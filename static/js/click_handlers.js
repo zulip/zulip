@@ -1,3 +1,20 @@
+var blueslip = require('./blueslip');
+var channel = require('./channel');
+var compose = require('./compose');
+var message_edit = require('./message_edit');
+var message_flags = require('./message_flags');
+var narrow = require('./narrow');
+var navigate = require('./navigate');
+var notifications = require('./notifications');
+var people = require('./people');
+var pointer = require('./pointer');
+var popovers = require('./popovers');
+var rows = require('./rows');
+var server_events = require('./server_events');
+var ui = require('./ui');
+var unread = require('./unread');
+var util = require('./util');
+
 var click_handlers = (function () {
 
 // We don't actually export anything yet; this is just for consistency.

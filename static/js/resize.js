@@ -1,3 +1,9 @@
+var condense = require('./condense');
+var navigate = require('./navigate');
+var popovers = require('./popovers');
+var ui = require('./ui');
+var viewport = require('./viewport');
+
 var resize = (function () {
 
 var exports = {};

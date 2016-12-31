@@ -1,3 +1,7 @@
+var blueslip = require('./blueslip');
+var localstorage = require('./localstorage');
+var server_events = require('./server_events');
+
 var Socket = (function () {
 
 var CLOSE_REASONS = {

@@ -1,3 +1,25 @@
+var activity = require('./activity');
+var admin = require('./admin');
+var alert_words = require('./alert_words');
+var blueslip = require('./blueslip');
+var bot_data = require('./bot_data');
+var channel = require('./channel');
+var echo = require('./echo');
+var emoji = require('./emoji');
+var message_store = require('./message_store');
+var muting_ui = require('./muting_ui');
+var notifications = require('./notifications');
+var people = require('./people');
+var pointer = require('./pointer');
+var referral = require('./referral');
+var reload = require('./reload');
+var stream_data = require('./stream_data');
+var subs = require('./subs');
+var tutorial = require('./tutorial');
+var ui = require('./ui');
+var unread = require('./unread');
+var util = require('./util');
+
 var server_events = (function () {
 
 var exports = {};

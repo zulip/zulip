@@ -1,4 +1,6 @@
 // Miscellaneous early setup.
+var blueslip = require('./blueslip');
+var loading = require('./loading');
 
 var csrf_token;
 $(function () {
@@ -31,14 +33,5 @@ $(function () {
             window.location.replace(page_params.login_page);
         }
     });
-
-    if (typeof $ !== 'undefined') {
-        $.fn.expectOne = function () {
-            if (blueslip && this.length !== 1) {
-                blueslip.error("Expected one element in jQuery set, " + this.length + " found");
-            }
-            return this;
-        };
-    }
 
 });

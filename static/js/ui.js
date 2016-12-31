@@ -1,3 +1,30 @@
+var activity = require('./activity');
+var blueslip = require('./blueslip');
+var compose = require('./compose');
+var composebox_typeahead = require('./composebox_typeahead');
+var emoji = require('./emoji');
+var feature_flags = require('./feature_flags');
+var floating_recipient_bar = require('./floating_recipient_bar');
+var gear_menu = require('./gear_menu');
+var hashchange = require('./hashchange');
+var invite = require('./invite');
+var loading = require('./loading');
+var message_edit = require('./message_edit');
+var message_list = require('./message_list');
+var message_store = require('./message_store');
+var navigate = require('./navigate');
+var notifications = require('./notifications');
+var pointer = require('./pointer');
+var reload = require('./reload');
+var resize = require('./resize');
+var rows = require('./rows');
+var search = require('./search');
+var settings = require('./settings');
+var timerender = require('./timerender');
+var tutorial = require('./tutorial');
+var unread = require('./unread');
+var viewport = require('./viewport');
+
 var ui = (function () {
 
 var exports = {};

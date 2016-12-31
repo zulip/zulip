@@ -1,3 +1,4 @@
+var blueslip = require('./blueslip');
 var localstorage = (function () {
 
 var exports = {};

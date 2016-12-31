@@ -1,3 +1,8 @@
+var Filter = require('./filter');
+var narrow = require('./narrow');
+var search_suggestion = require('./search_suggestion');
+var ui = require('./ui');
+
 var search = (function () {
 
 var exports = {};

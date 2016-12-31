@@ -1,3 +1,12 @@
+var channel = require('./channel');
+var compose = require('./compose');
+var composebox_typeahead = require('./composebox_typeahead');
+var echo = require('./echo');
+var feature_flags = require('./feature_flags');
+var rows = require('./rows');
+var templates = require('./templates');
+var viewport = require('./viewport');
+
 var message_edit = (function () {
 var exports = {};
 var currently_editing_messages = {};

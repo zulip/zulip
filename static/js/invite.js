@@ -1,3 +1,6 @@
+var stream_data = require('./stream_data');
+var templates = require('./templates');
+
 var invite = (function () {
 
 var exports = {};

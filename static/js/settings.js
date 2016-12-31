@@ -1,3 +1,15 @@
+var alert_words_ui = require('./alert_words_ui');
+var avatar = require('./avatar');
+var bot_data = require('./bot_data');
+var channel = require('./channel');
+var feature_flags = require('./feature_flags');
+var loading = require('./loading');
+var resize = require('./resize');
+var subs = require('./subs');
+var templates = require('./templates');
+var ui = require('./ui');
+var viewport = require('./viewport');
+
 var settings = (function () {
 
 var exports = {};

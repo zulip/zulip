@@ -1,3 +1,10 @@
+var blueslip = require('./blueslip');
+var people = require('./people');
+var popovers = require('./popovers');
+var resize = require('./resize');
+var templates = require('./templates');
+var unread_ui = require('./unread_ui');
+
 var pm_list = (function () {
 
 var exports = {};
@@ -80,9 +87,9 @@ exports.close = function () {
     remove_expanded_private_messages();
 };
 
-exports._build_private_messages_list = function (active_conversation, max_private_messages) {
+exports._build_private_messages_list = function (active_conversation, max_private_messages, num_unread_for_person, recent_private_messages, pm_with_uri) {
 
-    var private_messages = message_store.recent_private_messages || [];
+    var private_messages = recent_private_messages || [];
     var display_messages = [];
     var hiding_messages = false;
 
@@ -96,7 +103,7 @@ exports._build_private_messages_list = function (active_conversation, max_privat
         var user_ids_string = private_message_obj.user_ids_string;
         var reply_to = people.user_ids_string_to_emails_string(user_ids_string);
 
-        var num_unread = unread.num_unread_for_person(user_ids_string);
+        var num_unread = num_unread_for_person(user_ids_string);
 
         var always_visible = (idx < max_private_messages) || (num_unread > 0)
             || (user_ids_string === active_conversation);
@@ -113,7 +120,7 @@ exports._build_private_messages_list = function (active_conversation, max_privat
             unread: num_unread,
             is_zero: num_unread === 0,
             zoom_out_hide: !always_visible,
-            url: narrow.pm_with_uri(reply_to)
+            url: pm_with_uri(reply_to)
         };
         display_messages.push(display_message);
     });
@@ -150,7 +157,7 @@ exports.rebuild_recent = function (active_conversation) {
     resize.resize_stream_filters_container();
 };
 
-exports.update_private_messages = function () {
+exports.update_private_messages = function (narrow) {
     exports._build_private_messages_list();
 
     if (! narrow.active()) {

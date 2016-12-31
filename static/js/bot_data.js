@@ -1,3 +1,5 @@
+var util = require('./util');
+
 var bot_data = (function () {
     var exports = {};
 

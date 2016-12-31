@@ -1,3 +1,5 @@
+var webpack = require('webpack');
+
 module.exports = {
     entry: [
         'webpack-dev-server/client?http://0.0.0.0:9991/socket.io',
@@ -17,4 +19,10 @@ module.exports = {
             poll: 1000,
         },
     },
+    plugins: [
+        new webpack.ProvidePlugin({
+            $: "./extendjquery",
+            jQuery: "./extendjquery"
+        })
+    ],
 };

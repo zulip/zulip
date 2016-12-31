@@ -1,3 +1,7 @@
+var channel = require('./channel');
+var resize = require('./resize');
+var ui = require('./ui');
+
 var referral = (function () {
 
 var exports = {};

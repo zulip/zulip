@@ -1,3 +1,20 @@
+var blueslip = require('./blueslip');
+var compose_fade = require('./compose_fade');
+var condense = require('./condense');
+var message_edit = require('./message_edit');
+var narrow = require('./narrow');
+var navigate = require('./navigate');
+var notifications = require('./notifications');
+var rows = require('./rows');
+var stream_color = require('./stream_color');
+var stream_data = require('./stream_data');
+var templates = require('./templates');
+var timerender = require('./timerender');
+var ui = require('./ui');
+var unread = require('./unread');
+var util = require('./util');
+var viewport = require('./viewport');
+
 function MessageListView(list, table_name, collapse_messages) {
     this.list = list;
     this.collapse_messages = collapse_messages;

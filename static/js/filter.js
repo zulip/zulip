@@ -1,3 +1,6 @@
+var stream_data = require('./stream_data');
+var util = require('./util');
+
 var Filter = (function () {
 
 function zephyr_stream_name_match(message, operand) {

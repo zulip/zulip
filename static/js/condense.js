@@ -1,3 +1,8 @@
+var Dict = require('./dict');
+var message_flags = require('./message_flags');
+var rows = require('./rows');
+var viewport = require('./viewport');
+
 var condense = (function () {
 
 var exports = {};

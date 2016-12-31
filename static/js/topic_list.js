@@ -1,3 +1,13 @@
+var blueslip = require('./blueslip');
+var Dict = require('./dict');
+var muting = require('./muting');
+var narrow = require('./narrow');
+var popovers = require('./popovers');
+var stream_data = require('./stream_data');
+var templates = require('./templates');
+var ui = require('./ui');
+var unread = require('./unread');
+
 var topic_list = (function () {
 
 var exports = {};

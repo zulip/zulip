@@ -1,3 +1,14 @@
+var blueslip = require('./blueslip');
+var channel = require('./channel');
+var compose = require('./compose');
+var compose_fade = require('./compose_fade');
+var Dict = require('./dict');
+var people = require('./people');
+var resize = require('./resize');
+var templates = require('./templates');
+var unread = require('./unread');
+var util = require('./util');
+
 var activity = (function () {
 var exports = {};
 

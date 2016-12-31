@@ -1,3 +1,6 @@
+var rows = require('./rows');
+var ui = require('./ui');
+
 var copy_and_paste = (function () {
 
 var exports = {}; // we don't actually export anything yet, but that's ok

@@ -1,3 +1,22 @@
+var blueslip = require('./blueslip');
+var channel = require('./channel');
+var compose = require('./compose');
+var loading = require('./loading');
+var message_list = require('./message_list');
+var message_store = require('./message_store');
+var narrow = require('./narrow');
+var people = require('./people');
+var pointer = require('./pointer');
+var stream_color = require('./stream_color');
+var stream_data = require('./stream_data');
+var stream_list = require('./stream_list');
+var tab_bar = require('./tab_bar');
+var templates = require('./templates');
+var typeahead_helper = require('./typeahead_helper');
+var ui = require('./ui');
+var util = require('./util');
+var viewport = require('./viewport');
+
 var subs = (function () {
 
 var meta = {
@@ -364,7 +383,7 @@ function show_subscription_settings(sub_row) {
 
     var colorpicker = sub_settings.find('.colorpicker');
     var color = stream_data.get_color(sub.name);
-    stream_color.set_colorpicker_color(colorpicker, color);
+    stream_color.set_colorpicker_color(colorpicker, color, exports.set_color);
 }
 
 exports.show_settings_for = function (stream_name) {
@@ -647,7 +666,9 @@ exports.update_subscription_properties = function (stream_name, property, value)
     }
     switch (property) {
     case 'color':
-        stream_color.update_stream_color(sub, stream_name, value, {update_historical: true});
+        stream_color.update_stream_color(sub, stream_name, value,
+            exports.set_color, tab_bar.colorize_tab_bar,
+            {update_historical: true});
         break;
     case 'in_home_view':
         update_in_home_view(sub, value);

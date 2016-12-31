@@ -1,3 +1,18 @@
+var blueslip = require('./blueslip');
+var Dict = require('./dict');
+var narrow = require('./narrow');
+var pm_list = require('./pm_list');
+var popovers = require('./popovers');
+var resize = require('./resize');
+var stream_color = require('./stream_color');
+var stream_data = require('./stream_data');
+var templates = require('./templates');
+var topic_list = require('./topic_list');
+var ui = require('./ui');
+var unread = require('./unread');
+var unread_ui = require('./unread_ui');
+var util = require('./util');
+
 var stream_list = (function () {
 
 var exports = {};

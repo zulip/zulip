@@ -1,3 +1,16 @@
+var activity = require('./activity');
+var blueslip = require('./blueslip');
+var channel = require('./channel');
+var compose = require('./compose');
+var feature_flags = require('./feature_flags');
+var hashchange = require('./hashchange');
+var message_list = require('./message_list');
+var message_store = require('./message_store');
+var narrow = require('./narrow');
+var server_events = require('./server_events');
+var ui = require('./ui');
+var util = require('./util');
+
 var reload = (function () {
 
 var exports = {};

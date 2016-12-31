@@ -1,3 +1,9 @@
+var activity = require('./activity');
+var admin = require('./admin');
+var blueslip = require('./blueslip');
+var Dict = require('./dict');
+var util = require('./util');
+
 var people = (function () {
 
 var exports = {};

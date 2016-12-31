@@ -1,3 +1,7 @@
+var blueslip = require('./blueslip');
+var feature_flags = require('./feature_flags');
+var reload = require('./reload');
+
 var channel = (function () {
 
 var exports = {};

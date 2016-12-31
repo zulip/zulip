@@ -1,3 +1,22 @@
+var blueslip = require('./blueslip');
+var channel = require('./channel');
+var compose = require('./compose');
+var compose_fade = require('./compose_fade');
+var condense = require('./condense');
+var Dict = require('./dict');
+var Filter = require('./filter');
+var hashchange = require('./hashchange');
+var message_list = require('./message_list');
+var message_store = require('./message_store');
+var navigate = require('./navigate');
+var notifications = require('./notifications');
+var people = require('./people');
+var search = require('./search');
+var stream_data = require('./stream_data');
+var ui = require('./ui');
+var unread = require('./unread');
+var viewport = require('./viewport');
+
 var narrow = (function () {
 
 var exports = {};

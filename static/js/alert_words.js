@@ -1,3 +1,5 @@
+var util = require('./util');
+
 var alert_words = (function () {
 
 var exports = {};

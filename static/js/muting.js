@@ -1,3 +1,7 @@
+var Dict = require('./dict');
+var unread = require('./unread');
+var stream_list = require('./stream_list');
+
 var muting = (function () {
 
 var exports = {};
@@ -11,7 +15,7 @@ exports.mute_topic = function (stream, topic) {
         muted_topics.set(stream, sub_dict);
     }
     sub_dict.set(topic, true);
-    unread.update_unread_counts();
+    unread.update_unread_counts(stream_list.update_dom_with_unread_counts);
 };
 
 exports.unmute_topic = function (stream, topic) {
@@ -19,7 +23,7 @@ exports.unmute_topic = function (stream, topic) {
     if (sub_dict) {
         sub_dict.del(topic);
     }
-    unread.update_unread_counts();
+    unread.update_unread_counts(stream_list.update_dom_with_unread_counts);
 };
 
 exports.is_topic_muted = function (stream, topic) {

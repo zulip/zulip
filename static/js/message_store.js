@@ -1,3 +1,27 @@
+var activity = require('./activity');
+var alert_words = require('./alert_words');
+var blueslip = require('./blueslip');
+var channel = require('./channel');
+var compose = require('./compose');
+var composebox_typeahead = require('./composebox_typeahead');
+var condense = require('./condense');
+var loading = require('./loading');
+var message_edit = require('./message_edit');
+var message_list = require('./message_list');
+var narrow = require('./narrow');
+var notifications = require('./notifications');
+var people = require('./people');
+var pm_list = require('./pm_list');
+var pointer = require('./pointer');
+var resize = require('./resize');
+var server_events = require('./server_events');
+var stream_data = require('./stream_data');
+var stream_list = require('./stream_list');
+var tutorial = require('./tutorial');
+var ui = require('./ui');
+var unread = require('./unread');
+var util = require('./util');
+
 var message_store = (function () {
 
 var exports = {};
@@ -318,16 +342,16 @@ exports.update_messages = function update_messages(events) {
             message_list.narrowed.view.rerender_messages(msgs_to_rerender);
         }
     }
-    unread.update_unread_counts();
+    unread.update_unread_counts(stream_list.update_dom_with_unread_counts);
     stream_list.update_streams_sidebar();
-    pm_list.update_private_messages();
+    pm_list.update_private_messages(narrow);
 };
 
 
 // This function could probably benefit from some refactoring
 exports.do_unread_count_updates = function do_unread_count_updates(messages) {
     unread.process_loaded_messages(messages);
-    unread.update_unread_counts();
+    unread.update_unread_counts(stream_list.update_dom_with_unread_counts);
     resize.resize_page_components();
 };
 
@@ -380,7 +404,7 @@ exports.insert_new_messages = function insert_new_messages(messages) {
     unread.process_visible();
     notifications.received_messages(messages);
     stream_list.update_streams_sidebar();
-    pm_list.update_private_messages();
+    pm_list.update_private_messages(narrow);
 };
 
 function process_result(messages, opts) {
@@ -409,7 +433,7 @@ function process_result(messages, opts) {
 
     activity.process_loaded_messages(messages);
     stream_list.update_streams_sidebar();
-    pm_list.update_private_messages();
+    pm_list.update_private_messages(narrow);
 
     if (opts.cont !== undefined) {
         opts.cont(messages);
@@ -620,6 +644,10 @@ util.execute_early(function () {
         });
     });
 });
+
+exports.recipient_from_group = function (message_group) {
+    return exports.get(exports.id($(message_group).children('.message_row').first().expectOne()));
+};
 
 // This is for testing.
 exports._add_message_metadata = add_message_metadata;

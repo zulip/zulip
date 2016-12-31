@@ -1,3 +1,12 @@
+var blueslip = require('./blueslip');
+var narrow = require('./narrow');
+var pointer = require('./pointer');
+var rows = require('./rows');
+var stream_list = require('./stream_list');
+var ui = require('./ui');
+var unread = require('./unread');
+var viewport = require('./viewport');
+
 var navigate = (function () {
 
 var exports = {};

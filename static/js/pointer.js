@@ -1,6 +1,13 @@
 // See http://zulip.readthedocs.io/en/latest/pointer.html for notes on
 // how this system is designed.
 
+var channel = require('./channel');
+var reload = require('./reload');
+var rows = require('./rows');
+var ui = require('./ui');
+var unread = require('./unread');
+var viewport = require('./viewport');
+
 var pointer = (function () {
 
 var exports = {};

@@ -1,3 +1,4 @@
+var blueslip = require('./blueslip');
 /* Constructs a new Dict object.
  *
  * Dict(opt) -> the new Dict will be empty
