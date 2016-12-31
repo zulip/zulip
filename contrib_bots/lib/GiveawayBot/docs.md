@@ -1,17 +1,17 @@
-#Zulip Giveaway Bot - Created By Daniel O'Brien
+# Zulip Giveaway Bot - Created By Daniel O'Brien
 
 
-##Overview:
+## Overview:
 
 This bot facilitates the creation of 'Giveaways' within Zuilip. Once a giveaway has been initialized, it will automatically count down for a set period of time and once that time has passed it will randomly choose a winner out of the people whom entered the giveaway in that time period.
 
 
-##Syntax:
+## Syntax:
 
 @giveaway init|enter|exit|cancel [giveaway_name] [giveaway_time]
 
 
-##Commands:
+## Commands:
 
 init: Initialize a giveaway, [giveaway_name] and [giveaway_time] must also be supplied.
 
@@ -30,7 +30,7 @@ giveaway_time: The time, in minutes, the user wishes the giveaway to
 go on for. Maximum of 100 mins to prevent a stack overflow.
 
 
-##Example Usage:
+## Example Usage:
 
 @giveaway init Foobar 10 -
 
@@ -50,4 +50,3 @@ Opposite of @giveaway enter (see above).
 @giveaway cancel -
 
 This command will cancel any giveaway that is currently running. Can  only be executed by the person whom created the giveaway in the first place.
-
