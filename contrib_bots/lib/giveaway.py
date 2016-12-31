@@ -2,6 +2,7 @@
 import time
 import threading
 import random
+from __future__ import print_function
 
 class GiveawayHandler(object):
     '''
