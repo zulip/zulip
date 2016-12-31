@@ -141,7 +141,7 @@ function make_stream_default(stream_name) {
         stream_name: stream_name
     };
 
-    channel.put({
+    channel.post({
         url: '/json/default_streams',
         data: data,
         error: function (xhr) {
