@@ -17,14 +17,14 @@ class GiveawayHandler(object):
     enter - enter a giveaway (a giveaway must be running to use this command)
     exit - leave a giveaway (must be partaking in an active giveaway for this
     command to work
-    cancel - cancel a giveaway (can only be run by the person who first 
+    cancel - cancel a giveaway (can only be run by the person who first
     initialised the giveaway
 
     This plugin was created by Daniel O'Brien
     as part of Google Code-In 2016-2017
     '''
     def __init__(self):
-        self.giveawayArray = [] 
+        self.giveawayArray = []
         self.giveawayOn = False
         self.giveawayName = ""
         self.giveawayTime = 0
@@ -57,7 +57,7 @@ class GiveawayHandler(object):
                 self.giveawayWinner = random.choice(self.giveawayArray)
                 self.winnerIndex = self.giveawayArray.index(self.giveawayWinner)
                 new_content = 'The giveaway has now ended... The winner is... %s!' % (self.giveawayWinner)
-                direct_content = 'Congratulations!, you recently partook in the giveaway called %s and won! Please contact %s on details as to how to claim your prize.' % (self.giveawayName, self.giveawayCreator,)
+                direct_content = """Congratulations!, you recently partook in the giveaway called %s and won! Please contact %s on details as to how to claim your prize.""" % (self.giveawayName, self.giveawayCreator,)
                 self.giveawayClient.send_message(dict(
                     type='private',
                     to=self.winnerContactDetails[self.winnerIndex],
@@ -74,7 +74,6 @@ class GiveawayHandler(object):
                     subject=self.giveawaySubject,
                     content=new_content,
                 ))
-            
         elif time.time() > (self.giveawayStartTime+(self.giveawayTime/4)) and self.giveawayStage < 1: #1/4 Time elapsed
             new_content = '1/4 of giveaway time elapsed, %s minutes remaining' % (str((self.giveawayTimeMins/4)*3))
             self.time_update(new_content)
@@ -191,7 +190,7 @@ class GiveawayHandler(object):
                     new_content = 'Giveaway cancelled'
                     self.giveawayOn = False
                 else:
-                    new_content = 'Error: Giveaway can only be cancelled by its creator (%s)' % (giveawayCreator)
+                    new_content = 'Error: Giveaway can only be cancelled by its creator (%s)' % (self.giveawayCreator)
         else:
             new_content = 'Error: Possible commands are "init", "enter", "exit" and "cancel"'
 
@@ -203,5 +202,6 @@ class GiveawayHandler(object):
         ))
 
 handler_class = GiveawayHandler
+
 
 
