@@ -48,7 +48,7 @@ parser = optparse.OptionParser(r"""
 
     This integration can be used to send yourself reminders, on Zulip, of Google Calendar Events.
 
-    Before running this integration make sure you run the get-google-credentials file to give Zulip
+    Before running this integration make sure you run the oauth.py file to give Zulip
     access to certain aspects of your Google Account.
 
     This integration should be run on your local machine. Your API key and other information are
@@ -104,7 +104,7 @@ def get_credentials():
     except client.Error:
         logging.exception('Error while trying to open the `google-credentials.json` file.')
     except IOError:
-        logging.error("Run the get-google-credentials script from this directory first.")
+        logging.error("Run the oauth.py script from this directory first.")
 
 
 def populate_events():
