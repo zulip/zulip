@@ -436,6 +436,10 @@ exports.initialize = function () {
             if (! current_recipient.match(/\S/)) {
                 return false;
             }
+            var recipients = util.extract_pm_recipients(this.query);
+            if (recipients.indexOf(item.email) > -1) {
+                return false;
+            }
 
             return query_matches_person(current_recipient, item);
         },
