@@ -135,7 +135,7 @@ as a “**realm**”.
 * Only allow admins to create new streams
 * [Restrict editing of old messages and topics](/help/restrict-editing-of-old-messages-and-topics)
 * [Change the default language for realm](/help/change-the-default-language-for-realm)
-* Add custom emoji
+* [Add custom emoji](/help/add-custom-emoji)
 * Configure authentication methods
 * Add a custom linkification filter
 * Delete your organization (not implemented)
