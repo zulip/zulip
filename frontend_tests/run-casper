@@ -123,7 +123,10 @@ def run_tests(realms_have_subdomains, files):
         remote_debug = "--remote-debugger-port=7777 --remote-debugger-autorun=yes"
 
     # Run this not through the shell, so that we have the actual PID.
-    server = subprocess.Popen(('tools/run-dev.py', '--test'),
+    run_dev_server_command = ['tools/run-dev.py', '--test']
+    if options.force:
+        run_dev_server_command.append('--force')
+    server = subprocess.Popen(run_dev_server_command,
                               stdout=log, stderr=log)
 
     ret = 1
