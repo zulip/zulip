@@ -138,17 +138,62 @@ below.
 * Names of buttons, fields, etc. should be **bolded** (e.g. **Settings**
 page, **Change Password** button, **Email** field). No quotation marks
 should be used.
-* Specific instructions for the user should be formatted as a series of
+* All multi-step instructions should be formatted as a series of
 numbered steps. E.g.:
   ```
   1. Do something
   2. Do the next thing.
   ```
+  Keep the steps simple -- "do X, then Y, then Z" is three steps, not one.
 
-* Keep in mind that the UI may change. E.g. never refer specifically to
-button colors.
-* Screenshot guidelines:
-  * Only include a screenshot if it will help guide the user.
+* Keep in mind that the UI may change -- don't describe it in more detail
+  than is needed.
+    * Never refer specifically to button colors.
+
+* All icons should be referred to both by name and with an image, e.g.:
+  "between the **A** (![A](/images/formatting.png)) and **eye**
+(![eye](/images/eye.png)) icons"
+
+* Guidelines for **tips** and **warnings**:
+
+  * A **tip** is any suggestion for the user that is not part of the main
+    set of instructions. E.g. it may address a common problem users may
+    encounter while following the instructions, or point to an option
+    for power users.
+  * A **warning** is a note on what happens when there is some kind of problem.
+    Tips are more common than warnings.
+  * All tips/warnings should appear inside tip/warning blocks.
+    They should not be included as
+    part of the numbered instructions or displayed in plain paragraphs.
+  * There should be only one tip/warning inside each block. It is perfectly
+    fine to use multiple consecutive tip boxes.
+  * Generally, no title for the tip/warning block is needed.
+  * Example **tip** from the sign-in doc page:
+    ```
+    !!! tip ""
+        If you've forgotten your password, see the
+        [Change your password](/help/change-your-password) page for
+        instructions on how to reset it.
+    ```
+  * Other examples of **tips**:
+    * Your topic name can be no longer than 52 characters.
+    * If you are unsure of the code for any particular emoji visit Emoji
+      Cheat Sheet for a complete list.
+  * Example **warning**:
+      ```
+      !!! warning ""
+          If you attempt to input a nonexistent stream name, an error
+          message will appear.
+      ```
+
+* **Screenshot** guidelines:
+  * Only include a screenshot if it will help guide the user. E.g. include a
+    screenshot if the user needs to find a button in the corner. Don't
+    include a screenshot if the element the user needs to interact with is
+    the only thing on the page. Using too many screenshots creates problems:
+      * **Maitenance**: The screen shot has to be updated every time the UI
+        is changed.
+      * It makes the instructions look longer and therefore more complicated.
   * Never include the whole Zulip window in a screenshot. Focus on the
     relevant part of the app.
   * The screenshot should always come *after* the text that describes it,
@@ -156,8 +201,13 @@ button colors.
 
     1. Click the **Sign in with Google** button located under the **Login**
       button and **Forgot your password?** link.
+
       ![Zulip sign in Google](/images/signin-google.png)
-* Use the following format to direct users to part of the **Settings**:
+
+* Standard formulas for directing users to commonly used pages:
+  * There is a macro for directing users to the **Subscriptions** page:
+    `{!subscriptions.md!}`
+  * Use the following format to direct users to part of the **Settings**:
   ```
   1. Go to the [Your Account](/#settings/your-account) tab of the
    [Settings](/help/edit-settings) page.
