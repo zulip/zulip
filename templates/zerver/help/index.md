@@ -116,7 +116,7 @@ as a “**realm**”.
 
 ## Tools & Customization
 * [Keyboard shortcuts](/help/keyboard-shortcuts)
-* Add a bot or integration
+* [Add a bot or integration](/help/add-a-bot-or-integration)
 
 ## Apps
 * Zulip on Mac OS
