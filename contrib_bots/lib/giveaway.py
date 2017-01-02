@@ -91,7 +91,6 @@ class GiveawayHandler(object):
                     to=self.giveaway_winner_contact_address[self.winner_index],
                     content=direct_content,
                 ))
-
             except:
                 new_content = 'Giveaway ended: No one entered the giveaway :('
             if self.giveaway_on:
@@ -131,8 +130,6 @@ class GiveawayHandler(object):
         # return True if we want to (possibly) response to this message
 
         original_content = message['content']
-
-
         if message['display_recipient'] == 'giveawayer':
             return False
         return original_content.startswith('@giveaway')
@@ -158,7 +155,7 @@ class GiveawayHandler(object):
                         else:
                             self.giveaway_time = self.giveaway_timeMins * 60
                             new_content = ("""{} has initiated a giveaway called {} for {} minutes"""
-                                         .format(message['sender_full_name'], self.giveaway_name, self.giveaway_timeMins))
+                                           .format(message['sender_full_name'], self.giveaway_name, self.giveaway_timeMins))
                             self.giveaway_on = True
                             self.giveaway_start_time = time.time()
                             self.giveawayStream = message['display_recipient']
