@@ -1,5 +1,5 @@
 from zerver.lib.test_classes import WebhookTestCase
-from six import text_type
+from typing import Text
 
 class PapertrailHookTests(WebhookTestCase):
     STREAM_NAME = 'papertrail'
@@ -42,5 +42,5 @@ May 18 20:30:02 abc cron OR server1:
                                           content_type="application/x-www-form-urlencoded")
 
     def get_body(self, fixture_name):
-        # type: (text_type) -> text_type
+        # type: (Text) -> Text
         return self.fixture_data("papertrail", fixture_name, file_type="json")

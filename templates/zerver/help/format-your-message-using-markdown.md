@@ -12,7 +12,7 @@ The following modal window will appear.
 
 ## Emphasis
 
-You can surround your test with a combination of asterisks `*` and tildes `~` to emphasize words or phrases in your messages.
+You can surround your text with a combination of asterisks `*` and tildes `~` to emphasize words or phrases in your messages.
 
 ### Italics
 
@@ -72,9 +72,9 @@ A complete list of emojis can be found [here](http://www.webpagefx.com/tools/emo
 
 ## Mentions
 
-To call the attention of another member, you can alert other users by typing `@**username**"`
+To call the attention of another member, you can alert them by typing `@**username**`
 
-If you type `@` and then begin typing their email address or one of their names, and the system will offer you auto-completion suggestions.
+If you type `@` and then begin typing the user's email address or the user's name, the system will offer you auto-completion suggestions.
 
 ![Mentions](/static/images/help/mention-screenshot.png)
 
@@ -82,7 +82,7 @@ Typing `@**all**` will alert all users in the stream, and a confirmation message
 
 ![Mention All](/static/images/help/all-confirm.png)
 
-For more information on mentions, visit [here](/help/at-mention-a-team-member) for more information.
+For more information on mentions, visit [here](/help/at-mention-a-team-member).
 
 ## Code
 

@@ -1164,6 +1164,30 @@ a.message_label_clickable:hover {
     opacity: 1.0;
 }
 
+.reactions_hover {
+    display: inline-block;
+    position: relative;
+    left: 22px;
+    width: 0px;
+    height: 0px;
+    color: #bbb;
+    opacity: 0;
+}
+
+.reactions_hover i {
+    position: absolute;
+    display: block;
+    top: -0.9em;
+    left: 0.4em;
+    border-radius: 1px;
+    padding: 1px 2px;
+}
+
+.message_hovered .reactions_hover {
+    cursor: pointer;
+    opacity: 1.0;
+}
+
 /* Brighten text because of the dark background */
 .dark_background a,
 .dark_background a:hover,

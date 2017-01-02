@@ -1,6 +1,6 @@
 # Change Stream Color
 Zulip allows you to change stream colors to better customize an environment
-that best suites you.
+that best suits you.
 
 ### Using the streams sidebar
 The streams sidebar is the fastest approach to changing the color of a stream, to use this:

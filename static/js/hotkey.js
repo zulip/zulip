@@ -43,6 +43,7 @@ var hotkeys_shift_insensitive = {
     27: {name: 'escape', message_view_only: false}, // escape
     47: {name: 'search', message_view_only: false}, // '/'
     63: {name: 'show_shortcuts', message_view_only: false}, // '?'
+    64: {name: 'compose_reply_with_mention', message_view_only: true}, // '@'
     65: {name: 'stream_cycle_backward', message_view_only: true}, // 'A'
     67: {name: 'compose_private_message', message_view_only: true}, // 'C'
     68: {name: 'stream_cycle_forward', message_view_only: true}, // 'D'
@@ -363,6 +364,11 @@ function process_hotkey(e) {
             return true;
         case 'respond_to_author': // 'R': respond to author
             compose.respond_to_message({reply_type: "personal", trigger: 'hotkey pm'});
+            return true;
+        case 'compose_reply_with_mention': // '@': respond to message with mention to author
+            compose.respond_to_message({trigger: 'hotkey'});
+            var message = current_msg_list.selected_message();
+            $("#new_message_content").val('@**' + message.sender_full_name + '** ');
             return true;
     }
 

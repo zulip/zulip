@@ -2,7 +2,7 @@
 
 In Zulip, most of the stream administration is done on the
 subscription page.  Nevertheless, that is not the case for deleting a
-stream.  Follow this instructions to learn how it is done.
+stream.  Follow these instructions to learn how it is done.
 
 ## Locate the administration tab
 

@@ -1637,6 +1637,7 @@ class ChangeSettingsTest(ZulipTestCase):
         self.check_for_toggle_param_patch("/json/settings/notifications", "enable_offline_push_notifications")
         self.check_for_toggle_param_patch("/json/settings/notifications", "enable_online_push_notifications")
         self.check_for_toggle_param_patch("/json/settings/notifications", "enable_digest_emails")
+        self.check_for_toggle_param_patch("/json/settings/notifications", "pm_content_in_desktop_notifications")
 
     def test_ui_settings(self):
         # type: () -> None
@@ -1902,6 +1903,7 @@ class HomeTest(ZulipTestCase):
             "notifications_stream",
             "password_auth_enabled",
             "people_list",
+            "pm_content_in_desktop_notifications",
             "poll_timeout",
             "presence_disabled",
             "product_name",

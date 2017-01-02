@@ -411,6 +411,11 @@
       "t.co"
     ],
     [
+      "readme.md",
+      "<p>readme.md</p>",
+      "readme.md"
+    ],
+    [
       "go to views.org please",
       "<p>go to %s please</p>",
       "views.org"

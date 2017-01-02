@@ -388,7 +388,10 @@ def build_custom_checkers(by_lang):
          ]),
          'description': "`title` value should be translatable."},
         ] # type: RuleList
-    handlebars_rules = html_rules
+    handlebars_rules = html_rules + [
+        {'pattern': "[<]script",
+         'description': "Do not use inline <script> tags here; put JavaScript in static/js instead."},
+    ]
     json_rules = [] # type: RuleList # fix newlines at ends of files
     # It is okay that json_rules is empty, because the empty list
     # ensures we'll still check JSON files for whitespace.

@@ -3,8 +3,6 @@ from __future__ import absolute_import
 from django.utils.translation import ugettext as _
 from django.http import HttpRequest, HttpResponse
 
-from six import text_type
-
 from zerver.models import get_client, UserProfile, Client
 
 from zerver.decorator import asynchronous, \
@@ -17,7 +15,7 @@ from zerver.tornado.event_queue import get_client_descriptor, \
     process_notification, fetch_events
 from django.core.handlers.base import BaseHandler
 
-from typing import Union, Optional, Iterable, Sequence, List
+from typing import Union, Optional, Iterable, Sequence, List, Text
 import time
 import ujson
 
@@ -29,7 +27,7 @@ def notify(request):
 
 @has_request_variables
 def cleanup_event_queue(request, user_profile, queue_id=REQ()):
-    # type: (HttpRequest, UserProfile, text_type) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Text) -> HttpResponse
     client = get_client_descriptor(str(queue_id))
     if client is None:
         return json_error(_("Bad event queue id: %s") % (queue_id,))
@@ -51,7 +49,7 @@ def get_events_backend(request, user_profile, handler,
                        dont_block = REQ(default=False, validator=check_bool),
                        narrow = REQ(default=[], validator=check_list(None)),
                        lifespan_secs = REQ(default=0, converter=int)):
-    # type: (HttpRequest, UserProfile, BaseHandler, Optional[Client], Optional[int], Optional[List[text_type]], bool, bool, Optional[text_type], bool, Iterable[Sequence[text_type]], int) -> Union[HttpResponse, _RespondAsynchronously]
+    # type: (HttpRequest, UserProfile, BaseHandler, Optional[Client], Optional[int], Optional[List[Text]], bool, bool, Optional[Text], bool, Iterable[Sequence[Text]], int) -> Union[HttpResponse, _RespondAsynchronously]
     if user_client is None:
         user_client = request.client
 

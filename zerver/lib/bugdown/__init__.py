@@ -71,8 +71,8 @@ def unescape(s):
 
 def list_of_tlds():
     # type: () -> List[Text]
-    # HACK we manually blacklist .py
-    blacklist = [u'PY\n', ]
+    # HACK we manually blacklist a few domains
+    blacklist = [u'PY\n', u"MD\n"]
 
     # tlds-alpha-by-domain.txt comes from http://data.iana.org/TLD/tlds-alpha-by-domain.txt
     tlds_file = os.path.join(os.path.dirname(__file__), 'tlds-alpha-by-domain.txt')

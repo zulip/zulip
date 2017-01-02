@@ -73,6 +73,9 @@ jwt==0.3.2
 # Needed for USING_MANDRILL option for outgoing email
 mandrill==1.0.57
 
+# Needed for including other markdown files for user docs
+markdown-include==0.5.1
+
 # Needed for mock objects in decorators
 mock==2.0.0
 
@@ -84,9 +87,6 @@ pbr==1.10
 
 # Needed to access rabbitmq
 pika==0.10.0
-
-# Wrapper for mailchimp api
-postmonkey==1.0b0
 
 # Needed to access our database
 psycopg2==2.6.2

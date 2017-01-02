@@ -679,6 +679,7 @@ PIPELINE = {
                 'styles/settings.css',
                 'styles/subscriptions.css',
                 'styles/compose.css',
+                'styles/reactions.css',
                 'styles/left-sidebar.css',
                 'styles/overlay.css',
                 'styles/pygments.css',
@@ -698,6 +699,7 @@ PIPELINE = {
                 'styles/settings.css',
                 'styles/subscriptions.css',
                 'styles/compose.css',
+                'styles/reactions.css',
                 'styles/left-sidebar.css',
                 'styles/overlay.css',
                 'styles/pygments.css',
@@ -731,13 +733,13 @@ JS_SPECS = {
     },
     'signup': {
         'source_filenames': (
-            'js/signup.js',
+            'js/portico/signup.js',
             'node_modules/jquery-validation/dist/jquery.validate.js',
             ),
         'output_filename':  'min/signup.js'
     },
     'api': {
-        'source_filenames': ('js/api.js',),
+        'source_filenames': ('js/portico/api.js',),
         'output_filename':  'min/api.js'
     },
     'app_debug': {
@@ -839,6 +841,7 @@ JS_SPECS = {
             'js/referral.js',
             'js/custom_markdown.js',
             'js/bot_data.js',
+            'js/reactions.js',
             # JS bundled by webpack is also included here if PIPELINE_ENABLED setting is true
         ],
         'output_filename': 'min/app.js'
@@ -848,6 +851,14 @@ JS_SPECS = {
             'third/sorttable/sorttable.js',
         ),
         'output_filename': 'min/activity.js'
+    },
+    'stats': {
+        'source_filenames': (
+            'node_modules/plotly.js/dist/plotly.js',
+            'node_modules/jquery/dist/jquery.js',
+            'js/portico/stats.js'
+        ),
+        'output_filename': 'min/stats.js'
     },
     # We also want to minify sockjs separately for the sockjs iframe transport
     'sockjs': {
