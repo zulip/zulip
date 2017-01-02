@@ -137,7 +137,7 @@ as a “**realm**”.
 * [Change the default language for realm](/help/change-the-default-language-for-realm)
 * [Add custom emoji](/help/add-custom-emoji)
 * Configure authentication methods
-* Add a custom linkification filter
+* [Add a custom linkification filter](/help/add-a-custom-linkification-filter)
 * Delete your organization (not implemented)
 
 ## Users & Bots
