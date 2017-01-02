@@ -38,7 +38,7 @@ from six.moves.configparser import SafeConfigParser
 from six.moves import urllib
 import logging
 import six
-from typing import Any, Callable, Dict, Mapping, Optional, Tuple, Union, Iterable, Text
+from typing import Any, Callable, Dict, Iterable, IO, Mapping, Optional, Text, Tuple, Union
 
 __version__ = "0.2.5"
 
@@ -291,7 +291,7 @@ class Client(object):
                 )
 
     def do_api_query(self, orig_request, url, files=None, method="POST", longpolling=False):
-        # type: (Mapping[str, Any], str, List[typing.IO], str, bool) -> Dict[str, Any]
+        # type: (Mapping[str, Any], str, List[IO], str, bool) -> Dict[str, Any]
         request = {}
         req_files = []
 
@@ -301,14 +301,8 @@ class Client(object):
             else:
                 request[key] = simplejson.dumps(val)
 
-        if isinstance(files, list):
-            for file in files:
-                req_files.append((file.name, file))
-        else:
-            try:
-                req_files.append((files.name, files))
-            except AttributeError:
-                raise TypeError('files must be a file list/single object')
+        for f in files:
+            req_files.append((f.name, f))
 
         query_state = {
             'had_error_retry': False,
@@ -417,7 +411,7 @@ class Client(object):
                     "status_code": res.status_code}
 
     def call_endpoint(self, url=None, files=None, method="POST", request=None, longpolling=False):
-        # type: (str, Tuple(typing.IO), str, Dict[str, Any], bool) -> Dict[str, Any]
+        # type: (str, List[IO], str, Dict[str, Any], bool) -> Dict[str, Any]
         if request is None:
             request = dict()
         return self.do_api_query(request, API_VERSTRING + url, files, method=method)
@@ -495,10 +489,10 @@ class Client(object):
         )
 
     def upload_file(self, file):
-        # type: typing.IO -> str
+        # type: (IO) -> Dict[str, Any]
         return self.call_endpoint(
             url='user_uploads',
-            files=file
+            files=[file]
         )
 
     def update_message(self, message_data):
