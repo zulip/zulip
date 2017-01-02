@@ -13,18 +13,7 @@ The streams sidebar is the fastest approach to changing the color of a stream, t
 You can also edit the color of a Stream from the **Subscriptions page**.
 
 ### Finding the subscriptions page
-There are multiple ways to navigate to the subscriptions page. You can either:
-
-1. Click the **cog** (![cog](/static/images/help/cog.png)) icon in the top right corner.
-2. Select the **Manage Streams** option from the dropdown menu.
-
-![settings](/static/images/help/settings-dropdown-streams.png)
-
-or
-
-1. Click the **cog** (![cog](/static/images/help/cog.png)) icon located in the **left sidebar** next to **Streams**
-
-![Streams Cog](/static/images/help/streams-1.png)
+{!subscriptions.md!}
 
 ### Change color
 Once on the **subscriptions page**:
