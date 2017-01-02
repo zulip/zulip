@@ -93,83 +93,100 @@ def get_in(payload, keys, default=''):
         return default
     return payload
 
-def handle_issue_event(event, payload, user_profile):
-    # type: (Text, Dict[str, Any], Any) -> Tuple[Text, Text]
-    author = get_in(payload, ['user', 'displayName'])
-    issue_id = get_in(payload, ['issue', 'key'])
-
+def get_issue_string(payload, issue_id=None):
+    # type: (Dict[str, Any], Text) -> Text
     # Guess the URL as it is not specified in the payload
     # We assume that there is a /browse/BUG-### page
     # from the REST url of the issue itself
+    if issue_id is None:
+        issue_id = get_issue_id(payload)
+
     base_url = re.match("(.*)\/rest\/api/.*", get_in(payload, ['issue', 'self']))
     if base_url and len(base_url.groups()):
-        issue = "[{}]({}/browse/{})".format(issue_id, base_url.group(1), issue_id)
+        return "[{}]({}/browse/{})".format(issue_id, base_url.group(1), issue_id)
     else:
-        issue = issue_id
+        return issue_id
 
-    title = get_in(payload, ['issue', 'fields', 'summary'])
-    priority = get_in(payload, ['issue', 'fields', 'priority', 'name'])
-    assignee = get_in(payload, ['issue', 'fields', 'assignee', 'displayName'], 'no one')
-    assignee_email = get_in(payload, ['issue', 'fields', 'assignee', 'emailAddress'], '')
-    assignee_mention = ''
-
+def get_assignee_mention(assignee_email):
+    # type: (Text) -> Text
     if assignee_email != '':
         try:
-            assignee_profile = get_user_profile_by_email(assignee_email)
-            assignee_mention = "**{}**".format(assignee_profile.full_name)
+            assignee_name = get_user_profile_by_email(assignee_email).full_name
         except UserProfile.DoesNotExist:
-            assignee_mention = "**{}**".format(assignee_email)
+            assignee_name = assignee_email
+        return "**{}**".format(assignee_name)
+    return ''
 
-    subject = "{}: {}".format(issue_id, title)
+def get_issue_author(payload):
+    # type: (Dict[str, Any]) -> Text
+    return get_in(payload, ['user', 'displayName'])
 
-    if event == 'jira:issue_created':
-        content = "{} **created** {} priority {}, assigned to **{}**:\n\n> {}".format(
-            author,
-            issue,
-            priority,
-            assignee,
-            title
-        )
+def get_issue_id(payload):
+    # type: (Dict[str, Any]) -> Text
+    return get_in(payload, ['issue', 'key'])
 
-    elif event == 'jira:issue_deleted':
-        content = "{} **deleted** {}!".format(author, issue)
+def get_issue_title(payload):
+    # type: (Dict[str, Any]) -> Text
+    return get_in(payload, ['issue', 'fields', 'summary'])
 
-    elif event == 'jira:issue_updated':
-        # Reassigned, commented, reopened, and resolved events are all bundled
-        # into this one 'updated' event type, so we try to extract the meaningful
-        # event that happened
-        if assignee_mention != '':
-            assignee_blurb = " (assigned to {})".format(assignee_mention)
-        else:
-            assignee_blurb = ''
-        content = "{} **updated** {}{}:\n\n".format(author, issue, assignee_blurb)
-        changelog = get_in(payload, ['changelog'])
-        comment = get_in(payload, ['comment', 'body'])
+def get_issue_subject(payload):
+    # type: (Dict[str, Any]) -> Text
+    return "{}: {}".format(get_issue_id(payload), get_issue_title(payload))
 
-        if changelog != '':
-            # Use the changelog to display the changes, whitelist types we accept
-            items = changelog.get('items')
-            for item in items:
-                field = item.get('field')
+def handle_updated_issue_event(payload, user_profile):
+    # Reassigned, commented, reopened, and resolved events are all bundled
+    # into this one 'updated' event type, so we try to extract the meaningful
+    # event that happened
+    # type: (Dict[str, Any], UserProfile) -> Text
+    issue_id = get_in(payload, ['issue', 'key'])
+    issue = get_issue_string(payload, issue_id)
 
+    assignee_email = get_in(payload, ['issue', 'fields', 'assignee', 'emailAddress'], '')
+    assignee_mention = get_assignee_mention(assignee_email)
+
+    if assignee_mention != '':
+        assignee_blurb = " (assigned to {})".format(assignee_mention)
+    else:
+        assignee_blurb = ''
+
+    content = "{} **updated** {}{}:\n\n".format(get_issue_author(payload), issue, assignee_blurb)
+    changelog = get_in(payload, ['changelog'])
+    comment = get_in(payload, ['comment', 'body'])
+
+    if changelog != '':
+        # Use the changelog to display the changes, whitelist types we accept
+        items = changelog.get('items')
+        for item in items:
+            field = item.get('field')
+
+            if field == 'assignee' and assignee_mention != '':
+                target_field_string = assignee_mention
+            else:
                 # Convert a user's target to a @-mention if possible
                 target_field_string = "**{}**".format(item.get('toString'))
 
-                if field == 'assignee' and assignee_mention != '':
-                    target_field_string = assignee_mention
+            from_field_string = item.get('fromString')
+            if target_field_string or from_field_string:
+                content += "* Changed {} from **{}** to {}\n".format(field, from_field_string, target_field_string)
 
-                from_field_string = item.get('fromString')
-                if target_field_string or from_field_string:
-                    content += "* Changed {} from **{}** to {}\n".format(field, from_field_string, target_field_string)
+    if comment != '':
+        comment = convert_jira_markup(comment, user_profile.realm)
+        content += "\n{}\n".format(comment)
+    return content
 
-        if comment != '':
-            comment = convert_jira_markup(comment, user_profile.realm)
-            content += "\n{}\n".format(comment)
-    else:
-        content = None
-        subject = None
-    return content, subject
+def handle_created_issue_event(payload):
+    # type: (Dict[str, Any]) -> Text
+    return "{} **created** {} priority {}, assigned to **{}**:\n\n> {}".format(
+        get_issue_author(payload),
+        get_issue_string(payload),
+        get_in(payload, ['issue', 'fields', 'priority', 'name']),
+        get_in(payload, ['issue', 'fields', 'assignee', 'displayName'], 'no one'),
+        get_issue_title(payload)
+    )
 
+def handle_deleted_issue_event(payload):
+    # type: (Dict[str, Any]) -> Text
+    return "{} **deleted** {}!".format(get_issue_author(payload), get_issue_string(payload))
 
 @api_key_only_webhook_view("JIRA")
 @has_request_variables
@@ -179,20 +196,25 @@ def api_jira_webhook(request, user_profile, client,
     # type: (HttpRequest, UserProfile, Client, Dict[str, Any], Text) -> HttpResponse
 
     event = payload.get('webhookEvent')
-    if event.startswith('jira:issue'):
-        content, subject = handle_issue_event(event, payload, user_profile)
+    if event == 'jira:issue_created':
+        subject = get_issue_subject(payload)
+        content = handle_created_issue_event(payload)
+    elif event == 'jira:issue_deleted':
+        subject = get_issue_subject(payload)
+        content = handle_deleted_issue_event(payload)
+    elif event == 'jira:issue_updated':
+        subject = get_issue_subject(payload)
+        content = handle_updated_issue_event(payload, user_profile)
     else:
-        # Unknown event type
-        if not settings.TEST_SUITE:
-            if event is None:
-                logging.warning("Got JIRA event with None event type: {}".format(payload))
-            else:
-                logging.warning("Got JIRA event type we don't understand: {}".format(event))
-        return json_error(_("Unknown JIRA event type"))
+        if event is None:
+            if not settings.TEST_SUITE:
+                message = "Got JIRA event with None event type: {}".format(payload)
+                logging.warning(message)
+            return json_error(_("Event is not given by JIRA"))
+        else:
+            if not settings.TEST_SUITE:
+                logging.warning("Got JIRA event type we don't support: {}".format(event))
+            return json_error(_("Got JIRA event type we don't support: {}".format(event)))
 
-    if content is None or subject is None:
-        return json_error(_("Event {} is not supported".format(event)))
-
-    check_send_message(user_profile, client, "stream",
-                       [stream], subject, content)
+    check_send_message(user_profile, client, "stream", [stream], subject, content)
     return json_success()
