@@ -29,8 +29,10 @@ if (window.webkitNotifications) {
             return 2;
         },
         requestPermission: window.Notification.requestPermission,
-        createNotification: function createNotification(icon, title, content) {
-            var notification_object = new window.Notification(title, {icon: icon, body: content});
+        createNotification: function createNotification(icon, title, content, tag) {
+            var notification_object = new window.Notification(title, {icon: icon,
+                                                                      body: content,
+                                                                      tag: tag});
             notification_object.show = function () {};
             notification_object.cancel = function () { notification_object.close(); };
             return notification_object;
@@ -341,7 +343,7 @@ function process_notification(notification) {
         var icon_url = ui.small_avatar_url(message);
         notice_memory[key] = {
             obj: notifications_api.createNotification(
-                    icon_url, title, content),
+                    icon_url, title, content, message.id),
             msg_count: msg_count,
             message_id: message.id
         };
@@ -362,7 +364,8 @@ function process_notification(notification) {
             if (perm === 'granted') {
                 notification_object = new Notification(title, {
                     body: content,
-                    iconUrl: ui.small_avatar_url(message)
+                    iconUrl: ui.small_avatar_url(message),
+                    tag: message.id
                 });
             } else {
                 in_browser_notify(message, title, content, raw_operators, opts);
