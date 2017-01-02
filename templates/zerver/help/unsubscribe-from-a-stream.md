@@ -32,7 +32,7 @@ If you want to quickly unsubscribe from a single stream, you can do so through t
 2. Hover over the stream that you want to unsubscribe from in the left sidebar. The stream will be highlighted and a chevron (![chevron](/static/images/help/chevron.png)) will appear to the right of the stream.
 
     ![Streams chevron](/static/images/help/unsubscribe-1.png)
-    
+
 3. Click the chevron, then click the **Unsubscribe** option from the dropdown that appears. The stream will disappear from the left sidebar, confirming your unsubscription from the stream.
 
     ![Stream dropdown](/static/images/help/unsubscribe-2.png)
