@@ -5,7 +5,7 @@ var emoji_list = [{emoji_name: "tada", emoji_url: "TBD"},
 var stream_list = ['Denmark', 'Sweden'];
 
 set_global('emoji', {emojis: emoji_list});
-set_global('stream_data', {subscribed_streams: function () {
+set_global('stream_data', {subscribed_subs: function () {
     return stream_list;
 }});
 
