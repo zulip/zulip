@@ -9,10 +9,7 @@ help manage your Zulip team. You can do this by accessing the
 There are multiple ways to navigate to the subscriptions page. You can
 either:
 
-1. Click the **cog** (![cog](/static/images/help/cog.png)) icon in the top right corner.
-2. Select the **Manage Streams** option from the dropdown menu.
-
-![settings](/static/images/help/settings-dropdown-streams.png)
+{!subscriptions.md!}
 
 or
 
