@@ -8,17 +8,7 @@ remain subscribed to the stream after you change the stream's accesibility.
 
 ## Make a public stream private
 
-1. Click the cog (![cog](/static/images/help/cog.png)) next to **Streams** in
-the left sidebar. A tooltip labeled **Subscribe, add, or configure streams**
-will appear upon hovering above the cog.
-
-    ![Browse streams](/static/images/help/streams-1.png)
-
-2. The stream browser will now appear, showing all streams that you've subscribed
-to by default. If you wish to see streams that you aren't subscribed to, click
-the **All Streams** tab; the tab will turn gray upon doing so.
-
-    ![All streams](/static/images/help/all-streams.png)
+{!subscriptions.md!}
 
 3. Locate the public stream that you want to make private in the stream browser.
 You can search for specific streams by entering the name of the stream in the
@@ -52,17 +42,7 @@ switch from a **#** to a lock icon, confirming that the stream has been made pri
 
 ## Make a private stream public
 
-1. Click the cog (![cog](/static/images/help/cog.png)) next to **Streams** in
-the left sidebar. A tooltip labeled **Subscribe, add, or configure streams**
-will appear upon hovering above the cog.
-
-    ![Browse streams](/static/images/help/streams-1.png)
-
-2. The stream browser will now appear, showing all streams that you've subscribed
-to by default. If you wish to see streams that you aren't subscribed to, click
-the **All Streams** tab; the tab will turn gray upon doing so.
-
-    ![All streams](/static/images/help/all-streams.png)
+{!subscriptions.md!}
 
 3. Locate the public stream that you want to make public in the stream browser.
 You can search for specific streams by entering the name of the stream in the
