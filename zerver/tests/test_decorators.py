@@ -471,7 +471,7 @@ class ValidatorTestCase(TestCase):
             if error:
                 return 'This is not a valid person'
 
-        person = {'name': 'King Lear', 'age': 42}
+        person = {'name': 'King Lear', 'age': 42} # type: Any
         self.assertEqual(check_person(person), None)
 
         nonperson = 'misconfigured data'
