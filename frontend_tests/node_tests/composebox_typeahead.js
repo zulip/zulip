@@ -61,7 +61,9 @@ global.people.add({
     assert_typeahead_equals("test :-P", false);
 
     var all_items = [{ special_item_text: 'all (Notify everyone)', email: 'all', pm_recipient_count: Infinity, full_name: 'all' },
-                     { special_item_text: 'everyone (Notify everyone)', email: 'everyone', full_name: 'everyone' }];
+                     { special_item_text: 'everyone (Notify everyone)', email: 'everyone', full_name: 'everyone' },
+                     { special_item_text: 'here (Notify online folks)', email: 'here', full_name: 'here' },
+                     { special_item_text: 'online (Notify online folks)', email: 'online', full_name: 'online' }];
     var people_with_all = global.people.get_realm_persons().concat(all_items);
 
     assert_typeahead_equals("test @o", people_with_all);
