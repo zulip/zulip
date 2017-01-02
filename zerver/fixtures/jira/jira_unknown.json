@@ -1,5 +1,6 @@
 {
   "webhookEvent": "jira:issue_unknown",
+  "issue_event_type_name":"issue_unknown",
   "timestamp": 1364403934253,
   "user": {
     "self": "http://lfranchi.com:8080/rest/api/2/user?username=lfranchi",

@@ -1,5 +1,6 @@
 {
   "webhookEvent": "jira:issue_updated",
+  "issue_event_type_name":"issue_generic",
   "timestamp": 1364403465325,
   "user": {
     "self": "http://lfranchi.com:8080/rest/api/2/user?username=lfranchi",
