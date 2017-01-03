@@ -72,7 +72,7 @@ class MessageDict(object):
                 rendered_content_version = message.rendered_content_version,
                 sender_id = message.sender.id,
                 sender_email = message.sender.email,
-                sender_realm_id = message.sender.realm.id,
+                sender_realm_id = message.sender.realm_id,
                 sender_realm_domain = message.sender.realm.domain,
                 sender_full_name = message.sender.full_name,
                 sender_short_name = message.sender.short_name,
@@ -316,7 +316,7 @@ def render_markdown(message, content, realm_id=None, realm_alert_words=None, mes
     message.links_for_preview = set()
 
     if realm_id is None:
-        realm_id = message.sender.realm.id
+        realm_id = message.sender.realm_id
     if message.sending_client.name == "zephyr_mirror" and message.sender.realm.is_zephyr_mirror_realm:
         # Use slightly customized Markdown processor for content
         # delivered via zephyr_mirror

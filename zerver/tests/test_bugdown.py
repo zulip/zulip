@@ -495,9 +495,9 @@ class BugdownTest(TestCase):
             directly for testing is kind of awkward
             '''
             class Instance(object):
-                realm = None # type: Optional[Realm]
+                realm_id = None # type: Optional[int]
             instance = Instance()
-            instance.realm = realm
+            instance.realm_id = realm.id
             flush_realm_filter(sender=None, instance=instance)
 
         def save_new_realm_filter():

@@ -338,7 +338,7 @@ def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None)
                 'email_address': user_profile.email,
                 'merge_fields': {
                     'NAME': user_profile.full_name,
-                    'REALM_ID': user_profile.realm.id,
+                    'REALM_ID': user_profile.realm_id,
                     'OPTIN_IP': newsletter_data["IP"],
                     'OPTIN_TIME': datetime.datetime.isoformat(now().replace(microsecond=0)),
                 },
@@ -918,7 +918,7 @@ def do_send_messages(messages):
             if message['stream'] is None:
                 message['stream'] = Stream.objects.select_related("realm").get(id=message['message'].recipient.type_id)
             if message['stream'].is_public():
-                event['realm_id'] = message['stream'].realm.id
+                event['realm_id'] = message['stream'].realm_id
                 event['stream_name'] = message['stream'].name
             if message['stream'].invite_only:
                 event['invite_only'] = True

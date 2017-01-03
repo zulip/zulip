@@ -145,7 +145,7 @@ def upload_image_to_s3(
     key = Key(bucket)
     key.key = force_str(file_name)
     key.set_metadata("user_profile_id", str(user_profile.id))
-    key.set_metadata("realm_id", str(user_profile.realm.id))
+    key.set_metadata("realm_id", str(user_profile.realm_id))
 
     if content_type is not None:
         headers = {'Content-Type': force_str(content_type)}
@@ -184,14 +184,14 @@ def get_realm_for_filename(path):
     if key is None:
         # This happens if the key does not exist.
         return None
-    return get_user_profile_by_id(key.metadata["user_profile_id"]).realm.id
+    return get_user_profile_by_id(key.metadata["user_profile_id"]).realm_id
 
 class S3UploadBackend(ZulipUploadBackend):
     def upload_message_image(self, uploaded_file_name, content_type, file_data, user_profile, target_realm=None):
         # type: (Text, Optional[Text], binary_type, UserProfile, Optional[Realm]) -> Text
         bucket_name = settings.S3_AUTH_UPLOADS_BUCKET
         s3_file_name = "/".join([
-            str(target_realm.id if target_realm is not None else user_profile.realm.id),
+            str(target_realm.id if target_realm is not None else user_profile.realm_id),
             random_name(18),
             sanitize_name(uploaded_file_name)
         ])
@@ -315,7 +315,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         # type: (Text, Optional[Text], binary_type, UserProfile, Optional[Realm]) -> Text
         # Split into 256 subdirectories to prevent directories from getting too big
         path = "/".join([
-            str(user_profile.realm.id),
+            str(user_profile.realm_id),
             format(random.randint(0, 255), 'x'),
             random_name(18),
             sanitize_name(uploaded_file_name)

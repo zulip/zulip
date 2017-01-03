@@ -456,7 +456,7 @@ def all_realm_filters():
 
 def flush_realm_filter(sender, **kwargs):
     # type: (Any, **Any) -> None
-    realm_id = kwargs['instance'].realm.id
+    realm_id = kwargs['instance'].realm_id
     cache_delete(get_realm_filters_cache_key(realm_id))
     try:
         per_request_realm_filters_cache.pop(realm_id)

@@ -930,7 +930,7 @@ def export_uploads_from_local(realm, local_dir, output_dir):
         mkdir_p(os.path.dirname(output_path))
         subprocess.check_call(["cp", "-a", local_path, output_path])
         stat = os.stat(local_path)
-        record = dict(realm_id=attachment.realm.id,
+        record = dict(realm_id=attachment.realm_id,
                       user_profile_id=attachment.owner.id,
                       user_profile_email=attachment.owner.email,
                       s3_path=attachment.path_id,
@@ -1358,7 +1358,7 @@ def import_uploads_s3(bucket_name, import_dir, processing_avatars=False):
             user_profile_id = id_maps["user_profile"][user_profile_id]
         user_profile = get_user_profile_by_id(user_profile_id)
         key.set_metadata("user_profile_id", str(user_profile.id))
-        key.set_metadata("realm_id", str(user_profile.realm.id))
+        key.set_metadata("realm_id", str(user_profile.realm_id))
         key.set_metadata("orig_last_modified", record['last_modified'])
 
         headers = {'Content-Type': record['content_type']}
