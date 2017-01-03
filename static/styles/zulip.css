@@ -69,6 +69,10 @@ p.n-margin {
     border-radius: 4px;
 }
 
+.modal-backdrop {
+    z-index: 102;
+}
+
 #unmute_muted_topic_notification {
     display: none;
     position: absolute;

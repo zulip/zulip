@@ -290,6 +290,7 @@ exports.lightbox = function (data) {
     }
 
     $("#overlay").addClass("show");
+    popovers.hide_all();
 };
 
 exports.lightbox_photo = function (image, user) {
