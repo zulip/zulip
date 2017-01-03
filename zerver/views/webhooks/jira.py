@@ -16,6 +16,13 @@ import logging
 import re
 import ujson
 
+
+IGNORED_EVENTS = [
+    'comment_created',  # we handle issue_update event instead
+    'comment_updated',  # we handle issue_update event instead
+    'comment_deleted',  # we handle issue_update event instead
+]
+
 def guess_zulip_user_from_jira(jira_username, realm):
     # type: (str, Realm) -> Optional[UserProfile]
     try:
@@ -149,29 +156,39 @@ def handle_updated_issue_event(payload, user_profile):
     else:
         assignee_blurb = ''
 
-    content = "{} **updated** {}{}:\n\n".format(get_issue_author(payload), issue, assignee_blurb)
-    changelog = get_in(payload, ['changelog'])
-    comment = get_in(payload, ['comment', 'body'])
+    sub_event = payload.get('issue_event_type_name')
+    if 'comment' in sub_event:
+        if sub_event == 'issue_commented':
+            verb = 'added comment to'
+        elif sub_event == 'issue_comment_edited':
+            verb = 'edited comment on'
+        else:
+            verb = 'deleted comment from'
+        content = "{} **{}** {}{}".format(get_issue_author(payload), verb, issue, assignee_blurb)
+        comment = get_in(payload, ['comment', 'body'])
+        if comment:
+            comment = convert_jira_markup(comment, user_profile.realm)
+            content = "{}:\n\n\n{}\n".format(content, comment)
+    else:
+        content = "{} **updated** {}{}:\n\n".format(get_issue_author(payload), issue, assignee_blurb)
+        changelog = get_in(payload, ['changelog'])
 
-    if changelog != '':
-        # Use the changelog to display the changes, whitelist types we accept
-        items = changelog.get('items')
-        for item in items:
-            field = item.get('field')
+        if changelog != '':
+            # Use the changelog to display the changes, whitelist types we accept
+            items = changelog.get('items')
+            for item in items:
+                field = item.get('field')
 
-            if field == 'assignee' and assignee_mention != '':
-                target_field_string = assignee_mention
-            else:
-                # Convert a user's target to a @-mention if possible
-                target_field_string = "**{}**".format(item.get('toString'))
+                if field == 'assignee' and assignee_mention != '':
+                    target_field_string = assignee_mention
+                else:
+                    # Convert a user's target to a @-mention if possible
+                    target_field_string = "**{}**".format(item.get('toString'))
 
-            from_field_string = item.get('fromString')
-            if target_field_string or from_field_string:
-                content += "* Changed {} from **{}** to {}\n".format(field, from_field_string, target_field_string)
+                from_field_string = item.get('fromString')
+                if target_field_string or from_field_string:
+                    content += "* Changed {} from **{}** to {}\n".format(field, from_field_string, target_field_string)
 
-    if comment != '':
-        comment = convert_jira_markup(comment, user_profile.realm)
-        content += "\n{}\n".format(comment)
     return content
 
 def handle_created_issue_event(payload):
@@ -205,6 +222,8 @@ def api_jira_webhook(request, user_profile, client,
     elif event == 'jira:issue_updated':
         subject = get_issue_subject(payload)
         content = handle_updated_issue_event(payload, user_profile)
+    elif event in IGNORED_EVENTS:
+        return json_success()
     else:
         if event is None:
             if not settings.TEST_SUITE:
