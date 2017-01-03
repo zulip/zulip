@@ -897,7 +897,7 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "client": "test suite",
                                                      "content": "Test message",
                                                      "subject": "Test subject",
-                                                     "domain": "mit.edu"})
+                                                     "realm_str": "mit"})
         self.assert_json_error(result, "User not authorized for this query")
 
     def test_send_message_as_superuser_to_domain_that_dont_exist(self):
@@ -914,10 +914,10 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "client": "test suite",
                                                      "content": "Test message",
                                                      "subject": "Test subject",
-                                                     "domain": "non-existing"})
+                                                     "realm_str": "non-existing"})
         user.is_api_super_user = False
         user.save()
-        self.assert_json_error(result, "Unknown domain non-existing")
+        self.assert_json_error(result, "Unknown realm non-existing")
 
     def test_send_message_when_sender_is_not_set(self):
         # type: () -> None
