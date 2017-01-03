@@ -500,17 +500,16 @@ function remove_temporarily_miscategorized_streams() {
 
 exports.remove_miscategorized_streams = remove_temporarily_miscategorized_streams;
 
-function stream_matches_query(query, sub) {
+function stream_matches_query(query, sub, attr) {
     var search_terms = query.input.toLowerCase().split(",").map(function (s) {
         return s.trim();
     });
 
     var flag = true;
     flag = flag && (function () {
-        var sub_name = sub.name.toLowerCase();
-
+        var sub_attr = sub[attr].toLowerCase();
         return _.any(search_terms, function (o) {
-            if (sub_name.indexOf(o) !== -1) {
+            if (sub_attr.indexOf(o) !== -1) {
                 return true;
             }
         });
@@ -519,20 +518,60 @@ function stream_matches_query(query, sub) {
                     sub.data_temp_view === "true");
     return flag;
 }
+exports.stream_name_match_stream_ids = [];
+exports.stream_description_match_stream_ids = [];
 
 // query is now an object rather than a string.
 // Query { input: String, subscribed_only: Boolean }
 exports.filter_table = function (query) {
+    exports.stream_name_match_stream_ids = [];
+    exports.stream_description_match_stream_ids = [];
+    var others = [];
+    var stream_id_to_stream_name = {};
+    var widgets = {};
+
+    function sort_by_stream_name(a, b) {
+        var stream_a_name = stream_id_to_stream_name[a].toLocaleLowerCase();
+        var stream_b_name = stream_id_to_stream_name[b].toLocaleLowerCase();
+        return String.prototype.localeCompare.call(stream_a_name, stream_b_name);
+    }
+
     _.each($("#subscriptions_table .stream-row"), function (row) {
         var sub = stream_data.get_sub_by_id($(row).attr("data-stream-id"));
         sub.data_temp_view = $(row).attr("data-temp-view");
 
-        if (stream_matches_query(query, sub)) {
+        if (stream_matches_query(query, sub, 'name')) {
             $(row).removeClass("notdisplayed");
-        } else {
+
+            stream_id_to_stream_name[sub.stream_id] = sub.name;
+            exports.stream_name_match_stream_ids.push(sub.stream_id);
+
+            widgets[sub.stream_id] = $(row).detach();
+        } else if (stream_matches_query(query, sub, 'description')) {
+            $(row).removeClass("notdisplayed");
+
+            stream_id_to_stream_name[sub.stream_id] = sub.name;
+            exports.stream_description_match_stream_ids.push(sub.stream_id);
+
+            widgets[sub.stream_id] = $(row).detach();
+       } else {
             $(row).addClass("notdisplayed");
+            others.push($(row).detach());
         }
     });
+
+    exports.stream_name_match_stream_ids.sort(sort_by_stream_name);
+    exports.stream_description_match_stream_ids.sort(sort_by_stream_name);
+
+    _.each(exports.stream_name_match_stream_ids, function (stream_id) {
+        $('#subscriptions_table .streams-list').append(widgets[stream_id]);
+    });
+
+    _.each(exports.stream_description_match_stream_ids, function (stream_id) {
+        $('#subscriptions_table .streams-list').append(widgets[stream_id]);
+    });
+
+    $('#subscriptions_table .streams-list').append(others);
 
     if ($(".stream-row.active").hasClass("notdisplayed")) {
         $(".right .settings").hide();
