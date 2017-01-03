@@ -559,6 +559,10 @@ class MessageDictTest(ZulipTestCase):
         delay = time.time() - t
         # Make sure we don't take longer than 1ms per message to extract messages.
         self.assertTrue(delay < 0.001 * num_ids)
+        # Note, this fails if you run
+        # tools/test-backend zerver.tests.test_messages.MessageDictTest or
+        # tools/test-backend zerver.tests.test_messages.MessageDictTest.test_bulk_message_fetching.
+        # You need to run the full suite as tools/test-backend zerver.tests.test_messages.
         self.assert_max_length(queries, 7)
         self.assertEqual(len(rows), num_ids)
 
