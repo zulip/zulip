@@ -4,24 +4,19 @@ Zulip is written primarily in English, but it includes feature support for a var
 
 ## Summary:
 
-- {!settings.md!}
+{!settings1.md!} [Display Settings](/#settings/display-settings)
+{!settings2.md!}
 
-- Scroll down to the **Display Settings**.
+2. Next to the **Default Language** heading, select the blue text: **[Change]**.
 
-- Next to the **Default Language** heading, select the blue text: **[Change]**.
+    ![Display Settings Menu](/static/images/help/settings-section.png)
 
-    ![Display Settings Menu](/static/images/help/settings-section.png)<br><br>
+3. Finally, choose your desired language from the options in this popup menu:
 
-- Finally, choose your desired language from the options in this popup menu:
+    ![Change Default Language Menu](/static/images/help/change-default-language-menu.png)
 
-    ![Change Default Language Menu](/static/images/help/change-default-language-menu.png)<br><br>
-
-- The menu will close, and the language changes will take effect as soon as you **reload the page**.
-
-- And that's it! Now, you can enjoy Zulip in your desired language.
+4. The menu will close, and the language changes will take effect as soon as you **reload the page**.
 
 ## Want to help out Zulip?
 
 You can help translate parts of Zulip by going to **[https://www.transifex.com/zulip/zulip/](https://www.transifex.com/zulip/zulip/)** and signing up for an account.
-
-**[Go to "Table of contents"](/help/#using-zulip)**
