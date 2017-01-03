@@ -29,10 +29,12 @@ from __future__ import absolute_import
 
 import zulip
 from six.moves import range
+from typing import Text, Any, Optional, Dict
 
 VERSION = "0.9"
 
 def format_summary_line(web_url, user, base, tip, branch, node):
+    # type: (str, str, int, int, str, str) -> Text
     """
     Format the first line of the message, which contains summary
     information about the changeset and links to the changelog if a
@@ -58,6 +60,7 @@ def format_summary_line(web_url, user, base, tip, branch, node):
         node=node[:12])
 
 def format_commit_lines(web_url, repo, base, tip):
+    # type: (str, Any, int, int) -> str
     """
     Format the per-commit information for the message, including the one-line
     commit summary and a link to the diff if a web URL has been configured:
@@ -83,6 +86,7 @@ def format_commit_lines(web_url, repo, base, tip):
     return "\n".join(summary for summary in commit_summaries)
 
 def send_zulip(email, api_key, site, stream, subject, content):
+    # type: (str, str, str, str, str, Text) -> None
     """
     Send a message to Zulip using the provided credentials, which should be for
     a bot in most cases.
@@ -101,6 +105,7 @@ def send_zulip(email, api_key, site, stream, subject, content):
     client.send_message(message_data)
 
 def get_config(ui, item):
+    # type: (Any, str) -> Optional[str]
     try:
         # configlist returns everything in lists.
         return ui.configlist('zulip', item)[0]
@@ -108,6 +113,7 @@ def get_config(ui, item):
         return None
 
 def hook(ui, repo, **kwargs):
+    # type: (Any, Any, **str) -> None
     """
     Invoked by configuring a [hook] entry in .hg/hgrc.
     """
@@ -145,9 +151,9 @@ def hook(ui, repo, **kwargs):
     base = repo[node].rev()
     tip = len(repo)
 
-    email = get_config(ui, "email")
-    api_key = get_config(ui, "api_key")
-    site = get_config(ui, "site")
+    email = get_config(ui, "email")  # type: str
+    api_key = get_config(ui, "api_key")  # type: str
+    site = get_config(ui, "site")  # type: str
 
     if not (email and api_key):
         ui.warn("Zulip: missing email or api_key configurations\n")
