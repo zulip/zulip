@@ -952,7 +952,7 @@ def render_message_backend(request, user_profile, content=REQ()):
     message.content = content
     message.sending_client = request.client
 
-    rendered_content = render_markdown(message, content, domain=user_profile.realm.domain)
+    rendered_content = render_markdown(message, content, realm_id=user_profile.realm.id)
     return json_success({"rendered": rendered_content})
 
 @authenticated_json_post_view

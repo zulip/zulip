@@ -18,7 +18,6 @@ from zerver.lib.str_utils import force_bytes, dict_with_str_keys
 from zerver.lib.timestamp import datetime_to_timestamp
 
 from zerver.models import (
-    get_realm,
     get_display_recipient_by_id,
     Message,
     Recipient,
@@ -213,7 +212,7 @@ class MessageDict(object):
 
                 # It's unfortunate that we need to have side effects on the message
                 # in some cases.
-                rendered_content = render_markdown(message, content, sender_realm_domain)
+                rendered_content = render_markdown(message, content, realm_id=sender_realm_id)
                 message.rendered_content = rendered_content
                 message.rendered_content_version = bugdown.version
                 message.save_rendered_content()
@@ -297,8 +296,8 @@ def access_message(user_profile, message_id):
     # stream in your realm, so return the message, user_message pair
     return (message, user_message)
 
-def render_markdown(message, content, domain=None, realm_alert_words=None, message_users=None):
-    # type: (Message, Text, Optional[Text], Optional[RealmAlertWords], Set[UserProfile]) -> Text
+def render_markdown(message, content, realm_id=None, realm_alert_words=None, message_users=None):
+    # type: (Message, Text, Optional[int], Optional[RealmAlertWords], Set[UserProfile]) -> Text
     """Return HTML for given markdown. Bugdown may add properties to the
     message object such as `mentions_user_ids` and `mentions_wildcard`.
     These are only on this Django object and are not saved in the
@@ -316,9 +315,7 @@ def render_markdown(message, content, domain=None, realm_alert_words=None, messa
     message.alert_words = set()
     message.links_for_preview = set()
 
-    if domain:
-        realm_id = get_realm(domain).id
-    else:
+    if realm_id is None:
         realm_id = message.sender.realm.id
     if message.sending_client.name == "zephyr_mirror" and message.sender.realm.is_zephyr_mirror_realm:
         # Use slightly customized Markdown processor for content
