@@ -99,3 +99,10 @@ def check_venv():
             print('Your venv may be improperly installed!')
             return False
     return True
+
+@run
+def check_migrations():
+    # type: () -> bool
+    print()
+    rc = subprocess.check_call('./tools/test-migrations')
+    return (rc == 0)
