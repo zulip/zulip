@@ -1,0 +1,82 @@
+#!/usr/bin/env python
+
+from __future__ import print_function
+import os
+import platform
+import sys
+import subprocess
+
+from typing import Callable
+
+TOOLS_DIR = os.path.dirname(__file__)
+ROOT_DIR = os.path.dirname(TOOLS_DIR)
+sys.path.insert(0, ROOT_DIR)
+
+def run(check_func):
+    # type: (Callable) -> None
+    '''
+    This decorator simply runs functions.  It makes it more
+    convenient to add new checks without a big main() function.
+    '''
+    rc = check_func()
+    if not rc:
+        sys.exit(1)
+
+@run
+def check_python_version():
+    # type: () -> bool
+    subprocess.check_call(['/usr/bin/env', 'python', '-V'])
+    return True
+
+@run
+def pwd():
+    # type: () -> bool
+    subprocess.check_call('pwd')
+    return True
+
+@run
+def host_info():
+    # type: () -> bool
+    print(platform.platform())
+    return True
+
+@run
+def check_django():
+    # type: () -> bool
+    import django
+    print('Django version:', django.get_version())
+    return True
+
+@run
+def provision_version():
+    # type: () -> bool
+    fn = os.path.join(ROOT_DIR, 'var/provision_version')
+    with open(fn) as f:
+        version = f.read().strip()
+    print('latest version provisioned:', version)
+    from version import PROVISION_VERSION
+    print('desired version:', PROVISION_VERSION)
+    if version != PROVISION_VERSION:
+        print('You need to provision!')
+        return False
+    return True
+
+@run
+def node_stuff():
+    # type: () -> bool
+    print('node version:')
+    subprocess.check_call(['node', '--version'])
+    return True
+
+@run
+def test_models():
+    # type: () -> bool
+    settings_module = "zproject.test_settings"
+    os.environ['DJANGO_SETTINGS_MODULE'] = settings_module
+    import django
+    django.setup()
+    from zerver.models import UserProfile, Realm
+    print('Num realms: ', Realm.objects.count())
+    print('Num users: ', UserProfile.objects.count())
+    return True
+
