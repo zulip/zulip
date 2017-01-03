@@ -288,6 +288,10 @@ v1_api_and_json_patterns = [
     url(r'^streams$', rest_dispatch,
         {'GET': 'zerver.views.streams.get_streams_backend'}),
 
+    # GET returns `stream_id`, stream name should be encoded in the url query (in `stream` param)
+    url(r'^get_stream_id', rest_dispatch,
+        {'GET': 'zerver.views.streams.json_get_stream_id'}),
+
     # GET returns "stream info" (undefined currently?), HEAD returns whether stream exists (200 or 404)
     url(r'^streams/(?P<stream_name>.*)/members$', rest_dispatch,
         {'GET': 'zerver.views.streams.get_subscribers_backend'}),

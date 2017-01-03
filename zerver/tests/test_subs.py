@@ -1934,6 +1934,25 @@ class GetPublicStreamsTest(ZulipTestCase):
                                  **self.api_auth(email))
         self.assertEqual(result.status_code, 400)
 
+class StreamIdTest(ZulipTestCase):
+    def setUp(self):
+        # type: () -> None
+        self.email = "hamlet@zulip.com"
+        self.user_profile = get_user_profile_by_email(self.email)
+        self.login(self.email)
+
+    def test_get_stream_id(self):
+        # type: () -> None
+        stream = gather_subscriptions(self.user_profile)[0][0]
+        result = self.client_get("/json/get_stream_id?stream=%s" % (stream['name'],))
+        self.assert_json_success(result)
+        self.assertEqual(result.json()['stream_id'], stream['stream_id'])
+
+    def test_get_stream_id_wrong_name(self):
+        # type: () -> None
+        result = self.client_get("/json/get_stream_id?stream=wrongname")
+        self.assert_json_error(result, u'No such stream name')
+
 class InviteOnlyStreamTest(ZulipTestCase):
     def test_must_be_subbed_to_send(self):
         # type: () -> None
