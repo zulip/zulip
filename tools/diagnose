@@ -6,7 +6,7 @@ import platform
 import sys
 import subprocess
 
-from typing import Callable
+from typing import Callable, List
 
 TOOLS_DIR = os.path.dirname(__file__)
 ROOT_DIR = os.path.dirname(TOOLS_DIR)
@@ -21,6 +21,11 @@ def run(check_func):
     rc = check_func()
     if not rc:
         sys.exit(1)
+
+def run_command(args):
+    # type: (List[str]) -> None
+    print(' '.join(args))
+    subprocess.check_call(args)
 
 @run
 def check_python_version():
@@ -80,3 +85,17 @@ def test_models():
     print('Num users: ', UserProfile.objects.count())
     return True
 
+@run
+def check_venv():
+    # type: () -> bool
+    path = os.path.join(ROOT_DIR, 'scripts', 'lib', 'hash_reqs.py')
+    cache_dir = '/srv/zulip-venv-cache/'
+    for fn in ['py2_dev.txt', 'py3_dev.txt']:
+        requirements_file = os.path.join(ROOT_DIR, "requirements", fn)
+        output = subprocess.check_output([path, requirements_file], universal_newlines=True)
+        sha1sum = output.split()[0]
+        print(fn, 'venv sha: ', sha1sum)
+        if not os.path.exists(os.path.join(cache_dir, sha1sum)):
+            print('Your venv may be improperly installed!')
+            return False
+    return True
