@@ -107,7 +107,7 @@ as a “**realm**”.
 * [Mute a topic](/help/mute-a-topic)
 * Set notifications for a single stream
 * [Configure desktop notifications](/help/configure-desktop-notifications)
-* Configure audible notifications
+* [Configure audible notifications](/help/configure-audible-notifications)
 * Configure email notifications
 * Configure mobile push notifications
 * [Add an alert word](/help/alert-words)
