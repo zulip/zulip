@@ -5,16 +5,10 @@ similarly to being [@-mentioned](/help/at-mention-a-team-member)
 by another user.
 
 ## Adding Alert Words
-1.  Click the cog (![cog](/static/images/help/cog.png)) in the upper
-right corner of the right sidebar.
-2.  Select **Settings** from the dropdown menu that appears.
-    ![Settings dropdown](/static/images/help/settings-dropdown-menu.png)
+{!settings1.md!} [Custom Alert Words](/#settings/custom-alert-words)
+{!settings2.md!}
 
-3.  Scroll down until you reach the **Custom Alert Words** section.
-
-    ![Custom Alert Words](/static/images/help/settings-custom-alerts.png)
-
-4.  Type the word/phrase you wish to be notified for into the text box,
+2.  Type the word/phrase you wish to be notified for into the text box,
     then click the **Add Alert Word** button.
 
 Once these steps are completed, you should see something similar to:
