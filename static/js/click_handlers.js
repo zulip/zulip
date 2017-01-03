@@ -100,6 +100,14 @@ $(function () {
         window.location.href = $(this).attr('href');
     });
 
+    // NOTIFICATION CLICK
+
+    $('body').on('click', '.top-right', function () {
+        ui.change_tab_to('#home');
+        narrow.activate($(this)['0'].raw_operators_notif, $(this)['0'].opts_notif);
+    });
+
+
     // MESSAGE EDITING
 
     $('body').on('click', '.edit_content_button', function (e) {
