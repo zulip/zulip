@@ -106,7 +106,7 @@ environment setup, you simply need to reload your browser on
 `http://localhost:9991/help/foo` to see the latest version of `foo.md`
 rendered.
 
-Since raw HTML is supported in Markdown, you can include arbitraty
+Since raw HTML is supported in Markdown, you can include arbitrary
 HTML in your documentation in order to do fancy things like
 highlighting an important aspect of your code.  We'll likely add a
 library of common components over time, which will be documented
@@ -115,7 +115,7 @@ below.
 ### Supported features
 
 * All the usual features of Markdown with raw HTML enabled so you can
-  do custom things with HTML/CSS as needed.  The goal is to make
+  do custom things with HTML/CSS as needed. The goal is to make
   reusable markdown syntax for things we need often, though.
 * Code blocks with syntax highlighting, similar to Zulip's own markdown.
 * Anchor tags for linking to headers in other documents.
@@ -144,15 +144,17 @@ numbered steps. E.g.:
   1. Do something
   2. Do the next thing.
   ```
-  Keep the steps simple -- "do X, then Y, then Z" is three steps, not one.
+  Keep the steps simple — "do X, then Y, then Z" is three steps, not one.
 
-* Keep in mind that the UI may change -- don't describe it in more detail
+* Images and additional notes or instructions are kept within a single step by
+indenting them.
+
+* Keep in mind that the UI may change — don't describe it in more detail
   than is needed.
     * Never refer specifically to button colors.
 
-* All icons should be referred to both by name and with an image, e.g.:
-  "between the **A** (![A](/images/formatting.png)) and **eye**
-(![eye](/images/eye.png)) icons"
+* All icons should be referenced by their names and images within parentheses, e.g.: "between the **A**
+(![A](/images/formatting.png)) and **eye** (![eye](/images/eye.png)) icons"
 
 * Guidelines for **tips** and **warnings**:
 
@@ -191,7 +193,7 @@ numbered steps. E.g.:
     screenshot if the user needs to find a button in the corner. Don't
     include a screenshot if the element the user needs to interact with is
     the only thing on the page. Using too many screenshots creates problems:
-      * **Maitenance**: The screen shot has to be updated every time the UI
+      * **Maintenance**: The screen shot has to be updated every time the UI
         is changed.
       * It makes the instructions look longer and therefore more complicated.
   * Never include the whole Zulip window in a screenshot. Focus on the
@@ -208,8 +210,7 @@ numbered steps. E.g.:
   * There is a macro for directing users to the **Subscriptions** page:
     `{!subscriptions.md!}`
   * Use the following format to direct users to part of the **Settings**:
-  ```
-  1. Go to the [Your Account](/#settings/your-account) tab of the
+    ```
+    1. Go to the [Your Account](/#settings/your-account) tab of the
    [Settings](/help/edit-settings) page.
-   ```
-
+    ```
