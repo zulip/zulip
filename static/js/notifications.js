@@ -222,6 +222,7 @@ function in_browser_notify(message, title, content, raw_operators, opts) {
         gravatar_url: ui.small_avatar_url(message),
         title: title,
         content: content,
+        message_id: message.id,
     }));
 
     $('.top-right').notify({
