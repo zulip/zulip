@@ -218,9 +218,12 @@ exports.window_has_focus = function () {
 };
 
 function in_browser_notify(message, title, content, raw_operators, opts) {
-    var notification_html = $(templates.render('notification', {gravatar_url: ui.small_avatar_url(message),
-                                                                title: title,
-                                                                content: content}));
+    var notification_html = $(templates.render('notification', {
+        gravatar_url: ui.small_avatar_url(message),
+        title: title,
+        content: content,
+    }));
+
     $('.top-right').notify({
         message: {html: notification_html},
         fadeOut: {enabled: true, delay: 4000}
