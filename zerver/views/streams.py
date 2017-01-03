@@ -487,6 +487,15 @@ def stream_exists_backend(request, user_profile, stream_name, autosubscribe):
         return json_success(result) # results are ignored for HEAD requests
     return json_response(data=result, status=404)
 
+@has_request_variables
+def json_get_stream_id(request, user_profile, stream=REQ()):
+    # type: (HttpRequest, UserProfile, Text) -> HttpResponse
+    try:
+        stream_id = Stream.objects.get(realm=user_profile.realm, name=stream).id
+    except Stream.DoesNotExist:
+        return json_error(_("No such stream name"))
+    return json_success({'stream_id': stream_id})
+
 def get_subscription_or_die(stream_name, user_profile):
     # type: (Text, UserProfile) -> Subscription
     stream = get_stream(stream_name, user_profile.realm)
