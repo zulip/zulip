@@ -1213,7 +1213,7 @@ def make_md_engine(key, opts):
 
 def subject_links(realm_id, subject):
     # type: (int, Text) -> List[Text]
-    from zerver.models import get_realm, RealmFilter, realm_filters_for_realm
+    from zerver.models import RealmFilter, realm_filters_for_realm
     matches = [] # type: List[Text]
 
     realm_filters = realm_filters_for_realm(realm_id)
