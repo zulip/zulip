@@ -975,7 +975,7 @@ def do_add_reaction(user_profile, message, emoji_name):
     # reactions to public stream messages to every browser for every
     # client in the organization, which doesn't scale.
     ums = UserMessage.objects.filter(message=message.id)
-    send_event(event, [um.user_profile.id for um in ums])
+    send_event(event, [um.user_profile_id for um in ums])
 
 def do_remove_reaction(user_profile, message, emoji_name):
     # type: (UserProfile, Message, Text) -> None
@@ -1003,7 +1003,7 @@ def do_remove_reaction(user_profile, message, emoji_name):
     # reactions to public stream messages to every browser for every
     # client in the organization, which doesn't scale.
     ums = UserMessage.objects.filter(message=message.id)
-    send_event(event, [um.user_profile.id for um in ums])
+    send_event(event, [um.user_profile_id for um in ums])
 
 def do_send_typing_notification(notification):
     # type: (Dict[str, Any]) -> None
