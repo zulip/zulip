@@ -78,41 +78,6 @@ Adding a comment. Oh, what a comment it is!
 """
         self.send_and_test_stream_message('reassigned', expected_subject, expected_message)
 
-    def test_reopened(self):
-        # type: () -> None
-        expected_subject = "BUG-7: More cowbell polease"
-        expected_message = """Leo Franchi **updated** [BUG-7](http://lfranchi.com:8080/browse/BUG-7) (assigned to **Othello, the Moor of Venice**):
-
-* Changed resolution from **Fixed** to **None**
-* Changed status from **Resolved** to **Reopened**
-
-Re-opened yeah!
-"""
-        self.send_and_test_stream_message('reopened', expected_subject, expected_message)
-
-    def test_resolved(self):
-        # type: () -> None
-        expected_subject = "BUG-13: Refreshing the page loses the user's current posi..."
-        expected_message = """Leo Franchi **updated** [BUG-13](http://lfranchi.com:8080/browse/BUG-13) (assigned to **Othello, the Moor of Venice**):
-
-* Changed status from **Open** to **Resolved**
-* Changed assignee from **None** to **Othello, the Moor of Venice**
-* Changed resolution from **None** to **Fixed**
-
-Fixed it, finally!
-"""
-        self.send_and_test_stream_message('resolved', expected_subject, expected_message)
-
-    def test_mention(self):
-        # type: () -> None
-        expected_subject = "TEST-5: Lunch Decision Needed"
-        expected_message = """Leonardo Franchi [Administrator] **updated** [TEST-5](https://zulipp.atlassian.net/browse/TEST-5) (assigned to **Othello, the Moor of Venice**):
-
-
-Making a comment, **Othello, the Moor of Venice** is watching this issue
-"""
-        self.send_and_test_stream_message('watch_mention_updated', expected_subject, expected_message)
-
     def test_priority_updated(self):
         # type: () -> None
         expected_subject = "TEST-1: Fix That"
