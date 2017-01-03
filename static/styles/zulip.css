@@ -2273,6 +2273,10 @@ button.topic_edit_cancel {
     text-align: center;
 }
 
+.notification {
+    cursor: pointer;
+}
+
 #empty_narrow_private_message p,
 #empty_narrow_message p {
     text-align: center;
