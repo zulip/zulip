@@ -72,6 +72,7 @@ class MessageDict(object):
                 rendered_content_version = message.rendered_content_version,
                 sender_id = message.sender.id,
                 sender_email = message.sender.email,
+                sender_realm_id = message.sender.realm.id,
                 sender_realm_domain = message.sender.realm.domain,
                 sender_full_name = message.sender.full_name,
                 sender_short_name = message.sender.short_name,
@@ -104,6 +105,7 @@ class MessageDict(object):
                 rendered_content_version = row['rendered_content_version'],
                 sender_id = row['sender_id'],
                 sender_email = row['sender__email'],
+                sender_realm_id = row['sender__realm__id'],
                 sender_realm_domain = row['sender__realm__domain'],
                 sender_full_name = row['sender__full_name'],
                 sender_short_name = row['sender__short_name'],
@@ -130,6 +132,7 @@ class MessageDict(object):
             rendered_content_version,
             sender_id,
             sender_email,
+            sender_realm_id,
             sender_realm_domain,
             sender_full_name,
             sender_short_name,
@@ -141,7 +144,7 @@ class MessageDict(object):
             recipient_type_id,
             reactions
     ):
-        # type: (bool, Message, int, datetime.datetime, Text, Text, Text, datetime.datetime, Text, Optional[int], int, Text, Text, Text, Text, Text, bool, Text, int, int, int, List[Dict[str, Any]]) -> Dict[str, Any]
+        # type: (bool, Message, int, datetime.datetime, Text, Text, Text, datetime.datetime, Text, Optional[int], int, Text, int, Text, Text, Text, Text, bool, Text, int, int, int, List[Dict[str, Any]]) -> Dict[str, Any]
 
         avatar_url = get_avatar_url(sender_avatar_source, sender_email)
 
