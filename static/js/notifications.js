@@ -308,17 +308,24 @@ function process_notification(notification) {
         cancel_notification_object(notification_object);
     }
 
-    if (message.type === "private" && message.display_recipient.length > 2) {
-        // If the message has too many recipients to list them all...
-        if (content.length + title.length + other_recipients.length > 230) {
-            // Then count how many people are in the conversation and summarize
-            // by saying the conversation is with "you and [number] other people"
-            other_recipients = other_recipients.replace(/[^,]/g, "").length +
-                               " other people";
+    if (message.type === "private") {
+        if (message.display_recipient.length > 2) {
+            // If the message has too many recipients to list them all...
+            if (content.length + title.length + other_recipients.length > 230) {
+                // Then count how many people are in the conversation and summarize
+                // by saying the conversation is with "you and [number] other people"
+                other_recipients = other_recipients.replace(/[^,]/g, "").length +
+                                   " other people";
+            }
+
+            title += " (to you and " + other_recipients + ")";
+        } else {
+            title += " (to you)";
         }
-        title += " (to you and " + other_recipients + ")";
+
         raw_operators = [{operand: message.reply_to, operator: "pm-with"}];
     }
+
     if (message.type === "stream") {
         title += " (to " + message.stream + " > " + message.subject + ")";
         raw_operators = [{operand: message.stream, operator: "stream"}];
