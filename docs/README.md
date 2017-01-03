@@ -212,5 +212,5 @@ indenting them.
   * Use the following format to direct users to part of the **Settings**:
     ```
     1. Go to the [Your Account](/#settings/your-account) tab of the
-   [Settings](/help/edit-settings) page.
+    [Settings](/help/edit-settings) page.
     ```
