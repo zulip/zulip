@@ -374,6 +374,7 @@ exports.register_click_handlers = function () {
 
     $("body").on("click", ".actions_popover .reaction_button", function (e) {
         var msgid = $(e.currentTarget).data('msgid');
+        e.preventDefault();
         e.stopPropagation();
         // HACK: Because we need the popover to be based off an
         // element that definitely exists in the page even if the
