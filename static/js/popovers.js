@@ -820,7 +820,7 @@ exports.register_click_handlers = function () {
     });
 
     $('.app').on('scroll', function () {
-        popovers.hide_actions_popover();
+        popovers.hide_all();
     });
 
 };
