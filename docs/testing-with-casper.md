@@ -104,6 +104,12 @@ for writing Casper tests in addition to the debugging notes below:
     debugging your selectors on the relevant page of the Zulip
     development app in the Chrome JavaScript console by using e.g.
     `$$("#settings-dropdown")`.
+
+    Please note `$$` isn't jQuery, it's a CSS selector equivalent to
+    `querySelectorAll()`, only available in the browser's JavaScript console.
+
+    You can learn more about these selectors and other JavaScript console tools
+    [here](https://developers.google.com/web/tools/chrome-devtools/console/command-line-reference).
 -   The test suite uses a smaller set of default user accounts and other
     data initialized in the database than the development environment;
     to see what differs check out the section related to
