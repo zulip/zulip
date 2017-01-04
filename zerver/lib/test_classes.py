@@ -188,9 +188,8 @@ class ZulipTestCase(TestCase):
         else:
             self.assertFalse(self.client.login(username=email, password=password))
 
-    def register(self, username, password, domain="zulip.com"):
-        # type: (Text, Text, Text) -> HttpResponse
-        email = username + "@" + domain
+    def register(self, email, password):
+        # type: (Text, Text) -> HttpResponse
         self.client_post('/accounts/home/', {'email': email})
         return self.submit_reg_form_for_user(email, password)
 
