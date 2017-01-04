@@ -9,6 +9,33 @@ var emoji_map_is_open = false;
 
 var userlist_placement = "right";
 
+var list_of_popovers = [];
+
+// this utilizes the proxy pattern to intercept all calls to $.fn.popover
+// and push the $.fn.data($o, "popover") results to an array.
+// this is needed so that when we try to unload popovers, we can kill all dead
+// ones that no longer have valid parents in the DOM.
+(function (popover) {
+
+    $.fn.popover = function () {
+        // apply the jQuery object as `this`, and popover function arguments.
+        popover.apply(this, arguments);
+
+        // if there is a valid "popover" key in the jQuery data object then
+        // push it to the array.
+        if (this.data("popover")) {
+            list_of_popovers.push(this.data("popover"));
+        }
+    };
+
+    // add back all shallow properties of $.fn.popover to the new proxied version.
+    for (var x in popover) {
+        if (popover.hasOwnProperty(x)) {
+            $.fn.popover[x] = popover[x];
+        }
+    }
+}($.fn.popover));
+
 function show_message_info_popover(element, id) {
     var last_popover_elem = current_message_info_popover_elem;
     popovers.hide_all();
@@ -845,6 +872,13 @@ exports.hide_all = function () {
     popovers.hide_userlist_sidebar();
     popovers.hide_streamlist_sidebar();
     popovers.hide_emoji_map_popover();
+
+    // look through all the popovers that have been added and removed.
+    list_of_popovers.forEach(function ($o) {
+        if (!document.body.contains($o.$element[0]) && $o.$tip) {
+            $o.$tip.remove();
+        }
+    });
 };
 
 exports.set_userlist_placement = function (placement) {
