@@ -330,11 +330,11 @@ function actually_update_users_for_search() {
 var update_users_for_search = _.throttle(actually_update_users_for_search, 50);
 
 function show_huddles() {
-    $('#group-pm-list').expectOne().show();
+    $('#group-pm-list').addClass("show");
 }
 
 function hide_huddles() {
-    $('#group-pm-list').expectOne().hide();
+    $('#group-pm-list').removeClass("show");
 }
 
 exports.update_huddles = function () {
