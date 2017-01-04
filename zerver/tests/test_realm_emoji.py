@@ -48,7 +48,7 @@ class RealmEmojiTest(ZulipTestCase):
         email = "iago@zulip.com"
         self.login(email)
         data = {"name": "my_emoji", "url": "https://example.com/my_emoji"}
-        result = self.client_put("/json/realm/emoji", info=data)
+        result = self.client_put("/json/realm/emoji/my_emoji")
         self.assert_json_success(result)
         self.assertEqual(200, result.status_code)
         emoji = RealmEmoji.objects.get(name=data['name'])
