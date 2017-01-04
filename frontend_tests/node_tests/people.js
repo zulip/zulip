@@ -11,7 +11,7 @@ set_global('page_params', {
     email: 'hamlet@example.com',
 });
 set_global('activity', {
-    set_user_statuses: function () {},
+    redraw: function () {},
 });
 set_global('admin', {
     show_or_hide_menu_item: function () {},
