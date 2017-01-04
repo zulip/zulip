@@ -377,6 +377,34 @@ function get_predicate(operators) {
         {operator: 'stream', operand: 'exclude', negated: true},
     ];
     _test();
+
+    string = 'text stream:foo more text';
+    operators = [
+        {operator: 'stream', operand: 'foo'},
+        {operator: 'search', operand: 'text more text'},
+    ];
+    _test();
+
+    string = 'stream:foo :emoji: are cool';
+    operators = [
+        {operator: 'stream', operand: 'foo'},
+        {operator: 'search', operand: ':emoji: are cool'},
+    ];
+    _test();
+
+    string = ':stream: stream:foo :emoji: are cool';
+    operators = [
+        {operator: 'stream', operand: 'foo'},
+        {operator: 'search', operand: ':stream: :emoji: are cool'},
+    ];
+    _test();
+
+    string = ':stream: stream:foo -:emoji: are cool';
+    operators = [
+        {operator: 'stream', operand: 'foo'},
+        {operator: 'search', operand: ':stream: -:emoji: are cool'},
+    ];
+    _test();
 }());
 
 (function test_unparse() {

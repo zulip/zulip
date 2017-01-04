@@ -236,8 +236,9 @@ Filter.parse = function (str) {
             // it as a search for the given string (which may contain
             // a `:`), not as a search operator.
             if (Filter.operator_to_prefix(operator, negated) === '') {
-                operator = 'search';
-                operand = token;
+                // Put it as a search term, to not have duplicate operators
+                search_term.push(token);
+                return;
             }
             term = {negated: negated, operator: operator, operand: operand};
             operators.push(term);
