@@ -92,7 +92,8 @@ function get_message_height(elem, message_id) {
         return _message_content_height_cache.get(message_id);
     }
 
-    var height = elem.getBoundingClientRect().height;
+    // shown to be ~2.5x faster than Node.getBoundingClientRect().
+    var height = elem.offsetHeight;
     _message_content_height_cache.set(message_id, height);
     return height;
 }
