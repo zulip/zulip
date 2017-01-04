@@ -135,7 +135,7 @@ as a “**realm**”.
 * [Only allow admins to invite new users](/help/only-allow-admins-to-invite-new-users)
 * Only allow admins to create new streams
 * [Restrict editing of old messages and topics](/help/restrict-editing-of-old-messages-and-topics)
-* [Change the default language for realm](/help/change-the-default-language-for-realm)
+* [Change the default language for your organization](/help/change-the-default-language-for-your-organization)
 * [Add custom emoji](/help/add-custom-emoji)
 * Configure authentication methods
 * [Add a custom linkification filter](/help/add-a-custom-linkification-filter)
