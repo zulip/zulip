@@ -180,7 +180,7 @@ write the integration.  But we have a few notes on how to do these:
 `https://zulip.example.com/v1/messages/`.
 
 * We usually build Python script integration with (at least) 2 files:
-`zulip_foo_config.py`` containing the configuration for the
+`zulip_foo_config.py` containing the configuration for the
 integration including the bots' API keys, plus a script that reads
 from this configuration to actually do the work (that way, it's
 possible to update the script without breaking users' configurations).
