@@ -135,14 +135,20 @@ function handle_keydown(e) {
             }
 
             // Send the message on Ctrl/Cmd-Enter or if the user has configured enter to
-            // send and the shift key is not pressed.
-            if (e.target.id === "new_message_content" && code === 13 &&
-                (e.metaKey || e.ctrlKey || (page_params.enter_sends && !e.shiftKey))
-               ) {
-                e.preventDefault();
-                if ($("#compose-send-button").attr('disabled') !== "disabled") {
-                    $("#compose-send-button").attr('disabled', 'disabled');
-                    compose.finish();
+            // send and the Shift/Ctrl/Cmd/Alt keys are not pressed.
+            // Otherwise, make sure to insert a newline instead
+            if (e.target.id === "new_message_content" && code === 13) {
+                if ((!page_params.enter_sends && (e.metaKey || e.ctrlKey)) ||
+                    (page_params.enter_sends && !(e.shiftKey || e.ctrlKey || e.metaKey || e.altKey))
+                ) {
+                    e.preventDefault();
+                    if ($("#compose-send-button").attr('disabled') !== "disabled") {
+                        $("#compose-send-button").attr('disabled', 'disabled');
+                        compose.finish();
+                    }
+                } else {
+                    e.preventDefault();
+                    $("#new_message_content").caret('\n');
                 }
             }
         }
