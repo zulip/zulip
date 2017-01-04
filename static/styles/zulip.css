@@ -2402,6 +2402,10 @@ button.topic_edit_cancel {
     display: none;
 }
 
+#group-pm-list.show {
+    display: block;
+}
+
 #userlist-header,
 #group-pm-header {
     border-top: 1px solid #e2e2e2;
