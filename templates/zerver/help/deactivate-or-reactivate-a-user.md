@@ -14,35 +14,21 @@ Instead, you should deactivate the user’s account using the Zulip administrati
 interface; this will also automatically deactivate any bots the user has
 created.
 
-1. Click the cog (![cog](/static/images/help/cog.png)) in the upper right corner
-of the right sidebar.
+{!go-to-the.md!} [Users](/#administration/user-list-admin)
+{!admin.md!}
 
-2. Select **Administration** from the dropdown menu that appears.
+ 4. Click the **Deactivate** button to the right of the user account that you
+want to deactivate.
 
-    ![Administration dropdown](/static/images/help/administration.png)
-
-3. Upon clicking **Administration**, your view will be replaced with the
-**Administration** page. Click the **Users** tab at the top of the
-panel; it turns gray upon hover.
-
-    ![Administration](/static/images/help/admin-panel-users.png)
-
-4. In the **Users** section, click the red **Deactivate** button
-to the right of the user account that you want to deactivate.
-
-    ![Deactivated Users](/static/images/help/deactivate-panel-admin.png)
-
-4. After clicking the **Deactivate Account** button, a modal window titled
+4. After clicking the **Deactivate** button, a modal window titled
 **Deactivate (user's email address)** will appear.
 
-    ![Deactivate your account modal](/static/images/help/deactivate-modal-admin.png)
-
-5. To confirm the deletion of the user's account, click the red **Deactivate now**
+5. To confirm the deactivation of the user's account, click the **Deactivate now**
 button. Please note that any bots that the user maintains will be
 disabled.
 
 6. After clicking the **Deactivate now** button, the button will transform into
-a orange **Reactivate** button, and the **Make admin** button will also
+a **Reactivate** button, and the **Make admin** button will also
 disappear, confirming the success of the account's deactivation.
 
     The user will be logged out immediately and returned to the Zulip login page
@@ -53,25 +39,11 @@ disappear, confirming the success of the account's deactivation.
 Zulip realm administrators can choose to reactivate a user's deactivated account
 by following the following steps.
 
-1. Click the cog (![cog](/static/images/help/cog.png)) in the upper right corner
-of the right sidebar.
+{!go-to-the.md!} [Deactivated Users](/#administration/deactivated-users-admin)
+{!admin.md!}
 
-2. Select **Administration** from the dropdown menu that appears.
-
-    ![Administration dropdown](/static/images/help/administration.png)
-
-3. Upon clicking **Administration**, your view will be replaced with the
-**Administration** page. Click the **Deactivated Users** tab at the top of the
-panel; it turns gray upon hover.
-
-    ![Administration](/static/images/help/admin-panel.png)
-
-4. In the **Deactivated users** section, click the orange **Reactivate** button
-to the right of the user account that you want to reactivate.
-
-    ![Deactivated Users](/static/images/help/deactivate-panel.png)
+4. Click the **Reactivate** button to the right of the user account that you
+want to reactivate.
 
 5. After clicking the **Reactivate** button, the button will transform into a
-red **Deactivate** button, confirming the success of the account's reactivation.
-
-    ![Reactivate success](/static/images/help/reactivate-success.png)
+**Deactivate** button, confirming the success of the account's reactivation.
