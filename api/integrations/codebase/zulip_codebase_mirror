@@ -31,7 +31,6 @@
 
 from __future__ import print_function
 from __future__ import absolute_import
-from typing import Any, List, Dict, Optional
 import requests
 import logging
 import time
@@ -39,8 +38,6 @@ import sys
 import os
 
 from datetime import datetime, timedelta
-import six
-
 
 try:
     import dateutil.parser
@@ -55,7 +52,9 @@ VERSION = "0.9"
 
 if config.ZULIP_API_PATH is not None:
     sys.path.append(config.ZULIP_API_PATH)
+import six
 import zulip
+from typing import Any, List, Dict, Optional
 
 client = zulip.Client(
     email=config.ZULIP_USER,
