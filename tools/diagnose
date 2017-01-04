@@ -76,7 +76,7 @@ def node_stuff():
 @run
 def test_models():
     # type: () -> bool
-    settings_module = "zproject.test_settings"
+    settings_module = "zproject.settings"
     os.environ['DJANGO_SETTINGS_MODULE'] = settings_module
     import django
     django.setup()
