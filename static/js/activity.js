@@ -496,6 +496,11 @@ exports.set_user_statuses = function (users, server_time) {
     exports.update_huddles();
 };
 
+exports.redraw = function () {
+    exports.update_users();
+    exports.update_huddles();
+};
+
 exports.searching = function () {
     return $('.user-list-filter').expectOne().is(':focus');
 };

@@ -288,6 +288,10 @@ exports.update = function update(person) {
         if (util.is_current_user(person.email)) {
             page_params.fullname = person.full_name;
         }
+
+        activity.redraw();
+        // TODO: update sender names on messages
+
     }
 
     if (_.has(person, 'is_admin')) {
@@ -312,10 +316,6 @@ exports.update = function update(person) {
           "background-image": "url(" + url + ")"
         });
     }
-
-    activity.set_user_statuses([]);
-
-    // TODO: update sender names on messages
 };
 
 $(function () {
