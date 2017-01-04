@@ -100,13 +100,13 @@ for writing Casper tests in addition to the debugging notes below:
             casper.waitForSelector('tag 2');
         });
 
--   Casper uses CSS3 selectors; you can often save time by testing and
-    debugging your selectors on the relevant page of the Zulip
-    development app in the Chrome JavaScript console by using e.g.
-    `$$("#settings-dropdown")`.
-
-    Please note `$$` isn't jQuery, it's a CSS selector equivalent to
-    `querySelectorAll()`, only available in the browser's JavaScript console.
+- The selectors appearing in Casper tests are CSS3 selectors, which is
+    a slightly different syntax from jQuery selectors.  You can often
+    save time by testing and debugging your selectors on the relevant
+    page of the Zulip development app in the Chrome JavaScript console
+    by using e.g.  `$$("#settings-dropdown")` (this syntax is the CSS
+    selector equivalent to `querySelectorAll()`, only available in the
+    browser's JavaScript console).
 
     You can learn more about these selectors and other JavaScript console tools
     [here](https://developers.google.com/web/tools/chrome-devtools/console/command-line-reference).
