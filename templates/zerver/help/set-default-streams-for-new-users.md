@@ -1,30 +1,19 @@
 # Set default streams for new users
 
-Default streams for an organization are set by an administrator.
+If you are an administrator of a Zulip organization, you can set the default
+streams that new users are automatically subscribed to by following the
+following steps.
 
-Follow the steps given below to set the default streams for new users
-using an administrator account:
+{!go-to-the.md!} [Default Streams](/#administration/default-streams-list)
+{!admin.md!}
 
-* Click on the cog (![cog](/static/images/help/cog.png)) icon in the
-upper right corner of the sidebar.
+2. To add a new stream to **Default Streams**, enter the name of stream in the
+box next to **Stream Name**.  Autocompletion suggestions will appear in a
+dropdown as you type; select the stream name from the dropdown.
 
-* Choose the **Administration** option in the panel shown below:
+3. Once you select the stream name from the dropdown, the stream will appear in
+the **Default Streams** list, confirming the success of your action.
 
-![admin](/static/images/help/admin.png)
-
-* The **Administration** window will appear like the one below:
-
-![admin window](/static/images/help/admin-window.png)
-
-* Click on the **Default Streams** option as shown below:
-
-![default streams](/static/images/help/default-streams.png)
-
-* To add a stream to **Default Streams**, enter the name of stream
-in the box next to **Stream Name** and press the enter key.
-
-![default stream enter](/static/images/help/default-stream-enter.png)
-
-* To remove a stream from **Default Streams** click on the
-**Remove from default** button next to the name of the stream
-you want to remove.
+!!! tip ""
+    To remove a stream from **Default Streams** click on the **Remove from default**
+    button next to the name of the stream you want to remove.
