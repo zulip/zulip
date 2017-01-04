@@ -207,10 +207,29 @@ indenting them.
       ![Zulip sign in Google](/images/signin-google.png)
 
 * Standard formulas for directing users to commonly used pages:
+
   * There is a macro for directing users to the **Subscriptions** page:
     `{!subscriptions.md!}`
-  * Use the following format to direct users to part of the **Settings**:
-    ```
-    1. Go to the [Your Account](/#settings/your-account) tab of the
-    [Settings](/help/edit-settings) page.
-    ```
+
+  * The **Go to the** macro (`{!go-to-the.md}`) usually precedes the
+  **Settings** and **Administration** macros. This macro transforms the
+  following content into a step.
+
+    * The **Settings** macro (`{!settings.md!}`) directs users to the **Settings**
+  page. It is usually preceded by the **Go to the** macro and a link to a
+  particular section in the **Settings** page.
+
+    * The **Administration** macro (`{!admin.md!}`) directs users to the
+  **Administration** page. It is usually preceded by the **Go to the** macro and
+  a link to a particular section in the **Administration** page.
+
+    * Example:
+      ```.md
+      {!go-to-the.md!} [Notifications](/#settings/notifications)
+      {!settings.md!}
+      ```
+      renders as:
+      ```.md
+      1. Go to the [Notifications](/#settings/notifications) tab on the
+      [Settings](/help/edit-settings) page.
+      ```
