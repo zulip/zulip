@@ -9,7 +9,7 @@ from zerver.lib.actions import (
     check_add_realm_emoji,
     do_remove_realm_emoji,
     do_set_alert_words,
-    get_realm_by_string_id,
+    get_realm,
 )
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.camo import get_camo_url
@@ -26,7 +26,7 @@ from zerver.models import (
     flush_per_request_caches,
     flush_realm_filter,
     get_client,
-    get_realm_by_string_id,
+    get_realm,
     get_user_profile_by_email,
     get_stream,
     realm_filters_for_realm,
@@ -159,7 +159,7 @@ class FencedBlockPreprocessorTest(TestCase):
 
 def bugdown_convert(text):
     # type: (Text) -> Text
-    return bugdown.convert(text, get_realm_by_string_id('zulip').id)
+    return bugdown.convert(text, get_realm('zulip').id)
 
 class BugdownTest(TestCase):
     def common_bugdown_test(self, text, expected):
@@ -410,7 +410,7 @@ class BugdownTest(TestCase):
             # type: (Text, Text) -> Text
             return '<img alt="%s" class="emoji" src="%s" title="%s">' % (name, get_camo_url(url), name)
 
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         url = "https://zulip.com/test_realm_emoji.png"
         check_add_realm_emoji(realm, "test", url)
 
@@ -435,7 +435,7 @@ class BugdownTest(TestCase):
 
     def test_realm_patterns(self):
         # type: () -> None
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         url_format_string = r"https://trac.zulip.net/ticket/%(id)s"
         realm_filter = RealmFilter(realm=realm,
                                    pattern=r"#(?P<id>[0-9]{2,8})",
@@ -469,7 +469,7 @@ class BugdownTest(TestCase):
 
     def test_maybe_update_realm_filters(self):
         # type: () -> None
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         url_format_string = r"https://trac.zulip.net/ticket/%(id)s"
         realm_filter = RealmFilter(realm=realm,
                                    pattern=r"#(?P<id>[0-9]{2,8})",
@@ -486,7 +486,7 @@ class BugdownTest(TestCase):
 
     def test_flush_realm_filter(self):
         # type: () -> None
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
 
         def flush():
             # type: () -> None
@@ -526,7 +526,7 @@ class BugdownTest(TestCase):
 
     def test_realm_patterns_negative(self):
         # type: () -> None
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         RealmFilter(realm=realm, pattern=r"#(?P<id>[0-9]{2,8})",
                     url_format_string=r"https://trac.zulip.net/ticket/%(id)s").save()
         boring_msg = Message(sender=get_user_profile_by_email("othello@zulip.com"),
@@ -649,7 +649,7 @@ class BugdownTest(TestCase):
 
     def test_stream_single(self):
         # type: () -> None
-        denmark = get_stream('Denmark', get_realm_by_string_id('zulip'))
+        denmark = get_stream('Denmark', get_realm('zulip'))
         sender_user_profile = get_user_profile_by_email("othello@zulip.com")
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
         content = "#**Denmark**"
@@ -663,7 +663,7 @@ class BugdownTest(TestCase):
         # type: () -> None
         sender_user_profile = get_user_profile_by_email("othello@zulip.com")
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         denmark = get_stream('Denmark', realm)
         scotland = get_stream('Scotland', realm)
         content = "Look to #**Denmark** and #**Scotland**, there something"
@@ -679,7 +679,7 @@ class BugdownTest(TestCase):
 
     def test_stream_case_sensitivity(self):
         # type: () -> None
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         case_sens = Stream.objects.create(name='CaseSens', realm=realm)
         sender_user_profile = get_user_profile_by_email("othello@zulip.com")
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
@@ -695,7 +695,7 @@ class BugdownTest(TestCase):
         """#StreamName requires the stream be spelled with the correct case
         currently.  If we change that in the future, we'll need to change this
         test."""
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         Stream.objects.create(name='CaseSens', realm=realm)
         sender_user_profile = get_user_profile_by_email("othello@zulip.com")
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
@@ -706,7 +706,7 @@ class BugdownTest(TestCase):
 
     def test_stream_unicode(self):
         # type: () -> None
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         uni = Stream.objects.create(name=u'привет', realm=realm)
         sender_user_profile = get_user_profile_by_email("othello@zulip.com")
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
@@ -861,7 +861,7 @@ class BugdownApiTests(ZulipTestCase):
         self.assert_json_success(result)
         data = ujson.loads(result.content)
         self.assertEqual(data['rendered'],
-                         u'<p>This mentions <a class="stream" data-stream-id="%s" href="/#narrow/stream/Denmark">#Denmark</a> and <span class="user-mention" data-user-email="hamlet@zulip.com">@King Hamlet</span>.</p>' % (get_stream("Denmark", get_realm_by_string_id("zulip")).id),)
+                         u'<p>This mentions <a class="stream" data-stream-id="%s" href="/#narrow/stream/Denmark">#Denmark</a> and <span class="user-mention" data-user-email="hamlet@zulip.com">@King Hamlet</span>.</p>' % (get_stream("Denmark", get_realm("zulip")).id),)
 
 class BugdownErrorTests(ZulipTestCase):
     def test_bugdown_error_handling(self):

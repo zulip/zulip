@@ -4,7 +4,7 @@ from typing import Dict, Any
 from django.http import HttpRequest
 from django.conf import settings
 
-from zerver.models import UserProfile, get_realm_by_string_id
+from zerver.models import UserProfile, get_realm
 from zproject.backends import (password_auth_enabled, dev_auth_enabled,
                                google_auth_enabled, github_auth_enabled)
 from zerver.lib.utils import get_subdomain
@@ -27,7 +27,7 @@ def add_settings(request):
         realm = request.user.realm
     elif settings.REALMS_HAVE_SUBDOMAINS:
         subdomain = get_subdomain(request)
-        realm = get_realm_by_string_id(subdomain)
+        realm = get_realm(subdomain)
 
     if realm is not None:
         realm_uri = realm.uri

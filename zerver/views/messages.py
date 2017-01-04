@@ -42,7 +42,7 @@ from zerver.models import Message, UserProfile, Stream, Subscription, \
     Realm, RealmAlias, Recipient, UserMessage, bulk_get_recipients, get_recipient, \
     get_user_profile_by_email, get_stream, \
     parse_usermessage_flags, \
-    email_to_domain, get_realm_by_string_id, get_active_streams, \
+    email_to_domain, get_realm, get_active_streams, \
     bulk_get_streams, get_user_profile_by_id
 
 from sqlalchemy import func
@@ -813,7 +813,7 @@ def send_message_backend(request, user_profile,
             # The email gateway bot needs to be able to send messages in
             # any realm.
             return json_error(_("User not authorized for this query"))
-        realm = get_realm_by_string_id(realm_str)
+        realm = get_realm(realm_str)
         if not realm:
             return json_error(_("Unknown realm %s") % (realm_str,))
 

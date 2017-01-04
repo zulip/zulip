@@ -6,7 +6,7 @@ from typing import Any
 
 from argparse import ArgumentParser
 from django.core.management.base import BaseCommand, CommandParser
-from zerver.models import Realm, get_realm_by_string_id
+from zerver.models import Realm, get_realm
 from zerver.lib.actions import check_add_realm_emoji, do_remove_realm_emoji
 import sys
 import six
@@ -46,7 +46,7 @@ Example: ./manage.py realm_emoji --realm=zulip.com --op=show
 
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
-        realm = get_realm_by_string_id(options["string_id"])
+        realm = get_realm(options["string_id"])
         if options["op"] == "show":
             for name, url in six.iteritems(realm.get_emoji()):
                 print(name, url)

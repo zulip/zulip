@@ -242,9 +242,7 @@ class Realm(ModelReprMixin, models.Model):
 
 post_save.connect(flush_realm, sender=Realm)
 
-# Added to assist with the domain to string_id transition. Will eventually
-# be renamed and replace get_realm.
-def get_realm_by_string_id(string_id):
+def get_realm(string_id):
     # type: (Text) -> Optional[Realm]
     if not string_id:
         return None

@@ -4,7 +4,7 @@ from mock import patch, MagicMock
 from django.test import TestCase
 from django.conf import settings
 from django.core.management import call_command
-from zerver.models import get_realm_by_string_id
+from zerver.models import get_realm
 from confirmation.models import RealmCreationKey, generate_realm_creation_url
 from datetime import timedelta
 from zerver.lib.test_classes import ZulipTestCase
@@ -79,7 +79,7 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
             self.assert_in_success_response([u"Let's get started…"], result)
 
             # Create Realm with generated link
-            self.assertIsNone(get_realm_by_string_id('test'))
+            self.assertIsNone(get_realm('test'))
             result = self.client_post(generated_link, {'email': email})
             self.assertEqual(result.status_code, 302)
             self.assertTrue(result["Location"].endswith(

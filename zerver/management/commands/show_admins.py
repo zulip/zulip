@@ -5,7 +5,7 @@ from typing import Any
 
 from argparse import ArgumentParser
 from django.core.management.base import BaseCommand
-from zerver.models import get_realm_by_string_id, Realm
+from zerver.models import get_realm, Realm
 import sys
 
 class Command(BaseCommand):
@@ -21,7 +21,7 @@ class Command(BaseCommand):
         realm_name = options['realm']
 
         try:
-            realm = get_realm_by_string_id(realm_name)
+            realm = get_realm(realm_name)
         except Realm.DoesNotExist:
             print('There is no realm called %s.' % (realm_name,))
             sys.exit(1)

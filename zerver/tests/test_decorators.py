@@ -34,7 +34,7 @@ from zerver.lib.validator import (
     check_string, check_dict, check_bool, check_int, check_list
 )
 from zerver.models import \
-    get_realm_by_string_id, get_user_profile_by_email, UserProfile, Client
+    get_realm, get_user_profile_by_email, UserProfile, Client
 
 import ujson
 
@@ -484,8 +484,8 @@ class DeactivatedRealmTest(ZulipTestCase):
         rest_dispatch rejects requests in a deactivated realm, both /json and api
 
         """
-        realm = get_realm_by_string_id("zulip")
-        do_deactivate_realm(get_realm_by_string_id("zulip"))
+        realm = get_realm("zulip")
+        do_deactivate_realm(get_realm("zulip"))
 
         result = self.client_post("/json/messages", {"type": "private",
                                                      "content": "Test message",
@@ -519,7 +519,7 @@ class DeactivatedRealmTest(ZulipTestCase):
         authenticated_json_view views fail in a deactivated realm
 
         """
-        realm = get_realm_by_string_id("zulip")
+        realm = get_realm("zulip")
         email = "hamlet@zulip.com"
         test_password = "abcd1234"
         user_profile = get_user_profile_by_email(email)
@@ -537,7 +537,7 @@ class DeactivatedRealmTest(ZulipTestCase):
         logging in fails in a deactivated realm
 
         """
-        do_deactivate_realm(get_realm_by_string_id("zulip"))
+        do_deactivate_realm(get_realm("zulip"))
         result = self.login_with_return("hamlet@zulip.com")
         self.assert_in_response("has been deactivated", result)
 
@@ -547,7 +547,7 @@ class DeactivatedRealmTest(ZulipTestCase):
         Using a webhook while in a deactivated realm fails
 
         """
-        do_deactivate_realm(get_realm_by_string_id("zulip"))
+        do_deactivate_realm(get_realm("zulip"))
         email = "hamlet@zulip.com"
         api_key = self.get_api_key(email)
         url = "/api/v1/external/jira?api_key=%s&stream=jira_custom" % (api_key,)
