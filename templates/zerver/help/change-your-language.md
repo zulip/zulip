@@ -1,6 +1,10 @@
 # Changing the Default Language
 
-Zulip is written primarily in English, but it includes feature support for a variety of languages. Changing the default language in Zulip will translate many of the settings and menu options into the language that you select. Because some languages are only partially supported,  you may still see English words interspersed throughout Zulip.
+Zulip is written primarily in English, but it includes feature support for
+a variety of languages. Changing the default language in Zulip will translate
+many of the settings and menu options into the language that you select.
+Because some languages are only partially supported,
+you may still see English words interspersed throughout Zulip.
 
 ## Summary:
 
@@ -12,8 +16,6 @@ Zulip is written primarily in English, but it includes feature support for a var
     ![Display Settings Menu](/static/images/help/settings-section.png)
 
 3. Finally, choose your desired language from the options in this popup menu:
-
-    ![Change Default Language Menu](/static/images/help/change-default-language-menu.png)
 
 4. The menu will close, and the language changes will take effect as soon as you **reload the page**.
 
