@@ -7,7 +7,7 @@ from argparse import ArgumentParser
 from optparse import make_option
 
 from django.core.management.base import BaseCommand
-from zerver.models import RealmFilter, all_realm_filters, get_realm_by_string_id
+from zerver.models import RealmFilter, all_realm_filters, get_realm
 from zerver.lib.actions import do_add_realm_filter, do_remove_realm_filter
 import sys
 
@@ -44,7 +44,7 @@ Example: ./manage.py realm_filters --realm=zulip --op=show
 
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
-        realm = get_realm_by_string_id(options["string_id"])
+        realm = get_realm(options["string_id"])
         if options["op"] == "show":
             print("%s: %s" % (realm.string_id, all_realm_filters().get(realm.id, [])))
             sys.exit(0)

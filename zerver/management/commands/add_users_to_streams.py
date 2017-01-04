@@ -8,7 +8,7 @@ from typing import Any
 from django.core.management.base import BaseCommand, CommandParser
 
 from zerver.lib.actions import create_stream_if_needed, bulk_add_subscriptions
-from zerver.models import UserProfile, get_realm_by_string_id, get_user_profile_by_email
+from zerver.models import UserProfile, get_realm, get_user_profile_by_email
 
 class Command(BaseCommand):
     help = """Add some or all users in a realm to a set of streams."""
@@ -48,7 +48,7 @@ class Command(BaseCommand):
             exit(1)
 
         stream_names = set([stream.strip() for stream in options["streams"].split(",")])
-        realm = get_realm_by_string_id(options["string_id"])
+        realm = get_realm(options["string_id"])
 
         if options["all_users"]:
             user_profiles = UserProfile.objects.filter(realm=realm)

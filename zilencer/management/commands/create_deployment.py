@@ -7,7 +7,7 @@ from typing import Any
 
 from django.core.management.base import BaseCommand, CommandParser
 
-from zerver.models import get_realm_by_string_id
+from zerver.models import get_realm
 from zerver.lib.create_user import random_api_key
 from zerver.management.commands.create_realm import Command as CreateRealm
 
@@ -40,7 +40,7 @@ class Command(BaseCommand):
             CreateRealm().handle(*args, **options)
             print() # Newline
 
-        realm = get_realm_by_string_id(options["string_id"])
+        realm = get_realm(options["string_id"])
         if realm is None:
             print("\033[1;31mRealm does not exist!\033[0m\n", file=sys.stderr)
             exit(2)

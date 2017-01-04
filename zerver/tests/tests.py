@@ -22,7 +22,7 @@ from zerver.forms import WRONG_SUBDOMAIN_ERROR
 
 from zerver.models import UserProfile, Recipient, \
     Realm, RealmAlias, UserActivity, \
-    get_user_profile_by_email, get_realm_by_string_id, get_realm_by_email_domain, \
+    get_user_profile_by_email, get_realm, get_realm_by_email_domain, \
     get_client, get_stream, Message, get_unique_open_realm, \
     completely_open, GetRealmByDomainException
 
@@ -114,15 +114,15 @@ class RealmTest(ZulipTestCase):
         cache, and we start by populating the cache for Hamlet, and we end
         by checking the cache to ensure that the new value is there."""
         get_user_profile_by_email('hamlet@zulip.com')
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         new_name = 'Zed You Elle Eye Pea'
         do_set_realm_name(realm, new_name)
-        self.assertEqual(get_realm_by_string_id(realm.string_id).name, new_name)
+        self.assertEqual(get_realm(realm.string_id).name, new_name)
         self.assert_user_profile_cache_gets_new_name('hamlet@zulip.com', new_name)
 
     def test_do_set_realm_name_events(self):
         # type: () -> None
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         new_name = 'Puliz'
         events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
@@ -146,7 +146,7 @@ class RealmTest(ZulipTestCase):
 
         def set_up_db(attr, value):
             # type: (str, Any) -> None
-            realm = get_realm_by_string_id('zulip')
+            realm = get_realm('zulip')
             setattr(realm, attr, value)
             realm.save()
 
@@ -155,7 +155,7 @@ class RealmTest(ZulipTestCase):
             params = {k: ujson.dumps(v) for k, v in kwarg.items()}
             result = self.client_patch('/json/realm', params)
             self.assert_json_success(result)
-            return get_realm_by_string_id('zulip') # refresh data
+            return get_realm('zulip') # refresh data
 
         # name
         realm = update_with_api(name=new_name)
@@ -231,7 +231,7 @@ class RealmTest(ZulipTestCase):
         realm appears to be deactivated.  You can make this test fail
         by disabling cache.flush_realm()."""
         get_user_profile_by_email('hamlet@zulip.com')
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         do_deactivate_realm(realm)
         user = get_user_profile_by_email('hamlet@zulip.com')
         self.assertTrue(user.realm.deactivated)
@@ -239,7 +239,7 @@ class RealmTest(ZulipTestCase):
     def test_do_set_realm_default_language(self):
         # type: () -> None
         new_lang = "de"
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         self.assertNotEqual(realm.default_language, new_lang)
         # we need an admin user.
         email = 'iago@zulip.com'
@@ -248,7 +248,7 @@ class RealmTest(ZulipTestCase):
         req = dict(default_language=ujson.dumps(new_lang))
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         self.assertEqual(realm.default_language, new_lang)
 
         # Test setting zh_CN, we set zh_HANS instead of zh_CN in db
@@ -257,7 +257,7 @@ class RealmTest(ZulipTestCase):
         req = dict(default_language=ujson.dumps(chinese))
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         self.assertEqual(realm.default_language, simplified_chinese)
 
         # Test to make sure that when invalid languages are passed
@@ -267,7 +267,7 @@ class RealmTest(ZulipTestCase):
         req = dict(default_language=ujson.dumps(invalid_lang))
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result, "Invalid language '%s'" % (invalid_lang,))
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         self.assertNotEqual(realm.default_language, invalid_lang)
 
 
@@ -511,7 +511,7 @@ class AdminCreateUserTest(ZulipTestCase):
         self.assert_json_error(result,
                                "Email 'romeo@not-zulip.com' does not belong to domain 'zulip.com'")
 
-        RealmAlias.objects.create(realm=get_realm_by_string_id('zulip'), domain='zulip.net')
+        RealmAlias.objects.create(realm=get_realm('zulip'), domain='zulip.net')
 
         # HAPPY PATH STARTS HERE
         valid_params = dict(
@@ -2045,7 +2045,7 @@ class HomeTest(ZulipTestCase):
     def test_notifications_stream(self):
         # type: () -> None
         email = 'hamlet@zulip.com'
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         realm.notifications_stream = get_stream('Denmark', realm)
         realm.save()
         self.login(email)
@@ -2288,7 +2288,7 @@ class TestMissedMessages(ZulipTestCase):
 class TestOpenRealms(ZulipTestCase):
     def test_open_realm_logic(self):
         # type: () -> None
-        mit_realm = get_realm_by_string_id("mit")
+        mit_realm = get_realm("mit")
         self.assertEqual(get_unique_open_realm(), None)
         mit_realm.restricted_to_domain = False
         mit_realm.save()

@@ -21,7 +21,7 @@ from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
     PreregistrationUser, get_client, UserActivity, \
     get_stream, UserPresence, get_recipient, name_changes_disabled, email_to_username, \
     completely_open, get_unique_open_realm, email_allowed_for_realm, \
-    get_realm_by_string_id, get_realm_by_email_domain, list_of_domains_for_realm
+    get_realm, get_realm_by_email_domain, list_of_domains_for_realm
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
     do_activate_user, do_create_user, do_create_realm, set_default_streams, \
     update_user_presence, do_events_register, \
@@ -114,7 +114,7 @@ def accounts_register(request):
         # For creating a new realm, there is no existing realm or domain
         realm = None
     elif settings.REALMS_HAVE_SUBDOMAINS:
-        realm = get_realm_by_string_id(get_subdomain(request))
+        realm = get_realm(get_subdomain(request))
     else:
         realm = get_realm_by_email_domain(email)
 
@@ -303,14 +303,14 @@ def create_preregistration_user(email, request, realm_creation=False):
         # The user is trying to sign up for a completely open realm,
         # so create them a PreregistrationUser for that realm
         return PreregistrationUser.objects.create(email=email,
-                                                  realm=get_realm_by_string_id(realm_str),
+                                                  realm=get_realm(realm_str),
                                                   realm_creation=realm_creation)
 
     return PreregistrationUser.objects.create(email=email, realm_creation=realm_creation)
 
 def accounts_home_with_realm_str(request, realm_str):
     # type: (HttpRequest, str) -> HttpResponse
-    if not settings.REALMS_HAVE_SUBDOMAINS and completely_open(get_realm_by_string_id(realm_str)):
+    if not settings.REALMS_HAVE_SUBDOMAINS and completely_open(get_realm(realm_str)):
         # You can sign up for a completely open realm through a
         # special registration path that contains the domain in the
         # URL. We store this information in the session rather than
@@ -385,7 +385,7 @@ def get_realm_from_request(request):
         realm_str = get_subdomain(request)
     else:
         realm_str = request.session.get("realm_str")
-    return get_realm_by_string_id(realm_str)
+    return get_realm(realm_str)
 
 def accounts_home(request):
     # type: (HttpRequest) -> HttpResponse

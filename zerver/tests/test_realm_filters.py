@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
-from zerver.lib.actions import get_realm_by_string_id, do_add_realm_filter
+from zerver.lib.actions import get_realm, do_add_realm_filter
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import RealmFilter
 import ujson
@@ -12,7 +12,7 @@ class RealmFilterTest(ZulipTestCase):
     def test_list(self):
         # type: () -> None
         self.login("iago@zulip.com")
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         do_add_realm_filter(
             realm,
             "#(?P<id>[123])",
@@ -58,7 +58,7 @@ class RealmFilterTest(ZulipTestCase):
     def test_delete(self):
         # type: () -> None
         self.login("iago@zulip.com")
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         filter_id = do_add_realm_filter(
             realm,
             "#(?P<id>[123])",

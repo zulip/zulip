@@ -16,7 +16,7 @@ from zerver.forms import HomepageForm
 from zerver.views import do_change_password
 from zerver.views.invite import get_invitee_emails_set
 from zerver.models import (
-    get_realm_by_string_id, get_prereg_user_by_email, get_user_profile_by_email,
+    get_realm, get_prereg_user_by_email, get_user_profile_by_email,
     PreregistrationUser, Realm, RealmAlias, Recipient,
     Referral, ScheduledJob, UserProfile, UserMessage,
     Stream, Subscription, ScheduledJob
@@ -150,7 +150,7 @@ class AddNewUserHistoryTest(ZulipTestCase):
             "Denmark": {"description": "A Scandinavian country", "invite_only": False},
             "Verona": {"description": "A city in Italy", "invite_only": False}
         }  # type: Dict[Text, Dict[Text, Any]]
-        set_default_streams(get_realm_by_string_id("zulip"), stream_dict)
+        set_default_streams(get_realm("zulip"), stream_dict)
         with patch("zerver.lib.actions.add_new_user_history"):
             self.register("test", "test")
         user_profile = get_user_profile_by_email("test@zulip.com")
@@ -250,7 +250,7 @@ class LoginTest(ZulipTestCase):
 
     def test_register(self):
         # type: () -> None
-        realm = get_realm_by_string_id("zulip")
+        realm = get_realm("zulip")
         stream_dict = {"stream_"+str(i): {"description": "stream_%s_description" % i, "invite_only": False}
                        for i in range(40)}  # type: Dict[Text, Dict[Text, Any]]
         for stream_name in stream_dict.keys():
@@ -271,7 +271,7 @@ class LoginTest(ZulipTestCase):
         If you try to register for a deactivated realm, you get a clear error
         page.
         """
-        realm = get_realm_by_string_id("zulip")
+        realm = get_realm("zulip")
         realm.deactivated = True
         realm.save(update_fields=["deactivated"])
 
@@ -286,7 +286,7 @@ class LoginTest(ZulipTestCase):
         """
         If you try to log in to a deactivated realm, you get a clear error page.
         """
-        realm = get_realm_by_string_id("zulip")
+        realm = get_realm("zulip")
         realm.deactivated = True
         realm.save(update_fields=["deactivated"])
 
@@ -518,7 +518,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         In a realm with `restricted_to_domain = True`, you can't invite people
         with a different domain from that of the realm or your e-mail address.
         """
-        zulip_realm = get_realm_by_string_id("zulip")
+        zulip_realm = get_realm("zulip")
         zulip_realm.restricted_to_domain = True
         zulip_realm.save()
 
@@ -535,7 +535,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         In a realm with `restricted_to_domain = False`, you can invite people
         with a different domain from that of the realm or your e-mail address.
         """
-        zulip_realm = get_realm_by_string_id("zulip")
+        zulip_realm = get_realm("zulip")
         zulip_realm.restricted_to_domain = False
         zulip_realm.save()
 
@@ -736,7 +736,7 @@ class RealmCreationTest(ZulipTestCase):
         string_id = "zuliptest"
         domain = 'test.com'
         email = "user1@test.com"
-        realm = get_realm_by_string_id('test')
+        realm = get_realm('test')
 
         # Make sure the realm does not exist
         self.assertIsNone(realm)
@@ -760,7 +760,7 @@ class RealmCreationTest(ZulipTestCase):
             self.assertEqual(result.status_code, 302)
 
             # Make sure the realm is created
-            realm = get_realm_by_string_id(string_id)
+            realm = get_realm(string_id)
             self.assertIsNotNone(realm)
             self.assertEqual(realm.string_id, string_id)
             self.assertEqual(get_user_profile_by_email(email).realm, realm)
@@ -782,7 +782,7 @@ class RealmCreationTest(ZulipTestCase):
         realm_name = "Test"
 
         # Make sure the realm does not exist
-        self.assertIsNone(get_realm_by_string_id('test'))
+        self.assertIsNone(get_realm('test'))
 
         with self.settings(REALMS_HAVE_SUBDOMAINS=True), self.settings(OPEN_REALM_CREATION=True):
             # Create new realm with the email
@@ -806,7 +806,7 @@ class RealmCreationTest(ZulipTestCase):
             self.assertEqual(result.status_code, 302)
 
             # Make sure the realm is created
-            realm = get_realm_by_string_id(string_id)
+            realm = get_realm(string_id)
             self.assertIsNotNone(realm)
             self.assertEqual(realm.string_id, string_id)
             self.assertEqual(get_user_profile_by_email(email).realm, realm)
@@ -866,7 +866,7 @@ class UserSignUpTest(ZulipTestCase):
         username = "newguy"
         email = "newguy@zulip.com"
         password = "newpassword"
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         domain = realm.domain
         do_set_realm_default_language(realm, "de")
 
@@ -899,12 +899,12 @@ class UserSignUpTest(ZulipTestCase):
         subdomain = "zulip"
         realm_name = "Zulip"
 
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         realm.restricted_to_domain = False
         realm.invite_required = False
         realm.save()
 
-        realm = get_realm_by_string_id('mit')
+        realm = get_realm('mit')
         do_deactivate_realm(realm)
         realm.save()
 
@@ -946,7 +946,7 @@ class UserSignUpTest(ZulipTestCase):
         subdomain = "zulip"
         realm_name = "Zulip"
 
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         realm.restricted_to_domain = False
         realm.invite_required = False
         realm.save()
@@ -983,7 +983,7 @@ class UserSignUpTest(ZulipTestCase):
 
     def test_failed_signup_due_to_restricted_domain(self):
         # type: () -> None
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         with self.settings(REALMS_HAVE_SUBDOMAINS = True):
             request = HostRequestMock(host = realm.host)
             request.session = {} # type: ignore
@@ -992,7 +992,7 @@ class UserSignUpTest(ZulipTestCase):
 
     def test_failed_signup_due_to_invite_required(self):
         # type: () -> None
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         realm.invite_required = True
         realm.save()
         request = HostRequestMock(host = realm.host)

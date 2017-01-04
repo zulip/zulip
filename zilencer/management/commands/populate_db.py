@@ -15,7 +15,7 @@ from django.conf import settings
 from zerver.lib.bulk_create import bulk_create_realms, \
     bulk_create_streams, bulk_create_users, bulk_create_huddles, \
     bulk_create_clients
-from zerver.models import DefaultStream, get_stream, get_realm_by_string_id
+from zerver.models import DefaultStream, get_stream, get_realm
 from zilencer.models import Deployment
 
 import random
@@ -171,7 +171,7 @@ class Command(BaseCommand):
                     subscriptions_to_add.append(s)
             Subscription.objects.bulk_create(subscriptions_to_add)
         else:
-            zulip_realm = get_realm_by_string_id("zulip")
+            zulip_realm = get_realm("zulip")
             recipient_streams = [klass.type_id for klass in
                                  Recipient.objects.filter(type=Recipient.STREAM)]
 
