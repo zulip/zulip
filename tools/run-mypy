@@ -26,7 +26,6 @@ api/integrations/svn/zulip_svn_config.py
 api/integrations/trac/zulip_trac_config.py
 api/integrations/asana/zulip_asana_mirror
 api/integrations/basecamp/zulip_basecamp_mirror
-api/integrations/codebase/zulip_codebase_mirror
 api/integrations/git/post-receive
 api/integrations/rss/rss-bot
 tools/deprecated/iframe-bot/show-last-messages
@@ -38,7 +37,7 @@ zproject/test_settings.py
 # We don't run mypy on contrib_bots, since the code there will
 # often be shared with other projects that do not want a mypy
 # dependency (at least while it's still kind of beta).
-exclude_common  += ['contrib_bots']
+exclude_common += ['contrib_bots']
 
 exclude_py2 = [] # type: List[str]
 
