@@ -126,6 +126,7 @@ as a “**realm**”.
 * Connect to Zulip over IRC/etc (not implemented?)
 
 # Administering a Zulip organization
+* [Change your administrator settings](/help/edit-administrator-settings)
 
 ## Organization Settings
 * [Change your organization's name](/help/change-your-organizations-name)
