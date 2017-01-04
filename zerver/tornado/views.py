@@ -69,7 +69,7 @@ def get_events_backend(request, user_profile, handler,
     if queue_id is None:
         events_query['new_queue_data'] = dict(
             user_profile_id = user_profile.id,
-            realm_id = user_profile.realm.id,
+            realm_id = user_profile.realm_id,
             user_profile_email = user_profile.email,
             event_types = event_types,
             client_type_name = user_client.name,

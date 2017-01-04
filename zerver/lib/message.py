@@ -72,6 +72,7 @@ class MessageDict(object):
                 rendered_content_version = message.rendered_content_version,
                 sender_id = message.sender.id,
                 sender_email = message.sender.email,
+                sender_realm_id = message.sender.realm.id,
                 sender_realm_domain = message.sender.realm.domain,
                 sender_full_name = message.sender.full_name,
                 sender_short_name = message.sender.short_name,
@@ -104,6 +105,7 @@ class MessageDict(object):
                 rendered_content_version = row['rendered_content_version'],
                 sender_id = row['sender_id'],
                 sender_email = row['sender__email'],
+                sender_realm_id = row['sender__realm__id'],
                 sender_realm_domain = row['sender__realm__domain'],
                 sender_full_name = row['sender__full_name'],
                 sender_short_name = row['sender__short_name'],
@@ -130,6 +132,7 @@ class MessageDict(object):
             rendered_content_version,
             sender_id,
             sender_email,
+            sender_realm_id,
             sender_realm_domain,
             sender_full_name,
             sender_short_name,
@@ -141,7 +144,7 @@ class MessageDict(object):
             recipient_type_id,
             reactions
     ):
-        # type: (bool, Message, int, datetime.datetime, Text, Text, Text, datetime.datetime, Text, Optional[int], int, Text, Text, Text, Text, Text, bool, Text, int, int, int, List[Dict[str, Any]]) -> Dict[str, Any]
+        # type: (bool, Message, int, datetime.datetime, Text, Text, Text, datetime.datetime, Text, Optional[int], int, Text, int, Text, Text, Text, Text, bool, Text, int, int, int, List[Dict[str, Any]]) -> Dict[str, Any]
 
         avatar_url = get_avatar_url(sender_avatar_source, sender_email)
 
@@ -186,7 +189,7 @@ class MessageDict(object):
             avatar_url        = avatar_url,
             client            = sending_client_name)
 
-        obj['subject_links'] = bugdown.subject_links(sender_realm_domain.lower(), subject)
+        obj['subject_links'] = bugdown.subject_links(sender_realm_id, subject)
 
         if last_edit_time != None:
             obj['last_edit_timestamp'] = datetime_to_timestamp(last_edit_time)
@@ -209,7 +212,7 @@ class MessageDict(object):
 
                 # It's unfortunate that we need to have side effects on the message
                 # in some cases.
-                rendered_content = render_markdown(message, content, sender_realm_domain)
+                rendered_content = render_markdown(message, content, realm_id=sender_realm_id)
                 message.rendered_content = rendered_content
                 message.rendered_content_version = bugdown.version
                 message.save_rendered_content()
@@ -293,8 +296,8 @@ def access_message(user_profile, message_id):
     # stream in your realm, so return the message, user_message pair
     return (message, user_message)
 
-def render_markdown(message, content, domain=None, realm_alert_words=None, message_users=None):
-    # type: (Message, Text, Optional[Text], Optional[RealmAlertWords], Set[UserProfile]) -> Text
+def render_markdown(message, content, realm_id=None, realm_alert_words=None, message_users=None):
+    # type: (Message, Text, Optional[int], Optional[RealmAlertWords], Set[UserProfile]) -> Text
     """Return HTML for given markdown. Bugdown may add properties to the
     message object such as `mentions_user_ids` and `mentions_wildcard`.
     These are only on this Django object and are not saved in the
@@ -312,12 +315,12 @@ def render_markdown(message, content, domain=None, realm_alert_words=None, messa
     message.alert_words = set()
     message.links_for_preview = set()
 
-    if not domain:
-        domain = message.sender.realm.domain
+    if not realm_id:
+        realm_id = message.sender.realm.id
     if message.sending_client.name == "zephyr_mirror" and message.sender.realm.is_zephyr_mirror_realm:
         # Use slightly customized Markdown processor for content
         # delivered via zephyr_mirror
-        domain = u"zephyr_mirror"
+        realm_id = bugdown.ZEPHYR_MIRROR_BUGDOWN_KEY
 
     possible_words = set() # type: Set[Text]
     if realm_alert_words is not None:
@@ -326,7 +329,8 @@ def render_markdown(message, content, domain=None, realm_alert_words=None, messa
                 possible_words.update(set(words))
 
     # DO MAIN WORK HERE -- call bugdown to convert
-    rendered_content = bugdown.convert(content, domain, message, possible_words)
+    rendered_content = bugdown.convert(content, realm_id=realm_id, message=message,
+                                       possible_words=possible_words)
 
     message.user_ids_with_alert_words = set()
 
@@ -339,4 +343,3 @@ def render_markdown(message, content, domain=None, realm_alert_words=None, messa
     message.is_me_message = Message.is_status_message(content, rendered_content)
 
     return rendered_content
-

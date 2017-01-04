@@ -42,7 +42,7 @@ from zerver.models import Message, UserProfile, Stream, Subscription, \
     Realm, RealmAlias, Recipient, UserMessage, bulk_get_recipients, get_recipient, \
     get_user_profile_by_email, get_stream, \
     parse_usermessage_flags, \
-    email_to_domain, get_realm, get_active_streams, \
+    email_to_domain, get_realm_by_string_id, get_active_streams, \
     bulk_get_streams, get_user_profile_by_id
 
 from sqlalchemy import func
@@ -798,7 +798,7 @@ def send_message_backend(request, user_profile,
                          forged = REQ(default=False),
                          subject_name = REQ('subject', lambda x: x.strip(), None),
                          message_content = REQ('content'),
-                         domain = REQ('domain', default=None),
+                         realm_str = REQ('realm_str', default=None),
                          local_id = REQ(default=None),
                          queue_id = REQ(default=None)):
     # type: (HttpRequest, UserProfile, Text, List[Text], bool, Optional[Text], Text, Optional[Text], Optional[Text], Optional[Text]) -> HttpResponse
@@ -808,14 +808,14 @@ def send_message_backend(request, user_profile,
         return json_error(_("User not authorized for this query"))
 
     realm = None
-    if domain and domain != user_profile.realm.domain:
+    if realm_str and realm_str != user_profile.realm.string_id:
         if not is_super_user:
             # The email gateway bot needs to be able to send messages in
             # any realm.
             return json_error(_("User not authorized for this query"))
-        realm = get_realm(domain)
+        realm = get_realm_by_string_id(realm_str)
         if not realm:
-            return json_error(_("Unknown domain %s") % (domain,))
+            return json_error(_("Unknown realm %s") % (realm_str,))
 
     if client.name in ["zephyr_mirror", "irc_mirror", "jabber_mirror", "JabberMirror"]:
         # Here's how security works for mirroring:
@@ -952,7 +952,7 @@ def render_message_backend(request, user_profile, content=REQ()):
     message.content = content
     message.sending_client = request.client
 
-    rendered_content = render_markdown(message, content, domain=user_profile.realm.domain)
+    rendered_content = render_markdown(message, content, realm_id=user_profile.realm_id)
     return json_success({"rendered": rendered_content})
 
 @authenticated_json_post_view
