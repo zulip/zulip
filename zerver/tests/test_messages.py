@@ -163,8 +163,7 @@ class TestCrossRealmPMs(ZulipTestCase):
 
     def create_user(self, email):
         # type: (Text) -> UserProfile
-        username, domain = email.split('@')
-        self.register(username, 'test', domain=domain)
+        self.register(email, 'test')
         return get_user_profile_by_email(email)
 
     @override_settings(CROSS_REALM_BOT_EMAILS=['feedback@zulip.com',
@@ -273,7 +272,7 @@ class PersonalMessagesTest(ZulipTestCase):
         Newly created users are auto-subbed to the ability to receive
         personals.
         """
-        self.register("test", "test")
+        self.register("test@zulip.com", "test")
         user_profile = get_user_profile_by_email('test@zulip.com')
         old_messages_count = message_stream_count(user_profile)
         self.send_message("test@zulip.com", "test@zulip.com", Recipient.PERSONAL)
@@ -302,7 +301,7 @@ class PersonalMessagesTest(ZulipTestCase):
         If you send a personal to yourself, only you see it.
         """
         old_user_profiles = list(UserProfile.objects.all())
-        self.register("test1", "test1")
+        self.register("test1@zulip.com", "test1")
 
         old_messages = []
         for user_profile in old_user_profiles:

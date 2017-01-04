@@ -152,7 +152,7 @@ class AddNewUserHistoryTest(ZulipTestCase):
         }  # type: Dict[Text, Dict[Text, Any]]
         set_default_streams(get_realm("zulip"), stream_dict)
         with patch("zerver.lib.actions.add_new_user_history"):
-            self.register("test", "test")
+            self.register("test@zulip.com", "test")
         user_profile = get_user_profile_by_email("test@zulip.com")
 
         subs = Subscription.objects.select_related("recipient").filter(
@@ -258,7 +258,7 @@ class LoginTest(ZulipTestCase):
 
         set_default_streams(realm, stream_dict)
         with queries_captured() as queries:
-            self.register("test", "test")
+            self.register("test@zulip.com", "test")
         # Ensure the number of queries we make is not O(streams)
         self.assert_max_length(queries, 69)
         user_profile = get_user_profile_by_email('test@zulip.com')
@@ -275,7 +275,7 @@ class LoginTest(ZulipTestCase):
         realm.deactivated = True
         realm.save(update_fields=["deactivated"])
 
-        result = self.register("test", "test")
+        result = self.register("test@zulip.com", "test")
         self.assert_in_response("has been deactivated", result)
 
         with self.assertRaises(UserProfile.DoesNotExist):
@@ -308,7 +308,7 @@ class LoginTest(ZulipTestCase):
         password = u"hÃ¼mbÃ¼Çµ"
 
         # Registering succeeds.
-        self.register("test", password)
+        self.register("test@zulip.com", password)
         user_profile = get_user_profile_by_email(email)
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
         self.client_post('/accounts/logout/')

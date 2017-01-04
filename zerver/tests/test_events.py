@@ -407,7 +407,7 @@ class EventsRegisterTest(ZulipTestCase):
             ])))
         ])
 
-        events = self.do_test(lambda: self.register("test1", "test1"))
+        events = self.do_test(lambda: self.register("test1@zulip.com", "test1"))
         error = realm_user_add_checker('events[0]', events[0])
         self.assert_on_error(error)
         error = stream_create_checker('events[1]', events[1])
