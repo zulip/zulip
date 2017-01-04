@@ -9,7 +9,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from zerver.lib.queue import queue_json_publish
-from zerver.models import UserActivity, UserProfile, get_realm, Realm
+from zerver.models import UserActivity, UserProfile, Realm
 
 ## Logging setup ##
 
@@ -57,7 +57,7 @@ def queue_digest_recipient(user_profile, cutoff):
              "cutoff": cutoff.strftime('%s')}
     queue_json_publish("digest_emails", event, lambda event: None)
 
-def domains_for_this_deployment():
+def realms_for_this_deployment():
     # type: () -> List[str]
     if settings.ZILENCER_ENABLED:
         # Voyager deployments don't have a Deployment entry.
@@ -70,18 +70,18 @@ def domains_for_this_deployment():
         except Deployment.DoesNotExist:
             raise ValueError("digest: Unable to determine deployment.")
 
-        return [r.domain for r in deployment.realms.all()]
+        return [r.string_id for r in deployment.realms.all()]
     # Voyager and development.
     return []
 
-def should_process_digest(domain, deployment_domains):
+def should_process_digest(realm_str, deployment_realms):
     # type: (str, List[str]) -> bool
-    if domain in settings.SYSTEM_ONLY_REALMS:
+    if realm_str in settings.SYSTEM_ONLY_REALMS:
         # Don't try to send emails to system-only realms
         return False
     if settings.PRODUCTION and not settings.VOYAGER:
         # zulip.com or staging.zulip.com
-        return domain in deployment_domains
+        return realm_str in deployment_realms
     return True
 
 class Command(BaseCommand):
@@ -97,16 +97,13 @@ in a while.
         if datetime.datetime.utcnow().weekday() not in VALID_DIGEST_DAYS:
             return
 
-        deployment_domains = domains_for_this_deployment()
+        deployment_realms = realms_for_this_deployment()
         for realm in Realm.objects.filter(deactivated=False, show_digest_email=True):
-            domain = realm.domain
-            if not should_process_digest(domain, deployment_domains):
+            if not should_process_digest(realm.string_id, deployment_realms):
                 continue
 
-            string_id = realm.string_id
             user_profiles = UserProfile.objects.filter(
-                realm=get_realm(string_id), is_active=True, is_bot=False,
-                enable_digest_emails=True)
+                realm=realm, is_active=True, is_bot=False, enable_digest_emails=True)
 
             for user_profile in user_profiles:
                 cutoff = last_business_day()
