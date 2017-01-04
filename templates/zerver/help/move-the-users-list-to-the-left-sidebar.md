@@ -7,8 +7,8 @@ choose to move it to the left side of the screen.
 
 You can easily change the location of the **Users** list by following a few steps.
 
-{!settings1.md!} [Display Settings](/#settings/display-settings)
-{!settings2.md!}
+{!go-to-the.md!} [Display Settings](/#settings/display-settings)
+{!settings.md!}
 
 4. Select the option labeled **Display user list on left side in narrow windows**, then reload the page in order for the change to take effect.
 

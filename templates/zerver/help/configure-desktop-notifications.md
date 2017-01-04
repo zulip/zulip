@@ -2,8 +2,8 @@
 
 Follow the following steps to change your desktop notifications.
 
-{!settings1.md!} [Notifications](/#settings/notifications)
-{!settings2.md!}
+{!go-to-the.md!} [Notifications](/#settings/notifications)
+{!settings.md!}
 
     If you want notifications for each new message from a stream, check the
 desktop notifications box under **Stream messages**.

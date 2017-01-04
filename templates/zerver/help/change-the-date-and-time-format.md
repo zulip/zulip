@@ -5,8 +5,8 @@ By default, messages in Zulip are displayed with a 12-hour timestamp. If you are
 
 You can easily change the date and time format your messages are displayed in by following a few steps.
 
-{!settings1.md!} [Display Settings](/#settings/display-settings)
-{!settings2.md!}
+{!go-to-the.md!} [Display Settings](/#settings/display-settings)
+{!settings.md!}
 
 2. Select the option labeled **Display time in 24-hour format (17:00 instead of 5:00 PM)**, then reload the page in order for the change to take effect.
 

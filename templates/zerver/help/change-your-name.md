@@ -3,8 +3,8 @@
 It's easy to change how your name is shown in Zulip. With full Unicode support,
 you can spell your name exactly how you'd like it to be displayed.
 
-{!settings1.md!} [Your Account](/#settings/your-account)
-{!settings2.md!}
+{!go-to-the.md!} [Your Account](/#settings/your-account)
+{!settings.md!}
 
 2. Change your name in the **Full name** field, and click **Save Changes**.
 

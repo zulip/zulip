@@ -3,8 +3,8 @@
 You can configure your settings to receive audible notifications for messages
 sent when Zulip is offscreen.
 
-{!settings1.md!} [Notifications](/#settings/notifications)
-{!settings2.md!}
+{!go-to-the.md!} [Notifications](/#settings/notifications)
+{!settings.md!}
 
 2.    If you want to receive notifications for each new message from a stream,
 select the **Audible notifications** option under **Stream messages**.

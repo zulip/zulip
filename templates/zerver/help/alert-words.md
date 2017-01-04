@@ -5,8 +5,8 @@ similarly to being [@-mentioned](/help/at-mention-a-team-member)
 by another user.
 
 ## Adding Alert Words
-{!settings1.md!} [Custom Alert Words](/#settings/custom-alert-words)
-{!settings2.md!}
+{!go-to-the.md!} [Custom Alert Words](/#settings/custom-alert-words)
+{!settings.md!}
 
 2.  Type the word/phrase you wish to be notified for into the text box,
     then click the **Add Alert Word** button.

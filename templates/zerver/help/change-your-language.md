@@ -4,8 +4,8 @@ Zulip is written primarily in English, but it includes feature support for a var
 
 ## Summary:
 
-{!settings1.md!} [Display Settings](/#settings/display-settings)
-{!settings2.md!}
+{!go-to-the.md!} [Display Settings](/#settings/display-settings)
+{!settings.md!}
 
 2. Next to the **Default Language** heading, select the blue text: **[Change]**.
 
