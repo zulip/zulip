@@ -95,7 +95,7 @@ li {
 
     color: #444;
 
-    border-width: order: 1px solid #CCC;
+    border: 1px solid #CCC;
     border-radius: 4px;
     background-color: #FAFAFA;
 }
@@ -314,7 +314,6 @@ input.text-error {
     background-size: cover;
 }
 
-
 .feature-block {
     width: 49%;
     display: inline-block;
@@ -350,7 +349,6 @@ input.text-error {
 .feature-line.light {
     background: white;
   }
-
 
 .feature-line .feature-text {
     width: 49%;
@@ -1414,4 +1412,208 @@ label.label-title {
 
 .float-right {
     float: right;
+}
+
+/* -- dropdown css --*/
+
+@font-face {
+    font-family: "Yantramanav";
+    font-weight: 100;
+    src: "/static/third/yantramanav/Yantramanav-Thin.woff2";
+}
+
+@font-face {
+    font-family: "Yantramanav";
+    font-weight: 300;
+    src: "/static/third/yantramanav/Yantramanav-Light.woff2";
+}
+
+@font-face {
+    font-family: "Yantramanav";
+    font-weight: 400;
+    src: "/static/third/yantramanav/Yantramanav-Regular.woff2";
+}
+
+@font-face {
+    font-family: "Yantramanav";
+    font-weight: 500;
+    src: "/static/third/yantramanav/Yantramanav-Medium.woff2";
+}
+
+@font-face {
+    font-family: "Yantramanav";
+    font-weight: 600;
+    src: "/static/third/yantramanav/Yantramanav-Bold.woff2";
+}
+
+
+.dropdown-container {
+    font-family: "Yantramanav", Helvetica Neue, sans-serif;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 2;
+
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+nav {
+    width: calc(100% - 60px);
+    font-weight: 500;
+    font-size: 1em;
+    padding: 8px 30px 7px 30px;
+    background-color: #227f8e;
+    color: #fafafa;
+    z-index: 2;
+}
+
+nav a {
+    text-decoration: none !important;
+    color: #fafafa;
+}
+
+.options-block {
+    margin-top: 2px;
+    float: right;
+}
+
+nav .logo {
+    height: 30px;
+    position: relative;
+    top: 2px;
+    padding-right: 30px;
+    border-right: 1px solid rgba(255,255,255,0.2);
+}
+
+nav .menu {
+    font-size: 0.8rem;
+    display: inline-block;
+    padding: 0px 5px;
+    cursor: pointer;
+}
+
+nav .menu:hover {
+    background-color: #fafafa;
+    color: #227f8e;
+    border-radius: 4px;
+}
+
+nav .menu-container {
+    vertical-align: top;
+    display: inline-block;
+    margin-top: 2px;
+    margin-left: 23px;
+}
+
+nav .menu-container .option {
+    display: inline-block;
+    margin-right: -4px;
+    width: 100px;
+    font-size: 0.8em;
+    position: relative;
+    cursor: pointer;
+}
+
+nav .menu-container .option span {
+    padding: 0px 5px;
+    pointer-events: none;
+}
+
+nav .menu-container .option span:hover {
+    background-color: #fafafa;
+    color: #227f8e;
+    border-radius: 4px;
+}
+
+.overlay {
+    opacity: 0;
+    pointer-events: none;
+
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+    background-color: transparent;
+
+    transition: all 0.5s ease;
+}
+
+.overlay.shown {
+    opacity: 1;
+}
+
+.dropdown {
+    display: inline-block;
+    padding: 0px 50px;
+    margin-left: 117px;
+
+    max-height: 0px;
+    overflow: hidden;
+    opacity: 0;
+
+    background-color: #84c9d6;
+
+    text-align: center;
+
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+
+    transition: all 0.5s ease;
+}
+
+.dropdown.shown {
+    padding: 20px 35px;
+    max-height: 1000px;
+    opacity: 1;
+}
+
+.dropdown-section {
+    width: 100px;
+    display: inline-block;
+    vertical-align: top;
+    opacity: 0.7;
+
+    text-align: left;
+    color: #fff;
+
+    transition: all 0.2s ease;
+}
+
+.dropdown-section.highlighted {
+    opacity: 1;
+    text-shadow: 0px 0px 2px rgba(255,255,255,0.3);
+}
+
+.dropdown .dropdown-section:hover {
+    opacity: 1;
+}
+
+.dropdown h2 {
+    margin: 0 0 10px 0;
+
+    font-size: 1.6rem;
+    font-weight: 400;
+}
+
+.dropdown a {
+    font-size: 1.1em;
+    color: #FAFAFA;
+    text-decoration: none;
+}
+
+.dropdown a:hover {
+    text-decoration: underline;
+}
+
+.dropdown ul {
+    font-weight: 400;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    font-size: 0.8rem;
+}
+
+.dropdown li {
+    line-height: 1.5;
 }
