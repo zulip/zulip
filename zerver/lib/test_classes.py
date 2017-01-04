@@ -190,15 +190,14 @@ class ZulipTestCase(TestCase):
 
     def register(self, username, password, domain="zulip.com"):
         # type: (Text, Text, Text) -> HttpResponse
-        self.client_post('/accounts/home/',
-                         {'email': username + "@" + domain})
-        return self.submit_reg_form_for_user(username, password, domain=domain)
+        email = username + "@" + domain
+        self.client_post('/accounts/home/', {'email': email})
+        return self.submit_reg_form_for_user(email, password)
 
-    def submit_reg_form_for_user(self, username, password, domain="zulip.com",
-                                 realm_name="Zulip Test", realm_subdomain="zuliptest",
-                                 realm_org_type=Realm.COMMUNITY,
+    def submit_reg_form_for_user(self, email, password, realm_name="Zulip Test",
+                                 realm_subdomain="zuliptest", realm_org_type=Realm.COMMUNITY,
                                  from_confirmation='', **kwargs):
-        # type: (Text, Text, Text, Optional[Text], Optional[Text], int, Optional[Text], **Any) -> HttpResponse
+        # type: (Text, Text, Optional[Text], Optional[Text], int, Optional[Text], **Any) -> HttpResponse
         """
         Stage two of the two-step registration process.
 
@@ -208,10 +207,10 @@ class ZulipTestCase(TestCase):
         You can pass the HTTP_HOST variable for subdomains via kwargs.
         """
         return self.client_post('/accounts/register/',
-                                {'full_name': username, 'password': password,
+                                {'full_name': email, 'password': password,
                                  'realm_name': realm_name,
                                  'realm_subdomain': realm_subdomain,
-                                 'key': find_key_by_email(username + '@' + domain),
+                                 'key': find_key_by_email(email),
                                  'realm_org_type': realm_org_type,
                                  'terms': True,
                                  'from_confirmation': from_confirmation},
