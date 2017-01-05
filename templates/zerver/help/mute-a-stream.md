@@ -1,23 +1,23 @@
 # Mute a stream
 
-Muting streams to reduce notification clutter is easy. Simply hover your mouse
-over the stream in the streams list on the left of the chat, press the down
-chevron button ![chevron](/static/images/help/chevron.png)
-to bring up the stream dropdown menu and press **Mute the stream**.
+You can mute streams to reduce the amount of notifications you receive.
 
-![stream dropdown](/static/images/help/mute_the_stream.png)
+{!stream-actions.md!}
 
-After pressing, the stream should turn gray in the streams list.
+2. Click on the {!down-chevron.md!} Select the **Mute the stream (stream name)**
+option from the actions dropdown.
 
-![muted stream](/static/images/help/grayed_stream.png)
+3. Upon selecting the **Mute the stream (stream name)** option, the selected
+stream will be grayed out in the left sidebar, confirming the success of your
+muting.
 
-### Unmute a stream
+## Unmute a stream
 
-To unmute a stream, hover your mouse over the grayed stream in the streams
-list, press the down chevron button ![chevron stream](/static/images/help/chevron.png)
- and press **Unmute the stream**.
+{!stream-actions.md!}
 
-![unmute option](/static/images/help/unmute_option.png)
+2. Click on the {!down-chevron.md!} Select the **Unmute the stream (stream name)**
+option from the actions dropdown.
 
-The unmuted stream should return to a white background like other streams in
-the streams list.
+3. Upon selecting the **Unmute the stream (stream name)** option, the selected
+stream will return to its normal colors in the left sidebar, confirming the
+success of your unmuting.
