@@ -1,8 +1,8 @@
 # Restrict editing of old messages and topics
 
 If you are an administrator of a Zulip organization, you can easily change the
-time limit that your realm's users have to change their messages after sending
-them. Alternatively, you can choose to disable message editing for your realm
+time limit that your organization's users have to change their messages after sending
+them. Alternatively, you can choose to disable message editing for your organization
 users.
 
 {!go-to-the.md!} [Organization Settings](/#administration/organization-settings)
@@ -19,14 +19,15 @@ underneath it.
     input field will be grayed out.
 
     * **Message edit limit in minutes (0 for no limit)** - If you enable message
-    editing in your realm, you can restrict the time that realm users have to
-    edit their messages. Simply input the time limit in minutes that you would
-    like to set; for example, if you want to set a message edit time limit of 5
-    minutes, enter **5** in the field.
+    editing in your organization, you can restrict the time that organization
+    users have to edit their messages. Simply input the time limit in minutes
+    that you would like to set; for example, if you want to set a message edit
+    time limit of 5 minutes, enter **5** in the field.
 
-        If you would like to disable the message editing time limit for your realm,
-enter **0** in the field. This enables users to edit their messages whenever
-they want.
+        !!! tip ""
+            If you would like to disable the message editing time limit for your
+            organization, enter **0** in the field. This enables users to edit
+            their messages whenever they want.
 
 5. To save any changes you have made to your organization settings, click the
 **Save changes** button at the bottom of the **Organizations settings**
