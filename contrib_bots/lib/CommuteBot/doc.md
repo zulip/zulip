@@ -1,16 +1,34 @@
-This bot will allow briefings of estimated travel times, distances and fare information for transit travel.
+This bot will allow briefings of estimated travel times, distances and
+fare information for transit travel.
 
-It can respond to: departure times, arrival times, user preferences (toll avoidance, highway avoidance) and a mode of transport
+It can respond to: departure times, arrival times, user preferences
+(toll avoidance, highway avoidance) and a mode of transport
 
-It can output: fare information, more detailed addresses on origin and destination, duration in traffic information, metric and imperical units and information in various languages.
+It can output: fare information, more detailed addresses on origin and
+destination, duration in traffic information, metric and imperical
+units and information in various languages.
 
-The bot will respond to the same stream input was in. And if called as private message, the bot will reply with a private message.
+The bot will respond to the same stream input was in. And if called as
+private message, the bot will reply with a private message.
 
-To setup the bot, you will first need to move google-commute.ini into the user home directory and add an API key.
+To setup the bot, you will first need to move google-commute.ini into
+the user home directory and add an API key.
 
-Move <pre><code>~/zulip/contrib_bots/lib/CommuteBot/google-commute.ini</code></pre> into <pre><code>~/google-commute.ini</code></pre>
+Move
 
-To add an API key, please visit: https://developers.google.com/maps/documentation/distance-matrix/start to retrieve a key and copy your api key into google-commute.ini
+```
+~/zulip/contrib_bots/lib/CommuteBot/google-commute.ini
+```
+
+into
+
+```
+~/google-commute.ini
+```
+
+To add an API key, please visit:
+https://developers.google.com/maps/documentation/distance-matrix/start
+to retrieve a key and copy your api key into google-commute.ini
 
 Sample input and output:
 
