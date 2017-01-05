@@ -441,6 +441,20 @@ class StreamMessagesTest(ZulipTestCase):
 
         self.assert_max_length(queries, 8)
 
+    def test_stream_message_dict(self):
+        # type: () -> None
+        user_profile = get_user_profile_by_email("iago@zulip.com")
+        self.subscribe_to_stream(user_profile.email, "Denmark")
+        self.send_message("hamlet@zulip.com", "Denmark", Recipient.STREAM,
+                          content="whatever", subject="my topic")
+        message = most_recent_message(user_profile)
+        row = Message.get_raw_db_rows([message.id])[0]
+        dct = MessageDict.build_dict_from_raw_db_row(row, apply_markdown=True)
+        self.assertEqual(dct['display_recipient'], 'Denmark')
+
+        stream = get_stream('Denmark', user_profile.realm)
+        self.assertEqual(dct['stream_id'], stream.id)
+
     def test_stream_message_unicode(self):
         # type: () -> None
         user_profile = get_user_profile_by_email("iago@zulip.com")
