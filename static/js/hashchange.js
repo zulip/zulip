@@ -82,7 +82,7 @@ exports.save_narrow = function (operators) {
     exports.changehash(new_hash);
 };
 
-function parse_narrow(hash) {
+exports.parse_narrow = function (hash) {
     var i;
     var operators = [];
     for (i=1; i<hash.length; i+=2) {
@@ -102,7 +102,7 @@ function parse_narrow(hash) {
         }
     }
     return operators;
-}
+};
 
 function activate_home_tab() {
     ui.change_tab_to("#home");
@@ -135,7 +135,7 @@ function do_hashchange(from_reload) {
     switch (hash[0]) {
     case "#narrow":
         ui.change_tab_to("#home");
-        var operators = parse_narrow(hash);
+        var operators = exports.parse_narrow(hash);
         if (operators === undefined) {
             // If the narrow URL didn't parse, clear
             // window.location.hash and send them to the home tab
