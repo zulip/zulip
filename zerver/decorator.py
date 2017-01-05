@@ -30,7 +30,6 @@ from io import BytesIO
 from zerver.lib.mandrill_client import get_mandrill_client
 from six.moves import zip, urllib
 
-<<<<<<< b90e9d320022d024f427b35a2c266d21f81de81b
 from six import text_type
 from typing import Union, Any, Callable, Sequence, Dict, Optional, TypeVar, Text, cast
 from zerver.lib.str_utils import force_bytes
