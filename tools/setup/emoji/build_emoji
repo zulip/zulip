@@ -198,7 +198,7 @@ def dump_emojis(cache_path):
         print("Errors dumping emoji!")
         sys.exit(1)
 
-    subprocess.call('glue --quiet out/sprite . --namespace=emoji --sprite-namespace= --retina',
+    subprocess.call('glue --quiet out/sprite . --margin=1 --namespace=emoji --sprite-namespace= --retina',
                     shell=True)
 
     cache_emoji = os.path.join(cache_path, 'images', 'emoji')
