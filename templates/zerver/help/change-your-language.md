@@ -1,12 +1,18 @@
 # Changing your language
 
-Zulip is written primarily in English, but it includes feature support for a
-variety of languages. You can change the default language that Zulip features,
-such as your settings and menu options, are displayed in.
+By default, the Zulip UI is displayed in English.  However, Zulip has
+full support for internationalization, and the UI has been translated
+into many other languages.  You can see the Zulip UI in other
+languages temporarily by modifying the URLs using the appropriate
+language code, e.g. `/ru/` for Russian.
+
+Additionally, you can change the default language in the Zulip UI for
+your Zulip account using the following procedure.
 
 !!! warn ""
-    **Warning**: Because some languages are only partially supported, you may
-    still see English words interspersed throughout Zulip.
+    **Warning**: Because for languages, only some of the strings in
+    the Zulip UI have been translated, you may still see English words
+    interspersed throughout Zulip.
 
 {!go-to-the.md!} [Display Settings](/#settings/display-settings)
 {!settings.md!}
@@ -22,3 +28,7 @@ displayed in the language of your choice after you reload the page.
 
 !!! tip ""
     You can help translate parts of Zulip by signing up for an account at **[Transifex](https://www.transifex.com/zulip/zulip/)**.
+
+!!! tip ""
+    If your entire organization speaks a language other than English, an administrator can
+    [set the default language for new users joining the organization](change-the-default-language-for-your-organization).
