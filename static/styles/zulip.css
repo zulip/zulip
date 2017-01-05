@@ -454,7 +454,7 @@ li.actual-dropdown-menu i {
 
 .message_area_padder {
     /* The height of the header and the tabbar plus a small gap */
-    margin-top: 68px;
+    margin-top: 100px;
     /* This is needed for the floating recipient bar
      in Firefox only, for some reason; otherwise it gets
      a scrollbar */
@@ -1764,8 +1764,8 @@ div.floating_recipient {
     /* If you change these, make sure to adjust the constants in
      * loading.make_indicator as well */
     margin-left: 20px;
-    font-size:   33px;
-    font-weight: bold;
+    font-size:   1.2em;
+    font-weight: 300;
     line-height: 38px;
 }
 
@@ -1909,9 +1909,7 @@ div.floating_recipient {
 #loading_more_messages_indicator_box {
     position: relative;
     left: -50%;
-    top: 25px;
-    border: 1px rgb(100, 100, 100) solid;
-    background-color: rgba(230, 230, 230, 0.8);
+    top: -40px;
     z-index: 1;
     -webkit-border-radius: 6px;
        -moz-border-radius: 6px;
