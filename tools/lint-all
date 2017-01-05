@@ -372,6 +372,8 @@ def build_custom_checkers(by_lang):
          'description': "github should be spelled GitHub"},
         {'pattern': '[oO]rganisation', # exclude usage in hrefs/divs
          'description': "Organization is spelled with a z"},
+        {'pattern': '!!! warning',
+         'description': "!!! warning is invalid; it's spelled '!!! warn'"},
     ] # type: RuleList
     html_rules = whitespace_rules + prose_style_rules + [
         {'pattern': 'placeholder="[^{]',
