@@ -186,10 +186,6 @@ Files: static/third/spectrum/*
 Copyright: 2013 Brian Grinstead
 License: Expat
 
-Files: static/third/spin/spin.js
-Copyright: 2011-2013 Felix Gnass
-License: Expat
-
 Files: static/third/underscore/underscore.js
 Copyright: 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 License: Expat

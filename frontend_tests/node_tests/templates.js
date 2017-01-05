@@ -483,6 +483,7 @@ function render(template_name, args) {
         },
     ];
 
+    render('loader');
     var html = render('message_group', {message_groups: groups, use_match_properties: true});
 
     var first_message_text = $(html).next('.recipient_row').find('div.messagebox:first .message_content').text().trim();
