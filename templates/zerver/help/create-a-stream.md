@@ -1,9 +1,14 @@
 # Create a stream
-On Zulip, streams are similar to conversation threads or subjects. Streams are located on the left sidebar.
-Streams can be either:
 
-* **Public streams** - Public streams are for open discussions. All users can subscribe to public streams and discuss there.
-* **Private streams** - Private streams are for confidential discussions and are only visible to users who've been invited to subscribe to them.
+In Zulip, streams are like mailing lists in an email tool; each has a
+set of subscribers. Your current subscriptions are visible in the left
+sidebar.  Streams can be either:
+
+* **Public streams** - Public streams are for open discussions. All
+  users can subscribe to public streams and discuss there.
+* **Private streams** - Private streams are for confidential
+  discussions and are only visible to users who've been invited to
+  subscribe to them.
 
 ## Create a new stream
 

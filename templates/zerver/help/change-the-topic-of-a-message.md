@@ -2,7 +2,9 @@
 
 You can easily change the topic of a message by following the following steps.
 
-{!message-actions.md!} the pencil (![pencil](/static/images/help/pencil.png)) icon to begin editing your message.
+{!message-actions.md!} the pencil
+(![pencil](/static/images/help/pencil.png)) icon to begin editing your
+message.
 
 2. In the field labeled **Topic**, enter the new topic name for your message.
 
@@ -21,7 +23,9 @@ your message's topic.
 
     * **Change later messages to this topic**
 
-        This option changes the topic of the selected message as well as the topic of any messages under the same topic that were sent after the selected message.
+        This option changes the topic of the selected message as well
+        as the topic of any messages under the same topic that were
+        sent after the selected message.
 
         !!! tip ""
             You may want to select this option if you feel that some of your
@@ -29,7 +33,9 @@ your message's topic.
 
     * **Change previous and following messages to this topic**
 
-        This option changes the topic of the selected message as well as any messages under the same topic that were sent before and after the selected message.
+        This option changes the topic of the selected message as well
+        as any messages under the same topic that were sent before and
+        after the selected message.
 
         !!! tip ""
             You may want to select this option to change the topic for all

@@ -57,7 +57,9 @@ as a “**realm**”.
 * Verify that your message has been successfully sent
 * What to do if the server returns an error
 * Send a status message
-* [@-mention a team member](/help/at-mention-a-team-member) (needs a note that you can't @mention when editing messages, since they may have already read the message / not clear how to notif them)
+* [@-mention a team member](/help/at-mention-a-team-member) (needs a
+  note that you can't @mention when editing messages, since they may
+  have already read the message / not clear how to notif them)
 * Make an announcement
 * Send a message in a different language
 * [Reply to a message](/help/reply-to-a-message)
@@ -411,9 +413,10 @@ of the message is unchanged.
 
 Zulip uses a subset of
 [GitHub Flavored Markdown](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#tables)
-(GFM), To see the current subset, go to the cog
-(<img alt="cog" class="inline" src="/static/images/help/cog.png" />) in the upper right corner of the
-right sidebar and choose “Message formatting” from the drop-down menu.
+(GFM), To see the current subset, go to the cog (<img alt="cog"
+class="inline" src="/static/images/help/cog.png" />) in the upper
+right corner of the right sidebar and choose “Message formatting” from
+the drop-down menu.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
   **[Go back to “Table of contents”](#using-zulip)**
@@ -438,9 +441,10 @@ right sidebar and choose “Message formatting” from the drop-down menu.
 
  If you have messaged multiple individual users, their names will
  appear at the bottom of the right sidebar. In that case, a pale green
- circle (<span class="indicator green"></span>) means that some are recently but not currently active, while others are state unknown. A regular green circle
- (<span class="indicator green solid"></span>) means they
- are all at least recently active.
+ circle (<span class="indicator green"></span>) means that some are
+ recently but not currently active, while others are state unknown. A
+ regular green circle (<span class="indicator green solid"></span>)
+ means they are all at least recently active.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
   **[Go back to “Table of contents”](#using-zulip)**

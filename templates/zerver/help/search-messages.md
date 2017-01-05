@@ -27,7 +27,8 @@ top of your chat window.
 
 ### Filtering Messages
 
-You can search for messages that match certain criteria, like the author of the message, the stream they were sent in, etc.
+You can search for messages that match certain criteria, like the
+author of the message, the stream they were sent in, etc.
 
 * Filter your messages with so-called *operators* of the form `operator:operand`.
 
@@ -38,7 +39,8 @@ You can search for messages that match certain criteria, like the author of the 
 * You can combine the *operators* with the keyword search described formerly.
 
 * To see a list of search operators, go to the cog
-   (![cog](/static/images/help/cog.png)) in the upper right corner of the right sidebar and choose “Search help” from the drop-down menu:
+   (![cog](/static/images/help/cog.png)) in the upper right corner of
+   the right sidebar and choose “Search help” from the drop-down menu:
 
 <p align="center"><img src="/static/images/help/search-messages/search-help.png" width="400"></p>
 
@@ -47,8 +49,11 @@ Here are a few examples on how to use search operators:
 * Example 1<p align="top"><img src="/static/images/help/search-messages/search-example-1.png" width="600"></p>
 *Explanation*: Search for all messages in the stream *Scotland* that contain a link. <br/><br/>
 
-* Example 2<p align="top"><img src="/static/images/help/search-messages/search-example-2.png" width="600"></p>
-*Explanation*: Search for all messages from the user *iago@zulip.com* in the stream *errors* that contain the words *bug* and *code*. <br/><br/>
+* Example 2<p align="top"><img
+*src="/static/images/help/search-messages/search-example-2.png"
+*width="600"></p> Explanation*: Search for all messages from the user
+**iago@zulip.com* in the stream *errors* that contain the words *bug*
+*and *code*. <br/><br/>
 
 * Example 3<p align="top"><img src="/static/images/help/search-messages/search-example-3.png" width="600"></p>
 *Explanation*: Search for all messages that you starred.

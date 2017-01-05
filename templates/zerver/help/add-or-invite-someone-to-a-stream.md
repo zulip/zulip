@@ -1,8 +1,14 @@
 # Add or invite someone to a stream
 
-You might want to add a user to a particular stream that they haven't subscribed to yet so that they can send and read messages in that stream. In Zulip, you can add users to a public stream even if you aren't subscribed to that particular stream, but you must be subscribed to a private stream in order to invite a user to join that stream.
+You might want to add a user to a particular stream that they haven't
+subscribed to yet so that they can send and read messages in that
+stream. In Zulip, you can add users to a public stream even if you
+aren't subscribed to that particular stream, but you must be
+subscribed to a private stream in order to invite a user to join that
+stream.
 
-You can add users to streams, both public and private, that you're subscribed to.
+You can add users to streams, both public and private, that you're
+subscribed to.
 
 {!subscriptions.md!}
 {!filter-streams.md!}
