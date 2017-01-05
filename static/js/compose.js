@@ -837,8 +837,8 @@ function validate_stream_message() {
         }
     }
 
-    if (!validate_stream_message_mentions(stream_name) ||
-        !validate_stream_message_address_info(stream_name)) {
+    if (!validate_stream_message_address_info(stream_name) ||
+        !validate_stream_message_mentions(stream_name)) {
         return false;
     }
 
