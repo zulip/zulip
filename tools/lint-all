@@ -159,6 +159,7 @@ def build_custom_checkers(by_lang):
                     traceback.print_exc()
             if (max_length is not None and len(line) > max_length and
                 '# type' not in line and 'test' not in fn and 'example' not in fn and
+                not re.match("\[[a-z0-9_-]*\]: http.*", line) and
                     "#ignorelongline" not in line and 'migrations' not in fn):
                 print("Line too long (%s) at %s line %s: %s" % (len(line), fn, i+1, line_newline_stripped))
             lastLine = line
@@ -435,9 +436,20 @@ def build_custom_checkers(by_lang):
             if custom_check_file(fn, json_rules):
                 failed = True
 
+        markdown_docs_length_exclude = {
+            "contrib_bots/lib/ConverterBot/docs.md",
+            "docs/bots-guide.md",
+            "docs/dev-env-first-time-contributors.md",
+            "docs/integration-guide.md",
+            "docs/life-of-a-request.md",
+            "docs/logging.md",
+            "docs/migration-renumbering.md",
+            "docs/readme-symlink.md",
+            "README.md",
+        }
         for fn in by_lang['md']:
             max_length = None
-            if '/help/' in fn:
+            if fn not in markdown_docs_length_exclude:
                 max_length = 120
             if custom_check_file(fn, markdown_rules, max_length=max_length):
                 failed = True

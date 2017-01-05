@@ -111,7 +111,9 @@ git](https://github.com/zulip/tsearch_extras).
 
 Now continue with the [All Systems](#all-systems) instructions below.
 
-#### Using the [official Zulip PPA](https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+packages) (for 14.04 Trusty or 16.04 Xenial):
+#### Using the [official Zulip PPA][zulip-ppa] (for 14.04 Trusty or 16.04 Xenial):
+
+[zulip-ppa]: https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+packages
 
 Start by cloning this repository: `git clone
 https://github.com/zulip/zulip.git`

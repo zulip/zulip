@@ -116,7 +116,8 @@ won't find any information there. pg_ctlcluster runs the following
 command underneath when it actually goes to start Postgres:
 
 ```
-/usr/lib/postgresql/9.1/bin/pg_ctl start -D /var/lib/postgresql/9.1/main -s -o  '-c config_file="/etc/postgresql/9.1/main/postgresql.conf"'
+/usr/lib/postgresql/9.1/bin/pg_ctl start -D /var/lib/postgresql/9.1/main -s -o \
+    '-c config_file="/etc/postgresql/9.1/main/postgresql.conf"'
 ```
 
 Since pg_ctl doesn't redirect stdout or stderr, running the above can
