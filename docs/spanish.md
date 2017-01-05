@@ -12,7 +12,7 @@ Use formal Spanish for translation:
 
 * no slang or regional phrases that could be unclear or too informal
 
-* balance common verbs and nouns with specific IT-related translation of English terms - this can be tricky, try to check how other resources were translated (e.g. GMail, Microsoft websites, Facebook) to decide what wouldn't sound awkward / rude in Spanish
+* balance common verbs and nouns with specific IT-related translations of English terms - this can be tricky, try to check how other resources were translated (e.g. GMail, Microsoft websites, Facebook) to decide what wouldn't sound awkward / rude in Spanish
 
 
 Some terms are very tricky to translate, so be sure to communicate with other Spanish speakers in the community. It's all about making Zulip friendly and usable.
