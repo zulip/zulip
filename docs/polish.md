@@ -16,7 +16,7 @@ Use semi-formal Polish for translation, some specifics:
 
   * mindful usage of long words and phrases - it's sometimes hard to translate English to Polish concisely, be mindful of how it looks on the frontend after translating
 
-  * balance common verbs and nouns with specific IT-related translation of English terms - this can be tricky, try to check how other resources were translated (e.g. GMail, Microsoft websites, Facebook) to decide what wouldn't sound awkward in Polish
+  * balance common verbs and nouns with specific IT-related translations of English terms - this can be tricky, try to check how other resources were translated (e.g. GMail, Microsoft websites, Facebook) to decide what wouldn't sound awkward in Polish
 
 Some terms are very tricky to translate, so be sure to communicate with other Polish speakers in the community. It's all about making Zulip friendly and usable.
 
