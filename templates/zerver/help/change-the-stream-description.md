@@ -1,16 +1,20 @@
 # Change the stream description
 
-Note: Only administrators can change a stream's description.
+If you are an administrator of a Zulip organization, you can change the
+description of any stream in your organization.
 
 {!subscriptions.md!}
+{!filter-streams.md!}
 
-3. A window with your current stream subscriptions will appear.
-From the left, select the stream whose description you'd like
-to change.
+    !!! tip ""
+        {!all-streams.md!}
 
-    ![change description field](/static/images/help/change-stream-description.png)
+3. Click on the stream that you want to change the description of;
+{!stream-settings.md!}
 
-    Under **Administrator settings** on the right, there is a field
-with the current stream description.
-Change your stream's description in this field, and click
-**Change stream description** to save the change.
+{!stream-settings-scroll.md!} **Administrator settings** section. This section
+shows all stream settings that can be modified by an organization administrator.
+
+6. To make a public stream private, input the new stream description in the
+field to the left of the **Change stream description** button. Click the
+**Change stream description** button to save your changes.
