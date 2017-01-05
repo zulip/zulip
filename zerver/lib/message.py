@@ -309,18 +309,19 @@ def render_markdown(message, content, realm_id=None, realm_alert_words=None, mes
     else:
         message_user_ids = {u.id for u in message_users}
 
-    message.mentions_wildcard = False
-    message.is_me_message = False
-    message.mentions_user_ids = set()
-    message.alert_words = set()
-    message.links_for_preview = set()
+    if message is not None:
+        message.mentions_wildcard = False
+        message.is_me_message = False
+        message.mentions_user_ids = set()
+        message.alert_words = set()
+        message.links_for_preview = set()
 
-    if realm_id is None:
-        realm_id = message.sender.realm_id
-    if message.sending_client.name == "zephyr_mirror" and message.sender.realm.is_zephyr_mirror_realm:
-        # Use slightly customized Markdown processor for content
-        # delivered via zephyr_mirror
-        realm_id = bugdown.ZEPHYR_MIRROR_BUGDOWN_KEY
+        if realm_id is None:
+            realm_id = message.sender.realm_id
+        if message.sending_client.name == "zephyr_mirror" and message.sender.realm.is_zephyr_mirror_realm:
+            # Use slightly customized Markdown processor for content
+            # delivered via zephyr_mirror
+            realm_id = bugdown.ZEPHYR_MIRROR_BUGDOWN_KEY
 
     possible_words = set() # type: Set[Text]
     if realm_alert_words is not None:
@@ -332,14 +333,15 @@ def render_markdown(message, content, realm_id=None, realm_alert_words=None, mes
     rendered_content = bugdown.convert(content, realm_id=realm_id, message=message,
                                        possible_words=possible_words)
 
-    message.user_ids_with_alert_words = set()
+    if message is not None:
+        message.user_ids_with_alert_words = set()
 
-    if realm_alert_words is not None:
-        for user_id, words in realm_alert_words.items():
-            if user_id in message_user_ids:
-                if set(words).intersection(message.alert_words):
-                    message.user_ids_with_alert_words.add(user_id)
+        if realm_alert_words is not None:
+            for user_id, words in realm_alert_words.items():
+                if user_id in message_user_ids:
+                    if set(words).intersection(message.alert_words):
+                        message.user_ids_with_alert_words.add(user_id)
 
-    message.is_me_message = Message.is_status_message(content, rendered_content)
+        message.is_me_message = Message.is_status_message(content, rendered_content)
 
     return rendered_content
