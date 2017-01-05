@@ -9,6 +9,7 @@ from zerver.lib.actions import (
     do_set_realm_create_stream_by_admins_only,
     do_set_realm_name,
     do_set_realm_invite_by_admins_only,
+    do_set_realm_disallow_disposable_email_id,
     do_set_realm_add_emoji_by_admins_only,
     do_set_realm_invite_required,
     do_set_realm_message_editing,
@@ -29,6 +30,7 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
                  restricted_to_domain=REQ(validator=check_bool, default=None),
                  invite_required=REQ(validator=check_bool, default=None),
                  invite_by_admins_only=REQ(validator=check_bool, default=None),
+                 disallow_disposable_email_id=REQ(validator=check_bool, default=None),
                  create_stream_by_admins_only=REQ(validator=check_bool, default=None),
                  add_emoji_by_admins_only=REQ(validator=check_bool, default=None),
                  allow_message_editing=REQ(validator=check_bool, default=None),
@@ -36,7 +38,7 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
                  default_language=REQ(validator=check_string, default=None),
                  waiting_period_threshold=REQ(converter=to_non_negative_int, default=None),
                  authentication_methods=REQ(validator=check_dict([]), default=None)):
-    # type: (HttpRequest, UserProfile, Optional[str], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[int], Optional[str], Optional[int], Optional[dict]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Optional[str], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[int], Optional[str], Optional[int], Optional[dict]) -> HttpResponse
     # Validation for default_language
     if default_language is not None and default_language not in get_available_language_codes():
         raise JsonableError(_("Invalid language '%s'" % (default_language,)))
@@ -51,9 +53,9 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
     if invite_required is not None and realm.invite_required != invite_required:
         do_set_realm_invite_required(realm, invite_required)
         data['invite_required'] = invite_required
-    if invite_by_admins_only is not None and realm.invite_by_admins_only != invite_by_admins_only:
-        do_set_realm_invite_by_admins_only(realm, invite_by_admins_only)
-        data['invite_by_admins_only'] = invite_by_admins_only
+    if disallow_disposable_email_id is not None and realm.disallow_disposable_email_id != disallow_disposable_email_id:
+        do_set_realm_disallow_disposable_email_id(realm, disallow_disposable_email_id)
+        data['disallow_disposable_email_id'] = disallow_disposable_email_id
     if authentication_methods is not None and realm.authentication_methods != authentication_methods:
         if True not in list(authentication_methods.values()):
             return json_error(_("At least one authentication method must be enabled."),

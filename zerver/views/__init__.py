@@ -21,7 +21,8 @@ from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
     PreregistrationUser, get_client, UserActivity, \
     get_stream, UserPresence, get_recipient, name_changes_disabled, email_to_username, \
     completely_open, get_unique_open_realm, email_allowed_for_realm, \
-    get_realm_by_string_id, get_realm_by_email_domain, list_of_domains_for_realm
+    get_realm_by_string_id, get_realm_by_email_domain, list_of_domains_for_realm, \
+    email_to_domain,
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
     do_activate_user, do_create_user, do_create_realm, set_default_streams, \
     update_user_presence, do_events_register, \
@@ -34,6 +35,7 @@ from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, ToSForm, \
     CreateUserForm
 from zerver.lib.actions import is_inactive
+from zerver.lib.name_restrictions import is_disposable_domain
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from zerver.lib.validator import check_string, check_list
 from zerver.decorator import require_post, authenticated_json_post_view, \
@@ -128,6 +130,8 @@ def accounts_register(request):
                                   {"deactivated_domain_name": realm.name,
                                    "zulip_administrator": settings.ZULIP_ADMINISTRATOR})
 
+    if realm.disallow_disposable_email_id and is_disposable_domain(email_to_domain(email)):
+        return render_to_response("zerver/closed_realm.html", {"closed_domain_name": realm.name})
     try:
         if existing_user_profile is not None and existing_user_profile.is_mirror_dummy:
             # Mirror dummy users to be activated must be inactive
@@ -571,6 +575,7 @@ def home_real(request):
         realm_invite_by_admins_only = register_ret['realm_invite_by_admins_only'],
         realm_authentication_methods = register_ret['realm_authentication_methods'],
         realm_create_stream_by_admins_only = register_ret['realm_create_stream_by_admins_only'],
+        realm_disallow_disposable_email_id = register_ret['disallow_disposable_email_id'],
         realm_add_emoji_by_admins_only = register_ret['realm_add_emoji_by_admins_only'],
         realm_allow_message_editing = register_ret['realm_allow_message_editing'],
         realm_message_content_edit_limit_seconds = register_ret['realm_message_content_edit_limit_seconds'],

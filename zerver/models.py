@@ -116,6 +116,7 @@ class Realm(ModelReprMixin, models.Model):
     restricted_to_domain = models.BooleanField(default=False) # type: bool
     invite_required = models.BooleanField(default=True) # type: bool
     invite_by_admins_only = models.BooleanField(default=False) # type: bool
+    disallow_disposable_email_id = models.BooleanField(default=False) # type: bool
     create_stream_by_admins_only = models.BooleanField(default=False) # type: bool
     add_emoji_by_admins_only = models.BooleanField(default=False) # type: bool
     mandatory_topics = models.BooleanField(default=False) # type: bool
