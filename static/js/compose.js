@@ -771,21 +771,7 @@ function check_stream_for_send(stream_name, autosubscribe) {
     return result;
 }
 
-function validate_stream_message() {
-    var stream_name = exports.stream_name();
-    if (stream_name === "") {
-        compose_error(i18n.t("Please specify a stream"), $("#stream"));
-        return false;
-    }
-
-    if (page_params.mandatory_topics) {
-        var topic = exports.subject();
-        if (topic === "") {
-            compose_error(i18n.t("Please specify a topic"), $("#subject"));
-            return false;
-        }
-    }
-
+function validate_stream_message_mentions(stream_name) {
     var current_stream = stream_data.get_sub(stream_name);
     var stream_count = current_stream.subscribers.num_items();
 
@@ -808,6 +794,10 @@ function validate_stream_message() {
     // at this point, the user has either acknowledged the warning or removed @all / @everyone
     user_acknowledged_all_everyone = undefined;
 
+    return true;
+}
+
+function validate_stream_message_address_info(stream_name) {
     var response;
 
     if (!stream_data.is_subscribed(stream_name)) {
@@ -820,10 +810,6 @@ function validate_stream_message() {
             return false;
         case "error":
             return false;
-        case "subscribed":
-            // You're actually subscribed to the stream, but this
-            // browser window doesn't know it.
-            return true;
         case "not-subscribed":
             response = "<p>You're not subscribed to the stream <b>" +
                 Handlebars.Utils.escapeExpression(stream_name) + "</b>.</p>" +
@@ -831,6 +817,29 @@ function validate_stream_message() {
             compose_error(response, $('#stream'));
             return false;
         }
+    }
+
+    return true;
+}
+
+function validate_stream_message() {
+    var stream_name = exports.stream_name();
+    if (stream_name === "") {
+        compose_error(i18n.t("Please specify a stream"), $("#stream"));
+        return false;
+    }
+
+    if (page_params.mandatory_topics) {
+        var topic = exports.subject();
+        if (topic === "") {
+            compose_error(i18n.t("Please specify a topic"), $("#subject"));
+            return false;
+        }
+    }
+
+    if (!validate_stream_message_mentions(stream_name) ||
+        !validate_stream_message_address_info(stream_name)) {
+        return false;
     }
 
     return true;
