@@ -183,7 +183,7 @@ indenting them.
       Cheat Sheet for a complete list.
   * Example **warning**:
       ```
-      !!! warning ""
+      !!! warn ""
           If you attempt to input a nonexistent stream name, an error
           message will appear.
       ```
