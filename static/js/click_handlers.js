@@ -328,6 +328,16 @@ $(function () {
         e.preventDefault();
     });
 
+    $(".informational-overlays").click(function (e) {
+        if ($(e.target).is(".informational-overlays, [data-dismiss]")) {
+            $(this).removeClass("show");
+        }
+    });
+
+    $("body").on("click", "[data-overlay-trigger]", function () {
+        ui.show_info_overlay($(this).attr("data-overlay-trigger"));
+    });
+
     function handle_compose_click(e) {
         // Emoji clicks should be handled by their own click handler in popover.js
         if ($(e.target).is("#emoji_map, .emoji_popover, .emoji_popover.inner, img.emoji, .drag")) {

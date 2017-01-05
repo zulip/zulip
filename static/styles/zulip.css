@@ -1593,6 +1593,74 @@ blockquote p {
     z-index: 5;
 }
 
+.informational-overlays {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 102;
+
+    opacity: 0;
+    pointer-events: none;
+
+    background-color: rgba(0,0,0,0.8);
+    transition: all 0.3s ease;
+}
+
+.informational-overlays.show {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.informational-overlays .overlay-content {
+    width: 525px;
+    margin: 0 auto;
+    position: relative;
+    top: calc(50vh - 30vh - 90px);
+    border-radius: 4px;
+    overflow: hidden;
+
+    background-color: #fff;
+}
+
+.informational-overlays .overlay-tabs {
+    border-bottom: 1px solid #eee;
+}
+
+.informational-overlays .overlay-tabs .tab {
+    float: left;
+    width: calc(33.33% - 1px);
+
+    text-align: center;
+    padding: 15px 0px;
+    border-right: 1px solid #eee;
+
+    cursor: pointer;
+}
+
+.informational-overlays .overlay-tabs .tab.active {
+    background-color: #eee;
+}
+
+.informational-overlays .overlay-tabs .tab:last-of-type {
+    border-right: none;
+}
+
+.informational-overlays .overlay-modal .modal-header h3 {
+    font-weight: 300;
+}
+
+.informational-overlays .overlay-modal .modal-body th {
+    font-weight: 400;
+}
+
+.informational-overlays td.operator {
+    font-size: 0.9em;
+}
+
+
 nav .column-left {
     text-align: center;
 }

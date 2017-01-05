@@ -280,6 +280,28 @@ exports.lightbox = function (data) {
     popovers.hide_all();
 };
 
+exports.show_info_overlay = function (target) {
+    var el = {
+        tabs: $(".informational-overlays .tab"),
+        modals: $(".informational-overlays .overlay-modal"),
+        overlay: $(".informational-overlays"),
+    };
+
+    if (!el.overlay.hasClass("show")) {
+        $(el.overlay).addClass("show");
+    }
+
+    el.tabs.removeClass("active");
+    el.modals.hide();
+
+    $(".informational-overlays .tab[data-overlay-trigger='" + target + "']").addClass("active");
+    $("#" + target).show();
+};
+
+exports.hide_info_overlay = function () {
+    $(".informational-overlays").click();
+};
+
 exports.lightbox_photo = function (image, user) {
     // image should be an Image Object in JavaScript.
     var url = $(image).attr("src");
