@@ -9,8 +9,9 @@
     {% if emails %}
     <div id="results">
       <p>
-      We have checked the following email address(es). Any email address
-      not associated with Zulip was not sent the sign-in information.
+      Emails sent! You will only receive emails at addresses associated
+      with Zulip organizations. The addresses entered on the previous page
+      are listed below:
       </p>
 
       <ul>
@@ -22,8 +23,8 @@
     {% else %}
     <div class="find-team-form">
       <p>
-      We will send you an email with the sign-in information against
-      any email address associated with Zulip.
+      We will send you an email with the sign-in information for
+      any Zulip organization(s) associated with the addresses you enter below.
       </p>
       <form class="form-inline" id="find_my_team" name="email_form"
             action="{{ current_url() }}" method="post">

@@ -1,8 +1,14 @@
-Hello {{ user_profile.full_name }},
+Hi {{ user_profile.full_name }},
 
-You can log into Zulip using {{ user_profile.email }} on following organization:
+You can log in to your Zulip organization, {{ user_profile.realm.name }},
+at the following link:
+    {{ user_profile.realm.uri }}
 
-- {{ user_profile.realm.name }} through {{ user_profile.realm.uri }}
+The email address associated with your account is {{ user_profile.email }}.
 
-Cheers,
-The Zulip Team
+{% if verbose_support_offers %}
+If you have trouble signing in, please contact Zulip support by replying to
+this email.
+{% endif %}
+
+Thanks for using Zulip!
