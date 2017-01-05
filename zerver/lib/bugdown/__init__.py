@@ -132,9 +132,19 @@ def add_embed(root, link, extracted_data):
     container = markdown.util.etree.SubElement(root, "div")
     container.set("class", "message_embed")
 
+    img_link = extracted_data.get('image')
+    if img_link:
+        img = markdown.util.etree.SubElement(container, "a")
+        img.set("style", "background-image: url(" + img_link + ")")
+        img.set("href", img_link)
+        img.set("class", "message_embed_image")
+
+    data_container = markdown.util.etree.SubElement(container, "div")
+    data_container.set("class", "data-container")
+
     title = extracted_data.get('title')
     if title:
-        title_elm = markdown.util.etree.SubElement(container, "div")
+        title_elm = markdown.util.etree.SubElement(data_container, "div")
         title_elm.set("class", "message_embed_title")
         a = markdown.util.etree.SubElement(title_elm, "a")
         a.set("href", link)
@@ -144,15 +154,9 @@ def add_embed(root, link, extracted_data):
 
     description = extracted_data.get('description')
     if description:
-        description_elm = markdown.util.etree.SubElement(container, "div")
+        description_elm = markdown.util.etree.SubElement(data_container, "div")
         description_elm.set("class", "message_embed_description")
         description_elm.text = description
-
-    img_link = extracted_data.get('image')
-    if img_link:
-        img = markdown.util.etree.SubElement(container, "img")
-        img.set("src", img_link)
-        img.set("class", "message_embed_image")
 
 
 @cache_with_key(lambda tweet_id: tweet_id, cache_name="database", with_statsd_key="tweet_data")
