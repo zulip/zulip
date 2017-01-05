@@ -1,8 +1,8 @@
 .message_reactions .reaction_button {
     border-radius: 0.5em;
     display: none;
-    margin: 0.2em;
-    padding: 0.2em;
+    margin: 1px 0.1em;
+    padding: 2.5px;
     padding-left: 0.3em;
     padding-right: 0.3em;
     float: left;
@@ -17,6 +17,12 @@
 .reaction_button .message_reaction_count {
     font-size: 1.1em;
     color: #555;
+    margin-left: 3px;
+}
+
+.reaction_button i {
+    font-size: 1em;
+    margin-right: 3px;
 }
 
 .message_reactions:hover .reaction_button {
@@ -99,35 +105,37 @@
 }
 
 .message_reactions {
-    margin-left: -0.2em;
+    margin: 5px 0px;
     padding-left: 46px;
     overflow: auto;
 }
 
 .message_reaction {
     float: left;
-    margin: 0.2em;
-    padding: 0.4em;
-    padding-left: 0.3em;
-    padding-right: 0.3em;
+    margin: 0.15em;
+    padding: 0.2em 0.3em;
+    padding-left: 0.2em;
+    padding-right: 0.2em;
     cursor: pointer;
     background-color: #eef7fa;
-    border: thin solid #add8e6;
-    border-radius: 0.5em;
+    border: 1px solid #c7dfe6;
+    border-radius: 4px;
 }
 
 .message_reaction .emoji {
     float: left;
-    zoom: 0.80;
-    -moz-transform: scale(0.80);
+    top: 4px;
+    zoom: 0.70;
+    -moz-transform: scale(0.70);
     -moz-transform-origin: 0 0;
 }
 
 .message_reaction_count {
-    font-weight: bold;
+    position: relative;
+    top: 1px;
     font-size: 0.8em;
     float: left;
     color: #0088CC;
-    margin-left: 0.1em;
+    margin-left: 3px;
     line-height: 1em;
 }
