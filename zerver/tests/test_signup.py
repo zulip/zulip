@@ -711,7 +711,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
         self.assertTrue(user_profile.enable_digest_emails)
 
         # Enqueue a fake digest email.
-        send_digest_email(user_profile, "", "")
+        send_digest_email(user_profile, "", "", "")
         self.assertEqual(1, len(ScheduledJob.objects.filter(
                     type=ScheduledJob.EMAIL, filter_string__iexact=email)))
 
