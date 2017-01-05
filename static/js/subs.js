@@ -177,7 +177,7 @@ function update_stream_pin(sub, value) {
     sub.pin_to_top = value;
 }
 
-function update_stream_name(stream_id, old_name, new_name) {
+function update_stream_name(stream_id, new_name) {
     // Rename the stream internally.
     var sub = stream_data.rename_sub(stream_id, new_name);
 
@@ -195,9 +195,7 @@ function update_stream_name(stream_id, old_name, new_name) {
     sub_row.attr("data-stream-name", new_name);
 
     // Update the message feed.
-    _.each([home_msg_list, current_msg_list, message_list.all], function (list) {
-        list.change_display_recipient(old_name, new_name);
-    });
+    message_live_update.update_stream_name(stream_id, new_name);
 }
 
 function update_stream_description(sub, description) {
@@ -659,7 +657,7 @@ exports.update_subscription_properties = function (stream_name, property, value)
         update_stream_audible_notifications(sub, value);
         break;
     case 'name':
-        update_stream_name(sub.stream_id, sub.name, value);
+        update_stream_name(sub.stream_id, value);
         break;
     case 'description':
         update_stream_description(sub, value);

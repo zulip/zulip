@@ -555,13 +555,12 @@ exports.MessageList.prototype = {
         return item_list[cur_idx];
     },
 
-    change_display_recipient: function MessageList_change_display_recipient(old_recipient,
-                                                                            new_recipient) {
-        // This method only works for streams.
+    update_stream_name: function MessageList_update_stream_name(stream_id,
+                                                                new_stream_name) {
         _.each(this._items, function (item) {
-            if (item.display_recipient === old_recipient) {
-                item.display_recipient = new_recipient;
-                item.stream = new_recipient;
+            if (item.stream_id && (item.stream_id === stream_id)) {
+                item.display_recipient = new_stream_name;
+                item.stream = new_stream_name;
             }
         });
         this.view.rerender_the_whole_thing();
