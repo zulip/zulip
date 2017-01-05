@@ -394,40 +394,39 @@ input.recipient_box {
     color: #000;
 }
 
-.drag {
+.emoji_popover {
+    text-align: center;
+    font-size: 20px;
     display: none;
-    height: 18px;
-    width: 100%;
-    top: 23px;
-    position: relative;
-    cursor: ns-resize;
+    position: fixed;
+    left: 22%;
+    bottom: 40%;
+    width: 50%;
+    height: 35%;
+    background-color: #ffffff;
+    border: 1px solid #C0C0C0;
+    border-radius: 0.6em;
+    margin: auto;
 }
 
-.emoji_popover {
+#emoji_content {
     display: none;
-    position: relative;
-    margin-top: 10px;
-    bottom: 0px;
-    z-index: 1010;
-    width: 100%;
-    height: 140px;
-    padding: 1px;
-    text-align: center;
+    position: none;
+    width: auto;
+    height: 85%;
+    text-align: left;
     background-color: #ffffff;
-    border: 1px solid #ccc;
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    overflow: hidden;
     overflow-y: scroll;
 }
 
-.emoji_popover .emoji {
+#emoji_content .emoji {
     margin: 2px;
     box-sizing: border-box;
     cursor: pointer;
     display: inline-block;
 }
 
-.emoji_popover .emoji:active {
+#emoji_content .emoji:active {
     border-radius: 5px;
     border: 2px white solid;
 }

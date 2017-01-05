@@ -309,8 +309,8 @@ function topic_sidebar_popped() {
 
 exports.hide_emoji_map_popover = function () {
     if (emoji_map_is_open) {
+        $('#emoji_content').css('display', 'none');
         $('.emoji_popover').css('display', 'none');
-        $('.drag').css('display', 'none');
         emoji_map_is_open = false;
     }
 };
@@ -343,16 +343,14 @@ exports.hide_user_sidebar_popover = function () {
     }
 };
 
-function render_emoji_popover() {
+function render_emoji_content() {
     var content = templates.render('emoji_popover_content', {
         emoji_list: emoji.emojis_name_to_css_class
     });
 
-    $('.emoji_popover').append(content);
-
-    $('.drag').show();
-    $('.emoji_popover').css('display', 'inline-block');
-
+    $('#emoji_content').append(content);
+    $('#emoji_content').css('display', 'block');
+    $('.emoji_popover').css('display', 'block');
     $("#new_message_content").focus();
 
     emoji_map_is_open = true;
@@ -397,7 +395,7 @@ exports.register_click_handlers = function () {
           c: {
             y: null
           },
-          $popover: $(".emoji_popover"),
+          $popover: $("#emoji_content"),
           MIN_HEIGHT: 25,
           MAX_HEIGHT: 300
         };
@@ -428,11 +426,11 @@ exports.register_click_handlers = function () {
         });
     }());
 
-    $("body").on("click", ".emoji_popover", function (e) {
+    $("body").on("click", "#emoji_content", function (e) {
         e.stopPropagation();
     });
 
-    $(".emoji_popover").on("click", ".emoji", function (e) {
+    $("#emoji_content").on("click", ".emoji", function (e) {
         var emoji_choice = $(e.target).attr("title");
         var textarea = $("#new_message_content");
         textarea.val(textarea.val() + " " + emoji_choice);
@@ -449,7 +447,7 @@ exports.register_click_handlers = function () {
             return;
         }
         popovers.hide_all();
-        render_emoji_popover();
+        render_emoji_content();
     });
 
     $('body').on('click', '.user_popover .narrow_to_private_messages', function (e) {
