@@ -2316,7 +2316,7 @@ class FindMyTeamTestCase(ZulipTestCase):
         url = '/find-my-team/?emails=iago@zulip.com,cordelia@zulip.com'
         result = self.client_get(url)
         content = result.content.decode('utf8')
-        self.assertIn("We have checked the following email address(es)", content)
+        self.assertIn("Emails sent! You will only receive emails", content)
         self.assertIn("iago@zulip.com", content)
         self.assertIn("cordelia@zulip.com", content)
 
