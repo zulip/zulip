@@ -59,7 +59,7 @@ def send_find_my_team_emails(user_profile):
     html_content = loader.render_to_string(html_template, context)
     sender = settings.NOREPLY_EMAIL_ADDRESS
     recipients = [user_profile.email]
-    subject = "Your Zulip Team"
+    subject = loader.render_to_string('zerver/emails/find_team/find_team_email.subject').strip()
 
     send_mail(subject, text_content, sender, recipients, html_message=html_content)
 
