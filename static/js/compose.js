@@ -808,10 +808,6 @@ function validate_stream_message_address_info(stream_name) {
                 "<p>Manage your subscriptions <a href='#subscriptions'>on your Streams page</a>.</p>";
             compose_error(response, $('#stream'));
             return false;
-        case "subscribed":
-            // You're actually subscribed to the stream, but this
-            // browser window doesn't know it.
-            return true;
         case "error":
             return false;
         case "not-subscribed":
@@ -841,8 +837,8 @@ function validate_stream_message() {
         }
     }
 
-    if (!validate_stream_message_mentions(stream_name) ||
-        !validate_stream_message_address_info(stream_name)) {
+    if (!validate_stream_message_address_info(stream_name) ||
+        !validate_stream_message_mentions(stream_name)) {
         return false;
     }
 
