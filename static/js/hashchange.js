@@ -15,9 +15,17 @@ exports.encodeHashComponent = function (str) {
         .replace(/%/g,  '.');
 };
 
+exports.encode_operand = function (operator, operand) {
+    return exports.encodeHashComponent(operand);
+};
+
 function decodeHashComponent(str) {
     return decodeURIComponent(str.replace(/\./g, '%'));
 }
+
+exports.decode_operand = function (operator, operand) {
+    return decodeHashComponent(operand);
+};
 
 function set_hash(hash) {
     var location = window.location;
@@ -67,7 +75,7 @@ exports.operators_to_hash = function (operators) {
 
             var sign = elem.negated ? '-' : '';
             hash += '/' + sign + hashchange.encodeHashComponent(operator)
-                  + '/' + hashchange.encodeHashComponent(operand);
+                  + '/' + hashchange.encode_operand(operator, operand);
         });
     }
 
@@ -90,7 +98,7 @@ exports.parse_narrow = function (hash) {
         // but the user might write one.
         try {
             var operator = decodeHashComponent(hash[i]);
-            var operand  = decodeHashComponent(hash[i+1] || '');
+            var operand  = exports.decode_operand(operator, hash[i+1] || '');
             var negated = false;
             if (operator[0] === '-') {
                 negated = true;
