@@ -24,7 +24,6 @@ api/integrations/perforce/git_p4.py
 api/integrations/perforce/zulip_perforce_config.py
 api/integrations/svn/zulip_svn_config.py
 api/integrations/trac/zulip_trac_config.py
-api/integrations/asana/zulip_asana_mirror
 api/integrations/git/post-receive
 tools/deprecated/iframe-bot/show-last-messages
 tools/deprecated/inject-messages/inject-messages
