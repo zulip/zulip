@@ -436,7 +436,10 @@ def build_custom_checkers(by_lang):
                 failed = True
 
         for fn in by_lang['md']:
-            if custom_check_file(fn, markdown_rules):
+            max_length = None
+            if '/help/' in fn:
+                max_length = 120
+            if custom_check_file(fn, markdown_rules, max_length=max_length):
                 failed = True
 
         for fn in by_lang['txt'] + by_lang['text']:

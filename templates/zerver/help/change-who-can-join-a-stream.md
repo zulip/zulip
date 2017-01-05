@@ -12,7 +12,7 @@ remain subscribed to the stream after you change the stream's accesibility.
 {!filter-streams.md!}
 
     !!! tip ""
-        {!all-streams.md!}
+    {!all-streams.md!}
 
 4. Click on the stream that you want to make private; {!stream-settings.md!}
 
@@ -34,7 +34,7 @@ has been made private.
 {!filter-streams.md!}
 
     !!! tip ""
-        {!all-streams.md!}
+    {!all-streams.md!}
 
 4. Click on the stream that you want to make public; {!stream-settings.md!}
 

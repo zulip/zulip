@@ -7,7 +7,7 @@ description of any stream in your organization.
 {!filter-streams.md!}
 
     !!! tip ""
-        {!all-streams.md!}
+    {!all-streams.md!}
 
 3. Click on the stream that you want to change the description of;
 {!stream-settings.md!}

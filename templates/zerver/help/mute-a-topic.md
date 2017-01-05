@@ -34,7 +34,8 @@ wish to mute in the **Home** view.
 {!message-actions.md!}
 {!down-chevron.md!}
 
-2. Select the **Mute the topic (topic name)** option from the dropdown to mute the topic that the selected message belongs to.
+2. Select the **Mute the topic (topic name)** option from the dropdown
+   to mute the topic that the selected message belongs to.
 
 4. Upon clicking **Mute the topic (topic name)**, a tooltip titled **Topic Muted** will
  appear, and any messages belonging to the topic will disappear from your view,

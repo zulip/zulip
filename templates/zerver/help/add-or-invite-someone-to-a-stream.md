@@ -14,7 +14,7 @@ subscribed to.
 {!filter-streams.md!}
 
     !!! tip ""
-        {!all-streams.md!}
+    {!all-streams.md!}
 
 1. Click on the stream that you want to add someone to; {!stream-settings.md!}
 

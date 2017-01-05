@@ -7,7 +7,7 @@ streams by following the following steps.
 {!filter-streams.md!}
 
     !!! tip ""
-        {!all-streams.md!}
+    {!all-streams.md!}
 
 3. After selecting a stream, {!stream-settings.md!}
 

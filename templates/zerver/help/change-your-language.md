@@ -27,8 +27,12 @@ translation support. Select your desired language from the window.
 displayed in the language of your choice after you reload the page.
 
 !!! tip ""
-    You can help translate parts of Zulip by signing up for an account at **[Transifex](https://www.transifex.com/zulip/zulip/)**.
+    You can help translate parts of Zulip by signing up for an account
+    at **[Transifex](https://www.transifex.com/zulip/zulip/)**.
 
 !!! tip ""
+
     If your entire organization speaks a language other than English, an administrator can
-    [set the default language for new users joining the organization](change-the-default-language-for-your-organization).
+    [set the default language for new users joining the organization][change-org-lang]
+
+[change-org-lang]: change-the-default-language-for-your-organization

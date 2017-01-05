@@ -1,10 +1,11 @@
 # Unsubscribe from a stream
 
-If you want to stop receiving messages from a particular stream in Zulip, you can choose to unsubscribe from that stream.
+If you want to stop receiving messages from a particular stream in
+Zulip, you can choose to unsubscribe from that stream.
 
-There are two major ways to unsubscribe from a stream: unsubscribing from a
-stream through the [Subscriptions](/#subscriptions) page and unsubscribing from
-a stream through the stream sidebar.
+There are two major ways to unsubscribe from a stream: unsubscribing
+from a stream through the [Subscriptions](/#subscriptions) page and
+unsubscribing from a stream through the stream sidebar.
 
 ## Unsubscribing from a stream through the Subscriptions page
 
@@ -20,7 +21,8 @@ confirming the success of your unsubscribing from the stream.
 
 ## Unsubscribing from a stream through the stream sidebar
 
-If you want to quickly unsubscribe from a single stream, you can do so through the stream sidebar.
+If you want to quickly unsubscribe from a single stream, you can do so
+through the stream sidebar.
 
 {!stream-actions.md!}
 

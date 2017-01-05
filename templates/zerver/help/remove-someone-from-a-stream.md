@@ -7,7 +7,7 @@ manage your Zulip team.
 {!filter-streams.md!}
 
     !!! tip ""
-        {!all-streams.md!}
+    {!all-streams.md!}
 
 {!stream-settings-scroll.md!} **Stream membership** section. This section
 shows all users that are subscribed to a particular stream.
