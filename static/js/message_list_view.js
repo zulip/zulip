@@ -77,6 +77,12 @@ function populate_group_from_message_container(group, message_container) {
         group.match_subject = message_container.msg.match_subject;
         group.stream_url = message_container.stream_url;
         group.topic_url = message_container.topic_url;
+        var sub = stream_data.get_sub(message_container.msg.stream);
+        if (sub === undefined) {
+            group.stream_id = "-1";
+        } else {
+            group.stream_id = sub.stream_id;
+        }
     } else if (group.is_private) {
         group.pm_with_url = message_container.pm_with_url;
         group.display_reply_to = message_container.msg.display_reply_to;
