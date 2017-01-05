@@ -255,10 +255,8 @@ $(function () {
         }
 
         if ($(e.target).is(".exit, .exit-sign, #subscription_overlay, #subscription_overlay > .flex")) {
-            $("#subscription_overlay").fadeOut(500);
-            subs.remove_miscategorized_streams();
-
             hashchange.exit_settings();
+            subs.remove_miscategorized_streams();
         }
     });
     // HOME
@@ -297,9 +295,10 @@ $(function () {
     popovers.register_click_handlers();
     notifications.register_click_handlers();
 
-    $('.logout_button').click(function () {
+    $('body').on('click', '.logout_button', function () {
         $('#logout_form').submit();
     });
+
     $('.restart_get_events_button').click(function () {
         server_events.restart_get_events({dont_block: true});
     });
@@ -487,12 +486,68 @@ $(function () {
         }
     });
 
+    (function () {
+        $("#settings_overlay_container .sidebar").on("click", "li[data-section]", function () {
+            var $this = $(this);
+
+            $("#settings_overlay_container .sidebar li").removeClass("active no-border");
+            $this.addClass("active");
+            $this.prev().addClass("no-border");
+        });
+    }());
+
     // Workaround for Bootstrap issue #5900, which basically makes dropdowns
     // unclickable on mobile devices.
     // https://github.com/twitter/bootstrap/issues/5900
     $('a.dropdown-toggle, .dropdown-menu a').on('touchstart', function (e) {
         e.stopPropagation();
     });
+
+    (function () {
+        $("#settings_overlay_container .sidebar").on("click", "li[data-section]", function () {
+            var $this = $(this);
+            var section = $this.data("section");
+            var sel = "[data-name='" + section + "']";
+
+            $("#settings_overlay_container .sidebar li").removeClass("active no-border");
+            $this.addClass("active");
+            $this.prev().addClass("no-border");
+
+            if ($this.hasClass("admin")) {
+                window.location.hash = "administration/" + section;
+            } else {
+                window.location.hash = "settings/" + section;
+            }
+
+            $(".settings-section, .settings-wrapper").removeClass("show");
+            $(".settings-section" + sel + ", .settings-wrapper" + sel).addClass("show");
+        });
+
+        $("#settings_overlay_container").on("click", function (e) {
+            var $target = $(e.target);
+            if ($target.is(".exit")) {
+                hashchange.exit_settings();
+            }
+        });
+
+        (function () {
+            var $parent = $("#settings_overlay_container .sidebar .tab-switcher");
+            var $tabs = $parent.find(".ind-tab");
+            $tabs.click(function () {
+                $tabs.removeClass("selected");
+                $(this).addClass("selected");
+
+                $(".sidebar li").hide();
+                if ($(this).data("name") === "admin") {
+                    $("li.admin").show();
+                    $("li[data-section='organization-settings']").click();
+                } else {
+                    $("li:not(.admin)").show();
+                    $("li[data-section='your-account']").click();
+                }
+            });
+        }());
+    }());
 });
 
 return exports;

@@ -632,7 +632,7 @@ exports.onlaunchtrigger = function () {
 
 exports.launch = function () {
     exports.setup_page(function () {
-        $("#subscription_overlay").fadeIn(300);
+        $("#subscription_overlay").addClass("show");
     });
 };
 
