@@ -113,6 +113,10 @@ li {
     font-size: 0.9rem;
 }
 
+.help-inline.text-error {
+    color: #b94a48;
+}
+
 #company-email {
     display: none;
 }

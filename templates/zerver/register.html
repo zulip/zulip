@@ -41,7 +41,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                     maxlength="100" />
                 {% if form.full_name.errors %}
                     {% for error in form.full_name.errors %}
-                        <div class="alert alert-error">{{ error }}</div>
+                        <div class="help-inline text-error">{{ error }}</div>
                     {% endfor %}
                 {% endif %}
             {% endif %}
@@ -63,7 +63,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             {% endif %}
             {% if form.password.errors %}
             {% for error in form.password.errors %}
-            <div class="alert alert-error">{{ error }}</div>
+            <div class="help-inline text-error">{{ error }}</div>
             {% endfor %}
             {% endif %}
             <br />
@@ -82,7 +82,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 name="realm_name" maxlength="100" />
                 {% if form.realm_name.errors %}
                     {% for error in form.realm_name.errors %}
-                        <div class="alert alert-error">{{ error }}</div>
+                        <div class="help-inline text-error">{{ error }}</div>
                     {% endfor %}
                 {% endif %}
             <div class="help-box">
@@ -107,7 +107,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 {% endif %}
                     {% if form.realm_subdomain.errors %}
                         {% for error in form.realm_subdomain.errors %}
-                            <div class="alert alert-error">{{ error }}</div>
+                            <div class="help-inline text-error">{{ error }}</div>
                         {% endfor %}
                     {% endif %}
             </div>
@@ -176,7 +176,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 </label>
                 {% if form.terms.errors %}
                     {% for error in form.terms.errors %}
-                        <div class="alert alert-error">{{ error }}</div>
+                        <div class="help-inline text-error">{{ error }}</div>
                     {% endfor %}
                 {% endif %}
             </div>
