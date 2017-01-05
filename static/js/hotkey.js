@@ -205,11 +205,8 @@ function process_hotkey(e) {
         } else if ($("#subscription_overlay").is(":visible")) {
             subs.close();
             return true;
-        } else if ($('#markdown-help').hasClass('in') ||
-            $('#keyboard-shortcuts').hasClass('in') ||
-            $('#search-operators').hasClass('in') ||
-            $('#invite-user').hasClass('in')) {
-            return false;
+        } else if ($(".informational-overlays").hasClass("show")) {
+            ui.hide_info_overlay();
         }
     }
 
@@ -322,7 +319,7 @@ function process_hotkey(e) {
             search.initiate_search();
             return true;
         case 'show_shortcuts': // Show keyboard shortcuts page
-            $('#keyboard-shortcuts').modal('show');
+            ui.show_info_overlay("keyboard-shortcuts");
             return true;
         case 'stream_cycle_backward':
             navigate.cycle_stream('backward');
