@@ -53,7 +53,7 @@ except ImportError:
 def send_find_my_team_emails(user_profile):
     # type: (UserProfile) -> None
     text_template = 'zerver/emails/find_team/find_team_email.txt'
-    html_template = 'zerver/emails/find_team/find_team_email_html.txt'
+    html_template = 'zerver/emails/find_team/find_team_email.html'
     context = {'user_profile': user_profile}
     text_content = loader.render_to_string(text_template, context)
     html_content = loader.render_to_string(html_template, context)
