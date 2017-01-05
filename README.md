@@ -192,8 +192,10 @@ mind:
   Browsing this list can be a great way to find feature ideas to
   implement that other Zulip users are excited about.
 
-* [2016 roadmap milestone](http://zulip.readthedocs.io/en/latest/roadmap.html): The
-  projects that are [priorities for the Zulip project](https://zulip.readthedocs.io/en/latest/roadmap.html).  These are great projects if you're looking to make an impact.
+* [2016 roadmap milestone](http://zulip.readthedocs.io/en/latest/roadmap.html):
+  The projects that are
+  [priorities for the Zulip project](https://zulip.readthedocs.io/en/latest/roadmap.html).
+  These are great projects if you're looking to make an impact.
 
 Another way to find issues in Zulip is to take advantage of our
 "area:<foo>" convention in separating out issues.  We partition all of

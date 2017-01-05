@@ -320,7 +320,11 @@ Now run these commands:
 ./tools/install-mypy
 ./tools/setup/emoji/build_emoji
 ./scripts/setup/generate_secrets.py --development
-if [ $(uname) = "OpenBSD" ]; then sudo cp ./puppet/zulip/files/postgresql/zulip_english.stop /var/postgresql/tsearch_data/; else sudo cp ./puppet/zulip/files/postgresql/zulip_english.stop /usr/share/postgresql/9.*/tsearch_data/; fi
+if [ $(uname) = "OpenBSD" ]; then
+    sudo cp ./puppet/zulip/files/postgresql/zulip_english.stop /var/postgresql/tsearch_data/
+else
+    sudo cp ./puppet/zulip/files/postgresql/zulip_english.stop /usr/share/postgresql/9.*/tsearch_data/
+fi
 ./scripts/setup/configure-rabbitmq
 ./tools/setup/postgres-init-dev-db
 ./tools/do-destroy-rebuild-database

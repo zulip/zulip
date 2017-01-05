@@ -42,41 +42,59 @@ It presumes that you already have a fully implemented `<my-bot>.py` bot and now 
 
 3. Register a new bot on your Zulip server's web interface.
 
-    * Navigate to *Settings* -> *Your Bots* -> *Add a New Bot*, fill out the form and click on *Create Bot*.
+    * Navigate to *Settings* -> *Your Bots* -> *Add a New Bot*, fill
+      out the form and click on *Create Bot*.
     * A new bot should appear in the *Your Bots* panel.
 
 4. Add the bot's configuration file on your Zulip server.
 
-    * In the *Your Bots* panel, click on the green icon to download its configuration file *.zuliprc* (the structure of this file is explained [here](#configuration-file).
+    * In the *Your Bots* panel, click on the green icon to download
+      its configuration file *.zuliprc* (the structure of this file is
+      explained [here](#configuration-file).
     * Copy the file to a destination of your choice on your Zulip server, e.g. to `~/.zuliprc` or `~/zuliprc-test`.
 
 5. Subscribe the bot to the streams that the bot needs to read messages from or write messages to.
 
-    * To subscribe your bot to streams, navigate to *Manage Streams*. Select a stream and add your bot by its email address (the address you assigned in step 3).
+    * To subscribe your bot to streams, navigate to *Manage
+      Streams*. Select a stream and add your bot by its email address
+      (the address you assigned in step 3).
     * Now, the bot will do its job on the streams you subscribed it to.
 
 6. Run the bot.
 
     * On your Zulip server (and outside the Vagrant environment), navigate to `~/zulip/contrib_bots/`
-    * Run `python run.py ~/zulip/contrib_bots/lib/<my-bot>.py --config-file ~/.zuliprc`. The `~/` before `.zuliprc` should point to the directory containing the file (in this case, it is the home directory).
-    * Check the output of the command. It should start with the text the `usage` function returns, followed by logging output similar to this:
-    ```
-    INFO:root:starting message handling...
-    INFO:requests.packages.urllib3.connectionpool:Starting new HTTP connection (1): localhost
-    ```
+    * Run `python run.py ~/zulip/contrib_bots/lib/<my-bot>.py
+      --config-file ~/.zuliprc`. The `~/` before `.zuliprc` should
+      point to the directory containing the file (in this case, it is
+      the home directory).
+    * Check the output of the command. It should start with the text
+      the `usage` function returns, followed by logging output similar
+      to this:
+
+      ```
+      INFO:root:starting message handling...
+      INFO:requests.packages.urllib3.connectionpool:Starting new HTTP connection (1): localhost
+      ```
+
     * Congrats! Now, your bot should be ready to test on the streams you've subscribed it to.
 
 ### Test the `followup.py` bot
+
 1. Do the previous steps for the `followup.py` bot.
 2. Create the *followup* stream.
-3. Subscribe the bot to the newly created *followup* stream and a stream you want to use it from, e.g. *social*.
-4. Send a message to the stream you've subscribed the bot to (other than *followup*). If everything works, a copy of the message should now pop up in the *followup* stream.
+3. Subscribe the bot to the newly created *followup* stream and a
+   stream you want to use it from, e.g. *social*.
+4. Send a message to the stream you've subscribed the bot to (other
+   than *followup*). If everything works, a copy of the message should
+   now pop up in the *followup* stream.
 
 ## How to develop a bot
 
-The tutorial below explains the structure of a bot `<my-bot>.py`. You can use this as boilerplate code for developing your own bot.
+The tutorial below explains the structure of a bot `<my-bot>.py`. You
+can use this as boilerplate code for developing your own bot.
 
 Every bot is built upon this structure:
+
 ```
 class MyBotHandler(object):
     '''
@@ -94,7 +112,11 @@ class MyBotHandler(object):
 
 handler_class = MyBotHandler
 ```
-* The class name (in this case *MyBotHandler*) can be defined by you and should match the name of your bot. To register your bot's class, adjust the last line `handler_class = MyBotHandler` to match your class name.
+
+* The class name (in this case *MyBotHandler*) can be defined by you
+  and should match the name of your bot. To register your bot's class,
+  adjust the last line `handler_class = MyBotHandler` to match your
+  class name.
 
 * Every bot needs to implement the functions
     * `usage(self)`
@@ -104,7 +126,9 @@ handler_class = MyBotHandler
 * These functions are documented in the [next section](#bot-api).
 
 ## Bot API
-This section documents the functions every bot needs to implement and the structure of the bot's config file.
+
+This section documents the functions every bot needs to implement and
+the structure of the bot's config file.
 
 ### usage
 *usage(self)*
@@ -212,13 +236,17 @@ None.
  site=<dev-url>
  ```
 
-* key - the API key you created for the bot; this is how Zulip knows the request is from an authorized user.
+* key - the API key you created for the bot; this is how Zulip knows
+  the request is from an authorized user.
 
 * email - the email address of the bot, e.g. `some-bot@zulip.com`
 
-* site - your development environment URL; if you are working on a development environment hosted on your computer, use `localhost:9991`
+* site - your development environment URL; if you are working on a
+  development environment hosted on your computer, use
+  `localhost:9991`
 
 ## Common problems
+
 * I modified my bot's code, yet the changes don't seem to have an effect.
     * Ensure that you restarted the `run.py` script.
 

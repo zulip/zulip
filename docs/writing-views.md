@@ -194,7 +194,9 @@ REQ also helps us with request variable validation. For example:
   integer (`converter` differs from `validator` in that it does not
   automatically marshall the input from JSON).
 
-See [zerver/lib/validator.py](https://github.com/zulip/zulip/blob/master/zerver/lib/validator.py) for more validators and their documentation.
+See
+[zerver/lib/validator.py](https://github.com/zulip/zulip/blob/master/zerver/lib/validator.py)
+for more validators and their documentation.
 
 ### Deciding which HTTP verb to use
 
