@@ -189,6 +189,9 @@ class MessageDict(object):
             avatar_url        = avatar_url,
             client            = sending_client_name)
 
+        if obj['type'] == 'stream':
+            obj['stream_id'] = recipient_type_id
+
         obj['subject_links'] = bugdown.subject_links(sender_realm_id, subject)
 
         if last_edit_time != None:
