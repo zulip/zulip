@@ -35,11 +35,14 @@ def api_solano_webhook(request, user_profile, client,
 
     good_status = ['passed']
     bad_status  = ['failed', 'error']
+    neutral_status = ['running']
     emoji = ''
     if status in good_status:
         emoji = ':thumbsup:'
     elif status in bad_status:
         emoji = ':thumbsdown:'
+    elif status in neutral_status:
+        emoji = ':arrows_counterclockwise:'
     else:
         emoji = "(No emoji specified for status '%s'.)" % (status)
 
