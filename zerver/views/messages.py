@@ -264,15 +264,20 @@ class NarrowBuilder(object):
 
     def by_search(self, query, operand, maybe_negate):
         # type: (Query, str, ConditionTransform) -> Query
+        rendered_operand = render_markdown(None, operand)
+        for remove in ('<p>', '</p>', '<br>'):
+            rendered_operand = rendered_operand.replace(remove, '')
         if settings.USING_PGROONGA:
-            return self._by_search_pgroonga(query, operand, maybe_negate)
+            return self._by_search_pgroonga(query, rendered_operand, maybe_negate)
         else:
-            return self._by_search_tsearch(query, operand, maybe_negate)
+            return self._by_search_tsearch(query, rendered_operand, maybe_negate)
 
     def _by_search_pgroonga(self, query, operand, maybe_negate):
-        # type: (Query, str, ConditionTransform) -> Query
+        # type: (Query, Text, ConditionTransform) -> Query
         match_positions_byte = func.pgroonga.match_positions_byte
         query_extract_keywords = func.pgroonga.query_extract_keywords
+        for escape in '\\\"\'()<>':
+            operand = operand.replace(escape, '\\' + escape)
         keywords = query_extract_keywords(operand)
         query = query.column(match_positions_byte(column("rendered_content"),
                                                   keywords).label("content_matches"))
@@ -282,7 +287,7 @@ class NarrowBuilder(object):
         return query.where(maybe_negate(condition))
 
     def _by_search_tsearch(self, query, operand, maybe_negate):
-        # type: (Query, str, ConditionTransform) -> Query
+        # type: (Query, Text, ConditionTransform) -> Query
         tsquery = func.plainto_tsquery(literal("zulip.english_us_search"), literal(operand))
         ts_locs_array = func.ts_match_locs_array
         query = query.column(ts_locs_array(literal("zulip.english_us_search"),
@@ -308,6 +313,23 @@ class NarrowBuilder(object):
         cond = column("search_tsvector").op("@@")(tsquery)
         return query.where(maybe_negate(cond))
 
+def highlight_match_tag_pos(text, pos, loc, tag_open, tag_close):
+    # type: (AnyStr, int, Tuple[int, int], AnyStr, AnyStr) -> Tuple[int, int]
+
+    (offset, length) = loc
+
+    # When the offset is inside a tag, we want to move it back, so that it
+    # highlights the whole tag, not just some attribute of it
+    last_tag_open = text.rfind(tag_open, pos, offset+length) # + length so we detect tags inside the match
+    last_tag_close = text.rfind(tag_close, pos, offset)
+    if last_tag_close < last_tag_open:
+        previous_tag_open = text.rfind(tag_open, pos, offset + 1)
+        next_tag_close = text.find(tag_close, offset+length-1)
+        offset = previous_tag_open
+        length = next_tag_close - previous_tag_open + 1
+
+    return (offset, length)
+
 # Apparently, the offsets we get from tsearch_extras are counted in
 # unicode characters, not in bytes, so we do our processing with text,
 # not bytes.
@@ -319,7 +341,9 @@ def highlight_string_text_offsets(text, locs):
     pos = 0
     result = u''
     for loc in locs:
-        (offset, length) = loc
+        (offset, length) = highlight_match_tag_pos(string, pos, loc, u'<', u'>')
+        if offset < pos:
+            continue
         result += string[pos:offset]
         result += highlight_start
         result += string[offset:offset + length]
@@ -336,7 +360,9 @@ def highlight_string_bytes_offsets(text, locs):
     pos = 0
     result = b''
     for loc in locs:
-        (offset, length) = loc
+        (offset, length) = highlight_match_tag_pos(string, pos, loc, b'<', b'>')
+        if offset < pos:
+            continue
         result += string[pos:offset]
         result += highlight_start
         result += string[offset:offset + length]

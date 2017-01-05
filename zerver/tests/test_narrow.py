@@ -34,6 +34,7 @@ from zerver.lib.test_classes import (
 from zerver.views.messages import (
     exclude_muting_conditions,
     get_old_messages_backend, ok_to_include_history,
+    highlight_match_tag_pos, highlight_string_text_offsets,
     NarrowBuilder, BadNarrowOperator, Query
 )
 
@@ -413,6 +414,33 @@ class GetOldMessagesTest(ZulipTestCase):
 
         return query_ids
 
+    def test_tag_highlighting(self):
+        # type: () -> None
+        """
+        Test if tags are highlighted properly
+        """
+
+        def run_highlight_match_tag_pos(string, match):
+            # type: (Text, Text) -> Tuple[int, int]
+            return highlight_match_tag_pos(string, 0, (string.find(match), len(match)), '<', '>')
+        def run_highlight_string_text_offsets(string, match):
+            # type: (Text, Text) -> Text
+            return highlight_string_text_offsets(string, [(string.find(match), len(match))])
+
+        self.assertEqual(run_highlight_match_tag_pos('text text <tag> text', 'tag'), (10, 5))
+        self.assertEqual(run_highlight_match_tag_pos('text <tag attr> text', 'attr'), (5, 10))
+        self.assertEqual(run_highlight_match_tag_pos('</tag>', 'tag'), (0, 6))
+        self.assertEqual(run_highlight_match_tag_pos('1<tag>', 'tag'), (1, 5))
+        self.assertEqual(run_highlight_match_tag_pos('<tag>text</tag>', 'text'), (5, 4))
+        self.assertEqual(run_highlight_string_text_offsets('<tag>text</tag>', 'text'), '<tag><span class="highlight">text</span></tag>')
+        self.assertEqual(run_highlight_string_text_offsets('stuff <tag attr="text"></tag> stuff', 'text'), 'stuff <span class="highlight"><tag attr="text"></span></tag> stuff')
+        self.assertEqual(run_highlight_string_text_offsets('<tag attr="text"></tag>', 'text'), '<span class="highlight"><tag attr="text"></span></tag>')
+        # Note: above 2 might not be really correct HTML, but detecting opening/closing tags is going to be too complicated for what it's worth
+        self.assertEqual(run_highlight_string_text_offsets('<tag>', 'tag'), '<span class="highlight"><tag></span>')
+        self.assertEqual(run_highlight_string_text_offsets('stuff <tag></tag> stuff', 'tag></tag>'), 'stuff <span class="highlight"><tag></tag></span> stuff')
+        self.assertEqual(run_highlight_string_text_offsets('stuff <tag></tag> stuff', '<tag></tag'), 'stuff <span class="highlight"><tag></tag></span> stuff')
+        self.assertEqual(run_highlight_string_text_offsets('stuff <tag></tag> stuff', '></'), 'stuff <span class="highlight"><tag></tag></span> stuff')
+
     def test_successful_get_old_messages_reaction(self):
         # type: () -> None
         """
@@ -644,6 +672,10 @@ class GetOldMessagesTest(ZulipTestCase):
     @override_settings(USING_PGROONGA=False)
     def test_get_old_messages_with_search(self):
         # type: () -> None
+        def emoji_img(name, url):
+            # type: (Text, Text) -> Text
+            return '<img alt="%s" class="emoji" src="%s" title="%s">' % (name, url, name)
+
         self.login("cordelia@zulip.com")
 
         messages_to_search = [
@@ -652,6 +684,7 @@ class GetOldMessagesTest(ZulipTestCase):
             ('meetings', 'discuss lunch after lunch'),
             ('meetings', 'please bring your laptops to take notes'),
             ('dinner', 'Anybody staying late tonight?'),
+            ('meetings', 'Probably going to the :office: soon, who is there?'),
         ]
 
         for topic, content in messages_to_search:
@@ -694,9 +727,31 @@ class GetOldMessagesTest(ZulipTestCase):
             meeting_message['match_content'],
             '<p>I am hungry!</p>')
 
+        narrow_emoji = [
+            dict(operator='sender', operand='cordelia@zulip.com'),
+            dict(operator='search', operand=':office:'),
+        ]
+        result_emoji = self.get_and_check_messages(dict(
+            narrow=ujson.dumps(narrow_emoji),
+            anchor=0,
+            num_after=10,
+        )) # type: Dict[str, Dict]
+        self.assertEqual(len(result_emoji['messages']), 1)
+        emoji_message = result_emoji['messages'][0]
+        self.assertEqual(
+            emoji_message['match_subject'],
+            'meetings')
+        self.assertEqual(
+            emoji_message['match_content'],
+            '<p>Probably going to the <span class="highlight">%s</span> soon, who is there?</p>' % emoji_img(':office:', '/static/generated/emoji/images/emoji/office.png'))
+
     @override_settings(USING_PGROONGA=True)
     def test_get_old_messages_with_search_pgroonga(self):
         # type: () -> None
+        def emoji_img(name, url):
+            # type: (Text, Text) -> Text
+            return '<img alt="%s" class="emoji" src="%s" title="%s">' % (name, url, name)
+
         self.login("cordelia@zulip.com")
 
         messages_to_search = [
@@ -705,6 +760,7 @@ class GetOldMessagesTest(ZulipTestCase):
             (u'日本語', u'昨日、日本のお菓子を送りました。'),
             ('english', u'I want to go to 日本!'),
             ('english', 'Can you speak Japanese?'),
+            ('emoji', 'Hey, this :smiley: is an emoji! And they are searchable too!'),
         ]
 
         for topic, content in messages_to_search:
@@ -753,6 +809,24 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(
             english_message['match_content'],
             u'<p>I want to go to <span class="highlight">日本</span>!</p>')
+
+        narrow_emoji = [
+            dict(operator='sender', operand='cordelia@zulip.com'),
+            dict(operator='search', operand=':smiley:'),
+        ]
+        result_emoji = self.get_and_check_messages(dict(
+            narrow=ujson.dumps(narrow_emoji),
+            anchor=0,
+            num_after=10,
+        )) # type: Dict[str, Dict]
+        self.assertEqual(len(result_emoji['messages']), 1)
+        emoji_message = result_emoji['messages'][0]
+        self.assertEqual(
+            emoji_message['match_subject'],
+            'emoji')
+        self.assertEqual(
+            emoji_message['match_content'],
+            '<p>Hey, this <span class="highlight">%s</span> is an emoji! And they are searchable too!</p>' % emoji_img(':smiley:', '/static/generated/emoji/images/emoji/smiley.png'))
 
     def test_get_old_messages_with_only_searching_anchor(self):
         # type: () -> None
