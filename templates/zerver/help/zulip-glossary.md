@@ -6,7 +6,7 @@ Several terms will be used in Zulip conversation. Here are some common terms tha
 ### bot
 Zulip **bots** are often used for integrations to send automated messages to users and can do everything a normal user in the realm can do with a few exceptions (e.g. a bot cannot login to the web application or create other bots).
 ### chevron
-A **chevron** is a  small downward-facing arrow (![chevron](/static/images/help/chevron.png)) icon next to a message’s timestamp that appears upon hover, offering contextual options when clicked on, such as **View Source**, **Reply**, **Collapse**, **Mute [this topic]**, and **Link to this conversation**.
+A **chevron** is a  small downward-facing arrow (![chevron](/static/images/help/down_chevron.png)) icon next to a message’s timestamp that appears upon hover, offering contextual options when clicked on, such as **View Source**, **Reply**, **Collapse**, **Mute [this topic]**, and **Link to this conversation**.
 ### compose box
 The **compose box** is the area where you input the content of your message when you send stream or private messages. The compose box features several features that can help you compose your message, such as the **Emojis**, **Attach files**, **Formatting**, and **Preview** features.
 ### customization
