@@ -8,11 +8,33 @@ browse the list of streams that they subscribe to.
 
 ## Browse streams
 
-{!subscriptions.md!}
+1. Click the cog (![cog](/static/images/help/cog.png)) icon next to **Streams**
+in the left sidebar. A tooltip labeled **Subscribe, add, or configure streams**
+will appear upon hovering above the cog.
 
-    Here, you can explore all the public streams in the organization and
-search for specific streams by entering the stream name in the
-**Filter by stream name** search box.
+    ![Streams cog and tooltip](/static/images/help/streams-1.png)
+
+2. After clicking the cog (![cog](/static/images/help/cog.png)) icon, the
+[Subscriptions](/#subscriptions) page will now appear, showing all streams that
+you've subscribed to by default.
+
+    ![[Subscriptions page](/static/images/help/streams-overview.png)
+
+Here, you can explore all the public streams in the organization. You can also
+[create a new stream](create-a-stream) by clicking the plus
+(![plus](/static/images/help/plus.png)) icon to the right of the **Filter Streams** input.
+
+* {!all-streams.md!}
+
+    ![All streams](/static/images/help/all-streams.png)
+
+* {!filter-streams.md!}
+
+    ![Filter streams box](/static/images/help/filter-stream.png)
+
+* Upon selecting a stream in the [Subscriptions](/#subscriptions) page, {!stream-settings.md!}
+
+    ![Stream Settings](/static/images/help/stream-overview.png)
 
 ## Subscribing to streams
 
@@ -29,20 +51,17 @@ following image.
 
 ![Streams subscribe alert](/static/images/help/stream-subscribe.png)
 
-The message will present to you the option of subscribing to the stream, and you can do so by simply clicking the gray button.
+The message will present to you the option of subscribing to the stream, and you
+can do so by simply clicking the gray button.
 
 ### Subscribing later
 
-However, if the you were not notified about the stream's creation, you
-can subscribe to a stream by navigating to the stream browser.
+However, if the you were not notified about the stream's creation, you can
+subscribe to a stream by navigating to the [Subscriptions](/#subscriptions) page.
 
 {!subscriptions.md!}
 
-2. Click the **All Streams** tab (highlighted in red in the following image) to
-view all streams in the organization, including streams you haven't subscribed
-to.
-
-    ![Streams Overview](/static/images/help/stream-overview.png)
+2. {!all-streams.md!}
 
 3. Click on the area to the left of the stream that you would like to
 subscribe to (highlighted in red).
@@ -52,5 +71,3 @@ subscribe to (highlighted in red).
     A green checkmark will appear next to the stream that you've just
 subscribed to, and you will now be able to read and send messages in
 that stream.
-
-    ![Subscribe after](/static/images/help/subscribe-after.png)
