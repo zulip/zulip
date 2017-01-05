@@ -90,8 +90,7 @@ Here are some of the hot conversations that have happened while you've been gone
 
 <p><a href="{{ realm_uri }}">Click here to log in to Zulip and catch up.</a></p>
 
-<p>Cheers,
-<br>
+<p>Cheers,<br />
 The Zulip Team</p>
 
 <p>
