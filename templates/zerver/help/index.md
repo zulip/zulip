@@ -60,7 +60,7 @@ as a “**realm**”.
 * [@-mention a team member](/help/at-mention-a-team-member) (needs a
   note that you can't @mention when editing messages, since they may
   have already read the message / not clear how to notif them)
-* Make an announcement
+* [Make an announcement](/help/make-an-announcement)
 * Send a message in a different language
 * [Reply to a message](/help/reply-to-a-message)
 ### Reading
