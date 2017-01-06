@@ -1,9 +1,14 @@
 from __future__ import absolute_import
+from typing import Text, Union, Optional, Dict, Any, List, Tuple
+
+import os
+import simplejson as json
 
 from django.http import HttpRequest, HttpResponse
 
 from django.utils.translation import ugettext as _
 from django.shortcuts import redirect
+from django.conf import settings
 from six.moves import map
 
 from zerver.decorator import has_request_variables, REQ, JsonableError, \
@@ -20,9 +25,8 @@ from zerver.lib.validator import check_bool, check_string
 from zerver.lib.utils import generate_random_token
 from zerver.models import UserProfile, Stream, Realm, Message, get_user_profile_by_email, \
     get_stream, email_allowed_for_realm
+from zproject.jinja2 import render_to_response
 
-from typing import Text
-from typing import Optional, Dict, Any
 
 def deactivate_user_backend(request, user_profile, email):
     # type: (HttpRequest, UserProfile, Text) -> HttpResponse
@@ -361,3 +365,15 @@ def get_profile_backend(request, user_profile):
         result['max_message_id'] = messages[0].id
 
     return json_success(result)
+
+def authors_view(request):
+    # type: (HttpRequest) -> HttpResponse
+
+    with open(settings.CONTRIBUTORS_DATA) as f:
+        data = json.load(f)
+
+    return render_to_response(
+        'zerver/authors.html',
+        data,
+        request=request
+    )

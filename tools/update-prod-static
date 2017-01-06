@@ -64,4 +64,7 @@ subprocess.check_call(['cp', '-a', 'static/locale',
                        os.path.join(settings.STATIC_ROOT, 'locale')],
                       stdout=fp, stderr=fp)
 
+# Generate /authors page markdown
+subprocess.check_call(['./tools/update-authors-json'], stdout=fp)
+
 fp.close()

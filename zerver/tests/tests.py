@@ -37,6 +37,7 @@ from zerver.lib.notifications import handle_missedmessage_emails
 from zerver.lib.session_user import get_session_dict_user
 from zerver.middleware import is_slow_query
 from zerver.lib.avatar import avatar_url
+from zerver.lib.utils import split_by
 
 from zerver.worker import queue_processors
 
@@ -50,6 +51,7 @@ import time
 import ujson
 import random
 import filecmp
+import subprocess
 
 def bail(msg):
     # type: (str) -> None
@@ -2129,6 +2131,28 @@ class HomeTest(ZulipTestCase):
         result = self.client_get("/api/v1/generate_204")
         self.assertEqual(result.status_code, 204)
 
+class AuthorsPageTest(ZulipTestCase):
+    def setUp(self):
+        # type: () -> None
+        """ Manual installation which did not execute `tools/provision.py`
+        would not have the `static/generated/github-contributors.json` fixture
+        file.
+        """
+        if not os.path.exists(settings.CONTRIBUTORS_DATA):
+            # Copy the fixture file in `zerver/fixtures` to `static/generated`
+            update_script = os.path.join(os.path.dirname(__file__),
+                                         '../../tools/update-authors-json')
+            subprocess.check_call([update_script, '--use-fixture'])
+
+    def test_endpoint(self):
+        # type: () -> None
+        result = self.client_get('/authors/')
+        self.assert_in_success_response(
+            ['Contributors', 'Statistic last Updated:', 'commits',
+             '@timabbott'],
+            result
+        )
+
 class MutedTopicsTests(ZulipTestCase):
     def test_json_set(self):
         # type: () -> None
@@ -2337,3 +2361,10 @@ class TestFindMyTeam(ZulipTestCase):
         result = self.client_post('/find_my_team/', data)
         self.assertEqual(result.status_code, 200)
         self.assertIn("Please enter at most 10", result.content.decode('utf8'))
+
+class UtilsUnitTest(TestCase):
+    def test_split_by(self):
+        # type: () -> None
+        flat_list = [1, 2, 3, 4, 5, 6, 7]
+        expected_result = [[1, 2], [3, 4], [5, 6], [7, None]]
+        self.assertEqual(split_by(flat_list, 2, None), expected_result)
