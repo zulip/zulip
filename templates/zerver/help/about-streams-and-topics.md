@@ -4,22 +4,21 @@ In Zulip, conversations are organized by conversation **streams** and
 **topics**.
 
 ## About streams
-On Zulip, users communicate with each other in group chats by sending messages
-to streams, which are similar to conversation threads.
+On Zulip, users communicate with each other in group chats by sending
+messages to streams, which are similar to conversation threads.
 
 Streams are either:
 
-* **Public** - Public streams are for open discussions. All users can subscribe
-to public streams and discuss topics there. Any Zulip user can join any public
-stream in the organization, and they can view the complete message history of any
-public stream without joining the stream.
-* **Private** - Private streams are for confidential discussions and are only
-visible to users who've been invited to subscribe to them. Users who are not
-members of a private stream cannot subscribe to the stream, and they also cannot
-read or send messages to the stream.
+* **Public** - Public streams are for open discussions. Any Zulip user can
+join any public stream in the organization, and they can view the complete
+message history of any public stream without joining the stream.
+* **Private** - Private streams are for confidential discussions and are
+only visible to users who've been invited to subscribe to them. Users who
+are not members of a private stream cannot subscribe to the stream, and
+they also cannot read or send messages to the stream.
 
-Users are subscribed to specific streams in the organization by default, such as the
-[#announce](the-announce-stream) stream. Users can easily
+Users are subscribed to specific streams in the organization by default, such as
+the [#announce](the-announce-stream) stream. Users can easily
 [view messages](/help/view-messages-from-a-stream) from a specific stream; in
 addition, they can [browse](/help/browse-and-join-streams#browse-streams) their
 stream subscriptions using the Zulip stream browser.
@@ -31,21 +30,26 @@ a stream, users can choose to [unsubscribe](/help/unsubscribe-from-a-stream) fro
 stream.
 
 Users can also customize their stream settings; they can
-[pin](/help/pin-a-stream) or star important streams,
-[change the colors](/help/change-the-color-of-a-stream) of streams, and enable desktop
-notifications or muting for streams in order to create a better Zulip
-environment.
+
+* [pin a stream](/help/pin-a-stream)
+* [change the color of streams](/help/change-the-color-of-a-stream)
+* [enable desktop notifications for stream](/help/configure-desktop-notifications)
+* [muting notification for streams](/help/mute-a-stream)
 
 If enabled by the organization administrators, users can
 [create](/help/create-a-stream) streams and [invite](/help/add-or-invite-someone-to-a-stream)
 other users to a stream.
 
-Only organization administrators can make edits to a stream, such as
-[renaming](/help/rename-a-stream), [deleting](/help/delete-a-stream), changing the
-description of a stream, [removing users](/help/remove-someone-from-a-stream) from a
-stream, or changing the accessibility of a stream.
+Only organization administrators can modify a stream, like:
+
+* [renaming a stream](/help/rename-a-stream)
+* [deleting a stream](/help/delete-a-stream)
+* changing the description of a stream
+* [removing users from a stream](/help/remove-someone-from-a-stream)
+* [changing the accessibility of a stream](/help/change-who-can-join-a-stream)
 
 ## About topics
+
 In each stream, messages are sorted by topics. Topics are
 specific, fine-grained subjects that fit with the overall subject of the
 stream that they're sent to. Topics ensure sequential messages
