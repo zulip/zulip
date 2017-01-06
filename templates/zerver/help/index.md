@@ -1,13 +1,5 @@
 # Zulip User Documentation (draft)
 
-!!! warn ""
-    **Caveat**: This file is intended to collect all proposed user
-    documentation into one place. Ultimately, a single file is probably
-    not the best format for documentation when it is published to the
-    world, but for purposes of discussion it seems easiest to put
-    everything into a solitary and linear page.
-
-
 Zulip is a chat app. Its most distinctive characteristic is that
 conversation among a group of people can be divided according to
 subject “**streams**” and further subdivided into “**topics**”, so
@@ -19,13 +11,15 @@ Android/iOS, and desktop apps for Mac/Linux/Windows, as well as a
 cross-platform version and a version for Platform 9. See
 [the documentation on apps](/apps) for more information.
 
-One Zulip account, associated with a particular organization, is known
-as a “**realm**”.
+One Zulip account, associated with a particular group or organization, is known
+as a **realm**.
 
 ---
 
 # Using Zulip
-
+## Basics
+* [The Zulip browser window](/help/the-zulip-browser-window)
+- [Zulip glossary](/help/zulip-glossary)
 ## Account Basics
 * [Change your name](/help/change-your-name)
 * [Change your password](/help/change-your-password)
@@ -79,7 +73,7 @@ as a “**realm**”.
 * [Advanced search for messages](/help/advanced-search-for-messages)
 
 ## People
-* Check whether someone is here or away
+* [Check whether someone is here or away](/help/check-whether-someone-is-here-or-away)
 * [Invite a friend to Zulip](/help/invite-a-friend-to-zulip)
 * Send someone a private message
 * [Send a group of people a private message](/help/send-a-group-of-people-a-private-message)
@@ -90,6 +84,8 @@ as a “**realm**”.
 * [Create a stream](/help/create-a-stream)
 * [View your current stream subscriptions](/help/browse-and-join-streams#browse-streams)
 * [View messages from a stream](/help/view-messages-from-a-stream)
+* [View messages from a topic](/help/view-messages-from-a-topic)
+* [View messages from a user](/help/view-messages-from-a-user)
 * [The #announce stream](/help/the-announce-stream)
 * [Add or invite someone to a stream](/help/add-or-invite-someone-to-a-stream)
 * [Change the stream description](/help/change-the-stream-description)
@@ -99,7 +95,7 @@ as a “**realm**”.
 * [Change who can join a stream](/help/change-who-can-join-a-stream)
 * [Pin a stream](/help/pin-a-stream)
 * [Change the color of a stream](/help/change-the-color-of-a-stream)
-* Message a stream by email
+* [Message a stream by email](/help/message-a-stream-by-email)
 * Convert a group PM to a private stream (not implemented)
 * [Remove someone from a stream (admin only)](/help/remove-someone-from-a-stream)
 * [Delete a stream (admin only)](/help/delete-a-stream)
@@ -128,9 +124,9 @@ as a “**realm**”.
 * Connect to Zulip over IRC/etc (not implemented?)
 
 # Administering a Zulip organization
-* [Change your administrator settings](/help/edit-administrator-settings)
 
 ## Organization Settings
+* [Change your administrator settings](/help/edit-administrator-settings)
 * [Change your organization's name](/help/change-your-organizations-name)
 * Restrict user email addresses to certain domains
 * [Allow anyone to join without an invitation](/help/allow-anyone-to-join-without-an-invitation)
@@ -154,9 +150,10 @@ as a “**realm**”.
 * [Delete a stream](/help/delete-a-stream)
 * [Set default streams for new users](/help/set-default-streams-for-new-users)
 * [Rename a stream](/help/rename-a-stream)
-* Change a stream's description
+* [Change a stream's description](/help/change-the-stream-description)
 * [Make a public stream private](/help/change-who-can-join-a-stream#make-a-public-stream-private)
-* Add or remove users from a stream
+* [Add someone to a stream](/help/add-or-invite-someone-to-a-stream)
+* [Remove someone from a stream](/help/remove-someone-from-a-stream)
 
 ---
 
