@@ -235,7 +235,7 @@ def main(options):
         run(["./manage.py", "compilemessages"])
 
     # Here we install nvm, node, and npm.
-    run(["sudo", "tools/setup/install-node"])
+    run(["sudo", "scripts/setup/install-node"])
 
     # This is a wrapper around `npm install`, which we run last since
     # it can often fail due to network issues beyond our control.
