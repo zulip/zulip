@@ -91,6 +91,34 @@ exports.emails_strings_to_user_ids_string = function (emails_string) {
     return user_ids.join(',');
 };
 
+exports.emails_to_slug = function (emails_string) {
+    var slug = exports.emails_strings_to_user_ids_string(emails_string);
+
+    if (!slug) {
+        return;
+    }
+
+    slug += '-';
+
+    var emails = emails_string.split(',');
+
+    if (emails.length === 1) {
+        slug += emails[0].split('@')[0].toLowerCase();
+    } else {
+        slug += 'group';
+    }
+
+    return slug;
+};
+
+exports.slug_to_emails = function (slug) {
+    var m = /^([\d,]+)-/.exec(slug);
+    if (m) {
+        var user_ids = m[1];
+        return exports.user_ids_string_to_emails_string(user_ids);
+    }
+};
+
 exports.realm_get = function realm_get(email) {
     return realm_people_dict.get(email);
 };

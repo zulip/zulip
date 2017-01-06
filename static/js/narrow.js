@@ -584,7 +584,9 @@ exports.hide_empty_narrow_message = function () {
 };
 
 exports.pm_with_uri = function (reply_to) {
-    return "#narrow/pm-with/" + hashchange.encodeHashComponent(reply_to);
+    return hashchange.operators_to_hash([
+        {operator: 'pm-with', operand: reply_to},
+    ]);
 };
 
 exports.by_sender_uri = function (reply_to) {

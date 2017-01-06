@@ -1,4 +1,8 @@
+global.stub_out_jquery();
+
 add_dependencies({
+    hashchange: 'js/hashchange.js',
+    people: 'js/people.js',
     stream_data: 'js/stream_data.js',
     Filter: 'js/filter.js',
 });
@@ -101,4 +105,15 @@ function set_filter(operators) {
     opts = {};
     narrow.set_compose_defaults(opts);
     assert.equal(opts.stream, 'ROME');
+}());
+
+(function test_uris() {
+    var person = {
+        email: 'ray@example.com',
+        user_id: 22,
+        full_name: 'Raymond',
+    };
+    people.add(person);
+    var uri = narrow.pm_with_uri(person.email);
+    assert.equal(uri, '#narrow/pm-with/22-ray');
 }());
