@@ -399,6 +399,10 @@ def build_custom_checkers(by_lang):
     # It is okay that json_rules is empty, because the empty list
     # ensures we'll still check JSON files for whitespace.
     markdown_rules = markdown_whitespace_rules + prose_style_rules
+    help_markdown_rules = markdown_rules + [
+        {'pattern': '[a-z][.][A-Z]',
+         'description': "Likely missing space after end of sentence"},
+    ]
     txt_rules = whitespace_rules
 
     def check_custom_checks_py():
@@ -453,7 +457,10 @@ def build_custom_checkers(by_lang):
             max_length = None
             if fn not in markdown_docs_length_exclude:
                 max_length = 120
-            if custom_check_file(fn, markdown_rules, max_length=max_length):
+            rules = markdown_rules
+            if fn.startswith("templates/zerver/help"):
+                rules = help_markdown_rules
+            if custom_check_file(fn, rules, max_length=max_length):
                 failed = True
 
         for fn in by_lang['txt'] + by_lang['text']:

@@ -8,9 +8,10 @@ stream list or through your view.
 
 ## Muting a topic through the stream list
 
-1. Find the **Streams** section located on the left sidebar.In the stream list,
-click on the stream that the topic you want to mute belongs to. Upon clicking on
-the stream, a dropdown with all the topics in the stream will appear.
+1. Find the **Streams** section located on the left sidebar. In the
+stream list, click on the stream that the topic you want to mute
+belongs to. Upon clicking on the stream, a dropdown with all the
+topics in the stream will appear.
 
 3. In the stream topics dropdown, hover over a topic to reveal a {!down-chevron.md!}
 To mute the topic, simply select the **Mute the topic (topic name)**
