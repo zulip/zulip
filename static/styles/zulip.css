@@ -2374,10 +2374,13 @@ button.topic_edit_cancel {
 /* embed */
 .message_content .message_embed {
     display: block;
+    position: relative;
     margin: 5px 0px;
     border: none;
     border-left: 3px solid #eee;
+    height: 70px;
     padding: 5px;
+    z-index: 1;
 }
 
 .message_content .message_embed > * {
@@ -2389,21 +2392,20 @@ button.topic_edit_cancel {
 .message_embed .message_embed_title {
     padding-top: 0px;
     /* to remove the spacing that the font has from the top of the container. */
-    margin-top: -5px;
+    margin-top: -1px;
 
     font-size: 1em;
     font-weight: 600;
     line-height: normal;
 }
 
-.message_embed .message_embed_title a:hover {
-    text-decoration: none;
-    border-bottom: 1px solid #005580;
-}
-
 .message_embed .message_embed_description {
+    position: relative;
     margin-top: -5px;
     max-width: 500px;
+
+    /* to put it below the container gradient. */
+    z-index: -1;
 }
 
 .message_embed .message_embed_image {
@@ -2419,6 +2421,8 @@ button.topic_edit_cancel {
     display: inline-block;
     vertical-align: top;
     max-width: calc(100% - 100px);
+    max-height: 70px;
+    overflow: hidden;
 }
 
 .message_embed .data-container div {
@@ -2427,6 +2431,10 @@ button.topic_edit_cancel {
 }
 
 @media (max-width: 600px) {
+    .message_content .message_embed {
+        height: auto;
+    }
+
     .message_embed .message_embed_image {
         width: 100%;
         height: 100px;
