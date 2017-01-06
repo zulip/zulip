@@ -108,12 +108,26 @@ function set_filter(operators) {
 }());
 
 (function test_uris() {
-    var person = {
+    var ray = {
         email: 'ray@example.com',
         user_id: 22,
         full_name: 'Raymond',
     };
-    people.add(person);
-    var uri = narrow.pm_with_uri(person.email);
+    people.add(ray);
+
+    var alice = {
+        email: 'alice@example.com',
+        user_id: 23,
+        full_name: 'Alice Smith',
+    };
+    people.add(alice);
+
+    var uri = narrow.pm_with_uri(ray.email);
     assert.equal(uri, '#narrow/pm-with/22-ray');
+
+    uri = narrow.huddle_with_uri("22,23");
+    assert.equal(uri, '#narrow/pm-with/22,23-group');
+
+    var emails = global.hashchange.decode_operand('pm-with', '22,23-group');
+    assert.equal(emails, 'alice@example.com,ray@example.com');
 }());
