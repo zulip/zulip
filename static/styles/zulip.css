@@ -346,6 +346,11 @@ code {
     padding: 0px 4px;
 }
 
+/* This ensures bulleted lists are nicely centered in 1-line messages */
+.message_content ul {
+    margin: 5px 0 5px 20px;
+}
+
 .codehilite {
     display: block !important;
     border: none !important;
