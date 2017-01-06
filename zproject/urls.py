@@ -159,6 +159,13 @@ v1_api_and_json_patterns = [
     # Returns a 204, used by desktop app to verify connectivity status
     url(r'generate_204$', zerver.views.generate_204, name='zerver.views.generate_204'),
 
+    # realm/aliases -> zerver.views.realm_aliases
+    url(r'^realm/domains$', rest_dispatch,
+        {'GET': 'zerver.views.realm_aliases.list_aliases',
+         'POST': 'zerver.views.realm_aliases.create_alias'}),
+    url(r'^realm/domains/(?P<alias_id>\d+)$', rest_dispatch,
+        {'DELETE': 'zerver.views.realm_aliases.delete_alias'}),
+
     # realm/emoji -> zerver.views.realm_emoji
     url(r'^realm/emoji$', rest_dispatch,
         {'GET': 'zerver.views.realm_emoji.list_emoji',

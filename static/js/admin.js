@@ -200,6 +200,21 @@ exports.populate_filters = function (filters_data) {
     loading.destroy_indicator($('#admin_page_filters_loading_indicator'));
 };
 
+exports.populate_realm_aliases = function (aliases) {
+    var alias_table = $("#alias_table").expectOne();
+    var domains_list = _.map(page_params.domains, function (ADomain) {
+        return ADomain.domain;
+    });
+    var domains = stringify_list_with_conjunction(domains_list, "or");
+
+    $("#realm_restricted_to_domains_label").text(i18n.t("Users restricted to __domains__", {domains: domains}));
+
+    alias_table.find("tr").remove();
+    _.each(aliases, function (alias) {
+        alias_table.append(templates.render("admin_alias_list", {alias: alias}));
+    });
+};
+
 exports.reset_realm_default_language = function () {
     $("#id_realm_default_language").val(page_params.realm_default_language);
 };
@@ -219,17 +234,8 @@ exports.populate_auth_methods = function (auth_methods) {
 };
 
 function _setup_page() {
-    var domains_string = stringify_list_with_conjunction(page_params.domains, "or");
-    var atdomains = page_params.domains.slice();
-    var i;
-    for (i = 0; i < atdomains.length; i += 1) {
-        atdomains[i] = '@' + atdomains[i];
-    }
-    var atdomains_string = stringify_list_with_conjunction(atdomains, "or");
     var options = {
         realm_name: page_params.realm_name,
-        domains_string: domains_string,
-        atdomains_string: atdomains_string,
         realm_restricted_to_domain: page_params.realm_restricted_to_domain,
         realm_invite_required: page_params.realm_invite_required,
         realm_invite_by_admins_only: page_params.realm_invite_by_admins_only,
@@ -299,6 +305,9 @@ function _setup_page() {
 
     // Populate filters table
     exports.populate_filters(page_params.realm_filters);
+
+    // Populate realm aliases
+    exports.populate_realm_aliases(page_params.domains);
 
     // Setup click handlers
     $(".admin_user_table").on("click", ".deactivate", function (e) {
@@ -569,6 +578,15 @@ function _setup_page() {
                 }
                 if (response_data.restricted_to_domain !== undefined) {
                     if (response_data.restricted_to_domain) {
+                        var atdomains = _.map(page_params.domains, function (ADomain) {
+                            return ADomain.domain;
+                        });
+                        var i;
+                        for (i = 0; i < atdomains.length; i += 1) {
+                            atdomains[i] = '@' + atdomains[i];
+                        }
+                        var atdomains_string = stringify_list_with_conjunction(atdomains, "or");
+
                         ui.report_success(i18n.t("New users must have e-mails ending in __atdomains_string__!", {atdomains_string: atdomains_string}), restricted_to_domain_status);
                     } else {
                         ui.report_success(i18n.t("New users may have arbitrary e-mails!"), restricted_to_domain_status);
@@ -885,6 +903,48 @@ function _setup_page() {
                     xhr.responseText = JSON.stringify({msg: errors.__all__});
                     ui.report_error(i18n.t("Failed"), xhr, filter_status);
                 }
+            }
+        });
+    });
+
+    $("#alias_table").on("click", ".delete_alias", function () {
+        var url = "/json/realm/domains/" + $(this).data('id');
+        var aliases_info = $("#realm_aliases_modal").find(".aliases_info");
+
+        channel.del({
+            url: url,
+            success: function () {
+                aliases_info.removeClass("text-error");
+                aliases_info.addClass("text-success");
+                aliases_info.text("Deleted successfully!");
+            },
+            error: function (xhr) {
+                aliases_info.removeClass("text-success");
+                aliases_info.addClass("text-error");
+                aliases_info.text(JSON.parse(xhr.responseText).msg);
+            }
+        });
+    });
+
+    $("#add_alias").click(function () {
+        var aliases_info = $("#realm_aliases_modal").find(".aliases_info");
+        var data = {
+            domain: $("#new_alias").val(),
+        };
+
+        channel.post({
+            url: "/json/realm/domains",
+            data: data,
+            success: function () {
+                $("#new_alias").val("");
+                aliases_info.removeClass("text-error");
+                aliases_info.addClass("text-success");
+                aliases_info.text("Added successfully!");
+            },
+            error: function (xhr) {
+                aliases_info.removeClass("text-success");
+                aliases_info.addClass("text-error");
+                aliases_info.text(JSON.parse(xhr.responseText).msg);
             }
         });
     });

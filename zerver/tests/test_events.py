@@ -8,7 +8,7 @@ from django.test import TestCase
 
 from zerver.models import (
     get_client, get_realm, get_stream, get_user_profile_by_email,
-    Message, Recipient, UserProfile
+    Message, RealmAlias, Recipient, UserProfile
 )
 
 from zerver.lib.actions import (
@@ -56,6 +56,8 @@ from zerver.lib.actions import (
     do_change_enable_online_push_notifications,
     do_change_pm_content_in_desktop_notifications,
     do_change_enable_digest_emails,
+    do_add_realm_alias,
+    do_remove_realm_alias,
     fetch_initial_state_data,
     get_subscription
 )
@@ -804,6 +806,31 @@ class EventsRegisterTest(ZulipTestCase):
         self.assert_on_error(error)
 
         self.do_test(lambda: do_remove_realm_filter(get_realm("zulip"), "#(?P<id>[123])"))
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_realm_alias_events(self):
+        # type: () -> None
+        schema_checker = check_dict([
+            ('type', equals('realm_domains')),
+            ('op', equals('add')),
+            ('alias', check_dict([
+                ('id', check_int),
+                ('domain', check_string),
+            ])),
+        ])
+        realm = get_realm('zulip')
+        events = self.do_test(lambda: do_add_realm_alias(realm, 'zulip.org'))
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        schema_checker = check_dict([
+            ('type', equals('realm_domains')),
+            ('op', equals('remove')),
+            ('alias_id', check_int),
+        ])
+        alias_id = RealmAlias.objects.get(realm=realm, domain='zulip.org').id
+        events = self.do_test(lambda: do_remove_realm_alias(realm, alias_id))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
