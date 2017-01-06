@@ -5,7 +5,7 @@ messages! This guide shows you how to send emoji by using Zulip’s
 built-in emoji menu, pasting Unicode, or typing the emoji code.
 
 ### Using the emoji menu
-1. Start by composing a [new message](/help/#posting-and-replying)
+1. Start by composing a new message.
 2. Click the smiley face under the left edge of the message box.
 3. Click any emoji to include it in your messsage.
 
@@ -16,7 +16,7 @@ built-in emoji menu, pasting Unicode, or typing the emoji code.
 Zulip fully supports Unicode. To use Unicode in your message:
 
 1. Copy any emoji you would like to include onto your clipboard. For example:😀.
-2. Compose a [new message or reply](/help/#posting-and-replying)
+2. Compose a new message or reply.
 3. Paste the emoji into the message box.
 
 **Note**: You can browse the
@@ -25,7 +25,7 @@ Zulip fully supports Unicode. To use Unicode in your message:
 
 ### Using emoji codes
 1. Start by composing a
-   [new message or reply](/help/#posting-and-replying)
+   new message or reply.
 2. Type in the emoji code. For example `:smile:` produces the
    following icon:<img
    src="/static/generated/emoji/images/emoji/smile.png" alt="smile"

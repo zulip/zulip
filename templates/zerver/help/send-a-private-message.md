@@ -30,6 +30,3 @@ over the name and click on the option `Compose a private message to
 You can always discard your message by clicking the **x**
 (<i class="icon-vector-remove"></i>) icon located at the top-right corner
 of your compose box.
-
-**[Go back to “Streams and private messages”](/help/streams-and-private-messages)**
-
