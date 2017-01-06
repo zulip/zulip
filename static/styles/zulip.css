@@ -664,11 +664,11 @@ td.pointer {
     line-height: 17px;
 }
 
-.recipient_row_date .hide-date {
+.recipient_row_date.hide-date {
     display: none;
 }
 
-.floating_recipient .recipient_row_date .hide-date {
+.floating_recipient .recipient_row_date.hide-date {
     display: block;
 }
 

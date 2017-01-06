@@ -89,10 +89,6 @@ function populate_group_from_message_container(group, message_container) {
     var time = new XDate(message_container.msg.timestamp * 1000);
     var date_element = timerender.render_date(time)[0];
 
-    if (!message_container.show_date) {
-        date_element.className = "hide-date";
-    }
-
     group.date = date_element.outerHTML;
 }
 
@@ -333,6 +329,7 @@ MessageListView.prototype = {
             } else if (first_group !== undefined && second_group !== undefined) {
                 var last_msg_container = _.last(first_group.message_containers);
                 var first_msg_container = _.first(second_group.message_containers);
+
                 if (same_day(last_msg_container, first_msg_container)) {
                     // Clear the date if it is the same as the last group
                     second_group.show_date = undefined;
