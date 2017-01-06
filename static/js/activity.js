@@ -294,6 +294,7 @@ exports.update_users = function (user_list) {
         var presence = exports.presence_info[user_id].status;
         var person = people.get_person_from_user_id(user_id);
         return {
+            href: narrow.pm_with_uri(person.email),
             name: person.full_name,
             user_id: user_id,
             num_unread: get_num_unread(user_id),
