@@ -2305,7 +2305,7 @@ class TestLoginPage(ZulipTestCase):
         result = self.client_get("/login/?subdomain=1")
         self.assertIn(WRONG_SUBDOMAIN_ERROR, result.content.decode('utf8'))
 
-class FindMyTeamTestCase(ZulipTestCase):
+class TestFindMyTeam(ZulipTestCase):
     def test_template(self):
         # type: () -> None
         result = self.client_get('/find_my_team/')
