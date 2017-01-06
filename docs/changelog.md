@@ -4,23 +4,88 @@ All notable changes to the Zulip server are documented in this file.
 
 ### Unreleased
 
-- Have peer_add events send user_id, not email.
-- Show subscriber counts in Manage streams.
+Highlights:
+
+- Completely redesigned the Manage streams page.
+- Added support for emoji reactions to messages.
+- Added support for open graph previews of links (off by default).
+- Added a lightbox for viewing images and videos.
+- Added extensive user documentation under /help/.
+
+Partially merged highlights:
+- Added backend support for typing notifications.
+- Added partial support for message retention policy.
+
+Full Changelog:
+
+- Added an emoji picker/browser to the compose box.
+- Added markdown preview support to the compose box.
+- Added a new analytics system to track useful statistics.
+- Added display of subscriber counts in Manage streams.
+- Added several new search/filtering UI elements.
+- Added support for deploying Zulip with subdomains for each realm.
+  This entailed numerous changes to ensure a consistent experience.
 - Added support for (optionally) using PGRoonga to support full-text
   search in all languages (not just English).
-- Added GitLab and Sentry integrations.
+- Added AppFollow, GitLab, Google Calendar, GoSquared, HelloSign,
+  Heroku, Librato, MailChimp, Mention, Papertrail, Sentry, Solano
+  Labs, and Stripe integrations.
+- Added a webhook integration for GitHub, replacing the deprecated
+  github-services hook.
+- Normalized the message formatting for all the Zulip Git integrations.
 - Added support for VMWare Fusion Vagrant provider for faster OSX
   development.
+- Added a notification when users mute messages.
+- Added support for testing websockets to the Nagios suite.
+- Added a configuration option to disable websockets.
+- Added support for removing one's own Zulip account.
+- Added new organization type concept.  This will be used to control
+  whether Zulip is optimized around protecting user privacy
+  vs. administrative control.
+- Added #**streamName** syntax for linking to a stream.
+- Added support for viewing markdown source of messages.
+- Added setting to always send push notifications.
+- Added setting to hide private message content in desktop notifications.
+- Upgraded all Python dependencies to modern versions, including
+  Django 1.10 (all of Zulip's patches have been merged into mainline).
+- Increased backend test coverage of Python codebase to 90%.
+- Increased mypy static type coverage of Python code to 100%.
+- Optimized the speed of the Zulip upgrade process, especially with Git.
+- Have peer_add events send user_id, not email.
+- Fixed problems with rabbitmq when installing Zulip.
+- Fixed JavaScript not being gzip-compressed properly.
+- Fixed numerous bugs where strings were not properly tagged for translation.
+- Fixed several real-time sync bugs, and removed several AJAX calls.
+  Zulip should be more performant than ever before.
 - Fixed Zulip Tornado service not working with http_proxy set in environment.
 - Fixed text overflow in stream subscriptions.
 - Fixed CSS issues with message topic editing.
-- Upgrade jQuery to the latest 1.12 release.
+- Fixed several transactionality bugs (e.g. in Huddle creation).
+- Fixed missed-message email configuration error handling.
+- Fixed a significant performance bug in the Tornado subsystem.
+- Fixed annoying @-mentions in Jira integration.
+- Improved the message editing UI in several ways.
+- Upgraded jQuery to the latest 1.12 release.
+- Eliminated most legacy endpoints.
+- Made numerous improvements to the development tooling.
+- Made extensive improvements to code organization.
+- Integrated and cleared errors from several new linters.
 - Restyled all the registration pages to look nicer and be responsive.
 - Suppressed @-all mentions being treated as mentions on muted
   streams.
 - Documented preliminary design for interactive bot system.
 
+### 1.4.2 - 2016-09-27
+
+- Upgraded Django to version 1.8.15 (with the Zulip patches applied),
+  fixing a CSRF vulnerability in Django (see
+  https://www.djangoproject.com/weblog/2016/sep/26/security-releases/),
+  and a number of other Django bugs from past Django stable releases
+  that largely affects parts of Django that are not used by Zulip.
+- Fixed buggy logrotate configuration.
+
 ### 1.4.1 - 2016-09-03
+
 - Fixed settings bug upgrading from pre-1.4.0 releases to 1.4.0.
 - Fixed local file uploads integration being broken for new 1.4.0
   installations.
