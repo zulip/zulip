@@ -1237,16 +1237,16 @@ def get_huddle(id_list):
 @cache_with_key(lambda huddle_hash, id_list: huddle_hash_cache_key(huddle_hash), timeout=3600*24*7)
 def get_huddle_backend(huddle_hash, id_list):
     # type: (Text, List[int]) -> Huddle
-    (huddle, created) = Huddle.objects.get_or_create(huddle_hash=huddle_hash)
-    if created:
-        with transaction.atomic():
+    with transaction.atomic():
+        (huddle, created) = Huddle.objects.get_or_create(huddle_hash=huddle_hash)
+        if created:
             recipient = Recipient.objects.create(type_id=huddle.id,
                                                  type=Recipient.HUDDLE)
             subs_to_create = [Subscription(recipient=recipient,
                                            user_profile=get_user_profile_by_id(user_profile_id))
                               for user_profile_id in id_list]
             Subscription.objects.bulk_create(subs_to_create)
-    return huddle
+        return huddle
 
 def clear_database():
     # type: () -> None
