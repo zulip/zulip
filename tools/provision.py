@@ -219,6 +219,7 @@ def main(options):
     run(["sudo", "chown", "%s:%s" % (user_id, user_id), EMOJI_CACHE_PATH])
     run(["tools/setup/emoji/build_emoji"])
     run(["scripts/setup/generate_secrets.py", "--development"])
+    run(["tools/update-authors-json", "--use-fixture"])
     if options.is_travis and not options.is_production_travis:
         run(["sudo", "service", "rabbitmq-server", "restart"])
         run(["sudo", "service", "redis-server", "restart"])
