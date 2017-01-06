@@ -22,9 +22,7 @@ function send_typing_notification_ajax(recipients, operation) {
         },
         success: function () {},
         error: function (xhr) {
-            var response = channel.xhr_error_message("Error sending typing notification", xhr);
-            blueslip.error(JSON.stringify(xhr));
-            blueslip.error(response);
+            blueslip.warn("Failed to send typing event: " + xhr.responseText);
         }
     });
 }
