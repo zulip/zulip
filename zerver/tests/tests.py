@@ -2308,12 +2308,12 @@ class TestLoginPage(ZulipTestCase):
 class FindMyTeamTestCase(ZulipTestCase):
     def test_template(self):
         # type: () -> None
-        result = self.client_get('/find-my-team/')
+        result = self.client_get('/find_my_team/')
         self.assertIn("Find your team", result.content.decode('utf8'))
 
     def test_result(self):
         # type: () -> None
-        url = '/find-my-team/?emails=iago@zulip.com,cordelia@zulip.com'
+        url = '/find_my_team/?emails=iago@zulip.com,cordelia@zulip.com'
         result = self.client_get(url)
         content = result.content.decode('utf8')
         self.assertIn("Emails sent! You will only receive emails", content)
@@ -2323,28 +2323,28 @@ class FindMyTeamTestCase(ZulipTestCase):
     def test_find_team_zero_emails(self):
         # type: () -> None
         data = {'emails': ''}
-        result = self.client_post('/find-my-team/', data)
+        result = self.client_post('/find_my_team/', data)
         self.assertIn('This field is required', result.content.decode('utf8'))
         self.assertEqual(result.status_code, 200)
 
     def test_find_team_one_email(self):
         # type: () -> None
         data = {'emails': 'hamlet@zulip.com'}
-        result = self.client_post('/find-my-team/', data)
+        result = self.client_post('/find_my_team/', data)
         self.assertEqual(result.status_code, 302)
-        self.assertEqual(result.url, '/find-my-team/?emails=hamlet%40zulip.com')
+        self.assertEqual(result.url, '/find_my_team/?emails=hamlet%40zulip.com')
 
     def test_find_team_multiple_emails(self):
         # type: () -> None
         data = {'emails': 'hamlet@zulip.com,iago@zulip.com'}
-        result = self.client_post('/find-my-team/', data)
+        result = self.client_post('/find_my_team/', data)
         self.assertEqual(result.status_code, 302)
-        expected = '/find-my-team/?emails=hamlet%40zulip.com%2Ciago%40zulip.com'
+        expected = '/find_my_team/?emails=hamlet%40zulip.com%2Ciago%40zulip.com'
         self.assertEqual(result.url, expected)
 
     def test_find_team_more_than_ten_emails(self):
         # type: () -> None
         data = {'emails': ','.join(['hamlet-{}@zulip.com'.format(i) for i in range(11)])}
-        result = self.client_post('/find-my-team/', data)
+        result = self.client_post('/find_my_team/', data)
         self.assertEqual(result.status_code, 200)
         self.assertIn("Please enter at most 10", result.content.decode('utf8'))

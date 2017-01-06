@@ -131,7 +131,7 @@ i18n_urls = [
         name='landing-page'),
     url(r'^new-user/$', RedirectView.as_view(url='/hello', permanent=True)),
     url(r'^features/$', TemplateView.as_view(template_name='zerver/features.html')),
-    url(r'^find-my-team/$', zerver.views.find_my_team, name='find-my-team'),
+    url(r'^find_my_team/$', zerver.views.find_my_team, name='zerver.views.find_my_team'),
 ]
 
 # If a Terms of Service is supplied, add that route
