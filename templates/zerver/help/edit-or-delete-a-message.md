@@ -24,10 +24,10 @@ the **Save** button to save the changes you made to your message.
 Depending on your organization settings, Zulip may be configured with a time
 limit within which you may edit a message (e.g. 10 minutes). As soon as that
 limit has passed, the pencil (<i class="icon-vector-pencil"></i>) icon
-changes to a file (![file](/static/images/help/file.png)) icon.
+changes to a file (<i class="icon-vector-file-text-alt"></i>) icon.
 
 !!! tip ""
-    Clicking on (![file](/static/images/help/file.png)) icon will allow you to
+    Clicking on (<i class="icon-vector-file-text-alt"></i>) icon will allow you to
     view the [Markdown source](/help/view-the-markdown-source-of-a-message) or
     [change the topic](/help/change-the-topic-of-a-message) of your message.
 
