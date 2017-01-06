@@ -725,7 +725,7 @@ def send_find_my_team_emails(user_profile):
 
 def find_my_team(request):
     # type: (HttpRequest) -> HttpResponse
-    url = reverse('find-my-team')
+    url = reverse('zerver.views.find_my_team')
 
     emails = []  # type: List[Text]
     if request.method == 'POST':
