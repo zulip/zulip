@@ -9,7 +9,7 @@
 Zulip allows you to easily edit the contents of your messages after they have
 been posted.
 
-{!message-actions.md!} pencil (![pencil](/static/images/help/pencil.png)) icon
+{!message-actions.md!} pencil (<i class="icon-vector-pencil"></i>) icon
 to reveal a message editing box.
 
 2. After making the changes to your message in the message editing box, click
@@ -23,7 +23,7 @@ the **Save** button to save the changes you made to your message.
 
 Depending on your organization settings, Zulip may be configured with a time
 limit within which you may edit a message (e.g. 10 minutes). As soon as that
-limit has passed, the pencil (![pencil](/static/images/help/pencil.png)) icon
+limit has passed, the pencil (<i class="icon-vector-pencil"></i>) icon
 changes to a file (![file](/static/images/help/file.png)) icon.
 
 !!! tip ""

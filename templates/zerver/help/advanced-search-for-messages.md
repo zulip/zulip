@@ -80,5 +80,5 @@ Listed below are some Zulip keyboard shortcuts that will aid you in conducting a
 * **Clear a search** `Esc` - This shortcut clears the search bar of
   any search criteria that was previously entered. This action can
   also be achieved by clicking the **x**
-  (![x](/static/images/help/x.png)) icon in the right side of the
+  (<i class="icon-vector-remove"></i>) icon in the right side of the
   search bar.

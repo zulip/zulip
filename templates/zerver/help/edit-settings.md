@@ -1,6 +1,6 @@
 # Edit [Settings](/#settings)
 
-1. Click the cog (![cog](/static/images/help/cog.png)) icon in the top right corner.
+1. Click the cog (<i class="icon-vector-cog"></i>) icon in the top right corner.
 2. From the dropdown menu, choose the **Settings** option.
 
     ![settings-dropdown](/static/images/help/cog_dropdown_settings.png)

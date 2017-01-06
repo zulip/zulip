@@ -27,5 +27,5 @@ here...** or messaging box. You can now send your message to the
 specified stream under the specified topic.
 
 You can always delete your message by clicking the **x**
-(![x](/static/images/help/x.png)) icon located at the top-right corner
+(<i class="icon-vector-remove"></i>) icon located at the top-right corner
 of your messaging box.

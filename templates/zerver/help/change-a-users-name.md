@@ -8,7 +8,7 @@ Follow the following steps to change the name of a user using an administrator a
 {!go-to-the.md!} [Users](/#administration/user-list-admin)
 {!admin.md!}
 
-2. Click on the pencil (![pencil](/static/images/help/pencil.png)) icon next to
+2. Click on the pencil (<i class="icon-vector-pencil"></i>) icon next to
 the name of the user you want to change.
 
 3. After clicking on the pencil icon, an input field labeled **Full name** will

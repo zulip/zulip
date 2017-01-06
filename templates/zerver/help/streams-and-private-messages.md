@@ -41,7 +41,7 @@ in composing your message.
 ![Emoji feature](/static/images/help/emoji-box.png)
 
 Clicking the **smiley face**
-(![smiley face](/static/images/help/smiley-button.png)) icon allows a
+(<i class="icon-vector-smile"></i>) icon allows a
 box to appear featuring Zulip's vast collection of emojis. You can
 select an emoji to include in your message.
 
@@ -50,7 +50,7 @@ select an emoji to include in your message.
 ![File upload feature](/static/images/help/uploaded.png)
 
 Clicking the **paper clip**
-(![paper clip](/static/images/help/paper-clip.png)) icon allows you to
+(<i class="icon-vector-paper-clip"></i>) icon allows you to
 select a file from your computer and attach it to your message,
 uploading it to Zulip to share with your peers.
 
@@ -64,7 +64,7 @@ the file has been uploaded.
 
 ![Message formatting modal](/static/images/help/message-formatting-summary.png)
 
-Clicking the **A** (![A](/static/images/help/formatting.png)) icon
+Clicking the **A** (<i class="icon-vector-font"></i>) icon
 will reveal a modal window with a summary of message formatting in
 Zulip. For more information on message formatting, see our
 [message formatting guide](/help/format-your-message-using-markdown).
