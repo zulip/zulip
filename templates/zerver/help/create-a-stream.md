@@ -14,17 +14,17 @@ sidebar.  Streams can be either:
 
 {!subscriptions.md!}
 
-3. Click the plus (![plus](/static/images/help/plus.png)) icon to the right of
+3. Click the plus (<i class="icon-vector-plus"></i>) icon to the right of
 the **Filter Streams** input.
 
     !!! warn ""
-        **Note:** If you do not see the plus (![plus](/static/images/help/plus.png)) icon, it
+        **Note:** If you do not see the plus (<i class="icon-vector-plus"></i>) icon, it
         is probably because your organization's administrators have disabled stream
         creation for ordinary users. If that's the case, then you need to ask them
         to make creating streams available to other users, or you will have to ask
         an administrator for help creating each particular stream.
 
-4. After clicking the plus (![plus](/static/images/help/plus.png)) icon, the
+4. After clicking the plus (<i class="icon-vector-plus"></i>) icon, the
 right side of the [Subscriptions](/#subscriptions) page, labeled **Add New
 Stream**, will now display options for creating a stream.
 

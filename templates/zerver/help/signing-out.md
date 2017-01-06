@@ -6,7 +6,7 @@ When you're done using Zulip, it's easy to log out.
 
 ### Logging out on a browser:
 
-1. Click on the settings gear ( ![Gear](/static/images/help/cog.png) ) in the top right.  
+1. Click on the settings gear (<i class="icon-vector-cog"></i>) in the top right.  
 
 2. Click **Log Out**.
 
@@ -16,7 +16,7 @@ When you're done using Zulip, it's easy to log out.
 
 ### Logging out of the iOS app:  
 
-1. Tap the menu icon ( ![Hamburger](/static/images/help/hamburger_icon.jpg) ) in the top left of your screen.
+1. Tap the menu icon (<i class="icon-vector-reorder"></i>) in the top left of your screen.
 
 2. Tap **Logout**.
 
@@ -24,6 +24,6 @@ When you're done using Zulip, it's easy to log out.
 
 ### Logging out of the Android app:  
 
-1. Tap the overflow menu ( ![Overflow](/static/images/help/overflow.png) ) in the top right of your screen.
+1. Tap the overflow menu ( <i class="icon-vector-ellipsis-vertical"></i> ) in the top right of your screen.
 
 2. Tap **Logout**.

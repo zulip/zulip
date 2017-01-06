@@ -20,7 +20,7 @@ application or create other bots).
 ### chevron
 
 A **chevron** is a small downward-facing arrow
-(![chevron](/static/images/help/down_chevron.png)) icon next to a
+(<i class="icon-vector-chevron-down"></i>) icon next to a
 message’s timestamp that appears upon hover, offering contextual
 options when clicked on, such as **View Source**, **Reply**,
 **Collapse**, **Mute [this topic]**, and **Link to this
@@ -38,7 +38,7 @@ features.
 
 **Customization** is the process of modifying Zulip's settings to fit
 a user's set of personal preferences. Users can customize their Zulip
-settings by clicking the cog (![cog](/static/images/help/cog.png)) in
+settings by clicking the cog (<i class="icon-vector-cog"></i>) in
 the upper right corner of the right sidebar and choose **Settings**
 from the dropdown menu.
 
@@ -49,7 +49,7 @@ conversation. Emojis can be included in Zulip messages by enclosing an
 emoji phrase (a complete list of emojis can be found
 [here](http://www.webpagefx.com/tools/emoji-cheat-sheet/)) in colons
 or clicking the **smiley face**
-(![smiley face](/static/images/help/smiley-button.png)) icon below the
+(<i class="icon-vector-smile"></i>) icon below the
 compose box.
 
 ### home
@@ -84,7 +84,7 @@ If enabled by an administrator, users can utilize **message editing**
 for a few minutes after posting a message to edit the content of their
 recently-posted message by hovering to the right of their message's
 timestamp and clicking the pencil
-(![pencil](/static/images/help/pencil.png)) icon that appears. Zulip
+(<i class="icon-vector-pencil"></i>) icon that appears. Zulip
 labels edited messages with **(EDITED)** next to the username of the
 message writer.
 
@@ -154,7 +154,7 @@ private message recipient list, at the top of a group of messages.
 
 Zulip allows users to mark any important messages they receive as
 **starred** by hovering over the area next to the message's timestamp
-and clicking the star (![star](/static/images/help/star.png)) icon
+and clicking the star (<i class="icon-vector-star-empty"></i>) icon
 that appears. A user can easily access messages they’ve starred
 through the **Starred messages** link in the left sidebar or use
 **is:starred** as a narrow or a search constraint.

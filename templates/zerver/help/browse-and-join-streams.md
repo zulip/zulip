@@ -8,13 +8,13 @@ browse the list of streams that they subscribe to.
 
 ## Browse streams
 
-1. Click the cog (![cog](/static/images/help/cog.png)) icon next to **Streams**
+1. Click the cog (<i class="icon-vector-cog"></i>) icon next to **Streams**
 in the left sidebar. A tooltip labeled **Subscribe, add, or configure streams**
 will appear upon hovering above the cog.
 
     ![Streams cog and tooltip](/static/images/help/streams-1.png)
 
-2. After clicking the cog (![cog](/static/images/help/cog.png)) icon, the
+2. After clicking the cog (<i class="icon-vector-cog"></i>) icon, the
 [Subscriptions](/#subscriptions) page will now appear, showing all streams that
 you've subscribed to by default.
 
@@ -22,7 +22,7 @@ you've subscribed to by default.
 
 Here, you can explore all the public streams in the organization. You can also
 [create a new stream](create-a-stream) by clicking the plus
-(![plus](/static/images/help/plus.png)) icon to the right of the **Filter Streams** input.
+(<i class="icon-vector-plus"></i>) icon to the right of the **Filter Streams** input.
 
 * {!all-streams.md!}
 

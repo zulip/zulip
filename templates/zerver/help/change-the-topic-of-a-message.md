@@ -3,7 +3,7 @@
 You can easily change the topic of a message by following the following steps.
 
 {!message-actions.md!} the pencil
-(![pencil](/static/images/help/pencil.png)) icon to begin editing your
+(<i class="icon-vector-pencil"></i>) icon to begin editing your
 message.
 
 2. In the field labeled **Topic**, enter the new topic name for your message.

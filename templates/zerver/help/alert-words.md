@@ -22,6 +22,7 @@ and you will be alerted in accordance with your notification settings.
 
 ## Removing Alert Words
 
-Alert Words can be removed easily in the settings menu, by clicking the
-red bin button (![Trash Can](/static/images/help/delete-button.png))
-next to the word/phrase to be deleted.
+Alert Words can be removed easily in the settings menu, by clicking the trash
+(<button class="btn btn-danger btn-mini"><i
+class="icon-vector-trash"></i></button>) button next to the word/phrase to be
+deleted.

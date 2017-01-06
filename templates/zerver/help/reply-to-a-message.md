@@ -50,7 +50,7 @@ You can then type your reply in the **Compose your message here...** field.
 ## Discard your reply
 
 At any time you can discard your reply by clicking the **x**
-(![x](/static/images/help/x.png)) icon located at the top-right corner
+(<i class="icon-vector-remove"></i>) icon located at the top-right corner
 of the messaging box or by pressing the `esc` key on your keyboard.
 This message will be saved as a draft if you wish to restore it later.
 Learn more about this [here](/help/restore-the-last-unsent-message).

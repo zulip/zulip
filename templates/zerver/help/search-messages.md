@@ -39,7 +39,7 @@ author of the message, the stream they were sent in, etc.
 * You can combine the *operators* with the keyword search described formerly.
 
 * To see a list of search operators, go to the cog
-   (![cog](/static/images/help/cog.png)) in the upper right corner of
+   (<i class="icon-vector-cog"></i>) in the upper right corner of
    the right sidebar and choose “Search help” from the drop-down menu:
 
 <p align="center"><img src="/static/images/help/search-messages/search-help.png" width="400"></p>
