@@ -59,6 +59,10 @@ if os.path.islink((os.path.join(deploy_path, "zproject/local_settings.py"))):
 subprocess.check_call([os.path.join(deploy_path, "scripts", "lib", "create-production-venv"),
                        deploy_path])
 
+# Make sure the right version of node is installed
+subprocess.check_call([os.path.join(deploy_path, "scripts", "lib", "install-node"),
+                       deploy_path])
+
 # And then, building/installing the static assets.
 if args.from_git:
     # Note: The fact that this is before we apply puppet changes means
