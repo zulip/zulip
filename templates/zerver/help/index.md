@@ -166,7 +166,6 @@ as a “**realm**”.
 
 # Old table of contents:
 
-- **[The Zulip browser window](#the-zulip-browser-window)**
 - **[Editing your profile](/help/edit-settings)**
 - **[Posting and replying](#posting-and-replying)**
 - **[Searching](search-messages)**
@@ -175,33 +174,6 @@ as a “**realm**”.
 - **[Streams and private messages](/help/streams-and-private-messages)**
 - **[Other common questions](#other-common-questions)**
 - **[Signing out](signing-out)**
-- **[Terminology](#special-terms-used-with-zulip)**
-- **[Zulip glossary](/help/zulip-glossary)**
-
----
-
-## The Zulip browser window
-
-There are three panes in your browser window.
-
- * The middle one, the “**message table**”, is the stream of messages.
-
- * To its left is the “**left sidebar**”, showing “filters” or “views”
-   for different kinds of messages, and below it a menu of streams you
-   are subscribed to.
-
- * On the right side of the browser window is the “**right sidebar**”,
-   showing users and some configuration settings:
-
-   ![Left sidebar](/static/images/help/left_sidebar.png)
-   ![Right sidebar](/static/images/help/right_sidebar.png)
-
- * If your browser window is narrow, you’ll see only the message
-   table, or the message table and the left sidebar but not the right
-   sidebar.
-
-**[Go back to “The Zulip browser window”](#the-zulip-browser-window)**
-  | **[Go back to “Table of contents”](#using-zulip)**
 
 ---
 
@@ -307,8 +279,6 @@ individual users. ![New message](/static/images/help/new_message.png)
 **[Change topic title or stream name](#changing-the-title-of-a-topic-or-stream)** |
 **[Edit topic titles](#editing-a-topic-title)** |
 **[Message formatting](#message-formatting)** |
-**[User status](#user-status)** |
-**[Interact with Zulip by email](#interacting-with-zulip-by-email)** |
 **[Emoji](#emoji)** |
 **[Customization](#customization)**  |
 **[Muting vs. unsubscribing](#muting-a-stream-vs-unsubscribing-from-it)**
@@ -329,33 +299,6 @@ If you have starred a message and sometime later want to find it
 again, you can bring up all the message you have starred by clicking
 the "Starred messages" view (in the filters at the top of the left
 sidebar).
-
-**[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#using-zulip)**
-
-### Show only particular messages
-
- * Show only messages in a particular stream
-
-   This is called “narrowing” to a stream. The simplest way is by
-   clicking on the stream’s name in the left sidebar.
-
- * Show only messages in a particular topic
-
-   Click on the topic, on a message containing it in the message
-   table. You can do the same thing by clicking on a stream in the
-   left sidebar to open a list of recent topics, and then click on a
-   topic there. Only the most topics are listed, though; if you want
-   to find an older topic, you may have to use the search box (above
-   the message table) or scroll back in time by hand.
-
- * Show only messages with a particular user
-
-   Click on the user’s name in the right sidebar and your PM history
-   will appear. If you have had group-PM conversations, they will only
-   show up if you “narrow to” private messages with all participants —
-   narrowing to just one user will not show group PMs including that
-   user.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
   **[Go back to “Table of contents”](#using-zulip)**
@@ -416,46 +359,6 @@ Zulip uses a subset of
 (GFM), To see the current subset, go to the cog (<i class="icon-vector-cog"></i>) in the upper
 right corner of the right sidebar and choose “Message formatting” from
 the drop-down menu.
-
-**[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#using-zulip)**
-
-### User status
-
-… is marked by little circles to the left of a user’s name:
-
- * A green circle
-   (<span class="indicator green solid"></span>) means the
-   user is “active” — the browser has determined that the Zulip page
-   has “focus” at the moment on the user’s computer.
-
- * A white, circle (<span class="indicator grey"></span>) means the user is
-   not active and was not recently so.
-
- * A orange half-filled circle
-   (<span class="indicator orange"></span>)
-   means the user is “not active” but was recently so.
-
- The same information is available by mousing over a given user’s name.
-
- If you have messaged multiple individual users, their names will
- appear at the bottom of the right sidebar. In that case, a pale green
- circle (<span class="indicator green"></span>) means that some are
- recently but not currently active, while others are state unknown. A
- regular green circle (<span class="indicator green solid"></span>)
- means they are all at least recently active.
-
-**[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#using-zulip)**
-
-### Interacting with Zulip by email
-
-You can receive all activity from all streams, or just some streams,
-or just messages in which you were mentioned, by playing with the
-Settings — go to the cog (<i class="icon-vector-cog"></i>) in the
-upper right corner of the right sidebar and choose “Settings”
-there. You can also post to a stream by email — the Manage Streams
-pane shows you the email address to use for any particular stream.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
   **[Go back to “Table of contents”](#using-zulip)**
@@ -547,54 +450,4 @@ unmuted streams, saving space.
 You can't do any of that with a unsubscribed stream.
 
 **[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#using-zulip)**
-
----
-
-## Special terms used with Zulip
-
- * **@mention**: see **mention**.
- * **/me**: see **me**.
- * **customization**: changing Zulip's settings so that it behaves in
-   ways you prefer.
- * **emoji**: small image used in chat messages, for terse non-verbal
-   expression or cuteness; loanword into English from Japanese 絵文字.
- * **filter**: one of the options for viewing different kinds of
-   messages, listed in the upper left corner of the window: Home,
-   Private messages, Starred messages, @-mentions. Also called a
-   "view".
- * **group PM**: a private message sent directly to two or more other
-   users rather than through a stream.
- * **home**: a "view" in which all topics in all subscribed streams
-   are visible, in order by date and time of posting
- * **me**: a reference to one's own name, formatted as `/me`.
- * **mention**: notifying another user of a message, by putting their
-   name into the body of message after an `@`-sign.
- * **message table**: is the stream of messages in the middle pane of
-   a fully open browser window.
- * **muting a stream**: turning off a stream while remaining
-   subscribed to it.
- * **narrow**: to alter the view so that only a single stream, topic,
-   or private-message history is shown.
- * **pinning**: a stream: moving a particular stream to the top of the
-   list of streams.
- * **PM**: private message — a message sent directly to one or more
-   other users rather than through a stream.
- * **private stream**: a stream of that can be joined only by
-   invitation.
- * **realm**: a single Zulip account, associated with a particular
-   organization.
- * **stream**: a channel of topics expected to fall within a certain
-   scope of content.
- * **subscribing to a stream**: registering to receive all messages in
-   a particular stream.
- * **topic**: a distinct thread of conversation within a stream.
- * **unsubscribing from a stream**: excluding oneself from receiving
-   any messages in a particular stream.
- * **view**: one of the options for viewing different kinds of
-   messages, listed in the upper left corner of the window: Home,
-   Private messages, Starred messages, @-mentions. Also called a
-   "filter".
-
-**[Go back to “Terminology”](#special-terms-used-with-zulip)** |
   **[Go back to “Table of contents”](#using-zulip)**
