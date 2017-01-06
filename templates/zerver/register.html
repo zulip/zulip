@@ -79,6 +79,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             <label for="id_team_name" class="inline-block label-title">{{ _('Organization name') }}</label>
             <input id="id_team_name" class="required" type="text"
                 placeholder="{{ _("Acme") }}"
+                value="{% if form.realm_name.value() %}{{ form.realm_name.value() }}{% endif %}"
                 name="realm_name" maxlength="100" />
                 {% if form.realm_name.errors %}
                     {% for error in form.realm_name.errors %}
@@ -101,7 +102,8 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             <div class="breakpoint">
                 <input id="id_team_subdomain" class="required" type="text"
                     placeholder="{{ _("acme") }}"
-                       name="realm_subdomain" maxlength="40" />
+                    value="{% if form.realm_subdomain.value() %}{{ form.realm_subdomain.value() }}{% endif %}"
+                    name="realm_subdomain" maxlength="40" />
                 {% if realms_have_subdomains %}
                 <b> .{{ external_host }}</b>
                 {% endif %}
@@ -126,8 +128,8 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
           {% for org_type_value, org_type_text in form.realm_org_type.field.choices %}
           <div class="input-group radio">
             <input id="id_radio_{{ org_type_value }}" class="required inline-block" type="radio"
-                   name="realm_org_type" value="{{ org_type_value }}"
-                {% if org_type_value == form.realm_org_type.value() %} checked {% endif %} />
+                name="realm_org_type" value="{{ org_type_value }}"
+                {% if org_type_value|string == form.realm_org_type.value()|string %} checked {% endif %} />
             <label for="id_radio_{{ org_type_value }}" class="inline-block">{{ org_type_text }}</label>
           </div>
           {% endfor %}
