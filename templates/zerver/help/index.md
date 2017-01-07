@@ -161,17 +161,6 @@ as a **realm**.
 
 * [Chat with zulip button](/help/chat-with-zulip-button)
 
-# Old table of contents:
-
-- **[Editing your profile](/help/edit-settings)**
-- **[Posting and replying](#posting-and-replying)**
-- **[Searching](search-messages)**
-- **[Keyboard shortcuts](/help/keyboard-shortcuts)**
-- **[Message display settings](/help/message-display-settings)**
-- **[Streams and private messages](/help/streams-and-private-messages)**
-- **[Other common questions](#other-common-questions)**
-- **[Signing out](signing-out)**
-
 ---
 
 ## Posting and replying
