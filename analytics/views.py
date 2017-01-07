@@ -70,10 +70,10 @@ def get_messages_sent_to_realm(realm, min_length=None, start=None, end=None):
         realm=realm, property='messages_sent:is_bot', interval=frequency) \
         .values_list('end_time', 'value')
     humans = [0]*len(end_times)
-    for end_time, value in filter_set.filter(subgroup=False):
+    for end_time, value in filter_set.filter(subgroup='false'):
         humans[indices[end_time]] = value
     bots = [0]*len(end_times)
-    for end_time, value in filter_set.filter(subgroup=True):
+    for end_time, value in filter_set.filter(subgroup='true'):
         bots[indices[end_time]] = value
 
     return {'end_times': end_times, 'humans': humans, 'bots': bots,
