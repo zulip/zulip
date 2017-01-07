@@ -167,7 +167,7 @@ function insert_local_message(message_request, local_id) {
         });
     }
 
-    message_store.insert_new_messages([message]);
+    message_store.insert_new_messages([message], local_id);
     return message.local_id;
 }
 
