@@ -1825,14 +1825,9 @@ div.floating_recipient {
 .message_inline_image {
     margin-bottom: 5px;
     margin-left: 5px;
-    max-height: 100px;
+    height: 100px;
     display: block !important;
     border: none !important;
-}
-
-/* this forces the line to have inline-block styling which gives it a height. */
-.message_inline_image a {
-    display: inline-block;
 }
 
 .message_inline_ref {
@@ -1847,7 +1842,7 @@ div.floating_recipient {
 .message_inline_image img,
 .message_inline_ref img {
     height: auto;
-    max-height: 100px;
+    max-height: 100%;
     float: left;
     margin-right: 10px;
 }
