@@ -87,7 +87,7 @@ if not args.skip_migrations:
     migrations_output = subprocess.check_output(["./manage.py", "showmigrations"],
                                                 preexec_fn=su_to_zulip)
     for ln in migrations_output.split(b"\n"):
-        if ln.startswith("[ ]"):
+        if ln.strip().startswith("[ ]"):
             migrations_needed = True
 
 # Now we start shutting down services; we start with
