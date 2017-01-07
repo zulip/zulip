@@ -906,7 +906,7 @@ $(function () {
         // Hide users which aren't in filtered users
         _.each(users, function (user) {
             var display_type = filtered_users.hasOwnProperty(user.email)? "block" : "none";
-            $("label[data-name='" + user.email + "']").css({display: display_type});
+            $("label.add-user-label[data-user-id='" + user.user_id + "']").css({display: display_type});
         });
 
         update_announce_stream_state();

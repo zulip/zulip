@@ -198,6 +198,7 @@ exports.get_rest_of_realm = function get_rest_of_realm() {
     realm_people_dict.each(function (person) {
         if (!util.is_current_user(person.email)) {
             people_minus_you.push({email: person.email,
+                                   user_id: person.user_id,
                                    full_name: person.full_name});
         }
     });

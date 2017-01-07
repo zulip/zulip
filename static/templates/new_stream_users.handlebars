@@ -19,7 +19,7 @@
 </div>
 <div id="user-checkboxes">
   {{#each users}}
-  <label class="checkbox add-user-label" data-name="{{this.email}}">
+  <label class="checkbox add-user-label" data-user-id="{{this.user_id}}" data-email="{{this.email}}">
     <input type="checkbox" name="user" value="{{this.email}}" />
     <span></span>
     {{this.full_name}} ({{this.email}})

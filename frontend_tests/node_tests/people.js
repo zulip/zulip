@@ -155,9 +155,9 @@ var _ = global._;
     people.add_in_realm(alice2);
     var others = people.get_rest_of_realm();
     var expected = [
-        { email: 'alice1@example.com', full_name: 'Alice' },
-        { email: 'alice2@example.com', full_name: 'Alice' },
-        { email: 'bob@example.com', full_name: 'Bob van Roberts' },
+        { email: 'alice1@example.com', user_id: 202, full_name: 'Alice' },
+        { email: 'alice2@example.com', user_id: 203, full_name: 'Alice' },
+        { email: 'bob@example.com', user_id: 204, full_name: 'Bob van Roberts' },
     ];
     assert.deepEqual(others, expected);
 
