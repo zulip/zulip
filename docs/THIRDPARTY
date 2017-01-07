@@ -204,10 +204,6 @@ Files: static/third/zocial/*
 Copyright: Sam Collins
 License: Expat
 
-Files: tools/inject-messages/othello
-Copyright: Shakespeare
-License: public-domain
-
 Files: tools/review
 Copyright: 2010 Ksplice, Inc.
 License: Apache-2.0
