@@ -7,7 +7,7 @@ from analytics.lib.counts import CountStat, COUNT_STATS, process_count_stat, \
     zerver_count_message_by_stream, zerver_count_stream_by_realm, \
     do_fill_count_stat_at_hour, ZerverCountQuery
 from analytics.models import BaseCount, InstallationCount, RealmCount, \
-    UserCount, StreamCount, FillState, get_fill_state, installation_epoch
+    UserCount, StreamCount, FillState, installation_epoch
 
 from zerver.models import Realm, UserProfile, Message, Stream, Recipient, \
     get_user_profile_by_email, get_client
@@ -94,9 +94,9 @@ class TestProcessCountStat(AnalyticsTestCase):
         count_stat = self.make_dummy_count_stat(end_time)
         if property is None:
             property = count_stat.property
-        fill_state = get_fill_state(property)
-        self.assertEqual(fill_state['end_time'], end_time)
-        self.assertEqual(fill_state['state'], state)
+        fill_state = FillState.objects.filter(property=property).first()
+        self.assertEqual(fill_state.end_time, end_time)
+        self.assertEqual(fill_state.state, state)
 
     def test_process_stat(self):
         # type: () -> None

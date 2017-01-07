@@ -33,6 +33,9 @@ class Command(BaseCommand):
         parser.add_argument('--stat', '-s',
                             type=str,
                             help="CountStat to process. If omitted, all stats are processed.")
+        parser.add_argument('--quiet', '-q',
+                            type=str,
+                            help="Suppress output to stdout.")
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None

@@ -4,7 +4,7 @@ from django.conf import settings
 from datetime import timedelta, datetime
 
 from analytics.models import InstallationCount, RealmCount, \
-    UserCount, StreamCount, BaseCount, FillState, get_fill_state, installation_epoch
+    UserCount, StreamCount, BaseCount, FillState, installation_epoch
 from zerver.models import Realm, UserProfile, Message, Stream, models
 from zerver.lib.timestamp import floor_to_day
 
@@ -58,35 +58,39 @@ class ZerverCountQuery(object):
         self.analytics_table = analytics_table
         self.query = query
 
+def do_update_fill_state(fill_state, end_time, state):
+    # type: (FillState, datetime, int) -> None
+    fill_state.end_time = end_time
+    fill_state.state = state
+    fill_state.save()
+
 def process_count_stat(stat, fill_to_time):
     # type: (CountStat, datetime) -> None
-    fill_state = get_fill_state(stat.property)
+    fill_state = FillState.objects.filter(property=stat.property).first()
     if fill_state is None:
         currently_filled = installation_epoch()
-        FillState.objects.create(property = stat.property,
-                                 end_time = currently_filled,
-                                 state = FillState.DONE)
+        fill_state = FillState.objects.create(property=stat.property,
+                                              end_time=currently_filled,
+                                              state=FillState.DONE)
         logger.info("INITIALIZED %s %s" % (stat.property, currently_filled))
-    elif fill_state['state'] == FillState.STARTED:
-        logger.info("UNDO START %s %s" % (stat.property, fill_state['end_time']))
-        do_delete_count_stat_at_hour(stat, fill_state['end_time'])
-        currently_filled = fill_state['end_time'] - timedelta(hours = 1)
-        FillState.objects.filter(property = stat.property). \
-            update(end_time = currently_filled, state = FillState.DONE)
+    elif fill_state.state == FillState.STARTED:
+        logger.info("UNDO START %s %s" % (stat.property, fill_state.end_time))
+        do_delete_count_stat_at_hour(stat, fill_state.end_time)
+        currently_filled = fill_state.end_time - timedelta(hours = 1)
+        do_update_fill_state(fill_state, currently_filled, FillState.DONE)
         logger.info("UNDO DONE %s" % (stat.property,))
-    elif fill_state['state'] == FillState.DONE:
-        currently_filled = fill_state['end_time']
+    elif fill_state.state == FillState.DONE:
+        currently_filled = fill_state.end_time
     else:
-        raise ValueError("Unknown value for FillState.state: %s." % fill_state['state'])
+        raise ValueError("Unknown value for FillState.state: %s." % (fill_state.state,))
 
     currently_filled = currently_filled + timedelta(hours = 1)
     while currently_filled <= fill_to_time:
         logger.info("START %s %s %s" % (stat.property, stat.interval, currently_filled))
         start = time.time()
-        FillState.objects.filter(property = stat.property).update(end_time = currently_filled,
-                                                                  state = FillState.STARTED)
+        do_update_fill_state(fill_state, currently_filled, FillState.STARTED)
         do_fill_count_stat_at_hour(stat, currently_filled)
-        FillState.objects.filter(property = stat.property).update(state = FillState.DONE)
+        do_update_fill_state(fill_state, currently_filled, FillState.DONE)
         end = time.time()
         currently_filled = currently_filled + timedelta(hours = 1)
         logger.info("DONE %s %s (%dms)" % (stat.property, stat.interval, (end-start)*1000))
