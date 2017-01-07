@@ -13,7 +13,7 @@ With bots, you *cannot*
 
 * modify an intercepted message (you have to send a new message)
 * send messages on behalf of other users
-* intercept private messages
+* intercept private messages (except for PMs that are sent to the bot)
 
 
 On this page you'll find:
