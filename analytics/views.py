@@ -60,14 +60,14 @@ def get_messages_sent_to_realm(realm, min_length=None, start=None, end=None):
     if start > end:
         raise JsonableError(_("Start time is later than end time. Start: %(start)s, End: %(end)s") %
                             {'start': start, 'end': end})
-    interval = CountStat.DAY
-    end_times = time_range(start, end, interval, min_length)
+    frequency = CountStat.DAY
+    end_times = time_range(start, end, frequency, min_length)
     indices = {}
     for i, end_time in enumerate(end_times):
         indices[end_time] = i
 
     filter_set = RealmCount.objects.filter(
-        realm=realm, property='messages_sent:is_bot', interval=interval) \
+        realm=realm, property='messages_sent:is_bot', interval=frequency) \
         .values_list('end_time', 'value')
     humans = [0]*len(end_times)
     for end_time, value in filter_set.filter(subgroup=False):
@@ -76,7 +76,8 @@ def get_messages_sent_to_realm(realm, min_length=None, start=None, end=None):
     for end_time, value in filter_set.filter(subgroup=True):
         bots[indices[end_time]] = value
 
-    return {'end_times': end_times, 'humans': humans, 'bots': bots, 'interval': interval}
+    return {'end_times': end_times, 'humans': humans, 'bots': bots,
+            'frequency': frequency, 'interval': frequency}
 
 eastern_tz = pytz.timezone('US/Eastern')
 
