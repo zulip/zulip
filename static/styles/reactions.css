@@ -3,11 +3,12 @@
 }
 
 .message_reactions .message_reaction + .reaction_button {
-    border-radius: 0.5em;
     visibility: hidden;
     pointer-events: none;
-    margin: 1px 0.1em;
+    margin: 2px 0.1em 1px 0.1em;
     padding: 2.5px;
+    height: 14px;
+    border-radius: 4px;
     padding-left: 0.3em;
     border: thin solid #bbb;
     padding-right: 0.3em;
@@ -122,9 +123,8 @@
 .message_reaction {
     float: left;
     margin: 0.15em;
-    padding: 0.2em 0.3em;
-    padding-left: 0.2em;
-    padding-right: 0.2em;
+    padding: 0 2px 0 0;
+    height: 19px;
     cursor: pointer;
     background-color: #eef7fa;
     border: 1px solid #c7dfe6;
@@ -132,19 +132,24 @@
 }
 
 .message_reaction .emoji {
-    float: left;
-    top: 4px;
-    zoom: 0.70;
+    display: inline-block;
+    vertical-align: top;
+    top: -3px;
+    margin: 0px;
+
+    transform: scale(0.70);
+    transform-origin: 50% 50%;
     -moz-transform: scale(0.70);
-    -moz-transform-origin: 0 0;
+    -moz-transform-origin: 50% 50%;
 }
 
 .message_reaction_count {
     position: relative;
-    top: 1px;
+    top: 3px;
     font-size: 0.8em;
-    float: left;
+    display: inline-block;
+    vertical-align: top;
     color: #0088CC;
-    margin-left: 3px;
+    margin: 0px 1px 0px 0px;
     line-height: 1em;
 }
