@@ -13,7 +13,7 @@ built-in emoji menu, pasting Unicode, or typing the emoji code.
 
 
 ### Unicode
-Zulip fully supports Unicode. To use Unicode in your message:
+Zulip fully supports Unicode emoji. To use Unicode emoji in your message:
 
 1. Copy any emoji you would like to include onto your clipboard. For example:😀.
 2. Compose a [new message or reply](/help/#posting-and-replying)
