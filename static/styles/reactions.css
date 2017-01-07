@@ -1,9 +1,15 @@
-.message_reactions .reaction_button {
-    border-radius: 0.5em;
+.message_reactions .reaction_button:only-child {
     display: none;
+}
+
+.message_reactions .message_reaction + .reaction_button {
+    border-radius: 0.5em;
+    visibility: hidden;
+    pointer-events: none;
     margin: 1px 0.1em;
     padding: 2.5px;
     padding-left: 0.3em;
+    border: thin solid #bbb;
     padding-right: 0.3em;
     float: left;
 }
@@ -20,15 +26,19 @@
     margin-left: 3px;
 }
 
-.reaction_button i {
+.message_reactions .reaction_button:not(:only-child) {
+    margin-bottom: 5px;
+}
+
+.message_reactions .reaction_button i {
     font-size: 1em;
     margin-right: 3px;
 }
 
-.message_reactions:hover .reaction_button {
-    display: block;
+.message_reactions:hover .message_reaction + .reaction_button {
+    visibility: visible;
+    pointer-events: all;
     background-color: #fafafa;
-    border: thin solid #bbb;
     color: #bbb;
 }
 
@@ -105,7 +115,6 @@
 }
 
 .message_reactions {
-    margin: 5px 0px;
     padding-left: 46px;
     overflow: auto;
 }
