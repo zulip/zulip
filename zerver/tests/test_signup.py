@@ -13,7 +13,7 @@ from confirmation.models import Confirmation
 from zilencer.models import Deployment
 
 from zerver.forms import HomepageForm
-from zerver.views import do_change_password
+from zerver.lib.actions import do_change_password
 from zerver.views.invite import get_invitee_emails_set
 from zerver.models import (
     get_realm, get_prereg_user_by_email, get_user_profile_by_email,
@@ -1015,7 +1015,7 @@ class UserSignUpTest(ZulipTestCase):
             }
         }
 
-        with patch('zerver.views.get_subdomain', return_value=subdomain):
+        with patch('zerver.views.registration.get_subdomain', return_value=subdomain):
             result = self.client_post('/register/', {'email': email})
 
         self.assertEqual(result.status_code, 302)

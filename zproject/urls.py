@@ -19,6 +19,7 @@ import zerver.tornado.views
 import zerver.views
 import zerver.views.auth
 import zerver.views.home
+import zerver.views.registration
 import zerver.views.zephyr
 import zerver.views.users
 import zerver.views.unsubscribe
@@ -93,10 +94,12 @@ i18n_urls = [
     url(r'^avatar/(?P<email>[\S]+)?', zerver.views.users.avatar, name='zerver.views.users.avatar'),
 
     # Registration views, require a confirmation ID.
-    url(r'^accounts/home/', zerver.views.accounts_home, name='zerver.views.accounts_home'),
+    url(r'^accounts/home/', zerver.views.registration.accounts_home,
+        name='zerver.views.registration.accounts_home'),
     url(r'^accounts/send_confirm/(?P<email>[\S]+)?',
         TemplateView.as_view(template_name='zerver/accounts_send_confirm.html'), name='send_confirm'),
-    url(r'^accounts/register/', zerver.views.accounts_register, name='zerver.views.accounts_register'),
+    url(r'^accounts/register/', zerver.views.registration.accounts_register,
+        name='zerver.views.registration.accounts_register'),
     url(r'^accounts/do_confirm/(?P<confirmation_key>[\w]+)', confirmation.views.confirm, name='confirmation.views.confirm'),
 
     # Email unsubscription endpoint. Allows for unsubscribing from various types of emails,
@@ -108,15 +111,16 @@ i18n_urls = [
     url(r'^accounts/accept_terms/$', zerver.views.home.accounts_accept_terms, name='zerver.views.home.accounts_accept_terms'),
 
     # Realm Creation
-    url(r'^create_realm/$', zerver.views.create_realm, name='zerver.views.create_realm'),
-    url(r'^create_realm/(?P<creation_key>[\w]+)$', zerver.views.create_realm, name='zerver.views.create_realm'),
+    url(r'^create_realm/$', zerver.views.registration.create_realm, name='zerver.views.create_realm'),
+    url(r'^create_realm/(?P<creation_key>[\w]+)$', zerver.views.registration.create_realm, name='zerver.views.create_realm'),
 
     # Login/registration
-    url(r'^register/$', zerver.views.accounts_home, name='register'),
+    url(r'^register/$', zerver.views.registration.accounts_home, name='register'),
     url(r'^login/$',  zerver.views.auth.login_page, {'template_name': 'zerver/login.html'}, name='zerver.views.auth.login_page'),
 
     # A registration page that passes through the domain, for totally open realms.
-    url(r'^register/(?P<realm_str>\S+)/$', zerver.views.accounts_home_with_realm_str, name='zerver.views.accounts_home_with_realm_str'),
+    url(r'^register/(?P<realm_str>\S+)/$', zerver.views.registration.accounts_home_with_realm_str,
+        name='zerver.views.registration.accounts_home_with_realm_str'),
 
     # API and integrations documentation
     url(r'^api/$', APIView.as_view(template_name='zerver/api.html')),
@@ -132,7 +136,7 @@ i18n_urls = [
         name='landing-page'),
     url(r'^new-user/$', RedirectView.as_view(url='/hello', permanent=True)),
     url(r'^features/$', TemplateView.as_view(template_name='zerver/features.html')),
-    url(r'^find_my_team/$', zerver.views.find_my_team, name='zerver.views.find_my_team'),
+    url(r'^find_my_team/$', zerver.views.registration.find_my_team, name='zerver.views.registration.find_my_team'),
 ]
 
 # If a Terms of Service is supplied, add that route
@@ -158,7 +162,7 @@ v1_api_and_json_patterns = [
         {'PATCH': 'zerver.views.realm.update_realm'}),
 
     # Returns a 204, used by desktop app to verify connectivity status
-    url(r'generate_204$', zerver.views.generate_204, name='zerver.views.generate_204'),
+    url(r'generate_204$', zerver.views.registration.generate_204, name='zerver.views.registration.generate_204'),
 
     # realm/aliases -> zerver.views.realm_aliases
     url(r'^realm/domains$', rest_dispatch,

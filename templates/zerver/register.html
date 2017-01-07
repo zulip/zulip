@@ -23,7 +23,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
         {% endtrans %}
     </div>
 
-    <form method="post" class="form-horizontal" id="registration" action="{{ url('zerver.views.accounts_register') }}">
+    <form method="post" class="form-horizontal" id="registration" action="{{ url('zerver.views.registration.accounts_register') }}">
     {{ csrf_input }}
         <div class="input-group grid">
             <label for="id_email" class="inline-block label-title">{{ _('Email') }}</label>
