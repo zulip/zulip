@@ -36,7 +36,7 @@ class CountStat(object):
     GAUGE = 'gauge'
 
     def __init__(self, property, zerver_count_query, filter_args, group_by, frequency, is_gauge):
-        # type: (Text, ZerverCountQuery, Dict[str, bool], Optional[Tuple[models.Model, str]], str, bool) -> None
+        # type: (str, ZerverCountQuery, Dict[str, bool], Optional[Tuple[models.Model, str]], str, bool) -> None
         self.property = property
         self.zerver_count_query = zerver_count_query
         # might have to do something different for bitfields
