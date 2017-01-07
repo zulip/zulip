@@ -8,6 +8,7 @@ import zerver.views.tutorial
 import zerver.views.report
 import zerver.views.upload
 import zerver.views.messages
+import zerver.views.muting
 
 # Future endpoints should add to urls.py, which includes these legacy urls
 
@@ -35,5 +36,5 @@ legacy_urls = [
     url(r'^json/report_unnarrow_time$',      zerver.views.report.json_report_unnarrow_time),
     url(r'^json/upload_file$',               zerver.views.upload.json_upload_file),
     url(r'^json/messages_in_narrow$',        zerver.views.messages.json_messages_in_narrow),
-    url(r'^json/set_muted_topics$',          zerver.views.json_set_muted_topics),
+    url(r'^json/set_muted_topics$',          zerver.views.muting.json_set_muted_topics),
     ]

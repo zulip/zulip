@@ -20,17 +20,15 @@ from zerver.models import UserProfile, Realm, PreregistrationUser, \
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
     do_activate_user, do_create_user, do_create_realm, set_default_streams, \
     do_events_register, user_email_is_unique, \
-    compute_mit_user_fullname, do_set_muted_topics
+    compute_mit_user_fullname
 from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, \
     CreateUserForm, FindMyTeamForm
 from zerver.lib.actions import is_inactive
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
-from zerver.lib.validator import check_string, check_list
-from zerver.decorator import require_post, authenticated_json_post_view, \
-    has_request_variables, \
+from zerver.decorator import require_post, has_request_variables, \
     JsonableError, get_user_profile_by_email, REQ, \
     zulip_login_required
-from zerver.lib.response import json_success, json_error
+from zerver.lib.response import json_success
 from zerver.lib.utils import get_subdomain
 from zproject.backends import password_auth_enabled
 
@@ -365,14 +363,6 @@ def accounts_home(request):
     return render_to_response('zerver/accounts_home.html',
                               {'form': form, 'current_url': request.get_full_path},
                               request=request)
-
-@authenticated_json_post_view
-@has_request_variables
-def json_set_muted_topics(request, user_profile,
-                          muted_topics=REQ(validator=check_list(check_list(check_string, length=2)), default=[])):
-    # type: (HttpRequest, UserProfile, List[List[Text]]) -> HttpResponse
-    do_set_muted_topics(user_profile, muted_topics)
-    return json_success()
 
 def generate_204(request):
     # type: (HttpRequest) -> HttpResponse
