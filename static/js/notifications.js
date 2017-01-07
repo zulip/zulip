@@ -528,9 +528,12 @@ function get_message_header(message) {
     return "PM with " + message.display_reply_to;
 }
 
-exports.possibly_notify_new_messages_outside_viewport = function (messages) {
+exports.possibly_notify_new_messages_outside_viewport = function (messages, local_id) {
     _.each(messages, function (message) {
-        if (!util.is_current_user(message.sender_email)) {
+        // A warning should only be displayed when the message was sent by the user and
+        // this is the tab he sent it in.
+        if (!util.is_current_user(message.sender_email) ||
+            local_id === undefined) {
             return;
         }
         // queue up offscreen because of narrowed, or (secondarily) offscreen
