@@ -24,13 +24,6 @@ class FillState(ModelReprMixin, models.Model):
         # type: () -> Text
         return u"<FillState: %s %s %s>" % (self.property, self.end_time, self.state)
 
-def get_fill_state(property):
-    # type: (Text) -> Optional[Dict[str, Any]]
-    try:
-        return FillState.objects.filter(property = property).values('end_time', 'state')[0]
-    except IndexError:
-        return None
-
 # The earliest/starting end_time in FillState
 # We assume there is at least one realm
 def installation_epoch():
