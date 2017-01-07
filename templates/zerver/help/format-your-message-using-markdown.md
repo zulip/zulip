@@ -1,7 +1,8 @@
 # Message formatting
 
-Zulip uses a variant of GitHub Flavored Markdown (GFM) to allow you to
-easily format your messages.
+Zulip uses a variant of
+[GitHub Flavored Markdown](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#tables)
+(GFM) to allow you to easily format your messages.
 
 ## Summary
 

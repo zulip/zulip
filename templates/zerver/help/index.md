@@ -338,17 +338,6 @@ of the message is unchanged.
 **[Go back to “Other common questions”](#other-common-questions)** |
   **[Go back to “Table of contents”](#using-zulip)**
 
-### Message formatting
-
-Zulip uses a subset of
-[GitHub Flavored Markdown](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#tables)
-(GFM), To see the current subset, go to the cog (<i class="icon-vector-cog"></i>) in the upper
-right corner of the right sidebar and choose “Message formatting” from
-the drop-down menu.
-
-**[Go back to “Other common questions”](#other-common-questions)** |
-  **[Go back to “Table of contents”](#using-zulip)**
-
 ### Emoji
 
  * **Adding emoji to a message**. There are two ways to do this:
