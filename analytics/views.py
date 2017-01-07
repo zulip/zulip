@@ -10,6 +10,7 @@ from django.utils.translation import ugettext as _
 from jinja2 import Markup as mark_safe
 
 from analytics.lib.counts import CountStat, process_count_stat, COUNT_STATS
+from analytics.lib.time_utils import time_range
 from analytics.models import RealmCount, UserCount
 
 from zerver.decorator import has_request_variables, REQ, zulip_internal, \
@@ -76,30 +77,6 @@ def get_messages_sent_to_realm(realm, min_length=None, start=None, end=None):
         bots[indices[end_time]] = value
 
     return {'end_times': end_times, 'humans': humans, 'bots': bots, 'interval': interval}
-
-# If min_length is None, returns end_times from ceiling(start) to ceiling(end), inclusive.
-# If min_length is greater than 0, pads the list to the left.
-# So informally, time_range(Sep 20, Sep 22, day, None) returns [Sep 20, Sep 21, Sep 22],
-# and time_range(Sep 20, Sep 22, day, 5) returns [Sep 18, Sep 19, Sep 20, Sep 21, Sep 22]
-def time_range(start, end, interval, min_length):
-    # type: (datetime, datetime, str, Optional[int]) -> List[datetime]
-    if interval == CountStat.HOUR:
-        end = ceiling_to_hour(end)
-        step = timedelta(hours=1)
-    elif interval == CountStat.DAY:
-        end = ceiling_to_day(end)
-        step = timedelta(days=1)
-    else:
-        raise ValueError(_("Unknown interval."))
-
-    times = []
-    if min_length is not None:
-        start = min(start, end - (min_length-1)*step)
-    current = end
-    while current >= start:
-        times.append(current)
-        current -= step
-    return list(reversed(times))
 
 eastern_tz = pytz.timezone('US/Eastern')
 

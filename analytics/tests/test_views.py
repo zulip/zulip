@@ -2,7 +2,7 @@ from django.utils.timezone import get_fixed_timezone
 from zerver.lib.test_classes import ZulipTestCase
 
 from analytics.lib.counts import CountStat
-from analytics.views import time_range
+from analytics.lib.time_utils import time_range
 
 from datetime import datetime, timedelta
 
