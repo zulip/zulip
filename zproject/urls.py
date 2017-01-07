@@ -18,6 +18,7 @@ from django.contrib.auth.views import (login, password_reset,
 import zerver.tornado.views
 import zerver.views
 import zerver.views.auth
+import zerver.views.home
 import zerver.views.zephyr
 import zerver.views.users
 import zerver.views.unsubscribe
@@ -44,11 +45,11 @@ from zerver.lib.rest import rest_dispatch
 # If you're adding a new page to the website (as opposed to a new
 # endpoint for use by code), you should add it here.
 i18n_urls = [
-    url(r'^$', zerver.views.home, name='zerver.views.home'),
+    url(r'^$', zerver.views.home.home, name='zerver.views.home.home'),
     # We have a desktop-specific landing page in case we change our /
     # to not log in in the future. We don't want to require a new
     # desktop app build for everyone in that case
-    url(r'^desktop_home/$', zerver.views.desktop_home, name='zerver.views.desktop_home'),
+    url(r'^desktop_home/$', zerver.views.home.desktop_home, name='zerver.views.home.desktop_home'),
 
     url(r'^accounts/login/sso/$', zerver.views.auth.remote_user_sso, name='login-sso'),
     url(r'^accounts/login/jwt/$', zerver.views.auth.remote_user_jwt, name='login-jwt'),
@@ -104,7 +105,7 @@ i18n_urls = [
         zerver.views.unsubscribe.email_unsubscribe, name='zerver.views.unsubscribe.email_unsubscribe'),
 
     # Portico-styled page used to provide email confirmation of terms acceptance.
-    url(r'^accounts/accept_terms/$', zerver.views.accounts_accept_terms, name='zerver.views.accounts_accept_terms'),
+    url(r'^accounts/accept_terms/$', zerver.views.home.accounts_accept_terms, name='zerver.views.home.accounts_accept_terms'),
 
     # Realm Creation
     url(r'^create_realm/$', zerver.views.create_realm, name='zerver.views.create_realm'),
