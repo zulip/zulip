@@ -36,8 +36,8 @@ casper.waitForSelector("#copy-from-stream-expand-collapse", function () {
 });
 
 casper.waitUntilVisible("#stream-checkboxes", function () {
-    casper.test.assertExists('#stream-checkboxes [data-name="Scotland"]', 'Original stream list contains Scotland');
-    casper.test.assertExists('#stream-checkboxes [data-name="Rome"]', 'Original stream list contains Rome');
+    casper.test.assertExists('#stream-checkboxes [data-stream-name="Scotland"]', 'Original stream list contains Scotland');
+    casper.test.assertExists('#stream-checkboxes [data-stream-name="Rome"]', 'Original stream list contains Rome');
 });
 
 casper.waitForSelector("form#stream_creation_form", function () {
@@ -53,11 +53,11 @@ casper.waitForSelector(".subscriber-list", function () {
                              true,
                              "Othello is visible"
     );
-    casper.test.assertEquals(casper.visible('#stream-checkboxes [data-name="Scotland"]'),
+    casper.test.assertEquals(casper.visible('#stream-checkboxes [data-stream-name="Scotland"]'),
                              true,
                              "Scotland is visible"
     );
-    casper.test.assertEquals(casper.visible('#stream-checkboxes [data-name="Rome"]'),
+    casper.test.assertEquals(casper.visible('#stream-checkboxes [data-stream-name="Rome"]'),
                              false,
                              "Rome is not visible"
     );
@@ -75,11 +75,11 @@ casper.then(function () {
                              true,
                              "Othello is visible again"
     );
-    casper.test.assertEquals(casper.visible('#stream-checkboxes [data-name="Scotland"]'),
+    casper.test.assertEquals(casper.visible('#stream-checkboxes [data-stream-name="Scotland"]'),
                              true,
                              "Scotland is visible again"
     );
-    casper.test.assertEquals(casper.visible('#stream-checkboxes [data-name="Rome"]'),
+    casper.test.assertEquals(casper.visible('#stream-checkboxes [data-stream-name="Rome"]'),
                              true,
                              "Rome is visible again"
     );

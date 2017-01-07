@@ -897,9 +897,9 @@ $(function () {
             }());
 
             if (flag) {
-                $("label[data-name='" + stream.name + "']").css("display", "block");
+                $("label.add-user-label[data-stream-id='" + stream.stream_id + "']").css("display", "block");
             } else {
-                $("label[data-name='" + stream.name + "']").css("display", "none");
+                $("label.add-user-label[data-stream-id='" + stream.stream_id + "']").css("display", "none");
             }
         });
 
