@@ -66,11 +66,11 @@ class Command(BaseCommand):
 
             logging.warning("Sending %s email to %s" % (email_template_name, user_profile.email,))
             self.send_email(subject_template_name, email_template_name,
-                           context, from_email, user_profile.email,
-                           html_email_template_name=html_email_template_name)
+                            context, from_email, user_profile.email,
+                            html_email_template_name=html_email_template_name)
 
     def send_email(self, subject_template_name, email_template_name,
-                  context, from_email, to_email, html_email_template_name=None):
+                   context, from_email, to_email, html_email_template_name=None):
         # type: (str, str, Dict[str, Any], Text, Text, Optional[str]) -> None
         """
         Sends a django.core.mail.send_mail to `to_email`.

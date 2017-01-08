@@ -58,7 +58,7 @@ def send_email_job(job):
     message = data["email_text"]
     from_email = get_sender_as_string(data)
     to_email = get_recipient_as_string(data)
-    
+
     if data["email_html"]:
         html_message = data["email_html"]
         return send_mail(subject, message, from_email, [to_email], html_message=html_message) > 0
