@@ -117,7 +117,7 @@ as a **organization**.
 * Zulip on Mac OS
 * Zulip on Linux
 * Zulip on Windows
-* Zulip on Android
+* [Zulip on Android](/help/zulip-on-android)
 * Zulip on iOS
 * Zulip in a terminal
 * Connect to Zulip over IRC/etc (not implemented?)
