@@ -1,21 +1,20 @@
-# Press Enter to send
+# Enable or disable pressing enter to send
 
-By default, Zulip sends your message when you press enter (or return)
-on your keyboard. If you want to turn this off, simply uncheck the
-**Press Enter to send** box below the compose field:
+By default, Zulip sends your message when you press the **Send** button in
+the compose box. If you would like to send your message by pressing
+the enter (or return) key, follow these steps:
 
-![Box checked](/static/images/help/enter-box-checked.png)
+1. Check the **Press Enter to send** box below the compose field:
+    ![Box unchecked](/static/images/help/enter-box-unchecked.png)
 
-You will now see a **Send** button below the compose field looking
-like this.
+2. Now press the enter (or return) key to send your message.
 
-![Box unchecked](/static/images/help/enter-box-unchecked.png)
+## Enable pressing enter to send
 
-With the box unchecked, you will have to click the **Send** button to
-send your message. Pressing enter will no longer send your message.
-
-If you’d like to re-enable the press enter to send feature, just check
+If you’d like the enter (or return) key to not send messages again, just uncheck
 the **Press Enter to send** box again, and you will be able to send
-your messages by pressing enter.
+your messages by pressing the **Send** button like before.
 
-**[Go to "Table of contents"](/help/#using-zulip)**
+!!! tip ""
+    If you have **Pressing Enter to Send** enabled, you can add new lines to your messages
+    by pressing the CTRL + ALT + ENTER key combination.
