@@ -576,8 +576,8 @@ def rate_limit_user(request, user, domain):
 
 def rate_limit(domain='all'):
     # type: (Text) -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]
-    """Rate-limits a view. Takes an optional 'domain' param if you wish to rate limit different
-    types of API calls independently.
+    """Rate-limits a view. Takes an optional 'domain' param if you wish to
+    rate limit different types of API calls independently.
 
     Returns a decorator"""
     def wrapper(func):
@@ -597,7 +597,7 @@ def rate_limit(domain='all'):
 
             try:
                 user = request.user
-            except:
+            except Exception:
                 # TODO: This logic is not tested, and I'm not sure we are
                 # doing the right thing here.
                 user = None
