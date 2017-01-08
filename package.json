@@ -18,6 +18,7 @@
     "underscore": "1.8.3",
     "webpack": "1.12.2",
     "winchan": "0.2.0",
+    "xdate": "0.8.0",
     "zxcvbn": "4.4.1"
   },
   "devDependencies": {

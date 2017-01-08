@@ -187,10 +187,6 @@ Files: static/third/spectrum/*
 Copyright: 2013 Brian Grinstead
 License: Expat
 
-Files: static/third/xdate/*
-Copyright: 2010 C. F., Wong
-License: Expat
-
 Files: static/third/zocial/*
 Copyright: Sam Collins
 License: Expat

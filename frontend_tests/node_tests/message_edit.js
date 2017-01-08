@@ -2,7 +2,7 @@ set_global('document', null);
 set_global('page_params', {});
 
 add_dependencies({
-    XDate: 'third/xdate/xdate.dev.js',
+    XDate: 'node_modules/xdate/src/xdate.js',
 });
 
 var message_edit = require('js/message_edit.js');

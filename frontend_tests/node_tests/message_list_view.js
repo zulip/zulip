@@ -3,7 +3,7 @@ var MessageListView = require('js/message_list_view.js');
 
 add_dependencies({
     $: 'jquery',
-    XDate: 'third/xdate/xdate.dev.js',
+    XDate: 'node_modules/xdate/src/xdate.js',
     util: 'js/util.js',
 });
 
