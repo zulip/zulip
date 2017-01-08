@@ -820,7 +820,7 @@ JS_SPECS = {
             'node_modules/xdate/src/xdate.js',
             'third/jquery-throttle-debounce/jquery.ba-throttle-debounce.js',
             'third/jquery-idle/jquery.idle.js',
-            'third/jquery-autosize/jquery.autosize.js',
+            'node_modules/autosize/dist/autosize.js',
             'node_modules/perfect-scrollbar/dist/js/perfect-scrollbar.jquery.js',
             'third/lazyload/lazyload.js',
             'third/spectrum/spectrum.js',

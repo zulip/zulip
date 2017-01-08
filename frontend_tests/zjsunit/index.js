@@ -3,6 +3,7 @@ require('node_modules/string.prototype.codepointat/codepointat.js');
 
 global.Dict = require('js/dict');
 global._ = require('node_modules/underscore/underscore.js');
+global.autosize = require('node_modules/autosize/dist/autosize.js');
 var _ = global._;
 
 // Find the files we need to run.

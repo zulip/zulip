@@ -101,7 +101,7 @@ function clear_box() {
 }
 
 exports.autosize_message_content = function () {
-    $("#new_message_content").autosize();
+    autosize($("#new_message_content"));
 };
 
 exports.expand_compose_box = function () {
