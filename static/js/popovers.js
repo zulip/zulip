@@ -464,7 +464,7 @@ exports.register_click_handlers = function () {
     $(".emoji_popover").on("click", ".emoji", function (e) {
         var emoji_choice = $(e.target).attr("title");
         var textarea = $("#new_message_content");
-        textarea.val(textarea.val() + " " + emoji_choice);
+        textarea.caret(emoji_choice);
         textarea.focus();
         e.stopPropagation();
     });
