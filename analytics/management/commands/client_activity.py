@@ -76,5 +76,5 @@ Usage examples:
                     self.compute_activity(UserActivity.objects.filter(
                             user_profile__realm=realm))
                 except Realm.DoesNotExist:
-                    print("Unknown user or domain %s" % (arg,))
+                    print("Unknown user or realm %s" % (arg,))
                     exit(1)
