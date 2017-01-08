@@ -729,7 +729,7 @@ JS_SPECS = {
     'common': {
         'source_filenames': [
             'node_modules/jquery/dist/jquery.js',
-            'third/underscore/underscore.js',
+            'node_modules/underscore/underscore.js',
             'js/blueslip.js',
             'third/bootstrap/js/bootstrap.js',
             'js/common.js',

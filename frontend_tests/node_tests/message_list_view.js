@@ -1,4 +1,4 @@
-var _ = require('third/underscore/underscore.js');
+var _ = require('node_modules/underscore/underscore.js');
 var MessageListView = require('js/message_list_view.js');
 
 add_dependencies({

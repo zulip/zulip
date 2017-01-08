@@ -2,7 +2,7 @@ global.assert = require('assert');
 require('node_modules/string.prototype.codepointat/codepointat.js');
 
 global.Dict = require('js/dict');
-global._ = require('third/underscore/underscore.js');
+global._ = require('node_modules/underscore/underscore.js');
 var _ = global._;
 
 // Find the files we need to run.
