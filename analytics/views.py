@@ -296,7 +296,7 @@ def realm_summary_table(realm_minutes):
     for row in rows:
         try:
             row['history'] = counts[row['domain']]['cnts']
-        except:
+        except Exception:
             row['history'] = ''
 
     # augment data with realm_minutes
@@ -309,7 +309,7 @@ def realm_summary_table(realm_minutes):
         row['hours'] = str(int(hours))
         try:
             row['hours_per_user'] = '%.1f' % (hours / row['active_user_count'],)
-        except:
+        except Exception:
             pass
 
     # formatting
