@@ -38,8 +38,9 @@ def server_is_up(server):
     assert_server_running(server)
     try:
         # We could get a 501 error if the reverse proxy is up but the Django app isn't.
-        return requests.get('http://127.0.0.1:9981/accounts/home').status_code == 200
-    except:
+        r = requests.get('http://127.0.0.1:9981/accounts/home')
+        return r.status_code == 200
+    except requests.exceptions.RequestException:
         return False
 
 
