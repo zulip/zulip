@@ -93,9 +93,9 @@ class ConfirmationManager(models.Manager):
         return getattr(settings, 'EMAIL_CONFIRMATION_DAYS', 10)
 
     def send_confirmation(self, obj, email_address, additional_context=None,
-                          subject_template_path=None, body_template_path=None,
+                          subject_template_path=None, body_template_path=None, html_body_template_path=None,
                           host=None):
-        # type: (ContentType, Text, Optional[Dict[str, Any]], Optional[str], Optional[str], Optional[str]) -> Confirmation
+        # type: (ContentType, Text, Optional[Dict[str, Any]], Optional[str], Optional[str], Optional[str], Optional[str]) -> Confirmation
         confirmation_key = generate_key()
         current_site = Site.objects.get_current()
         activate_url = self.get_activation_url(confirmation_key, host=host)
@@ -113,8 +113,8 @@ class ConfirmationManager(models.Manager):
         else:
             template_name = obj._meta.model_name
         templates = [
-            'confirmation/%s_confirmation_email_subject.txt' % (template_name,),
-            'confirmation/confirmation_email_subject.txt',
+            'confirmation/%s_confirmation_email.subject' % (template_name,),
+            'confirmation/confirmation_email.subject',
         ]
         if subject_template_path:
             template = loader.get_template(subject_template_path)
@@ -122,15 +122,21 @@ class ConfirmationManager(models.Manager):
             template = loader.select_template(templates)
         subject = template.render(context).strip().replace(u'\n', u' ') # no newlines, please
         templates = [
-            'confirmation/%s_confirmation_email_body.txt' % (template_name,),
-            'confirmation/confirmation_email_body.txt',
+            'confirmation/%s_confirmation_email.txt' % (template_name,),
+            'confirmation/confirmation_email.txt',
         ]
         if body_template_path:
             template = loader.get_template(body_template_path)
         else:
             template = loader.select_template(templates)
+        if html_body_template_path:
+            html_template = loader.get_template(html_body_template_path)
+        else:
+            html_template = loader.get_template('confirmation/%s_confirmation_email.html' % (template_name,))
         body = template.render(context)
-        send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [email_address])
+        if html_template:
+            html_content = html_template.render(context)
+        send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [email_address], html_message=html_content)
         return self.create(content_object=obj, date_sent=now(), confirmation_key=confirmation_key)
 
 
