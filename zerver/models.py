@@ -244,12 +244,7 @@ post_save.connect(flush_realm, sender=Realm)
 
 def get_realm(string_id):
     # type: (Text) -> Optional[Realm]
-    if not string_id:
-        return None
-    try:
-        return Realm.objects.get(string_id=string_id)
-    except Realm.DoesNotExist:
-        return None
+    return Realm.objects.filter(string_id=string_id).first()
 
 def completely_open(realm):
     # type: (Realm) -> bool
