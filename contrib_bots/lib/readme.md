@@ -1,4 +1,4 @@
-# Overview
+# Contrib Bots:
 
 This is the documentation for an experimental new system for writing
 bots that react to messages.
@@ -9,13 +9,12 @@ bots that react to messages sent by users.
 This document explains how to run the code, and it also
 talks about the architecture for creating bots.
 
-## Design goals
+## Design Goals
 
 The goal is to have a common framework for hosting a bot that reacts
 to messages in any of the following settings:
 
-* Run as a long-running process using `call_on_each_event`
-  (implemented today).
+* Run as a long-running process using `call_on_each_event`.
 
 * Run via a simple web service that can be deployed to PAAS providers
   and handles outgoing webhook requests from Zulip.
@@ -24,7 +23,11 @@ to messages in any of the following settings:
   which would be done for high quality, reusable bots; we would have a
   nice "bot store" sort of UI for browsing and activating them.
 
-## Running bots
+* Run locally by our technically inclined users for bots that require
+  account specific authentication, for example: a gmail bot that lets
+  one send emails directly through Zulip.
+
+## Running Bots
 
 Here is an example of running the "follow-up" bot from
 inside a Zulip repo (and in your remote instance):
@@ -53,6 +56,8 @@ page to create a user-owned bot.
     key=<your api key>
     site=https://zulip.somewhere.com
 
+When you run your bot, make sure to point it to the correct location
+of your `.zuliprc`.
 
 ### Third Party Configuration
 
@@ -66,7 +71,10 @@ information anywhere in your Zulip directory.  Instead,
 create a separate configuration file for the third party's
 configuration in your home directory.
 
-### Python dependencies
+Any bots that require this will have instructions on
+exactly how to create or access this information.
+
+### Python Dependencies
 
 If your module requires Python modules that are not either
 part of the standard Python library or the Zulip API
@@ -100,13 +108,13 @@ Each bot library simply needs to do the following:
 `triage_message`, and `handle_message`.
 - Set `handler_class` to be the name of that class.
 
-(We make this a two-step process, so that you can give
-a descriptive name to your handler class.)
+(We make this a two-step process to reduce code repetition
+and to add abstraction.)
 
 ## Portability
 
 Creating a handler class for each bot allows your bot
-code to be more portable.  For example, if you want to
+code to be more portable. For example, if you want to
 use your bot code in some other kind of bot platform, then
 if all of your bots conform to the `handler_class` protocol,
 you can write simple adapter code to use them elsewhere.
@@ -128,6 +136,7 @@ in a server-side environment.
 ## Other approaches
 
 If you are not interested in running your bots on the
-server, then you can still use the full Zulip API.  The
-hope, though, is that this architecture will make
-writing simple bots a quick/easy process.
+server, then you can still use the full Zulip API and run
+them locally.  The hope, though, is that this
+architecture will make writing simple bots a quick/easy
+process.
