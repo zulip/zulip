@@ -27,7 +27,7 @@ to messages in any of the following settings:
 ## Running bots
 
 Here is an example of running the "follow-up" bot from
-inside a Zulip repo:
+inside a Zulip repo (and in your remote instance):
 
     cd ~/zulip/contrib_bots
     ./run.py lib/followup.py --config-file ~/.zuliprc-prod
@@ -37,7 +37,7 @@ message explaining how to use the bot, as well as
 some log messages.  You can use the `--quiet` option
 to suppress these messages.
 
-The bot code will run continuously until you kill them with
+The bot code will run continuously until you end the program with
 control-C (or otherwise).
 
 ### Zulip Configuration
@@ -60,7 +60,7 @@ If your bot interacts with a non-Zulip service, you may
 have to configure keys or usernames or URLs or similar
 information to hit the other service.
 
-Do **not** put third party configuration information in your
+Do **NOT** put third party configuration information in your
 `.zuliprc` file.  Do not put third party configuration
 information anywhere in your Zulip directory.  Instead,
 create a separate configuration file for the third party's
@@ -71,7 +71,7 @@ configuration in your home directory.
 If your module requires Python modules that are not either
 part of the standard Python library or the Zulip API
 distribution, we ask that you put a comment at the top
-of your bot explaining how to install the dependencies.
+of your bot explaining how to install the dependencies/modules.
 
 Right now we don't support any kind of automatic build
 environment for bots, so it's currently up to the users
@@ -82,7 +82,7 @@ in the future.
 
 In order to make bot development easy, we separate
 out boilerplate code (loading up the Client API, etc.)
-from bot-specific code (do what makes the bot unique).
+from bot-specific code (actions of the bot/what the bot does).
 
 All of the boilerplate code lives in `../run.py`.  The
 runner code does things like find where it can import
