@@ -507,7 +507,7 @@ class BugdownTest(TestCase):
                                        url_format_string='whatever')
             realm_filter.save()
 
-        # start fresh for our domain
+        # start fresh for our realm
         flush()
         self.assertFalse(realm_in_local_realm_filters_cache(realm.id))
 

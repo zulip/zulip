@@ -135,7 +135,7 @@ def get_realm_day_counts():
     # type: () -> Dict[str, Dict[str, str]]
     query = '''
         select
-            r.domain,
+            r.string_id,
             (now()::date - pub_date::date) age,
             count(*) cnt
         from zerver_message m
@@ -149,10 +149,10 @@ def get_realm_day_counts():
         and
             c.name not in ('zephyr_mirror', 'ZulipMonitoring')
         group by
-            r.domain,
+            r.string_id,
             age
         order by
-            r.domain,
+            r.string_id,
             age
     '''
     cursor = connection.cursor()
@@ -162,11 +162,11 @@ def get_realm_day_counts():
 
     counts = defaultdict(dict) # type: Dict[str, Dict[int, int]]
     for row in rows:
-        counts[row['domain']][row['age']] = row['cnt']
+        counts[row['string_id']][row['age']] = row['cnt']
 
     result = {}
-    for domain in counts:
-        raw_cnts = [counts[domain].get(age, 0) for age in range(8)]
+    for string_id in counts:
+        raw_cnts = [counts[string_id].get(age, 0) for age in range(8)]
         min_cnt = min(raw_cnts)
         max_cnt = max(raw_cnts)
 
@@ -182,7 +182,7 @@ def get_realm_day_counts():
             return '<td class="number %s">%s</td>' % (good_bad, cnt)
 
         cnts = ''.join(map(format_count, raw_cnts))
-        result[domain] = dict(cnts=cnts)
+        result[string_id] = dict(cnts=cnts)
 
     return result
 
@@ -190,7 +190,7 @@ def realm_summary_table(realm_minutes):
     # type: (Dict[str, float]) -> str
     query = '''
         SELECT
-            realm.domain,
+            realm.string_id,
             coalesce(user_counts.active_user_count, 0) active_user_count,
             coalesce(at_risk_counts.at_risk_count, 0) at_risk_count,
             (
@@ -283,7 +283,7 @@ def realm_summary_table(realm_minutes):
                 AND
                     last_visit > now() - interval '2 week'
         )
-        ORDER BY active_user_count DESC, domain ASC
+        ORDER BY active_user_count DESC, string_id ASC
         '''
 
     cursor = connection.cursor()
@@ -295,15 +295,15 @@ def realm_summary_table(realm_minutes):
     counts = get_realm_day_counts()
     for row in rows:
         try:
-            row['history'] = counts[row['domain']]['cnts']
+            row['history'] = counts[row['string_id']]['cnts']
         except:
             row['history'] = ''
 
     # augment data with realm_minutes
     total_hours = 0.0
     for row in rows:
-        domain = row['domain']
-        minutes = realm_minutes.get(domain, 0.0)
+        string_id = row['string_id']
+        minutes = realm_minutes.get(string_id, 0.0)
         hours = minutes / 60.0
         total_hours += hours
         row['hours'] = str(int(hours))
@@ -314,7 +314,7 @@ def realm_summary_table(realm_minutes):
 
     # formatting
     for row in rows:
-        row['domain'] = realm_activity_link(row['domain'])
+        row['string_id'] = realm_activity_link(row['string_id'])
 
     # Count active sites
     def meets_goal(row):
@@ -335,7 +335,7 @@ def realm_summary_table(realm_minutes):
         total_at_risk_count += int(row['at_risk_count'])
 
     rows.append(dict(
-        domain='Total',
+        string_id='Total',
         active_user_count=total_active_user_count,
         user_profile_count=total_user_profile_count,
         bot_count=total_bot_count,
@@ -368,20 +368,20 @@ def user_activity_intervals():
         'start',
         'end',
         'user_profile__email',
-        'user_profile__realm__domain'
+        'user_profile__realm__string_id'
     ).order_by(
-        'user_profile__realm__domain',
+        'user_profile__realm__string_id',
         'user_profile__email'
     )
 
-    by_domain = lambda row: row.user_profile.realm.domain
+    by_string_id = lambda row: row.user_profile.realm.string_id
     by_email = lambda row: row.user_profile.email
 
     realm_minutes = {}
 
-    for domain, realm_intervals in itertools.groupby(all_intervals, by_domain):
+    for string_id, realm_intervals in itertools.groupby(all_intervals, by_string_id):
         realm_duration = timedelta(0)
-        output += '<hr>%s\n' % (domain,)
+        output += '<hr>%s\n' % (string_id,)
         for email, intervals in itertools.groupby(realm_intervals, by_email):
             duration = timedelta(0)
             for interval in intervals:
@@ -393,7 +393,7 @@ def user_activity_intervals():
             realm_duration += duration
             output += "  %-*s%s\n" % (37, email, duration)
 
-        realm_minutes[domain] = realm_duration.total_seconds() / 60
+        realm_minutes[string_id] = realm_duration.total_seconds() / 60
 
     output += "\nTotal Duration:                      %s\n" % (total_duration,)
     output += "\nTotal Duration in minutes:           %s\n" % (total_duration.total_seconds() / 60.,)
@@ -431,7 +431,7 @@ def sent_messages_report(realm):
             join zerver_userprofile up on up.id = m.sender_id
             join zerver_realm r on r.id = up.realm_id
             where
-                r.domain = %s
+                r.string_id = %s
             and
                 (not up.is_bot)
             and
@@ -450,7 +450,7 @@ def sent_messages_report(realm):
             join zerver_userprofile up on up.id = m.sender_id
             join zerver_realm r on r.id = up.realm_id
             where
-                r.domain = %s
+                r.string_id = %s
             and
                 up.is_bot
             and
@@ -485,7 +485,7 @@ def ad_hoc_queries():
                 row[i] = fixup_func(row[i])
 
         for i, col in enumerate(cols):
-            if col == 'Domain':
+            if col == 'Realm':
                 fix_rows(i, realm_activity_link)
             elif col in ['Last time', 'Last visit']:
                 fix_rows(i, format_date_for_activity_reports)
@@ -506,7 +506,7 @@ def ad_hoc_queries():
 
         query = '''
             select
-                realm.domain,
+                realm.string_id,
                 up.id user_id,
                 client.name,
                 sum(count) as hits,
@@ -517,13 +517,13 @@ def ad_hoc_queries():
             join zerver_realm realm on realm.id = up.realm_id
             where
                 client.name like '%s'
-            group by domain, up.id, client.name
+            group by string_id, up.id, client.name
             having max(last_visit) > now() - interval '2 week'
-            order by domain, up.id, client.name
+            order by string_id, up.id, client.name
         ''' % (mobile_type,)
 
         cols = [
-            'Domain',
+            'Realm',
             'User id',
             'Name',
             'Hits',
@@ -538,7 +538,7 @@ def ad_hoc_queries():
 
     query = '''
         select
-            realm.domain,
+            realm.string_id,
             client.name,
             sum(count) as hits,
             max(last_visit) as last_time
@@ -548,13 +548,13 @@ def ad_hoc_queries():
         join zerver_realm realm on realm.id = up.realm_id
         where
             client.name like 'desktop%%'
-        group by domain, client.name
+        group by string_id, client.name
         having max(last_visit) > now() - interval '2 week'
-        order by domain, client.name
+        order by string_id, client.name
     '''
 
     cols = [
-        'Domain',
+        'Realm',
         'Client',
         'Hits',
         'Last time'
@@ -564,11 +564,11 @@ def ad_hoc_queries():
 
     ###
 
-    title = 'Integrations by domain'
+    title = 'Integrations by realm'
 
     query = '''
         select
-            realm.domain,
+            realm.string_id,
             case
                 when query like '%%external%%' then split_part(query, '/', 5)
                 else client.name
@@ -586,13 +586,13 @@ def ad_hoc_queries():
             )
         or
             query like '%%external%%'
-        group by domain, client_name
+        group by string_id, client_name
         having max(last_visit) > now() - interval '2 week'
-        order by domain, client_name
+        order by string_id, client_name
     '''
 
     cols = [
-        'Domain',
+        'Realm',
         'Client',
         'Hits',
         'Last time'
@@ -610,7 +610,7 @@ def ad_hoc_queries():
                 when query like '%%external%%' then split_part(query, '/', 5)
                 else client.name
             end client_name,
-            realm.domain,
+            realm.string_id,
             sum(count) as hits,
             max(last_visit) as last_time
         from zerver_useractivity ua
@@ -624,14 +624,14 @@ def ad_hoc_queries():
             )
         or
             query like '%%external%%'
-        group by client_name, domain
+        group by client_name, string_id
         having max(last_visit) > now() - interval '2 week'
-        order by client_name, domain
+        order by client_name, string_id
     '''
 
     cols = [
         'Client',
-        'Domain',
+        'Realm',
         'Hits',
         'Last time'
     ]
@@ -673,7 +673,7 @@ def get_user_activity_records_for_realm(realm, is_bot):
     ]
 
     records = UserActivity.objects.filter(
-            user_profile__realm__domain=realm,
+            user_profile__realm__string_id=realm,
             user_profile__is_active=True,
             user_profile__is_bot=is_bot
     )
@@ -935,20 +935,20 @@ def realm_user_summary_table(all_records, admin_emails):
     return user_records, content
 
 @zulip_internal
-def get_realm_activity(request, realm):
+def get_realm_activity(request, realm_str):
     # type: (HttpRequest, str) -> HttpResponse
     data = [] # type: List[Tuple[str, str]]
     all_user_records = {} # type: Dict[str, Any]
 
     try:
-        admins = Realm.objects.get(domain=realm).get_admin_users()
+        admins = Realm.objects.get(string_id=realm_str).get_admin_users()
     except Realm.DoesNotExist:
-        return HttpResponseNotFound("Realm %s does not exist" % (realm,))
+        return HttpResponseNotFound("Realm %s does not exist" % (realm_str,))
 
     admin_emails = {admin.email for admin in admins}
 
     for is_bot, page_title in [(False,  'Humans'), (True, 'Bots')]:
-        all_records = list(get_user_activity_records_for_realm(realm, is_bot))
+        all_records = list(get_user_activity_records_for_realm(realm_str, is_bot))
 
         user_records, content = realm_user_summary_table(all_records, admin_emails)
         all_user_records.update(user_records)
@@ -960,15 +960,13 @@ def get_realm_activity(request, realm):
     data += [(page_title, content)]
 
     page_title = 'History'
-    content = sent_messages_report(realm)
+    content = sent_messages_report(realm_str)
     data += [(page_title, content)]
 
-    fix_name = lambda realm: realm.replace('.', '_')
-
     realm_link = 'https://stats1.zulip.net:444/render/?from=-7days'
-    realm_link += '&target=stats.gauges.staging.users.active.%s.0_16hr' % (fix_name(realm),)
+    realm_link += '&target=stats.gauges.staging.users.active.%s.0_16hr' % (realm_str)
 
-    title = realm
+    title = realm_str
     return render_to_response(
         'analytics/activity.html',
         dict(data=data, realm_link=realm_link, title=title),

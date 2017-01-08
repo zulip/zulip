@@ -19,7 +19,7 @@ def analyze_activity(options):
 
     user_profile_query = UserProfile.objects.all()
     if options["realm"]:
-        user_profile_query = user_profile_query.filter(realm__domain=options["realm"])
+        user_profile_query = user_profile_query.filter(realm__string_id=options["realm"])
 
     print("Per-user online duration:\n")
     total_duration = datetime.timedelta(0)
@@ -47,7 +47,7 @@ It will correctly not count server-initiated reloads in the activity statistics.
 
 The duration flag can be used to control how many days to show usage duration for
 
-Usage: ./manage.py analyze_user_activity [--realm=zulip.com] [--date=2013-09-10] [--duration=1]
+Usage: ./manage.py analyze_user_activity [--realm=zulip] [--date=2013-09-10] [--duration=1]
 
 By default, if no date is selected 2013-09-10 is used. If no realm is provided, information
 is shown for all realms"""
