@@ -196,11 +196,6 @@ Copyright: 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters 
 License: Expat
 Comment: https://github.com/jashkenas/underscore/blob/master/LICENSE
 
-Files: static/third/winchan/*
-Copyright: 2012 Lloyd Hilaiel
-License: Expat
-Comment: https://github.com/mozilla/winchan
-
 Files: static/third/xdate/*
 Copyright: 2010 C. F., Wong
 License: Expat
