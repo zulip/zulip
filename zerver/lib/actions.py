@@ -3388,8 +3388,10 @@ def do_send_confirmation_email(invitee, referrer):
     `invitee` is a PreregistrationUser.
     `referrer` is a UserProfile.
     """
-    subject_template_path = 'confirmation/invite_email_subject.txt'
-    body_template_path = 'confirmation/invite_email_body.txt'
+    subject_template_path = 'confirmation/invite_email.subject'
+    body_template_path = 'confirmation/invite_email.txt'
+    html_body_template_path = 'confirmation/invite_email.html'
+
     context = {'referrer': referrer,
                'support_email': settings.ZULIP_ADMINISTRATOR,
                'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS}
@@ -3397,11 +3399,14 @@ def do_send_confirmation_email(invitee, referrer):
     if referrer.realm.is_zephyr_mirror_realm:
         subject_template_path = 'confirmation/mituser_invite_email_subject.txt'
         body_template_path = 'confirmation/mituser_invite_email_body.txt'
+        html_body_template_path = None
 
     Confirmation.objects.send_confirmation(
         invitee, invitee.email, additional_context=context,
         subject_template_path=subject_template_path,
-        body_template_path=body_template_path, host=referrer.realm.host)
+        body_template_path=body_template_path,
+        html_body_template_path=html_body_template_path,
+        host=referrer.realm.host)
 
 @statsd_increment("push_notifications")
 def handle_push_notification(user_profile_id, missed_message):
