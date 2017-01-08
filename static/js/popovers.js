@@ -433,7 +433,10 @@ exports.register_click_handlers = function () {
     $("#emoji_content").on("click", ".emoji", function (e) {
         var emoji_choice = $(e.target).attr("title");
         var textarea = $("#new_message_content");
-        textarea.val(textarea.val() + " " + emoji_choice);
+        var position = $("#new_message_content").caret();
+        var text = [textarea.val().slice(0,position) + emoji_choice +
+          textarea.val().slice(position)].join(' ');
+        textarea.val(text);
         textarea.focus();
         e.stopPropagation();
     });
