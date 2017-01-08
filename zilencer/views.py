@@ -37,12 +37,12 @@ def has_enough_time_expired_since_last_message(sender_email, min_delay):
 
 def get_ticket_number():
     # type: () -> int
-    fn = '/var/tmp/.feedback-bot-ticket-number'
+    num_file = '/var/tmp/.feedback-bot-ticket-number'
     try:
-        ticket_number = int(open(fn).read()) + 1
-    except:
+        ticket_number = int(open(num_file).read()) + 1
+    except Exception:
         ticket_number = 1
-    open(fn, 'w').write('%d' % (ticket_number,))
+    open(num_file, 'w').write('%d' % (ticket_number,))
     return ticket_number
 
 @has_request_variables
