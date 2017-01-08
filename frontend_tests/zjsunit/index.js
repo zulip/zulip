@@ -1,5 +1,5 @@
 global.assert = require('assert');
-require('third/string-prototype-codepointat/codepointat.js');
+require('node_modules/string.prototype.codepointat/codepointat.js');
 
 global.Dict = require('js/dict');
 global._ = require('third/underscore/underscore.js');
