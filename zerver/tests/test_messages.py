@@ -965,7 +965,6 @@ class MessagePOSTTest(ZulipTestCase):
         create_mirrored_message_users_mock.return_value = (True, True)
         email = "starnine@mit.edu"
         user = get_user_profile_by_email(email)
-        domain = user.realm.domain
         user.realm.domain = 'not_mit.edu'
         user.realm.save()
         self.login("starnine@mit.edu")
@@ -975,8 +974,6 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "client": "zephyr_mirror",
                                                      "to": "starnine@mit.edu"}, name='gownooo')
         self.assert_json_error(result, "Invalid mirrored realm")
-        user.realm.domain = domain
-        user.realm.save()
 
 class EditMessageTest(ZulipTestCase):
     def check_message(self, msg_id, subject=None, content=None):

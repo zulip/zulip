@@ -190,10 +190,9 @@ class ExportTest(TestCase):
         mkdir_p(output_dir)
         return output_dir
 
-    def _export_realm(self, domain, exportable_user_ids=None):
-        # type: (str, Set[int]) -> Dict[str, Any]
+    def _export_realm(self, realm, exportable_user_ids=None):
+        # type: (Realm, Set[int]) -> Dict[str, Any]
         output_dir = self._make_output_dir()
-        realm = Realm.objects.get(domain=domain)
         with patch('logging.info'), patch('zerver.lib.export.create_soft_link'):
             do_export_realm(
                 realm=realm,
@@ -234,8 +233,8 @@ class ExportTest(TestCase):
             is_message_realm_public=True
         )
 
-        domain = 'zulip.com'
-        full_data = self._export_realm(domain=domain)
+        realm = Realm.objects.get(string_id='zulip')
+        full_data = self._export_realm(realm)
 
         data = full_data['attachment']
         self.assertEqual(len(data['zerver_attachment']), 1)
@@ -248,8 +247,8 @@ class ExportTest(TestCase):
 
     def test_zulip_realm(self):
         # type: () -> None
-        domain = 'zulip.com'
-        full_data = self._export_realm(domain=domain)
+        realm = Realm.objects.get(string_id='zulip')
+        full_data = self._export_realm(realm)
 
         data = full_data['realm']
         self.assertEqual(len(data['zerver_userprofile_crossrealm']), 0)
@@ -294,10 +293,7 @@ class ExportTest(TestCase):
         hamlet = get_user_profile_by_email('hamlet@zulip.com')
         user_ids = set([cordelia.id, hamlet.id])
 
-        full_data = self._export_realm(
-            domain=domain,
-            exportable_user_ids=user_ids
-        )
+        full_data = self._export_realm(realm, exportable_user_ids=user_ids)
         data = full_data['realm']
         exported_user_emails = get_set('zerver_userprofile', 'email')
         self.assertIn('cordelia@zulip.com', exported_user_emails)
