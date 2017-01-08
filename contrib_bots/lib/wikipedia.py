@@ -43,17 +43,18 @@ class WikipediaHandler(object):
         return is_wikipedia
 
     def handle_message(self, message, client, state_handler):
-        original_content = message['content']
+        query = message['content']
 
         for prefix in ['@wikipedia', '@wiki']:
-            if original_content.startswith(prefix):
-                original_content = original_content[len(prefix)+1:]
+            if query.startswith(prefix):
+                query = query[len(prefix)+1:]
                 break
 
-        query_wiki_link = 'https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch='
+        query_wiki_link = ('https://en.wikipedia.org/w/api.php?action=query&'
+                           'list=search&srsearch=%s&format=json' % (query,))
         try:
-            data = requests.get(query_wiki_link + original_content + '&format=json')
-        except:
+            data = requests.get(query_wiki_link)
+        except requests.exceptions.RequestException:
             logging.error('broken link')
             return
 
@@ -63,7 +64,7 @@ class WikipediaHandler(object):
 
         search_string = data.json()['query']['search'][0]['title'].replace(' ', '_')
         url = 'https://wikipedia.org/wiki/' + search_string
-        new_content = 'For search term "' + original_content
+        new_content = 'For search term "' + query
         if len(data.json()['query']['search']) == 0:
             new_content = 'I am sorry. The search term you provided is not found :slightly_frowning_face:'
         else:
