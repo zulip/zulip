@@ -136,9 +136,13 @@ def try_to_copy_venv(venv_path, new_packages):
         except Exception:
             # Virtualenv-clone is not installed. Install it and try running
             # the command again.
-            run("{}/bin/pip install --no-deps virtualenv-clone".format(
-                source_venv_path).split())
-            run(cmd)
+            try:
+                run("{}/bin/pip install --no-deps virtualenv-clone".format(
+                    source_venv_path).split())
+                run(cmd)
+            except Exception:
+                # virtualenv-clone isn't working, so just make a new venv
+                return False
 
         run(["sudo", "chown", "-R",
              "{}:{}".format(os.getuid(), os.getgid()), venv_path])
