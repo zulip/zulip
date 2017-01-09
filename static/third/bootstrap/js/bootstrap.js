@@ -1033,7 +1033,7 @@
       }
 
     , removeBackdrop: function () {
-        if (this !== null) {
+        if (this.$backdrop && this.$backdrop.remove) {
           this.$backdrop.remove();
         }
         this.$backdrop = null
