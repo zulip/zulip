@@ -1,7 +1,7 @@
 # Browse and subscribe to streams
 
-On Zulip, users communicate with each other by sending messages to
-conversation streams, which are similar to conversation threads.  New
+On Zulip, users primarily communicate with each other by sending messages
+to streams, which are similar to conversation threads.  New
 users are automatically subscribed to the organization's default
 streams; however, users may want to subscribe to additional streams or
 browse the list of streams that they subscribe to.
@@ -9,20 +9,20 @@ browse the list of streams that they subscribe to.
 ## Browse streams
 
 1. Click the cog (<i class="icon-vector-cog"></i>) icon next to **Streams**
-in the left sidebar. A tooltip labeled **Subscribe, add, or configure streams**
-will appear upon hovering above the cog.
+in the left sidebar. A tooltip labeled **Subscribe, add, or
+configure streams** will appear upon hovering above the cog.
 
     ![Streams cog and tooltip](/static/images/help/streams-1.png)
 
 2. After clicking the cog (<i class="icon-vector-cog"></i>) icon, the
-[Subscriptions](/#subscriptions) page will now appear, showing all streams that
-you've subscribed to by default.
+[Subscriptions](/#subscriptions) page will now appear, showing all streams
+that you've subscribed to by default.
 
-    ![[Subscriptions page](/static/images/help/streams-overview.png)
+    ![Subscriptions page](/static/images/help/streams-overview.png)
 
-Here, you can explore all the public streams in the organization. You can also
-[create a new stream](create-a-stream) by clicking the plus
-(<i class="icon-vector-plus"></i>) icon to the right of the **Filter Streams** input.
+    Here, you can explore all the public streams in the organization.
+You can also [create a new stream](create-a-stream) by clicking the plus
+(<i class="icon-vector-plus"></i>) icon.
 
 * {!all-streams.md!}
 
@@ -32,7 +32,8 @@ Here, you can explore all the public streams in the organization. You can also
 
     ![Filter streams box](/static/images/help/filter-stream.png)
 
-* Upon selecting a stream in the [Subscriptions](/#subscriptions) page, {!stream-settings.md!}
+* Upon selecting a stream in the [Subscriptions](/#subscriptions) page,
+{!stream-settings.md!}
 
     ![Stream Settings](/static/images/help/stream-overview.png)
 
@@ -51,13 +52,15 @@ following image.
 
 ![Streams subscribe alert](/static/images/help/stream-subscribe.png)
 
-The message will present to you the option of subscribing to the stream, and you
-can do so by simply clicking the gray button.
+The message will present to you the option of subscribing to the stream,
+and you can do so by simply clicking **Subscribe to 'stream name'**
+button.
 
 ### Subscribing later
 
-However, if the you were not notified about the stream's creation, you can
-subscribe to a stream by navigating to the [Subscriptions](/#subscriptions) page.
+However, if the you were not notified about the stream's creation,
+you can subscribe to a stream by navigating to the
+[Subscriptions](/#subscriptions) page.
 
 {!subscriptions.md!}
 
