@@ -157,7 +157,11 @@ def build_custom_checkers(by_lang):
                 except Exception:
                     print("Exception with %s at %s line %s" % (rule['pattern'], fn, i+1))
                     traceback.print_exc()
-            if (max_length is not None and len(line) > max_length and
+            if isinstance(line, bytes):
+                line_length = len(line.decode("utf-8"))
+            else:
+                line_length = len(line)
+            if (max_length is not None and line_length > max_length and
                 '# type' not in line and 'test' not in fn and 'example' not in fn and
                 not re.match("\[[a-z0-9_-]*\]: http.*", line) and
                     "#ignorelongline" not in line and 'migrations' not in fn):
