@@ -5,6 +5,7 @@ set_global('page_params', {
 });
 
 add_dependencies({
+    Handlebars: 'handlebars',
     util: 'js/util.js',
     people: 'js/people.js',
 });
