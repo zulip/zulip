@@ -206,7 +206,7 @@ def update_subscriptions():
         f = open(options.stream_file_path, "r")
         public_streams = simplejson.loads(f.read())
         f.close()
-    except:
+    except Exception:
         logger.exception("Error reading public streams:")
         return
 
