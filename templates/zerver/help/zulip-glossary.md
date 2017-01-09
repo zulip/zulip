@@ -5,15 +5,15 @@ common terms that you should know.
 ### administrator
 
 **Administrators** have special privileges that allow them to control the
-settings and customizations of the realms that they own, including the ability
+settings and customizations of the organizations that they own, including the ability
 to deactivate and reactivate other human and bot users, delete streams,
 add/remove administrator privileges, as well as change configuration for the
-overall realm (e.g. whether an invitation is required to join the realm).
+overall organization (e.g. whether an invitation is required to join the organization).
 
 ### bot
 
 Zulip **bots** are often used for integrations to send automated messages to
-users and can do everything a normal user in the realm can do with a few
+users and can do everything a normal user in the organization can do with a few
 exceptions (e.g. a bot cannot login to the web application or create other
 bots).
 
@@ -123,7 +123,7 @@ messages.
 ### notification
 
 **Notifications** are messages that appear notifying Zulip users about
-important events in the realm, such as being mentioned in another
+important events in the organization, such as being mentioned in another
 user's message or the creation of a stream. Notifications can be sent
 as emails or browser/desktop notifications, often accompanied by an
 alert sound.
@@ -152,11 +152,11 @@ visible to users who've been invited to subscribe to them.
 **Public streams** are for open discussions. All users can subscribe
 to public streams and discuss there.
 
-### realm
+### organization
 
-A **realm** is a Zulip organization hosted on a domain. Each realm is a private
+A **organization** is a Zulip organization hosted on a domain. Each organization is a private
 chamber with its own users, streams, customizations, etc. Administrators manage
-the realm, controlling the specific settings of the realms that they own.
+the organization, controlling the specific settings of the organizations that they own.
 
 ### recipient bar
 

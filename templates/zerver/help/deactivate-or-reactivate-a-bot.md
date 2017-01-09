@@ -1,7 +1,7 @@
 # Deactivate or reactivate a bot
 
-Zulip realm administrators have the ability to deactivate or reactivate any bots
-in their realm.
+Zulip organization administrators have the ability to deactivate or reactivate any bots
+in their organization.
 
 ## Deactivate a bot
 
@@ -23,7 +23,7 @@ stricken through, confirming the success of the bot's deactivation.
 
 ## Reactivate a bot
 
-Zulip realm administrators can choose to reactivate a deactivated bot by
+Zulip organization administrators can choose to reactivate a deactivated bot by
 following the following steps.
 
 {!go-to-the.md!} [Bots](/#administration/bot-list-admin)

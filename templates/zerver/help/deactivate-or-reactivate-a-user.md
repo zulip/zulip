@@ -1,7 +1,7 @@
 # Deactivate or reactivate a user
 
-Zulip realm administrators have the ability to deactivate or reactivate any
-user's account in their realm.
+Zulip organization administrators have the ability to deactivate or reactivate any
+user's account in their organization.
 
 ## Deactivate a user
 
@@ -36,7 +36,7 @@ disappear, confirming the success of the account's deactivation.
 
 ## Reactivate a user
 
-Zulip realm administrators can choose to reactivate a user's deactivated account
+Zulip organization administrators can choose to reactivate a user's deactivated account
 by following the following steps.
 
 {!go-to-the.md!} [Deactivated Users](/#administration/deactivated-users-admin)
