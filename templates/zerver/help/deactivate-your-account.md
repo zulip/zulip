@@ -26,13 +26,13 @@ deactivate your Zulip account.
 Please note that you cannot register a Zulip account using the email
 address of a deactivated account.
 
-In addition, if you're the only administrator in the realm, you cannot
+In addition, if you're the only administrator in the organization, you cannot
 deactivate your account; you need to make another user an
 administrator first before you can deactivate your account.
 
 ## Reactivating an account
 
-If you regret deactivating your account, you can ask a Zulip realm
+If you regret deactivating your account, you can ask a Zulip organization
 administrator to
 [reactivate](/help/deactivate-or-reactivate-a-user#reactivate-a-user)
 your account.

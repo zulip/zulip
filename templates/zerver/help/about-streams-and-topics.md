@@ -11,14 +11,14 @@ Streams are either:
 
 * **Public** - Public streams are for open discussions. All users can subscribe
 to public streams and discuss topics there. Any Zulip user can join any public
-stream in the realm, and they can view the complete message history of any
+stream in the organization, and they can view the complete message history of any
 public stream without joining the stream.
 * **Private** - Private streams are for confidential discussions and are only
 visible to users who've been invited to subscribe to them. Users who are not
 members of a private stream cannot subscribe to the stream, and they also cannot
 read or send messages to the stream.
 
-Users are subscribed to specific streams in the realm by default, such as the
+Users are subscribed to specific streams in the organization by default, such as the
 [#announce](the-announce-stream) stream. Users can easily
 [view messages](/help/view-messages-from-a-stream) from a specific stream; in
 addition, they can [browse](/help/browse-and-join-streams#browse-streams) their
@@ -36,11 +36,11 @@ Users can also customize their stream settings; they can
 notifications or muting for streams in order to create a better Zulip
 environment.
 
-If enabled by the realm administrators, users can
+If enabled by the organization administrators, users can
 [create](/help/create-a-stream) streams and [invite](/help/add-or-invite-someone-to-a-stream)
 other users to a stream.
 
-Only realm administrators can make edits to a stream, such as
+Only organization administrators can make edits to a stream, such as
 [renaming](/help/rename-a-stream), [deleting](/help/delete-a-stream), changing the
 description of a stream, [removing users](/help/remove-someone-from-a-stream) from a
 stream, or changing the accessibility of a stream.

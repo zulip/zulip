@@ -407,6 +407,8 @@ def build_custom_checkers(by_lang):
     help_markdown_rules = markdown_rules + [
         {'pattern': '[a-z][.][A-Z]',
          'description': "Likely missing space after end of sentence"},
+        {'pattern': '[rR]ealm',
+         'description': "Realms are referred to as Organizations in user-facing docs."},
     ]
     txt_rules = whitespace_rules
 

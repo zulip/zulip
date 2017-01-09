@@ -3,9 +3,9 @@
 By default, new users can join a Zulip organization with or without an email
 invitation.
 
-However, if you are a realm administrator that wants to limit the membership of
-your organization, you can choose to limit new members to those with email
-invitations.
+However, if you are an organization administrator that wants to limit
+the membership of your organization, you can choose to limit new
+members to those with email invitations.
 
 ## Limiting new membership to users invited by organization members
 
