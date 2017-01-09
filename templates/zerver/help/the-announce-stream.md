@@ -1,7 +1,7 @@
 # The #announce stream
 
 The #announce stream is just like other streams in most ways, but it's
-conventionally used for realm-wide announcements.
+conventionally used for organization-wide announcements.
 
 ![Example message](/static/images/help/announce-message.png)
 

@@ -18,7 +18,7 @@ It is important to note that spaces in `operand` must be replaced with
 query by separating each operator with spaces in your search bar. Most
 importantly, you can search an individual stream for results from
 before you joined, but search results will only include messages from
-after you first joined Zulip if you search the entire realm.
+after you first joined Zulip if you search the entire organization.
 
 ## Search operators
 
@@ -76,7 +76,7 @@ Listed below are some Zulip keyboard shortcuts that will aid you in conducting a
 * **Initiate a search** `/` - This shortcut moves the user's cursor to
   the message search bar at the top of the window to allow them to
   begin searching for messages belonging to a specific topic, stream,
-  view, etc. in the realm.
+  view, etc. in the organization.
 * **Clear a search** `Esc` - This shortcut clears the search bar of
   any search criteria that was previously entered. This action can
   also be achieved by clicking the **x**

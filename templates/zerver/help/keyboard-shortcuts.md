@@ -14,13 +14,13 @@ Zulip keyboard shortcuts are divided into four categories:
 * **Initiate a search** `/` - This shortcut moves the user's cursor to
   the message search bar at the top of the window to allow them to
   begin searching for messages belonging to a specific topic, stream,
-  view, etc. in the realm.
+  view, etc. in the organization.
 * **Search people** `q` - This shortcut moves the user's cursor to the
   user search bar in the right sidebar to to allow them to begin
-  searching for a particular user in the realm.
+  searching for a particular user in the organization.
 * **Search streams** `w` - This shortcut moves the user's cursor to
   the stream search bar in the left sidebar to to allow them to begin
-  searching for a particular stream in the realm.
+  searching for a particular stream in the organization.
 * **Previous message** `k` `Up arrow` - This shortcut allows the user
   to scroll up to the previous message in their view.
 * **Next message** `j` `Down arrow` - This shortcut allows the user to
@@ -65,7 +65,7 @@ Zulip keyboard shortcuts are divided into four categories:
   to navigate to the previous stream narrow, and `D` allows the user
   to navigate to the next stream narrow.
 * **Return to home view** `Esc` - This shortcut makes the user return
-  to the Home view, showing all messages in the realm.
+  to the Home view, showing all messages in the organization.
 
 ## Menus
 
