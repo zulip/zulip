@@ -87,6 +87,8 @@ real-time notifications they find irrelevant.
 Components
 ----------
 
+  ![architecture-simple](images/architecture_simple.png)
+
 ### Tornado and Django
 
 We use both the [Tornado](http://www.tornadoweb.org) and
