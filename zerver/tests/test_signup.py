@@ -284,7 +284,7 @@ class InviteUserTest(ZulipTestCase):
         params = {
             'invitee_emails': ujson.dumps(invitees),
         }
-        result = self.client_post('/json/bulk_invite_users', params)
+        result = self.client_post('/json/invite/bulk', params)
         self.assert_json_success(result)
         self.check_sent_emails(invitees)
 
@@ -296,7 +296,7 @@ class InviteUserTest(ZulipTestCase):
             'invitee_emails': ujson.dumps(invitees),
         }
         self.assert_json_error(
-            self.client_post('/json/bulk_invite_users', params),
+            self.client_post('/json/invite/bulk', params),
             'Some emails did not validate, so we didn\'t send any invitations.')
         self.check_sent_emails([])
 

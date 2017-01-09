@@ -15,7 +15,6 @@ import zerver.views.muting
 legacy_urls = [
     # These are json format views used by the web client.  They require a logged in browser.
     url(r'^json/invite_users$', zerver.views.invite.json_invite_users),
-    url(r'^json/bulk_invite_users$', zerver.views.invite.json_bulk_invite_users),
     url(r'^json/refer_friend$', zerver.views.invite.json_refer_friend),
     url(r'^json/settings/change$', zerver.views.user_settings.json_change_settings),
 
