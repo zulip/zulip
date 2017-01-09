@@ -25,7 +25,7 @@ function size_blocks(blocks, usable_height) {
     _.each(blocks, function (block) {
         var ratio = block.real_height / sum_height;
         ratio = confine_to_range(0.05, ratio, 0.85);
-        block.max_height = confine_to_range(40, usable_height * ratio, 1.2 * block.real_height);
+        block.max_height = confine_to_range(80, usable_height * ratio, 1.2 * block.real_height);
     });
 }
 
@@ -75,7 +75,7 @@ function get_new_heights() {
     }
 
     // Don't let us crush the stream sidebar completely out of view
-    res.stream_filters_max_height = Math.max(40, res.stream_filters_max_height);
+    res.stream_filters_max_height = Math.max(80, res.stream_filters_max_height);
 
     // RIGHT SIDEBAR
     var user_presences = $('#user_presences').expectOne();
