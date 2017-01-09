@@ -4,19 +4,26 @@ set_global('page_params', {
     people_list: [],
 });
 
-add_dependencies({
-    util: 'js/util.js',
-    people: 'js/people.js',
-});
-
-set_global('resize', {
-    resize_page_components: function () {},
-});
+set_global('feature_flags', {});
 
 set_global('document', {
     hasFocus: function () {
         return true;
     },
+});
+
+add_dependencies({
+    Handlebars: 'handlebars',
+    templates: 'js/templates',
+    util: 'js/util.js',
+    compose_fade: 'js/compose_fade.js',
+    people: 'js/people.js',
+    unread: 'js/unread.js',
+    activity: 'js/activity.js',
+});
+
+set_global('resize', {
+    resize_page_components: function () {},
 });
 
 var alice = {
@@ -51,20 +58,32 @@ global.people.add(jill);
 global.people.add(mark);
 global.people.add(norbert);
 
-
 var people = global.people;
 
 var activity = require('js/activity.js');
+var compose_fade = require('js/compose_fade.js');
+var jsdom = require('jsdom');
+var window = jsdom.jsdom().defaultView;
 
+global.$ = require('jquery')(window);
+$.fn.expectOne = function () {
+    assert(this.length === 1);
+    return this;
+};
+
+compose_fade.update_faded_users = function () {};
 activity.update_huddles = function () {};
+
+global.compile_template('user_presence_row');
+global.compile_template('user_presence_rows');
 
 (function test_sort_users() {
     var user_ids = [alice.user_id, fred.user_id, jill.user_id];
 
     var user_info = {};
-    user_info[alice.user_id] = {status: 'inactive'};
-    user_info[fred.user_id] = {status: 'active'};
-    user_info[jill.user_id] = {status: 'active'};
+    user_info[alice.user_id] = { status: 'inactive' };
+    user_info[fred.user_id] = { status: 'active' };
+    user_info[jill.user_id] = { status: 'active' };
 
     activity._sort_users(user_ids, user_info);
 
@@ -85,8 +104,7 @@ activity.update_huddles = function () {};
 
     var old_timestamp = 1382479000;
 
-    var messages = [
-        {
+    var messages = [{
             type: 'private',
             reply_to: huddle1,
             timestamp: timestamp1,
@@ -165,10 +183,10 @@ activity.update_huddles = function () {};
     huddle = people.emails_strings_to_user_ids_string(huddle);
 
     var presence_list = {};
-    presence_list[alice.user_id] = {status: 'active'};
-    presence_list[fred.user_id] = {status: 'idle'}; // counts as present
+    presence_list[alice.user_id] = { status: 'active' };
+    presence_list[fred.user_id] = { status: 'idle' }; // counts as present
     // jill not in list
-    presence_list[mark.user_id] = {status: 'offline'}; // does not count
+    presence_list[mark.user_id] = { status: 'offline' }; // does not count
 
     assert.equal(
         activity.huddle_fraction_present(huddle, presence_list),
@@ -227,5 +245,96 @@ activity.update_huddles = function () {};
         base_time + activity._OFFLINE_THRESHOLD_SECS * 2, presence);
     assert.equal(status.mobile, true);
     assert.equal(status.status, "offline");
+
+}());
+
+activity.presence_info = {};
+activity.presence_info[alice.user_id] = { status: activity.IDLE };
+activity.presence_info[fred.user_id] = { status: activity.ACTIVE };
+activity.presence_info[jill.user_id] = { status: activity.ACTIVE };
+activity.presence_info[mark.user_id] = { status: activity.IDLE };
+activity.presence_info[norbert.user_id] = { status: activity.ACTIVE };
+
+(function test_presence_list_full_update() {
+    var users = activity.update_users();
+    assert.deepEqual(users, [{
+            name: 'Fred Flintstone',
+            user_id: fred.user_id,
+            num_unread: 0,
+            type: 'active',
+            type_desc: 'is active',
+            mobile: undefined
+        },
+        {
+            name: 'Jill Hill',
+            user_id: jill.user_id,
+            num_unread: 0,
+            type: 'active',
+            type_desc: 'is active',
+            mobile: undefined
+        },
+        {
+            name: 'Norbert Oswald',
+            user_id: norbert.user_id,
+            num_unread: 0,
+            type: 'active',
+            type_desc: 'is active',
+            mobile: undefined
+        },
+        {
+            name: 'Alice Smith',
+            user_id: alice.user_id,
+            num_unread: 0,
+            type: 'idle',
+            type_desc: 'is not active',
+            mobile: undefined
+        },
+        {
+            name: 'Marky Mark',
+            user_id: mark.user_id,
+            num_unread: 0,
+            type: 'idle',
+            type_desc: 'is not active',
+            mobile: undefined
+        },
+    ]);
+}());
+
+(function test_presence_list_partial_update() {
+    activity.presence_info[alice.user_id] = { status: 'active' };
+    activity.presence_info[mark.user_id] = { status: 'active' };
+
+    var users = {};
+
+    users[alice.user_id] = { status: 'active' };
+    users = activity.update_users(users);
+    assert.deepEqual(users, [{
+        name: 'Alice Smith',
+        user_id: alice.user_id,
+        num_unread: 0,
+        type: 'active',
+        type_desc: 'is active',
+        mobile: undefined
+    }, ]);
+
+    // Test if user index in presence_info is the expected one
+    var all_users = activity._filter_and_sort(activity.presence_info);
+    assert.equal(all_users.indexOf(alice.user_id.toString()), 0);
+
+    // Test another user
+    users = {};
+    users[mark.user_id] = { status: 'active' };
+    users = activity.update_users(users);
+    assert.deepEqual(users, [{
+        name: 'Marky Mark',
+        user_id: mark.user_id,
+        num_unread: 0,
+        type: 'active',
+        type_desc: 'is active',
+        mobile: undefined
+    }, ]);
+
+    all_users = activity._filter_and_sort(activity.presence_info);
+    assert.equal(all_users.indexOf(mark.user_id.toString()), 3);
 
 }());
