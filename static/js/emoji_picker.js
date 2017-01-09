@@ -134,7 +134,8 @@ exports.toggle_emoji_popover = function (element, id) {
         $(".emoji-popover-emoji-map").perfectScrollbar({
             suppressScrollX: true,
             useKeyboard: false,
-            wheelSpeed: 25,
+            // Picked so that each mousewheel bump moves 1 emoji down.
+            wheelSpeed: 0.68,
         });
         current_message_emoji_popover_elem = elt;
         exports.render_emoji_show_list();
