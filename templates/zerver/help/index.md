@@ -69,8 +69,7 @@ as a **organization**.
 * [Edit or delete a message](/help/edit-or-delete-a-message)
 * [Change the topic of a message](/help/change-the-topic-of-a-message)
 ### Searching
-* [Search messages](/help/search-messages)
-* [Advanced search for messages](/help/advanced-search-for-messages)
+* [Searching for messages](/help/searching-for-messages)
 
 ## People
 * [Check whether someone is here or away](/help/check-whether-someone-is-here-or-away)
