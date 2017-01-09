@@ -1,7 +1,7 @@
-# Making an Announcement
+# Make an Announcement
 
 An announcement on Zulip is a message which will reach
- all users organization-wide.
+all users in an organization.
 Announcements on Zulip are sent using the `#announce` stream.
 
 1. To send an announcement, click the **New stream message**
@@ -15,15 +15,17 @@ Announcements on Zulip are sent using the `#announce` stream.
 4. Enter the topic for your announcement in the **Topic** field.
 
     !!! tip ""
-        Your topic name can be no longer than 52 characters.
+        Your topic name cannot be longer than 52 characters.
 
-5. Enter your announcement in the box labeled
- **Compose your message here...** or messaging box.
+5. Enter your announcement in **Compose your message here...**
+  (also known as the compose box).
 
-6. Finally, you can now send your announcement by clicking the **Send** button.
+6. Finally, you can now send your announcement by
+  clicking the **Send** button or by pressing the enter key
+  (if you have checked the option **Press Enter to send**).
 
 You can always delete your announcement by
- clicking the <i class="icon-vector-remove"></i> icon located at
+ clicking the X (<i class="icon-vector-remove"></i>) icon located at
  the top-right corner of your messaging box.
 
 Your announcement will look similar to the below image.
