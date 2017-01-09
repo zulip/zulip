@@ -59,13 +59,13 @@ def api_teamcity_webhook(request, user_profile, client, payload=REQ(argument_typ
             status = 'was successful! :thumbsup:'
     elif build_result == 'failure':
         if build_result_delta == 'broken':
-            status = 'is broken with status %s! :thumbsdown:' % (build_status)
+            status = 'is broken with status %s! :thumbsdown:' % (build_status,)
         else:
-            status = 'is still broken with status %s! :thumbsdown:' % (build_status)
+            status = 'is still broken with status %s! :thumbsdown:' % (build_status,)
     elif build_result == 'running':
         status = 'has started.'
     else:
-        status = '(has no message specified for status %s)' % (build_status)
+        status = '(has no message specified for status %s)' % (build_status,)
 
     template = (
         u'%s build %s %s\n'

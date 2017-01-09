@@ -658,7 +658,7 @@ class UnicodeEmoji(markdown.inlinepatterns.Pattern):
         orig_syntax = match.group('syntax')
         name = hex(ord(orig_syntax))[2:]
         if name in unicode_emoji_list:
-            src = '/static/generated/emoji/images/emoji/unicode/%s.png' % (name)
+            src = '/static/generated/emoji/images/emoji/unicode/%s.png' % (name,)
             return make_emoji(name, src, orig_syntax)
         else:
             return None
@@ -676,7 +676,7 @@ class Emoji(markdown.inlinepatterns.Pattern):
         if current_message and name in realm_emoji:
             return make_emoji(name, realm_emoji[name]['display_url'], orig_syntax)
         elif name in emoji_list:
-            src = '/static/generated/emoji/images/emoji/%s.png' % (name)
+            src = '/static/generated/emoji/images/emoji/%s.png' % (name,)
             return make_emoji(name, src, orig_syntax)
         else:
             return None

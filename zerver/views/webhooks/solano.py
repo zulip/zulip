@@ -44,7 +44,7 @@ def api_solano_webhook(request, user_profile, client,
     elif status in neutral_status:
         emoji = ':arrows_counterclockwise:'
     else:
-        emoji = "(No emoji specified for status '%s'.)" % (status)
+        emoji = "(No emoji specified for status '%s'.)" % (status,)
 
     template = (
         u'Author: {}\n'

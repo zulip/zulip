@@ -147,7 +147,7 @@ def build_message_list(user_profile, messages):
         # type: (UserProfile, Message) -> Dict[str, Any]
         disp_recipient = get_display_recipient(message.recipient)
         if message.recipient.type == Recipient.PERSONAL:
-            header = u"You and %s" % (message.sender.full_name)
+            header = u"You and %s" % (message.sender.full_name,)
             html_link = pm_narrow_url(user_profile.realm, [message.sender.email])
             header_html = u"<a style='color: #ffffff;' href='%s'>%s</a>" % (html_link, header)
         elif message.recipient.type == Recipient.HUDDLE:

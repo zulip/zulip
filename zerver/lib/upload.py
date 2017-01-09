@@ -195,7 +195,7 @@ class S3UploadBackend(ZulipUploadBackend):
             random_name(18),
             sanitize_name(uploaded_file_name)
         ])
-        url = "/user_uploads/%s" % (s3_file_name)
+        url = "/user_uploads/%s" % (s3_file_name,)
 
         upload_image_to_s3(
                 bucket_name,

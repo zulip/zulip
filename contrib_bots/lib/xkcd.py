@@ -87,7 +87,7 @@ def get_xkcd_bot_response(message):
     except XkcdNotFoundError:
         logging.exception('XKCD server responded 404 when trying to fetch comic with id %s'
                           % (command))
-        return 'Sorry, there is likely no xkcd comic strip with id: #%s' % (command)
+        return 'Sorry, there is likely no xkcd comic strip with id: #%s' % (command,)
     else:
         return ("#%s: **%s**\n[%s](%s)" % (fetched['num'],
                                            fetched['title'],
