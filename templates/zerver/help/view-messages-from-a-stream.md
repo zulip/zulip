@@ -11,19 +11,20 @@ the left.
 
 ![narrowed view](/static/images/help/narrowed-view.png)
 
-Only messages from the selected stream will be displayed.
-
-In the stream list, the stream whose messages are currently being viewed
-will be highlighted in blue, and the topics in that stream will be
-displayed below the stream name.
+!!! tip ""
+    Only messages from the selected stream will be displayed.
+    In the stream list, the stream whose messages are
+    currently being viewed will be highlighted in blue, and
+    the topics in that
+    stream will be displayed below the stream name.
 
 An alternative way to view messages from only one stream is to type
 **stream:** in the search bar at the top, and then enter the name of the
-stream whose messages you want to view. Autocomplete options to narrow to a
-stream will appear as you type.
+stream whose messages you want to view. Use the autocomplete feature to
+narrow to a stream.
 
 ![narrow from search](/static/images/help/narrow-from-search.png)
 
-You can view messages from a stream that you're not subscribed to through
-the search bar, but you'll generally want to subscribe to streams whose
-messages you want to view.
+You can view any messages from a subscribed or public stream, but
+you'll generally want to subscribe to
+streams whose messages you want to view.
