@@ -211,7 +211,8 @@ function _setup_page() {
     });
 
     $('#new_password').on('change keyup', function () {
-        password_quality($('#new_password').val(), $('#pw_strength .bar'));
+        var field = $('#new_password');
+        password_quality(field.val(), $('#pw_strength .bar'), field);
     });
 
     if (!page_params.show_digest_email) {
@@ -241,9 +242,10 @@ function _setup_page() {
             if (page_params.password_auth_enabled !== false) {
                 // FIXME: Check that the two password fields match
                 // FIXME: Use the same jQuery validation plugin as the signup form?
+                var field = $('#new_password');
                 var new_pw = $('#new_password').val();
                 if (new_pw !== '') {
-                    var password_ok = password_quality(new_pw);
+                    var password_ok = password_quality(new_pw, undefined, field);
                     if (password_ok === undefined) {
                         // zxcvbn.js didn't load, for whatever reason.
                         settings_change_error(

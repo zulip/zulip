@@ -61,6 +61,8 @@ def add_settings(request):
         'development_environment':   settings.DEVELOPMENT,
         'support_email':             settings.ZULIP_ADMINISTRATOR,
         'find_team_link_disabled':   settings.FIND_TEAM_LINK_DISABLED,
+        'password_min_length':       settings.PASSWORD_MIN_LENGTH,
+        'password_min_quality':      settings.PASSWORD_MIN_ZXCVBN_QUALITY,
     }
 
 

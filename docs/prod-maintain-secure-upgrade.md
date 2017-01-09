@@ -391,9 +391,8 @@ announcement).
   the standard PBKDF2 algorithm.  Password strength is checked and
   weak passwords are visually discouraged using the `zxcvbn` library,
   but Zulip does not by default have strong requirements on user
-  password strength.  Modify `static/js/common.js` to adjust the
-  password strength requirements (patches welcome to make this
-  controllable by an easy setting!).
+  password strength.  Modify the settings to adjust the password
+  strength requirements (length and `zxcvbn` minimum quality).
 
 * Zulip requires CSRF tokens in all interactions with the web API to
   prevent CSRF attacks.
