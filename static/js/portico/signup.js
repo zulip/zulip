@@ -3,7 +3,7 @@ $(function () {
     // some of the jQuery selectors below will return empty lists.
 
     $.validator.addMethod('password_strength', function (value) {
-        return password_quality(value);
+        return password_quality(value, undefined, $('#id_password, #id_new_password1'));
     }, 'Password is weak.');
 
     function highlight(class_to_add) {
@@ -33,7 +33,7 @@ $(function () {
     $('#id_password, #id_new_password1').on('change keyup', function () {
         // Update the password strength bar even if we aren't validating
         // the field yet.
-        password_quality($(this).val(), $('#pw_strength .bar'));
+        password_quality($(this).val(), $('#pw_strength .bar'), $(this));
     });
 
     $("#send_confirm").validate({

@@ -28,7 +28,9 @@
                 <div class="">
                     <input id="id_new_password1" class="required" type="password" name="new_password1"
                            value="{% if form.new_password1.value() %}{{ form.new_password1.value() }}{% endif %}"
-                           maxlength="100" />
+                           maxlength="100"
+                           data-min-length="{{password_min_length}}"
+                           data-min-quality="{{password_min_quality}}" />
                     {% if form.new_password1.errors %}
                         {% for error in form.new_password1.errors %}
                             <div class="alert alert-error">{{ error }}</div>

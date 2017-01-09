@@ -121,6 +121,10 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 # Session cookie expiry in seconds after the last page load
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 7 * 2 # 2 weeks
 
+# Controls password strength requirements
+PASSWORD_MIN_LENGTH = 6
+PASSWORD_MIN_ZXCVBN_QUALITY = 0.4 # 0 to disable
+
 # Controls whether or not there is a feedback button in the UI.
 ENABLE_FEEDBACK = False
 

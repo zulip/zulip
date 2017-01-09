@@ -191,6 +191,8 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'POST_MIGRATION_CACHE_FLUSHING': False,
                     'ENABLE_FILE_LINKS': False,
                     'USE_WEBSOCKETS': True,
+                    'PASSWORD_MIN_LENGTH': 6,
+                    'PASSWORD_MIN_ZXCVBN_QUALITY': 0.4,
                     }
 
 for setting_name, setting_val in six.iteritems(DEFAULT_SETTINGS):

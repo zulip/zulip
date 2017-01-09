@@ -63,7 +63,7 @@ casper.then(function () {
             full_name: 'Alice',
             realm_name: organization_name,
             realm_subdomain: subdomain,
-            password: 'password',
+            password: 'passwordwhichisreallyreallyreallycomplexandnotguessable',
             terms: true,
         }, true);
     });
