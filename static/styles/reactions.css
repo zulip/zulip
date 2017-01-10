@@ -38,7 +38,7 @@
 }
 
 .message_reactions .reaction_button .message_reaction_count {
-    top: 1px;
+    top: 0.5px;
 }
 
 .message_reactions i {
@@ -75,8 +75,8 @@
 .message_reactions .message_reaction + .reaction_button {
     visibility: hidden;
     pointer-events: none;
-    margin: 2px 0.1em 1px 0.1em;
-    padding: 2.5px;
+    margin: 2px 0.1em 3px 0.1em;
+    padding: 3px;
     height: 14px;
     border-radius: 4px;
     padding-left: 0.3em;
