@@ -6,6 +6,7 @@ import logging
 import optparse
 import os
 import sys
+import time
 
 our_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -15,17 +16,42 @@ if os.path.exists(os.path.join(our_dir, '../api/zulip')):
 
 from zulip import Client
 
+class RateLimit(object):
+    def __init__(self, message_limit, interval_limit):
+        self.message_limit = message_limit
+        self.interval_limit = interval_limit
+        self.message_list = []
+
+    def is_legal(self):
+        self.message_list.append(time.time())
+        if len(self.message_list) > self.message_limit:
+            self.message_list.pop(0)
+            time_diff = self.message_list[-1] - self.message_list[0]
+            return time_diff >= self.interval_limit
+        else:
+            return True
+
 class RestrictedClient(object):
     def __init__(self, client):
         # Only expose a subset of our Client's functionality
         user_profile = client.get_profile()
-        self.send_message = client.send_message
+        self.rate_limit = RateLimit(20, 5)
+        self.client = client
         try:
             self.full_name = user_profile['full_name']
             self.email = user_profile['email']
         except KeyError:
             logging.error('Cannot fetch user profile, make sure you have set'
                           ' up the zuliprc file correctly.')
+            sys.exit(1)
+
+    def send_message(self, *args, **kwargs):
+        if self.rate_limit.is_legal():
+            self.client.send_message(*args, **kwargs)
+        else:
+            logging.error('-----> !*!*!*MESSAGE RATE LIMIT REACHED, EXITING*!*!*! <-----\n'
+                  'Is your bot trapped in an infinite loop by reacting to'
+                  ' its own messages?')
             sys.exit(1)
 
 def get_lib_module(lib_fn):
