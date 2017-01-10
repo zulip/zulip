@@ -1,68 +1,79 @@
 {
-  "change":{
-    "diff":{
-      "severity":{
-        "from":610789,
-        "to":610790
-      }
-    },
-    "snapshot":null,
-    "values":{
-      "severity":{
-        "610789":"Important",
-        "610790":"Critical"
-      }
-    },
-    "user":{
-      "name":"Antek",
-      "pk":126383
-    },
-    "delete_comment_user":null,
-    "id":"cd061cd2-fcd6-11e5-9191-52540016253e",
-    "created_at":"2016-04-07T15:38:39+0000",
-    "type":1,
-    "key":"issues.issue:264165",
-    "comment":"",
-    "comment_html":"",
-    "delete_comment_date":null,
-    "is_hidden":false,
-    "is_snapshot":false
+  "by": {
+    "gravatar_id": "a2f998f1e3c224fc53cf1d595718961e",
+    "id": 187698,
+    "full_name": "TomaszKolek",
+    "permalink": "https://tree.taiga.io/profile/kolaszek",
+    "username": "kolaszek",
+    "photo": null
   },
-  "data":{
-    "custom_attributes_values":{
-
-    },
-    "is_watcher":false,
-    "total_watchers":0,
-    "watchers":[
-
-    ],
-    "tags":[
-
-    ],
-    "owner":{
-      "id":126383,
-      "name":"Antek"
-    },
-    "assigned_to":null,
-    "id":264165,
-    "version":2,
-    "is_blocked":false,
-    "blocked_note":"",
-    "ref":3,
-    "status":857143,
-    "severity":610790,
-    "priority":367852,
-    "type":369481,
-    "milestone":null,
-    "project":122355,
-    "created_date":"2016-04-07T15:37:41+0000",
-    "modified_date":"2016-04-07T15:38:39+0000",
-    "finished_date":null,
-    "subject":"A new issue",
-    "description":"",
-    "external_reference":null
+  "change": {
+    "comment_html": "",
+    "comment": "",
+    "comment_versions": null,
+    "edit_comment_date": null,
+    "delete_comment_date": null,
+    "diff": {
+      "severity": {
+        "from": "Normal",
+        "to": "Minor"
+      }
+    }
   },
-  "type":"issue",
-  "action":"change"
+  "date": "2017-01-10T19:36:16.215Z",
+  "action": "change",
+  "data": {
+    "watchers": [
+      187698
+    ],
+    "severity": {
+      "name": "Minor",
+      "color": "#669933",
+      "id": 849621
+    },
+    "ref": 8,
+    "id": 511941,
+    "priority": {
+      "name": "Normal",
+      "color": "#669933",
+      "id": 511600
+    },
+    "project": {
+      "name": "TomKol",
+      "id": 170130,
+      "logo_big_url": null,
+      "permalink": "https://tree.taiga.io/project/kolaszek-tomkol"
+    },
+    "finished_date": null,
+    "custom_attributes_values": {},
+    "external_reference": null,
+    "milestone": null,
+    "description": "New description",
+    "created_date": "2017-01-10T19:34:20.303Z",
+    "modified_date": "2017-01-10T19:36:16.121Z",
+    "owner": {
+      "gravatar_id": "a2f998f1e3c224fc53cf1d595718961e",
+      "id": 187698,
+      "full_name": "TomaszKolek",
+      "permalink": "https://tree.taiga.io/profile/kolaszek",
+      "username": "kolaszek",
+      "photo": null
+    },
+    "subject": "New issue",
+    "status": {
+      "name": "New",
+      "slug": "new",
+      "color": "#8C2318",
+      "id": 1192590,
+      "is_closed": false
+    },
+    "type": {
+      "name": "Question",
+      "color": "#ba89a8",
+      "id": 514254
+    },
+    "tags": [],
+    "assigned_to": null
+  },
+  "type": "issue"
 }
