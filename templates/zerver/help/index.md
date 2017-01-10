@@ -64,7 +64,7 @@ as a **organization**.
 * [View an image at full size](/help/view-an-image-at-full-size)
 * [Collapse a message](/help/collapse-a-message)
 * [Star a message](/help/star-a-message)
-* Share a message or conversation (permanent link)
+* [Share a message or conversation](/help/share-a-message-or-conversation)
 ### Editing
 * [Edit or delete a message](/help/edit-or-delete-a-message)
 * [Change the topic of a message](/help/change-the-topic-of-a-message)
