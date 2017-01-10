@@ -595,7 +595,8 @@ td.pointer {
     margin-bottom: 10px;
 }
 
-.message_list .message_row:hover .message_time {
+.message_list .message_row:hover .message_time,
+.message_list .has_popover .message_time {
     display: none;
 }
 
@@ -1028,7 +1029,7 @@ a.message_label_clickable:hover {
     width: 0px;
     height: 0px;
     color: #bbb;
-    opacity: 0;
+    visibility: hidden;
 }
 
 .reactions_hover i {
@@ -1040,9 +1041,11 @@ a.message_label_clickable:hover {
     padding: 1px 2px;
 }
 
-.message_hovered .reactions_hover {
+.message_hovered .reactions_hover,
+.has_reactions_popover .reactions_hover
+ {
     cursor: pointer;
-    opacity: 1.0;
+    visibility: visible;
 }
 
 /* Brighten text because of the dark background */
@@ -1084,6 +1087,7 @@ a.dark_background:hover,
 }
 
 .message_hovered .info,
+.has_actions_popover .info,
 .message_hovered .empty-star {
     visibility: visible;
 }
