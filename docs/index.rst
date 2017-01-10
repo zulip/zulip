@@ -79,6 +79,7 @@ Contents:
    new-feature-tutorial
    writing-views
    life-of-a-request
+   reading-list
 
 .. _code-docs:
 
