@@ -93,7 +93,7 @@ templates = {
         'changed_status': u':chart_with_upwards_trend: %(user)s changed status of task **%(subject)s**'
         ' from %(old)s to %(new)s.',
         'renamed': u':notebook: %(user)s renamed task %(old)s to **%(new)s**.',
-        'description': u':notebook: %(user)s updated description of task **%(subject)s**.',
+        'description_diff': u':notebook: %(user)s updated description of task **%(subject)s**.',
         'commented': u':thought_balloon: %(user)s commented on task **%(subject)s**.',
         'delete': u':x: %(user)s deleted task **%(subject)s**.',
         'changed_us': u':clipboard: %(user)s moved task **%(subject)s** from user story %(old)s to %(new)s.'
