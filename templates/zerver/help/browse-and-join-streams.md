@@ -38,7 +38,7 @@ Here, you can explore all the public streams in the organization. You can also
 
 ## Subscribing to streams
 
-Users can choose to subscribe to any public stream in the orgniazation.
+Users can choose to subscribe to any public stream in the organization.
 
 ### Subscribing when a stream is created
 
@@ -46,7 +46,7 @@ When users create a public stream, they can choose to alert all users
 in the organization about their stream's creation.
 
 Thus, you may be notified about the stream's creation with a message
-in the **Home** view sent by Notification Bot such as the one in the
+in the **Home** view sent by the notification bot such as the one in the
 following image.
 
 ![Streams subscribe alert](/static/images/help/stream-subscribe.png)
@@ -56,7 +56,7 @@ can do so by simply clicking the gray button.
 
 ### Subscribing later
 
-However, if the you were not notified about the stream's creation, you can
+However, if you were not notified about the stream's creation, you can
 subscribe to a stream by navigating to the [Subscriptions](/#subscriptions) page.
 
 {!subscriptions.md!}
