@@ -15,27 +15,16 @@ their Zulip organization. To do so, simply follow the following steps.
 
     ![Invite users to Zulip](/static/images/help/invite-users.png)
 
-4. In the box labeled **Emails (one on each line or
-   comma-separated)**, enter the email addresses of the users that you
-   want to invite. Insert a comma or a separate line between each
-   email.
-
-    ![Invite emails](/static/images/help/invite-email.png)
-
-5. In the section labeled **Streams they should join**, select the
+4. In the section labeled **Streams they should join**, select the
    options of any streams that you want the users you invite to be
    subscribed to by default. Only streams that you're subscribed to
    are displayed; the **Check all** option selects all streams, while
    the **Uncheck all** option deselects all streams.
 
-    ![Streams they should join](/static/images/help/streams-should-join.png)
-
-6. After you have finished inputting all fields, click the blue
+5. After you have finished inputting all fields, click the
    **Invite** button in the bottom right corner. A section labeled
    **Users invited successfully.** will appear in the modal to confirm
    the success of your invitation.
-
-    ![Invite success](/static/images/help/invite-success.png)
 
 ## Invitation email example
 
