@@ -791,7 +791,7 @@ JS_SPECS = {
             'third/sockjs/sockjs-0.3.4.js',
             'node_modules/string.prototype.codepointat/codepointat.js',
             'node_modules/winchan/winchan.js',
-            'third/handlebars/handlebars.runtime.js',
+            'node_modules/handlebars/dist/handlebars.runtime.js',
             'third/marked/lib/marked.js',
             'generated/emoji/emoji_codes.js',
             'templates/compiled.js',
