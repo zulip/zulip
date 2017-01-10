@@ -379,9 +379,9 @@ exports.register_click_handlers = function () {
         // HACK: Because we need the popover to be based off an
         // element that definitely exists in the page even if the
         // message wasn't sent by us and thus the .reaction_hover
-        // element is not present, we use the message's .message_star
-        // element as the base for the popover.
-        popovers.toggle_reactions_popover($(".selected_message .message_star")[0], msgid);
+        // element is not present, we use the message's
+        // .icon-vector-chevron-down element as the base for the popover.
+        popovers.toggle_reactions_popover($(".selected_message .icon-vector-chevron-down")[0], msgid);
     });
 
     $("#main_div").on("click", ".sender_info_hover", function (e) {
