@@ -50,8 +50,8 @@ class RestrictedClient(object):
             self.client.send_message(*args, **kwargs)
         else:
             logging.error('-----> !*!*!*MESSAGE RATE LIMIT REACHED, EXITING*!*!*! <-----\n'
-                  'Is your bot trapped in an infinite loop by reacting to'
-                  ' its own messages?')
+                          'Is your bot trapped in an infinite loop by reacting to'
+                          ' its own messages?')
             sys.exit(1)
 
 def get_lib_module(lib_fn):
