@@ -154,9 +154,8 @@ def parse_comment(message):
         'event': 'commented',
         'type': message["type"],
         'values': {
-            'user': message["change"]["user"]["name"],
-            'subject': message["data"]["subject"] if "subject" in list(message["data"].keys()) else
-                 (message["data"]["name"])
+            'user': get_owner_name(message),
+            'subject': get_subject(message)
         }
     }
 
@@ -168,9 +167,8 @@ def parse_create_or_delete(message):
         'event': message["action"],
         'values':
             {
-                'user': message["data"]["owner"]["name"],
-                'subject': message["data"]["subject"] if "subject" in list(message["data"].keys()) else
-                (message["data"]["name"])
+                'user': get_owner_name(message),
+                'subject': get_subject(message)
             }
     }
 
@@ -180,8 +178,8 @@ def parse_change_event(change_type, message):
     """ Parses change event. """
     evt = {}
     values = {
-        'user': message["change"]["user"]["name"],
-        'subject': message["data"]["subject"] if "subject" in list(message["data"].keys()) else message["data"]["name"]
+        'user': get_owner_name(message),
+        'subject': get_subject(message)
     }
 
     if change_type in ["description", "points"]:
@@ -264,3 +262,10 @@ def generate_content(data):
         return templates[data['type']][data['event']] % data['values']
     except KeyError:
         return json_error(_("Unknown message"))
+
+def get_owner_name(message):
+    return message["by"]["full_name"]
+
+def get_subject(message):
+    data = message["data"]
+    return data.get("subject", data.get("name"))
