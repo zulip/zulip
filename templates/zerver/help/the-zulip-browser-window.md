@@ -11,7 +11,7 @@ central panel of your browser window.
 ### Search bar
 The **search bar** is located at the top of the central panel. This feature
 allows you to narrow your view to show specific messages using
-[search constraints](/help/advanced-search-for-messages).
+[search constraints](/help/searching-for-messages).
 
 !!! tip ""
     If your current filter is not the **Home** view, clicking on the home ((<i
