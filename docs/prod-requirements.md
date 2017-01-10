@@ -26,8 +26,20 @@ instance).
 
 #### Network and Security Specifications
 
-* Outgoing HTTP(S) access to the public Internet. If you want to be able to
-  send email from Zulip, you'll also need SMTP access.
+* Incoming HTTPS access (usually port 443, though this is
+  configurable) from the networks where your users are (usually, the
+  public Internet).  If you also open port 80, Zulip will redirect
+  users to HTTPS rather than not working when users type
+  e.g. `http://zulip.example.com` in their browser.  If you are using
+  Zulip's [incoming email integration][email-mirror-code] you may also
+  need incoming port 25 open.
+
+[email-mirror-code]: https://github.com/zulip/zulip/blob/master/zerver/management/commands/email_mirror.py
+
+* Outgoing HTTP(S) access (ports 80 and 443) to the public Internet so
+  that Zulip can properly manage inline image previews.  If you want
+  to be able to send email from Zulip, you'll also need outgoing SMTP
+  access to your mail server (using port 587).
 
 #### Operating System
 
