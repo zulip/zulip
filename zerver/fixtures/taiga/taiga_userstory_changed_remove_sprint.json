@@ -1,11 +1,13 @@
 {
   "change": {
     "diff": {
-      "points": {
-        "UX": {
-          "to": "5",
-          "from": "?"
-        }
+      "backlog_order": {
+        "to": 0,
+        "from": 1484072668937
+      },
+      "milestone": {
+        "to": null,
+        "from": "Sprint2"
       }
     },
     "comment_versions": null,
@@ -26,7 +28,7 @@
   "action": "change",
   "data": {
     "finish_date": null,
-    "modified_date": "2017-01-10T19:02:19.535Z",
+    "modified_date": "2017-01-10T19:04:34.712Z",
     "is_closed": false,
     "tribe_gig": null,
     "subject": "UserStory",
@@ -92,5 +94,5 @@
       187698
     ]
   },
-  "date": "2017-01-10T19:02:19.731Z"
+  "date": "2017-01-10T19:04:34.926Z"
 }

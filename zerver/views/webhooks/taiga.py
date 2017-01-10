@@ -53,12 +53,14 @@ templates = {
     'userstory': {
         'create': u':package: %(user)s created user story **%(subject)s**.',
         'set_assigned_to': u':busts_in_silhouette: %(user)s assigned user story **%(subject)s** to %(new)s.',
+        'unset_assigned_to': u':busts_in_silhouette: %(user)s unassigned user story **%(subject)s**.',
         'changed_assigned_to': u':busts_in_silhouette: %(user)s reassigned user story **%(subject)s**'
         ' from %(old)s to %(new)s.',
         'points': u':game_die: %(user)s changed estimation of user story **%(subject)s**.',
         'blocked': u':lock: %(user)s blocked user story **%(subject)s**.',
         'unblocked': u':unlock: %(user)s unblocked user story **%(subject)s**.',
         'set_milestone': u':calendar: %(user)s added user story **%(subject)s** to sprint %(new)s.',
+        'unset_milestone': u':calendar: %(user)s removed user story **%(subject)s** from sprint %(old)s.',
         'changed_milestone': u':calendar: %(user)s changed sprint of user story **%(subject)s** from %(old)s'
         ' to %(new)s.',
         'changed_status': u':chart_with_upwards_trend: %(user)s changed status of user story **%(subject)s**'
@@ -66,7 +68,7 @@ templates = {
         'closed': u':checkered_flag: %(user)s closed user story **%(subject)s**.',
         'reopened': u':package: %(user)s reopened user story **%(subject)s**.',
         'renamed': u':notebook: %(user)s renamed user story from %(old)s to **%(new)s**.',
-        'description': u':notebook: %(user)s updated description of user story **%(subject)s**.',
+        'description_diff': u':notebook: %(user)s updated description of user story **%(subject)s**.',
         'commented': u':thought_balloon: %(user)s commented on user story **%(subject)s**.',
         'delete': u':x: %(user)s deleted user story **%(subject)s**.'
     },
@@ -133,14 +135,12 @@ def get_old_and_new_values(change_type, message):
         return old, new
 
     try:
-        old_id = message["change"]["diff"][change_type]["from"]
-        old = message["change"]["values"][values_map[change_type]][str(old_id)]
+        old = message["change"]["diff"][change_type]["from"]
     except KeyError:
         old = None
 
     try:
-        new_id = message["change"]["diff"][change_type]["to"]
-        new = message["change"]["values"][values_map[change_type]][str(new_id)]
+        new = message["change"]["diff"][change_type]["to"]
     except KeyError:
         new = None
 
@@ -182,7 +182,7 @@ def parse_change_event(change_type, message):
         'subject': get_subject(message)
     }
 
-    if change_type in ["description", "points"]:
+    if change_type in ["description_diff", "points"]:
         event_type = change_type
 
     elif change_type in ["milestone", "assigned_to"]:
@@ -190,6 +190,9 @@ def parse_change_event(change_type, message):
         if not old:
             event_type = "set_" + change_type
             values["new"] = new
+        elif not new:
+            event_type = "unset_" + change_type
+            values["old"] = old
         else:
             event_type = "changed_" + change_type
             values.update({'old': old, 'new': new})

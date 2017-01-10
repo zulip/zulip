@@ -13,76 +13,91 @@ class TaigaHookTests(WebhookTestCase):
         api_key = self.get_api_key(self.TEST_USER_EMAIL)
         return self.URL_TEMPLATE.format(stream=self.STREAM_NAME, api_key=api_key, topic=self.TOPIC)
 
-    # def test_taiga_userstory_deleted(self):
-    #     # type: () -> None
-    #     message = u':x: Antek deleted user story **A newer hope**.\n'
-    #     self.send_and_test_stream_message("userstory_deleted", u'subject', message)
-    #
-    # def test_taiga_userstory_created(self):
-    #     # type: () -> None
-    #     message = u':package: Antek created user story **A new hope**.\n'
-    #     self.send_and_test_stream_message("userstory_created", u'subject', message)
-    #
-    # def test_taiga_userstory_changed_unblocked(self):
-    #     # type: () -> None
-    #     message = u':unlock: Antek unblocked user story **A newer hope**.\n'
-    #     self.send_and_test_stream_message("userstory_changed_unblocked", u'subject', message)
-    #
-    # def test_taiga_userstory_changed_subject(self):
-    #     # type: () -> None
-    #     message = u':notebook: Antek renamed user story from A new hope to **A newer hope**.\n'
-    #     self.send_and_test_stream_message("userstory_changed_subject", u'subject', message)
-    #
-    # def test_taiga_userstory_changed_status(self):
-    #     # type: () -> None
-    #     message = u':chart_with_upwards_trend: Antek changed status of user story **A new hope** from New to Done.\n'
-    #     self.send_and_test_stream_message("userstory_changed_status", u'subject', message)
-    #
-    # def test_taiga_userstory_changed_reassigned(self):
-    #     # type: () -> None
-    #     message = u':busts_in_silhouette: Antek reassigned user story **Great US** from Antek to Han Solo.\n'
-    #     self.send_and_test_stream_message("userstory_changed_reassigned", u'subject', message)
-    #
-    # def test_taiga_userstory_changed_points(self):
-    #     # type: () -> None
-    #     message = u':game_die: Antek changed estimation of user story **A new hope**.\n'
-    #     self.send_and_test_stream_message("userstory_changed_points", u'subject', message)
-    #
-    # def test_taiga_userstory_changed_new_milestone(self):
-    #     # type: () -> None
-    #     message = u':calendar: Antek added user story **A newer hope** to sprint New sprint.\n'
-    #     self.send_and_test_stream_message("userstory_changed_new_milestone", u'subject', message)
-    #
-    # def test_taiga_userstory_changed_milestone(self):
-    #     # type: () -> None
-    #     message = u':calendar: Antek changed sprint of user story **A newer hope** from Old sprint to New sprint.\n'
-    #     self.send_and_test_stream_message("userstory_changed_milestone", u'subject', message)
-    #
-    # def test_taiga_userstory_changed_description(self):
-    #     # type: () -> None
-    #     message = u':notebook: Antek updated description of user story **A newer hope**.\n'
-    #     self.send_and_test_stream_message("userstory_changed_description", u'subject', message)
-    #
-    # def test_taiga_userstory_changed_closed(self):
-    #     # type: () -> None
-    #     message = u':chart_with_upwards_trend: Antek changed status of user story **A newer hope** from New to Done.\n:checkered_flag: Antek closed user story **A newer hope**.\n'
-    #     self.send_and_test_stream_message("userstory_changed_closed", u'subject', message)
-    #
-    # def test_taiga_userstory_changed_reopened(self):
-    #     # type: () -> None
-    #     message = u':chart_with_upwards_trend: Antek changed status of user story **A newer hope** from Done to New.\n:package: Antek reopened user story **A newer hope**.\n'
-    #     self.send_and_test_stream_message("userstory_changed_reopened", u'subject', message)
-    #
-    # def test_taiga_userstory_changed_blocked(self):
-    #     # type: () -> None
-    #     message = u':lock: Antek blocked user story **A newer hope**.\n'
-    #     self.send_and_test_stream_message("userstory_changed_blocked", u'subject', message)
-    #
-    # def test_taiga_userstory_changed_assigned(self):
-    #     # type: () -> None
-    #     message = u':busts_in_silhouette: Antek assigned user story **Great US** to Antek.\n'
-    #     self.send_and_test_stream_message("userstory_changed_assigned", u'subject', message)
-    #
+    def test_taiga_userstory_deleted(self):
+        # type: () -> None
+        message = u':x: TomaszKolek deleted user story **New userstory**.\n'
+        self.send_and_test_stream_message("userstory_deleted", u'subject', message)
+
+    def test_taiga_userstory_created(self):
+        # type: () -> None
+        message = u':package: TomaszKolek created user story **New userstory**.\n'
+        self.send_and_test_stream_message("userstory_created", u'subject', message)
+
+    def test_taiga_userstory_changed_unblocked(self):
+        # type: () -> None
+        message = u':unlock: TomaszKolek unblocked user story **UserStory**.\n'
+        self.send_and_test_stream_message("userstory_changed_unblocked", u'subject', message)
+
+    def test_taiga_userstory_changed_subject(self):
+        # type: () -> None
+        message = u':notebook: TomaszKolek renamed user story from UserStory to **UserStoryNewSubject**.\n'
+        self.send_and_test_stream_message("userstory_changed_subject", u'subject', message)
+
+    def test_taiga_userstory_changed_status(self):
+        # type: () -> None
+        message = u':chart_with_upwards_trend: TomaszKolek changed status of user story **UserStory** from Ready to In progress.\n'
+        self.send_and_test_stream_message("userstory_changed_status", u'subject', message)
+
+    def test_taiga_userstory_changed_reassigned(self):
+        # type: () -> None
+        message = u':busts_in_silhouette: TomaszKolek reassigned user story **UserStory** from TomaszKolek to HanSolo.\n'
+        self.send_and_test_stream_message("userstory_changed_reassigned", u'subject', message)
+
+    def test_taiga_userstory_changed_unassigned(self):
+        # type: () -> None
+        message = u':busts_in_silhouette: TomaszKolek unassigned user story **UserStory**.\n'
+        self.send_and_test_stream_message("userstory_changed_unassigned", u'subject', message)
+
+    def test_taiga_userstory_changed_points(self):
+        # type: () -> None
+        message = u':game_die: TomaszKolek changed estimation of user story **UserStory**.\n'
+        self.send_and_test_stream_message("userstory_changed_points", u'subject', message)
+
+    def test_taiga_userstory_changed_new_sprint(self):
+        # type: () -> None
+        message = u':calendar: TomaszKolek added user story **UserStory** to sprint Sprint1.\n'
+        self.send_and_test_stream_message("userstory_changed_new_sprint", u'subject', message)
+
+    def test_taiga_userstory_changed_sprint(self):
+        # type: () -> None
+        message = u':calendar: TomaszKolek changed sprint of user story **UserStory** from Sprint1 to Sprint2.\n'
+        self.send_and_test_stream_message("userstory_changed_sprint", u'subject', message)
+
+    def test_taiga_userstory_changed_remove_sprint(self):
+        # type: () -> None
+        message = u':calendar: TomaszKolek removed user story **UserStory** from sprint Sprint2.\n'
+        self.send_and_test_stream_message("userstory_changed_remove_sprint", u'subject', message)
+
+    def test_taiga_userstory_changed_description(self):
+        # type: () -> None
+        message = u':notebook: TomaszKolek updated description of user story **UserStory**.\n'
+        self.send_and_test_stream_message("userstory_changed_description", u'subject', message)
+
+    def test_taiga_userstory_changed_closed(self):
+        # type: () -> None
+        message = u':chart_with_upwards_trend: TomaszKolek changed status of user story **UserStory** from New to Done.\n:checkered_flag: TomaszKolek closed user story **UserStory**.\n'
+        self.send_and_test_stream_message("userstory_changed_closed", u'subject', message)
+
+    def test_taiga_userstory_changed_reopened(self):
+        # type: () -> None
+        message = u':chart_with_upwards_trend: TomaszKolek changed status of user story **UserStory** from Done to Ready.\n:package: TomaszKolek reopened user story **UserStory**.\n'
+        self.send_and_test_stream_message("userstory_changed_reopened", u'subject', message)
+
+    def test_taiga_userstory_changed_blocked(self):
+        # type: () -> None
+        message = u':lock: TomaszKolek blocked user story **UserStory**.\n'
+        self.send_and_test_stream_message("userstory_changed_blocked", u'subject', message)
+
+    def test_taiga_userstory_changed_assigned(self):
+        # type: () -> None
+        message = u':busts_in_silhouette: TomaszKolek assigned user story **UserStory** to TomaszKolek.\n'
+        self.send_and_test_stream_message("userstory_changed_assigned", u'subject', message)
+
+    def test_taiga_userstory_comment_added(self):
+        # type: () -> None
+        message = u':thought_balloon: TomaszKolek commented on user story **UserStory**.\n'
+        self.send_and_test_stream_message("userstory_changed_comment_added", u'subject', message)
+
     # def test_taiga_task_created(self):
     #     # type: () -> None
     #     message = u':clipboard: Antek created task **New task assigned and in progress**.\n'
@@ -202,11 +217,6 @@ class TaigaHookTests(WebhookTestCase):
     #     # type: () -> None
     #     message = u':rocket: Antek changed priority of issue **A new issue** from Normal to High.\n'
     #     self.send_and_test_stream_message("issue_changed_priority", u'subject', message)
-    #
-    # def test_taiga_userstory_comment_added(self):
-    #     # type: () -> None
-    #     message = u':thought_balloon: Han Solo commented on user story **Great US**.\n'
-    #     self.send_and_test_stream_message("userstory_changed_comment_added", u'subject', message)
     #
     # def test_taiga_task_changed_comment_added(self):
     #     # type: () -> None
