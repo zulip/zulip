@@ -10,11 +10,10 @@ from zerver.lib.response import json_success
 from zerver.lib.validator import check_string, check_list
 from zerver.models import UserProfile
 
-@authenticated_json_post_view
 @has_request_variables
-def json_set_muted_topics(request, user_profile,
-                          muted_topics=REQ(validator=check_list(
-                              check_list(check_string, length=2)), default=[])):
+def set_muted_topics(request, user_profile,
+                     muted_topics=REQ(validator=check_list(
+                         check_list(check_string, length=2)), default=[])):
     # type: (HttpRequest, UserProfile, List[List[Text]]) -> HttpResponse
     do_set_muted_topics(user_profile, muted_topics)
     return json_success()
