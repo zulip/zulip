@@ -55,7 +55,7 @@ function Socket(url) {
 
 Socket.prototype = {
     _create_sockjs_object: function Socket__create_sockjs_object() {
-        this._sockjs = new SockJS(this.url, null, {transports: this._supported_protocols});
+        this._sockjs = new SockJS(this.url, null, {protocols_whitelist: this._supported_protocols});
         this._setup_sockjs_callbacks(this._sockjs);
     },
 
