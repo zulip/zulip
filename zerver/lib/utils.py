@@ -185,16 +185,25 @@ def query_chunker(queries, id_collector=None, chunk_size=1000, db_chunk_size=Non
 
         yield [row for row_id, i, row in tup_chunk]
 
-def get_subdomain(request):
+def _extract_subdomain(request):
     # type: (HttpRequest) -> Text
     domain = request.get_host().lower()
     index = domain.find("." + settings.EXTERNAL_HOST)
     if index == -1:
         return ""
-    subdomain = domain[0:index]
+    return domain[0:index]
+
+def get_subdomain(request):
+    # type: (HttpRequest) -> Text
+    subdomain = _extract_subdomain(request)
     if subdomain in settings.ROOT_SUBDOMAIN_ALIASES:
         return ""
     return subdomain
+
+def is_subdomain_root_or_alias(request):
+    # type: (HttpRequest) -> bool
+    subdomain = _extract_subdomain(request)
+    return not subdomain or subdomain in settings.ROOT_SUBDOMAIN_ALIASES
 
 def check_subdomain(realm_subdomain, user_subdomain):
     # type: (Text, Text) -> bool
