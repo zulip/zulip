@@ -96,7 +96,7 @@ exports.persist_and_rerender = function () {
     };
     last_topic_update = timestamp_ms();
     channel.post({
-        url: '/json/set_muted_topics',
+        url: '/json/users/me/subscriptions/muted_topics',
         idempotent: true,
         data: data,
     });
