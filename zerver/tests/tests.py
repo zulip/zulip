@@ -2318,6 +2318,47 @@ class TestLoginPage(ZulipTestCase):
         result = self.client_get("/login/?subdomain=1")
         self.assertIn(WRONG_SUBDOMAIN_ERROR, result.content.decode('utf8'))
 
+    @patch('django.http.HttpRequest.get_host')
+    def test_login_page_redirects_for_root_alias(self, mock_get_host):
+        # type: (MagicMock) -> None
+        mock_get_host.return_value = 'www.testserver'
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True,
+                           ROOT_SUBDOMAIN_ALIASES=['www']):
+            result = self.client_get("/en/login/")
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, '/find_my_team/')
+
+    @patch('django.http.HttpRequest.get_host')
+    def test_login_page_redirects_for_root_domain(self, mock_get_host):
+        # type: (MagicMock) -> None
+        mock_get_host.return_value = 'testserver'
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True,
+                           ROOT_SUBDOMAIN_ALIASES=['www']):
+            result = self.client_get("/en/login/")
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, '/find_my_team/')
+
+        mock_get_host.return_value = 'www.testserver.com'
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True,
+                           EXTERNAL_HOST='www.testserver.com',
+                           ROOT_SUBDOMAIN_ALIASES=['test']):
+            result = self.client_get("/en/login/")
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, '/find_my_team/')
+
+    @patch('django.http.HttpRequest.get_host')
+    def test_login_page_works_without_subdomains(self, mock_get_host):
+        # type: (MagicMock) -> None
+        mock_get_host.return_value = 'www.testserver'
+        with self.settings(ROOT_SUBDOMAIN_ALIASES=['www']):
+            result = self.client_get("/en/login/")
+            self.assertEqual(result.status_code, 200)
+
+        mock_get_host.return_value = 'testserver'
+        with self.settings(ROOT_SUBDOMAIN_ALIASES=['www']):
+            result = self.client_get("/en/login/")
+            self.assertEqual(result.status_code, 200)
+
 class TestFindMyTeam(ZulipTestCase):
     def test_template(self):
         # type: () -> None

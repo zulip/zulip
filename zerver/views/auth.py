@@ -6,7 +6,8 @@ from django.contrib.auth.views import login as django_login_page, \
     logout_then_login as django_logout_then_login
 from django.core.urlresolvers import reverse
 from zerver.decorator import authenticated_json_post_view, require_post
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, \
+    HttpResponseNotFound
 from django.middleware.csrf import get_token
 from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
@@ -21,7 +22,7 @@ from zerver.forms import HomepageForm, OurAuthenticationForm, \
 
 from zerver.lib.request import REQ, has_request_variables, JsonableError
 from zerver.lib.response import json_success, json_error
-from zerver.lib.utils import get_subdomain
+from zerver.lib.utils import get_subdomain, is_subdomain_root_or_alias
 from zerver.models import PreregistrationUser, UserProfile, remote_user_to_email, Realm
 from zerver.views.registration import create_preregistration_user, get_realm_from_request, \
     redirect_and_log_into_subdomain
@@ -326,6 +327,10 @@ def log_into_subdomain(request):
 
 def login_page(request, **kwargs):
     # type: (HttpRequest, **Any) -> HttpResponse
+    if is_subdomain_root_or_alias(request) and settings.REALMS_HAVE_SUBDOMAINS:
+        redirect_url = reverse('zerver.views.registration.find_my_team')
+        return HttpResponseRedirect(redirect_url)
+
     extra_context = kwargs.pop('extra_context', {})
     if dev_auth_enabled():
         # Development environments usually have only a few users, but
