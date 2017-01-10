@@ -1,6 +1,7 @@
 .message_reactions {
     padding-left: 46px;
-    overflow: auto;
+    overflow: hidden;
+    padding-bottom: 2px;
 }
 
 .message_reactions .message_reaction {
