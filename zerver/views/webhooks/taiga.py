@@ -84,6 +84,7 @@ templates = {
     'task': {
         'create': u':clipboard: %(user)s created task **%(subject)s**.',
         'set_assigned_to': u':busts_in_silhouette: %(user)s assigned task **%(subject)s** to %(new)s.',
+        'unset_assigned_to': u':busts_in_silhouette: %(user)s unassigned task **%(subject)s**.',
         'changed_assigned_to': u':busts_in_silhouette: %(user)s reassigned task **%(subject)s**'
         ' from %(old)s to %(new)s.',
         'blocked': u':lock: %(user)s blocked task **%(subject)s**.',
@@ -101,6 +102,7 @@ templates = {
     'issue': {
         'create': u':bulb: %(user)s created issue **%(subject)s**.',
         'set_assigned_to': u':busts_in_silhouette: %(user)s assigned issue **%(subject)s** to %(new)s.', #
+        'unset_assigned_to': u':busts_in_silhouette: %(user)s unassigned issue **%(subject)s**.',
         'changed_assigned_to': u':busts_in_silhouette: %(user)s reassigned issue **%(subject)s**'
         ' from %(old)s to %(new)s.',
         'changed_priority': u':rocket: %(user)s changed priority of issue **%(subject)s** from %(old)s to %(new)s.',
@@ -109,7 +111,7 @@ templates = {
                            ' from %(old)s to %(new)s.',
         'changed_type': u':bulb: %(user)s changed type of issue **%(subject)s** from %(old)s to %(new)s.',
         'renamed': u':notebook: %(user)s renamed issue %(old)s to **%(new)s**.',
-        'description': u':notebook: %(user)s updated description of issue **%(subject)s**.',
+        'description_diff': u':notebook: %(user)s updated description of issue **%(subject)s**.',
         'commented': u':thought_balloon: %(user)s commented on issue **%(subject)s**.',
         'delete': u':x: %(user)s deleted issue **%(subject)s**.'
     },
@@ -119,16 +121,6 @@ templates = {
 def get_old_and_new_values(change_type, message):
     # type: (str, Mapping[str, Any]) -> Tuple[Optional[Dict[str, Any]], Optional[Dict[str, Any]]]
     """ Parses the payload and finds previous and current value of change_type."""
-    values_map = {
-        'assigned_to': 'users',
-        'status': 'status',
-        'severity': 'severity',
-        'priority': 'priority',
-        'milestone': 'milestone',
-        'type': 'type',
-        'user_story': 'user_story'
-    }
-
     if change_type in ['subject', 'name', 'estimated_finish', 'estimated_start']:
         old = message["change"]["diff"][change_type]["from"]
         new = message["change"]["diff"][change_type]["to"]
@@ -176,11 +168,11 @@ def parse_create_or_delete(message):
 def parse_change_event(change_type, message):
     # type: (str, Mapping[str, Any]) -> Dict[str, Any]
     """ Parses change event. """
-    evt = {}
+    evt = {}  # type: Dict[str, Any]
     values = {
         'user': get_owner_name(message),
         'subject': get_subject(message)
-    }
+    }  # type: Dict[str, Any]
 
     if change_type in ["description_diff", "points"]:
         event_type = change_type
@@ -267,8 +259,10 @@ def generate_content(data):
         return json_error(_("Unknown message"))
 
 def get_owner_name(message):
+    # type: (Mapping[str, Any]) -> str
     return message["by"]["full_name"]
 
 def get_subject(message):
+    # type: (Mapping[str, Any]) -> str
     data = message["data"]
     return data.get("subject", data.get("name"))

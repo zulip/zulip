@@ -143,6 +143,11 @@ class TaigaHookTests(WebhookTestCase):
         message = u':x: TomaszKolek deleted task **New Task**.\n'
         self.send_and_test_stream_message("task_deleted", u'subject', message)
 
+    def test_taiga_task_changed_comment_added(self):
+        # type: () -> None
+        message = u':thought_balloon: TomaszKolek commented on task **New Task**.\n'
+        self.send_and_test_stream_message("task_changed_comment_added", u'subject', message)
+
     def test_taiga_sprint_created(self):
         # type: () -> None
         message = u':calendar: TomaszKolek created sprint **New sprint**.\n'
@@ -162,63 +167,58 @@ class TaigaHookTests(WebhookTestCase):
         # type: () -> None
         message = u':notebook: TomaszKolek renamed sprint from New sprint to **New name**.\n'
         self.send_and_test_stream_message("sprint_changed_name", u'subject', message)
-    #
-    # def test_taiga_issue_created(self):
-    #     # type: () -> None
-    #     message = u':bulb: Antek created issue **A new issue**.\n'
-    #     self.send_and_test_stream_message("issue_created", u'subject', message)
-    #
-    # def test_taiga_issue_deleted(self):
-    #     # type: () -> None
-    #     message = u':x: Antek deleted issue **Aaaa**.\n'
-    #     self.send_and_test_stream_message("issue_deleted", u'subject', message)
-    #
-    # def test_taiga_issue_changed_assigned(self):
-    #     # type: () -> None
-    #     message = u':busts_in_silhouette: Antek assigned issue **Aaaa** to Antek.\n'
-    #     self.send_and_test_stream_message("issue_changed_assigned", u'subject', message)
-    #
-    # def test_taiga_issue_changed_reassigned(self):
-    #     # type: () -> None
-    #     message = u':busts_in_silhouette: Antek reassigned issue **Aaaa** from Antek to Han Solo.\n'
-    #     self.send_and_test_stream_message("issue_changed_reassigned", u'subject', message)
-    #
-    # def test_taiga_issue_changed_subject(self):
-    #     # type: () -> None
-    #     message = u':notebook: Antek renamed issue Aaaa to **More descriptive name**.\n'
-    #     self.send_and_test_stream_message("issue_changed_subject", u'subject', message)
-    #
-    # def test_taiga_issue_changed_description(self):
-    #     # type: () -> None
-    #     message = u':notebook: Antek updated description of issue **More descriptive name**.\n'
-    #     self.send_and_test_stream_message("issue_changed_description", u'subject', message)
-    #
-    # def test_taiga_issue_changed_type(self):
-    #     # type: () -> None
-    #     message = u':bulb: Antek changed type of issue **A new issue** from Bug to Enhancement.\n'
-    #     self.send_and_test_stream_message("issue_changed_type", u'subject', message)
-    #
-    # def test_taiga_issue_changed_status(self):
-    #     # type: () -> None
-    #     message = u':chart_with_upwards_trend: Antek changed status of issue **A new issue** from New to Rejected.\n'
-    #     self.send_and_test_stream_message("issue_changed_status", u'subject', message)
-    #
-    # def test_taiga_issue_changed_severity(self):
-    #     # type: () -> None
-    #     message = u':warning: Antek changed severity of issue **A new issue** from Important to Critical.\n'
-    #     self.send_and_test_stream_message("issue_changed_severity", u'subject', message)
-    #
-    # def test_taiga_issue_changed_priority(self):
-    #     # type: () -> None
-    #     message = u':rocket: Antek changed priority of issue **A new issue** from Normal to High.\n'
-    #     self.send_and_test_stream_message("issue_changed_priority", u'subject', message)
-    #
-    # def test_taiga_task_changed_comment_added(self):
-    #     # type: () -> None
-    #     message = u':thought_balloon: Antek commented on task **New task assigned and in progress**.\n'
-    #     self.send_and_test_stream_message("task_changed_comment_added", u'subject', message)
-    #
-    # def test_taiga_issue_changed_comment_added(self):
-    #     # type: () -> None
-    #     message = u':thought_balloon: Antek commented on issue **Aaaa**.\n'
-    #     self.send_and_test_stream_message("issue_changed_comment_added", u'subject', message)
+
+    def test_taiga_issue_created(self):
+        # type: () -> None
+        message = u':bulb: TomaszKolek created issue **New issue**.\n'
+        self.send_and_test_stream_message("issue_created", u'subject', message)
+
+    def test_taiga_issue_deleted(self):
+        # type: () -> None
+        message = u':x: TomaszKolek deleted issue **New issue**.\n'
+        self.send_and_test_stream_message("issue_deleted", u'subject', message)
+
+    def test_taiga_issue_changed_assigned(self):
+        # type: () -> None
+        message = u':busts_in_silhouette: TomaszKolek assigned issue **New issue** to TomaszKolek.\n'
+        self.send_and_test_stream_message("issue_changed_assigned", u'subject', message)
+
+    def test_taiga_issue_changed_reassigned(self):
+        # type: () -> None
+        message = u':busts_in_silhouette: TomaszKolek reassigned issue **New issue** from TomaszKolek to HanSolo.\n'
+        self.send_and_test_stream_message("issue_changed_reassigned", u'subject', message)
+
+    def test_taiga_issue_changed_subject(self):
+        # type: () -> None
+        message = u':notebook: TomaszKolek renamed issue New issue to **New issueNewSubject**.\n'
+        self.send_and_test_stream_message("issue_changed_subject", u'subject', message)
+
+    def test_taiga_issue_changed_description(self):
+        # type: () -> None
+        message = u':notebook: TomaszKolek updated description of issue **New issue**.\n'
+        self.send_and_test_stream_message("issue_changed_description", u'subject', message)
+
+    def test_taiga_issue_changed_type(self):
+        # type: () -> None
+        message = u':bulb: TomaszKolek changed type of issue **New issue** from Bug to Question.\n'
+        self.send_and_test_stream_message("issue_changed_type", u'subject', message)
+
+    def test_taiga_issue_changed_status(self):
+        # type: () -> None
+        message = u':chart_with_upwards_trend: TomaszKolek changed status of issue **New issue** from New to In progress.\n'
+        self.send_and_test_stream_message("issue_changed_status", u'subject', message)
+
+    def test_taiga_issue_changed_severity(self):
+        # type: () -> None
+        message = u':warning: TomaszKolek changed severity of issue **New issue** from Normal to Minor.\n'
+        self.send_and_test_stream_message("issue_changed_severity", u'subject', message)
+
+    def test_taiga_issue_changed_priority(self):
+        # type: () -> None
+        message = u':rocket: TomaszKolek changed priority of issue **New issue** from Normal to Low.\n'
+        self.send_and_test_stream_message("issue_changed_priority", u'subject', message)
+
+    def test_taiga_issue_changed_comment_added(self):
+        # type: () -> None
+        message = u':thought_balloon: TomaszKolek commented on issue **New issue**.\n'
+        self.send_and_test_stream_message("issue_changed_comment_added", u'subject', message)
