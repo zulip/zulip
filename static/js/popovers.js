@@ -47,6 +47,7 @@ function show_message_info_popover(element, id) {
 exports.toggle_reactions_popover = function (element, id) {
     var last_popover_elem = current_message_reactions_popover_elem;
     popovers.hide_all();
+    $(element).closest('.message_row').toggleClass('has_popover has_reactions_popover');
     if (last_popover_elem !== undefined
         && last_popover_elem.get()[0] === element) {
         // We want it to be the case that a user can dismiss a popover
@@ -119,6 +120,7 @@ exports.toggle_reactions_popover = function (element, id) {
 exports.toggle_actions_popover = function (element, id) {
     var last_popover_elem = current_actions_popover_elem;
     popovers.hide_all();
+    $(element).closest('.message_row').toggleClass('has_popover has_actions_popover');
     if (last_popover_elem !== undefined
         && last_popover_elem.get()[0] === element) {
         // We want it to be the case that a user can dismiss a popover
@@ -833,6 +835,7 @@ exports.any_active = function () {
 };
 
 exports.hide_all = function () {
+    $('.has_popover').removeClass('has_popover has_actions_popover has_reactions_popover');
     popovers.hide_actions_popover();
     popovers.hide_message_info_popover();
     popovers.hide_reactions_popover();
