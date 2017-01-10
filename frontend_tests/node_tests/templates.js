@@ -288,8 +288,7 @@ function render(template_name, args) {
     var all_html = '';
 
     html = render('bookend', args);
-
-    assert.equal($(html).text().trim(), "subscribed to stream\n    \n        \n            \n            Unsubscribe");
+    assert.equal($(html).text().trim(), "subscribed to stream\n    \n        \n            Unsubscribe");
 
     all_html += html;
 
@@ -300,7 +299,7 @@ function render(template_name, args) {
     };
 
     html = render('bookend', args);
-    assert.equal($(html).text().trim(), 'Not subscribed to stream\n    \n        \n            \n            Subscribe');
+    assert.equal($(html).text().trim(), 'Not subscribed to stream\n    \n        \n            Subscribe');
 
     all_html += '<hr />';
     all_html += html;
