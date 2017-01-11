@@ -12,7 +12,7 @@ cross-platform version and a version for Platform 9. See
 [the documentation on apps](/apps) for more information.
 
 One Zulip account, associated with a particular group or organization, is known
-as a **organization**.
+as an **organization**.
 
 ---
 
