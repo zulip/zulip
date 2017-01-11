@@ -237,7 +237,7 @@ function in_browser_notify(message, title, content, raw_operators, opts) {
         }
     }).show();
 
-    $(".notification[data-message-id='" + message.id + "]'").expectOne().data("narrow", {
+    $(".notification[data-message-id='" + message.id + "']").expectOne().data("narrow", {
         raw_operators: raw_operators,
         opts_notif: opts
     });
