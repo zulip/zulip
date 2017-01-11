@@ -1,5 +1,5 @@
-Zulip 2016 Roadmap
-==================
+Zulip Roadmap
+=============
 
 ## Introduction
 
