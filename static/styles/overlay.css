@@ -151,7 +151,7 @@
 
 #overlay .image-description .user::before {
     margin-right: 5px;
-    content: "–";
+    content: "\2014";
 }
 
 #overlay .player-container {
