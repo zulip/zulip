@@ -1,11 +1,69 @@
 <html lang="en">
 <head>
     {{ minified_js('stats')|safe }}
+
+<style type="text/css">
+    .graph_title {
+        font-family: Open Sans, verdana, arial, sans-serif;
+        font-size: 18px;
+        margin-left: 250px;
+        margin-bottom: 30px;
+    }
+    #button_label {
+        font-family: Open Sans, verdana, arial, sans-serif;
+        font-size: 14px;
+        margin-left: 50px;
+        margin-bottom: 5px;
+    }
+    #hoverinfo {
+        position: absolute;
+        left: 480px;
+        top: 620px;
+        z-index: 1;
+        font-family: Open Sans, verdana, arial, sans-serif;
+        font-size: 13px;
+        margin-left: 250px;
+        margin-bottom: 0px;
+    }
+    .btn {
+        font-size: 12px;
+        font-family: Open Sans, verdana, arial, sans-serif;
+        border: none;
+        border-radius: 4px;
+        outline: 0;
+    }
+    #daily {
+        margin-left: 50px;
+        background: #D8D8D8;
+    }
+    #weekly {
+        background: #F0F0F0;
+    }
+    #monthly {
+        background: #F0F0F0;
+    }
+    #cumulative {
+        background: #F0F0F0;
+    }
+    #id_messages_sent_to_realm_bar{
+        position: relative;
+    }
+</style>
 </head>
 <body>
+
   <div id="id_stats_errors" class="alert alert-error"></div>
-  <div id="id_messages_sent_to_realm" style="width: 800px; height: 400px;">
+  <div id="id_messages_sent_to_realm" style="width: 800px; height: 400px;"></div>
     <!-- Plotly chart will be drawn inside this DIV -->
-  </div>
+
+  <p class="graph_title"> Messages Sent by Humans and Bots </p>
+  <p class="label" id="button_label"> Time Window </p>
+  <button class="btn" type="button" id='daily'> daily </button>
+  <button class="btn" type="button" id='weekly'> weekly </button>
+  <button class="btn" type="button" id='monthly'> 4 weeks </button>
+  <button class="btn" type="button" id='cumulative'> cumulative </button>
+  <div class="label" id="hoverinfo"></div>
+  <div id="id_messages_sent_to_realm_bar" style="width: 800px; height: 500px;"></div>
+
 </body>
 </html>

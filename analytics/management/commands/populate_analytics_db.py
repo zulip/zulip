@@ -121,3 +121,4 @@ class Command(BaseCommand):
         insert_fixture_data(stat, realm_data, RealmCount)
 
         # TODO: messages_sent_to_stream:is_bot
+
