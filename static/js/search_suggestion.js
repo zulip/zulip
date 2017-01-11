@@ -346,10 +346,6 @@ function get_special_filter_suggestions(query, operators) {
             search_string: 'is:alerted',
             description: 'Alerted messages',
         },
-        {
-            search_string: 'sender:' + page_params.email,
-            description: 'Sent by me',
-        },
     ];
 
     query = query.toLowerCase();
@@ -368,6 +364,39 @@ function get_special_filter_suggestions(query, operators) {
     return suggestions;
 }
 
+function get_sent_by_me_suggestions(query, operators) {
+    if (operators.length >= 2) {
+        return [];
+    }
+
+    var sender_query = 'sender:' + page_params.email;
+    var from_query = 'from:' + page_params.email;
+    var description = 'Sent by me';
+
+    query = query.toLowerCase();
+
+    if (query === sender_query || query === from_query) {
+        return [];
+    } else if (query === '' ||
+        sender_query.indexOf(query) === 0 ||
+        description.toLowerCase().indexOf(query) === 0) {
+        return [
+            {
+                search_string: sender_query,
+                description: description,
+            },
+        ];
+    } else if (from_query.indexOf(query) === 0) {
+        return [
+            {
+                search_string: from_query,
+                description: description,
+            },
+        ];
+    }
+    return [];
+}
+
 exports.get_suggestions = function (query) {
     // This method works in tandem with the typeahead library to generate
     // search suggestions.  If you want to change its behavior, be sure to update
@@ -384,6 +413,9 @@ exports.get_suggestions = function (query) {
     result = [suggestion];
 
     suggestions = get_special_filter_suggestions(query, operators);
+    result = result.concat(suggestions);
+
+    suggestions = get_sent_by_me_suggestions(query, operators);
     result = result.concat(suggestions);
 
     suggestions = get_stream_suggestions(operators);
