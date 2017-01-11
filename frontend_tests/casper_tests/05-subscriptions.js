@@ -47,20 +47,16 @@ casper.waitForSelector("form#stream_creation_form", function () {
 casper.waitForSelector(".subscriber-list", function () {
     casper.test.assertEquals(casper.visible('#user-checkboxes [data-email="cordelia@zulip.com"]'),
                              false,
-                             "Cordelia is not visible"
-    );
+                             "Cordelia is not visible");
     casper.test.assertEquals(casper.visible('#user-checkboxes [data-email="othello@zulip.com"]'),
                              true,
-                             "Othello is visible"
-    );
+                             "Othello is visible");
     casper.test.assertEquals(casper.visible('#stream-checkboxes [data-stream-name="Scotland"]'),
                              true,
-                             "Scotland is visible"
-    );
+                             "Scotland is visible");
     casper.test.assertEquals(casper.visible('#stream-checkboxes [data-stream-name="Rome"]'),
                              false,
-                             "Rome is not visible"
-    );
+                             "Rome is not visible");
 });
 casper.then(function () {
     casper.test.info("Clearing user filter search box");
@@ -69,20 +65,16 @@ casper.then(function () {
 casper.then(function () {
     casper.test.assertEquals(casper.visible('#user-checkboxes [data-email="cordelia@zulip.com"]'),
                              true,
-                             "Cordelia is visible again"
-    );
+                             "Cordelia is visible again");
     casper.test.assertEquals(casper.visible('#user-checkboxes [data-email="othello@zulip.com"]'),
                              true,
-                             "Othello is visible again"
-    );
+                             "Othello is visible again");
     casper.test.assertEquals(casper.visible('#stream-checkboxes [data-stream-name="Scotland"]'),
                              true,
-                             "Scotland is visible again"
-    );
+                             "Scotland is visible again");
     casper.test.assertEquals(casper.visible('#stream-checkboxes [data-stream-name="Rome"]'),
                              true,
-                             "Rome is visible again"
-    );
+                             "Rome is visible again");
 });
 casper.waitForSelector('#stream_creation_form', function () {
     casper.test.assertTextExists('Add New Stream', 'New stream creation panel');
