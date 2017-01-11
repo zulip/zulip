@@ -205,6 +205,11 @@ MessageListView.prototype = {
                 message_container.include_sender = false;
             }
 
+            message_container.sender_is_bot = (function sender_is_bot() {
+                var email = message_container.msg.sender_email;
+                return people.get_by_email(email).is_bot;
+            }());
+
             self._add_msg_timestring(message_container);
 
             message_container.small_avatar_url = ui.small_avatar_url(message_container.msg);

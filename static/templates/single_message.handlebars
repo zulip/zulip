@@ -15,8 +15,16 @@
 
             {{#unless status_message}}
               {{msg/sender_full_name}}
+              {{#if sender_is_bot}}
+                <img class="bot-icon" src="/static/images/bot.png" />
+              {{/if}}
             {{else}}
-              <span class="sender_name{{#status_message}}-in-status{{/status_message}} sender_info_hover">{{msg/sender_full_name}}</span>
+              <span class="sender_name{{#status_message}}-in-status{{/status_message}} sender_info_hover">
+                {{msg/sender_full_name}}
+                {{#if sender_is_bot}}
+                  <img class="bot-icon" src="/static/images/bot.png" />
+                {{/if}}
+              </span>
                   {{{ status_message }}}
             {{/unless}}
             {{#if_and last_edit_timestr include_sender}}
