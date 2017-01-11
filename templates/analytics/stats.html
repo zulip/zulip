@@ -1,11 +1,193 @@
-<html lang="en">
-<head>
-    {{ minified_js('stats')|safe }}
-</head>
-<body>
+{% extends "zerver/portico.html" %}
+{% block portico_content %}
+
+{{ minified_js('stats')|safe }}
+
+<style type="text/css">
+    .graph_title {
+        text-align: center;
+        font-size: 22px;
+        margin-bottom: 60px;
+    }
+    #button_label {
+        font-size: 12px;
+    }
+    #graph_container {
+        position: relative;
+    }
+    #button_label {
+        font-size: 16px;
+        margin-left: 50px;
+        margin-bottom: 0px;
+    }
+    #hoverinfo {
+        position: absolute;
+        width: 250px;
+        left: 40px;
+        top: 360px;
+        z-index: 1;
+        font-size: 14px;
+    }
+    .button {
+        font-family: 'Humbug', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        border: none;
+        border-radius: 4px;
+    }
+    .pie_button {
+        font-family: 'Humbug', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        font-weight: inherit;
+        border: none;
+        border-radius: 4px;
+        padding: 0px 5px 0px 5px;
+        margin: 5px 0px 0px 0px;
+    }
+    #button_container {
+        position: absolute;
+        top: -15px;
+        z-index: 1
+    }
+    #hourly_button {
+        padding: 0px 5px 0px 5px;
+        font-size: 14px;
+        margin-left: 50px;
+        margin-top: 0px;
+        background: #F0F0F0;
+    }
+    #daily_button {
+        padding: 0px 5px 0px 5px;
+        font-size: 14px;
+        margin-top: 0px;
+        background: #D8D8D8;
+    }
+    #weekly_button {
+        padding: 0px 5px 0px 5px;
+        font-size: 14px;
+        margin-top: 0px;
+        background: #F0F0F0;
+    }
+    #cumulative_button {
+        padding: 0px 5px 0px 5px;
+        font-size: 14px;
+        margin-top: 0px;
+        background: #F0F0F0;
+    }
+    #messages_by_client_realm_button {
+        font-size: 14px;
+        background: #D8D8D8;
+    }
+    #messages_by_client_user_button {
+        font-size: 14px;
+        background: #F0F0F0;
+    }
+    #messages_by_client_cumulative_button {
+        font-size: 14px;
+        margin-left: 50px;
+        background: #D8D8D8;
+    }
+    #messages_by_client_ten_days_button {
+        font-size: 14px;
+        background: #F0F0F0;
+    }
+    #messages_by_client_thirty_days_button {
+        font-size: 14px;
+        background: #F0F0F0;
+    }
+    #messages_by_type_realm_button {
+        font-size: 14px;
+        margin-left: 50px;
+        margin-bottom: 100px;
+        background: #D8D8D8;
+    }
+    #messages_by_type_user_button {
+        font-size: 14px;
+        background: #F0F0F0;
+        margin-bottom: 100px;
+    }
+    #messages_by_type_cumulative_button {
+        font-size: 14px;
+        margin-left: 50px;
+        background: #D8D8D8;
+        vertical-align: top;
+    }
+    #messages_by_type_ten_days_button {
+        font-size: 14px;
+        background: #F0F0F0;
+        vertical-align: top;
+    }
+    #messages_by_type_thirty_days_button {
+        font-size: 14px;
+        background: #F0F0F0;
+        vertical-align: top;
+
+    }
+    #pie_container {
+        text-align: center;
+    }
+    #pie_1 {
+        display: inline-block;
+        vertical-align: top;
+        margin: 40px;
+    }
+    #pie_2 {
+        display: inline-block;
+        vertical-align: top;
+        margin: 40px;
+    }
+    #pie1_total {
+        font-size: 15px;
+        text-align: left;
+        margin: 0px 0px 10px 5px;
+    }
+    #pie2_total {
+        font-size: 15px;
+        text-align: left;
+        margin: 0px 0px 10px 50px;
+    }
+</style>
   <div id="id_stats_errors" class="alert alert-error"></div>
-  <div id="id_messages_sent_to_realm" style="width: 800px; height: 400px;">
-    <!-- Plotly chart will be drawn inside this DIV -->
+  <h3 class="login-page-header">Analytics</h3>
+  <div class="center-container">
+    <div class="center-block">
+      <p class="graph_title"> Messages Sent by Humans and Bots </p>
+      <div id="graph_container">
+        <div id="button_container">
+          <p id="button_label"> Aggregation </p>
+          <button class="button" type="button" id='hourly_button'> hourly </button>
+          <button class="button" type="button" id='daily_button'> daily </button>
+          <button class="button" type="button" id='weekly_button'> weekly </button>
+          <button class="button" type="button" id='cumulative_button'> cumulative </button>
+        </div>
+        <div id="hoverinfo"></div>
+        <div id="id_messages_sent_over_time"></div>
+      </div>
+    </div>
   </div>
-</body>
-</html>
+  <div class="center-container">
+    <div class="center-block">
+      <p class="graph_title"> Number of Users</p>
+      <div id="id_number_of_users"></div>
+    </div>
+  </div>
+  <div id="pie_container">
+    <div id="pie_1">
+      <p class="graph_title"> Messages Sent by Client</p>
+      <div id="id_messages_sent_by_client"></div>
+      <div id="pie1_total"> </div>
+      <button class="pie_button" type="button" id='messages_by_client_realm_button'> Everyone </button>
+      <button class="pie_button" type="button" id='messages_by_client_user_button'> Me </button>
+      <button class="pie_button" type="button" id='messages_by_client_cumulative_button'> All time </button>
+      <button class="pie_button" type="button" id='messages_by_client_thirty_days_button'> Last 30 Days </button>
+      <button class="pie_button" type="button" id='messages_by_client_ten_days_button'> Last 10 Days </button>
+    </div>
+    <div id="pie_2">
+      <p class="graph_title"> Messages Sent by Message Type</p>
+      <div id="id_messages_sent_by_message_type"></div>
+      <div id="pie2_total"> </div>
+      <button class="pie_button" type="button" id='messages_by_type_realm_button'> Everyone </button>
+      <button class="pie_button" type="button" id='messages_by_type_user_button'> Me </button>
+      <button class="pie_button" type="button" id='messages_by_type_cumulative_button'> All time </button>
+      <button class="pie_button" type="button" id='messages_by_type_thirty_days_button'> Last 30 Days </button>
+      <button class="pie_button" type="button" id='messages_by_type_ten_days_button'> Last 10 Days </button>
+    </div>
+  </div>
+{% endblock %}
