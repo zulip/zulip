@@ -175,6 +175,16 @@ global.stream_data.populate_stream_topics_for_tests({});
     ];
     assert.deepEqual(suggestions.strings, expected);
 
+    query = 'from:ted';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "from:ted",
+        "from:ted@zulip.com",
+        "is:private",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+
     // Users can enter bizarre queries, and if they do, we want to
     // be conservative with suggestions.
     query = 'is:private near:3';

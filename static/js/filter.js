@@ -195,7 +195,7 @@ function encodeOperand(operand) {
 }
 
 function decodeOperand(encoded, operator) {
-    if (operator !== 'pm-with' && operator !== 'sender') {
+    if (operator !== 'pm-with' && operator !== 'sender' && operator !== 'from') {
         encoded = encoded.replace(/\+/g, ' ');
     }
     return util.robust_uri_decode(encoded);
