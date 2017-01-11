@@ -57,6 +57,21 @@ exports.toggle = (function () {
             get: function () {
                 return component;
             },
+            goto: function (name) {
+                var value = _.find(opts.values, function (o) {
+                    return o.label === name;
+                });
+
+                var idx = opts.values.indexOf(value);
+
+                if (idx !== -1) {
+                    meta.$ind_tab.removeClass("selected");
+                    meta.$ind_tab.filter("[data-tab-id='" + idx + "']").addClass("selected");
+
+                    value.label = name;
+                    opts.callback(name);
+                }
+            },
         };
 
         if (opts.name) {
@@ -64,6 +79,7 @@ exports.toggle = (function () {
                 opts: opts,
                 component: component,
                 value: prototype.value,
+                goto: prototype.goto,
             };
         }
 

@@ -8,7 +8,8 @@
 }
 
 #streams_inline_cog,
-#streams_filter_icon {
+#streams_filter_icon,
+#join_unsub_stream {
     float: right;
     color: #000;
     font-size: 13px;
@@ -20,6 +21,10 @@
 #streams_inline_cog:hover,
 #streams_filter_icon:hover {
    opacity: 1.0;
+}
+
+#join_unsub_stream {
+    margin-top: 1px;
 }
 
 #streams_header a {

@@ -354,6 +354,11 @@ $(function () {
         compose.cancel();
     });
 
+    $("#join_unsub_stream").click(function () {
+        subs.launch();
+        components.toggle.lookup("stream-filter-toggle").goto("All Streams");
+    });
+
     // FEEDBACK
 
     // Keep these 2 feedback bot triggers separate because they have to
