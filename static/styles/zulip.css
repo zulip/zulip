@@ -1938,7 +1938,7 @@ div.floating_recipient {
     color: white;
 }
 
-#fmt_help_table {
+.help-table {
     table-layout: fixed;
 }
 
