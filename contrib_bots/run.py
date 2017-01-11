@@ -31,7 +31,7 @@ class RateLimit(object):
         else:
             return True
 
-class RestrictedClient(object):
+class BotHandlerApi(object):
     def __init__(self, client):
         # Only expose a subset of our Client's functionality
         user_profile = client.get_profile()
@@ -73,7 +73,7 @@ def get_lib_module(lib_fn):
 def run_message_handler_for_bot(lib_module, quiet, config_file):
     # Make sure you set up your ~/.zuliprc
     client = Client(config_file=config_file)
-    restricted_client = RestrictedClient(client)
+    restricted_client = BotHandlerApi(client)
 
     message_handler = lib_module.handler_class()
 
