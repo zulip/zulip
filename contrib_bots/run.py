@@ -5,6 +5,7 @@ import importlib
 import logging
 import optparse
 import os
+import signal
 import sys
 import time
 
@@ -15,6 +16,9 @@ if os.path.exists(os.path.join(our_dir, '../api/zulip')):
     sys.path.insert(0, '../api')
 
 from zulip import Client
+
+def exit_gracefully(signum, frame):
+    sys.exit(0)
 
 class RateLimit(object):
     def __init__(self, message_limit, interval_limit):
@@ -147,4 +151,6 @@ def run():
     )
 
 if __name__ == '__main__':
+    original_sigint = signal.getsignal(signal.SIGINT)
+    signal.signal(signal.SIGINT, exit_gracefully)
     run()
