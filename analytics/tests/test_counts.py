@@ -207,3 +207,93 @@ class TestCountStats(AnalyticsTestCase):
         self.assertEqual(InstallationCount.objects.count(), 2)
         self.assertFalse(UserCount.objects.exists())
         self.assertFalse(StreamCount.objects.exists())
+
+    def test_messages_sent_by_message_type(self):
+        # type: () -> None
+        stat = COUNT_STATS['messages_sent:message_type']
+        self.current_property = stat.property
+        self.current_interval = stat.interval
+
+        # Nothing currently in this stat that is bot related, but so many of
+        # the rest of our stats make the human/bot distinction that one can
+        # imagine a later refactoring that will intentionally or
+        # unintentionally change this. So make one of our users a bot.
+        user1 = self.create_user(is_bot=True)
+        user2 = self.create_user()
+        user3 = self.create_user()
+
+        # private streams
+        recipient_stream1 = self.create_stream_with_recipient(invite_only=True)[1]
+        recipient_stream2 = self.create_stream_with_recipient(invite_only=True)[1]
+        self.create_message(user1, recipient_stream1)
+        self.create_message(user2, recipient_stream1)
+        self.create_message(user2, recipient_stream2)
+
+        # public streams
+        recipient_stream3 = self.create_stream_with_recipient()[1]
+        recipient_stream4 = self.create_stream_with_recipient()[1]
+        self.create_message(user1, recipient_stream3)
+        self.create_message(user1, recipient_stream4)
+        self.create_message(user2, recipient_stream3)
+
+        # huddles
+        recipient_huddle1 = self.create_huddle_with_recipient()[1]
+        recipient_huddle2 = self.create_huddle_with_recipient()[1]
+        self.create_message(user1, recipient_huddle1)
+        self.create_message(user2, recipient_huddle2)
+
+        # private messages
+        recipient_user1 = Recipient.objects.create(type_id=user1.id, type=Recipient.PERSONAL)
+        recipient_user2 = Recipient.objects.create(type_id=user2.id, type=Recipient.PERSONAL)
+        recipient_user3 = Recipient.objects.create(type_id=user3.id, type=Recipient.PERSONAL)
+        self.create_message(user1, recipient_user2)
+        self.create_message(user2, recipient_user1)
+        self.create_message(user3, recipient_user3)
+
+        do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
+
+        self.assertCountEquals(UserCount, 1, subgroup='private_stream', user=user1)
+        self.assertCountEquals(UserCount, 2, subgroup='private_stream', user=user2)
+        self.assertCountEquals(UserCount, 2, subgroup='public_stream', user=user1)
+        self.assertCountEquals(UserCount, 1, subgroup='public_stream', user=user2)
+        self.assertCountEquals(UserCount, 2, subgroup='private_message', user=user1)
+        self.assertCountEquals(UserCount, 2, subgroup='private_message', user=user2)
+        self.assertCountEquals(UserCount, 1, subgroup='private_message', user=user3)
+        self.assertCountEquals(UserCount, 1, subgroup='public_stream', realm=self.second_realm,
+                               user=UserProfile.objects.get(email='user1@domain.tld'))
+        self.assertCountEquals(UserCount, 1, subgroup='public_stream', realm=self.second_realm,
+                               user=UserProfile.objects.get(email='user61@domain.tld'))
+        self.assertEqual(UserCount.objects.count(), 9)
+
+        self.assertCountEquals(RealmCount, 3, subgroup='private_stream')
+        self.assertCountEquals(RealmCount, 3, subgroup='public_stream')
+        self.assertCountEquals(RealmCount, 5, subgroup='private_message')
+        self.assertCountEquals(RealmCount, 2, subgroup='public_stream', realm=self.second_realm)
+        self.assertEqual(RealmCount.objects.count(), 4)
+
+        self.assertCountEquals(InstallationCount, 3, subgroup='private_stream')
+        self.assertCountEquals(InstallationCount, 5, subgroup='public_stream')
+        self.assertCountEquals(InstallationCount, 5, subgroup='private_message')
+        self.assertEqual(InstallationCount.objects.count(), 3)
+
+        self.assertFalse(StreamCount.objects.exists())
+
+    def test_messages_sent_to_recipients_with_same_id(self):
+        # type: () -> None
+        stat = COUNT_STATS['messages_sent:message_type']
+        self.current_property = stat.property
+        self.current_interval = stat.interval
+
+        user = self.create_user(id=1000)
+        user_recipient = Recipient.objects.create(type_id=user.id, type=Recipient.PERSONAL)
+        stream_recipient = self.create_stream_with_recipient(id=1000)[1]
+        huddle_recipient = self.create_huddle_with_recipient(id=1000)[1]
+
+        self.create_message(user, user_recipient)
+        self.create_message(user, stream_recipient)
+        self.create_message(user, huddle_recipient)
+
+        do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
+
+        self.assertCountEquals(UserCount, 2, subgroup='private_message')
+        self.assertCountEquals(UserCount, 1, subgroup='public_stream')
