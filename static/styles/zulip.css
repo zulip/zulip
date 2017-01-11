@@ -1272,6 +1272,11 @@ blockquote p {
     padding: 4px 90px 1px 10px;
 }
 
+.messagebox-content .bot-icon {
+    height: 14px;
+    width: 14px;
+}
+
 .last_message .messagebox-content {
     padding-bottom: 1px;
 }
