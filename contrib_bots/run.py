@@ -35,8 +35,8 @@ class RestrictedClient(object):
     def __init__(self, client):
         # Only expose a subset of our Client's functionality
         user_profile = client.get_profile()
-        self.rate_limit = RateLimit(20, 5)
-        self.client = client
+        self._rate_limit = RateLimit(20, 5)
+        self._client = client
         try:
             self.full_name = user_profile['full_name']
             self.email = user_profile['email']
@@ -46,8 +46,8 @@ class RestrictedClient(object):
             sys.exit(1)
 
     def send_message(self, *args, **kwargs):
-        if self.rate_limit.is_legal():
-            self.client.send_message(*args, **kwargs)
+        if self._rate_limit.is_legal():
+            self._client.send_message(*args, **kwargs)
         else:
             logging.error('-----> !*!*!*MESSAGE RATE LIMIT REACHED, EXITING*!*!*! <-----\n'
                           'Is your bot trapped in an infinite loop by reacting to'
