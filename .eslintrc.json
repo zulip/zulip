@@ -140,7 +140,13 @@
         "no-caller": 2,
         "no-bitwise": 2,
         "no-catch-shadow": 2,
-        "comma-dangle": 0,
+        "comma-dangle": ["error", {
+            "arrays": "always-multiline",
+            "objects": "always-multiline",
+            "imports": "always-multiline",
+            "exports": "always-multiline",
+            "functions": "never"
+        }],
         "no-console": 1,
         "no-control-regex": 2,
         "no-debugger": 2,
