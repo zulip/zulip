@@ -954,6 +954,20 @@ just a temporary hack.
     border-color: #0088CC;
 }
 
+.message_sender .bot-icon {
+    position: relative;
+    vertical-align: top;
+    top: -4px;
+
+    height: 20px;
+    width: 20px;
+}
+
+.message_sender .sender-status .bot-icon {
+    top: -1px;
+    margin-left: -3px;
+}
+
 .actions_hover:hover {
     color: #0088CC;
 }

@@ -231,6 +231,8 @@ MessageListView.prototype = {
                 message_container.include_sender = false;
             }
 
+            message_container.sender_is_bot = people.sender_is_bot(message_container.msg);
+
             self._add_msg_timestring(message_container);
 
             message_container.small_avatar_url = people.small_avatar_url(message_container.msg);

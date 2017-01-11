@@ -364,6 +364,14 @@ exports.format_small_avatar_url = function (raw_url, sent_by_me) {
     return url;
 };
 
+exports.sender_is_bot = function (message) {
+    if (message.sender_id) {
+        var person = exports.get_person_from_user_id(message.sender_id);
+        return person.is_bot;
+    }
+    return false;
+};
+
 exports.small_avatar_url = function (message) {
     // Try to call this function in all places where we need 25px
     // avatar images, so that the browser can help
