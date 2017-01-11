@@ -971,6 +971,8 @@ class UserSignUpTest(ZulipTestCase):
     def test_failed_signup_due_to_restricted_domain(self):
         # type: () -> None
         realm = get_realm('zulip')
+        realm.invite_required = False
+        realm.save()
         with self.settings(REALMS_HAVE_SUBDOMAINS = True):
             request = HostRequestMock(host = realm.host)
             request.session = {} # type: ignore
