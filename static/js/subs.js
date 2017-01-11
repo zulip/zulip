@@ -362,7 +362,7 @@ function show_subscription_settings(sub_row) {
 
     var colorpicker = sub_settings.find('.colorpicker');
     var color = stream_data.get_color(sub.name);
-    stream_color.set_colorpicker_color(colorpicker, color);
+    stream_color.set_colorpicker_color(colorpicker, color, exports.set_color);
 }
 
 exports.show_settings_for = function (stream_name) {
@@ -645,7 +645,8 @@ exports.update_subscription_properties = function (stream_name, property, value)
     }
     switch (property) {
     case 'color':
-        stream_color.update_stream_color(sub, stream_name, value, {update_historical: true});
+        stream_color.update_stream_color(sub, stream_name, value,
+                                         exports.set_color, {update_historical: true});
         break;
     case 'in_home_view':
         update_in_home_view(sub, value);
