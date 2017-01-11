@@ -16,7 +16,7 @@ exports.set_focused_recipient = function (msg_type) {
     // Construct focused_recipient as a mocked up element which has all the
     // fields of a message used by util.same_recipient()
     focused_recipient = {
-        type: msg_type
+        type: msg_type,
     };
 
     if (focused_recipient.type === "stream") {

@@ -258,7 +258,7 @@ exports.extract_people_from_message = function (message) {
                     user_id: person.user_id || person.id,
                     full_name: person.full_name,
                     is_admin: person.is_realm_admin || false,
-                    is_bot: person.is_bot || false
+                    is_bot: person.is_bot || false,
                 });
             }
 
@@ -314,7 +314,7 @@ exports.update = function update(person) {
         }
 
         $(".inline_profile_picture.u-" + person.id).css({
-          "background-image": "url(" + url + ")"
+          "background-image": "url(" + url + ")",
         });
     }
 };

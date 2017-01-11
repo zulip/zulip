@@ -22,7 +22,7 @@ exports.toggle = (function () {
 
         var meta = {
             retrieved: false,
-            $ind_tab: component.find(".ind-tab")
+            $ind_tab: component.find(".ind-tab"),
         };
 
         (function () {
@@ -56,14 +56,14 @@ exports.toggle = (function () {
             },
             get: function () {
                 return component;
-            }
+            },
         };
 
         if (opts.name) {
             keys[opts.name] = {
                 opts: opts,
                 component: component,
-                value: prototype.value
+                value: prototype.value,
             };
         }
 

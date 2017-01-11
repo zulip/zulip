@@ -6,7 +6,7 @@ var CLOSE_REASONS = {
     auth_fail:    {code: 4002, msg: "Authentication failed"},
     ack_timeout:  {code: 4003, msg: "ACK timeout"},
     cant_send:    {code: 4004, msg: "User attempted to send while Socket was not ready"},
-    unsuspend:    {code: 4005, msg: "Got unsuspend event"}
+    unsuspend:    {code: 4005, msg: "Got unsuspend event"},
 };
 
 function Socket(url) {
@@ -404,7 +404,7 @@ Socket.prototype = {
         }
 
         this._save_localstorage_requests();
-    }
+    },
 };
 
 return Socket;

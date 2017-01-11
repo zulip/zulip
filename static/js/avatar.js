@@ -12,7 +12,7 @@ function is_image_format(file) {
         'image/jpeg',
         'image/png',
         'image/gif',
-        'image/tiff'
+        'image/tiff',
     ];
     return _.indexOf(supported_types, type) >= 0;
 }
@@ -138,7 +138,7 @@ exports.build_widget = function (
         clear: clear,
         // Call back to close() when you are truly done with the widget,
         // so you can release handlers.
-        close: close
+        close: close,
     };
 };
 
@@ -162,7 +162,7 @@ exports.build_user_avatar_widget = function (upload_function) {
               // where you try to upload the same image you just deleted.
               var file_input = $("#user_avatar_file_input");
               file_input.replaceWith(file_input.clone(true));
-            }
+            },
         });
     });
 

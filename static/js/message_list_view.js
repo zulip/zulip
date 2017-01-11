@@ -130,7 +130,7 @@ MessageListView.prototype = {
         function start_group() {
             return {
                 message_containers: [],
-                message_group_id: _.uniqueId('message_group_')
+                message_group_id: _.uniqueId('message_group_'),
             };
         }
 
@@ -280,7 +280,7 @@ MessageListView.prototype = {
             prepend_groups: [],
             rerender_groups: [],
             append_messages: [],
-            rerender_messages: []
+            rerender_messages: [],
         };
         var first_group;
         var second_group;
@@ -446,7 +446,7 @@ MessageListView.prototype = {
             rendered_groups = $(templates.render('message_group', {
                 message_groups: message_actions.prepend_groups,
                 use_match_properties: self.list.filter.is_search(),
-                table_name: self.table_name
+                table_name: self.table_name,
             }));
 
             dom_messages = rendered_groups.find('.message_row');
@@ -473,7 +473,7 @@ MessageListView.prototype = {
                 rendered_groups = $(templates.render('message_group', {
                     message_groups: [message_group],
                     use_match_properties: self.list.filter.is_search(),
-                    table_name: self.table_name
+                    table_name: self.table_name,
                 }));
 
                 dom_messages = rendered_groups.find('.message_row');
@@ -529,7 +529,7 @@ MessageListView.prototype = {
             rendered_groups = $(templates.render('message_group', {
                 message_groups: message_actions.append_groups,
                 use_match_properties: self.list.filter.is_search(),
-                table_name: self.table_name
+                table_name: self.table_name,
             }));
 
             dom_messages = rendered_groups.find('.message_row');
@@ -896,7 +896,7 @@ MessageListView.prototype = {
         var rendered_trailing_bookend = $(templates.render('bookend', {
             bookend_content: trailing_bookend_content,
             trailing: true,
-            subscribed: subscribed
+            subscribed: subscribed,
         }));
         rows.get_table(this.table_name).append(rendered_trailing_bookend);
     },
@@ -936,7 +936,7 @@ MessageListView.prototype = {
         } else {
             message_container.status_message = false;
         }
-    }
+    },
 };
 
 }());

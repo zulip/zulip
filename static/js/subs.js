@@ -2,7 +2,7 @@ var subs = (function () {
 
 var meta = {
     callbacks: {},
-    stream_created: false
+    stream_created: false,
 };
 var exports = {};
 
@@ -48,7 +48,7 @@ function set_stream_property(stream_name, property, value) {
     return channel.post({
         url:      '/json/subscriptions/property',
         data: {subscription_data: JSON.stringify([sub_data])},
-        timeout:  10*1000
+        timeout:  10*1000,
     });
 }
 
@@ -335,7 +335,7 @@ function show_subscription_settings(sub_row) {
         error: function () {
             loading.destroy_indicator(indicator_elem);
             error_elem.removeClass("hide").text("Could not fetch subscriber list");
-        }
+        },
     });
 
     sub_settings.find('input[name="principal"]').typeahead({
@@ -357,7 +357,7 @@ function show_subscription_settings(sub_row) {
         sorter: typeahead_helper.sort_recipientbox_typeahead,
         updater: function (item) {
             return item.email;
-        }
+        },
     });
 
     var colorpicker = sub_settings.find('.colorpicker');
@@ -549,7 +549,7 @@ exports.setup_page = function (callback) {
             callback: function () {
                 actually_filter_streams();
                 remove_temporarily_miscategorized_streams();
-            }
+            },
         }).get();
 
         if (should_list_all_streams()) {
@@ -568,7 +568,7 @@ exports.setup_page = function (callback) {
         var template_data = {
             can_create_streams: page_params.can_create_streams,
             subscriptions: sub_rows,
-            hide_all_streams: !should_list_all_streams()
+            hide_all_streams: !should_list_all_streams(),
         };
         var rendered = templates.render('subscription_table_body', template_data);
         $('#subscriptions_table').append(rendered);
@@ -611,7 +611,7 @@ exports.setup_page = function (callback) {
 exports.onlaunch = function (name, callback, keep) {
     meta.callbacks[name] = {
         func: callback,
-        keep: keep
+        keep: keep,
     };
 };
 
@@ -699,7 +699,7 @@ function ajaxSubscribe(stream) {
         error: function (xhr) {
             ui.report_error(i18n.t("Error adding subscription"), xhr,
                             $("#subscriptions-status"), 'subscriptions-status');
-        }
+        },
     });
 }
 
@@ -714,7 +714,7 @@ function ajaxUnsubscribe(stream) {
         error: function (xhr) {
             ui.report_error(i18n.t("Error removing subscription"), xhr,
                             $("#subscriptions-status"), 'subscriptions-status');
-        }
+        },
     });
 }
 
@@ -725,7 +725,7 @@ function ajaxSubscribeForCreation(stream, description, principals, invite_only, 
         data: {subscriptions: JSON.stringify([{name: stream, description: description}]),
                principals: JSON.stringify(principals),
                invite_only: JSON.stringify(invite_only),
-               announce: JSON.stringify(announce)
+               announce: JSON.stringify(announce),
         },
         success: function () {
             $("#create_stream_name").val("");
@@ -736,7 +736,7 @@ function ajaxSubscribeForCreation(stream, description, principals, invite_only, 
         error: function (xhr) {
             ui.report_error(i18n.t("Error creating stream"), xhr,
                             $("#subscriptions-status"), 'subscriptions-status');
-        }
+        },
     });
 }
 
@@ -764,7 +764,7 @@ function show_new_stream_modal() {
     $(".right .settings").hide();
     $('#people_to_add').html(templates.render('new_stream_users', {
         users: people.get_rest_of_realm(),
-        streams: stream_data.get_streams_for_settings_page()
+        streams: stream_data.get_streams_for_settings_page(),
     }));
 
     // Make the options default to the same each time:
@@ -782,7 +782,7 @@ exports.invite_user_to_stream = function (user_email, stream_name, success, fail
         data: {subscriptions: JSON.stringify([{name: stream_name}]),
                principals: JSON.stringify([user_email])},
         success: success,
-        error: failure
+        error: failure,
     });
 };
 
@@ -792,7 +792,7 @@ exports.remove_user_from_stream = function (user_email, stream_name, success, fa
         data: {subscriptions: JSON.stringify([stream_name]),
                principals: JSON.stringify([user_email])},
         success: success,
-        error: failure
+        error: failure,
     });
 };
 
@@ -1214,7 +1214,7 @@ $(function () {
             error: function (xhr) {
                 ui.report_error(i18n.t("Error renaming stream"), xhr,
                                 $("#subscriptions-status"), 'subscriptions-status');
-            }
+            },
         });
     });
 
@@ -1230,7 +1230,7 @@ $(function () {
             // Stream names might contain unsafe characters so we must encode it first.
             url: '/json/streams/' + encodeURIComponent(stream_name),
             data: {
-                description: JSON.stringify(description)
+                description: JSON.stringify(description),
             },
             success: function () {
                 // The event from the server will update the rest of the UI
@@ -1240,7 +1240,7 @@ $(function () {
             error: function (xhr) {
                 ui.report_error(i18n.t("Error updating the stream description"), xhr,
                                 $("#subscriptions-status"), 'subscriptions-status');
-            }
+            },
         });
     });
 
@@ -1297,7 +1297,7 @@ $(function () {
                 var stream_settings = settings_for_sub(sub);
                 var feedback_div = stream_settings.find(".change-stream-privacy-feedback").expectOne();
                 ui.report_error(error_message, xhr, feedback_div);
-            }
+            },
         });
     }
 

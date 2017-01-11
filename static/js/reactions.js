@@ -13,7 +13,7 @@ function send_reaction_ajax(message_id, emoji_name, operation) {
         error: function (xhr) {
             var response = channel.xhr_error_message("Error sending reaction", xhr);
             blueslip.error(response);
-        }
+        },
     };
     if (operation === 'add') {
         channel.put(args);
@@ -179,7 +179,7 @@ exports.get_message_reactions = function (message) {
             emoji_name: item[0],
             emoji_name_css_class: emoji.emoji_name_to_css_class(item[0]),
             count: item[1].length,
-            title: generate_title(item[0], item[1])
+            title: generate_title(item[0], item[1]),
         };
         if (emoji.realm_emojis[reaction.emoji_name]) {
             reaction.is_realm_emoji = true;

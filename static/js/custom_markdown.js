@@ -13,8 +13,8 @@ var exports = {};
         channel.post({
             url: '/json/users/me/subscriptions',
             data: {
-                subscriptions: JSON.stringify([{name: stream_name}])
-            }
+                subscriptions: JSON.stringify([{name: stream_name}]),
+            },
         }).then(
             function (data) {
                 if (!$.isEmptyObject(data.already_subscribed)) {
@@ -33,8 +33,8 @@ var exports = {};
         channel.del({
             url: '/json/users/me/subscriptions',
             data: {
-                subscriptions: JSON.stringify([stream_name])
-            }
+                subscriptions: JSON.stringify([stream_name]),
+            },
         }).then(
             function () {
                 $status_message.hide();

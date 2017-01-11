@@ -113,7 +113,7 @@ function report_narrow_time(initial_core_time, initial_free_time, network_time) 
         url: '/json/report_narrow_time',
         data: {initial_core: initial_core_time.toString(),
                initial_free: initial_free_time.toString(),
-               network: network_time.toString()}
+               network: network_time.toString()},
     });
 }
 
@@ -142,7 +142,7 @@ function report_unnarrow_time() {
     channel.post({
         url: '/json/report_unnarrow_time',
         data: {initial_core: initial_core_time.toString(),
-               initial_free: initial_free_time.toString()}
+               initial_free: initial_free_time.toString()},
     });
 
     unnarrow_times = {};
@@ -198,7 +198,7 @@ exports.activate = function (raw_operators, opts) {
         first_unread_from_server: false,
         from_reload: false,
         change_hash: true,
-        trigger: 'unknown'
+        trigger: 'unknown',
     });
     if (filter.has_operator("near")) {
         opts.then_select_id = parseInt(filter.operands("near")[0], 10);
@@ -241,7 +241,7 @@ exports.activate = function (raw_operators, opts) {
                 selected_idx_exact: current_msg_list._items.indexOf(
                                         current_msg_list.get(current_msg_list.selected_id())),
                 render_start: current_msg_list.view._render_win_start,
-                render_end: current_msg_list.view._render_win_end
+                render_end: current_msg_list.view._render_win_end,
             });
         }
         current_msg_list.pre_narrow_offset = current_msg_list.selected_row().offset().top;
@@ -257,7 +257,7 @@ exports.activate = function (raw_operators, opts) {
 
     var msg_list = new message_list.MessageList('zfilt', current_filter, {
         collapse_messages: ! current_filter.is_search(),
-        muting_enabled: muting_enabled
+        muting_enabled: muting_enabled,
     });
     msg_list.start_time = start_time;
 
@@ -292,7 +292,7 @@ exports.activate = function (raw_operators, opts) {
 
             message_list.narrowed.select_id(then_select_id, {then_scroll: then_scroll,
                                                          use_closest: true,
-                                                         force_rerender: true
+                                                         force_rerender: true,
                                                         });
 
             if (preserve_pre_narrowing_screen_position) {
@@ -327,7 +327,7 @@ exports.activate = function (raw_operators, opts) {
             msg_list.network_time = new Date();
             maybe_report_narrow_time(msg_list);
         },
-        cont_will_add_messages: false
+        cont_will_add_messages: false,
     });
 
     if (! defer_selecting_closest) {
@@ -384,7 +384,7 @@ exports.by_subject = function (target_id, opts) {
     unread.mark_message_as_read(original);
     var search_terms = [
         {operator: 'stream', operand: original.stream},
-        {operator: 'topic', operand: original.subject}
+        {operator: 'topic', operand: original.subject},
     ];
     opts = _.defaults({}, opts, {then_select_id: target_id});
     exports.activate(search_terms, opts);
@@ -472,7 +472,7 @@ exports.deactivate = function () {
         var select_opts = {
             then_scroll: true,
             use_closest: true,
-            empty_ok: true
+            empty_ok: true,
         };
 
         // We fall back to the closest selected id, if the user has removed a

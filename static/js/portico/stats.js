@@ -6,7 +6,7 @@ function populate_messages_sent_to_realm(data) {
         y: data.humans,
         mode: 'lines',
         name: 'Messages from humans',
-        hoverinfo: 'y'
+        hoverinfo: 'y',
     };
 
     var trace_bots = {
@@ -16,7 +16,7 @@ function populate_messages_sent_to_realm(data) {
         y: data.bots,
         mode: 'lines',
         name: 'Messages from bots',
-        hoverinfo: 'y'
+        hoverinfo: 'y',
     };
 
     var layout = {
@@ -27,7 +27,7 @@ function populate_messages_sent_to_realm(data) {
         yaxis: {
             fixedrange: true,
             rangemode: 'tozero',
-        }
+        },
     };
 
     Plotly.newPlot('id_messages_sent_to_realm', [trace_humans, trace_bots], layout, {displayModeBar: false});
@@ -42,5 +42,5 @@ $.get({
     },
     error: function (xhr) {
         $('#id_stats_errors').text($.parseJSON(xhr.responseText).msg);
-    }
+    },
 });

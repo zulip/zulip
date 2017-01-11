@@ -36,7 +36,7 @@ if (window.webkitNotifications) {
             notification_object.show = function () {};
             notification_object.cancel = function () { notification_object.close(); };
             return notification_object;
-        }
+        },
     };
 }
 
@@ -229,17 +229,17 @@ function in_browser_notify(message, title, content, raw_operators, opts) {
 
     $(".top-right").notify({
         message: {
-            html: notification_html
+            html: notification_html,
         },
         fadeOut: {
             enabled: true,
-            delay: 4000
-        }
+            delay: 4000,
+        },
     }).show();
 
     $(".notification[data-message-id='" + message.id + "']").expectOne().data("narrow", {
         raw_operators: raw_operators,
-        opts_notif: opts
+        opts_notif: opts,
     });
 }
 
@@ -345,7 +345,7 @@ function process_notification(notification) {
             obj: notifications_api.createNotification(
                     icon_url, title, content, message.id),
             msg_count: msg_count,
-            message_id: message.id
+            message_id: message.id,
         };
         notification_object = notice_memory[key].obj;
         notification_object.onclick = function () {
@@ -365,7 +365,7 @@ function process_notification(notification) {
                 notification_object = new Notification(title, {
                     body: content,
                     iconUrl: ui.small_avatar_url(message),
-                    tag: message.id
+                    tag: message.id,
                 });
             } else {
                 in_browser_notify(message, title, content, raw_operators, opts);

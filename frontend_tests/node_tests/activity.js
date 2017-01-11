@@ -263,7 +263,7 @@ activity.presence_info[norbert.user_id] = { status: activity.ACTIVE };
             num_unread: 0,
             type: 'active',
             type_desc: 'is active',
-            mobile: undefined
+            mobile: undefined,
         },
         {
             name: 'Jill Hill',
@@ -271,7 +271,7 @@ activity.presence_info[norbert.user_id] = { status: activity.ACTIVE };
             num_unread: 0,
             type: 'active',
             type_desc: 'is active',
-            mobile: undefined
+            mobile: undefined,
         },
         {
             name: 'Norbert Oswald',
@@ -279,7 +279,7 @@ activity.presence_info[norbert.user_id] = { status: activity.ACTIVE };
             num_unread: 0,
             type: 'active',
             type_desc: 'is active',
-            mobile: undefined
+            mobile: undefined,
         },
         {
             name: 'Alice Smith',
@@ -287,7 +287,7 @@ activity.presence_info[norbert.user_id] = { status: activity.ACTIVE };
             num_unread: 0,
             type: 'idle',
             type_desc: 'is not active',
-            mobile: undefined
+            mobile: undefined,
         },
         {
             name: 'Marky Mark',
@@ -295,7 +295,7 @@ activity.presence_info[norbert.user_id] = { status: activity.ACTIVE };
             num_unread: 0,
             type: 'idle',
             type_desc: 'is not active',
-            mobile: undefined
+            mobile: undefined,
         },
     ]);
 }());
@@ -314,8 +314,8 @@ activity.presence_info[norbert.user_id] = { status: activity.ACTIVE };
         num_unread: 0,
         type: 'active',
         type_desc: 'is active',
-        mobile: undefined
-    }, ]);
+        mobile: undefined,
+    } ]);
 
     // Test if user index in presence_info is the expected one
     var all_users = activity._filter_and_sort(activity.presence_info);
@@ -331,8 +331,8 @@ activity.presence_info[norbert.user_id] = { status: activity.ACTIVE };
         num_unread: 0,
         type: 'active',
         type_desc: 'is active',
-        mobile: undefined
-    }, ]);
+        mobile: undefined,
+    } ]);
 
     all_users = activity._filter_and_sort(activity.presence_info);
     assert.equal(all_users.indexOf(mark.user_id.toString()), 3);

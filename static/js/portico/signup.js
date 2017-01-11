@@ -18,7 +18,7 @@ $(function () {
     $('#registration, #password_reset').validate({
         rules: {
             password:      'password_strength',
-            new_password1: 'password_strength'
+            new_password1: 'password_strength',
         },
         errorElement: "p",
         errorPlacement: function (error, element) {
@@ -27,7 +27,7 @@ $(function () {
             error.insertAfter(element).addClass('help-inline');
         },
         highlight:   highlight('error'),
-        unhighlight: highlight('success')
+        unhighlight: highlight('success'),
     });
 
     $('#id_password, #id_new_password1').on('change keyup', function () {
@@ -45,11 +45,11 @@ $(function () {
         },
         success: function () {
             $('#errors').empty();
-        }
+        },
     });
 
     $("#login_form").validate({
         errorClass: "text-error",
-        wrapper: "div"
+        wrapper: "div",
     });
 });

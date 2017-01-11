@@ -28,7 +28,7 @@ function update_pointer() {
             },
             error: function () {
                 pointer_update_in_flight = false;
-            }
+            },
         });
     }
     // Return an empty, resolved Deferred.
@@ -72,7 +72,7 @@ exports.fast_forward_pointer = function () {
                                      save_compose: true});
                 });
             });
-        }
+        },
     });
 };
 

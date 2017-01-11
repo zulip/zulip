@@ -120,7 +120,7 @@ function render_bots() {
             zuliprc: 'zuliprc', // Most browsers do not allow filename starting with `.`
             default_sending_stream: elem.default_sending_stream,
             default_events_register_stream: elem.default_events_register_stream,
-            default_all_public_streams: elem.default_all_public_streams
+            default_all_public_streams: elem.default_all_public_streams,
         });
     });
 }
@@ -160,7 +160,7 @@ function _setup_page() {
                     $('#create_bot_default_events_register_stream'),
                     [['__all_public__', 'All public streams']]
                 );
-            }
+            },
         });
     }
 
@@ -270,7 +270,7 @@ function _setup_page() {
             // Whether successful or not, clear the password boxes.
             // TODO: Clear these earlier, while the request is still pending.
             clear_password_change();
-        }
+        },
     });
 
     function update_notification_settings_success(resp, statusText, xhr) {
@@ -333,7 +333,7 @@ function _setup_page() {
             url: "/json/settings/notifications",
             data: notification_changes,
             success: success_func,
-            error: error_func
+            error: error_func,
         });
     }
 
@@ -361,7 +361,7 @@ function _setup_page() {
             url: "/json/settings/notifications",
             data: data,
             success: update_notification_settings_success,
-            error: update_notification_settings_error
+            error: update_notification_settings_error,
         });
     }
 
@@ -422,7 +422,7 @@ function _setup_page() {
             },
             error: function (xhr) {
                 ui.report_error(i18n.t("Error updating user list placement setting"), xhr, $('#display-settings-status').expectOne());
-            }
+            },
         });
     });
 
@@ -446,7 +446,7 @@ function _setup_page() {
             },
             error: function (xhr) {
                 ui.report_error(i18n.t("Error updating time format setting"), xhr, $('#display-settings-status').expectOne());
-            }
+            },
         });
     });
 
@@ -475,7 +475,7 @@ function _setup_page() {
             },
             error: function (xhr) {
                 ui.report_error(i18n.t("Error updating default language setting"), xhr, $('#display-settings-status').expectOne());
-            }
+            },
         });
     });
 
@@ -500,7 +500,7 @@ function _setup_page() {
             },
             error: function (xhr) {
                 ui.report_error(i18n.t("Error deactivating account"), xhr, $('#settings-status').expectOne());
-            }
+            },
         });
     });
 
@@ -522,7 +522,7 @@ function _setup_page() {
             ui.report_error(i18n.t("Error getting API key"), xhr, $('#settings-status').expectOne());
             $("#show_api_key_box").hide();
             $("#get_api_key_box").show();
-        }
+        },
     });
 
     function upload_avatar(file_input) {
@@ -548,7 +548,7 @@ function _setup_page() {
                 $("#user-settings-avatar").expectOne().attr("src", url);
                 $("#user_avatar_delete_button").show();
                 exports.avatar_stamp += 1;
-            }
+            },
         });
 
     }
@@ -612,9 +612,9 @@ function _setup_page() {
                 },
                 complete: function () {
                     $('#create_bot_button').val('Create bot').prop('disabled', false);
-                }
+                },
             });
-        }
+        },
     });
 
     $("#bots_list").on("click", "button.delete_bot", function (e) {
@@ -627,7 +627,7 @@ function _setup_page() {
             },
             error: function (xhr) {
                 $('#bot_delete_error').text(JSON.parse(xhr.responseText).msg).show();
-            }
+            },
         });
     });
 
@@ -644,7 +644,7 @@ function _setup_page() {
             error: function (xhr) {
                 var row = $(e.currentTarget).closest("li");
                 row.find(".api_key_error").text(JSON.parse(xhr.responseText).msg).show();
-            }
+            },
         });
     });
 
@@ -729,9 +729,9 @@ function _setup_page() {
                         loading.destroy_indicator(spinner);
                         edit_button.show();
                         errors.text(JSON.parse(xhr.responseText).msg).show();
-                    }
+                    },
                 });
-            }
+            },
         });
 
 
@@ -763,7 +763,7 @@ function _setup_page() {
             },
             error: function (xhr) {
                 $('#user_api_key_error').text(JSON.parse(xhr.responseText).msg).show();
-            }
+            },
         });
     });
 
@@ -792,7 +792,7 @@ function _setup_page() {
             },
             error: function (xhr) {
                 ui.report_error(i18n.t("Error changing settings"), xhr, $('#ui-settings-status').expectOne());
-            }
+            },
         });
     });
 }

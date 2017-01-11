@@ -34,12 +34,12 @@ i18n.init({
     var poland = {
         subscribed: true,
         name: 'Poland',
-        stream_id: 2
+        stream_id: 2,
     };
     var pomona = {
         subscribed: true,
         name: 'Pomona',
-        stream_id: 3
+        stream_id: 3,
     };
 
     var elem_1 = $(global.render_template("subscription", denmark));

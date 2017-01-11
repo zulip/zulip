@@ -267,7 +267,7 @@ exports.update_messages = function update_messages(events) {
                             var operators = new_filter.operators();
                             var opts = {
                                 trigger: 'topic change',
-                                then_select_id: current_id
+                                then_select_id: current_id,
                             };
                             narrow.activate(operators, opts);
                             changed_narrow = true;
@@ -496,7 +496,7 @@ exports.load_old_messages = function load_old_messages(opts) {
             setTimeout(function () {
                 exports.load_old_messages(opts);
             }, 5000);
-        }
+        },
     });
 };
 
@@ -529,7 +529,7 @@ exports.load_more_messages = function load_more_messages(msg_list) {
             if (messages.length >= batch_size) {
                 load_more_enabled = true;
             }
-        }
+        },
     });
 };
 
@@ -561,7 +561,7 @@ util.execute_early(function () {
                     num_before: 0,
                     num_after: 400,
                     msg_list: home_msg_list,
-                    cont: load_more
+                    cont: load_more,
                 });
                 return;
             }
@@ -578,7 +578,7 @@ util.execute_early(function () {
                                   anchor: first_id,
                                   num_before: backfill_batch_size,
                                   num_after: 0,
-                                  msg_list: home_msg_list
+                                  msg_list: home_msg_list,
                               });
                           }});
     }
@@ -589,7 +589,7 @@ util.execute_early(function () {
             num_before: 200,
             num_after: 200,
             msg_list: home_msg_list,
-            cont: load_more
+            cont: load_more,
         });
     } else {
         server_events.home_view_loaded();

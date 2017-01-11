@@ -43,7 +43,7 @@ function check_duplicate_ids() {
                     id: o.id,
                     count: 1,
                     node: "<" + tag + " className='" + o.className + "' id='" + o.id + "'>" +
-                          "</" + tag + ">"
+                          "</" + tag + ">",
                 });
             } else {
                 el.count += 1;
@@ -55,7 +55,7 @@ function check_duplicate_ids() {
 
     return {
         collisions: collisions,
-        total_collisions: total_collisions
+        total_collisions: total_collisions,
     };
 }
 
@@ -129,5 +129,5 @@ IterationProfiler.prototype = {
                 console.log(prop, this.sections[prop]);
             }
         }
-    }
+    },
 };

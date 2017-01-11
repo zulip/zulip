@@ -214,7 +214,7 @@ exports.CachedValue.prototype = {
 
     reset: function CachedValue_reset() {
         this._value = unassigned_value_sentinel;
-    }
+    },
 };
 
 exports.execute_early = function (func) {

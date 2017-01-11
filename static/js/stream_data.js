@@ -204,7 +204,7 @@ exports.create_streams = function (streams) {
         // We handle subscriber stuff in other events.
         var attrs = _.defaults(stream, {
             subscribers: [],
-            subscribed: false
+            subscribed: false,
         });
         exports.create_sub_from_server_data(stream.name, attrs);
     });
@@ -237,7 +237,7 @@ exports.create_sub_from_server_data = function (stream_name, attrs) {
         invite_only: false,
         desktop_notifications: page_params.stream_desktop_notifications_enabled,
         audible_notifications: page_params.stream_sounds_enabled,
-        description: ''
+        description: '',
     });
 
     exports.set_subscribers(sub, subscriber_user_ids);
@@ -272,7 +272,7 @@ exports.add_admin_options = function (sub) {
     return _.extend(sub, {
         is_admin: page_params.is_admin,
         can_make_public: page_params.is_admin && sub.invite_only && sub.subscribed,
-        can_make_private: page_params.is_admin && !sub.invite_only
+        can_make_private: page_params.is_admin && !sub.invite_only,
     });
 };
 

@@ -512,7 +512,7 @@ $(function () {
                         _.pluck(event.msg_list._items, 'id'),
                         _.chain(current_msg_list._items).pluck('id').clone().value().sort()
                     ),
-                    found_in_dom: row_from_dom.length
+                    found_in_dom: row_from_dom.length,
                 });
             }
             if (event.target_scroll_offset !== undefined) {

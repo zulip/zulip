@@ -251,12 +251,12 @@ exports.compose_content_begins_typeahead = function (query) {
             // Always sort above, under the assumption that names will
             // be longer and only contain "all" as a substring.
             pm_recipient_count: Infinity,
-            full_name: "all"
+            full_name: "all",
         };
         var everyone_item = {
             special_item_text: "everyone (Notify everyone)",
             email: "everyone",
-            full_name: "everyone"
+            full_name: "everyone",
         };
         var persons = people.get_realm_persons();
         return [].concat(persons, [all_item, everyone_item]);
@@ -349,7 +349,7 @@ exports.initialize_compose_typeahead = function (selector, completions) {
         },
         updater: exports.content_typeahead_selected,
         stopAdvance: true, // Do not advance to the next field on a tab or enter
-        completions: completions
+        completions: completions,
     });
 };
 
@@ -378,7 +378,7 @@ exports.initialize = function () {
         return channel.post({
             url: '/json/users/me/enter-sends',
             idempotent: true,
-            data: {enter_sends: page_params.enter_sends}
+            data: {enter_sends: page_params.enter_sends},
         });
     });
     $("#enter_sends").prop('checked', page_params.enter_sends);
@@ -402,7 +402,7 @@ exports.initialize = function () {
             // because we want to avoid mixing up streams.
             var q = this.query.trim().toLowerCase();
             return (item.toLowerCase().indexOf(q) === 0);
-        }
+        },
     });
 
     $( "#subject" ).typeahead({
@@ -419,7 +419,7 @@ exports.initialize = function () {
                 sorted.unshift(this.query);
             }
             return sorted;
-        }
+        },
     });
 
     $( "#private_message_recipient" ).typeahead({
@@ -459,7 +459,7 @@ exports.initialize = function () {
             }
             return previous_recipients + item.email + ", ";
         },
-        stopAdvance: true // Do not advance to the next field on a tab or enter
+        stopAdvance: true, // Do not advance to the next field on a tab or enter
     });
 
     exports.initialize_compose_typeahead("#new_message_content", {mention: true, emoji: true, stream: true});

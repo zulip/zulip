@@ -51,7 +51,7 @@ exports.id = function (message_row) {
 
 var valid_table_names = {
     zhome: true,
-    zfilt: true
+    zfilt: true,
 };
 
 exports.get_table = function (table_name) {

@@ -18,7 +18,7 @@ var unicode_emoji_names = ["1f198", "1f3ed", "0034", "1f341", "1f3d7", "26f9", "
 emoji_names.push("zulip");
 exports.realm_emojis.zulip = {
     emoji_name: 'zulip',
-    emoji_url: '/static/third/gemoji/images/emoji/zulip.png'
+    emoji_url: '/static/third/gemoji/images/emoji/zulip.png',
 };
 
 _.each(emoji_names, function (value) {

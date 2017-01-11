@@ -29,7 +29,7 @@ var fake_messages = [
         subject: "screenshots",
         timestr: "12:11",
         timestamp: today,
-        type: "stream"
+        type: "stream",
     },
     {
         id: 2,
@@ -43,7 +43,7 @@ var fake_messages = [
         subject: "screenshots",
         timestr: "12:11",
         timestamp: today,
-        type: "stream"
+        type: "stream",
     },
     {
         id: 3,
@@ -57,7 +57,7 @@ var fake_messages = [
         subject: "screenshots",
         timestr: "12:16",
         timestamp: today,
-        type: "stream"
+        type: "stream",
     },
     {
         id: 4,
@@ -71,7 +71,7 @@ var fake_messages = [
         subject: "integrations",
         timestr: "12:25",
         timestamp: today,
-        type: "stream"
+        type: "stream",
     },
     {
         id: 5,
@@ -85,7 +85,7 @@ var fake_messages = [
         subject: "integrations",
         timestr: "12:25",
         timestamp: today,
-        type: "stream"
+        type: "stream",
     },
     {
         id: 6,
@@ -99,7 +99,7 @@ var fake_messages = [
         subject: "integrations",
         timestr: "12:26",
         timestamp: today,
-        type: "stream"
+        type: "stream",
     },
     {
         id: 7,
@@ -113,7 +113,7 @@ var fake_messages = [
         subject: "integrations",
         timestr: "12:26",
         timestamp: today,
-        type: "stream"
+        type: "stream",
     },
     {
         id: 8,
@@ -127,7 +127,7 @@ var fake_messages = [
         subject: "weekly meeting",
         timestr: "12:30",
         timestamp: today,
-        type: "stream"
+        type: "stream",
     },
     {
         id: 9,
@@ -141,7 +141,7 @@ var fake_messages = [
         subject: "screenshots",
         timestr: "12:32",
         timestamp: today,
-        type: "stream"
+        type: "stream",
     },
     {
         id: 10,
@@ -155,7 +155,7 @@ var fake_messages = [
         subject: "screenshots",
         timestr: "12:32",
         timestamp: today,
-        type: "stream"
+        type: "stream",
     },
     {
         id: 11,
@@ -169,7 +169,7 @@ var fake_messages = [
         subject: "screenshots",
         timestr: "12:16",
         timestamp: today,
-        type: "stream"
+        type: "stream",
     },
     {
         id: 12,
@@ -183,8 +183,8 @@ var fake_messages = [
         subject: "screenshots",
         timestr: "12:32",
         timestamp: today,
-        type: "stream"
-    }
+        type: "stream",
+    },
 ];
 
 function send_delayed_stream_message(stream, topic, content, delay) {
@@ -197,7 +197,7 @@ function send_delayed_stream_message(stream, topic, content, delay) {
             dataType: 'json',
             url: '/json/tutorial_send_message',
             type: 'POST',
-            data: data
+            data: data,
         });
     }, delay * 1000); // delay is in seconds.
 }
@@ -225,7 +225,7 @@ function set_tutorial_status(status, callback) {
     return channel.post({
         url:      '/json/tutorial_status',
         data:     {status: JSON.stringify(status)},
-        success:  callback
+        success:  callback,
     });
 }
 
@@ -295,7 +295,7 @@ function create_and_show_popover(target_div, placement, title, content_template)
                                                    placement: placement}),
         content: templates.render(content_template, {placement: placement,
                                                      page_params: page_params}),
-        trigger: "manual"
+        trigger: "manual",
     });
     target_div.popover("show");
 
