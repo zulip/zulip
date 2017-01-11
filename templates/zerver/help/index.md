@@ -29,7 +29,7 @@ as an **organization**.
 * [Change your language](/help/change-your-language)
 * [Change the date and time format](/help/change-the-date-and-time-format)
 * [Move the users list to the left sidebar](/help/move-the-users-list-to-the-left-sidebar)
-* Join a Zulip organization
+* [Join a Zulip organization](/help/join-a-zulip-organization)
 * [Signing in](/help/signing-in)
 * [Signing out](/help/signing-out)
 * Find your Zulip organization (not implemented)
