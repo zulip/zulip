@@ -299,7 +299,7 @@ count_message_type_by_user_query = """
         JOIN zerver_recipient
         ON
             zerver_recipient.id = zerver_message.recipient_id
-        JOIN zerver_stream
+        LEFT JOIN zerver_stream
         ON
             zerver_stream.id = zerver_recipient.type_id
         GROUP BY zerver_userprofile.realm_id, zerver_userprofile.id, zerver_recipient.type, zerver_stream.invite_only
