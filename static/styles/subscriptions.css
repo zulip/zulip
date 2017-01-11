@@ -554,9 +554,27 @@ form#add_new_subscription {
     background-size: 60% auto;
     background-repeat: no-repeat;
     background-position: center center;
+
+    background-image: url(../images/checkbox-green.png);
+    opacity: 0;
+}
+
+.stream-row:hover .check:not(.checked) {
+    -webkit-filter: saturate(0) brightness(1.1);
+    -moz-filter: saturate(0) brightness(1.1);
+    filter: saturate(0) brightness(1.1);
+    opacity: 1;
+}
+
+.stream-row.active:hover .check:not(.checked) {
+    -webkit-filter: saturate(0) brightness(0.9);
+    -moz-filter: saturate(0) brightness(0.9);
+    filter: saturate(0) brightness(0.9);
+    opacity: 1;
 }
 
 .stream-row .checked {
+    opacity: 1;
     background-image: url(../images/checkbox-green.png);
 }
 
