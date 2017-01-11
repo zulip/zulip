@@ -63,7 +63,7 @@ def get_chart_data(request, user_profile, chart_name=REQ(),
         subgroups = ['false', 'true']
         labels = ['human', 'bot']
         include_empty_subgroups = True
-    elif chart_name == 'messages_sent_by_humans_and_bots':
+    elif chart_name == 'messages_sent_over_time':
         stat = COUNT_STATS['messages_sent:is_bot:hour']
         tables = [RealmCount]
         subgroups = ['false', 'true']

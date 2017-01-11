@@ -1,0 +1,253 @@
+.app-main {
+    padding: 0;
+    width: auto;
+    max-width: none;
+}
+
+p {
+    margin-bottom: 0px;
+}
+
+.alert {
+    display: none;
+}
+
+.analytics-page-header {
+    margin-top: 20px;
+    margin-bottom: 50px;
+    text-align: center;
+}
+
+.sidebar {
+    width: 300px;
+    height: calc(100vh - 94px);
+    z-index: 2;
+    display: inline-block;
+    vertical-align: top;
+    border-right: 1px solid #eee;
+}
+
+.nav {
+    margin-left: 20px;
+}
+
+.nav-subtitle {
+    font-size: 20px;
+    font-weight: 300;
+    margin-top: 40px;
+    margin-bottom: 7px;
+}
+
+.nav-link {
+    display: block;
+    font-size: 16px;
+    margin-left: 25px;
+}
+
+.page-content {
+    width: calc(100% - 300px - 8px);
+    height: calc(100vh - 94px);
+    overflow: auto;
+    display: inline-block;
+    vertical-align: top;
+}
+
+.center-container {
+    min-height: 0px;
+}
+
+.graph-title {
+    text-align: center;
+    font-size: 22px;
+    margin-bottom: 30px;
+}
+
+#button_label {
+    font-size: 12px;
+}
+
+#graph_container {
+    position: relative;
+}
+
+#button_label {
+    font-size: 16px;
+    margin-left: 40px;
+    margin-bottom: 0px;
+}
+
+#hoverinfo {
+    position: relative;
+    top: -33px;
+    height: 0;
+    width: 350px;
+    z-index: 1;
+    font-size: 14px;
+    margin-left: 40px;
+}
+
+#hover_date {
+    font-weight: 400;
+}
+
+#hover_humans {
+    font-weight: 400;
+    margin-left: 18px;
+}
+
+#hover_bots {
+    font-weight: 400;
+    margin-left: 8px;
+}
+
+.button {
+    font-family: 'Humbug', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    border: none;
+    border-radius: 4px;
+    outline: none;
+}
+
+.button:hover {
+    background: #D8D8D8 !important;
+}
+
+.pie-button {
+    font-family: 'Humbug', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-weight: inherit;
+    border: none;
+    border-radius: 4px;
+    padding: 0px 5px 0px 5px;
+    margin: 5px 0px 0px 0px;
+}
+
+.pie-button:hover {
+    background: #D8D8D8 !important;
+}
+
+#button_container {
+    position: absolute;
+    top: -12px;
+    z-index: 1;
+}
+
+#hourly_button {
+    padding: 0px 5px 0px 5px;
+    font-size: 13.5px;
+    font-weight: 600px !important;
+    margin-left: 40px;
+    margin-top: 0px;
+    background: #F0F0F0;
+}
+
+#daily_button {
+    padding: 0px 5px 0px 5px;
+    font-size: 13.5px;
+    margin-top: 0px;
+    background: #D8D8D8;
+}
+
+#weekly_button {
+    padding: 0px 5px 0px 5px;
+    font-size: 13.5px;
+    margin-top: 0px;
+    background: #F0F0F0;
+}
+
+#cumulative_button {
+    padding: 0px 5px 0px 5px;
+    font-size: 13.5px;
+    margin-top: 0px;
+    background: #F0F0F0;
+}
+
+#messages_by_client_realm_button {
+    font-size: 14px;
+    background: #D8D8D8;
+}
+
+#messages_by_client_user_button {
+    font-size: 14px;
+    background: #F0F0F0;
+}
+
+#messages_by_client_cumulative_button {
+    font-size: 14px;
+    background: #D8D8D8;
+}
+
+#messages_by_client_ten_days_button {
+    font-size: 14px;
+    margin-left: 50px;
+    background: #F0F0F0;
+}
+
+#messages_by_client_thirty_days_button {
+    font-size: 14px;
+    background: #F0F0F0;
+}
+
+#messages_by_type_realm_button {
+    font-size: 14px;
+    margin-bottom: 100px;
+    background: #D8D8D8;
+}
+
+#messages_by_type_user_button {
+    font-size: 14px;
+    background: #F0F0F0;
+    margin-bottom: 100px;
+}
+
+#messages_by_type_cumulative_button {
+    font-size: 14px;
+    background: #D8D8D8;
+    vertical-align: top;
+}
+
+#messages_by_type_ten_days_button {
+    font-size: 14px;
+    background: #F0F0F0;
+    vertical-align: top;
+    margin-left: 50px;
+}
+
+#messages_by_type_thirty_days_button {
+    font-size: 14px;
+    background: #F0F0F0;
+    vertical-align: top;
+}
+
+#pie_container {
+    text-align: center;
+}
+
+#pie_messages_sent_by_client {
+    display: inline-block;
+    vertical-align: top;
+    margin: 100px 40px 0px 0px;
+}
+
+#pie_messages_sent_by_type {
+    display: inline-block;
+    vertical-align: top;
+    margin: 100px 0px 0px 0px;
+}
+
+#pie_messages_sent_by_client_total {
+    font-size: 15px;
+    text-align: left;
+    margin: 0px 0px 10px 5px;
+}
+
+#pie_messages_sent_by_type_total {
+    font-size: 15px;
+    text-align: left;
+    margin: 0px 0px 10px 50px;
+}
+
+@media (max-width: 1127px) {
+    #pie_messages_sent_by_client {
+        margin-right: 0px;
+        margin-bottom: 40px;
+    }
+}
