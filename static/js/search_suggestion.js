@@ -397,7 +397,7 @@ exports.get_suggestions = function (query) {
     suggestions = get_person_suggestions(persons, query, 'sender');
     result = result.concat(suggestions);
 
-    suggestions = get_private_suggestions(persons, operators, ['pm-with', 'sender']);
+    suggestions = get_private_suggestions(persons, operators, ['pm-with', 'sender', 'from']);
     result = result.concat(suggestions);
 
     suggestions = get_topic_suggestions(operators);
