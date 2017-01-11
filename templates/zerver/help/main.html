@@ -5,9 +5,23 @@
 {% block portico_content %}
 
 <div class="app terms-page">
-  <div class="app-main terms-page-container markdown">
-  {{ article|render_markdown_path }}
-  </div>
+    <div class="app-main terms-page-container markdown">
+    {{ article|render_markdown_path }}
+        <div id="footer">
+        <hr>
+        <p>
+        Click <a href="/help/">here</a> to go back to the documentation home page.
+        </p>
+        <p>
+        The Zulip software, including this documentation, is open source
+         which means that anyone can contribute to it. Click
+         <a href="https://zulip.readthedocs.io/en/latest/README.html">here</a>
+         to learn how you can contribute.
+        </p>
+        </div>
+    </div>
 </div>
 
+
 {% endblock %}
+
