@@ -187,12 +187,35 @@ function do_hashchange(from_reload) {
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- - -- //
 var ignore = {
     flag: false,
-    prev: null
+    prev: null,
+    group: null
 };
 
 function get_main_hash(hash) {
     return hash.replace(/^#/, "").split(/\//)[0];
 }
+
+// different groups require different reloads. The grouped elements don't
+// require a reload or overlay change to run.
+var get_hash_group = (function () {
+    var groups = [
+        ["subscriptions"]
+    ];
+
+    return function (value) {
+        var idx = null;
+
+        _.find(groups, function (o, i) {
+            if (o.indexOf(value)) {
+                idx = i;
+                return true;
+            }
+            return false;
+        });
+
+        return idx;
+    };
+}());
 
 function should_ignore(hash) {
     // an array of hashes to ignore (eg. ["subscriptions", "settings", "administration"]).
@@ -215,12 +238,19 @@ function hashchanged(from_reload, e) {
 
     var base = get_main_hash(window.location.hash);
     if (should_ignore(window.location.hash)) {
-        if (!should_ignore(old_hash || "#")) {
+        // if the old has was a standard non-ignore hash OR the ignore hash
+        // base has changed, something needs to run again.
+        if (!should_ignore(old_hash || "#") || ignore.group !== get_hash_group(window.location.hash)) {
             if (base === "subscriptions") {
                 subs.launch();
             }
 
-            ignore.prev = old_hash;
+            // now only if the previous one should not have been ignored.
+            if (!should_ignore(old_hash || "#")) {
+                ignore.prev = old_hash;
+            }
+
+            ignore.group = get_hash_group(window.location.hash);
         }
     } else if (!should_ignore(window.location.hash) && !ignore.flag) {
         hide_overlays();
