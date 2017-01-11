@@ -35,6 +35,8 @@ def add_api_uri_context(context, request):
     context['external_api_path_subdomain'] = external_api_path_subdomain
     context['external_api_uri_subdomain'] = external_api_uri_subdomain
     context["html_settings_links"] = html_settings_links
+    context["webhook_link"] = settings.EXTERNAL_URI_SCHEME + "integration-bot%40example.com:api_key@"\
+        + external_api_path_subdomain + "/v1/external/"
 
 class ApiURLView(TemplateView):
     def get_context_data(self, **kwargs):
