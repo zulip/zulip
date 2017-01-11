@@ -127,7 +127,7 @@ as a **organization**.
 ## Organization Settings
 * [Change your administrator settings](/help/edit-administrator-settings)
 * [Change your organization's name](/help/change-your-organizations-name)
-* Restrict user email addresses to certain domains
+* [Restrict user email addresses to certain domains](/help/restrict-user-email-addresses-to-certain-domains)
 * [Allow anyone to join without an invitation](/help/allow-anyone-to-join-without-an-invitation)
 * [Only allow admins to invite new users](/help/only-allow-admins-to-invite-new-users)
 * Only allow admins to create new streams
