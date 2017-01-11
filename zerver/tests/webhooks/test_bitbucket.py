@@ -104,15 +104,15 @@ class Bitbucket2HookTests(WebhookTestCase):
         kwargs = {
             "HTTP_X_EVENT_KEY": 'pullrequest:rejected'
         }
-        self.send_and_test_stream_message('v2_pull_request_merged_or_rejected', self.EXPECTED_SUBJECT_PR_EVENTS, expected_message, **kwargs)
+        self.send_and_test_stream_message('v2_pull_request_fulfilled_or_rejected', self.EXPECTED_SUBJECT_PR_EVENTS, expected_message, **kwargs)
 
-    def test_bitbucket2_on_pull_request_merged_event(self):
+    def test_bitbucket2_on_pull_request_fulfilled_event(self):
         # type: () -> None
         expected_message = u"kolaszek merged [PR #1](https://bitbucket.org/kolaszek/repository-name/pull-requests/1)"
         kwargs = {
-            "HTTP_X_EVENT_KEY": 'pullrequest:merged'
+            "HTTP_X_EVENT_KEY": 'pullrequest:fulfilled'
         }
-        self.send_and_test_stream_message('v2_pull_request_merged_or_rejected', self.EXPECTED_SUBJECT_PR_EVENTS, expected_message, **kwargs)
+        self.send_and_test_stream_message('v2_pull_request_fulfilled_or_rejected', self.EXPECTED_SUBJECT_PR_EVENTS, expected_message, **kwargs)
 
     def test_bitbucket2_on_pull_request_comment_created_event(self):
         # type: () -> None
