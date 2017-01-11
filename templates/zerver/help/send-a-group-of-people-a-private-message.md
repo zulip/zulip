@@ -70,6 +70,7 @@ Alternatively, you can click on a message from a group
 to bring up a messaging box with the **one or more people...** field
 filled with the users in that private group message.  
 
-At any time you can discard your message by clicking the **x**
-(<i class="icon-vector-remove"></i>) icon
-located at the top-right corner of the messaging box.
+!!! tip ""
+    At any time you can discard your message by clicking the **x**
+    (<i class="icon-vector-remove"></i>) icon
+    located at the top-right corner of the compose box.
