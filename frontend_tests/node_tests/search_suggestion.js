@@ -245,6 +245,62 @@ people.init();
     assert.equal(describe('stream:devel'), 'Narrow to stream <strong>devel</strong>');
 }());
 
+(function test_sent_by_me_suggestions() {
+    global.stream_data.subscribed_streams = function () {
+        return [];
+    };
+
+    global.narrow.stream = function () {
+        return undefined;
+    };
+
+    var query = '';
+    var suggestions = search.get_suggestions(query);
+    assert(suggestions.strings.indexOf('sender:bob@zulip.com') !== -1);
+    assert.equal(suggestions.lookup_table['sender:bob@zulip.com'].description,
+                 'Sent by me');
+
+    query = 'sender';
+    suggestions = search.get_suggestions(query);
+    var expected = [
+        "sender",
+        "sender:bob@zulip.com",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = 'from';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "from",
+        "from:bob@zulip.com",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = 'sender:bob@zulip.com';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "sender:bob@zulip.com",
+        "is:private",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = 'from:bob@zulip.com';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "from:bob@zulip.com",
+        "is:private",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = 'sent';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "sent",
+        "sender:bob@zulip.com",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+}());
+
 (function test_topic_suggestions() {
     var suggestions;
     var expected;
