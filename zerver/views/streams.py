@@ -32,12 +32,6 @@ from six.moves import urllib
 import six
 from typing import Text
 
-def is_active_subscriber(user_profile, recipient):
-    # type: (UserProfile, Recipient) -> bool
-    return Subscription.objects.filter(user_profile=user_profile,
-                                       recipient=recipient,
-                                       active=True).exists()
-
 def list_to_streams(streams_raw, user_profile, autocreate=False):
     # type: (Iterable[Mapping[str, Any]], UserProfile, Optional[bool]) -> Tuple[List[Stream], List[Stream]]
     """Converts list of dicts to a list of Streams, validating input in the process
@@ -439,45 +433,33 @@ def get_topics_backend(request, user_profile,
     # so the most recent topic is the first element of the list.
     return json_success(dict(topics=result))
 
-
 @authenticated_json_post_view
 @has_request_variables
-def json_stream_exists(request, user_profile, stream=REQ(),
-                       autosubscribe=REQ(default=False)):
+def json_stream_exists(request, user_profile, stream_name=REQ("stream"),
+                       autosubscribe=REQ(validator=check_bool, default=False)):
     # type: (HttpRequest, UserProfile, Text, bool) -> HttpResponse
-    if not valid_stream_name(stream):
+    if not valid_stream_name(stream_name):
         return json_error(_("Invalid characters in stream name"))
-    try:
-        stream_id = Stream.objects.get(realm=user_profile.realm, name=stream).id
-    except Stream.DoesNotExist:
-        stream_id = None
-    return stream_exists_backend(request, user_profile, stream_id, autosubscribe)
 
-def stream_exists_backend(request, user_profile, stream_id, autosubscribe):
-    # type: (HttpRequest, UserProfile, int, bool) -> HttpResponse
     try:
-        stream = get_and_validate_stream_by_id(stream_id, user_profile.realm)
-    except JsonableError:
-        stream = None
-    result = {"exists": bool(stream)}
-    if stream is not None:
-        recipient = get_recipient(Recipient.STREAM, stream.id)
-        if not stream.invite_only and autosubscribe:
-            bulk_add_subscriptions([stream], [user_profile])
-        result["subscribed"] = is_active_subscriber(
-            user_profile=user_profile,
-            recipient=recipient)
+        (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
+    except JsonableError as e:
+        result = {"exists": False}
+        return json_error(e.error, data=result, status=404)
 
-        return json_success(result) # results are ignored for HEAD requests
-    return json_response(data=result, status=404)
+    # access_stream functions return a subscription if and only if we
+    # are already subscribed.
+    result = {"exists": True,
+              "subscribed": sub is not None}
 
-def get_and_validate_stream_by_id(stream_id, realm):
-    # type: (int, Realm) -> Stream
-    try:
-        stream = Stream.objects.get(pk=stream_id, realm_id=realm.id)
-    except Stream.DoesNotExist:
-        raise JsonableError(_("Invalid stream id"))
-    return stream
+    # If we got here, we're either subscribed or the stream is public.
+    # So if we're not yet subscribed and autosubscribe is enabled, we
+    # should join.
+    if sub is None and autosubscribe:
+        bulk_add_subscriptions([stream], [user_profile])
+        result["subscribed"] = True
+
+    return json_success(result) # results are ignored for HEAD requests
 
 @has_request_variables
 def json_get_stream_id(request, user_profile, stream_name=REQ('stream')):

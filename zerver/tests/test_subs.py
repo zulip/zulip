@@ -570,8 +570,7 @@ class StreamAdminTest(ZulipTestCase):
         result = self.attempt_unsubscribe_of_principal(
             is_admin=True, is_subbed=False, invite_only=True,
             other_user_subbed=True)
-        self.assert_json_error(
-            result, "Cannot administer invite-only streams this way")
+        self.assert_json_error(result, "Cannot administer invite-only streams this way")
 
     def test_create_stream_by_admins_only_setting(self):
         # type: () -> None
@@ -1927,13 +1926,26 @@ class SubscriptionAPITest(ZulipTestCase):
         """
         Call /json/subscriptions/exist on an existing stream and autosubscribe to it.
         """
-        stream_name = self.streams[0]
+        stream_name = "new_public_stream"
+        result = self.common_subscribe_to_streams("cordelia@zulip.com", [stream_name],
+                                                  invite_only=False)
         result = self.client_post("/json/subscriptions/exists",
-                                  {"stream": stream_name, "autosubscribe": True})
+                                  {"stream": stream_name, "autosubscribe": "false"})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         self.assertIn("exists", json)
         self.assertTrue(json["exists"])
+        self.assertIn("subscribed", json)
+        self.assertFalse(json["subscribed"])
+
+        result = self.client_post("/json/subscriptions/exists",
+                                  {"stream": stream_name, "autosubscribe": "true"})
+        self.assert_json_success(result)
+        json = ujson.loads(result.content)
+        self.assertIn("exists", json)
+        self.assertTrue(json["exists"])
+        self.assertIn("subscribed", json)
+        self.assertTrue(json["subscribed"])
 
     def test_existing_subscriptions_autosubscription_private_stream(self):
         # type: () -> None
@@ -1946,17 +1958,24 @@ class SubscriptionAPITest(ZulipTestCase):
         stream = get_stream(stream_name, self.realm)
 
         result = self.client_post("/json/subscriptions/exists",
-                                  {"stream": stream_name, "autosubscribe": True})
+                                  {"stream": stream_name, "autosubscribe": "true"})
+        # We can't see invite-only streams here
+        self.assert_json_error(result, "Invalid stream name 'Saxony'", status_code=404)
+        # Importantly, we are not now subscribed
+        self.assertEqual(Subscription.objects.filter(
+            recipient__type=Recipient.STREAM,
+            recipient__type_id=stream.id).count(), 1)
+
+        # A user who is subscribed still sees the stream exists
+        self.login("cordelia@zulip.com")
+        result = self.client_post("/json/subscriptions/exists",
+                                  {"stream": stream_name, "autosubscribe": "false"})
         self.assert_json_success(result)
         json = ujson.loads(result.content)
         self.assertIn("exists", json)
         self.assertTrue(json["exists"])
         self.assertIn("subscribed", json)
-        # Importantly, we are not now subscribed
-        self.assertFalse(json["subscribed"])
-        self.assertEqual(Subscription.objects.filter(
-            recipient__type=Recipient.STREAM,
-            recipient__type_id=stream.id).count(), 1)
+        self.assertTrue(json["subscribed"])
 
     def get_subscription(self, user_profile, stream_name):
         # type: (UserProfile, Text) -> Subscription

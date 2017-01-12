@@ -364,6 +364,7 @@ def build_custom_checkers(by_lang):
              ('zerver/views/invite.py',
               'return json_error(data=error_data, msg=ret_error)'),
              ('zerver/views/streams.py', 'return json_error(property_conversion)'),
+             ('zerver/views/streams.py', 'return json_error(e.error, data=result, status=404)'),
              # We can't do anything about this.
              ('zerver/views/realm_emoji.py', 'return json_error(e.messages[0])'),
              ('zerver/views/realm_filters.py', 'return json_error(e.messages[0], data={"errors": dict(e)})'),
