@@ -22,14 +22,6 @@ from zerver.lib.utils import generate_random_token
 from zerver.models import PreregistrationUser
 from typing import Optional, Union, Any, Text
 
-try:
-    import mailer
-    send_mail = mailer.send_mail
-except ImportError:
-    # no mailer app present, stick with default
-    pass
-
-
 B16_RE = re.compile('^[a-f0-9]{40}$')
 
 def check_key_is_valid(creation_key):

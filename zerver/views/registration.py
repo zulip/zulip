@@ -368,13 +368,6 @@ def generate_204(request):
     # type: (HttpRequest) -> HttpResponse
     return HttpResponse(content=None, status=204)
 
-try:
-    import mailer
-    send_mail = mailer.send_mail
-except ImportError:
-    # no mailer app present, stick with default
-    pass
-
 def send_find_my_team_emails(user_profile):
     # type: (UserProfile) -> None
     text_template = 'zerver/emails/find_team/find_team_email.txt'
