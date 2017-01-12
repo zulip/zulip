@@ -91,7 +91,7 @@ take input from both a cron job and a Zulip stream, and it may
 write to both a Zulip stream and a third party calendar tool.  For
 the scope of this document, we won't spend a lot of time talking
 about how to build these types of apps, but we are aware that
-any solution needs to accomodate multiple sources and targets.
+any solution needs to accommodate multiple sources and targets.
 
 ### World Reader/Zulip Reader
 
