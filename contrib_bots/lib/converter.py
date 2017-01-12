@@ -123,7 +123,7 @@ ALIASES = {'a': 'are',
            'y^3': 'cubic-yard'}
 
 HELP_MESSAGE = ('Converter usage:\n'
-                '`@convert <number> <unit_from> <unit_to>`\n'
+                '`<number> <unit_from> <unit_to>`\n'
                 'Converts `number` in the unit <unit_from> to '
                 'the <unit_to> and prints the result\n'
                 '`number`: integer or floating point number, e.g. 12, 13.05, 0.002\n'
@@ -146,12 +146,12 @@ HELP_MESSAGE = ('Converter usage:\n'
                 '* atto, pico, femto, nano, micro, milli, centi, deci\n'
                 '* deca, hecto, kilo, mega, giga, tera, peta, exa\n\n\n'
                 'Usage examples:\n'
-                '* `@convert 12 celsius fahrenheit`\n'
-                '* `@convert 0.002 kilomile millimeter`\n'
-                '* `@convert 31.5 square-mile ha`\n'
-                '* `@convert 56 g lb`\n')
+                '* `12 celsius fahrenheit`\n'
+                '* `0.002 kilomile millimeter`\n'
+                '* `31.5 square-mile ha`\n'
+                '* `56 g lb`\n')
 
-QUICK_HELP = 'Enter `@convert help` for help on using the converter.'
+QUICK_HELP = 'Enter `help` for help on using the converter.'
 
 def is_float(value):
     try:
@@ -173,8 +173,8 @@ class ConverterHandler(object):
     This plugin allows users to make conversions between various units,
     e.g. Celsius to Fahrenheit, or kilobytes to gigabytes.
     It looks for messages of the format
-    '@convert <number> <unit_from> <unit_to>'
-    The message '@convert help' posts a short description of how to use
+    '<number> <unit_from> <unit_to>'
+    The message 'help' posts a short description of how to use
     the plugin, along with a list of all supported units.
     '''
 
@@ -183,14 +183,16 @@ class ConverterHandler(object):
                This plugin allows users to make conversions between
                various units, e.g. Celsius to Fahrenheit,
                or kilobytes to gigabytes. It looks for messages of
-               the format '@convert <number> <unit_from> <unit_to>'
-               The message '@convert help' posts a short description of
+               the format '<number> <unit_from> <unit_to>'
+               The message 'help' posts a short description of
                how to use the plugin, along with a list of
                all supported units.
                '''
 
     def triage_message(self, message, client):
-        return '@convert' in message['content']
+        if message['type'] == 'private':
+            return client.full_name != message['sender_full_name']
+        return (message['type'] == 'private')
 
     def handle_message(self, message, client, state_handler):
         content = message['content']
@@ -266,9 +268,8 @@ class ConverterHandler(object):
             new_content += ((str(idx) + '. conversion: ') if len(results) > 1 else '') + result + '\n'
 
         client.send_message(dict(
-            type='stream',
-            to=message['display_recipient'],
-            subject=message['subject'],
+            type='private',
+            to='manager-bot@zulip.com',
             content=new_content,
         ))
 
