@@ -846,7 +846,7 @@ MessageListView.prototype = {
 
         // If the pointer is high on the page such that there is a
         // lot of empty space below and the render window is full, a
-        // newly recieved message should trigger a rerender so that
+        // newly received message should trigger a rerender so that
         // the new message, which will appear in the viewable area,
         // is rendered.
         this.maybe_rerender();
