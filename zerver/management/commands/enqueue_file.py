@@ -19,7 +19,7 @@ class Command(BaseCommand):
     help = """Read JSON lines from a file and enqueue them to a worker queue.
 
 Each line in the file should either be a JSON payload or two tab-separated
-fields, the second of which is a JSON payload.  (The latter is to accomodate
+fields, the second of which is a JSON payload.  (The latter is to accommodate
 the format of error files written by queue workers that catch exceptions--their
 first field is a timestamp that we ignore.)
 

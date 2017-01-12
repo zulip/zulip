@@ -1255,7 +1255,7 @@ def re_map_foreign_keys(data, table, field_name, related_table, verbose=False):
     # type: (TableData, TableName, Field, TableName, bool) -> None
     '''
     We occasionally need to assign new ids to rows during the
-    import/export process, to accomodate things like existing rows
+    import/export process, to accommodate things like existing rows
     already being in tables.  See bulk_import_client for more context.
 
     The tricky part is making sure that foreign key references
