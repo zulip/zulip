@@ -6,7 +6,8 @@ import platform
 import sys
 import subprocess
 
-from typing import Callable, List
+if False:
+    from typing import Callable, List
 
 TOOLS_DIR = os.path.dirname(__file__)
 ROOT_DIR = os.path.dirname(TOOLS_DIR)
