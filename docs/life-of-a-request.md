@@ -45,7 +45,7 @@ location /static/ {
 [tornado-django]: architecture-overview.html?highlight=tornado#tornado-and-django
 
 All our connected clients hold open long-polling connections so that
-they can recieve events (messages, presence notifications, and so on) in
+they can receive events (messages, presence notifications, and so on) in
 real-time. Events are served by Zulip's `tornado` application.
 
 Nearly every other kind of request is served by the `zerver` Django
