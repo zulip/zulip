@@ -79,11 +79,6 @@ p.n-margin {
     top: 67px;
     width: 24px;
     height: 24px;
-    background-image: url(../images/logo/zulip-icon-128x128.png);
-    background-size: 100%;
-    background-repeat: no-repeat;
-    -webkit-filter: saturate(0) invert(1) brightness(1.3);
-    filter: saturate(0) invert(1) brightness(1.3);
 }
 
 #unmute_muted_topic_notification {
