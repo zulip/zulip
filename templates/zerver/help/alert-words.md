@@ -1,28 +1,34 @@
-# Alert Words
-Zulip allows you to define custom alert words and phrases.
-When they are used in any stream you are subscribed to, it works
-similarly to being [@-mentioned](/help/at-mention-a-team-member)
-by another user.
+# Alert words
 
-## Adding Alert Words
+Zulip allows you to define custom alert words and phrases. When they are used
+in any stream you are subscribed to, it works similarly to being
+[@-mentioned](/help/at-mention-a-team-member) by another user.
+
+## Adding alert words
+
 {!go-to-the.md!} [Custom Alert Words](/#settings/custom-alert-words)
 {!settings.md!}
 
-2.  Type the word/phrase you wish to be notified for into the text box,
-    then click the **Add Alert Word** button.
+2. Type the word/phrase you wish to be notified for into the **New Alert Word**
+text box. (e.g. "Downtime")
+
+3. Click on the **Add Alert Word** button to save it.
 
 Once these steps are completed, you should see something similar to:
 
-![Alert Settings](/static/images/help/settings-custom-alerts-sample.png)
+![Alert settings](/static/images/help/settings-custom-alerts-sample.png)
 
 If any alert words are mentioned, they will be highlighted within the message,
-and you will be alerted in accordance with your notification settings.
+and you will be alerted in accordance with your [notification settings](/#settings/notifications).
 
-![Example Notification](/static/images/help/alert-word-notification-example.png)
+![Highlighted message](/static/images/help/alert-words-message-example.png)
 
-## Removing Alert Words
+!!! tip ""
+    Alert words/phrases are matched case-insensitive, meaning you don't have to
+    care about capitalization when defining them.
 
-Alert Words can be removed easily in the settings menu, by clicking the trash
-(<button class="btn btn-danger btn-mini"><i
-class="icon-vector-trash"></i></button>) button next to the word/phrase to be
+## Removing alert words
+
+Alert words can be removed with ease in the settings menu, by clicking the trash
+(<i class="icon-vector-trash"></i>) icon left of the alert word/phrase to be
 deleted.
