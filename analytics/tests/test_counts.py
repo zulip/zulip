@@ -8,13 +8,12 @@ from analytics.lib.counts import CountStat, COUNT_STATS, process_count_stat, \
     do_fill_count_stat_at_hour, ZerverCountQuery
 from analytics.models import BaseCount, InstallationCount, RealmCount, \
     UserCount, StreamCount, FillState, installation_epoch
-
 from zerver.models import Realm, UserProfile, Message, Stream, Recipient, \
-    get_user_profile_by_email, get_client
+    Huddle, get_user_profile_by_email, get_client
 
 from datetime import datetime, timedelta
 
-from typing import Any, Type, Optional, Text
+from typing import Any, Type, Optional, Text, Tuple
 
 class AnalyticsTestCase(TestCase):
     MINUTE = timedelta(seconds = 60)
@@ -44,14 +43,25 @@ class AnalyticsTestCase(TestCase):
             kwargs[key] = kwargs.get(key, value)
         return UserProfile.objects.create(email=email, **kwargs)
 
-    def create_stream(self, **kwargs):
-        # type: (**Any) -> Stream
+    def create_stream_with_recipient(self, **kwargs):
+        # type: (**Any) -> Tuple[Stream, Recipient]
         defaults = {'name': 'stream name',
                     'realm': self.default_realm,
                     'date_created': self.TIME_LAST_HOUR}
         for key, value in defaults.items():
             kwargs[key] = kwargs.get(key, value)
-        return Stream.objects.create(**kwargs)
+        stream = Stream.objects.create(**kwargs)
+        recipient = Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
+        return stream, recipient
+
+    def create_huddle_with_recipient(self, huddle_hash, **kwargs):
+        # type: (str, **Any) -> Tuple[Huddle, Recipient]
+        defaults = {'huddle_hash': huddle_hash}
+        for key, value in defaults.items():
+            kwargs[key] = kwargs.get(key, value)
+        huddle = Huddle.objects.create(**kwargs)
+        recipient = Recipient.objects.create(type_id=huddle.id, type=Recipient.HUDDLE)
+        return huddle, recipient
 
     def create_message(self, sender, recipient, **kwargs):
         # type: (UserProfile, Recipient, **Any) -> Message
@@ -137,15 +147,13 @@ class TestCountStats(AnalyticsTestCase):
             string_id='second-realm', name='Second Realm',
             domain='second.analytics', date_created=self.TIME_ZERO-2*self.DAY)
         user = self.create_user('user@second.analytics', realm=self.second_realm)
-        stream = self.create_stream(realm=self.second_realm)
-        recipient = Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
+        stream, recipient = self.create_stream_with_recipient(realm=self.second_realm)
         self.create_message(user, recipient)
 
         future_user = self.create_user('future_user@second.analytics', realm=self.second_realm,
                                        date_joined=self.TIME_ZERO)
-        future_stream = self.create_stream(name='future stream', realm=self.second_realm,
-                                           date_created=self.TIME_ZERO)
-        future_recipient = Recipient.objects.create(type_id=future_stream.id, type=Recipient.STREAM)
+        future_stream, future_recipient = self.create_stream_with_recipient(name='future stream',
+                                                                            realm=self.second_realm, date_created=self.TIME_ZERO)
         self.create_message(future_user, future_recipient, pub_date=self.TIME_ZERO)
 
     def test_active_users_by_is_bot(self):
