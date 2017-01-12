@@ -116,7 +116,7 @@ describe provider_class do
       File.read(@tmpfile).should eql("foo1\nfoo2\n")
     end
 
-    it 'should remove any occurence of the line' do
+    it 'should remove any occurrence of the line' do
       File.open(@tmpfile, 'w') do |fh|
         fh.write("foo1\nfoo\nfoo2\nfoo\nfoo")
       end
