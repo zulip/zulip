@@ -22,6 +22,7 @@ Over time, we expect this registry to grow additional convenience
 features for writing and configuring integrations efficiently.
 """
 
+
 class Integration(object):
     DEFAULT_LOGO_STATIC_PATH_PNG = 'static/images/integrations/logos/{name}.png'
     DEFAULT_LOGO_STATIC_PATH_SVG = 'static/images/integrations/logos/{name}.svg'
@@ -47,10 +48,13 @@ class Integration(object):
         # type: () -> bool
         return True
 
+
 class EmailIntegration(Integration):
+
     def is_enabled(self):
         # type: () -> bool
         return settings.EMAIL_GATEWAY_BOT != ""
+
 
 class WebhookIntegration(Integration):
     DEFAULT_FUNCTION_PATH = 'zerver.views.webhooks.{name}.api_{name}_webhook'
@@ -62,7 +66,8 @@ class WebhookIntegration(Integration):
         # type: (str, Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str]) -> None
         if client_name is None:
             client_name = self.DEFAULT_CLIENT_NAME.format(name=name.title())
-        super(WebhookIntegration, self).__init__(name, client_name, logo, secondary_line_text, display_name)
+        super(WebhookIntegration, self).__init__(
+            name, client_name, logo, secondary_line_text, display_name)
 
         if function is None:
             function = self.DEFAULT_FUNCTION_PATH.format(name=name)
@@ -81,6 +86,7 @@ class WebhookIntegration(Integration):
         # type: () -> LocaleRegexProvider
         return url(self.url, self.function)
 
+
 class HubotLozenge(Integration):
     GIT_URL_TEMPLATE = "https://github.com/hubot-scripts/hubot-{}"
 
@@ -93,7 +99,9 @@ class HubotLozenge(Integration):
         if git_url is None:
             git_url = self.GIT_URL_TEMPLATE.format(name)
         self.git_url = git_url
-        super(HubotLozenge, self).__init__(name, name, logo, display_name=display_name)
+        super(HubotLozenge, self).__init__(
+            name, name, logo, display_name=display_name)
+
 
 class GithubIntegration(WebhookIntegration):
     """
@@ -109,13 +117,15 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('airbrake'),
     WebhookIntegration('appfollow', display_name='AppFollow'),
     WebhookIntegration('beanstalk'),
-    WebhookIntegration('bitbucket2', logo='static/images/integrations/logos/bitbucket.png', display_name='Bitbucket'),
+    WebhookIntegration(
+        'bitbucket2', logo='static/images/integrations/logos/bitbucket.svg', display_name='Bitbucket'),
     WebhookIntegration('bitbucket', secondary_line_text='(Enterprise)'),
     WebhookIntegration('circleci', display_name='CircleCI'),
     WebhookIntegration('codeship'),
     WebhookIntegration('crashlytics'),
     WebhookIntegration('delighted', display_name='Delighted'),
-    WebhookIntegration('deskdotcom', logo='static/images/integrations/logos/deskcom.png', display_name='Desk.com'),
+    WebhookIntegration(
+        'deskdotcom', logo='static/images/integrations/logos/deskcom.png', display_name='Desk.com'),
     WebhookIntegration('freshdesk'),
     GithubIntegration(
         'github',
@@ -135,8 +145,10 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('hellosign', display_name='HelloSign'),
     WebhookIntegration('helloworld', display_name='Hello World'),
     WebhookIntegration('heroku', display_name='Heroku'),
-    WebhookIntegration('ifttt', function='zerver.views.webhooks.ifttt.api_iftt_app_webhook', display_name='IFTTT'),
-    WebhookIntegration('jira', secondary_line_text='(hosted or v5.2+)', display_name='JIRA'),
+    WebhookIntegration(
+        'ifttt', function='zerver.views.webhooks.ifttt.api_iftt_app_webhook', display_name='IFTTT'),
+    WebhookIntegration(
+        'jira', secondary_line_text='(hosted or v5.2+)', display_name='JIRA'),
     WebhookIntegration('librato'),
     WebhookIntegration('mention', display_name='Mention'),
     WebhookIntegration('newrelic', display_name='New Relic'),
@@ -177,7 +189,7 @@ INTEGRATIONS = {
     'jira-plugin': Integration(
         'jira-plugin',
         'jira-plugin',
-        logo='static/images/integrations/logos/jira.png',
+        logo='static/images/integrations/logos/jira.svg',
         secondary_line_text='(locally installed)',
         display_name='JIRA'
     ),
