@@ -1,18 +1,20 @@
 # Configure desktop notifications
 
-Follow the following steps to change your desktop notifications.
+You can configure your settings to receive desktop notifications for messages
+sent while Zulip is offscreen.
 
 {!go-to-the.md!} [Notifications](/#settings/notifications)
 {!settings.md!}
 
-    If you want notifications for each new message from a stream, check the
-desktop notifications box under **Stream messages**.
+    * If you want desktop notifications for each new message from a stream,
+check the **Desktop notifications** option under **Stream messages**.
 
-    ![Stream notifications](/static/images/help/stream-notification-settings.png)
+    * If you want desktop notifications only for private messages and @-mentions,
+check the **Desktop notifications** option under **Private messages and @-mentions**.
 
-    If you want notifications for private messages and @-mentions, check the
-desktop notifications box under **Private messages and @-mentions**.
+2. Click on the **Save Changes** button at the bottom to save any changes you
+made to your notification settings.
 
-    ![PM notifications](/static/images/help/pm-notification-settings.png)
-
-2. Click on the **Save Changes** button at the bottom to save your settings.
+!!! tip ""
+    You can change your notification settings for individual streams on your
+    [Streams](/#subscriptions) page.
