@@ -1,4 +1,5 @@
 from typing import Dict, List, Optional, TypeVar
+import os.path
 from django.conf import settings
 from django.conf.urls import url
 from django.core.urlresolvers import LocaleRegexProvider
@@ -22,7 +23,8 @@ features for writing and configuring integrations efficiently.
 """
 
 class Integration(object):
-    DEFAULT_LOGO_STATIC_PATH = 'static/images/integrations/logos/{name}.png'
+    DEFAULT_LOGO_STATIC_PATH_PNG = 'static/images/integrations/logos/{name}.png'
+    DEFAULT_LOGO_STATIC_PATH_SVG = 'static/images/integrations/logos/{name}.svg'
 
     def __init__(self, name, client_name, logo=None, secondary_line_text=None, display_name=None):
         # type: (str, str, Optional[str], Optional[str], Optional[str]) -> None
@@ -31,7 +33,10 @@ class Integration(object):
         self.secondary_line_text = secondary_line_text
 
         if logo is None:
-            logo = self.DEFAULT_LOGO_STATIC_PATH.format(name=name)
+            if os.path.isfile(self.DEFAULT_LOGO_STATIC_PATH_SVG.format(name=name)):
+                logo = self.DEFAULT_LOGO_STATIC_PATH_SVG.format(name=name)
+            else:
+                logo = self.DEFAULT_LOGO_STATIC_PATH_PNG.format(name=name)
         self.logo = logo
 
         if display_name is None:
