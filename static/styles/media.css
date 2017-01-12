@@ -269,7 +269,6 @@
         height: 20px;
         background: rgba(255,255,255,0.8);
         z-index: 10;
-        border: 1px solid #e2e2e2;
     }
 
     .selected_message .message_controls {
@@ -290,12 +289,14 @@
 
     .star {
         position: absolute;
-        left: 4px;
+        left: 0px;
+        top: -1px;
     }
 
     .info {
         position: absolute;
-        left: 20px;
+        left: 17px;
+        top: -1px;
     }
 
     .edit_content, .reactions_hover {
