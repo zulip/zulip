@@ -22,12 +22,9 @@ class DefineHandler(object):
             '''
 
     def triage_message(DefineHandler, message, client):
-        # return True if we want to (possibly) response to this message
-        original_content = message['content']
-        # This next line of code is defensive, as we
-        # never want to get into an infinite loop of posting follow
-        # ups for own follow ups!
-        is_define = original_content.startswith('@define')
+        if message['type'] == 'private':
+            return client.full_name != message['sender_full_name']
+        is_define = (message['type'] == 'private')
 
         return is_define
 
@@ -76,10 +73,9 @@ class DefineHandler(object):
         response = DefineHandler._handle_definition(original_content)
 
         client.send_message(dict(
-            type='stream',
-            to=message['display_recipient'],
-            subject=message['sender_email'],
-            content=response
+            type='private',
+            to='manager-bot@zulip.com',
+            content=response,
         ))
 
 handler_class = DefineHandler
