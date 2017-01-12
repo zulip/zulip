@@ -49,9 +49,24 @@ def host_info():
 @run
 def check_django():
     # type: () -> bool
-    import django
-    print('Django version:', django.get_version())
-    return True
+    try:
+        import django
+        print('Django version:', django.get_version())
+        return True
+    except ImportError:
+        print('''
+            ERROR!
+            We cannot import Django, which is usually a
+            symptom of not having your Python venv
+            set up correctly.
+
+            Make sure your shell does this at init time:
+
+            source /srv/zulip-venv/bin/activate
+
+            Or maybe you forget to run inside your VM?
+            ''')
+        return False
 
 @run
 def provision_version():
