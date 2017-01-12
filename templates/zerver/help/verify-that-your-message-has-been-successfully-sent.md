@@ -31,7 +31,7 @@ error in your browser window.
 
 4. Reconnect your computer to the Internet.
 
-5. A few seconds later, your message will be updated to contains the
+5. A few seconds later, your message will be updated to contain the
 timestamp on the right side of the message body.
 
 ![Message time](/static/images/help/message-exact-time.png)
