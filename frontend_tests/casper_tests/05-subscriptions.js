@@ -59,6 +59,27 @@ casper.waitForSelector(".subscriber-list", function () {
                              "Rome is not visible");
 });
 casper.then(function () {
+    casper.test.info("Check Uncheck only visible users for new stream");
+    casper.click('.subs_set_all_users');
+    casper.wait(100, function () {
+        casper.test.assert(casper.evaluate(function () {
+            return !$('#user-checkboxes [value="cordelia@zulip.com"]')[0].checked;
+        }), "Cordelia is unchecked");
+        casper.test.assert(casper.evaluate(function () {
+            return $('#user-checkboxes [value="othello@zulip.com"]')[0].checked;
+        }), "Othello is checked");
+    });
+});
+casper.then(function () {
+    casper.test.info("Check Uncheck only visible users for new stream");
+    casper.click('.subs_unset_all_users');
+    casper.wait(100, function () {
+        casper.test.assert(casper.evaluate(function () {
+            return !$('#user-checkboxes [value="othello@zulip.com"]')[0].checked;
+        }), "Othello is unchecked");
+    });
+});
+casper.then(function () {
     casper.test.info("Clearing user filter search box");
     casper.fill('form#stream_creation_form', {user_list_filter: ''});
 });

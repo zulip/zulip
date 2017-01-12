@@ -855,14 +855,22 @@ $(function () {
         }
     });
 
-    // 'Check all' and 'Uncheck all' links
+    // 'Check all' and 'Uncheck all' visible users
     $(document).on('click', '.subs_set_all_users', function (e) {
-        $('#people_to_add :checkbox').prop('checked', true);
+        $('#people_to_add .checkbox').each(function (idx, li) {
+            if  (li.style.display !== "none") {
+                $(li.firstElementChild).prop('checked', true);
+            }
+        });
         e.preventDefault();
         update_announce_stream_state();
     });
     $(document).on('click', '.subs_unset_all_users', function (e) {
-        $('#people_to_add :checkbox').prop('checked', false);
+        $('#people_to_add .checkbox').each(function (idx, li) {
+            if  (li.style.display !== "none") {
+                $(li.firstElementChild).prop('checked', false);
+            }
+        });
         e.preventDefault();
         update_announce_stream_state();
     });
