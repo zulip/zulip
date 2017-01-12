@@ -762,11 +762,11 @@ def user_activity_link(email):
     email_link = '<a href="%s">%s</a>' % (url, email)
     return mark_safe(email_link)
 
-def realm_activity_link(realm):
+def realm_activity_link(realm_str):
     # type: (str) -> mark_safe
     url_name = 'analytics.views.get_realm_activity'
-    url = urlresolvers.reverse(url_name, kwargs=dict(realm=realm))
-    realm_link = '<a href="%s">%s</a>' % (url, realm)
+    url = urlresolvers.reverse(url_name, kwargs=dict(realm_str=realm_str))
+    realm_link = '<a href="%s">%s</a>' % (url, realm_str)
     return mark_safe(realm_link)
 
 def realm_client_table(user_summaries):
