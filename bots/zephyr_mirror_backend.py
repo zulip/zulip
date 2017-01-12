@@ -85,7 +85,7 @@ def to_zephyr_username(zulip_username):
 # significantly shorter than the following line (which, if they were
 # in the same paragraph, should have been wrapped in a way consistent
 # with how the previous line was wrapped) or (2) shorter than 60
-# characters (our assumed minimum linewrapping threshhold for Zephyr)
+# characters (our assumed minimum linewrapping threshold for Zephyr)
 # or (3) the first word of the next line is longer than this entire
 # line.
 def different_paragraph(line, next_line):
