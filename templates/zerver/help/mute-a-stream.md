@@ -1,6 +1,7 @@
 # Mute a stream
 
-You can mute streams to reduce the amount of notifications you receive.
+If you would like to stop receiving notifications from a certain stream, you can
+choose to mute it. You can also [mute individual topics](/help/mute-a-topic).
 
 {!stream-actions.md!}
 
@@ -19,5 +20,5 @@ muting.
 option from the actions dropdown.
 
 3. Upon selecting the **Unmute the stream (stream name)** option, the selected
-stream will return to its normal colors in the left sidebar, confirming the
-success of your unmuting.
+stream will stop being grayed out in the left sidebar, confirming the success
+of your unmuting.
