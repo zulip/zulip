@@ -2443,9 +2443,13 @@ button.topic_edit_cancel {
 .nav-table a {
     display: block;
 }
-.nav-table a:hover {
+.nav-table tr:hover {
     text-decoration: none;
     background-color: #eeeeee;
+    color: #0088cc;
+}
+.nav-table a:hover {
+    text-decoration: none;
     color: #0088cc;
 }
 .nav-list-table a,
@@ -2453,14 +2457,10 @@ button.topic_edit_cancel {
     text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 .ikon-style {
-    margin-right: -38px;
-    margin-left: -15px;
-    padding: 3px 5px;
-    padding-right: 153px;
+    padding: 3px 15px;
+
 }
 .message-style {
-    margin-left: -138px;
-    margin-right: -15px;
-    padding: 3px 5px;
-    padding-left: 25px;
+    padding: 3px 15px;
+    margin-left: -27px;
 }
