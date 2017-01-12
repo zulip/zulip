@@ -3,7 +3,7 @@
 Zulip allows you to easily attach files, including images, sound, and video by:
 
 - **Clicking the Paperclip Icon** - Use the paperclip icon
-  (![paperclip](/static/images/help/paperclip.png)) located under the message field.
+  (<i class="icon-vector-paperclip"></i>) located under the message field.
 - **Dragging and dropping** - You may also drag and drop files on the message
   field. The files are uploaded to a server and a link is supplied,
   but a thumbnail is displayed if possible. The link to the file will be
@@ -28,9 +28,9 @@ varying options depending on the media type. Images may be opened in new tabs or
 downloaded, while videos from Youtube may only be opened (and not downloaded).
 
 !!! tip ""
-    You can exit out of a lightbox by clicking the space around the media preview
-    or by clicking the exit button (![x](/static/images/help/x.png)) found in
-    the upper right-hand corner.
+    You can exit out of a lightbox by clicking the space around
+    the media preview or by clicking the X in the upper right-hand
+    corner.
 
 ### Sharing Files from External Websites
 
