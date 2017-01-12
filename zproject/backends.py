@@ -423,7 +423,7 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
             try:
                 user_profile = backend.do_auth(*args, **kwargs)
             except AuthFailed:
-                logging.info("User profile not member of team.")
+                logging.info("User is not member of GitHub team.")
                 user_profile = None
 
         elif (org_name):
@@ -431,7 +431,7 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
             try:
                 user_profile = backend.do_auth(*args, **kwargs)
             except AuthFailed:
-                logging.info("User profile not member of organization.")
+                logging.info("User is not member of GitHub organization.")
                 user_profile = None
 
         return self.process_do_auth(user_profile, *args, **kwargs)
