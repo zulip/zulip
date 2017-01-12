@@ -74,7 +74,7 @@ class DefineHandler(object):
 
         client.send_message(dict(
             type='private',
-            to='manager-bot@zulip.com',
+            to=message['sender_email'],
             content=response,
         ))
 
