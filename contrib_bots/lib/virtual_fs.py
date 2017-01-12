@@ -89,6 +89,7 @@ def sample_conversation():
         ('read /bar', 'new bar'),
         ('write /yo/invalid whatever', 'ERROR: /yo is not a directory'),
         ('mkdir /yo', 'directory created'),
+        ('read /yo', 'ERROR: /yo is a directory, file required'),
         ('ls /yo', 'WARNING: directory is empty'),
         ('read /yo/nada', 'ERROR: file does not exist'),
         ('write /yo whatever', 'ERROR: file already exists'),
@@ -209,6 +210,9 @@ def fs_write(fs, fn, content):
 def fs_read(fs, fn):
     if fn not in fs:
         msg = 'ERROR: file does not exist'
+        return fs, msg
+    if fs[fn]['kind'] == 'dir':
+        msg = 'ERROR: {} is a directory, file required'.format(fn)
         return fs, msg
     val = fs[fn]['content']
     return fs, val
