@@ -10,7 +10,7 @@ structured.
 
 Most of the existing JS in Zulip is written in IIFE-wrapped modules, one
 per file in the static/js directory. When running Zulip in development
-mode, each file is loaded seperately. In production mode (and when
+mode, each file is loaded separately. In production mode (and when
 creating a release tarball using tools/build-release-tarball),
 JavaScript files are concatenated and minified.
 
