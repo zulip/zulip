@@ -38,6 +38,9 @@ usage = """%prog [options]
     test-js-with-casper 01 03 # Run a few test files, 01-login.js and 03-narrow.js here"""
 parser = optparse.OptionParser(usage)
 
+parser.add_option('--skip-flaky-tests', dest='skip_flaky',
+                  action="store_true",
+                  default=False, help='Skip flaky tests')
 parser.add_option('--force', dest='force',
                   action="store_true",
                   default=False, help='Run tests despite possible problems.')
@@ -117,6 +120,10 @@ def run_tests(realms_have_subdomains, files):
 
     if not test_files:
         test_files = sorted(glob.glob(os.path.join(test_dir, '*.js')))
+
+    # 10-admin.js is too flaky!
+    if options.skip_flaky:
+        test_files = [fn for fn in test_files if '10-admin' not in fn]
 
     remote_debug = ""
     if options.remote_debug:
