@@ -76,7 +76,6 @@ class CommuteHandler(object):
                 '''
 
     def triage_message(self, message, client):
-        # return True iff we want to (possibly) response to this message
         original_content = message['content']
         # This next line of code is defensive, as we
         # never want to get into an infinite loop of posting follow

@@ -275,7 +275,6 @@ class ticTacToeHandler(object):
             '''
 
     def triage_message(self, message, client):
-        # return True if we want to (possibly) response to this message
         original_content = message['content']
         is_tictactoe = (original_content.startswith('@tictactoe') or
                         original_content.startswith('@ttt'))

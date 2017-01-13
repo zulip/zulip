@@ -64,8 +64,6 @@ class YodaSpeakHandler(object):
             '''
 
     def triage_message(self, message):
-        # return True iff we want to (possibly) response to this message
-
         original_content = message['content']
 
         return original_content.startswith('@yoda')

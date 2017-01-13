@@ -59,8 +59,6 @@ class ThesaurusHandler(object):
             '''
 
     def triage_message(self, message, client):
-        # return True if we want to (possibly) respond to this message
-
         original_content = message['content']
 
         is_thesaurus = (original_content.startswith('@synonym') or

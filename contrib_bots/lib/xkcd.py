@@ -28,7 +28,6 @@ class XkcdHandler(object):
             '''
 
     def triage_message(self, message, client):
-        # Return True if we want to (possibly) response to this message
         original_content = message['content']
         is_xkcd_called = original_content.startswith('@xkcd ')
         is_xkcd_called_without_command = original_content == '@xkcd'
