@@ -197,8 +197,6 @@
 
 #userlist-header,
 #group-pm-header {
-    border-top: 1px solid #e2e2e2;
-    margin-top: 5px;
     margin-right: 10px;
 }
 
@@ -208,7 +206,9 @@
 
 #feedback_section {
     text-align: left;
-    padding-bottom: 10px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e2e2e2;
+    margin-right: 10px;
 }
 
 .user-list-filter ,
