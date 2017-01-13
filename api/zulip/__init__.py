@@ -659,11 +659,11 @@ class Client(object):
         '''
             Example usage: client.get_subscribers(stream='devel')
         '''
-        request_stream_id = self.get_stream_id(request['stream'])
-        try:
-            stream_id = request_stream_id['stream_id']
-        except KeyError:
-            return request_stream_id
+        response = self.get_stream_id(request['stream'])
+        if response['result'] == 'error':
+            return response
+
+        stream_id = response['stream_id']
         url = 'streams/%d/members' % (stream_id,)
         return self.call_endpoint(
             url=url,
