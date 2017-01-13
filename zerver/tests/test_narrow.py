@@ -61,7 +61,7 @@ def get_recipient_id_for_stream_name(realm, stream_name):
 
 def mute_stream(realm, user_profile, stream_name):
     # type: (Realm, Text, Text) -> None
-    stream = Stream.objects.get(realm=realm, name=stream_name)
+    stream = get_stream(stream_name, realm)
     recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
     subscription = Subscription.objects.get(recipient=recipient, user_profile=user_profile)
     subscription.in_home_view = False
