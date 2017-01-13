@@ -297,3 +297,49 @@ class TestCountStats(AnalyticsTestCase):
 
         self.assertCountEquals(UserCount, 2, subgroup='private_message')
         self.assertCountEquals(UserCount, 1, subgroup='public_stream')
+
+    def test_messages_sent_to_stream_by_is_bot(self):
+        # type: () -> None
+        stat = COUNT_STATS['messages_sent_to_stream:is_bot']
+        self.current_property = stat.property
+        self.current_interval = stat.interval
+
+        bot = self.create_user(is_bot=True)
+        human1 = self.create_user()
+        human2 = self.create_user()
+        recipient_human1 = Recipient.objects.create(type_id=human1.id, type=Recipient.PERSONAL)
+
+        stream1, recipient_stream1 = self.create_stream_with_recipient()
+        stream2, recipient_stream2 = self.create_stream_with_recipient()
+
+        # To be included
+        self.create_message(human1, recipient_stream1)
+        self.create_message(human2, recipient_stream1)
+        self.create_message(human1, recipient_stream2)
+        self.create_message(bot, recipient_stream2)
+        self.create_message(bot, recipient_stream2)
+
+        # To be excluded
+        self.create_message(human2, recipient_human1)
+        self.create_message(bot, recipient_human1)
+        recipient_huddle = self.create_huddle_with_recipient()[1]
+        self.create_message(human1, recipient_huddle)
+
+        do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
+
+        self.assertCountEquals(StreamCount, 2, subgroup='false', stream=stream1)
+        self.assertCountEquals(StreamCount, 1, subgroup='false', stream=stream2)
+        self.assertCountEquals(StreamCount, 2, subgroup='true', stream=stream2)
+        self.assertCountEquals(StreamCount, 1, subgroup='false', realm=self.second_realm)
+        self.assertEqual(StreamCount.objects.count(), 4)
+
+        self.assertCountEquals(RealmCount, 3, subgroup='false')
+        self.assertCountEquals(RealmCount, 2, subgroup='true')
+        self.assertCountEquals(RealmCount, 1, subgroup='false', realm=self.second_realm)
+        self.assertEqual(RealmCount.objects.count(), 3)
+
+        self.assertCountEquals(InstallationCount, 4, subgroup='false')
+        self.assertCountEquals(InstallationCount, 2, subgroup='true')
+        self.assertEqual(InstallationCount.objects.count(), 2)
+
+        self.assertFalse(UserCount.objects.exists())
