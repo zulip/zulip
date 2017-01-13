@@ -27,11 +27,14 @@ class AnalyticsTestCase(TestCase):
         self.default_realm = Realm.objects.create(
             string_id='realmtest', name='Realm Test',
             domain='test.analytics', date_created=self.TIME_ZERO - 2*self.DAY)
+        self.name_counter = 100
 
     # Lightweight creation of users, streams, and messages
-    def create_user(self, email, **kwargs):
-        # type: (str, **Any) -> UserProfile
+    def create_user(self, **kwargs):
+        # type: (**Any) -> UserProfile
+        self.name_counter += 1
         defaults = {
+            'email': 'user%s@domain.tld' % (self.name_counter,),
             'date_joined': self.TIME_LAST_HOUR,
             'full_name': 'full_name',
             'short_name': 'short_name',
@@ -41,11 +44,12 @@ class AnalyticsTestCase(TestCase):
             'api_key': '42'}
         for key, value in defaults.items():
             kwargs[key] = kwargs.get(key, value)
-        return UserProfile.objects.create(email=email, **kwargs)
+        return UserProfile.objects.create(**kwargs)
 
     def create_stream_with_recipient(self, **kwargs):
         # type: (**Any) -> Tuple[Stream, Recipient]
-        defaults = {'name': 'stream name',
+        self.name_counter += 1
+        defaults = {'name': 'stream name %s' % (self.name_counter,),
                     'realm': self.default_realm,
                     'date_created': self.TIME_LAST_HOUR}
         for key, value in defaults.items():
@@ -54,9 +58,10 @@ class AnalyticsTestCase(TestCase):
         recipient = Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
         return stream, recipient
 
-    def create_huddle_with_recipient(self, huddle_hash, **kwargs):
-        # type: (str, **Any) -> Tuple[Huddle, Recipient]
-        defaults = {'huddle_hash': huddle_hash}
+    def create_huddle_with_recipient(self, **kwargs):
+        # type: (**Any) -> Tuple[Huddle, Recipient]
+        self.name_counter += 1
+        defaults = {'huddle_hash': 'hash%s' % (self.name_counter,)}
         for key, value in defaults.items():
             kwargs[key] = kwargs.get(key, value)
         huddle = Huddle.objects.create(**kwargs)
@@ -146,14 +151,13 @@ class TestCountStats(AnalyticsTestCase):
         self.second_realm = Realm.objects.create(
             string_id='second-realm', name='Second Realm',
             domain='second.analytics', date_created=self.TIME_ZERO-2*self.DAY)
-        user = self.create_user('user@second.analytics', realm=self.second_realm)
+        user = self.create_user(realm=self.second_realm)
         stream, recipient = self.create_stream_with_recipient(realm=self.second_realm)
         self.create_message(user, recipient)
 
-        future_user = self.create_user('future_user@second.analytics', realm=self.second_realm,
-                                       date_joined=self.TIME_ZERO)
-        future_stream, future_recipient = self.create_stream_with_recipient(name='future stream',
-                                                                            realm=self.second_realm, date_created=self.TIME_ZERO)
+        future_user = self.create_user(realm=self.second_realm, date_joined=self.TIME_ZERO)
+        future_stream, future_recipient = self.create_stream_with_recipient(
+            realm=self.second_realm, date_created=self.TIME_ZERO)
         self.create_message(future_user, future_recipient, pub_date=self.TIME_ZERO)
 
     def test_active_users_by_is_bot(self):
@@ -162,12 +166,12 @@ class TestCountStats(AnalyticsTestCase):
         stat = COUNT_STATS[property]
 
         # To be included
-        self.create_user('email1-bot', is_bot=True)
-        self.create_user('email2-bot', is_bot=True, date_joined=self.TIME_ZERO-25*self.HOUR)
-        self.create_user('email3-human', is_bot=False)
+        self.create_user(is_bot=True)
+        self.create_user(is_bot=True, date_joined=self.TIME_ZERO-25*self.HOUR)
+        self.create_user(is_bot=False)
 
         # To be excluded
-        self.create_user('email4', is_active=False)
+        self.create_user(is_active=False)
 
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
 
