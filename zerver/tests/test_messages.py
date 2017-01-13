@@ -63,7 +63,7 @@ class TopicHistoryTest(ZulipTestCase):
         self.login(email)
 
         user_profile = get_user_profile_by_email(email)
-        stream = Stream.objects.get(name=stream_name)
+        stream = get_stream(stream_name, user_profile.realm)
         recipient = get_recipient(Recipient.STREAM, stream.id)
 
         def create_test_message(topic, read, starred=False):
