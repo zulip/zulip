@@ -681,7 +681,7 @@ class Client(object):
         '''
         return self.call_endpoint(
             url='messages/render',
-            method='GET',
+            method='POST',
             request=request,
         )
 
