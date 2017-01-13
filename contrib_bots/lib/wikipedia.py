@@ -28,17 +28,9 @@ class WikipediaHandler(object):
             '''
 
     def triage_message(self, message, client):
-        # return True iff we want to (possibly) response to this message
-
-        original_content = message['content']
-
-        # This next line of code is defensive, as we
-        # never want to get into an infinite loop of posting Wikipedia
-        # searches for own Wikipedia searches!
-        if message['sender_full_name'] == 'wikipedia-bot':
-            return False
-        is_wikipedia = (original_content.startswith('@wiki') or
-                        original_content.startswith('@wikipedia'))
+        if message['type'] == 'private':
+            return client.full_name != message['sender_full_name']
+        is_wikipedia = (message['type'] == 'private')
 
         return is_wikipedia
 
@@ -71,9 +63,8 @@ class WikipediaHandler(object):
             new_content = new_content + '", ' + url
 
         client.send_message(dict(
-            type=message['type'],
-            to=message['display_recipient'],
-            subject=message['subject'],
+            type='private',
+            to=message['sender_email'],
             content=new_content,
         ))
 
