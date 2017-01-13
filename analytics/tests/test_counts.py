@@ -27,7 +27,11 @@ class AnalyticsTestCase(TestCase):
         self.default_realm = Realm.objects.create(
             string_id='realmtest', name='Realm Test',
             domain='test.analytics', date_created=self.TIME_ZERO - 2*self.DAY)
+        # used to generate unique names in self.create_*
         self.name_counter = 100
+        # used as defaults in self.assertCountEquals
+        self.current_property = None # type: Optional[str]
+        self.current_interval = None # type: Optional[str]
 
     # Lightweight creation of users, streams, and messages
     def create_user(self, **kwargs):
@@ -82,9 +86,13 @@ class AnalyticsTestCase(TestCase):
         return Message.objects.create(**kwargs)
 
     # kwargs should only ever be a UserProfile or Stream.
-    def assertCountEquals(self, table, property, value, subgroup=None, end_time=TIME_ZERO,
-                          interval=CountStat.HOUR, realm=None, **kwargs):
-        # type: (Type[BaseCount], Text, int, Optional[Text], datetime, str, Optional[Realm], **models.Model) -> None
+    def assertCountEquals(self, table, value, property=None, subgroup=None,
+                          end_time=TIME_ZERO, interval=None, realm=None, **kwargs):
+        # type: (Type[BaseCount], int, Optional[Text], Optional[Text], datetime, Optional[str], Optional[Realm], **models.Model) -> None
+        if property is None:
+            property = self.current_property
+        if interval is None:
+            interval = self.current_interval
         queryset = table.objects.filter(property=property, interval=interval, end_time=end_time) \
                                 .filter(**kwargs)
         if table is not InstallationCount:
@@ -175,8 +183,9 @@ class TestCountStats(AnalyticsTestCase):
 
     def test_active_users_by_is_bot(self):
         # type: () -> None
-        property = 'active_users:is_bot'
-        stat = COUNT_STATS[property]
+        stat = COUNT_STATS['active_users:is_bot']
+        self.current_property = stat.property
+        self.current_interval = stat.interval
 
         # To be included
         self.create_user(is_bot=True)
@@ -188,15 +197,13 @@ class TestCountStats(AnalyticsTestCase):
 
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
 
-        self.assertCountEquals(RealmCount, property, 2, subgroup='true', interval=stat.interval)
-        self.assertCountEquals(RealmCount, property, 1, subgroup='false', interval=stat.interval)
-        self.assertCountEquals(RealmCount, property, 3, subgroup='false', interval=stat.interval,
-                               realm=self.second_realm)
-        self.assertCountEquals(RealmCount, property, 1, subgroup='false', interval=stat.interval,
-                               realm=self.no_message_realm)
+        self.assertCountEquals(RealmCount, 2, subgroup='true')
+        self.assertCountEquals(RealmCount, 1, subgroup='false')
+        self.assertCountEquals(RealmCount, 3, subgroup='false', realm=self.second_realm)
+        self.assertCountEquals(RealmCount, 1, subgroup='false', realm=self.no_message_realm)
         self.assertEqual(RealmCount.objects.count(), 4)
-        self.assertCountEquals(InstallationCount, property, 2, subgroup='true', interval=stat.interval)
-        self.assertCountEquals(InstallationCount, property, 5, subgroup='false', interval=stat.interval)
+        self.assertCountEquals(InstallationCount, 2, subgroup='true')
+        self.assertCountEquals(InstallationCount, 5, subgroup='false')
         self.assertEqual(InstallationCount.objects.count(), 2)
         self.assertFalse(UserCount.objects.exists())
         self.assertFalse(StreamCount.objects.exists())
