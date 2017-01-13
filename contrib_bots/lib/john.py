@@ -114,7 +114,6 @@ class JohnHandler(object):
             '''
 
     def triage_message(self, message, client):
-        # return True if we want to (possibly) response to this message
         original_content = message['content'].lower()
         return (original_content.startswith("@john") or
                 original_content.startswith("@**john**"))

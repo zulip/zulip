@@ -8,7 +8,6 @@ class VirtualFsHandler(object):
         return get_help()
 
     def triage_message(self, message, client):
-        # return True iff we want to (possibly) response to this message
         if message['type'] != 'stream':
             return False
 

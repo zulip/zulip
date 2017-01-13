@@ -39,7 +39,6 @@ class GiphyHandler(object):
         if message['type'] == 'private':
             return client.full_name != message['sender_full_name']
 
-        # Return True if we want to (possibly) response to this message.
         original_content = message['content']
         is_giphy_called = (original_content.startswith('@giphy ') or
                            message['is_mentioned'])
