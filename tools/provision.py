@@ -187,6 +187,12 @@ def main(options):
             "source %s\n" % (os.path.join(VENV_PATH, "bin", "activate"),),
         ])
 
+    # Put Python2 virtualenv activation in .zprofile (for Zsh users).
+    with open(os.path.expanduser('~/.zprofile'), 'w') as zprofile:
+        zprofile.writelines([
+            "source %s\n" % (os.path.join(VENV_PATH, "bin", "activate"),),
+        ])
+
     run(["sudo", "cp", REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH])
 
     # create log directory `zulip/var/log`
