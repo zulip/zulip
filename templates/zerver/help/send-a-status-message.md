@@ -15,4 +15,4 @@ name, like this:
 
 !!! tip ""
     Status messages are frequently written in third person, in order to make
-    them look gramatically coherent.
+    them look grammatically coherent.

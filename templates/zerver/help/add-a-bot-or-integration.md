@@ -1,6 +1,6 @@
 # Add a Bot or Integration
 
-Bots and integrations are features that are accesible to all members of an organization.
+Bots and integrations are features that are accessible to all members of an organization.
 
 ## To Add a Bot
 

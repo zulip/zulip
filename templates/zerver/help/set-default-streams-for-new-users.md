@@ -7,7 +7,7 @@ following steps.
 {!go-to-the.md!} [Default streams](/#administration/default-streams-list)
 {!admin.md!}
 
-2. To add a new stream to **Default streams**, enter the name of stream in the
+2. To add a new stream to **Default streams**, enter the name of the stream in the
 box next to **Stream Name**.  Autocompletion suggestions will appear in a
 dropdown as you type; select the stream name from the dropdown.
 

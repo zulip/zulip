@@ -11,4 +11,4 @@ message.
 
 !!! tip ""
     To uncollapse a message, click the **[More...]** hyperlink near the
-    bottom of a collasped message.
+    bottom of a collapsed message.

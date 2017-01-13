@@ -58,7 +58,7 @@ button.
 
 ### Subscribing later
 
-However, if the you were not notified about the stream's creation,
+However, if you were not notified about the stream's creation,
 you can subscribe to a stream by navigating to the
 [Subscriptions](/#subscriptions) page.
 
