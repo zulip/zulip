@@ -839,7 +839,7 @@ class BugdownApiTests(ZulipTestCase):
     def test_render_message_api(self):
         # type: () -> None
         content = 'That is a **bold** statement'
-        result = self.client_get(
+        result = self.client_post(
             '/api/v1/messages/render',
             dict(content=content),
             **self.api_auth('othello@zulip.com')
@@ -853,7 +853,7 @@ class BugdownApiTests(ZulipTestCase):
         # type: () -> None
         """Determines whether we're correctly passing the realm context"""
         content = 'This mentions #**Denmark** and @**King Hamlet**.'
-        result = self.client_get(
+        result = self.client_post(
             '/api/v1/messages/render',
             dict(content=content),
             **self.api_auth('othello@zulip.com')
