@@ -178,6 +178,7 @@ INTEGRATIONS = {
     ),
     'mercurial': Integration('mercurial', 'mercurial', display_name='Mercurial (hg)'),
     'nagios': Integration('nagios', 'nagios'),
+    'openshift': Integration('openshift', 'openshift', display_name='OpenShift'),
     'perforce': Integration('perforce', 'perforce'),
     'phabricator': Integration('phabricator', 'phabricator'),
     'puppet': Integration('puppet', 'puppet'),
