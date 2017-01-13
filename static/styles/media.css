@@ -262,10 +262,10 @@
     .message_controls {
         right: -16px;
         top: -2px;
+        width: 51px;
     }
 
     .message_hovered .message_controls {
-        width: 51px;
         height: 20px;
         background: rgba(255,255,255,0.8);
         z-index: 10;
