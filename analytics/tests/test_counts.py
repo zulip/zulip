@@ -148,17 +148,30 @@ class TestCountStats(AnalyticsTestCase):
     def setUp(self):
         # type: () -> None
         super(TestCountStats, self).setUp()
+        # This tests two things for each of the queries/CountStats: Handling
+        # more than 1 realm, and the time bounds (time_start and time_end in
+        # the queries).
         self.second_realm = Realm.objects.create(
             string_id='second-realm', name='Second Realm',
             domain='second.analytics', date_created=self.TIME_ZERO-2*self.DAY)
-        user = self.create_user(realm=self.second_realm)
-        stream, recipient = self.create_stream_with_recipient(realm=self.second_realm)
-        self.create_message(user, recipient)
+        for minutes_ago in [0, 1, 61, 60*24+1]:
+            creation_time = self.TIME_ZERO - minutes_ago*self.MINUTE
+            user = self.create_user(email='user%s@domain.tld' % (minutes_ago,),
+                                    realm=self.second_realm, date_joined=creation_time)
+            recipient = self.create_stream_with_recipient(
+                name='stream %s' % (minutes_ago,), realm=self.second_realm,
+                date_created=creation_time)[1]
+            self.create_message(user, recipient, pub_date=creation_time)
 
-        future_user = self.create_user(realm=self.second_realm, date_joined=self.TIME_ZERO)
-        future_stream, future_recipient = self.create_stream_with_recipient(
-            realm=self.second_realm, date_created=self.TIME_ZERO)
-        self.create_message(future_user, future_recipient, pub_date=self.TIME_ZERO)
+        # This realm should not show up in the *Count tables for any of the
+        # messages_* CountStats
+        self.no_message_realm = Realm.objects.create(
+            string_id='no-message-realm', name='No Message Realm',
+            domain='no.message', date_created=self.TIME_ZERO-2*self.DAY)
+        self.create_user(realm=self.no_message_realm)
+        self.create_stream_with_recipient(realm=self.no_message_realm)
+        # This huddle should not show up anywhere
+        self.create_huddle_with_recipient()
 
     def test_active_users_by_is_bot(self):
         # type: () -> None
@@ -177,10 +190,13 @@ class TestCountStats(AnalyticsTestCase):
 
         self.assertCountEquals(RealmCount, property, 2, subgroup='true', interval=stat.interval)
         self.assertCountEquals(RealmCount, property, 1, subgroup='false', interval=stat.interval)
-        self.assertCountEquals(RealmCount, property, 1, subgroup='false', interval=stat.interval, realm=self.second_realm)
-        self.assertEqual(RealmCount.objects.count(), 3)
+        self.assertCountEquals(RealmCount, property, 3, subgroup='false', interval=stat.interval,
+                               realm=self.second_realm)
+        self.assertCountEquals(RealmCount, property, 1, subgroup='false', interval=stat.interval,
+                               realm=self.no_message_realm)
+        self.assertEqual(RealmCount.objects.count(), 4)
         self.assertCountEquals(InstallationCount, property, 2, subgroup='true', interval=stat.interval)
-        self.assertCountEquals(InstallationCount, property, 2, subgroup='false', interval=stat.interval)
+        self.assertCountEquals(InstallationCount, property, 5, subgroup='false', interval=stat.interval)
         self.assertEqual(InstallationCount.objects.count(), 2)
         self.assertFalse(UserCount.objects.exists())
         self.assertFalse(StreamCount.objects.exists())
