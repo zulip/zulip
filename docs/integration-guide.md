@@ -206,14 +206,7 @@ Every Zulip integration must be documented in
 `templates/zerver/integrations.html`.  Usually, this involves a few
 steps:
 
-* Make sure you've added your integration to
-  `zerver/lib/integrations.py`; this results in your integration
-  appearing on the `/integrations` page.  You'll need to add a logo
-  image for your integration under the
-  `static/images/integrations/logos/<name>.png`, where `<name>` is the
-  name of the integration, all in lower case.
-
-* Add an `integration-instructions` class block also in the
+* Add an `integration-instructions` class block in the
   alphabetically correct place, explaining all the steps required to
   setup the integration, including what URLs to use, etc.  If there
   are any screens in the product involved, take a few screenshots with
@@ -221,6 +214,13 @@ steps:
   instructions really easy to follow.  For the screenshots, use
   something like `github-bot@example.com` for the email addresses and
   an obviously fake API key like `abcdef123456790`.
+
+* Make sure you've added your integration to
+  `zerver/lib/integrations.py`; this results in your integration
+  appearing on the `/integrations` page.  You'll need to add a logo
+  image for your integration under the
+  `static/images/integrations/logos/<name>.png`, where `<name>` is the
+  name of the integration, all in lower case.
 
 * Finally, generate a message sent by the integration and take a
   screenshot of the message to provide an example message in the
