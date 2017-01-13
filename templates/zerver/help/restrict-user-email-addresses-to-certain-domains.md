@@ -25,3 +25,9 @@ underneath the list and clicking the **Add** button.
         **Delete** button next to a domain on the list. However, you must have
         at least one allowed domain if the **Users restricted to** option is
         enabled.
+
+5. Once you have made all your changes, exit out of the **Allowed Domains** list
+ by clicking the x (<i class="icon-vector-remove"></i>) icon in the top
+ right-hand corner of the **Allowed Domains** list. Then scroll down to the
+ bottom of the **Organization Settings** panel and click the **Save Changes**
+ button to save your changes.
