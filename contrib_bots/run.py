@@ -79,7 +79,7 @@ def run_message_handler_for_bot(lib_module, quiet, config_file):
     client = Client(config_file=config_file)
     restricted_client = BotHandlerApi(client)
 
-    message_handler = lib_module.handler_class()
+    message_handler = lib_module.handler_class(client=restricted_client)
 
     class StateHandler(object):
         def __init__(self):
@@ -105,7 +105,6 @@ def run_message_handler_for_bot(lib_module, quiet, config_file):
                 client=restricted_client,
                 state_handler=state_handler
                 )
-
     logging.info('starting message handling...')
     client.call_on_each_message(handle_message)
 
