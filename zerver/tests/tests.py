@@ -2313,7 +2313,7 @@ class TestOpenRealms(ZulipTestCase):
         mit_realm.save()
 
 class TestLoginPage(ZulipTestCase):
-    def test_login_page_with_subdomains(self):
+    def test_login_page_wrong_subdomain_error(self):
         # type: () -> None
         result = self.client_get("/login/?subdomain=1")
         self.assertIn(WRONG_SUBDOMAIN_ERROR, result.content.decode('utf8'))
