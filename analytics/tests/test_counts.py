@@ -9,7 +9,7 @@ from analytics.lib.counts import CountStat, COUNT_STATS, process_count_stat, \
 from analytics.models import BaseCount, InstallationCount, RealmCount, \
     UserCount, StreamCount, FillState, installation_epoch
 from zerver.models import Realm, UserProfile, Message, Stream, Recipient, \
-    Huddle, get_user_profile_by_email, get_client
+    Huddle, Client, get_user_profile_by_email, get_client
 
 from datetime import datetime, timedelta
 
@@ -208,6 +208,78 @@ class TestCountStats(AnalyticsTestCase):
         self.assertFalse(UserCount.objects.exists())
         self.assertFalse(StreamCount.objects.exists())
 
+    def test_messages_sent(self):
+        # type: () -> None
+        stat = COUNT_STATS['messages_sent']
+        self.current_property = stat.property
+        self.current_interval = stat.interval
+
+        # Nothing in this query should be bot-related
+        user1 = self.create_user(is_bot=True)
+        user2 = self.create_user()
+        recipient_user2 = Recipient.objects.create(type_id=user2.id, type=Recipient.PERSONAL)
+
+        recipient_stream = self.create_stream_with_recipient()[1]
+        recipient_huddle = self.create_huddle_with_recipient()[1]
+
+        self.create_message(user1, recipient_user2)
+        self.create_message(user2, recipient_user2)
+        self.create_message(user2, recipient_stream)
+        self.create_message(user2, recipient_huddle)
+
+        do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
+
+        self.assertCountEquals(UserCount, 1, user=user1)
+        self.assertCountEquals(UserCount, 3, user=user2)
+        self.assertCountEquals(UserCount, 1, realm=self.second_realm,
+                               user=UserProfile.objects.get(email='user1@domain.tld'))
+        self.assertEqual(UserCount.objects.count(), 3)
+        self.assertCountEquals(RealmCount, 4)
+        self.assertCountEquals(RealmCount, 1, realm=self.second_realm)
+        self.assertEqual(RealmCount.objects.count(), 2)
+        self.assertCountEquals(InstallationCount, 5)
+        self.assertEqual(InstallationCount.objects.count(), 1)
+        self.assertFalse(StreamCount.objects.exists())
+
+    def test_messages_sent_by_is_bot(self):
+        # type: () -> None
+        stat = COUNT_STATS['messages_sent:is_bot']
+        self.current_property = stat.property
+        self.current_interval = stat.interval
+
+        bot = self.create_user(is_bot=True)
+        human1 = self.create_user()
+        human2 = self.create_user()
+        recipient_human1 = Recipient.objects.create(type_id=human1.id, type=Recipient.PERSONAL)
+
+        recipient_stream = self.create_stream_with_recipient()[1]
+        recipient_huddle = self.create_huddle_with_recipient()[1]
+
+        self.create_message(bot, recipient_human1)
+        self.create_message(bot, recipient_stream)
+        self.create_message(bot, recipient_huddle)
+        self.create_message(human1, recipient_human1)
+        self.create_message(human2, recipient_human1)
+
+        do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
+
+        self.assertCountEquals(UserCount, 1, subgroup='false', user=human1)
+        self.assertCountEquals(UserCount, 1, subgroup='false', user=human2)
+        self.assertCountEquals(UserCount, 3, subgroup='true', user=bot)
+        self.assertCountEquals(UserCount, 1, subgroup='false', realm=self.second_realm,
+                               user=UserProfile.objects.get(email='user1@domain.tld'))
+        self.assertCountEquals(UserCount, 1, subgroup='false', realm=self.second_realm,
+                               user=UserProfile.objects.get(email='user61@domain.tld'))
+        self.assertEqual(UserCount.objects.count(), 5)
+        self.assertCountEquals(RealmCount, 2, subgroup='false')
+        self.assertCountEquals(RealmCount, 3, subgroup='true')
+        self.assertCountEquals(RealmCount, 2, subgroup='false', realm=self.second_realm)
+        self.assertEqual(RealmCount.objects.count(), 3)
+        self.assertCountEquals(InstallationCount, 4, subgroup='false')
+        self.assertCountEquals(InstallationCount, 3, subgroup='true')
+        self.assertEqual(InstallationCount.objects.count(), 2)
+        self.assertFalse(StreamCount.objects.exists())
+
     def test_messages_sent_by_message_type(self):
         # type: () -> None
         stat = COUNT_STATS['messages_sent:message_type']
@@ -297,6 +369,46 @@ class TestCountStats(AnalyticsTestCase):
 
         self.assertCountEquals(UserCount, 2, subgroup='private_message')
         self.assertCountEquals(UserCount, 1, subgroup='public_stream')
+
+    def test_messages_sent_by_client(self):
+        # type: () -> None
+        stat = COUNT_STATS['messages_sent:client']
+        self.current_property = stat.property
+        self.current_interval = stat.interval
+
+        user1 = self.create_user(is_bot=True)
+        user2 = self.create_user()
+        recipient_user2 = Recipient.objects.create(type_id=user2.id, type=Recipient.PERSONAL)
+
+        recipient_stream = self.create_stream_with_recipient()[1]
+        recipient_huddle = self.create_huddle_with_recipient()[1]
+
+        client2 = Client.objects.create(name='client2')
+
+        self.create_message(user1, recipient_user2, sending_client=client2)
+        self.create_message(user1, recipient_stream)
+        self.create_message(user1, recipient_huddle)
+        self.create_message(user2, recipient_user2, sending_client=client2)
+        self.create_message(user2, recipient_user2, sending_client=client2)
+
+        do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
+
+        client2_id = str(client2.id)
+        website_client_id = str(get_client('website').id) # default for self.create_message
+        self.assertCountEquals(UserCount, 2, subgroup=website_client_id, user=user1)
+        self.assertCountEquals(UserCount, 1, subgroup=client2_id, user=user1)
+        self.assertCountEquals(UserCount, 2, subgroup=client2_id, user=user2)
+        self.assertCountEquals(UserCount, 1, subgroup=website_client_id, realm=self.second_realm,
+                               user=UserProfile.objects.get(email='user1@domain.tld'))
+        self.assertEqual(UserCount.objects.count(), 4)
+        self.assertCountEquals(RealmCount, 2, subgroup=website_client_id)
+        self.assertCountEquals(RealmCount, 3, subgroup=client2_id)
+        self.assertCountEquals(RealmCount, 1, subgroup=website_client_id, realm=self.second_realm)
+        self.assertEqual(RealmCount.objects.count(), 3)
+        self.assertCountEquals(InstallationCount, 3, subgroup=website_client_id)
+        self.assertCountEquals(InstallationCount, 3, subgroup=client2_id)
+        self.assertEqual(InstallationCount.objects.count(), 2)
+        self.assertFalse(StreamCount.objects.exists())
 
     def test_messages_sent_to_stream_by_is_bot(self):
         # type: () -> None
