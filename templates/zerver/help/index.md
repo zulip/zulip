@@ -98,6 +98,7 @@ as an **organization**.
 * Convert a group PM to a private stream (not implemented)
 * [Remove someone from a stream (admin only)](/help/remove-someone-from-a-stream)
 * [Delete a stream (admin only)](/help/delete-a-stream)
+* [Organize the streams sidebar](/help/organize-the-streams-sidebar)
 
 ## Notifications
 * [Mute a stream](/help/mute-a-stream)
