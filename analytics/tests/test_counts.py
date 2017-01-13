@@ -10,7 +10,7 @@ from analytics.models import BaseCount, InstallationCount, RealmCount, \
     UserCount, StreamCount, FillState, installation_epoch
 
 from zerver.models import Realm, UserProfile, Message, Stream, Recipient, \
-    get_user_profile_by_email, get_client
+    Huddle, get_user_profile_by_email, get_client, get_huddle_hash
 
 from datetime import datetime, timedelta
 
@@ -172,3 +172,47 @@ class TestCountStats(AnalyticsTestCase):
         self.assertEqual(InstallationCount.objects.count(), 2)
         self.assertFalse(UserCount.objects.exists())
         self.assertFalse(StreamCount.objects.exists())
+
+    def test_messages_sent_to_stream_by_is_bot(self):
+        # type: () -> None
+        property = 'messages_sent_to_stream:is_bot'
+        stat = COUNT_STATS[property]
+
+        stream1 = self.create_stream(name='stream1')
+        stream2 = self.create_stream(name='stream2')
+
+        bot1 = self.create_user('email1-bot', is_bot=True)
+        user1 = self.create_user('email2-human', is_bot=False)
+        user2 = self.create_user('email3-human', is_bot=False)
+        user3 = self.create_user('email4-human', is_bot=False)
+
+        users_list = [user2.id, user3.id] # type: (List[int])
+        huddle_hash = get_huddle_hash(users_list) # type: Text
+        huddle = Huddle.objects.create(huddle_hash=huddle_hash)
+
+        recipient1 = Recipient.objects.create(type_id=stream1.id, type=Recipient.STREAM)
+        recipient2 = Recipient.objects.create(type_id=stream2.id, type=Recipient.STREAM)
+        recipient3 = Recipient.objects.create(type_id=user2.id, type=Recipient.PERSONAL)
+        recipient4 = Recipient.objects.create(type_id=huddle.id, type=Recipient.HUDDLE)
+
+        # To be included
+        self.create_message(user1, recipient1, pub_date=self.TIME_LAST_HOUR)
+        self.create_message(user2, recipient1, pub_date=self.TIME_LAST_HOUR)
+        self.create_message(user1, recipient2, pub_date=self.TIME_LAST_HOUR)
+        self.create_message(user1, recipient4, pub_date=self.TIME_LAST_HOUR)
+        self.create_message(bot1, recipient1, pub_date=self.TIME_LAST_HOUR)
+
+        # To be excluded
+        self.create_message(user1, recipient1, pub_date=self.TIME_ZERO-61*self.MINUTE)
+        self.create_message(user1, recipient3, pub_date=self.TIME_LAST_HOUR)
+        self.create_message(user1, recipient3, pub_date=self.TIME_LAST_HOUR)
+
+        do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
+
+        self.assertCountEquals(RealmCount, property, 1, subgroup='true', interval=stat.interval)
+        self.assertCountEquals(RealmCount, property, 3, subgroup='false', interval=stat.interval)
+        self.assertCountEquals(StreamCount, property, 2, stream_id=stream1.id, subgroup='false', interval=stat.interval)
+        self.assertCountEquals(StreamCount, property, 1, stream_id=stream2.id, subgroup='false', interval=stat.interval)
+        self.assertEqual(StreamCount.objects.count(), 4)
+        self.assertFalse(UserCount.objects.exists())
+        self.assertFalse(UserCount.objects.filter(property=property).exists())
