@@ -164,12 +164,14 @@ class TestCountStats(AnalyticsTestCase):
             domain='second.analytics', date_created=self.TIME_ZERO-2*self.DAY)
         for minutes_ago in [0, 1, 61, 60*24+1]:
             creation_time = self.TIME_ZERO - minutes_ago*self.MINUTE
-            user = self.create_user(email='user%s@domain.tld' % (minutes_ago,),
+            user = self.create_user(email='user-%s@second.analytics' % (minutes_ago,),
                                     realm=self.second_realm, date_joined=creation_time)
             recipient = self.create_stream_with_recipient(
                 name='stream %s' % (minutes_ago,), realm=self.second_realm,
                 date_created=creation_time)[1]
             self.create_message(user, recipient, pub_date=creation_time)
+        self.hourly_user = UserProfile.objects.get(email='user-1@second.analytics')
+        self.daily_user = UserProfile.objects.get(email='user-61@second.analytics')
 
         # This realm should not show up in the *Count tables for any of the
         # messages_* CountStats
@@ -232,7 +234,7 @@ class TestCountStats(AnalyticsTestCase):
         self.assertCountEquals(UserCount, 1, user=user1)
         self.assertCountEquals(UserCount, 3, user=user2)
         self.assertCountEquals(UserCount, 1, realm=self.second_realm,
-                               user=UserProfile.objects.get(email='user1@domain.tld'))
+                               user=self.hourly_user)
         self.assertEqual(UserCount.objects.count(), 3)
         self.assertCountEquals(RealmCount, 4)
         self.assertCountEquals(RealmCount, 1, realm=self.second_realm)
@@ -267,9 +269,9 @@ class TestCountStats(AnalyticsTestCase):
         self.assertCountEquals(UserCount, 1, subgroup='false', user=human2)
         self.assertCountEquals(UserCount, 3, subgroup='true', user=bot)
         self.assertCountEquals(UserCount, 1, subgroup='false', realm=self.second_realm,
-                               user=UserProfile.objects.get(email='user1@domain.tld'))
+                               user=self.hourly_user)
         self.assertCountEquals(UserCount, 1, subgroup='false', realm=self.second_realm,
-                               user=UserProfile.objects.get(email='user61@domain.tld'))
+                               user=self.daily_user)
         self.assertEqual(UserCount.objects.count(), 5)
         self.assertCountEquals(RealmCount, 2, subgroup='false')
         self.assertCountEquals(RealmCount, 3, subgroup='true')
@@ -332,9 +334,9 @@ class TestCountStats(AnalyticsTestCase):
         self.assertCountEquals(UserCount, 2, subgroup='private_message', user=user2)
         self.assertCountEquals(UserCount, 1, subgroup='private_message', user=user3)
         self.assertCountEquals(UserCount, 1, subgroup='public_stream', realm=self.second_realm,
-                               user=UserProfile.objects.get(email='user1@domain.tld'))
+                               user=self.hourly_user)
         self.assertCountEquals(UserCount, 1, subgroup='public_stream', realm=self.second_realm,
-                               user=UserProfile.objects.get(email='user61@domain.tld'))
+                               user=self.daily_user)
         self.assertEqual(UserCount.objects.count(), 9)
 
         self.assertCountEquals(RealmCount, 3, subgroup='private_stream')
@@ -399,7 +401,7 @@ class TestCountStats(AnalyticsTestCase):
         self.assertCountEquals(UserCount, 1, subgroup=client2_id, user=user1)
         self.assertCountEquals(UserCount, 2, subgroup=client2_id, user=user2)
         self.assertCountEquals(UserCount, 1, subgroup=website_client_id, realm=self.second_realm,
-                               user=UserProfile.objects.get(email='user1@domain.tld'))
+                               user=self.hourly_user)
         self.assertEqual(UserCount.objects.count(), 4)
         self.assertCountEquals(RealmCount, 2, subgroup=website_client_id)
         self.assertCountEquals(RealmCount, 3, subgroup=client2_id)
