@@ -1,35 +1,44 @@
 from __future__ import absolute_import
-from typing import Any, Optional, Tuple, List, Set, Iterable, Mapping, Callable, Dict
+from typing import (Any, Callable, Dict, Iterable, List,
+                    Mapping, Optional, Set, Text, Tuple)
 
-from django.utils.translation import ugettext as _
+import six
+from collections import defaultdict
+from six.moves import urllib
+
+import ujson
+
 from django.conf import settings
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
+from django.utils.translation import ugettext as _
 
-from zerver.lib.request import JsonableError, REQ, has_request_variables
-from zerver.decorator import authenticated_json_post_view, \
-    authenticated_json_view, \
-    get_user_profile_by_email, require_realm_admin, to_non_negative_int
-from zerver.lib.actions import bulk_remove_subscriptions, \
-    do_change_subscription_property, internal_prep_message, \
-    create_streams_if_needed, gather_subscriptions, subscribed_to_stream, \
-    bulk_add_subscriptions, do_send_messages, get_subscriber_emails, do_rename_stream, \
-    do_deactivate_stream, do_make_stream_public, do_add_default_stream, \
-    do_change_stream_description, do_get_streams, do_make_stream_private, \
-    do_remove_default_stream, get_topic_history_for_stream
-from zerver.lib.response import json_success, json_error, json_response
-from zerver.lib.validator import check_string, check_list, check_dict, \
-    check_bool, check_variable_type
-from zerver.models import UserProfile, Stream, Realm, Subscription, \
-    Recipient, get_recipient, get_stream, bulk_get_streams, \
-    bulk_get_recipients, valid_stream_name, get_active_user_dicts_in_realm
+from zerver.decorator import (authenticated_json_post_view,
+                              authenticated_json_view,
+                              get_user_profile_by_email, require_realm_admin,
+                              to_non_negative_int)
+from zerver.lib.actions import (bulk_add_subscriptions,
+                                bulk_remove_subscriptions,
+                                create_streams_if_needed,
+                                do_add_default_stream,
+                                do_change_stream_description,
+                                do_change_subscription_property,
+                                do_deactivate_stream, do_get_streams,
+                                do_make_stream_private, do_make_stream_public,
+                                do_remove_default_stream, do_rename_stream,
+                                do_send_messages, gather_subscriptions,
+                                get_subscriber_emails,
+                                get_topic_history_for_stream,
+                                internal_prep_message, subscribed_to_stream)
+from zerver.lib.request import REQ, JsonableError, has_request_variables
+from zerver.lib.response import json_error, json_response, json_success
+from zerver.lib.validator import (check_bool, check_dict, check_list,
+                                  check_string, check_variable_type)
+from zerver.models import (Realm, Recipient, Stream, Subscription,
+                           UserProfile, bulk_get_recipients, bulk_get_streams,
+                           get_active_user_dicts_in_realm, get_recipient,
+                           get_stream, valid_stream_name)
 
-from collections import defaultdict
-import ujson
-from six.moves import urllib
-
-import six
-from typing import Text
 
 def is_active_subscriber(user_profile, recipient):
     # type: (UserProfile, Recipient) -> bool

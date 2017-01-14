@@ -1,18 +1,19 @@
 from __future__ import absolute_import
+from typing import Any, Callable, Optional, Text, Tuple
 
-from typing import Any, Optional, Callable, Tuple, Text
 from six.moves import zip
 
-from django.utils.translation import ugettext as _
-from django.utils.datetime_safe import datetime
-from django.http import HttpRequest, HttpResponse
-
-from zerver.decorator import api_key_only_webhook_view, REQ, has_request_variables
-from zerver.lib.response import json_success, json_error
-from zerver.lib.actions import check_send_message
-from zerver.models import Client, UserProfile
-
 import ujson
+
+from django.http import HttpRequest, HttpResponse
+from django.utils.datetime_safe import datetime
+from django.utils.translation import ugettext as _
+
+from zerver.decorator import (REQ, api_key_only_webhook_view,
+                              has_request_variables)
+from zerver.lib.actions import check_send_message
+from zerver.lib.response import json_error, json_success
+from zerver.models import Client, UserProfile
 
 ALERT_CLEAR = 'clear'
 ALERT_VIOLATION = 'violations'

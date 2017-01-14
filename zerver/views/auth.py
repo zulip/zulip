@@ -1,40 +1,45 @@
 from __future__ import absolute_import
-
-from django.conf import settings
-from django.contrib.auth import authenticate, login, get_backends
-from django.contrib.auth.views import login as django_login_page, \
-    logout_then_login as django_logout_then_login
-from django.core.urlresolvers import reverse
-from zerver.decorator import authenticated_json_post_view, require_post
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
-from django.middleware.csrf import get_token
-from django.shortcuts import redirect
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.translation import ugettext as _
-from django.core import signing
-from six.moves import urllib
-from typing import Any, Dict, Optional, Tuple, Text
-
-from confirmation.models import Confirmation
-from zerver.forms import HomepageForm, OurAuthenticationForm, \
-    WRONG_SUBDOMAIN_ERROR
-
-from zerver.lib.request import REQ, has_request_variables, JsonableError
-from zerver.lib.response import json_success, json_error
-from zerver.lib.utils import get_subdomain
-from zerver.models import PreregistrationUser, UserProfile, remote_user_to_email, Realm
-from zerver.views.registration import create_preregistration_user, get_realm_from_request, \
-    redirect_and_log_into_subdomain
-from zproject.backends import password_auth_enabled, dev_auth_enabled, google_auth_enabled
-from zproject.jinja2 import render_to_response
+from typing import Any, Dict, Optional, Text, Tuple
 
 import hashlib
 import hmac
-import jwt
 import logging
-import requests
 import time
+from six.moves import urllib
+
+import jwt
+import requests
 import ujson
+
+from django.conf import settings
+from django.contrib.auth import authenticate, get_backends, login
+from django.contrib.auth.views import login as django_login_page
+from django.contrib.auth.views import \
+    logout_then_login as django_logout_then_login
+from django.core import signing
+from django.core.urlresolvers import reverse
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.middleware.csrf import get_token
+from django.shortcuts import redirect
+from django.utils.translation import ugettext as _
+from django.views.decorators.csrf import csrf_exempt
+
+from confirmation.models import Confirmation
+from zerver.decorator import authenticated_json_post_view, require_post
+from zerver.forms import (WRONG_SUBDOMAIN_ERROR, HomepageForm,
+                          OurAuthenticationForm)
+from zerver.lib.request import REQ, JsonableError, has_request_variables
+from zerver.lib.response import json_error, json_success
+from zerver.lib.utils import get_subdomain
+from zerver.models import (PreregistrationUser, Realm,
+                           UserProfile, remote_user_to_email)
+from zerver.views.registration import (create_preregistration_user,
+                                       get_realm_from_request,
+                                       redirect_and_log_into_subdomain)
+from zproject.backends import (dev_auth_enabled, google_auth_enabled,
+                               password_auth_enabled)
+from zproject.jinja2 import render_to_response
+
 
 def maybe_send_to_registration(request, email, full_name=''):
     # type: (HttpRequest, Text, Text) -> HttpResponse

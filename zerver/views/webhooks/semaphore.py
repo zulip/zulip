@@ -1,17 +1,18 @@
 # Webhooks for external integrations.
 from __future__ import absolute_import
+from typing import Any, Dict
+
+import ujson
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
-from zerver.models import get_client, get_user_profile_by_email
+from zerver.decorator import (REQ, api_key_only_webhook_view,
+                              has_request_variables)
 from zerver.lib.actions import check_send_message
-from zerver.lib.response import json_success, json_error
-from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
-from zerver.models import UserProfile, Client
-import ujson
-
-from typing import Any, Dict
+from zerver.lib.response import json_error, json_success
+from zerver.models import (Client, UserProfile, get_client,
+                           get_user_profile_by_email)
 
 
 @api_key_only_webhook_view('Semaphore')

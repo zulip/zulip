@@ -1,17 +1,20 @@
 from __future__ import absolute_import
-from typing import Optional, Any, Dict
-from collections import OrderedDict
-from django.views.generic import TemplateView
-from django.conf import settings
-from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
+from typing import Any, Dict, Optional
 
 import os
+from collections import OrderedDict
+
 import ujson
 
+from django.conf import settings
+from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
+from django.views.generic import TemplateView
+
 from zerver.lib import bugdown
-from zerver.lib.integrations import INTEGRATIONS, HUBOT_LOZENGES
+from zerver.lib.integrations import HUBOT_LOZENGES, INTEGRATIONS
 from zerver.lib.utils import get_subdomain
 from zproject.jinja2 import render_to_response
+
 
 def add_api_uri_context(context, request):
     # type: (Dict[str, Any], HttpRequest) -> None

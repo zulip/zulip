@@ -1,11 +1,14 @@
 from __future__ import absolute_import
-from django.utils.translation import ugettext as _
 from typing import Any, Callable, Dict
+
 from django.http import HttpRequest, HttpResponse
+from django.utils.translation import ugettext as _
+
+from zerver.decorator import (REQ, api_key_only_webhook_view,
+                              has_request_variables)
 from zerver.lib.actions import check_send_message
-from zerver.lib.response import json_success, json_error
-from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
-from zerver.models import UserProfile, Client
+from zerver.lib.response import json_error, json_success
+from zerver.models import Client, UserProfile
 
 
 @api_key_only_webhook_view('IFTTT')

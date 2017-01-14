@@ -1,45 +1,50 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
-from typing import Any, List, Dict, Optional, Text
-
-from django.utils.translation import ugettext as _
-from django.conf import settings
-from django.contrib.auth import authenticate, login, get_backends
-from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect, HttpResponseForbidden, HttpResponse, HttpRequest
-from django.shortcuts import redirect
-from django.template import RequestContext, loader
-from django.utils.timezone import now
-from django.core.exceptions import ValidationError
-from django.core import validators
-from django.core.mail import send_mail
-from zerver.models import UserProfile, Realm, PreregistrationUser, \
-    name_changes_disabled, email_to_username, \
-    completely_open, get_unique_open_realm, email_allowed_for_realm, \
-    get_realm, get_realm_by_email_domain
-from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
-    do_activate_user, do_create_user, do_create_realm, set_default_streams, \
-    do_events_register, user_email_is_unique, \
-    compute_mit_user_fullname
-from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, \
-    CreateUserForm, FindMyTeamForm
-from zerver.lib.actions import is_inactive
-from django_auth_ldap.backend import LDAPBackend, _LDAPUser
-from zerver.decorator import require_post, has_request_variables, \
-    JsonableError, get_user_profile_by_email, REQ, \
-    zulip_login_required
-from zerver.lib.response import json_success
-from zerver.lib.utils import get_subdomain
-from zproject.backends import password_auth_enabled
-
-from confirmation.models import Confirmation, RealmCreationKey, check_key_is_valid
+from typing import Any, Dict, List, Optional, Text
 
 import logging
+from six.moves import urllib
+
 import requests
 import ujson
 
-from six.moves import urllib
+from django.conf import settings
+from django.contrib.auth import authenticate, get_backends, login
+from django.core import validators
+from django.core.exceptions import ValidationError
+from django.core.mail import send_mail
+from django.core.urlresolvers import reverse
+from django.http import (HttpRequest, HttpResponse,
+                         HttpResponseForbidden, HttpResponseRedirect)
+from django.shortcuts import redirect
+from django.template import RequestContext, loader
+from django.utils.timezone import now
+from django.utils.translation import ugettext as _
+
+from confirmation.models import (Confirmation, RealmCreationKey,
+                                 check_key_is_valid)
+from django_auth_ldap.backend import LDAPBackend, _LDAPUser
+from zerver.decorator import (REQ, JsonableError, get_user_profile_by_email,
+                              has_request_variables, require_post,
+                              zulip_login_required)
+from zerver.forms import (CreateUserForm, FindMyTeamForm, HomepageForm,
+                          RealmCreationForm, RegistrationForm)
+from zerver.lib.actions import (compute_mit_user_fullname, do_activate_user,
+                                do_change_full_name, do_change_is_admin,
+                                do_change_password, do_create_realm,
+                                do_create_user, do_events_register,
+                                is_inactive, set_default_streams,
+                                user_email_is_unique)
+from zerver.lib.response import json_success
+from zerver.lib.utils import get_subdomain
+from zerver.models import (PreregistrationUser, Realm, UserProfile,
+                           completely_open, email_allowed_for_realm,
+                           email_to_username, get_realm,
+                           get_realm_by_email_domain, get_unique_open_realm,
+                           name_changes_disabled)
+from zproject.backends import password_auth_enabled
 from zproject.jinja2 import render_to_response
+
 
 def redirect_and_log_into_subdomain(realm, full_name, email_address):
     # type: (Realm, Text, Text) -> HttpResponse

@@ -1,14 +1,14 @@
 from __future__ import absolute_import
+from typing import Iterable, Optional, Sequence, Text
 
 from django.http import HttpRequest, HttpResponse
-from typing import Text
-from typing import Iterable, Optional, Sequence
 
 from zerver.lib.actions import do_events_register
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.validator import check_string, check_list, check_bool
+from zerver.lib.validator import check_bool, check_list, check_string
 from zerver.models import UserProfile
+
 
 def _default_all_public_streams(user_profile, all_public_streams):
     # type: (UserProfile, Optional[bool]) -> bool
@@ -48,4 +48,3 @@ def events_register_backend(request, user_profile, apply_markdown=True,
                              event_types, queue_lifespan_secs, all_public_streams,
                              narrow=narrow)
     return json_success(ret)
-

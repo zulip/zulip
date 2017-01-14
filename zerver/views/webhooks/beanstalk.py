@@ -1,20 +1,22 @@
 # Webhooks for external integrations.
 
 from __future__ import absolute_import
-from django.http import HttpRequest, HttpResponse
-from zerver.models import get_client, UserProfile
-from zerver.lib.actions import check_send_message
-from zerver.lib.response import json_success
-from zerver.lib.validator import check_dict
-from zerver.decorator import REQ, has_request_variables, authenticated_rest_api_view
+from typing import Any, Callable, Dict, TypeVar
 
 import base64
 from functools import wraps
 
-from .github import build_message_from_gitlog
+from django.http import HttpRequest, HttpResponse
 
-from typing import Any, Callable, Dict, TypeVar
-from zerver.lib.str_utils import force_str, force_bytes
+from zerver.decorator import (REQ, authenticated_rest_api_view,
+                              has_request_variables)
+from zerver.lib.actions import check_send_message
+from zerver.lib.response import json_success
+from zerver.lib.str_utils import force_bytes, force_str
+from zerver.lib.validator import check_dict
+from zerver.models import UserProfile, get_client
+
+from .github import build_message_from_gitlog
 
 ViewFuncT = TypeVar('ViewFuncT', bound=Callable[..., HttpResponse])
 

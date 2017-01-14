@@ -1,28 +1,32 @@
 from __future__ import absolute_import
+from typing import Any, Dict, Optional, Text
 
-from django.http import HttpRequest, HttpResponse
-
-from django.utils.translation import ugettext as _
-from django.shortcuts import redirect
 from six.moves import map
 
-from zerver.decorator import has_request_variables, REQ, JsonableError, \
-    require_realm_admin
+from django.http import HttpRequest, HttpResponse
+from django.shortcuts import redirect
+from django.utils.translation import ugettext as _
+
+from zerver.decorator import (REQ, JsonableError, has_request_variables,
+                              require_realm_admin)
 from zerver.forms import CreateUserForm
-from zerver.lib.actions import do_change_full_name, do_change_is_admin, \
-    do_create_user, subscribed_to_stream, do_deactivate_user, do_reactivate_user, \
-    do_change_default_events_register_stream, do_change_default_sending_stream, \
-    do_change_default_all_public_streams, do_regenerate_api_key, do_change_avatar_source
+from zerver.lib.actions import (do_change_avatar_source,
+                                do_change_default_all_public_streams,
+                                do_change_default_events_register_stream,
+                                do_change_default_sending_stream,
+                                do_change_full_name, do_change_is_admin,
+                                do_create_user, do_deactivate_user,
+                                do_reactivate_user, do_regenerate_api_key,
+                                subscribed_to_stream)
 from zerver.lib.avatar import avatar_url, get_avatar_url
 from zerver.lib.response import json_error, json_success
 from zerver.lib.upload import upload_avatar_image
-from zerver.lib.validator import check_bool, check_string
 from zerver.lib.utils import generate_random_token
-from zerver.models import UserProfile, Stream, Realm, Message, get_user_profile_by_email, \
-    get_stream, email_allowed_for_realm
+from zerver.lib.validator import check_bool, check_string
+from zerver.models import (Message, Realm, Stream, UserProfile,
+                           email_allowed_for_realm, get_stream,
+                           get_user_profile_by_email)
 
-from typing import Text
-from typing import Optional, Dict, Any
 
 def deactivate_user_backend(request, user_profile, email):
     # type: (HttpRequest, UserProfile, Text) -> HttpResponse

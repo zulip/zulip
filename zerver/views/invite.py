@@ -1,21 +1,21 @@
 from __future__ import absolute_import
+from typing import Set, Text
+
+import re
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
-from typing import Text
-from typing import Set
 
 from zerver.decorator import authenticated_json_post_view
-from zerver.lib.actions import do_invite_users, do_refer_friend, \
-    get_default_subs, internal_send_message
-from zerver.lib.request import REQ, has_request_variables, JsonableError
-from zerver.lib.response import json_success, json_error
-from zerver.lib.validator import check_string, check_list
+from zerver.lib.actions import (do_invite_users, do_refer_friend,
+                                get_default_subs, internal_send_message)
+from zerver.lib.request import REQ, JsonableError, has_request_variables
+from zerver.lib.response import json_error, json_success
+from zerver.lib.validator import check_list, check_string
 from zerver.models import PreregistrationUser, Stream, UserProfile, get_stream
 
-import re
 
 @authenticated_json_post_view
 @has_request_variables
@@ -95,4 +95,3 @@ def json_refer_friend(request, user_profile, email=REQ()):
     do_refer_friend(user_profile, email)
 
     return json_success()
-

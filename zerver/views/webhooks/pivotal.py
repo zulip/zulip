@@ -1,20 +1,21 @@
 """Webhooks for external integrations."""
 from __future__ import absolute_import
+from typing import List, Optional, Text, Tuple
+
+import logging
+import re
+
+import ujson
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
-from zerver.lib.actions import check_send_message
-from zerver.lib.response import json_success, json_error
-from zerver.decorator import api_key_only_webhook_view, REQ, has_request_variables
-from zerver.models import UserProfile, Client
-
 from defusedxml.ElementTree import fromstring as xml_fromstring
-
-import logging
-import re
-import ujson
-from typing import List, Optional, Tuple, Text
+from zerver.decorator import (REQ, api_key_only_webhook_view,
+                              has_request_variables)
+from zerver.lib.actions import check_send_message
+from zerver.lib.response import json_error, json_success
+from zerver.models import Client, UserProfile
 
 
 def api_pivotal_webhook_v3(request, user_profile, stream):

@@ -1,16 +1,16 @@
 from __future__ import absolute_import
+from typing import Text
 
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
-from zerver.decorator import has_request_variables, REQ, require_realm_admin
-from zerver.lib.actions import do_add_realm_alias, do_get_realm_aliases, \
-    do_remove_realm_alias
+from zerver.decorator import REQ, has_request_variables, require_realm_admin
+from zerver.lib.actions import (do_add_realm_alias, do_get_realm_aliases,
+                                do_remove_realm_alias)
 from zerver.lib.response import json_error, json_success
-from zerver.models import can_add_alias, RealmAlias, UserProfile
+from zerver.models import RealmAlias, UserProfile, can_add_alias
 
-from typing import Text
 
 def list_aliases(request, user_profile):
     # type: (HttpRequest, UserProfile) -> (HttpResponse)

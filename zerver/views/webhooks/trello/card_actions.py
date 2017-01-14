@@ -1,7 +1,9 @@
-from typing import Dict, Tuple, Any, Optional, MutableMapping, Mapping, Text
+from typing import Any, Dict, Mapping, MutableMapping, Optional, Text, Tuple
+
 from datetime import datetime
+
 from .exceptions import UnknownUpdateCardAction
-from .templates import TRELLO_SUBJECT_TEMPLATE, TRELLO_MESSAGE_TEMPLATE
+from .templates import TRELLO_MESSAGE_TEMPLATE, TRELLO_SUBJECT_TEMPLATE
 
 SUPPORTED_CARD_ACTIONS = [
     u'updateCard',

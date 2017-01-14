@@ -1,15 +1,17 @@
 from __future__ import absolute_import
+from typing import Callable
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
-from typing import Callable
 
 from confirmation.models import Confirmation
-from zerver.lib.actions import do_change_enable_offline_email_notifications, \
-    do_change_enable_digest_emails, clear_followup_emails_queue
-from zerver.models import UserProfile
 from zerver.context_processors import common_context
+from zerver.lib.actions import (clear_followup_emails_queue,
+                                do_change_enable_digest_emails,
+                                do_change_enable_offline_email_notifications)
+from zerver.models import UserProfile
 from zproject.jinja2 import render_to_response
+
 
 def process_unsubscribe(token, subscription_type, unsubscribe_function):
     # type: (HttpRequest, str, Callable[[UserProfile], None]) -> HttpResponse

@@ -1,30 +1,39 @@
 from __future__ import absolute_import
-from typing import Optional, Any
-from typing import Text
+from typing import Any, Optional, Text
 
-from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.contrib.auth import authenticate, update_session_auth_hash
 from django.http import HttpRequest, HttpResponse
+from django.utils.translation import ugettext as _
 
-from zerver.decorator import authenticated_json_post_view, has_request_variables, REQ
-from zerver.lib.actions import do_change_password, \
-    do_change_full_name, do_change_enable_desktop_notifications, \
-    do_change_enter_sends, do_change_enable_sounds, \
-    do_change_enable_offline_email_notifications, do_change_enable_digest_emails, \
-    do_change_enable_offline_push_notifications, do_change_enable_online_push_notifications, \
-    do_change_default_desktop_notifications, do_change_autoscroll_forever, \
-    do_change_enable_stream_desktop_notifications, do_change_enable_stream_sounds, \
-    do_regenerate_api_key, do_change_avatar_source, do_change_twenty_four_hour_time, \
-    do_change_left_side_userlist, do_change_default_language, \
-    do_change_pm_content_in_desktop_notifications
+from zerver.decorator import (REQ, authenticated_json_post_view,
+                              has_request_variables)
+from zerver.lib.actions import (do_change_autoscroll_forever,
+                                do_change_avatar_source,
+                                do_change_default_desktop_notifications,
+                                do_change_default_language,
+                                do_change_enable_desktop_notifications,
+                                do_change_enable_digest_emails,
+                                do_change_enable_offline_email_notifications,
+                                do_change_enable_offline_push_notifications,
+                                do_change_enable_online_push_notifications,
+                                do_change_enable_sounds,
+                                do_change_enable_stream_desktop_notifications,
+                                do_change_enable_stream_sounds,
+                                do_change_enter_sends, do_change_full_name,
+                                do_change_left_side_userlist,
+                                do_change_password,
+                                do_change_pm_content_in_desktop_notifications,
+                                do_change_twenty_four_hour_time,
+                                do_regenerate_api_key)
 from zerver.lib.avatar import avatar_url
 from zerver.lib.i18n import get_available_language_codes
-from zerver.lib.response import json_success, json_error
+from zerver.lib.request import JsonableError
+from zerver.lib.response import json_error, json_success
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.validator import check_bool, check_string
-from zerver.lib.request import JsonableError
-from zerver.models import UserProfile, Realm, name_changes_disabled
+from zerver.models import Realm, UserProfile, name_changes_disabled
+
 
 @has_request_variables
 def json_change_ui_settings(request, user_profile,

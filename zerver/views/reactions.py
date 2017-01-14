@@ -1,17 +1,18 @@
 from __future__ import absolute_import
+from typing import Text
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
-from typing import Text
 
-from zerver.decorator import authenticated_json_post_view,\
-    has_request_variables, REQ, to_non_negative_int
+from zerver.decorator import (REQ, authenticated_json_post_view,
+                              has_request_variables, to_non_negative_int)
 from zerver.lib.actions import do_add_reaction, do_remove_reaction
 from zerver.lib.bugdown import emoji_list
 from zerver.lib.message import access_message
 from zerver.lib.request import JsonableError
 from zerver.lib.response import json_success
 from zerver.models import Reaction, Realm, UserProfile
+
 
 def check_valid_emoji(realm, emoji_name):
     # type: (Realm, Text) -> None

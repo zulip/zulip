@@ -1,27 +1,26 @@
 from __future__ import absolute_import
-
 from typing import Any, Optional
+
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
 from zerver.decorator import require_realm_admin, to_non_negative_int
-from zerver.lib.actions import (
-    do_set_realm_create_stream_by_admins_only,
-    do_set_realm_name,
-    do_set_realm_invite_by_admins_only,
-    do_set_realm_add_emoji_by_admins_only,
-    do_set_realm_invite_required,
-    do_set_realm_message_editing,
-    do_set_realm_restricted_to_domain,
-    do_set_realm_default_language,
-    do_set_realm_waiting_period_threshold,
-    do_set_realm_authentication_methods
-)
+from zerver.lib.actions import (do_set_realm_add_emoji_by_admins_only,
+                                do_set_realm_authentication_methods,
+                                do_set_realm_create_stream_by_admins_only,
+                                do_set_realm_default_language,
+                                do_set_realm_invite_by_admins_only,
+                                do_set_realm_invite_required,
+                                do_set_realm_message_editing,
+                                do_set_realm_name,
+                                do_set_realm_restricted_to_domain,
+                                do_set_realm_waiting_period_threshold)
 from zerver.lib.i18n import get_available_language_codes
-from zerver.lib.request import has_request_variables, REQ, JsonableError
-from zerver.lib.response import json_success, json_error
-from zerver.lib.validator import check_string, check_dict, check_bool
+from zerver.lib.request import REQ, JsonableError, has_request_variables
+from zerver.lib.response import json_error, json_success
+from zerver.lib.validator import check_bool, check_dict, check_string
 from zerver.models import UserProfile
+
 
 @require_realm_admin
 @has_request_variables

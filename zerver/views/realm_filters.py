@@ -1,17 +1,17 @@
 from __future__ import absolute_import
-
 from typing import Text
+
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
-from django.views.decorators.csrf import csrf_exempt
 from django.utils.translation import ugettext as _
+from django.views.decorators.csrf import csrf_exempt
 
-from zerver.decorator import has_request_variables, REQ, require_realm_admin
+from zerver.decorator import REQ, has_request_variables, require_realm_admin
 from zerver.lib.actions import do_add_realm_filter, do_remove_realm_filter
-from zerver.lib.response import json_success, json_error
+from zerver.lib.response import json_error, json_success
 from zerver.lib.rest import rest_dispatch as _rest_dispatch
 from zerver.lib.validator import check_string
-from zerver.models import realm_filters_for_realm, UserProfile, RealmFilter
+from zerver.models import RealmFilter, UserProfile, realm_filters_for_realm
 
 
 # Custom realm filters

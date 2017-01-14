@@ -1,20 +1,23 @@
 from __future__ import absolute_import
-from typing import Any, List, Dict, Optional, Callable, Tuple, Iterable, Sequence, Text
-
-from django.conf import settings
-from django.http import HttpResponse, HttpRequest
-from django.utils.translation import ugettext as _
-from zerver.decorator import authenticated_json_view
-from zerver.lib.ccache import make_ccache
-from zerver.lib.request import has_request_variables, REQ, JsonableError
-from zerver.lib.response import json_success, json_error
-from zerver.lib.str_utils import force_str
-from zerver.models import UserProfile
+from typing import (Any, Callable, Dict, Iterable, List,
+                    Optional, Sequence, Text, Tuple)
 
 import base64
 import logging
 import subprocess
+
 import ujson
+
+from django.conf import settings
+from django.http import HttpRequest, HttpResponse
+from django.utils.translation import ugettext as _
+
+from zerver.decorator import authenticated_json_view
+from zerver.lib.ccache import make_ccache
+from zerver.lib.request import REQ, JsonableError, has_request_variables
+from zerver.lib.response import json_error, json_success
+from zerver.lib.str_utils import force_str
+from zerver.models import UserProfile
 
 
 @authenticated_json_view

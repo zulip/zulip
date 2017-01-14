@@ -1,17 +1,17 @@
 # Webhooks for external integrations.
 from __future__ import absolute_import
-
-from django.utils.translation import ugettext as _
-from django.http import HttpRequest, HttpResponse
 from typing import Any
-
-from zerver.lib.actions import check_send_message
-from zerver.lib.response import json_success, json_error
-from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
-from zerver.models import UserProfile, Client
 
 import ujson
 
+from django.http import HttpRequest, HttpResponse
+from django.utils.translation import ugettext as _
+
+from zerver.decorator import (REQ, api_key_only_webhook_view,
+                              has_request_variables)
+from zerver.lib.actions import check_send_message
+from zerver.lib.response import json_error, json_success
+from zerver.models import Client, UserProfile
 
 CODESHIP_SUBJECT_TEMPLATE = '{project_name}'
 CODESHIP_MESSAGE_TEMPLATE = '[Build]({build_url}) triggered by {committer} on {branch} branch {status}.'
