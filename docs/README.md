@@ -256,6 +256,23 @@ following content into a step.
     name of the stream in the **Filter Streams** input.
     ```
 
+##### **Follow steps** `{!follow-steps.md!}` macro
+
+* **About:** Prepends phrases with instructions to follow the following steps.
+
+* **Contents:**
+    ```.md
+    Follow the following steps to
+    ```
+
+* **Example usage and rendering:**
+    ```.md
+    {!follow-steps.md!}  change your mobile notification settings.
+    ```
+    ```.md
+    Follow the following steps to change your mobile notification settings.
+    ```
+
 ##### **Message actions** `{!message-actions.md!}` macro
 
 * **About:** Explains how to view the actions of message. Usually followed by an instruction
