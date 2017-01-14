@@ -11,7 +11,7 @@ os.environ["PYTHONUNBUFFERED"] = "y"
 
 PY2 = sys.version_info[0] == 2
 
-ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import run, subprocess_text_output, OKBLUE, ENDC, WARNING

@@ -32,7 +32,7 @@ When reporting your issue, please include the following information:
 * installation method (Vagrant or direct)
 * whether or not you are using a proxy
 * a copy of Zulip's `vagrant` provisioning logs, available in
-  `/var/log/zulip_provision.log` on your virtual machine
+  `/var/log/provision.log` on your virtual machine
 
 ### Requirements
 
@@ -268,7 +268,7 @@ does the following:
 - configures this virtual machine/container for use with Zulip,
 - creates a shared directory mapping your clone of the Zulip code inside the
   virtual machine/container at `~/zulip`
-- runs the `tools/provision.py` script inside the virtual machine/container, which
+- runs the `tools/provision` script inside the virtual machine/container, which
   downloads all required dependencies, sets up the python environment for
   the Zulip development server, and initializes a default test database.
 
@@ -435,7 +435,7 @@ is likely because we've recently merged changes to the development
 environment provisioning process that you need to apply to your
 development environment.  To update your environment, you'll need to
 re-provision your vagrant machine using `vagrant provision` (this just
-runs `tools/provision.py` from your Zulip checkout inside the Vagrant
+runs `tools/provision` from your Zulip checkout inside the Vagrant
 guest); this should complete in about a minute.
 
 After provisioning, you'll want to
@@ -540,7 +540,7 @@ When reporting your issue, please include the following information:
 * installation method (Vagrant or direct)
 * whether or not you are using a proxy
 * a copy of Zulip's `vagrant` provisioning logs, available in
-  `/var/log/zulip_provision.log` on your virtual machine
+  `/var/log/provision.log` on your virtual machine
 
 #### The box 'ubuntu/trusty64' could not be found
 
@@ -682,16 +682,16 @@ The `vagrant up` command basically does the following:
 
 * Downloads an Ubuntu image and starts it using a Vagrant provider.
 * Uses `vagrant ssh` to connect to that Ubuntu guest, and then runs
-  `tools/provision.py`, which has a lot of subcommands that are
+  `tools/provision`, which has a lot of subcommands that are
   executed via Python's `subprocess` module.  These errors mean that
   one of those subcommands failed.
 
 To debug such errors, you can log in to the Vagrant guest machine by
 running `vagrant ssh`, which should present you with a standard shell
 prompt.  You can debug interactively by using e.g. `cd zulip &&
-./tools/provision.py`, and then running the individual subcommands
+./tools/provision`, and then running the individual subcommands
 that failed.  Once you've resolved the problem, you can rerun
-`tools/provision.py` to proceed; the provisioning system is designed
+`tools/provision` to proceed; the provisioning system is designed
 to recover well from failures.
 
 The zulip provisioning system is generally highly reliable; the most common
@@ -727,16 +727,16 @@ the VM.
 
 ##### npm install errors
 
-The `tools/provision.py` script may encounter an error related to `npm install`
+The `tools/provision` script may encounter an error related to `npm install`
 that looks something like:
 
 ```
 ==> default: + npm install
 ==> default: Traceback (most recent call last):
-==> default:   File "/srv/zulip/tools/provision.py", line 195, in <module>
+==> default:   File "/srv/zulip/tools/provision", line 195, in <module>
 ==> default:
 ==> default: sys.exit(main())
-==> default:   File "/srv/zulip/tools/provision.py", line 191, in main
+==> default:   File "/srv/zulip/tools/provision", line 191, in main
 ==> default:
 ==> default: run(["npm", "install"])
 ==> default:   File "/srv/zulip/scripts/lib/zulip_tools.py", line 78, in run

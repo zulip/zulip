@@ -2134,7 +2134,7 @@ class HomeTest(ZulipTestCase):
 class AuthorsPageTest(ZulipTestCase):
     def setUp(self):
         # type: () -> None
-        """ Manual installation which did not execute `tools/provision.py`
+        """ Manual installation which did not execute `tools/provision`
         would not have the `static/generated/github-contributors.json` fixture
         file.
         """

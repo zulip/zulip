@@ -347,7 +347,7 @@ def build_custom_checkers(by_lang):
         # This rule might give false positives in virtualenv setup files which should be excluded,
         # and comments which should be rewritten to avoid use of "python2", "python3", etc.
         {'pattern': 'python[23]',
-         'exclude': set(['tools/provision.py',
+         'exclude': set(['tools/lib/provision.py',
                          'tools/setup/setup_venvs.py',
                          'scripts/lib/setup_venv.py',
                          'tools/lint-all']),
