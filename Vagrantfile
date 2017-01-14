@@ -100,11 +100,11 @@ if [ -d "/sys/fs/selinux" ]; then
   sudo mount -o remount,ro /sys/fs/selinux
 fi
 ln -nsf /srv/zulip ~/zulip
-/srv/zulip/tools/provision.py | sudo tee -a /var/log/zulip_provision.log
+/srv/zulip/tools/provision
 SCRIPT
 
   config.vm.provision "shell",
-    # We want provision.py to be run with the permissions of the vagrant user.
+    # We want provision to be run with the permissions of the vagrant user.
     privileged: false,
     inline: $provision_script
 end
