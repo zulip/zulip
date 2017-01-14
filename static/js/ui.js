@@ -386,7 +386,7 @@ $(function () {
 
     viewport.message_pane.mousewheel(function (e, delta) {
         // Ignore mousewheel events if a modal is visible.  It's weird if the
-        // user can scroll the main view by wheeling over the greyed-out area.
+        // user can scroll the main view by wheeling over the grayed-out area.
         // Similarly, ignore events on settings page etc.
         //
         // We don't handle the compose box here, because it *should* work to
