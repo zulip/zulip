@@ -1,8 +1,8 @@
 ## View the Markdown source of a message
 
-If one of your peers sends a message, you can view the markdown of the
-message to learn more about formatting tricks or to reuse their markdown
-in a reply.
+When someone in your your Zulip organization sends a message, you can view the
+Markdown source of the message to learn more about the message's formatting or
+reuse the message's Markdown source in a reply.
 
 {!message-actions.md!}
 {!down-chevron.md!}
