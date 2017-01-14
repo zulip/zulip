@@ -19,12 +19,14 @@ files will simply have a link displayed.
 ### Link Behavior
 
 Clicking all file links will open a new tab that will either:
+
 - display the file if it is an image.
 - download the file automatically to your computer.
 
 If the file has a thumbnail, clicking it will open a lightbox modal with
-varying options depending on the media type. Images may be opened in new tabs or
-downloaded, while videos from YouTube may only be opened (and not downloaded).
+varying options depending on the media type. Images may be opened in new
+tabs or downloaded, while videos from YouTube may only be opened (and not
+downloaded).
 
 !!! tip ""
     You can exit out of a lightbox by clicking the space around the media preview
