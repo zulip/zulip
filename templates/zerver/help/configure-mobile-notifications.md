@@ -12,5 +12,5 @@ want mobile notifications only when you're offline.
     Check the box by **Mobile push notifications always (even when online)** if
 you always want mobile notifications.
 
-4. Click on the **Save Changes** button at the bottom to save any changes you
-made to your settings.
+4. Click on the **Save changes** button at the bottom to save your
+settings

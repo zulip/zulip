@@ -12,7 +12,7 @@ check the **Desktop notifications** option under **Stream messages**.
     * If you want desktop notifications only for private messages and @-mentions,
 check the **Desktop notifications** option under **Private messages and @-mentions**.
 
-2. Click on the **Save Changes** button at the bottom to save any changes you
+2. Click on the **Save changes** button at the bottom to save any changes you
 made to your notification settings.
 
 !!! tip ""
