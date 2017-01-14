@@ -356,7 +356,7 @@ $(function () {
 
     $("#join_unsub_stream").click(function () {
         subs.launch();
-        components.toggle.lookup("stream-filter-toggle").goto("All Streams");
+        components.toggle.lookup("stream-filter-toggle").goto("All streams");
     });
 
     // FEEDBACK

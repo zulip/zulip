@@ -544,7 +544,7 @@ exports.setup_page = function (callback) {
             selected: 0,
             values: [
                 { label: "Subscribed" },
-                { label: "All Streams" },
+                { label: "All streams" },
             ],
             callback: function () {
                 actually_filter_streams();
@@ -556,7 +556,7 @@ exports.setup_page = function (callback) {
             $("#subscriptions_table .search-container").prepend(stream_filter_toggle);
         }
 
-        // show the "Stream Settings" header by default.
+        // show the "Stream settings" header by default.
         $(".display-type #stream_settings_title").show();
     }
 
