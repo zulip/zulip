@@ -337,7 +337,7 @@ function _setup_page() {
         });
     }
 
-    $("#change_notification_settings").on("click", function (e) {
+    $("input:checkbox","#notification-settings").on("click", function (e) {
         e.preventDefault();
 
         var updated_settings = {};
