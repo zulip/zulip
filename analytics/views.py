@@ -44,13 +44,13 @@ def get_chart_data(request, user_profile, chart_name=REQ(),
                    end=REQ(converter=to_utc_datetime, default=None)):
     # type: (HttpRequest, UserProfile, Text, Optional[int], Optional[datetime], Optional[datetime]) -> HttpResponse
     realm = user_profile.realm
-    if chart_name == 'messages_sent_to_realm':
-        data = get_messages_sent_to_realm(realm, min_length=min_length, start=start, end=end)
+    if chart_name == 'messages_sent_by_humans_and_bots':
+        data = get_messages_sent_by_humans_and_bots(realm, min_length=min_length, start=start, end=end)
     else:
         raise JsonableError(_("Unknown chart name: %s") % (chart_name,))
     return json_success(data=data)
 
-def get_messages_sent_to_realm(realm, min_length=None, start=None, end=None):
+def get_messages_sent_by_humans_and_bots(realm, min_length=None, start=None, end=None):
     # type: (Realm, Optional[int], Optional[datetime], Optional[datetime]) -> Dict[str, Any]
     # These are implicitly relying on realm.date_created and timezone.now being in UTC.
     if start is None:
