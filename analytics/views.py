@@ -2,6 +2,7 @@ from __future__ import absolute_import, division
 
 from django.core import urlresolvers
 from django.db import connection
+from django.db.models import Sum
 from django.db.models.query import QuerySet
 from django.http import HttpResponseNotFound, HttpRequest, HttpResponse
 from django.template import RequestContext, loader
@@ -19,7 +20,8 @@ from zerver.decorator import has_request_variables, REQ, zulip_internal, \
 from zerver.lib.request import JsonableError
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import ceiling_to_hour, ceiling_to_day, timestamp_to_datetime
-from zerver.models import Realm, UserProfile, UserActivity, UserActivityInterval
+from zerver.models import Realm, UserProfile, UserActivity, \
+    UserActivityInterval, Client
 from zproject.jinja2 import render_to_response
 
 from collections import defaultdict
@@ -54,8 +56,14 @@ def get_chart_data(request, user_profile, chart_name=REQ(),
     if start > end:
         raise JsonableError(_("Start time is later than end time. Start: %(start)s, End: %(end)s") %
                             {'start': start, 'end': end})
-    if chart_name == 'messages_sent_by_humans_and_bots':
+    if chart_name == 'number_of_humans':
+        data = get_number_of_humans(realm, start, end, min_length=min_length)
+    elif chart_name == 'messages_sent_by_humans_and_bots':
         data = get_messages_sent_by_humans_and_bots(realm, start, end, min_length=min_length)
+    elif chart_name == 'messages_sent_by_client':
+        data = get_messages_sent_by_client(user_profile)
+    elif chart_name == 'messages_sent_by_message_type':
+        data = get_messages_sent_by_message_type(user_profile)
     else:
         raise JsonableError(_("Unknown chart name: %s") % (chart_name,))
     return json_success(data=data)
@@ -86,6 +94,23 @@ def get_time_series_by_subgroup(stat, table, key_id, subgroups, start, end, min_
         value_arrays[subgroup] = [value_dicts[subgroup][end_time] for end_time in end_times]
     return end_times, value_arrays
 
+def get_totals_by_subgroup(property, table, key_id):
+    # type: (str, Type[BaseCount], int) -> Dict[str, int]
+    queryset = table_filtered_to_id(table, key_id) \
+               .filter(property=property).values('subgroup').annotate(Sum('value'))
+    data = defaultdict(int) # type: Dict[Optional[str], int]
+    for row in queryset:
+        data[row['subgroup']] = row['value__sum']
+    return data
+
+def get_number_of_humans(realm, start, end, min_length=None):
+    # type: (Realm, datetime, datetime, Optional[int]) -> Dict[str, Any]
+    stat = COUNT_STATS['active_users:is_bot']
+    end_times, values = get_time_series_by_subgroup(
+        stat, RealmCount, realm.id, ['false'], start, end, min_length)
+    return {'end_times': end_times, 'humans': values['false'],
+            'frequency': stat.frequency, 'interval': stat.interval}
+
 def get_messages_sent_by_humans_and_bots(realm, start, end, min_length=None):
     # type: (Realm, datetime, datetime, Optional[int]) -> Dict[str, Any]
     stat = COUNT_STATS['messages_sent:is_bot']
@@ -93,6 +118,26 @@ def get_messages_sent_by_humans_and_bots(realm, start, end, min_length=None):
         stat, RealmCount, realm.id, ['false', 'true'], start, end, min_length)
     return {'end_times': end_times, 'humans': values['false'], 'bots': values['true'],
             'frequency': stat.frequency, 'interval': stat.interval}
+
+def get_messages_sent_by_message_type(user):
+    # type: (UserProfile) -> Dict[str, List[Any]]
+    property = 'messages_sent:message_type'
+    user_data = get_totals_by_subgroup(property, UserCount, user.id)
+    realm_data = get_totals_by_subgroup(property, RealmCount, user.realm.id)
+    message_types = ['public_stream', 'private_stream', 'private_message']
+    return {'message_types': message_types,
+            'user': [user_data[message_type] for message_type in message_types],
+            'realm': [realm_data[message_type] for message_type in message_types]}
+
+def get_messages_sent_by_client(user):
+    # type: (UserProfile) -> Dict[str, List[Any]]
+    property = 'messages_sent:client'
+    user_data = get_totals_by_subgroup(property, UserCount, user.id)
+    realm_data = get_totals_by_subgroup(property, RealmCount, user.realm.id)
+    client_ids = sorted(realm_data.keys())
+    return {'clients': [Client.objects.get(id=int(client_id)) for client_id in client_ids],
+            'user': [user_data[client_id] for client_id in client_ids],
+            'realm': [realm_data[client_id] for client_id in client_ids]}
 
 
 eastern_tz = pytz.timezone('US/Eastern')
