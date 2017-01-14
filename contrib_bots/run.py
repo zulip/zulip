@@ -41,6 +41,7 @@ class BotHandlerApi(object):
         user_profile = client.get_profile()
         self._rate_limit = RateLimit(20, 5)
         self._client = client
+        self.upload_file = client.upload_file
         try:
             self.full_name = user_profile['full_name']
             self.email = user_profile['email']
