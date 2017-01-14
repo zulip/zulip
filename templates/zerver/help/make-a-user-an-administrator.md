@@ -3,8 +3,8 @@
 By default, everyone in an organization is a user; this limits them from
 modifying organization-wide settings, such as changing the organization name,
 activating or deactivating users, deleting streams, etc. Zulip organization
-administrators can give a user administrative rights. To do so, follow the steps
-below:
+administrators can give a user administrative rights. {!follow-steps.md!}
+give any user in your organization administrative rights.
 
 {!go-to-the.md!} [Users](/#administration/user-list-admin)
 {!admin.md!}
