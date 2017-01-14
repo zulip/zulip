@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 from django.db import models
 from django.test import TestCase
 from django.utils import timezone
@@ -13,7 +15,8 @@ from zerver.models import Realm, UserProfile, Message, Stream, Recipient, \
 
 from datetime import datetime, timedelta
 
-from typing import Any, Type, Optional, Text, Tuple
+from six.moves import range
+from typing import Any, Type, Optional, Text, Tuple, List, Union
 
 class AnalyticsTestCase(TestCase):
     MINUTE = timedelta(seconds = 60)
@@ -102,6 +105,51 @@ class AnalyticsTestCase(TestCase):
         if subgroup is not None:
             queryset = queryset.filter(subgroup=subgroup)
         self.assertEqual(queryset.values_list('value', flat=True)[0], value)
+
+    def assertTableState(self, table, arg_keys, arg_values):
+        # type: (Type[BaseCount], List[str], List[List[Union[int, str, Realm, UserProfile, Stream]]]) -> None
+        """Assert that the state of a *Count table is what it should be.
+
+        Example usage:
+            self.assertTableState(RealmCount, ['property', 'subgroup', 'realm'],
+                                  [['p1', 4], ['p2', 10, self.alt_realm]])
+
+        table -- A *Count table.
+        arg_keys -- List of columns of <table>.
+        arg_values -- List of "rows" of <table>.
+            Each entry of arg_values (e.g. ['p1', 4]) represents a row of <table>.
+            The i'th value of the entry corresponds to the i'th arg_key, so e.g.
+            the first arg_values entry here corresponds to a row of RealmCount
+            with property='p1' and subgroup=10.
+            Any columns not specified (in this case, every column of RealmCount
+            other than property and subgroup) are either set to default values,
+            or are ignored.
+
+        The function checks that every entry of arg_values matches exactly one
+        row of <table>, and that no additional rows exist. Note that this means
+        checking a table with duplicate rows is not supported.
+        """
+        defaults = {
+            'property': self.current_property,
+            'subgroup': None,
+            'end_time': self.TIME_ZERO,
+            'interval': self.current_interval}
+        for values in arg_values:
+            kwargs = {} # type: Dict[str, Any]
+            for i in range(len(values)):
+                kwargs[arg_keys[i]] = values[i]
+            for key, value in defaults.items():
+                kwargs[key] = kwargs.get(key, value)
+            if table is not InstallationCount:
+                if 'realm' not in kwargs:
+                    if 'user' in kwargs:
+                        kwargs['realm'] = kwargs['user'].realm
+                    elif 'stream' in kwargs:
+                        kwargs['realm'] = kwargs['stream'].realm
+                    else:
+                        kwargs['realm'] = self.default_realm
+            self.assertEqual(table.objects.filter(**kwargs).count(), 1)
+        self.assertEqual(table.objects.count(), len(arg_values))
 
 class TestProcessCountStat(AnalyticsTestCase):
     def make_dummy_count_stat(self, current_time):
@@ -199,16 +247,13 @@ class TestCountStats(AnalyticsTestCase):
 
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
 
-        self.assertCountEquals(RealmCount, 2, subgroup='true')
-        self.assertCountEquals(RealmCount, 1, subgroup='false')
-        self.assertCountEquals(RealmCount, 3, subgroup='false', realm=self.second_realm)
-        self.assertCountEquals(RealmCount, 1, subgroup='false', realm=self.no_message_realm)
-        self.assertEqual(RealmCount.objects.count(), 4)
-        self.assertCountEquals(InstallationCount, 2, subgroup='true')
-        self.assertCountEquals(InstallationCount, 5, subgroup='false')
-        self.assertEqual(InstallationCount.objects.count(), 2)
-        self.assertFalse(UserCount.objects.exists())
-        self.assertFalse(StreamCount.objects.exists())
+        self.assertTableState(RealmCount, ['value', 'subgroup', 'realm'],
+                              [[2, 'true'], [1, 'false'],
+                               [3, 'false', self.second_realm],
+                               [1, 'false', self.no_message_realm]])
+        self.assertTableState(InstallationCount, ['value', 'subgroup'], [[2, 'true'], [5, 'false']])
+        self.assertTableState(UserCount, [], [])
+        self.assertTableState(StreamCount, [], [])
 
     def test_messages_sent(self):
         # type: () -> None
@@ -231,17 +276,11 @@ class TestCountStats(AnalyticsTestCase):
 
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
 
-        self.assertCountEquals(UserCount, 1, user=user1)
-        self.assertCountEquals(UserCount, 3, user=user2)
-        self.assertCountEquals(UserCount, 1, realm=self.second_realm,
-                               user=self.hourly_user)
-        self.assertEqual(UserCount.objects.count(), 3)
-        self.assertCountEquals(RealmCount, 4)
-        self.assertCountEquals(RealmCount, 1, realm=self.second_realm)
-        self.assertEqual(RealmCount.objects.count(), 2)
-        self.assertCountEquals(InstallationCount, 5)
-        self.assertEqual(InstallationCount.objects.count(), 1)
-        self.assertFalse(StreamCount.objects.exists())
+        self.assertTableState(UserCount, ['value', 'user'],
+                              [[1, user1], [3, user2], [1, self.hourly_user]])
+        self.assertTableState(RealmCount, ['value', 'realm'], [[4], [1, self.second_realm]])
+        self.assertTableState(InstallationCount, ['value'], [[5]])
+        self.assertTableState(StreamCount, [], [])
 
     def test_messages_sent_by_is_bot(self):
         # type: () -> None
@@ -265,22 +304,13 @@ class TestCountStats(AnalyticsTestCase):
 
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
 
-        self.assertCountEquals(UserCount, 1, subgroup='false', user=human1)
-        self.assertCountEquals(UserCount, 1, subgroup='false', user=human2)
-        self.assertCountEquals(UserCount, 3, subgroup='true', user=bot)
-        self.assertCountEquals(UserCount, 1, subgroup='false', realm=self.second_realm,
-                               user=self.hourly_user)
-        self.assertCountEquals(UserCount, 1, subgroup='false', realm=self.second_realm,
-                               user=self.daily_user)
-        self.assertEqual(UserCount.objects.count(), 5)
-        self.assertCountEquals(RealmCount, 2, subgroup='false')
-        self.assertCountEquals(RealmCount, 3, subgroup='true')
-        self.assertCountEquals(RealmCount, 2, subgroup='false', realm=self.second_realm)
-        self.assertEqual(RealmCount.objects.count(), 3)
-        self.assertCountEquals(InstallationCount, 4, subgroup='false')
-        self.assertCountEquals(InstallationCount, 3, subgroup='true')
-        self.assertEqual(InstallationCount.objects.count(), 2)
-        self.assertFalse(StreamCount.objects.exists())
+        self.assertTableState(UserCount, ['value', 'subgroup', 'user'],
+                              [[1, 'false', human1], [1, 'false', human2], [3, 'true', bot],
+                               [1, 'false', self.hourly_user], [1, 'false', self.daily_user]])
+        self.assertTableState(RealmCount, ['value', 'subgroup', 'realm'],
+                              [[2, 'false'], [3, 'true'], [2, 'false', self.second_realm]])
+        self.assertTableState(InstallationCount, ['value', 'subgroup'], [[4, 'false'], [3, 'true']])
+        self.assertTableState(StreamCount, [], [])
 
     def test_messages_sent_by_message_type(self):
         # type: () -> None
@@ -326,31 +356,22 @@ class TestCountStats(AnalyticsTestCase):
 
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
 
-        self.assertCountEquals(UserCount, 1, subgroup='private_stream', user=user1)
-        self.assertCountEquals(UserCount, 2, subgroup='private_stream', user=user2)
-        self.assertCountEquals(UserCount, 2, subgroup='public_stream', user=user1)
-        self.assertCountEquals(UserCount, 1, subgroup='public_stream', user=user2)
-        self.assertCountEquals(UserCount, 2, subgroup='private_message', user=user1)
-        self.assertCountEquals(UserCount, 2, subgroup='private_message', user=user2)
-        self.assertCountEquals(UserCount, 1, subgroup='private_message', user=user3)
-        self.assertCountEquals(UserCount, 1, subgroup='public_stream', realm=self.second_realm,
-                               user=self.hourly_user)
-        self.assertCountEquals(UserCount, 1, subgroup='public_stream', realm=self.second_realm,
-                               user=self.daily_user)
-        self.assertEqual(UserCount.objects.count(), 9)
-
-        self.assertCountEquals(RealmCount, 3, subgroup='private_stream')
-        self.assertCountEquals(RealmCount, 3, subgroup='public_stream')
-        self.assertCountEquals(RealmCount, 5, subgroup='private_message')
-        self.assertCountEquals(RealmCount, 2, subgroup='public_stream', realm=self.second_realm)
-        self.assertEqual(RealmCount.objects.count(), 4)
-
-        self.assertCountEquals(InstallationCount, 3, subgroup='private_stream')
-        self.assertCountEquals(InstallationCount, 5, subgroup='public_stream')
-        self.assertCountEquals(InstallationCount, 5, subgroup='private_message')
-        self.assertEqual(InstallationCount.objects.count(), 3)
-
-        self.assertFalse(StreamCount.objects.exists())
+        self.assertTableState(UserCount, ['value', 'subgroup', 'user'],
+                              [[1, 'private_stream', user1],
+                               [2, 'private_stream', user2],
+                               [2, 'public_stream', user1],
+                               [1, 'public_stream', user2],
+                               [2, 'private_message', user1],
+                               [2, 'private_message', user2],
+                               [1, 'private_message', user3],
+                               [1, 'public_stream', self.hourly_user],
+                               [1, 'public_stream', self.daily_user]])
+        self.assertTableState(RealmCount, ['value', 'subgroup', 'realm'],
+                              [[3, 'private_stream'], [3, 'public_stream'], [5, 'private_message'],
+                               [2, 'public_stream', self.second_realm]])
+        self.assertTableState(InstallationCount, ['value', 'subgroup'],
+                              [[3, 'private_stream'], [5, 'public_stream'], [5, 'private_message']])
+        self.assertTableState(StreamCount, [], [])
 
     def test_messages_sent_to_recipients_with_same_id(self):
         # type: () -> None
@@ -397,20 +418,16 @@ class TestCountStats(AnalyticsTestCase):
 
         client2_id = str(client2.id)
         website_client_id = str(get_client('website').id) # default for self.create_message
-        self.assertCountEquals(UserCount, 2, subgroup=website_client_id, user=user1)
-        self.assertCountEquals(UserCount, 1, subgroup=client2_id, user=user1)
-        self.assertCountEquals(UserCount, 2, subgroup=client2_id, user=user2)
-        self.assertCountEquals(UserCount, 1, subgroup=website_client_id, realm=self.second_realm,
-                               user=self.hourly_user)
-        self.assertEqual(UserCount.objects.count(), 4)
-        self.assertCountEquals(RealmCount, 2, subgroup=website_client_id)
-        self.assertCountEquals(RealmCount, 3, subgroup=client2_id)
-        self.assertCountEquals(RealmCount, 1, subgroup=website_client_id, realm=self.second_realm)
-        self.assertEqual(RealmCount.objects.count(), 3)
-        self.assertCountEquals(InstallationCount, 3, subgroup=website_client_id)
-        self.assertCountEquals(InstallationCount, 3, subgroup=client2_id)
-        self.assertEqual(InstallationCount.objects.count(), 2)
-        self.assertFalse(StreamCount.objects.exists())
+        self.assertTableState(UserCount, ['value', 'subgroup', 'user'],
+                              [[2, website_client_id, user1],
+                               [1, client2_id, user1], [2, client2_id, user2],
+                               [1, website_client_id, self.hourly_user]])
+        self.assertTableState(RealmCount, ['value', 'subgroup', 'realm'],
+                              [[2, website_client_id], [3, client2_id],
+                               [1, website_client_id, self.second_realm]])
+        self.assertTableState(InstallationCount, ['value', 'subgroup'],
+                              [[3, website_client_id], [3, client2_id]])
+        self.assertTableState(StreamCount, [], [])
 
     def test_messages_sent_to_stream_by_is_bot(self):
         # type: () -> None
@@ -441,19 +458,11 @@ class TestCountStats(AnalyticsTestCase):
 
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
 
-        self.assertCountEquals(StreamCount, 2, subgroup='false', stream=stream1)
-        self.assertCountEquals(StreamCount, 1, subgroup='false', stream=stream2)
-        self.assertCountEquals(StreamCount, 2, subgroup='true', stream=stream2)
-        self.assertCountEquals(StreamCount, 1, subgroup='false', realm=self.second_realm)
-        self.assertEqual(StreamCount.objects.count(), 4)
-
-        self.assertCountEquals(RealmCount, 3, subgroup='false')
-        self.assertCountEquals(RealmCount, 2, subgroup='true')
-        self.assertCountEquals(RealmCount, 1, subgroup='false', realm=self.second_realm)
-        self.assertEqual(RealmCount.objects.count(), 3)
-
-        self.assertCountEquals(InstallationCount, 4, subgroup='false')
-        self.assertCountEquals(InstallationCount, 2, subgroup='true')
-        self.assertEqual(InstallationCount.objects.count(), 2)
-
-        self.assertFalse(UserCount.objects.exists())
+        self.assertTableState(StreamCount, ['value', 'subgroup', 'stream'],
+                              [[2, 'false', stream1], [1, 'false', stream2], [2, 'true', stream2],
+                               # "hourly" stream, from TestCountStats.setUp
+                               [1, 'false', Stream.objects.get(name='stream 1')]])
+        self.assertTableState(RealmCount, ['value', 'subgroup', 'realm'],
+                              [[3, 'false'], [2, 'true'], [1, 'false', self.second_realm]])
+        self.assertTableState(InstallationCount, ['value', 'subgroup'], [[4, 'false'], [2, 'true']])
+        self.assertTableState(UserCount, [], [])
