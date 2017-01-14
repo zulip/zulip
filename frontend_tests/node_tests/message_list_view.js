@@ -26,7 +26,7 @@ set_global('timerender', {
 });
 
 (function test_merge_message_groups() {
-    // MessageListView has lots of DOM code, so we are going to test the mesage
+    // MessageListView has lots of DOM code, so we are going to test the message
     // group mearging logic on its own.
 
     function build_message_context(message, message_context) {
