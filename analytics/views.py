@@ -75,16 +75,15 @@ def table_filtered_to_id(table, key_id):
 
 def get_time_series_by_subgroup(stat, table, key_id, subgroups, start, end, min_length=None):
     # type: (CountStat, Type[BaseCount], Optional[int], List[Optional[str]], datetime, datetime, Optional[int]) -> Tuple[List[datetime], Dict[str, List[int]]]
-    filter_set = table_filtered_to_id(table, key_id) \
-                 .filter(property=stat.property, interval=stat.interval) \
-                 .values_list('end_time', 'value')
-    end_times = time_range(start, end, stat.frequency, min_length)
+    queryset = table_filtered_to_id(table, key_id) \
+               .filter(property=stat.property).values_list('subgroup', 'end_time', 'value')
+    value_dicts = defaultdict(lambda: defaultdict(int)) # type: Dict[Optional[str], Dict[datetime, int]]
+    for subgroup, end_time, value in queryset:
+        value_dicts[subgroup][end_time] = value
     value_arrays = {}
+    end_times = time_range(start, end, stat.frequency, min_length)
     for subgroup in subgroups:
-        values = defaultdict(int) # type: Dict[datetime, int]
-        for end_time, value in filter_set.filter(subgroup=subgroup):
-            values[end_time] = value
-        value_arrays[subgroup] = [values[end_time] for end_time in end_times]
+        value_arrays[subgroup] = [value_dicts[subgroup][end_time] for end_time in end_times]
     return end_times, value_arrays
 
 def get_messages_sent_by_humans_and_bots(realm, start, end, min_length=None):
