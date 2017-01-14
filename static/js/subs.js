@@ -544,7 +544,7 @@ exports.setup_page = function (callback) {
             selected: 0,
             values: [
                 { label: "Subscribed" },
-                { label: "All Streams" },
+                { label: "All streams" },
             ],
             callback: function () {
                 actually_filter_streams();
