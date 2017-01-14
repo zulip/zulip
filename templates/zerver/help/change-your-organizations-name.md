@@ -1,7 +1,7 @@
 # Change your organization's name
 Only an administrator can change the name of the organization.
 
-Follow these steps to change the name of the organization
+{!follow-steps.md!} change the name of the organization
 using an administrator account:
 
 {!go-to-the.md!} [Organization Settings](/#administration/organization-settings)
