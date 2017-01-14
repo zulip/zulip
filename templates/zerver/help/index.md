@@ -92,13 +92,13 @@ as an **organization**.
 * Preview a stream (not implemented)
 * [Unsubscribe from a stream](/help/unsubscribe-from-a-stream)
 * [Change who can join a stream](/help/change-who-can-join-a-stream)
+* [Organize the Streams sidebar](/help/organize-the-streams-sidebar)
 * [Pin a stream](/help/pin-a-stream)
 * [Change the color of a stream](/help/change-the-color-of-a-stream)
 * [Message a stream by email](/help/message-a-stream-by-email)
 * Convert a group PM to a private stream (not implemented)
 * [Remove someone from a stream (admin only)](/help/remove-someone-from-a-stream)
 * [Delete a stream (admin only)](/help/delete-a-stream)
-* [Organize the streams sidebar](/help/organize-the-streams-sidebar)
 
 ## Notifications
 * [Mute a stream](/help/mute-a-stream)
