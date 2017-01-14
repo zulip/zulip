@@ -29,7 +29,7 @@ a stream. Similarly, if they are not interested in the topics being discussed in
 a stream, users can choose to [unsubscribe](/help/unsubscribe-from-a-stream) from a
 stream.
 
-Users can also customize their stream settings; they can
+Users can also customize their stream settings; they can:
 
 * [pin a stream](/help/pin-a-stream)
 * [change the color of streams](/help/change-the-color-of-a-stream)
@@ -56,9 +56,10 @@ stream that they're sent to. Topics ensure sequential messages
 about the same thing are threaded together, allowing for better consumption
 by users.
 
-The best stream topics are short and specific. For example, for a bug tracker
-integration, a good topic would be the bug number; for an integration like
-Nagios, the service would serve as a good topic.
+!!! tip ""
+    The best stream topics are short and specific. For example, for a bug
+    tracker integration, a good topic would be the bug number; for an
+    integration like Nagios, the service would serve as a good topic.
 
 Users can easily [change the topics](/help/change-the-topic-of-a-message) of the messages
 that they sent if they sent the message to the wrong topic or if some
