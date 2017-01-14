@@ -25,7 +25,7 @@ Announcements on Zulip are sent using the `#announce` stream.
   (if you have checked the option **Press Enter to send**).
 
 You can always delete your announcement by
- clicking the X (<i class="icon-vector-remove"></i>) icon located at
+ clicking the x (<i class="icon-vector-remove"></i>) icon located at
  the top-right corner of your messaging box.
 
 Your announcement will look similar to the below image.

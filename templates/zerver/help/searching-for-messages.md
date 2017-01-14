@@ -111,6 +111,6 @@ Listed below are some Zulip keyboard shortcuts that will aid you in conducting a
   view, etc. in the organization.
 * **Clear a search** `Esc` - This shortcut clears the search bar of
   any search criteria that was previously entered. This action can also be
-  achieved by clicking the X (<i class="icon-vector-remove"></i>) icon to the
+  achieved by clicking the x (<i class="icon-vector-remove"></i>) icon to the
   right of the search bar or the home (<i class="icon-vector-home"></i>) icon to
   the left of the search bar.
