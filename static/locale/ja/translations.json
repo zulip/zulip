@@ -134,7 +134,7 @@
   "__page_params.product_name__ Labs": "__page_params.product_name__ラボ",
   "Please specify a stream": "ストリームを指定してください",
   "Mark all messages in <b>__topic_name__</b> as read": "<b>__topic_name__</b>のすべてのメッセージを既読にする",
-  "Deactivated Users": "無効なユーザー",
+  "Deactivated users": "無効なユーザー",
   "This is a <span class=\"icon-vector-globe\"></span> <b>public stream</b>. Anybody in your organization can join.": "これは<span class=\"icon-vector-globe\"></span> <b>公開ストリーム</b>です。この組織の人はだれでも参加できます。",
   "The email subject will become the __page_params.product_name__ topic": "メールの件名は__page_params.product_name__トピックになります",
   "Username": "ユーザー名",

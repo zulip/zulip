@@ -39,7 +39,7 @@ disappear, confirming the success of the account's deactivation.
 Zulip organization administrators can choose to reactivate a user's deactivated account
 by following the following steps.
 
-{!go-to-the.md!} [Deactivated Users](/#administration/deactivated-users-admin)
+{!go-to-the.md!} [Deactivated users](/#administration/deactivated-users-admin)
 {!admin.md!}
 
 4. Click the **Reactivate** button to the right of the user account that you

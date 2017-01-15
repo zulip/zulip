@@ -231,7 +231,7 @@
   "Name": "Name", 
   "Error listing users or bots": "Error listing users or bots", 
   "Yes, delete this stream": "Yes, delete this stream", 
-  "Deactivated Users": "Deactivated Users", 
+  "Deactivated users": "Deactivated users", 
   "Stream membership": "Stream membership", 
   "\n        The <b>topic</b> of a conversation is one or two words that describe\n        what it is about, for example: <b>Bug #345</b>, <b>lunch</b>, or\n        <b>logo</b>. Don't overthink it.\n        ": "\n        The <b>topic</b> of a conversation is one or two words that describe\n        what it is about, for example: <b>Bug #345</b>, <b>lunch</b>, or\n        <b>logo</b>. Don't overthink it.\n        ", 
   "Mute the stream <b>__stream.name__</b>": "Mute the stream <b>__stream.name__</b>", 

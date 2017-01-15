@@ -134,7 +134,7 @@
   "__page_params.product_name__ Labs": "__page_params.product_name__实验室",
   "Please specify a stream": "请指定频道",
   "Mark all messages in <b>__topic_name__</b> as read": "标记话题&quot;<b>__topic_name__</b>&quot;中的所有消息为已读",
-  "Deactivated Users": "禁用的用户",
+  "Deactivated users": "禁用的用户",
   "This is a <span class=\"icon-vector-globe\"></span> <b>public stream</b>. Anybody in your organization can join.": "这是一个<span class=\"icon-vector-globe\"></span> <b>公开的频道</b>。社区中的所有用户都可以订阅。",
   "The email subject will become the __page_params.product_name__ topic": "邮件主题作为__page_params.product_name__的话题",
   "Username": "用户名",
