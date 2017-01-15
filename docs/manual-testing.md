@@ -404,7 +404,7 @@ Do these tasks as Cordelia.
     - Change full name (Hamlet should see the name change)
     - Customize avatar
     - Deactivate account (and then log in as Iago to re-activate Cordelia)
-- Display Settings
+- Display settings
     - Right now, these unfortunately require reloads to take effect.
     - Default language (change to Spanish)
     - Display user list in narrow windows (verify by making window thinner)

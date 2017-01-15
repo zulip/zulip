@@ -8,7 +8,7 @@ this to avoid confusion between A.M. and P.M. hours.
 You can easily change the date and time format your messages are displayed in by
 following a few steps.
 
-{!go-to-the.md!} [Display Settings](/#settings/display-settings)
+{!go-to-the.md!} [Display settings](/#settings/display-settings)
 {!settings.md!}
 
 2. Select the option labeled

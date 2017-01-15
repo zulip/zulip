@@ -29,7 +29,7 @@
   "[Condense this message]": "[このメッセージを簡略表示]",
   "Listen on": "ウォッチするストリーム",
   "Error updating the stream description": "ストリームの説明の更新に失敗",
-  "Display Settings": "表示の設定",
+  "Display settings": "表示の設定",
   "Change notification settings for individual streams on your <a href=\"/#subscriptions\">Streams page</a>.": "<a href=\"/#subscriptions\">ストリームページ</a>でストリーム毎に通知設定を変更します。",
   "Preview": "プレビュー",
   "Edit": "編集",
