@@ -83,7 +83,7 @@ Markdown, not newer Markdown variants like CommonMark.
 Markdown is great for group chat for the same reason it's been
 successful in products ranging from blogs to wikis to bug trackers:
 it's close enough to how people try to express themselves when writing
-plain text (e.g. emails) that is helps more than getting in the way.
+plain text (e.g. emails) that it helps more than getting in the way.
 
 The main issue for using Markdown in instant messaging is that the
 Markdown standard syntax used in a lot of wikis/blogs has nontrivial
