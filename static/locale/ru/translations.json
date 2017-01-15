@@ -263,7 +263,7 @@
   "Mark all messages in <b>__stream.name__</b> as read": "Отметить все сообщения в <b>__stream.name__</b> как прочитанные",
   "You and __display_reply_to__": "You and __display_reply_to__",
   "more topics": "еще темы",
-  "Select Default language": "Select Default language",
+  "Select default language": "Select default language",
   "Narrow to your private messages with __display_reply_to__": "Narrow to your private messages with __display_reply_to__",
   "Change previous and following messages to this topic": "Change previous and following messages to this topic",
   "You'll receive notifications when a message arrives and __page_params.product_name__ isn't in focus or the message is offscreen.": "You'll receive notifications when a message arrives and __page_params.product_name__ isn't in focus or the message is offscreen.",

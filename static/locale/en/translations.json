@@ -98,7 +98,7 @@
   "Clear avatar": "Clear avatar", 
   "Display time in 24-hour format (17:00 instead of 5:00 PM)": "Display time in 24-hour format (17:00 instead of 5:00 PM)", 
   "Send __message.sender_full_name__ a private message": "Send __message.sender_full_name__ a private message", 
-  "Select Default language": "Select Default language", 
+  "Select default language": "Select default language", 
   "Error getting API key": "Error getting API key", 
   "You and __display_reply_to__": "You and __display_reply_to__", 
   "Change only this message topic": "Change only this message topic", 

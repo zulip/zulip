@@ -263,7 +263,7 @@
   "Mark all messages in <b>__stream.name__</b> as read": "标记频道&quot;<b>__stream.name__</b>&quot;中的所有消息为已读",
   "You and __display_reply_to__": "你和__display_reply_to__",
   "more topics": "更多话题",
-  "Select Default language": "选择默认语言",
+  "Select default language": "选择默认语言",
   "Narrow to your private messages with __display_reply_to__": "筛选和&quot;__display_reply_to__&quot;的私信",
   "Change previous and following messages to this topic": "修改前后消息到该话题",
   "You'll receive notifications when a message arrives and __page_params.product_name__ isn't in focus or the message is offscreen.": "当__page_params.product_name__不是当前窗口，或者当前屏幕不显示收到的消息时，你会收到通知。",
