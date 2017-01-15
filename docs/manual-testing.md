@@ -215,7 +215,7 @@ Here are the things to test:
     - Compose (send a message to the stream)
     - Mark as read (scroll back and then have Hamlet send you a message)
     - Mute/unmute (do both)
-    - Unsubcribe (and then go to Stream Settings in the gear menu to resubscribe)
+    - Unsubcribe (and then go to Stream settings in the gear menu to resubscribe)
     - Choose custom color (play around with this)
 
 - Topic sidebar menus
@@ -348,7 +348,7 @@ Miscellaneous:
 - Use the "x" icon to clear a search.
 - Use the "Esc" hotkey to clear a search.
 
-### Stream Settings ###
+### Stream settings ###
 
 Test various UI entry points into stream settings:
 - Use small gear menu in left sidebar, then filter to "devel".

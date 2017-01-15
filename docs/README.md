@@ -343,7 +343,7 @@ instruction and the [**Down chevron** macro](#down-chevron-down-chevron-md-macro
     icon to reveal an actions dropdown.
     ```
 
-##### **Stream Settings** `{!stream-settings.md!}` macro
+##### **Stream settings** `{!stream-settings.md!}` macro
 
 * **About:** Notifies readers about the changes in the
   **Subscriptions** page when a stream is selected; usually followed
@@ -352,7 +352,7 @@ instruction and the [**Down chevron** macro](#down-chevron-down-chevron-md-macro
 * **Contents:**
     ```.md
     the right side of the [Subscriptions](/#subscriptions) page, labeled
-    **Stream Settings**, will now display the selected stream's settings.
+    **Stream settings**, will now display the selected stream's settings.
     ```
 
 * **Example usage and rendering:**
@@ -361,11 +361,11 @@ instruction and the [**Down chevron** macro](#down-chevron-down-chevron-md-macro
     ```
     ```.md
     1. Click on the stream you want to edit; the right side of the
-    [Subscriptions](/#subscriptions) page, labeled **Stream Settings**, will
+    [Subscriptions](/#subscriptions) page, labeled **Stream settings**, will
     now display the selected stream's settings.
     ```
 
-##### **Stream Settings scroll** `{!stream-settings.md!}` macro
+##### **Stream settings scroll** `{!stream-settings.md!}` macro
 
 * **About:** Instructs readers to scroll down to a particular section on the
 **Subscriptions** page after making sure their cursors are hovering above the
