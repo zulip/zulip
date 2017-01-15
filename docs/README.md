@@ -169,7 +169,7 @@ particular section on the **Administration** page.
 * **Contents:**
     ```.md
         If you wish to see streams that you aren't subscribed to, click on the
-            **All Streams** tab; the tab will turn gray upon doing so.
+            **All streams** tab; the tab will turn gray upon doing so.
     ```
 
 * **Example usage and rendering:**
@@ -186,7 +186,7 @@ particular section on the **Administration** page.
     name of the stream in the **Filter Streams** input.
         !!! tip ""
             If you wish to see streams that you aren't subscribed to, click on the
-            **All Streams** tab; the tab will turn gray upon doing so.
+            **All streams** tab; the tab will turn gray upon doing so.
     ```
 
 ##### **Down chevron** `{!down-chevron.md!}` macro
