@@ -29,6 +29,4 @@ underneath it.
             organization, enter **0** in the field. This enables users to edit
             their messages whenever they want.
 
-5. To save any changes you have made to your organization settings, click the
-**Save changes** button at the bottom of the **Organizations settings**
-section.
+{!save-changes.md!} organization settings.
