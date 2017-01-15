@@ -101,6 +101,10 @@ function clear_filters() {
     };
     global.stream_data.add_sub('social', social);
 
+    global.unread.num_unread_for_stream = function () {
+        return 42;
+    };
+
     stream_list.create_sidebar_row(devel);
     stream_list.create_sidebar_row(social);
     stream_list.build_stream_list();
