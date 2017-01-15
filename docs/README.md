@@ -412,6 +412,20 @@ numbered steps. E.g.:
 * Images and additional notes or instructions are kept within a single step by
 indenting them.
 
+* The first heading of a page should be prefaced with '# '. All subsequent
+ subheading levels should use more '#'s
+   ```
+  # This is a heading
+
+  ## This is a subheading
+
+  ### This is a lower level subheading
+
+  ## This is another subheading
+
+  ### This is another lower level subheading
+   ```
+
 * Keep in mind that the UI may change — don't describe it in more detail
   than is needed.
     * Never refer specifically to button colors.

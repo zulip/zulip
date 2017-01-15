@@ -1,6 +1,6 @@
 # View the Markdown source of a message
 
-If one of your peers sends a message, you can view the markdown of the
+If one of your peers sends a message, you can view the Markdown source of the
 message to learn more about formatting tricks or to reuse their markdown
 in a reply.
 
