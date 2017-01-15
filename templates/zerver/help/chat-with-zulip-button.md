@@ -1,11 +1,19 @@
-# **Chat button for zulip**
-* This button redirects user to zulip chat [Zulip Chat Portal for Developers](https://chat.zulip.org).
-* This is displayed in Zulip's [GitHub](https://github.com/zulip/zulip) README.md page.
-* To embed this badge, simply copy and paste the following markdown:
+# Join Zulip chat badge
 
-~~~
-[![Zulip chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://chat.zulip.org)
-~~~
+If you'd like to link to your Zulip organization in your project's
+documentation or GitHub homepage, you can do that with our
+[shields.io](https://shields.io) badge:
+[![](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://chat.zulip.org)
 
-* This badge is dynamically generated, visit shields.io for detail information about customizing it.
-* A static version is available in `/static/images/help/chat_on_zulip.[png|svg]`.
+To embed this badge in a Markdown document, simply copy and paste the
+following Markdown, replacing `https://chat.zulip.org` with the URL of
+your Zulip server:
+
+```
+[![](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://chat.zulip.org)
+```
+
+!!! tip ""
+    This badge is dynamically generated; visit
+    [shields.io](https://shields.io) for detailed information about
+    customizing it.

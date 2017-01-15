@@ -151,8 +151,5 @@ as an **organization**.
 * [Add someone to a stream](/help/add-or-invite-someone-to-a-stream)
 * [Remove someone from a stream](/help/remove-someone-from-a-stream)
 
----
-
-# Include Zulip
-
-* [Chat with zulip button](/help/chat-with-zulip-button)
+## Linking to a Zulip server
+* [Join Zulip chat badge](/help/chat-with-zulip-button)
