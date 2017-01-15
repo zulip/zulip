@@ -273,6 +273,14 @@ function build_stream_sidebar_row(sub) {
         list_item.remove();
     };
 
+
+    self.update_unread_count = function () {
+        var count = unread.num_unread_for_stream(stream_name);
+        update_count_in_dom(list_item, count);
+    };
+
+    self.update_unread_count();
+
     exports.stream_sidebar.set_row(sub.stream_id, self);
 }
 
