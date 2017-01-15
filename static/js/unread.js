@@ -96,6 +96,22 @@ exports.unread_topic_counter = (function () {
         return res;
     };
 
+    self.get_stream_count = function (stream) {
+        var stream_count = 0;
+
+        if (!unread_topics.has(stream)) {
+            return 0;
+        }
+
+        unread_topics.get(stream).each(function (msgs, subject) {
+            if (!muting.is_topic_muted(stream, subject)) {
+                stream_count += msgs.num_items();
+            }
+        });
+
+        return stream_count;
+    };
+
     self.get = function (stream, subject) {
         var num_unread = 0;
         if (unread_topics.has(stream) &&
@@ -227,6 +243,10 @@ exports.get_counts = function () {
     }
 
     return res;
+};
+
+exports.num_unread_for_stream = function (stream) {
+    return exports.unread_topic_counter.get_stream_count(stream);
 };
 
 exports.num_unread_for_subject = function (stream, subject) {
