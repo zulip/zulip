@@ -1,6 +1,6 @@
-# Configure Mobile Push Notifications
+# Configure mobile push Notifications
 
-Follow these steps to change your mobile notification settings.
+{!follow-steps.md!} change your mobile notification settings.
 
 {!go-to-the.md!} [Notifications](/#settings/notifications)
 {!settings.md!}
@@ -9,8 +9,8 @@ Follow these steps to change your mobile notification settings.
 box by **Mobile push notifications when offline** if you
 want mobile notifications only when you're offline.
 
-3. And/or check the box by **Mobile push notifications always (even
-when online)** if you want mobile notifications all of the time.
+    Check the box by **Mobile push notifications always (even when online)** if
+you always want mobile notifications.
 
-4. Click on the **Save Changes** button at the bottom to save your
-settings
+4. Click on the **Save Changes** button at the bottom to save any changes you
+made to your settings.

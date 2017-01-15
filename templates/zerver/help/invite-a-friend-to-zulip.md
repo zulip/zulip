@@ -1,7 +1,7 @@
 # Invite a friend to Zulip
 
 By default, all users in a Zulip organization can invite users to
-their Zulip organization. To do so, simply follow the following steps.
+their Zulip organization. {!follow-steps.md!}  invite a friend to Zulip.
 
 1. Click the cog (<i class="icon-vector-cog"></i>) in the upper
    right corner of the right sidebar.
