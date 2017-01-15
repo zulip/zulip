@@ -291,7 +291,10 @@ exports.get_stream_li = function (stream_name) {
     return get_filter_li('stream', stream_name);
 };
 
-function update_count_in_dom(count_span, value_span, count) {
+function update_count_in_dom(unread_count_elem, count) {
+    var count_span = unread_count_elem.find('.count');
+    var value_span = count_span.find('.value');
+
     if (count === 0) {
         count_span.hide();
         if (count_span.parent().hasClass("subscription_block")) {
@@ -310,9 +313,8 @@ function update_count_in_dom(count_span, value_span, count) {
 }
 
 function set_count(type, name, count) {
-    var count_span = get_filter_li(type, name).find('.count');
-    var value_span = count_span.find('.value');
-    update_count_in_dom(count_span, value_span, count);
+    var unread_count_elem = get_filter_li(type, name);
+    update_count_in_dom(unread_count_elem, count);
 }
 
 function rebuild_recent_topics(stream) {
