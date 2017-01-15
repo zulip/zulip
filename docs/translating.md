@@ -166,7 +166,7 @@ is used to enclose the variables can be changed in
 `/static/js/src/main.js`.
 
 `i18next` also supports plural translations. To support plurals make
-sure your resource file contatins the related keys:
+sure your resource file contains the related keys:
 
 ```
 {

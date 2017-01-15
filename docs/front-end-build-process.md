@@ -21,7 +21,7 @@ the concatenated file.
 ## Webpack/CommonJS modules
 
 New JS written for Zulip can be written as CommonJS modules (bundled
-using [webpack](https://webpack.github.io/), though this will taken care
+using [webpack](https://webpack.github.io/), though this will be taken care
 of automatically whenever `run-dev.py` is running). (CommonJS is the
 same module format that Node uses, so see the [Node
 documentation](https://nodejs.org/docs/latest/api/modules.html) for

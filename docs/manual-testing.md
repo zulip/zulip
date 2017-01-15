@@ -215,7 +215,7 @@ Here are the things to test:
     - Compose (send a message to the stream)
     - Mark as read (scroll back and then have Hamlet send you a message)
     - Mute/unmute (do both)
-    - Unsubcribe (and then go to Stream settings in the gear menu to resubscribe)
+    - Unsubscribe (and then go to Stream settings in the gear menu to resubscribe)
     - Choose custom color (play around with this)
 
 - Topic sidebar menus
@@ -370,7 +370,7 @@ Test subscribe/unsubscribe:
 - Log in as Hamlet and go to his stream settings.
 - As Cordelia, unsubscribe from "public1" using the checkmark in the
   streams settings page.
-- Verify that Hamlet sees that Corderlia has unsubscribed (and the
+- Verify that Hamlet sees that Cordelia has unsubscribed (and the
   subscriber count should decrement).
 - As Cordelia, resubscribe to "public1."
 - Verify Hamlet sees that change.

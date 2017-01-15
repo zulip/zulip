@@ -30,7 +30,7 @@ First a bit of terminology:
 
 If you enter a narrow by clicking on a message group's *recipient bar*
 (stream/topic or private message recipient list at the top of a group
-of messages), Zulip will select the the message you clicked on. This
+of messages), Zulip will select the message you clicked on. This
 provides a nice user experience where you get to see the stuff near
 what you clicked on, and in fact the message you clicked on stays at
 exactly the same scroll position in the window after the narrowing as
@@ -39,7 +39,7 @@ it was at before.
 ### Search or sidebar click: unread/recent matching narrow
 
 If you instead narrow by clicking on something in the left sidebar or
-typing some terms into the search box, Zulip will instead selected on
+typing some terms into the search box, Zulip will instead select
 the first unread message matching that narrow, or if there are none,
 the most recent messages matching that narrow. This provides the nice
 user experience of taking you to the start of the new stuff (with
@@ -102,7 +102,7 @@ use the product.  The algorithm is as follows:
   is marked as read.  So messages are marked as read as you scroll
   down the keyboard when the pointer passes over them.
 
-* If the whitspace at the very bottom of the feed is in view, all
+* If the whitespace at the very bottom of the feed is in view, all
   messages in view are marked as read.
 
 These two simple rules, combined with the pointer logic above, end up

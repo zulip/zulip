@@ -47,7 +47,7 @@ The following processes should be executed as the root user. Run:
 
     sudo -i
 
-### How to enable full-text search against all languages
+### How to enable full-text search across all languages
 
 This section describes how to enable using PGroonga to back the
 full-text search feature.
@@ -73,15 +73,15 @@ And apply the PGroonga migrations:
     ./manage.py migrate pgroonga
 
 Note that the migration may take a long time, and you can't send new
-messages until the migration is finished.
+messages until the migration finishes.
 
 Once the migrations are complete, restart Zulip:
 
     su zulip -c /home/zulip/deployments/current/scripts/restart-server
 
-Now, you can use full-text search against all languages.
+Now, you can use full-text search across all languages.
 
-### How to disable full-text search against all languages
+### How to disable full-text search across all languages
 
 This section describes how to disable full-text search feature based
 on PGroonga.
