@@ -17,7 +17,7 @@ your Zulip account using the following procedure.
 {!go-to-the.md!} [Display settings](/#settings/display-settings)
 {!settings.md!}
 
-2. Next to the **Default Language** heading, select the **[Change]** link.
+2. Next to the **Default language** heading, select the **[Change]** link.
 
 3. After clicking the **[Change]** link, a modal window will appear with all
 foreign languages that Zulip supports along with their percentages of

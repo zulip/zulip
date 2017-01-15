@@ -32,7 +32,7 @@ languages (e.g. what word to translate words like "home" to):
 * [Russian](russian.html)
 * [Spanish](spanish.html)
 
-## Setting Default Language in Zulip
+## Setting Default language in Zulip
 
 Zulip allows you to set the default language through the settings
 page, in the 'Display settings' section. The URL will be
