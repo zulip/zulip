@@ -240,7 +240,7 @@
   "Send __message.sender_full_name__ a private message": "给&quot;__message.sender_full_name__&quot;发送私信",
   "Emoji URL": "表情URL",
   "Only admins may invite": "仅管理员可以邀请",
-  "Add a New Emoji": "添加新的表情",
+  "Add a new emoji": "添加新的表情",
   "It's been a while! Since you were last here, you received <b>__unread_count__</b> new messages.": "好久不见哦！您不在的时候共收到了<b>__unread_count__</b>条新消息。",
   "New alert word": "新建提示词语",
   "If checked, only administrators may create new streams.": "如果勾选，则仅有管理员可以创建新频道。",

@@ -135,7 +135,7 @@
   "Sent by <b>__message.sender_full_name__</b>": "Sent by <b>__message.sender_full_name__</b>", 
   "Email notifications when offline": "Email notifications when offline", 
   "Image": "Image", 
-  "Add a New Emoji": "Add a New Emoji", 
+  "Add a new emoji": "Add a new emoji", 
   "bot": "bot", 
   "<p>Messages in __page_params.product_name__ go to a <b>stream</b> and have a <b>topic</b>.</p>": "<p>Messages in __page_params.product_name__ go to a <b>stream</b> and have a <b>topic</b>.</p>", 
   "Full Bot Name": "Full Bot Name", 

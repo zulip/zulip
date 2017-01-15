@@ -240,7 +240,7 @@
   "Send __message.sender_full_name__ a private message": "__message.sender_full_name__ന് ഒരു വ്യക്തിപരമായ സന്ദേശം അയക്കുക",
   "Emoji URL": "ഇമോജിയുടെ യുആർഎൽ",
   "Only admins may invite": "നടത്തിപ്പുകാർക്ക് മാത്രമേ ക്ഷണിക്കാൻ കഴിയുള്ളൂ",
-  "Add a New Emoji": "പുതിയ ഇമോജി ചേർക്കുക",
+  "Add a new emoji": "പുതിയ ഇമോജി ചേർക്കുക",
   "It's been a while! Since you were last here, you received <b>__unread_count__</b> new messages.": "കണ്ടിട്ട് കൂറേയായല്ലോ! നിങ്ങൾ ഇവിടെ അവസാനമായി വന്നതിനു ശേഷം നിങ്ങൾക്ക് <b>__unread_count__</b> പുതിയ സന്ദേശങ്ങൾ ലഭിച്ചിട്ടുണ്ട്.",
   "New alert word": "New alert word",
   "If checked, only administrators may create new streams.": "If checked, only administrators may create new streams.",

@@ -240,7 +240,7 @@
   "Send __message.sender_full_name__ a private message": "__message.sender_full_name__へプライベートメッセージを送信",
   "Emoji URL": "絵文字のURL",
   "Only admins may invite": "管理者だけが招待できる",
-  "Add a New Emoji": "新しい絵文字を追加",
+  "Add a new emoji": "新しい絵文字を追加",
   "It's been a while! Since you were last here, you received <b>__unread_count__</b> new messages.": "おひさしぶりです！最後にアクセスしてから新しいメッセージが<b>__unread_count__</b>件あります。",
   "New alert word": "新しいアラート単語",
   "If checked, only administrators may create new streams.": "チェックすると管理者だけが新しいストリームを",

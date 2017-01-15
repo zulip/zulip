@@ -240,7 +240,7 @@
   "Send __message.sender_full_name__ a private message": "Send __message.sender_full_name__ a private message",
   "Emoji URL": "Emoji URL",
   "Only admins may invite": "Only admins may invite",
-  "Add a New Emoji": "Neues Emoji hinzufügen",
+  "Add a new emoji": "Neues Emoji hinzufügen",
   "It's been a while! Since you were last here, you received <b>__unread_count__</b> new messages.": "It's been a while! Since you were last here, you received <b>__unread_count__</b> new messages.",
   "New alert word": "New alert word",
   "If checked, only administrators may create new streams.": "If checked, only administrators may create new streams.",
