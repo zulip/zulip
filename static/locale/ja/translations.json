@@ -201,7 +201,7 @@
   "New users must be invited by e-mail!": "新規ユーザーはEメールで招待しなければいけません！",
   "Email": "メール",
   "\n      <p>Please re-enter your password to confirm your identity.\n        (<a href=\"/accounts/password/reset/\" target=\"_blank\">Forgotten it?</a>)</p>\n      ": "\n      <p>確認のためパスワードを再入力してください。\n        （<a href=\"/accounts/password/reset/\" target=\"_blank\">パスワードを忘れましたか？</a>）</p>\n      ",
-  "Your Account": "あなたのアカウント",
+  "Your account": "あなたのアカウント",
   "\n  <p>Lets everyone know about the new stream,<br />\n  even if you don't add them.</p>\n  ": "\n  <p>新しいストリームをみんな（ストリームに追加していない人も含む）に<br />\n知らせましょう。</p>\n  ",
   "Edit bot": "ボットを編集",
   "Updated notification settings!": "通知設定を更新しました！",

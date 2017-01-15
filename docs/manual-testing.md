@@ -400,7 +400,7 @@ Test per-stream options:
 You can modify per-user settings by choosing "Settings" in the gear menu.
 Do these tasks as Cordelia.
 
-- Your Account
+- Your account
     - Change full name (Hamlet should see the name change)
     - Customize avatar
     - Deactivate account (and then log in as Iago to re-activate Cordelia)

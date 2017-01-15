@@ -65,7 +65,7 @@
   "Pin stream <b>__stream.name__</b> to top": "Pin stream <b>__stream.name__</b> to top", 
   "Your Bots": "Your Bots", 
   "It's been a while! Since you were last here, you received <b>__unread_count__</b> new messages.": "It's been a while! Since you were last here, you received <b>__unread_count__</b> new messages.", 
-  "Your Account": "Your Account", 
+  "Your account": "Your account", 
   "\n        <b>Streams</b> are like chat rooms or mailing lists. You can easily\n        <b>join</b>, <b>leave</b>, and <b>make</b> them.\n        ": "\n        <b>Streams</b> are like chat rooms or mailing lists. You can easily\n        <b>join</b>, <b>leave</b>, and <b>make</b> them.\n        ", 
   "Mark all messages in <b>__stream.name__</b> as read": "Mark all messages in <b>__stream.name__</b> as read", 
   "Next": "Next", 

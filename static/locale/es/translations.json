@@ -201,7 +201,7 @@
   "New users must be invited by e-mail!": "New users must be invited by e-mail!",
   "Email": "Email",
   "\n      <p>Please re-enter your password to confirm your identity.\n        (<a href=\"/accounts/password/reset/\" target=\"_blank\">Forgotten it?</a>)</p>\n      ": "\n      <p>Please re-enter your password to confirm your identity.\n        (<a href=\"/accounts/password/reset/\" target=\"_blank\">Forgotten it?</a>)</p>\n      ",
-  "Your Account": "Your Account",
+  "Your account": "Your account",
   "\n  <p>Lets everyone know about the new stream,<br />\n  even if you don't add them.</p>\n  ": "\n  <p>Lets everyone know about the new stream,<br />\n  even if you don't add them.</p>\n  ",
   "Edit bot": "Edit bot",
   "Updated notification settings!": "Updated notification settings!",

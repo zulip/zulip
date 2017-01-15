@@ -201,7 +201,7 @@
   "New users must be invited by e-mail!": "New users must be invited by e-mail!",
   "Email": "ഈമെയിൽ",
   "\n      <p>Please re-enter your password to confirm your identity.\n        (<a href=\"/accounts/password/reset/\" target=\"_blank\">Forgotten it?</a>)</p>\n      ": "\n      <p>Please re-enter your password to confirm your identity.\n        (<a href=\"/accounts/password/reset/\" target=\"_blank\">Forgotten it?</a>)</p>\n      ",
-  "Your Account": "നിങ്ങളുടെ അക്കൗണ്ട്",
+  "Your account": "നിങ്ങളുടെ അക്കൗണ്ട്",
   "\n  <p>Lets everyone know about the new stream,<br />\n  even if you don't add them.</p>\n  ": "\n  <p>Lets everyone know about the new stream,<br />\n  even if you don't add them.</p>\n  ",
   "Edit bot": "ബോട്ടിനു മാറ്റം വരുത്തുക",
   "Updated notification settings!": "Updated notification settings!",

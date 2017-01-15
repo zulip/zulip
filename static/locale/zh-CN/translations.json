@@ -201,7 +201,7 @@
   "New users must be invited by e-mail!": "必须通过邮件邀请新用户",
   "Email": "邮箱",
   "\n      <p>Please re-enter your password to confirm your identity.\n        (<a href=\"/accounts/password/reset/\" target=\"_blank\">Forgotten it?</a>)</p>\n      ": "<p>请重新输入密码以便确认您的身份（<a href=\"/accounts/password/reset/\" target=\"_blank\">忘记了？</a>）</p>\n      ",
-  "Your Account": "用户设置",
+  "Your account": "用户设置",
   "\n  <p>Lets everyone know about the new stream,<br />\n  even if you don't add them.</p>\n  ": "向所有用户广播通知，以便大家及时加入",
   "Edit bot": "编辑机器人",
   "Updated notification settings!": "消息通知设置已更新！",
