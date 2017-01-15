@@ -16,4 +16,4 @@ appear to allow you to change the user's name. Enter the user's new name in
 **Full name**.
 
 4. After editing the name of the user, you can save the changes you made by
-clicking on the **Save Changes** button.
+clicking on the **Save changes** button.

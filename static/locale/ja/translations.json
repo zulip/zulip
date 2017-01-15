@@ -227,7 +227,7 @@
   "Message sent when you were not subscribed": "購読前に送られたメッセージ",
   "You have nothing to send!": "送信するものがありません！",
   "__lang__ is now the default language!  You will need to reload the window for your changes to take effect": "__lang__がデフォルトの言語になりました！この変更を有効にするにはこのウィンドウをリロードする必要があります。",
-  "Save Changes": "変更を保存",
+  "Save changes": "変更を保存",
   "Add New Default Stream": "新しいデフォルトストリームを追加",
   "Compose a message to stream <b>__stream.name__</b>": "<b>__stream.name__</b>ストリームへのメッセージを作成",
   "Customize avatar": "アバターをカスタマイズ",

@@ -6,7 +6,7 @@ you can spell your name exactly how you'd like it to be displayed.
 {!go-to-the.md!} [Your Account](/#settings/your-account)
 {!settings.md!}
 
-2. Change your name in the **Full name** field, and click **Save Changes**.
+2. Change your name in the **Full name** field, and click **Save changes**.
 
 Congratulations! You have updated your name.
 

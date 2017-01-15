@@ -227,7 +227,7 @@
   "Message sent when you were not subscribed": "വരിക്കാരനല്ലാതിരുന്ന സമയത്തു അയച്ച സന്ദേശങ്ങൾ.",
   "You have nothing to send!": "നിങ്ങൾക്ക് അയക്കാൻ ഒന്നുമില്ല!",
   "__lang__ is now the default language!  You will need to reload the window for your changes to take effect": "__lang__ is now the default language!  You will need to reload the window for your changes to take effect",
-  "Save Changes": "Save Changes",
+  "Save changes": "Save changes",
   "Add New Default Stream": "പുതിയ സ്ഥിരമായ ശാഖ ചേർക്കുക",
   "Compose a message to stream <b>__stream.name__</b>": "<b>__stream.name__</b> ശാഖയിലേക്കുള്ള സന്ദേശം രചിക്കുക",
   "Customize avatar": "അവതാർ ഇഷ്ടാനുസൃതമാക്കുക",

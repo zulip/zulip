@@ -28,5 +28,5 @@ the list and clicking the **Add** button.
 5. Once you have made all your changes, exit out of the **Allowed Domains** list
  by clicking the x (<i class="icon-vector-remove"></i>) icon in the top
  right-hand corner of the **Allowed Domains** list. Then scroll down to the
- bottom of the **Organization Settings** panel and click the **Save Changes**
+ bottom of the **Organization Settings** panel and click the **Save changes**
  button to save your changes.
