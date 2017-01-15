@@ -6,6 +6,27 @@ var zoomed_stream = '';
 var previous_sort_order;
 var previous_unpinned_order;
 
+function update_count_in_dom(unread_count_elem, count) {
+    var count_span = unread_count_elem.find('.count');
+    var value_span = count_span.find('.value');
+
+    if (count === 0) {
+        count_span.hide();
+        if (count_span.parent().hasClass("subscription_block")) {
+            count_span.parent(".subscription_block").removeClass("stream-with-count");
+        }
+        value_span.text('');
+        return;
+    }
+
+    count_span.show();
+
+    if (count_span.parent().hasClass("subscription_block")) {
+        count_span.parent(".subscription_block").addClass("stream-with-count");
+    }
+    value_span.text(count);
+}
+
 function filter_streams_by_search(streams) {
     var search_box = $(".stream-list-filter");
 
@@ -290,27 +311,6 @@ exports.redraw_stream_privacy = function (stream_name) {
 exports.get_stream_li = function (stream_name) {
     return get_filter_li('stream', stream_name);
 };
-
-function update_count_in_dom(unread_count_elem, count) {
-    var count_span = unread_count_elem.find('.count');
-    var value_span = count_span.find('.value');
-
-    if (count === 0) {
-        count_span.hide();
-        if (count_span.parent().hasClass("subscription_block")) {
-            count_span.parent(".subscription_block").removeClass("stream-with-count");
-        }
-        value_span.text('');
-        return;
-    }
-
-    count_span.show();
-
-    if (count_span.parent().hasClass("subscription_block")) {
-        count_span.parent(".subscription_block").addClass("stream-with-count");
-    }
-    value_span.text(count);
-}
 
 function set_count(type, name, count) {
     var unread_count_elem = get_filter_li(type, name);
