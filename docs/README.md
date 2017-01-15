@@ -294,6 +294,28 @@ to click a specific icon, such as the [**Down chevron** macro](#down-chevron-dow
     actions, represented by three icons. From the icons that appear, select the
     down chevron (<i class="icon-vector-chevron-down"></i>) icon to reveal an actions dropdown.
     ```
+
+##### **Save changes** `{!save-changes.md!}` macro
+
+* **About:** Used in documentation that requests users to save their changes
+by pressing the **Save changes** button. Usually followed by a phrase
+describing the settings they modified.
+
+* **Contents:**
+    ```.md
+    1. Click on the **Save changes** button to save any changes you made to
+    your
+    ```
+
+* Standard usage and rendering:
+    ```.md
+    {!save-changes.md!} notification settings.
+    ```
+    ```.md
+    1. Click on the **Save changes** button to save any changes you made to
+    your notification settings.
+    ```
+
 ##### **Settings** `{!settings.md!}` macro
 
 * **About:** Links to the **Edit Settings** documentation. Usually preceded by
