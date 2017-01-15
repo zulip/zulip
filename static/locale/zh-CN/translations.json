@@ -68,7 +68,7 @@
   "Choose custom color": "选择自定义颜色",
   "Save": "保存",
   "Yes": "是",
-  "Default Streams": "默认频道",
+  "Default streams": "默认频道",
   "By deactivating <strong><span class=\"user_name\"></span></strong> &lt;<span class=\"email\"></span>&gt;, they will be logged out immediately.": "去激活用户后 <strong><span class=\"user_name\"></span></strong> &lt;<span class=\"email\"></span>&gt;, 这些用户会立即退出登录。",
   "Unsubscribe": "退订",
   "Custom alert words": "提示词设置",

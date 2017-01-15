@@ -68,7 +68,7 @@
   "Choose custom color": "色を選択",
   "Save": "保存",
   "Yes": "はい",
-  "Default Streams": "デフォルトストリーム",
+  "Default streams": "デフォルトストリーム",
   "By deactivating <strong><span class=\"user_name\"></span></strong> &lt;<span class=\"email\"></span>&gt;, they will be logged out immediately.": "<strong><span class=\"user_name\"></span></strong> &lt;<span class=\"email\"></span>&gt;を無効にすると、無効にしたユーザーはすぐにログアウトさせられます。",
   "Unsubscribe": "購読解除",
   "Custom alert words": "カスタムアラート単語",
