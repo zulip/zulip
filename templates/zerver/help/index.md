@@ -158,5 +158,4 @@ as an **organization**.
 ---
 
 # Include Zulip
-
-* [Chat with zulip button](/help/chat-with-zulip-button)
+* [Join Zulip Chat button](/help/chat-with-zulip-button)
