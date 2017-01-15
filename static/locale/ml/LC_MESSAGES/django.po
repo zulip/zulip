@@ -1122,7 +1122,7 @@ msgid "Search"
 msgstr "തിരയുക"
 
 #: templates/zerver/navbar.html:49
-msgid "Manage Streams"
+msgid "Manage streams"
 msgstr "ശാഖകൾ നിയന്ത്രിക്കുക"
 
 #: templates/zerver/navbar.html:54

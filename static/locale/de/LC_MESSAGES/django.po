@@ -1128,7 +1128,7 @@ msgid "Search"
 msgstr "Suche"
 
 #: templates/zerver/navbar.html:49
-msgid "Manage Streams"
+msgid "Manage streams"
 msgstr "Streams verwalten"
 
 #: templates/zerver/navbar.html:54
