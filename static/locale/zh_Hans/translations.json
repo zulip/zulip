@@ -207,7 +207,7 @@
   "User invited successfully.": "User invited successfully.", 
   "Unless I say otherwise for a particular stream, I want:": "Unless I say otherwise for a particular stream, I want:", 
   "Optional": "Optional", 
-  "Add Alert Word": "Add Alert Word", 
+  "Add alert word": "Add alert word", 
   "Nothing to preview": "Nothing to preview", 
   "Error changing settings": "Error changing settings", 
   "If checked, users must be invited in order to join your organization.": "If checked, users must be invited in order to join your organization.", 
@@ -293,7 +293,7 @@
   "Organization settings": "Organization settings", 
   "User list will appear on the __side__ hand side! You will need to reload the window for your changes to take effect.": "User list will appear on the __side__ hand side! You will need to reload the window for your changes to take effect.", 
   "Filter by stream name": "Filter by stream name", 
-  "Custom Alert Words": "Custom Alert Words", 
+  "Custom alert words": "Custom alert words", 
   "Make admin": "Make admin", 
   "Please specify at least one recipient": "Please specify at least one recipient", 
   "left": "left"
