@@ -44,7 +44,7 @@ from zerver.lib.actions import (
 
 from zerver.lib.upload import create_attachment
 
-from zerver.views.messages import create_mirrored_message_users
+from zerver.views.messages import create_mirrored_message_users, get_message_edit_history
 
 import datetime
 import DNS
@@ -976,6 +976,9 @@ class MessagePOSTTest(ZulipTestCase):
         self.assert_json_error(result, "Invalid mirrored realm")
 
 class EditMessageTest(ZulipTestCase):
+    class Request(object):
+        pass
+
     def check_message(self, msg_id, subject=None, content=None):
         # type: (int, Optional[Text], Optional[Text]) -> Message
         msg = Message.objects.get(id=msg_id)
@@ -1093,6 +1096,39 @@ class EditMessageTest(ZulipTestCase):
         self.assert_json_success(result)
         content = Message.objects.filter(id=msg_id).values_list('content', flat = True)[0]
         self.assertEqual(content, "(deleted)")
+
+    def test_edit_message_history(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        msg_id = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
+                                   subject="editing", content="content before edit")
+        new_content = 'content after edit'
+        params_dict = {'message_id': msg_id, 'content': new_content}
+
+        # Edits message content
+        result = self.client_patch("/json/messages/" + str(msg_id), params_dict)
+        self.assert_json_success(result)
+
+        request = self.Request()
+        request.GET = {} # Empty dict
+        request.POST = {'message_id': msg_id}
+
+        user = get_user_profile_by_email('hamlet@zulip.com')
+        message_edit_history = self.client_get("/json/messages/" + str(msg_id) + "/history", {
+            'user': user,
+        })
+
+        import json
+        json_response = json.loads(message_edit_history.content.decode('utf-8'))
+        message_history = json_response['message_history']
+
+        # Checks content of message after edit.
+        self.assertEqual(message_history[0]['prev_rendered_content'],
+                         '<p>content <span class="highlight_text_replaced">after</span> edit</p>')
+
+        # Checks content of message before edit.
+        self.assertEqual(message_history[1]['prev_rendered_content'],
+                         '<p>content before edit</p>')
 
     def test_edit_message_content_limit(self):
         # type: () -> None
