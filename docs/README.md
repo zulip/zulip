@@ -415,7 +415,7 @@ Often followed by the [**Filter streams** macro](#filter-streams-filter-streams-
 ### Style guide
 
 * Names of buttons, fields, etc. should be **bolded** (e.g. **Settings**
-page, **Change Password** button, **Email** field). No quotation marks
+page, **Change password** button, **Email** field). No quotation marks
 should be used.
 
 * All multi-step instructions should be formatted as a series of

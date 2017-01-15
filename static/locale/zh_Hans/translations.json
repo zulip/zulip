@@ -130,7 +130,7 @@
   "Delete": "Delete", 
   "Generate new API key": "Generate new API key", 
   "The recipient __recipient__ is not valid ": "The recipient __recipient__ is not valid ", 
-  "Change Password": "Change Password", 
+  "Change password": "Change password", 
   "A stream needs to have a name": "A stream needs to have a name", 
   "Sent by <b>__message.sender_full_name__</b>": "Sent by <b>__message.sender_full_name__</b>", 
   "Email notifications when offline": "Email notifications when offline", 

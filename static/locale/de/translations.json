@@ -18,7 +18,7 @@
   "New password": "Neues Passwort",
   "Narrow to stream &quot;__display_recipient__&quot;, topic &quot;__subject__&quot;": "Narrow to stream &quot;__display_recipient__&quot;, topic &quot;__subject__&quot;",
   "You can send emails to __page_params.product_name__! Just copy and use this address as an email recipient, and:": "You can send emails to __page_params.product_name__! Just copy and use this address as an email recipient, and:",
-  "Change Password": "Passwort ändern",
+  "Change password": "Passwort ändern",
   "Configure the default streams new users are subscribed to when joining the {{domain}} organization.": "Configure the default streams new users are subscribed to when joining the {{domain}} organization.",
   "Other notifications": "Other notifications",
   "Error checking subscription": "Error checking subscription",

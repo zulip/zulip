@@ -18,7 +18,7 @@
   "New password": "新密码",
   "Narrow to stream &quot;__display_recipient__&quot;, topic &quot;__subject__&quot;": "筛选频道&quot;__display_recipient__&quot;, 话题&quot;__subject__&quot;",
   "You can send emails to __page_params.product_name__! Just copy and use this address as an email recipient, and:": "你可以发送邮件给__page_params.product_name__！就把这个地址拷贝一下作为收件人，然后：",
-  "Change Password": "修改密码",
+  "Change password": "修改密码",
   "Configure the default streams new users are subscribed to when joining the {{domain}} organization.": "为社区{{domain}} 的新用户设置默认订阅的频道",
   "Other notifications": "其它通知",
   "Error checking subscription": "检查订阅关系时发生错误",

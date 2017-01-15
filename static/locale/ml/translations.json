@@ -18,7 +18,7 @@
   "New password": "പുതിയ രഹസ്യവാക്ക്",
   "Narrow to stream &quot;__display_recipient__&quot;, topic &quot;__subject__&quot;": "&quot;__display_recipient__&quot;, topic &quot;__subject__&quot; ശാഖയിലേക്ക് ചുരുക്കുക",
   "You can send emails to __page_params.product_name__! Just copy and use this address as an email recipient, and:": "You can send emails to __page_params.product_name__! Just copy and use this address as an email recipient, and:",
-  "Change Password": "രഹസ്യവാക്ക്  മാറ്റുക",
+  "Change password": "രഹസ്യവാക്ക്  മാറ്റുക",
   "Configure the default streams new users are subscribed to when joining the {{domain}} organization.": "Configure the default streams new users are subscribed to when joining the {{domain}} organization.",
   "Other notifications": "മറ്റു അറിയിപ്പുകൾ",
   "Error checking subscription": "വരിക്കാനയോ എന്ന് ചെക്കുചെയുന്നതിൽ പിശകു സംഭവിചിരിക്കുന്നു",

@@ -4,7 +4,7 @@
 
 {!go-to-the.md!} [Your Account](/#settings/your-account)
 {!settings.md!}
-2. Click the **Change Password** button located underneath your name.
+2. Click the **Change password** button located underneath your name.
 3. You will be asked first to enter your old password, and then to
    enter a new password and to confirm it.
 4. Click **Save Changes** to apply your new password.

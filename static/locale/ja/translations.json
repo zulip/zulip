@@ -18,7 +18,7 @@
   "New password": "新しいパスワード",
   "Narrow to stream &quot;__display_recipient__&quot;, topic &quot;__subject__&quot;": "ストリーム&quot;__display_recipient__&quot;のトピック&quot;__subject__&quot;だけを表示",
   "You can send emails to __page_params.product_name__! Just copy and use this address as an email recipient, and:": "__page_params.product_name__にメールを送れます！このアドレスをコピーしてメールの送信先にしてください。",
-  "Change Password": "パスワード変更",
+  "Change password": "パスワード変更",
   "Configure the default streams new users are subscribed to when joining the {{domain}} organization.": "{{domain}}組織に参加したときに新しいユーザーがデフォルトで購読するストリームを設定します。",
   "Other notifications": "他の通知",
   "Error checking subscription": "購読のチェックに失敗",
