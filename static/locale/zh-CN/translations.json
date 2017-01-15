@@ -228,7 +228,7 @@
   "You have nothing to send!": "消息不能为空！",
   "__lang__ is now the default language!  You will need to reload the window for your changes to take effect": "默认语言修改为\"__lang__\"！需要重新加载页面以生效",
   "Save changes": "Save changes",
-  "Add New Default Stream": "添加默认频道",
+  "Add new default stream": "添加默认频道",
   "Compose a message to stream <b>__stream.name__</b>": "发消息到频道&quot;<b>__stream.name__</b>&quot;",
   "Customize avatar": "自定义头像",
   "Forgotten it?": "忘记了？",

@@ -228,7 +228,7 @@
   "You have nothing to send!": "You have nothing to send!",
   "__lang__ is now the default language!  You will need to reload the window for your changes to take effect": "__lang__ is now the default language!  You will need to reload the window for your changes to take effect",
   "Save changes": "Save changes",
-  "Add New Default Stream": "Add New Default Stream",
+  "Add new default stream": "Add new default stream",
   "Compose a message to stream <b>__stream.name__</b>": "Compose a message to stream <b>__stream.name__</b>",
   "Customize avatar": "Customize avatar",
   "Forgotten it?": "Forgotten it?",
