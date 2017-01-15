@@ -15,7 +15,7 @@ the left sidebar.  Streams can be either:
 {!subscriptions.md!}
 
 3. Click the plus (<i class="icon-vector-plus"></i>) icon to the right of
-the **Filter Streams** input.
+the **Filter streams** input.
 
     !!! warn ""
         **Note:** If you do not see the plus

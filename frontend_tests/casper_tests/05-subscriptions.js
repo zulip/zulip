@@ -140,7 +140,7 @@ casper.waitForText('A stream with this name already exists', function () {
     casper.test.info('Streams should be filtered when typing in the create box');
     casper.click('form#stream_creation_form button.btn.btn-default');
 });
-casper.waitForText('Filter Streams', function () {
+casper.waitForText('Filter streams', function () {
     casper.test.assertSelectorHasText('.stream-row[data-stream-name="Verona"] .stream-name', 'Verona', 'Verona stream exists before filtering');
     casper.test.assertSelectorDoesntHaveText('.stream-row.notdisplayed .stream-name', 'Verona', 'Verona stream shown before filtering');
 });

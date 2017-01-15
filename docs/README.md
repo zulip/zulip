@@ -183,7 +183,7 @@ particular section on the **Administration** page.
     ```.md
     1. [Find the relevant stream](/help/browse-and-join-streams#browse-streams) on the
     [Subscriptions](/#subscriptions) page. You can search for specific streams by entering the
-    name of the stream in the **Filter Streams** input.
+    name of the stream in the **Filter streams** input.
         !!! tip ""
             If you wish to see streams that you aren't subscribed to, click on the
             **All streams** tab; the tab will turn gray upon doing so.
@@ -236,13 +236,13 @@ following content into a step.
 ##### **Filter streams** `{!filter-streams.md!}` macro
 
 * **About:** Explains how to search for specific streams in the
-  **Subscriptions** page using the **Filter Streams** input. Usually preceded by
+  **Subscriptions** page using the **Filter streams** input. Usually preceded by
   the [**Subscriptions** macro](#subscriptions-subscriptions-md-macro).
 
 * **Contents:**
     ```.md
     You can search for specific streams by entering the name of the stream in
-    the **Filter Streams** input.
+    the **Filter streams** input.
     ```
 
 * **Example usage and rendering:**
@@ -253,7 +253,7 @@ following content into a step.
     ```.md
     1. [Find the relevant stream](/help/browse-and-join-streams#browse-streams) on the
     [Subscriptions](/#subscriptions) page. You can search for specific streams by entering the
-    name of the stream in the **Filter Streams** input.
+    name of the stream in the **Filter streams** input.
     ```
 
 ##### **Follow steps** `{!follow-steps.md!}` macro
@@ -409,7 +409,7 @@ Often followed by the [**Filter streams** macro](#filter-streams-filter-streams-
     ```.md
     1. [Find the relevant stream](/help/browse-and-join-streams#browse-streams) on the
     [Subscriptions](/#subscriptions) page. You can search for specific streams by entering the
-    name of the stream in the **Filter Streams** input.
+    name of the stream in the **Filter streams** input.
     ```
 
 ### Style guide
