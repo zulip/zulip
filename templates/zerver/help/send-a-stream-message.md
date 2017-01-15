@@ -1,31 +1,32 @@
 ## Sending a new stream message
 
-![New stream message](/static/images/help/new-stream-message.png)
+You can follow the following steps to send a new stream message.
 
-To submit a new stream message, first click the **New stream message**
-button located at the bottom of your screen.
+1. Click the **New stream message** button(similar to the button shown above)
+located at the bottom of your screen. The message box, similar to the one shown
+below will appear.
 
-![New stream message](/static/images/help/new-stream.png)
-
-A box similar to the one shown in the above image will appear.
-
-In the **Stream** field, input the name of the stream you want your
-message to be located in. When you begin typing a stream name,
-autocomplete suggestions will appear.
-
-![Stream does not exist](/static/images/help/stream-none.png)
-
-If you attempt to input a nonexistent stream name, an error message
+2. In the **Stream** field, input the name of the stream you want your message
+to be located in. When you begin typing a stream name, autocomplete suggestions
 will appear.
 
-Once you have entered your stream name, enter the topic for your
-message in the **Topic** field. Your topic name can be no longer than
-52 characters.
+    !!! warn ""
+        If you attempt to input a nonexistent stream name, an error
+        message will appear.
 
-Finally, enter your message in the box labeled **Compose your message
-here...** or messaging box. You can now send your message to the
-specified stream under the specified topic.
 
-You can always delete your message by clicking the **x**
-(<i class="icon-vector-remove"></i>) icon located at the top-right corner
-of your messaging box.
+3. Enter the topic for your message in the **Topic** field.
+
+    !!! warn ""
+        Your topic name can be no longer than 52 characters.
+
+4. Enter your message in the box labeled **Compose your message here...**, also
+known as the messaging box.
+
+5. Press the **Send** button if the **Press Enter to send** checkbox is not
+selected. If it is, press Enter or return key to send your message.
+
+!!! tip ""
+    You can always close the message box by clicking the **x**
+    (<i class="icon-vector-remove"></i>) icon located at the top-right corner of
+    your messaging box.
