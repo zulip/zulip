@@ -113,7 +113,7 @@ as an **organization**.
 ## Apps
 * Zulip on Mac OS
 * Zulip on Linux
-* Zulip on Windows
+* [Zulip on Windows](/help/zulip-on-windows)
 * [Zulip on Android](/help/zulip-on-android)
 * Zulip on iOS
 * Zulip in a terminal
