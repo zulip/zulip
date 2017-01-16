@@ -34,7 +34,6 @@ class AnalyticsTestCase(TestCase):
         self.name_counter = 100
         # used as defaults in self.assertCountEquals
         self.current_property = None # type: Optional[str]
-        self.current_interval = None # type: Optional[str]
 
     # Lightweight creation of users, streams, and messages
     def create_user(self, **kwargs):
@@ -90,14 +89,11 @@ class AnalyticsTestCase(TestCase):
 
     # kwargs should only ever be a UserProfile or Stream.
     def assertCountEquals(self, table, value, property=None, subgroup=None,
-                          end_time=TIME_ZERO, interval=None, realm=None, **kwargs):
-        # type: (Type[BaseCount], int, Optional[Text], Optional[Text], datetime, Optional[str], Optional[Realm], **models.Model) -> None
+                          end_time=TIME_ZERO, realm=None, **kwargs):
+        # type: (Type[BaseCount], int, Optional[Text], Optional[Text], datetime, Optional[Realm], **models.Model) -> None
         if property is None:
             property = self.current_property
-        if interval is None:
-            interval = self.current_interval
-        queryset = table.objects.filter(property=property, interval=interval, end_time=end_time) \
-                                .filter(**kwargs)
+        queryset = table.objects.filter(property=property, end_time=end_time).filter(**kwargs)
         if table is not InstallationCount:
             if realm is None:
                 realm = self.default_realm
@@ -132,8 +128,7 @@ class AnalyticsTestCase(TestCase):
         defaults = {
             'property': self.current_property,
             'subgroup': None,
-            'end_time': self.TIME_ZERO,
-            'interval': self.current_interval}
+            'end_time': self.TIME_ZERO}
         for values in arg_values:
             kwargs = {} # type: Dict[str, Any]
             for i in range(len(values)):
@@ -174,31 +169,28 @@ class TestProcessCountStat(AnalyticsTestCase):
         # process new stat
         current_time = installation_epoch() + self.HOUR
         count_stat = self.make_dummy_count_stat(current_time)
+        property = count_stat.property
         process_count_stat(count_stat, current_time)
         self.assertFillStateEquals(current_time)
-        self.assertEqual(InstallationCount.objects.filter(property = count_stat.property,
-                                                          interval = CountStat.HOUR).count(), 1)
+        self.assertEqual(InstallationCount.objects.filter(property=property).count(), 1)
 
         # dirty stat
-        FillState.objects.filter(property=count_stat.property).update(state=FillState.STARTED)
+        FillState.objects.filter(property=property).update(state=FillState.STARTED)
         process_count_stat(count_stat, current_time)
         self.assertFillStateEquals(current_time)
-        self.assertEqual(InstallationCount.objects.filter(property = count_stat.property,
-                                                          interval = CountStat.HOUR).count(), 1)
+        self.assertEqual(InstallationCount.objects.filter(property=property).count(), 1)
 
         # clean stat, no update
         process_count_stat(count_stat, current_time)
         self.assertFillStateEquals(current_time)
-        self.assertEqual(InstallationCount.objects.filter(property = count_stat.property,
-                                                          interval = CountStat.HOUR).count(), 1)
+        self.assertEqual(InstallationCount.objects.filter(property=property).count(), 1)
 
         # clean stat, with update
         current_time = current_time + self.HOUR
         count_stat = self.make_dummy_count_stat(current_time)
         process_count_stat(count_stat, current_time)
         self.assertFillStateEquals(current_time)
-        self.assertEqual(InstallationCount.objects.filter(property = count_stat.property,
-                                                          interval = CountStat.HOUR).count(), 2)
+        self.assertEqual(InstallationCount.objects.filter(property=property).count(), 2)
 
 class TestCountStats(AnalyticsTestCase):
     def setUp(self):
@@ -235,7 +227,6 @@ class TestCountStats(AnalyticsTestCase):
         # type: () -> None
         stat = COUNT_STATS['active_users:is_bot']
         self.current_property = stat.property
-        self.current_interval = stat.interval
 
         # To be included
         self.create_user(is_bot=True)
@@ -259,7 +250,6 @@ class TestCountStats(AnalyticsTestCase):
         # type: () -> None
         stat = COUNT_STATS['messages_sent']
         self.current_property = stat.property
-        self.current_interval = stat.interval
 
         # Nothing in this query should be bot-related
         user1 = self.create_user(is_bot=True)
@@ -286,7 +276,6 @@ class TestCountStats(AnalyticsTestCase):
         # type: () -> None
         stat = COUNT_STATS['messages_sent:is_bot']
         self.current_property = stat.property
-        self.current_interval = stat.interval
 
         bot = self.create_user(is_bot=True)
         human1 = self.create_user()
@@ -316,7 +305,6 @@ class TestCountStats(AnalyticsTestCase):
         # type: () -> None
         stat = COUNT_STATS['messages_sent:message_type']
         self.current_property = stat.property
-        self.current_interval = stat.interval
 
         # Nothing currently in this stat that is bot related, but so many of
         # the rest of our stats make the human/bot distinction that one can
@@ -377,7 +365,6 @@ class TestCountStats(AnalyticsTestCase):
         # type: () -> None
         stat = COUNT_STATS['messages_sent:message_type']
         self.current_property = stat.property
-        self.current_interval = stat.interval
 
         user = self.create_user(id=1000)
         user_recipient = Recipient.objects.create(type_id=user.id, type=Recipient.PERSONAL)
@@ -397,7 +384,6 @@ class TestCountStats(AnalyticsTestCase):
         # type: () -> None
         stat = COUNT_STATS['messages_sent:client']
         self.current_property = stat.property
-        self.current_interval = stat.interval
 
         user1 = self.create_user(is_bot=True)
         user2 = self.create_user()
@@ -434,7 +420,6 @@ class TestCountStats(AnalyticsTestCase):
         # type: () -> None
         stat = COUNT_STATS['messages_sent_to_stream:is_bot']
         self.current_property = stat.property
-        self.current_interval = stat.interval
 
         bot = self.create_user(is_bot=True)
         human1 = self.create_user()
