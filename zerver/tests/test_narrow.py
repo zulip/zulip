@@ -694,6 +694,19 @@ class GetOldMessagesTest(ZulipTestCase):
             meeting_message['match_content'],
             '<p>I am hungry!</p>')
 
+        # Should not crash when multiple search operands are present
+        multi_search_narrow = [
+            dict(operator='search', operand='discuss'),
+            dict(operator='search', operand='after'),
+        ]
+        multi_search_result = self.get_and_check_messages(dict(
+            narrow=ujson.dumps(multi_search_narrow),
+            anchor=0,
+            num_after=10,
+        )) # type: Dict[str, Dict]
+        self.assertEqual(len(multi_search_result['messages']), 1)
+        self.assertEqual(multi_search_result['messages'][0]['match_content'], '<p><span class="highlight">discuss</span> lunch <span class="highlight">after</span> lunch</p>')
+
     @override_settings(USING_PGROONGA=True)
     def test_get_old_messages_with_search_pgroonga(self):
         # type: () -> None
@@ -753,6 +766,19 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(
             english_message['match_content'],
             u'<p>I want to go to <span class="highlight">日本</span>!</p>')
+
+        # Should not crash when multiple search operands are present
+        multi_search_narrow = [
+            dict(operator='search', operand='can'),
+            dict(operator='search', operand='speak'),
+        ]
+        multi_search_result = self.get_and_check_messages(dict(
+            narrow=ujson.dumps(multi_search_narrow),
+            anchor=0,
+            num_after=10,
+        )) # type: Dict[str, Dict]
+        self.assertEqual(len(multi_search_result['messages']), 1)
+        self.assertEqual(multi_search_result['messages'][0]['match_content'], '<p><span class="highlight">Can</span> you <span class="highlight">speak</span> Japanese?</p>')
 
     def test_get_old_messages_with_only_searching_anchor(self):
         # type: () -> None
