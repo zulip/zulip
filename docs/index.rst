@@ -127,3 +127,4 @@ Contents:
    logging
    release-checklist
    README
+   user-docs
