@@ -246,32 +246,6 @@ class TestCountStats(AnalyticsTestCase):
         self.assertTableState(UserCount, [], [])
         self.assertTableState(StreamCount, [], [])
 
-    def test_messages_sent(self):
-        # type: () -> None
-        stat = COUNT_STATS['messages_sent:hour']
-        self.current_property = stat.property
-
-        # Nothing in this query should be bot-related
-        user1 = self.create_user(is_bot=True)
-        user2 = self.create_user()
-        recipient_user2 = Recipient.objects.create(type_id=user2.id, type=Recipient.PERSONAL)
-
-        recipient_stream = self.create_stream_with_recipient()[1]
-        recipient_huddle = self.create_huddle_with_recipient()[1]
-
-        self.create_message(user1, recipient_user2)
-        self.create_message(user2, recipient_user2)
-        self.create_message(user2, recipient_stream)
-        self.create_message(user2, recipient_huddle)
-
-        do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
-
-        self.assertTableState(UserCount, ['value', 'user'],
-                              [[1, user1], [3, user2], [1, self.hourly_user]])
-        self.assertTableState(RealmCount, ['value', 'realm'], [[4], [1, self.second_realm]])
-        self.assertTableState(InstallationCount, ['value'], [[5]])
-        self.assertTableState(StreamCount, [], [])
-
     def test_messages_sent_by_is_bot(self):
         # type: () -> None
         stat = COUNT_STATS['messages_sent:is_bot:hour']
