@@ -105,7 +105,7 @@ def get_totals_by_subgroup(property, table, key_id):
 
 def get_number_of_humans(realm, start, end, min_length=None):
     # type: (Realm, datetime, datetime, Optional[int]) -> Dict[str, Any]
-    stat = COUNT_STATS['active_users:is_bot']
+    stat = COUNT_STATS['active_users:is_bot:day']
     end_times, values = get_time_series_by_subgroup(
         stat, RealmCount, realm.id, ['false'], start, end, min_length)
     return {'end_times': end_times, 'humans': values['false'],
@@ -113,7 +113,7 @@ def get_number_of_humans(realm, start, end, min_length=None):
 
 def get_messages_sent_by_humans_and_bots(realm, start, end, min_length=None):
     # type: (Realm, datetime, datetime, Optional[int]) -> Dict[str, Any]
-    stat = COUNT_STATS['messages_sent:is_bot']
+    stat = COUNT_STATS['messages_sent:is_bot:day']
     end_times, values = get_time_series_by_subgroup(
         stat, RealmCount, realm.id, ['false', 'true'], start, end, min_length)
     return {'end_times': end_times, 'humans': values['false'], 'bots': values['true'],
@@ -121,7 +121,7 @@ def get_messages_sent_by_humans_and_bots(realm, start, end, min_length=None):
 
 def get_messages_sent_by_message_type(user):
     # type: (UserProfile) -> Dict[str, List[Any]]
-    property = 'messages_sent:message_type'
+    property = 'messages_sent:message_type:day'
     user_data = get_totals_by_subgroup(property, UserCount, user.id)
     realm_data = get_totals_by_subgroup(property, RealmCount, user.realm.id)
     message_types = ['public_stream', 'private_stream', 'private_message']
@@ -131,7 +131,7 @@ def get_messages_sent_by_message_type(user):
 
 def get_messages_sent_by_client(user):
     # type: (UserProfile) -> Dict[str, List[Any]]
-    property = 'messages_sent:client'
+    property = 'messages_sent:client:day'
     user_data = get_totals_by_subgroup(property, UserCount, user.id)
     realm_data = get_totals_by_subgroup(property, RealmCount, user.realm.id)
     client_ids = sorted(realm_data.keys())
