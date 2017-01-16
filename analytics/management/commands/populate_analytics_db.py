@@ -17,32 +17,23 @@ from typing import Any, Text
 class Command(BaseCommand):
     help = """Populates analytics tables with randomly generated data."""
 
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
-        parser.add_argument('--clear-existing',
-                            action='store_true',
-                            help="Clear analytics tables before populating. If you run "
-                            "this twice with this flag, the main change will be in the timestamps "
-                            "of all the created database objects.")
-
     def create_user(self, email, full_name, is_staff, date_joined, realm):
         # type: (Text, Text, Text, bool, datetime, Realm) -> UserProfile
-        return UserProfile.objects.get_or_create(
+        return UserProfile.objects.create(
             email=email, full_name=full_name, is_staff=is_staff,
             realm=realm, short_name=full_name, pointer=-1, last_pointer_updater='none',
-            api_key='42', defaults={'date_joined': date_joined})[0]
+            api_key='42', date_joined=date_joined)
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
-        if options['clear_existing']:
-            do_drop_all_analytics_tables()
-            # I believe this also deletes any objects with this realm as a foreign key
-            Realm.objects.filter(string_id='analytics').delete()
+        do_drop_all_analytics_tables()
+        # I believe this also deletes any objects with this realm as a foreign key
+        Realm.objects.filter(string_id='analytics').delete()
 
         installation_time = timezone.now() - timedelta(days=100)
-        realm, created = Realm.objects.get_or_create(
+        realm = Realm.objects.create(
             string_id='analytics', name='Analytics', domain='analytics.ds',
-            defaults={'date_created': installation_time})
+            date_created=installation_time)
         self.create_user('shylock@analytics.ds', 'Shylock', True, installation_time, realm)
 
         stat = COUNT_STATS['active_users:is_bot']
