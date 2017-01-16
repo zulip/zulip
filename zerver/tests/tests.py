@@ -378,6 +378,14 @@ class PermissionTest(ZulipTestCase):
         result = self.client_patch('/json/users/hamlet@zulip.com', req)
         self.assert_json_error(result, 'Name too long!')
 
+    def test_admin_cannot_set_full_name_with_invalid_characters(self):
+        # type: () -> None
+        new_name = 'Opheli*'
+        self.login('iago@zulip.com')
+        req = dict(full_name=ujson.dumps(new_name))
+        result = self.client_patch('/json/users/hamlet@zulip.com', req)
+        self.assert_json_error(result, 'Invalid characters in name!')
+
 class ZephyrTest(ZulipTestCase):
     def test_webathena_kerberos_login(self):
         # type: () -> None
@@ -1614,6 +1622,16 @@ class ChangeSettingsTest(ZulipTestCase):
         json_result = self.client_post("/json/settings/change",
                                        dict(full_name='x' * 1000))
         self.assert_json_error(json_result, 'Name too long!')
+
+    def test_illegal_characters_in_name_changes(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        self.login(email)
+
+        # Now try a name with invalid characters
+        json_result = self.client_post("/json/settings/change",
+                                       dict(full_name='Opheli*'))
+        self.assert_json_error(json_result, 'Invalid characters in name!')
 
     # This is basically a don't-explode test.
     def test_notify_settings(self):

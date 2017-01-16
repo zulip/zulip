@@ -105,6 +105,8 @@ def update_user_backend(request, user_profile, email,
         new_full_name = full_name.strip()
         if len(new_full_name) > UserProfile.MAX_NAME_LENGTH:
             return json_error(_("Name too long!"))
+        elif list(set(new_full_name).intersection(UserProfile.NAME_INVALID_CHARS)):
+            return json_error(_("Invalid characters in name!"))
         do_change_full_name(target, new_full_name)
 
     return json_success()
