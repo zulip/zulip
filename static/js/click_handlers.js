@@ -264,7 +264,7 @@ $(function () {
     // HOME
 
     // Capture both the left-sidebar Home click and the tab breadcrumb Home
-    $(document).on('click', "li[data-name='home']", function (e) {
+    $(document).on('click', ".home-link[data-name='home']", function (e) {
         ui.change_tab_to('#home');
         narrow.deactivate();
         // We need to maybe scroll to the selected message
