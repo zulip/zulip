@@ -82,7 +82,7 @@ class Command(BaseCommand):
         realm_data = {None: self.generate_fixture_data(stat, 50, 30, 5, .6, 3)}
         insert_fixture_data(stat, realm_data, RealmCount)
 
-        stat = COUNT_STATS['messages_sent:is_bot:day']
+        stat = COUNT_STATS['messages_sent:is_bot:hour']
         user_data = {'false': self.generate_fixture_data(stat, 2, 1, 1.5, .6, 8)}
         insert_fixture_data(stat, user_data, UserCount)
         realm_data = {'false': self.generate_fixture_data(stat, 35, 15, 6, .6, 4),
