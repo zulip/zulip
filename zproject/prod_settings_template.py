@@ -123,7 +123,12 @@ SESSION_COOKIE_AGE = 60 * 60 * 24 * 7 * 2 # 2 weeks
 
 # Controls password strength requirements
 PASSWORD_MIN_LENGTH = 6
-PASSWORD_MIN_ZXCVBN_QUALITY = 0.4 # 0 to disable
+# zxcvbn estimates that it would take e^(quality * 22) seconds to crack the
+# password if the attacker somehow gets hold of the hash. E.g. with quality
+# equal to 0.4 (the default), it would take them ~6634 seconds or under
+# two hours to crack (assuming they were able to get access to the hash in
+# the first place, which would probably mean you have a bigger problem).
+PASSWORD_MIN_ZXCVBN_QUALITY = 0.4
 
 # Controls whether or not there is a feedback button in the UI.
 ENABLE_FEEDBACK = False
