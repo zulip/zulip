@@ -48,9 +48,11 @@ class Command(BaseCommand):
         stat = COUNT_STATS['active_users:is_bot']
         if not RealmCount.objects.filter(property=stat.property).exists():
             last_end_time = floor_to_day(timezone.now())
-            human_data = generate_time_series_data(100, 30, 10, growth=5, autocorrelation=.5,
+            human_data = generate_time_series_data(days=100, business_hours_base=30,
+                                                   non_business_hours_base=10, growth=5, autocorrelation=.5,
                                                    spikiness=3, frequency=CountStat.DAY)
-            bot_data = generate_time_series_data(100, 20, 20, growth=3, frequency=CountStat.DAY)
+            bot_data = generate_time_series_data(days=100, business_hours_base=20,
+                                                 non_business_hours_base=20, growth=3, frequency=CountStat.DAY)
             bulk_create_realmcount(stat.property, 'false', last_end_time,
                                    stat.frequency, stat.interval, human_data, realm)
             bulk_create_realmcount(stat.property, 'true', last_end_time,
