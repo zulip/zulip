@@ -66,11 +66,3 @@ def generate_time_series_data(days=100, business_hours_base=10, non_business_hou
         for i in range(1, length):
             values[i] = values[i-1] + values[i]
     return [max(v, 0) for v in values]
-
-def bulk_create_realmcount(property, subgroup, last_end_time, frequency, interval, values, realm):
-    # type: (str, str, datetime, str, str, List[int], Realm) -> None
-    end_times = time_range(last_end_time, last_end_time, frequency, len(values))
-    RealmCount.objects.bulk_create([
-        RealmCount(realm=realm, property=property, subgroup=subgroup, end_time=end_time,
-                   interval=interval, value=value)
-        for end_time, value in zip(end_times, values) if value != 0])
