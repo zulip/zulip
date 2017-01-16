@@ -152,6 +152,19 @@ LOUD = dict(_out=sys.stdout, _err=sys.stderr)
 
 user_id = os.getuid()
 
+def setup_shell_profile(shell_profile):
+    # type: (str) -> None
+    source_activate_command = "source %s\n" % (os.path.join(VENV_PATH, "bin", "activate"),)
+    shell_profile_path = os.path.expanduser(shell_profile)
+
+    if os.path.exists(shell_profile_path):
+        with open(shell_profile_path, 'a+') as shell_profile_file:
+            if source_activate_command not in shell_profile_file.read():
+                shell_profile_file.writelines(source_activate_command)
+    else:
+        with open(shell_profile_path, 'w') as shell_profile_file:
+            shell_profile_file.writelines(source_activate_command)
+
 def main(options):
     # type: (Any) -> int
 
@@ -180,18 +193,11 @@ def main(options):
         from tools.setup import setup_venvs
         setup_venvs.main()
 
-    # Put Python2 virtualenv activation in our .bash_profile.
-    with open(os.path.expanduser('~/.bash_profile'), 'w+') as bash_profile:
-        bash_profile.writelines([
-            "source .bashrc\n",
-            "source %s\n" % (os.path.join(VENV_PATH, "bin", "activate"),),
-        ])
+    # Put Python2 virtualenv activation in .bash_profile.
+    setup_shell_profile('~/.bash_profile')
 
     # Put Python2 virtualenv activation in .zprofile (for Zsh users).
-    with open(os.path.expanduser('~/.zprofile'), 'w') as zprofile:
-        zprofile.writelines([
-            "source %s\n" % (os.path.join(VENV_PATH, "bin", "activate"),),
-        ])
+    setup_shell_profile('~/.zprofile')
 
     run(["sudo", "cp", REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH])
 
