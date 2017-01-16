@@ -1,6 +1,6 @@
 <ul id="tab_list">
 {{#each tabs}}
-  <li class="{{active}} {{cls}}"  {{#if data}}data-name="{{data}}"{{/if}}>
+  <li class="{{active}} {{cls}} {{#if home}}home-link{{/if}}" {{#if data}}data-name="{{data}}"{{/if}}>
     {{#if icon}}
       <i class="icon-vector-narrow icon-vector-small"></i>
     {{/if}}
