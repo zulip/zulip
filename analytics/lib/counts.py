@@ -338,8 +338,6 @@ COUNT_STATS = {
     'active_users:is_bot:day': CountStat(
         'active_users:is_bot:day', zerver_count_user_by_realm, {'is_active': True},
         (UserProfile, 'is_bot'), CountStat.DAY, True),
-    'messages_sent:hour': CountStat(
-        'messages_sent:hour', zerver_count_message_by_user, {}, None, CountStat.HOUR, False),
     'messages_sent:is_bot:hour': CountStat(
         'messages_sent:is_bot:hour', zerver_count_message_by_user, {},
         (UserProfile, 'is_bot'), CountStat.HOUR, False),
