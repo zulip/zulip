@@ -3484,6 +3484,33 @@ def user_email_is_unique(email):
     except UserProfile.DoesNotExist:
         pass
 
+def validate_email(user_profile, email):
+    # type: (UserProfile, Text) -> Tuple[Optional[str], Optional[str]]
+    try:
+        validators.validate_email(email)
+    except ValidationError:
+        return _("Invalid address."), None
+
+    if not email_allowed_for_realm(email, user_profile.realm):
+        return _("Outside your domain."), None
+
+    try:
+        existing_user_profile = get_user_profile_by_email(email)
+    except UserProfile.DoesNotExist:
+        existing_user_profile = None
+
+    try:
+        if existing_user_profile is not None and existing_user_profile.is_mirror_dummy:
+            # Mirror dummy users to be activated must be inactive
+            is_inactive(email)
+        else:
+            # Other users should not already exist at all.
+            user_email_is_unique(email)
+    except ValidationError:
+        return None, _("Already has an account.")
+
+    return None, None
+
 def do_invite_users(user_profile, invitee_emails, streams):
     # type: (UserProfile, SizedTextIterable, Iterable[Stream]) -> Tuple[Optional[str], Dict[str, Union[List[Tuple[Text, str]], bool]]]
     validated_emails = [] # type: List[Text]
@@ -3497,32 +3524,14 @@ def do_invite_users(user_profile, invitee_emails, streams):
         if email == '':
             continue
 
-        try:
-            validators.validate_email(email)
-        except ValidationError:
-            errors.append((email, _("Invalid address.")))
-            continue
+        email_error, email_skipped = validate_email(user_profile, email)
 
-        if not email_allowed_for_realm(email, user_profile.realm):
-            errors.append((email, _("Outside your domain.")))
-            continue
-
-        try:
-            existing_user_profile = get_user_profile_by_email(email)
-        except UserProfile.DoesNotExist:
-            existing_user_profile = None
-        try:
-            if existing_user_profile is not None and existing_user_profile.is_mirror_dummy:
-                # Mirror dummy users to be activated must be inactive
-                is_inactive(email)
-            else:
-                # Other users should not already exist at all.
-                user_email_is_unique(email)
-        except ValidationError:
-            skipped.append((email, _("Already has an account.")))
-            continue
-
-        validated_emails.append(email)
+        if not (email_error or email_skipped):
+            validated_emails.append(email)
+        elif email_error:
+            errors.append((email, email_error))
+        elif email_skipped:
+            skipped.append((email, email_skipped))
 
     if errors:
         ret_error = _("Some emails did not validate, so we didn't send any invitations.")
