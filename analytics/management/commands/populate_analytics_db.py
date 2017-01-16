@@ -67,14 +67,14 @@ class Command(BaseCommand):
                           interval=stat.interval, value=value, **id_args)
                     for end_time, value in zip(end_times, values) if value != 0])
 
-        stat = COUNT_STATS['active_users:is_bot']
+        stat = COUNT_STATS['active_users:is_bot:day']
         realm_data = {
             'false': self.generate_fixture_data(stat, .1, .03, 3, .5, 3),
             'true': self.generate_fixture_data(stat, .01, 0, 1, 0, 1)
         } # type: Dict[Optional[str], List[int]]
         insert_fixture_data(stat, realm_data, RealmCount)
 
-        stat = COUNT_STATS['messages_sent']
+        stat = COUNT_STATS['messages_sent:hour']
         user_data = {
             None: self.generate_fixture_data(stat, 2, 1, 1.5, .6, 8, holiday_rate=.1)
         } # type: Dict[Optional[str], List[int]]
@@ -82,14 +82,14 @@ class Command(BaseCommand):
         realm_data = {None: self.generate_fixture_data(stat, 50, 30, 5, .6, 3)}
         insert_fixture_data(stat, realm_data, RealmCount)
 
-        stat = COUNT_STATS['messages_sent:is_bot']
+        stat = COUNT_STATS['messages_sent:is_bot:day']
         user_data = {'false': self.generate_fixture_data(stat, 2, 1, 1.5, .6, 8)}
         insert_fixture_data(stat, user_data, UserCount)
         realm_data = {'false': self.generate_fixture_data(stat, 35, 15, 6, .6, 4),
                       'true': self.generate_fixture_data(stat, 15, 15, 3, .4, 2)}
         insert_fixture_data(stat, realm_data, RealmCount)
 
-        stat = COUNT_STATS['messages_sent:message_type']
+        stat = COUNT_STATS['messages_sent:message_type:day']
         user_data = {
             'public_stream': self.generate_fixture_data(stat, 1.5, 1, 3, .6, 8),
             'private_message': self.generate_fixture_data(stat, .5, .3, 1, .6, 8)}
@@ -109,7 +109,7 @@ class Command(BaseCommand):
         barnowl_ = Client.objects.create(name='barnowl_')
         plan9_ = Client.objects.create(name='plan9_')
 
-        stat = COUNT_STATS['messages_sent:client']
+        stat = COUNT_STATS['messages_sent:client:day']
         user_data = {
             website_.id: self.generate_fixture_data(stat, 2, 1, 1.5, .6, 8),
             barnowl_.id: self.generate_fixture_data(stat, 0, .3, 1.5, .6, 8)}

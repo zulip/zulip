@@ -225,7 +225,7 @@ class TestCountStats(AnalyticsTestCase):
 
     def test_active_users_by_is_bot(self):
         # type: () -> None
-        stat = COUNT_STATS['active_users:is_bot']
+        stat = COUNT_STATS['active_users:is_bot:day']
         self.current_property = stat.property
 
         # To be included
@@ -248,7 +248,7 @@ class TestCountStats(AnalyticsTestCase):
 
     def test_messages_sent(self):
         # type: () -> None
-        stat = COUNT_STATS['messages_sent']
+        stat = COUNT_STATS['messages_sent:hour']
         self.current_property = stat.property
 
         # Nothing in this query should be bot-related
@@ -274,7 +274,7 @@ class TestCountStats(AnalyticsTestCase):
 
     def test_messages_sent_by_is_bot(self):
         # type: () -> None
-        stat = COUNT_STATS['messages_sent:is_bot']
+        stat = COUNT_STATS['messages_sent:is_bot:day']
         self.current_property = stat.property
 
         bot = self.create_user(is_bot=True)
@@ -303,7 +303,7 @@ class TestCountStats(AnalyticsTestCase):
 
     def test_messages_sent_by_message_type(self):
         # type: () -> None
-        stat = COUNT_STATS['messages_sent:message_type']
+        stat = COUNT_STATS['messages_sent:message_type:day']
         self.current_property = stat.property
 
         # Nothing currently in this stat that is bot related, but so many of
@@ -363,7 +363,7 @@ class TestCountStats(AnalyticsTestCase):
 
     def test_messages_sent_to_recipients_with_same_id(self):
         # type: () -> None
-        stat = COUNT_STATS['messages_sent:message_type']
+        stat = COUNT_STATS['messages_sent:message_type:day']
         self.current_property = stat.property
 
         user = self.create_user(id=1000)
@@ -382,7 +382,7 @@ class TestCountStats(AnalyticsTestCase):
 
     def test_messages_sent_by_client(self):
         # type: () -> None
-        stat = COUNT_STATS['messages_sent:client']
+        stat = COUNT_STATS['messages_sent:client:day']
         self.current_property = stat.property
 
         user1 = self.create_user(is_bot=True)
@@ -418,7 +418,7 @@ class TestCountStats(AnalyticsTestCase):
 
     def test_messages_sent_to_stream_by_is_bot(self):
         # type: () -> None
-        stat = COUNT_STATS['messages_sent_to_stream:is_bot']
+        stat = COUNT_STATS['messages_sent_to_stream:is_bot:hour']
         self.current_property = stat.property
 
         bot = self.create_user(is_bot=True)
