@@ -147,11 +147,11 @@ is also borrowed from the WeChat.
 * Deactivate/Reactivate - **禁用/启用(帐户)，关闭/激活(社区)**
 
 When applied to a user account, translated as "禁用/启用
-(Disable/Enable)", for example "Deactivated Users" to "禁用的用户";
+(Disable/Enable)", for example "Deactivated users" to "禁用的用户";
 when applied to a realm, translated as "关闭/激活(Close/Open)", for
 example "Your realm has been deactivated." to "您的社区已关闭".
 
-当应用于用户帐户时，选择翻译为“禁用/启用”，例如“Deactivated Users”翻译
+当应用于用户帐户时，选择翻译为“禁用/启用”，例如“Deactivated users”翻译
 为“禁用的用户”；当应用于“社区”（Realm）时，选择翻译为“关闭/激活”，如
 “Your realm has been deactivated.”翻译为“您的社区已关闭”。
 

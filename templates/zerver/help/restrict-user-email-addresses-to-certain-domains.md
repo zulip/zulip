@@ -14,19 +14,21 @@ We allow administrators to block new users from signing up who are not in
         The allowed domains will be listed after the **Users restricted to**
          next to the checkbox.
 
-3. Domains can be added to the allowed domains list by clicking on the **Change domains**
-link next to the checkbox to reveal the **Allowed Domains** list. You
-can then add a domain to the list by typing the domain into the box underneath
-the list and clicking the **Add** button.
+3. Domains can be added to the allowed domains list by clicking on the
+**Change domains** link next to the checkbox to reveal the **Allowed
+domains** list.
+
+4. You can then add a domain to the list by typing the domain into the box
+underneath the list and clicking the **Add** button.
 
     !!! tip ""
-        Domains can be deleted from the **Allowed Domains** list by clicking the
+        Domains can be deleted from the **Allowed domains** list by clicking the
         **Delete** button next to a domain on the list. However, you must have
         at least one allowed domain if the **Users restricted to** option is
         enabled.
 
-5. Once you have made all your changes, exit out of the **Allowed Domains** list
+5. Once you have made all your changes, exit out of the **Allowed domains** list
  by clicking the x (<i class="icon-vector-remove"></i>) icon in the top
- right-hand corner of the **Allowed Domains** list. Then scroll down to the
- bottom of the **Organization Settings** panel and click the **Save Changes**
+ right-hand corner of the **Allowed domains** list. Then scroll down to the
+ bottom of the **Organization Settings** panel and click the **Save changes**
  button to save your changes.

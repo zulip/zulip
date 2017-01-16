@@ -6,7 +6,7 @@ custom emojis to your organization for other members to use.
 {!go-to-the.md!} [Emoji Settings](/#administration/emoji-settings)
 {!admin.md!}
 
-5. In the green section labeled **Add a New Emoji**, find the **Emoji name** and
+5. In the green section labeled **Add a new emoji**, find the **Emoji name** and
 **Emoji URL** fields.
 
     * In the **Emoji name** field, enter a phrase for your emoji. Only
@@ -28,13 +28,13 @@ click the blue **Add emoji** button to add your custom emoji to your
 Zulip organization.
 
 7. Upon clicking the **Add emoji** button, you will receive a notification
-labeled **Custom emoji added!** in the **Add a New Emoji** section, confirming
+labeled **Custom emoji added!** in the **Add a new emoji** section, confirming
 the success of the addition of your custom emoji to your organization.
 
     ![Custom emoji success](/static/images/help/custom-emoji-success.png)
 
     The emoji's information and settings will also be displayed above the
-    **Add a New Emoji** section. You can choose to delete any custom emojis in
+    **Add a new emoji** section. You can choose to delete any custom emojis in
     your organization through this panel.
 
 8. Users in your organization can now use your emoji in their messages.
