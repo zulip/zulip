@@ -105,7 +105,7 @@ class ReactionMessageIDTest(ZulipTestCase):
 
         result = self.client_post("/api/v1/messages", {"type": "private",
                                                        "content": "Test message",
-                                                       "to": pm_recipient},
+                                                       "to": ujson.dumps(pm_recipient.split(','))},
                                   **self.api_auth(pm_sender))
         self.assert_json_success(result)
         content = ujson.loads(result.content)
@@ -126,7 +126,7 @@ class ReactionTest(ZulipTestCase):
 
         pm = self.client_post("/api/v1/messages", {"type": "private",
                                                    "content": "Test message",
-                                                   "to": pm_recipient},
+                                                   "to": ujson.dumps(pm_recipient.split(','))},
                               **self.api_auth(pm_sender))
         self.assert_json_success(pm)
         content = ujson.loads(pm.content)
@@ -150,7 +150,7 @@ class ReactionTest(ZulipTestCase):
 
         pm = self.client_post("/api/v1/messages", {"type": "private",
                                                    "content": "Test message",
-                                                   "to": pm_recipient},
+                                                   "to": ujson.dumps(pm_recipient.split(','))},
                               **self.api_auth(pm_sender))
         self.assert_json_success(pm)
         content = ujson.loads(pm.content)
@@ -181,7 +181,7 @@ class ReactionEventTest(ZulipTestCase):
 
         result = self.client_post("/api/v1/messages", {"type": "private",
                                                        "content": "Test message",
-                                                       "to": pm_recipient},
+                                                       "to": ujson.dumps(pm_recipient.split(','))},
                                   **self.api_auth(pm_sender))
         self.assert_json_success(result)
         content = ujson.loads(result.content)
@@ -219,7 +219,7 @@ class ReactionEventTest(ZulipTestCase):
 
         result = self.client_post("/api/v1/messages", {"type": "private",
                                                        "content": "Test message",
-                                                       "to": pm_recipient},
+                                                       "to": ujson.dumps(pm_recipient.split(','))},
                                   **self.api_auth(pm_sender))
         self.assert_json_success(result)
         content = ujson.loads(result.content)
