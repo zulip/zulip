@@ -56,9 +56,7 @@ def generate_time_series_data(length, business_hours_base, non_business_hours_ba
     if is_gauge:
         for i in range(1, length):
             values[i] = values[i-1] + values[i]
-    else:
-        values = [max(v, 0) for v in values]
-    return values
+    return [max(v, 0) for v in values]
 
 def bulk_create_realmcount(property, subgroup, last_end_time, frequency, interval, values, realm):
     # type: (str, str, datetime, str, str, List[int], Realm) -> None
