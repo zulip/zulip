@@ -421,12 +421,13 @@ class TestCountStats(AnalyticsTestCase):
         self.assertTableState(UserCount, ['value', 'subgroup', 'user'],
                               [[2, website_client_id, user1],
                                [1, client2_id, user1], [2, client2_id, user2],
-                               [1, website_client_id, self.hourly_user]])
+                               [1, website_client_id, self.hourly_user],
+                               [1, website_client_id, self.daily_user]])
         self.assertTableState(RealmCount, ['value', 'subgroup', 'realm'],
                               [[2, website_client_id], [3, client2_id],
-                               [1, website_client_id, self.second_realm]])
+                               [2, website_client_id, self.second_realm]])
         self.assertTableState(InstallationCount, ['value', 'subgroup'],
-                              [[3, website_client_id], [3, client2_id]])
+                              [[4, website_client_id], [3, client2_id]])
         self.assertTableState(StreamCount, [], [])
 
     def test_messages_sent_to_stream_by_is_bot(self):

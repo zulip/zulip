@@ -350,7 +350,7 @@ COUNT_STATS = {
                                             zerver_count_message_type_by_user, {},
                                             None, CountStat.DAY, False),
     'messages_sent:client': CountStat('messages_sent:client', zerver_count_message_by_user, {},
-                                      (Message, 'sending_client_id'), CountStat.HOUR, False),
+                                      (Message, 'sending_client_id'), CountStat.DAY, False),
     'messages_sent_to_stream:is_bot': CountStat('messages_sent_to_stream:is_bot',
                                                 zerver_count_message_by_stream, {},
                                                 (UserProfile, 'is_bot'), CountStat.HOUR, False)
