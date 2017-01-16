@@ -11,7 +11,7 @@ user’s name, in the user list located at the right sidebar by default.
  * A white, circle (<span class="indicator grey"></span>) means the user is
    not active and was not recently so.
 
- * A orange half-filled circle
+ * An orange half-filled circle
    (<span class="indicator orange"></span>)
    means the user is “not active” but was recently so.
 
