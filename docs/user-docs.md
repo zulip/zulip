@@ -1,73 +1,231 @@
-# General user documentation
+# General user guide documentation
 
-Our goal is for Zulip to have complete, high-quality user-facing
-documentation about how to use every feature and how to do common
-tasks (like setting up a new Zulip organization well).  This system is
-designed to make writing and maintaining such documentation highly
-efficient.
+Our goal is for Zulip to have complete, high-quality user-appealing
+documentation about use Zulip's features and perform certain tasks, such as
+setting up an organization. This system is designed to make writing and
+maintaining such documentation highly efficient.
 
-The user documentation is available under `/help/` on any Zulip
-server;
+The user documentation is available under `/help/` on any Zulip server;
 (e.g. [https://chat.zulip.org/help/](https://chat.zulip.org/help/) or
-`http://localhost:9991/help/` in the Zulip development environment).
-The user documentation is not hosted on ReadTheDocs, since Zulip
-supports running a server completely disconnected from the Internet,
-and we'd like the documentation to be available in that environment.
+`http://localhost:9991/help/` in the Zulip development environment). The
+user documentation is not hosted on ReadTheDocs, since Zulip supports
+running a server completely disconnected from the Internet, and we'd like
+the documentation to be available in that environment.
 
-The source for this user documentation is the Markdown files under
+ The source for this user documentation is the Markdown files under
 `templates/zerver/help/` in the
-[main Zulip server repository](https://github.com/zulip/zulip).  The
-file `foo.md` is automatically rendered by the `render_markdown_path`
-function in `zerver/templatetags/app_filters.py` when the user
-accesses a URL of the form `/help/foo`; with special cases for
-`/help/` going to `index.md` and `/help/unknown_article` going to
-`missing.md` (with a 404 response).  Images are usually linked from
-`static/images/help/`.
+[main Zulip server repository](https://github.com/zulip/zulip). The file
+`foo.md` is automatically rendered by the `render_markdown_path` function in
+`zerver/templatetags/app_filters.py` when the user accesses a URL of the
+form `/help/foo`; with special cases for `/help/` going to `index.md` and
+`/help/unknown_article` going to `missing.md` (with a 404 response). Images
+are usually linked from `static/images/help/`.
 
-This means that you can contribute to the Zulip user documentation by
-just adding to or editing the collection of markdown files under
-`templates/zerver/help`.  If you have the Zulip development
-environment setup, you simply need to reload your browser on
+This means that you can contribute to the Zulip user documentation by just
+adding to or editing the collection of markdown files under
+`templates/zerver/help`.  If you have the Zulip development environment
+setup, you simply need to reload your browser on
 `http://localhost:9991/help/foo` to see the latest version of `foo.md`
 rendered.
 
-Since raw HTML is supported in Markdown, you can include arbitrary
-HTML in your documentation in order to do fancy things like
-highlighting an important aspect of your code.  We'll likely add a
-library of common components over time, which will be documented
-below.
+## Writing documentation
 
-### Supported features
+Writing documentation is a different form of writing than most people have
+experience with.
 
-* All the usual features of Markdown with raw HTML enabled so you can
-  do custom things with HTML/CSS as needed. The goal is to make
-  reusable markdown syntax for things we need often, though.
-* Code blocks with syntax highlighting, similar to Zulip's own markdown.
-* Anchor tags for linking to headers in other documents.
-* You can create special highlight warning blocks using e.g.:
+When you write user-appealing documentation, keep in mind that most users
+don't care about how the underlying code works; they simply want to know
+how a feature works or how they can do something.
+
+Think of writing user documentation as writing a recipe; you're trying to
+direct your readers how to cook a dish while introducing them to the dish
+itself, yet you shouldn't go into detail about the scientific processes that
+allow you to cook your dish.
+
+By keeping these thoughts in mind, you'll be able to write better
+user guide documentation.
+
+### Title
+
+The title of your documentation should be a brief summary of your
+documentation. Your title should be formatted as a heading by prepending
+your title with a `#`.
+
+The title of your documentation needs to be included under a fitting section
+in `templates/zerver/help/index.md` so users can access it from the user
+documentation index.
+
+### Introduction
+
+By writing a brief introduction of what you will be discussing in your
+documentation, users will gain a better understanding of your document. For
+example, if you are writing about a feature, you could describe what the
+feature allows users to do. Your introduction should be no longer than two
+paragraphs.
+
+### Directions
+
+If you are guiding a user on how to perform a certain task in Zulip, it is
+best to explain the process through a series of numbered steps. Your
+documentation's goal is to direct users on how to do something so that they
+achieve their goals. Thus, steps should be as detailed yet concise as
+possible.
+
+For example, if you tried to explain copying and pasting text, you could
+describe it in the following steps:
+
 ```
-!!! warn "title of warning"
-    Body of warning
+1. Highlight the text you want to copy.
+
+2. Press CTRL+C to copy the highlighted text.
+
+3. Move your cursor to the location where you want to paste the text.
+
+4. Press CTRL+V to paste the copied text.
 ```
 
-  to create a special warning block with title "title of warning" to
-  highlight something important.  The whitespace is important.  Often,
-  we just use "" as the title.  `!!! tip "title"` is useful for less
-  scary tips.  See
-  [the python-markdown docs on this extension](https://pythonhosted.org/Markdown/extensions/admonition.html)
-  for details on how this extension works; essentially the value
-  `warn` or `tip` is an extra CSS class added to the admonition.
+You can continue steps with additional notes or instructions by breaking the
+line and indenting the next line, which is especially useful for including
+images within a single step.
 
-#### Macros
+```
+1. Do something.
 
-**Macros** are elements in the format of `{!macro.md!}` that insert common phrases
-and steps at the location of the macros.
+    You can also do this.
+```
 
-##### **Administration** `{!admin.md!}` macro
+A general tip for breaking up a process is whenever a user interacts with
+the Zulip UI (e.g.: click a button, refresh the page), a new step should be
+created.
 
-* **About:** Links to the **Edit Administrator Settings** documentation. Usually
-preceded by the [**Go to the** macro](#go-to-the-go-to-the-md-macro) and a link to a
-particular section on the **Administration** page.
+### Sections
+
+If you are documenting multiple processes in your documentation, such as how
+to perform a task by using several different features, you should
+differentiate the processes by dividing them into sections using headings.
+Like the title, your section headings should give a brief description of the
+processes you describe.
+
+All subsequent subsections should be appended with an increasing number of
+`#`'s to make the headings smaller.
+
+```
+# Title
+
+## Section 1
+
+### Subsection 1
+
+### Subsection 2
+
+## Section 2
+
+### Subsection 1
+```
+
+### User interface
+
+When you refer to the features in the Zulip UI, you should **bold** the
+feature's name followed by the feature itself (e.g. **Settings** page,
+**Change Password** button, **Email** field). No quotation marks should be
+used.
+
+Keep in mind that the UI may change — don’t describe it in more detail than
+is needed. **Never identify or refer to a button by its color.**
+
+## Features
+
+Zulip's Markdown processor allows you to include several special features in
+your documentation to help improve its readibility:
+
+* Since raw HTML is supported in Markdown, you can include arbitrary
+HTML/CSS in your documentation as needed.
+* Code blocks allow you to highlight syntax, similar to Zulip's own markdown.
+* Anchor tags can be used to link to headers in other documents.
+* [Images](#images) of Zulip UI can be added to documentation.
+* Inline [icons](#icons) used to refer to features in the Zulip UI.
+* You can utilize [macros](#macros) to limit repeated content in the
+documentation.
+* You can create special highlight warning blocks using
+[tips and warnings](#tips-and-warnings).
+
+### Images
+
+Images should be included in documentation only if it will help guide the
+user. For instance, an image of an element should not be included if the
+element the user needs to interact with is the only thing on the page, but
+images can be included to show the end result of an interaction with the UI.
+
+Using too many screenshots creates problems such as constantly updating
+images every time the UI is changed and making the instructions look longer
+and therefore more complicated.
+
+The image should never include the whole Zulip browser window in a
+screenshot; instead, it should only show relevant parts of the app. In
+addition, the screenshot should always come *after* the text that describes
+it, never before.
+
+Images are often formatted as continuations of steps and must be indented on
+a new line to be formatted this way.
+
+### Icons
+
+You can refer to features in the Zulip UI by refrencing their names and
+their [FontAwesome](http://fontawesome.io) (version 3.0.2) text icons within
+parentheses. The source for the text icons is located in
+`static/styles/thirdparty-fonts.css`.
+
+* cog (<i class="fa fa-cog"></i>) icon — `cog (<i
+class="icon-vector-cog"></i>) icon`
+* down chevron (<i class="fa fa-chevron-down"></i>) icon —
+`down chevron (<i class="icon-vector-chevron-down"></i>) icon`
+* eye (<i class="fa fa-eye"></i>) icon — `eye (<i
+class="icon-vector-eye-open"></i>) icon`
+* file (<i class="fa fa-file-text-o"></i>) icon — `file (<i
+class="icon-vector-file-text-alt"></i>) icon`
+* filled star (<i class="fa fa-star"></i>) icon —
+`filled star (<i class="icon-vector-star"></i>) icon`
+* formatting (<i class="fa fa-font"></i>) icon —
+`formatting (<i class="icon-vector-font"></i>) icon`
+* menu (<i class="fa fa-bars"></i>) icon — `menu (<i
+class="icon-vector-reorder"></i>) icon`
+* overflow ( <i class="fa fa-ellipsis-v"></i> ) icon —
+`overflow ( <i class="icon-vector-ellipsis-verical"></i> ) icon`
+* paperclip (<i class="fa fa-paperclip"></i>) icon —
+`paperclip (<i class="icon-vector-paperclip"></i>) icon`
+* pencil (<i class="fa fa-pencil"></i>) icon —
+`pencil (<i class="icon-vector-pencil"></i>) icon`
+* pencil and paper (<i class="fa fa-pencil-square-o"></i>) icon —
+`pencil and paper (<i class="icon-vector-edit"></i>) icon`
+* plus (<i class="fa fa-plus"></i>) icon —
+`plus (<i class="icon-vector-plus"></i>) icon`
+* smiley face (<i class="fa fa-smile-o"></i>) icon —
+`smiley face (<i class="icon-vector-smile"></i>) icon`
+* star (<i class="fa fa-star-o"></i>) icon —
+`star (<i class="icon-vector-star-empty"></i>) icon`
+* trash (<i class="fa fa-trash-o"></i>) icon —
+`trash (<i class="icon-vector-trash"></i>) icon`
+* x (<i class="fa fa-times"></i>) icon —
+`x (<i class="icon-vector-remove"></i>) icon`
+
+### Macros
+
+**Macros** are elements in the format of `{!macro.md!}` that insert common
+phrases and steps at the location of the macros. Macros help eliminate
+repeated content in our documentation.
+
+The source for macros is the Markdown files under
+`templates/zerver/help/include` in the
+[main Zulip server repository](https://github.com/zulip/zulip). If you find
+multiple instances of particular content in the documentation, you can
+always create a new macro by adding a new file to that folder.
+
+### **Administration** `{!admin.md!}` macro
+
+* **About:** Links to the **Edit Administrator Settings** documentation.
+Usually preceded by the [**Go to the** macro](#go-to-the-go-to-the-md-macro)
+and a link to a particular section
+on the **Administration** page.
 
 * **Contents:**
     ```.md
@@ -76,15 +234,15 @@ particular section on the **Administration** page.
 
 * **Example usage and rendering:**
     ```.md
-    {!go-to-the.md!} [Organization Settings](/#administration/organization-settings)
+    {!go-to-the.md!} [Organization settings](/#administration/organization-settings)
     {!admin.md!}
     ```
     ```.md
-    1. Go to the [OrganizationSettings](/#administration/organization-settings) tab of the
+    1. Go to the [Organization settings](/#administration/organization-settings) tab of the
     [Administration](/help/edit-administrator-settings) page.
     ```
 
-##### **All streams** `{!all-sreams.md!}` macro
+### **All streams** `{!all-streams.md!}` macro
 
 * **About:** Explains how to view all streams in the organization on the
 **Subscriptions** page. Usually formatted as a tip and preceded by the
@@ -114,7 +272,7 @@ particular section on the **Administration** page.
             **All Streams** tab; the tab will turn gray upon doing so.
     ```
 
-##### **Down chevron** `{!down-chevron.md!}` macro
+### **Down chevron** `{!down-chevron.md!}` macro
 
 * **About:** Instructs readers to click on the down chevron (<i class="fa
 fa-chevron-down"></i>) icon to reveal an actions dropdown; usually preceded by
@@ -137,7 +295,7 @@ macro](#message-actions-message-actions-md-macro).
     down chevron (<i class="icon-vector-chevron-down"></i>) icon to reveal an actions dropdown.
     ```
 
-##### **Go to the** `{!go-to-the.md}` macro
+### **Go to the** `{!go-to-the.md}` macro
 
 * **About:** Usually precedes the [**Settings** macro](#settings-settings-md-macro)
 or the [**Administration** macro](#administration-admin-md-macro). Transforms
@@ -158,7 +316,7 @@ following content into a step.
     [Settings](/help/edit-settings) page.
     ```
 
-##### **Filter streams** `{!filter-streams.md!}` macro
+### **Filter streams** `{!filter-streams.md!}` macro
 
 * **About:** Explains how to search for specific streams in the
   **Subscriptions** page using the **Filter Streams** input. Usually preceded by
@@ -181,24 +339,7 @@ following content into a step.
     name of the stream in the **Filter Streams** input.
     ```
 
-##### **Follow steps** `{!follow-steps.md!}` macro
-
-* **About:** Prepends phrases with instructions to follow the following steps.
-
-* **Contents:**
-    ```.md
-    Follow the following steps to
-    ```
-
-* **Example usage and rendering:**
-    ```.md
-    {!follow-steps.md!}  change your mobile notification settings.
-    ```
-    ```.md
-    Follow the following steps to change your mobile notification settings.
-    ```
-
-##### **Message actions** `{!message-actions.md!}` macro
+### **Message actions** `{!message-actions.md!}` macro
 
 * **About:** Explains how to view the actions of message. Usually followed by an instruction
 to click a specific icon, such as the [**Down chevron** macro](#down-chevron-down-chevron-md-macro).
@@ -219,7 +360,29 @@ to click a specific icon, such as the [**Down chevron** macro](#down-chevron-dow
     actions, represented by three icons. From the icons that appear, select the
     down chevron (<i class="icon-vector-chevron-down"></i>) icon to reveal an actions dropdown.
     ```
-##### **Settings** `{!settings.md!}` macro
+
+### **Save changes** `{!save-changes.md!}` macro
+
+* **About:** Used in documentation that requests users to save their changes
+by pressing the **Save changes** button. Usually followed by a phrase
+describing the settings they modified.
+
+* **Contents:**
+    ```.md
+    1. Click on the **Save changes** button to save any changes you made to
+    your
+    ```
+
+* **Example usage and rendering:**
+    ```.md
+    {!save-changes.md!} notification settings.
+    ```
+    ```.md
+    1. Click on the **Save changes** button to save any changes you made to
+    your notification settings.
+    ```
+
+### **Settings** `{!settings.md!}` macro
 
 * **About:** Links to the **Edit Settings** documentation. Usually preceded by
 the [**Go to the** macro](#go-to-the-go-to-the-md-macro) and a link to a
@@ -240,7 +403,7 @@ particular section on the **Settings** page.
     [Settings](/help/edit-settings) page.
     ```
 
-##### **Stream actions** `{!stream-actions.md!}` macro
+### **Stream actions** `{!stream-actions.md!}` macro
 
 * **About:** Explains how to view the actions of stream. Usually followed by the an
 instruction and the [**Down chevron** macro](#down-chevron-down-chevron-md-macro).
@@ -268,7 +431,7 @@ instruction and the [**Down chevron** macro](#down-chevron-down-chevron-md-macro
     icon to reveal an actions dropdown.
     ```
 
-##### **Stream Settings** `{!stream-settings.md!}` macro
+### **Stream Settings** `{!stream-settings.md!}` macro
 
 * **About:** Notifies readers about the changes in the
   **Subscriptions** page when a stream is selected; usually followed
@@ -290,7 +453,7 @@ instruction and the [**Down chevron** macro](#down-chevron-down-chevron-md-macro
     now display the selected stream's settings.
     ```
 
-##### **Stream Settings scroll** `{!stream-settings.md!}` macro
+### **Stream Settings scroll** `{!stream-settings.md!}` macro
 
 * **About:** Instructs readers to scroll down to a particular section on the
 **Subscriptions** page after making sure their cursors are hovering above the
@@ -315,7 +478,7 @@ instruction and the [**Down chevron** macro](#down-chevron-down-chevron-md-macro
     selected stream.
     ```
 
-##### **Subscriptions** `{!subscriptions.md!}` macro
+### **Subscriptions** `{!subscriptions.md!}` macro
 
 * **About:** Used in documentation that direct users to the **Subscriptions** page.
 Often followed by the [**Filter streams** macro](#filter-streams-filter-streams-md-macro).
@@ -326,7 +489,7 @@ Often followed by the [**Filter streams** macro](#filter-streams-filter-streams-
     the [Subscriptions](/#subscriptions) page.
     ```
 
-* Standard usage and rendering:
+* **Example usage and rendering:**
     ```.md
     {!subscriptions.md!}
     {!filter-streams.md!}
@@ -337,108 +500,77 @@ Often followed by the [**Filter streams** macro](#filter-streams-filter-streams-
     name of the stream in the **Filter Streams** input.
     ```
 
-### Style guide
 
-* Names of buttons, fields, etc. should be **bolded** (e.g. **Settings**
-page, **Change Password** button, **Email** field). No quotation marks
-should be used.
+### Tips and warnings
 
-* All multi-step instructions should be formatted as a series of
-numbered steps. E.g.:
-  ```
-  1. Do something
-  2. Do the next thing.
-  ```
-  Keep the steps simple — "do X, then Y, then Z" is three steps, not one.
+A **tip** is any suggestion for the user that is not part of the main set of
+instructions. For instance, it may address a common problem users may
+encounter while following the instructions, or point to an option for power
+users.
 
-* Images and additional notes or instructions are kept within a single step by
-indenting them.
+```
+!!! tip ""
+    If you've forgotten your password, see the
+    [Change your password](/help/change-your-password) page for
+    instructions on how to reset it.
+```
 
-* Keep in mind that the UI may change — don't describe it in more detail
-  than is needed.
-    * Never refer specifically to button colors.
+A **warning** is a note on what happens when there is some kind of problem.
+Tips are more common than warnings.
 
-* All icons should be referenced by their names and their [FontAwesome](http://fontawesome.io)
-(version 3.0.2) text icons within parentheses.
-    * cog (<i class="fa fa-cog"></i>) icon — `cog (<i
-    class="icon-vector-cog"></i>) icon`
-    * down chevron (<i class="fa fa-chevron-down"></i>) icon —
-    `down chevron (<i class="icon-vector-chevron-down"></i>) icon`
-    * eye (<i class="fa fa-eye"></i>) icon — `eye (<i
-    class="icon-vector-eye-open"></i>) icon`
-    * file (<i class="fa fa-file-text-o"></i>) icon — `file (<i
-    class="icon-vector-file-text-alt"></i>) icon`
-    * filled star (<i class="fa fa-star"></i>) icon —
-    `filled star (<i class="icon-vector-star"></i>) icon`
-    * formatting (<i class="fa fa-font"></i>) icon —
-    `formatting (<i class="icon-vector-font"></i>) icon`
-    * menu (<i class="fa fa-bars"></i>) icon — `menu (<i
-    class="icon-vector-reorder"></i>) icon`
-    * overflow ( <i class="fa fa-ellipsis-v"></i> ) icon —
-    `overflow ( <i class="icon-vector-ellipsis-verical"></i> ) icon`
-    * paperclip (<i class="fa fa-paperclip"></i>) icon —
-    `paperclip (<i class="icon-vector-paperclip"></i>) icon`
-    * pencil (<i class="fa fa-pencil"></i>) icon —
-    `pencil (<i class="icon-vector-pencil"></i>) icon`
-    * pencil and paper (<i class="fa fa-pencil-square-o"></i>) icon —
-    `pencil and paper (<i class="icon-vector-edit"></i>) icon`
-    * plus (<i class="fa fa-plus"></i>) icon —
-    `plus (<i class="icon-vector-plus"></i>) icon`
-    * smiley face (<i class="fa fa-smile-o"></i>) icon —
-    `smiley face (<i class="icon-vector-smile"></i>) icon`
-    * star (<i class="fa fa-star-o"></i>) icon —
-    `star (<i class="icon-vector-star-empty"></i>) icon`
-    * trash (<i class="fa fa-trash-o"></i>) icon —
-    `trash (<i class="icon-vector-trash"></i>) icon`
-    * x (<i class="fa fa-times"></i>) icon —
-    `x (<i class="icon-vector-remove"></i>) icon`
+```
+!!! warn ""
+    **Note:** If you attempt to input a nonexistent stream name, an error
+    message will appear.
+```
 
-* Guidelines for **tips** and **warnings**:
+All tips/warnings should appear inside tip/warning blocks. There should be
+only one tip/warning inside each block.They usually be formatted as a
+continuation of a numbered step.
 
-  * A **tip** is any suggestion for the user that is not part of the main
-    set of instructions. E.g. it may address a common problem users may
-    encounter while following the instructions, or point to an option
-    for power users.
-  * A **warning** is a note on what happens when there is some kind of problem.
-    Tips are more common than warnings.
-  * All tips/warnings should appear inside tip/warning blocks.
-    They should not be included as
-    part of the numbered instructions or displayed in plain paragraphs.
-  * There should be only one tip/warning inside each block. It is perfectly
-    fine to use multiple consecutive tip boxes.
-  * Generally, no title for the tip/warning block is needed.
-  * Example **tip** from the sign-in doc page:
-    ```
+## Documentation template
+
+Here is a template for writing user documentation that follows the
+guidelines listed in this document. It demonstrates the proper formatting of
+several features discussed above.
+
+You can always look at previously-written documentation in the
+`templates/zerver/help` folder as a reference for writing your
+documentation.
+
+```
+# Title of documentation
+
+This paragraph briefly summarizes the documentation. Please remember to
+replace this paragraph with an appropriate description of the documentation.
+
+## Writing documentation as a series of steps
+
+1. This is the first step of the documentation.
+
+    ![First step](/static/images/help/image1.png)
+
+2. This is the second step of the documentation.
+
+    Here's an additional note about the second step. Click on the star (<i
+    class="icon-vector-star-empty"></i>) icon to learn more about it.
+
+3. This is the third step of the documentation.
+
     !!! tip ""
-        If you've forgotten your password, see the
-        [Change your password](/help/change-your-password) page for
-        instructions on how to reset it.
-    ```
-  * Other examples of **tips**:
-    * Your topic name can be no longer than 52 characters.
-    * If you are unsure of the code for any particular emoji visit Emoji
-      Cheat Sheet for a complete list.
-  * Example **warning**:
-      ```
-      !!! warn ""
-          If you attempt to input a nonexistent stream name, an error
-          message will appear.
-      ```
+        You can always add more steps to your documentation!
 
-* **Screenshot** guidelines:
-  * Only include a screenshot if it will help guide the user. E.g. include a
-    screenshot if the user needs to find a button in the corner. Don't
-    include a screenshot if the element the user needs to interact with is
-    the only thing on the page. Using too many screenshots creates problems:
-      * **Maintenance**: The screen shot has to be updated every time the UI
-        is changed.
-      * It makes the instructions look longer and therefore more complicated.
-  * Never include the whole Zulip window in a screenshot. Focus on the
-    relevant part of the app.
-  * The screenshot should always come *after* the text that describes it,
-    never before. E.g.:
+## Writing documentation to introduce a feature
 
-    1. Click the **Sign in with Google** button located under the **Login**
-      button and **Forgot your password?** link.
+If necessary, you can add another section to your documentation. Sections
+can be used to differentiate different methods of performing a task or
+describing a related task.
 
-      ![Zulip sign in Google](/images/signin-google.png)
+![Feature](/static/images/help/feature.png)
+
+You can also conclude your documentation with some final notes.
+
+!!! warn ""
+    **Note:** This is only a documentation template; you can always deviate
+    **from this template to suit your documentation needs.
+```
