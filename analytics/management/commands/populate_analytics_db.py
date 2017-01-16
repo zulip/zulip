@@ -11,7 +11,7 @@ from analytics.lib.counts import COUNT_STATS, CountStat, do_drop_all_analytics_t
 from analytics.lib.fixtures import generate_time_series_data
 from analytics.lib.time_utils import time_range
 from zerver.lib.timestamp import floor_to_day
-from zerver.models import Realm, UserProfile, Stream, Message
+from zerver.models import Realm, UserProfile, Stream, Message, Client
 
 from datetime import datetime, timedelta
 
@@ -44,6 +44,7 @@ class Command(BaseCommand):
         do_drop_all_analytics_tables()
         # I believe this also deletes any objects with this realm as a foreign key
         Realm.objects.filter(string_id='analytics').delete()
+        Client.objects.filter(name__endswith='_').delete()
 
         installation_time = timezone.now() - timedelta(days=self.DAYS_OF_DATA)
         last_end_time = floor_to_day(timezone.now())
@@ -67,6 +68,61 @@ class Command(BaseCommand):
                     for end_time, value in zip(end_times, values) if value != 0])
 
         stat = COUNT_STATS['active_users:is_bot']
-        realm_data = {'false': self.generate_fixture_data(stat, .1, .03, 3, .5, 3),
-                      'true': self.generate_fixture_data(stat, .01, 0, 1, 0, 1)}
+        realm_data = {
+            'false': self.generate_fixture_data(stat, .1, .03, 3, .5, 3),
+            'true': self.generate_fixture_data(stat, .01, 0, 1, 0, 1)
+        } # type: Dict[Optional[str], List[int]]
         insert_fixture_data(stat, realm_data, RealmCount)
+
+        stat = COUNT_STATS['messages_sent']
+        user_data = {
+            None: self.generate_fixture_data(stat, 2, 1, 1.5, .6, 8, holiday_rate=.1)
+        } # type: Dict[Optional[str], List[int]]
+        insert_fixture_data(stat, user_data, UserCount)
+        realm_data = {None: self.generate_fixture_data(stat, 50, 30, 5, .6, 3)}
+        insert_fixture_data(stat, realm_data, RealmCount)
+
+        stat = COUNT_STATS['messages_sent:is_bot']
+        user_data = {'false': self.generate_fixture_data(stat, 2, 1, 1.5, .6, 8)}
+        insert_fixture_data(stat, user_data, UserCount)
+        realm_data = {'false': self.generate_fixture_data(stat, 35, 15, 6, .6, 4),
+                      'true': self.generate_fixture_data(stat, 15, 15, 3, .4, 2)}
+        insert_fixture_data(stat, realm_data, RealmCount)
+
+        stat = COUNT_STATS['messages_sent:message_type']
+        user_data = {
+            'public_stream': self.generate_fixture_data(stat, 1.5, 1, 3, .6, 8),
+            'private_message': self.generate_fixture_data(stat, .5, .3, 1, .6, 8)}
+        insert_fixture_data(stat, user_data, UserCount)
+        realm_data = {
+            'public_stream': self.generate_fixture_data(stat, 30, 8, 5, .6, 4),
+            'private_stream': self.generate_fixture_data(stat, 7, 7, 5, .6, 4),
+            'private_message': self.generate_fixture_data(stat, 13, 5, 5, .6, 4)}
+        insert_fixture_data(stat, realm_data, RealmCount)
+
+        website_ = Client.objects.create(name='website_')
+        API_ = Client.objects.create(name='API_')
+        android_ = Client.objects.create(name='android_')
+        iOS_ = Client.objects.create(name='iOS_')
+        react_native_ = Client.objects.create(name='react_native_')
+        electron_ = Client.objects.create(name='electron_')
+        barnowl_ = Client.objects.create(name='barnowl_')
+        plan9_ = Client.objects.create(name='plan9_')
+
+        stat = COUNT_STATS['messages_sent:client']
+        user_data = {
+            website_.id: self.generate_fixture_data(stat, 2, 1, 1.5, .6, 8),
+            barnowl_.id: self.generate_fixture_data(stat, 0, .3, 1.5, .6, 8)}
+        insert_fixture_data(stat, user_data, UserCount)
+        realm_data = {
+            website_.id: self.generate_fixture_data(stat, 30, 20, 5, .6, 3),
+            API_.id: self.generate_fixture_data(stat, 5, 5, 5, .6, 3),
+            android_.id: self.generate_fixture_data(stat, 5, 5, 2, .6, 3),
+            iOS_.id: self.generate_fixture_data(stat, 5, 5, 2, .6, 3),
+            react_native_.id: self.generate_fixture_data(stat, 5, 5, 10, .6, 3),
+            electron_.id: self.generate_fixture_data(stat, 5, 3, 8, .6, 3),
+            barnowl_.id: self.generate_fixture_data(stat, 1, 1, 3, .6, 3),
+            plan9_.id: self.generate_fixture_data(stat, 0, 0, 0, 0, 0, 0)}
+        insert_fixture_data(stat, realm_data, RealmCount)
+
+        # TODO: messages_sent_to_stream:is_bot
