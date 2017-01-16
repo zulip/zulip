@@ -155,7 +155,7 @@ options like `async`.
 ### State and logs files
 
 Do not write state and logs files inside the current working directory
-in the production environment. This will not how you expect, because the
+in the production environment. This will not do what you expect, because the
 current working directory for the app changes every time we do a deploy.
 Instead, hardcode a path in settings.py -- see SERVER\_LOG\_PATH in
 settings.py for an example.

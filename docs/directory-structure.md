@@ -112,7 +112,7 @@ Django context (i.e. with database access).
   the development environment setup process.
 
 * `tools/travis/` Subdirectory of `tools/` for things only used to
-  setup and run our tests in Travis CI.  Actually test suites should
+  setup and run our tests in Travis CI.  Actual test suites should
   go in `tools/`.
 
 ---------------------------------------------------------

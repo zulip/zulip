@@ -15,7 +15,7 @@ need to.
 
 ## Connecting to the remote environment
 
-The best way to connect to your server is with the command line tool `ssh`.
+The best way to connect to your server is using the command line tool `ssh`.
 
 * On macOS and Linux/UNIX, `ssh` is a part of Terminal.
 * On Windows, `ssh` comes with [Bash for Git][git-bash].
@@ -134,7 +134,7 @@ To setup Codeanywhere for Zulip:
 
 1. Create a [Codeanywhere][codeanywhere] account and log in.
 2. Create a new **SFTP-SSH** project. Use *Public key* for authentication.
-3. Click **GET YOUR PUBLIC KEY** to get the new new public key that
+3. Click **GET YOUR PUBLIC KEY** to get the new public key that
    Codeanywhere generates when you create a new project. Add this public key to
    `~/.ssh/authorized_keys` on your remote development instance.
 4. Once you've added the new public key to your remote development instance, click

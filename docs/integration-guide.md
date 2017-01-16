@@ -8,7 +8,7 @@ Zulip integrations library.
 
 On this page you'll find:
 
-* An overvew of the different [types of integrations](#types-of-integrations)
+* An overview of the different [types of integrations](#types-of-integrations)
   possible with Zulip.
 * [General advice](#general-advice) for writing integrations.
 * Details about writing [webhook integrations](#webhook-integrations).
