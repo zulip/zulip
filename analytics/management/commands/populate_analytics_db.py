@@ -64,7 +64,7 @@ class Command(BaseCommand):
             for subgroup, values in fixture_data.items():
                 table.objects.bulk_create([
                     table(property=stat.property, subgroup=subgroup, end_time=end_time,
-                          interval=stat.interval, value=value, **id_args)
+                          value=value, **id_args)
                     for end_time, value in zip(end_times, values) if value != 0])
 
         stat = COUNT_STATS['active_users:is_bot:day']
