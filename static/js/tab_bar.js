@@ -46,7 +46,7 @@ function make_tab_data() {
                    filter.has_operand("is", "private")) {
 
             tabs.push(make_tab("Private Messages", '#narrow/is/private',
-                                undefined, 'private_message '));
+                                undefined, 'private_message special '));
 
             if (filter.has_operator("pm-with")) {
                 var emails = filter.operands("pm-with")[0].split(',');
@@ -61,13 +61,13 @@ function make_tab_data() {
             }
 
         } else if (filter.has_operand("is", "starred")) {
-            tabs.push(make_tab("Starred", hashed));
+            tabs.push(make_tab("Starred", hashed, undefined, "starred_message special "));
         } else if (filter.has_operator("near")) {
-            tabs.push(make_tab("Near " + filter.operands("near")[0], hashed));
+            tabs.push(make_tab("Near " + filter.operands("near")[0], hashed, undefined, "near_message special "));
         } else if (filter.has_operator("id")) {
             tabs.push(make_tab("ID " + filter.operands("id")[0], hashed));
         } else if (filter.has_operand("is", "mentioned")) {
-            tabs.push(make_tab("Mentions", hashed));
+            tabs.push(make_tab("Mentions", hashed, undefined, "mentioned_message special "));
         } else if (filter.has_operator("sender")) {
             var sender = filter.operands("sender")[0];
             if (people.get_by_email(sender)) {
@@ -98,6 +98,7 @@ function make_tab_data() {
 
 exports.colorize_tab_bar = function () {
     var stream_tab = $('#tab_list .stream');
+
     if (stream_tab.length > 0) {
         var stream_name = stream_tab.data('name');
         if (stream_name === undefined) {
@@ -111,26 +112,18 @@ exports.colorize_tab_bar = function () {
                            colorspace.getLighterColor(
                            colorspace.getDecimalColor(color_for_stream), 0.2));
 
-        if (stream_tab.hasClass("stream")) {
-            stream_tab.css('border-left-color',
-                           color_for_stream).css('background-color',
-                                                 color_for_stream);
-            if (stream_tab.hasClass("inactive")) {
-              stream_tab.hover (
+        stream_tab.css('background-color', color_for_stream);
+        if (stream_tab.hasClass("inactive")) {
+            stream_tab.hover (
                 function () {
-                 $(this).css('border-left-color',
-                             stream_light).css('background-color',
-                             stream_light);
+                    $(this).css('background-color',stream_light);
                 }, function () {
-                 $(this).css('border-left-color',
-                             color_for_stream).css('background-color',
-                                                   color_for_stream);
+                    $(this).css('background-color', color_for_stream);
                 }
-              );
-            }
-            stream_tab.removeClass(stream_color.color_classes);
-            stream_tab.addClass(stream_dark);
+            );
         }
+        stream_tab.removeClass(stream_color.color_classes);
+        stream_tab.addClass(stream_dark);
     }
 };
 
@@ -154,6 +147,19 @@ $(function () {
     });
     $(document).on('narrow_deactivated.zulip', function () {
         build_tab_bar();
+    });
+
+    $("body").on("click", function (event) {
+        if ($(event.target).closest("#searchbox").length === 1 && !$(event.target).is("a")) {
+            $("#tab_bar").fadeOut(200);
+            if (!$("#searchbox input").is(":focus")) {
+                $("#searchbox input").select();
+            }
+        }
+    });
+
+    $("#search_query").on("blur", function (event) {
+        $("#tab_bar").fadeIn(200);
     });
 
     build_tab_bar();

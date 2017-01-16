@@ -80,6 +80,7 @@
 
     .column-middle {
         margin-right: 7px;
+        max-width: calc(100% - 250px - 100px);
     }
 
     #subscriptions-status {
@@ -136,6 +137,7 @@
 
     .header-main .column-middle {
         margin-left: 0px;
+        max-width: calc(100% - 140px);
     }
 
     .column-middle-inner {
