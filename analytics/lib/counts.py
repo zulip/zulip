@@ -109,8 +109,8 @@ def do_fill_count_stat_at_hour(stat, end_time):
     else: # stat.interval == CountStat.GAUGE
         start_time = MIN_TIME
 
-    do_pull_from_zerver(stat, start_time, end_time, stat.interval)
-    do_aggregate_to_summary_table(stat, end_time, stat.interval)
+    do_pull_from_zerver(stat, start_time, end_time)
+    do_aggregate_to_summary_table(stat, end_time)
 
 def do_delete_count_stat_at_hour(stat, end_time):
     # type: (CountStat, datetime) -> None
@@ -127,8 +127,8 @@ def do_drop_all_analytics_tables():
     InstallationCount.objects.all().delete()
     FillState.objects.all().delete()
 
-def do_aggregate_to_summary_table(stat, end_time, interval):
-    # type: (CountStat, datetime, str) -> None
+def do_aggregate_to_summary_table(stat, end_time):
+    # type: (CountStat, datetime) -> None
     cursor = connection.cursor()
 
     # Aggregate into RealmCount
@@ -136,23 +136,21 @@ def do_aggregate_to_summary_table(stat, end_time, interval):
     if analytics_table in (UserCount, StreamCount):
         realmcount_query = """
             INSERT INTO analytics_realmcount
-                (realm_id, value, property, subgroup, end_time, interval)
+                (realm_id, value, property, subgroup, end_time)
             SELECT
                 zerver_realm.id, COALESCE(sum(%(analytics_table)s.value), 0), '%(property)s',
-                %(analytics_table)s.subgroup, %%(end_time)s, '%(interval)s'
+                %(analytics_table)s.subgroup, %%(end_time)s
             FROM zerver_realm
             JOIN %(analytics_table)s
             ON
             (
                 %(analytics_table)s.realm_id = zerver_realm.id AND
                 %(analytics_table)s.property = '%(property)s' AND
-                %(analytics_table)s.end_time = %%(end_time)s AND
-                %(analytics_table)s.interval = '%(interval)s'
+                %(analytics_table)s.end_time = %%(end_time)s
             )
             GROUP BY zerver_realm.id, %(analytics_table)s.subgroup
         """ % {'analytics_table': analytics_table._meta.db_table,
-               'property': stat.property,
-               'interval': interval}
+               'property': stat.property}
         start = time.time()
         cursor.execute(realmcount_query, {'end_time': end_time})
         end = time.time()
@@ -161,18 +159,16 @@ def do_aggregate_to_summary_table(stat, end_time, interval):
     # Aggregate into InstallationCount
     installationcount_query = """
         INSERT INTO analytics_installationcount
-            (value, property, subgroup, end_time, interval)
+            (value, property, subgroup, end_time)
         SELECT
-            sum(value), '%(property)s', analytics_realmcount.subgroup, %%(end_time)s, '%(interval)s'
+            sum(value), '%(property)s', analytics_realmcount.subgroup, %%(end_time)s
         FROM analytics_realmcount
         WHERE
         (
             property = '%(property)s' AND
-            end_time = %%(end_time)s AND
-            interval = '%(interval)s'
+            end_time = %%(end_time)s
         ) GROUP BY analytics_realmcount.subgroup
-    """ % {'property': stat.property,
-           'interval': interval}
+    """ % {'property': stat.property}
     start = time.time()
     cursor.execute(installationcount_query, {'end_time': end_time})
     end = time.time()
@@ -180,8 +176,8 @@ def do_aggregate_to_summary_table(stat, end_time, interval):
     cursor.close()
 
 # This is the only method that hits the prod databases directly.
-def do_pull_from_zerver(stat, start_time, end_time, interval):
-    # type: (CountStat, datetime, datetime, str) -> None
+def do_pull_from_zerver(stat, start_time, end_time):
+    # type: (CountStat, datetime, datetime) -> None
     zerver_table = stat.zerver_count_query.zerver_table._meta.db_table # type: ignore
     join_args = ' '.join('AND %s.%s = %s' % (zerver_table, key, value)
                          for key, value in stat.filter_args.items())
@@ -197,7 +193,6 @@ def do_pull_from_zerver(stat, start_time, end_time, interval):
     # the string formatting prior so that cursor.execute runs it as sql
     query_ = stat.zerver_count_query.query % {'zerver_table': zerver_table,
                                               'property': stat.property,
-                                              'interval': interval,
                                               'join_args': join_args,
                                               'subgroup': subgroup,
                                               'group_by_clause': group_by_clause}
@@ -210,9 +205,9 @@ def do_pull_from_zerver(stat, start_time, end_time, interval):
 
 count_user_by_realm_query = """
     INSERT INTO analytics_realmcount
-        (realm_id, value, property, subgroup, end_time, interval)
+        (realm_id, value, property, subgroup, end_time)
     SELECT
-        zerver_realm.id, count(%(zerver_table)s),'%(property)s', %(subgroup)s, %%(time_end)s, '%(interval)s'
+        zerver_realm.id, count(%(zerver_table)s),'%(property)s', %(subgroup)s, %%(time_end)s
     FROM zerver_realm
     JOIN zerver_userprofile
     ON
@@ -231,9 +226,9 @@ zerver_count_user_by_realm = ZerverCountQuery(UserProfile, RealmCount, count_use
 # currently .sender_id is only Message specific thing
 count_message_by_user_query = """
     INSERT INTO analytics_usercount
-        (user_id, realm_id, value, property, subgroup, end_time, interval)
+        (user_id, realm_id, value, property, subgroup, end_time)
     SELECT
-        zerver_userprofile.id, zerver_userprofile.realm_id, count(*), '%(property)s', %(subgroup)s, %%(time_end)s, '%(interval)s'
+        zerver_userprofile.id, zerver_userprofile.realm_id, count(*), '%(property)s', %(subgroup)s, %%(time_end)s
     FROM zerver_userprofile
     JOIN zerver_message
     ON
@@ -252,9 +247,9 @@ zerver_count_message_by_user = ZerverCountQuery(Message, UserCount, count_messag
 # Currently unused and untested
 count_stream_by_realm_query = """
     INSERT INTO analytics_realmcount
-        (realm_id, value, property, subgroup, end_time, interval)
+        (realm_id, value, property, subgroup, end_time)
     SELECT
-        zerver_realm.id, count(*), '%(property)s', %(subgroup)s, %%(time_end)s, '%(interval)s'
+        zerver_realm.id, count(*), '%(property)s', %(subgroup)s, %%(time_end)s
     FROM zerver_realm
     JOIN zerver_stream
     ON
@@ -276,8 +271,8 @@ zerver_count_stream_by_realm = ZerverCountQuery(Stream, RealmCount, count_stream
 # it uses 'message_type' from the subquery to fill in the subgroup column.
 count_message_type_by_user_query = """
     INSERT INTO analytics_usercount
-            (realm_id, user_id, value, property, subgroup, end_time, interval)
-    SELECT realm_id, id, SUM(count) AS value, '%(property)s', message_type, %%(time_end)s, '%(interval)s'
+            (realm_id, user_id, value, property, subgroup, end_time)
+    SELECT realm_id, id, SUM(count) AS value, '%(property)s', message_type, %%(time_end)s
     FROM
     (
         SELECT zerver_userprofile.realm_id, zerver_userprofile.id, count(*),
@@ -314,9 +309,9 @@ zerver_count_message_type_by_user = ZerverCountQuery(Message, UserCount, count_m
 # the UserProfile table, consider writing a new query for efficiency.
 count_message_by_stream_query = """
     INSERT INTO analytics_streamcount
-        (stream_id, realm_id, value, property, subgroup, end_time, interval)
+        (stream_id, realm_id, value, property, subgroup, end_time)
     SELECT
-        zerver_stream.id, zerver_stream.realm_id, count(*), '%(property)s', %(subgroup)s, %%(time_end)s, '%(interval)s'
+        zerver_stream.id, zerver_stream.realm_id, count(*), '%(property)s', %(subgroup)s, %%(time_end)s
     FROM zerver_stream
     JOIN zerver_recipient
     ON
