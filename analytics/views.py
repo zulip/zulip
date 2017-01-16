@@ -113,7 +113,7 @@ def get_number_of_humans(realm, start, end, min_length=None):
 
 def get_messages_sent_by_humans_and_bots(realm, start, end, min_length=None):
     # type: (Realm, datetime, datetime, Optional[int]) -> Dict[str, Any]
-    stat = COUNT_STATS['messages_sent:is_bot:day']
+    stat = COUNT_STATS['messages_sent:is_bot:hour']
     end_times, values = get_time_series_by_subgroup(
         stat, RealmCount, realm.id, ['false', 'true'], start, end, min_length)
     return {'end_times': end_times, 'humans': values['false'], 'bots': values['true'],

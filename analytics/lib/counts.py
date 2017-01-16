@@ -340,9 +340,9 @@ COUNT_STATS = {
         (UserProfile, 'is_bot'), CountStat.DAY, True),
     'messages_sent:hour': CountStat(
         'messages_sent:hour', zerver_count_message_by_user, {}, None, CountStat.HOUR, False),
-    'messages_sent:is_bot:day': CountStat(
-        'messages_sent:is_bot:day', zerver_count_message_by_user, {},
-        (UserProfile, 'is_bot'), CountStat.DAY, False),
+    'messages_sent:is_bot:hour': CountStat(
+        'messages_sent:is_bot:hour', zerver_count_message_by_user, {},
+        (UserProfile, 'is_bot'), CountStat.HOUR, False),
     'messages_sent:message_type:day': CountStat(
         'messages_sent:message_type:day', zerver_count_message_type_by_user, {},
         None, CountStat.DAY, False),
