@@ -97,8 +97,6 @@ as an **organization**.
 * [Change the color of a stream](/help/change-the-color-of-a-stream)
 * [Message a stream by email](/help/message-a-stream-by-email)
 * Convert a group PM to a private stream (not implemented)
-* [Remove someone from a stream (admin only)](/help/remove-someone-from-a-stream)
-* [Delete a stream (admin only)](/help/delete-a-stream)
 
 ## Notifications
 * [Mute a stream](/help/mute-a-stream)
@@ -144,7 +142,7 @@ as an **organization**.
 * [Deactivate or reactivate a bot](/help/deactivate-or-reactivate-a-bot)
 * [Make a user an administrator](/help/make-a-user-an-administrator)
 * [Change a user's name](/help/change-a-users-name)
-* [View all bots in your organization (admin only)](/help/view-all-bots-in-your-organization)
+* [View all bots in your organization](/help/view-all-bots-in-your-organization)
 
 ## Streams
 * [Delete a stream](/help/delete-a-stream)
