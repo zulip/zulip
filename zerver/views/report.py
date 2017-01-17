@@ -1,22 +1,20 @@
 from __future__ import absolute_import
-from typing import Any
+from typing import Any, Text
+
+import os
+import subprocess
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 
-from zerver.decorator import authenticated_json_post_view, has_request_variables, REQ, \
-    to_non_negative_int
-from zerver.lib.response import json_success
+from zerver.decorator import (REQ, authenticated_json_post_view,
+                              has_request_variables, to_non_negative_int)
 from zerver.lib.queue import queue_json_publish
+from zerver.lib.response import json_success
 from zerver.lib.unminify import SourceMap
 from zerver.lib.utils import statsd, statsd_key
 from zerver.lib.validator import check_bool, check_dict
 from zerver.models import UserProfile
-
-from typing import Text
-
-import subprocess
-import os
 
 # Read the source map information for decoding JavaScript backtraces
 js_source_map = None

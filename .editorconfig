@@ -10,6 +10,18 @@ insert_final_newline = true
 indent_style = space
 indent_size = 4
 
+# isort configuration
+[*.py]
+line_length = 79
+multi_line_output = 0
+balanced_wrapping = true
+known_future_library = future, typing
+known_standard_library = six
+known_django = django
+known_third_party = ujson, sqlalchemy
+known_first_party = zerver, zproject, version
+sections = FUTURE, STDLIB, THIRDPARTY, DJANGO, FIRSTPARTY, LOCALFOLDER
+
 [*.{svg,rb,pp,pl}]
 indent_style = space
 indent_size = 2

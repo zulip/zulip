@@ -1,14 +1,17 @@
 # Webhooks for external integrations.
 from __future__ import absolute_import
+from typing import Any, Dict, Iterable, Optional, Text
+
+from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
+
+from zerver.decorator import (REQ, api_key_only_webhook_view,
+                              has_request_variables)
 from zerver.lib.actions import check_send_message
-from zerver.lib.response import json_success, json_error
-from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
+from zerver.lib.response import json_error, json_success
 from zerver.lib.validator import check_dict, check_string
 from zerver.models import Client, UserProfile
 
-from django.http import HttpRequest, HttpResponse
-from typing import Dict, Any, Iterable, Optional, Text
 
 @api_key_only_webhook_view('HelloWorld')
 @has_request_variables

@@ -1,8 +1,8 @@
 from __future__ import absolute_import
+from typing import Any
 
 import datetime
 import time
-from typing import Any
 
 from django.http import HttpRequest, HttpResponse
 from django.utils import timezone
@@ -10,10 +10,11 @@ from django.utils.translation import ugettext as _
 
 from zerver.decorator import authenticated_json_post_view
 from zerver.lib.actions import get_status_dict, update_user_presence
-from zerver.lib.request import has_request_variables, REQ, JsonableError
-from zerver.lib.response import json_success, json_error
+from zerver.lib.request import REQ, JsonableError, has_request_variables
+from zerver.lib.response import json_error, json_success
 from zerver.lib.validator import check_bool
 from zerver.models import UserActivity, UserPresence, UserProfile
+
 
 def get_status_list(requesting_user_profile):
     # type: (UserProfile) -> Dict[str, Any]

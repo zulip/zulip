@@ -2,20 +2,21 @@
 from __future__ import absolute_import
 from typing import Any, Optional, Text, Tuple
 
-from django.utils.translation import ugettext as _
-from django.db.models import Q
-from django.conf import settings
-from django.http import HttpRequest, HttpResponse
-
-from zerver.models import Client, UserProfile, get_user_profile_by_email, Realm
-from zerver.lib.actions import check_send_message
-from zerver.lib.response import json_success, json_error
-from zerver.decorator import api_key_only_webhook_view, has_request_variables, REQ
-
 import logging
 import re
+
 import ujson
 
+from django.conf import settings
+from django.db.models import Q
+from django.http import HttpRequest, HttpResponse
+from django.utils.translation import ugettext as _
+
+from zerver.decorator import (REQ, api_key_only_webhook_view,
+                              has_request_variables)
+from zerver.lib.actions import check_send_message
+from zerver.lib.response import json_error, json_success
+from zerver.models import Client, Realm, UserProfile, get_user_profile_by_email
 
 IGNORED_EVENTS = [
     'comment_created',  # we handle issue_update event instead

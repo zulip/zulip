@@ -1,13 +1,15 @@
 from __future__ import absolute_import
 
-from django.utils.translation import ugettext as _
 from django.http import HttpRequest, HttpResponse
+from django.utils.translation import ugettext as _
 
-from zerver.decorator import authenticated_json_post_view, has_request_variables, REQ
+from zerver.decorator import (REQ, authenticated_json_post_view,
+                              has_request_variables)
 from zerver.lib.actions import internal_send_message
 from zerver.lib.response import json_error, json_success
 from zerver.lib.validator import check_string
 from zerver.models import UserProfile
+
 
 @authenticated_json_post_view
 @has_request_variables

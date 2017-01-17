@@ -4,10 +4,11 @@ from typing import Text
 
 from django.http import HttpRequest, HttpResponse
 
+from zerver.decorator import (REQ, api_key_only_webhook_view,
+                              has_request_variables)
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success
-from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
-from zerver.models import UserProfile, Client
+from zerver.models import Client, UserProfile
 
 
 @api_key_only_webhook_view("Heroku")

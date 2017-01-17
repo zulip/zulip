@@ -1,5 +1,4 @@
 from __future__ import absolute_import
-
 from typing import Optional
 
 from django.conf import settings
@@ -7,10 +6,11 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now
 from django.utils.translation import ugettext as _
 
-from zerver.lib.request import has_request_variables, REQ
-from zerver.lib.response import json_success, json_error
-from zerver.lib.validator import check_string, check_list, check_bool
+from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.response import json_error, json_success
+from zerver.lib.validator import check_bool, check_list, check_string
 from zerver.models import PushDeviceToken, UserProfile
+
 
 def add_push_device_token(request, user_profile, token_str, kind, ios_app_id=None):
     # type: (HttpRequest, UserProfile, str, int, Optional[str]) -> HttpResponse

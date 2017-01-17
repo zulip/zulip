@@ -1,18 +1,16 @@
 from __future__ import absolute_import
+from typing import List, Text
 
-from django.http import HttpResponse, HttpRequest
+from django.http import HttpRequest, HttpResponse
 
-from typing import List
-from zerver.models import UserProfile
-
-from zerver.decorator import has_request_variables, REQ
+from zerver.decorator import REQ, has_request_variables
+from zerver.lib.actions import (do_add_alert_words, do_remove_alert_words,
+                                do_set_alert_words)
+from zerver.lib.alert_words import user_alert_words
 from zerver.lib.response import json_success
 from zerver.lib.validator import check_list, check_string
+from zerver.models import UserProfile
 
-from zerver.lib.actions import do_add_alert_words, do_remove_alert_words, do_set_alert_words
-from zerver.lib.alert_words import user_alert_words
-
-from typing import Text
 
 def list_alert_words(request, user_profile):
     # type: (HttpRequest, UserProfile) -> HttpResponse

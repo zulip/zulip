@@ -1,13 +1,15 @@
 from __future__ import absolute_import
-from django.http import HttpRequest, HttpResponse
-from django.core.exceptions import ValidationError
-from django.utils.translation import ugettext as _
 from typing import Text
 
-from zerver.models import UserProfile
-from zerver.lib.request import JsonableError
-from zerver.lib.response import json_success, json_error
+from django.core.exceptions import ValidationError
+from django.http import HttpRequest, HttpResponse
+from django.utils.translation import ugettext as _
+
 from zerver.lib.actions import check_add_realm_emoji, do_remove_realm_emoji
+from zerver.lib.request import JsonableError
+from zerver.lib.response import json_error, json_success
+from zerver.models import UserProfile
+
 
 def check_emoji_admin(user_profile):
     # type: (UserProfile) -> None

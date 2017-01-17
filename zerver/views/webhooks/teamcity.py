@@ -1,18 +1,20 @@
 # Webhooks for teamcity integration
 from __future__ import absolute_import
+from typing import Any, Optional
+
+import logging
+
+import ujson
 
 from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
-from typing import Any, Optional
 
-from zerver.models import Client, UserProfile, Realm
+from zerver.decorator import (REQ, api_key_only_webhook_view,
+                              has_request_variables)
 from zerver.lib.actions import check_send_message
-from zerver.lib.response import json_success, json_error
-from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
+from zerver.lib.response import json_error, json_success
+from zerver.models import Client, Realm, UserProfile
 
-
-import logging
-import ujson
 
 def guess_zulip_user_from_teamcity(teamcity_username, realm):
     # type: (str, Realm) -> Optional[UserProfile]

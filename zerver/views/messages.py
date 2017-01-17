@@ -1,60 +1,58 @@
 from __future__ import absolute_import
+from typing import (Any, AnyStr, Callable, Iterable,
+                    Optional, Text, Tuple, Union)
 
-from django.utils.translation import ugettext as _
-from django.utils.timezone import now
+import datetime
+import re
+import six
+from six.moves import map
+
+import ujson
+from sqlalchemy import func
+from sqlalchemy.sql import (ColumnElement, Select, Selectable, alias,
+                            and_, column, join, literal, literal_column,
+                            not_, or_, select, union_all)
+
 from django.conf import settings
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.db import connection
 from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
-from typing import Text
-from typing import Any, AnyStr, Callable, Iterable, Optional, Tuple, Union
-from zerver.lib.str_utils import force_bytes, force_text
-
-from zerver.decorator import authenticated_api_view, authenticated_json_post_view, \
-    has_request_variables, REQ, JsonableError, \
-    to_non_negative_int
 from django.utils.html import escape as escape_html
+from django.utils.timezone import now
+from django.utils.translation import ugettext as _
+
+from zerver.decorator import (REQ, JsonableError, authenticated_api_view,
+                              authenticated_json_post_view,
+                              has_request_variables, to_non_negative_int)
 from zerver.lib import bugdown
-from zerver.lib.actions import recipient_for_emails, do_update_message_flags, \
-    compute_mit_user_fullname, compute_irc_user_fullname, compute_jabber_user_fullname, \
-    create_mirror_user_if_needed, check_send_message, do_update_message, \
-    extract_recipients, truncate_body, render_incoming_message
+from zerver.lib.actions import (check_send_message, compute_irc_user_fullname,
+                                compute_jabber_user_fullname,
+                                compute_mit_user_fullname,
+                                create_mirror_user_if_needed,
+                                do_update_message, do_update_message_flags,
+                                extract_recipients, recipient_for_emails,
+                                render_incoming_message, truncate_body)
+from zerver.lib.cache import generic_bulk_cached_fetch, to_dict_cache_key_id
+from zerver.lib.message import (MessageDict, access_message,
+                                extract_message_dict, render_markdown,
+                                stringify_message_dict)
 from zerver.lib.queue import queue_json_publish
-from zerver.lib.cache import (
-    generic_bulk_cached_fetch,
-    to_dict_cache_key_id,
-)
-from zerver.lib.message import (
-    access_message,
-    MessageDict,
-    extract_message_dict,
-    render_markdown,
-    stringify_message_dict,
-)
-from zerver.lib.response import json_success, json_error
+from zerver.lib.response import json_error, json_success
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
+from zerver.lib.str_utils import force_bytes, force_text
 from zerver.lib.utils import statsd
-from zerver.lib.validator import \
-    check_list, check_int, check_dict, check_string, check_bool
-from zerver.models import Message, UserProfile, Stream, Subscription, \
-    Realm, RealmAlias, Recipient, UserMessage, bulk_get_recipients, get_recipient, \
-    get_user_profile_by_email, get_stream, \
-    parse_usermessage_flags, \
-    email_to_domain, get_realm, get_active_streams, \
-    bulk_get_streams, get_user_profile_by_id
+from zerver.lib.validator import (check_bool, check_dict, check_int,
+                                  check_list, check_string)
+from zerver.models import (Message, Realm, RealmAlias, Recipient, Stream,
+                           Subscription, UserMessage, UserProfile,
+                           bulk_get_recipients, bulk_get_streams,
+                           email_to_domain, get_active_streams, get_realm,
+                           get_recipient, get_stream,
+                           get_user_profile_by_email, get_user_profile_by_id,
+                           parse_usermessage_flags)
 
-from sqlalchemy import func
-from sqlalchemy.sql import select, join, column, literal_column, literal, and_, \
-    or_, not_, union_all, alias, Selectable, Select, ColumnElement
-
-import re
-import ujson
-import datetime
-
-from six.moves import map
-import six
 
 class BadNarrowOperator(JsonableError):
     def __init__(self, desc, status_code=400):

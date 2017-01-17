@@ -1,16 +1,23 @@
 from __future__ import absolute_import
+from typing import Any, Dict, Iterable, Optional, Text
+
 from functools import partial
-from zerver.lib.actions import check_send_message
-from zerver.lib.response import json_success
-from zerver.decorator import api_key_only_webhook_view, REQ, has_request_variables
-from zerver.lib.webhooks.git import get_push_commits_event_message, EMPTY_SHA,\
-    get_remove_branch_event_message, get_pull_request_event_message,\
-    get_issue_event_message, SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE,\
-    get_commits_comment_action_message, get_push_tag_event_message
-from zerver.models import Client, UserProfile
 
 from django.http import HttpRequest, HttpResponse
-from typing import Dict, Any, Iterable, Optional, Text
+
+from zerver.decorator import (REQ, api_key_only_webhook_view,
+                              has_request_variables)
+from zerver.lib.actions import check_send_message
+from zerver.lib.response import json_success
+from zerver.lib.webhooks.git import (EMPTY_SHA,
+                                     SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE,
+                                     get_commits_comment_action_message,
+                                     get_issue_event_message,
+                                     get_pull_request_event_message,
+                                     get_push_commits_event_message,
+                                     get_push_tag_event_message,
+                                     get_remove_branch_event_message)
+from zerver.models import Client, UserProfile
 
 
 class UnknownEventType(Exception):

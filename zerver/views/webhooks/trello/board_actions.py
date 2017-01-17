@@ -1,6 +1,7 @@
-from typing import Mapping, Any, Tuple, Optional, MutableMapping, Text
+from typing import Any, Mapping, MutableMapping, Optional, Text, Tuple
+
 from .exceptions import UnknownUpdateBoardAction
-from .templates import TRELLO_SUBJECT_TEMPLATE, TRELLO_MESSAGE_TEMPLATE
+from .templates import TRELLO_MESSAGE_TEMPLATE, TRELLO_SUBJECT_TEMPLATE
 
 SUPPORTED_BOARD_ACTIONS = [
     u'removeMemberFromBoard',

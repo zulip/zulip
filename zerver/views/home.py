@@ -1,39 +1,44 @@
 from __future__ import absolute_import
-from typing import Any, List, Dict, Optional, Text
-
-from django.conf import settings
-from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect, HttpResponse, HttpRequest
-from django.shortcuts import redirect
-from django.utils import translation
-from django.utils.cache import patch_cache_control
-from six.moves import zip_longest, zip, range
-
-from version import ZULIP_VERSION
-from zerver.decorator import zulip_login_required
-from zerver.forms import ToSForm
-from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
-    Recipient, Realm, UserMessage, DefaultStream, RealmEmoji, RealmAlias, \
-    RealmFilter, \
-    PreregistrationUser, get_client, UserActivity, \
-    get_stream, UserPresence, get_recipient, name_changes_disabled, email_to_username, \
-    list_of_domains_for_realm
-from zerver.lib.actions import update_user_presence, do_change_tos_version, \
-    do_events_register, do_update_pointer, get_cross_realm_dicts, realm_user_count
-from zerver.lib.avatar import avatar_url
-from zerver.lib.i18n import get_language_list, get_language_name, \
-    get_language_list_for_templates
-from zerver.lib.push_notifications import num_push_devices_for_user
-from zerver.lib.utils import statsd, get_subdomain
-from zproject.backends import password_auth_enabled
-from zproject.jinja2 import render_to_response
+from typing import Any, Dict, List, Optional, Text
 
 import calendar
 import datetime
 import logging
 import re
-import simplejson
 import time
+from six.moves import range, zip, zip_longest
+
+import simplejson
+
+from django.conf import settings
+from django.core.urlresolvers import reverse
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.shortcuts import redirect
+from django.utils import translation
+from django.utils.cache import patch_cache_control
+
+from version import ZULIP_VERSION
+from zerver.decorator import zulip_login_required
+from zerver.forms import ToSForm
+from zerver.lib.actions import (do_change_tos_version, do_events_register,
+                                do_update_pointer, get_cross_realm_dicts,
+                                realm_user_count, update_user_presence)
+from zerver.lib.avatar import avatar_url
+from zerver.lib.i18n import (get_language_list,
+                             get_language_list_for_templates,
+                             get_language_name)
+from zerver.lib.push_notifications import num_push_devices_for_user
+from zerver.lib.utils import get_subdomain, statsd
+from zerver.models import (DefaultStream, Huddle, Message, PreregistrationUser,
+                           Realm, RealmAlias, RealmEmoji, RealmFilter,
+                           Recipient, Stream, Subscription, UserActivity,
+                           UserMessage, UserPresence, UserProfile,
+                           email_to_username, get_client, get_recipient,
+                           get_stream, list_of_domains_for_realm,
+                           name_changes_disabled)
+from zproject.backends import password_auth_enabled
+from zproject.jinja2 import render_to_response
+
 
 @zulip_login_required
 def accounts_accept_terms(request):
@@ -339,4 +344,3 @@ def is_buggy_ua(agent):
     """
     return ("Humbug Desktop/" in agent or "Zulip Desktop/" in agent or "ZulipDesktop/" in agent) and \
         "Mac" not in agent
-

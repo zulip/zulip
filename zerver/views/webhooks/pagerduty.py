@@ -1,17 +1,18 @@
 # Webhooks for external integrations.
 from __future__ import absolute_import
+from typing import Any, Dict, Iterable, Optional, Text
 
-from zerver.lib.actions import check_send_message
-from zerver.lib.response import json_success
-from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
-from zerver.models import Client, UserProfile
+import pprint
+
+import ujson
 
 from django.http import HttpRequest, HttpResponse
 
-import pprint
-import ujson
-from typing import Dict, Any, Iterable, Optional, Text
-
+from zerver.decorator import (REQ, api_key_only_webhook_view,
+                              has_request_variables)
+from zerver.lib.actions import check_send_message
+from zerver.lib.response import json_success
+from zerver.models import Client, UserProfile
 
 PAGER_DUTY_EVENT_NAMES = {
     'incident.trigger': 'triggered',
