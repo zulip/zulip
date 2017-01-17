@@ -1,27 +1,15 @@
 from __future__ import absolute_import
 
-import re
-
 from django.http import HttpRequest, HttpResponse
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext as _
 from typing import Text
 
 from zerver.models import UserProfile
+from zerver.lib.emoji import check_emoji_admin, check_valid_emoji_name
 from zerver.lib.request import JsonableError, REQ, has_request_variables
 from zerver.lib.response import json_success, json_error
 from zerver.lib.actions import check_add_realm_emoji, do_remove_realm_emoji
-
-def check_emoji_admin(user_profile):
-    # type: (UserProfile) -> None
-    if user_profile.realm.add_emoji_by_admins_only and not user_profile.is_realm_admin:
-        raise JsonableError(_("Must be a realm administrator"))
-
-def check_valid_emoji_name(emoji_name):
-    # type: (Text) -> None
-    if re.match('^[0-9a-zA-Z.\-_]+(?<![.\-_])$', emoji_name):
-        return
-    raise JsonableError(_("Invalid characters in emoji name"))
 
 def list_emoji(request, user_profile):
     # type: (HttpRequest, UserProfile) -> HttpResponse
