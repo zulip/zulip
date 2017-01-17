@@ -65,6 +65,9 @@ subprocess.check_call(['cp', '-a', 'static/locale',
                       stdout=fp, stderr=fp)
 
 # Generate /authors page markdown
-subprocess.check_call(['./tools/update-authors-json'], stdout=fp)
+authors_cmd = ['./tools/update-authors-json']
+if os.environ.get("TRAVIS"):
+    authors_cmd.append("--use-fixture")
+subprocess.check_call(authors_cmd, stdout=fp)
 
 fp.close()

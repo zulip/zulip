@@ -26,7 +26,7 @@ else
     build_options=(--py3)
 fi
 
-if ! ./tools/build-release-tarball "${build_options[@]}" travis; then
+if ! env TRAVIS=1 ./tools/build-release-tarball "${build_options[@]}" travis; then
     echo "Attempting to output failure logging data"
     cat /tmp/tmp.*/update-prod-static.log || true
     exit 1
