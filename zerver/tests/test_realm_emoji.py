@@ -107,3 +107,9 @@ class RealmEmojiTest(ZulipTestCase):
         check_add_realm_emoji(realm, "my_emoji", "https://example.com/my_emoji")
         result = self.client_delete("/json/realm/emoji/my_emoji")
         self.assert_json_error(result, 'Must be a realm administrator')
+
+    def test_delete_exception(self):
+        # type: () -> None
+        self.login("iago@zulip.com")
+        result = self.client_delete("/json/realm/emoji/invalid_emoji")
+        self.assert_json_error(result, "Emoji 'invalid_emoji' does not exist")
