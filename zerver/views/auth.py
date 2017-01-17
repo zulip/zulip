@@ -326,6 +326,7 @@ def log_into_subdomain(request):
 
 def login_page(request, **kwargs):
     # type: (HttpRequest, **Any) -> HttpResponse
+
     extra_context = kwargs.pop('extra_context', {})
     if dev_auth_enabled():
         # Development environments usually have only a few users, but
@@ -349,6 +350,7 @@ def login_page(request, **kwargs):
         template_response.context_data['wrong_subdomain_error'] = WRONG_SUBDOMAIN_ERROR
     except KeyError:
         pass
+    
 
     return template_response
 
