@@ -1061,7 +1061,6 @@ a.dark_background:hover,
 
 .include-sender .message_top_line {
     margin-top: 6px;
-    margin-bottom: 7px;
 }
 
 .message-right {
@@ -1264,7 +1263,7 @@ blockquote p {
 }
 
 .messagebox p {
-    margin: 3px 0px 3px 2px;
+    margin: 3px 0px 3px 0px;
 }
 
 .messagebox blockquote {
