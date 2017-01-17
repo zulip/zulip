@@ -7,12 +7,12 @@ Bots and integrations are features that are accesible to all members of an organ
 {!go-to-the.md!} [Your bots](/#settings/your-bots)
 {!settings.md!}
 
-2. On this page, under the **Add a New Bot** view, you can enter a name, an email, and
+2. On this page, under the **Add a new bot** view, you can enter a name, an email, and
 optionally an avatar for your bot. Then click the **Create bot** button to create your bot.
 
     ![Bots page](/static/images/help/add_a_new_bot.png)
 
-3. An entry such as the following should appear above the **Add a New Bot** view, confirming
+3. An entry such as the following should appear above the **Add a new bot** view, confirming
 the creation of your bot.
 
     ![Example bot](/static/images/help/bot_example.png)
