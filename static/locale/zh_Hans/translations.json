@@ -147,7 +147,7 @@
   "Yes": "Yes", 
   "This is a <span class=\"icon-vector-globe\"></span> <b>public stream</b>. Anybody in your organization can join.": "This is a <span class=\"icon-vector-globe\"></span> <b>public stream</b>. Anybody in your organization can join.", 
   "Error updating time format setting": "Error updating time format setting", 
-  "Authentication Methods": "Authentication Methods", 
+  "Authentication methods": "Authentication methods", 
   "New users must have e-mails ending in __atdomains_string__!": "New users must have e-mails ending in __atdomains_string__!", 
   "If checked, users can edit the content and topics of their old messages.": "If checked, users can edit the content and topics of their old messages.", 
   "Only admins may create streams": "Only admins may create streams", 
