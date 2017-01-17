@@ -1,7 +1,7 @@
 # Add custom emoji
 
-If you are an administrator of a Zulip organization, you can add
-custom emojis to your organization for other members to use.
+If enabled by your Zulip organization administrator, you can add custom
+emojis to your organization for other members to use.
 
 {!go-to-the.md!} [Emoji Settings](/#administration/emoji-settings)
 {!admin.md!}
