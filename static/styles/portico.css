@@ -503,6 +503,48 @@ a.bottom-signup-button {
     font-size: 25px;
 }
 
+.authors_row {
+    width: 100%;
+    table-layout: fixed;
+}
+
+.authors_row a {
+    color: inherit;
+}
+
+.authors_row td {
+    width: 100%;
+    height: 100%;
+    height: 120px;
+    padding: 10px;
+    transition: box-shadow 0.3s ease-in-out;
+}
+
+.authors_row td:hover {
+    color: #00796B;
+    box-shadow: 0px 0px 30px #B2DFDB;
+}
+
+.authors_row .avatar {
+    width: 50%;
+    text-align: center;
+    vertical-align: top;
+}
+
+.authors_row .info {
+    width: 50%;
+    text-align: left;
+    vertical-align: top;
+}
+
+.avatar_img {
+    width: auto;
+    height: auto;
+    max-width: 80%;
+    max-height: 80%;
+    border-radius: 20%;
+}
+
 .integration-lozenges {
     text-align: center;
 }
@@ -568,12 +610,13 @@ a.bottom-signup-button {
     display: none;
 }
 
-.login-page-header,
+.api-page-header,
 .apps-page-header,
+.authors-page-header,
 .feature-page-header,
 .integrations-page-header,
-.register-page-header,
-.api-page-header {
+.login-page-header,
+.register-page-header {
     font-weight: 300;
     font-size: 40px;
     display: block;
@@ -594,11 +637,11 @@ a.bottom-signup-button {
     margin-bottom: 50px;
 }
 
-.feature-page-header,
 .api-page-header,
 .apps-page-header,
-.integrations-page-header
-{
+.authors-page-header,
+.feature-page-header,
+.integrations-page-header {
     padding-top: 40px;
 }
 
