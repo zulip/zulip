@@ -43,7 +43,7 @@ It presumes that you already have a fully implemented `<my-bot>.py` bot and now 
 3. Register a new bot on your Zulip server's web interface.
 
     * Navigate to *Settings* -> *Your bots* -> *Add a New Bot*, fill
-      out the form and click on *Create Bot*.
+      out the form and click on *Create bot*.
     * A new bot should appear in the *Your bots* panel.
 
 4. Add the bot's configuration file on your Zulip server.

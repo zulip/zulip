@@ -183,7 +183,7 @@
   "Organization settings": "社区设置",
   "\n    <p class=\"alert-word-settings-note\">\n      {{t \"Alert words allow you to be notified as if you were @-mentioned\n      when certain words or phrases are used in Zulip.\"}}\n    </p>\n    ": "\n    <p class=\"alert-word-settings-note\">\n      {{t \"当消息中出现提示词后，您会收到通知，就像@提醒一样。\"}}\n    </p>\n    ",
   "Make this message take up less space on the screen": "使得该消息占用较少的屏幕空间",
-  "Create Bot": "创建机器人",
+  "Create bot": "创建机器人",
   "Actions": "操作",
   "Any user may now invite new users!": "现在所有用户都可以邀请新用户！",
   "<p>Messages in __page_params.product_name__ go to a <b>stream</b> and have a <b>topic</b>.</p>": "<p>__page_params.product_name__中的消息是发送在一个<b>频道</b>中并且拥有一个<b>话题</b>。</p>",

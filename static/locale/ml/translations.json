@@ -183,7 +183,7 @@
   "Organization settings": "സംഘടന സജ്ജീകരണങ്ങൾ",
   "\n    <p class=\"alert-word-settings-note\">\n      {{t \"Alert words allow you to be notified as if you were @-mentioned\n      when certain words or phrases are used in Zulip.\"}}\n    </p>\n    ": "\n    <p class=\"alert-word-settings-note\">\n      {{t \"Alert words allow you to be notified as if you were @-mentioned\n      when certain words or phrases are used in Zulip.\"}}\n    </p>\n    ",
   "Make this message take up less space on the screen": "ഈ സന്ദേശങ്ങൾ സ്ക്രീനിലെ കുറച്ച് സ്ഥലം മാത്രം ഉപയോഗിക്കുന്നതു പോലെയാക്കുക",
-  "Create Bot": "ബോട്ട് നിർമ്മിക്കുക",
+  "Create bot": "ബോട്ട് നിർമ്മിക്കുക",
   "Actions": "പ്രവർത്തനങ്ങൾ",
   "Any user may now invite new users!": "Any user may now invite new users!",
   "<p>Messages in __page_params.product_name__ go to a <b>stream</b> and have a <b>topic</b>.</p>": "<p>Messages in __page_params.product_name__ go to a <b>stream</b> and have a <b>topic</b>.</p>",

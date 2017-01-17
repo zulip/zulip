@@ -219,7 +219,7 @@
   "Private messages and @-mentions": "Private messages and @-mentions", 
   "Compose a message to stream <b>__stream.name__</b>": "Compose a message to stream <b>__stream.name__</b>", 
   "Error listing streams": "Error listing streams", 
-  "Create Bot": "Create Bot", 
+  "Create bot": "Create bot", 
   "By deactivating <strong><span class=\"user_name\"></span></strong> &lt;<span class=\"email\"></span>&gt;, they will be logged out immediately.": "By deactivating <strong><span class=\"user_name\"></span></strong> &lt;<span class=\"email\"></span>&gt;, they will be logged out immediately.", 
   "\n    <p>You can <b>narrow</b> to a stream or topic by <b>clicking on it</b>, or\n       see messages from all streams at once from your Home view.</p>\n    ": "\n    <p>You can <b>narrow</b> to a stream or topic by <b>clicking on it</b>, or\n       see messages from all streams at once from your Home view.</p>\n    ", 
   "Error listing streams or subscriptions": "Error listing streams or subscriptions", 

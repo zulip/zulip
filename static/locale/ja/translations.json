@@ -183,7 +183,7 @@
   "Organization settings": "組織の設定",
   "\n    <p class=\"alert-word-settings-note\">\n      {{t \"Alert words allow you to be notified as if you were @-mentioned\n      when certain words or phrases are used in Zulip.\"}}\n    </p>\n    ": "\n    <p class=\"alert-word-settings-note\">\n      {{t \"Zulip内でアラート単語に指定した単語・フレーズが使われると@で言及されたときのように通知されます。\"}}\n    </p>\n    ",
   "Make this message take up less space on the screen": "このメッセージをより少ないスペースで表示するようにする",
-  "Create Bot": "ボットを作成",
+  "Create bot": "ボットを作成",
   "Actions": "アクション",
   "Any user may now invite new users!": "すべてのユーザーが新しいユーザーを招待できるようになりました！",
   "<p>Messages in __page_params.product_name__ go to a <b>stream</b> and have a <b>topic</b>.</p>": "<p>__page_params.product_name__のメッセージを<b>stream</b>ストリームに移動し<b>topic</b>トピックにします。</p>",
