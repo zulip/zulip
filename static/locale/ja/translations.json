@@ -210,7 +210,7 @@
   "Exit Tutorial": "チュートリアルを終了",
   "Narrow to topic <b>__topic_name__</b>": "<b>__topic_name__</b>トピックだけを表示",
   "Unpin stream <b>__stream.name__</b> from top": "上部へのストリーム<b>__stream.name__</b>の固定をやめる",
-  "Your Bots": "あなたのボット",
+  "Your bots": "あなたのボット",
   "Delete": "削除",
   "Remove admin": "管理者を削除",
   "Deactivate now": "すぐに無効にする",

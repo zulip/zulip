@@ -69,7 +69,7 @@
   "Unsubscribe from __stream__": "Unsubscribe from __stream__", 
   "\n      <p>Please re-enter your password to confirm your identity.\n        (<a href=\"/accounts/password/reset/\" target=\"_blank\">Forgotten it?</a>)</p>\n      ": "\n      <p>Please re-enter your password to confirm your identity.\n        (<a href=\"/accounts/password/reset/\" target=\"_blank\">Forgotten it?</a>)</p>\n      ", 
   "Pin stream <b>__stream.name__</b> to top": "Pin stream <b>__stream.name__</b> to top", 
-  "Your Bots": "Your Bots", 
+  "Your bots": "Your bots", 
   "Users restricted to __domains_string__": "Users restricted to __domains_string__", 
   "Message sent when you were not subscribed": "Message sent when you were not subscribed", 
   "Your account": "Your account", 

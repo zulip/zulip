@@ -210,7 +210,7 @@
   "Exit Tutorial": "退出教程",
   "Narrow to topic <b>__topic_name__</b>": "筛选话题&quot;<b>__topic_name__</b>&quot;",
   "Unpin stream <b>__stream.name__</b> from top": "取消频道\"<b>__stream.name__</b>\"置顶",
-  "Your Bots": "机器人设置",
+  "Your bots": "机器人设置",
   "Delete": "删除",
   "Remove admin": "取消管理员",
   "Deactivate now": "禁用",

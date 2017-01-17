@@ -4,7 +4,7 @@ Bots and integrations are features that are accesible to all members of an organ
 
 ## To Add a Bot
 
-{!go-to-the.md!} [Your Bots](/#settings/your-bots)
+{!go-to-the.md!} [Your bots](/#settings/your-bots)
 {!settings.md!}
 
 2. On this page, under the **Add a New Bot** view, you can enter a name, an email, and
