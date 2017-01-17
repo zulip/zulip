@@ -1,7 +1,9 @@
 # Remove someone from a stream
 
-As an administrator, Zulip allows you to remove users from streams to help
-manage your Zulip team.
+{!admin-only.md!}
+
+Zulip allows you to remove users from streams to help manage your Zulip
+team.
 
 {!subscriptions.md!}
 {!filter-streams.md!}
