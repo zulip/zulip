@@ -6,6 +6,7 @@ import logging
 import argparse
 import platform
 import subprocess
+import re
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
@@ -176,6 +177,15 @@ def main(options):
     run(["sudo", "./scripts/lib/setup-apt-repo"])
     run(["sudo", "apt-get", "-y", "install", "--no-install-recommends"] + APT_DEPENDENCIES[codename])
 
+    # Check if the current version of pip is outdated.In some edge cases, the previous command
+    # doesn't update pip correctly, which may lead to failing provisions if the current version
+    # is too old.
+    pip_version = re.search(r'\d+', subprocess_text_output(["pip", "--version"])).group()
+    if int(pip_version) < 9:
+        logging.critical("Your pip version is outdated!"
+                         " Is your system path to pip set up correctly?")
+        sys.exit(1)
+
     if options.is_travis:
         if PY2:
             MYPY_REQS_FILE = os.path.join(ZULIP_PATH, "requirements", "mypy.txt")
@@ -296,3 +306,4 @@ if __name__ == "__main__":
 
     options = parser.parse_args()
     sys.exit(main(options))
+
