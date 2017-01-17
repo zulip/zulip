@@ -7,10 +7,11 @@
 2. Click the **Change password** button located underneath your name.
 3. You will first be asked to enter your old password, and then to
    enter a new password and to confirm it.
-4. Click **Save changes** to apply your new password.
 
-!!! tip ""
-    Your password must be six characters or longer.
+    !!! warn ""
+        **Note:** Your password must be six characters or longer.
+
+{!save-changes.md!} account settings.
 
 ## If you forgot your password
 If you've forgotten your password, you can easily reset it using your e-mail.
