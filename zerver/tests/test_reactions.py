@@ -16,9 +16,9 @@ class ReactionEmojiTest(ZulipTestCase):
         Sending reaction without emoji fails
         """
         sender = 'hamlet@zulip.com'
-        result = self.client_put('/api/v1/messages/1/emoji_reactions',
+        result = self.client_put('/api/v1/messages/1/emoji_reactions/',
                                  **self.api_auth(sender))
-        self.assertEqual(result.status_code, 404)
+        self.assertEqual(result.status_code, 400)
 
     def test_add_invalid_emoji(self):
         # type: () -> None
