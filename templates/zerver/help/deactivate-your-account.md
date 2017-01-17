@@ -10,7 +10,7 @@ deactivate your Zulip account.
    **Your account** section.
 
 4. After clicking the **Deactivate account** button, a modal window titled
-**Deactivate Your account** will appear. To confirm the deletion of your
+**Deactivate your account** will appear. To confirm the deletion of your
 account, click the **Deactivate now** button.  
 
     !!! warn ""
