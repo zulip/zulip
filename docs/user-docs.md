@@ -5,6 +5,8 @@ documentation about use Zulip's features and perform certain tasks, such as
 setting up an organization. This system is designed to make writing and
 maintaining such documentation highly efficient.
 
+## Editing and testing
+
 The user documentation is available under `/help/` on any Zulip server;
 (e.g. [https://chat.zulip.org/help/](https://chat.zulip.org/help/) or
 `http://localhost:9991/help/` in the Zulip development environment). The
@@ -123,6 +125,8 @@ All subsequent subsections should be appended with an increasing number of
 ### Subsection 1
 ```
 
+Always leave a blank line on either side of a section heading.
+
 ### User interface
 
 When you refer to the features in the Zulip UI, you should **bold** the
@@ -151,19 +155,22 @@ documentation.
 
 ### Images
 
-Images should be included in documentation only if it will help guide the
-user. For instance, an image of an element should not be included if the
-element the user needs to interact with is the only thing on the page, but
-images can be included to show the end result of an interaction with the UI.
+Images and screenshots should be included in user documentation only
+if it will help guide the user in how to do something (e.g. if the
+image will make it much clearer which element on the page the user
+should interact with).  For instance, an image of an element should
+not be included if the element the user needs to interact with is the
+only thing on the page, but images can be included to show the end
+result of an interaction with the UI.
 
-Using too many screenshots creates problems such as constantly updating
-images every time the UI is changed and making the instructions look longer
-and therefore more complicated.
+Using too many screenshots creates maintainability problems (we have
+to update them every time the UI is changed) and also can make the
+instructions for something simple look long and complicated.
 
-The image should never include the whole Zulip browser window in a
-screenshot; instead, it should only show relevant parts of the app. In
-addition, the screenshot should always come *after* the text that describes
-it, never before.
+When taking screenshots, the image should never include the whole
+Zulip browser window in a screenshot; instead, it should only show
+relevant parts of the app.  In addition, the screenshot should always
+come *after* the text that describes it, never before.
 
 Images are often formatted as continuations of steps and must be indented on
 a new line to be formatted this way.
