@@ -63,7 +63,7 @@ Start by cloning this repository: `git clone
 https://github.com/zulip/zulip.git`
 
 ```
-sudo apt-get install closure-compiler libfreetype6-dev libffi-dev \
+sudo apt-get install libfreetype6-dev libffi-dev \
     memcached rabbitmq-server libldap2-dev redis-server \
     postgresql-server-dev-all libmemcached-dev python-dev \
     hunspell-en-us nodejs nodejs-legacy npm git yui-compressor \
@@ -121,7 +121,7 @@ https://github.com/zulip/zulip.git`
 ```
 sudo add-apt-repository ppa:tabbott/zulip
 sudo apt-get update
-sudo apt-get install closure-compiler libfreetype6-dev libffi-dev \
+sudo apt-get install libfreetype6-dev libffi-dev \
     memcached rabbitmq-server libldap2-dev redis-server \
     postgresql-server-dev-all libmemcached-dev python-dev \
     hunspell-en-us nodejs nodejs-legacy npm git yui-compressor \
@@ -142,7 +142,7 @@ https://github.com/zulip/zulip.git`
 sudo dnf install libffi-devel memcached rabbitmq-server \
     openldap-devel python-devel redis postgresql-server \
     postgresql-devel postgresql libmemcached-devel freetype-devel \
-    nodejs npm yuicompressor closure-compiler gettext
+    nodejs npm yuicompressor gettext
 ```
 
 Now continue with the [Common to Fedora/CentOS](#common-to-fedora-centos-instructions) instructions below.
@@ -179,8 +179,7 @@ sudo yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noa
 sudo yum install libffi-devel memcached rabbitmq-server openldap-devel \
     python-devel redis postgresql-server postgresql-devel postgresql \
     libmemcached-devel wget python-pip openssl-devel freetype-devel \
-    libjpeg-turbo-devel zlib-devel nodejs yuicompressor \
-    closure-compiler gettext
+    libjpeg-turbo-devel zlib-devel nodejs yuicompressor gettext
 
 # We need these packages to compile tsearch-extras
 sudo yum groupinstall "Development Tools"
@@ -460,4 +459,3 @@ the results in your browser.
 Currently, the Docker workflow is substantially less convenient than
 the Vagrant workflow and less documented; please contribute to this
 guide and the Docker tooling if you are using Docker to develop Zulip!
-

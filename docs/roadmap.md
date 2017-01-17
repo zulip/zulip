@@ -159,7 +159,8 @@ major focus area for the project.
 * [Add support for changing users' email
   addresses](https://github.com/zulip/zulip/issues/734)
 * [Migrate from jslint to eslint](https://github.com/zulip/zulip/issues/535)
-* [Replace the slow closure-compiler based static asset toolchain](https://github.com/zulip/zulip/issues/693)
+* <strike>[Replace the slow closure-compiler based static asset
+  toolchain](https://github.com/zulip/zulip/issues/693)</strike>
 * [Use a modern JavaScript bundler like webpack](https://github.com/zulip/zulip/issues/695)
 * [Add support for building frontend features in something like React](https://github.com/zulip/zulip/issues/694)
 

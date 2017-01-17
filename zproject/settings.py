@@ -193,6 +193,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'USE_WEBSOCKETS': True,
                     'PASSWORD_MIN_LENGTH': 6,
                     'PASSWORD_MIN_ZXCVBN_QUALITY': 0.4,
+                    'UGLIFY_ARGUMENTS': "--compress sequences=5 --mangle --comments",
                     }
 
 for setting_name, setting_val in six.iteritems(DEFAULT_SETTINGS):
