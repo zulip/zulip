@@ -13,8 +13,8 @@ from six.moves import range, zip
 
 def generate_time_series_data(days=100, business_hours_base=10, non_business_hours_base=10,
                               growth=1, autocorrelation=0, spikiness=1, holiday_rate=0,
-                              frequency=CountStat.DAY, is_gauge=False):
-    # type: (int, float, float, float, float, float, float, str, bool) -> List[int]
+                              frequency=CountStat.DAY, is_gauge=False, random_seed=26):
+    # type: (int, float, float, float, float, float, float, str, bool, int) -> List[int]
     """
     Generate semi-realistic looking time series data for testing analytics graphs.
 
@@ -32,6 +32,7 @@ def generate_time_series_data(days=100, business_hours_base=10, non_business_hou
     holiday_rate -- Fraction of days randomly set to 0, largely for testing how we handle 0s.
     frequency -- Should be CountStat.HOUR or CountStat.DAY.
     is_gauge -- If True, return partial sum of the series.
+    random_seed -- Seed for random number generator.
     """
     if frequency == CountStat.HOUR:
         length = days*24
@@ -55,7 +56,7 @@ def generate_time_series_data(days=100, business_hours_base=10, non_business_hou
     growth_base = growth ** (1. / (length-1))
     values_no_noise = [seasonality[i % len(seasonality)] * (growth_base**i) for i in range(length)]
 
-    seed(26)
+    seed(random_seed)
     noise_scalars = [gauss(0, 1)]
     for i in range(1, length):
         noise_scalars.append(noise_scalars[-1]*autocorrelation + gauss(0, 1)*(1-autocorrelation))

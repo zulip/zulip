@@ -22,6 +22,7 @@ class Command(BaseCommand):
     help = """Populates analytics tables with randomly generated data."""
 
     DAYS_OF_DATA = 100
+    random_seed = 26
 
     def create_user(self, email, full_name, is_staff, date_joined, realm):
         # type: (Text, Text, Text, bool, datetime, Realm) -> UserProfile
@@ -33,11 +34,13 @@ class Command(BaseCommand):
     def generate_fixture_data(self, stat, business_hours_base, non_business_hours_base,
                               growth, autocorrelation, spikiness, holiday_rate=0):
         # type: (CountStat, float, float, float, float, float, float) -> List[int]
+        self.random_seed += 1
         return generate_time_series_data(
             days=self.DAYS_OF_DATA, business_hours_base=business_hours_base,
             non_business_hours_base=non_business_hours_base, growth=growth,
             autocorrelation=autocorrelation, spikiness=spikiness, holiday_rate=holiday_rate,
-            frequency=stat.frequency, is_gauge=(stat.interval == CountStat.GAUGE))
+            frequency=stat.frequency, is_gauge=(stat.interval == CountStat.GAUGE),
+            random_seed=self.random_seed)
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
