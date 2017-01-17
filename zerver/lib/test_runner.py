@@ -174,21 +174,23 @@ class Runner(DiscoverRunner):
         return self.shallow_tested_templates
 
     def run_suite(self, suite, fatal_errors=True):
-        # type: (Iterable[TestCase], bool) -> bool
+        # type: (Iterable[TestCase], bool) -> Tuple[bool, Any]
         failed = False
+        failed_tests = []
         for test in suite:
             # The attributes __unittest_skip__ and __unittest_skip_why__ are undocumented
             if hasattr(test, '__unittest_skip__') and test.__unittest_skip__:
                 print('Skipping', full_test_name(test), "(%s)" % (test.__unittest_skip_why__,))
             elif run_test(test):
                 failed = True
+                failed_tests.append(full_test_name(test))
                 if fatal_errors:
-                    return failed
-        return failed
+                    return failed, failed_tests
+        return failed, failed_tests
 
     def run_tests(self, test_labels, extra_tests=None,
                   full_suite=False, **kwargs):
-        # type: (List[str], Optional[List[TestCase]], bool, **Any) -> bool
+        # type: (List[str], Optional[List[TestCase]], bool, **Any) -> Tuple[bool, Any]
         self.setup_test_environment()
         try:
             suite = self.build_suite(test_labels, extra_tests)
@@ -206,8 +208,8 @@ class Runner(DiscoverRunner):
         # run a single test and getting an SA connection causes data from
         # a Django connection to be rolled back mid-test.
         get_sqlalchemy_connection()
-        failed = self.run_suite(suite, fatal_errors=kwargs.get('fatal_errors'))
+        failed, failed_tests = self.run_suite(suite, fatal_errors=kwargs.get('fatal_errors'))
         self.teardown_test_environment()
         if not failed:
             write_instrumentation_reports(full_suite=full_suite)
-        return failed
+        return failed, failed_tests

@@ -5,6 +5,7 @@ import optparse
 import os
 import sys
 import subprocess
+import ujson
 
 try:
     import django
@@ -75,10 +76,32 @@ if __name__ == "__main__":
                       action="store_true",
                       default=False,
                       help="Show which tests are slowest.")
+    parser.add_option('--re-run', dest="re_run",
+                      action = "store_true",
+                      default=False,
+                      help=("Run the tests which failed the last time test-backend was run."
+                            "--re-run doesn't run along with --force and --nonfatal-error"))
 
     (options, args) = parser.parse_args()
 
+    if options.re_run and (not options.fatal_errors or options.force):
+        print("--re-run doesn't run along with --force or --nonfatal-error, please try again.")
+        sys.exit(0)
+
     zerver_test_dir = 'zerver/tests/'
+    failed_test_path = 'var/last_test_failure.json'
+
+    # While running --re-run, we access the file containing the
+    # details of the tests which failed in the last run of test-backend
+    # which is stored at zulip/var/last_test_failure.json and runs them
+    if options.re_run:
+        options.fatal_errors  = False
+        try:
+            with open(failed_test_path, 'r') as outfile:
+                failed_tests = ujson.load(outfile)
+                args = failed_tests['tests']
+        except IOError:
+            print("var/last_test_failure.json doesn't exist")
 
     # to transform forward slashes '/' present in the argument into dots '.'
     for suite in args:
@@ -168,10 +191,20 @@ if __name__ == "__main__":
 
     TestRunner = get_runner(settings)
     test_runner = TestRunner()
-    failures = test_runner.run_tests(suites, fatal_errors=options.fatal_errors,
-                                     full_suite=full_suite)
+    failures, failed_tests = test_runner.run_tests(suites, fatal_errors=options.fatal_errors,
+                                                   full_suite=full_suite)
 
     templates_not_rendered = test_runner.get_shallow_tested_templates()
+
+    # If one or more tests fail, we store the test as a JSON list
+    # at zulip/var/last_test_failure.json so that the failed test
+    # can be run alone next time using the command --re-run
+    if failures:
+        failed_test_name = {}
+        failed_test_name['tests'] = failed_tests
+        with open(failed_test_path, 'w') as outfile:
+            ujson.dump(failed_test_name, outfile)
+
     if templates_not_rendered and full_suite:
         missed_count = len(templates_not_rendered)
         print("\nError: %s templates have no tests!" % (missed_count,))
