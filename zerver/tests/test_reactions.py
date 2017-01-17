@@ -58,8 +58,8 @@ class ReactionEmojiTest(ZulipTestCase):
         """
         sender = 'hamlet@zulip.com'
         emoji_name = 'my_emoji'
-        emoji_data = {'name': emoji_name, 'url': 'https://example.com/my_emoji'}
-        result = self.client_put('/json/realm/emoji', info=emoji_data,
+        emoji_data = {'url': 'https://example.com/my_emoji'}
+        result = self.client_put('/json/realm/emoji/my_emoji', info=emoji_data,
                                  **self.api_auth(sender))
         self.assert_json_success(result)
         self.assertEqual(200, result.status_code)
