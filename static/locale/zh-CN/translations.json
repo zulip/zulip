@@ -1,6 +1,6 @@
 {
   "{{#if msg/starred}}Unstar{{else}}Star{{/if}} this message": "消息{{#if msg/starred}}去星标{{else}}加星标{{/if}}",
-  "Streams Deletion": "删除频道",
+  "Delete streams": "删除频道",
   "Users restricted to __domain__": "仅限__domain__用户",
   "Nothing to preview": "Nothing to preview",
   "Mute the topic <b>__topic_name__</b>": "话题&quot;<b>__topic_name__</b>&quot;开启免打扰",

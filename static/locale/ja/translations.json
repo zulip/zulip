@@ -1,6 +1,6 @@
 {
   "{{#if msg/starred}}Unstar{{else}}Star{{/if}} this message": "このメッセージ{{#if msg/starred}}のスターを取る{{else}}にスターをつける{{/if}}",
-  "Streams Deletion": "ストリームの削除",
+  "Delete streams": "ストリームの削除",
   "Users restricted to __domain__": "ユーザーを__domain__だけに制限",
   "Nothing to preview": "プレビューするものがありません。",
   "Mute the topic <b>__topic_name__</b>": "<b>__topic_name__</b>トピックをミュート",

@@ -251,7 +251,7 @@
   "Alert words allow you to be notified as if you were @-mentioned\n      when certain words or phrases are used in Zulip.": "Alert words allow you to be notified as if you were @-mentioned\n      when certain words or phrases are used in Zulip.", 
   "Their password will be cleared from our systems, and any bots they maintain will be disabled.": "Their password will be cleared from our systems, and any bots they maintain will be disabled.", 
   "Confirm password": "Confirm password", 
-  "Streams Deletion": "Streams Deletion", 
+  "Delete streams": "Delete streams", 
   "Stream name": "Stream name", 
   "Create new stream": "Create new stream", 
   "Delete bot": "Delete bot", 

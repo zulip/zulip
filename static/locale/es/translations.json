@@ -1,6 +1,6 @@
 {
   "{{#if msg/starred}}Unstar{{else}}Star{{/if}} this message": "{{#if msg/starred}}Unstar{{else}}Star{{/if}} this message",
-  "Streams Deletion": "Streams Deletion",
+  "Delete streams": "Delete streams",
   "Users restricted to __domain__": "Users restricted to __domain__",
   "Nothing to preview": "Nothing to preview",
   "Mute the topic <b>__topic_name__</b>": "Mute the topic <b>__topic_name__</b>",
