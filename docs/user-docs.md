@@ -231,8 +231,7 @@ always create a new macro by adding a new file to that folder.
 
 * **About:** Links to the **Edit Administrator Settings** documentation.
 Usually preceded by the [**Go to the** macro](#go-to-the-go-to-the-md-macro)
-and a link to a particular section
-on the **Administration** page.
+and a link to a particular section on the **Administration** page.
 
 * **Contents:**
     ```.md
@@ -247,6 +246,33 @@ on the **Administration** page.
     ```.md
     1. Go to the [Organization settings](/#administration/organization-settings) tab of the
     [Administration](/help/edit-administrator-settings) page.
+    ```
+
+### **Administrator only feature** `{!admin-only.md!}` macro
+
+* **About:** Creates a note the feature discussed in the documentation is
+only available to organization administrators. It should be placed
+immediately after the title.
+
+* **Contents:**
+    ```.md
+    !!! warn ""
+        **Note:** This feature can only be controlled by organization administrators.
+    ```
+
+* **Example usage and rendering:**
+    ```.md
+    {!admin-only.md!}
+
+    {!follow-steps.md!} change who can join your stream by changing the stream's
+    accessibility.
+    ```
+    ```.md
+    !!! warn ""
+        **Note:** This feature can only be controlled by organization administrators.
+
+    Follow the following steps to change who can join your stream by
+    changing the stream's accessibility.
     ```
 
 ### **All streams** `{!all-streams.md!}` macro
