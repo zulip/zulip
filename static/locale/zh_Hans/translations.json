@@ -279,7 +279,7 @@
   "New users may sign up online!": "New users may sign up online!", 
   "Time will be displayed in the __format__-hour format!  You will need to reload the window for your changes to take effect": "Time will be displayed in the __format__-hour format!  You will need to reload the window for your changes to take effect", 
   "Unmute the stream <b>__stream.name__</b>": "Unmute the stream <b>__stream.name__</b>", 
-  "Deactivate Account": "Deactivate Account", 
+  "Deactivate account": "Deactivate account", 
   "Uncheck all": "Uncheck all", 
   "Alert words allow you to be notified as if you were @-mentioned\n      when certain words or phrases are used in Zulip.": "Alert words allow you to be notified as if you were @-mentioned\n      when certain words or phrases are used in Zulip.", 
   "Their password will be cleared from our systems, and any bots they maintain will be disabled.": "Their password will be cleared from our systems, and any bots they maintain will be disabled.", 
