@@ -27,8 +27,8 @@ the **Filter streams** input.
         to ask an administrator for help creating each particular stream.
 
 4. After clicking the plus (<i class="icon-vector-plus"></i>) icon, at
-right side of the [Subscriptions](/#subscriptions) page, labeled **Add New
-Stream**, will now display options for creating a stream.
+right side of the [Subscriptions](/#subscriptions) page, labeled
+**Create stream**, will now display options for creating a stream.
 
 5. Enter the title of your stream in the **Stream name** input.
 If you designate your stream as public, the **Stream name** will be

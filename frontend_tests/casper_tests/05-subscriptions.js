@@ -98,7 +98,7 @@ casper.then(function () {
                              "Rome is visible again");
 });
 casper.waitForSelector('#stream_creation_form', function () {
-    casper.test.assertTextExists('Add New Stream', 'New stream creation panel');
+    casper.test.assertTextExists('Create stream', 'New stream creation panel');
     casper.fill('form#stream_creation_form', {stream_name: 'Waseemio', stream_description: 'Oimeesaw'});
     casper.click('input[value="Scotland"] ~ span');
     casper.click('input[value="cordelia@zulip.com"] ~ span');
