@@ -3097,7 +3097,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
         state['realm_domain'] = user_profile.realm.domain
 
     if want('realm_domains'):
-        state['realm_domains'] = do_get_realm_aliases(user_profile.realm)
+        state['realm_domains'] = get_realm_aliases(user_profile.realm)
 
     if want('realm_emoji'):
         state['realm_emoji'] = user_profile.realm.get_emoji()
@@ -3683,7 +3683,7 @@ def get_emails_from_user_ids(user_ids):
     # We may eventually use memcached to speed this up, but the DB is fast.
     return UserProfile.emails_from_ids(user_ids)
 
-def do_get_realm_aliases(realm):
+def get_realm_aliases(realm):
     # type: (Realm) -> List[Dict[str, Text]]
     return list(realm.realmalias_set.values('id', 'domain'))
 

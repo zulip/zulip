@@ -5,7 +5,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
 from zerver.decorator import has_request_variables, REQ, require_realm_admin
-from zerver.lib.actions import do_add_realm_alias, do_get_realm_aliases, \
+from zerver.lib.actions import get_realm_aliases, do_add_realm_alias, \
     do_remove_realm_alias
 from zerver.lib.response import json_error, json_success
 from zerver.models import can_add_alias, RealmAlias, UserProfile
@@ -14,7 +14,7 @@ from typing import Text
 
 def list_aliases(request, user_profile):
     # type: (HttpRequest, UserProfile) -> (HttpResponse)
-    aliases = do_get_realm_aliases(user_profile.realm)
+    aliases = get_realm_aliases(user_profile.realm)
     return json_success({'domains': aliases})
 
 @require_realm_admin
