@@ -16,6 +16,10 @@ var editability_types = {
 };
 exports.editability_types = editability_types;
 
+function initClipboard(elem) {
+    return new Clipboard(elem);
+}
+
 function get_editability(message, edit_limit_seconds_buffer) {
     edit_limit_seconds_buffer = edit_limit_seconds_buffer || 0;
     if (!(message && message.sent_by_me)) {
@@ -188,6 +192,8 @@ function edit_message(row, raw_content) {
     var edit_obj = {form: form, raw_content: raw_content};
     currently_editing_messages[message.id] = edit_obj;
     current_msg_list.show_edit_message(row, edit_obj);
+
+    initClipboard(row.find('.copy_message')[0]);
 
     form.keydown(_.partial(handle_edit_keydown, false));
 

@@ -118,7 +118,8 @@
         "Plotly": false,
         "emoji_codes": false,
         "drafts": false,
-        "katex": false
+        "katex": false,
+        "Clipboard": false
     },
     "rules": {
         "no-restricted-syntax": 0,
