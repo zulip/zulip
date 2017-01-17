@@ -155,17 +155,6 @@ function make_stream_default(stream_name) {
     });
 }
 
-function stringify_list_with_conjunction(lst, conjunction) {
-    if (lst.length === 0) {
-        return '';
-    } else if (lst.length === 1) {
-        return lst.toString();
-    } else if (lst.length === 2) {
-        return lst.join(" " + conjunction + " ");
-    }
-    return lst.slice(0, lst.length-1).join(", ") + ", " + conjunction + " " + lst[lst.length-1].toString();
-}
-
 exports.populate_emoji = function (emoji_data) {
     var emoji_table = $('#admin_emoji_table').expectOne();
     emoji_table.find('tr.emoji_row').remove();
@@ -205,9 +194,11 @@ exports.populate_realm_aliases = function (aliases) {
     var domains_list = _.map(page_params.domains, function (ADomain) {
         return ADomain.domain;
     });
-    var domains = stringify_list_with_conjunction(domains_list, "or");
-
-    $("#realm_restricted_to_domains_label").text(i18n.t("Users restricted to __domains__", {domains: domains}));
+    var domains = domains_list.join(', ');
+    if (domains.length === 0) {
+        domains = i18n.t("None");
+    }
+    $("#realm_restricted_to_domains_label").text(i18n.t("New users restricted to the following domains: __domains__", {domains: domains}));
 
     alias_table.find("tr").remove();
     _.each(aliases, function (alias) {
@@ -578,16 +569,7 @@ function _setup_page() {
                 }
                 if (response_data.restricted_to_domain !== undefined) {
                     if (response_data.restricted_to_domain) {
-                        var atdomains = _.map(page_params.domains, function (ADomain) {
-                            return ADomain.domain;
-                        });
-                        var i;
-                        for (i = 0; i < atdomains.length; i += 1) {
-                            atdomains[i] = '@' + atdomains[i];
-                        }
-                        var atdomains_string = stringify_list_with_conjunction(atdomains, "or");
-
-                        ui.report_success(i18n.t("New users must have e-mails ending in __atdomains_string__!", {atdomains_string: atdomains_string}), restricted_to_domain_status);
+                        ui.report_success(i18n.t("New user e-mails now restricted to certain domains!"), restricted_to_domain_status);
                     } else {
                         ui.report_success(i18n.t("New users may have arbitrary e-mails!"), restricted_to_domain_status);
                     }
