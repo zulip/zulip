@@ -9,7 +9,7 @@ in any stream you are subscribed to, it works similarly to being
 {!go-to-the.md!} [Custom alert words](/#settings/custom-alert-words)
 {!settings.md!}
 
-2. Type the word/phrase you wish to be notified for into the **New Alert Word**
+2. Type the word/phrase you wish to be notified for into the **New alert word**
 text box. (e.g. "Downtime")
 
 3. Click on the **Add alert word** button to save it.
