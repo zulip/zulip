@@ -173,10 +173,10 @@ v1_api_and_json_patterns = [
 
     # realm/emoji -> zerver.views.realm_emoji
     url(r'^realm/emoji$', rest_dispatch,
-        {'GET': 'zerver.views.realm_emoji.list_emoji',
-         'PUT': 'zerver.views.realm_emoji.upload_emoji'}),
-    url(r'^realm/emoji/(?P<emoji_name>[0-9a-zA-Z.\-_]+(?<![.\-_]))$', rest_dispatch,
-        {'DELETE': 'zerver.views.realm_emoji.delete_emoji'}),
+        {'GET': 'zerver.views.realm_emoji.list_emoji'}),
+    url(r'^realm/emoji/(?P<emoji_name>.*)$', rest_dispatch,
+        {'PUT': 'zerver.views.realm_emoji.upload_emoji',
+         'DELETE': 'zerver.views.realm_emoji.delete_emoji'}),
 
     # realm/filters -> zerver.views.realm_filters
     url(r'^realm/filters$', rest_dispatch,
@@ -220,7 +220,7 @@ v1_api_and_json_patterns = [
     # reactions -> zerver.view.reactions
     # PUT adds a reaction to a message
     # DELETE removes a reaction from a message
-    url(r'^messages/(?P<message_id>[0-9]+)/emoji_reactions/(?P<emoji_name>[+0-9a-zA-Z.\-_]+(?<![.\-_]))$',
+    url(r'^messages/(?P<message_id>[0-9]+)/emoji_reactions/(?P<emoji_name>.*)$',
         rest_dispatch,
         {'PUT': 'zerver.views.reactions.add_reaction_backend',
          'DELETE': 'zerver.views.reactions.remove_reaction_backend'}),

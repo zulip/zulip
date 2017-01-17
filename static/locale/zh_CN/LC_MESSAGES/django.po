@@ -1126,7 +1126,7 @@ msgid "Search"
 msgstr "搜索"
 
 #: templates/zerver/navbar.html:49
-msgid "Manage Streams"
+msgid "Manage streams"
 msgstr "频道管理"
 
 #: templates/zerver/navbar.html:54

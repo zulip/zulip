@@ -12,8 +12,7 @@ stream, select the **Audible notifications** option under **Stream messages**.
     * If you want to have audible notifications only for private messages and @-mentions,
 select the **Audible notifications** option under **Private messages and @-mentions**.
 
-2. Click on the **Save Changes** button at the bottom to save any changes you
-made to your notification settings.
+{!save-changes.md!} notification settings.
 
 !!! tip ""
     You can change your notification settings for individual streams on your

@@ -28,7 +28,7 @@ code for your stream's color, you should change the stream's colors through the
 2. Select the stream you want to change the color of in the
 [Subscriptions](/#subscriptions) page; {!stream-settings.md!}
 
-2. Under the **Stream Settings** section, select the **Stream color** option.
+2. Under the **Stream settings** section, select the **Stream color** option.
 
 3. In the tooltip that appears after selecting the **Stream color** option,
 select a color from the color palette.

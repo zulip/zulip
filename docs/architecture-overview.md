@@ -36,7 +36,7 @@ repositories.
 We use [Transifex](https://www.transifex.com/zulip/zulip/) to do
 translations.
 
-In this overview we'll mainly discuss the core Zulip server and web
+In this overview, we'll mainly discuss the core Zulip server and web
 application.
 
 Usage assumptions and concepts
@@ -47,7 +47,7 @@ similar groups ranging in size from a small team to more than a thousand
 users. It features real-time notifications, message persistence and
 search, public group conversations (*streams*), invite-only streams,
 private one-on-one and group conversations, inline image previews, team
-presence/buddy list, a rich API, Markdown message support, and numerous
+presence/buddy lists, a rich API, Markdown message support, and numerous
 integrations with other services. The maintainer team aims to support
 users who connect to Zulip using dedicated iOS, Android, Linux, Windows,
 and Mac OS X clients, as well as people using modern web browsers or
@@ -75,7 +75,7 @@ users, in strict chronological order. A user can *narrow* to view only
 the messages in a single stream, and can further narrow to focus on a
 *topic* (thread) within that stream. Each narrow has its own URL. The
 user can quickly see what conversation they're in -- the stream and
-topic, or the names of the the user(s) they're private messaging with
+topic, or the names of the user(s) they're private messaging with
 -- using *the recipient bar* displayed atop each conversation.
 
 Zulip's philosophy is to provide sensible defaults but give the user

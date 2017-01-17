@@ -2,7 +2,7 @@
     <div class="flex">
         <div class="subscriptions-container">
             <div class="subscriptions-header">
-                Subscriptions
+                {{t 'Subscriptions' }}
                 <div class="exit">
                     <span class="exit-sign">&times;</span>
                 </div>
@@ -11,10 +11,10 @@
                 <div class="search-container">
                     <form id="add_new_subscription" class="form-inline" action="">
                         <input type="text" name="stream_name" id="search_stream_name"
-                          placeholder="{{t 'Filter Streams' }}" value="" autocomplete="off" />
+                          placeholder="{{t 'Filter streams' }}" value="" autocomplete="off" />
                         {{#if can_create_streams}}
                             <input type="submit" class=""
-                              id="create_stream_button" value="{{t '+' }}" />
+                              id="create_stream_button" value="+" />
                         {{/if}}
                         <div class="float-clear"></div>
                     </form>
@@ -28,11 +28,11 @@
             </div>
             <div class="right">
                 <div class="display-type">
-                    <div id="add_new_stream_title" class="stream-info-title">Add New Stream</div>
-                    <div id="stream_settings_title" class="stream-info-title">Stream Settings</div>
+                    <div id="add_new_stream_title" class="stream-info-title">{{t 'Create stream' }}</div>
+                    <div id="stream_settings_title" class="stream-info-title">{{t 'Stream settings' }}</div>
                 </div>
                 <div class="nothing-selected">
-                    Nothing selected.
+                    {{t 'Nothing selected.' }}
                 </div>
                 <div class="settings">
                     {{#each subscriptions}}

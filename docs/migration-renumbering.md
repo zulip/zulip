@@ -6,7 +6,7 @@ thrown off by conflicting migrations that are
 new in master.
 
 To help you understand how to deal with these
-conflicts, I am about narrate an exercise
+conflicts, I am about to narrate an exercise
 where I bring my development branch called
 showell-topic up to date with master.
 

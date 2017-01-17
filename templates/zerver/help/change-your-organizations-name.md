@@ -9,5 +9,5 @@ using an administrator account:
 
 4. Edit your organization's name in the **Your organization's name** textbox.
 You can choose any name of up to 40 characters for your organization.
-5. After editing the organization's name, you can save the changes by
-clicking on the **Save changes** button.
+
+{!save-changes.md!} organization settings.

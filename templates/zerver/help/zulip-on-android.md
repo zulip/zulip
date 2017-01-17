@@ -12,10 +12,10 @@ for your server's address appears. You have to write the server's URL in it, and
 press **Enter**.
 
 !!! warn ""
-    **Note:** There's no need to add `https://` in case your server is running secure
+    **Note:** There's no need to add `https://` in case your server is running a secure
     HTTP (HTTPS) protocol.
 
-    However, if your server uses a unsecure HTTP connection, you'll have to
+    However, if your server uses an insecure HTTP connection, you'll have to
     write `http://` manually. A message will appear, warning you about the risks
     of using this type of connections. In case you have no other choice, choose the
     **Use HTTP** option.

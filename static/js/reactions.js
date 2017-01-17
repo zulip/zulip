@@ -108,7 +108,14 @@ function generate_title(emoji_name, user_ids) {
 exports.add_reaction = function (event) {
     event.emoji_name_css_class = emoji.emoji_name_to_css_class(event.emoji_name);
     event.user.id = event.user.user_id;
-    message_store.get(event.message_id).reactions.push(event);
+    var message = message_store.get(event.message_id);
+    if (message === undefined) {
+        // If we don't have the message in cache, do nothing; if we
+        // ever fetch it from the server, it'll come with the
+        // latest reactions attached
+        return;
+    }
+    message.reactions.push(event);
     var message_element = $('.message_table').find("[zid='" + event.message_id + "']");
     var message_reactions_element = message_element.find('.message_reactions');
     var user_list = get_user_list_for_message_reaction(event.message_id, event.emoji_name);
@@ -134,8 +141,14 @@ exports.remove_reaction = function (event) {
     var emoji_name = event.emoji_name;
     var message_id = event.message_id;
     var user_id = event.user.user_id;
-    var message = message_store.get(message_id);
     var i = -1;
+    var message = message_store.get(message_id);
+    if (message === undefined) {
+        // If we don't have the message in cache, do nothing; if we
+        // ever fetch it from the server, it'll come with the
+        // latest reactions attached
+        return;
+    }
     _.each(message.reactions, function (reaction, index) {
         if (reaction.emoji_name === emoji_name && reaction.user.id === user_id) {
             i = index;

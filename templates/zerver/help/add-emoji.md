@@ -8,7 +8,7 @@ menu, pasting Unicode, or manually inputting the emoji code.
 1. Start by composing a [new message](/help/reply-to-a-message).
 2. Click the smiley face (<i class="icon-vector-smile"></i>) icon under the left
 edge of the message box.
-3. Click on any emoji to include it in your messsage.
+3. Click on any emoji to include it in your message.
 
 ## Pasting Unicode
 Zulip fully supports Unicode emoji. To use Unicode emoji in your message:

@@ -333,7 +333,7 @@ def render_markdown(message, content, realm_id=None, realm_alert_words=None, mes
                 possible_words.update(set(words))
 
     # DO MAIN WORK HERE -- call bugdown to convert
-    rendered_content = bugdown.convert(content, realm_id=realm_id, message=message,
+    rendered_content = bugdown.convert(content, realm_filters_key=realm_id, message=message,
                                        possible_words=possible_words)
 
     if message is not None:

@@ -26,7 +26,7 @@ If you want to pin multiple streams at once, you should pin streams through the 
 
 2. Select the stream you want to pin in the [Subscriptions](/#subscriptions) page; {!stream-settings.md!}
 
-3. Select the **Pin stream to top of left sidebar** option in **Stream Settings**.
+3. Select the **Pin stream to top of left sidebar** option in **Stream settings**.
 
 4. Once you close the [Subscriptions](/#subscriptions) page, the selected stream
 will be pinned the top of the **Streams** section, confirming the success of

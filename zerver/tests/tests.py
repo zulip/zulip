@@ -1830,7 +1830,7 @@ class HomeTest(ZulipTestCase):
             'Get started',
             'Keyboard shortcuts',
             'Loading...',
-            'Manage Streams',
+            'Manage streams',
             'Narrow by topic',
             'Next message',
             'SHARE THE LOVE',
