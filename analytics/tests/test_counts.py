@@ -8,13 +8,12 @@ from analytics.lib.counts import CountStat, COUNT_STATS, process_count_stat, \
     do_fill_count_stat_at_hour, ZerverCountQuery
 from analytics.models import BaseCount, InstallationCount, RealmCount, \
     UserCount, StreamCount, FillState, installation_epoch
-
 from zerver.models import Realm, UserProfile, Message, Stream, Recipient, \
-    get_user_profile_by_email, get_client
+    Huddle, get_user_profile_by_email, get_client
 
 from datetime import datetime, timedelta
 
-from typing import Any, Type, Optional, Text
+from typing import Any, Type, Optional, Text, Tuple
 
 class AnalyticsTestCase(TestCase):
     MINUTE = timedelta(seconds = 60)
@@ -44,14 +43,16 @@ class AnalyticsTestCase(TestCase):
             kwargs[key] = kwargs.get(key, value)
         return UserProfile.objects.create(email=email, **kwargs)
 
-    def create_stream(self, **kwargs):
-        # type: (**Any) -> Stream
+    def create_stream_with_recipient(self, **kwargs):
+        # type: (**Any) -> Tuple[Stream, Recipient]
         defaults = {'name': 'stream name',
                     'realm': self.default_realm,
                     'date_created': self.TIME_LAST_HOUR}
         for key, value in defaults.items():
             kwargs[key] = kwargs.get(key, value)
-        return Stream.objects.create(**kwargs)
+        stream = Stream.objects.create(**kwargs)
+        recipient = Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
+        return stream, recipient
 
     def create_message(self, sender, recipient, **kwargs):
         # type: (UserProfile, Recipient, **Any) -> Message
@@ -65,6 +66,15 @@ class AnalyticsTestCase(TestCase):
         for key, value in defaults.items():
             kwargs[key] = kwargs.get(key, value)
         return Message.objects.create(**kwargs)
+
+    def create_huddle_with_recipient(self, huddle_hash, **kwargs):
+        # type: (str, **Any) -> Tuple[Huddle, Recipient]
+        defaults = {'huddle_hash': huddle_hash}
+        for key, value in defaults.items():
+            kwargs[key] = kwargs.get(key, value)
+        huddle = Huddle.objects.create(**kwargs)
+        recipient = Recipient.objects.create(type_id=huddle.id, type=Recipient.HUDDLE)
+        return huddle, recipient
 
     # kwargs should only ever be a UserProfile or Stream.
     def assertCountEquals(self, table, property, value, subgroup=None, end_time=TIME_ZERO,
@@ -137,15 +147,13 @@ class TestCountStats(AnalyticsTestCase):
             string_id='second-realm', name='Second Realm',
             domain='second.analytics', date_created=self.TIME_ZERO-2*self.DAY)
         user = self.create_user('user@second.analytics', realm=self.second_realm)
-        stream = self.create_stream(realm=self.second_realm)
-        recipient = Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
+        unused, recipient = self.create_stream_with_recipient(realm=self.second_realm)
         self.create_message(user, recipient)
 
         future_user = self.create_user('future_user@second.analytics', realm=self.second_realm,
                                        date_joined=self.TIME_ZERO)
-        future_stream = self.create_stream(name='future stream', realm=self.second_realm,
-                                           date_created=self.TIME_ZERO)
-        future_recipient = Recipient.objects.create(type_id=future_stream.id, type=Recipient.STREAM)
+        unused, future_recipient = self.create_stream_with_recipient(
+                name='future stream', realm=self.second_realm, date_created=self.TIME_ZERO)
         self.create_message(future_user, future_recipient, pub_date=self.TIME_ZERO)
 
     def test_active_users_by_is_bot(self):
@@ -172,3 +180,75 @@ class TestCountStats(AnalyticsTestCase):
         self.assertEqual(InstallationCount.objects.count(), 2)
         self.assertFalse(UserCount.objects.exists())
         self.assertFalse(StreamCount.objects.exists())
+
+    def test_messages_sent_by_message_type(self):
+        # type: () -> None
+        property = 'messages_sent:message_type'
+        stat = COUNT_STATS[property]
+
+        user1 = self.create_user('email1', is_bot=True)
+        user2 = self.create_user('email2')
+        user3 = self.create_user('email3')
+
+        unused, private_stream_recipient1 = self.create_stream_with_recipient(name='private_stream1', invite_only=True)
+        unused, private_stream_recipient2 = self.create_stream_with_recipient(name='private_stream2', invite_only=True)
+        self.create_message(user1, private_stream_recipient1)
+        self.create_message(user2, private_stream_recipient1)
+        self.create_message(user2, private_stream_recipient2)
+
+        unused, public_stream_recipient1 = self.create_stream_with_recipient(name='public_stream1')
+        self.create_message(user1, public_stream_recipient1)
+        self.create_message(user2, public_stream_recipient1)
+
+        user1_recipient = Recipient.objects.create(type_id=user1.id, type=Recipient.PERSONAL)
+        user2_recipient = Recipient.objects.create(type_id=user2.id, type=Recipient.PERSONAL)
+        user3_recipient = Recipient.objects.create(type_id=user3.id, type=Recipient.PERSONAL)
+        self.create_message(user1, user2_recipient)
+        self.create_message(user2, user1_recipient)
+        self.create_message(user3, user3_recipient)
+
+        unused, huddle1_recipient = self.create_huddle_with_recipient('foo')
+        unused, huddle2_recipient = self.create_huddle_with_recipient('bar')
+        self.create_message(user1, huddle1_recipient)
+        self.create_message(user2, huddle2_recipient)
+
+        do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
+
+        self.assertCountEquals(RealmCount, property, 3, subgroup='private_stream', interval=stat.interval)
+        self.assertCountEquals(RealmCount, property, 2, subgroup='public_stream', interval=stat.interval)
+        self.assertCountEquals(RealmCount, property, 5, subgroup='private_message', interval=stat.interval)
+        self.assertCountEquals(RealmCount, property, 1, subgroup='public_stream', interval=stat.interval, realm=self.second_realm)
+        self.assertEqual(RealmCount.objects.count(), 4)
+        self.assertCountEquals(InstallationCount, property, 3, subgroup='private_stream', interval=stat.interval)
+        self.assertCountEquals(InstallationCount, property, 3, subgroup='public_stream', interval=stat.interval)
+        self.assertCountEquals(InstallationCount, property, 5, subgroup='private_message', interval=stat.interval)
+        self.assertEqual(InstallationCount.objects.count(), 3)
+        self.assertCountEquals(UserCount, property, 1, subgroup='private_stream', interval=stat.interval, user_id=user1.id)
+        self.assertCountEquals(UserCount, property, 1, subgroup='public_stream', interval=stat.interval, user_id=user1.id)
+        self.assertCountEquals(UserCount, property, 2, subgroup='private_message', interval=stat.interval, user_id=user1.id)
+        self.assertCountEquals(UserCount, property, 2, subgroup='private_stream', interval=stat.interval, user_id=user2.id)
+        self.assertCountEquals(UserCount, property, 1, subgroup='public_stream', interval=stat.interval, user_id=user2.id)
+        self.assertCountEquals(UserCount, property, 2, subgroup='private_message', interval=stat.interval, user_id=user2.id)
+        self.assertCountEquals(UserCount, property, 1, subgroup='private_message', interval=stat.interval, user_id=user3.id)
+        self.assertCountEquals(UserCount, property, 1, subgroup='public_stream', interval=stat.interval, realm=self.second_realm)
+        self.assertEqual(UserCount.objects.count(), 8)
+        self.assertFalse(StreamCount.objects.exists())
+
+    def test_messages_sent_to_recipients_with_same_id(self):
+        # type: () -> None
+        property = 'messages_sent:message_type'
+        stat = COUNT_STATS[property]
+
+        user = self.create_user('email', id=1000)
+        user_recipient = Recipient.objects.create(type_id=user.id, type=Recipient.PERSONAL)
+        unused, stream_recipient = self.create_stream_with_recipient(id=1000)
+        unused, huddle_recipient = self.create_huddle_with_recipient('foobar', id=1000)
+
+        self.create_message(user, user_recipient)
+        self.create_message(user, stream_recipient)
+        self.create_message(user, huddle_recipient)
+
+        do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
+
+        self.assertCountEquals(RealmCount, property, 2, subgroup='private_message', interval=stat.interval)
+        self.assertCountEquals(RealmCount, property, 1, subgroup='public_stream', interval=stat.interval)
