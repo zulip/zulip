@@ -1,8 +1,9 @@
 # Set default streams for new users
 
-If you are an administrator of a Zulip organization, you can set the default
-streams that new users are automatically subscribed to by following the
-following steps.
+{!admin-only.md!}
+
+{!follow-steps.md!} set the default streams that new users are automatically
+subscribed to.
 
 {!go-to-the.md!} [Default streams](/#administration/default-streams-list)
 {!admin.md!}

@@ -1,7 +1,13 @@
 # Deactivate or reactivate a bot
 
-Zulip organization administrators have the ability to deactivate or reactivate any bots
-in their organization.
+{!admin-only.md!}
+
+{!follow-steps.md!} deactivate or reactivate any bots
+in your organization.
+
+!!! tip ""
+    You can manage your own bots or integrations on the
+    [Your bots](/#settings/your-bots) {!settings.md!}
 
 ## Deactivate a bot
 

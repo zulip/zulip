@@ -1,7 +1,9 @@
 # Change the accessibility of a stream
 
-If you are a Zulip organization administrator, you can change who can join your
-stream by changing the stream's accessibility.
+{!admin-only.md!}
+
+{!follow-steps.md!} change who can join your stream by changing the stream's
+accessibility.
 
 Please note that any users that were previously subscribed to the stream will
 remain subscribed to the stream after you change the stream's accessibility.
