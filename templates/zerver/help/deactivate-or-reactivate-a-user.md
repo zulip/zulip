@@ -1,7 +1,9 @@
 # Deactivate or reactivate a user
 
-Zulip organization administrators have the ability to deactivate or reactivate any
-user's account in their organization.
+{!admin-only.md!}
+
+{!follow-steps.md!} deactivate or reactivate any user's account in your
+organization.
 
 ## Deactivate a user
 
