@@ -145,7 +145,7 @@
   "Image": "图片",
   "Add alert word": "添加提示词",
   "The recipients __recipients__ are not valid ": "收信人\"__recipients__\"不正确",
-  "Updated __product_name__ Labs settings!": "__product_name__实验室设置已更新！",
+  "Updated Experimental settings!": "__product_name__实验室设置已更新！",
   "Error creating stream": "创建频道时发生错误",
   "Error changing settings": "修改设置时发生错误",
   "Delete bot": "删除机器人",

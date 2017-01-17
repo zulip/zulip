@@ -145,7 +145,7 @@
   "Image": "画像",
   "Add alert word": "アラート単語を追加",
   "The recipients __recipients__ are not valid ": "送信者__recipients__は不正です。",
-  "Updated __product_name__ Labs settings!": "__product_name__ラボの設定を更新",
+  "Updated Experimental settings!": "__product_name__ラボの設定を更新",
   "Error creating stream": "ストリーム作成に失敗",
   "Error changing settings": "設定の変更に失敗",
   "Delete bot": "ボットを削除",

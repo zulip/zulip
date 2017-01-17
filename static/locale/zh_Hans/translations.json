@@ -195,7 +195,7 @@
   "Enabled": "Enabled", 
   "Make stream private": "Make stream private", 
   "New users must be invited by an admin!": "New users must be invited by an admin!", 
-  "Updated __product_name__ Labs settings!": "Updated __product_name__ Labs settings!", 
+  "Updated Experimental settings!": "Updated Experimental settings!", 
   "Your organization's name": "Your organization's name", 
   "Add a new filter": "Add a new filter", 
   "\n        <p class=\"api-key-note\">For most bots using the API, you'll want to give each bot\n          its own name and API key using the above section.  But if you\n          want to write a bot that can access your own private\n          messages, you should use your personal API key.\n        </p>\n        ": "\n        <p class=\"api-key-note\">For most bots using the API, you'll want to give each bot\n          its own name and API key using the above section.  But if you\n          want to write a bot that can access your own private\n          messages, you should use your personal API key.\n        </p>\n        ", 
