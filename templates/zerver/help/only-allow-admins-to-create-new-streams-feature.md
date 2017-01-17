@@ -1,6 +1,8 @@
 # Only allow admins to create new streams
 
-If you are a Zulip organization administrator, you can enable a setting that
+{!admin-only.md!}
+
+By default, any user can create new streams. You can enable a setting that
 only allows administrators to create new streams in the organization.
 
 {!go-to-the.md!} [Organization settings](/#administration/organization-settings)
