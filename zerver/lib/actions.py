@@ -770,6 +770,7 @@ def render_incoming_message(message, content, message_users, realm):
         rendered_content = render_markdown(
             message=message,
             content=content,
+            realm=realm,
             realm_alert_words=realm_alert_words,
             message_users=message_users,
         )
