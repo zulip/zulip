@@ -9,6 +9,16 @@
         margin-left: 250px;
         margin-bottom: 30px;
     }
+    #id_messages_sent_to_realm_bar {
+        position: relative;
+        margin-bottom: 50px;
+    }
+    #id_messages_sent_by_client {
+        margin-top: 100px;
+    }
+    #id_messages_sent_by_message_type {
+        margin-top: 150px;
+    }
     #button_label {
         font-family: Open Sans, verdana, arial, sans-serif;
         font-size: 14px;
@@ -32,27 +42,39 @@
         border-radius: 4px;
         outline: 0;
     }
-    #daily {
+    #daily_button {
         margin-left: 50px;
         background: #D8D8D8;
     }
-    #weekly {
+    #weekly_button {
         background: #F0F0F0;
     }
-    #monthly {
+    #monthly_button {
         background: #F0F0F0;
     }
-    #cumulative {
+    #cumulative_button {
         background: #F0F0F0;
     }
-    #id_messages_sent_to_realm_bar {
-        position: relative;
-    }
-    #messages_by_client_realm {
+    #messages_by_client_realm_button {
         margin-left: 50px;
         background: #D8D8D8;
     }
-    #messages_by_client_user {
+    #messages_by_client_user_button {
+        background: #F0F0F0;
+    }
+    #messages_by_client_realm_button {
+        margin-left: 50px;
+        background: #D8D8D8;
+    }
+    #messages_by_client_user_button {
+        background: #F0F0F0;
+    }
+    #messages_by_type_realm_button {
+        margin-left: 50px;
+        margin-bottom: 100px;
+        background: #D8D8D8;
+    }
+    #messages_by_type_user_button {
         background: #F0F0F0;
     }
 </style>
@@ -63,15 +85,18 @@
   <div id="id_number_of_users" style="width: 800px; height: 500px;"></div>
   <p class="graph_title"> Messages Sent by Humans and Bots </p>
   <p class="label" id="button_label"> Time Window </p>
-  <button class="btn" type="button" id='daily'> daily </button>
-  <button class="btn" type="button" id='weekly'> weekly </button>
-  <button class="btn" type="button" id='monthly'> 4 weeks </button>
-  <button class="btn" type="button" id='cumulative'> cumulative </button>
+  <button class="btn" type="button" id='daily_button'> daily </button>
+  <button class="btn" type="button" id='weekly_button'> weekly </button>
+  <button class="btn" type="button" id='monthly_button'> 4 weeks </button>
+  <button class="btn" type="button" id='cumulative_button'> cumulative </button>
   <div class="label" id="hoverinfo"></div>
   <div id="id_messages_sent_to_realm_bar" style="width: 800px; height: 500px;"></div>
   <div id="id_messages_sent_by_client" style="width: 800px; height: 400px;"></div>
-  <button class="btn" type="button" id='messages_by_client_realm'> Everyone </button>
-  <button class="btn" type="button" id='messages_by_client_user'> Me </button>
+  <button class="btn" type="button" id='messages_by_client_realm_button'> Everyone </button>
+  <button class="btn" type="button" id='messages_by_client_user_button'> Me </button>
+  <div id="id_messages_sent_by_message_type" style="width: 800px; height: 400px;"></div>
+  <button class="btn" type="button" id='messages_by_type_realm_button'> Everyone </button>
+  <button class="btn" type="button" id='messages_by_type_user_button'> Me </button>
 
 </body>
 </html>

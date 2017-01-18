@@ -137,44 +137,44 @@ function populate_messages_sent_to_realm_bar(data) {
                    trace_humans_weekly, trace_bots_weekly, trace_humans_4weekly,
                    trace_bots_4weekly], layout, {displayModeBar: false});
 
-    $('#cumulative').click(function () {
+    $('#cumulative_button').click(function () {
         $(this).css('background', '#D8D8D8');
-        $('#daily').css('background', '#F0F0F0');
-        $('#weekly').css('background', '#F0F0F0');
-        $('#monthly').css('background', '#F0F0F0');
+        $('#daily_button').css('background', '#F0F0F0');
+        $('#weekly_button').css('background', '#F0F0F0');
+        $('#monthly_button').css('background', '#F0F0F0');
         var update1 = {visible:false};
         var update2 = {visible:true};
         Plotly.restyle('id_messages_sent_to_realm_bar', update1, [0,1,4,5,6,7]);
         Plotly.restyle('id_messages_sent_to_realm_bar', update2, [2,3]);
     });
 
-    $('#daily').click(function () {
+    $('#daily_button').click(function () {
         $(this).css('background', '#D8D8D8');
-        $('#cumulative').css('background', '#F0F0F0');
-        $('#weekly').css('background', '#F0F0F0');
-        $('#monthly').css('background', '#F0F0F0');
+        $('#cumulative_button').css('background', '#F0F0F0');
+        $('#weekly_button').css('background', '#F0F0F0');
+        $('#monthly_button').css('background', '#F0F0F0');
         var update1 = {visible:false};
         var update2 = {visible:true};
         Plotly.restyle('id_messages_sent_to_realm_bar', update2, [0,1]);
         Plotly.restyle('id_messages_sent_to_realm_bar', update1, [2,3,4,5,6,7]);
     });
 
-    $('#weekly').click(function () {
+    $('#weekly_button').click(function () {
         $(this).css('background', '#D8D8D8');
-        $('#daily').css('background', '#F0F0F0');
-        $('#cumulative').css('background', '#F0F0F0');
-        $('#monthly').css('background', '#F0F0F0');
+        $('#daily_button').css('background', '#F0F0F0');
+        $('#cumulative_button').css('background', '#F0F0F0');
+        $('#monthly_button').css('background', '#F0F0F0');
         var update1 = {visible:false};
         var update2 = {visible:true};
         Plotly.restyle('id_messages_sent_to_realm_bar', update2, [4,5]);
         Plotly.restyle('id_messages_sent_to_realm_bar', update1, [0,1,2,3,6,7]);
     });
 
-    $('#monthly').click(function () {
+    $('#monthly_button').click(function () {
         $(this).css('background', '#D8D8D8');
-        $('#daily').css('background', '#F0F0F0');
-        $('#weekly').css('background', '#F0F0F0');
-        $('#cumulative').css('background', '#F0F0F0');
+        $('#daily_button').css('background', '#F0F0F0');
+        $('#weekly_button').css('background', '#F0F0F0');
+        $('#cumulative_button').css('background', '#F0F0F0');
         var update1 = {visible:false};
         var update2 = {visible:true};
         Plotly.restyle('id_messages_sent_to_realm_bar', update2, [6,7]);
@@ -259,20 +259,19 @@ $.get({
     },
 });
 
-function get_values_and_labels(data, subset, names) {
+function get_values_and_labels(categories, user_or_realm_data, name_directory) {
     var values = [];
     var labels = [];
-    for (var i = 0; i < data.clients.length; i+=1) {
-        if (subset[i] > 0) {
-            values.push(subset[i]);
-            labels.push(names[data.clients[i].name]);
+    for (var i = 0; i < categories.length; i+=1) {
+        if (user_or_realm_data[i] > 0) {
+            values.push(user_or_realm_data[i]);
+            labels.push(name_directory[categories[i]]);
         }
     }
     return [values, labels];
 }
 
 function make_pie_trace(data, values, labels) {
-
     var trace = [{
         values: values,
         labels: labels,
@@ -294,10 +293,13 @@ function populate_messages_sent_by_client(data) {
         iOS_: "iOS",
         react_native_: "React Native",
     };
-    var realm_values = get_values_and_labels(data, data.realm, names)[0];
-    var realm_labels = get_values_and_labels(data, data.realm, names)[1];
-    var user_values = get_values_and_labels(data, data.user, names)[0];
-    var user_labels = get_values_and_labels(data, data.user, names)[1];
+    var categories = data.clients.map(function (x) {
+        return x.name;
+    });
+    var realm_values = get_values_and_labels(categories, data.realm, names)[0];
+    var realm_labels = get_values_and_labels(categories, data.realm, names)[1];
+    var user_values = get_values_and_labels(categories, data.user, names)[0];
+    var user_labels = get_values_and_labels(categories, data.user, names)[1];
 
     var trace_realm = make_pie_trace(data, realm_values, realm_labels);
     var layout = {
@@ -308,17 +310,17 @@ function populate_messages_sent_by_client(data) {
     Plotly.newPlot('id_messages_sent_by_client',
                    trace_realm, layout, {displayModeBar: false});
 
-    $('#messages_by_client_realm').click(function () {
+    $('#messages_by_client_realm_button').click(function () {
         $(this).css('background', '#D8D8D8');
-        $('#messages_by_client_user').css('background', '#F0F0F0');
+        $('#messages_by_client_user_button').css('background', '#F0F0F0');
         var plotDiv = document.getElementById('id_messages_sent_by_client');
         plotDiv.data[0].values = realm_values;
         plotDiv.data[0].labels = realm_labels;
         Plotly.redraw('id_messages_sent_by_client');
     });
-    $('#messages_by_client_user').click(function () {
+    $('#messages_by_client_user_button').click(function () {
         $(this).css('background', '#D8D8D8');
-        $('#messages_by_client_realm').css('background', '#F0F0F0');
+        $('#messages_by_client_realm_button').css('background', '#F0F0F0');
         var plotDiv = document.getElementById('id_messages_sent_by_client');
         plotDiv.data[0].values = user_values;
         plotDiv.data[0].labels = user_labels;
@@ -332,6 +334,56 @@ $.get({
     idempotent: true,
     success: function (data) {
         populate_messages_sent_by_client(data);
+    },
+    error: function (xhr) {
+        $('#id_stats_errors').text($.parseJSON(xhr.responseText).msg);
+    },
+});
+
+function populate_messages_sent_by_message_type(data) {
+    var names = {
+        public_stream: "Public Stream",
+        private_stream: "Private Stream",
+        private_message: "Private Message",
+    };
+    var realm_values = get_values_and_labels(data.message_types, data.realm, names)[0];
+    var realm_labels = get_values_and_labels(data.message_types, data.realm, names)[1];
+    var user_values = get_values_and_labels(data.message_types, data.user, names)[0];
+    var user_labels = get_values_and_labels(data.message_types, data.user, names)[1];
+
+    var trace_realm = make_pie_trace(data, realm_values, realm_labels);
+    var layout = {
+        title: 'Messages Sent by Message Type',
+        width: 500,
+        height: 400,
+    };
+    Plotly.newPlot('id_messages_sent_by_message_type',
+                   trace_realm, layout, {displayModeBar: false});
+
+    $('#messages_by_type_realm_button').click(function () {
+        $(this).css('background', '#D8D8D8');
+        $('#messages_by_type_user_button').css('background', '#F0F0F0');
+        var plotDiv = document.getElementById('id_messages_sent_by_message_type');
+        plotDiv.data[0].values = realm_values;
+        plotDiv.data[0].labels = realm_labels;
+        Plotly.redraw('id_messages_sent_by_message_type');
+    });
+    $('#messages_by_type_user_button').click(function () {
+        $(this).css('background', '#D8D8D8');
+        $('#messages_by_type_realm_button').css('background', '#F0F0F0');
+        var plotDiv = document.getElementById('id_messages_sent_by_message_type');
+        plotDiv.data[0].values = user_values;
+        plotDiv.data[0].labels = user_labels;
+        Plotly.redraw('id_messages_sent_by_message_type');
+    });
+}
+
+$.get({
+    url: '/json/analytics/chart_data',
+    data: {chart_name: 'messages_sent_by_message_type', min_length: '10'},
+    idempotent: true,
+    success: function (data) {
+        populate_messages_sent_by_message_type(data);
     },
     error: function (xhr) {
         $('#id_stats_errors').text($.parseJSON(xhr.responseText).msg);
