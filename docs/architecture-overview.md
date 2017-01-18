@@ -60,10 +60,8 @@ be a user of multiple Zulip realms. The administrators of a realm can
 choose whether to allow anyone to register an account and join, or
 only allow people who have been invited, or restrict registrations to
 members of particular groups (using email domain names or corporate
-single-sign-on login for verification). For more on scalability and
-security considerations, see [the security section of the production
-maintenance
-instructions](prod-maintain-secure-upgrade.html#security-model).
+single-sign-on login for verification). For more on security
+considerations, see [the security model section](security-model.html).
 
 The default Zulip home screen is like a chronologically ordered inbox;
 it displays messages, starting at the oldest message that the user
