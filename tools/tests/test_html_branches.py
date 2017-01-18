@@ -14,6 +14,8 @@ from tools.lib.html_branches import (
     split_for_id_and_class,
 )
 
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+TEST_TEMPLATES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_template_data")
 
 class TestHtmlBranches(unittest.TestCase):
 
@@ -106,21 +108,21 @@ class TestHtmlBranches(unittest.TestCase):
 
     def test_build_id_dict(self):
         # type: () -> None
-        TEST_TEMPLATES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_template_data")
         templates = ["test_template1.html", "test_template2.html"]
         templates = [os.path.join(TEST_TEMPLATES_DIR, fn) for fn in templates]
 
         template_id_dict = build_id_dict(templates)
 
-        self.assertEqual(list(template_id_dict.keys()), ['hello_{{ message }}', 'intro', 'below_navbar'])
+        self.assertEqual(set(template_id_dict.keys()), {'below_navbar', 'hello_{{ message }}', 'intro'})
         self.assertEqual(template_id_dict['hello_{{ message }}'], [
-                         'Line 12:/srv/zulip/tools/tests/test_template_data/test_template1.html',
-                         'Line 12:/srv/zulip/tools/tests/test_template_data/test_template2.html'])
+                         'Line 12:%s/tools/tests/test_template_data/test_template1.html' % (ZULIP_PATH),
+                         'Line 12:%s/tools/tests/test_template_data/test_template2.html' % (ZULIP_PATH)])
         self.assertEqual(template_id_dict['intro'], [
-                         'Line 10:/srv/zulip/tools/tests/test_template_data/test_template1.html',
-                         'Line 11:/srv/zulip/tools/tests/test_template_data/test_template1.html',
-                         'Line 11:/srv/zulip/tools/tests/test_template_data/test_template2.html'])
-        self.assertEqual(template_id_dict['below_navbar'], ['Line 10:/srv/zulip/tools/tests/test_template_data/test_template2.html'])
+                         'Line 10:%s/tools/tests/test_template_data/test_template1.html' % (ZULIP_PATH),
+                         'Line 11:%s/tools/tests/test_template_data/test_template1.html' % (ZULIP_PATH),
+                         'Line 11:%s/tools/tests/test_template_data/test_template2.html' % (ZULIP_PATH)])
+        self.assertEqual(template_id_dict['below_navbar'], [
+                         'Line 10:%s/tools/tests/test_template_data/test_template2.html' % (ZULIP_PATH)])
 
     def test_split_for_id_and_class(self):
         # type: () -> None
