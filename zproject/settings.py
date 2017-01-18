@@ -18,6 +18,7 @@ import sys
 import six.moves.configparser
 
 from zerver.lib.db import TimeTrackingConnection
+import zerver.lib.logging_util
 import six
 
 ########################################################################
@@ -969,6 +970,10 @@ LOGGING = {
         'require_really_deployed': {
             '()': 'zerver.lib.logging_util.RequireReallyDeployed',
         },
+        'skip_200_and_304': {
+            '()': 'django.utils.log.CallbackFilter',
+            'callback': zerver.lib.logging_util.skip_200_and_304,
+        },
     },
     'handlers': {
         'zulip_admins': {
@@ -1031,6 +1036,10 @@ LOGGING = {
         'django.security.DisallowedHost': {
             'handlers': ['file'],
             'propagate': False,
+        },
+        'django.server': {
+            'propagate': False,
+            'filters': ['skip_200_and_304'],
         },
         ## Uncomment the following to get all database queries logged to the console
         # 'django.db': {
