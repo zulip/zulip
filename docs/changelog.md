@@ -11,18 +11,26 @@ Highlights:
 - Added support for open graph previews of links (off by default).
 - Added a lightbox for viewing images and videos.
 - Added extensive user documentation under /help/.
+- Added admin setting to auto-linkify certain strings (useful for
+  issue numbers and Git commit IDs).
 
 Partially merged highlights:
 - Added backend support for typing notifications.
 - Added partial support for message retention policy.
 
-Full Changelog:
+Full feature Changelog:
 
 - Added an emoji picker/browser to the compose box.
 - Added markdown preview support to the compose box.
 - Added a new analytics system to track useful statistics.
+- Added a /stats page with graphs of the analytics data.
 - Added display of subscriber counts in Manage streams.
+- Added support for filtering streams in Manage streams.
+- Added support for setting a stream description on creation.
+- Added support for copying subscribers from existing streams on creation.
 - Added several new search/filtering UI elements.
+- Added UI for deactivating your own Zulip account.
+- Added support for viewing the raw markdown content of a message.
 - Added support for deploying Zulip with subdomains for each realm.
   This entailed numerous changes to ensure a consistent experience.
 - Added support for (optionally) using PGRoonga to support full-text
@@ -35,25 +43,36 @@ Full Changelog:
 - Normalized the message formatting for all the Zulip Git integrations.
 - Added support for VMWare Fusion Vagrant provider for faster OSX
   development.
-- Added a notification when users mute messages.
-- Added support for testing websockets to the Nagios suite.
+- Added admin setting for which email domains can join a realm.
+- Added admin setting for controlling who can create streams.
+- Added admin setting to limit stream creation to older users.
+- Added a notification when you muted a topic.
+- Added a new hotkey for muting/unmuting topics.
+- Added support for testing websockets to the Nagios plugins.
 - Added a configuration option to disable websockets.
 - Added support for removing one's own Zulip account.
+- Added support for realm admins which auth backends are supported.
 - Added new organization type concept.  This will be used to control
   whether Zulip is optimized around protecting user privacy
   vs. administrative control.
 - Added #**streamName** syntax for linking to a stream.
 - Added support for viewing markdown source of messages.
 - Added setting to always send push notifications.
-- Added setting to hide private message content in desktop notifications.
+- Added setting to hide private message content in desktop
+  notifications.
+- Added buttons to download .zuliprc files.
+- Added italics and strikethrough support in markdown implementation.
+- Added errors for common installations mistakes (e.g. too little RAM).
 - Upgraded all Python dependencies to modern versions, including
   Django 1.10 (all of Zulip's patches have been merged into mainline).
 - Increased backend test coverage of Python codebase to 90%.
 - Increased mypy static type coverage of Python code to 100%.
+- Added several new linters (eslint, pep8) and cleaned the codebase.
 - Optimized the speed of the Zulip upgrade process, especially with Git.
 - Have peer_add events send user_id, not email.
 - Fixed problems with rabbitmq when installing Zulip.
 - Fixed JavaScript not being gzip-compressed properly.
+- Fixed a major performance bug in the Tornado service.
 - Fixed numerous bugs where strings were not properly tagged for translation.
 - Fixed several real-time sync bugs, and removed several AJAX calls.
   Zulip should be more performant than ever before.
@@ -64,7 +83,16 @@ Full Changelog:
 - Fixed missed-message email configuration error handling.
 - Fixed a significant performance bug in the Tornado subsystem.
 - Fixed annoying @-mentions in Jira integration.
+- Fixed various mismatches between frontend and backend markdown
+  implementations.
+- Fixed various popover-related UI bugs.
+- Fixed duplicate notifications with multiple open Zulip tabs.
+- Eliminated most of the legacy API endpoints.
+- Improved typeahead and autocomplete across the application.
+- Improved the color scheme for code blocks.
 - Improved the message editing UI in several ways.
+- Improved how dates are displayed in the UI.
+- Improved default settings for zxcvbn password strength checker.
 - Upgraded jQuery to the latest 1.12 release.
 - Eliminated most legacy endpoints.
 - Made numerous improvements to the development tooling.
