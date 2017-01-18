@@ -75,40 +75,40 @@ function date_ranges_for_hover(trace_x, window_size) {
 
 function populate_messages_sent_to_realm_bar(data) {
 
-    var trace_humans = make_bar_trace(data, data.humans, "Messages from humans", 'x+y', true, '');
-    var trace_bots = make_bar_trace(data, data.bots, "Messages from bots", 'x+y', true, '');
+    var trace_humans = make_bar_trace(data, data.humans, "Humans", 'x+y', true, '');
+    var trace_bots = make_bar_trace(data, data.bots, "Bots", 'x+y', true, '');
 
     var cumulative_sums = partial_sums(data);
     var humans_cumulative = cumulative_sums[0];
     var bots_cumulative = cumulative_sums[1];
-    var trace_humans_cumulative = make_bar_trace(data, humans_cumulative, "Messages from humans", 'x+y', false, '');
-    var trace_bots_cumulative = make_bar_trace(data, bots_cumulative, "Messages from bots", 'x+y', false, '');
+    var trace_humans_cumulative = make_bar_trace(data, humans_cumulative, "Humans", 'x+y', false, '');
+    var trace_bots_cumulative = make_bar_trace(data, bots_cumulative, "Bots", 'x+y', false, '');
 
     var weekly_sums = window_sums(cumulative_sums, 7);
     var humans_weekly = weekly_sums[0];
     var bots_weekly = weekly_sums[1];
     var date_range_weekly = date_ranges_for_hover(trace_humans.x, 7);
-    var trace_humans_weekly = make_bar_trace(data, humans_weekly, "Messages from humans", 'y+text', false, date_range_weekly);
-    var trace_bots_weekly = make_bar_trace(data, bots_weekly, "Messages from bots", 'y+text', false, date_range_weekly);
+    var trace_humans_weekly = make_bar_trace(data, humans_weekly, "Humans", 'y+text', false, date_range_weekly);
+    var trace_bots_weekly = make_bar_trace(data, bots_weekly, "Bots", 'y+text', false, date_range_weekly);
 
     var monthly_sums = window_sums(cumulative_sums, 28);
     var humans_4weekly = monthly_sums[0];
     var bots_4weekly = monthly_sums[1];
     var date_range_4weekly = date_ranges_for_hover(trace_humans.x, 28);
-    var trace_humans_4weekly = make_bar_trace(data, humans_4weekly, "Messages from humans", 'y+text', false, date_range_4weekly);
-    var trace_bots_4weekly = make_bar_trace(data, bots_4weekly, "Messages from bots", 'y+text', false, date_range_4weekly);
+    var trace_humans_4weekly = make_bar_trace(data, humans_4weekly, "Humans", 'y+text', false, date_range_4weekly);
+    var trace_bots_4weekly = make_bar_trace(data, bots_4weekly, "Bots", 'y+text', false, date_range_4weekly);
 
 
     var layout = {
         barmode:'group',
         width: 900,
         margin: {
-            l: 50, r: 50, b: 100, t: 5,
+            l: 40, r: 0, b: 40, t: 0,
         },
         xaxis: {
             rangeselector: {
                 x: 0.65,
-                y:-0.5,
+                y: -0.7,
                 buttons: [
                     {count:10,
                          label:'Last 10 Days',
@@ -216,11 +216,10 @@ function populate_number_of_users(data) {
     var trace_humans = make_bar_trace(data, data.humans, "Active users", 'x+y', true, '');
 
     var layout = {
-        title: 'Number of Users',
-        width: 750,
-        height: 350,
+        width: 800,
+        height: 370,
         margin: {
-            l: 50, r: 50, b: 30, t: 60,
+            l: 0, r: 0, b: 0, t: 20,
         },
         xaxis: {
             rangeselector: {
@@ -303,7 +302,9 @@ function populate_messages_sent_by_client(data) {
 
     var trace_realm = make_pie_trace(data, realm_values, realm_labels);
     var layout = {
-        title: 'Messages Sent by Client',
+        margin: {
+            l: 0, r: 0, b: 50, t: 30,
+        },
         width: 500,
         height: 400,
     };
@@ -353,7 +354,9 @@ function populate_messages_sent_by_message_type(data) {
 
     var trace_realm = make_pie_trace(data, realm_values, realm_labels);
     var layout = {
-        title: 'Messages Sent by Message Type',
+        margin: {
+            l: 0, r: 0, b: 50, t: 30,
+        },
         width: 500,
         height: 400,
     };
