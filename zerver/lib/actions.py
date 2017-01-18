@@ -748,21 +748,25 @@ def log_message(message):
         log_event(message.to_log_dict())
 
 # Helper function. Defaults here are overriden by those set in do_send_messages
-def do_send_message(message, rendered_content = None, no_log = False, stream = None, local_id = None):
-    # type: (Union[int, Message], Optional[Text], bool, Optional[Stream], Optional[int]) -> int
+def do_send_message(message, rendered_content = None, no_log = False, stream = None, local_id = None, realm = None):
+    # type: (Union[int, Message], Optional[Text], bool, Optional[Stream], Optional[int], Optional[Realm]) -> int
     return do_send_messages([{'message': message,
                               'rendered_content': rendered_content,
                               'no_log': no_log,
                               'stream': stream,
-                              'local_id': local_id}])[0]
+                              'local_id': local_id,
+                              'realm': realm}])[0]
 
-def render_incoming_message(message, content, message_users):
-    # type: (Message, Text, Set[UserProfile]) -> Text
-    realm_alert_words = alert_words_in_realm(message.get_realm())
+def render_incoming_message(message, content, message_users, realm=None):
+    # type: (Message, Text, Set[UserProfile], Optional[Realm]) -> Text
+    if realm is None:
+        realm = message.get_realm()
+    realm_alert_words = alert_words_in_realm(realm)
     try:
         rendered_content = render_markdown(
             message=message,
             content=content,
+            realm=realm,
             realm_alert_words=realm_alert_words,
             message_users=message_users,
         )
@@ -821,6 +825,7 @@ def do_send_messages(messages):
         message['stream'] = message.get('stream', None)
         message['local_id'] = message.get('local_id', None)
         message['sender_queue_id'] = message.get('sender_queue_id', None)
+        message['realm'] = message.get('realm', None)
 
     # Log the message to our message log for populate_db to refill
     for message in messages:
@@ -841,7 +846,8 @@ def do_send_messages(messages):
         rendered_content = render_incoming_message(
             message['message'],
             message['message'].content,
-            message_users=message['active_recipients'])
+            message_users=message['active_recipients'],
+            realm=message['realm'])
         message['message'].rendered_content = rendered_content
         message['message'].rendered_content_version = bugdown_version
         links_for_embed |= message['message'].links_for_preview
@@ -1349,7 +1355,7 @@ def check_message(sender, client, message_type_name, message_to,
         if id is not None:
             return {'message': id}
 
-    return {'message': message, 'stream': stream, 'local_id': local_id, 'sender_queue_id': sender_queue_id}
+    return {'message': message, 'stream': stream, 'local_id': local_id, 'sender_queue_id': sender_queue_id, 'realm': realm}
 
 def internal_prep_message(sender_email, recipient_type_name, recipients,
                           subject, content, realm=None):

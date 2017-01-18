@@ -36,7 +36,7 @@ from zerver.lib.timeout import timeout, TimeoutExpired
 from zerver.lib.cache import (
     cache_with_key, cache_get_many, cache_set_many, NotFoundInCache)
 from zerver.lib.url_preview import preview as link_preview
-from zerver.models import Message
+from zerver.models import Message, Realm
 import zerver.lib.alert_words as alert_words
 import zerver.lib.mention as mention
 from zerver.lib.str_utils import force_text, force_str
@@ -1290,13 +1290,15 @@ def log_bugdown_error(msg):
     could cause an infinite exception loop."""
     logging.getLogger('').error(msg)
 
-def do_convert(content, realm_filters_key=None, message=None, possible_words=None):
-    # type: (Text, Optional[int], Optional[Message], Optional[Set[Text]]) -> Optional[Text]
+def do_convert(content, realm_filters_key=None, message=None, message_realm=None, possible_words=None):
+    # type: (Text, Optional[int], Optional[Message], Optional[Realm], Optional[Set[Text]]) -> Optional[Text]
     """Convert Markdown to HTML, with Zulip-specific settings and hacks."""
     from zerver.models import get_active_user_dicts_in_realm, get_active_streams, UserProfile
 
     if message:
-        maybe_update_realm_filters(message.get_realm().id)
+        if message_realm is None:
+            message_realm = message.get_realm()
+        maybe_update_realm_filters(message_realm.id)
 
     if realm_filters_key in md_engines:
         _md_engine = md_engines[realm_filters_key]
@@ -1314,8 +1316,8 @@ def do_convert(content, realm_filters_key=None, message=None, possible_words=Non
     # Pre-fetch data from the DB that is used in the bugdown thread
     global db_data
     if message:
-        realm_users = get_active_user_dicts_in_realm(message.get_realm())
-        realm_streams = get_active_streams(message.get_realm()).values('id', 'name')
+        realm_users = get_active_user_dicts_in_realm(message_realm)
+        realm_streams = get_active_streams(message_realm).values('id', 'name')
 
         if possible_words is None:
             possible_words = set() # Set[Text]
@@ -1323,7 +1325,7 @@ def do_convert(content, realm_filters_key=None, message=None, possible_words=Non
         db_data = {'possible_words':    possible_words,
                    'full_names':        dict((user['full_name'].lower(), user) for user in realm_users),
                    'short_names':       dict((user['short_name'].lower(), user) for user in realm_users),
-                   'emoji':             message.get_realm().get_emoji(),
+                   'emoji':             message_realm.get_emoji(),
                    'stream_names':      dict((stream['name'], stream) for stream in realm_streams)}
 
     try:
@@ -1376,9 +1378,9 @@ def bugdown_stats_finish():
     bugdown_total_requests += 1
     bugdown_total_time += (time.time() - bugdown_time_start)
 
-def convert(content, realm_filters_key=None, message=None, possible_words=None):
-    # type: (Text, Optional[int], Optional[Message], Optional[Set[Text]]) -> Optional[Text]
+def convert(content, realm_filters_key=None, message=None, message_realm=None, possible_words=None):
+    # type: (Text, Optional[int], Optional[Message], Optional[Realm], Optional[Set[Text]]) -> Optional[Text]
     bugdown_stats_start()
-    ret = do_convert(content, realm_filters_key, message, possible_words)
+    ret = do_convert(content, realm_filters_key, message, message_realm, possible_words)
     bugdown_stats_finish()
     return ret
