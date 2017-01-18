@@ -202,7 +202,7 @@ exports.populate_realm_aliases = function (aliases) {
     var alias_table_body = $("#alias_table tbody").expectOne();
     alias_table_body.find("tr").remove();
     _.each(aliases, function (alias) {
-        alias_table_body.append(templates.render("admin_alias_list", {alias: alias}));
+        alias_table_body.append(templates.render("admin-alias-list", {alias: alias}));
     });
 };
 

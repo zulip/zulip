@@ -99,7 +99,7 @@ function render(template_name, args) {
             domain: 'zulip.org',
         },
     };
-    html += render("admin_alias_list", args);
+    html += render("admin-alias-list", args);
     html += "</table>";
 
     var button = $(html).find('.btn');
@@ -114,7 +114,7 @@ function render(template_name, args) {
 
     assert.equal(row.attr("id"), "alias_1");
 
-    global.write_handlebars_output("admin_alias_list", html);
+    global.write_handlebars_output("admin-alias-list", html);
 }());
 
 (function admin_default_streams_list() {
