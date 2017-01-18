@@ -31,20 +31,49 @@ announcement).
   other either via a localhost connection or using an encrypted SSL
   connection.
 
-* The preferred way to login to Zulip is using an SSO solution like
-  Google Auth, LDAP, or similar.  Zulip stores user passwords using
-  the standard PBKDF2 algorithm.  Password strength is checked and
-  weak passwords are visually discouraged using the `zxcvbn` library,
-  but Zulip does not by default have strong requirements on user
-  password strength.  Modify the settings to adjust the password
-  strength requirements (length and `zxcvbn` minimum quality).
-
 * Zulip requires CSRF tokens in all interactions with the web API to
   prevent CSRF attacks.
 
-* See
+* The preferred way to login to Zulip is using an SSO solution like
+  Google Auth, LDAP, or similar, but Zulip also supports password
+  authentication.  See
   [the authentication methods documentation](prod-authentication-methods.html)
   for details on Zulip's available authentication methods.
+
+### Passwords
+
+Zulip stores user passwords using the standard PBKDF2 algorithm.
+Password strength is checked and weak passwords are visually
+discouraged using the popular
+[zxcvbn](https://github.com/dropbox/zxcvbn) library.  The minimum
+password strength allowed is controlled by two settings in
+`/etc/zulip/settings.py`; `PASSWORD_MIN_LENGTH` and
+`PASSWORD_MIN_ZXCVBN_QUALITY`.  The former is self-explanatory; we
+will explain the latter.
+
+Password strength estimation is a complicated topic that we can't go
+into great detail on here; we recommend reading the zxvcbn website for
+details if you are not familiar with password strength analysis.
+
+In Zulip's configuration, a password has quality `X` if zxcvbn
+estimates that it would take `e^(X * 22)` seconds to crack the
+password with a specific attack scenario.  The scenario Zulip uses is
+one where an the attacker breaks into the Zulip server and steals the
+hashed passwords; in that case, with a slow hash, the attacker would
+be able to make roughly 10,000 attempts per second.  E.g. a password
+with quality 0.5 (the default), it would take an attacker about 16
+hours to crack such a password in this sort of offline attack.
+
+Another important attack scenario is the online attacks (i.e. an
+attacker sending tons of login requests guessing different passwords
+to a Zulip server over the web).  Those attacks are much slower (more
+like 10/second without rate limiting), and you should estimate the
+time to guess a password as correspondingly longer.
+
+As a server administrators, you must balance the security risks
+associated with attackers guessing weak passwords against the
+usability challenges associated with requiring strong passwords in
+your organization.
 
 ## Messages and History
 
