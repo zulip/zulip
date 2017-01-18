@@ -1,8 +1,13 @@
-/var/log/zulip/server.log /var/log/zulip/workers.log /var/log/zulip/manage.log {
+/var/log/zulip/*.log {
 	missingok
 	rotate 10
 	size 1G
 	compress
 	delaycompress
 	notifempty
+        create 644 zulip zulip
+        sharedscripts
+        postrotate
+                supervisorctl signal SIGHUP all >/dev/null 2>&1
+        endscript
 }
