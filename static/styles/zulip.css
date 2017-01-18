@@ -83,7 +83,7 @@ p.n-margin {
 .top-messages-logo {
     position: absolute;
     left: calc(50% - 12px);
-    top: 67px;
+    top: 25px;
     width: 24px;
     height: 24px;
 }
