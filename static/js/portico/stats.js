@@ -32,7 +32,7 @@ function window_sums(cumulative_sums, window_size) {
     return [humans_windowsums, bots_windowsums];
 }
 
-function make_bar_trace(data, y, name, hoverinfo, visible, text) {
+function make_bar_trace(data, y, name, hoverinfo, text) {
     var trace = {
         x: data.end_times.map(function (timestamp) {
             return new Date(timestamp*1000);
@@ -41,7 +41,6 @@ function make_bar_trace(data, y, name, hoverinfo, visible, text) {
         type: 'bar',
         name: name,
         hoverinfo: hoverinfo,
-        visible: visible,
         text: text,
     };
     return trace;
@@ -53,7 +52,24 @@ function format_date(date_object) {
     var date = date_object;
     var day = date.getDate();
     var month = date.getMonth();
-    return month_abbreviations[month] + ' ' + day;
+    var hour = date.getHours();
+    var hour_12;
+    var suffix;
+    if (hour == 0){
+        suffix = ' AM';
+        hour_12 = 12;
+    } else if (hour == 12){
+        suffix = ' PM';
+        hour_12 = hour;
+    } else if (hour < 12){
+        suffix = ' AM';
+        hour_12 = hour;
+    } else {
+        suffix = 'PM';
+        hour_12 = hour-12
+    }
+    return month_abbreviations[month] + ' ' + day + ', ' + hour_12 + suffix;
+
 }
 
 function date_ranges_for_hover(trace_x, window_size) {
@@ -75,28 +91,28 @@ function date_ranges_for_hover(trace_x, window_size) {
 
 function populate_messages_sent_to_realm_bar(data) {
 
-    var trace_humans = make_bar_trace(data, data.humans, "Humans", 'x+y', true, '');
-    var trace_bots = make_bar_trace(data, data.bots, "Bots", 'x+y', true, '');
+    var trace_humans = make_bar_trace(data, data.humans, "Humans", 'x+y', '');
+    var trace_bots = make_bar_trace(data, data.bots, "Bots", 'x+y', '');
 
     var cumulative_sums = partial_sums(data);
     var humans_cumulative = cumulative_sums[0];
     var bots_cumulative = cumulative_sums[1];
-    var trace_humans_cumulative = make_bar_trace(data, humans_cumulative, "Humans", 'x+y', false, '');
-    var trace_bots_cumulative = make_bar_trace(data, bots_cumulative, "Bots", 'x+y', false, '');
+    var trace_humans_cumulative = make_bar_trace(data, humans_cumulative, "Humans", 'x+y', '');
+    var trace_bots_cumulative = make_bar_trace(data, bots_cumulative, "Bots", 'x+y', '');
 
-    var weekly_sums = window_sums(cumulative_sums, 7);
+    var weekly_sums = window_sums(cumulative_sums, 7*24);
     var humans_weekly = weekly_sums[0];
     var bots_weekly = weekly_sums[1];
-    var date_range_weekly = date_ranges_for_hover(trace_humans.x, 7);
-    var trace_humans_weekly = make_bar_trace(data, humans_weekly, "Humans", 'y+text', false, date_range_weekly);
-    var trace_bots_weekly = make_bar_trace(data, bots_weekly, "Bots", 'y+text', false, date_range_weekly);
+    var date_range_weekly = date_ranges_for_hover(trace_humans.x, 7*24);
+    var trace_humans_weekly = make_bar_trace(data, humans_weekly, "Humans", 'y+text', date_range_weekly);
+    var trace_bots_weekly = make_bar_trace(data, bots_weekly, "Bots", 'y+text', date_range_weekly);
 
-    var monthly_sums = window_sums(cumulative_sums, 28);
-    var humans_4weekly = monthly_sums[0];
-    var bots_4weekly = monthly_sums[1];
-    var date_range_4weekly = date_ranges_for_hover(trace_humans.x, 28);
-    var trace_humans_4weekly = make_bar_trace(data, humans_4weekly, "Humans", 'y+text', false, date_range_4weekly);
-    var trace_bots_4weekly = make_bar_trace(data, bots_4weekly, "Bots", 'y+text', false, date_range_4weekly);
+    var daily_sums = window_sums(cumulative_sums, 24);
+    var humans_daily = daily_sums[0];
+    var bots_daily = daily_sums[1];
+    var date_range_daily = date_ranges_for_hover(trace_humans.x, 24);
+    var trace_humans_daily = make_bar_trace(data, humans_daily, "Humans", 'y+text', date_range_daily);
+    var trace_bots_daily = make_bar_trace(data, bots_daily, "Bots", 'y+text', date_range_daily);
 
 
     var layout = {
@@ -133,52 +149,42 @@ function populate_messages_sent_to_realm_bar(data) {
         },
     };
     Plotly.newPlot('id_messages_sent_to_realm_bar',
-                   [trace_humans, trace_bots, trace_humans_cumulative,trace_bots_cumulative,
-                   trace_humans_weekly, trace_bots_weekly, trace_humans_4weekly,
-                   trace_bots_4weekly], layout, {displayModeBar: false});
+                   [trace_humans, trace_bots], layout, {displayModeBar: false});
 
     $('#cumulative_button').click(function () {
         $(this).css('background', '#D8D8D8');
         $('#daily_button').css('background', '#F0F0F0');
         $('#weekly_button').css('background', '#F0F0F0');
-        $('#monthly_button').css('background', '#F0F0F0');
-        var update1 = {visible:false};
-        var update2 = {visible:true};
-        Plotly.restyle('id_messages_sent_to_realm_bar', update1, [0,1,4,5,6,7]);
-        Plotly.restyle('id_messages_sent_to_realm_bar', update2, [2,3]);
+        $('#hourly_button').css('background', '#F0F0F0');
+        Plotly.deleteTraces('id_messages_sent_to_realm_bar', [0,1]);
+        Plotly.addTraces('id_messages_sent_to_realm_bar', [trace_humans_cumulative, trace_bots_cumulative]);
     });
 
     $('#daily_button').click(function () {
         $(this).css('background', '#D8D8D8');
         $('#cumulative_button').css('background', '#F0F0F0');
         $('#weekly_button').css('background', '#F0F0F0');
-        $('#monthly_button').css('background', '#F0F0F0');
-        var update1 = {visible:false};
-        var update2 = {visible:true};
-        Plotly.restyle('id_messages_sent_to_realm_bar', update2, [0,1]);
-        Plotly.restyle('id_messages_sent_to_realm_bar', update1, [2,3,4,5,6,7]);
+        $('#hourly_button').css('background', '#F0F0F0');
+        Plotly.deleteTraces('id_messages_sent_to_realm_bar', [0,1]);
+        Plotly.addTraces('id_messages_sent_to_realm_bar', [trace_humans_daily, trace_bots_daily]);
     });
 
     $('#weekly_button').click(function () {
         $(this).css('background', '#D8D8D8');
         $('#daily_button').css('background', '#F0F0F0');
         $('#cumulative_button').css('background', '#F0F0F0');
-        $('#monthly_button').css('background', '#F0F0F0');
-        var update1 = {visible:false};
-        var update2 = {visible:true};
-        Plotly.restyle('id_messages_sent_to_realm_bar', update2, [4,5]);
-        Plotly.restyle('id_messages_sent_to_realm_bar', update1, [0,1,2,3,6,7]);
+        $('#hourly_button').css('background', '#F0F0F0');
+        Plotly.deleteTraces('id_messages_sent_to_realm_bar', [0,1]);
+        Plotly.addTraces('id_messages_sent_to_realm_bar', [trace_humans_weekly, trace_bots_weekly]);
     });
 
-    $('#monthly_button').click(function () {
+    $('#hourly_button').click(function () {
         $(this).css('background', '#D8D8D8');
         $('#daily_button').css('background', '#F0F0F0');
         $('#weekly_button').css('background', '#F0F0F0');
         $('#cumulative_button').css('background', '#F0F0F0');
-        var update1 = {visible:false};
-        var update2 = {visible:true};
-        Plotly.restyle('id_messages_sent_to_realm_bar', update2, [6,7]);
-        Plotly.restyle('id_messages_sent_to_realm_bar', update1, [0,1,2,3,4,5]);
+        Plotly.deleteTraces('id_messages_sent_to_realm_bar', [0,1]);
+        Plotly.addTraces('id_messages_sent_to_realm_bar', [trace_humans, trace_bots]);
     });
 
     var myPlot = document.getElementById('id_messages_sent_to_realm_bar');

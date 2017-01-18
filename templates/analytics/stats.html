@@ -32,23 +32,27 @@
         border: none;
         border-radius: 4px;
     }
-    #daily_button {
+    #hourly_button {
+        padding: 0px 5px 0px 5px;
         font-size: 14px;
         margin-left: 50px;
         margin-top: 0px;
         background: #D8D8D8;
     }
-    #weekly_button {
+    #daily_button {
+        padding: 0px 5px 0px 5px;
         font-size: 14px;
         margin-top: 0px;
         background: #F0F0F0;
     }
-    #monthly_button {
+    #weekly_button {
+        padding: 0px 5px 0px 5px;
         font-size: 14px;
         margin-top: 0px;
         background: #F0F0F0;
     }
     #cumulative_button {
+        padding: 0px 5px 0px 5px;
         font-size: 14px;
         margin-top: 0px;
         background: #F0F0F0;
@@ -91,9 +95,9 @@
       <div class="center-block">
           <p class="graph_title"> Messages Sent by Humans and Bots </p>
           <p id="button_label"> Aggregation </p>
+          <button class="button" type="button" id='hourly_button'> hourly </button>
           <button class="button" type="button" id='daily_button'> daily </button>
           <button class="button" type="button" id='weekly_button'> weekly </button>
-          <button class="button" type="button" id='monthly_button'> 4 weeks </button>
           <button class="button" type="button" id='cumulative_button'> cumulative </button>
           <div id="hoverinfo"></div>
           <div id="id_messages_sent_to_realm_bar"></div>
