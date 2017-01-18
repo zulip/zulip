@@ -17,10 +17,10 @@
       <input type="text" id="id_realm_name" name="realm_name" class="admin-realm-name"
              value="{{ realm_name }}" />
     </div>
-    <div class="input-group">
+    <div class="input-group admin-restricted-to-domain">
       <input type="checkbox" class="inline-block" id="id_realm_restricted_to_domain" name="realm_restricted_to_domain"
          {{#if realm_restricted_to_domain}}checked="checked"{{/if}} />
-      <label for="id_realm_restricted_to_domain" class="inline-block" id="realm_restricted_to_domains_label"
+      <label for="id_realm_restricted_to_domain" class="inline" id="realm_restricted_to_domains_label"
         title="{{#tr this}}If checked, only users with an e-mail address ending in these domains will be able to join the organization.{{/tr}}">
       </label>
       <a data-toggle="modal" href="#realm_aliases_modal">{{t "[Add or Change]" }}</a>

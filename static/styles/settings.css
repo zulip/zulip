@@ -139,6 +139,7 @@ td .button {
     margin: 0px;
 }
 
+.admin-restricted-to-domain input[type=checkbox] + .inline,
 input[type=checkbox] + .inline-block {
     margin-left: 10px;
 }
