@@ -32,7 +32,7 @@ as an **organization**.
 * [Join a Zulip organization](/help/join-a-zulip-organization)
 * [Signing in](/help/signing-in)
 * [Signing out](/help/signing-out)
-* Find your Zulip organization (not implemented)
+* Find your Zulip organization
 * Set up two-factor authentication (not implemented)
 * [Deactivate your account](/help/deactivate-your-account)
 
@@ -96,7 +96,6 @@ as an **organization**.
 * [Pin a stream](/help/pin-a-stream)
 * [Change the color of a stream](/help/change-the-color-of-a-stream)
 * [Message a stream by email](/help/message-a-stream-by-email)
-* Convert a group PM to a private stream (not implemented)
 
 ## Notifications
 * [Mute a stream](/help/mute-a-stream)
