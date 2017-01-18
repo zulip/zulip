@@ -258,3 +258,82 @@ $.get({
         $('#id_stats_errors').text($.parseJSON(xhr.responseText).msg);
     },
 });
+
+function get_values_and_labels(data, subset, names) {
+    var values = [];
+    var labels = [];
+    for (var i = 0; i < data.clients.length; i+=1) {
+        if (subset[i] > 0) {
+            values.push(subset[i]);
+            labels.push(names[data.clients[i].name]);
+        }
+    }
+    return [values, labels];
+}
+
+function make_pie_trace(data, values, labels) {
+
+    var trace = [{
+        values: values,
+        labels: labels,
+        type: 'pie',
+        direction: 'clockwise',
+        rotation: -180,
+        sort: true,
+    }];
+    return trace;
+}
+
+function populate_messages_sent_by_client(data) {
+    var names = {
+        electron_: "Electron",
+        barnowl_: "BarnOwl",
+        website_: "Website",
+        API_: "API",
+        android_: "Android",
+        iOS_: "iOS",
+        react_native_: "React Native",
+    };
+    var realm_values = get_values_and_labels(data, data.realm, names)[0];
+    var realm_labels = get_values_and_labels(data, data.realm, names)[1];
+    var user_values = get_values_and_labels(data, data.user, names)[0];
+    var user_labels = get_values_and_labels(data, data.user, names)[1];
+
+    var trace_realm = make_pie_trace(data, realm_values, realm_labels);
+    var layout = {
+        title: 'Messages Sent by Client',
+        width: 500,
+        height: 400,
+    };
+    Plotly.newPlot('id_messages_sent_by_client',
+                   trace_realm, layout, {displayModeBar: false});
+
+    $('#messages_by_client_realm').click(function () {
+        $(this).css('background', '#D8D8D8');
+        $('#messages_by_client_user').css('background', '#F0F0F0');
+        var plotDiv = document.getElementById('id_messages_sent_by_client');
+        plotDiv.data[0].values = realm_values;
+        plotDiv.data[0].labels = realm_labels;
+        Plotly.redraw('id_messages_sent_by_client');
+    });
+    $('#messages_by_client_user').click(function () {
+        $(this).css('background', '#D8D8D8');
+        $('#messages_by_client_realm').css('background', '#F0F0F0');
+        var plotDiv = document.getElementById('id_messages_sent_by_client');
+        plotDiv.data[0].values = user_values;
+        plotDiv.data[0].labels = user_labels;
+        Plotly.redraw('id_messages_sent_by_client');
+    });
+}
+
+$.get({
+    url: '/json/analytics/chart_data',
+    data: {chart_name: 'messages_sent_by_client', min_length: '10'},
+    idempotent: true,
+    success: function (data) {
+        populate_messages_sent_by_client(data);
+    },
+    error: function (xhr) {
+        $('#id_stats_errors').text($.parseJSON(xhr.responseText).msg);
+    },
+});

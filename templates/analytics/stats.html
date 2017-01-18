@@ -45,8 +45,15 @@
     #cumulative {
         background: #F0F0F0;
     }
-    #id_messages_sent_to_realm_bar{
+    #id_messages_sent_to_realm_bar {
         position: relative;
+    }
+    #messages_by_client_realm {
+        margin-left: 50px;
+        background: #D8D8D8;
+    }
+    #messages_by_client_user {
+        background: #F0F0F0;
     }
 </style>
 </head>
@@ -62,6 +69,9 @@
   <button class="btn" type="button" id='cumulative'> cumulative </button>
   <div class="label" id="hoverinfo"></div>
   <div id="id_messages_sent_to_realm_bar" style="width: 800px; height: 500px;"></div>
+  <div id="id_messages_sent_by_client" style="width: 800px; height: 400px;"></div>
+  <button class="btn" type="button" id='messages_by_client_realm'> Everyone </button>
+  <button class="btn" type="button" id='messages_by_client_user'> Me </button>
 
 </body>
 </html>
