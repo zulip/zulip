@@ -371,6 +371,17 @@ exports.populate_stream_topics_for_tests = function (stream_map) {
     recent_topics = Dict.from(stream_map, {fold_case: true});
 };
 
+exports.get_newbie_stream = function () {
+    // This is the stream that we narrow folks to after the tutorial.
+
+    if (exports.is_subscribed("new members")) {
+        return "new members";
+    } else if (exports.in_home_view(page_params.notifications_stream)) {
+        return page_params.notifications_stream;
+    }
+    return undefined;
+};
+
 return exports;
 
 }());

@@ -345,8 +345,10 @@ function finale(skip) {
     deferred_work = [];
 
     // We start you in a narrow so it's not overwhelming.
-    if (stream_data.in_home_view(page_params.notifications_stream)) {
-        narrow.activate([{operator: "stream", operand: page_params.notifications_stream}]);
+    var newbie_stream = stream_data.get_newbie_stream();
+
+    if (newbie_stream) {
+        narrow.activate([{operator: "stream", operand: newbie_stream}]);
     }
 
     if (page_params.first_in_realm) {
