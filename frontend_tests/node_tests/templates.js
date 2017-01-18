@@ -106,7 +106,7 @@ function render(template_name, args) {
     var domain = $(html).find('.domain');
     var row = button.closest('tr');
 
-    assert.equal(button.text().trim(), "Delete");
+    assert.equal(button.text().trim(), "Remove");
     assert(button.hasClass("delete_alias"));
     assert.equal(button.data("id"), "1");
 

@@ -437,6 +437,11 @@ input[type=checkbox].inline-block {
 }
 
 #administration #new_alias {
-    margin-right: 20px;
+    width: 130px;
     margin-bottom: auto;
+    padding: 0px 2px;
+}
+
+#administration #add_alias {
+    width: 75px;
 }

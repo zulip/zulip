@@ -190,7 +190,6 @@ exports.populate_filters = function (filters_data) {
 };
 
 exports.populate_realm_aliases = function (aliases) {
-    var alias_table = $("#alias_table").expectOne();
     var domains_list = _.map(page_params.domains, function (ADomain) {
         return ADomain.domain;
     });
@@ -200,9 +199,10 @@ exports.populate_realm_aliases = function (aliases) {
     }
     $("#realm_restricted_to_domains_label").text(i18n.t("New users restricted to the following domains: __domains__", {domains: domains}));
 
-    alias_table.find("tr").remove();
+    var alias_table_body = $("#alias_table tbody").expectOne();
+    alias_table_body.find("tr").remove();
     _.each(aliases, function (alias) {
-        alias_table.append(templates.render("admin_alias_list", {alias: alias}));
+        alias_table_body.append(templates.render("admin_alias_list", {alias: alias}));
     });
 };
 
