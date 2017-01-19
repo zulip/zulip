@@ -19,7 +19,7 @@ pyflakes==1.5.0
 transifex-client==0.12.2
 
 # Dependency of transifex-client
-urllib3==1.19
+urllib3==1.20
 
 # Install the Zulip API bindings into the virtualenv; note that this
 # won't be automatically updated for new versions of api/.
