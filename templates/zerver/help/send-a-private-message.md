@@ -1,32 +1,32 @@
-# Private Message
+# Send a private message
 
-Zulip allows users to send private messages to each other.
+{!follow-steps.md!} send a new private message.
 
-## There are two ways to send a Private Message:
+1. Click the **New private message** button located in the compose box at
+the bottom of your screen.
 
-### Way 1:
+2. Upon clicking on the the **New private message** button, the compose box
+will transform to include **one or more people...** and
+**Compose your message here...** inputs.
 
-* To submit a new private message, first click on the `New Private
-  Message` button located at the bottom of your screen.
+    ![Private message](/static/images/help/private-box.png)
 
-* The following box will be displayed
-![New stream message](/static/images/help/private-box.png)
-
-* In the **one or more people...** field, input the username or email
-address of the user you want to privately message.  When you begin
+3. In the **one or more people...** field, input the username or email
+address of the user you want to privately message. When you begin
 typing an email address or username, autocomplete suggestions will
 appear.
 
-* If you attempt to input a nonexistent username or email address, an
-  error message will appear.
+    !!! warn ""
+        **Note:** If you attempt to input a nonexistent username or email
+        address, an error message will appear.
 
-### Way 2:
+5. Enter your message in the **Compose your message here...** field.
 
-* You also can click on the **user's name** in the `USERS` panel on
-the right and click on `down arrow` that gets visible when hovering
-over the name and click on the option `Compose a private message to
-<user's name>` and write the message in the compose box.
+6. Once you have finished completing your message and adding the recipients,
+you can now send your message to the specified user by pressing the Enter
+key or clicking the **Send** button, depending on your settings.
 
-You can always discard your message by clicking the **x**
-(<i class="icon-vector-remove"></i>) icon located at the top-right corner
-of your compose box.
+!!! tip ""
+    You can always delete your message by clicking the x (<i
+    class="icon-vector-remove"></i>) icon located at the top-right corner of
+    your compose box or pressing the `Esc` key.
