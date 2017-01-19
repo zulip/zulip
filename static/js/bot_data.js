@@ -10,20 +10,9 @@ var bot_data = (function () {
         $(document).trigger('zulip.bot_data_changed');
     }, 50);
 
-    var set_can_admin = function bot_data__set_can_admin(bot) {
-        if (page_params.is_admin) {
-            bot.can_admin = true;
-        } else if (bot.owner !== undefined && util.is_current_user(bot.owner)) {
-            bot.can_admin = true;
-        } else {
-            bot.can_admin = false;
-        }
-    };
-
     exports.add = function bot_data__add(bot) {
         var clean_bot = _.pick(bot, bot_fields);
         bots[bot.email] = clean_bot;
-        set_can_admin(clean_bot);
         send_change_event();
     };
 
@@ -35,7 +24,6 @@ var bot_data = (function () {
     exports.update = function bot_data__update(email, bot_update) {
         var bot = bots[email];
         _.extend(bot, _.pick(bot_update, bot_fields));
-        set_can_admin(bot);
         send_change_event();
     };
 
