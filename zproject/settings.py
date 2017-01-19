@@ -964,6 +964,9 @@ LOGGING = {
         'require_debug_false': {
             '()': 'django.utils.log.RequireDebugFalse',
         },
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
         'nop': {
             '()': 'zerver.lib.logging_util.ReturnTrue',
         },
@@ -1040,6 +1043,12 @@ LOGGING = {
         'django.server': {
             'propagate': False,
             'filters': ['skip_200_and_304'],
+        },
+        'django.template': {
+            'handlers': ['console'],
+            'filters': ['require_debug_true'],
+            'level': 'DEBUG',
+            'propagate': False,
         },
         ## Uncomment the following to get all database queries logged to the console
         # 'django.db': {
