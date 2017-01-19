@@ -22,7 +22,7 @@ to.
 2. The **Sent by** section displays the username and email address of the
 message sender.
 
-    In this example, **King Hamlet** sent the messsage. His email address is
+    In this example, **King Hamlet** sent the message. His email address is
     **hamlet@zulip.com**.
 
 3. This **Timestamp** section shows the exact date and time at which the message

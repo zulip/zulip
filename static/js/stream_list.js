@@ -6,6 +6,27 @@ var zoomed_stream = '';
 var previous_sort_order;
 var previous_unpinned_order;
 
+function update_count_in_dom(unread_count_elem, count) {
+    var count_span = unread_count_elem.find('.count');
+    var value_span = count_span.find('.value');
+
+    if (count === 0) {
+        count_span.hide();
+        if (count_span.parent().hasClass("subscription_block")) {
+            count_span.parent(".subscription_block").removeClass("stream-with-count");
+        }
+        value_span.text('');
+        return;
+    }
+
+    count_span.show();
+
+    if (count_span.parent().hasClass("subscription_block")) {
+        count_span.parent(".subscription_block").addClass("stream-with-count");
+    }
+    value_span.text(count);
+}
+
 function filter_streams_by_search(streams) {
     var search_box = $(".stream-list-filter");
 
@@ -252,6 +273,14 @@ function build_stream_sidebar_row(sub) {
         list_item.remove();
     };
 
+
+    self.update_unread_count = function () {
+        var count = unread.num_unread_for_stream(stream_name);
+        update_count_in_dom(list_item, count);
+    };
+
+    self.update_unread_count();
+
     exports.stream_sidebar.set_row(sub.stream_id, self);
 }
 
@@ -291,28 +320,9 @@ exports.get_stream_li = function (stream_name) {
     return get_filter_li('stream', stream_name);
 };
 
-function update_count_in_dom(count_span, value_span, count) {
-    if (count === 0) {
-        count_span.hide();
-        if (count_span.parent().hasClass("subscription_block")) {
-            count_span.parent(".subscription_block").removeClass("stream-with-count");
-        }
-        value_span.text('');
-        return;
-    }
-
-    count_span.show();
-
-    if (count_span.parent().hasClass("subscription_block")) {
-        count_span.parent(".subscription_block").addClass("stream-with-count");
-    }
-    value_span.text(count);
-}
-
 function set_count(type, name, count) {
-    var count_span = get_filter_li(type, name).find('.count');
-    var value_span = count_span.find('.value');
-    update_count_in_dom(count_span, value_span, count);
+    var unread_count_elem = get_filter_li(type, name);
+    update_count_in_dom(unread_count_elem, count);
 }
 
 function rebuild_recent_topics(stream) {

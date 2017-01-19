@@ -154,7 +154,7 @@ it would be inconvenient to enforce this too strictly.)
 
 Zulip also has custom regex-based rules that it applies to Python code.
 Look for `python_rules` in the source code for `lint-all`.  Note that we
-provide a mechanism to excude certain lines of codes from these checks.
+provide a mechanism to exclude certain lines of codes from these checks.
 Often, it is simply the case that our regex approach is too crude to
 correctly exonerate certain valid constructs.  In other cases, the code
 that we exempt may be deemed not worthwhile to fix.
@@ -186,7 +186,7 @@ Zulip uses two HTML templating systems:
 - [Django templates](https://docs.djangoproject.com/en/1.10/topics/templates/)
 - [handlebars](http://handlebarsjs.com/)
 
-Zulip has a home grown tool that validates both types of templates for
+Zulip has an internal tool that validates both types of templates for
 correct indentation and matching tags.  You can find the code here:
 
 - driver: [check-templates](https://github.com/zulip/zulip/blob/master/tools/check-templates)

@@ -550,32 +550,26 @@ form#add_new_subscription {
 .stream-row .check {
     width: 25px;
     height: 35px;
+    position: relative;
     margin-right: 8px;
     background-size: 60% auto;
     background-repeat: no-repeat;
     background-position: center center;
-
-    background-image: url(../images/checkbox-green.png);
-    opacity: 0;
 }
 
-.stream-row:hover .check:not(.checked) {
-    -webkit-filter: saturate(0) brightness(1.1);
-    -moz-filter: saturate(0) brightness(1.1);
-    filter: saturate(0) brightness(1.1);
-    opacity: 1;
+.stream-row .check svg {
+    fill: transparent;
+    width: 70%;
+    margin: 0% 15%;
 }
 
-.stream-row.active:hover .check:not(.checked) {
-    -webkit-filter: saturate(0) brightness(0.9);
-    -moz-filter: saturate(0) brightness(0.9);
-    filter: saturate(0) brightness(0.9);
-    opacity: 1;
+.stream-row:hover .check:not(.checked) svg,
+.stream-row.active:hover .check:not(.checked) svg {
+    fill: #ddd;
 }
 
-.stream-row .checked {
-    opacity: 1;
-    background-image: url(../images/checkbox-green.png);
+.stream-row .checked svg {
+    fill: #52c2af;
 }
 
 .stream-row .icon {

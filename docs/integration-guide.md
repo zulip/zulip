@@ -8,7 +8,7 @@ Zulip integrations library.
 
 On this page you'll find:
 
-* An overvew of the different [types of integrations](#types-of-integrations)
+* An overview of the different [types of integrations](#types-of-integrations)
   possible with Zulip.
 * [General advice](#general-advice) for writing integrations.
 * Details about writing [webhook integrations](#webhook-integrations).
@@ -405,7 +405,7 @@ icon.
 At this point, if you're following along and/or writing your own Hello World
 webhook, you have written enough code to test your integration.
 
-First, get an API key from the Your Bots section of your Zulip user's Settings
+First, get an API key from the Your bots section of your Zulip user's Settings
 page. If you haven't created a bot already, you can do that there. Then copy
 its API key and replace the placeholder "<api_key>" in the examples with
 your real key. This is how Zulip knows the request is from an authorized user.

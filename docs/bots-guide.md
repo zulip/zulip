@@ -42,13 +42,13 @@ It presumes that you already have a fully implemented `<my-bot>.py` bot and now 
 
 3. Register a new bot on your Zulip server's web interface.
 
-    * Navigate to *Settings* -> *Your Bots* -> *Add a New Bot*, fill
-      out the form and click on *Create Bot*.
-    * A new bot should appear in the *Your Bots* panel.
+    * Navigate to *Settings* -> *Your bots* -> *Add a new bot*, fill
+      out the form and click on *Create bot*.
+    * A new bot should appear in the *Your bots* panel.
 
 4. Add the bot's configuration file on your Zulip server.
 
-    * In the *Your Bots* panel, click on the green icon to download
+    * In the *Your bots* panel, click on the green icon to download
       its configuration file *.zuliprc* (the structure of this file is
       explained [here](#configuration-file).
     * Copy the file to a destination of your choice on your Zulip server, e.g. to `~/.zuliprc` or `~/zuliprc-test`.

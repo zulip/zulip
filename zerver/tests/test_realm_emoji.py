@@ -47,11 +47,11 @@ class RealmEmojiTest(ZulipTestCase):
         # type: () -> None
         email = "iago@zulip.com"
         self.login(email)
-        data = {"name": "my_emoji", "url": "https://example.com/my_emoji"}
-        result = self.client_put("/json/realm/emoji", info=data)
+        data = {"url": "https://example.com/my_emoji"}
+        result = self.client_put("/json/realm/emoji/my_emoji", data)
         self.assert_json_success(result)
         self.assertEqual(200, result.status_code)
-        emoji = RealmEmoji.objects.get(name=data['name'])
+        emoji = RealmEmoji.objects.get(name="my_emoji")
         self.assertEqual(emoji.author.email, email)
 
         result = self.client_get("/json/realm/emoji")
@@ -71,9 +71,9 @@ class RealmEmojiTest(ZulipTestCase):
     def test_upload_exception(self):
         # type: () -> None
         self.login("iago@zulip.com")
-        data = {"name": "my_em*/oji", "url": "https://example.com/my_emoji"}
-        result = self.client_put("/json/realm/emoji", info=data)
-        self.assert_json_error(result, 'Invalid characters in Emoji name')
+        data = {"url": "https://example.com/my_emoji"}
+        result = self.client_put("/json/realm/emoji/my_em*oji", info=data)
+        self.assert_json_error(result, 'Invalid characters in emoji name')
 
     def test_upload_admins_only(self):
         # type: () -> None
@@ -81,8 +81,8 @@ class RealmEmojiTest(ZulipTestCase):
         realm = get_realm('zulip')
         realm.add_emoji_by_admins_only = True
         realm.save()
-        data = {"name": "my_emoji", "url": "https://example.com/my_emoji"}
-        result = self.client_put("/json/realm/emoji", info=data)
+        data = {"url": "https://example.com/my_emoji"}
+        result = self.client_put("/json/realm/emoji/my_emoji", info=data)
         self.assert_json_error(result, 'Must be a realm administrator')
 
     def test_delete(self):
@@ -107,3 +107,9 @@ class RealmEmojiTest(ZulipTestCase):
         check_add_realm_emoji(realm, "my_emoji", "https://example.com/my_emoji")
         result = self.client_delete("/json/realm/emoji/my_emoji")
         self.assert_json_error(result, 'Must be a realm administrator')
+
+    def test_delete_exception(self):
+        # type: () -> None
+        self.login("iago@zulip.com")
+        result = self.client_delete("/json/realm/emoji/invalid_emoji")
+        self.assert_json_error(result, "Emoji 'invalid_emoji' does not exist")

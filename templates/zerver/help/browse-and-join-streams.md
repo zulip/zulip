@@ -35,7 +35,7 @@ You can also [create a new stream](create-a-stream) by clicking the plus
 * Upon selecting a stream in the [Subscriptions](/#subscriptions) page,
 {!stream-settings.md!}
 
-    ![Stream Settings](/static/images/help/stream-overview.png)
+    ![Stream settings](/static/images/help/stream-overview.png)
 
 ## Subscribing to streams
 
@@ -58,7 +58,7 @@ button.
 
 ### Subscribing later
 
-However, if the you were not notified about the stream's creation,
+However, if you were not notified about the stream's creation,
 you can subscribe to a stream by navigating to the
 [Subscriptions](/#subscriptions) page.
 

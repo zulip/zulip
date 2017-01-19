@@ -16,9 +16,9 @@ class ReactionEmojiTest(ZulipTestCase):
         Sending reaction without emoji fails
         """
         sender = 'hamlet@zulip.com'
-        result = self.client_put('/api/v1/messages/1/emoji_reactions',
+        result = self.client_put('/api/v1/messages/1/emoji_reactions/',
                                  **self.api_auth(sender))
-        self.assertEqual(result.status_code, 404)
+        self.assertEqual(result.status_code, 400)
 
     def test_add_invalid_emoji(self):
         # type: () -> None
@@ -58,8 +58,8 @@ class ReactionEmojiTest(ZulipTestCase):
         """
         sender = 'hamlet@zulip.com'
         emoji_name = 'my_emoji'
-        emoji_data = {'name': emoji_name, 'url': 'https://example.com/my_emoji'}
-        result = self.client_put('/json/realm/emoji', info=emoji_data,
+        emoji_data = {'url': 'https://example.com/my_emoji'}
+        result = self.client_put('/json/realm/emoji/my_emoji', info=emoji_data,
                                  **self.api_auth(sender))
         self.assert_json_success(result)
         self.assertEqual(200, result.status_code)

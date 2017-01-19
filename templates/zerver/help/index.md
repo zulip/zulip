@@ -55,7 +55,7 @@ as an **organization**.
   note that you can't @mention when editing messages, since they may
   have already read the message / not clear how to notif them)
 * [Make an announcement](/help/make-an-announcement)
-* Send a message in a different language
+* [Send a message in a different language](/help/send-a-message-in-a-different-language)
 * [Reply to a message](/help/reply-to-a-message)
 ### Reading
 * [View the Markdown source of a message](/help/view-the-markdown-source-of-a-message)

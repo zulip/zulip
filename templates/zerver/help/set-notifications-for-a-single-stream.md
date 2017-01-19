@@ -15,6 +15,6 @@ On Zulip, you can set different notification settings for different streams.
 4. You will be taken to the [Subscriptions](/#subscriptions) page;
  {!stream-settings.md!}
 
-5. Under the **Stream Settings** section you can now toggle
+5. Under the **Stream settings** section you can now toggle
  **Receive audible notifications** and **Receive desktop notifications**
  for that stream.

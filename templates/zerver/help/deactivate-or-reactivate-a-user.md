@@ -5,7 +5,7 @@ user's account in their organization.
 
 ## Deactivate a user
 
-To properly remove a user’s access to a Zulip orgnanization, it does not
+To properly remove a user’s access to a Zulip organization, it does not
 suffice to change their password or deactivate their account in the SSO system,
 since neither of those actions prevents authentication with the user’s API key
 or any API keys of the bots the user has created.
@@ -39,7 +39,7 @@ disappear, confirming the success of the account's deactivation.
 Zulip organization administrators can choose to reactivate a user's deactivated account
 by following the following steps.
 
-{!go-to-the.md!} [Deactivated Users](/#administration/deactivated-users-admin)
+{!go-to-the.md!} [Deactivated users](/#administration/deactivated-users-admin)
 {!admin.md!}
 
 4. Click the **Reactivate** button to the right of the user account that you

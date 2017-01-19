@@ -5,7 +5,7 @@ All notable changes to the Zulip server are documented in this file.
 ### Unreleased
 
 - Have peer_add events send user_id, not email.
-- Show subscriber counts in Manage Streams.
+- Show subscriber counts in Manage streams.
 - Added support for (optionally) using PGRoonga to support full-text
   search in all languages (not just English).
 - Added GitLab and Sentry integrations.

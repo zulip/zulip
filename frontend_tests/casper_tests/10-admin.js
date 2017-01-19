@@ -105,7 +105,7 @@ casper.then(function () {
     casper.click('#settings-dropdown');
     casper.click('a[href^="#administration"]');
 
-    casper.test.assertSelectorHasText("#administration a[aria-controls='deactivated-users']", "Deactivated Users");
+    casper.test.assertSelectorHasText("#administration a[aria-controls='deactivated-users']", "Deactivated users");
     casper.click("#administration a[aria-controls='deactivated-users']");
 
 

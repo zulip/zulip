@@ -831,7 +831,7 @@ function _setup_page() {
         });
 
         channel.put({
-            url: "/json/realm/emoji",
+            url: "/json/realm/emoji/" + encodeURIComponent(emoji.name),
             data: $(this).serialize(),
             success: function () {
                 $('#admin-emoji-status').hide();

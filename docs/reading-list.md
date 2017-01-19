@@ -120,12 +120,6 @@ Some titles have been shortened for organizational purposes.
 
 [The Hitchhiker’s Guide to Python!]: http://docs.python-guide.org/en/latest
 
-## C/C++
-
-*Book* [The C Programming Language][]
-
-[The C Programming Language]: https://www.ime.usp.br/~pf/Kernighan-Ritchie/C-Programming-Ebook.pdf
-
 ## Java/Android
 
 *Course* - [Android Development for Beginners][]

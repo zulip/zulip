@@ -1123,7 +1123,7 @@ msgid "Search"
 msgstr "Buscar"
 
 #: templates/zerver/navbar.html:49
-msgid "Manage Streams"
+msgid "Manage streams"
 msgstr ""
 
 #: templates/zerver/navbar.html:54

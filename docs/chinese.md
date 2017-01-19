@@ -5,8 +5,8 @@
 The language style of Zulip is a little colloquial, while the Chinese
 translation prefers a formal style and also avoids stereotypes. Since
 Zulip is a modern internet application, many Chinese translations are
-borrowed from the popular Web softwares, such as WeiBo, WeChat, QQ
-Mail etc. that most of Chinese users are familiar with.
+borrowed from the popular Web software, such as WeiBo, WeChat, QQ
+Mail etc. that most Chinese users are familiar with.
 
 Zulip的文风比较口语化，考虑到大多数中国用户的习惯，翻译时的语言习惯稍
 微正式了一点，但也尽量避免刻板。Zulip是一款时尚的互联网应用，翻译时也
@@ -115,7 +115,7 @@ The perfect tense subscribed/unsubscribed is translated as "已订阅/已
    to the specific conditions. "Narrow to ..." means "to narrow the
    scope of ...". The two words share the common meanings.
 
-2. "筛选" is of a common computer vocabulary and has been well
+2. "筛选" is a common computer phrase and has been well
    accepted by public, e.g. the "Filter(筛选)" feature in Microsoft
    Excel.
 
@@ -147,11 +147,11 @@ is also borrowed from the WeChat.
 * Deactivate/Reactivate - **禁用/启用(帐户)，关闭/激活(社区)**
 
 When applied to a user account, translated as "禁用/启用
-(Disable/Enable)", for example "Deactivated Users" to "禁用的用户";
+(Disable/Enable)", for example, "Deactivated users" to "禁用的用户";
 when applied to a realm, translated as "关闭/激活(Close/Open)", for
 example "Your realm has been deactivated." to "您的社区已关闭".
 
-当应用于用户帐户时，选择翻译为“禁用/启用”，例如“Deactivated Users”翻译
+当应用于用户帐户时，选择翻译为“禁用/启用”，例如“Deactivated users”翻译
 为“禁用的用户”；当应用于“社区”（Realm）时，选择翻译为“关闭/激活”，如
 “Your realm has been deactivated.”翻译为“您的社区已关闭”。
 
@@ -159,7 +159,7 @@ example "Your realm has been deactivated." to "您的社区已关闭".
 
 "Invalid" is mainly used in exception information, which is uncommon
 for general users. Other translations "错误(Error)", "非法(Illegal)",
-"不合法(Invalid)" are all ok. Generally it is translated as "不正确
+"不合法(Invalid)" are all ok. Generally, it is translated as "不正确
 (Incorrect)" for consistency. For example, "Invalid API key" is
 translated as "API码不正确".
 
@@ -188,14 +188,14 @@ All translated as "用户(User)".
 * You/Your - **您/您的**
 
 It is translated as 您/您的(You/Your) rather than "你/你的(You/Your)",
-so as to express respect to user.
+so as to express respect to the user.
 
 出于尊重用户的目的，翻译为敬语“您/您的”，而不翻译为“你/你的”。
 
 * We - **我们（或不翻）**
 
 "We" is generally translated as the first person "我们(We)", while in
-formal Chinese extensive use of "We" is relatively small. So in many
+formal Chinese, extensive use of "We" is relatively rare. So in many
 times and places it can be ignored not to translate or transforming
 expression. For example, "Still no email? We can resend it" is
 translated as "仍然没有收到邮件？点击重新发送(Still no email? Click to

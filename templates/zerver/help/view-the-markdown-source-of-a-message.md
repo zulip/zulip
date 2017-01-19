@@ -1,4 +1,4 @@
-## View the Markdown source of a message
+# View the Markdown source of a message
 
 When someone in your your Zulip organization sends a message, you can view the
 Markdown source of the message to learn more about the message's formatting or

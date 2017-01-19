@@ -1,4 +1,4 @@
-## Sending a new stream message
+# Sending a new stream message
 
 ![New stream message](/static/images/help/new-stream-message.png)
 

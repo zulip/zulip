@@ -37,5 +37,6 @@ timestamp on the right side of the message body.
 ![Message time](/static/images/help/message-exact-time.png)
 
 Zulip is designed to store locally echoed message content in local
-storage and replay it when your browser reconnects to the Internet, to
-avoid issues where messages users thought they sent are lost.
+storage and replay it when your browser reconnects to the Internet.
+This should ensure that messages that users thought they had sent get
+delivered eventually.

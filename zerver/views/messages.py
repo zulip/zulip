@@ -542,11 +542,20 @@ def get_old_messages_backend(request, user_profile,
         # Build the query for the narrow
         num_extra_messages = 0
         builder = NarrowBuilder(user_profile, inner_msg_id_col)
+        search_term = None # type: Optional[Dict[str, Any]]
         for term in narrow:
-            if term['operator'] == 'search' and not is_search:
-                query = query.column("subject").column("rendered_content")
-                is_search = True
-            query = builder.add_term(query, term)
+            if term['operator'] == 'search':
+                if not is_search:
+                    search_term = term
+                    query = query.column("subject").column("rendered_content")
+                    is_search = True
+                else:
+                    # Join the search operators if there are multiple of them
+                    search_term['operand'] += ' ' + term['operand']
+            else:
+                query = builder.add_term(query, term)
+        if is_search:
+            query = builder.add_term(query, search_term)
 
     # We add 1 to the number of messages requested if no narrow was
     # specified to ensure that the resulting list always contains the
