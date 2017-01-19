@@ -79,7 +79,7 @@ markdown-include==0.5.1
 # Needed for mock objects in decorators
 mock==2.0.0
 
-oauth2client==3.0.0
+oauth2client==4.0.0
 oauthlib==1.1.2
 
 # Needed for mock>1.1.2
