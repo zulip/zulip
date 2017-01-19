@@ -32,7 +32,7 @@ exports.rename_sub = function (stream_id, new_name) {
 
 exports.unsubscribe_myself = function (sub) {
     // Remove user from subscriber's list
-    var user_id = people.get_user_id(page_params.email);
+    var user_id = people.my_current_user_id();
     exports.remove_subscriber(sub.name, user_id);
     sub.subscribed = false;
 };
