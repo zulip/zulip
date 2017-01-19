@@ -1,21 +1,29 @@
-# Mention a Team Member
+# @-mention a team member
 
-![Mention a Team Member](/static/images/help/mention_user.png)
+When having a conversation in Zulip, it is sometimes necessary to call the
+attention of another member. You can @-mention (alert) other users by
+mentioning them in the body of a message.
 
-When having a conversation in Zulip, it is sometimes necessary to call
-the attention of another member. You can alert ("**@mention**") other
-users with a particular stream-message from within the body of the
-message itself. Type `@` and then begin typing their email address or
-one of their names, and the system will offer you tab-completions. The
-completed `@mention` will look something like: `@**name**`, and it
-will appear as **@name** in your posted message.
-
-If you attempt to `@mention` someone who is not subscribed to the
-current stream, Zulip will ask if you would like to subscribe them to
-the stream:
-
-![A User Who is Not Subscribed](/static/images/help/mention_user_not_subscribed.png)
+Please note that you cannot @-mention users when you edit a message, since
+they may have already read the message.
 
 !!! tip ""
-    You can view any mentions calling your attention by clicking on the
-    "@-mentions" view in the left sidebar.
+    You can view any messages calling your attention by clicking on the
+    **@-mentions** filters in the left sidebar.
+
+1. Compose a [new message or reply](/help/reply-to-a-message).
+2. In the **Compose your message here...** field, type `@` followed by the
+email address or part of the username of the user you want to @-mention.
+When you begin typing an email address or username, autocomplete suggestions
+will appear.
+
+    ![Mention](/static/images/help/mention-screenshot.png)
+
+    Once you select an autocomplete suggestion, the name or email address of
+the user will be replaced with  `@**name**` where `name` is the name of the
+selected user.
+
+    !!! tip ""
+        If you attempt to @-mention someone who is not subscribed to the
+        stream in which you're posting the message, Zulip will ask if you
+        would like to subscribe the user to the stream.
