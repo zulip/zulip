@@ -7,7 +7,7 @@
 -r twisted.txt
 
 # Needed to compute test coverage
-coverage==4.2
+coverage==4.3.4
 
 # fake for LDAP testing
 git+https://github.com/umairwaheed/fakeldap.git@37bc199e9589c31f4bb5bae1445ad1cd7f84e1ac#egg=fakeldap==0.5.1.0zulip1
