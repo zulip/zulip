@@ -255,8 +255,7 @@ $(function () {
         }
 
         if ($(e.target).is(".exit, .exit-sign, #subscription_overlay, #subscription_overlay > .flex")) {
-            $("#subscription_overlay").fadeOut(500);
-            subs.remove_miscategorized_streams();
+            subs.close();
 
             hashchange.exit_settings();
         }

@@ -196,7 +196,7 @@ function process_hotkey(e) {
             ui.exit_lightbox_photo();
             return true;
         } else if ($("#subscription_overlay").is(":visible")) {
-            $("#subscription_overlay").click();
+            subs.close();
             return true;
         }
     }

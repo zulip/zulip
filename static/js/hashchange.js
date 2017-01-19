@@ -225,7 +225,7 @@ function should_ignore(hash) {
 }
 
 function hide_overlays() {
-    $("#subscription_overlay").fadeOut(500);
+    subs.close();
 }
 
 function hashchanged(from_reload, e) {
