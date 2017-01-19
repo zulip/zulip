@@ -105,11 +105,16 @@ for js_group, filespec in six.iteritems(JS_SPECS):
     in_files = [os.path.join(STATIC_PATH, filename)
                 for filename in filespec['source_filenames']]
 
+    min_files = [os.path.join(STATIC_PATH, filename)
+                 for filename in filespec.get('minifed_source_filenames')
+                 or []]
+
     out_file = os.path.join(MIN_DIR, os.path.basename(filespec['output_filename']))
     map_file = os.path.join(MAP_DIR, os.path.basename(filespec['output_filename'])
                             + '.map')
 
-    if (not 'force_minify' in filespec) and (prev_deploy and len(set(in_files) & changed_files) == 0):
+    if (not 'force_minify' in filespec) and \
+       (prev_deploy and len(set(in_files) & changed_files) == 0):
         # Try to reuse the output file from previous deploy
         try:
             for dest in [out_file, map_file]:
@@ -132,4 +137,10 @@ for js_group, filespec in six.iteritems(JS_SPECS):
 
     # Write out the JS
     with open(out_file, 'wb') as fp:
+        # Minified source files (most likely libraries) should be loaded
+        # first to prevent any dependency errors.
+        for file in min_files:
+            with open(file, 'rb') as f:
+                fp.write(f.read())
+
         fp.write(js)
