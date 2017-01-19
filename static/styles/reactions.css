@@ -46,24 +46,24 @@
 }
 
 .message_reactions .message_reaction:hover .emoji {
-  transform: scale(1.2);
-  -moz-transform: scale(1.2);
+    transform: scale(1.2);
+    -moz-transform: scale(1.2);
 }
 
 @-webkit-keyframes shaking {
-  0% { -webkit-transform: translate(2px, 1px) rotate(0deg); }
-  40% { -webkit-transform: translate(1px, -1px) rotate(1deg); }
-  60% { -webkit-transform: translate(-3px, 1px) rotate(0deg); }
-  80% { -webkit-transform: translate(-1px, -1px) rotate(1deg); }
-  100% { -webkit-transform: translate(1px, -2px) rotate(-1deg); }
+    0% { -webkit-transform: translate(2px, 1px) rotate(0deg); }
+    40% { -webkit-transform: translate(1px, -1px) rotate(1deg); }
+    60% { -webkit-transform: translate(-3px, 1px) rotate(0deg); }
+    80% { -webkit-transform: translate(-1px, -1px) rotate(1deg); }
+    100% { -webkit-transform: translate(1px, -2px) rotate(-1deg); }
 }
 
 .message_reactions .message_reaction:active .emoji {
-  -webkit-animation-name: shaking;
-  -webkit-animation-duration: .2s;
-  -webkit-transform-origin: 50% 50%;
-  -webkit-animation-iteration-count: infinite;
-  -webkit-animation-timing-function: linear;
+    -webkit-animation-name: shaking;
+    -webkit-animation-duration: .2s;
+    -webkit-transform-origin: 50% 50%;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-timing-function: linear;
 }
 
 .message_reactions .message_reaction_count {
