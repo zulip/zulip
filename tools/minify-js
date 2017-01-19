@@ -106,8 +106,7 @@ for js_group, filespec in six.iteritems(JS_SPECS):
                 for filename in filespec['source_filenames']]
 
     min_files = [os.path.join(STATIC_PATH, filename)
-                 for filename in filespec.get('minifed_source_filenames')
-                 or []]
+                 for filename in filespec.get('minifed_source_filenames', [])]
 
     out_file = os.path.join(MIN_DIR, os.path.basename(filespec['output_filename']))
     map_file = os.path.join(MAP_DIR, os.path.basename(filespec['output_filename'])

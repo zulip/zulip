@@ -21,11 +21,11 @@ class MinifiedJSNode(Node):
         if settings.DEBUG:
             source_files = settings.JS_SPECS[self.sourcefile]
             normal_source = source_files['source_filenames']
-            minified_source = source_files.get('minifed_source_filenames')
+            minified_source = source_files.get('minifed_source_filenames', [])
 
             # Minified source files (most likely libraries) should be loaded
             # first to prevent any dependency errors.
-            scripts = minified_source + normal_source if minified_source else normal_source
+            scripts = minified_source + normal_source
         else:
             scripts = [settings.JS_SPECS[self.sourcefile]['output_filename']]
         script_urls = [staticfiles_storage.url(script) for script in scripts]
