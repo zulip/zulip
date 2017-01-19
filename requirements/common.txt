@@ -111,7 +111,7 @@ requests_oauthlib==0.7.0
 rsa==3.4.2
 
 # Dependencies of our API
-simplejson==3.8.2
+simplejson==3.10.0
 
 # Needed for Tornado>3.2
 singledispatch==3.4.0.3
