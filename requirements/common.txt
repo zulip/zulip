@@ -136,7 +136,7 @@ statsd==3.2.1
 tornado==4.4.2
 
 # Needed for Python static typing
-typing==3.5.2.2
+typing==3.5.3.0
 
 # Fast JSON parser
 ujson==1.35
