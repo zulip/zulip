@@ -1,4 +1,4 @@
-# Message formatting
+# Format your message using Markdown
 
 Zulip uses a variant of
 [GitHub Flavored Markdown](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#tables)
@@ -6,13 +6,12 @@ Zulip uses a variant of
 
 ## Summary
 
-For a summary of message formatting in Zulip, click the
-<i class="icon-vector-font"></i> icon located at the bottom
-left of your messaging box or the cog
-(<i class="icon-vector-cog"></i>) in the upper right corner of the
-right sidebar and choose “Message formatting” from the drop-down menu.
-
-The following modal window will appear.
+To see a summary of message formatting in Zulip, click the A (<i
+class="icon-vector-font"></i>) icon located in the bottom left corner of
+your messaging box. You can alternatively click the cog (<i
+class="icon-vector-cog"></i>) icon in the upper right corner of the right
+sidebar and choose **Message formatting** from the dropdown menu that
+appears.
 
 ![Message formatting modal](/static/images/help/message-formatting-summary.png)
 
