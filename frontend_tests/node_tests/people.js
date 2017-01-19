@@ -8,7 +8,6 @@ var people = require("js/people.js");
 
 set_global('page_params', {
     people_list: [],
-    email: 'hamlet@example.com',
 });
 set_global('activity', {
     redraw: function () {},
@@ -19,17 +18,25 @@ set_global('admin', {
 
 var _ = global._;
 
-(function test_basics() {
-    var orig_person = {
-        email: 'orig@example.com',
-        user_id: 31,
-        full_name: 'Original',
-    };
-    people.add(orig_person);
+var me = {
+    email: 'me@example.com',
+    user_id: 30,
+    full_name: 'Me Myself',
+};
 
+function initialize() {
+    people.init();
+    people.add(me);
+    people.initialize_current_user(me.email);
+}
+
+initialize();
+
+(function test_basics() {
     var persons = people.get_all_persons();
+
     assert.equal(_.size(persons), 1);
-    assert.equal(persons[0].full_name, 'Original');
+    assert.equal(persons[0].full_name, 'Me Myself');
 
     var realm_persons = people.get_realm_persons();
     assert.equal(_.size(realm_persons), 0);
@@ -69,14 +76,6 @@ var _ = global._;
     assert.equal(person.full_name, 'Sir Isaac');
     assert.equal(person.is_admin, true);
 
-    global.page_params.email = email;
-
-    people.update({email: email, is_admin: false});
-    assert(!global.page_params.is_admin);
-
-    people.update({email: email, full_name: 'The Godfather of Calculus'});
-    assert.equal(global.page_params.fullname, 'The Godfather of Calculus');
-
     // Now deactivate isaac
     people.deactivate(isaac);
     person = people.realm_get(email);
@@ -86,10 +85,19 @@ var _ = global._;
     person = people.get_by_email(email);
     assert.equal(person.email, email);
 
-    // The original person should still be there
-    person = people.get_by_email('orig@example.com');
-    assert.equal(person.full_name, 'Original');
+    // The current user should still be there
+    person = people.get_by_email('me@example.com');
+    assert.equal(person.full_name, 'Me Myself');
 }());
+
+(function test_updates() {
+    people.update({email: me.email, is_admin: false});
+    assert(!global.page_params.is_admin);
+
+    people.update({email: me.email, full_name: 'Me V2'});
+    assert.equal(global.page_params.fullname, 'Me V2');
+}());
+
 
 (function test_get_person_from_user_id() {
     var person = {
@@ -128,12 +136,6 @@ var _ = global._;
 }());
 
 (function test_get_rest_of_realm() {
-    var myself = {
-        email: 'myself@example.com',
-        user_id: 201,
-        full_name: 'Yours Truly',
-    };
-    global.page_params.email = myself.email;
     var alice1 = {
         email: 'alice1@example.com',
         user_id: 202,
@@ -149,7 +151,6 @@ var _ = global._;
         user_id: 204,
         full_name: 'Bob van Roberts',
     };
-    people.add_in_realm(myself);
     people.add_in_realm(alice1);
     people.add_in_realm(bob);
     people.add_in_realm(alice2);
@@ -163,7 +164,7 @@ var _ = global._;
 
 }());
 
-people.init();
+initialize();
 
 (function test_recipient_counts() {
     var email = 'anybody@example.com';
