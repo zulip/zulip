@@ -99,7 +99,7 @@ pycrypto==2.6.1
 pylibmc==1.5.1
 
 # Needed for timezone work
-pytz==2016.7
+pytz==2016.10
 
 # Needed for redis
 redis==2.10.5
