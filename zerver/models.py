@@ -16,7 +16,7 @@ from django.core.validators import URLValidator
 from django.dispatch import receiver
 from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
     user_profile_by_id_cache_key, user_profile_by_email_cache_key, \
-    generic_bulk_cached_fetch, cache_set, flush_stream, \
+    realm_by_id_cache_key, generic_bulk_cached_fetch, cache_set, flush_stream, \
     display_recipient_cache_key, cache_delete, \
     get_stream_cache_key, active_user_dicts_in_realm_cache_key, \
     active_bot_dicts_in_realm_cache_key, active_user_dict_fields, \
@@ -241,6 +241,11 @@ class Realm(ModelReprMixin, models.Model):
         )
 
 post_save.connect(flush_realm, sender=Realm)
+
+@cache_with_key(realm_by_id_cache_key, timeout=3600*24*7)
+def get_realm_by_id(uid):
+    # type: (int) -> Realm
+    return Realm.objects.select_related().get(id=uid)
 
 def get_realm(string_id):
     # type: (Text) -> Optional[Realm]

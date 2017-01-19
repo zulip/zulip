@@ -4,9 +4,9 @@ from typing import Any, Callable, Mapping
 from django.conf import settings
 from django.core.handlers.wsgi import WSGIRequest
 from django.core.handlers.base import BaseHandler
-from zerver.models import get_user_profile_by_email, \
+from zerver.models import get_user_profile_by_email, get_realm_by_id, \
     get_user_profile_by_id, get_prereg_user_by_email, get_client, \
-    UserMessage, Message, Realm
+    UserMessage, Message
 from zerver.lib.context_managers import lockfile
 from zerver.lib.queue import SimpleQueueClient, queue_json_publish
 from zerver.lib.timestamp import timestamp_to_datetime
@@ -408,7 +408,7 @@ class FetchLinksEmbedData(QueueProcessingWorker):
 
             realm = None
             if 'message_realm_id' in event:
-                realm = Realm.objects.get(id=event['message_realm_id'])
+                realm = get_realm_by_id(event['message_realm_id'])
 
             # If rendering fails, the called code will raise a JsonableError.
             rendered_content = render_incoming_message(
