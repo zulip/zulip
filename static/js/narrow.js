@@ -598,7 +598,9 @@ exports.huddle_with_uri = function (user_ids_string) {
 };
 
 exports.by_sender_uri = function (reply_to) {
-    return "#narrow/sender/" + hashchange.encodeHashComponent(reply_to);
+    return hashchange.operators_to_hash([
+        {operator: 'sender', operand: reply_to},
+    ]);
 };
 
 exports.by_stream_uri = function (stream) {
