@@ -124,7 +124,7 @@ smmap==0.9.0
 sockjs-tornado==1.0.3
 
 # Needed to parse source maps for error reporting
-sourcemap==0.1.8
+sourcemap==0.2.0
 
 # Needed for django-statsd-mozilla
 statsd==3.2.1
