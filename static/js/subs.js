@@ -698,9 +698,11 @@ function ajaxSubscribe(stream) {
         url: "/json/users/me/subscriptions",
         data: {subscriptions: JSON.stringify([{name: stream}]) },
         success: function (resp, statusText, xhr) {
-            $("#create_stream_name").val("");
+            if (subs.is_open) {
+                $("#create_stream_name").val("");
 
-            actually_filter_streams();
+                actually_filter_streams();
+            }
 
             var res = JSON.parse(xhr.responseText);
             if (!$.isEmptyObject(res.already_subscribed)) {
