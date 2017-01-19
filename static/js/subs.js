@@ -3,6 +3,7 @@ var subs = (function () {
 var meta = {
     callbacks: {},
     stream_created: false,
+    is_open: false,
 };
 var exports = {};
 
@@ -629,9 +630,23 @@ exports.onlaunchtrigger = function () {
 };
 
 exports.launch = function () {
+    meta.is_open = true;
     exports.setup_page(function () {
         $("#subscription_overlay").fadeIn(300);
     });
+};
+
+Object.defineProperty(exports, "is_open", {
+    get: function () {
+        return meta.is_open;
+    },
+    enumerable: false,
+});
+
+exports.close = function () {
+    meta.is_open = false;
+    $("#subscription_overlay").fadeOut(500);
+    subs.remove_miscategorized_streams();
 };
 
 exports.update_subscription_properties = function (stream_name, property, value) {
