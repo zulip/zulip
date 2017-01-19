@@ -170,7 +170,7 @@ git+https://github.com/umairwaheed/virtualenv-clone.git@short-version#egg=virtua
 ijson==2.3
 
 #for pep8 linter
-pycodestyle==2.1.0
+pycodestyle==2.2.0
 
 # Needed for link preview
 beautifulsoup4==4.5.1
