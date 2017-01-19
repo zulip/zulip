@@ -337,15 +337,6 @@ function _setup_page() {
         });
     }
 
-    $("#enable_stream_desktop_notifications").on("click", function (e) {
-        e.preventDefault();
-
-        var updated_setting = $("#" + setting).is(":checked");
-        post_notify_settings_changes(updated_setting,
-                                     update_notification_settings_success,
-                                     update_notification_settings_error);
-    });
-
 /*    $("input:checkbox","#notification-settings").on("click", function (e) {
         e.preventDefault();
 
@@ -401,6 +392,10 @@ function _setup_page() {
 
     $("#enable_stream_desktop_notifications").on("click", function () {
         var notification_checkbox = $("#enable_stream_desktop_notifications");
+        var updated_setting = $("#" + setting).is(":checked");
+        post_notify_settings_changes(updated_setting,
+                                     update_notification_settings_success,
+                                     update_notification_settings_error);
         maybe_bulk_update_stream_notification_setting(notification_checkbox,
                                                       update_desktop_notification_setting);
     });
