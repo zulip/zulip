@@ -19,7 +19,7 @@ Pygments==2.1.3
 SQLAlchemy==1.1.5
 
 # Needed for Tornado >3.2 compatibility
-backports-abc==0.4
+backports-abc==0.5
 
 # Needed for Tornado 4 compatibility
 backports.ssl-match-hostname==3.5.0.1
