@@ -8,10 +8,6 @@ add_dependencies({
 var noop = function () {};
 var people = global.people;
 
-set_global('page_params', {
-    email: 'me@example.com',
-});
-
 set_global('alert_words', {
     process_message: noop,
 });
@@ -44,6 +40,8 @@ people.add_in_realm(me);
 people.add_in_realm(alice);
 people.add_in_realm(bob);
 people.add_in_realm(cindy);
+
+global.people.initialize_current_user(me.email);
 
 global.util.execute_early = noop;
 

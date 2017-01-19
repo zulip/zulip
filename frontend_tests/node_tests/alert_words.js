@@ -6,12 +6,19 @@ add_dependencies({
 
 set_global('page_params', {
     alert_words: ['alertone', 'alerttwo', 'alertthree', 'al*rt.*s', '.+'],
-    email: 'tester@zulip.com',
 });
 
 set_global('feature_flags', {
     alert_words: true,
 });
+
+global.people.add({
+    email: 'tester@zulip.com',
+    full_name: 'Tester von Tester',
+    user_id: 42,
+});
+
+global.people.initialize_current_user('tester@zulip.com');
 
 var alert_words = require('js/alert_words.js');
 

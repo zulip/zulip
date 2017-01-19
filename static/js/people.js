@@ -8,6 +8,7 @@ var people_by_user_id_dict;
 var realm_people_dict;
 var cross_realm_dict;
 var pm_recipient_count_dict;
+var my_user_id;
 
 // We have an init() function so that our automated tests
 // can easily clear data.
@@ -351,9 +352,17 @@ exports.is_current_user = function (email) {
     if (email === null || email === undefined) {
         return false;
     }
-    return email.toLowerCase() === page_params.email.toLowerCase();
+
+    return email.toLowerCase() === exports.my_current_email().toLowerCase();
 };
 
+exports.initialize_current_user = function (email) {
+    my_user_id = exports.get_user_id(email);
+};
+
+exports.my_current_email = function () {
+    return people_by_user_id_dict.get(my_user_id).email;
+};
 
 $(function () {
     _.each(page_params.people_list, function (person) {
@@ -366,6 +375,8 @@ $(function () {
         }
         cross_realm_dict.set(person.email, person);
     });
+
+    exports.initialize_current_user(page_params.email);
 
     delete page_params.people_list; // We are the only consumer of this.
     delete page_params.cross_realm_bots;
