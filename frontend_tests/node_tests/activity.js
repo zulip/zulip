@@ -19,6 +19,8 @@ add_dependencies({
     compose_fade: 'js/compose_fade.js',
     people: 'js/people.js',
     unread: 'js/unread.js',
+    hashchange: 'js/hashchange.js',
+    narrow: 'js/narrow.js',
     activity: 'js/activity.js',
 });
 
@@ -259,6 +261,7 @@ activity.presence_info[norbert.user_id] = { status: activity.ACTIVE };
     var users = activity.update_users();
     assert.deepEqual(users, [{
             name: 'Fred Flintstone',
+            href: '#narrow/pm-with/2-fred',
             user_id: fred.user_id,
             num_unread: 0,
             type: 'active',
@@ -267,6 +270,7 @@ activity.presence_info[norbert.user_id] = { status: activity.ACTIVE };
         },
         {
             name: 'Jill Hill',
+            href: '#narrow/pm-with/3-jill',
             user_id: jill.user_id,
             num_unread: 0,
             type: 'active',
@@ -275,6 +279,7 @@ activity.presence_info[norbert.user_id] = { status: activity.ACTIVE };
         },
         {
             name: 'Norbert Oswald',
+            href: '#narrow/pm-with/5-norbert',
             user_id: norbert.user_id,
             num_unread: 0,
             type: 'active',
@@ -283,6 +288,7 @@ activity.presence_info[norbert.user_id] = { status: activity.ACTIVE };
         },
         {
             name: 'Alice Smith',
+            href: '#narrow/pm-with/1-alice',
             user_id: alice.user_id,
             num_unread: 0,
             type: 'idle',
@@ -291,6 +297,7 @@ activity.presence_info[norbert.user_id] = { status: activity.ACTIVE };
         },
         {
             name: 'Marky Mark',
+            href: '#narrow/pm-with/4-mark',
             user_id: mark.user_id,
             num_unread: 0,
             type: 'idle',
@@ -310,6 +317,7 @@ activity.presence_info[norbert.user_id] = { status: activity.ACTIVE };
     users = activity.update_users(users);
     assert.deepEqual(users, [{
         name: 'Alice Smith',
+        href: '#narrow/pm-with/1-alice',
         user_id: alice.user_id,
         num_unread: 0,
         type: 'active',
@@ -327,6 +335,7 @@ activity.presence_info[norbert.user_id] = { status: activity.ACTIVE };
     users = activity.update_users(users);
     assert.deepEqual(users, [{
         name: 'Marky Mark',
+        href: '#narrow/pm-with/4-mark',
         user_id: mark.user_id,
         num_unread: 0,
         type: 'active',

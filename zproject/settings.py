@@ -192,7 +192,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'ENABLE_FILE_LINKS': False,
                     'USE_WEBSOCKETS': True,
                     'PASSWORD_MIN_LENGTH': 6,
-                    'PASSWORD_MIN_ZXCVBN_QUALITY': 0.4,
+                    'PASSWORD_MIN_ZXCVBN_QUALITY': 0.5,
                     }
 
 for setting_name, setting_val in six.iteritems(DEFAULT_SETTINGS):
@@ -1103,3 +1103,5 @@ if PRODUCTION:
 PROFILE_ALL_REQUESTS = False
 
 CROSS_REALM_BOT_EMAILS = set(('feedback@zulip.com', 'notification-bot@zulip.com'))
+
+CONTRIBUTORS_DATA = os.path.join(STATIC_ROOT, 'generated/github-contributors.json')

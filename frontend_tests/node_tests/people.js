@@ -244,7 +244,28 @@ people.init();
     var emails_string = people.user_ids_string_to_emails_string('402,401');
     assert.equal(emails_string, 'emp401@example.com,emp402@example.com');
 
+    emails_string = people.slug_to_emails('402,401-group');
+    assert.equal(emails_string, 'emp401@example.com,emp402@example.com');
+
     emails_string = 'emp402@example.com,EMP401@EXAMPLE.COM';
     var user_ids_string = people.emails_strings_to_user_ids_string(emails_string);
     assert.equal(user_ids_string, '401,402');
+
+    var slug = people.emails_to_slug(emails_string);
+    assert.equal(slug, '401,402-group');
+}());
+
+(function test_slugs() {
+    var person = {
+        email: 'deBBie71@example.com',
+        user_id: 501,
+        full_name: 'Debra Henton',
+    };
+    people.add(person);
+
+    var slug = people.emails_to_slug(person.email);
+    assert.equal(slug, '501-debbie71');
+
+    var email = people.slug_to_emails(slug);
+    assert.equal(email, 'debbie71@example.com');
 }());

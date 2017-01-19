@@ -35,7 +35,7 @@ function populate_messages_sent_to_realm(data) {
 
 $.get({
     url: '/json/analytics/chart_data',
-    data: {chart_name: 'messages_sent_to_realm', min_length: '10'},
+    data: {chart_name: 'messages_sent_by_humans_and_bots', min_length: '10'},
     idempotent: true,
     success: function (data) {
         populate_messages_sent_to_realm(data);

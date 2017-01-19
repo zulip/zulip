@@ -60,10 +60,8 @@ be a user of multiple Zulip realms. The administrators of a realm can
 choose whether to allow anyone to register an account and join, or
 only allow people who have been invited, or restrict registrations to
 members of particular groups (using email domain names or corporate
-single-sign-on login for verification). For more on scalability and
-security considerations, see [the security section of the production
-maintenance
-instructions](prod-maintain-secure-upgrade.html#security-model).
+single-sign-on login for verification). For more on security
+considerations, see [the security model section](security-model.html).
 
 The default Zulip home screen is like a chronologically ordered inbox;
 it displays messages, starting at the oldest message that the user
@@ -222,10 +220,10 @@ list of stopwords used by a Postgresql extension.
 
 In a development environment, configuration of that postgresql
 extension is handled by `tools/postgres-init-dev-db` (invoked by
-`tools/provision.py`).  That file also manages setting up the
+`tools/provision`).  That file also manages setting up the
 development postgresql user.
 
-`tools/provision.py` also invokes `tools/do-destroy-rebuild-database`
+`tools/provision also invokes `tools/do-destroy-rebuild-database`
 to create the actual database with its schema.
 
 ### Nagios

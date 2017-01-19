@@ -1,7 +1,9 @@
 # Change the stream description
 
-If you are an administrator of a Zulip organization, you can change the
-description of any stream in your organization.
+{!admin-only.md!}
+
+{!follow-steps.md!} change the description of any stream in your
+organization.
 
 {!subscriptions.md!}
 {!filter-streams.md!}

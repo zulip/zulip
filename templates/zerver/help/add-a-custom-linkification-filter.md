@@ -1,8 +1,9 @@
 # Add a custom linkification filter
 
-If you are an administrator of a Zulip organization, you can add custom
-linkification filters to your organization that automatically turn phrases in
-messages into links to other pages.
+{!admin-only.md!}
+
+You can add custom linkification filters to your organization that
+automatically turn phrases in messages into links to other pages.
 
 {!go-to-the.md!} [Filter Settings](/#administration/filter-settings)
 {!admin.md!}

@@ -1,4 +1,8 @@
+global.stub_out_jquery();
+
 add_dependencies({
+    hashchange: 'js/hashchange.js',
+    people: 'js/people.js',
     stream_data: 'js/stream_data.js',
     Filter: 'js/filter.js',
 });
@@ -101,4 +105,29 @@ function set_filter(operators) {
     opts = {};
     narrow.set_compose_defaults(opts);
     assert.equal(opts.stream, 'ROME');
+}());
+
+(function test_uris() {
+    var ray = {
+        email: 'ray@example.com',
+        user_id: 22,
+        full_name: 'Raymond',
+    };
+    people.add(ray);
+
+    var alice = {
+        email: 'alice@example.com',
+        user_id: 23,
+        full_name: 'Alice Smith',
+    };
+    people.add(alice);
+
+    var uri = narrow.pm_with_uri(ray.email);
+    assert.equal(uri, '#narrow/pm-with/22-ray');
+
+    uri = narrow.huddle_with_uri("22,23");
+    assert.equal(uri, '#narrow/pm-with/22,23-group');
+
+    var emails = global.hashchange.decode_operand('pm-with', '22,23-group');
+    assert.equal(emails, 'alice@example.com,ray@example.com');
 }());

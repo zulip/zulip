@@ -17,7 +17,7 @@ can do that by just running:
 
 ```
 # From a clone of zulip.git
-./tools/provision.py
+./tools/provision
 source /srv/zulip-venv/bin/activate
 ./tools/run-dev.py  # starts the development server
 ```
@@ -395,7 +395,7 @@ docker build -t user/zulipdev .
 Commit and tag the provisioned images. The below will install Zulip's dependencies:
 ```
 docker run -itv $(pwd):/srv/zulip -p 9991:9991 user/zulipdev /bin/bash
-$ /usr/bin/python /srv/zulip/tools/provision.py --docker
+$ /usr/bin/python /srv/zulip/tools/provision --docker
 docker ps -af ancestor=user/zulipdev
 docker commit -m "Zulip installed" <container id> user/zulipdev:v2
 ```

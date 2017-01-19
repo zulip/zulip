@@ -22,6 +22,8 @@ OKGREEN = '\033[92m'
 WARNING = '\033[93m'
 FAIL = '\033[91m'
 ENDC = '\033[0m'
+BLACKONYELLOW = '\x1b[0;30;43m'
+WHITEONRED = '\x1b[0;37;41m'
 
 def subprocess_text_output(args):
     # type: (Sequence[str]) -> str
@@ -95,8 +97,10 @@ def run(args, **kwargs):
     try:
         subprocess.check_call(args, **kwargs)
     except subprocess.CalledProcessError:
-        print(WARNING + "A command run by %s failed; see output above." % (sys.argv[0])
+        print()
+        print(WHITEONRED + "Error running a subcommand of %s: %s" % (sys.argv[0], " ".join(args))
               + ENDC)
-        print(WARNING + "Command was: %s" % (" ".join(args))
+        print(WHITEONRED + "Actual error output for the subcommand is just above this."
               + ENDC)
+        print()
         raise

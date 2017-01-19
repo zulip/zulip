@@ -11,7 +11,7 @@ os.environ["PYTHONUNBUFFERED"] = "y"
 
 PY2 = sys.version_info[0] == 2
 
-ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import run, subprocess_text_output, OKBLUE, ENDC, WARNING
@@ -219,6 +219,7 @@ def main(options):
     run(["sudo", "chown", "%s:%s" % (user_id, user_id), EMOJI_CACHE_PATH])
     run(["tools/setup/emoji/build_emoji"])
     run(["scripts/setup/generate_secrets.py", "--development"])
+    run(["tools/update-authors-json", "--use-fixture"])
     if options.is_travis and not options.is_production_travis:
         run(["sudo", "service", "rabbitmq-server", "restart"])
         run(["sudo", "service", "redis-server", "restart"])

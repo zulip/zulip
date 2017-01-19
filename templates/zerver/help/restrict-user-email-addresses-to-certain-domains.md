@@ -1,8 +1,11 @@
 # Restrict user email addresses to certain domains
 
-We allow administrators to block new users from signing up who are not in
- the organization. The administrator can accomplish this by restricting
- users to have email addresses only from the organization's domains.
+{!admin-only.md!}
+
+Zulip allows organization administrators to block new users from signing up
+who are not in their organization. The administrator can accomplish this by
+restricting users to have email addresses only from the organization's
+domains.
 
 {!go-to-the.md!} [Organization settings](/#administration/)
 {!admin.md!}

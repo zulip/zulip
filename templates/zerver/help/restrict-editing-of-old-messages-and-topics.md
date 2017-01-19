@@ -1,9 +1,10 @@
 # Restrict editing of old messages and topics
 
-If you are an administrator of a Zulip organization, you can easily change the
-time limit that your organization's users have to change their messages after sending
-them. Alternatively, you can choose to disable message editing for your organization
-users.
+{!admin-only.md!}
+
+You can easily change the time limit that your organization's users have to
+change their messages after sending them. Alternatively, you can choose to
+disable message editing for your organization users.
 
 {!go-to-the.md!} [Organization Settings](/#administration/organization-settings)
 {!admin.md!}

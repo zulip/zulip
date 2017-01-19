@@ -11,14 +11,15 @@ from random import gauss, random, seed
 
 from six.moves import range, zip
 
-def generate_time_series_data(length, business_hours_base, non_business_hours_base,
+def generate_time_series_data(days=100, business_hours_base=10, non_business_hours_base=10,
                               growth=1, autocorrelation=0, spikiness=1, holiday_rate=0,
-                              frequency=CountStat.HOUR, is_gauge=False):
-    # type: (int, float, float, float, float, float, float, str, bool) -> List[int]
+                              frequency=CountStat.DAY, is_gauge=False, random_seed=26):
+    # type: (int, float, float, float, float, float, float, str, bool, int) -> List[int]
     """
     Generate semi-realistic looking time series data for testing analytics graphs.
 
-    length -- Number of data points returned.
+    days -- Number of days of data. Is the number of data points generated if
+        frequency is CountStat.DAY.
     business_hours_base -- Average value during a business hour (or day) at beginning of
         time series, if frequency is CountStat.HOUR (CountStat.DAY, respectively).
     non_business_hours_base -- The above, for non-business hours/days.
@@ -28,42 +29,41 @@ def generate_time_series_data(length, business_hours_base, non_business_hours_ba
         function of the previous point.
     spikiness -- 0 means no randomness (other than holiday_rate), higher values increase
         the variance.
-    holiday_rate -- Fraction of points randomly set to 0.
+    holiday_rate -- Fraction of days randomly set to 0, largely for testing how we handle 0s.
     frequency -- Should be CountStat.HOUR or CountStat.DAY.
     is_gauge -- If True, return partial sum of the series.
+    random_seed -- Seed for random number generator.
     """
-    if length < 2:
-        raise ValueError("length must be at least 2")
     if frequency == CountStat.HOUR:
+        length = days*24
         seasonality = [non_business_hours_base] * 24 * 7
         for day in range(5):
             for hour in range(8):
                 seasonality[24*day + hour] = business_hours_base
+        holidays  = []
+        for i in range(days):
+            holidays.extend([random() < holiday_rate] * 24)
     elif frequency == CountStat.DAY:
-        seasonality = [business_hours_base]*5 + [non_business_hours_base]*2
+        length = days
+        seasonality = [8*business_hours_base + 16*non_business_hours_base] * 5 + \
+                      [24*non_business_hours_base] * 2
+        holidays = [random() < holiday_rate for i in range(days)]
     else:
         raise ValueError("Unknown frequency: %s" % (frequency,))
+    if length < 2:
+        raise ValueError("Must be generating at least 2 data points. "
+                         "Currently generating %s" % (length,))
     growth_base = growth ** (1. / (length-1))
     values_no_noise = [seasonality[i % len(seasonality)] * (growth_base**i) for i in range(length)]
 
-    seed(26)
+    seed(random_seed)
     noise_scalars = [gauss(0, 1)]
     for i in range(1, length):
         noise_scalars.append(noise_scalars[-1]*autocorrelation + gauss(0, 1)*(1-autocorrelation))
 
-    values = [0 if random() < holiday_rate else int(v + sqrt(v)*noise_scalar*spikiness)
-              for v, noise_scalar in zip(values_no_noise, noise_scalars)]
+    values = [0 if holiday else int(v + sqrt(v)*noise_scalar*spikiness)
+              for v, noise_scalar, holiday in zip(values_no_noise, noise_scalars, holidays)]
     if is_gauge:
         for i in range(1, length):
             values[i] = values[i-1] + values[i]
-    else:
-        values = [max(v, 0) for v in values]
-    return values
-
-def bulk_create_realmcount(property, subgroup, last_end_time, frequency, interval, values, realm):
-    # type: (str, str, datetime, str, str, List[int], Realm) -> None
-    end_times = time_range(last_end_time, last_end_time, frequency, len(values))
-    RealmCount.objects.bulk_create([
-        RealmCount(realm=realm, property=property, subgroup=subgroup, end_time=end_time,
-                   interval=interval, value=value)
-        for end_time, value in zip(end_times, values) if value != 0])
+    return [max(v, 0) for v in values]

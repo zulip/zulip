@@ -46,7 +46,6 @@ class BaseCount(ModelReprMixin, models.Model):
     property = models.CharField(max_length=32) # type: Text
     subgroup = models.CharField(max_length=16, null=True) # type: Text
     end_time = models.DateTimeField() # type: datetime.datetime
-    interval = models.CharField(max_length=8) # type: Text
     value = models.BigIntegerField() # type: int
     anomaly = models.ForeignKey(Anomaly, null=True) # type: Optional[Anomaly]
 
@@ -66,7 +65,7 @@ class BaseCount(ModelReprMixin, models.Model):
 class InstallationCount(BaseCount):
 
     class Meta(object):
-        unique_together = ("property", "subgroup", "end_time", "interval")
+        unique_together = ("property", "subgroup", "end_time")
 
     @staticmethod
     def extended_id():
@@ -86,7 +85,7 @@ class RealmCount(BaseCount):
     realm = models.ForeignKey(Realm)
 
     class Meta(object):
-        unique_together = ("realm", "property", "subgroup", "end_time", "interval")
+        unique_together = ("realm", "property", "subgroup", "end_time")
 
     @staticmethod
     def extended_id():
@@ -107,7 +106,7 @@ class UserCount(BaseCount):
     realm = models.ForeignKey(Realm)
 
     class Meta(object):
-        unique_together = ("user", "property", "subgroup", "end_time", "interval")
+        unique_together = ("user", "property", "subgroup", "end_time")
 
     @staticmethod
     def extended_id():
@@ -128,7 +127,7 @@ class StreamCount(BaseCount):
     realm = models.ForeignKey(Realm)
 
     class Meta(object):
-        unique_together = ("stream", "property", "subgroup", "end_time", "interval")
+        unique_together = ("stream", "property", "subgroup", "end_time")
 
     @staticmethod
     def extended_id():

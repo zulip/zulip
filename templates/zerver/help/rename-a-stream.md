@@ -1,7 +1,8 @@
 # Rename a stream
 
-If you are an administrator of a Zulip organization, you can rename existing
-streams by following the following steps.
+{!admin-only.md!}
+
+{!follow-steps.md!} rename existing streams in your organization.
 
 {!subscriptions.md!}
 {!filter-streams.md!}

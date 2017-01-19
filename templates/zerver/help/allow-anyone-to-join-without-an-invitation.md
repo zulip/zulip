@@ -1,5 +1,7 @@
 # Allow anyone to join without an invitation
 
+{!admin-only.md!}
+
 By default, new users can join a Zulip organization with or without an email
 invitation.
 

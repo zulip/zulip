@@ -37,6 +37,7 @@ from zerver.lib.notifications import handle_missedmessage_emails
 from zerver.lib.session_user import get_session_dict_user
 from zerver.middleware import is_slow_query
 from zerver.lib.avatar import avatar_url
+from zerver.lib.utils import split_by
 
 from zerver.worker import queue_processors
 
@@ -50,6 +51,7 @@ import time
 import ujson
 import random
 import filecmp
+import subprocess
 
 def bail(msg):
     # type: (str) -> None
@@ -2129,6 +2131,28 @@ class HomeTest(ZulipTestCase):
         result = self.client_get("/api/v1/generate_204")
         self.assertEqual(result.status_code, 204)
 
+class AuthorsPageTest(ZulipTestCase):
+    def setUp(self):
+        # type: () -> None
+        """ Manual installation which did not execute `tools/provision`
+        would not have the `static/generated/github-contributors.json` fixture
+        file.
+        """
+        if not os.path.exists(settings.CONTRIBUTORS_DATA):
+            # Copy the fixture file in `zerver/fixtures` to `static/generated`
+            update_script = os.path.join(os.path.dirname(__file__),
+                                         '../../tools/update-authors-json')
+            subprocess.check_call([update_script, '--use-fixture'])
+
+    def test_endpoint(self):
+        # type: () -> None
+        result = self.client_get('/authors/')
+        self.assert_in_success_response(
+            ['Contributors', 'Statistic last Updated:', 'commits',
+             '@timabbott'],
+            result
+        )
+
 class MutedTopicsTests(ZulipTestCase):
     def test_json_set(self):
         # type: () -> None
@@ -2289,10 +2313,51 @@ class TestOpenRealms(ZulipTestCase):
         mit_realm.save()
 
 class TestLoginPage(ZulipTestCase):
-    def test_login_page_with_subdomains(self):
+    def test_login_page_wrong_subdomain_error(self):
         # type: () -> None
         result = self.client_get("/login/?subdomain=1")
         self.assertIn(WRONG_SUBDOMAIN_ERROR, result.content.decode('utf8'))
+
+    @patch('django.http.HttpRequest.get_host')
+    def test_login_page_redirects_for_root_alias(self, mock_get_host):
+        # type: (MagicMock) -> None
+        mock_get_host.return_value = 'www.testserver'
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True,
+                           ROOT_SUBDOMAIN_ALIASES=['www']):
+            result = self.client_get("/en/login/")
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, '/find_my_team/')
+
+    @patch('django.http.HttpRequest.get_host')
+    def test_login_page_redirects_for_root_domain(self, mock_get_host):
+        # type: (MagicMock) -> None
+        mock_get_host.return_value = 'testserver'
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True,
+                           ROOT_SUBDOMAIN_ALIASES=['www']):
+            result = self.client_get("/en/login/")
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, '/find_my_team/')
+
+        mock_get_host.return_value = 'www.testserver.com'
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True,
+                           EXTERNAL_HOST='www.testserver.com',
+                           ROOT_SUBDOMAIN_ALIASES=['test']):
+            result = self.client_get("/en/login/")
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, '/find_my_team/')
+
+    @patch('django.http.HttpRequest.get_host')
+    def test_login_page_works_without_subdomains(self, mock_get_host):
+        # type: (MagicMock) -> None
+        mock_get_host.return_value = 'www.testserver'
+        with self.settings(ROOT_SUBDOMAIN_ALIASES=['www']):
+            result = self.client_get("/en/login/")
+            self.assertEqual(result.status_code, 200)
+
+        mock_get_host.return_value = 'testserver'
+        with self.settings(ROOT_SUBDOMAIN_ALIASES=['www']):
+            result = self.client_get("/en/login/")
+            self.assertEqual(result.status_code, 200)
 
 class TestFindMyTeam(ZulipTestCase):
     def test_template(self):
@@ -2337,3 +2402,10 @@ class TestFindMyTeam(ZulipTestCase):
         result = self.client_post('/find_my_team/', data)
         self.assertEqual(result.status_code, 200)
         self.assertIn("Please enter at most 10", result.content.decode('utf8'))
+
+class UtilsUnitTest(TestCase):
+    def test_split_by(self):
+        # type: () -> None
+        flat_list = [1, 2, 3, 4, 5, 6, 7]
+        expected_result = [[1, 2], [3, 4], [5, 6], [7, None]]
+        self.assertEqual(split_by(flat_list, 2, None), expected_result)

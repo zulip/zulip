@@ -1,9 +1,10 @@
 # Change a user's name
-An administrator can change the name of another user. Ordinary users can
-[change their own names](/help/change-your-name), but administrators can change
-users' names when users are unavailable.
 
-{!follow-steps.md!}  change the name of a user using an administrator account.
+{!admin-only.md!}
+
+Ordinary users can [change their own names](/help/change-your-name), but
+administrators can change users' names when users are
+unavailable. {!follow-steps.md!} change the name of a user.
 
 {!go-to-the.md!} [Users](/#administration/user-list-admin)
 {!admin.md!}
