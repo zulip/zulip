@@ -80,7 +80,7 @@ markdown-include==0.5.1
 mock==2.0.0
 
 oauth2client==4.0.0
-oauthlib==1.1.2
+oauthlib==2.0.1
 
 # Needed for mock>1.1.2
 pbr==1.10
