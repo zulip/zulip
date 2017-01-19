@@ -156,7 +156,7 @@ git+https://github.com/bear/python-twitter@7fafaf291512bd103c3de2cb478ab48377c42
 -r emailmirror.txt
 
 # To parse po files
-polib==1.0.7
+polib==1.0.8
 
 # Needed for sprite generation
 # We're using this version from git to ensure compatibility with
