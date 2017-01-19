@@ -1,5 +1,7 @@
+global.stub_out_jquery();
+
 add_dependencies({
-    util: 'js/util.js',
+   people: 'js/people.js',
 });
 
 set_global('page_params', {

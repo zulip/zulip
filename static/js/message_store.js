@@ -19,7 +19,7 @@ exports.get_private_message_recipient = function (message, attr, fallback_attr) 
     var i;
     var other_recipients = _.filter(message.display_recipient,
                                   function (element) {
-                                      return !util.is_current_user(element.email);
+                                      return !people.is_current_user(element.email);
                                   });
     if (other_recipients.length === 0) {
         // private message with oneself
@@ -96,7 +96,7 @@ function add_message_metadata(message) {
         return cached_msg;
     }
 
-    message.sent_by_me = util.is_current_user(message.sender_email);
+    message.sent_by_me = people.is_current_user(message.sender_email);
 
     message.flags = message.flags || [];
     message.historical = (message.flags !== undefined &&

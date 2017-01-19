@@ -13,7 +13,7 @@ var bot_data = (function () {
     var set_can_admin = function bot_data__set_can_admin(bot) {
         if (page_params.is_admin) {
             bot.can_admin = true;
-        } else if (bot.owner !== undefined && util.is_current_user(bot.owner)) {
+        } else if (bot.owner !== undefined && people.is_current_user(bot.owner)) {
             bot.can_admin = true;
         } else {
             bot.can_admin = false;
@@ -41,7 +41,7 @@ var bot_data = (function () {
 
     exports.get_editable = function bots_data__get_editable() {
         return _.filter(bots, function (bot) {
-            return util.is_current_user(bot.owner);
+            return people.is_current_user(bot.owner);
         });
     };
 
