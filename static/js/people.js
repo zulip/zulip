@@ -82,7 +82,7 @@ exports.emails_strings_to_user_ids_string = function (emails_string) {
     });
 
     if (!_.all(user_ids)) {
-        blueslip.error('Unknown emails: ' + emails_string);
+        blueslip.warn('Unknown emails: ' + emails_string);
         return;
     }
 

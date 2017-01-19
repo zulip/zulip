@@ -400,7 +400,7 @@ var zero_counts = {
 }());
 
 (function test_errors() {
-    global.blueslip.error = function () {};
+    global.blueslip.warn = function () {};
 
     // Test unknown message leads to zero count
     var message = {
