@@ -1,7 +1,7 @@
 ipython==5.1.0
 
 # Dependencies of ipython
-decorator==4.0.10
+decorator==4.0.11
 ipython-genutils==0.1.0
 pathlib2==2.1.0
 pexpect==4.2.1
