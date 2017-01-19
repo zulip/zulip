@@ -47,7 +47,7 @@ as an **organization**.
 * [Restore the last unsent message](/help/restore-the-last-unsent-message)
 * Automatically link to an external issue tracker (improve wording)
 * Add a link preview
-* [Enable or disable pressing enter to send](/help/enable-or-disable-pressing-enter-to-send)
+* [Enable or disable Press Enter to send](/help/enable-or-disable-pressing-enter-to-send)
 * [Verify that your message has been successfully sent](/help/verify-that-your-message-has-been-successfully-sent)
 * What to do if the server returns an error
 * [Send a status message](/help/send-a-status-message)
