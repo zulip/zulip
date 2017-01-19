@@ -5,28 +5,32 @@ shows you how to send messages containing emoji by using Zulip’s built-in emoj
 menu, pasting Unicode, or manually inputting the emoji code.
 
 ## Using the emoji menu
-1. Start by composing a [new message](/help/reply-to-a-message).
-2. Click the smiley face (<i class="icon-vector-smile"></i>) icon under the left
-edge of the message box.
-3. Click on any emoji to include it in your message.
+1. Compose a [new message or reply](/help/reply-to-a-message).
+2. Click the smiley face (<i class="icon-vector-smile"></i>) icon in the
+bottom left corner of the compose box.
+3. Upon clicking on the smiley face (<i class="icon-vector-smile"></i>)
+icon, the emoji menu will appear below the compose box. Click on an emoji in
+the emoji menu to include it in your message.
 
 ## Pasting Unicode
 Zulip fully supports Unicode emoji. To use Unicode emoji in your message:
 
 1. Copy any emoji you would like to include onto your clipboard, such as 😀.
 2. Compose a [new message or reply](/help/reply-to-a-message).
-3. Paste the emoji into the message box.
+3. Paste the emoji into the **Compose your message here...** field of the
+compose box.
 
 !!! tip ""
     You can browse the
     [Unicode Consortium's full list of emoji](http://unicode.org/emoji/charts/full-emoji-list.html);
-    however, Zulip emoji may appear different than the ones listed.
+    however, Zulip emoji may look different than the ones listed.
 
 ## Using emoji codes
-1. Start by composing a new message or reply.
-2. Type in the emoji code surrounded by colons. For example, `:smile:` produces
-the <img src="/static/generated/emoji/images/emoji/smile.png"
-alt="smile" style="width: 3%;"/> emoji.
+1. Compose a [new message or reply](/help/reply-to-a-message).
+2. In the **Compose your message here...** field, type in the emoji code
+surrounded by colons. For example, `:smile:` produces the <img
+src="/static/generated/emoji/images/emoji/smile.png" alt="smile"
+style="width: 3%;"/> emoji.
 
 !!! tip ""
     If you are unsure of the code for any particular emoji, visit
