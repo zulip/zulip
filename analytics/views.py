@@ -56,16 +56,43 @@ def get_chart_data(request, user_profile, chart_name=REQ(),
     if start > end:
         raise JsonableError(_("Start time is later than end time. Start: %(start)s, End: %(end)s") %
                             {'start': start, 'end': end})
+
     if chart_name == 'number_of_humans':
-        data = get_number_of_humans(realm, start, end, min_length=min_length)
+        stat = COUNT_STATS['active_users:is_bot:day']
+        tables = [RealmCount]
+        subgroups = ['false', 'true']
+        labels = ['human', 'bot']
+        include_empty_subgroups = True
     elif chart_name == 'messages_sent_by_humans_and_bots':
-        data = get_messages_sent_by_humans_and_bots(realm, start, end, min_length=min_length)
-    elif chart_name == 'messages_sent_by_client':
-        data = get_messages_sent_by_client(user_profile)
+        stat = COUNT_STATS['messages_sent:is_bot:hour']
+        tables = [RealmCount]
+        subgroups = ['false', 'true']
+        labels = ['human', 'bot']
+        include_empty_subgroups = True
     elif chart_name == 'messages_sent_by_message_type':
-        data = get_messages_sent_by_message_type(user_profile)
+        stat = COUNT_STATS['messages_sent:message_type:day']
+        tables = [RealmCount, UserCount]
+        subgroups = ['public_stream', 'private_stream', 'private_message']
+        labels = None
+        include_empty_subgroups = True
+    elif chart_name == 'messages_sent_by_client':
+        stat = COUNT_STATS['messages_sent:client:day']
+        tables = [RealmCount, UserCount]
+        subgroups = [str(x) for x in Client.objects.values_list('id', flat=True).order_by('id')]
+        labels = list(Client.objects.values_list('name', flat=True).order_by('id'))
+        include_empty_subgroups = False
     else:
         raise JsonableError(_("Unknown chart name: %s") % (chart_name,))
+
+    end_times = time_range(start, end, stat.frequency, min_length)
+    data = {'end_times': end_times, 'frequency': stat.frequency, 'interval': stat.interval}
+    for table in tables:
+        if table == RealmCount:
+            data['realm'] = get_time_series_by_subgroup(
+                stat, RealmCount, realm.id, end_times, subgroups, labels, include_empty_subgroups)
+        if table == UserCount:
+            data['user'] = get_time_series_by_subgroup(
+                stat, UserCount, user_profile.id, end_times, subgroups, labels, include_empty_subgroups)
     return json_success(data=data)
 
 def table_filtered_to_id(table, key_id):
@@ -81,63 +108,23 @@ def table_filtered_to_id(table, key_id):
     else:
         raise ValueError("Unknown table: %s" % (table,))
 
-def get_time_series_by_subgroup(stat, table, key_id, subgroups, start, end, min_length=None):
-    # type: (CountStat, Type[BaseCount], Optional[int], List[Optional[str]], datetime, datetime, Optional[int]) -> Tuple[List[datetime], Dict[str, List[int]]]
-    queryset = table_filtered_to_id(table, key_id) \
-               .filter(property=stat.property).values_list('subgroup', 'end_time', 'value')
+def get_time_series_by_subgroup(stat, table, key_id, end_times, subgroups, labels, include_empty_subgroups):
+    # type: (CountStat, Type[BaseCount], Optional[int], List[datetime], List[str], Optional[List[str]], bool) -> Dict[str, List[int]]
+    if labels is None:
+        labels = subgroups
+    if len(subgroups) != len(labels):
+        raise ValueError("subgroups and labels have lengths %s and %s, which are different." %
+                         (len(subgroups), len(labels)))
+    queryset = table_filtered_to_id(table, key_id).filter(property=stat.property) \
+                                                  .values_list('subgroup', 'end_time', 'value')
     value_dicts = defaultdict(lambda: defaultdict(int)) # type: Dict[Optional[str], Dict[datetime, int]]
     for subgroup, end_time, value in queryset:
         value_dicts[subgroup][end_time] = value
     value_arrays = {}
-    end_times = time_range(start, end, stat.frequency, min_length)
-    for subgroup in subgroups:
-        value_arrays[subgroup] = [value_dicts[subgroup][end_time] for end_time in end_times]
-    return end_times, value_arrays
-
-def get_totals_by_subgroup(property, table, key_id):
-    # type: (str, Type[BaseCount], int) -> Dict[str, int]
-    queryset = table_filtered_to_id(table, key_id) \
-               .filter(property=property).values('subgroup').annotate(Sum('value'))
-    data = defaultdict(int) # type: Dict[Optional[str], int]
-    for row in queryset:
-        data[row['subgroup']] = row['value__sum']
-    return data
-
-def get_number_of_humans(realm, start, end, min_length=None):
-    # type: (Realm, datetime, datetime, Optional[int]) -> Dict[str, Any]
-    stat = COUNT_STATS['active_users:is_bot:day']
-    end_times, values = get_time_series_by_subgroup(
-        stat, RealmCount, realm.id, ['false'], start, end, min_length)
-    return {'end_times': end_times, 'humans': values['false'],
-            'frequency': stat.frequency, 'interval': stat.interval}
-
-def get_messages_sent_by_humans_and_bots(realm, start, end, min_length=None):
-    # type: (Realm, datetime, datetime, Optional[int]) -> Dict[str, Any]
-    stat = COUNT_STATS['messages_sent:is_bot:hour']
-    end_times, values = get_time_series_by_subgroup(
-        stat, RealmCount, realm.id, ['false', 'true'], start, end, min_length)
-    return {'end_times': end_times, 'humans': values['false'], 'bots': values['true'],
-            'frequency': stat.frequency, 'interval': stat.interval}
-
-def get_messages_sent_by_message_type(user):
-    # type: (UserProfile) -> Dict[str, List[Any]]
-    property = 'messages_sent:message_type:day'
-    user_data = get_totals_by_subgroup(property, UserCount, user.id)
-    realm_data = get_totals_by_subgroup(property, RealmCount, user.realm.id)
-    message_types = ['public_stream', 'private_stream', 'private_message']
-    return {'message_types': message_types,
-            'user': [user_data[message_type] for message_type in message_types],
-            'realm': [realm_data[message_type] for message_type in message_types]}
-
-def get_messages_sent_by_client(user):
-    # type: (UserProfile) -> Dict[str, List[Any]]
-    property = 'messages_sent:client:day'
-    user_data = get_totals_by_subgroup(property, UserCount, user.id)
-    realm_data = get_totals_by_subgroup(property, RealmCount, user.realm.id)
-    client_ids = sorted(realm_data.keys())
-    return {'clients': [Client.objects.get(id=int(client_id)) for client_id in client_ids],
-            'user': [user_data[client_id] for client_id in client_ids],
-            'realm': [realm_data[client_id] for client_id in client_ids]}
+    for subgroup, label in zip(subgroups, labels):
+        if (subgroup in value_dicts) or include_empty_subgroups:
+            value_arrays[label] = [value_dicts[subgroup][end_time] for end_time in end_times]
+    return value_arrays
 
 
 eastern_tz = pytz.timezone('US/Eastern')
