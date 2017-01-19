@@ -1,31 +1,31 @@
-# Sending a new stream message
+# Send a new stream message
 
-![New stream message](/static/images/help/new-stream-message.png)
+{!follow-steps.md!} send a new stream message.
 
-To submit a new stream message, first click the **New stream message**
-button located at the bottom of your screen.
+1. Click the **New stream message** button located in the compose box
+at the bottom of your screen.  The compose box will open, showing the
+**Stream**, **Topic**, and **Compose your message here...** inputs.
 
-![New stream message](/static/images/help/new-stream.png)
+    ![Stream message](/static/images/help/new-stream.png)
 
-A box similar to the one shown in the above image will appear.
-
-In the **Stream** field, input the name of the stream you want your
-message to be located in. When you begin typing a stream name,
-autocomplete suggestions will appear.
-
-![Stream does not exist](/static/images/help/stream-none.png)
-
-If you attempt to input a nonexistent stream name, an error message
+2. In the **Stream** field, input the name of the stream you want to
+send to. When you begin typing a stream name, autocomplete suggestions
 will appear.
 
-Once you have entered your stream name, enter the topic for your
-message in the **Topic** field. Your topic name can be no longer than
-52 characters.
+3. Once you have entered the stream name in the **Stream** field, enter the
+topic for your message in the **Topic** field.
 
-Finally, enter your message in the box labeled **Compose your message
-here...** or messaging box. You can now send your message to the
-specified stream under the specified topic.
+    !!! warn ""
+        **Note:** Your topic name can be no longer than 60 characters.
 
-You can always delete your message by clicking the **x**
-(<i class="icon-vector-remove"></i>) icon located at the top-right corner
-of your messaging box.
+4. Enter your message in the **Compose your message here...** field.
+
+5. Once you have finished completing your message and adding the recipients,
+you can now send your message to the specified stream under the specified
+topic by pressing the Enter key or clicking the **Send** button, depending
+on your settings.
+
+!!! tip ""
+    You can always cancel your message by clicking the x (<i
+    class="icon-vector-remove"></i>) icon located at the top-right corner of
+    your compose box or pressing the `Esc` key.
