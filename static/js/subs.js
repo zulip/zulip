@@ -1131,7 +1131,7 @@ $(function () {
             if (data.subscribed.hasOwnProperty(principal)) {
                 error_elem.addClass("hide");
                 warning_elem.addClass("hide");
-                if (util.is_current_user(principal)) {
+                if (people.is_current_user(principal)) {
                     // mark_subscribed adds the user to the member list
                     exports.mark_subscribed(stream);
                 }
@@ -1197,7 +1197,7 @@ $(function () {
                 // Remove the user from the subscriber list.
                 list_entry.remove();
 
-                if (util.is_current_user(principal)) {
+                if (people.is_current_user(principal)) {
                     // If you're unsubscribing yourself, mark whole
                     // stream entry as you being unsubscribed.
                     exports.mark_unsubscribed(stream_name);

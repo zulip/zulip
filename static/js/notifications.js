@@ -522,7 +522,7 @@ function get_message_header(message) {
     if (message.display_recipient.length > 2) {
         return "group PM with " + message.display_reply_to;
     }
-    if (util.is_current_user(message.reply_to)) {
+    if (people.is_current_user(message.reply_to)) {
         return "PM with yourself";
     }
     return "PM with " + message.display_reply_to;
@@ -532,7 +532,7 @@ exports.possibly_notify_new_messages_outside_viewport = function (messages, loca
     _.each(messages, function (message) {
         // A warning should only be displayed when the message was sent by the user and
         // this is the tab he sent it in.
-        if (!util.is_current_user(message.sender_email) ||
+        if (!people.is_current_user(message.sender_email) ||
             local_id === undefined) {
             return;
         }
@@ -570,7 +570,7 @@ exports.possibly_notify_new_messages_outside_viewport = function (messages, loca
 // the current_msg_list (!can_apply_locally; a.k.a. "a search").
 exports.notify_messages_outside_current_search = function (messages) {
     _.each(messages, function (message) {
-        if (!util.is_current_user(message.sender_email)) {
+        if (!people.is_current_user(message.sender_email)) {
             return;
         }
         exports.notify_above_composebox("Sent! Your recent message is outside the current search.",

@@ -224,7 +224,7 @@ function people_cmp(person1, person2) {
 exports.get_rest_of_realm = function get_rest_of_realm() {
     var people_minus_you = [];
     realm_people_dict.each(function (person) {
-        if (!util.is_current_user(person.email)) {
+        if (!exports.is_current_user(person.email)) {
             people_minus_you.push({email: person.email,
                                    user_id: person.user_id,
                                    full_name: person.full_name});
@@ -314,7 +314,7 @@ exports.update = function update(person) {
 
         person_obj.full_name = person.full_name;
 
-        if (util.is_current_user(person.email)) {
+        if (exports.is_current_user(person.email)) {
             page_params.fullname = person.full_name;
         }
 
@@ -326,7 +326,7 @@ exports.update = function update(person) {
     if (_.has(person, 'is_admin')) {
         person_obj.is_admin = person.is_admin;
 
-        if (util.is_current_user(person.email)) {
+        if (exports.is_current_user(person.email)) {
             page_params.is_admin = person.is_admin;
             admin.show_or_hide_menu_item();
         }
@@ -336,7 +336,7 @@ exports.update = function update(person) {
         var url = person.avatar_url + "&y=" + new Date().getTime();
         person_obj.avatar_url = url;
 
-        if (util.is_current_user(person.email)) {
+        if (exports.is_current_user(person.email)) {
           page_params.avatar_url = url;
           $("#user-settings-avatar").attr("src", url);
         }
@@ -346,6 +346,14 @@ exports.update = function update(person) {
         });
     }
 };
+
+exports.is_current_user = function (email) {
+    if (email === null || email === undefined) {
+        return false;
+    }
+    return email.toLowerCase() === page_params.email.toLowerCase();
+};
+
 
 $(function () {
     _.each(page_params.people_list, function (person) {

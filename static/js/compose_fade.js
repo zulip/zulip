@@ -106,7 +106,7 @@ exports.would_receive_message = function (email) {
     // helpful if we want to emphasize the '.unfaded' class later (applied
     // to users who will definitely receive the message).
 
-    if (util.is_current_user(email)) {
+    if (people.is_current_user(email)) {
         // We never want to fade you yourself, so pretend it's true even if
         // it's not.
         return true;

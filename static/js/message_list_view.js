@@ -363,7 +363,7 @@ MessageListView.prototype = {
             if (row.hasClass('mention')) {
                 row.find('.user-mention').each(function () {
                     var email = $(this).attr('data-user-email');
-                    if (email === '*' || util.is_current_user(email)) {
+                    if (email === '*' || people.is_current_user(email)) {
                         $(this).addClass('user-mention-me');
                     }
                 });
@@ -600,7 +600,7 @@ MessageListView.prototype = {
                 var row_id = rows.id(elem);
                 // check for `row_id` NaN in case we're looking at a date row or bookend row
                 if (row_id > -1 &&
-                    util.is_current_user(this.get_message(row_id).sender_email)) {
+                    people.is_current_user(this.get_message(row_id).sender_email)) {
                     id_of_last_message_sent_by_us = rows.id(elem);
                 }
             }

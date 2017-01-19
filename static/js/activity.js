@@ -431,7 +431,7 @@ function focus_ping() {
 
             // Ping returns the active peer list
             _.each(data.presences, function (presence, this_email) {
-                if (!util.is_current_user(this_email)) {
+                if (!people.is_current_user(this_email)) {
                     var user_id = people.get_user_id(this_email);
                     if (user_id) {
                         var status = status_from_timestamp(data.server_timestamp,
@@ -481,7 +481,7 @@ exports.set_user_statuses = function (users, server_time) {
     var updated_users = {};
     var status;
     _.each(users, function (presence, email) {
-        if (util.is_current_user(email)) {
+        if (people.is_current_user(email)) {
             return;
         }
         status = status_from_timestamp(server_time, presence);
