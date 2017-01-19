@@ -392,8 +392,7 @@ function _setup_page() {
 
     $("#enable_stream_desktop_notifications").on("click", function () {
         var notification_checkbox = $("#enable_stream_desktop_notifications");
-        var updated_setting = $("#enable_stream_desktop_notifications").is(":checked");
-        post_notify_settings_changes(updated_setting,
+        post_notify_settings_changes(notification_checkbox,
                                      update_notification_settings_success,
                                      update_notification_settings_error);
         maybe_bulk_update_stream_notification_setting(notification_checkbox,
