@@ -364,6 +364,10 @@ exports.my_current_email = function () {
     return people_by_user_id_dict.get(my_user_id).email;
 };
 
+exports.my_current_user_id = function () {
+    return my_user_id;
+};
+
 $(function () {
     _.each(page_params.people_list, function (person) {
         exports.add_in_realm(person);

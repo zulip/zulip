@@ -102,8 +102,8 @@ var people = global.people;
     };
 
     // set up user data
-    global.page_params.email = 'me@zulip.com';
     people.add(me);
+    people.initialize_current_user(me.email);
 
     // set up our subscription
     stream_data.add_sub('devel', sub);
