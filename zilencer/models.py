@@ -1,12 +1,36 @@
 from django.db import models
 from django.db.models import Manager
-from typing import Text
+from typing import Text, Optional
+from six import text_type
 
 import zerver.models
+import datetime
 
-def get_deployment_by_domain(domain):
-    # type: (Text) -> Deployment
-    return Deployment.objects.get(realms__domain=domain)
+def get_remote_server_by_uuid(uuid):
+    # type: (text_type) -> RemoteZulipServer
+    return RemoteZulipServer.objects.get(uuid=uuid)
+
+class RemoteZulipServer(models.Model):
+    uuid = models.CharField(max_length=36, unique=True) # type: text_type
+    api_key = models.CharField(max_length=32) # type: text_type
+
+    hostname = models.CharField(max_length=128, unique=True) # type: text_type
+    contact_email = models.EmailField(blank=True, null=False) # type: text_type
+    last_updated = models.DateTimeField('last updated') # type: datetime.datetime
+
+# Variant of PushDeviceToken for a remote server.
+class RemotePushDeviceToken(models.Model):
+    server = models.ForeignKey(RemoteZulipServer)
+    # The user id on the remote server for this device device this is
+    user_id = models.BigIntegerField() # type: int
+
+    kind = models.PositiveSmallIntegerField(choices=zerver.models.PushDeviceToken.KINDS) # type: int
+
+    token = models.CharField(max_length=4096, unique=True) # type: text_type
+    last_updated = models.DateTimeField(auto_now=True) # type: datetime.datetime
+
+    # [optional] Contains the app id of the device if it is an iOS device
+    ios_app_id = models.TextField(null=True) # type: Optional[text_type]
 
 class Deployment(models.Model):
     realms = models.ManyToManyField(zerver.models.Realm,
@@ -32,5 +56,5 @@ class Deployment(models.Model):
         # TODO: This only does the right thing for prod because prod authenticates to
         # staging with the zulip.com deployment key, while staging is technically the
         # deployment for the zulip.com realm.
-        # This also doesn't necessarily handle other multi-realm deployments correctly.
+        # This also doesn't necessarily handle other multi-realm deployments correctly
         return self.realms.order_by('pk')[0].domain

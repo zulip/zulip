@@ -30,22 +30,23 @@ from io import BytesIO
 from zerver.lib.mandrill_client import get_mandrill_client
 from six.moves import zip, urllib
 
-from typing import Union, Any, Callable, Sequence, Dict, Optional, TypeVar, Text
+from six import text_type
+from typing import Union, Any, Callable, Sequence, Dict, Optional, TypeVar, Text, cast
 from zerver.lib.str_utils import force_bytes
 
 if settings.ZILENCER_ENABLED:
-    from zilencer.models import get_deployment_by_domain, Deployment
+    from zilencer.models import get_remote_server_by_uuid, RemoteZulipServer
 else:
     from mock import Mock
-    get_deployment_by_domain = Mock()
-    Deployment = Mock() # type: ignore # https://github.com/JukkaL/mypy/issues/1188
+    get_remote_server_by_uuid = Mock()
+    RemoteZulipServer = Mock() # type: ignore # https://github.com/JukkaL/mypy/issues/1188
 
 FuncT = TypeVar('FuncT', bound=Callable[..., Any])
 ViewFuncT = TypeVar('ViewFuncT', bound=Callable[..., HttpResponse])
 
-def get_deployment_or_userprofile(role):
-    # type: (Text) -> Union[UserProfile, Deployment]
-    return get_user_profile_by_email(role) if "@" in role else get_deployment_by_domain(role)
+def get_remote_server_or_userprofile(role):
+    # type: (text_type) -> Union[UserProfile, RemoteZulipServer]
+    return get_user_profile_by_email(role) if "@" in role else get_remote_server_by_uuid(role)
 
 class _RespondAsynchronously(object):
     pass
@@ -163,16 +164,16 @@ def process_client(request, user_profile, is_json_view=False, client_name=None):
     update_user_activity(request, user_profile)
 
 def validate_api_key(request, role, api_key, is_webhook=False):
-    # type: (HttpRequest, Text, Text, bool) -> Union[UserProfile, Deployment]
+    # type: (HttpRequest, text_type, text_type, bool) -> Union[UserProfile, RemoteZulipServer]
     # Remove whitespace to protect users from trivial errors.
     role, api_key = role.strip(), api_key.strip()
 
     try:
-        profile = get_deployment_or_userprofile(role)
+        profile = get_remote_server_or_userprofile(role)
     except UserProfile.DoesNotExist:
         raise JsonableError(_("Invalid user: %s") % (role,))
-    except Deployment.DoesNotExist:
-        raise JsonableError(_("Invalid deployment: %s") % (role,))
+    except RemoteZulipServer.DoesNotExist:
+        raise JsonableError(_("Invalid Zulip server: %s") % (role,))
 
     if api_key != profile.api_key:
         if len(api_key) != 32:
@@ -181,16 +182,18 @@ def validate_api_key(request, role, api_key, is_webhook=False):
         else:
             reason = _("Invalid API key for role '%s'")
         raise JsonableError(reason % (role,))
+
+    # early exit for RemoteZulipServers
+    if isinstance(profile, RemoteZulipServer):
+      return profile
+
+    profile = cast(UserProfile, profile) # is UserProfile
     if not profile.is_active:
         raise JsonableError(_("Account not active"))
     if profile.is_incoming_webhook and not is_webhook:
         raise JsonableError(_("Account is not valid to post webhook messages"))
-    try:
-        if profile.realm.deactivated:
-            raise JsonableError(_("Realm for account has been deactivated"))
-    except AttributeError:
-        # Deployment objects don't have realms
-        pass
+    if profile.realm.deactivated:
+        raise JsonableError(_("Realm for account has been deactivated"))
     if (not check_subdomain(get_subdomain(request), profile.realm.subdomain)
         # Allow access to localhost for Tornado
         and not (settings.RUNNING_INSIDE_TORNADO and
@@ -381,7 +384,7 @@ def authenticated_rest_api_view(is_webhook=False):
 
             # Now we try to do authentication or die
             try:
-                # Could be a UserProfile or a Deployment
+                # Could be a UserProfile or a RemoteZulipServer
                 profile = validate_api_key(request, role, api_key, is_webhook)
             except JsonableError as e:
                 return json_unauthorized(e.error)
@@ -390,8 +393,8 @@ def authenticated_rest_api_view(is_webhook=False):
             if isinstance(profile, UserProfile):
                 request._email = profile.email
             else:
-                assert isinstance(profile, Deployment)
-                request._email = "deployment:" + role
+                assert isinstance(profile, RemoteZulipServer)
+                request._email = "zulip-server:" + role
                 profile.rate_limits = ""
             # Apply rate limiting
             return rate_limit()(view_func)(request, profile, *args, **kwargs)

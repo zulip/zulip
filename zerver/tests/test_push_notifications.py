@@ -16,6 +16,9 @@ from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 
+from zilencer.models import RemoteZulipServer, RemotePushDeviceToken
+from django.utils.timezone import now
+
 class MockRedis(object):
     data = {}  # type: Dict[str, Any]
 
@@ -39,6 +42,92 @@ class MockRedis(object):
     def expire(self, *args, **kwargs):
         # type: (Any, Any) -> None
         pass
+
+class PushBouncerNotificationTest(ZulipTestCase):
+    def setUp(self):
+        # type: () -> None
+        server_uuid = self.get_generic_payload()['server_uuid']
+        server = RemoteZulipServer(uuid=server_uuid,api_key="magic_secret_api_key",hostname="demo.example.com",last_updated=now())
+        server.save()
+
+    def tearDown(self):
+        # type: () -> None
+        server_uuid = self.get_generic_payload()['server_uuid']
+        RemoteZulipServer.objects.filter(uuid=server_uuid).delete()
+
+    def test_unregister_remote_push_user_params(self):
+        # type: () -> None
+        server_uuid = "1234-abcd"
+        token = "111222"
+        token_kind = PushDeviceToken.GCM
+
+        endpoint = '/api/v1/remotes/push/unregister'
+        result = self.client_post(endpoint, {'token': token, 'token_kind': token_kind}, **self.get_auth())
+        self.assert_json_error(result, "Missing 'server_uuid' argument")
+        result = self.client_post(endpoint, {'server_uuid': server_uuid, 'token_kind': token_kind}, **self.get_auth())
+        self.assert_json_error(result, "Missing 'token' argument")
+        result = self.client_post(endpoint, {'server_uuid': server_uuid, 'token': token}, **self.get_auth())
+        self.assert_json_error(result, "Missing 'token_kind' argument")
+
+
+    def test_register_remote_push_user_paramas(self):
+        # type: () -> None
+        server_uuid = "1234-abcd"
+        token = "111222"
+        user_id = 11
+        token_kind = PushDeviceToken.GCM
+
+        endpoint = '/api/v1/remotes/push/register'
+
+        result = self.client_post(endpoint, {'user_id': user_id, 'token': token, 'token_kind': token_kind}, **self.get_auth())
+        self.assert_json_error(result, "Missing 'server_uuid' argument")
+        result = self.client_post(endpoint, {'server_uuid': server_uuid, 'user_id': user_id, 'token_kind': token_kind}, **self.get_auth())
+        self.assert_json_error(result, "Missing 'token' argument")
+        result = self.client_post(endpoint, {'server_uuid': server_uuid, 'user_id': user_id, 'token': token}, **self.get_auth())
+        self.assert_json_error(result, "Missing 'token_kind' argument")
+        result = self.client_post(endpoint, {'server_uuid': server_uuid, 'token': token, 'token_kind': token_kind}, **self.get_auth())
+        self.assert_json_error(result, "Missing 'user_id' argument")
+
+    def test_remote_push_user_endpoints(self):
+        # type: () -> None
+        endpoints = [
+            ('/api/v1/remotes/push/register', 'register'),
+            ('/api/v1/remotes/push/unregister', 'unregister'),
+        ]
+        
+        for endpoint, method in endpoints:
+            payload = self.get_generic_payload(method)
+            server_uuid = payload['server_uuid']
+
+            # Verify correct results are success
+            result = self.client_post(endpoint, payload, **self.get_auth())
+            self.assert_json_success(result)
+
+            remote_tokens = RemotePushDeviceToken.objects.filter(token=payload['token'])
+            token_count = 1 if method == 'register' else 0
+            self.assertEquals(len(remote_tokens), token_count)
+
+            # Try adding/removing tokens that are too big...
+            broken_token = "x" * 5000 # too big
+            payload['token'] = broken_token
+            result = self.client_post(endpoint, payload, **self.get_auth())
+            self.assert_json_error(result, 'Empty or invalid length token')
+
+
+    def get_generic_payload(self, method='register'):
+        #type: (text_type) -> Dict[str, Any]
+        server_uuid = "1234-abcd"
+        user_id = 10
+        token = "111222"
+        token_kind = PushDeviceToken.GCM
+
+        return {'user_id':user_id,'server_uuid':server_uuid, 'token':token,'token_kind':token_kind}
+
+    def get_auth(self):
+        #type: () -> Dict[str, text_type]
+        # Auth on this user
+        server_uuid = self.get_generic_payload()['server_uuid']
+        return self.api_auth(server_uuid)
 
 class PushNotificationTest(TestCase):
     def setUp(self):

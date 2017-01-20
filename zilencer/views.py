@@ -1,12 +1,13 @@
 from __future__ import absolute_import
 
 from django.utils.translation import ugettext as _
+from django.utils.timezone import now
 from django.http import HttpResponse, HttpRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.views import login as django_login_page
 from django.http import HttpResponseRedirect
 
-from zilencer.models import Deployment
+from zilencer.models import Deployment, RemotePushDeviceToken, RemoteZulipServer
 
 from zerver.decorator import has_request_variables, REQ
 from zerver.lib.actions import internal_send_message
@@ -19,7 +20,8 @@ from .error_notify import notify_server_error, notify_browser_error
 
 import time
 
-from typing import Dict, Optional, Any, Text
+from typing import Dict, Optional, Any, Text, Union, cast
+from six import text_type
 
 client = get_redis_client()
 
@@ -44,6 +46,62 @@ def get_ticket_number():
         ticket_number = 1
     open(num_file, 'w').write('%d' % (ticket_number,))
     return ticket_number
+
+@has_request_variables
+def remote_server_register_push(request, entity, server_uuid=REQ(), user_id=REQ(), token=REQ(), token_kind=REQ(), ios_app_id=None):
+    # type: (HttpRequest, Union[UserProfile, RemoteZulipServer], text_type, int, text_type, int, text_type) -> HttpResponse
+    
+    if not isinstance(entity, RemoteZulipServer):
+        return json_error(_("Must validate with valid Zulip server API key"))
+
+    server = cast(RemoteZulipServer, entity)
+    if token == '' or len(token) > 4096:
+        return json_error(_("Empty or invalid length token"))
+
+    # If a user logged out on a device and failed to unregister,
+    # we should delete any other user associations for this token
+    # & RemoteServer pair
+    RemotePushDeviceToken.objects.filter(token=token,kind=token_kind,server_id=server.id).exclude(user_id=user_id).delete()
+
+    # Save or update
+    remote_token, created = RemotePushDeviceToken.objects.get_or_create(user_id=user_id,
+                                              server=server,
+                                              kind=token_kind,
+                                              token=token,
+                                              ios_app_id=ios_app_id,
+                                              last_updated=now())
+
+    return json_success()
+
+@has_request_variables
+def remote_server_unregister_push(request, entity, server_uuid=REQ(), token=REQ(), token_kind=REQ(), ios_app_id=None):
+    # type: (HttpRequest, Union[UserProfile, RemoteZulipServer], text_type, text_type, int, text_type) -> HttpResponse
+
+    if not isinstance(entity, RemoteZulipServer):
+        return json_error(_("Must validate with valid Zulip server API key"))
+
+    server = cast(RemoteZulipServer, entity)
+
+    if token == '' or len(token) > 4096:
+        return json_error(_("Empty or invalid length token"))
+
+    RemotePushDeviceToken.objects.filter(token=token,kind=token_kind,server=server).delete()
+
+    return json_success()
+
+@has_request_variables
+def remote_server_push_message(request, entity_profile, server_uuid=REQ(), user_id=REQ(), msg=REQ()):
+    # type: (HttpRequest, Union[UserProfile, RemoteZulipServer], text_type, int, text_type) -> HttpResponse
+
+    # accepts a user xyz
+
+    return json_success()
+
+@has_request_variables
+def update_remote_server(request):
+    # type: (HttpRequest) -> HttpResponse
+    # stub. todo: write this method (either update or save a new remote server object)
+    return json_success()
 
 @has_request_variables
 def submit_feedback(request, deployment, message=REQ(validator=check_dict([]))):
