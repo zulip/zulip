@@ -19,7 +19,7 @@ from django.utils.timezone import now
 
 from confirmation.util import get_status_field
 from zerver.lib.utils import generate_random_token
-from zerver.models import PreregistrationUser
+from zerver.models import PreregistrationUser, EmailChangeStatus
 from typing import Optional, Union, Any, Text
 
 B16_RE = re.compile('^[a-f0-9]{40}$')
@@ -59,7 +59,7 @@ def generate_realm_creation_url():
 class ConfirmationManager(models.Manager):
 
     def confirm(self, confirmation_key):
-        # type: (str) -> Union[bool, PreregistrationUser]
+        # type: (str) -> Union[bool, PreregistrationUser, EmailChangeStatus]
         if B16_RE.search(confirmation_key):
             try:
                 confirmation = self.get(confirmation_key=confirmation_key)
@@ -140,6 +140,20 @@ class ConfirmationManager(models.Manager):
         send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [email_address], html_message=html_content)
         return self.create(content_object=obj, date_sent=now(), confirmation_key=confirmation_key)
 
+class EmailChangeConfirmationManager(ConfirmationManager):
+    def get_activation_url(self, key, host=None):
+        # type: (Text, Optional[str]) -> Text
+        if host is None:
+            # This will raise exception if the key doesn't exist.
+            host = self.get(confirmation_key=key).content_object.realm.host
+        return u'%s%s%s' % (settings.EXTERNAL_URI_SCHEME,
+                            host,
+                            reverse('zerver.views.user_settings.confirm_email_change',
+                                    kwargs={'confirmation_key': key}))
+
+    def get_link_validity_in_days(self):
+        # type: () -> int
+        return settings.EMAIL_CHANGE_CONFIRMATION_DAYS
 
 class Confirmation(models.Model):
     content_type = models.ForeignKey(ContentType)
@@ -157,6 +171,12 @@ class Confirmation(models.Model):
     def __unicode__(self):
         # type: () -> Text
         return _('confirmation email for %s') % (self.content_object,)
+
+class EmailChangeConfirmation(Confirmation):
+    class Meta(object):
+        proxy = True
+
+    objects = EmailChangeConfirmationManager()
 
 class RealmCreationKey(models.Model):
     creation_key = models.CharField(_('activation key'), max_length=40)

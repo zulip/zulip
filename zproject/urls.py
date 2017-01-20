@@ -25,6 +25,7 @@ import zerver.views.zephyr
 import zerver.views.users
 import zerver.views.unsubscribe
 import zerver.views.integrations
+import zerver.views.user_settings
 import confirmation.views
 
 from zerver.lib.rest import rest_dispatch
@@ -102,6 +103,10 @@ i18n_urls = [
     url(r'^accounts/register/', zerver.views.registration.accounts_register,
         name='zerver.views.registration.accounts_register'),
     url(r'^accounts/do_confirm/(?P<confirmation_key>[\w]+)', confirmation.views.confirm, name='confirmation.views.confirm'),
+
+    url(r'^accounts/confirm_new_email/(?P<confirmation_key>[\w]+)',
+        zerver.views.user_settings.confirm_email_change,
+        name='zerver.views.user_settings.confirm_email_change'),
 
     # Email unsubscription endpoint. Allows for unsubscribing from various types of emails,
     # including the welcome emails (day 1 & 2), missed PMs, etc.

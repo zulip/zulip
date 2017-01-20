@@ -678,6 +678,18 @@ class PreregistrationUser(models.Model):
 
     realm = models.ForeignKey(Realm, null=True) # type: Optional[Realm]
 
+class EmailChangeStatus(models.Model):
+    new_email = models.EmailField() # type: Text
+    old_email = models.EmailField() # type: Text
+    updated_at = models.DateTimeField(auto_now=True) # type: datetime.datetime
+    user_profile = models.ForeignKey(UserProfile) # type: UserProfile
+
+    # status: whether an object has been confirmed.
+    #   if confirmed, set to confirmation.settings.STATUS_ACTIVE
+    status = models.IntegerField(default=0) # type: int
+
+    realm = models.ForeignKey(Realm) # type: Realm
+
 class PushDeviceToken(models.Model):
     APNS = 1
     GCM = 2

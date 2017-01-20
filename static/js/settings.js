@@ -517,10 +517,42 @@ function _setup_page() {
         });
     });
 
+    $('#change_email_button').on('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $('#change_email_modal').modal('hide');
+
+        var data = {};
+        data.email = $('.email_change_container').find("input[name='email']").val();
+
+        channel.patch({
+            url: '/json/settings/change',
+            data: data,
+            success: function (data) {
+                if ('account_email' in data) {
+                    settings_change_success(data.account_email);
+                } else {
+                    settings_change_error(i18n.t("Error changing settings: No new data supplied."));
+                }
+            },
+            error: function (xhr) {
+                settings_change_error("Error changing settings", xhr);
+            },
+        });
+    });
+
     $('#default_language').on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
         $('#default_language_modal').show().attr('aria-hidden', false);
+    });
+
+    $('#change_email').on('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $('#change_email_modal').modal('show');
+        var email = $('#email_value').text();
+        $('.email_change_container').find("input[name='email']").val(email);
     });
 
     $("#user_deactivate_account_button").on('click', function (e) {
