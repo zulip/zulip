@@ -368,6 +368,13 @@ exports.my_current_user_id = function () {
     return my_user_id;
 };
 
+exports.is_my_user_id = function (user_id) {
+    if (!user_id) {
+        return false;
+    }
+    return user_id.toString() === my_user_id.toString();
+};
+
 $(function () {
     _.each(page_params.people_list, function (person) {
         exports.add_in_realm(person);
