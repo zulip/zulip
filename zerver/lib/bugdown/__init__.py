@@ -1335,6 +1335,7 @@ def do_convert(content, realm_filters_key=None, message=None, message_realm=None
         return timeout(5, _md_engine.convert, content)
     except:
         from zerver.lib.actions import internal_send_message
+        from zerver.models import get_user_profile_by_email
 
         cleaned = _sanitize_for_log(content)
 
@@ -1343,7 +1344,8 @@ def do_convert(content, realm_filters_key=None, message=None, message_realm=None
                           % (traceback.format_exc(), cleaned))
         subject = "Markdown parser failure on %s" % (platform.node(),)
         if settings.ERROR_BOT is not None:
-            internal_send_message(settings.ERROR_BOT, "stream",
+            realm = get_user_profile_by_email(settings.ERROR_BOT).realm
+            internal_send_message(realm, settings.ERROR_BOT, "stream",
                                   "errors", subject, "Markdown parser failed, email sent with details.")
         mail.mail_admins(subject, "Failed message: %s\n\n%s\n\n" % (
                                     cleaned, traceback.format_exc()),

@@ -79,8 +79,8 @@ def json_bulk_invite_users(request, user_profile,
         invited = PreregistrationUser.objects.filter(referred_by=user_profile)
         internal_message = "%s <`%s`> invited %d people to Zulip." % (
             user_profile.full_name, user_profile.email, invited.count())
-        internal_send_message(settings.NEW_USER_BOT, "stream", "signups",
-                              user_profile.realm.domain, internal_message)
+        internal_send_message(user_profile.realm, settings.NEW_USER_BOT, "stream",
+                              "signups", user_profile.realm.domain, internal_message)
         return json_success()
 
 @authenticated_json_post_view
