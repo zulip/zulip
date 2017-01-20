@@ -375,6 +375,8 @@ def build_custom_checkers(by_lang):
               'return json_error(data=error_data, msg=ret_error)'),
              ('zerver/views/streams.py', 'return json_error(property_conversion)'),
              ('zerver/views/streams.py', 'return json_error(e.error, data=result, status=404)'),
+             # error and skipped are already internationalized
+             ('zerver/views/user_settings.py', 'return json_error(error or skipped)'),
              # We can't do anything about this.
              ('zerver/views/realm_filters.py', 'return json_error(e.messages[0], data={"errors": dict(e)})'),
          ]),
