@@ -155,7 +155,7 @@ function insert_local_message(message_request, local_id) {
     exports.apply_markdown(message);
     message.content_type = 'text/html';
     message.sender_email = people.my_current_email();
-    message.sender_full_name = page_params.fullname;
+    message.sender_full_name = people.my_full_name();
     message.avatar_url = page_params.avatar_url;
     message.timestamp = new XDate().getTime() / 1000;
     message.local_id = local_id;

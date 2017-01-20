@@ -95,7 +95,7 @@ initialize();
     assert(!global.page_params.is_admin);
 
     people.update({email: me.email, full_name: 'Me V2'});
-    assert.equal(global.page_params.fullname, 'Me V2');
+    assert.equal(people.my_full_name(), 'Me V2');
 }());
 
 
