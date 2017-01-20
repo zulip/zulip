@@ -495,6 +495,11 @@ if DEVELOPMENT:
     # Also we auto-generate passwords for the default users which you
     # can query using ./manage.py print_initial_password
     INITIAL_PASSWORD_SALT = get_secret("initial_password_salt")
+else:
+    # For production, use the best password hashing algorithm: Argon2
+    # Zulip was originally on PBKDF2 so we need it for compatibility
+    PASSWORD_HASHERS = ('django.contrib.auth.hashers.Argon2PasswordHasher',
+                        'django.contrib.auth.hashers.PBKDF2PasswordHasher')
 
 ########################################################################
 # API/BOT SETTINGS
