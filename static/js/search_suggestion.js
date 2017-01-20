@@ -369,8 +369,8 @@ function get_sent_by_me_suggestions(query, operators) {
         return [];
     }
 
-    var sender_query = 'sender:' + page_params.email;
-    var from_query = 'from:' + page_params.email;
+    var sender_query = 'sender:' + people.my_current_email();
+    var from_query = 'from:' + people.my_current_email();
     var description = 'Sent by me';
 
     query = query.toLowerCase();

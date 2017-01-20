@@ -21,9 +21,19 @@ var people = global.people;
 
 var search = require('js/search_suggestion.js');
 
-set_global('page_params', {
+var bob = {
     email: 'bob@zulip.com',
-});
+    full_name: 'Bob Roberts',
+    user_id: 42,
+};
+
+
+function init() {
+    people.init();
+    people.add(bob);
+    people.initialize_current_user(bob.email);
+}
+init();
 
 set_global('narrow', {});
 
@@ -101,6 +111,7 @@ global.stream_data.populate_stream_topics_for_tests({});
     var expected = [
         "is:private",
         "pm-with:alice@zulip.com",
+        "pm-with:bob@zulip.com",
         "pm-with:ted@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
@@ -204,7 +215,7 @@ global.stream_data.populate_stream_topics_for_tests({});
     assert.deepEqual(suggestions.strings, expected);
 }());
 
-people.init();
+init();
 
 (function test_empty_query_suggestions() {
     var query = '';
