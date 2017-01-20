@@ -348,7 +348,7 @@ def build_custom_checkers(by_lang):
         {'pattern': '[^r][M]essage.objects.get',
          'exclude': set(["zerver/tests", "zerver/worker/queue_processors.py"]),
          'description': 'Please use access_message() to fetch Message objects',
-        },
+         },
         # This rule might give false positives in virtualenv setup files which should be excluded,
         # and comments which should be rewritten to avoid use of "python2", "python3", etc.
         {'pattern': 'python[23]',
