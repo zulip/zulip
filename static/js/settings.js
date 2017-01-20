@@ -749,7 +749,7 @@ function _setup_page() {
 
     $("#download_zuliprc").on("click", function () {
         $(this).attr("href", settings.generate_zuliprc_uri(
-            page_params.email,
+            people.my_current_email(),
             $("#api_key_value").text()
         ));
     });
