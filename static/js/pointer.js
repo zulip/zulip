@@ -60,7 +60,6 @@ exports.fast_forward_pointer = function () {
     channel.get({
         url: '/json/users/me',
         idempotent: true,
-        data: {email: page_params.email},
         success: function (data) {
             unread.mark_all_as_read(function () {
                 pointer.furthest_read = data.max_message_id;
