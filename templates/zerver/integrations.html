@@ -2816,7 +2816,21 @@ access_token_secret =</pre>
       <p>Multiple users can use the same Yo bot; each user should use
       their own Zulip account email in the webhook URL.</p>
     </div>
+    <div id="zapier" class="integration-instructions">
 
+        <p>Go to the following link <code>https://zapier.com/app/explore</code> after you sign into your zapier account and Select Send Weather info to your app via webhookse </p><br />
+        <img class="screenshot" src="/static/images/integrations/zapier/001.png" /><br /><br />
+        <p>Select trigger app as <b>weather by zapier</b></p><br />
+        <img class="screenshot" src="/static/images/integrations/zapier/002.png" /><br /><br />
+        <p>Next select the option <b>Today's Forecast</b></p><br />
+        <img class="screenshot" src="/static/images/integrations/zapier/003.png" /><br /><br />
+        <p>Fill in the latitude and longitude of your location</p><br />
+        <img class="screenshot" src="/static/images/integrations/zapier/004.png" /><br /><br />
+        <p>Next select the <code>POST</code> option under the action section and then fill in the url as <code>https://yourZulipDomain.zulipchat.com/api/v1/external/zapier?api_key=abcdefgh</code></p><br />
+        <img class="screenshot" src="/static/images/integrations/zapier/005.png" /><br /><br />
+        <p>Make sure you keep the Zap ON.</p><br />
+        <p><b>Congratulations! You're done!</b><br /></p>
+    </div>
     <div id="zendesk" class="integration-instructions">
       <p>First, create the stream you'd like to use for Zendesk notifications,
       and subscribe all interested parties to this stream. We recommend the
