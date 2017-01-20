@@ -32,7 +32,22 @@ exports.contains_bugdown = function contains_bugdown(content) {
 
 exports.apply_markdown = function apply_markdown(message) {
     // Our python-markdown processor appends two \n\n to input
-    message.content = marked(message.raw_content + '\n\n').trim();
+    var options = {
+        userMentionHandler: function (name) {
+            var person = people.get_by_name(name);
+            if (person !== undefined) {
+                return '<span class="user-mention" data-user-email="' + person.email + '">' +
+                       '@' + person.full_name +
+                       '</span>';
+            } else if (name === 'all' || name === 'everyone') {
+                return '<span class="user-mention" data-user-email="*">' +
+                       '@' + name +
+                       '</span>';
+            }
+            return undefined;
+        },
+    };
+    message.content = marked(message.raw_content + '\n\n', options).trim();
 };
 
 function resend_message(message, row) {
@@ -319,17 +334,6 @@ function handleAvatar(email) {
            ' title="' + email + '">';
 }
 
-function handleUserMentions(username) {
-    var person = people.get_by_name(username);
-    if (person !== undefined) {
-        return '<span class="user-mention" data-user-email="' + person.email + '">' +
-                '@' + person.full_name + '</span>';
-    } else if (username === 'all' || username === 'everyone') {
-        return '<span class="user-mention" data-user-email="*">' + '@' + username + '</span>';
-    }
-    return undefined;
-}
-
 function handleStream(streamName) {
     var stream = stream_data.get_sub(streamName);
     if (stream === undefined) {
@@ -497,7 +501,6 @@ $(function () {
         emojiHandler: handleEmoji,
         avatarHandler: handleAvatar,
         unicodeEmojiHandler: handleUnicodeEmoji,
-        userMentionHandler: handleUserMentions,
         streamHandler: handleStream,
         realmFilterHandler: handleRealmFilter,
         renderer: r,
