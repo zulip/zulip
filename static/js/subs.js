@@ -407,7 +407,7 @@ exports.mark_subscribed = function (stream_name, attrs) {
         // viewing the members of this stream
         if (sub.render_subscribers && settings.hasClass('in')) {
             prepend_subscriber(settings,
-                               page_params.email);
+                               people.my_current_email());
         }
     } else {
         add_sub_to_table(sub);
@@ -706,7 +706,7 @@ function ajaxSubscribe(stream) {
             var res = JSON.parse(xhr.responseText);
             if (!$.isEmptyObject(res.already_subscribed)) {
                 // Display the canonical stream capitalization.
-                true_stream_name = res.already_subscribed[page_params.email][0];
+                true_stream_name = res.already_subscribed[people.my_current_email()][0];
                 ui.report_success(i18n.t("Already subscribed to __stream__", {stream: true_stream_name}),
                                   $("#subscriptions-status"), 'subscriptions-status');
             }
@@ -1007,7 +1007,7 @@ $(function () {
 
 
             // You are always subscribed to streams you create.
-            principals.push(page_params.email);
+            principals.push(people.my_current_email());
 
             meta.stream_created = stream;
 
