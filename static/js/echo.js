@@ -154,7 +154,7 @@ function insert_local_message(message_request, local_id) {
     // NOTE: This will parse synchronously. We're not using the async pipeline
     exports.apply_markdown(message);
     message.content_type = 'text/html';
-    message.sender_email = page_params.email;
+    message.sender_email = people.my_current_email();
     message.sender_full_name = page_params.fullname;
     message.avatar_url = page_params.avatar_url;
     message.timestamp = new XDate().getTime() / 1000;
