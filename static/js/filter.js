@@ -156,7 +156,7 @@ Filter.canonicalize_term = function (opts) {
     case 'pm-with':
         operand = operand.toString().toLowerCase();
         if (operand === 'me') {
-            operand = page_params.email;
+            operand = people.my_current_email();
         }
         break;
     case 'search':
