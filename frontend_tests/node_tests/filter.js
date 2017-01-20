@@ -22,7 +22,7 @@ var me = {
 };
 
 people.add(me);
-people.initialize_current_user(me.email);
+people.initialize_current_user(me.user_id);
 
 function assert_same_operators(result, terms) {
     terms = _.map(terms, function (term) {

@@ -31,7 +31,7 @@ var bob = {
 function init() {
     people.init();
     people.add(bob);
-    people.initialize_current_user(bob.email);
+    people.initialize_current_user(bob.user_id);
 }
 init();
 

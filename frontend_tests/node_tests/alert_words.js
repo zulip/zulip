@@ -18,7 +18,7 @@ global.people.add({
     user_id: 42,
 });
 
-global.people.initialize_current_user('tester@zulip.com');
+global.people.initialize_current_user(42);
 
 var alert_words = require('js/alert_words.js');
 

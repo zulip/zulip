@@ -103,7 +103,7 @@ var people = global.people;
 
     // set up user data
     people.add(me);
-    people.initialize_current_user(me.email);
+    people.initialize_current_user(me.user_id);
 
     // set up our subscription
     stream_data.add_sub('devel', sub);

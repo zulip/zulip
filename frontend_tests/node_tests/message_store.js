@@ -41,7 +41,7 @@ people.add_in_realm(alice);
 people.add_in_realm(bob);
 people.add_in_realm(cindy);
 
-global.people.initialize_current_user(me.email);
+global.people.initialize_current_user(me.user_id);
 
 global.util.execute_early = noop;
 

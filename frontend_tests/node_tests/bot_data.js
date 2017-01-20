@@ -26,7 +26,7 @@ global.people.add({
     user_id: 42,
 });
 
-global.people.initialize_current_user('owner@zulip.com');
+global.people.initialize_current_user(42);
 
 var patched_underscore = _.clone(_);
 patched_underscore.debounce = function (f) { return f; };
