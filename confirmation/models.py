@@ -65,6 +65,12 @@ class ConfirmationManager(models.Manager):
                 confirmation = self.get(confirmation_key=confirmation_key)
             except self.model.DoesNotExist:
                 return False
+
+            max_days = self.get_link_validity_in_days()
+            time_elapsed = now() - confirmation.date_sent
+            if time_elapsed.total_seconds() > max_days * 24 * 3600:
+                return False
+
             obj = confirmation.content_object
             status_field = get_status_field(obj._meta.app_label, obj._meta.model_name)
             setattr(obj, status_field, getattr(settings, 'STATUS_ACTIVE', 1))
@@ -81,6 +87,10 @@ class ConfirmationManager(models.Manager):
     def get_activation_url(self, confirmation_key, host=None):
         # type: (Text, Optional[str]) -> Text
         return generate_activation_url(confirmation_key, host=host)
+
+    def get_link_validity_in_days(self):
+        # type: () -> int
+        return getattr(settings, 'EMAIL_CONFIRMATION_DAYS', 10)
 
     def send_confirmation(self, obj, email_address, additional_context=None,
                           subject_template_path=None, body_template_path=None,
