@@ -21,8 +21,7 @@ def api_zapier_webhook(request, user_profile, client,
   # construct the body of the message
   body = 'Good Morning! Here is your weather update for the day'
 
-  # try to add the Wikipedia article of the day
-  # return appropriate error if not successful
+
   try:
       summary = payload['summary']
       min_temp = payload['temperatureMin']
