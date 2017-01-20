@@ -385,39 +385,38 @@ exports.mark_subscribed = function (stream_name, attrs) {
         return;
     }
 
-    if (! sub.subscribed) {
-        // Add yourself to a stream we already know about client-side.
-        var color = get_color();
-        exports.set_color(sub.stream_id, color);
-        sub.subscribed = true;
-        if (attrs) {
-            stream_data.set_subscriber_emails(sub, attrs.subscribers);
-        }
-        var settings = settings_for_sub(sub);
-        var button = button_for_sub(sub);
-
-        if (button.length !== 0) {
-            exports.rerender_subscribers_count(sub);
-
-            button.toggleClass("checked");
-            // Add the user to the member list if they're currently
-            // viewing the members of this stream
-            if (sub.render_subscribers && settings.hasClass('in')) {
-                prepend_subscriber(settings,
-                                   page_params.email);
-            }
-        } else {
-            add_sub_to_table(sub);
-        }
-
-        // Display the swatch and subscription settings
-        var sub_row = settings.closest('.stream-row');
-        sub_row.find(".color_swatch").addClass('in');
-        sub_row.find(".regular_subscription_settings").collapse('show');
-    } else {
-        // Already subscribed
+    if (sub.subscribed) {
         return;
     }
+
+    // Add yourself to a stream we already know about client-side.
+    var color = get_color();
+    exports.set_color(sub.stream_id, color);
+    sub.subscribed = true;
+    if (attrs) {
+        stream_data.set_subscriber_emails(sub, attrs.subscribers);
+    }
+    var settings = settings_for_sub(sub);
+    var button = button_for_sub(sub);
+
+    if (button.length !== 0) {
+        exports.rerender_subscribers_count(sub);
+
+        button.toggleClass("checked");
+        // Add the user to the member list if they're currently
+        // viewing the members of this stream
+        if (sub.render_subscribers && settings.hasClass('in')) {
+            prepend_subscriber(settings,
+                               page_params.email);
+        }
+    } else {
+        add_sub_to_table(sub);
+    }
+
+    // Display the swatch and subscription settings
+    var sub_row = settings.closest('.stream-row');
+    sub_row.find(".color_swatch").addClass('in');
+    sub_row.find(".regular_subscription_settings").collapse('show');
 
     if (current_msg_list.narrowed) {
         current_msg_list.update_trailing_bookend();
