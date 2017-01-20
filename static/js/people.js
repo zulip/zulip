@@ -299,6 +299,14 @@ exports.extract_people_from_message = function (message) {
     });
 };
 
+exports.set_full_name = function (person_obj, new_full_name) {
+    if (people_by_name_dict.has(person_obj.full_name)) {
+        people_by_name_dict.del(person_obj.full_name);
+    }
+    people_by_name_dict.set(new_full_name, person_obj);
+    person_obj.full_name = new_full_name;
+};
+
 exports.update = function update(person) {
     if (! people_dict.has(person.email)) {
         blueslip.error("Got update_person event for unexpected user",
@@ -308,12 +316,7 @@ exports.update = function update(person) {
     var person_obj = people_dict.get(person.email);
 
     if (_.has(person, 'full_name')) {
-        if (people_by_name_dict.has(person_obj.full_name)) {
-            people_by_name_dict.set(person.full_name, person_obj);
-            people_by_name_dict.del(person_obj.full_name);
-        }
-
-        person_obj.full_name = person.full_name;
+        exports.set_full_name(person_obj, person.full_name);
 
         activity.redraw();
         // TODO: update sender names on messages

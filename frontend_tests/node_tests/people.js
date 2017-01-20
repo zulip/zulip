@@ -96,6 +96,12 @@ initialize();
 
     people.update({email: me.email, full_name: 'Me V2'});
     assert.equal(people.my_full_name(), 'Me V2');
+
+    var person = people.get_by_email('me@example.com');
+    people.set_full_name(person, 'Me the Third');
+    assert.equal(people.my_full_name(), 'Me the Third');
+    assert.equal(person.full_name, 'Me the Third');
+    assert.equal(people.get_by_name('Me the Third').email, 'me@example.com');
 }());
 
 
