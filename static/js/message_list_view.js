@@ -16,6 +16,22 @@ function MessageListView(list, table_name, collapse_messages) {
 
 (function () {
 
+function mention_button_refers_to_me(elem) {
+    var user_id = $(elem).attr('data-user-id');
+    if ((user_id === '*') || people.is_my_user_id(user_id)) {
+        return true;
+    }
+
+    // Handle legacy markdown that was rendered before we cut
+    // over to using data-user-id.
+    var email = $(elem).attr('data-user-email');
+    if (email === '*' || people.is_current_user(email)) {
+        return true;
+    }
+
+    return false;
+}
+
 function stringify_time(time) {
     if (page_params.twenty_four_hour_time) {
         return time.toString('HH:mm');
@@ -362,8 +378,9 @@ MessageListView.prototype = {
 
             if (row.hasClass('mention')) {
                 row.find('.user-mention').each(function () {
-                    var email = $(this).attr('data-user-email');
-                    if (email === '*' || people.is_current_user(email)) {
+                    // We give special highlights to the mention buttons
+                    // that refer to the current user.
+                    if (mention_button_refers_to_me(this)) {
                         $(this).addClass('user-mention-me');
                     }
                 });

@@ -166,7 +166,7 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
     {input: '\n~~~quote\nquote this for me\n~~~\nthanks\n',
      expected: '<blockquote>\n<p>quote this for me</p>\n</blockquote>\n<p>thanks</p>'},
     {input: 'This is a @**Cordelia Lear** mention',
-     expected: '<p>This is a <span class="user-mention" data-user-email="cordelia@zulip.com">@Cordelia Lear</span> mention</p>'},
+     expected: '<p>This is a <span class="user-mention" data-user-id="101">@Cordelia Lear</span> mention</p>'},
     {input: 'These @ @**** are not mentions',
      expected: '<p>These @ @<em>**</em> are not mentions</p>'},
     {input: 'These # #**** are not mentions',

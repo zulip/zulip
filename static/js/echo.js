@@ -47,12 +47,12 @@ exports.apply_markdown = function apply_markdown(message) {
             var person = people.get_by_name(name);
             if (person !== undefined) {
                 push_uniquely(message.flags, 'mentioned');
-                return '<span class="user-mention" data-user-email="' + person.email + '">' +
+                return '<span class="user-mention" data-user-id="' + person.user_id + '">' +
                        '@' + person.full_name +
                        '</span>';
             } else if (name === 'all' || name === 'everyone') {
                 push_uniquely(message.flags, 'mentioned');
-                return '<span class="user-mention" data-user-email="*">' +
+                return '<span class="user-mention" data-user-id="*">' +
                        '@' + name +
                        '</span>';
             }
