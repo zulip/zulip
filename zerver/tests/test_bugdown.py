@@ -585,7 +585,7 @@ class BugdownTest(TestCase):
 
         content = "@all test"
         self.assertEqual(render_markdown(msg, content),
-                         '<p><span class="user-mention" data-user-email="*">@all</span> test</p>')
+                         '<p><span class="user-mention" data-user-id="*">@all</span> test</p>')
         self.assertTrue(msg.mentions_wildcard)
 
     def test_mention_everyone(self):
@@ -595,7 +595,7 @@ class BugdownTest(TestCase):
 
         content = "@everyone test"
         self.assertEqual(render_markdown(msg, content),
-                         '<p><span class="user-mention" data-user-email="*">@everyone</span> test</p>')
+                         '<p><span class="user-mention" data-user-id="*">@everyone</span> test</p>')
         self.assertTrue(msg.mentions_wildcard)
 
     def test_mention_single(self):
@@ -603,10 +603,11 @@ class BugdownTest(TestCase):
         sender_user_profile = get_user_profile_by_email("othello@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        user_id = user_profile.id
 
         content = "@**King Hamlet**"
         self.assertEqual(render_markdown(msg, content),
-                         '<p><span class="user-mention" data-user-email="hamlet@zulip.com">@King Hamlet</span></p>')
+                         '<p><span class="user-mention" data-user-id="%s">@King Hamlet</span></p>' % (user_id,))
         self.assertEqual(msg.mentions_user_ids, set([user_profile.id]))
 
     def test_mention_shortname(self):
@@ -614,10 +615,11 @@ class BugdownTest(TestCase):
         sender_user_profile = get_user_profile_by_email("othello@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        user_id = user_profile.id
 
         content = "@**hamlet**"
         self.assertEqual(render_markdown(msg, content),
-                         '<p><span class="user-mention" data-user-email="hamlet@zulip.com">@King Hamlet</span></p>')
+                         '<p><span class="user-mention" data-user-id="%s">@King Hamlet</span></p>' % (user_id,))
         self.assertEqual(msg.mentions_user_ids, set([user_profile.id]))
 
     def test_mention_multiple(self):
@@ -631,10 +633,10 @@ class BugdownTest(TestCase):
         self.assertEqual(render_markdown(msg, content),
                          '<p>'
                          '<span class="user-mention" '
-                         'data-user-email="hamlet@zulip.com">@King Hamlet</span> and '
+                         'data-user-id="%s">@King Hamlet</span> and '
                          '<span class="user-mention" '
-                         'data-user-email="cordelia@zulip.com">@Cordelia Lear</span>, '
-                         'check this out</p>')
+                         'data-user-id="%s">@Cordelia Lear</span>, '
+                         'check this out</p>' % (hamlet.id, cordelia.id))
         self.assertEqual(msg.mentions_user_ids, set([hamlet.id, cordelia.id]))
 
     def test_mention_invalid(self):
@@ -864,8 +866,9 @@ class BugdownApiTests(ZulipTestCase):
         )
         self.assert_json_success(result)
         data = ujson.loads(result.content)
+        user_id = get_user_profile_by_email('hamlet@zulip.com').id
         self.assertEqual(data['rendered'],
-                         u'<p>This mentions <a class="stream" data-stream-id="%s" href="/#narrow/stream/Denmark">#Denmark</a> and <span class="user-mention" data-user-email="hamlet@zulip.com">@King Hamlet</span>.</p>' % (get_stream("Denmark", get_realm("zulip")).id),)
+                         u'<p>This mentions <a class="stream" data-stream-id="%s" href="/#narrow/stream/Denmark">#Denmark</a> and <span class="user-mention" data-user-id="%s">@King Hamlet</span>.</p>' % (get_stream("Denmark", get_realm("zulip")).id, user_id))
 
 class BugdownErrorTests(ZulipTestCase):
     def test_bugdown_error_handling(self):
