@@ -30,9 +30,9 @@ exports.contains_bugdown = function contains_bugdown(content) {
     return markedup !== undefined;
 };
 
-exports.apply_markdown = function apply_markdown(content) {
+exports.apply_markdown = function apply_markdown(message) {
     // Our python-markdown processor appends two \n\n to input
-    return marked(content + '\n\n').trim();
+    message.content = marked(message.raw_content + '\n\n').trim();
 };
 
 function resend_message(message, row) {
@@ -132,7 +132,7 @@ function insert_local_message(message_request, local_id) {
     var message = $.extend({}, message_request);
     message.raw_content = message.content;
     // NOTE: This will parse synchronously. We're not using the async pipeline
-    message.content = exports.apply_markdown(message.content);
+    exports.apply_markdown(message);
     message.content_type = 'text/html';
     message.sender_email = page_params.email;
     message.sender_full_name = page_params.fullname;
@@ -197,7 +197,8 @@ exports.edit_locally = function edit_locally(message, raw_content, new_topic) {
         stream_data.process_message_for_recent_topics(message);
     }
 
-    message.content = exports.apply_markdown(raw_content);
+    exports.apply_markdown(message);
+
     // We don't handle unread counts since local messages must be sent by us
 
     home_msg_list.view.rerender_messages([message]);
