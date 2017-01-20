@@ -315,10 +315,6 @@ exports.update = function update(person) {
 
         person_obj.full_name = person.full_name;
 
-        if (exports.is_current_user(person.email)) {
-            page_params.fullname = person.full_name;
-        }
-
         activity.redraw();
         // TODO: update sender names on messages
 
@@ -358,6 +354,10 @@ exports.is_current_user = function (email) {
 
 exports.initialize_current_user = function (user_id) {
     my_user_id = user_id;
+};
+
+exports.my_full_name = function () {
+    return people_by_user_id_dict.get(my_user_id).full_name;
 };
 
 exports.my_current_email = function () {
