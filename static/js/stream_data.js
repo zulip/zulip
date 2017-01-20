@@ -30,6 +30,12 @@ exports.rename_sub = function (stream_id, new_name) {
     return sub;
 };
 
+exports.subscribe_myself = function (sub) {
+    var user_id = people.my_current_user_id();
+    exports.add_subscriber(sub.name, user_id);
+    sub.subscribed = true;
+};
+
 exports.unsubscribe_myself = function (sub) {
     // Remove user from subscriber's list
     var user_id = people.my_current_user_id();
