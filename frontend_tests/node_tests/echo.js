@@ -249,6 +249,7 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
 (function test_message_flags() {
   var input = "/me is testing this";
   var message = {subject: "No links here", raw_content: input};
+  message.flags = ['read'];
   echo.apply_markdown(message);
   echo._add_message_flags(message);
 
@@ -256,26 +257,25 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
   assert(message.flags.indexOf('read') !== -1);
   assert(message.flags.indexOf('is_me_message') !== -1);
 
-  input = "testing this @**all**";
+  input = "testing this @**all** @**Cordelia Lear**";
   message = {subject: "No links here", raw_content: input};
   echo.apply_markdown(message);
   echo._add_message_flags(message);
 
-  assert.equal(message.flags.length, 2);
-  assert(message.flags.indexOf('read') !== -1);
+  assert.equal(message.flags.length, 1);
   assert(message.flags.indexOf('mentioned') !== -1);
 
   input = "test @all";
   message = {subject: "No links here", raw_content: input};
   echo.apply_markdown(message);
   echo._add_message_flags(message);
-  assert.equal(message.flags.length, 2);
+  assert.equal(message.flags.length, 1);
   assert(message.flags.indexOf('mentioned') !== -1);
 
   input = "test @any";
   message = {subject: "No links here", raw_content: input};
   echo.apply_markdown(message);
   echo._add_message_flags(message);
-  assert.equal(message.flags.length, 1);
+  assert.equal(message.flags.length, 0);
   assert(message.flags.indexOf('mentioned') === -1);
 }());

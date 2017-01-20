@@ -30,16 +30,28 @@ exports.contains_bugdown = function contains_bugdown(content) {
     return markedup !== undefined;
 };
 
+function push_uniquely(lst, elem) {
+    if (!_.contains(lst, elem)) {
+        lst.push(elem);
+    }
+}
+
 exports.apply_markdown = function apply_markdown(message) {
+    if (message.flags === undefined) {
+        message.flags = [];
+    }
+
     // Our python-markdown processor appends two \n\n to input
     var options = {
         userMentionHandler: function (name) {
             var person = people.get_by_name(name);
             if (person !== undefined) {
+                push_uniquely(message.flags, 'mentioned');
                 return '<span class="user-mention" data-user-email="' + person.email + '">' +
                        '@' + person.full_name +
                        '</span>';
             } else if (name === 'all' || name === 'everyone') {
+                push_uniquely(message.flags, 'mentioned');
                 return '<span class="user-mention" data-user-email="*">' +
                        '@' + name +
                        '</span>';
@@ -81,25 +93,13 @@ function truncate_precision(float) {
 }
 
 function add_message_flags(message) {
-    // Locally delivered messages cannot be unread (since we sent them), nor
-    // can they alert the user
-    var flags = ["read"];
-
-    // Messages that mention the sender should highlight as well
-    var self_mention = 'data-user-email="' + page_params.email + '"';
-    var wildcard_mention = 'data-user-email="*"';
-    if (message.content.indexOf(self_mention) > -1 ||
-        message.content.indexOf(wildcard_mention) > -1) {
-        flags.push("mentioned");
-    }
+    // Note: mention flags are set in apply_markdown()
 
     if (message.raw_content.indexOf('/me ') === 0 &&
         message.content.indexOf('<p>') === 0 &&
         message.content.lastIndexOf('</p>') === message.content.length - 4) {
-        flags.push('is_me_message');
+        message.flags.push('is_me_message');
     }
-
-    message.flags = flags;
 }
 
 function add_subject_links(message) {
@@ -145,6 +145,11 @@ function insert_local_message(message_request, local_id) {
     // for zulip.js:add_message
     // Keep this in sync with changes to compose.create_message_object
     var message = $.extend({}, message_request);
+
+    // Locally delivered messages cannot be unread (since we sent them), nor
+    // can they alert the user.
+    message.flags = ['read']; // we may add more flags later
+
     message.raw_content = message.content;
     // NOTE: This will parse synchronously. We're not using the async pipeline
     exports.apply_markdown(message);
