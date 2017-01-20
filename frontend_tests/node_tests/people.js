@@ -27,7 +27,7 @@ var me = {
 function initialize() {
     people.init();
     people.add(me);
-    people.initialize_current_user(me.email);
+    people.initialize_current_user(me.user_id);
 }
 
 initialize();

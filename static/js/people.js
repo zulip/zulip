@@ -356,8 +356,8 @@ exports.is_current_user = function (email) {
     return email.toLowerCase() === exports.my_current_email().toLowerCase();
 };
 
-exports.initialize_current_user = function (email) {
-    my_user_id = exports.get_user_id(email);
+exports.initialize_current_user = function (user_id) {
+    my_user_id = user_id;
 };
 
 exports.my_current_email = function () {
@@ -387,7 +387,7 @@ $(function () {
         cross_realm_dict.set(person.email, person);
     });
 
-    exports.initialize_current_user(page_params.email);
+    exports.initialize_current_user(page_params.user_id);
 
     delete page_params.people_list; // We are the only consumer of this.
     delete page_params.cross_realm_bots;
