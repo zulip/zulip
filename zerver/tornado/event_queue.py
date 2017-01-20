@@ -21,8 +21,6 @@ import random
 import traceback
 from zerver.models import UserProfile, Client
 from zerver.decorator import RespondAsynchronously
-from zerver.lib.cache import cache_get_many, \
-    user_profile_by_id_cache_key, cache_save_user_profile, cache_with_key
 from zerver.tornado.handlers import clear_handler_by_id, get_handler_by_id, \
     finish_handler, handler_stats_string
 from zerver.lib.utils import statsd

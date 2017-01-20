@@ -313,10 +313,6 @@ def user_profile_by_id_cache_key(user_profile_id):
 # TODO: Refactor these cache helpers into another file that can import
 # models.py so that python v3 style type annotations can also work.
 
-def cache_save_user_profile(user_profile):
-    # type: (UserProfile) -> None
-    cache_set(user_profile_by_id_cache_key(user_profile.id), user_profile, timeout=3600*24*7)
-
 active_user_dict_fields = ['id', 'full_name', 'short_name', 'email', 'is_realm_admin', 'is_bot'] # type: List[str]
 def active_user_dicts_in_realm_cache_key(realm):
     # type: (Realm) -> Text
