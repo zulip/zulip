@@ -69,15 +69,20 @@ exports.set_all_stream_audible_notifications_to = function (new_setting) {
     set_notification_setting_for_all_streams("audible_notifications", new_setting);
 };
 
+function get_stream_id(target) {
+    if (target.constructor !== jQuery) {
+        target = $(target);
+    }
+    return target.closest(".stream-row, .subscription_settings").attr("data-stream-id");
+}
 
 // Finds the stream name of a jquery object that's inside a
 // .stream-row or .subscription_settings element.
 function get_stream_name(target) {
-    if (target.constructor !== jQuery) {
-        target = $(target);
+    var stream = stream_data.get_sub_by_id(get_stream_id(target));
+    if (stream) {
+        return stream.name;
     }
-    var stream_id = target.closest(".stream-row, .subscription_settings").attr("data-stream-id");
-    return stream_data.get_sub_by_id(stream_id).name;
 }
 
 function stream_home_view_clicked(e) {
@@ -193,7 +198,6 @@ function update_stream_name(stream_id, new_name) {
     // Update the subscriptions page
     var sub_row = $(".stream-row[data-stream-id='" + sub.stream_id + "']");
     sub_row.find(".stream-name").text(new_name);
-    sub_row.attr("data-stream-name", new_name);
 
     // Update the message feed.
     message_live_update.update_stream_name(stream_id, new_name);
@@ -276,7 +280,7 @@ function add_sub_to_table(sub) {
     add_email_hint(sub, email_address_hint_content);
 
     if (meta.stream_created) {
-        $(".stream-row[data-stream-name='" + meta.stream_created + "']").click();
+        $(".stream-row[data-stream-id='" + stream_data.get_sub(meta.stream_created).stream_id + "']").click();
         meta.stream_created = false;
     }
 }
@@ -366,9 +370,11 @@ function show_subscription_settings(sub_row) {
     stream_color.set_colorpicker_color(colorpicker, color);
 }
 
-exports.show_settings_for = function (stream_name) {
-    var sub_settings = settings_for_sub(stream_data.get_sub(stream_name));
-    var stream = $(".subscription_settings[data-stream-name='" + stream_name + "']");
+exports.show_settings_for = function (stream_id) {
+    var sub = stream_data.get_sub_by_id(stream_id);
+    var sub_settings = settings_for_sub(sub);
+
+    var stream = $(".subscription_settings[data-stream-id='" + stream_id + "']");
     $(".subscription_settings[data-stream].show").removeClass("show");
 
     $("#subscription_overlay .subscription_settings.show").removeClass("show");
@@ -1149,7 +1155,7 @@ $(function () {
             show_subs_pane.settings();
 
             $(node).addClass("active");
-            exports.show_settings_for(get_stream_name(node));
+            exports.show_settings_for(get_stream_id(node));
         } else {
             show_subs_pane.nothing_selected();
         }
