@@ -142,10 +142,11 @@ clicking the chevron of the corresponding stream and clicking **Pin stream
 
 ### private message
 
-**Private messages** are either **one-on-one** or **group**
-conversations. They can only be seen by users participating in the
-message. To send a private messages to a user, users can search for
-the username or email address.
+**Private messages** are either **one-on-one** or **group** conversations.
+They can only be seen by users participating in the message. Organization
+[administrators](#administrator) cannot read your private messages unless
+they are members of the conversation. To send a private messages to a user,
+users can search for the username or email address.
 
 ### private stream
 
