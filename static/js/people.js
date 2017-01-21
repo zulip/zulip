@@ -318,6 +318,7 @@ exports.update = function update(person) {
     if (_.has(person, 'full_name')) {
         exports.set_full_name(person_obj, person.full_name);
 
+        admin.update_user_full_name(person.email, person.full_name);
         activity.redraw();
         // TODO: update sender names on messages
 
