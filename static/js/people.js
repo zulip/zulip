@@ -128,14 +128,38 @@ exports.small_avatar_url = function (message) {
     //
     // We actually request these at s=50, so that we look better
     // on retina displays.
-    if (message.avatar_url) {
-        var url = message.avatar_url + "&s=50";
+
+    var url = "";
+    var person;
+
+    if (message.sender_id) {
+        // We should always have message.sender_id, except for in the
+        // tutorial, where it's ok to fall back to the url in the fake
+        // messages.
+        person = exports.get_person_from_user_id(message.sender_id);
+    }
+
+    // The first time we encounter a sender in a message, we may
+    // not have person.avatar_url set, but if we do, then use that.
+    if (person && person.avatar_url) {
+        url = person.avatar_url;
+    } else if (message.avatar_url) {
+        // Here we fall back to using the avatar_url from the message
+        // itself.
+        url = message.avatar_url;
+        if (person) {
+            person.avatar_url = url;
+        }
+    }
+
+    if (url) {
+        url += "&s=50";
         if (message.sent_by_me) {
             url += "&stamp=" + settings.avatar_stamp;
         }
-        return url;
     }
-    return "";
+
+    return url;
 };
 
 exports.realm_get = function realm_get(email) {
