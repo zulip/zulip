@@ -16,7 +16,7 @@ function update_alert_words() {
 }
 
 function add_alert_word(word, event) {
-    if (word === '') {
+    if ($.trim(word) === '') {
         $("#empty_alert_word_error").show();
         return;
     }
