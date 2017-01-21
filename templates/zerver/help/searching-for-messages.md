@@ -37,6 +37,12 @@ contain "walk", "walks", "walked", etc.
 
 ## Search operators
 
+To see a list of all search operators in Zulip, click the cog (<i
+class="icon-vector-cog"></i>) icon in the upper right corner of the right
+sidebar and choose **Search help** from the dropdown menu that appears.
+
+![Search help](/static/images/help/search-help.png)
+
 Listed below are all Zulip search operators.
 
 * `stream:foobar` - This operator narrows the view to show only
