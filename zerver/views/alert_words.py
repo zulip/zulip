@@ -22,6 +22,7 @@ def list_alert_words(request, user_profile):
 def set_alert_words(request, user_profile,
                     alert_words=REQ(validator=check_list(check_string), default=[])):
     # type: (HttpRequest, UserProfile, List[Text]) -> HttpResponse
+    alert_words = [w for w in alert_words if w.strip()]
     do_set_alert_words(user_profile, alert_words)
     return json_success()
 
