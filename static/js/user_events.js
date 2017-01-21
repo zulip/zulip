@@ -43,9 +43,7 @@ exports.update_person = function update(person) {
           $("#user-settings-avatar").attr("src", url);
         }
 
-        $(".inline_profile_picture.u-" + person.id).css({
-          "background-image": "url(" + url + ")",
-        });
+        message_live_update.update_avatar(person_obj);
     }
 };
 

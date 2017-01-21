@@ -8,6 +8,16 @@ exports.update_stream_name = function (stream_id, new_name) {
     });
 };
 
+exports.update_avatar = function (person) {
+    var sent_by_me = people.is_my_user_id(person.user_id);
+    var url = person.avatar_url;
+    url = people.format_small_avatar_url(url, sent_by_me);
+
+    $(".inline_profile_picture.u-" + person.user_id).css({
+      "background-image": "url(" + url + ")",
+    });
+};
+
 return exports;
 
 }());

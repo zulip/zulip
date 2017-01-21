@@ -120,6 +120,14 @@ exports.slug_to_emails = function (slug) {
     }
 };
 
+exports.format_small_avatar_url = function (raw_url, sent_by_me) {
+    var url = raw_url + "&s=50";
+    if (sent_by_me) {
+        url += "&stamp=" + settings.avatar_stamp;
+    }
+    return url;
+};
+
 exports.small_avatar_url = function (message) {
     // Try to call this function in all places where we need 25px
     // avatar images, so that the browser can help
@@ -153,10 +161,7 @@ exports.small_avatar_url = function (message) {
     }
 
     if (url) {
-        url += "&s=50";
-        if (message.sent_by_me) {
-            url += "&stamp=" + settings.avatar_stamp;
-        }
+        url = exports.format_small_avatar_url(url, message.sent_by_me);
     }
 
     return url;
