@@ -259,24 +259,6 @@ exports.show_failed_message_success = function (message_id) {
     });
 };
 
-exports.small_avatar_url = function (message) {
-    // Try to call this function in all places where we need 25px
-    // avatar images, so that the browser can help
-    // us avoid unnecessary network trips.  (For user-uploaded avatars,
-    // the s=25 parameter is essentially ignored, but it's harmless.)
-    //
-    // We actually request these at s=50, so that we look better
-    // on retina displays.
-    if (message.avatar_url) {
-        var url = message.avatar_url + "&s=50";
-        if (message.sent_by_me) {
-            url += "&stamp=" + settings.avatar_stamp;
-        }
-        return url;
-    }
-    return "";
-};
-
 exports.lightbox = function (data) {
     switch (data.type) {
         case "photo":
