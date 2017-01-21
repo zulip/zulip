@@ -3178,7 +3178,7 @@ def apply_events(state, events, user_profile):
 
             def our_person(p):
                 # type: (Dict[str, Any]) -> bool
-                return p['email'] == person['email']
+                return p['user_id'] == person['user_id']
 
             if event['op'] == "add":
                 state['realm_users'].append(person)
