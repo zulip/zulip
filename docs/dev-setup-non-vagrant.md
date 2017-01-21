@@ -379,6 +379,8 @@ links for somebody new in Docker are:
 
 * [Get Started](https://docs.docker.com/engine/installation/linux/)
 * [Understand the architecture](https://docs.docker.com/engine/understanding-docker/)
+* [Docker run reference](https://docs.docker.com/engine/reference/run/)
+* [Dockerfile reference](https://docs.docker.com/engine/reference/builder/)
 
 [docker-install]: https://docs.docker.com/engine/installation/
 
