@@ -221,7 +221,7 @@ exports.window_has_focus = function () {
 
 function in_browser_notify(message, title, content, raw_operators, opts) {
     var notification_html = $(templates.render('notification', {
-        gravatar_url: ui.small_avatar_url(message),
+        gravatar_url: people.small_avatar_url(message),
         title: title,
         content: content,
         message_id: message.id,
@@ -340,7 +340,7 @@ function process_notification(notification) {
     }
 
     if (window.bridge === undefined && notification.webkit_notify === true) {
-        var icon_url = ui.small_avatar_url(message);
+        var icon_url = people.small_avatar_url(message);
         notice_memory[key] = {
             obj: notifications_api.createNotification(
                     icon_url, title, content, message.id),
@@ -364,7 +364,7 @@ function process_notification(notification) {
             if (perm === 'granted') {
                 notification_object = new Notification(title, {
                     body: content,
-                    iconUrl: ui.small_avatar_url(message),
+                    iconUrl: people.small_avatar_url(message),
                     tag: message.id,
                 });
             } else {
