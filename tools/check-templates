@@ -65,6 +65,7 @@ def check_html_templates(templates, modified_only, all_dups):
         'api-example-tabs',
         'errors',
         'email',
+        'messages',
         'registration',
         'pw_strength',
         'id_password',
