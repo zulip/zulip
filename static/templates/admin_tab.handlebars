@@ -83,14 +83,16 @@
           <table class="table table-condensed table-stripped" id="alias_table">
             <thead>
               <th>{{t "Domain" }}</th>
+              <th>{{t "Allow Subdomains"}}</th>
               <th>{{t "Action" }}</th>
             </thead>
             <tbody>
             </tbody>
             <tfoot>
-              <tr>
-                <td><input type="text" id="new_alias" placeholder={{t "acme.com" }}></input></td>
-                <td><button type="button" class="btn btn-primary" id="add_alias">{{t "Add" }}</button></td>
+              <tr id="add-alias-widget">
+                <td><input type="text" class="new-alias-domain" placeholder={{t "acme.com" }}></input></td>
+                <td><input type="checkbox" class="new-alias-allow-subdomains"></input></td>
+                <td><button type="button" class="btn btn-primary" id="submit-add-alias">{{t "Add" }}</button></td>
               </tr>
             </tfoot>
           </table>

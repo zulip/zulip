@@ -283,6 +283,10 @@ class RealmAlias(models.Model):
     realm = models.ForeignKey(Realm, null=True) # type: Optional[Realm]
     # should always be stored lowercase
     domain = models.CharField(max_length=80, db_index=True) # type: Text
+    allow_subdomains = models.BooleanField(default=False)
+
+    class Meta(object):
+        unique_together = ("realm", "domain")
 
 def can_add_alias(domain):
     # type: (Text) -> bool
@@ -315,11 +319,19 @@ def get_realm_by_email_domain(email):
     if settings.REALMS_HAVE_SUBDOMAINS:
         raise GetRealmByDomainException(
             "Cannot get realm from email domain when settings.REALMS_HAVE_SUBDOMAINS = True")
-    try:
-        alias = RealmAlias.objects.select_related('realm').get(domain = email_to_domain(email))
+    domain = email_to_domain(email)
+    query = RealmAlias.objects.select_related('realm')
+    alias = query.filter(domain=domain).first()
+    if alias is not None:
         return alias.realm
-    except RealmAlias.DoesNotExist:
-        return None
+    else:
+        query = query.filter(allow_subdomains=True)
+        while len(domain) > 0:
+            subdomain, sep, domain = domain.partition('.')
+            alias = query.filter(domain=domain).first()
+            if alias is not None:
+                return alias.realm
+    return None
 
 # Is a user with the given email address allowed to be in the given realm?
 # (This function does not check whether the user has been invited to the realm.
@@ -330,11 +342,20 @@ def email_allowed_for_realm(email, realm):
     if not realm.restricted_to_domain:
         return True
     domain = email_to_domain(email)
-    return RealmAlias.objects.filter(realm = realm, domain = domain).exists()
+    query = RealmAlias.objects.filter(realm=realm)
+    if query.filter(domain=domain).exists():
+        return True
+    else:
+        query = query.filter(allow_subdomains=True)
+        while len(domain) > 0:
+            subdomain, sep, domain = domain.partition('.')
+            if query.filter(domain=domain).exists():
+                return True
+    return False
 
 def list_of_domains_for_realm(realm):
-    # type: (Realm) -> List[Text]
-    return list(RealmAlias.objects.filter(realm=realm).values('domain'))
+    # type: (Realm) -> List[Dict[str, Union[str, bool]]]
+    return list(RealmAlias.objects.filter(realm=realm).values('domain', 'allow_subdomains'))
 
 class RealmEmoji(ModelReprMixin, models.Model):
     author = models.ForeignKey('UserProfile', blank=True, null=True)

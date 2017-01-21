@@ -97,6 +97,7 @@ function render(template_name, args) {
     var args = {
         alias: {
             domain: 'zulip.org',
+            allow_subdomains: true,
         },
     };
     html += render("admin-alias-list", args);
@@ -104,10 +105,14 @@ function render(template_name, args) {
 
     var button = $(html).find('.btn');
     var domain = $(html).find('.domain');
+    var row = button.closest('tr');
+    var subdomains_checkbox = row.find('.allow-subdomains');
 
     assert.equal(button.text().trim(), "Remove");
     assert(button.hasClass("delete_alias"));
     assert.equal(domain.text(), "zulip.org");
+
+    assert.equal(subdomains_checkbox.prop('checked'), true);
 
     global.write_handlebars_output("admin-alias-list", html);
 }());

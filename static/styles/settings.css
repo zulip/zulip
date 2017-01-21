@@ -437,12 +437,12 @@ input[type=checkbox].inline-block {
     padding: 10px 15px;
 }
 
-#administration #new_alias {
+#administration .new-alias-domain {
     width: 130px;
     margin-bottom: auto;
     padding: 0px 2px;
 }
 
-#administration #add_alias {
+#administration #submit-add-alias {
     width: 75px;
 }

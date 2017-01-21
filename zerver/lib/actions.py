@@ -3616,16 +3616,26 @@ def get_emails_from_user_ids(user_ids):
 
 def get_realm_aliases(realm):
     # type: (Realm) -> List[Dict[str, Text]]
-    return list(realm.realmalias_set.values('domain'))
+    return list(realm.realmalias_set.values('domain', 'allow_subdomains'))
 
-def do_add_realm_alias(realm, domain):
-    # type: (Realm, Text) -> (RealmAlias)
-    alias = RealmAlias.objects.create(realm=realm, domain=domain)
+def do_add_realm_alias(realm, domain, allow_subdomains):
+    # type: (Realm, Text, bool) -> (RealmAlias)
+    alias = RealmAlias.objects.create(realm=realm, domain=domain,
+                                      allow_subdomains=allow_subdomains)
     event = dict(type="realm_domains", op="add",
                  alias=dict(domain=alias.domain,
-                            ))
+                            allow_subdomains=alias.allow_subdomains))
     send_event(event, active_user_ids(realm))
     return alias
+
+def do_change_realm_alias(alias, allow_subdomains):
+    # type: (RealmAlias, bool) -> None
+    alias.allow_subdomains = allow_subdomains
+    alias.save(update_fields=['allow_subdomains'])
+    event = dict(type="realm_domains", op="change",
+                 alias=dict(domain=alias.domain,
+                            allow_subdomains=alias.allow_subdomains))
+    send_event(event, active_user_ids(alias.realm))
 
 def do_remove_realm_alias(alias):
     # type: (RealmAlias) -> None

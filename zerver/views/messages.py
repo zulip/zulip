@@ -766,6 +766,8 @@ def same_realm_zephyr_user(user_profile, email):
 
     domain = email_to_domain(email)
 
+    # Assumes allow_subdomains=False for all RealmAlias's corresponding to
+    # these realms.
     return user_profile.realm.is_zephyr_mirror_realm and \
         RealmAlias.objects.filter(realm=user_profile.realm, domain=domain).exists()
 
@@ -781,6 +783,8 @@ def same_realm_irc_user(user_profile, email):
 
     domain = email_to_domain(email).replace("irc.", "")
 
+    # Assumes allow_subdomains=False for all RealmAlias's corresponding to
+    # these realms.
     return RealmAlias.objects.filter(realm=user_profile.realm, domain=domain).exists()
 
 def same_realm_jabber_user(user_profile, email):
@@ -794,6 +798,8 @@ def same_realm_jabber_user(user_profile, email):
     # Zulip users, this is where you would do any translation.
     domain = email_to_domain(email)
 
+    # Assumes allow_subdomains=False for all RealmAlias's corresponding to
+    # these realms.
     return RealmAlias.objects.filter(realm=user_profile.realm, domain=domain).exists()
 
 # We do not @require_login for send_message_backend, since it is used
