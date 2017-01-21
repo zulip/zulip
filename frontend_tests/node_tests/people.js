@@ -6,17 +6,6 @@ global.stub_out_jquery();
 
 var people = require("js/people.js");
 
-set_global('page_params', {
-    people_list: [],
-});
-set_global('activity', {
-    redraw: function () {},
-});
-set_global('admin', {
-    update_user_full_name: function () {},
-    show_or_hide_menu_item: function () {},
-});
-
 var _ = global._;
 
 var me = {
@@ -42,7 +31,6 @@ initialize();
     var realm_persons = people.get_realm_persons();
     assert.equal(_.size(realm_persons), 0);
 
-
     var full_name = 'Isaac Newton';
     var email = 'isaac@example.com';
     var isaac = {
@@ -67,16 +55,6 @@ initialize();
     assert.equal(_.size(realm_persons), 1);
     assert.equal(realm_persons[0].full_name, 'Isaac Newton');
 
-    people.update({email: email, is_admin: true});
-    person = people.get_by_email(email);
-    assert.equal(person.full_name, full_name);
-    assert.equal(person.is_admin, true);
-
-    people.update({email: email, full_name: 'Sir Isaac'});
-    person = people.get_by_email(email);
-    assert.equal(person.full_name, 'Sir Isaac');
-    assert.equal(person.is_admin, true);
-
     // Now deactivate isaac
     people.deactivate(isaac);
     person = people.realm_get(email);
@@ -92,19 +70,12 @@ initialize();
 }());
 
 (function test_updates() {
-    people.update({email: me.email, is_admin: false});
-    assert(!global.page_params.is_admin);
-
-    people.update({email: me.email, full_name: 'Me V2'});
-    assert.equal(people.my_full_name(), 'Me V2');
-
     var person = people.get_by_email('me@example.com');
     people.set_full_name(person, 'Me the Third');
     assert.equal(people.my_full_name(), 'Me the Third');
     assert.equal(person.full_name, 'Me the Third');
     assert.equal(people.get_by_name('Me the Third').email, 'me@example.com');
 }());
-
 
 (function test_get_person_from_user_id() {
     var person = {
@@ -118,17 +89,7 @@ initialize();
     person = people.get_person_from_user_id(42);
     assert.equal(person.email, 'mary@example.com');
 
-    // The semantics for update() are going to eventually
-    // change to use user_id as a key, but now we use email
-    // as a key and change attributes.  With the current
-    // behavior, we don't have to make update() do anything
-    // new.
-    person = {
-        email: 'mary@example.com',
-        user_id: 42,
-        full_name: 'Mary New',
-    };
-    people.update(person);
+    people.set_full_name(person, 'Mary New');
     person = people.get_person_from_user_id(42);
     assert.equal(person.full_name, 'Mary New');
 

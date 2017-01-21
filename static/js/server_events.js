@@ -127,7 +127,7 @@ function dispatch_normal_event(event) {
         } else if (event.op === 'remove') {
             people.deactivate(event.person);
         } else if (event.op === 'update') {
-            people.update(event.person);
+            user_events.update_person(event.person);
         }
         break;
 

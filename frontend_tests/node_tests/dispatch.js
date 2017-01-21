@@ -588,7 +588,7 @@ run(function (override, capture, args) {
     assert_same(args.person, event.person);
 
     event = event_fixtures.realm_user__update;
-    override('people', 'update', capture(['person']));
+    override('user_events', 'update_person', capture(['person']));
     dispatch(event);
     assert_same(args.person, event.person);
 

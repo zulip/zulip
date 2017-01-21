@@ -307,47 +307,6 @@ exports.set_full_name = function (person_obj, new_full_name) {
     person_obj.full_name = new_full_name;
 };
 
-exports.update = function update(person) {
-    if (! people_dict.has(person.email)) {
-        blueslip.error("Got update_person event for unexpected user",
-                       {email: person.email});
-        return;
-    }
-    var person_obj = people_dict.get(person.email);
-
-    if (_.has(person, 'full_name')) {
-        exports.set_full_name(person_obj, person.full_name);
-
-        admin.update_user_full_name(person.email, person.full_name);
-        activity.redraw();
-        // TODO: update sender names on messages
-
-    }
-
-    if (_.has(person, 'is_admin')) {
-        person_obj.is_admin = person.is_admin;
-
-        if (exports.is_current_user(person.email)) {
-            page_params.is_admin = person.is_admin;
-            admin.show_or_hide_menu_item();
-        }
-    }
-
-    if (_.has(person, 'avatar_url')) {
-        var url = person.avatar_url + "&y=" + new Date().getTime();
-        person_obj.avatar_url = url;
-
-        if (exports.is_current_user(person.email)) {
-          page_params.avatar_url = url;
-          $("#user-settings-avatar").attr("src", url);
-        }
-
-        $(".inline_profile_picture.u-" + person.id).css({
-          "background-image": "url(" + url + ")",
-        });
-    }
-};
-
 exports.is_current_user = function (email) {
     if (email === null || email === undefined) {
         return false;
