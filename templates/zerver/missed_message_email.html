@@ -5,7 +5,7 @@ Mail sent to user when she was not logged in and received a PM or @-mention
 Hello {{ name }},
 
 <p>
-While you were away you received {{ message_count }} new message{{ message_count|pluralize }}{% if mention %} in which you were mentioned{%endif %}!
+While you were away you received {{ message_count }} new message{{ message_count|pluralize }}{% if mention %} in which you were mentioned{% endif %}!
 </p>
 
 <div id='messages' style="width: 600px;font-size: 12px;font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;overflow-y: scroll;">
@@ -38,8 +38,10 @@ While you were away you received {{ message_count }} new message{{ message_count
 <p>Please do not reply to this automated message. To respond to the missed messages you have received, please log on to Zulip and send your replies there.</p>
 {% endif %}
 
-<p>Cheers,
-<br>
-The Zulip Team</p>
+<p>
+    Cheers,
+    <br></br>
+    The Zulip Team
+</p>
 
 <p><a href="{{ realm_uri }}/#settings">Manage email preferences</a> | <a href="{{ unsubscribe_link }}">Unsubscribe from missed message emails</a></p>
