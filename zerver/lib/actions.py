@@ -2035,6 +2035,7 @@ def do_change_is_admin(user_profile, value, permission='administer'):
     if permission == 'administer':
         event = dict(type="realm_user", op="update",
                      person=dict(email=user_profile.email,
+                                 user_id=user_profile.id,
                                  is_admin=value))
         send_event(event, active_user_ids(user_profile.realm))
 
