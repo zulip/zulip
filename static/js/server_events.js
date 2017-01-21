@@ -128,7 +128,6 @@ function dispatch_normal_event(event) {
             people.deactivate(event.person);
         } else if (event.op === 'update') {
             people.update(event.person);
-            admin.update_user_full_name(event.person.email, event.person.full_name);
         }
         break;
 
