@@ -112,8 +112,8 @@ function dispatch_normal_event(event) {
             page_params.domains.push(event.alias);
         } else if (event.op === 'remove') {
             var i;
-            for (i = 0;i < page_params.domains.length;i += 1) {
-                if (page_params.domains[i].id === event.alias_id) {
+            for (i = 0; i < page_params.domains.length; i += 1) {
+                if (page_params.domains[i].domain === event.domain) {
                     page_params.domains.splice(i, 1);
                     break;
                 }

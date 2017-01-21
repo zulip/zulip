@@ -95,7 +95,6 @@ function render(template_name, args) {
     var html = "<table>";
     var args = {
         alias: {
-            id: 1,
             domain: 'zulip.org',
         },
     };
@@ -104,15 +103,10 @@ function render(template_name, args) {
 
     var button = $(html).find('.btn');
     var domain = $(html).find('.domain');
-    var row = button.closest('tr');
 
     assert.equal(button.text().trim(), "Remove");
     assert(button.hasClass("delete_alias"));
-    assert.equal(button.data("id"), "1");
-
     assert.equal(domain.text(), "zulip.org");
-
-    assert.equal(row.attr("id"), "alias_1");
 
     global.write_handlebars_output("admin-alias-list", html);
 }());

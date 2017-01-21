@@ -47,12 +47,13 @@ class RealmAliasTest(ZulipTestCase):
         # type: () -> None
         self.login("iago@zulip.com")
         realm = get_realm('zulip')
-        alias_id = RealmAlias.objects.create(realm=realm, domain='zulip.org').id
+        RealmAlias.objects.create(realm=realm, domain='zulip.org')
         aliases_count = RealmAlias.objects.count()
-        result = self.client_delete("/json/realm/domains/{0}".format(alias_id + 1))
-        self.assert_json_error(result, 'No such entry found.')
+        result = self.client_delete("/json/realm/domains/non-existent.com")
+        self.assertEqual(result.status_code, 400)
+        self.assert_json_error(result, 'No entry found for domain non-existent.com.')
 
-        result = self.client_delete("/json/realm/domains/{0}".format(alias_id))
+        result = self.client_delete("/json/realm/domains/zulip.org")
         self.assert_json_success(result)
         self.assertEqual(RealmAlias.objects.count(), aliases_count - 1)
 

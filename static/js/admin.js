@@ -902,7 +902,8 @@ function _setup_page() {
     });
 
     $("#alias_table").on("click", ".delete_alias", function () {
-        var url = "/json/realm/domains/" + $(this).data('id');
+        var domain = $(this).parents("tr").find(".domain").text();
+        var url = "/json/realm/domains/" + domain;
         var aliases_info = $("#realm_aliases_modal").find(".aliases_info");
 
         channel.del({

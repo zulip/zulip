@@ -37,11 +37,11 @@ def create_alias(request, user_profile, domain=REQ(validator=check_string)):
 
 @require_realm_admin
 @has_request_variables
-def delete_alias(request, user_profile, alias_id):
-    # type: (HttpRequest, UserProfile, int) -> (HttpResponse)
+def delete_alias(request, user_profile, domain):
+    # type: (HttpRequest, UserProfile, Text) -> (HttpResponse)
     try:
-        # Ensure alias_id is an integer. Django passes captured url parameters as strings.
-        do_remove_realm_alias(user_profile.realm, int(alias_id))
+        RealmAlias.objects.get(realm=user_profile.realm, domain=domain)
+        do_remove_realm_alias(user_profile.realm, domain)
     except RealmAlias.DoesNotExist:
-        return json_error(_('No such entry found.'))
+        return json_error(_('No entry found for domain %(domain)s.' % {'domain': domain}))
     return json_success()

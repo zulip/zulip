@@ -815,7 +815,6 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('realm_domains')),
             ('op', equals('add')),
             ('alias', check_dict([
-                ('id', check_int),
                 ('domain', check_string),
             ])),
         ])
@@ -827,10 +826,10 @@ class EventsRegisterTest(ZulipTestCase):
         schema_checker = check_dict([
             ('type', equals('realm_domains')),
             ('op', equals('remove')),
-            ('alias_id', check_int),
+            ('domain', check_string),
         ])
-        alias_id = RealmAlias.objects.get(realm=realm, domain='zulip.org').id
-        events = self.do_test(lambda: do_remove_realm_alias(realm, alias_id))
+        alias = RealmAlias.objects.get(realm=realm, domain='zulip.org')
+        events = self.do_test(lambda: do_remove_realm_alias(realm, alias.domain))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 

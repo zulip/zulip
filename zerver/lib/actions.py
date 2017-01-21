@@ -3321,7 +3321,7 @@ def apply_events(state, events, user_profile):
             if event['op'] == 'add':
                 state['realm_domains'].append(event['alias'])
             elif event['op'] == 'remove':
-                state['realm_domains'] = [alias for alias in state['realm_domains'] if alias['id'] != event['alias_id']]
+                state['realm_domains'] = [alias for alias in state['realm_domains'] if alias['domain'] != event['domain']]
         elif event['type'] == "realm_emoji":
             state['realm_emoji'] = event['realm_emoji']
         elif event['type'] == "alert_words":
@@ -3685,24 +3685,21 @@ def get_emails_from_user_ids(user_ids):
 
 def get_realm_aliases(realm):
     # type: (Realm) -> List[Dict[str, Text]]
-    return list(realm.realmalias_set.values('id', 'domain'))
+    return list(realm.realmalias_set.values('domain'))
 
 def do_add_realm_alias(realm, domain):
     # type: (Realm, Text) -> (RealmAlias)
-    alias = RealmAlias(realm=realm, domain=domain)
-    alias.full_clean()
-    alias.save()
+    alias = RealmAlias.objects.create(realm=realm, domain=domain)
     event = dict(type="realm_domains", op="add",
-                 alias=dict(id=alias.id,
-                            domain=alias.domain,
+                 alias=dict(domain=alias.domain,
                             ))
     send_event(event, active_user_ids(realm))
     return alias
 
-def do_remove_realm_alias(realm, alias_id):
-    # type: (Realm, int) -> None
-    RealmAlias.objects.get(pk=alias_id).delete()
-    event = dict(type="realm_domains", op="remove", alias_id=alias_id)
+def do_remove_realm_alias(realm, domain):
+    # type: (Realm, Text) -> None
+    RealmAlias.objects.get(realm=realm, domain=domain).delete()
+    event = dict(type="realm_domains", op="remove", domain=domain)
     send_event(event, active_user_ids(realm))
 
 def get_occupied_streams(realm):

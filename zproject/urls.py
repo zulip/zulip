@@ -168,7 +168,7 @@ v1_api_and_json_patterns = [
     url(r'^realm/domains$', rest_dispatch,
         {'GET': 'zerver.views.realm_aliases.list_aliases',
          'POST': 'zerver.views.realm_aliases.create_alias'}),
-    url(r'^realm/domains/(?P<alias_id>\d+)$', rest_dispatch,
+    url(r'^realm/domains/(?P<domain>\S+)$', rest_dispatch,
         {'DELETE': 'zerver.views.realm_aliases.delete_alias'}),
 
     # realm/emoji -> zerver.views.realm_emoji
