@@ -32,16 +32,16 @@ class RealmAliasTest(ZulipTestCase):
     def test_create(self):
         # type: () -> None
         self.login("iago@zulip.com")
-        data = {"domain": ""}
+        data = {'domain': ujson.dumps('')}
         result = self.client_post("/json/realm/domains", info=data)
-        self.assert_json_error(result, 'Domain can\'t be empty.')
+        self.assert_json_error(result, 'Invalid domain: Domain can\'t be empty.')
 
-        data['domain'] = 'zulip.org'
+        data = {'domain': ujson.dumps('zulip.org')}
         result = self.client_post("/json/realm/domains", info=data)
         self.assert_json_success(result)
 
         result = self.client_post("/json/realm/domains", info=data)
-        self.assert_json_error(result, 'A Realm for this domain already exists.')
+        self.assert_json_error(result, 'The domain zulip.org is already a part of your organization.')
 
     def test_delete(self):
         # type: () -> None

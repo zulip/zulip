@@ -923,7 +923,7 @@ function _setup_page() {
     $("#add_alias").click(function () {
         var aliases_info = $("#realm_aliases_modal").find(".aliases_info");
         var data = {
-            domain: $("#new_alias").val(),
+            domain: JSON.stringify($("#new_alias").val()),
         };
 
         channel.post({

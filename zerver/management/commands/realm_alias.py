@@ -4,9 +4,11 @@ from __future__ import print_function
 from typing import Any
 
 from argparse import ArgumentParser
+from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand
 from zerver.models import Realm, RealmAlias, get_realm, can_add_alias
 from zerver.lib.actions import get_realm_aliases
+from zerver.lib.domains import validate_domain
 import sys
 
 class Command(BaseCommand):
@@ -36,7 +38,12 @@ class Command(BaseCommand):
                 print(alias["domain"])
             sys.exit(0)
 
-        domain = options['alias'].lower()
+        domain = options['alias'].strip().lower()
+        try:
+            validate_domain(domain)
+        except ValidationError as e:
+            print(e.messages[0])
+            sys.exit(1)
         if options["op"] == "add":
             if not can_add_alias(domain):
                 print("A Realm already exists for this domain, cannot add it as an alias for another realm!")
