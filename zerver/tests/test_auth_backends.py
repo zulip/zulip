@@ -36,10 +36,10 @@ from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
 
 from zerver.views.auth import maybe_send_to_registration
 
-from social.exceptions import AuthFailed
-from social.strategies.django_strategy import DjangoStrategy
-from social.storage.django_orm import BaseDjangoStorage
-from social.backends.github import GithubOrganizationOAuth2, GithubTeamOAuth2, \
+from social_core.exceptions import AuthFailed
+from social_django.strategy import DjangoStrategy
+from social_django.storage import BaseDjangoStorage
+from social_core.backends.github import GithubOrganizationOAuth2, GithubTeamOAuth2, \
     GithubOAuth2
 
 from six.moves import urllib
@@ -359,7 +359,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
     def test_github_backend_do_auth_without_subdomains(self):
         # type: () -> None
-        with mock.patch('social.backends.github.GithubOAuth2.do_auth',
+        with mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
                         side_effect=self.do_auth), \
                 mock.patch('zerver.views.auth.login'):
             response = dict(email=self.email, name=self.name)
@@ -368,7 +368,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
     def test_github_backend_do_auth_with_non_existing_subdomain(self):
         # type: () -> None
-        with mock.patch('social.backends.github.GithubOAuth2.do_auth',
+        with mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
                         side_effect=self.do_auth):
             with self.settings(REALMS_HAVE_SUBDOMAINS=True):
                 self.backend.strategy.session_set('subdomain', 'test')
@@ -378,7 +378,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
     def test_github_backend_do_auth_with_subdomains(self):
         # type: () -> None
-        with mock.patch('social.backends.github.GithubOAuth2.do_auth',
+        with mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
                         side_effect=self.do_auth):
             with self.settings(REALMS_HAVE_SUBDOMAINS=True):
                 self.backend.strategy.session_set('subdomain', 'zulip')
@@ -388,7 +388,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
     def test_github_backend_do_auth_for_default(self):
         # type: () -> None
-        with mock.patch('social.backends.github.GithubOAuth2.do_auth',
+        with mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
                         side_effect=self.do_auth), \
                 mock.patch('zproject.backends.SocialAuthMixin.process_do_auth') as result:
             response = dict(email=self.email, name=self.name)
@@ -401,7 +401,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
     def test_github_backend_do_auth_for_team(self):
         # type: () -> None
-        with mock.patch('social.backends.github.GithubTeamOAuth2.do_auth',
+        with mock.patch('social_core.backends.github.GithubTeamOAuth2.do_auth',
                         side_effect=self.do_auth), \
                 mock.patch('zproject.backends.SocialAuthMixin.process_do_auth') as result:
             response = dict(email=self.email, name=self.name)
@@ -415,7 +415,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
     def test_github_backend_do_auth_for_team_auth_failed(self):
         # type: () -> None
-        with mock.patch('social.backends.github.GithubTeamOAuth2.do_auth',
+        with mock.patch('social_core.backends.github.GithubTeamOAuth2.do_auth',
                         side_effect=AuthFailed('Not found')), \
                 mock.patch('logging.info'), \
                 mock.patch('zproject.backends.SocialAuthMixin.process_do_auth') as result:
@@ -429,7 +429,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
     def test_github_backend_do_auth_for_org(self):
         # type: () -> None
-        with mock.patch('social.backends.github.GithubOrganizationOAuth2.do_auth',
+        with mock.patch('social_core.backends.github.GithubOrganizationOAuth2.do_auth',
                         side_effect=self.do_auth), \
                 mock.patch('zproject.backends.SocialAuthMixin.process_do_auth') as result:
             response = dict(email=self.email, name=self.name)
@@ -443,7 +443,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
     def test_github_backend_do_auth_for_org_auth_failed(self):
         # type: () -> None
-        with mock.patch('social.backends.github.GithubOrganizationOAuth2.do_auth',
+        with mock.patch('social_core.backends.github.GithubOrganizationOAuth2.do_auth',
                         side_effect=AuthFailed('Not found')), \
                 mock.patch('logging.info'), \
                 mock.patch('zproject.backends.SocialAuthMixin.process_do_auth') as result:
@@ -474,7 +474,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
             return self.user_profile
 
         with mock.patch('zerver.views.auth.login_or_register_remote_user') as result, \
-                mock.patch('social.backends.github.GithubOAuth2.do_auth',
+                mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
                            side_effect=do_auth_inactive):
             response = dict(email=self.email, name=self.name)
             user = self.backend.do_auth(response=response)
@@ -495,7 +495,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
             return_data['valid_attestation'] = True
             return None
 
-        with mock.patch('social.backends.github.GithubOAuth2.do_auth',
+        with mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
                         side_effect=do_auth):
             response = dict(email='nonexisting@phantom.com', name='Ghost')
             result = self.backend.do_auth(response=response)

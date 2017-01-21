@@ -350,7 +350,7 @@ INSTALLED_APPS = [
     'guardian',
     'pipeline',
     'zerver',
-    'social.apps.django_app.default',
+    'social_django',
 ]
 if USING_PGROONGA:
     INSTALLED_APPS += ['pgroonga']

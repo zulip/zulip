@@ -384,7 +384,7 @@ urls += [
 ]
 
 # Python Social Auth
-urls += [url(r'^', include('social.apps.django_app.urls', namespace='social'))]
+urls += [url(r'^', include('social_django.urls', namespace='social'))]
 
 # User documentation site
 urls += [url(r'^help/(?P<article>.*)$', HelpView.as_view(template_name='zerver/help/main.html'))]

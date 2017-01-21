@@ -17,9 +17,9 @@ from zerver.models import UserProfile, Realm, get_user_profile_by_id, \
 
 from apiclient.sample_tools import client as googleapiclient
 from oauth2client.crypt import AppIdentityError
-from social.backends.github import GithubOAuth2, GithubOrganizationOAuth2, \
+from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, \
     GithubTeamOAuth2
-from social.exceptions import AuthFailed
+from social_core.exceptions import AuthFailed
 from django.contrib.auth import authenticate
 from zerver.lib.utils import check_subdomain, get_subdomain
 
