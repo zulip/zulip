@@ -90,6 +90,7 @@
         "home_msg_list": false,
         "pm_list": false,
         "unread_ui": false,
+        "user_events": false,
         "Plotly": false
     },
     "rules": {

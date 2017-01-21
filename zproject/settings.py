@@ -834,6 +834,7 @@ JS_SPECS = {
             'js/server_events.js',
             'js/zulip.js',
             'js/activity.js',
+            'js/user_events.js',
             'js/colorspace.js',
             'js/timerender.js',
             'js/tutorial.js',
