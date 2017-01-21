@@ -675,6 +675,7 @@ function _setup_page() {
         }
 
         reset_edit_bot.click(function (event) {
+            form.find(".edit_bot_name").val(old_full_name);
             show_row_again();
             $(this).off(event);
         });
