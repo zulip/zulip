@@ -753,12 +753,14 @@ def log_message(message):
         log_event(message.to_log_dict())
 
 # Helper function. Defaults here are overriden by those set in do_send_messages
-def do_send_message(message, rendered_content = None, no_log = False, stream = None, local_id = None):
-    # type: (Union[int, Message], Optional[Text], bool, Optional[Stream], Optional[int]) -> int
+def do_send_message(message, rendered_content=None, no_log=False, stream=None,
+                    local_id=None, realm=None):
+    # type: (Union[int, Message], Optional[Text], bool, Optional[Stream], Optional[int], Optional[Realm]) -> int
     return do_send_messages([{'message': message,
                               'rendered_content': rendered_content,
                               'no_log': no_log,
                               'stream': stream,
+                              'realm': realm,
                               'local_id': local_id}])[0]
 
 def render_incoming_message(message, content, message_users):
@@ -826,6 +828,7 @@ def do_send_messages(messages):
         message['stream'] = message.get('stream', None)
         message['local_id'] = message.get('local_id', None)
         message['sender_queue_id'] = message.get('sender_queue_id', None)
+        message['realm'] = message.get('realm', message['message'].sender.realm)
 
     # Log the message to our message log for populate_db to refill
     for message in messages:
@@ -1354,7 +1357,8 @@ def check_message(sender, client, message_type_name, message_to,
         if id is not None:
             return {'message': id}
 
-    return {'message': message, 'stream': stream, 'local_id': local_id, 'sender_queue_id': sender_queue_id}
+    return {'message': message, 'stream': stream, 'local_id': local_id,
+            'sender_queue_id': sender_queue_id, 'realm': realm}
 
 def internal_prep_message(realm, sender_email, recipient_type_name, recipients,
                           subject, content):
@@ -1377,7 +1381,7 @@ def internal_prep_message(realm, sender_email, recipient_type_name, recipients,
 
     try:
         return check_message(sender, get_client("Internal"), recipient_type_name,
-                             parsed_recipients, subject, content, realm)
+                             parsed_recipients, subject, content, realm=realm)
     except JsonableError as e:
         logging.error("Error queueing internal message by %s: %s" % (sender_email, str(e)))
 
