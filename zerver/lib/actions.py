@@ -1247,7 +1247,7 @@ def send_pm_if_empty_stream(sender, stream, stream_name, realm):
                "tried to send a message to stream `%s`, but %s"
                "click the gear in the left-side stream list." %
                (sender.full_name, stream_name, error_msg))
-    message = internal_prep_message(settings.NOTIFICATION_BOT, "private",
+    message = internal_prep_message(realm, settings.NOTIFICATION_BOT, "private",
                                     sender.bot_owner.email, "", content)
     do_send_messages([message])
 
@@ -1351,9 +1351,9 @@ def check_message(sender, client, message_type_name, message_to,
 
     return {'message': message, 'stream': stream, 'local_id': local_id, 'sender_queue_id': sender_queue_id}
 
-def internal_prep_message(sender_email, recipient_type_name, recipients,
-                          subject, content, realm=None):
-    # type: (Text, str, Text, Text, Text, Optional[Realm]) -> Optional[Dict[str, Any]]
+def internal_prep_message(realm, sender_email, recipient_type_name, recipients,
+                          subject, content):
+    # type: (Realm, Text, str, Text, Text, Text) -> Optional[Dict[str, Any]]
     """
     Create a message object and checks it, but doesn't send it or save it to the database.
     The internal function that calls this can therefore batch send a bunch of created
@@ -1365,7 +1365,7 @@ def internal_prep_message(sender_email, recipient_type_name, recipients,
 
     sender = get_user_profile_by_email(sender_email)
     if realm is None:
-        realm = sender.realm
+        raise RuntimeError("None is not a valid realm for internal_prep_message!")
     parsed_recipients = extract_recipients(recipients)
     if recipient_type_name == "stream":
         stream, _ = create_stream_if_needed(realm, parsed_recipients[0])
@@ -1381,8 +1381,8 @@ def internal_prep_message(sender_email, recipient_type_name, recipients,
 def internal_send_message(sender_email, recipient_type_name, recipients,
                           subject, content, realm=None):
     # type: (Text, str, Text, Text, Text, Optional[Realm]) -> None
-    msg = internal_prep_message(sender_email, recipient_type_name, recipients,
-                                subject, content, realm)
+    msg = internal_prep_message(realm, sender_email, recipient_type_name, recipients,
+                                subject, content)
 
     # internal_prep_message encountered an error
     if msg is None:
@@ -2167,9 +2167,9 @@ def do_create_realm(string_id, name, restricted_to_domain=None,
 
 This is a message on stream `%s` with the topic `welcome`. We'll use this stream for
 system-generated notifications.""" % (product_name, notifications_stream.name,)
-        msg = internal_prep_message(settings.WELCOME_BOT, 'stream',
+        msg = internal_prep_message(realm, settings.WELCOME_BOT, 'stream',
                                     notifications_stream.name, "welcome",
-                                    content, realm=realm)
+                                    content)
         do_send_messages([msg])
 
         # Log the event
