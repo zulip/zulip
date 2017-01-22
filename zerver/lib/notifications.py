@@ -98,7 +98,7 @@ def build_message_list(user_profile, messages):
         # structure of the URL to leverage.
         content = re.sub(
             r"/user_uploads/(\S*)",
-            settings.EXTERNAL_HOST + r"/user_uploads/\1", content)
+            user_profile.realm.uri + r"/user_uploads/\1", content)
 
         # Our proxying user-uploaded images seems to break inline images in HTML
         # emails, so scrub the image but leave the link.
@@ -108,8 +108,8 @@ def build_message_list(user_profile, messages):
         # URLs for emoji are of the form
         # "static/generated/emoji/images/emoji/snowflake.png".
         content = re.sub(
-            r"static/generated/emoji/images/emoji/",
-            settings.EXTERNAL_HOST + r"/static/generated/emoji/images/emoji/",
+            r"/static/generated/emoji/images/emoji/",
+            user_profile.realm.uri + r"/static/generated/emoji/images/emoji/",
             content)
 
         return content

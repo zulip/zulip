@@ -121,7 +121,7 @@ def gather_new_streams(user_profile, threshold):
         new_streams = list(get_active_streams(user_profile.realm).filter(
                 invite_only=False, date_created__gt=threshold))
 
-    base_url = u"https://%s/#narrow/stream/" % (settings.EXTERNAL_HOST,)
+    base_url = u"%s/#narrow/stream/" % (user_profile.realm.uri,)
 
     streams_html = []
     streams_plain = []
