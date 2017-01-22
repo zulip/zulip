@@ -795,6 +795,8 @@ function _setup_page() {
             },
         });
     });
+
+    $('#hover-message, i[data-toggle="tooltip"]').tooltip();
 }
 
 function _update_page() {
