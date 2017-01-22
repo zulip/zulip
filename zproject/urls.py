@@ -234,6 +234,14 @@ v1_api_and_json_patterns = [
     url(r'^user_uploads$', rest_dispatch,
         {'POST': 'zerver.views.upload.upload_file_backend'}),
 
+    # invite -> zerver.views.invite
+    url(r'^invite/bulk_invite$', rest_dispatch,
+        {'POST': 'zerver.views.invite.bulk_invite_users'}),
+
+    # muting -> zerver.views.muting
+    url(r'^muting/topics$', rest_dispatch,
+        {'POST': 'zerver.views.muting.set_muted_topics'}),
+
     # users/me -> zerver.views
     url(r'^users/me$', rest_dispatch,
         {'GET': 'zerver.views.users.get_profile_backend',
