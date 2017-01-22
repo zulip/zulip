@@ -62,7 +62,7 @@ and print the result.
 ## Notes
 
 * You can use multiple `@convert` statements in a message, the response will look accordingly:
-![multiple-converts](multiple-converts.png)
+![multiple-converts](assets/multiple-converts.png)
 
 * Enter `@convert help` to display a quick overview of the converter's functionality.
 
