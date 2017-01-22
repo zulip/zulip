@@ -2438,3 +2438,28 @@ button.topic_edit_cancel {
         margin-top: 10px;
     }
 }
+
+.nav-table a {
+    display: block;
+}
+.nav-table tr:hover {
+    text-decoration: none;
+    background-color: #eeeeee;
+    color: #0088cc;
+}
+.nav-table a:hover {
+    text-decoration: none;
+    color: #0088cc;
+}
+.nav-list-table a,
+.nav-list .nav-header {
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+.ikon-style {
+    padding: 3px 15px;
+
+}
+.message-style {
+    padding: 3px 15px;
+    margin-left: -27px;
+}
