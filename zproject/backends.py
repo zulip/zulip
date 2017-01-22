@@ -13,7 +13,7 @@ from zerver.lib.actions import do_create_user
 
 from zerver.models import UserProfile, Realm, get_user_profile_by_id, \
     get_user_profile_by_email, remote_user_to_email, email_to_username, \
-    get_realm_by_email_domain
+    get_realm, get_realm_by_email_domain
 
 from apiclient.sample_tools import client as googleapiclient
 from oauth2client.crypt import AppIdentityError
@@ -332,6 +332,10 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
     def authenticate(self, username, password, realm_subdomain=None, return_data=None):
         # type: (Text, str, Optional[Text], Optional[Dict[str, Any]]) -> Optional[UserProfile]
         try:
+            if settings.REALMS_HAVE_SUBDOMAINS:
+                self._realm = get_realm(realm_subdomain)
+            else:
+                self._realm = get_realm_by_email_domain(username)
             username = self.django_to_ldap_username(username)
             user_profile = ZulipLDAPAuthBackendBase.authenticate(self, username, password)
             if user_profile is None:
@@ -354,9 +358,8 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
                 raise ZulipLDAPException("LDAP Authentication is not enabled")
             return user_profile, False
         except UserProfile.DoesNotExist:
-            realm = get_realm_by_email_domain(username)
             # No need to check for an inactive user since they don't exist yet
-            if realm.deactivated:
+            if self._realm.deactivated:
                 raise ZulipLDAPException("Realm has been deactivated")
 
             full_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["full_name"]
@@ -365,7 +368,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
                 short_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["short_name"]
                 short_name = ldap_user.attrs[short_name_attr][0]
 
-            user_profile = do_create_user(username, None, realm, full_name, short_name)
+            user_profile = do_create_user(username, None, self._realm, full_name, short_name)
             return user_profile, True
 
 # Just like ZulipLDAPAuthBackend, but doesn't let you log in.

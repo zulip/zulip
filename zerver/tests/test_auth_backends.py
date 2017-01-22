@@ -1224,6 +1224,10 @@ class TestLDAP(ZulipTestCase):
         self.mock_ldap = MockLDAP()
         self.mock_initialize.return_value = self.mock_ldap
         self.backend = ZulipLDAPAuthBackend()
+        # Internally `_realm` attribute is automatically set by the
+        # `authenticate()` method. But for testing the `get_or_create_user()`
+        # method separately, we need to set it manually.
+        self.backend._realm = get_realm('zulip')
 
     def tearDown(self):
         # type: () -> None
@@ -1345,8 +1349,7 @@ class TestLDAP(ZulipTestCase):
         with self.settings(AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map):
             backend = self.backend
             email = 'nonexisting@zulip.com'
-            realm = get_realm('zulip')
-            do_deactivate_realm(realm)
+            do_deactivate_realm(backend._realm)
             with self.assertRaisesRegex(Exception, 'Realm has been deactivated'):
                 backend.get_or_create_user(email, _LDAPUser())
 
@@ -1426,6 +1429,26 @@ class TestLDAP(ZulipTestCase):
             user_profile = self.backend.authenticate('hamlet@zulip.com', 'testing',
                                                      realm_subdomain='zulip')
             self.assertEqual(user_profile.email, 'hamlet@zulip.com')
+
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
+    def test_login_success_when_user_does_not_exist_with_valid_subdomain(self):
+        # type: () -> None
+        self.mock_ldap.directory = {
+            'uid=nonexisting,ou=users,dc=acme,dc=com': {
+                'cn': ['NonExisting', ],
+                'userPassword': 'testing'
+            }
+        }
+        with self.settings(
+                REALMS_HAVE_SUBDOMAINS=True,
+                LDAP_APPEND_DOMAIN='acme.com',
+                AUTH_LDAP_BIND_PASSWORD='',
+                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=acme,dc=com'):
+            user_profile = self.backend.authenticate('nonexisting@acme.com', 'testing',
+                                                     realm_subdomain='zulip')
+            self.assertEqual(user_profile.email, 'nonexisting@acme.com')
+            self.assertEqual(user_profile.full_name, 'NonExisting')
+            self.assertEqual(user_profile.realm.string_id, 'zulip')
 
 class TestZulipLDAPUserPopulator(ZulipTestCase):
     def test_authenticate(self):
