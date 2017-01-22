@@ -4,7 +4,7 @@ def test():
     for cmd, expected_response in sample_conversation():
         message = {'content': cmd, 'subject': 'foo',
                    'display_recipient': 'bar'}
-        class ClientDummy:
+        class ClientDummy(object):
             def __init__(self):
                 self.output = ''
             def send_message(self, params):
