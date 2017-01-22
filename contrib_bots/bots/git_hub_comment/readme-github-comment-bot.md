@@ -27,7 +27,7 @@ Here is an example of running the `git_hub_comment` bot from
 inside a Zulip repo:
 
     `cd ~/zulip/contrib_bots`
-    `./run.py lib/git_hub_comment.py --config-file ~/.zuliprc-prod`
+    `./run.py bots/git_hub_comment/git_hub_comment.py --config-file ~/.zuliprc-prod`
 
 Once the bot code starts running, you will see a
 message explaining how to use the bot, as well as

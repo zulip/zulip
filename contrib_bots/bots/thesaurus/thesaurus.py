@@ -1,4 +1,4 @@
-# See zulip/contrib_bots/lib/readme.md for instructions on running this code.
+# See zulip/contrib_bots/bots/readme.md for instructions on running this code.
 from __future__ import print_function
 import sys
 import logging

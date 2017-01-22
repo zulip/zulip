@@ -17,7 +17,7 @@ the user home directory and add an API key.
 Move
 
 ```
-~/zulip/contrib_bots/lib/CommuteBot/google-commute.ini
+~/zulip/contrib_bots/bots/commute_bot/CommuteBot/google-commute.ini
 ```
 
 into

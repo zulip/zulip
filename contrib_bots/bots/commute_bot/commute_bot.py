@@ -62,7 +62,9 @@ class CommuteHandler(object):
 
     Please note:
         Fare information can be derived, though is solely dependent on the
-        availability of the informatipython run.py lib/followup.py --config-file ~/.zuliprc-localon released by public transport operators.
+        availability of the information
+        python run.py bots/followup/followup.py --config-file ~/.zuliprc-local
+        released by public transport operators.
         Duration in traffic can only be derived if a departure time is set.
         If a location has spaces in its name, please use a + symbol in the
         place of the space/s.
@@ -88,7 +90,7 @@ class CommuteHandler(object):
     # adds API Authentication Key to url request
     def get_api_key(self):
         # google-commute.ini must have been moved from
-        # ~/zulip/contrib_bots/lib/CommuteBot/google-commute.ini into
+        # ~/zulip/contrib_bots/bots/commute_bot/CommuteBot/google-commute.ini into
         # /google-commute.ini for program to work
         # see doc.md for more information
         with open(CONFIG_PATH) as settings:

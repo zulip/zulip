@@ -55,7 +55,7 @@ Here is an example of running the "yoda_bot" bot from
 inside a Zulip repo:
 
     cd ~/zulip/contrib_bots
-    ./run.py lib/yoda_bot.py --config-file ~/.zuliprc-prod
+    ./run.py bots/yoda_bot/yoda_bot.py --config-file ~/.zuliprc-prod
 
 Once the bot code starts running, you will see a
 message explaining how to use the bot, as well as
