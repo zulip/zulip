@@ -301,7 +301,9 @@ class SlowQueryWorker(QueueProcessingWorker):
             for query in slow_queries:
                 content += "    %s\n" % (query,)
 
-            internal_send_message(settings.ERROR_BOT, "stream", "logs", topic, content)
+            error_bot_realm = get_user_profile_by_email(settings.ERROR_BOT).realm
+            internal_send_message(error_bot_realm, settings.ERROR_BOT,
+                                  "stream", "logs", topic, content)
 
         reset_queries()
 

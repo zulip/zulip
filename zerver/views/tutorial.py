@@ -23,8 +23,8 @@ def json_tutorial_send_message(request, user_profile, type=REQ(validator=check_s
     """
     sender_name = "welcome-bot@zulip.com"
     if type == 'stream':
-        internal_send_message(sender_name, "stream", recipient, topic, content,
-                              realm=user_profile.realm)
+        internal_send_message(user_profile.realm, sender_name,
+                              "stream", recipient, topic, content)
         return json_success()
     # For now, there are no PM cases.
     return json_error(_('Bad data passed in to tutorial_send_message'))

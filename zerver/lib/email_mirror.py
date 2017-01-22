@@ -176,8 +176,8 @@ def send_to_missed_message_address(address, message):
     else:
         recipient_type_name = 'private'
 
-    internal_send_message(user_profile.email, recipient_type_name,
-                          recipient_str, subject, body)
+    internal_send_message(user_profile.realm, user_profile.email,
+                          recipient_type_name, recipient_str, subject, body)
     logging.info("Successfully processed email from %s to %s" % (
         user_profile.email, recipient_str))
 
@@ -189,12 +189,12 @@ class ZulipEmailForwardError(Exception):
 def send_zulip(sender, stream, topic, content):
     # type: (Text, Stream, Text, Text) -> None
     internal_send_message(
+            stream.realm,
             sender,
             "stream",
             stream.name,
             topic[:60],
-            content[:2000],
-            stream.realm)
+            content[:2000])
 
 def valid_stream(stream_name, token):
     # type: (Text, Text) -> bool

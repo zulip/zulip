@@ -228,14 +228,18 @@ def send_signup_message(sender, signups_stream, user_profile,
     # Don't send notification for the first user in a realm
     if user_profile.realm.notifications_stream is not None and user_count > 1:
         internal_send_message(
+            user_profile.realm,
             sender,
             "stream",
             user_profile.realm.notifications_stream.name,
             "New users", "%s just signed up for Zulip. Say hello!" % (
-                user_profile.full_name,),
-            realm=user_profile.realm)
+                user_profile.full_name,)
+        )
 
+    # We also send a notification to the Zulip administrative realm
+    admin_realm = get_user_profile_by_email(sender).realm
     internal_send_message(
+        admin_realm,
         sender,
         "stream",
         signups_stream,
@@ -309,6 +313,7 @@ def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None)
             and settings.NOTIFICATION_BOT is not None:
         # This is a cross-realm private message.
         internal_send_message(
+            user_profile.realm,
             settings.NOTIFICATION_BOT,
             "private",
             prereg_user.referred_by.email,
@@ -1378,9 +1383,9 @@ def internal_prep_message(realm, sender_email, recipient_type_name, recipients,
 
     return None
 
-def internal_send_message(sender_email, recipient_type_name, recipients,
-                          subject, content, realm=None):
-    # type: (Text, str, Text, Text, Text, Optional[Realm]) -> None
+def internal_send_message(realm, sender_email, recipient_type_name, recipients,
+                          subject, content):
+    # type: (Realm, Text, str, Text, Text, Text) -> None
     msg = internal_prep_message(realm, sender_email, recipient_type_name, recipients,
                                 subject, content)
 
@@ -2179,9 +2184,11 @@ system-generated notifications.""" % (product_name, notifications_stream.name,)
                    "invite_required": invite_required,
                    "org_type": org_type})
 
+        # Send a notification to the admin realm (if configured)
         if settings.NEW_USER_BOT is not None:
             signup_message = "Signups enabled"
-            internal_send_message(settings.NEW_USER_BOT, "stream",
+            admin_realm = get_user_profile_by_email(settings.NEW_USER_BOT).realm
+            internal_send_message(admin_realm, settings.NEW_USER_BOT, "stream",
                                   "signups", string_id, signup_message)
     return (realm, created)
 
