@@ -178,14 +178,20 @@ class PreviewTestCase(ZulipTestCase):
         response = MockPythonResponse(html, 200)
         mocked_response = mock.Mock(
             side_effect=lambda k: {url: response}.get(k, MockPythonResponse('', 404)))
+        msg = Message.objects.select_related("sender").get(id=msg_id)
+        self.assertNotIn(
+            '<a href="{0}" target="_blank" title="The Rock">The Rock</a>'.format(url),
+            msg.rendered_content)
+
         event = {
             'message_id': msg_id,
             'urls': [url],
+            'message_realm_id': msg.sender.realm_id,
             'message_content': url}
         with self.settings(INLINE_URL_EMBED_PREVIEW=True, TEST_SUITE=False, CACHES=TEST_CACHES):
             with mock.patch('requests.get', mocked_response):
                 FetchLinksEmbedData().consume(event)
-        msg = Message.objects.get(id=msg_id)
+        msg = Message.objects.select_related("sender").get(id=msg_id)
         self.assertIn(
             '<a href="{0}" target="_blank" title="The Rock">The Rock</a>'.format(url),
             msg.rendered_content)
@@ -196,9 +202,11 @@ class PreviewTestCase(ZulipTestCase):
         msg_id = self.send_message(
             "hamlet@zulip.com", "cordelia@zulip.com",
             Recipient.PERSONAL, subject="url", content=url)
+        msg = Message.objects.select_related("sender").get(id=msg_id)
         event = {
             'message_id': msg_id,
             'urls': [url],
+            'message_realm_id': msg.sender.realm_id,
             'message_content': url}
         with self.settings(INLINE_URL_EMBED_PREVIEW=True, TEST_SUITE=False, CACHES=TEST_CACHES):
             with mock.patch('requests.get', mock.Mock(side_effect=ConnectionError())):

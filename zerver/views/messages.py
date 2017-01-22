@@ -931,10 +931,14 @@ def update_message_backend(request, user_profile,
         ums = UserMessage.objects.filter(message=message.id,
                                          flags=~UserMessage.flags.historical)
         message_users = {get_user_profile_by_id(um.user_profile_id) for um in ums}
-        # If rendering fails, the called code will raise a JsonableError.
+        # We render the message using the current user's realm; since
+        # the cross-realm bots never edit messages, this should be
+        # always correct.
+        # Note: If rendering fails, the called code will raise a JsonableError.
         rendered_content = render_incoming_message(message,
-                                                   content=content,
-                                                   message_users=message_users)
+                                                   content,
+                                                   message_users,
+                                                   user_profile.realm)
         links_for_embed |= message.links_for_preview
 
     do_update_message(user_profile, message, subject, propagate_mode, content, rendered_content)

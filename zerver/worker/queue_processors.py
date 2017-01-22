@@ -6,7 +6,7 @@ from django.core.handlers.wsgi import WSGIRequest
 from django.core.handlers.base import BaseHandler
 from zerver.models import get_user_profile_by_email, \
     get_user_profile_by_id, get_prereg_user_by_email, get_client, \
-    UserMessage, Message
+    UserMessage, Message, Realm
 from zerver.lib.context_managers import lockfile
 from zerver.lib.queue import SimpleQueueClient, queue_json_publish
 from zerver.lib.timestamp import timestamp_to_datetime
@@ -405,10 +405,15 @@ class FetchLinksEmbedData(QueueProcessingWorker):
             ums = UserMessage.objects.filter(
                 message=message.id).select_related("user_profile")
             message_users = {um.user_profile for um in ums}
+
+            # Fetch the realm whose settings we're using for rendering
+            realm = Realm.objects.get(id=event['message_realm_id'])
+
             # If rendering fails, the called code will raise a JsonableError.
             rendered_content = render_incoming_message(
                 message,
-                content=message.content,
-                message_users=message_users)
+                message.content,
+                message_users,
+                realm)
             do_update_embedded_data(
                 message.sender, message, message.content, rendered_content)

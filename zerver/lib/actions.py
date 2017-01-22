@@ -763,9 +763,9 @@ def do_send_message(message, rendered_content=None, no_log=False, stream=None,
                               'realm': realm,
                               'local_id': local_id}])[0]
 
-def render_incoming_message(message, content, message_users):
-    # type: (Message, Text, Set[UserProfile]) -> Text
-    realm_alert_words = alert_words_in_realm(message.get_realm())
+def render_incoming_message(message, content, message_users, realm):
+    # type: (Message, Text, Set[UserProfile], Realm) -> Text
+    realm_alert_words = alert_words_in_realm(realm)
     try:
         rendered_content = render_markdown(
             message=message,
@@ -849,7 +849,8 @@ def do_send_messages(messages):
         rendered_content = render_incoming_message(
             message['message'],
             message['message'].content,
-            message_users=message['active_recipients'])
+            message['active_recipients'],
+            message['realm'])
         message['message'].rendered_content = rendered_content
         message['message'].rendered_content_version = bugdown_version
         links_for_embed |= message['message'].links_for_preview
@@ -940,6 +941,7 @@ def do_send_messages(messages):
             event_data = {
                 'message_id': message['message'].id,
                 'message_content': message['message'].content,
+                'message_realm_id': message['realm'].id,
                 'urls': links_for_embed}
             queue_json_publish('embed_links', event_data, lambda x: None)
 
