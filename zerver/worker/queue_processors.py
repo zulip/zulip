@@ -4,7 +4,7 @@ from typing import Any, Callable, Mapping
 from django.conf import settings
 from django.core.handlers.wsgi import WSGIRequest
 from django.core.handlers.base import BaseHandler
-from zerver.models import get_user_profile_by_email, \
+from zerver.models import get_user_profile_by_email, get_realm_by_id, \
     get_user_profile_by_id, get_prereg_user_by_email, get_client, \
     UserMessage, Message
 from zerver.lib.context_managers import lockfile
@@ -301,7 +301,9 @@ class SlowQueryWorker(QueueProcessingWorker):
             for query in slow_queries:
                 content += "    %s\n" % (query,)
 
-            internal_send_message(settings.ERROR_BOT, "stream", "logs", topic, content)
+            realm = get_user_profile_by_email(settings.ERROR_BOT).realm
+            internal_send_message(realm, settings.ERROR_BOT,
+                                  "stream", "logs", topic, content)
 
         reset_queries()
 
@@ -403,10 +405,16 @@ class FetchLinksEmbedData(QueueProcessingWorker):
             ums = UserMessage.objects.filter(
                 message=message.id).select_related("user_profile")
             message_users = {um.user_profile for um in ums}
+
+            realm = None
+            if 'message_realm_id' in event:
+                realm = get_realm_by_id(event['message_realm_id'])
+
             # If rendering fails, the called code will raise a JsonableError.
             rendered_content = render_incoming_message(
                 message,
                 content=message.content,
-                message_users=message_users)
+                message_users=message_users,
+                realm=realm)
             do_update_embedded_data(
                 message.sender, message, message.content, rendered_content)

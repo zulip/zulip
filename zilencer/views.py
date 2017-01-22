@@ -77,7 +77,8 @@ def submit_feedback(request, deployment, message=REQ(validator=check_dict([]))):
 
     content += message['content']
 
-    internal_send_message("feedback@zulip.com", "stream", "support", subject, content)
+    internal_send_message(realm_for_email("feedback@zulip.com"), "feedback@zulip.com",
+                          "stream", "support", subject, content)
 
     return HttpResponse(message['sender_email'])
 

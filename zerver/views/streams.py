@@ -369,7 +369,7 @@ def add_subscriptions_backend(request, user_profile,
 
             if len([s for s in subscriptions if not private_streams[s]]) > 0:
                 msg += "\nYou can see historical content on a non-invite-only stream by narrowing to it."
-            notifications.append(internal_prep_message(settings.NOTIFICATION_BOT,
+            notifications.append(internal_prep_message(user_profile.realm, settings.NOTIFICATION_BOT,
                                                        "private", email, "", msg))
 
     if announce and len(created_streams) > 0:
@@ -381,10 +381,9 @@ def add_subscriptions_backend(request, user_profile,
                 stream_msg = "a new stream #**%s**." % created_streams[0].name
             msg = ("%s just created %s" % (user_profile.full_name, stream_msg))
             notifications.append(
-                internal_prep_message(settings.NOTIFICATION_BOT,
+                internal_prep_message(notifications_stream.realm, settings.NOTIFICATION_BOT,
                                       "stream",
-                                      notifications_stream.name, "Streams", msg,
-                                      realm=notifications_stream.realm))
+                                      notifications_stream.name, "Streams", msg))
         else:
             msg = ("Hi there!  %s just created a new stream #**%s**."
                    % (user_profile.full_name, created_streams[0].name))
@@ -393,7 +392,7 @@ def add_subscriptions_backend(request, user_profile,
                 # (who will get the notification above instead).
                 if realm_user_dict['email'] in principals or realm_user_dict['email'] == user_profile.email:
                     continue
-                notifications.append(internal_prep_message(settings.NOTIFICATION_BOT,
+                notifications.append(internal_prep_message(user_profile.realm, settings.NOTIFICATION_BOT,
                                                            "private",
                                                            realm_user_dict['email'], "", msg))
 

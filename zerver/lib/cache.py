@@ -310,6 +310,10 @@ def user_profile_by_id_cache_key(user_profile_id):
     # type: (int) -> Text
     return u"user_profile_by_id:%s" % (user_profile_id,)
 
+def realm_by_id_cache_key(realm_id):
+    # type: (int) -> Text
+    return u"realm_by_id:%s" % (realm_id,)
+
 # TODO: Refactor these cache helpers into another file that can import
 # models.py so that python v3 style type annotations can also work.
 
@@ -379,6 +383,7 @@ def flush_realm(sender, **kwargs):
     # type: (Any, **Any) -> None
     realm = kwargs['instance']
     users = realm.get_active_users()
+    cache_delete(realm_by_id_cache_key(realm))
     delete_user_profile_caches(users)
 
     if realm.deactivated:

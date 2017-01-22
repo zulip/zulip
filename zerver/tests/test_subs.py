@@ -1298,6 +1298,46 @@ class SubscriptionAPITest(ZulipTestCase):
         expected_msg = "%s just created a new stream #**%s**." % (invitee_full_name, invite_streams[0])
         self.assertEqual(msg.content, expected_msg)
 
+    def test_successful_cross_realm_notification(self):
+        # type: () -> None
+        """
+        Calling POST /json/users/me/subscriptions in a new realm
+        should notify with a proper new stream link
+        """
+        (realm, _) = do_create_realm("testrealm", "Test Realm")
+
+        notifications_stream = Stream.objects.get(name='announce', realm=realm)
+        realm.notifications_stream = notifications_stream
+        realm.save()
+
+        invite_streams = ["cross_stream"]
+
+        user = get_user_profile_by_email("AARON@zulip.com")
+        user.realm = realm
+        user.save()
+
+        # Delete the UserProfile from the cache so the realm change will be
+        # picked up
+        cache.cache_delete(cache.user_profile_by_email_cache_key(user.email))
+
+        result = self.common_subscribe_to_streams(
+            user.email,
+            invite_streams,
+            extra_post_data=dict(
+                announce='true'
+            ),
+        )
+        self.assert_json_success(result)
+
+        msg = self.get_last_message()
+        self.assertEqual(msg.recipient.type, Recipient.STREAM)
+        self.assertEqual(msg.sender_id,
+                         get_user_profile_by_email('notification-bot@zulip.com').id)
+        stream_id = Stream.objects.latest('id').id
+        expected_rendered_msg = '<p>%s just created a new stream <a class="stream" data-stream-id="%d" href="/#narrow/stream/%s">#%s</a>.</p>' % (
+            user.full_name, stream_id, invite_streams[0], invite_streams[0])
+        self.assertEqual(msg.rendered_content, expected_rendered_msg)
+
     def test_successful_subscriptions_notifies_with_escaping(self):
         # type: () -> None
         """
