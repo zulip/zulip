@@ -33,7 +33,7 @@ Here is an example of running the "follow-up" bot from
 inside a Zulip repo (and in your remote instance):
 
     cd ~/zulip/contrib_bots
-    ./run.py lib/followup.py --config-file ~/.zuliprc-prod
+    ./run.py bots/followup/followup.py --config-file ~/.zuliprc-prod
 
 Once the bot code starts running, you will see a
 message explaining how to use the bot, as well as
