@@ -22,6 +22,11 @@ with these details in mind:
   as needed thereafter. If you're unfamiliar with how to rebase a pull request,
   [read this excellent guide][github-rebase-pr].
 
+  We use this strategy in order to avoid the extra commits that appear when
+  another branch is merged, that clutter the commit history. A side effect is
+  that the pull requests we merge appear as *closed* instead of *merged*,
+  since GitHub is unable to identify this approach.
+
 - We have a **[code style guide][zulip-rtd-code-style]**, a **[commit message
   guide][zulip-rtd-commit-messages]**, and strive for each commit to be *a
   minimal coherent idea* (see **[commit
