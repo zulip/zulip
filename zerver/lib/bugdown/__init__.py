@@ -1290,15 +1290,30 @@ def log_bugdown_error(msg):
     could cause an infinite exception loop."""
     logging.getLogger('').error(msg)
 
-def do_convert(content, realm_filters_key=None, message=None, message_realm=None, possible_words=None):
-    # type: (Text, Optional[int], Optional[Message], Optional[Realm], Optional[Set[Text]]) -> Optional[Text]
+def do_convert(content, message=None, message_realm=None, possible_words=None):
+    # type: (Text, Optional[Message], Optional[Realm], Optional[Set[Text]]) -> Optional[Text]
     """Convert Markdown to HTML, with Zulip-specific settings and hacks."""
     from zerver.models import get_active_user_dicts_in_realm, get_active_streams, UserProfile
 
+    # This logic is a bit convoluted, but the overall goal is to support a range of use cases:
+    # * Nothing is passed in other than content -> just run default options (e.g. for docs)
+    # * message is passed, but no realm is -> look up realm from message
+    # * message_realm is passed -> use that realm for bugdown purposes
     if message:
         if message_realm is None:
             message_realm = message.get_realm()
-        maybe_update_realm_filters(realm_filters_key)
+    if message_realm is None:
+        realm_filters_key = DEFAULT_BUGDOWN_KEY
+    else:
+        realm_filters_key = message_realm.id
+
+    if (message and message.sender.realm.is_zephyr_mirror_realm and
+            message.sending_client.name == "zephyr_mirror"):
+        # Use slightly customized Markdown processor for content
+        # delivered via zephyr_mirror
+        realm_filters_key = ZEPHYR_MIRROR_BUGDOWN_KEY
+
+    maybe_update_realm_filters(realm_filters_key)
 
     if realm_filters_key in md_engines:
         _md_engine = md_engines[realm_filters_key]
@@ -1380,9 +1395,9 @@ def bugdown_stats_finish():
     bugdown_total_requests += 1
     bugdown_total_time += (time.time() - bugdown_time_start)
 
-def convert(content, realm_filters_key=None, message=None, message_realm=None, possible_words=None):
-    # type: (Text, Optional[int], Optional[Message], Optional[Realm], Optional[Set[Text]]) -> Optional[Text]
+def convert(content, message=None, message_realm=None, possible_words=None):
+    # type: (Text, Optional[Message], Optional[Realm], Optional[Set[Text]]) -> Optional[Text]
     bugdown_stats_start()
-    ret = do_convert(content, realm_filters_key, message, message_realm, possible_words)
+    ret = do_convert(content, message, message_realm, possible_words)
     bugdown_stats_finish()
     return ret

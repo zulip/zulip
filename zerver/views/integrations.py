@@ -121,8 +121,7 @@ def api_endpoint_docs(request):
             extended_response = response.replace(", ", ",\n ")
         else:
             extended_response = response
-        call['rendered_response'] = bugdown.convert("~~~ .py\n" + extended_response + "\n~~~\n",
-                                                    realm_filters_key=bugdown.DEFAULT_BUGDOWN_KEY)
+        call['rendered_response'] = bugdown.convert("~~~ .py\n" + extended_response + "\n~~~\n")
         for example_type in ('request', 'response'):
             for lang in call.get('example_' + example_type, []):
                 langs.add(lang)

@@ -159,7 +159,7 @@ class FencedBlockPreprocessorTest(TestCase):
 
 def bugdown_convert(text):
     # type: (Text) -> Text
-    return bugdown.convert(text, realm_filters_key=get_realm('zulip').id)
+    return bugdown.convert(text, message_realm=get_realm('zulip'))
 
 class BugdownTest(TestCase):
     def common_bugdown_test(self, text, expected):
@@ -224,7 +224,7 @@ class BugdownTest(TestCase):
             bugdown.make_md_engine(
                 realm.id,
                 {'realm_filters': [[], u'file_links_test.example.com'], 'realm': [u'file_links_test.example.com', 'Realm name']})
-            converted = bugdown.convert(msg, realm_filters_key=realm.id)
+            converted = bugdown.convert(msg, message_realm=realm)
             self.assertEqual(converted, '<p>Check out this file file:///Volumes/myserver/Users/Shared/pi.py</p>')
 
     def test_inline_youtube(self):
@@ -416,11 +416,11 @@ class BugdownTest(TestCase):
 
         # Needs to mock an actual message because that's how bugdown obtains the realm
         msg = Message(sender=get_user_profile_by_email("hamlet@zulip.com"))
-        converted = bugdown.convert(":test:", realm_filters_key=realm.id, message=msg)
+        converted = bugdown.convert(":test:", message_realm=realm, message=msg)
         self.assertEqual(converted, '<p>%s</p>' % (emoji_img(':test:', url)))
 
         do_remove_realm_emoji(realm, 'test')
-        converted = bugdown.convert(":test:", realm_filters_key=realm.id, message=msg)
+        converted = bugdown.convert(":test:", message_realm=realm, message=msg)
         self.assertEqual(converted, '<p>:test:</p>')
 
     def test_unicode_emoji(self):
@@ -452,7 +452,7 @@ class BugdownTest(TestCase):
         flush_per_request_caches()
 
         content = "We should fix #224 and #115, but not issue#124 or #1124z or [trac #15](https://trac.zulip.net/ticket/16) today."
-        converted = bugdown.convert(content, realm_filters_key=realm.id, message=msg)
+        converted = bugdown.convert(content, message_realm=realm, message=msg)
         converted_subject = bugdown.subject_links(realm.id, msg.subject)
 
         self.assertEqual(converted, '<p>We should fix <a href="https://trac.zulip.net/ticket/224" target="_blank" title="https://trac.zulip.net/ticket/224">#224</a> and <a href="https://trac.zulip.net/ticket/115" target="_blank" title="https://trac.zulip.net/ticket/115">#115</a>, but not issue#124 or #1124z or <a href="https://trac.zulip.net/ticket/16" target="_blank" title="https://trac.zulip.net/ticket/16">trac #15</a> today.</p>')
@@ -463,7 +463,7 @@ class BugdownTest(TestCase):
         msg = Message(sender=get_user_profile_by_email('hamlet@zulip.com'))
 
         content = '#ZUL-123 was fixed and code was deployed to production, also #zul-321 was deployed to staging'
-        converted = bugdown.convert(content, realm_filters_key=realm.id, message=msg)
+        converted = bugdown.convert(content, message_realm=realm, message=msg)
 
         self.assertEqual(converted, '<p><a href="https://trac.zulip.net/ticket/ZUL-123" target="_blank" title="https://trac.zulip.net/ticket/ZUL-123">#ZUL-123</a> was fixed and code was deployed to production, also <a href="https://trac.zulip.net/ticket/zul-321" target="_blank" title="https://trac.zulip.net/ticket/zul-321">#zul-321</a> was deployed to staging</p>')
 
@@ -817,19 +817,23 @@ class BugdownTest(TestCase):
         verifies almost all inline patterns are disabled, but
         inline_interesting_links is still enabled"""
         msg = "**test**"
-        converted = bugdown.convert(msg, realm_filters_key=bugdown.ZEPHYR_MIRROR_BUGDOWN_KEY)
+        realm = get_realm("mit")
+        client = get_client("zephyr_mirror")
+        message = Message(sending_client=client,
+                          sender=get_user_profile_by_email("sipbtest@mit.edu"))
+        converted = bugdown.convert(msg, message_realm=realm, message=message)
         self.assertEqual(
             converted,
             "<p>**test**</p>",
             )
         msg = "* test"
-        converted = bugdown.convert(msg, realm_filters_key=bugdown.ZEPHYR_MIRROR_BUGDOWN_KEY)
+        converted = bugdown.convert(msg, message_realm=realm, message=message)
         self.assertEqual(
             converted,
             "<p>* test</p>",
             )
         msg = "https://lists.debian.org/debian-ctte/2014/02/msg00173.html"
-        converted = bugdown.convert(msg, realm_filters_key=bugdown.ZEPHYR_MIRROR_BUGDOWN_KEY)
+        converted = bugdown.convert(msg, message_realm=realm, message=message)
         self.assertEqual(
             converted,
             '<p><a href="https://lists.debian.org/debian-ctte/2014/02/msg00173.html" target="_blank" title="https://lists.debian.org/debian-ctte/2014/02/msg00173.html">https://lists.debian.org/debian-ctte/2014/02/msg00173.html</a></p>',
