@@ -9,7 +9,7 @@ from zerver.models import Message, UserProfile, Stream, Recipient, UserPresence,
     Subscription, get_huddle, Realm, UserMessage, RealmAlias, \
     clear_database, get_client, get_user_profile_by_id, \
     email_to_username
-from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, do_send_message, \
+from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, do_send_messages, \
     do_change_is_admin
 from django.conf import settings
 from zerver.lib.bulk_create import bulk_create_realms, \
@@ -391,7 +391,7 @@ def send_messages(data):
             saved_data['subject'] = message.subject
 
         message.pub_date = now()
-        do_send_message(message)
+        do_send_messages([{'message': message}])
 
         recipients[num_messages] = (message_type, message.recipient.id, saved_data)
         num_messages += 1

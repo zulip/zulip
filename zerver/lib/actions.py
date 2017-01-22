@@ -752,17 +752,6 @@ def log_message(message):
     if not message.sending_client.name.startswith("test:"):
         log_event(message.to_log_dict())
 
-# Helper function. Defaults here are overriden by those set in do_send_messages
-def do_send_message(message, rendered_content=None, no_log=False, stream=None,
-                    local_id=None, realm=None):
-    # type: (Union[int, Message], Optional[Text], bool, Optional[Stream], Optional[int], Optional[Realm]) -> int
-    return do_send_messages([{'message': message,
-                              'rendered_content': rendered_content,
-                              'no_log': no_log,
-                              'stream': stream,
-                              'realm': realm,
-                              'local_id': local_id}])[0]
-
 def render_incoming_message(message, content, message_users, realm):
     # type: (Message, Text, Set[UserProfile], Realm) -> Text
     realm_alert_words = alert_words_in_realm(realm)
