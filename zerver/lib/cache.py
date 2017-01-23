@@ -356,14 +356,14 @@ def flush_user_profile(sender, **kwargs):
     # Invalidate our active_users_in_realm info dict if any user has changed
     # the fields in the dict or become (in)active
     if kwargs.get('update_fields') is None or \
-            len(set(active_user_dict_fields + ['is_active']) &
+            len(set(active_user_dict_fields + ['is_active', 'email']) &
                 set(kwargs['update_fields'])) > 0:
         cache_delete(active_user_dicts_in_realm_cache_key(user_profile.realm))
 
     # Invalidate our active_bots_in_realm info dict if any bot has
     # changed the fields in the dict or become (in)active
     if user_profile.is_bot and (kwargs['update_fields'] is None or
-                                (set(active_bot_dict_fields + ['is_active']) &
+                                (set(active_bot_dict_fields + ['is_active', 'email']) &
                                  set(kwargs['update_fields']))):
         cache_delete(active_bot_dicts_in_realm_cache_key(user_profile.realm))
 
