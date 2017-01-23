@@ -360,7 +360,7 @@ function process_hotkey(e) {
         case  'enter': // Enter: respond to message (unless we need to do something else)
             if(current_view === "#settings" || current_view === "#administration" ||
                 current_view === "#subscriptions"){
-                return false;
+                return false; //Press Enter on above views, will not bring to HOME
             }
             compose.respond_to_message({trigger: 'hotkey enter'});
             return true;
