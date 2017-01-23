@@ -272,8 +272,8 @@ v1_api_and_json_patterns = [
     url(r'^users/me$', rest_dispatch,
         {'GET': 'zerver.views.users.get_profile_backend',
          'DELETE': 'zerver.views.users.deactivate_user_own_backend'}),
-    # PUT is currently used by mobile apps, we intend to remove the PUT version
-    # as soon as possible. POST exists to correct the erroneous use of PUT.
+    url(r'^users/me/buddy$', rest_dispatch,
+        {'PATCH': 'zerver.views.users.update_buddy_list'}),
     url(r'^users/me/pointer$', rest_dispatch,
         {'GET': 'zerver.views.pointer.get_pointer_backend',
          'PUT': 'zerver.views.pointer.update_pointer_backend',

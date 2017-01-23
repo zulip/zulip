@@ -18,11 +18,12 @@ from zerver.lib.actions import do_change_avatar_fields, do_change_bot_owner, \
     do_change_is_admin, do_change_default_all_public_streams, \
     do_change_default_events_register_stream, do_change_default_sending_stream, \
     do_create_user, do_deactivate_user, do_reactivate_user, do_regenerate_api_key
+from zerver.lib.events import do_update_buddy_list
 from zerver.lib.avatar import avatar_url, get_avatar_url
 from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.upload import upload_avatar_image
-from zerver.lib.validator import check_bool, check_string
+from zerver.lib.validator import check_bool, check_string, check_int
 from zerver.lib.users import check_change_full_name, check_full_name
 from zerver.lib.utils import generate_random_token
 from zerver.models import UserProfile, Stream, Realm, Message, get_user_profile_by_email, \
@@ -108,6 +109,25 @@ def update_user_backend(request, user_profile, email,
         # We don't respect `name_changes_disabled` here because the request
         # is on behalf of the administrator.
         check_change_full_name(target, full_name)
+
+    return json_success()
+
+
+@has_request_variables
+def update_buddy_list(request, user_profile, buddy_id=REQ(validator=check_int),
+                      should_add=REQ(validator=check_bool)):
+    # type: (HttpRequest, UserProfile, int, bool) -> HttpResponse
+    try:
+        buddy_profile = get_user_profile_by_id(buddy_id)
+    except UserProfile.DoesNotExist:
+        return json_error(_('No such user with user id ' + str(buddy_id)))
+
+    if user_profile.id == buddy_profile.id:
+        return json_error(_('User and buddy user are same'))
+    if user_profile.realm_id != buddy_profile.realm_id:
+        return json_error(_('User and buddy user belong to different realms'))
+
+    do_update_buddy_list(user_profile, buddy_profile, should_add)
 
     return json_success()
 

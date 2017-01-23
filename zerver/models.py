@@ -1505,3 +1505,10 @@ class RealmAuditLog(models.Model):
     event_type = models.CharField(max_length=40) # type: Text
     event_time = models.DateTimeField() # type: datetime.datetime
     backfilled = models.BooleanField(default=False) # type: bool
+
+class BuddyList(models.Model):
+    user = models.ForeignKey(UserProfile, related_name="user")  # type: UserProfile
+    buddy = models.ForeignKey(UserProfile, related_name="buddy") # type: UserProfile
+
+    class Meta(object):
+        unique_together = ("user", "buddy")

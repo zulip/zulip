@@ -43,6 +43,7 @@ class HomeTest(ZulipTestCase):
             "avatar_url",
             "avatar_url_medium",
             "bot_list",
+            "buddy_list",
             "can_create_streams",
             "cross_realm_bots",
             "debug_mode",

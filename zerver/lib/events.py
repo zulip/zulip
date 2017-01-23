@@ -28,12 +28,11 @@ from zerver.lib.actions import validate_user_access_to_subscribers_helper, \
     gather_subscriptions_helper, get_realm_aliases, \
     get_status_dict, streams_to_dicts_sorted
 from zerver.tornado.event_queue import request_event_queue, get_user_events
-from zerver.models import Client, Message, UserProfile, \
+from zerver.models import Client, Message, UserProfile, BuddyList, \
     get_user_profile_by_email, get_user_profile_by_id, \
     get_active_user_dicts_in_realm, realm_filters_for_realm, \
     get_owned_bot_dicts
 from version import ZULIP_VERSION
-
 
 def get_realm_user_dicts(user_profile):
     # type: (UserProfile) -> List[Dict[str, Text]]
@@ -51,6 +50,22 @@ def get_realm_user_dicts(user_profile):
              'is_bot': userdict['is_bot'],
              'full_name': userdict['full_name']}
             for userdict in get_active_user_dicts_in_realm(user_profile.realm)]
+
+def do_update_buddy_list(user_profile, buddy_profile, should_add):
+    # type: (UserProfile, str, bool) -> None
+
+    if should_add:
+        BuddyList.objects.get_or_create(user=user_profile, buddy=buddy_profile)
+    else:
+        BuddyList.objects.filter(user=user_profile, buddy=buddy_profile).delete()
+
+def get_buddy_list(user_profile):
+    # type: (UserProfile) -> Set[int]
+
+    records = BuddyList.objects.filter(user=user_profile)
+    user_id_set = {r.buddy.id for r in records}
+
+    return user_id_set
 
 # Fetch initial data.  When event_types is not specified, clients want
 # all event types.  Whenever you add new code to this function, you
@@ -142,6 +157,8 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         # get any updates during a session from get_events()
         pass
 
+    if want('buddy_list'):
+        state['buddy_list'] = list(get_buddy_list(user_profile))
     if want('stream'):
         state['streams'] = do_get_streams(user_profile)
     if want('default_streams'):
