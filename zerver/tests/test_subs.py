@@ -1501,6 +1501,29 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertIn("exists", json)
         self.assertTrue(json["exists"])
 
+    def test_existing_subscriptions_autosubscription_private_stream(self):
+        # type: () -> None
+        """Call /json/subscriptions/exist on an existing private stream with
+        autosubscribe should fail.
+        """
+        stream_name = "Saxony"
+        result = self.common_subscribe_to_streams("cordelia@zulip.com", [stream_name],
+                                                  invite_only=True)
+        stream = get_stream(stream_name, self.realm)
+
+        result = self.client_post("/json/subscriptions/exists",
+                                  {"stream": stream_name, "autosubscribe": True})
+        self.assert_json_success(result)
+        json = ujson.loads(result.content)
+        self.assertIn("exists", json)
+        self.assertTrue(json["exists"])
+        self.assertIn("subscribed", json)
+        # Importantly, we are not now subscribed
+        self.assertFalse(json["subscribed"])
+        self.assertEqual(Subscription.objects.filter(
+            recipient__type=Recipient.STREAM,
+            recipient__type_id=stream.id).count(), 1)
+
     def get_subscription(self, user_profile, stream_name):
         # type: (UserProfile, text_type) -> Subscription
         stream = Stream.objects.get(realm=self.realm, name=stream_name)

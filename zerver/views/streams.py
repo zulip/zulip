@@ -447,7 +447,7 @@ def stream_exists_backend(request, user_profile, stream_name, autosubscribe):
     result = {"exists": bool(stream)}
     if stream is not None:
         recipient = get_recipient(Recipient.STREAM, stream.id)
-        if autosubscribe:
+        if not stream.invite_only and autosubscribe:
             bulk_add_subscriptions([stream], [user_profile])
         result["subscribed"] = Subscription.objects.filter(user_profile=user_profile,
                                                            recipient=recipient,
