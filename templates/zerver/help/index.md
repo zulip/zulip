@@ -74,7 +74,7 @@ as an **organization**.
 ## People
 * [Check whether someone is here or away](/help/check-whether-someone-is-here-or-away)
 * [Invite a friend to Zulip](/help/invite-a-friend-to-zulip)
-* Send someone a private message
+* [Send someone a private message](/help/send-someone-a-private-message)
 * [Send a group of people a private message](/help/send-a-group-of-people-a-private-message)
 
 ## Streams & Topics
