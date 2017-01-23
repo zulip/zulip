@@ -54,7 +54,7 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
     if invite_by_admins_only is not None and realm.invite_by_admins_only != invite_by_admins_only:
         do_set_realm_invite_by_admins_only(realm, invite_by_admins_only)
         data['invite_by_admins_only'] = invite_by_admins_only
-    if authentication_methods is not None and realm.authentication_methods != authentication_methods:
+    if authentication_methods is not None and realm.authentication_methods_dict() != authentication_methods:
         if True not in list(authentication_methods.values()):
             return json_error(_("At least one authentication method must be enabled."),
                               data={"reason": "no authentication"}, status=403)
