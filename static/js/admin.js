@@ -657,6 +657,16 @@ function _setup_page() {
                         ui.report_success(i18n.t("waiting period threshold changed!"), waiting_period_threshold_status);
                     }
                 }
+                // Check if no changes made
+                var no_changes_made = true;
+                for (var key in response_data) {
+                    if (['msg', 'result'].indexOf(key) < 0) {
+                        no_changes_made = false;
+                    }
+                }
+                if (no_changes_made) {
+                    ui.report_success(i18n.t("No changes to save!"), name_status);
+                }
             },
             error: function (xhr) {
                 var reason = $.parseJSON(xhr.responseText).reason;
