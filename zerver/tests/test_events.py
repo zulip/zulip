@@ -832,7 +832,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('domain', check_string),
         ])
         alias = RealmAlias.objects.get(realm=realm, domain='zulip.org')
-        events = self.do_test(lambda: do_remove_realm_alias(realm, alias.domain))
+        events = self.do_test(lambda: do_remove_realm_alias(alias))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 

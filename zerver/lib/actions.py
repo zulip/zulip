@@ -3627,9 +3627,11 @@ def do_add_realm_alias(realm, domain):
     send_event(event, active_user_ids(realm))
     return alias
 
-def do_remove_realm_alias(realm, domain):
-    # type: (Realm, Text) -> None
-    RealmAlias.objects.get(realm=realm, domain=domain).delete()
+def do_remove_realm_alias(alias):
+    # type: (RealmAlias) -> None
+    realm = alias.realm
+    domain = alias.domain
+    alias.delete()
     event = dict(type="realm_domains", op="remove", domain=domain)
     send_event(event, active_user_ids(realm))
 
