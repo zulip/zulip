@@ -359,7 +359,7 @@ function process_hotkey(e) {
             return do_narrow_action(narrow.by_subject);
         case  'enter': // Enter: respond to message (unless we need to do something else)
             if(current_view === "#settings" || current_view === "#administration" ||
-                current_view === "subscriptions"){
+                current_view === "#subscriptions"){
                 return false;
             }
             compose.respond_to_message({trigger: 'hotkey enter'});
