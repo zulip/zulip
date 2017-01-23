@@ -210,6 +210,11 @@ exports.update_starred = function (message_id, starred) {
     // lists.
     var message = exports.find_message(message_id);
 
+    // If it isn't cached in the browser, no need to do anything
+    if (message === undefined) {
+        return;
+    }
+
     unread.mark_message_as_read(message);
 
     message.starred = starred;
