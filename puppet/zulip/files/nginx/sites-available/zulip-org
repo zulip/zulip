@@ -1,4 +1,9 @@
 server {
+    listen 80;
+    return 301 https://$host$request_uri;
+}
+
+server {
     listen 443;
     server_name zulip.org;
 
@@ -8,11 +13,11 @@ server {
 
     location /dist/ {
         autoindex on;
-	alias /home/zulip/dist/;
+        alias /home/zulip/dist/;
     }
 
     location / {
         autoindex on;
-	alias /home/zulip/zulip.github.io/;
+        alias /home/zulip/zulip.github.io/;
     }
 }
