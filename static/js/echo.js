@@ -46,7 +46,9 @@ exports.apply_markdown = function apply_markdown(message) {
         userMentionHandler: function (name) {
             var person = people.get_by_name(name);
             if (person !== undefined) {
-                push_uniquely(message.flags, 'mentioned');
+                if (people.is_my_user_id(person.user_id)) {
+                    push_uniquely(message.flags, 'mentioned');
+                }
                 return '<span class="user-mention" data-user-id="' + person.user_id + '">' +
                        '@' + person.full_name +
                        '</span>';
