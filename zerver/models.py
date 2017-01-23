@@ -546,6 +546,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
             (AVATAR_FROM_USER, 'Uploaded by user'),
     )
     avatar_source = models.CharField(default=AVATAR_FROM_GRAVATAR, choices=AVATAR_SOURCES, max_length=1) # type: Text
+    avatar_version = models.PositiveSmallIntegerField(default=1) # type: int
 
     TUTORIAL_WAITING  = u'W'
     TUTORIAL_STARTED  = u'S'
