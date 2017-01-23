@@ -256,6 +256,27 @@ function filter_and_sort(users) {
 
 exports._filter_and_sort = filter_and_sort;
 
+function get_num_unread(user_id) {
+    if (unread.suppress_unread_counts) {
+        return 0;
+    }
+    return unread.num_unread_for_person(user_id);
+}
+
+function info_for(user_id) {
+    var presence = exports.presence_info[user_id].status;
+    var person = people.get_person_from_user_id(user_id);
+    return {
+        href: narrow.pm_with_uri(person.email),
+        name: person.full_name,
+        user_id: user_id,
+        num_unread: get_num_unread(user_id),
+        type: presence,
+        type_desc: presence_descriptions[presence],
+        mobile: exports.presence_info[user_id].mobile,
+    };
+}
+
 exports.update_users = function (user_list) {
     if (page_params.presence_disabled) {
         return;
@@ -268,31 +289,6 @@ exports.update_users = function (user_list) {
         users = user_list;
     }
     users = filter_and_sort(users);
-
-    function get_num_unread(user_id) {
-        if (unread.suppress_unread_counts) {
-            return 0;
-        }
-        return unread.num_unread_for_person(user_id);
-    }
-
-    // Note that we do not include ourselves in the user list any more.
-    // If you want to figure out how to get details for "me", then revert
-    // the commit that added this comment.
-
-    function info_for(user_id) {
-        var presence = exports.presence_info[user_id].status;
-        var person = people.get_person_from_user_id(user_id);
-        return {
-            href: narrow.pm_with_uri(person.email),
-            name: person.full_name,
-            user_id: user_id,
-            num_unread: get_num_unread(user_id),
-            type: presence,
-            type_desc: presence_descriptions[presence],
-            mobile: exports.presence_info[user_id].mobile,
-        };
-    }
 
     var user_info = _.map(users, info_for);
     if (user_list !== undefined) {
