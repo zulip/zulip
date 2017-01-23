@@ -298,6 +298,17 @@ exports.update_messages = function update_messages(events) {
             });
         }
 
+        var edit_history = {edited_by: event.edited_by,
+                            prev_content: event.orig_content,
+                            prev_rendered_content: event.orig_rendered_content,
+                            prev_rendered_content_version: event.prev_rendered_content_version,
+                            timestamp: event.edit_timestamp,
+                        };
+
+        // Add message's edit_history in message dict
+        // For messages that are edited, edit_history needs to be added to message in frontend.
+        msg.edit_history = [edit_history];
+
         msg.last_edit_timestamp = event.edit_timestamp;
         delete msg.last_edit_timestr;
 

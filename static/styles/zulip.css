@@ -1063,6 +1063,22 @@ a.dark_background:hover,
     margin-top: 6px;
 }
 
+.message_author {
+    position: relative;
+}
+
+.author_details {
+    display: block;
+    font-size: 12px;
+    vertical-align: middle;
+    padding: 1px;
+    font-weight: 300;
+    position: absolute;
+    right: -80px;
+    line-height: 20px;
+    text-align: right;
+}
+
 .message-right {
     float: right;
 }

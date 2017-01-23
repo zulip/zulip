@@ -2782,11 +2782,14 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
         edit_history_event["prev_content"] = message.content
         edit_history_event["prev_rendered_content"] = message.rendered_content
         edit_history_event["prev_rendered_content_version"] = message.rendered_content_version
+        edit_history_event["edited_by"] = user_profile.id
         message.content = content
         message.rendered_content = rendered_content
         message.rendered_content_version = bugdown_version
         event["content"] = content
         event["rendered_content"] = rendered_content
+        event["edited_by"] = user_profile.id
+        event['prev_rendered_content_version'] = message.rendered_content_version
 
         prev_content = edit_history_event['prev_content']
         if Message.content_has_attachment(prev_content) or Message.content_has_attachment(message.content):
