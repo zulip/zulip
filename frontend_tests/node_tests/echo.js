@@ -64,6 +64,14 @@ people.add({
     email: 'cordelia@zulip.com',
 });
 
+people.add({
+    full_name: 'Leo',
+    user_id: 102,
+    email: 'leo@zulip.com',
+});
+
+people.initialize_current_user(101);
+
 var stream_data = global.stream_data;
 var denmark = {
     subscribed: false,
