@@ -1,4 +1,4 @@
-# Make an Announcement
+# Make an announcement
 
 An announcement on Zulip is a message which will reach
 all users in an organization.

@@ -15,5 +15,4 @@ your Zulip server:
 
 !!! tip ""
     This badge is dynamically generated; visit
-    [shields.io](https://shields.io) for detailed information about
-    customizing it.
+    [shields.io](https://shields.io) for details about customizing it.

@@ -1,4 +1,4 @@
-# Starring a message
+# Star a message
 Starring messages is a good way to keep track of important messages, such as
 tasks you need to go back to or documents you reference often.
 

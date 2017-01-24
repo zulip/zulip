@@ -1,4 +1,4 @@
-# Organizing the Streams sidebar
+# Organize the Streams sidebar
 
 On Zulip, it is useful to organize streams in the sidebar in order to easily
  access streams which you use frequently. This is because streams are initially
