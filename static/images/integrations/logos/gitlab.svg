@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="500px" height="500px" viewBox="0 0 500 500" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+    <!-- Generator: Sketch 3.2.2 (9983) - http://www.bohemiancoding.com/sketch -->
+    <title>logo-square</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
+        <g id="logo-square" sketch:type="MSArtboardGroup">
+            <g id="logo-no-bg" sketch:type="MSLayerGroup" transform="translate(2.000000, 19.000000)">
+                <g id="Page-1" sketch:type="MSShapeGroup">
+                    <g id="gitlab_logo">
+                        <g id="g10" transform="translate(248.000000, 228.833300) scale(1, -1) translate(-248.000000, -228.833300) translate(0.000000, 0.333300)">
+                            <g id="g16">
+                                <g id="g18-Clipped">
+                                    <g id="g18">
+                                        <g>
+                                            <g id="Group" transform="translate(0.666658, 0.666658)">
+                                                <g id="g44" transform="translate(0.532000, 0.774933)" fill="#FC6D26">
+                                                    <path d="M491.999988,194.666662 L464.441322,279.481326 L409.82399,447.578655 C407.014656,456.226655 394.778657,456.226655 391.96799,447.578655 L337.349325,279.481326 L155.982663,279.481326 L101.362664,447.578655 C98.5533309,456.226655 86.3173312,456.226655 83.5066646,447.578655 L28.8893326,279.481326 L1.33199997,194.666662 C-1.18266664,186.930662 1.57199996,178.455996 8.1519998,173.674662 L246.665327,0.385333324 L485.179988,173.674662 C491.759988,178.455996 494.513321,186.930662 491.999988,194.666662" id="path46"></path>
+                                                </g>
+                                                <g id="g48" transform="translate(156.197863, 1.160267)" fill="#E24329">
+                                                    <path d="M90.9999977,0 L90.9999977,0 L181.683995,279.095993 L0.31599997,279.095993 L90.9999977,0 L90.9999977,0 Z" id="path50"></path>
+                                                </g>
+                                                <g id="g56" transform="translate(28.531199, 1.160800)" fill="#FC6D26">
+                                                    <path d="M218.666661,0 L127.982663,279.09466 L0.890666644,279.09466 L218.666661,0 L218.666661,0 Z" id="path58"></path>
+                                                </g>
+                                                <g id="g64" transform="translate(0.088533, 0.255867)" fill="#FCA326">
+                                                    <path d="M29.3333326,279.999993 L29.3333326,279.999993 L1.77466662,195.185328 C-0.738666648,187.449329 2.01466662,178.974662 8.59599979,174.194662 L247.109327,0.905333311 L29.3333326,279.999993 L29.3333326,279.999993 Z" id="path66"></path>
+                                                </g>
+                                                <g id="g72" transform="translate(29.421866, 280.255593)" fill="#E24329">
+                                                    <path d="M0,0 L127.091997,0 L72.4733315,168.097329 C69.6626649,176.746662 57.4266652,176.746662 54.617332,168.097329 L0,0 L0,0 Z" id="path74"></path>
+                                                </g>
+                                                <g id="g76" transform="translate(247.197860, 1.160800)" fill="#FC6D26">
+                                                    <path d="M0,0 L90.6839977,279.09466 L217.775995,279.09466 L0,0 L0,0 Z" id="path78"></path>
+                                                </g>
+                                                <g id="g80" transform="translate(246.307061, 0.255867)" fill="#FCA326">
+                                                    <path d="M218.666661,279.999993 L218.666661,279.999993 L246.225327,195.185328 C248.73866,187.449329 245.985327,178.974662 239.403994,174.194662 L0.890666644,0.905333311 L218.666661,279.999993 L218.666661,279.999993 Z" id="path82"></path>
+                                                </g>
+                                                <g id="g84" transform="translate(336.973725, 280.255593)" fill="#E24329">
+                                                    <path d="M127.999997,0 L0.907999977,0 L55.5266653,168.097329 C58.3373319,176.746662 70.5733316,176.746662 73.3826648,168.097329 L127.999997,0 L127.999997,0 Z" id="path86"></path>
+                                                </g>
+                                            </g>
+                                        </g>
+                                    </g>
+                                </g>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

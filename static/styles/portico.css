@@ -556,6 +556,7 @@ a.bottom-signup-button {
     margin: 15px 5px 0px 5px;
     display: inline-block;
     vertical-align: top;
+    padding: 10px;
 }
 
 .integration-instruction-block .integration-lozenge {
@@ -603,7 +604,7 @@ a.bottom-signup-button {
 }
 
 .integration-instructions {
-    margin-left: 150px;
+    margin-left: 180px;
 }
 
 #integration-instructions-group {
@@ -680,7 +681,7 @@ a.bottom-signup-button {
 
 #integration-list-link {
     position: absolute;
-    top: 200px;
+    top: 210px;
     width: 130px;
     text-align: center;
     display: none;
