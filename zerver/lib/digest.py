@@ -171,7 +171,7 @@ def handle_digest_email(user_profile_id, cutoff):
     template_payload.update({
         'name': user_profile.full_name,
         'unsubscribe_link': one_click_unsubscribe_link(user_profile, "digest")
-        })
+    })
 
     # Gather recent missed PMs, re-using the missed PM email logic.
     # You can't have an unread message that you sent, but when testing

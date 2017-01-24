@@ -827,19 +827,19 @@ class BugdownTest(TestCase):
         self.assertEqual(
             converted,
             "<p>**test**</p>",
-            )
+        )
         msg = "* test"
         converted = bugdown.convert(msg, message_realm=realm, message=message)
         self.assertEqual(
             converted,
             "<p>* test</p>",
-            )
+        )
         msg = "https://lists.debian.org/debian-ctte/2014/02/msg00173.html"
         converted = bugdown.convert(msg, message_realm=realm, message=message)
         self.assertEqual(
             converted,
             '<p><a href="https://lists.debian.org/debian-ctte/2014/02/msg00173.html" target="_blank" title="https://lists.debian.org/debian-ctte/2014/02/msg00173.html">https://lists.debian.org/debian-ctte/2014/02/msg00173.html</a></p>',
-            )
+        )
 
 class BugdownApiTests(ZulipTestCase):
     def test_render_message_api(self):

@@ -284,7 +284,7 @@ class EventsRegisterTest(ZulipTestCase):
                  queue_timeout = 600,
                  last_connection_time = time.time(),
                  narrow = [])
-            )
+        )
         # hybrid_state = initial fetch state + re-applying events triggered by our action
         # normal_state = do action then fetch at the end (the "normal" code path)
         hybrid_state = fetch_initial_state_data(self.user_profile, event_types, "")
@@ -553,7 +553,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('op', equals('update')),
             ('property', equals('default_language')),
             ('value', check_string),
-            ])
+        ])
         events = self.do_test(lambda: do_set_realm_default_language(self.user_profile.realm, 'de'))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
@@ -631,7 +631,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('setting_name', equals('twenty_four_hour_time')),
             ('user', check_string),
             ('setting', check_bool),
-            ])
+        ])
         # The first False is probably a noop, then we get transitions in both directions.
         for setting_value in [False, True, False]:
             events = self.do_test(lambda: do_change_twenty_four_hour_time(self.user_profile, setting_value))
@@ -645,7 +645,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('setting_name', equals('left_side_userlist')),
             ('user', check_string),
             ('setting', check_bool),
-            ])
+        ])
         # The first False is probably a noop, then we get transitions in both directions.
         for setting_value in [False, True, False]:
             events = self.do_test(lambda: do_change_left_side_userlist(self.user_profile, setting_value))
@@ -659,7 +659,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('notification_name', equals('enable_stream_desktop_notifications')),
             ('user', check_string),
             ('setting', check_bool),
-            ])
+        ])
         # The first False is probably a noop, then we get transitions in both directions.
         for setting_value in [False, True, False]:
             events = self.do_test(lambda: do_change_enable_stream_desktop_notifications(self.user_profile, setting_value))
@@ -673,7 +673,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('notification_name', equals('enable_stream_sounds')),
             ('user', check_string),
             ('setting', check_bool),
-            ])
+        ])
         # The first False is probably a noop, then we get transitions in both directions.
         for setting_value in [False, True, False]:
             events = self.do_test(lambda: do_change_enable_stream_sounds(self.user_profile, setting_value))
@@ -687,7 +687,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('notification_name', equals('enable_desktop_notifications')),
             ('user', check_string),
             ('setting', check_bool),
-            ])
+        ])
         # The first False is probably a noop, then we get transitions in both directions.
         for setting_value in [False, True, False]:
             events = self.do_test(lambda: do_change_enable_desktop_notifications(self.user_profile, setting_value))
@@ -701,7 +701,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('notification_name', equals('enable_sounds')),
             ('user', check_string),
             ('setting', check_bool),
-            ])
+        ])
         # The first False is probably a noop, then we get transitions in both directions.
         for setting_value in [False, True, False]:
             events = self.do_test(lambda: do_change_enable_sounds(self.user_profile, setting_value))
@@ -715,7 +715,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('notification_name', equals('enable_offline_email_notifications')),
             ('user', check_string),
             ('setting', check_bool),
-            ])
+        ])
         # The first False is probably a noop, then we get transitions in both directions.
         for setting_value in [False, True, False]:
             events = self.do_test(lambda: do_change_enable_offline_email_notifications(self.user_profile, setting_value))
@@ -729,7 +729,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('notification_name', equals('enable_offline_push_notifications')),
             ('user', check_string),
             ('setting', check_bool),
-            ])
+        ])
         # The first False is probably a noop, then we get transitions in both directions.
         for setting_value in [False, True, False]:
             events = self.do_test(lambda: do_change_enable_offline_push_notifications(self.user_profile, setting_value))
@@ -743,7 +743,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('notification_name', equals('enable_online_push_notifications')),
             ('user', check_string),
             ('setting', check_bool),
-            ])
+        ])
         # The first False is probably a noop, then we get transitions in both directions.
         for setting_value in [False, True, False]:
             events = self.do_test(lambda: do_change_enable_online_push_notifications(self.user_profile, setting_value))
@@ -757,7 +757,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('notification_name', equals('pm_content_in_desktop_notifications')),
             ('user', check_string),
             ('setting', check_bool),
-            ])
+        ])
         # The first False is probably a noop, then we get transitions in both directions.
         for setting_value in [False, True, False]:
             events = self.do_test(lambda: do_change_pm_content_in_desktop_notifications(self.user_profile, setting_value))
@@ -771,7 +771,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('notification_name', equals('enable_digest_emails')),
             ('user', check_string),
             ('setting', check_bool),
-            ])
+        ])
         # The first False is probably a noop, then we get transitions in both directions.
         for setting_value in [False, True, False]:
             events = self.do_test(lambda: do_change_enable_digest_emails(self.user_profile, setting_value))

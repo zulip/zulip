@@ -171,7 +171,7 @@ class JabberToZulipBot(ClientXMPP):
             type = "private",
             to = recipient,
             content = msg["body"],
-            )
+        )
         ret = self.zulipToJabber.client.send_message(zulip_message)
         if ret.get("result") != "success":
             logging.error(str(ret))
@@ -199,7 +199,7 @@ class JabberToZulipBot(ClientXMPP):
             subject = subject,
             to = stream,
             content = msg["body"],
-            )
+        )
         ret = self.zulipToJabber.client.send_message(zulip_message)
         if ret.get("result") != "success":
             logging.error(str(ret))

@@ -45,7 +45,7 @@ def send_log_zulip(file_name, count, lines, extra=""):
         "to": "logs",
         "subject": "%s on %s" % (file_name, platform.node()),
         "content": content,
-        })
+    })
 
 def process_lines(raw_lines, file_name):
     # type: (List[str], str) -> None

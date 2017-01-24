@@ -1527,7 +1527,7 @@ class StarTests(ZulipTestCase):
 
         sent_message = UserMessage.objects.filter(
             user_profile=get_user_profile_by_email(test_email)
-            ).order_by("id").reverse()[0]
+        ).order_by("id").reverse()[0]
         self.assertEqual(sent_message.message.content, content)
         self.assertFalse(sent_message.flags.starred)
 

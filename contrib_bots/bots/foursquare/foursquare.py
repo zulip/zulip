@@ -80,7 +80,7 @@ Example Inputs:
                 subject=message['subject'],
                 to=message['display_recipient'],
                 content=letter,
-                ))
+            ))
 
     def handle_message(self, message, client, state_handler):
         words = message['content'].split()

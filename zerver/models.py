@@ -1322,7 +1322,7 @@ class UserPresence(models.Model):
                     push_enabled=row['user_profile__enable_offline_push_notifications'],
                     has_push_devices=row['user_profile__id'] in mobile_user_ids,
                     is_mirror_dummy=row['user_profile__is_mirror_dummy'],
-                    )
+            )
             user_statuses[row['user_profile__email']][row['client__name']] = info
 
         return user_statuses

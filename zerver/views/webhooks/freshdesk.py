@@ -122,7 +122,7 @@ def api_freshdesk_webhook(request, user_profile, payload=REQ(argument_type='body
         "triggered_event", "ticket_id", "ticket_url", "ticket_type",
         "ticket_subject", "ticket_description", "ticket_status",
         "ticket_priority", "requester_name", "requester_email",
-        ]
+    ]
 
     for key in required_keys:
         if ticket_data.get(key) is None:

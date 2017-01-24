@@ -87,7 +87,7 @@ def check_pep8(files):
         # ignored. It either doesn't fit with the style of the project or should
         # actually be cleaned up.
         #
-        'E123', 'E126', 'E226', 'E261', 'E302',
+        'E126', 'E226', 'E261', 'E302',
         'E401', 'E501', 'E702',
 
         #
@@ -227,7 +227,7 @@ def build_custom_checkers(by_lang):
          'exclude': set(['zerver/lib/bugdown/codehilite.py',
                          'tools/travis/success-http-headers.txt']),
          'description': 'Fix tab-based whitespace'},
-        ] # type: RuleList
+    ] # type: RuleList
     markdown_whitespace_rules = list([rule for rule in whitespace_rules if rule['pattern'] != '\s+$']) + [
         # Two spaces trailing a line with other content is okay--it's a markdown line break.
         # This rule finds one space trailing a non-space, three or more trailing spaces, and
@@ -284,7 +284,7 @@ def build_custom_checkers(by_lang):
          'exclude': set(['tools/lint-all']),
          'description': 'Argument to report_error should be a literal string enclosed '
                         'by i18n.t()'},
-        ]) + whitespace_rules
+    ]) + whitespace_rules
     python_rules = cast(RuleList, [
         {'pattern': '^(?!#)@login_required',
          'description': '@login_required is unsupported; use @zulip_login_required'},
@@ -401,12 +401,12 @@ def build_custom_checkers(by_lang):
                          'scripts/lib/setup_venv.py',
                          'tools/lint-all']),
          'description': 'Explicit python invocations should not include a version'}
-        ]) + whitespace_rules
+    ]) + whitespace_rules
     bash_rules = [
         {'pattern': '#!.*sh [-xe]',
          'description': 'Fix shebang line with proper call to /usr/bin/env for Bash path, change -x|-e switches'
                         ' to set -x|set -e'},
-        ] + whitespace_rules[0:1] # type: RuleList
+    ] + whitespace_rules[0:1] # type: RuleList
     css_rules = cast(RuleList, [
         {'pattern': '^[^:]*:\S[^:]*;$',
          'description': "Missing whitespace after : in CSS"},
@@ -420,7 +420,7 @@ def build_custom_checkers(by_lang):
          'strip': '\n'},
         {'pattern': '{\w',
          'description': "Missing whitespace after '{' in CSS (should be newline)."},
-        ]) + whitespace_rules # type: RuleList
+    ]) + whitespace_rules # type: RuleList
     prose_style_rules = [
         {'pattern': '[^\/\#\-\"]([jJ]avascript)', # exclude usage in hrefs/divs
          'description': "javascript should be spelled JavaScript"},
@@ -446,7 +446,7 @@ def build_custom_checkers(by_lang):
               '<td><img alt=":heart:" class="emoji" src="/static/generated/emoji/images/emoji/heart.png" title=":heart:" /></td>')
          ]),
          'description': "`title` value should be translatable."},
-        ] # type: RuleList
+    ] # type: RuleList
     handlebars_rules = html_rules + [
         {'pattern': "[<]script",
          'description': "Do not use inline <script> tags here; put JavaScript in static/js instead."},

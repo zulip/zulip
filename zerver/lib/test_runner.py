@@ -10,7 +10,7 @@ from zerver.lib.cache import bounce_key_prefix_for_testing
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.test_helpers import (
     get_all_templates, write_instrumentation_reports,
-    )
+)
 
 import os
 import subprocess

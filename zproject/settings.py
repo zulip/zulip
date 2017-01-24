@@ -378,24 +378,23 @@ DATABASES = {"default": {
     'CONN_MAX_AGE': 600,
     'OPTIONS': {
         'connection_factory': TimeTrackingConnection
-        },
     },
-}
+}}
 
 if DEVELOPMENT:
     LOCAL_DATABASE_PASSWORD = get_secret("local_database_password")
     DATABASES["default"].update({
             'PASSWORD': LOCAL_DATABASE_PASSWORD,
             'HOST': 'localhost'
-            })
+    })
 elif REMOTE_POSTGRES_HOST != '':
     DATABASES['default'].update({
             'HOST': REMOTE_POSTGRES_HOST,
-            })
+    })
     if get_secret("postgres_password") is not None:
         DATABASES['default'].update({
             'PASSWORD': get_secret("postgres_password"),
-            })
+        })
     if REMOTE_POSTGRES_SSLMODE != '':
         DATABASES['default']['OPTIONS']['sslmode'] = REMOTE_POSTGRES_SSLMODE
     else:
@@ -454,7 +453,7 @@ CACHES = {
 
 RATE_LIMITING_RULES = [
     (60, 100),     # 100 requests max every minute
-    ]
+]
 DEBUG_RATE_LIMITING = DEBUG
 REDIS_PASSWORD = get_secret('redis_password')
 
@@ -733,14 +732,14 @@ JS_SPECS = {
             'js/blueslip.js',
             'third/bootstrap/js/bootstrap.js',
             'js/common.js',
-            ],
+        ],
         'output_filename': 'min/common.js'
     },
     'signup': {
         'source_filenames': [
             'js/portico/signup.js',
             'node_modules/jquery-validation/dist/jquery.validate.js',
-            ],
+        ],
         'output_filename': 'min/signup.js'
     },
     'api': {
@@ -898,7 +897,7 @@ ZULIP_PATHS = [
     ("STATS_DIR", "/home/zulip/stats"),
     ("DIGEST_LOG_PATH", "/var/log/zulip/digest.log"),
     ("ANALYTICS_LOG_PATH", "/var/log/zulip/analytics.log"),
-    ]
+]
 
 # The Event log basically logs most significant database changes,
 # which can be useful for debugging.

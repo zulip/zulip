@@ -69,7 +69,7 @@ class IRCBot(irc.bot.SingleServerIRCBot):
                 "type": "private",
                 "to": "username@example.com",
                 "content": content,
-                }))
+        }))
 
     def on_pubmsg(self, c, e):
         # type: (ServerConnection, Event) -> None
@@ -87,7 +87,7 @@ class IRCBot(irc.bot.SingleServerIRCBot):
                 "to": stream,
                 "subject": "IRC",
                 "content": content,
-                }))
+        }))
 
     def on_dccmsg(self, c, e):
         # type: (ServerConnection, Event) -> None

@@ -129,5 +129,5 @@ def api_endpoint_docs(request):
             'zerver/api_endpoints.html', {
                 'content': calls,
                 'langs': langs,
-                },
+            },
             request=request)

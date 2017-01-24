@@ -157,11 +157,10 @@ def parse_create_or_delete(message):
     return {
         'type': message["type"],
         'event': message["action"],
-        'values':
-            {
-                'user': get_owner_name(message),
-                'subject': get_subject(message)
-            }
+        'values': {
+            'user': get_owner_name(message),
+            'subject': get_subject(message)
+        }
     }
 
 

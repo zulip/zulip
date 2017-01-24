@@ -464,23 +464,20 @@ class AdminCreateUserTest(ZulipTestCase):
 
         result = self.client_post("/json/users", dict(
             email='romeo@not-zulip.com',
-            )
-        )
+        ))
         self.assert_json_error(result, "Missing 'password' argument")
 
         result = self.client_post("/json/users", dict(
             email='romeo@not-zulip.com',
             password='xxxx',
-            )
-        )
+        ))
         self.assert_json_error(result, "Missing 'full_name' argument")
 
         result = self.client_post("/json/users", dict(
             email='romeo@not-zulip.com',
             password='xxxx',
             full_name='Romeo Montague',
-            )
-        )
+        ))
         self.assert_json_error(result, "Missing 'short_name' argument")
 
         result = self.client_post("/json/users", dict(
@@ -488,8 +485,7 @@ class AdminCreateUserTest(ZulipTestCase):
             password='xxxx',
             full_name='Romeo Montague',
             short_name='Romeo',
-            )
-        )
+        ))
         self.assert_json_error(result, "Bad name or username")
 
         result = self.client_post("/json/users", dict(
@@ -497,8 +493,7 @@ class AdminCreateUserTest(ZulipTestCase):
             password='xxxx',
             full_name='Romeo Montague',
             short_name='Romeo',
-            )
-        )
+        ))
         self.assert_json_error(result,
                                "Email 'romeo@not-zulip.com' does not belong to domain 'zulip.com'")
 
@@ -789,7 +784,7 @@ class BotTest(ZulipTestCase):
         bot_info = dict(
             full_name='',
             short_name='',
-            )
+        )
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, 'Bad name or username')
         self.assert_num_bots_equal(0)
@@ -840,7 +835,7 @@ class BotTest(ZulipTestCase):
         bot_info = dict(
             full_name='Duplicate',
             short_name='hambot',
-            )
+        )
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, 'Username already in use')
 
@@ -871,7 +866,7 @@ class BotTest(ZulipTestCase):
                 short_name='whatever',
                 file1=fp1,
                 file2=fp2,
-                )
+            )
             result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, 'You may only upload one file at a time')
         self.assert_num_bots_equal(0)

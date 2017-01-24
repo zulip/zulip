@@ -288,7 +288,7 @@ class Client(object):
                 client_name=self.client_name,
                 vendor=vendor,
                 vendor_version=vendor_version,
-                )
+        )
 
     def do_api_query(self, orig_request, url, method="POST", longpolling=False, files=None):
         # type: (Mapping[str, Any], str, str, bool, List[IO]) -> Dict[str, Any]

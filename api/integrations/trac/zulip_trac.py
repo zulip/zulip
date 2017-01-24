@@ -80,7 +80,7 @@ def send_update(ticket, content):
             "to": config.STREAM_FOR_NOTIFICATIONS,
             "content": content,
             "subject": trac_subject(ticket)
-            })
+    })
 
 class ZulipPlugin(Component):
     implements(ITicketChangeListener)

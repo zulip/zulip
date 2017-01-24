@@ -578,7 +578,7 @@ def do_set_realm_default_language(realm, default_language):
             op="update",
             property="default_language",
             value=default_language
-            )
+    )
     send_event(event, active_user_ids(realm))
 
 def do_set_realm_waiting_period_threshold(realm, threshold):

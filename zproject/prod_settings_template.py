@@ -25,7 +25,7 @@ AUTHENTICATION_BACKENDS = (
     # 'zproject.backends.GitHubAuthBackend', # GitHub auth, setup below
     # 'zproject.backends.ZulipLDAPAuthBackend', # LDAP, setup below
     # 'zproject.backends.ZulipRemoteUserBackend', # Local SSO, setup docs on readthedocs
-    )
+)
 
 # To enable Google authentication, you need to do the following:
 #

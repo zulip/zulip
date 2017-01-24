@@ -20,7 +20,7 @@ states = {
     "WARNING": 1,
     "CRITICAL": 2,
     "UNKNOWN": 3
-    } # type: Dict[str, int]
+} # type: Dict[str, int]
 
 def report(state, data, last_check):
     # type: (str, str, float) -> None

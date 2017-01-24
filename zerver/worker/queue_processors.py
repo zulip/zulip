@@ -267,7 +267,7 @@ class ErrorReporter(QueueProcessingWorker):
                 method='POST',
                 url='deployments/report_error',
                 make_request=(lambda type, report: {'type': type, 'report': simplejson.dumps(report)}),
-                )
+            )
         QueueProcessingWorker.start(self)
 
     def consume(self, event):

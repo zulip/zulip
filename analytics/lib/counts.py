@@ -350,4 +350,4 @@ COUNT_STATS = {
     'messages_sent_to_stream:is_bot:hour': CountStat(
         'messages_sent_to_stream:is_bot', zerver_count_message_by_stream, {},
         (UserProfile, 'is_bot'), CountStat.HOUR, False)
-    }
+}

@@ -47,7 +47,7 @@ email_unsubscribers = {
     "missed_messages": ("missed messages", do_missedmessage_unsubscribe),
     "welcome": ("welcome", do_welcome_unsubscribe),
     "digest": ("digest", do_digest_unsubscribe)
-    }
+}
 
 # Login NOT required. These are for one-click unsubscribes.
 def email_unsubscribe(request, type, token):

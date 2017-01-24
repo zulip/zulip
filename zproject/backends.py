@@ -443,4 +443,4 @@ AUTH_BACKEND_NAME_MAP = {
     u'Google': GoogleMobileOauth2Backend,
     u'LDAP': ZulipLDAPAuthBackend,
     u'RemoteUser': ZulipRemoteUserBackend,
-    } # type: Dict[Text, Any]
+} # type: Dict[Text, Any]

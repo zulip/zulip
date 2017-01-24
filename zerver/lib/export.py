@@ -259,8 +259,7 @@ class Config(object):
                     may be deeper issues going on.''' % (
                         self.table,
                         self.id_source[0],
-                        self.virtual_parent.table,
-                        ))
+                        self.virtual_parent.table))
 
 
 def export_from_config(response, config, seed_object=None, context=None):
@@ -589,7 +588,7 @@ def fetch_user_profile_cross_realm(response, config, context):
             get_user_profile_by_email(settings.NOTIFICATION_BOT),
             get_user_profile_by_email(settings.EMAIL_GATEWAY_BOT),
             get_user_profile_by_email(settings.WELCOME_BOT),
-            ]]
+        ]]
 
 def fetch_attachment_data(response, realm_id, message_ids):
     # type: (TableData, int, Set[int]) -> None

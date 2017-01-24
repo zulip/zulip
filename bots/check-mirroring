@@ -90,7 +90,7 @@ if options.sharded:
         ("tabbott-nagios-test-12", "d"),
         ("tabbott-nagios-test-11", "e"),
         ("tabbott-nagios-test-9", "f"),
-        ]
+    ]
     for (stream, test) in test_streams:
         if stream == "message":
             continue
@@ -99,7 +99,7 @@ else:
     test_streams = [
         ("message", "p"),
         ("tabbott-nagios-test", "a"),
-        ]
+    ]
 
 def print_status_and_exit(status):
     # type: (int) -> None
@@ -262,7 +262,7 @@ for key, (stream, test) in hzkeys.items():
                 "subject": "test",
                 "content": str(key),
                 "to": stream,
-                })
+        })
     receive_zephyrs()
 
 logger.info("Sent Zulip messages!")

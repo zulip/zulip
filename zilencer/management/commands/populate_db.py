@@ -223,7 +223,7 @@ class Command(BaseCommand):
                     ("Fred Sipb (MIT)", "sipbtest@mit.edu"),
                     ("Athena Consulting Exchange User (MIT)", "starnine@mit.edu"),
                     ("Esp Classroom (MIT)", "espuser@mit.edu"),
-                    ]
+                ]
                 create_users(mit_realm, testsuite_mit_users)
 
             # These bots are directly referenced from code and thus
@@ -234,7 +234,7 @@ class Command(BaseCommand):
                 ("Zulip New User Bot", "new-user-bot@zulip.com"),
                 ("Zulip Error Bot", "error-bot@zulip.com"),
                 ("Zulip Default Bot", "default-bot@zulip.com"),
-                ]
+            ]
             zulip_realm_bots.extend(all_realm_bots)
             create_users(zulip_realm, zulip_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
 
@@ -294,12 +294,12 @@ class Command(BaseCommand):
                     ("Zulip Commit Bot", "commit-bot@zulip.com"),
                     ("Zulip Trac Bot", "trac-bot@zulip.com"),
                     ("Zulip Nagios Bot", "nagios-bot@zulip.com"),
-                    ]
+                ]
                 create_users(zulip_realm, internal_zulip_users_nosubs, bot_type=UserProfile.DEFAULT_BOT)
 
             zulip_cross_realm_bots = [
                 ("Zulip Feedback Bot", "feedback@zulip.com"),
-                ]
+            ]
             create_users(zulip_realm, zulip_cross_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
 
             # Mark all messages as read

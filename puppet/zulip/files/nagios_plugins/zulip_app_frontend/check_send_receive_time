@@ -96,7 +96,7 @@ states = {
     "WARNING": 1,
     "CRITICAL": 2,
     "UNKNOWN": 3
-    }
+}
 
 def report(state, timestamp, msg=None):
     # type: (str, Any, Optional[str]) -> None
@@ -177,7 +177,7 @@ else:
         "content": msg_to_send,
         "subject": "time to send",
         "to": recipient.email,
-        })
+    })
 
 msg_content = [] # type: List[str]
 

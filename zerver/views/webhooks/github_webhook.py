@@ -136,7 +136,7 @@ def get_create_or_delete_body(payload, action):
         action,
         ref_type,
         payload['ref']
-        ).rstrip()
+    ).rstrip()
 
 def get_commit_comment_body(payload):
     # type: (Dict[str, Any]) -> Text

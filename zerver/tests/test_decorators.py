@@ -29,7 +29,7 @@ from zerver.decorator import (
     get_client_name, internal_notify_view, is_local_addr,
     rate_limit, validate_api_key, logged_in_and_active,
     return_success_on_head_request
-    )
+)
 from zerver.lib.validator import (
     check_string, check_dict, check_bool, check_int, check_list
 )
@@ -60,7 +60,7 @@ class DecoratorTestCase(TestCase):
             GET=dict(),
             POST=dict(),
             META=dict(),
-            )
+        )
 
         self.assertEqual(get_client_name(req, is_json_view=True), 'website')
         self.assertEqual(get_client_name(req, is_json_view=False), 'Unspecified')
@@ -69,7 +69,7 @@ class DecoratorTestCase(TestCase):
             GET=dict(),
             POST=dict(),
             META=dict(HTTP_USER_AGENT='Mozilla/bla bla bla'),
-            )
+        )
 
         self.assertEqual(get_client_name(req, is_json_view=True), 'website')
         self.assertEqual(get_client_name(req, is_json_view=False), 'Mozilla')
@@ -78,7 +78,7 @@ class DecoratorTestCase(TestCase):
             GET=dict(),
             POST=dict(),
             META=dict(HTTP_USER_AGENT='ZulipDesktop/bla bla bla'),
-            )
+        )
 
         self.assertEqual(get_client_name(req, is_json_view=True), 'ZulipDesktop')
         self.assertEqual(get_client_name(req, is_json_view=False), 'ZulipDesktop')
@@ -87,7 +87,7 @@ class DecoratorTestCase(TestCase):
             GET=dict(client='fancy phone'),
             POST=dict(),
             META=dict(),
-            )
+        )
 
         self.assertEqual(get_client_name(req, is_json_view=True), 'fancy phone')
         self.assertEqual(get_client_name(req, is_json_view=False), 'fancy phone')
@@ -782,7 +782,7 @@ class TestInternalNotifyView(TestCase):
         req = self.Request(
             POST=dict(secret=secret),
             META=dict(REMOTE_ADDR='127.0.0.1'),
-            )
+        )
 
         req._tornado_handler = 'set'
         with self.settings(SHARED_SECRET=secret):
@@ -796,7 +796,7 @@ class TestInternalNotifyView(TestCase):
         req = self.Request(
             POST=dict(secret=secret),
             META=dict(REMOTE_ADDR='127.0.0.1'),
-            )
+        )
 
         with self.settings(SHARED_SECRET='broken'):
             self.assertFalse(authenticate_notify(req))
@@ -808,7 +808,7 @@ class TestInternalNotifyView(TestCase):
         req = self.Request(
             POST=dict(secret=secret),
             META=dict(REMOTE_ADDR='3.3.3.3'),
-            )
+        )
 
         with self.settings(SHARED_SECRET=secret):
             self.assertFalse(authenticate_notify(req))
