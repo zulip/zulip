@@ -121,7 +121,8 @@ def run_test(test):
         else:
             print("Test doesn't have _pre_setup; something is wrong.")
             print("Here's a debugger. Good luck!")
-            import pdb; pdb.set_trace()
+            import pdb
+            pdb.set_trace()
     test._pre_setup()
 
     start_time = time.time()
