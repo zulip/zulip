@@ -82,10 +82,53 @@ def check_pep8(files):
     # type: (List[str]) -> bool
     failed = False
     ignored_rules = [
-        'E402', 'E501', 'W503', 'E711', 'E226',
-        'E126', 'E121', 'E123', 'E266', 'E265', 'E261', 'E221',
-        'E241', 'E712', 'E702', 'E401', 'E115', 'E114', 'E731', 'E302',
-        'E741', 'E714', 'W391', 'E713', 'E305', 'E251', 'E306',
+        #
+        # For each of these rules, we have no explanation for why it is
+        # ignored. It either doesn't fit with the style of the project or should
+        # actually be cleaned up.
+        #
+        'W391', 'W503',
+
+        'E114', 'E115', 'E121', 'E123', 'E126', 'E226', 'E241', 'E261', 'E302',
+        'E305', 'E306', 'E401', 'E501', 'E702', 'E711', 'E712', 'E713', 'E714',
+        'E741',
+
+        #
+        # Each of these rules are ignored for the explained reason.
+        #
+
+        # "multiple spaces before operator"
+        # There are several typos here, but also several instances that are
+        # being used for alignment in dict keys/values using the `dict`
+        # constructor. We could fix the alignment cases by switching to the `{}`
+        # constructor, but it makes fixing this rule a little less
+        # straightforward.
+        'E221',
+
+        # "unexpected spaces around keyword / parameter equals"
+        # Many of these should be fixed, but many are also being used for
+        # alignment/making the code easier to read.
+        'E251',
+
+        # "block comment should start with '#'"
+        # These serve to show which lines should be changed in files customized
+        # by the user. We could probably resolve one of E265 or E266 by
+        # standardizing on a single style for lines that the user might want to
+        # change.
+        'E265',
+
+        # "too many leading '#' for block comment"
+        # Most of these are there for valid reasons.
+        'E266',
+
+        # "module level import not at top of file"
+        # Most of these are there for valid reasons, though there might be a
+        # few thatcould be eliminated.
+        'E402',
+
+        # "do not assign a lambda expression, use a def"
+        # Fixing these would probably reduce readability in most cases.
+        'E731',
     ]
     pep8 = subprocess.Popen(
         ['pycodestyle'] + files + ['--ignore={rules}'.format(rules=','.join(ignored_rules))],
