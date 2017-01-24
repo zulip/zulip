@@ -74,7 +74,7 @@ from zerver.lib.html_diff import highlight_html_differences
 from zerver.lib.alert_words import user_alert_words, add_user_alert_words, \
     remove_user_alert_words, set_user_alert_words
 from zerver.lib.push_notifications import num_push_devices_for_user, \
-     send_apple_push_notification, send_android_push_notification
+    send_apple_push_notification, send_android_push_notification
 from zerver.lib.notifications import clear_followup_emails_queue
 from zerver.lib.narrow import check_supported_events_narrow_filter
 from zerver.lib.request import JsonableError
@@ -574,10 +574,10 @@ def do_set_realm_default_language(realm, default_language):
     realm.default_language = default_language
     realm.save(update_fields=['default_language'])
     event = dict(
-            type="realm",
-            op="update",
-            property="default_language",
-            value=default_language
+        type="realm",
+        op="update",
+        property="default_language",
+        value=default_language
     )
     send_event(event, active_user_ids(realm))
 
@@ -789,7 +789,7 @@ def get_recipient_user_profiles(recipient, sender_id):
             'user_profile__realm__domain'
         ]
         query = Subscription.objects.select_related("user_profile", "user_profile__realm").only(*fields).filter(
-                recipient=recipient, active=True)
+            recipient=recipient, active=True)
         recipients = [s.user_profile for s in query]
     else:
         raise ValueError('Bad recipient type')
@@ -939,9 +939,9 @@ def do_send_messages(messages):
             message['message'].recipient.type == Recipient.PERSONAL and
                 settings.FEEDBACK_BOT in [up.email for up in message['recipients']]):
             queue_json_publish(
-                    'feedback_messages',
-                    message_to_dict(message['message'], apply_markdown=False),
-                    lambda x: None
+                'feedback_messages',
+                message_to_dict(message['message'], apply_markdown=False),
+                lambda x: None
             )
 
     # Note that this does not preserve the order of message ids
@@ -1015,10 +1015,10 @@ def do_send_typing_notification(notification):
     # Include a list of recipients in the event body to help identify where the typing is happening
     recipient_dicts = [{'user_id': profile.id, 'email': profile.email} for profile in recipient_user_profiles]
     event = dict(
-            type            = 'typing',
-            op              = notification['op'],
-            sender          = sender_dict,
-            recipients      = recipient_dicts)
+        type            = 'typing',
+        op              = notification['op'],
+        sender          = sender_dict,
+        recipients      = recipient_dicts)
 
     send_event(event, user_ids_to_notify)
 

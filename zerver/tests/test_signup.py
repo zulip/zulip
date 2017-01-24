@@ -184,7 +184,7 @@ class PasswordResetTest(ZulipTestCase):
         # check the redirect link telling you to check mail for password reset link
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
-                "/accounts/password/reset/done/"))
+            "/accounts/password/reset/done/"))
         result = self.client_get(result["Location"])
 
         self.assert_in_response("Check your email to finish the process.", result)
@@ -687,7 +687,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
         # Simulate a new user signing up, which enqueues 2 welcome e-mails.
         enqueue_welcome_emails(email, "King Hamlet")
         self.assertEqual(2, len(ScheduledJob.objects.filter(
-                type=ScheduledJob.EMAIL, filter_string__iexact=email)))
+            type=ScheduledJob.EMAIL, filter_string__iexact=email)))
 
         # Simulate unsubscribing from the welcome e-mails.
         unsubscribe_link = one_click_unsubscribe_link(user_profile, "welcome")
@@ -696,7 +696,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
         # The welcome email jobs are no longer scheduled.
         self.assertEqual(result.status_code, 200)
         self.assertEqual(0, len(ScheduledJob.objects.filter(
-                type=ScheduledJob.EMAIL, filter_string__iexact=email)))
+            type=ScheduledJob.EMAIL, filter_string__iexact=email)))
 
     def test_digest_unsubscribe(self):
         # type: () -> None
@@ -714,7 +714,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
         # Enqueue a fake digest email.
         send_digest_email(user_profile, "", "", "")
         self.assertEqual(1, len(ScheduledJob.objects.filter(
-                    type=ScheduledJob.EMAIL, filter_string__iexact=email)))
+            type=ScheduledJob.EMAIL, filter_string__iexact=email)))
 
         # Simulate unsubscribing from digest e-mails.
         unsubscribe_link = one_click_unsubscribe_link(user_profile, "digest")
@@ -726,7 +726,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
         user_profile = UserProfile.objects.get(email="hamlet@zulip.com")
         self.assertFalse(user_profile.enable_digest_emails)
         self.assertEqual(0, len(ScheduledJob.objects.filter(
-                type=ScheduledJob.EMAIL, filter_string__iexact=email)))
+            type=ScheduledJob.EMAIL, filter_string__iexact=email)))
 
 class RealmCreationTest(ZulipTestCase):
 
@@ -745,7 +745,7 @@ class RealmCreationTest(ZulipTestCase):
             result = self.client_post('/create_realm/', {'email': email})
             self.assertEqual(result.status_code, 302)
             self.assertTrue(result["Location"].endswith(
-                    "/accounts/send_confirm/%s" % (email,)))
+                "/accounts/send_confirm/%s" % (email,)))
             result = self.client_get(result["Location"])
             self.assert_in_response("Check your email so we can get started.", result)
 
@@ -785,7 +785,7 @@ class RealmCreationTest(ZulipTestCase):
             result = self.client_post('/create_realm/', {'email': email})
             self.assertEqual(result.status_code, 302)
             self.assertTrue(result["Location"].endswith(
-                    "/accounts/send_confirm/%s" % (email,)))
+                "/accounts/send_confirm/%s" % (email,)))
             result = self.client_get(result["Location"])
             self.assert_in_response("Check your email so we can get started.", result)
 
@@ -865,7 +865,7 @@ class UserSignUpTest(ZulipTestCase):
         result = self.client_post('/accounts/home/', {'email': email})
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
-                "/accounts/send_confirm/%s" % (email,)))
+            "/accounts/send_confirm/%s" % (email,)))
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email so we can get started.", result)
 
@@ -903,7 +903,7 @@ class UserSignUpTest(ZulipTestCase):
 
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
-                "/accounts/send_confirm/%s" % (email,)))
+            "/accounts/send_confirm/%s" % (email,)))
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email so we can get started.", result)
         # Visit the confirmation link.
@@ -944,7 +944,7 @@ class UserSignUpTest(ZulipTestCase):
 
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
-                "/accounts/send_confirm/%s" % (email,)))
+            "/accounts/send_confirm/%s" % (email,)))
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email so we can get started.", result)
         # Visit the confirmation link.
@@ -1023,7 +1023,7 @@ class UserSignUpTest(ZulipTestCase):
 
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
-                "/accounts/send_confirm/%s" % (email,)))
+            "/accounts/send_confirm/%s" % (email,)))
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email so we can get started.", result)
         # Visit the confirmation link.
@@ -1097,7 +1097,7 @@ class UserSignUpTest(ZulipTestCase):
 
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
-                "/accounts/send_confirm/%s" % (email,)))
+            "/accounts/send_confirm/%s" % (email,)))
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email so we can get started.", result)
         # Visit the confirmation link.

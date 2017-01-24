@@ -83,7 +83,7 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
             result = self.client_post(generated_link, {'email': email})
             self.assertEqual(result.status_code, 302)
             self.assertTrue(result["Location"].endswith(
-                    "/accounts/send_confirm/%s" % (email,)))
+                "/accounts/send_confirm/%s" % (email,)))
             result = self.client_get(result["Location"])
             self.assert_in_response("Check your email so we can get started.", result)
 

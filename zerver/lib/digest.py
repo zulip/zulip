@@ -107,8 +107,8 @@ def gather_new_users(user_profile, threshold):
         new_users = [] # type: List[UserProfile]
     else:
         new_users = list(UserProfile.objects.filter(
-                realm=user_profile.realm, date_joined__gt=threshold,
-                is_bot=False))
+            realm=user_profile.realm, date_joined__gt=threshold,
+            is_bot=False))
     user_names = [user.full_name for user in new_users]
 
     return len(user_names), user_names
@@ -119,7 +119,7 @@ def gather_new_streams(user_profile, threshold):
         new_streams = [] # type: List[Stream]
     else:
         new_streams = list(get_active_streams(user_profile.realm).filter(
-                invite_only=False, date_created__gt=threshold))
+            invite_only=False, date_created__gt=threshold))
 
     base_url = u"%s/#narrow/stream/" % (user_profile.realm.uri,)
 

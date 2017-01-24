@@ -148,8 +148,8 @@ class LibratoWebhookHandler(LibratoWebhookParser):
         metric_name, recorded_at = self.parse_violation(violation)
         metric_condition_template = u"\n>Metric `{metric_name}`, {summary_function} was {condition_type} {threshold}"
         content = metric_condition_template.format(
-                metric_name=metric_name, summary_function=summary_function, condition_type=condition_type,
-                threshold=threshold)
+            metric_name=metric_name, summary_function=summary_function, condition_type=condition_type,
+            threshold=threshold)
         if duration:
             content += u" by {duration}s".format(duration=duration)
         content += u", recorded at {recorded_at}".format(recorded_at=recorded_at)

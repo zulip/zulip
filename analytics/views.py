@@ -699,9 +699,9 @@ def get_user_activity_records_for_realm(realm, is_bot):
     ]
 
     records = UserActivity.objects.filter(
-            user_profile__realm__string_id=realm,
-            user_profile__is_active=True,
-            user_profile__is_bot=is_bot
+        user_profile__realm__string_id=realm,
+        user_profile__is_active=True,
+        user_profile__is_bot=is_bot
     )
     records = records.order_by("user_profile__email", "-last_visit")
     records = records.select_related('user_profile', 'client').only(*fields)
@@ -718,7 +718,7 @@ def get_user_activity_records_for_email(email):
     ]
 
     records = UserActivity.objects.filter(
-            user_profile__email=email
+        user_profile__email=email
     )
     records = records.order_by("-last_visit")
     records = records.select_related('user_profile', 'client').only(*fields)
@@ -736,10 +736,10 @@ def raw_user_activity_table(records):
     def row(record):
         # type: (QuerySet) -> List[Any]
         return [
-                record.query,
-                record.client.name,
-                record.count,
-                format_date_for_activity_reports(record.last_visit)
+            record.query,
+            record.client.name,
+            record.count,
+            format_date_for_activity_reports(record.last_visit)
         ]
 
     rows = list(map(row, records))
@@ -759,14 +759,14 @@ def get_user_activity_summary(records):
         # type: (str, QuerySet) -> None
         if action not in summary:
             summary[action] = dict(
-                    count=record.count,
-                    last_visit=record.last_visit
+                count=record.count,
+                last_visit=record.last_visit
             )
         else:
             summary[action]['count'] += record.count
             summary[action]['last_visit'] = max(
-                    summary[action]['last_visit'],
-                    record.last_visit
+                summary[action]['last_visit'],
+                record.last_visit
             )
 
     if records:
@@ -820,13 +820,13 @@ def realm_activity_link(realm_str):
 def realm_client_table(user_summaries):
     # type: (Dict[str, Dict[str, Dict[str, Any]]]) -> str
     exclude_keys = [
-            'internal',
-            'name',
-            'use',
-            'send',
-            'pointer',
-            'website',
-            'desktop',
+        'internal',
+        'name',
+        'use',
+        'send',
+        'pointer',
+        'website',
+        'desktop',
     ]
 
     rows = []
@@ -840,22 +840,22 @@ def realm_client_table(user_summaries):
             count = v['count']
             last_visit = v['last_visit']
             row = [
-                    format_date_for_activity_reports(last_visit),
-                    client,
-                    name,
-                    email_link,
-                    count,
+                format_date_for_activity_reports(last_visit),
+                client,
+                name,
+                email_link,
+                count,
             ]
             rows.append(row)
 
     rows = sorted(rows, key=lambda r: r[0], reverse=True)
 
     cols = [
-            'Last visit',
-            'Client',
-            'Name',
-            'Email',
-            'Count',
+        'Last visit',
+        'Client',
+        'Name',
+        'Email',
+        'Count',
     ]
 
     title = 'Clients'
@@ -872,18 +872,18 @@ def user_activity_summary_table(user_summary):
         count = v['count']
         last_visit = v['last_visit']
         row = [
-                format_date_for_activity_reports(last_visit),
-                client,
-                count,
+            format_date_for_activity_reports(last_visit),
+            client,
+            count,
         ]
         rows.append(row)
 
     rows = sorted(rows, key=lambda r: r[0], reverse=True)
 
     cols = [
-            'last_visit',
-            'client',
-            'count',
+        'last_visit',
+        'client',
+        'count',
     ]
 
     title = 'User Activity'
@@ -944,15 +944,15 @@ def realm_user_summary_table(all_records, admin_emails):
     rows = sorted(rows, key=by_used_time, reverse=True)
 
     cols = [
-            'Name',
-            'Email',
-            'Total sent',
-            'Heard from',
-            'Message sent',
-            'Pointer motion',
-            'Desktop',
-            'ZulipiOS',
-            'Android'
+        'Name',
+        'Email',
+        'Total sent',
+        'Heard from',
+        'Message sent',
+        'Pointer motion',
+        'Desktop',
+        'ZulipiOS',
+        'Android',
     ]
 
     title = 'Summary'

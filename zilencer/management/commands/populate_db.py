@@ -386,7 +386,7 @@ def send_messages(data):
             stream = Stream.objects.get(id=message.recipient.type_id)
             # Pick a random subscriber to the stream
             message.sender = random.choice(Subscription.objects.filter(
-                    recipient=message.recipient)).user_profile
+                recipient=message.recipient)).user_profile
             message.subject = stream.name + Text(random.randint(1, 3))
             saved_data['subject'] = message.subject
 

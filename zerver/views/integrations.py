@@ -126,8 +126,8 @@ def api_endpoint_docs(request):
             for lang in call.get('example_' + example_type, []):
                 langs.add(lang)
     return render_to_response(
-            'zerver/api_endpoints.html', {
-                'content': calls,
-                'langs': langs,
-            },
-            request=request)
+        'zerver/api_endpoints.html', {
+            'content': calls,
+            'langs': langs,
+        },
+        request=request)

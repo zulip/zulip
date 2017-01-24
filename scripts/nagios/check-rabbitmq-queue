@@ -60,7 +60,7 @@ if not set(warn_queues) - set(("missedmessage_emails", "digest_emails")) and \
         now_struct.tm_hour == 15 and now_struct.tm_min < 25:
     status = 0
     print("%s|%s|%s|processing digests, not alerting on elevated mail queues" % (
-            now, status, states[status]))
+        now, status, states[status]))
     exit(0)
 
 if status > 0:

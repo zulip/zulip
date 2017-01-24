@@ -132,7 +132,7 @@ def accounts_register(request):
             # zephyr mirroring realm.
             hesiod_name = compute_mit_user_fullname(email)
             form = RegistrationForm(
-                    initial={'full_name': hesiod_name if "@" not in hesiod_name else ""})
+                initial={'full_name': hesiod_name if "@" not in hesiod_name else ""})
             name_validated = True
         elif settings.POPULATE_PROFILE_VIA_LDAP:
             for backend in get_backends():

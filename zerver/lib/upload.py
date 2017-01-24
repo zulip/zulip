@@ -198,11 +198,11 @@ class S3UploadBackend(ZulipUploadBackend):
         url = "/user_uploads/%s" % (s3_file_name,)
 
         upload_image_to_s3(
-                bucket_name,
-                s3_file_name,
-                content_type,
-                user_profile,
-                file_data
+            bucket_name,
+            s3_file_name,
+            content_type,
+            user_profile,
+            file_data
         )
 
         create_attachment(uploaded_file_name, s3_file_name, user_profile)

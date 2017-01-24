@@ -76,10 +76,10 @@ def trac_subject(ticket):
 def send_update(ticket, content):
     # type: (Any, str) -> None
     client.send_message({
-            "type": "stream",
-            "to": config.STREAM_FOR_NOTIFICATIONS,
-            "content": content,
-            "subject": trac_subject(ticket)
+        "type": "stream",
+        "to": config.STREAM_FOR_NOTIFICATIONS,
+        "content": content,
+        "subject": trac_subject(ticket)
     })
 
 class ZulipPlugin(Component):

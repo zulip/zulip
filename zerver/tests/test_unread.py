@@ -80,9 +80,10 @@ class PointerTest(ZulipTestCase):
 class UnreadCountTests(ZulipTestCase):
     def setUp(self):
         # type: () -> None
-        self.unread_msg_ids = [self.send_message(
+        self.unread_msg_ids = [
+            self.send_message(
                 "iago@zulip.com", "hamlet@zulip.com", Recipient.PERSONAL, "hello"),
-                               self.send_message(
+            self.send_message(
                 "iago@zulip.com", "hamlet@zulip.com", Recipient.PERSONAL, "hello2")]
 
     # Sending a new message results in unread UserMessages being created

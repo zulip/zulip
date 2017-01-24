@@ -84,10 +84,6 @@ def check_pep8(files):
     ignored_rules = [
         # Each of these rules are ignored for the explained reason.
 
-        # 'continuation line over-indented for hanging indent'
-        # Most of these we should probably clean up.
-        'E126',
-
         # "multiple spaces before operator"
         # There are several typos here, but also several instances that are
         # being used for alignment in dict keys/values using the `dict`

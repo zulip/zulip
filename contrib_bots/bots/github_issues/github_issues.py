@@ -85,12 +85,12 @@ class IssueHandler(object):
 
         # Creates the issue json, that is transmitted to the github api servers
         issue = {
-                 'title': new_issue_title,
-                 'body': '{} **Sent by [{}](https://chat.zulip.org/#) from zulip**'.format(issue_content, original_sender),
-                 'assignee': '',
-                 'milestone': 'none',
-                 'labels': [''],
-                }
+            'title': new_issue_title,
+            'body': '{} **Sent by [{}](https://chat.zulip.org/#) from zulip**'.format(issue_content, original_sender),
+            'assignee': '',
+            'milestone': 'none',
+            'labels': [''],
+        }
         # Sends the HTTP post request
         r = session.post(url_new, json.dumps(issue))
 

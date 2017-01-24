@@ -252,16 +252,16 @@ logger.info("Sent Zephyr messages!")
 for key, (stream, test) in hzkeys.items():
     if stream == "message":
         send_zulip({
-                "type": "private",
-                "content": str(key),
-                "to": zulip_user,
+            "type": "private",
+            "content": str(key),
+            "to": zulip_user,
         })
     else:
         send_zulip({
-                "type": "stream",
-                "subject": "test",
-                "content": str(key),
-                "to": stream,
+            "type": "stream",
+            "subject": "test",
+            "content": str(key),
+            "to": stream,
         })
     receive_zephyrs()
 

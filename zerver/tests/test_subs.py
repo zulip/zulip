@@ -415,9 +415,9 @@ class StreamAdminTest(ZulipTestCase):
         deletion_events = [e['event'] for e in events if e['event']['type'] == 'subscription']
         if subscribed:
             self.assertEqual(deletion_events[0], dict(
-                    op='remove',
-                    type='subscription',
-                    subscriptions=[{'name': active_name, 'stream_id': stream.id}]
+                op='remove',
+                type='subscription',
+                subscriptions=[{'name': active_name, 'stream_id': stream.id}]
             ))
         else:
             # You could delete the stream, but you weren't on it so you don't
@@ -435,7 +435,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assertTrue(deactivated_stream.invite_only)
         self.assertEqual(deactivated_stream.name, deactivated_stream_name)
         subscribers = self.users_subscribed_to_stream(
-                deactivated_stream_name, realm)
+            deactivated_stream_name, realm)
         self.assertEqual(subscribers, [])
 
         # It doesn't show up in the list of public streams anymore.
@@ -1478,8 +1478,8 @@ class SubscriptionAPITest(ZulipTestCase):
             if isinstance(ev['event']['subscriptions'][0], dict):
                 self.assertEqual(ev['event']['op'], 'add')
                 self.assertEqual(
-                        set(ev['event']['subscriptions'][0]['subscribers']),
-                        set([email1, email2])
+                    set(ev['event']['subscriptions'][0]['subscribers']),
+                    set([email1, email2])
                 )
             else:
                 # Check "peer_add" events for streams users were
@@ -1495,9 +1495,9 @@ class SubscriptionAPITest(ZulipTestCase):
         with tornado_redirected_to_list(events):
             with queries_captured() as queries:
                 self.common_subscribe_to_streams(
-                        self.test_email,
-                        streams_to_sub,
-                        dict(principals=ujson.dumps([self.test_email])),
+                    self.test_email,
+                    streams_to_sub,
+                    dict(principals=ujson.dumps([self.test_email])),
                 )
         self.assert_max_length(queries, 8)
 
@@ -1507,8 +1507,8 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(add_event['event']['op'], 'add')
         self.assertEqual(add_event['users'], [get_user_profile_by_email(self.test_email).id])
         self.assertEqual(
-                set(add_event['event']['subscriptions'][0]['subscribers']),
-                set([email1, email2, self.test_email])
+            set(add_event['event']['subscriptions'][0]['subscribers']),
+            set([email1, email2, self.test_email])
         )
 
         self.assertEqual(len(add_peer_event['users']), 16)
@@ -1534,8 +1534,8 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(add_event['event']['op'], 'add')
         self.assertEqual(add_event['users'], [get_user_profile_by_email(email3).id])
         self.assertEqual(
-                set(add_event['event']['subscriptions'][0]['subscribers']),
-                set([email1, email2, email3, self.test_email])
+            set(add_event['event']['subscriptions'][0]['subscribers']),
+            set([email1, email2, email3, self.test_email])
         )
 
         # We don't send a peer_add event to othello
@@ -1561,9 +1561,9 @@ class SubscriptionAPITest(ZulipTestCase):
         events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
             self.common_subscribe_to_streams(
-                    self.test_email,
-                    streams_to_sub,
-                    dict(principals=ujson.dumps(new_users_to_subscribe)),
+                self.test_email,
+                streams_to_sub,
+                dict(principals=ujson.dumps(new_users_to_subscribe)),
             )
 
         add_peer_events = [events[2], events[3]]
@@ -1667,9 +1667,9 @@ class SubscriptionAPITest(ZulipTestCase):
         with tornado_redirected_to_list(events):
             with queries_captured() as queries:
                 self.common_subscribe_to_streams(
-                        'starnine@mit.edu',
-                        streams,
-                        dict(principals=ujson.dumps(['starnine@mit.edu'])),
+                    'starnine@mit.edu',
+                    streams,
+                    dict(principals=ujson.dumps(['starnine@mit.edu'])),
                 )
         # Make sure Zephyr mirroring realms such as MIT do not get
         # any tornado subscription events
@@ -1686,9 +1686,9 @@ class SubscriptionAPITest(ZulipTestCase):
 
         with queries_captured() as queries:
                 self.common_subscribe_to_streams(
-                        self.test_email,
-                        streams,
-                        dict(principals=ujson.dumps([self.test_email])),
+                    self.test_email,
+                    streams,
+                    dict(principals=ujson.dumps([self.test_email])),
                 )
         # Make sure we don't make O(streams) queries
         self.assert_max_length(queries, 10)
@@ -2120,7 +2120,7 @@ class GetSubscribersTest(ZulipTestCase):
         self.assertIn("subscribers", result)
         self.assertIsInstance(result["subscribers"], list)
         true_subscribers = [user_profile.email for user_profile in self.users_subscribed_to_stream(
-                stream_name, realm)]
+            stream_name, realm)]
         self.assertEqual(sorted(result["subscribers"]), sorted(true_subscribers))
 
     def make_subscriber_request(self, stream_id, email=None):

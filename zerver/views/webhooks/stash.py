@@ -37,7 +37,7 @@ def api_stash_webhook(request, user_profile, payload=REQ(argument_type='body'),
     content = "`%s` was pushed to **%s** in **%s/%s** with:\n\n" % (
         head_ref, branch_name, project_name, repo_name)
     content += "\n".join("* `%s`: %s" % (
-            commit[0], commit[1]) for commit in commits)
+        commit[0], commit[1]) for commit in commits)
 
     check_send_message(user_profile, get_client("ZulipStashWebhook"), "stream",
                        [stream], subject, content)

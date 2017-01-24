@@ -812,8 +812,8 @@ def send_notification_http(data):
     # type: (Mapping[str, Any]) -> None
     if settings.TORNADO_SERVER and not settings.RUNNING_INSIDE_TORNADO:
         requests_client.post(settings.TORNADO_SERVER + '/notify_tornado', data=dict(
-                data   = ujson.dumps(data),
-                secret = settings.SHARED_SECRET))
+            data   = ujson.dumps(data),
+            secret = settings.SHARED_SECRET))
     else:
         process_notification(data)
 

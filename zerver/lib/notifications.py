@@ -438,7 +438,7 @@ def send_future_email(recipients, email_html, email_text, subject,
                         user_profile = get_user_profile_by_email(bounce_email)
                         do_change_enable_digest_emails(user_profile, False)
                         log_digest_event("%s\nTurned off digest emails for %s" % (
-                                str(problems), bounce_email))
+                            str(problems), bounce_email))
                         continue
                 elif problem["reject_reason"] == "soft-bounce":
                     # A soft bounce is temporary; let it try to resolve itself.

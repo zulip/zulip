@@ -61,29 +61,29 @@ class MessageDict(object):
     def to_dict_uncached_helper(message, apply_markdown):
         # type: (Message, bool) -> Dict[str, Any]
         return MessageDict.build_message_dict(
-                apply_markdown = apply_markdown,
-                message = message,
-                message_id = message.id,
-                last_edit_time = message.last_edit_time,
-                edit_history = message.edit_history,
-                content = message.content,
-                subject = message.subject,
-                pub_date = message.pub_date,
-                rendered_content = message.rendered_content,
-                rendered_content_version = message.rendered_content_version,
-                sender_id = message.sender.id,
-                sender_email = message.sender.email,
-                sender_realm_id = message.sender.realm_id,
-                sender_realm_domain = message.sender.realm.domain,
-                sender_full_name = message.sender.full_name,
-                sender_short_name = message.sender.short_name,
-                sender_avatar_source = message.sender.avatar_source,
-                sender_is_mirror_dummy = message.sender.is_mirror_dummy,
-                sending_client_name = message.sending_client.name,
-                recipient_id = message.recipient.id,
-                recipient_type = message.recipient.type,
-                recipient_type_id = message.recipient.type_id,
-                reactions = Reaction.get_raw_db_rows([message.id])
+            apply_markdown = apply_markdown,
+            message = message,
+            message_id = message.id,
+            last_edit_time = message.last_edit_time,
+            edit_history = message.edit_history,
+            content = message.content,
+            subject = message.subject,
+            pub_date = message.pub_date,
+            rendered_content = message.rendered_content,
+            rendered_content_version = message.rendered_content_version,
+            sender_id = message.sender.id,
+            sender_email = message.sender.email,
+            sender_realm_id = message.sender.realm_id,
+            sender_realm_domain = message.sender.realm.domain,
+            sender_full_name = message.sender.full_name,
+            sender_short_name = message.sender.short_name,
+            sender_avatar_source = message.sender.avatar_source,
+            sender_is_mirror_dummy = message.sender.is_mirror_dummy,
+            sending_client_name = message.sending_client.name,
+            recipient_id = message.recipient.id,
+            recipient_type = message.recipient.type,
+            recipient_type_id = message.recipient.type_id,
+            reactions = Reaction.get_raw_db_rows([message.id])
         )
 
     @staticmethod
@@ -94,29 +94,29 @@ class MessageDict(object):
         all the relevant fields populated
         '''
         return MessageDict.build_message_dict(
-                apply_markdown = apply_markdown,
-                message = None,
-                message_id = row['id'],
-                last_edit_time = row['last_edit_time'],
-                edit_history = row['edit_history'],
-                content = row['content'],
-                subject = row['subject'],
-                pub_date = row['pub_date'],
-                rendered_content = row['rendered_content'],
-                rendered_content_version = row['rendered_content_version'],
-                sender_id = row['sender_id'],
-                sender_email = row['sender__email'],
-                sender_realm_id = row['sender__realm__id'],
-                sender_realm_domain = row['sender__realm__domain'],
-                sender_full_name = row['sender__full_name'],
-                sender_short_name = row['sender__short_name'],
-                sender_avatar_source = row['sender__avatar_source'],
-                sender_is_mirror_dummy = row['sender__is_mirror_dummy'],
-                sending_client_name = row['sending_client__name'],
-                recipient_id = row['recipient_id'],
-                recipient_type = row['recipient__type'],
-                recipient_type_id = row['recipient__type_id'],
-                reactions=row['reactions']
+            apply_markdown = apply_markdown,
+            message = None,
+            message_id = row['id'],
+            last_edit_time = row['last_edit_time'],
+            edit_history = row['edit_history'],
+            content = row['content'],
+            subject = row['subject'],
+            pub_date = row['pub_date'],
+            rendered_content = row['rendered_content'],
+            rendered_content_version = row['rendered_content_version'],
+            sender_id = row['sender_id'],
+            sender_email = row['sender__email'],
+            sender_realm_id = row['sender__realm__id'],
+            sender_realm_domain = row['sender__realm__domain'],
+            sender_full_name = row['sender__full_name'],
+            sender_short_name = row['sender__short_name'],
+            sender_avatar_source = row['sender__avatar_source'],
+            sender_is_mirror_dummy = row['sender__is_mirror_dummy'],
+            sending_client_name = row['sending_client__name'],
+            recipient_id = row['recipient_id'],
+            recipient_type = row['recipient__type'],
+            recipient_type_id = row['recipient__type_id'],
+            reactions=row['reactions']
         )
 
     @staticmethod
@@ -150,9 +150,9 @@ class MessageDict(object):
         avatar_url = get_avatar_url(sender_avatar_source, sender_email)
 
         display_recipient = get_display_recipient_by_id(
-                recipient_id,
-                recipient_type,
-                recipient_type_id
+            recipient_id,
+            recipient_type,
+            recipient_type_id
         )
 
         if recipient_type == Recipient.STREAM:

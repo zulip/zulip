@@ -228,22 +228,22 @@ class AuthBackendTest(TestCase):
         # Test LDAP auth fails when LDAP server rejects password
         with mock.patch('django_auth_ldap.backend._LDAPUser._authenticate_user_dn',
                         side_effect=_LDAPUser.AuthenticationFailed("Failed")), (
-             mock.patch('django_auth_ldap.backend._LDAPUser._check_requirements')), (
-             mock.patch('django_auth_ldap.backend._LDAPUser._get_user_attrs',
-                        return_value=dict(full_name=['Hamlet']))):
+            mock.patch('django_auth_ldap.backend._LDAPUser._check_requirements')), (
+            mock.patch('django_auth_ldap.backend._LDAPUser._get_user_attrs',
+                       return_value=dict(full_name=['Hamlet']))):
             self.assertIsNone(backend.authenticate(email, password))
 
         # For this backend, we mock the internals of django_auth_ldap
         with mock.patch('django_auth_ldap.backend._LDAPUser._authenticate_user_dn'), (
-             mock.patch('django_auth_ldap.backend._LDAPUser._check_requirements')), (
-             mock.patch('django_auth_ldap.backend._LDAPUser._get_user_attrs',
-                        return_value=dict(full_name=['Hamlet']))):
+            mock.patch('django_auth_ldap.backend._LDAPUser._check_requirements')), (
+            mock.patch('django_auth_ldap.backend._LDAPUser._get_user_attrs',
+                       return_value=dict(full_name=['Hamlet']))):
             self.verify_backend(backend, good_kwargs=dict(password=password))
 
         with mock.patch('django_auth_ldap.backend._LDAPUser._authenticate_user_dn'), (
-             mock.patch('django_auth_ldap.backend._LDAPUser._check_requirements')), (
-             mock.patch('django_auth_ldap.backend._LDAPUser._get_user_attrs',
-                        return_value=dict(full_name=['Hamlet']))):
+            mock.patch('django_auth_ldap.backend._LDAPUser._check_requirements')), (
+            mock.patch('django_auth_ldap.backend._LDAPUser._get_user_attrs',
+                       return_value=dict(full_name=['Hamlet']))):
             self.verify_backend(backend, good_kwargs=dict(password=password,
                                                           realm_subdomain='acme'))
 
@@ -251,9 +251,9 @@ class AuthBackendTest(TestCase):
             # With subdomains, authenticating with the right subdomain
             # works; using the wrong subdomain doesn't
             with mock.patch('django_auth_ldap.backend._LDAPUser._authenticate_user_dn'), (
-                 mock.patch('django_auth_ldap.backend._LDAPUser._check_requirements')), (
-                 mock.patch('django_auth_ldap.backend._LDAPUser._get_user_attrs',
-                            return_value=dict(full_name=['Hamlet']))):
+                mock.patch('django_auth_ldap.backend._LDAPUser._check_requirements')), (
+                mock.patch('django_auth_ldap.backend._LDAPUser._get_user_attrs',
+                           return_value=dict(full_name=['Hamlet']))):
                 self.verify_backend(backend,
                                     bad_kwargs=dict(password=password,
                                                     realm_subdomain='acme'),
@@ -541,7 +541,7 @@ class GoogleOAuthTest(ZulipTestCase):
         csrf_state = urllib.parse.parse_qs(parsed_url.query)['state']
 
         with mock.patch("requests.post", return_value=token_response), (
-             mock.patch("requests.get", return_value=account_response)):
+                mock.patch("requests.get", return_value=account_response)):
             result = self.client_get("/accounts/login/google/done/",
                                      dict(state=csrf_state))
         return result
@@ -643,8 +643,8 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         # type: () -> None
         """If the user doesn't exist yet, Google auth can be used to register an account"""
         with self.settings(REALMS_HAVE_SUBDOMAINS=True), (
-             mock.patch('zerver.views.auth.get_subdomain', return_value='zulip')), (
-             mock.patch('zerver.views.registration.get_subdomain', return_value='zulip')):
+                mock.patch('zerver.views.auth.get_subdomain', return_value='zulip')), (
+                mock.patch('zerver.views.registration.get_subdomain', return_value='zulip')):
 
             email = "newuser@zulip.com"
             token_response = ResponseMock(200, {'access_token': "unique_token"})

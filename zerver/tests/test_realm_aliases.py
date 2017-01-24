@@ -61,5 +61,5 @@ class RealmAliasTest(ZulipTestCase):
         self.assertEqual(get_realm_by_email_domain('user@zulip.com').string_id, 'zulip')
         self.assertEqual(get_realm_by_email_domain('user@fakedomain.com'), None)
         with self.settings(REALMS_HAVE_SUBDOMAINS = True), (
-             self.assertRaises(GetRealmByDomainException)):
+                self.assertRaises(GetRealmByDomainException)):
             get_realm_by_email_domain('user@zulip.com')

@@ -332,7 +332,7 @@ zulip configuration file under the jabber_mirror section (exceptions are noted
 in their help sections).  Keys have the same name as options with hyphens
 replaced with underscores.  Zulip configuration options go in the api section,
 as normal.'''.replace("\n", " ")
-                                    )
+    )
     parser.add_option(
         '--mode',
         default=None,

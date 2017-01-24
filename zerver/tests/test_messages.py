@@ -1558,10 +1558,10 @@ class AttachmentTest(ZulipTestCase):
         sender_email = "hamlet@zulip.com"
         user_profile = get_user_profile_by_email(sender_email)
         dummy_files = [
-                        ('zulip.txt', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt'),
-                        ('temp_file.py', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py'),
-                        ('abc.py', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py')
-                    ]
+            ('zulip.txt', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt'),
+            ('temp_file.py', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py'),
+            ('abc.py', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py')
+        ]
 
         for file_name, path_id in dummy_files:
             create_attachment(file_name, path_id, user_profile)
@@ -1630,14 +1630,14 @@ class CheckMessageTest(ZulipTestCase):
         an unsubscribed stream"""
         parent = get_user_profile_by_email('othello@zulip.com')
         bot = do_create_user(
-                email='othello-bot@zulip.com',
-                password='',
-                realm=parent.realm,
-                full_name='',
-                short_name='',
-                active=True,
-                bot_type=UserProfile.DEFAULT_BOT,
-                bot_owner=parent
+            email='othello-bot@zulip.com',
+            password='',
+            realm=parent.realm,
+            full_name='',
+            short_name='',
+            active=True,
+            bot_type=UserProfile.DEFAULT_BOT,
+            bot_owner=parent
         )
         bot.last_reminder = None
 

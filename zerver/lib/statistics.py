@@ -26,8 +26,8 @@ def median(data):
         return (data[before] + data[after]) / 2.0
 
 users_who_sent_query = Message.objects.select_related("sender") \
-        .exclude(sending_client__name__contains="mirror") \
-        .exclude(sending_client__name__contains="API")
+                                      .exclude(sending_client__name__contains="mirror") \
+                                      .exclude(sending_client__name__contains="API")
 
 def active_users():
     # type: () -> Sequence[UserProfile]

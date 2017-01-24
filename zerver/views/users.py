@@ -265,11 +265,11 @@ def add_bot_backend(request, user_profile, full_name=REQ(), short_name=REQ(),
                                  default_events_register_stream=default_events_register_stream,
                                  default_all_public_streams=default_all_public_streams)
     json_result = dict(
-            api_key=bot_profile.api_key,
-            avatar_url=avatar_url(bot_profile),
-            default_sending_stream=get_stream_name(bot_profile.default_sending_stream),
-            default_events_register_stream=get_stream_name(bot_profile.default_events_register_stream),
-            default_all_public_streams=bot_profile.default_all_public_streams,
+        api_key=bot_profile.api_key,
+        avatar_url=avatar_url(bot_profile),
+        default_sending_stream=get_stream_name(bot_profile.default_sending_stream),
+        default_events_register_stream=get_stream_name(bot_profile.default_events_register_stream),
+        default_all_public_streams=bot_profile.default_all_public_streams,
     )
     return json_success(json_result)
 

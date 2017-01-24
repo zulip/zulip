@@ -36,10 +36,10 @@ class Command(BaseCommand):
             print(session.expire_date, session.get_decoded())
         print("")
         print("%s has %s active bots that will also be deactivated." % (
-                user_profile.email,
-                UserProfile.objects.filter(
-                    is_bot=True, is_active=True, bot_owner=user_profile
-                ).count()
+            user_profile.email,
+            UserProfile.objects.filter(
+                is_bot=True, is_active=True, bot_owner=user_profile
+            ).count()
         ))
 
         if not options["for_real"]:

@@ -285,9 +285,9 @@ class Client(object):
             vendor_version = platform.mac_ver()[0]
 
         return "{client_name} ({vendor}; {vendor_version})".format(
-                client_name=self.client_name,
-                vendor=vendor,
-                vendor_version=vendor_version,
+            client_name=self.client_name,
+            vendor=vendor,
+            vendor_version=vendor_version,
         )
 
     def do_api_query(self, orig_request, url, method="POST", longpolling=False, files=None):
@@ -357,15 +357,15 @@ class Client(object):
                     client_cert = self.client_cert
 
                 res = requests.request(
-                        method,
-                        urllib.parse.urljoin(self.base_url, url),
-                        auth=requests.auth.HTTPBasicAuth(self.email,
-                                                         self.api_key),
-                        verify=self.tls_verification,
-                        cert=client_cert,
-                        timeout=90,
-                        headers={"User-agent": self.get_user_agent()},
-                        **kwargs)
+                    method,
+                    urllib.parse.urljoin(self.base_url, url),
+                    auth=requests.auth.HTTPBasicAuth(self.email,
+                                                     self.api_key),
+                    verify=self.tls_verification,
+                    cert=client_cert,
+                    timeout=90,
+                    headers={"User-agent": self.get_user_agent()},
+                    **kwargs)
 
                 # On 50x errors, try again after a short sleep
                 if str(res.status_code).startswith('5'):

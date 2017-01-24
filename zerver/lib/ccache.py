@@ -122,17 +122,17 @@ def der_encode_ticket(tkt):
             [der_encode_integer(5), # tktVno
              der_encode_string(tkt["realm"]),
              der_encode_sequence( # PrincipalName
-                    [der_encode_int32(tkt["sname"]["nameType"]),
-                     der_encode_sequence([der_encode_string(c)
-                                          for c in tkt["sname"]["nameString"]],
-                                         tagged=False)]),
+                 [der_encode_int32(tkt["sname"]["nameType"]),
+                  der_encode_sequence([der_encode_string(c)
+                                       for c in tkt["sname"]["nameString"]],
+                                      tagged=False)]),
              der_encode_sequence( # EncryptedData
-                    [der_encode_int32(tkt["encPart"]["etype"]),
-                     (der_encode_uint32(tkt["encPart"]["kvno"])
-                      if "kvno" in tkt["encPart"]
-                      else None),
-                     der_encode_octet_string(
-                                base64.b64decode(tkt["encPart"]["cipher"]))])]))
+                 [der_encode_int32(tkt["encPart"]["etype"]),
+                  (der_encode_uint32(tkt["encPart"]["kvno"])
+                   if "kvno" in tkt["encPart"]
+                   else None),
+                  der_encode_octet_string(
+                      base64.b64decode(tkt["encPart"]["cipher"]))])]))
 
 # Kerberos ccache writing code. Using format documentation from here:
 # http://www.gnu.org/software/shishi/manual/html_node/The-Credential-Cache-Binary-File-Format.html

@@ -11,7 +11,7 @@ root_dir = os.path.dirname(tools_dir)
 sys.path.insert(0, root_dir)
 
 from tools.lib.test_script import (
-        get_provisioning_status,
+    get_provisioning_status,
 )
 
 def run():

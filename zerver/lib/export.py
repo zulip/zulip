@@ -257,9 +257,9 @@ class Config(object):
                     the ordering correctly.  You may simply
                     need to assign a virtual_parent, or there
                     may be deeper issues going on.''' % (
-                        self.table,
-                        self.id_source[0],
-                        self.virtual_parent.table))
+                    self.table,
+                    self.id_source[0],
+                    self.virtual_parent.table))
 
 
 def export_from_config(response, config, seed_object=None, context=None):

@@ -31,7 +31,7 @@ def inactive_since(user_profile, cutoff):
     # Hasn't used the app in the last 24 business-day hours.
     most_recent_visit = [row.last_visit for row in
                          UserActivity.objects.filter(
-                                 user_profile=user_profile)]
+                             user_profile=user_profile)]
 
     if not most_recent_visit:
         # This person has never used the app.
@@ -110,4 +110,4 @@ in a while.
                 if inactive_since(user_profile, cutoff):
                     queue_digest_recipient(user_profile, cutoff)
                     logger.info("%s is inactive, queuing for potential digest" % (
-                            user_profile.email,))
+                        user_profile.email,))

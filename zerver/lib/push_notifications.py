@@ -226,10 +226,10 @@ def send_android_push_notification(user, data):
                 #
                 # That said, recovery is easy: just update the current PDT object to use the new ID.
                 logging.warning(
-                        "GCM: Got canonical ref %s replacing %s but new ID not registered! Updating." %
-                        (new_reg_id, reg_id))
+                    "GCM: Got canonical ref %s replacing %s but new ID not registered! Updating." %
+                    (new_reg_id, reg_id))
                 PushDeviceToken.objects.filter(
-                        token=reg_id, kind=PushDeviceToken.GCM).update(token=new_reg_id)
+                    token=reg_id, kind=PushDeviceToken.GCM).update(token=new_reg_id)
             else:
                 # Since we know the new ID is registered in our system we can just drop the old one.
                 logging.info("GCM: Got canonical ref %s, dropping %s" % (new_reg_id, reg_id))

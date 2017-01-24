@@ -251,7 +251,7 @@ def remove_subscriptions_backend(request, user_profile,
 
     if principals:
         people_to_unsub = set(principal_to_user_profile(
-                user_profile, principal) for principal in principals)
+            user_profile, principal) for principal in principals)
     else:
         people_to_unsub = set([user_profile])
 
@@ -484,8 +484,8 @@ def stream_exists_backend(request, user_profile, stream_id, autosubscribe):
         if autosubscribe:
             bulk_add_subscriptions([stream], [user_profile])
         result["subscribed"] = is_active_subscriber(
-                user_profile=user_profile,
-                recipient=recipient)
+            user_profile=user_profile,
+            recipient=recipient)
 
         return json_success(result) # results are ignored for HEAD requests
     return json_response(data=result, status=404)

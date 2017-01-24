@@ -63,9 +63,9 @@ def get_display_recipient_by_id(recipient_id, recipient_type, recipient_type_id)
 def get_display_recipient(recipient):
     # type: (Recipient) -> Union[Text, List[Dict[str, Any]]]
     return get_display_recipient_by_id(
-            recipient.id,
-            recipient.type,
-            recipient.type_id
+        recipient.id,
+        recipient.type,
+        recipient.type_id
     )
 
 def flush_per_request_caches():
@@ -542,8 +542,8 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     AVATAR_FROM_GRAVATAR = u'G'
     AVATAR_FROM_USER = u'U'
     AVATAR_SOURCES = (
-            (AVATAR_FROM_GRAVATAR, 'Hosted by Gravatar'),
-            (AVATAR_FROM_USER, 'Uploaded by user'),
+        (AVATAR_FROM_GRAVATAR, 'Hosted by Gravatar'),
+        (AVATAR_FROM_USER, 'Uploaded by user'),
     )
     avatar_source = models.CharField(default=AVATAR_FROM_GRAVATAR, choices=AVATAR_SOURCES, max_length=1) # type: Text
     avatar_version = models.PositiveSmallIntegerField(default=1) # type: int
@@ -708,10 +708,10 @@ class Stream(ModelReprMixin, models.Model):
     def num_subscribers(self):
         # type: () -> int
         return Subscription.objects.filter(
-                recipient__type=Recipient.STREAM,
-                recipient__type_id=self.id,
-                user_profile__is_active=True,
-                active=True
+            recipient__type=Recipient.STREAM,
+            recipient__type_id=self.id,
+            user_profile__is_active=True,
+            active=True
         ).count()
 
     # This is stream information that is sent to clients
@@ -980,7 +980,7 @@ class Message(ModelReprMixin, models.Model):
 
         return (sending_client in ('zulipandroid', 'zulipios', 'zulipdesktop',
                                    'website', 'ios', 'android')) or (
-                                   'desktop app' in sending_client)
+                                       'desktop app' in sending_client)
 
     @staticmethod
     def content_has_attachment(content):
@@ -1295,33 +1295,33 @@ class UserPresence(models.Model):
         user_statuses = defaultdict(dict) # type: defaultdict[Any, Dict[Any, Any]]
 
         query = UserPresence.objects.filter(
-                user_profile__realm_id=realm_id,
-                user_profile__is_active=True,
-                user_profile__is_bot=False
+            user_profile__realm_id=realm_id,
+            user_profile__is_active=True,
+            user_profile__is_bot=False
         ).values(
-                'client__name',
-                'status',
-                'timestamp',
-                'user_profile__email',
-                'user_profile__id',
-                'user_profile__enable_offline_push_notifications',
-                'user_profile__is_mirror_dummy',
+            'client__name',
+            'status',
+            'timestamp',
+            'user_profile__email',
+            'user_profile__id',
+            'user_profile__enable_offline_push_notifications',
+            'user_profile__is_mirror_dummy',
         )
 
         mobile_user_ids = [row['user'] for row in PushDeviceToken.objects.filter(
-                user__realm_id=1,
-                user__is_active=True,
-                user__is_bot=False,
+            user__realm_id=1,
+            user__is_active=True,
+            user__is_bot=False,
         ).distinct("user").values("user")]
 
         for row in query:
             info = UserPresence.to_presence_dict(
-                    client_name=row['client__name'],
-                    status=row['status'],
-                    dt=row['timestamp'],
-                    push_enabled=row['user_profile__enable_offline_push_notifications'],
-                    has_push_devices=row['user_profile__id'] in mobile_user_ids,
-                    is_mirror_dummy=row['user_profile__is_mirror_dummy'],
+                client_name=row['client__name'],
+                status=row['status'],
+                dt=row['timestamp'],
+                push_enabled=row['user_profile__enable_offline_push_notifications'],
+                has_push_devices=row['user_profile__id'] in mobile_user_ids,
+                is_mirror_dummy=row['user_profile__is_mirror_dummy'],
             )
             user_statuses[row['user_profile__email']][row['client__name']] = info
 
@@ -1335,18 +1335,18 @@ class UserPresence(models.Model):
 
         timestamp = datetime_to_timestamp(dt)
         return dict(
-                client=client_name,
-                status=presence_val,
-                timestamp=timestamp,
-                pushable=(push_enabled and has_push_devices),
+            client=client_name,
+            status=presence_val,
+            timestamp=timestamp,
+            pushable=(push_enabled and has_push_devices),
         )
 
     def to_dict(self):
         # type: () -> Dict[str, Any]
         return UserPresence.to_presence_dict(
-                client_name=self.client.name,
-                status=self.status,
-                dt=self.timestamp
+            client_name=self.client.name,
+            status=self.status,
+            dt=self.timestamp
         )
 
     @staticmethod

@@ -189,12 +189,12 @@ class ZulipEmailForwardError(Exception):
 def send_zulip(sender, stream, topic, content):
     # type: (Text, Stream, Text, Text) -> None
     internal_send_message(
-            stream.realm,
-            sender,
-            "stream",
-            stream.name,
-            topic[:60],
-            content[:2000])
+        stream.realm,
+        sender,
+        "stream",
+        stream.name,
+        topic[:60],
+        content[:2000])
 
 def valid_stream(stream_name, token):
     # type: (Text, Text) -> bool

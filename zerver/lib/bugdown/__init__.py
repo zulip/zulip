@@ -1205,16 +1205,16 @@ def make_md_engine(key, opts):
     md_engines[key] = markdown.Markdown(
         output_format = 'html',
         extensions    = [
-                         'markdown.extensions.nl2br',
-                         'markdown.extensions.tables',
-                         codehilite.makeExtension(
-                                linenums=False,
-                                guess_lang=False
-                         ),
-                         fenced_code.makeExtension(),
-                         EscapeHtml(),
-                         Bugdown(realm_filters=opts["realm_filters"][0],
-                                 realm=opts["realm"][0])])
+            'markdown.extensions.nl2br',
+            'markdown.extensions.tables',
+            codehilite.makeExtension(
+                linenums=False,
+                guess_lang=False
+            ),
+            fenced_code.makeExtension(),
+            EscapeHtml(),
+            Bugdown(realm_filters=opts["realm_filters"][0],
+                    realm=opts["realm"][0])])
 
 def subject_links(realm_filters_key, subject):
     # type: (int, Text) -> List[Text]
@@ -1362,9 +1362,9 @@ def do_convert(content, message=None, message_realm=None, possible_words=None):
             error_bot_realm = get_user_profile_by_email(settings.ERROR_BOT).realm
             internal_send_message(error_bot_realm, settings.ERROR_BOT, "stream",
                                   "errors", subject, "Markdown parser failed, email sent with details.")
-        mail.mail_admins(subject, "Failed message: %s\n\n%s\n\n" % (
-                                    cleaned, traceback.format_exc()),
-                         fail_silently=False)
+        mail.mail_admins(
+            subject, "Failed message: %s\n\n%s\n\n" % (cleaned, traceback.format_exc()),
+            fail_silently=False)
         raise BugdownRenderingException()
     finally:
         current_message = None

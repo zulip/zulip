@@ -45,10 +45,10 @@ def github_pull_request_content(payload):
             get_pull_request_or_issue_assignee(pull_request)
         )
     return get_pull_request_event_message(
-            payload['sender']['login'],
-            action,
-            pull_request['html_url'],
-            pull_request['number']
+        payload['sender']['login'],
+        action,
+        pull_request['html_url'],
+        pull_request['number']
     )
 
 def github_issues_content(payload):
@@ -66,10 +66,10 @@ def github_issues_content(payload):
             get_pull_request_or_issue_assignee(issue)
         )
     return get_issue_event_message(
-            payload['sender']['login'],
-            action,
-            issue['html_url'],
-            issue['number'],
+        payload['sender']['login'],
+        action,
+        issue['html_url'],
+        issue['number'],
     )
 
 def github_object_commented_content(payload, type):
@@ -100,10 +100,10 @@ def get_pull_request_or_issue_assignee(object_payload):
 def get_pull_request_or_issue_subject(repository, payload_object, type):
     # type: (Mapping[Text, Any], Mapping[Text, Any], Text) -> Text
     return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
-            repo=repository['name'],
-            type=type,
-            id=payload_object['number'],
-            title=payload_object['title']
+        repo=repository['name'],
+        type=type,
+        id=payload_object['number'],
+        title=payload_object['title']
     )
 
 def github_generic_subject(noun, topic_focus, blob):

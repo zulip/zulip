@@ -542,15 +542,15 @@ class WorkerTest(TestCase):
 
         user = get_user_profile_by_email('hamlet@zulip.com')
         UserActivity.objects.filter(
-                user_profile = user.id,
-                client = get_client('ios')
+            user_profile = user.id,
+            client = get_client('ios')
         ).delete()
 
         data = dict(
-                user_profile_id = user.id,
-                client = 'ios',
-                time = time.time(),
-                query = 'send_message'
+            user_profile_id = user.id,
+            client = 'ios',
+            time = time.time(),
+            query = 'send_message'
         )
         fake_client.queue.append(('user_activity', data))
 
@@ -559,8 +559,8 @@ class WorkerTest(TestCase):
             worker.setup()
             worker.start()
             activity_records = UserActivity.objects.filter(
-                    user_profile = user.id,
-                    client = get_client('ios')
+                user_profile = user.id,
+                client = get_client('ios')
             )
             self.assertTrue(len(activity_records), 1)
             self.assertTrue(activity_records[0].count, 1)
@@ -984,9 +984,9 @@ class BotTest(ZulipTestCase):
         do_make_stream_private(user_profile.realm, "Denmark")
 
         bot_info = {
-             'full_name': 'The Bot of Hamlet',
-             'short_name': 'hambot',
-             'default_sending_stream': 'Denmark',
+            'full_name': 'The Bot of Hamlet',
+            'short_name': 'hambot',
+            'default_sending_stream': 'Denmark',
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, 'Insufficient permission')
@@ -1047,9 +1047,9 @@ class BotTest(ZulipTestCase):
 
         self.assert_num_bots_equal(0)
         bot_info = {
-             'full_name': 'The Bot of Hamlet',
-             'short_name': 'hambot',
-             'default_events_register_stream': 'Denmark',
+            'full_name': 'The Bot of Hamlet',
+            'short_name': 'hambot',
+            'default_events_register_stream': 'Denmark',
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, 'Insufficient permission')

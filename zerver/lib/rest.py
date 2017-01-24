@@ -7,7 +7,7 @@ from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
 from zerver.decorator import authenticated_json_view, authenticated_rest_api_view, \
-        process_as_post
+    process_as_post
 from zerver.lib.response import json_method_not_allowed, json_unauthorized
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.conf import settings

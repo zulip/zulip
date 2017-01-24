@@ -278,7 +278,7 @@ TEMPLATES = [
     {
         'BACKEND': 'zproject.jinja2.backends.Jinja2',
         'DIRS': [
-             os.path.join(DEPLOY_ROOT, 'templates'),
+            os.path.join(DEPLOY_ROOT, 'templates'),
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -299,7 +299,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-             os.path.join(DEPLOY_ROOT, 'django_templates'),
+            os.path.join(DEPLOY_ROOT, 'django_templates'),
         ],
         'APP_DIRS': False,
         'OPTIONS': {
@@ -384,12 +384,12 @@ DATABASES = {"default": {
 if DEVELOPMENT:
     LOCAL_DATABASE_PASSWORD = get_secret("local_database_password")
     DATABASES["default"].update({
-            'PASSWORD': LOCAL_DATABASE_PASSWORD,
-            'HOST': 'localhost'
+        'PASSWORD': LOCAL_DATABASE_PASSWORD,
+        'HOST': 'localhost'
     })
 elif REMOTE_POSTGRES_HOST != '':
     DATABASES['default'].update({
-            'HOST': REMOTE_POSTGRES_HOST,
+        'HOST': REMOTE_POSTGRES_HOST,
     })
     if get_secret("postgres_password") is not None:
         DATABASES['default'].update({
@@ -488,9 +488,9 @@ if DEVELOPMENT:
     # Use fast password hashing for creating testing users when not
     # PRODUCTION.  Saves a bunch of time.
     PASSWORD_HASHERS = (
-                'django.contrib.auth.hashers.SHA1PasswordHasher',
-                'django.contrib.auth.hashers.PBKDF2PasswordHasher'
-            )
+        'django.contrib.auth.hashers.SHA1PasswordHasher',
+        'django.contrib.auth.hashers.PBKDF2PasswordHasher'
+    )
     # Also we auto-generate passwords for the default users which you
     # can query using ./manage.py print_initial_password
     INITIAL_PASSWORD_SALT = get_secret("initial_password_salt")
@@ -551,12 +551,12 @@ INTERNAL_BOTS = [{'var_name': 'NOTIFICATION_BOT',
 
 if PRODUCTION:
     INTERNAL_BOTS += [
-                 {'var_name': 'NAGIOS_STAGING_SEND_BOT',
-                  'email_template': 'nagios-staging-send-bot@%s',
-                  'name': 'Nagios Staging Send Bot'},
-                 {'var_name': 'NAGIOS_STAGING_RECEIVE_BOT',
-                  'email_template': 'nagios-staging-receive-bot@%s',
-                  'name': 'Nagios Staging Receive Bot'},
+        {'var_name': 'NAGIOS_STAGING_SEND_BOT',
+         'email_template': 'nagios-staging-send-bot@%s',
+         'name': 'Nagios Staging Send Bot'},
+        {'var_name': 'NAGIOS_STAGING_RECEIVE_BOT',
+         'email_template': 'nagios-staging-receive-bot@%s',
+         'name': 'Nagios Staging Receive Bot'},
     ]
 
 INTERNAL_BOT_DOMAIN = "zulip.com"
