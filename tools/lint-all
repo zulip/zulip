@@ -88,7 +88,7 @@ def check_pep8(files):
         # actually be cleaned up.
         #
         'E126', 'E226', 'E261', 'E302',
-        'E401', 'E501', 'E702',
+        'E501', 'E702',
 
         #
         # Each of these rules are ignored for the explained reason.

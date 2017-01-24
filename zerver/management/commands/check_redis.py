@@ -10,7 +10,8 @@ from django.core.management.base import BaseCommand, CommandParser
 from django.conf import settings
 from optparse import make_option
 
-import time, logging
+import logging
+import time
 
 class Command(BaseCommand):
     help = """Checks redis to make sure our rate limiting system hasn't grown a bug and left redis with a bunch of data

@@ -6,7 +6,9 @@ import json
 import os
 import requests
 import six.moves.configparser
-import urllib.request, urllib.error, urllib.parse
+import urllib.error
+import urllib.parse
+import urllib.request
 
 class IssueHandler(object):
     '''

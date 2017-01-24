@@ -15,7 +15,11 @@ from gcm import GCM
 
 from django.conf import settings
 
-import base64, binascii, logging, os, time
+import base64
+import binascii
+import logging
+import os
+import time
 from functools import partial
 
 # APNS error codes
