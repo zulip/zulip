@@ -8,7 +8,7 @@ class StripeHookTests(WebhookTestCase):
     FIXTURE_DIR_NAME = 'stripe'
 
     def test_charge_dispute_closed(self):
-         # type: () -> None
+        # type: () -> None
         expected_subject = u"Charge ch_00000000000000"
         expected_message = u"A charge dispute for **10.01aud** has been closed as **won**.\nThe charge in dispute was **[ch_00000000000000](https://dashboard.stripe.com/payments/ch_00000000000000)**."
 

@@ -15,7 +15,7 @@ def api_transifex_webhook(request, user_profile, client,
                           language=REQ(), translated=REQ(default=None),
                           reviewed=REQ(default=None),
                           stream=REQ(default='transifex')):
-                          # type: (HttpRequest, UserProfile, Client, str, str, str, Optional[int], Optional[int], str) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Client, str, str, str, Optional[int], Optional[int], str) -> HttpResponse
     subject = "{} in {}".format(project, language)
     if translated:
         body = "Resource {} fully translated.".format(resource)
