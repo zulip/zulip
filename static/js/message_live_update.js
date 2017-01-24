@@ -8,6 +8,12 @@ exports.update_stream_name = function (stream_id, new_name) {
     });
 };
 
+exports.update_user_full_name = function (user_id, full_name) {
+    _.each([home_msg_list, current_msg_list, message_list.all], function (list) {
+        list.update_user_full_name(user_id, full_name);
+    });
+};
+
 exports.update_avatar = function (person) {
     var sent_by_me = people.is_my_user_id(person.user_id);
     var url = person.avatar_url;
