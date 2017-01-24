@@ -134,7 +134,7 @@ def home_real(request):
 
     # Reset our don't-spam-users-with-email counter since the
     # user has since logged in
-    if not user_profile.last_reminder is None:
+    if user_profile.last_reminder is not None:
         user_profile.last_reminder = None
         user_profile.save(update_fields=["last_reminder"])
 
