@@ -37,14 +37,14 @@ def get_members(client):
     assert len(members) == 1
     iago = members[0]
 
-    assert iago['is_admin'] == False
+    assert not iago['is_admin']
     assert iago['full_name'] == 'New User'
 
 def get_profile(client):
     # type: (Client) -> None
 
     result = client.get_profile()
-    assert result['is_admin'] == True
+    assert result['is_admin']
     assert result['email'] == 'iago@zulip.com'
     assert result['full_name'] == 'Iago'
 

@@ -143,7 +143,7 @@ class TicTacToeGame(object):
         # The check is done by replacing the blank locations with o's and seeing if the computer would win in each case.
         for row, col in blank_locations:
             my_board[row][col] = "o"
-            if self.win_conditions(my_board, self.triplets) == True:
+            if self.win_conditions(my_board, self.triplets):
                 board[row][col] = "o"
                 return board
             else:
@@ -171,7 +171,7 @@ class TicTacToeGame(object):
         # random blank location from a set of better locations to play. These locations are determined by seeing if
         # there are two blanks and an 'o' in each row, column, and diagonal (done in two_blanks).
         # If smarter is False, all blank locations can be chosen.
-        if self.smarter == True:
+        if self.smarter:
             blanks = []
             for triplet in self.triplets:
                 result = self.two_blanks(triplet, board)
@@ -234,11 +234,11 @@ class TicTacToeGame(object):
         return_string += self.display_board(board)
 
         # Check to see if the user won/drew after they made their move. If not, it's the computer's turn.
-        if self.win_conditions(board, self.triplets) == True:
+        if self.win_conditions(board, self.triplets):
             return_string += output_mode("Game over! You've won!", mode)
             return return_string
 
-        if self.board_is_full(board) == True:
+        if self.board_is_full(board):
             return_string += output_mode("It's a draw! Neither of us was able to win.", mode)
             return return_string
 
@@ -248,7 +248,7 @@ class TicTacToeGame(object):
 
         # Checks to see if the computer won after it makes its move. (The computer can't draw, so there's no point
         # in checking.) If the computer didn't win, the user gets another turn.
-        if self.win_conditions(board, self.triplets) == True:
+        if self.win_conditions(board, self.triplets):
             return_string += output_mode("Game over! I've won!", mode)
             return return_string
 
@@ -306,7 +306,7 @@ class ticTacToeHandler(object):
                 return_content += TicTacToeGame.positions
         elif command == 'help':
             return_content = TicTacToeGame.detailed_help_message
-        elif (user_game) and TicTacToeGame.check_validity(user_game, TicTacToeGame.sanitize_move(user_game, command)) == True:
+        elif (user_game) and TicTacToeGame.check_validity(user_game, TicTacToeGame.sanitize_move(user_game, command)):
             user_board = user_game.board
             return_content = TicTacToeGame.tictactoe(user_game, user_board, command)
         elif (user_game) and command == 'quit':
