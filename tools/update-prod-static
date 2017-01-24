@@ -19,6 +19,8 @@ from scripts.lib.node_cache import setup_node_modules
 parser = argparse.ArgumentParser()
 parser.add_argument('--prev-deploy', metavar='DIR',
                     help='a previous deploy from which to reuse files if possible')
+parser.add_argument('--authors-not-required', action='store_true', default=False,
+                    help='Authors files need not be updated')
 args = parser.parse_args()
 prev_deploy = args.prev_deploy
 
@@ -68,6 +70,8 @@ subprocess.check_call(['cp', '-a', 'static/locale',
 authors_cmd = ['./tools/update-authors-json']
 if os.environ.get("TRAVIS"):
     authors_cmd.append("--use-fixture")
+if args.authors_not_required:
+    authors_cmd.append("--not-required")
 subprocess.check_call(authors_cmd, stdout=fp)
 
 fp.close()

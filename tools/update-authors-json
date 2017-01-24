@@ -32,6 +32,8 @@ parser.add_argument('--max-retries', type=int, default=3,
 # fetching from Github constantly.
 parser.add_argument('--use-fixture', action='store_true', default=False,
                     help='Use fixture data instead of fetching from Github')
+parser.add_argument('--not-required', action='store_true', default=False,
+                    help='Consider failures to reach GitHub nonfatal')
 args = parser.parse_args()
 
 def fetch_data(retries, link):
@@ -88,7 +90,7 @@ def run_production():
 
         write_to_disk(out_data, settings.CONTRIBUTORS_DATA)
 
-    else:
+    elif not args.not_required:
         print('Fail to fetch data from Github.')
         sys.exit(1)
 
