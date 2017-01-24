@@ -135,11 +135,11 @@ ENABLE_FEEDBACK = False
 # be sent to that email address.
 FEEDBACK_EMAIL = ZULIP_ADMINISTRATOR
 
-# Controls whether or not error reports are sent to Zulip.  Error
-# reports are used to improve the quality of the product and do not
-# include message contents; please contact Zulip support with any
-# questions.
-ERROR_REPORTING = True
+# Controls whether or not error reports (tracebacks) are emailed to the
+# server administrators.
+#ERROR_REPORTING = True
+# For frontend (JavaScript) tracebacks
+#BROWSER_ERROR_REPORTING = False
 
 # Controls whether or not Zulip will provide inline image preview when
 # a link to an image is referenced in a message.
