@@ -122,8 +122,8 @@ def log_event(event):
         os.mkdir(settings.EVENT_LOG_DIR)
 
     template = os.path.join(settings.EVENT_LOG_DIR,
-                            '%s.' + platform.node()
-                            + datetime.datetime.now().strftime('.%Y-%m-%d'))
+                            '%s.' + platform.node() +
+                            datetime.datetime.now().strftime('.%Y-%m-%d'))
 
     with lockfile(template % ('lock',)):
         with open(template % ('events',), 'a') as log:
@@ -1128,8 +1128,8 @@ def recipient_for_emails(emails, not_forged_mirror_message,
 
     # If the private message is just between the sender and
     # another person, force it to be a personal internally
-    if (len(recipient_profile_ids) == 2
-            and sender.id in recipient_profile_ids):
+    if (len(recipient_profile_ids) == 2 and
+            sender.id in recipient_profile_ids):
         recipient_profile_ids.remove(sender.id)
 
     if len(recipient_profile_ids) > 1:

@@ -171,16 +171,16 @@ class CommuteHandler(object):
 
         # determines if fare information is available
         try:
-            fare = ('Fare: ' + variable_list["fare"]["currency"]
-                    + variable_list["fare"]["text"])
+            fare = ('Fare: ' + variable_list["fare"]["currency"] +
+                    variable_list["fare"]["text"])
             output += '\n' + fare
         except (KeyError, IndexError):
             pass
 
         # determines if traffic duration information is available
         try:
-            traffic_duration = ('Duration in traffic: '
-                                + variable_list["duration_in_traffic"]
+            traffic_duration = ('Duration in traffic: ' +
+                                variable_list["duration_in_traffic"]
                                 ["text"])
             output += '\n' + traffic_duration
         except (KeyError, IndexError):
@@ -208,13 +208,13 @@ class CommuteHandler(object):
                 return request.json()
             else:
                 self.send_info(message,
-                               "Something went wrong. Please try again."
-                               + " Error: {error_num}.\n{error_text}"
+                               "Something went wrong. Please try again." +
+                               " Error: {error_num}.\n{error_text}"
                                .format(error_num=request.status_code,
                                        error_text=request.text), client)
                 return
-        r = requests.get('https://maps.googleapis.com/maps/api/'
-                         + 'distancematrix/json', params=params)
+        r = requests.get('https://maps.googleapis.com/maps/api/' +
+                         'distancematrix/json', params=params)
         result = validate_requests(r)
         return result
 

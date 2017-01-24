@@ -121,8 +121,8 @@ def principal_to_user_profile(agent, principal):
     except UserProfile.DoesNotExist:
         principal_doesnt_exist = True
 
-    if (principal_doesnt_exist
-            or agent.realm != principal_user_profile.realm):
+    if (principal_doesnt_exist or
+            agent.realm != principal_user_profile.realm):
         # We have to make sure we don't leak information about which users
         # are registered for Zulip in a different realm.  We could do
         # something a little more clever and check the domain part of the

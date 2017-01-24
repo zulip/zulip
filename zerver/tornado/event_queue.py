@@ -169,8 +169,8 @@ class ClientDescriptor(object):
         if not hasattr(self, 'queue_timeout'):
             self.queue_timeout = IDLE_EVENT_QUEUE_TIMEOUT_SECS
 
-        return (self.current_handler_id is None
-                and now - self.last_connection_time >= self.queue_timeout)
+        return (self.current_handler_id is None and
+                now - self.last_connection_time >= self.queue_timeout)
 
     def connect_handler(self, handler_id, client_name):
         # type: (int, Text) -> None
@@ -408,8 +408,8 @@ def gc_event_queues():
     # not have a current handler.
     do_gc_event_queues(to_remove, affected_users, affected_realms)
 
-    logging.info(('Tornado removed %d idle event queues owned by %d users in %.3fs.'
-                  + '  Now %d active queues, %s')
+    logging.info(('Tornado removed %d idle event queues owned by %d users in %.3fs.' +
+                  '  Now %d active queues, %s')
                  % (len(to_remove), len(affected_users), time.time() - start,
                     len(clients), handler_stats_string()))
     statsd.gauge('tornado.active_queues', len(clients))

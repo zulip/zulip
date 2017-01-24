@@ -32,8 +32,8 @@ fp = open('var/log/update-prod-static.log', 'w')
 setup_node_modules(npm_args=['--production'], stdout=fp, stderr=fp)
 
 # Compile Handlebars templates and minify JavaScript.
-subprocess.check_call(['./tools/minify-js']
-                      + (['--prev-deploy', prev_deploy] if prev_deploy else []),
+subprocess.check_call(['./tools/minify-js'] +
+                      (['--prev-deploy', prev_deploy] if prev_deploy else []),
                       stdout=fp, stderr=fp)
 
 # Build emoji

@@ -87,7 +87,6 @@ def check_pep8(files):
         # ignored. It either doesn't fit with the style of the project or should
         # actually be cleaned up.
         #
-        'W503',
         'E114', 'E115', 'E121', 'E123', 'E126', 'E226', 'E241', 'E261', 'E302',
         'E305', 'E306', 'E401', 'E501', 'E702', 'E711', 'E712', 'E713', 'E714',
         'E741',
@@ -622,8 +621,8 @@ def run():
             # type: () -> int
             if len(by_lang['js']) == 0:
                 return 0
-            result = subprocess.call(['node', 'node_modules/.bin/eslint', '--quiet']
-                                     + by_lang['js'])
+            result = subprocess.call(['node', 'node_modules/.bin/eslint', '--quiet'] +
+                                     by_lang['js'])
             return result
 
         @lint

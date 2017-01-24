@@ -84,8 +84,8 @@ def rest_dispatch(request, **kwargs):
 
         # for some special views (e.g. serving a file that has been
         # uploaded), we support using the same url for web and API clients.
-        if ('override_api_url_scheme' in view_flags
-                and request.META.get('HTTP_AUTHORIZATION', None) is not None):
+        if ('override_api_url_scheme' in view_flags and
+                request.META.get('HTTP_AUTHORIZATION', None) is not None):
             # This request  API based authentication.
             target_function = authenticated_rest_api_view()(target_function)
         # /json views (web client) validate with a session token (cookie)

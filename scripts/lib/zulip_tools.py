@@ -67,18 +67,18 @@ def get_deployment_lock(error_rerun_script):
             got_lock = True
             break
         except OSError:
-            print(WARNING + "Another deployment in progress; waiting for lock... "
-                  + "(If no deployment is running, rmdir %s)" % (LOCK_DIR,) + ENDC)
+            print(WARNING + "Another deployment in progress; waiting for lock... " +
+                  "(If no deployment is running, rmdir %s)" % (LOCK_DIR,) + ENDC)
             sys.stdout.flush()
             time.sleep(3)
 
     if not got_lock:
-        print(FAIL + "Deployment already in progress.  Please run\n"
-              + "  %s\n" % (error_rerun_script,)
-              + "manually when the previous deployment finishes, or run\n"
-              + "  rmdir %s\n"  % (LOCK_DIR,)
-              + "if the previous deployment crashed."
-              + ENDC)
+        print(FAIL + "Deployment already in progress.  Please run\n" +
+              "  %s\n" % (error_rerun_script,) +
+              "manually when the previous deployment finishes, or run\n" +
+              "  rmdir %s\n"  % (LOCK_DIR,) +
+              "if the previous deployment crashed." +
+              ENDC)
         sys.exit(1)
 
 def release_deployment_lock():
@@ -98,9 +98,9 @@ def run(args, **kwargs):
         subprocess.check_call(args, **kwargs)
     except subprocess.CalledProcessError:
         print()
-        print(WHITEONRED + "Error running a subcommand of %s: %s" % (sys.argv[0], " ".join(args))
-              + ENDC)
-        print(WHITEONRED + "Actual error output for the subcommand is just above this."
-              + ENDC)
+        print(WHITEONRED + "Error running a subcommand of %s: %s" % (sys.argv[0], " ".join(args)) +
+              ENDC)
+        print(WHITEONRED + "Actual error output for the subcommand is just above this." +
+              ENDC)
         print()
         raise

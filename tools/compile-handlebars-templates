@@ -24,10 +24,10 @@ def get_templates():
 
 def run():
     # type: () -> None
-    subprocess.check_call(['node', 'node_modules/.bin/handlebars']
-                          + get_templates()
-                          + ['--output', os.path.join(STATIC_PATH, 'templates/compiled.js'),
-                             '--known', 'if,unless,each,with'])
+    subprocess.check_call(['node', 'node_modules/.bin/handlebars'] +
+                          get_templates() +
+                          ['--output', os.path.join(STATIC_PATH, 'templates/compiled.js'),
+                           '--known', 'if,unless,each,with'])
 
 def run_forever():
     # type: () -> None

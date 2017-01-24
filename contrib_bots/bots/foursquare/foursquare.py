@@ -120,9 +120,9 @@ Example Inputs:
             return
 
         if received_json['meta']['code'] == 200:
-            response_msg = ('Food nearby ' + params['near']
-                            + ' coming right up:\n'
-                            + self.format_json(received_json['response']['venues']))
+            response_msg = ('Food nearby ' + params['near'] +
+                            ' coming right up:\n' +
+                            self.format_json(received_json['response']['venues']))
             self.send_info(message, response_msg, client)
             return
 

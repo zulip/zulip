@@ -79,9 +79,9 @@ class CountingBackoff(object):
 
     def _check_success_timeout(self):
         # type: () -> None
-        if (self.timeout_success_equivalent is not None
-            and self.last_attempt_time != 0
-                and time.time() - self.last_attempt_time > self.timeout_success_equivalent):
+        if (self.timeout_success_equivalent is not None and
+            self.last_attempt_time != 0 and
+                time.time() - self.last_attempt_time > self.timeout_success_equivalent):
             self.number_of_retries = 0
 
 class RandomExponentialBackoff(CountingBackoff):

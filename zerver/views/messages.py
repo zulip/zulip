@@ -373,9 +373,9 @@ def narrow_parameter(json):
 
         # We have to support a legacy tuple format.
         if isinstance(elem, list):
-            if (len(elem) != 2
-                or any(not isinstance(x, str) and not isinstance(x, Text)
-                       for x in elem)):
+            if (len(elem) != 2 or
+                any(not isinstance(x, str) and not isinstance(x, Text)
+                    for x in elem)):
                 raise ValueError("element is not a string pair")
             return dict(operator=elem[0], operand=elem[1])
 

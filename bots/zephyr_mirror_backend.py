@@ -104,8 +104,8 @@ def unwrap_lines(body):
     previous_line = lines[0]
     for line in lines[1:]:
         line = line.rstrip()
-        if (re.match(r'^\W', line, flags=re.UNICODE)
-                and re.match(r'^\W', previous_line, flags=re.UNICODE)):
+        if (re.match(r'^\W', line, flags=re.UNICODE) and
+                re.match(r'^\W', previous_line, flags=re.UNICODE)):
             result += previous_line + "\n"
         elif (line == "" or
               previous_line == "" or
