@@ -2748,7 +2748,7 @@ def do_update_embedded_data(user_profile, message, content, rendered_content):
 # We use transaction.atomic to support select_for_update in the attachment codepath.
 @transaction.atomic
 def do_update_message(user_profile, message, subject, propagate_mode, content, rendered_content):
-    # type: (UserProfile, Message, Optional[Text], str, Optional[Text], Optional[Text]) -> None
+    # type: (UserProfile, Message, Optional[Text], str, Optional[Text], Optional[Text]) -> int
     event = {'type': 'update_message',
              'sender': user_profile.email,
              'message_id': message.id} # type: Dict[str, Any]
@@ -2851,6 +2851,7 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
             'flags': um.flags_list()
         }
     send_event(event, list(map(user_info, ums)))
+    return len(changed_messages)
 
 def encode_email_address(stream):
     # type: (Stream) -> Text

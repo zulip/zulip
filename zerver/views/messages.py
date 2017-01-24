@@ -941,7 +941,10 @@ def update_message_backend(request, user_profile,
                                                    user_profile.realm)
         links_for_embed |= message.links_for_preview
 
-    do_update_message(user_profile, message, subject, propagate_mode, content, rendered_content)
+    number_changed = do_update_message(user_profile, message, subject,
+                                       propagate_mode, content, rendered_content)
+    # Include the number of messages changed in the logs
+    request._log_data['extra'] = "[%s]" % (number_changed,)
     if links_for_embed and getattr(settings, 'INLINE_URL_EMBED_PREVIEW', None):
         event_data = {
             'message_id': message.id,
