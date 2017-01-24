@@ -128,4 +128,3 @@ class JohnHandler(object):
         ))
 
 handler_class = JohnHandler
-

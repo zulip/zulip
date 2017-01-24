@@ -181,5 +181,3 @@ def test_the_api(client):
     test_messages(client)
 
     # print(dir(client))
-
-

@@ -18,4 +18,3 @@ def json_set_muted_topics(request, user_profile,
     # type: (HttpRequest, UserProfile, List[List[Text]]) -> HttpResponse
     do_set_muted_topics(user_profile, muted_topics)
     return json_success()
-

@@ -95,4 +95,3 @@ def json_refer_friend(request, user_profile, email=REQ()):
     do_refer_friend(user_profile, email)
 
     return json_success()
-

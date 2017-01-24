@@ -27,4 +27,3 @@ def check_valid_emoji_name(emoji_name):
     if re.match('^[0-9a-zA-Z.\-_]+(?<![.\-_])$', emoji_name):
         return
     raise JsonableError(_("Invalid characters in emoji name"))
-

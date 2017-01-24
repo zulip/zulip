@@ -91,4 +91,3 @@ def run_message_handler_for_bot(lib_module, quiet, config_file):
 
     logging.info('starting message handling...')
     client.call_on_each_message(handle_message)
-

@@ -85,5 +85,3 @@ class Command(BaseCommand):
             send_mail(subject, body, from_email, [to_email], html_message=html_email)
         else:
             send_mail(subject, body, from_email, [to_email])
-
-
