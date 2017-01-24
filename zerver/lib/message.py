@@ -195,7 +195,7 @@ class MessageDict(object):
 
         obj['subject_links'] = bugdown.subject_links(sender_realm_id, subject)
 
-        if last_edit_time != None:
+        if last_edit_time is not None:
             obj['last_edit_timestamp'] = datetime_to_timestamp(last_edit_time)
             obj['edit_history'] = ujson.loads(edit_history)
 
