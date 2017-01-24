@@ -423,6 +423,7 @@ class Client(object):
         # type: (Callable, Optional[List[str]], Any) -> None
         if narrow is None:
             narrow = []
+
         def do_register():
             # type: () -> Tuple[str, int]
             while True:
