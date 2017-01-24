@@ -426,9 +426,9 @@ SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 
 CACHES = {
     'default': {
-        'BACKEND':  'django.core.cache.backends.memcached.PyLibMCCache',
+        'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
         'LOCATION': MEMCACHED_LOCATION,
-        'TIMEOUT':  3600,
+        'TIMEOUT': 3600,
         'OPTIONS': {
             'verify_keys': True,
             'tcp_nodelay': True,
@@ -436,8 +436,8 @@ CACHES = {
         }
     },
     'database': {
-        'BACKEND':  'django.core.cache.backends.db.DatabaseCache',
-        'LOCATION':  'third_party_api_results',
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'third_party_api_results',
         # Basically never timeout.  Setting to 0 isn't guaranteed
         # to work, see https://code.djangoproject.com/ticket/9595
         'TIMEOUT': 2000000000,
@@ -659,7 +659,7 @@ PIPELINE = {
         # in frontend_tests/zjsunit/output.js as needed.
         'activity': {
             'source_filenames': ('styles/activity.css',),
-            'output_filename':  'min/activity.css'
+            'output_filename': 'min/activity.css'
         },
         'portico': {
             'source_filenames': (
@@ -734,22 +734,22 @@ JS_SPECS = {
             'third/bootstrap/js/bootstrap.js',
             'js/common.js',
             ],
-        'output_filename':  'min/common.js'
+        'output_filename': 'min/common.js'
     },
     'signup': {
         'source_filenames': [
             'js/portico/signup.js',
             'node_modules/jquery-validation/dist/jquery.validate.js',
             ],
-        'output_filename':  'min/signup.js'
+        'output_filename': 'min/signup.js'
     },
     'api': {
         'source_filenames': ['js/portico/api.js'],
-        'output_filename':  'min/api.js'
+        'output_filename': 'min/api.js'
     },
     'app_debug': {
         'source_filenames': ['js/debug.js'],
-        'output_filename':  'min/app_debug.js'
+        'output_filename': 'min/app_debug.js'
     },
     'app': {
         'source_filenames': [
@@ -951,60 +951,60 @@ LOGGING = {
     },
     'handlers': {
         'zulip_admins': {
-            'level':     'ERROR',
-            'class':     'zerver.logging_handlers.AdminZulipHandler',
+            'level': 'ERROR',
+            'class': 'zerver.logging_handlers.AdminZulipHandler',
             # For testing the handler delete the next line
-            'filters':   ['ZulipLimiter', 'require_debug_false', 'require_really_deployed'],
+            'filters': ['ZulipLimiter', 'require_debug_false', 'require_really_deployed'],
             'formatter': 'default'
         },
         'console': {
-            'level':     'DEBUG',
-            'class':     'logging.StreamHandler',
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
             'formatter': 'default'
         },
         'file': {
-            'level':       'DEBUG',
-            'class':       'logging.handlers.WatchedFileHandler',
-            'formatter':   'default',
-            'filename':    FILE_LOG_PATH,
+            'level': 'DEBUG',
+            'class': 'logging.handlers.WatchedFileHandler',
+            'formatter': 'default',
+            'filename': FILE_LOG_PATH,
         },
         'errors_file': {
-            'level':       'WARNING',
-            'class':       'logging.handlers.WatchedFileHandler',
-            'formatter':   'default',
-            'filename':    ERROR_FILE_LOG_PATH,
+            'level': 'WARNING',
+            'class': 'logging.handlers.WatchedFileHandler',
+            'formatter': 'default',
+            'filename': ERROR_FILE_LOG_PATH,
         },
     },
     'loggers': {
         '': {
             'handlers': ['console', 'file', 'errors_file'],
-            'level':    'INFO',
+            'level': 'INFO',
             'propagate': False,
         },
         'django': {
             'handlers': (['zulip_admins'] if ERROR_REPORTING else [] +
                          ['console', 'file', 'errors_file']),
-            'level':    'INFO',
+            'level': 'INFO',
             'propagate': False,
         },
         'zulip.requests': {
             'handlers': ['console', 'file', 'errors_file'],
-            'level':    'INFO',
+            'level': 'INFO',
             'propagate': False,
         },
         'zulip.queue': {
             'handlers': ['console', 'file', 'errors_file'],
-            'level':    'WARNING',
+            'level': 'WARNING',
             'propagate': False,
         },
         'zulip.management': {
             'handlers': ['file', 'errors_file'],
-            'level':    'INFO',
+            'level': 'INFO',
             'propagate': False,
         },
         'requests': {
             'handlers': ['console', 'file', 'errors_file'],
-            'level':    'WARNING',
+            'level': 'WARNING',
             'propagate': False,
         },
         'django.security.DisallowedHost': {

@@ -456,7 +456,7 @@ class BugdownTest(TestCase):
         converted_subject = bugdown.subject_links(realm.id, msg.subject)
 
         self.assertEqual(converted, '<p>We should fix <a href="https://trac.zulip.net/ticket/224" target="_blank" title="https://trac.zulip.net/ticket/224">#224</a> and <a href="https://trac.zulip.net/ticket/115" target="_blank" title="https://trac.zulip.net/ticket/115">#115</a>, but not issue#124 or #1124z or <a href="https://trac.zulip.net/ticket/16" target="_blank" title="https://trac.zulip.net/ticket/16">trac #15</a> today.</p>')
-        self.assertEqual(converted_subject,  [u'https://trac.zulip.net/ticket/444'])
+        self.assertEqual(converted_subject, [u'https://trac.zulip.net/ticket/444'])
 
         RealmFilter(realm=realm, pattern=r'#(?P<id>[a-zA-Z]+-[0-9]+)',
                     url_format_string=r'https://trac.zulip.net/ticket/%(id)s').save()
@@ -532,7 +532,7 @@ class BugdownTest(TestCase):
         boring_msg = Message(sender=get_user_profile_by_email("othello@zulip.com"),
                              subject=u"no match here")
         converted_boring_subject = bugdown.subject_links(realm.id, boring_msg.subject)
-        self.assertEqual(converted_boring_subject,  [])
+        self.assertEqual(converted_boring_subject, [])
 
     def test_is_status_message(self):
         # type: () -> None

@@ -551,8 +551,8 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     TUTORIAL_WAITING  = u'W'
     TUTORIAL_STARTED  = u'S'
     TUTORIAL_FINISHED = u'F'
-    TUTORIAL_STATES   = ((TUTORIAL_WAITING,  "Waiting"),
-                         (TUTORIAL_STARTED,  "Started"),
+    TUTORIAL_STATES   = ((TUTORIAL_WAITING, "Waiting"),
+                         (TUTORIAL_STARTED, "Started"),
                          (TUTORIAL_FINISHED, "Finished"))
 
     tutorial_status = models.CharField(default=TUTORIAL_WAITING, choices=TUTORIAL_STATES, max_length=1) # type: Text
@@ -655,8 +655,8 @@ class PushDeviceToken(models.Model):
     GCM = 2
 
     KINDS = (
-        (APNS,  'apns'),
-        (GCM,   'gcm'),
+        (APNS, 'apns'),
+        (GCM, 'gcm'),
     )
 
     kind = models.PositiveSmallIntegerField(choices=KINDS) # type: int
@@ -750,8 +750,8 @@ class Recipient(ModelReprMixin, models.Model):
     # N.B. If we used Django's choice=... we would get this for free (kinda)
     _type_names = {
         PERSONAL: 'personal',
-        STREAM:   'stream',
-        HUDDLE:   'huddle'}
+        STREAM: 'stream',
+        HUDDLE: 'huddle'}
 
     def type_name(self):
         # type: () -> str

@@ -116,7 +116,7 @@ i18n_urls = [
 
     # Login/registration
     url(r'^register/$', zerver.views.registration.accounts_home, name='register'),
-    url(r'^login/$',  zerver.views.auth.login_page, {'template_name': 'zerver/login.html'}, name='zerver.views.auth.login_page'),
+    url(r'^login/$', zerver.views.auth.login_page, {'template_name': 'zerver/login.html'}, name='zerver.views.auth.login_page'),
 
     # A registration page that passes through the domain, for totally open realms.
     url(r'^register/(?P<realm_str>\S+)/$', zerver.views.registration.accounts_home_with_realm_str,
@@ -141,7 +141,7 @@ i18n_urls = [
 
 # If a Terms of Service is supplied, add that route
 if settings.TERMS_OF_SERVICE is not None:
-    i18n_urls += [url(r'^terms/$',   TemplateView.as_view(template_name='zerver/terms.html'))]
+    i18n_urls += [url(r'^terms/$', TemplateView.as_view(template_name='zerver/terms.html'))]
 
 # Make a copy of i18n_urls so that they appear without prefix for english
 urls = list(i18n_urls)

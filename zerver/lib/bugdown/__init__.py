@@ -735,7 +735,7 @@ def fixup_link(link, target_blank=True):
     """Set certain attributes we want on every link."""
     if target_blank:
         link.set('target', '_blank')
-    link.set('title',  url_filename(link.get('href')))
+    link.set('title', url_filename(link.get('href')))
 
 
 def sanitize_url(url):
@@ -1337,11 +1337,11 @@ def do_convert(content, message=None, message_realm=None, possible_words=None):
         if possible_words is None:
             possible_words = set() # Set[Text]
 
-        db_data = {'possible_words':    possible_words,
-                   'full_names':        dict((user['full_name'].lower(), user) for user in realm_users),
-                   'short_names':       dict((user['short_name'].lower(), user) for user in realm_users),
-                   'emoji':             message_realm.get_emoji(),
-                   'stream_names':      dict((stream['name'], stream) for stream in realm_streams)}
+        db_data = {'possible_words': possible_words,
+                   'full_names': dict((user['full_name'].lower(), user) for user in realm_users),
+                   'short_names': dict((user['short_name'].lower(), user) for user in realm_users),
+                   'emoji': message_realm.get_emoji(),
+                   'stream_names': dict((stream['name'], stream) for stream in realm_streams)}
 
     try:
         # Spend at most 5 seconds rendering.

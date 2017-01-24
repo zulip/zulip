@@ -73,5 +73,5 @@ than max_api_calls! (trying to trim) %s %s" % (key, count))
             # elements to trim. We'd have to go through every list item and take
             # the intersection. The best we can do is expire it
             self._check_within_range(zset,
-                                     lambda:  client.zcount(zset, 0, now),
-                                     lambda key, max_calls:  None)
+                                     lambda: client.zcount(zset, 0, now),
+                                     lambda key, max_calls: None)

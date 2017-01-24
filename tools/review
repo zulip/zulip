@@ -47,7 +47,7 @@ def create_pull_branch(pull_id):
 
     print()
     print('PR: %d' % (pull_id,))
-    print(subprocess.check_output(['git',  'log', 'HEAD~..',
+    print(subprocess.check_output(['git', 'log', 'HEAD~..',
                                    '--pretty=format:Author: %an']))
 
 def review_pr():

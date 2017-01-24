@@ -40,7 +40,7 @@ You can omit --user and --api-key arguments if you have a properly set up ~/.zul
 parser = optparse.OptionParser(usage=usage)
 parser.add_option('--subject', default="test")
 parser.add_option('--message', default="test message")
-parser.add_option('--type',   default='private')
+parser.add_option('--type', default='private')
 parser.add_option_group(zulip.generate_option_group(parser))
 (options, args) = parser.parse_args()
 

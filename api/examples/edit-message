@@ -41,7 +41,7 @@ import zulip
 parser = optparse.OptionParser(usage=usage)
 parser.add_option('--message-id', default="")
 parser.add_option('--subject', default="")
-parser.add_option('--content',   default="")
+parser.add_option('--content', default="")
 parser.add_option_group(zulip.generate_option_group(parser))
 (options, args) = parser.parse_args()
 
