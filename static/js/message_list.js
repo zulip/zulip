@@ -555,6 +555,15 @@ exports.MessageList.prototype = {
         return item_list[cur_idx];
     },
 
+    update_user_full_name: function (user_id, full_name) {
+        _.each(this._items, function (item) {
+            if (item.sender_id && (item.sender_id === user_id)) {
+                item.sender_full_name = full_name;
+            }
+        });
+        this.view.rerender_the_whole_thing();
+    },
+
     update_stream_name: function MessageList_update_stream_name(stream_id,
                                                                 new_stream_name) {
         _.each(this._items, function (item) {
