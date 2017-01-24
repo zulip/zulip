@@ -87,7 +87,7 @@ def check_pep8(files):
         # ignored. It either doesn't fit with the style of the project or should
         # actually be cleaned up.
         #
-        'E115', 'E121', 'E123', 'E126', 'E226', 'E241', 'E261', 'E302',
+        'E121', 'E123', 'E126', 'E226', 'E241', 'E261', 'E302',
         'E305', 'E306', 'E401', 'E501', 'E702', 'E711', 'E712', 'E713', 'E714',
         'E741',
 

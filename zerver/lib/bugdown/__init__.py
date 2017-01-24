@@ -1196,7 +1196,7 @@ realm_filter_data = {} # type: Dict[int, List[Tuple[Text, Text, int]]]
 
 class EscapeHtml(markdown.Extension):
     def extendMarkdown(self, md, md_globals):
-    # type: (markdown.Markdown, Dict[str, Any]) -> None
+        # type: (markdown.Markdown, Dict[str, Any]) -> None
         del md.preprocessors['html_block']
         del md.inlinePatterns['html']
 
