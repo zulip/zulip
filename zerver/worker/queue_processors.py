@@ -8,6 +8,7 @@ from zerver.models import get_user_profile_by_email, \
     get_user_profile_by_id, get_prereg_user_by_email, get_client, \
     UserMessage, Message, Realm
 from zerver.lib.context_managers import lockfile
+from zerver.lib.error_notify import do_report_error
 from zerver.lib.queue import SimpleQueueClient, queue_json_publish
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.notifications import handle_missedmessage_emails, enqueue_welcome_emails, \
@@ -275,7 +276,6 @@ class ErrorReporter(QueueProcessingWorker):
         if settings.DEPLOYMENT_ROLE_KEY:
             self.staging_client.forward_error(event['type'], event['report'])
         elif settings.ZILENCER_ENABLED:
-            from zilencer.views import do_report_error
             do_report_error(settings.DEPLOYMENT_ROLE_NAME, event['type'], event['report'])
 
 @assign_queue('slow_queries')

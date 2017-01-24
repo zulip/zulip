@@ -80,6 +80,8 @@ def json_report_error(request, user_profile, message=REQ(), stacktrace=REQ(),
                       href=REQ(), log=REQ(),
                       more_info=REQ(validator=check_dict([]), default=None)):
     # type: (HttpRequest, UserProfile, Text, Text, bool, Text, Text, Text, Dict[str, Any]) -> HttpResponse
+    """Accepts an error report and stores in a queue for processing.  The
+    actual error reports are later handled by do_report_error (below)"""
     if not settings.ERROR_REPORTING:
         return json_success()
 

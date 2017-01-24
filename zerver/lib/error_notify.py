@@ -6,10 +6,13 @@ import six
 from collections import defaultdict
 from django.conf import settings
 from django.core.mail import mail_admins
-from typing import Any, Dict
+from django.http import HttpResponse
+from django.utils.translation import ugettext as _
+from typing import Any, Dict, Text
 
 from zerver.models import get_user_profile_by_email
 from zerver.lib.actions import internal_send_message
+from zerver.lib.response import json_success, json_error
 
 def format_subject(subject):
     # type: (str) -> str
@@ -118,3 +121,14 @@ def email_server_error(report):
                                                      request_repr)
 
     mail_admins(format_subject(subject), message, fail_silently=True)
+
+def do_report_error(deployment_name, type, report):
+    # type: (Text, Text, Dict[str, Any]) -> HttpResponse
+    report['deployment'] = deployment_name
+    if type == 'browser':
+        notify_browser_error(report)
+    elif type == 'server':
+        notify_server_error(report)
+    else:
+        return json_error(_("Invalid type parameter"))
+    return json_success()

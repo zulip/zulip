@@ -1,6 +1,7 @@
 from django.conf.urls import url, include
 from zerver.lib.rest import rest_dispatch
 import zilencer.views
+import zerver.views.report
 
 i18n_urlpatterns = [
     # SSO dispatch page for desktop app with SSO
@@ -18,7 +19,7 @@ v1_api_and_json_patterns = [
     url('^deployment/feedback$', rest_dispatch,
         {'POST': 'zilencer.views.submit_feedback'}),
     url('^deployment/report_error$', rest_dispatch,
-        {'POST': 'zilencer.views.report_error'}),
+        {'POST': 'zerver.views.report.report_error'}),
     url('^deployment/endpoints$', zilencer.views.lookup_endpoints_for_user,
         name='zilencer.views.lookup_endpoints_for_user'),
 ]

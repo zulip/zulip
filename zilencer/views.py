@@ -10,9 +10,9 @@ from zilencer.models import Deployment
 
 from zerver.decorator import has_request_variables, REQ
 from zerver.lib.actions import internal_send_message
-from zerver.lib.error_notify import notify_browser_error, notify_server_error
+from zerver.lib.error_notify import do_report_error
 from zerver.lib.redis_utils import get_redis_client
-from zerver.lib.response import json_success, json_error, json_response
+from zerver.lib.response import json_error, json_response
 from zerver.lib.validator import check_dict
 from zerver.models import get_realm, get_user_profile_by_email, \
     get_realm_by_email_domain, UserProfile, Realm
@@ -86,17 +86,6 @@ def submit_feedback(request, deployment, message=REQ(validator=check_dict([]))):
 def report_error(request, deployment, type=REQ(), report=REQ(validator=check_dict([]))):
     # type: (HttpRequest, Deployment, Text, Dict[str, Any]) -> HttpResponse
     return do_report_error(deployment.name, type, report)
-
-def do_report_error(deployment_name, type, report):
-    # type: (Text, Text, Dict[str, Any]) -> HttpResponse
-    report['deployment'] = deployment_name
-    if type == 'browser':
-        notify_browser_error(report)
-    elif type == 'server':
-        notify_server_error(report)
-    else:
-        return json_error(_("Invalid type parameter"))
-    return json_success()
 
 def realm_for_email(email):
     # type: (str) -> Optional[Realm]
