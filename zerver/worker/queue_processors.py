@@ -276,7 +276,7 @@ class ErrorReporter(QueueProcessingWorker):
         logging.info("Processing traceback with type %s for %s" % (event['type'], event.get('user_email')))
         if settings.DEPLOYMENT_ROLE_KEY:
             self.staging_client.forward_error(event['type'], event['report'])
-        elif settings.ZILENCER_ENABLED:
+        elif settings.ERROR_REPORTING:
             do_report_error(settings.DEPLOYMENT_ROLE_NAME, event['type'], event['report'])
 
 @assign_queue('slow_queries')
