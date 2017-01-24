@@ -38,6 +38,7 @@ from zerver.lib.actions import (
     do_create_user,
     do_deactivate_stream,
     do_deactivate_user,
+    do_mark_hotspot_as_read,
     do_reactivate_user,
     do_refer_friend,
     do_regenerate_api_key,
@@ -1449,6 +1450,16 @@ class EventsRegisterTest(ZulipTestCase):
         action = lambda: do_reactivate_user(bot)
         events = self.do_test(action, num_events=2)
         error = bot_reactivate_checker('events[1]', events[1])
+        self.assert_on_error(error)
+
+    def test_do_mark_hotspot_as_read(self):
+        # type: () -> None
+        schema_checker = check_dict([
+            ('type', equals('hotspots')),
+            ('hotspots', check_list(check_string)),
+        ])
+        events = self.do_test(lambda: do_mark_hotspot_as_read(self.user_profile, 'welcome'))
+        error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
     def test_rename_stream(self):

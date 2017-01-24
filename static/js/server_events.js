@@ -23,6 +23,11 @@ function dispatch_normal_event(event) {
         admin.update_default_streams_table();
         break;
 
+    case 'hotspots':
+        hotspots.show(event.hotspots);
+        page_params.hotspots = event.hotspots;
+        break;
+
     case 'muted_topics':
         muting_ui.handle_updates(event.muted_topics);
         break;

@@ -256,6 +256,7 @@ $(function () {
     unread_ui.initialize();
     activity.initialize();
     emoji.initialize();
+    hotspots.initialize();
 });
 
 

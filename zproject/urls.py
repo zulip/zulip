@@ -298,6 +298,10 @@ v1_api_and_json_patterns = [
         {'PUT': 'zerver.views.user_settings.set_avatar_backend',
          'DELETE': 'zerver.views.user_settings.delete_avatar_backend'}),
 
+    # users/me/hotspots -> zerver.views.hotspots
+    url(r'^users/me/hotspots$', rest_dispatch,
+        {'POST': 'zerver.views.hotspots.mark_hotspot_as_read'}),
+
     # settings -> zerver.views.user_settings
     url(r'^settings/display$', rest_dispatch,
         {'PATCH': 'zerver.views.user_settings.update_display_settings_backend'}),
