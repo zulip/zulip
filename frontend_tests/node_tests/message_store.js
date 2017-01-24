@@ -50,6 +50,7 @@ var message_store = require('js/message_store.js');
 (function test_add_message_metadata() {
     var message = {
         sender_email: 'me@example.com',
+        sender_id: me.user_id,
         type: 'private',
         display_recipient: [me, bob, cindy],
         flags: ['has_alert_word'],

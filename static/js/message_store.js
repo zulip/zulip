@@ -111,6 +111,11 @@ function add_message_metadata(message) {
 
     people.extract_people_from_message(message);
 
+    var sender = people.get_person_from_user_id(message.sender_id);
+    if (sender) {
+        message.sender_full_name = sender.full_name;
+    }
+
     switch (message.type) {
     case 'stream':
         message.is_stream = true;
