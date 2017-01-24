@@ -634,7 +634,7 @@ exports.respond_to_message = function (opts) {
     var pm_recipient = message.reply_to;
     if (opts.reply_type === "personal" && message.type === "private") {
         // reply_to for private messages is everyone involved, so for
-        // personals replies we need to set the the private message
+        // personals replies we need to set the private message
         // recipient to just the sender
         pm_recipient = message.sender_email;
     }
