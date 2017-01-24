@@ -88,12 +88,16 @@ def check_pep8(files):
         # actually be cleaned up.
         #
         'E123', 'E126', 'E226', 'E241', 'E261', 'E302',
-        'E305', 'E306', 'E401', 'E501', 'E702', 'E711', 'E712', 'E713', 'E714',
+        'E306', 'E401', 'E501', 'E702', 'E711', 'E712', 'E713', 'E714',
         'E741',
 
         #
         # Each of these rules are ignored for the explained reason.
         #
+
+        # "expected 2 blank lines after class or function definition"
+        # Zulip only uses 1 blank line after class/function definitions.
+        'E305',
 
         # "multiple spaces before operator"
         # There are several typos here, but also several instances that are
