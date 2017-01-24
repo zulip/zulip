@@ -76,7 +76,7 @@ def check_html_templates(templates, modified_only, all_dups):
         'register',
     ]
     bad_ids_dict = {ids: fns for ids, fns in template_id_dict.items()
-                    if (not ids in IGNORE_IDS) and len(fns) > 1}
+                    if (ids not in IGNORE_IDS) and len(fns) > 1}
 
     if all_dups:
         ignorable_ids_dict = {ids: fns for ids, fns in template_id_dict.items()
