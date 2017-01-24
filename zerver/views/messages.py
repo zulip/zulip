@@ -867,10 +867,6 @@ def send_message_backend(request, user_profile,
                              local_id=local_id, sender_queue_id=queue_id)
     return json_success({"id": ret})
 
-def json_update_message(request, user_profile, message_id):
-    # type: (HttpRequest, UserProfile, int) -> HttpResponse
-    return update_message_backend(request, user_profile)
-
 @has_request_variables
 def update_message_backend(request, user_profile,
                            message_id=REQ(converter=to_non_negative_int),
