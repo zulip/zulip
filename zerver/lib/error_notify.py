@@ -1,15 +1,15 @@
 from __future__ import absolute_import
-from collections import defaultdict
-from typing import Any
-import logging
 
+import logging
+import six
+
+from collections import defaultdict
 from django.conf import settings
 from django.core.mail import mail_admins
+from typing import Any, Dict
 
 from zerver.models import get_user_profile_by_email
 from zerver.lib.actions import internal_send_message
-from typing import Dict
-import six
 
 def format_subject(subject):
     # type: (str) -> str
