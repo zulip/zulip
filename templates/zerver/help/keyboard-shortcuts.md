@@ -1,4 +1,4 @@
-# Keyboard Shortcuts
+# Keyboard shortcuts
 
 Keyboard shortcuts allow a user to use Zulip easily and efficiently
 for a better user experience.

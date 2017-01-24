@@ -24,7 +24,7 @@ as an **organization**.
 * [Change your name](/help/change-your-name)
 * [Change your password](/help/change-your-password)
 * Change your email address (not implemented)
-* [Change your settings](/help/edit-settings)
+* [Change your settings](/help/change-your-settings)
 * [Change your avatar](/help/change-your-avatar)
 * [Change your language](/help/change-your-language)
 * [Change the date and time format](/help/change-the-date-and-time-format)
@@ -77,9 +77,9 @@ as an **organization**.
 
 ## Streams & Topics
 * [About streams and topics](/help/about-streams-and-topics)
-* [Browse and join streams](/help/browse-and-join-streams)
+* [Browse and subscribe to streams](/help/browse-and-subscribe-to-streams)
 * [Create a stream](/help/create-a-stream)
-* [View your current stream subscriptions](/help/browse-and-join-streams#browse-streams)
+* [View your current stream subscriptions](/help/browse-and-subscribe-to-streams#browse-streams)
 * [View messages from a stream](/help/view-messages-from-a-stream)
 * [View messages from a topic](/help/view-messages-from-a-topic)
 * [View messages from a user](/help/view-messages-from-a-user)
@@ -89,7 +89,7 @@ as an **organization**.
 * [Rename a stream](/help/rename-a-stream)
 * Preview a stream (not implemented)
 * [Unsubscribe from a stream](/help/unsubscribe-from-a-stream)
-* [Change who can join a stream](/help/change-who-can-join-a-stream)
+* [Change the accessibility of a stream](/help/change-the-accessibility-of-a-stream)
 * [Organize the Streams sidebar](/help/organize-the-streams-sidebar)
 * [Pin a stream](/help/pin-a-stream)
 * [Change the color of a stream](/help/change-the-color-of-a-stream)
@@ -122,7 +122,7 @@ as an **organization**.
 # Administering a Zulip organization
 
 ## Organization Settings
-* [Change your administrator settings](/help/edit-administrator-settings)
+* [Change your administrator settings](/help/change-your-administrator-settings)
 * [Change your organization's name](/help/change-your-organizations-name)
 * [Restrict user email addresses to certain domains](/help/restrict-user-email-addresses-to-certain-domains)
 * [Allow anyone to join without an invitation](/help/allow-anyone-to-join-without-an-invitation)
@@ -147,9 +147,9 @@ as an **organization**.
 * [Set default streams for new users](/help/set-default-streams-for-new-users)
 * [Rename a stream](/help/rename-a-stream)
 * [Change a stream's description](/help/change-the-stream-description)
-* [Make a public stream private](/help/change-who-can-join-a-stream#make-a-public-stream-private)
+* [Make a public stream private](/help/change-the-accessibility-of-a-stream#make-a-public-stream-private)
 * [Add someone to a stream](/help/add-or-invite-someone-to-a-stream)
 * [Remove someone from a stream](/help/remove-someone-from-a-stream)
 
 ## Linking to a Zulip server
-* [Join Zulip chat badge](/help/chat-with-zulip-button)
+* [Join Zulip chat badge](/help/join-zulip-chat-badge)

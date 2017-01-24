@@ -1,4 +1,4 @@
-# Changing your language
+# Change your language
 
 By default, the Zulip UI is displayed in English.  However, Zulip has
 full support for internationalization, and the UI has been translated

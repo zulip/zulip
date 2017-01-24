@@ -1,4 +1,4 @@
-# Logging out of Zulip
+# Signing out
 
 When you're done using Zulip, it's easy to log out of Zulip.
 

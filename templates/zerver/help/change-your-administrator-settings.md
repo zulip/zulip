@@ -1,4 +1,4 @@
-# Edit [Administrator](/#administration) Settings
+# Change your [administrator](/#administration) settings
 
 {!admin-only.md!}
 

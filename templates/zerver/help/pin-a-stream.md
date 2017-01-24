@@ -1,4 +1,4 @@
-# Pinning a stream
+# Pin a stream
 
 If you are subscribed to a lot of streams, pinning important streams to the top
 of the **Streams** section on your left sidebar can be a good way to organize

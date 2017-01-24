@@ -1,4 +1,4 @@
-# Add a Bot or Integration
+# Add a bot or integration
 
 Bots and integrations are features that are accessible to all members of an organization.
 

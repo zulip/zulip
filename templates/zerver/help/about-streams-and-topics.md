@@ -20,11 +20,11 @@ they also cannot read or send messages to the stream.
 Users are subscribed to specific streams in the organization by default, such as
 the [#announce](the-announce-stream) stream. Users can easily
 [view messages](/help/view-messages-from-a-stream) from a specific stream; in
-addition, they can [browse](/help/browse-and-join-streams#browse-streams) their
+addition, they can [browse](/help/browse-and-subscribe-to-streams#browse-streams) their
 stream subscriptions using the Zulip stream browser.
 
 If they wish to read messages from a stream that they're not subscribed to,
-users can choose to [join](/help/browse-and-join-streams#subscribing-to-streams)
+users can choose to [join](/help/browse-and-subscribe-to-streams#subscribing-to-streams)
 a stream. Similarly, if they are not interested in the topics being discussed in
 a stream, users can choose to [unsubscribe](/help/unsubscribe-from-a-stream) from a
 stream.
@@ -46,7 +46,7 @@ Only organization administrators can modify a stream, like:
 * [deleting a stream](/help/delete-a-stream)
 * changing the description of a stream
 * [removing users from a stream](/help/remove-someone-from-a-stream)
-* [changing the accessibility of a stream](/help/change-who-can-join-a-stream)
+* [changing the accessibility of a stream](/help/change-the-accessibility-of-a-stream)
 
 ## About topics
 
