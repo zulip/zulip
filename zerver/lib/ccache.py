@@ -37,14 +37,14 @@ import six
 # there is already an ASN.1 implementation, but in the interest of
 # limiting MIT Kerberos's exposure to malformed ccaches, encode it
 # ourselves. To that end, here's the laziest DER encoder ever.
-def der_encode_length(l):
+def der_encode_length(length):
     # type: (int) -> str
-    if l <= 127:
-        return chr(l)
+    if length <= 127:
+        return chr(length)
     out = ""
-    while l > 0:
-        out = chr(l & 0xff) + out
-        l >>= 8
+    while length > 0:
+        out = chr(length & 0xff) + out
+        length >>= 8
     out = chr(len(out) | 0x80) + out
     return out
 
