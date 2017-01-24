@@ -522,6 +522,10 @@ def build_custom_checkers(by_lang):
             if custom_check_file(fn, txt_rules):
                 failed = True
 
+        for fn in by_lang['yaml']:
+            if custom_check_file(fn, txt_rules):
+                failed = True
+
         return failed
 
     return (check_custom_checks_py, check_custom_checks_nonpy)
@@ -566,7 +570,7 @@ def run():
     by_lang = cast(Dict[str, List[str]],
                    lister.list_files(args, modified_only=options.modified,
                                      ftypes=['py', 'sh', 'js', 'pp', 'css', 'handlebars',
-                                             'html', 'json', 'md', 'txt', 'text'],
+                                             'html', 'json', 'md', 'txt', 'text', 'yaml'],
                                      use_shebang=True, group_by_ftype=True, exclude=EXCLUDED_FILES))
 
     # Invoke the appropriate lint checker for each language,
