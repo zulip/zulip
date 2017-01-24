@@ -273,6 +273,7 @@ class ErrorReporter(QueueProcessingWorker):
 
     def consume(self, event):
         # type: (Mapping[str, Any]) -> None
+        logging.info("Processing traceback with type %s for %s" % (event['type'], event.get('user_email')))
         if settings.DEPLOYMENT_ROLE_KEY:
             self.staging_client.forward_error(event['type'], event['report'])
         elif settings.ZILENCER_ENABLED:
