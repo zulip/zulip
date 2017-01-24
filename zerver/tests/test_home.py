@@ -68,6 +68,7 @@ class HomeTest(ZulipTestCase):
             "furthest_read_time",
             "has_mobile_devices",
             "have_initial_messages",
+            "hotspots",
             "initial_pointer",
             "initial_presences",
             "initial_servertime",

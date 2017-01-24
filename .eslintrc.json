@@ -119,7 +119,8 @@
         "emoji_codes": false,
         "drafts": false,
         "katex": false,
-        "Clipboard": false
+        "Clipboard": false,
+        "hotspots": false
     },
     "rules": {
         "no-restricted-syntax": 0,

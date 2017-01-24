@@ -283,6 +283,7 @@ def home_real(request):
         'attachments',
         'default_language',
         'emoji_alt_code',
+        'hotspots',
         'last_event_id',
         'left_side_userlist',
         'max_icon_file_size',

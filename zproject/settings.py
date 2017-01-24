@@ -895,6 +895,7 @@ JS_SPECS = {
             'js/colorspace.js',
             'js/timerender.js',
             'js/tutorial.js',
+            'js/hotspots.js',
             'js/templates.js',
             'js/upload_widget.js',
             'js/avatar.js',

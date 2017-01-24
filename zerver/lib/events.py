@@ -20,6 +20,7 @@ session_engine = import_module(settings.SESSION_ENGINE)
 from zerver.lib.alert_words import user_alert_words
 from zerver.lib.attachments import user_attachments
 from zerver.lib.avatar import get_avatar_url
+from zerver.lib.hotspots import get_next_hotspots
 from zerver.lib.narrow import check_supported_events_narrow_filter
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.request import JsonableError
@@ -71,6 +72,9 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
 
     if want('attachments'):
         state['attachments'] = user_attachments(user_profile)
+
+    if want('hotspots'):
+        state['hotspots'] = get_next_hotspots(user_profile)
 
     if want('message'):
         # The client should use get_messages() to fetch messages
@@ -181,6 +185,8 @@ def apply_event(state, event, user_profile, include_subscribers):
     # type: (Dict[str, Any], Dict[str, Any], UserProfile, bool) -> None
     if event['type'] == "message":
         state['max_message_id'] = max(state['max_message_id'], event['message']['id'])
+    elif event['type'] == "hotspots":
+        state['hotspots'] = event['hotspots']
     elif event['type'] == "pointer":
         state['pointer'] = max(state['pointer'], event['pointer'])
     elif event['type'] == "realm_user":

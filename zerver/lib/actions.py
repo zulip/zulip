@@ -20,6 +20,7 @@ from zerver.lib.cache import (
     to_dict_cache_key_id,
 )
 from zerver.lib.context_managers import lockfile
+from zerver.lib.hotspots import get_next_hotspots
 from zerver.lib.message import (
     access_message,
     MessageDict,
@@ -28,7 +29,7 @@ from zerver.lib.message import (
 )
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, RealmAlias, \
-    Subscription, Recipient, Message, Attachment, UserMessage, RealmAuditLog, \
+    Subscription, Recipient, Message, Attachment, UserMessage, RealmAuditLog, UserHotspot, \
     Client, DefaultStream, UserPresence, Referral, PushDeviceToken, MAX_SUBJECT_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle, \
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
@@ -3173,6 +3174,12 @@ def do_update_muted_topic(user_profile, stream, topic, op):
     user_profile.save(update_fields=['muted_topics'])
     event = dict(type="muted_topics", muted_topics=muted_topics)
     send_event(event, [user_profile.id])
+
+def do_mark_hotspot_as_read(user, hotspot):
+    # type: (UserProfile, str) -> None
+    UserHotspot.objects.get_or_create(user=user, hotspot=hotspot)
+    event = dict(type="hotspots", hotspots=get_next_hotspots(user))
+    send_event(event, [user.id])
 
 def notify_realm_filters(realm):
     # type: (Realm) -> None

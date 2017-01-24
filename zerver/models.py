@@ -1553,3 +1553,11 @@ class RealmAuditLog(models.Model):
     event_time = models.DateTimeField() # type: datetime.datetime
     backfilled = models.BooleanField(default=False) # type: bool
     extra_data = models.TextField(null=True) # type: Text
+
+class UserHotspot(models.Model):
+    user = models.ForeignKey(UserProfile) # type: UserProfile
+    hotspot = models.CharField(max_length=30) # type: Text
+    timestamp = models.DateTimeField(default=timezone.now) # type: datetime.datetime
+
+    class Meta(object):
+        unique_together = ("user", "hotspot")
