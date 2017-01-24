@@ -2984,7 +2984,27 @@ access_token_secret =</pre>
 
       <img class="screenshot" src="/static/images/integrations/zapier/005.png" />
 
-      
+      <p><b>Weather Update with Zapier!</b><br /></p>
+        <p>Go to the following link <code>https://zapier.com/app/explore</code> after you sign into your zapier account and Select Send Weather info to your app via webhookse </p><br />
+        <img class="screenshot" src="/static/images/integrations/zapier/006.png" /><br /><br />
+        <p>Select trigger app as <b>weather by zapier</b></p><br />
+        <img class="screenshot" src="/static/images/integrations/zapier/007.png" /><br /><br />
+        <p>Next select the option <b>Today's Forecast</b></p><br />
+        <img class="screenshot" src="/static/images/integrations/zapier/008.png" /><br /><br />
+        <p>Fill in the latitude and longitude of your location</p><br />
+        <img class="screenshot" src="/static/images/integrations/zapier/009.png" /><br /><br />
+        <p>After selecting <code>Webhook</code> as action choose the  <code>POST</code> option and then fill in the url as <code>https://yourZulipDomain.zulipchat.com/api/v1/external/zapier?api_key=abcdefgh&stream=zapier</code></p><br />
+        <p>Select Payload type as <code>JSON</code></p>
+        <p>You have to add 2 fields:
+        <ul>
+          <li><code>subject</code> is field corresponding to a subject of the message</li>
+          <li><code>content</code> is field corresponding to a content of the message. Like <code>Summary</code>, <code>Temperature Max</code> and so on.</li>
+        </ul>
+      </p>
+        <img class="screenshot" src="/static/images/integrations/zapier/010.png" /><br /><br />
+
+        <p>Make sure you keep the Zap ON.</p><br />
+        <p><b>Congratulations! You're done!</b><br /></p>
     </div>
 
     <div id="zendesk" class="integration-instructions">
