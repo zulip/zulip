@@ -28,6 +28,10 @@ exports.init = function () {
 exports.init();
 
 exports.get_person_from_user_id = function (user_id) {
+    if (!people_by_user_id_dict.has(user_id)) {
+        blueslip.error('Unknown user_id in get_person_from_user_id: ' + user_id);
+        return undefined;
+    }
     return people_by_user_id_dict.get(user_id);
 };
 
