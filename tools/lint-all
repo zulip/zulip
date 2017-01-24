@@ -82,21 +82,11 @@ def check_pep8(files):
     # type: (List[str]) -> bool
     failed = False
     ignored_rules = [
-        #
-        # For each of these rules, we have no explanation for why it is
-        # ignored. It either doesn't fit with the style of the project or should
-        # actually be cleaned up.
-        #
-        'E126', 'E226', 'E261', 'E302',
-        'E501',
-
-        #
         # Each of these rules are ignored for the explained reason.
-        #
 
-        # "expected 2 blank lines after class or function definition"
-        # Zulip only uses 1 blank line after class/function definitions.
-        'E305',
+        # 'continuation line over-indented for hanging indent'
+        # Most of these we should probably clean up.
+        'E126',
 
         # "multiple spaces before operator"
         # There are several typos here, but also several instances that are
@@ -106,10 +96,21 @@ def check_pep8(files):
         # straightforward.
         'E221',
 
+        # 'missing whitespace around arithmetic operator'
+        # This should possibly be cleaned up, though changing some of
+        # these may make the code less readable.
+        'E226',
+
         # "unexpected spaces around keyword / parameter equals"
         # Many of these should be fixed, but many are also being used for
         # alignment/making the code easier to read.
         'E251',
+
+        # 'at least two spaces before inline comment'
+        # This we should probably clean up, but has 800+ instances in
+        # conflict (many of them type comments), so fixing this will
+        # be a lot of churn.
+        'E261',
 
         # "block comment should start with '#'"
         # These serve to show which lines should be changed in files customized
@@ -122,10 +123,20 @@ def check_pep8(files):
         # Most of these are there for valid reasons.
         'E266',
 
+        # "expected 2 blank lines after class or function definition"
+        # Zulip only uses 1 blank line after class/function
+        # definitions; the PEP-8 recommendation results in super sparse code.
+        'E302', 'E305',
+
         # "module level import not at top of file"
         # Most of these are there for valid reasons, though there might be a
-        # few thatcould be eliminated.
+        # few that could be eliminated.
         'E402',
+
+        # "line too long"
+        # Zulip is a bit less strict about line length, and has its
+        # own check for this (see max_length)
+        'E501',
 
         # "do not assign a lambda expression, use a def"
         # Fixing these would probably reduce readability in most cases.
