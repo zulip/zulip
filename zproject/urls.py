@@ -207,7 +207,6 @@ v1_api_and_json_patterns = [
     # GET returns messages, possibly filtered, POST sends a message
     url(r'^messages$', rest_dispatch,
         {'GET': 'zerver.views.messages.get_old_messages_backend',
-         'PATCH': 'zerver.views.messages.update_message_backend',
          'POST': 'zerver.views.messages.send_message_backend'}),
     url(r'^messages/(?P<message_id>[0-9]+)$', rest_dispatch,
         {'GET': 'zerver.views.messages.json_fetch_raw_message',
