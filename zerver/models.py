@@ -10,6 +10,7 @@ from django.db.models import Manager
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, UserManager, \
     PermissionsMixin
+from django.contrib.postgres.fields import JSONField
 import django.contrib.auth
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
@@ -43,6 +44,7 @@ import logging
 import sre_constants
 import time
 import datetime
+import json
 
 MAX_SUBJECT_LENGTH = 60
 MAX_MESSAGE_LENGTH = 10000
@@ -1387,3 +1389,8 @@ class ScheduledJob(models.Model):
     # Kind if like a ForeignKey, but table is determined by type.
     filter_id = models.IntegerField(null=True) # type: Optional[int]
     filter_string = models.CharField(max_length=100) # type: Text
+
+class UserTutorial(models.Model):
+    user_profile = models.OneToOneField(UserProfile) # type: UserProfile
+    ALL_FLAGS = ['welcome', 'streams', 'topics', 'narrowing', 'replying', 'get_started']
+    tutorial_pieces = BitField(flags=ALL_FLAGS, default=0) # type: BitHandler
