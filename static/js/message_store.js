@@ -109,6 +109,11 @@ function add_message_metadata(message) {
     message.alerted = message.flags.indexOf("has_alert_word") !== -1;
     message.is_me_message = message.flags.indexOf("is_me_message") !== -1;
 
+    var sender = people.get_person_from_user_id(message.sender_id);
+    if (sender) {
+        message.sender_full_name = sender.full_name;
+    }
+
     people.extract_people_from_message(message);
 
     switch (message.type) {
