@@ -176,10 +176,10 @@ for status in statuses[::-1][:opts.limit_tweets]:
         search_term_used = "mentions"
 
     message = {
-      "type": "stream",
-      "to": [opts.stream],
-      "subject": search_term_used,
-      "content": url,
+        "type": "stream",
+        "to": [opts.stream],
+        "subject": search_term_used,
+        "content": url,
     }
 
     ret = client.send_message(message)

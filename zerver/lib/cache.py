@@ -403,8 +403,7 @@ def flush_stream(sender, **kwargs):
     if kwargs.get('update_fields') is None or 'name' in kwargs['update_fields'] and \
        UserProfile.objects.filter(
            Q(default_sending_stream=stream) |
-           Q(default_events_register_stream=stream)
-       ).exists():
+           Q(default_events_register_stream=stream)).exists():
         cache_delete(active_bot_dicts_in_realm_cache_key(stream.realm))
 
 # TODO: Rename to_dict_cache_key_id and to_dict_cache_key

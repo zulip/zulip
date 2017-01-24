@@ -12,7 +12,7 @@ sys.path.insert(0, root_dir)
 
 from tools.lib.test_script import (
         get_provisioning_status,
-    )
+)
 
 def run():
     # type: () -> None

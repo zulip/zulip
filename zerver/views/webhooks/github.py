@@ -49,7 +49,7 @@ def github_pull_request_content(payload):
             action,
             pull_request['html_url'],
             pull_request['number']
-        )
+    )
 
 def github_issues_content(payload):
     # type: (Mapping[Text, Any]) -> Text
@@ -70,7 +70,7 @@ def github_issues_content(payload):
             action,
             issue['html_url'],
             issue['number'],
-        )
+    )
 
 def github_object_commented_content(payload, type):
     # type: (Mapping[Text, Any], Text) -> Text
@@ -104,7 +104,7 @@ def get_pull_request_or_issue_subject(repository, payload_object, type):
             type=type,
             id=payload_object['number'],
             title=payload_object['title']
-        )
+    )
 
 def github_generic_subject(noun, topic_focus, blob):
     # type: (Text, Text, Mapping[Text, Any]) -> Text

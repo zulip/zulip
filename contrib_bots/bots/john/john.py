@@ -32,12 +32,12 @@ def create_chat_bot(no_learn):
                    storage_adapter="chatterbot.storage.JsonFileStorageAdapter",
                    logic_adapters=
                    [
-                      "chatterbot.logic.MathematicalEvaluation",
-                      {
-                          "import_path": "chatterbot.logic.BestMatch",
-                          "response_selection_method": "chatterbot.response_selection.get_random_response",
-                          "statement_comparison_function": "chatterbot.comparisons.levenshtein_distance"
-                      }],
+                       "chatterbot.logic.MathematicalEvaluation",
+                       {
+                           "import_path": "chatterbot.logic.BestMatch",
+                           "response_selection_method": "chatterbot.response_selection.get_random_response",
+                           "statement_comparison_function": "chatterbot.comparisons.levenshtein_distance"
+                       }],
                    output_adapter="chatterbot.output.OutputFormatAdapter",
                    output_format='text',
                    database=DATABASE_PATH,

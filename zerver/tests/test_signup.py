@@ -479,7 +479,7 @@ earl-test@zulip.com""", ["Denmark"]))
             "We weren't able to invite anyone.")
         self.assertRaises(PreregistrationUser.DoesNotExist,
                           lambda: PreregistrationUser.objects.get(
-                            email="hamlet@zulip.com"))
+                              email="hamlet@zulip.com"))
         self.check_sent_emails([])
 
     def test_invite_some_existing_some_new(self):
@@ -503,7 +503,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         for email in existing:
             self.assertRaises(PreregistrationUser.DoesNotExist,
                               lambda: PreregistrationUser.objects.get(
-                                email=email))
+                                  email=email))
         for email in new:
             self.assertTrue(PreregistrationUser.objects.get(email=email))
 

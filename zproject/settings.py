@@ -558,7 +558,7 @@ if PRODUCTION:
                  {'var_name': 'NAGIOS_STAGING_RECEIVE_BOT',
                   'email_template': 'nagios-staging-receive-bot@%s',
                   'name': 'Nagios Staging Receive Bot'},
-        ]
+    ]
 
 INTERNAL_BOT_DOMAIN = "zulip.com"
 

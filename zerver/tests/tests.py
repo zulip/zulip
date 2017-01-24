@@ -992,7 +992,7 @@ class BotTest(ZulipTestCase):
              'full_name': 'The Bot of Hamlet',
              'short_name': 'hambot',
              'default_sending_stream': 'Denmark',
-         }
+        }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, 'Insufficient permission')
 
@@ -1055,7 +1055,7 @@ class BotTest(ZulipTestCase):
              'full_name': 'The Bot of Hamlet',
              'short_name': 'hambot',
              'default_events_register_stream': 'Denmark',
-         }
+        }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, 'Insufficient permission')
 

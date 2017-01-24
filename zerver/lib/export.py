@@ -260,7 +260,7 @@ class Config(object):
                         self.table,
                         self.id_source[0],
                         self.virtual_parent.table,
-                    ))
+                        ))
 
 
 def export_from_config(response, config, seed_object=None, context=None):
