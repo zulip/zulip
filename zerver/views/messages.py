@@ -928,9 +928,13 @@ def update_message_backend(request, user_profile,
         # probably are not relevant for reprocessed alert_words,
         # mentions and similar rendering features.  This may be a
         # decision we change in the future.
-        ums = UserMessage.objects.filter(message=message.id,
-                                         flags=~UserMessage.flags.historical)
-        message_users = {get_user_profile_by_id(um.user_profile_id) for um in ums}
+        ums = UserMessage.objects.filter(
+            message=message.id,
+            flags=~UserMessage.flags.historical)
+
+        message_users = UserProfile.objects.select_related().filter(
+            id__in={um.user_profile_id for um in ums})
+
         # We render the message using the current user's realm; since
         # the cross-realm bots never edit messages, this should be
         # always correct.
