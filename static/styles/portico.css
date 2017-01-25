@@ -57,8 +57,49 @@ body {
     font-size: 17px;
 }
 
-li {
+.markdown ul,
+.markdown ol {
+    margin-left: 30px;
+}
+
+.markdown li {
     line-height: 150%;
+}
+
+.markdown ol {
+    counter-reset: item;
+    list-style: none;
+}
+
+.markdown ol li {
+    counter-increment: item;
+    margin-bottom: 5px;
+}
+
+.markdown ol li:before {
+    content: counter(item);
+
+    display: inline-block;
+    vertical-align: top;
+
+    padding: 3px 6.5px 3px 7.5px;
+    margin-right: 5px;
+    background-color: #52c2af;
+    color: white;
+    border-radius: 100%;
+    font-size: 0.9em;
+    line-height: 1.1;
+    text-align: center;
+}
+
+.markdown ol li p {
+    display: inline-block;
+    vertical-align: top;
+
+    max-width: calc(100% - 28px);
+
+    position: relative;
+    top: -2px;
 }
 
 .title {
