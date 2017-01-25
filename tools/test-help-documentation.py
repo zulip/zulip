@@ -18,59 +18,25 @@ except ImportError as e:
     print("If you are using Vagrant, you can `vagrant ssh` to enter the Vagrant guest.")
     sys.exit(1)
 
-os.environ["EXTERNAL_HOST"] = "localhost:9981"
-
 parser = optparse.OptionParser()
 parser.add_option('--force', default=False,
                   action="store_true",
                   help='Run tests despite possible problems.')
 (options, args) = parser.parse_args()
 
-def assert_server_running(server):
-    # type: (subprocess.Popen) -> None
-    """Get the exit code of the server, or None if it is still running."""
-    if server.poll() is not None:
-        raise RuntimeError('Server died unexpectedly! Check %s' % (LOG_FILE,))
+TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.dirname(TOOLS_DIR))
 
-
-def server_is_up(server):
-    # type: (subprocess.Popen) -> bool
-    assert_server_running(server)
-    try:
-        # We could get a 501 error if the reverse proxy is up but the Django app isn't.
-        r = requests.get('http://127.0.0.1:9981/accounts/home')
-        return r.status_code == 200
-    except requests.exceptions.RequestException:
-        return False
-
+from tools.lib.test_server import test_server_running
 
 subprocess.check_call(['mkdir', '-p', 'var/help-documentation'])
 
 LOG_FILE = 'var/help-documentation/server.log'
-if os.path.exists(LOG_FILE) and os.path.getsize(LOG_FILE) < 100000:
-    log = open(LOG_FILE, 'a')
-    log.write('\n\n')
-else:
-    log = open(LOG_FILE, 'w')
+external_host = "localhost:9981"
 
-run_dev_server_command = ['tools/run-dev.py', '--test']
-if options.force:
-    run_dev_server_command.append('--force')
-server = subprocess.Popen(run_dev_server_command, stdout=log, stderr=log)
-
-sys.stdout.write('Waiting for test server')
-try:
-    while not server_is_up(server):
-        sys.stdout.write('.')
-        sys.stdout.flush()
-        time.sleep(0.1)
-    sys.stdout.write('\n')
-
+with test_server_running(options.force, external_host, log_file=LOG_FILE, dots=True, use_db=False):
     ret = subprocess.call(('scrapy', 'crawl_with_status', 'help_documentation_crawler'),
                           cwd='tools/documentation_crawler')
-finally:
-    assert_server_running(server)
-    server.terminate()
 
 if ret != 0:
     print("\033[0;91m")
