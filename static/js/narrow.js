@@ -555,6 +555,9 @@ function pick_empty_narrow_banner() {
         }
     } else if ((first_operator === "stream") && !stream_data.is_subscribed(first_operand)) {
         // You are narrowed to a stream to which you aren't subscribed.
+        if (!stream_data.get_sub(narrow.stream())) {
+            return $("#nonsubbed_private_nonexistent_stream_narrow_message");
+        }
         return $("#nonsubbed_stream_narrow_message");
     } else if (first_operator === "search") {
         // You are narrowed to empty search results.
