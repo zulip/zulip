@@ -508,7 +508,7 @@ class Client(object):
             See api/examples/edit-message for example usage.
         '''
         return self.call_endpoint(
-            url='messages',
+            url='messages/%d' % (message_data['message_id'],),
             method='PATCH',
             request=message_data,
         )
