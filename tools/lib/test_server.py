@@ -33,15 +33,18 @@ def set_up_django(external_host):
     django.setup()
     os.environ['PYTHONUNBUFFERED'] = 'y'
 
-def assert_server_running(server):
-    # type: (subprocess.Popen) -> None
+def assert_server_running(server, log_file):
+    # type: (subprocess.Popen, str) -> None
     """Get the exit code of the server, or None if it is still running."""
     if server.poll() is not None:
-        raise RuntimeError('Server died unexpectedly!')
+        message = 'Server died unexpectedly!'
+        if log_file:
+            message += '\nSee %s\n' % (log_file,)
+        raise RuntimeError(message)
 
-def server_is_up(server):
-    # type: (subprocess.Popen) -> bool
-    assert_server_running(server)
+def server_is_up(server, log_file):
+    # type: (subprocess.Popen, str) -> bool
+    assert_server_running(server, log_file)
     try:
         # We could get a 501 error if the reverse proxy is up but the Django app isn't.
         return requests.get('http://127.0.0.1:9981/accounts/home').status_code == 200
@@ -49,8 +52,17 @@ def server_is_up(server):
         return False
 
 @contextmanager
-def test_server_running(force=False, external_host='testserver', log=sys.stdout, dots=False):
-    # type: (bool, str, Any, bool) -> Iterator[None]
+def test_server_running(force=False, external_host='testserver', log_file=None, dots=False):
+    # type: (bool, str, str, bool) -> Iterator[None]
+    if log_file:
+        if os.path.exists(log_file) and os.path.getsize(log_file) < 100000:
+            log = open(log_file, 'a')
+            log.write('\n\n')
+        else:
+            log = open(log_file, 'w')
+    else:
+        log = sys.stdout # type: ignore # BinaryIO vs. IO[str]
+
     set_up_django(external_host)
 
     generate_fixtures_command = ['tools/setup/generate-fixtures']
@@ -68,7 +80,7 @@ def test_server_running(force=False, external_host='testserver', log=sys.stdout,
     try:
         # Wait for the server to start up.
         sys.stdout.write('Waiting for test server')
-        while not server_is_up(server):
+        while not server_is_up(server, log_file):
             if dots:
                 sys.stdout.write('.')
                 sys.stdout.flush()
@@ -79,7 +91,7 @@ def test_server_running(force=False, external_host='testserver', log=sys.stdout,
         yield
 
     finally:
-        assert_server_running(server)
+        assert_server_running(server, log_file)
         server.terminate()
 
 if __name__ == '__main__':
