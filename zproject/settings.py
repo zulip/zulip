@@ -65,7 +65,7 @@ if 'DEBUG' not in globals():
     DEBUG = DEVELOPMENT # and platform.node() != 'your-machine'
 
 if DEBUG:
-    INTERNAL_IPS = ('127.0.0.1',)
+    INTERNAL_IPS = ('127.0.0.1', '::1',)
 
 # Detect whether we're running as a queue worker; this impacts the logging configuration.
 if len(sys.argv) > 2 and sys.argv[0].endswith('manage.py') and sys.argv[1] == 'process_queue':

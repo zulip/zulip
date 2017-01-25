@@ -1246,7 +1246,7 @@ def get_huddle_backend(huddle_hash, id_list):
 
 def clear_database():
     # type: () -> None
-    pylibmc.Client(['127.0.0.1']).flush_all()
+    pylibmc.Client(['localhost']).flush_all()
     model = None # type: Any
     for model in [Message, Stream, UserProfile, Recipient,
                   Realm, Subscription, Huddle, UserMessage, Client,

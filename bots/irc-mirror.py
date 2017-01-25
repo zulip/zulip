@@ -18,6 +18,17 @@ if False:
 
 IRC_DOMAIN = "irc.example.com"
 
+import os
+import sys
+
+our_dir = os.path.dirname(os.path.abspath(__file__))
+
+# For dev setups, we can find the API in the repo itself.
+if os.path.exists(os.path.join(our_dir, '../api/zulip')):
+    sys.path.append('../api')
+
+import zulip
+
 def zulip_sender(sender_string):
     # type: (str) -> str
     nick = sender_string.split("!")[0]
@@ -110,7 +121,7 @@ usage = """./irc-mirror.py --server=IRC_SERVER --channel=<CHANNEL> --nick-prefix
 
 Example:
 
-./irc-mirror.py --irc-server=127.0.0.1 --channel='#test' --nick-prefix=username
+./irc-mirror.py --irc-server=localhost --channel='#test' --nick-prefix=username
   --site=https://zulip.example.com --user=irc-bot@example.com
   --api-key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 

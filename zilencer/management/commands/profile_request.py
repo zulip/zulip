@@ -23,7 +23,7 @@ class MockRequest(HttpRequest):
         self.user = get_user_profile_by_email(email)
         self.path = '/'
         self.method = "POST"
-        self.META = {"REMOTE_ADDR": "127.0.0.1"}
+        self.META = {"REMOTE_ADDR": "localhost"}
         self.REQUEST = {
             "anchor": UserMessage.objects.filter(user_profile=self.user).order_by("-message")[200].message_id,
             "num_before": 1200,
