@@ -150,6 +150,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('semaphore'),
     WebhookIntegration('sentry'),
     WebhookIntegration('solano', display_name='Solano Labs'),
+    WebhookIntegration('splunk', display_name='Splunk'),
     WebhookIntegration('stash'),
     WebhookIntegration('stripe', display_name='Stripe'),
     WebhookIntegration('taiga'),
