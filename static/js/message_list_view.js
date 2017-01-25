@@ -95,7 +95,7 @@ function populate_group_from_message_container(group, message_container) {
         group.topic_url = message_container.topic_url;
     } else if (group.is_private) {
         group.pm_with_url = message_container.pm_with_url;
-        group.display_reply_to = message_container.msg.display_reply_to;
+        group.display_reply_to = message_store.get_pm_full_names(message_container.msg);
     }
     group.display_recipient = message_container.msg.display_recipient;
     group.always_visible_topic_edit = message_container.msg.always_visible_topic_edit;
