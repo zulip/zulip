@@ -30,6 +30,7 @@ set_global('page_params', {
 
 add_dependencies({
     marked: 'third/marked/lib/marked.js',
+    emoji_codes: 'generated/emoji/emoji_codes.js',
     emoji: 'js/emoji.js',
     people: 'js/people.js',
     stream_data: 'js/stream_data.js',

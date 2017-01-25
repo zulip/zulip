@@ -91,7 +91,8 @@
         "pm_list": false,
         "unread_ui": false,
         "user_events": false,
-        "Plotly": false
+        "Plotly": false,
+        "emoji_codes": false
     },
     "rules": {
         "no-restricted-syntax": 1,

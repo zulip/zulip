@@ -773,6 +773,7 @@ JS_SPECS = {
             'node_modules/winchan/winchan.js',
             'third/handlebars/handlebars.runtime.js',
             'third/marked/lib/marked.js',
+            'generated/emoji/emoji_codes.js',
             'templates/compiled.js',
             'js/feature_flags.js',
             'js/loading.js',

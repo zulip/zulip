@@ -6,6 +6,7 @@ set_global('page_params', {realm_emoji: {
 add_dependencies({
     Handlebars: 'handlebars',
     templates: 'js/templates',
+    emoji_codes: 'generated/emoji/emoji_codes.js',
     emoji: 'js/emoji',
     i18n: 'i18next',
 });
