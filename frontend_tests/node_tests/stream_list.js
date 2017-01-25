@@ -44,8 +44,15 @@ var bob = {
     user_id: 102,
     full_name: 'Bob',
 };
+var me = {
+    email: 'me@zulip.com',
+    user_id: 103,
+    full_name: 'Me Myself',
+};
 global.people.add_in_realm(alice);
 global.people.add_in_realm(bob);
+global.people.add_in_realm(me);
+global.people.initialize_current_user(me.user_id);
 
 (function test_build_private_messages_list() {
     var active_conversation = "alice@zulip.com,bob@zulip.com";
@@ -53,7 +60,6 @@ global.people.add_in_realm(bob);
 
 
     var conversations = {user_ids_string: '101,102',
-                         display_reply_to: active_conversation,
                          timestamp: 0 };
     global.message_store.recent_private_messages.push(conversations);
 
@@ -65,7 +71,7 @@ global.people.add_in_realm(bob);
     global.write_test_output("test_build_private_messages_list", convos_html);
 
     var conversation = $(convos_html).find('a').text().trim();
-    assert.equal(conversation, active_conversation);
+    assert.equal(conversation, 'Alice, Bob');
 }());
 
 function clear_filters() {

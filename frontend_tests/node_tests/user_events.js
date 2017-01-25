@@ -19,6 +19,10 @@ set_global('page_params', {
     is_admin: true,
 });
 
+set_global('pm_list', {
+    update_private_messages: function () {},
+});
+
 set_global('message_live_update', {
 });
 
