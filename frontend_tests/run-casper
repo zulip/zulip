@@ -68,11 +68,6 @@ subprocess.check_call(['mkdir', '-p', 'var/casper'])
 subprocess.check_call(['rm', '-f'] + glob.glob('var/casper/casper-failure*.png'))
 
 LOG_FILE = 'var/casper/server.log'
-if os.path.exists(LOG_FILE) and os.path.getsize(LOG_FILE) < 100000:
-    log = open(LOG_FILE, 'a')
-    log.write('\n\n')
-else:
-    log = open(LOG_FILE, 'w')
 
 def run_tests(realms_have_subdomains, files, external_host):
     # type: (bool, Iterable[str], str) -> None
@@ -98,7 +93,7 @@ def run_tests(realms_have_subdomains, files, external_host):
     if options.remote_debug:
         remote_debug = "--remote-debugger-port=7777 --remote-debugger-autorun=yes"
 
-    with test_server_running(options.force, external_host, log, dots=True):
+    with test_server_running(options.force, external_host, log_file=LOG_FILE, dots=True):
         ret = 1
         for test_file in test_files:
             cmd = "node_modules/.bin/casperjs %s test --subdomains=%s %s" % (
