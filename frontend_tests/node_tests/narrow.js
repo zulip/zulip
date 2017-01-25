@@ -134,3 +134,69 @@ function set_filter(operators) {
     var emails = global.hashchange.decode_operand('pm-with', '22,23-group');
     assert.equal(emails, 'alice@example.com,ray@example.com');
 }());
+
+(function test_show_empty_narrow_message() {
+
+    var hide_id;
+    var show_id;
+    global.$ = function (id) {
+      return {hide: function () {hide_id = id;}, show: function () {show_id = id;}};
+    };
+
+    narrow._set_current_filter(undefined);
+    narrow.show_empty_narrow_message();
+    assert.equal(hide_id,'.empty_feed_notice');
+    assert.equal(show_id, '#empty_narrow_message');
+
+    // for non-existent or private stream
+    set_filter([['stream', 'Foo']]);
+    narrow.show_empty_narrow_message();
+    assert.equal(hide_id,'.empty_feed_notice');
+    assert.equal(show_id, '#nonsubbed_private_nonexistent_stream_narrow_message');
+
+    // for non sub public stream
+    set_filter([['stream', 'Rome']]);
+    narrow.show_empty_narrow_message();
+    assert.equal(hide_id,'.empty_feed_notice');
+    assert.equal(show_id, '#nonsubbed_stream_narrow_message');
+
+    set_filter([['is', 'starred']]);
+    narrow.show_empty_narrow_message();
+    assert.equal(hide_id,'.empty_feed_notice');
+    assert.equal(show_id, '#empty_star_narrow_message');
+
+    set_filter([['is', 'mentioned']]);
+    narrow.show_empty_narrow_message();
+    assert.equal(hide_id,'.empty_feed_notice');
+    assert.equal(show_id, '#empty_narrow_all_mentioned');
+
+    set_filter([['is', 'private']]);
+    narrow.show_empty_narrow_message();
+    assert.equal(hide_id,'.empty_feed_notice');
+    assert.equal(show_id, '#empty_narrow_all_private_message');
+
+    set_filter([['pm-with', ['alice@example.com', 'Yo']]]);
+    narrow.show_empty_narrow_message();
+    assert.equal(hide_id,'.empty_feed_notice');
+    assert.equal(show_id, '#empty_narrow_multi_private_message');
+
+    set_filter([['pm-with', 'alice@example.com']]);
+    narrow.show_empty_narrow_message();
+    assert.equal(hide_id,'.empty_feed_notice');
+    assert.equal(show_id, '#empty_narrow_private_message');
+
+    set_filter([['sender', 'ray@example.com']]);
+    narrow.show_empty_narrow_message();
+    assert.equal(hide_id,'.empty_feed_notice');
+    assert.equal(show_id, '#silent_user');
+
+    set_filter([['sender', 'sinwar@example.com']]);
+    narrow.show_empty_narrow_message();
+    assert.equal(hide_id,'.empty_feed_notice');
+    assert.equal(show_id, '#non_existing_user');
+
+    set_filter([['search', 'grail']]);
+    narrow.show_empty_narrow_message();
+    assert.equal(hide_id,'.empty_feed_notice');
+    assert.equal(show_id, '#empty_search_narrow_message');
+}());
