@@ -46,5 +46,6 @@ run ./tools/test-js-with-casper $FORCEARG
 # Not running documentation tests since it takes 20s and only tests documentation
 # run ./tools/test-documentation
 run ./tools/test-help-documentation.py $FORCEARG
+run ./tools/test-api
 
 printf '\n\e[32mAll OK!\e[0m\n'
