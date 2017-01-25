@@ -52,8 +52,8 @@ def server_is_up(server, log_file):
         return False
 
 @contextmanager
-def test_server_running(force=False, external_host='testserver', log_file=None, dots=False):
-    # type: (bool, str, str, bool) -> Iterator[None]
+def test_server_running(force=False, external_host='testserver', log_file=None, dots=False, use_db=True):
+    # type: (bool, str, str, bool, bool) -> Iterator[None]
     if log_file:
         if os.path.exists(log_file) and os.path.getsize(log_file) < 100000:
             log = open(log_file, 'a')
@@ -65,10 +65,11 @@ def test_server_running(force=False, external_host='testserver', log_file=None, 
 
     set_up_django(external_host)
 
-    generate_fixtures_command = ['tools/setup/generate-fixtures']
-    if not is_template_database_current():
-        generate_fixtures_command.append('--force')
-    subprocess.check_call(generate_fixtures_command)
+    if use_db:
+        generate_fixtures_command = ['tools/setup/generate-fixtures']
+        if not is_template_database_current():
+            generate_fixtures_command.append('--force')
+        subprocess.check_call(generate_fixtures_command)
 
     # Run this not through the shell, so that we have the actual PID.
     run_dev_server_command = ['tools/run-dev.py', '--test']
