@@ -80,7 +80,6 @@ exports.process_message_for_recent_private_messages =
     });
 
     var new_conversation = {user_ids_string: user_ids_string,
-                            display_reply_to: message.display_reply_to,
                             timestamp: Math.max(message.timestamp, current_timestamp)};
 
     exports.recent_private_messages.push(new_conversation);
