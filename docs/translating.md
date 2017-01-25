@@ -28,6 +28,7 @@ giving guidance on how Zulip should be translated into specific
 languages (e.g. what word to translate words like "home" to):
 
 * [Chinese](chinese.html)
+* [German](german.html)
 * [Polish](polish.html)
 * [Russian](russian.html)
 * [Spanish](spanish.html)
