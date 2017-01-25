@@ -42,6 +42,9 @@ You can also run them individually:
 Finally, you can rely on our Travis CI setup to run linters for you, but
 it is good practice to run lint checks locally.
 
+**Note:** The linters only check files that git tracks. Remember to `git add`
+new files before running lint checks.
+
 Our linting tools generally support the ability to lint files
 individually--with some caveats--and those options will be described
 later in this document.
