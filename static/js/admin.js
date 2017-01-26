@@ -215,8 +215,11 @@ exports.populate_realm_aliases = function (aliases) {
         return (alias.allow_subdomains ? "*." + alias.domain : alias.domain);
     });
     var domains = domains_list.join(', ');
+
+    $("#id_realm_restricted_to_domain").prop("checked", page_params.realm_restricted_to_domain);
     if (domains.length === 0) {
         domains = i18n.t("None");
+        $("#id_realm_restricted_to_domain").prop("disabled", true);
     }
     $("#realm_restricted_to_domains_label").text(i18n.t("New users restricted to the following domains: __domains__", {domains: domains}));
 
@@ -988,6 +991,7 @@ function _setup_page() {
             success: function () {
                 $("#add-alias-widget .new-alias-domain").val("");
                 $("#add-alias-widget .new-alias-allow-subdomains").prop("checked", false);
+                $("#id_realm_restricted_to_domain").prop("disabled", false);
                 aliases_info.removeClass("text-error");
                 aliases_info.addClass("text-success");
                 aliases_info.text("Added successfully!");
