@@ -41,4 +41,7 @@ with test_server_running():
         api_key=api_key,
         site=site)
 
+    print("Running API tests...")
     test_the_api(client)
+
+print("API tests passed!")
