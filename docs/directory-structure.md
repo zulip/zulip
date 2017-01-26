@@ -25,7 +25,7 @@ paths will be familiar to Django developers.
 
 * `zerver/views/*.py` Most [Django views](https://docs.djangoproject.com/en/1.8/topics/http/views/).
 
-* `zerver/views/webhooks/` Webhook views for [Zulip integrations](integration-guide.html).
+* `zerver/webhooks/` Webhook views and tests for [Zulip webhook integrations](integration-guide.html).
 
 * `zerver/tornado/views.py` Tornado views.
 
