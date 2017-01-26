@@ -1,0 +1,236 @@
+<h4>Freshdesk</h4>
+
+<p>
+    See customer support interactions right in Zulip, with our Freshdesk
+    integration! Note that this integration must be set up by an administrator
+    for your Freshdesk instance.
+</p>
+
+<p>
+    First, create the stream you'd like to use for Freshdesk notifications,
+    and subscribe all interested parties to this stream. We recommend the
+    stream name <code>freshdesk</code>.
+</p>
+
+<p>Next, on your {{ settings_html|safe }}, create a Freshdesk bot.</p>
+
+<p>
+    Now we can set up the Freshdesk events that will trigger
+    Zulips. Freshdesk provides separate triggering mechanisms for ticket
+    creation and ticket changes, so we'll set up these triggers in two
+    parts.
+</p>
+
+<h4>Part 1: Zulip notifications for new Freshdesk tickets</h4>
+
+<ol>
+    <li>
+        <p>
+            Visit your Freshdesk admin page. Under the <b>"Helpdesk
+            Productivity"</b> section, click the <b>"Dispatch'r"</b> icon:
+        </p>
+
+        <img class="screenshot" src="/static/images/integrations/freshdesk/001.png"/>
+
+        <p>
+            Click the <b>"New rule"</b> button to create a new Dispatch'r rule
+            that will send notifications to Zulip when Freshdesk tickets are
+            opened.
+        </p>
+    </li>
+    <li>
+        <p>
+            On the Dispatch'r rule creation page, give the rule a name and
+            description. Next, we need to specify the conditions under which to
+            trigger Zulip notifications. There isn't a shortcut for "always
+            generate a notification on ticket creation", so we'll instead fake it
+            by picking two complementary conditions: when the source <b>is
+            email</b>, and when the source <b>is not email</b>:
+        </p>
+
+        <img class="screenshot" src="/static/images/integrations/freshdesk/002.png"/>
+    </li>
+    <li>
+
+        <p>
+            In the <b>"Action"</b> section, add a new action of
+            type <b>"Trigger Webhook"</b>. Set the <b>"Request Type"</b>
+            to <b>"POST"</b>. Set the following <b>"Callback URL"</b>, replacing
+            the Zulip stream with your desired stream:
+        </p>
+
+        <p>
+            <code>{{ external_api_uri_subdomain }}/v1/external/freshdesk?stream=<font color="#00A26F">freshdesk</font></code>
+        </p>
+
+        <p>
+            Check the <b>"Requires Authentication"</b> box, and supply the bot
+            e-mail address and API key.
+        </p>
+
+        <p>The Action section should look like this so far:</p>
+
+        <img class="screenshot" src="/static/images/integrations/freshdesk/003.png"/>
+    </li>
+    <li>
+        <p>
+            Select <b>"JSON"</b> for the <b>"Encoding"</b>. Under the encoding, select
+            <b>"Advanced"</b>. Paste the following JSON into the <b>"Content"</b>
+            box:
+        </p>
+
+        <pre>{"freshdesk_webhook":
+{
+    "triggered_event":"&#123;&#123;triggered_event&#125;&#125;",
+    "ticket_id":"&#123;&#123;ticket.id&#125;&#125;",
+    "ticket_url":"&#123;&#123;ticket.url&#125;&#125;",
+    "ticket_type":"&#123;&#123;ticket.ticket_type&#125;&#125;",
+    "ticket_subject":"&#123;&#123;ticket.subject&#125;&#125;",
+    "ticket_description":"&#123;&#123;ticket.description&#125;&#125;",
+    "ticket_status":"&#123;&#123;ticket.status&#125;&#125;",
+    "ticket_priority":"&#123;&#123;ticket.priority&#125;&#125;",
+    "requester_name":"&#123;&#123;ticket.requester.name&#125;&#125;",
+    "requester_email":"&#123;&#123;ticket.requester.email&#125;&#125;",
+}
+}
+        </pre>
+
+        <p>
+            These ticket details are what will be forwarded to Zulip. The
+            pasted JSON should look like this:
+        </p>
+
+        <img class="screenshot" src="/static/images/integrations/freshdesk/004.png"/>
+    </li>
+    <li>
+        <p>
+            Save your new Dispatch'r rule. The next time a Freshdesk ticket is
+            opened, the team will get a notification in Zulip!
+        </p>
+    </li>
+</ol>
+
+<p>
+    If you only want to receive Zulip notifications on ticket creation,
+    stop here, you're done! If you also want notifications on important ticket
+    changes, please continue to the next section.
+</p>
+
+<h4>Part 2: Zulip notifications on ticket changes</h4>
+
+<ol>
+    <li>
+        <p>
+            Visit your Freshdesk admin page. Under the <b>"Helpdesk
+            Productivity"</b> section, click the <b>"Observer"</b> icon:
+        </p>
+
+        <img class="screenshot" src="/static/images/integrations/freshdesk/005.png"/>
+
+        <p>
+            Click the <b>"New rule"</b> button to create a new Observer rule
+            that will send notifications to Zulip when Freshdesk tickets are
+            updated.
+        </p>
+    </li>
+    <li>
+        <p>
+            On the Observer rule creation page, give the rule a name and
+            description. Under <b>"When Any Of These Events Occur"</b>, create
+            these new rules:
+        </p>
+        <ul>
+            <li><p>Priority is changed, from Any Priority, to Any Priority</p></li>
+            <li><p>Status is changed, from Any Status, to Any Status</p></li>
+            <li><p>Note is added, Type Any</p></li>
+        </ul>
+
+        <p>
+            If you do not want to receive Zulip notifications on one or more of
+            these events, leave out the rule for that event.
+        </p>
+
+        <p>
+            Under <b>"And The Events Are Performed By"</b>,
+            select <b>"Anyone"</b>.
+        </p>
+
+        <p>So far, the rule should look like this:</p>
+
+        <img class="screenshot" src="/static/images/integrations/freshdesk/006.png"/>
+    </li>
+    <li>
+        <p>
+            Next, we need to specify the types of tickets that will trigger
+            Zulip notifications. There isn't a shortcut for "always generate a
+            notification on ticket update", so as before we'll instead fake it by
+            picking two complementary conditions: when the source <b>is email</b>,
+            and when the source <b>is not email</b>:
+        </p>
+
+        <img class="screenshot" src="/static/images/integrations/freshdesk/007.png"/>
+    </li>
+    <li>
+        <p>
+            Under <b>"Perform These Actions"</b>, add a new action of
+            type <b>"Trigger Webhook"</b>. Set the <b>"Request Type"</b>
+            to <b>"POST"</b>. Set the following <b>"Callback URL"</b>, replacing
+            the Zulip stream with your desired stream:
+        </p>
+
+        <p>
+            <code>{{ external_api_uri_subdomain }}/v1/external/freshdesk?stream=<font color="#00A26F">freshdesk</font></code>
+        </p>
+
+        <p>
+            Check the <b>"Requires Authentication"</b> box, and supply the bot
+            e-mail address and API key.
+        </p>
+
+        <p>The Action section should look like this so far:</p>
+
+        <img class="screenshot" src="/static/images/integrations/freshdesk/008.png"/>
+    </li>
+    <li>
+        <p>
+            Select <b>"JSON"</b> for the <b>"Encoding"</b>. Under the encoding,
+            select <b>"Advanced"</b>. Paste the following JSON into
+            the <b>"Content"</b> box:
+        </p>
+
+        <pre>
+{"freshdesk_webhook":
+    {
+        "triggered_event":"&#123;&#123;triggered_event&#125;&#125;",
+        "ticket_id":"&#123;&#123;ticket.id&#125;&#125;",
+        "ticket_url":"&#123;&#123;ticket.url&#125;&#125;",
+        "ticket_type":"&#123;&#123;ticket.ticket_type&#125;&#125;",
+        "ticket_subject":"&#123;&#123;ticket.subject&#125;&#125;",
+        "ticket_description":"&#123;&#123;ticket.description&#125;&#125;",
+        "ticket_status":"&#123;&#123;ticket.status&#125;&#125;",
+        "ticket_priority":"&#123;&#123;ticket.priority&#125;&#125;",
+        "requester_name":"&#123;&#123;ticket.requester.name&#125;&#125;",
+        "requester_email":"&#123;&#123;ticket.requester.email&#125;&#125;",
+    }
+}</pre>
+        <p>
+            These ticket details are what will be forwarded to Zulip. The
+            pasted JSON should look like this:
+        </p>
+
+        <img class="screenshot" src="/static/images/integrations/freshdesk/009.png"/>
+    </li>
+    <li>
+        <p>
+            Save your new Observer rule. The next time a Freshdesk ticket is
+            updated, the team will get a notification in Zulip!
+        </p>
+    </li>
+</ol>
+
+<p>
+    <b>Congratulations! You're done!</b><br/> You'll now see support
+    progress in real time in Zulip:
+</p>
+
+<img class="screenshot" src="/static/images/integrations/freshdesk/010.png"/>

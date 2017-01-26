@@ -1,0 +1,33 @@
+<p>See your Yo App notifications in Zulip!</p>
+
+<p>
+    <a href="/api/#api_keys">Go to your Zulip settings and set up a Zulip bot for the
+        integration.</a> You'll need the bot's API key to construct a URL for
+    <a href="http://docs.justyo.co/docs/receiving-a-yo-with-the-api">Yo App Callback</a>.
+</p>
+
+<p>You will receive your notifications as a private message between you and the bot.</p>
+
+<p>Create a URL using your bot's API key and the email address associated with your Zulip account:</p>
+
+<pre><code>{{ external_api_uri_subdomain }}/api/v1/external/yo?email=awesome@zulip.example.com&amp;api_key=abcdefgh</code></pre>
+
+<p>Copy the URL created and go to <a href="https://yoapi.justyo.co">yoapi.justyo.co</a>.</p>
+<p>Sign in using your username and password and go to <b>Edit Profile</b>.</p>
+
+<img class="screenshot" src="/static/images/integrations/yo-app/001.png"/>
+
+<p>Paste the URL in the <b>Callback</b> field and click on <b>Update</b>.</p>
+
+<p>
+    <b>Congratulations! You're done!</b><br/>When someone sends your username a Yo,
+    you'll receive a notification as a private message from the bot
+    like this:
+</p>
+
+<img class="screenshot" src="/static/images/integrations/yo-app/002.png"/>
+
+<p>
+    Multiple users can use the same Yo bot; each user should use
+    their own Zulip account email in the webhook URL.
+</p>

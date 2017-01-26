@@ -24,11 +24,12 @@ features for writing and configuring integrations efficiently.
 class Integration(object):
     DEFAULT_LOGO_STATIC_PATH = 'static/images/integrations/logos/{name}.png'
 
-    def __init__(self, name, client_name, logo=None, secondary_line_text=None, display_name=None):
-        # type: (str, str, Optional[str], Optional[str], Optional[str]) -> None
+    def __init__(self, name, client_name, logo=None, secondary_line_text=None, display_name=None, doc=None):
+        # type: (str, str, Optional[str], Optional[str], Optional[str], Optional[str]) -> None
         self.name = name
         self.client_name = client_name
         self.secondary_line_text = secondary_line_text
+        self.doc = doc
 
         if logo is None:
             logo = self.DEFAULT_LOGO_STATIC_PATH.format(name=name)
@@ -51,10 +52,11 @@ class WebhookIntegration(Integration):
     DEFAULT_FUNCTION_PATH = 'zerver.webhooks.{name}.view.api_{name}_webhook'
     DEFAULT_URL = 'api/v1/external/{name}'
     DEFAULT_CLIENT_NAME = 'Zulip{name}Webhook'
+    DEFAULT_DOC_PATH = '{name}/doc.html'
 
     def __init__(self, name, client_name=None, logo=None, secondary_line_text=None,
-                 function=None, url=None, display_name=None):
-        # type: (str, Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str]) -> None
+                 function=None, url=None, display_name=None, doc=None):
+        # type: (str, Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str]) -> None
         if client_name is None:
             client_name = self.DEFAULT_CLIENT_NAME.format(name=name.title())
         super(WebhookIntegration, self).__init__(name, client_name, logo, secondary_line_text, display_name)
@@ -70,6 +72,10 @@ class WebhookIntegration(Integration):
         if url is None:
             url = self.DEFAULT_URL.format(name=name)
         self.url = url
+
+        if doc is None:
+            doc = self.DEFAULT_DOC_PATH.format(name=name)
+        self.doc = doc
 
     @property
     def url_object(self):

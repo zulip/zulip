@@ -1,0 +1,53 @@
+<p>
+    This webhook bases on deprecated concept that is
+    <a href="https://github.com/github/github-services">GitHub Services</a>
+</p>
+
+<p>
+    First, create the stream you'd like to use for GitHub notifications,
+    and subscribe all interested parties to this stream. The integration will
+    use the default stream <code>commits</code> if no stream is supplied in
+    the hook; you still need to create the stream even if you are using this
+    default.
+</p>
+
+<p>Next, go to your repository page and click <b>"Settings"</b>:</p>
+<p><img src="/static/images/integrations/github/001.png"/></p>
+
+<p>From there, select <b>"Webhooks &amp; Services"</b>:</p>
+<p><img src="/static/images/integrations/github/002.png"/></p>
+
+<p>To find the Zulip hook, you have to click on <b>Configure services</b>.</p>
+<p><img class="screenshot" src="/static/images/integrations/github/003.png"/></p>
+
+<p>
+    Select <b>"Zulip"</b> from the list of service hooks. Fill in
+    the API key and email address for your bot and check
+    the <b>"active"</b> checkbox. Specify
+    <code>{{ external_api_uri_subdomain }}/v1/external/github</code> as the <b>"Alternative
+    endpoint"</b>. You can optionally supply the Zulip stream (the
+    default is <code>commits</code>) and restrict Zulip
+    notifications to a specified set of branches.
+</p>
+
+<p>
+    Further configuration is possible. By default, commits traffic (pushes, commit comments),
+    GitHub issues traffic, and pull requests are enabled. You can exclude certain types of traffic
+    via the checkboxes. If you want commit traffic, issue traffic, and pull requests to go to
+    different places, you can use the <b>Commit Stream</b> and <b>Issue Stream</b> overrides;
+    otherwise, it is safe to leave these fields blank and just have it default to the <b>Stream</b>
+    setting.
+</p>
+
+<p>
+    Click the <b>"Update settings"</b> button to complete the
+    configuration:
+</p>
+<p><img src="/static/images/integrations/github/004.png"/></p>
+
+<p>
+    <b>Congratulations! You're done!</b><br/> When team members push to
+    your repository, you'll get a Zulip notification that looks like this:
+</p>
+
+<p><img class="screenshot" src="/static/images/integrations/github/005.png"/></p>

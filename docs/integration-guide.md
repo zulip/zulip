@@ -32,10 +32,9 @@ products, ordered here by which types we prefer to write:
 1. **[Webhook integrations](#webhook-integrations)** (examples:
    Freshdesk, GitHub), where the third-party service supports posting
    content to a particular URI on our site with data about the event.
-   For these, you usually just need to add a new view file in the
-   `zerver/views/webhooks/` directory (plus test/document/etc.).  An
-   example commit implementing a new webhook is:
-   https://github.com/zulip/zulip/pull/324.
+   For these, you usually just need to create a new python package in the
+   `zerver/webhooks/` directory.  An example commit implementing
+   a new webhook is: https://github.com/zulip/zulip/pull/324.
 
 2. **[Python script integrations](#python-script-and-plugin-integrations)**
    (examples: SVN, Git), where we can get the service to call our integration
@@ -100,26 +99,26 @@ Here's how we recommend doing it:
   can use these captured payloads to create a set of test fixtures for
   your integration under `zerver/fixtures`.
 
-* Then write a draft webhook handler under `zerver/views/webhooks/`;
+* Then write a draft webhook handler under `zerver/webhooks/`;
   there are a lot of examples in that directory.  We recommend
-  templating off a short one (like `stash.py` or `zendesk.py`), since
+  templating off a short one (like `stash` or `zendesk`), since
   the longer ones usually just have more complex parsing which can
   obscure what's common to all webhook integrations.  In addition to
   writing the integration itself, you'll need to create `Integration`
   object and add it to `WEBHOOK_INTEGRATIONS` in
-  `zerver/lib/integrations.py'; search for `webhook` in that
+  `zerver/lib/integrations.py';` search for `webhook` in that
   file to find the existing ones (and please add yours in the
   alphabetically correct place).
 
-* Then write a test for your fixture in a new file in the
-  `zerver/tests/webhooks/` directory, and you can iterate on the tests
-  and webhooks handler until they work, all without ever needing to
-  post directly from the server you're integrating to your Zulip
-  development machine.  To run just the tests from the test class you
-  wrote, you can use e.g.
+* Then write a test for your fixture in `tests.py` file in the
+  `zerver/webhooks/mywebhook` directory, and you
+  can iterate on the tests and webhooks handler until they work,
+  all without ever needing to post directly from the server you're
+  integrating to your Zulip development machine.
+  To run just the tests from the test class you wrote, you can use e.g.
 
   ```
-  test-backend zerver.tests.webhooks.test_pagerduty.PagerDutyHookTests
+  test-backend zerver.webhooks.test_pagerduty.PagerDutyHookTests
   ```
 
   See [this guide](testing.html) for more details on the Zulip test
@@ -155,15 +154,17 @@ for a webhook named 'MyWebHook'.
 * `zerver/fixtures/mywebhook/mywebhook_messagetype.json`: Sample json payload data
   used by tests. Add one fixture file per type of message supported by your
   integration. See [Testing and writing tests](testing.html) for details.
-* `zerver/views/webhooks/mywebhook.py`: Includes the main webhook integration
+* `zerver/webhooks/mywebhook/__init__.py`: Mostly empty file that is obligatory
+   part of every python package.
+* `zerver/webhooks/mywebhook/view.py`: Includes the main webhook integration
   function including any needed helper functions.
-* `zerver/tests/webhooks/mywebhook.py`: Add tests for your
+* `zerver/webhooks/mywebhook/tests.py`: Add tests for your
   webbook. See [Testing and writing tests](testing.html) for details.
+* `zerver/webhooks/mywebhook/doc.html`: Add end-user documentation. See
+  [Documenting your integration](#documenting-your-integration) for details.
 
 ### Files that need to be updated
 
-* `templates/zerver/integrations.html`: Edit to add end-user documentation. See
-  [Documenting your integration](#documenting-your-integration) for details.
 * `zerver/lib/integrations.py`: Add your integration to
 `WEBHOOK_INTEGRATIONS` to register it.  This will automatically
 register a url for the webhook of the form `api/v1/external/mywebhook`
@@ -203,11 +204,10 @@ ZulipMobile/0.5.4 (Android; 4.2; maguro)
 ## Documenting your integration
 
 Every Zulip integration must be documented in
-`templates/zerver/integrations.html`.  Usually, this involves a few
+`zerver/webhooks/mywebhook/doc.html`.  Usually, this involves a few
 steps:
 
-* Add an `integration-instructions` class block in the
-  alphabetically correct place, explaining all the steps required to
+* Add text with explanation of all the steps required to
   setup the integration, including what URLs to use, etc.  If there
   are any screens in the product involved, take a few screenshots with
   the input fields filled out with sample values in order to make the
@@ -286,16 +286,24 @@ only one fixture, `zerver/fixtures/helloworld/helloworld_hello.json`:
 When writing your own webhook integration, you'll want to write a test function
 for each distinct message condition your webhook supports. You'll also need a
 corresponding fixture for each of these tests. See [Step 3: Create
-tests](#step-3-create-tests) or [Testing](testing.html) for further details.
+tests](#step-4-create-tests) or [Testing](testing.html) for further details.
 
-### Step 1: Create main webhook code
+### Step 1: Initialize your webhook python package
+
+Under `zerver/webhooks/` directory you have to create
+new directory that will contain all of corresponding code.
+In our example it will be `helloworld`. New directory should
+be a python package so you have to create `__init__.py` file
+under `zerver/webhooks/helloworld/` directory.
+
+
+### Step 2: Create main webhook code
 
 The majority of the code for your webhook integration will be in a single
-python file in `zerver/views/webhooks/`. The name of this file should be the
-name of your webhook, all lower-case, with file extension `.py`:
-`mywebhook.py`.
+python file in `zerver/webhooks/mywebhook/`. The name of this file should be:
+`view.py`.
 
-The Hello World integration is in `zerver/views/webhooks/helloworld.py`:
+The Hello World integration is in `zerver/webhooks/helloworld.py`:
 
 ```
 from __future__ import absolute_import
@@ -377,7 +385,7 @@ validate the message and then send it.
 Finally, we return a 200 http status with a JSON format success message via
 `json_success()`.
 
-### Step 2: Create an api endpoint for the webhook
+### Step 3: Create an api endpoint for the webhook
 
 In order for a webhook to be externally available, it must be mapped to a url.
 This is done in `zerver/lib/integrations.py`.
@@ -395,7 +403,7 @@ And you'll find the entry for Hello World:
 ```
 
 This tells the Zulip api to call the `api_helloworld_webhook` function in
-`zerver/views/webhooks/helloworld.py` when it receives a request at
+`zerver/webhooks/helloworld/view.py` when it receives a request at
 `/api/v1/external/helloworld`.
 
 This line also tells Zulip to generate an entry for Hello World on the Zulip
@@ -441,10 +449,10 @@ Using either method will create a message in Zulip:
 
 ![Image of Hello World webhook message](images/helloworld-webhook.png)
 
-### Step 3: Create tests
+### Step 4: Create tests
 
-Every webhook integration should have a corresponding test file in
-`zerver/tests/webhooks/`.
+Every webhook integration should have a corresponding test file:
+`zerver/webhooks/mywbehook/tests.py`.
 
 You should name the class `<WebhookName>HookTests` and have it inherit from
 the base class `WebhookTestCase`. For our HelloWorld webhook, we name the test
@@ -510,7 +518,7 @@ the Zulip development environment with this command:
 
 ```
 (zulip-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$
-./tools/test-backend zerver.tests.webhooks.test_hello_world.HelloWorldHookTests
+./tools/test-backend zerver.webhooks.helloworld.tests.HelloWorldHookTests
 ```
 
 (Note: You must run the tests from the top level of your development directory.
@@ -520,15 +528,15 @@ using Vagrant, use the directory where you have your development environment.)
 You will see some script output and if all the tests have passed, you will see:
 
 ```
-Running zerver.tests.webhooks.test_hello_world.HelloWorldHookTests.test_goodbye_message
-Running zerver.tests.webhooks.test_hello_world.HelloWorldHookTests.test_hello_message
+Running zerver.webhooks.helloworld.tests.HelloWorldHookTests.test_goodbye_message
+Running zerver.webhooks.helloworld.tests.HelloWorldHookTests.test_hello_message
 DONE!
 ```
 
-### Step 4: Create documentation
+### Step 5: Create documentation
 
 Next, we add end-user documentation for our webhook integration to
-`templates/zerver/integrations.html`. This is what generates the page
+`zever/webhooks/mywebhook/doc.html`. This is what generates the page
 displayed for your webhook from the Integrations page (in the gear menu.)
 You can see an example at [https://zulipchat.com/integrations](https://zulipchat.com/integrations).
 
@@ -541,40 +549,40 @@ installation and usage instructions.
 Because there is an entry for the Hello World webhook in WEBHOOK_INTEGRATIONS
 in `zerver/lib/integrations.py`, this div will be generated automatically.
 
-The second part is a `div` with the webhook's usage instructions:
+The second part is a content of a `div` with the webhook's usage instructions.
+Because there is an entry for the Hello World webhook in WEBHOOK_INTEGRATIONS
+in `zerver/lib/integrations.py`, this div will also be generated automatically.
+
 
 ```
-<div id="helloworld" class="integration-instructions">
+<p>Learn how Zulip integrations work with this simple Hello World example!</p>
 
-    <p>Learn how Zulip integrations work with this simple Hello World example!</p>
+<p>The Hello World webhook will use the <code>test<code> stream, which is
+created by default in the Zulip development environment. If you are running
+Zulip in production, you should make sure this stream exists.</p>
 
-    <p>The Hello World webhook will use the <code>test<code> stream, which is
-    created by default in the Zulip development environment. If you are running
-    Zulip in production, you should make sure this stream exists.</p>
+<p>Next, on your <a href="/#settings" target="_blank">Zulip
+settings page</a>, create a Hello World bot.  Construct the URL for
+the Hello World bot using the API key and stream name:
+  <code>{{ external_api_uri }}/v1/external/helloworld?api_key=abcdefgh&amp;stream=test</code>
+</p>
 
-    <p>Next, on your <a href="/#settings" target="_blank">Zulip
-    settings page</a>, create a Hello World bot.  Construct the URL for
-    the Hello World bot using the API key and stream name:
-      <code>{{ external_api_uri }}/v1/external/helloworld?api_key=abcdefgh&amp;stream=test</code>
-    </p>
-
-    <p>To trigger a notication using this webhook, use `send_webhook_fixture_message` from the Zulip command line:</p>
-    <div class="codehilite">
-      <pre>(zulip-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$
+<p>To trigger a notication using this webhook, use `send_webhook_fixture_message` from the Zulip command line:</p>
+<div class="codehilite">
+  <pre>(zulip-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$
 ./manage.py send_webhook_fixture_message \
 > --fixture=zerver/fixtures/helloworld/helloworld_hello.json \
 > '--url=http://localhost:9991/api/v1/external/helloworld?api_key=<api_key>'</pre>
-    </div>
-
-    <p>Or, use curl:</p>
-    <div class="codehilite">
-      <pre>curl -X POST -H "Content-Type: application/json" -d '{ "featured_title":"Marilyn Monroe", "featured_url":"https://en.wikipedia.org/wiki/Marilyn_Monroe" }' http://localhost:9991/api/v1/external/helloworld\?api_key\=<api_key></pre>
-    </div>
-
-    <p><b>Congratulations! You're done!</b><br /> Your messages may look like:</p>
-
-    <img class="screenshot" src="/static/images/integrations/helloworld/001.png" />
 </div>
+
+<p>Or, use curl:</p>
+<div class="codehilite">
+  <pre>curl -X POST -H "Content-Type: application/json" -d '{ "featured_title":"Marilyn Monroe", "featured_url":"https://en.wikipedia.org/wiki/Marilyn_Monroe" }' http://localhost:9991/api/v1/external/helloworld\?api_key\=<api_key></pre>
+</div>
+
+<p><b>Congratulations! You're done!</b><br /> Your messages may look like:</p>
+
+<img class="screenshot" src="/static/images/integrations/helloworld/001.png" />
 ```
 
 These documentation blocks should fall alphabetically. For the
