@@ -264,6 +264,7 @@ function populate_messages_sent_over_time(data) {
         update_plot_on_aggregation_click(rangeselector, hourly_traces);
         $(this).css('background', '#D8D8D8');
         clicked_cumulative = false;
+
     });
 
     $('#daily_button').click(function () {
@@ -568,6 +569,20 @@ function populate_messages_sent_by_client(data) {
         }
         Plotly.redraw('id_messages_sent_by_client');
     });
+    // handle links with @href started with '#' only
+    $(document).on('click', 'a[href^="#"]', function (e) {
+        // target element id
+        var id = $(this).attr('href');
+        // target element
+        var $id = $(id);
+        if ($id.length === 0) {
+            return;
+        }
+        // prevent standard hash navigation (avoid blinking in IE)
+        e.preventDefault();
+        var pos = $id.offset().top+$('.page-content')[0].scrollTop-50;
+        $('.page-content').animate({scrollTop: pos + "px"}, 500);
+    });
 }
 
 $.get({
@@ -760,3 +775,4 @@ $.get({
         $('#id_stats_errors').text($.parseJSON(xhr.responseText).msg);
     },
 });
+
