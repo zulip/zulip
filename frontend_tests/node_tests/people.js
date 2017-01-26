@@ -174,22 +174,22 @@ initialize();
     var search_term = 'a';
     var users = people.get_rest_of_realm();
     var filtered_people = people.filter_people_by_search_terms(users, [search_term]);
-    assert.equal(filtered_people["ashton@example.com"], true);
-    assert.equal(filtered_people["athens@example.com"], true);
-    assert.equal(_.keys(filtered_people).length, 2);
-    assert(!_.has(filtered_people, 'charles@example.com'));
+    assert.equal(filtered_people.num_items(), 2);
+    assert(filtered_people.has(ashton.user_id));
+    assert(filtered_people.has(maria.user_id));
+    assert(!filtered_people.has(charles.user_id));
 
     filtered_people = people.filter_people_by_search_terms(users, []);
-    assert(_.isEmpty(filtered_people));
+    assert.equal(filtered_people.num_items(), 0);
 
     filtered_people = people.filter_people_by_search_terms(users, ['ltorv']);
-    assert.equal(_.keys(filtered_people).length, 1);
-    assert(_.has(filtered_people, 'ltorvalds@example.com'));
+    assert.equal(filtered_people.num_items(), 1);
+    assert(filtered_people.has(linus.user_id));
 
     filtered_people = people.filter_people_by_search_terms(users, ['ch di', 'maria']);
-    assert.equal(_.keys(filtered_people).length, 2);
-    assert(_.has(filtered_people, 'charles@example.com'));
-    assert(_.has(filtered_people, 'athens@example.com'));
+    assert.equal(filtered_people.num_items(), 2);
+    assert(filtered_people.has(charles.user_id));
+    assert(filtered_people.has(maria.user_id));
 
 }());
 

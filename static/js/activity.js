@@ -250,11 +250,8 @@ function filter_user_ids(user_ids) {
         return people.get_person_from_user_id(user_id);
     });
 
-    var email_dict = people.filter_people_by_search_terms(persons, search_terms);
-    user_ids = _.map(_.keys(email_dict), function (email) {
-        return people.get_user_id(email);
-    });
-    return user_ids;
+    var user_id_dict = people.filter_people_by_search_terms(persons, search_terms);
+    return user_id_dict.keys();
 }
 
 function filter_and_sort(users) {

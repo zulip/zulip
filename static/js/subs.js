@@ -939,8 +939,7 @@ $(function () {
         user_labels.each(function () {
             var elem = $(this);
             var user_id = elem.attr('data-user-id');
-            var user = people.get_person_from_user_id(user_id);
-            var user_checked = filtered_users.hasOwnProperty(user.email);
+            var user_checked = filtered_users.has(user_id);
             var display = user_checked ? "block" : "none";
             elem.css({display: display});
         });
