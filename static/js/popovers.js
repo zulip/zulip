@@ -848,9 +848,23 @@ exports.register_click_handlers = function () {
         }, true);
     });
 
-    $('.app').on('scroll', function () {
-        popovers.hide_all();
-    });
+    (function () {
+        var last_scroll = null;
+
+        $('.app').on('scroll', function () {
+            var date = new Date().getTime();
+
+            // only run `popovers.hide_all()` if the last scroll was more
+            // than 250ms ago.
+            if (date - last_scroll > 250) {
+                popovers.hide_all();
+            }
+
+            // update the scroll time on every event to make sure it doesn't
+            // retrigger `hide_all` while still scrolling.
+            last_scroll = date;
+        });
+    }());
 
 };
 
