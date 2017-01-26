@@ -202,7 +202,7 @@ exports.incr_recipient_count = function (email) {
 };
 
 exports.filter_people_by_search_terms = function (users, search_terms) {
-        var filtered_users = {};
+        var filtered_users = new Dict();
 
         var matchers = _.map(search_terms, function (search_term) {
             var termlets = search_term.toLowerCase().split(/\s+/);
@@ -249,7 +249,7 @@ exports.filter_people_by_search_terms = function (users, search_terms) {
             });
 
             if (match) {
-                filtered_users[email] = true;
+                filtered_users.set(person.user_id, true);
             }
         });
         return filtered_users;
