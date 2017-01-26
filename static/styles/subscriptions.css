@@ -202,7 +202,7 @@
     border: 1px solid #adadad;
 }
 
-.btn.sub_unsub_button {
+.stream-row .btn.sub_unsub_button {
     display: inline-block;
     min-width: 140px;
     float: right;
@@ -679,6 +679,21 @@ form#add_new_subscription {
     display: inline-block;
     font-size: 1.5em;
     font-weight: 600;
+    margin-left: -3px;
+}
+
+#subscription_overlay .stream-header .subscribe-button {
+    float: right;
+    margin-top: -5px;
+}
+
+#subscription_overlay .stream-header .subscribe-button.unsubscribed {
+    color: #5bb792;
+    border-color: #addcc9;
+}
+
+#subscription_overlay .stream-header .subscribe-button.unsubscribed:active {
+    background-color: rgba(91,183,146,0.2);
 }
 
 #subscription_overlay .stream-header .large-icon {
