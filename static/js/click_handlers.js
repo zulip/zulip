@@ -331,7 +331,7 @@ $(function () {
 
     function handle_compose_click(e) {
         // Emoji clicks should be handled by their own click handler in popover.js
-        if ($(e.target).is("#emoji_map, .emoji_popover, .emoji_popover.inner, img.emoji, .drag")) {
+        if ($(e.target).is("#emoji_map, #emoji_content, #emoji_content.inner, img.emoji")) {
             return;
         }
         // Don't let clicks in the compose area count as
