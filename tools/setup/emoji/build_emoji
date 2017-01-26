@@ -13,6 +13,8 @@ from typing import Union, Text
 from os.path import dirname
 from PIL import Image, ImageDraw, ImageFont
 
+from emoji_setup_utils import emoji_names_for_picker
+
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../')
 sys.path.append(ZULIP_PATH)
 
@@ -152,7 +154,7 @@ def get_success_stamp():
     sha = hashlib.sha1()
 
     filenames = ['NotoColorEmoji.ttf', 'emoji_map.json', 'AndroidEmoji.ttf',
-                 'build_emoji']
+                 'build_emoji', 'emoji_setup_utils.py']
 
     for filename in filenames:
         with open(filename, 'rb') as reader:
@@ -165,9 +167,6 @@ def dump_emojis(cache_path):
     subprocess.call('ttx -v -z extfile -d {} NotoColorEmoji.ttf'.format(EMOJI_DUMP_DIR_PATH), shell=True)
 
     emoji_map = json.load(open('emoji_map.json'))
-    # Fix data problem with red/blue cars being inaccurate.
-    emoji_map['blue_car'] = emoji_map['red_car']
-    emoji_map['red_car'] = emoji_map['oncoming_automobile']
     code_point_to_fname_map = code_point_to_file_name_map(EMOJI_DUMP_PATH("NotoColorEmoji.ttx"))
 
     os.chdir(EMOJI_DUMP_DIR_PATH)
@@ -227,7 +226,7 @@ def dump_emojis(cache_path):
     EMOJI_CODES_PATH = os.path.join(cache_path, 'emoji_codes.js')
     emoji_codes_file = open(EMOJI_CODES_PATH, 'w')
     emoji_codes_file.write(EMOJI_CODES_FILE_TEMPLATE % {
-        'names': [str(name) for name in sorted(emoji_map.keys())],
+        'names': emoji_names_for_picker(emoji_map),
         'codepoints': sorted([str(code_point) for code_point in set(emoji_map.values())])
     })
     emoji_codes_file.close()
