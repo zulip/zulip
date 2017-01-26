@@ -51,12 +51,14 @@ casper.waitForSelector(".subscriber-list", function () {
     casper.test.assertEquals(casper.visible('#user-checkboxes [data-email="othello@zulip.com"]'),
                              true,
                              "Othello is visible");
+
+    /* The filter should not impact streams */
     casper.test.assertEquals(casper.visible('#stream-checkboxes [data-stream-name="Scotland"]'),
                              true,
                              "Scotland is visible");
     casper.test.assertEquals(casper.visible('#stream-checkboxes [data-stream-name="Rome"]'),
-                             false,
-                             "Rome is not visible");
+                             true,
+                             "Rome is visible");
 });
 casper.then(function () {
     casper.test.info("Check Uncheck only visible users for new stream");
