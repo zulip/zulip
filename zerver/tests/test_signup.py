@@ -895,9 +895,10 @@ class UserSignUpTest(ZulipTestCase):
         realm.invite_required = False
         realm.save()
 
-        realm = get_realm('mit')
-        do_deactivate_realm(realm)
-        realm.save()
+        for string_id in ('simple', 'mit'):
+            realm = get_realm(string_id)
+            do_deactivate_realm(realm)
+            realm.save()
 
         result = self.client_post('/register/', {'email': email})
 

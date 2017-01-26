@@ -35,7 +35,6 @@ def create_users(realm, name_list, bot_type=None):
     tos_version = settings.TOS_VERSION if bot_type is None else None
     bulk_create_users(realm, user_set, bot_type=bot_type, tos_version=tos_version)
 
-
 class Command(BaseCommand):
     help = "Populate a test database"
 
@@ -243,6 +242,8 @@ class Command(BaseCommand):
             ]
             create_users(zulip_realm, zulip_webhook_bots, bot_type=UserProfile.INCOMING_WEBHOOK_BOT)
 
+            create_simple_community_realm()
+
             if not options["test_suite"]:
                 # Initialize the email gateway bot as an API Super User
                 email_gateway_bot = UserProfile.objects.get(email__iexact=settings.EMAIL_GATEWAY_BOT)
@@ -396,3 +397,31 @@ def send_messages(data):
         recipients[num_messages] = (message_type, message.recipient.id, saved_data)
         num_messages += 1
     return tot_messages
+
+def create_simple_community_realm():
+    # type: () -> None
+    simple_realm = Realm.objects.create(
+        string_id="simple", name="Simple Realm", restricted_to_domain=False,
+        invite_required=False, org_type=Realm.COMMUNITY, domain="simple.com")
+
+    names = [
+        ("alice", "alice@example.com"),
+        ("bob", "bob@foo.edu"),
+        ("cindy", "cindy@foo.tv"),
+    ]
+    create_users(simple_realm, names)
+
+    user_profiles = UserProfile.objects.filter(realm__string_id='simple')
+    create_user_presences(user_profiles)
+
+def create_user_presences(user_profiles):
+    # type: (Iterable[UserProfile]) -> None
+    for user in user_profiles:
+        status = 1 # type: int
+        date = now()
+        client = get_client("website")
+        UserPresence.objects.get_or_create(
+            user_profile=user,
+            client=client,
+            timestamp=date,
+            status=status)

@@ -340,7 +340,12 @@ def login_page(request, **kwargs):
         users_query = UserProfile.objects.select_related().filter(is_bot=False, is_active=True)
         users = users_query.order_by('email')[0:MAX_DEV_BACKEND_USERS]
         extra_context['direct_admins'] = [u.email for u in users if u.is_realm_admin]
-        extra_context['direct_users'] = [u.email for u in users if not u.is_realm_admin]
+        extra_context['direct_users'] = [
+            u.email for u in users
+            if not u.is_realm_admin and u.realm.string_id == 'zulip']
+        extra_context['community_users'] = [
+            u.email for u in users
+            if u.realm.string_id == 'simple']
     template_response = django_login_page(
         request, authentication_form=OurAuthenticationForm,
         extra_context=extra_context, **kwargs)
