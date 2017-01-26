@@ -371,7 +371,7 @@ $(function () {
         viewport.last_movement_direction = delta;
     });
 
-    viewport.message_pane.mousewheel(function (e) {
+    viewport.message_pane.mousewheel(function (e, delta) {
         // Ignore mousewheel events if a modal is visible.  It's weird if the
         // user can scroll the main view by wheeling over the grayed-out area.
         // Similarly, ignore events on settings page etc.
@@ -380,7 +380,7 @@ $(function () {
         // select the compose box and then wheel over the message stream.
         var obscured = exports.home_tab_obscured();
         if (!obscured) {
-            throttled_mousewheelhandler(e, e.deltaY);
+            throttled_mousewheelhandler(e, delta);
         } else if (obscured === 'modal') {
             // The modal itself has a handler invoked before this one (see below).
             // preventDefault here so that the tab behind the modal doesn't scroll.
@@ -400,7 +400,7 @@ $(function () {
     // propagation in all cases.  Also, ignore the event if the
     // element is already at the top or bottom.  Otherwise we get a
     // new scroll event on the parent (?).
-    $('.modal-body, .scrolling_list, input, textarea').mousewheel(function (e) {
+    $('.modal-body, .scrolling_list, input, textarea').mousewheel(function (e, delta) {
         var self = $(this);
         var scroll = self.scrollTop();
 
@@ -409,8 +409,8 @@ $(function () {
         var max_scroll = this.scrollHeight - self.innerHeight() - 1;
 
         e.stopPropagation();
-        if (   ((e.deltaY > 0) && (scroll <= 0))
-            || ((e.deltaY < 0) && (scroll >= max_scroll))) {
+        if (   ((delta > 0) && (scroll <= 0))
+            || ((delta < 0) && (scroll >= max_scroll))) {
             e.preventDefault();
         }
     });
