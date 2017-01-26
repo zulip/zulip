@@ -873,7 +873,7 @@ $(function () {
 
     // 'Check all' and 'Uncheck all' visible users
     $(document).on('click', '.subs_set_all_users', function (e) {
-        $('#people_to_add .checkbox').each(function (idx, li) {
+        $('#user-checkboxes .checkbox').each(function (idx, li) {
             if  (li.style.display !== "none") {
                 $(li.firstElementChild).prop('checked', true);
             }
@@ -882,7 +882,7 @@ $(function () {
         update_announce_stream_state();
     });
     $(document).on('click', '.subs_unset_all_users', function (e) {
-        $('#people_to_add .checkbox').each(function (idx, li) {
+        $('#user-checkboxes .checkbox').each(function (idx, li) {
             if  (li.style.display !== "none") {
                 $(li.firstElementChild).prop('checked', false);
             }
@@ -899,31 +899,12 @@ $(function () {
 
     // Search People or Streams
     $(document).on('input', '.add-user-list-filter', function (e) {
-        var streams = stream_data.get_streams_for_settings_page();
-
         var user_list = $(".add-user-list-filter");
         if (user_list === 0) {
             return;
         }
         var search_term = user_list.expectOne().val().trim();
         var search_terms = search_term.toLowerCase().split(",");
-
-        _.each(streams, function (stream) {
-            var flag = true;
-
-            flag = flag && (function () {
-                var sub_name = stream.name.toLowerCase();
-                var matches_list = search_terms.indexOf(sub_name) > -1;
-                var matches_last_val = sub_name.match(search_terms[search_terms.length - 1]);
-                return matches_list || matches_last_val;
-            }());
-
-            if (flag) {
-                $("label.add-user-label[data-stream-id='" + stream.stream_id + "']").css("display", "block");
-            } else {
-                $("label.add-user-label[data-stream-id='" + stream.stream_id + "']").css("display", "none");
-            }
-        });
 
         (function filter_user_checkboxes() {
             var user_labels = $("#user-checkboxes label.add-user-label");
