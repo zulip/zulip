@@ -925,24 +925,32 @@ $(function () {
             }
         });
 
-        var users = people.get_rest_of_realm();
-        var filtered_users = people.filter_people_by_search_terms(users, search_terms);
-        var user_labels = $("#user-checkboxes label.add-user-label");
+        (function filter_user_checkboxes() {
+            var user_labels = $("#user-checkboxes label.add-user-label");
 
-        // Be careful about modifying the follow code.  A naive implementation
-        // will work very poorly with a large user population (~1000 users).
-        //
-        // I tested using: `./manage.py populate_db --extra-users 3500`
-        //
-        // This would break the previous implementation, whereas the new
-        // implementation is merely sluggish.
-        user_labels.each(function () {
-            var elem = $(this);
-            var user_id = elem.attr('data-user-id');
-            var user_checked = filtered_users.has(user_id);
-            var display = user_checked ? "block" : "none";
-            elem.css({display: display});
-        });
+            if (search_term === '') {
+                user_labels.css({display: 'block'});
+                return;
+            }
+
+            var users = people.get_rest_of_realm();
+            var filtered_users = people.filter_people_by_search_terms(users, search_terms);
+
+            // Be careful about modifying the follow code.  A naive implementation
+            // will work very poorly with a large user population (~1000 users).
+            //
+            // I tested using: `./manage.py populate_db --extra-users 3500`
+            //
+            // This would break the previous implementation, whereas the new
+            // implementation is merely sluggish.
+            user_labels.each(function () {
+                var elem = $(this);
+                var user_id = elem.attr('data-user-id');
+                var user_checked = filtered_users.has(user_id);
+                var display = user_checked ? "block" : "none";
+                elem.css({display: display});
+            });
+        }());
 
         update_announce_stream_state();
         e.preventDefault();
