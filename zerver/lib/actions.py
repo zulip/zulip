@@ -3642,6 +3642,12 @@ def do_remove_realm_alias(alias):
     realm = alias.realm
     domain = alias.domain
     alias.delete()
+    if RealmAlias.objects.filter(realm=realm).count() == 0 and realm.restricted_to_domain:
+        # If this was the last realm alias, we mark the realm as no
+        # longer restricted to domain, because the feature doesn't do
+        # anything if there are no domains, and this is probably less
+        # confusing than the alternative.
+        do_set_realm_restricted_to_domain(realm, False)
     event = dict(type="realm_domains", op="remove", domain=domain)
     send_event(event, active_user_ids(realm))
 

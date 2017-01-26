@@ -5,7 +5,8 @@ from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
 
 from zerver.lib.actions import do_change_is_admin, \
-    do_create_realm, do_change_realm_alias
+    do_change_realm_alias, do_create_realm, \
+    do_remove_realm_alias
 from zerver.lib.domains import validate_domain
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import email_allowed_for_realm, get_realm, \
@@ -99,6 +100,22 @@ class RealmAliasTest(ZulipTestCase):
         result = self.client_delete("/json/realm/domains/acme.com")
         self.assert_json_success(result)
         self.assertFalse(RealmAlias.objects.filter(domain='acme.com').exists())
+        self.assertTrue(realm.restricted_to_domain)
+
+    def test_delete_all_aliases(self):
+        # type: () -> None
+        self.login("iago@zulip.com")
+        realm = get_realm('zulip')
+        query = RealmAlias.objects.filter(realm=realm)
+
+        self.assertTrue(realm.restricted_to_domain)
+        for alias in query.all():
+            do_remove_realm_alias(alias)
+        self.assertEqual(query.count(), 0)
+        # Deleting last alias should set `restricted_to_domain` to False.
+        # This should be tested on a fresh instance, since the cached
+        # objects would not be updated.
+        self.assertFalse(get_realm('zulip').restricted_to_domain)
 
     def test_get_realm_by_email_domain(self):
         # type: () -> None
