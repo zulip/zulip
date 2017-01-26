@@ -12,27 +12,27 @@ function partial_sums(array) {
 
 // Assumes date is a round number of hours
 function floor_to_local_day(date) {
-    date_copy = new Date(date.getTime());
+    var date_copy = new Date(date.getTime());
     date_copy.setHours(0);
     return date_copy;
 }
 
 // Assumes date is a round number of hours
 function floor_to_local_week(date) {
-    date_copy = floor_to_local_day(date);
+    var date_copy = floor_to_local_day(date);
     date_copy.setHours(-24 * date.getDay());
     return date_copy;
 }
 
 function messages_sent_over_time_traces(dates, values, type, date_formatter) {
-    text = dates.map(function(date) {
+    var text = dates.map(function (date) {
         return date_formatter(date);
     });
-    common = { x: dates, type: type, hoverinfo: 'none', text: text, visible: true };
+    var common = { x: dates, type: type, hoverinfo: 'none', text: text, visible: true};
     return {
-        'human': $.extend({ name: "Humans", y: values.human }, common),
-        'bot': $.extend({ name: "Bots", y: values.bot }, common)
-    }
+        human: $.extend({ name: "Humans", y: values.human, marker: {color: '#1f77b4'}}, common),
+        bot: $.extend({ name: "Bots", y: values.bot,  marker: {color: '#ff7f00'}}, common),
+    };
 }
 
 function format_date(date, include_hour) {
@@ -68,13 +68,13 @@ function messages_sent_over_time_rangeselector(
                 count: button_1_count,
                 label: button_1_label,
                 step: button_1_step,
-                stepmode: 'backward'
+                stepmode: 'backward',
             },
             {
                 count: button_2_count,
                 label: button_2_label,
                 step: button_2_step,
-                stepmode: 'backward'
+                stepmode: 'backward',
             },
             {
                 step: 'all',
@@ -121,10 +121,32 @@ function hover(id) {
         var infotext = data.points.map(function (d) {
             var text = d.data.text;
             var index = data.points[0].pointNumber;
-            date_text = d.data.text[index];
+            date_text = text[index];
             return (d.data.name + ': ' + d.y);
         });
         hoverInfo.innerHTML = date_text + '<br/>' + infotext.join('<br/>');
+        var human_colors = data.points[0].data.x.map(function () {
+            return '#1f77b4';
+        });
+        var bot_colors = data.points[0].data.x.map(function () {
+            return '#ff7f00';
+        });
+        human_colors[data.points[0].pointNumber] = '#185a88';
+        bot_colors[data.points[0].pointNumber] = '#cc6600';
+        var update_human = {marker:{color: human_colors}};
+        var update_bot = {marker:{color: bot_colors}};
+        Plotly.restyle(id, update_human, 0);
+        Plotly.restyle(id, update_bot, 1);
+        var legendBoxes = document.getElementById(id).getElementsByClassName("legendbar");
+        Plotly.d3.select(legendBoxes[0]).style("fill", "#1f77b4");
+        Plotly.d3.select(legendBoxes[1]).style("fill", "#ff7f00");
+
+    });
+    myPlot.on('plotly_unhover', function () {
+        var update_human = {marker:{color: '#1f77b4'}};
+        var update_bot = {marker:{color: '#ff7f00'}};
+        Plotly.restyle(id, update_human, 0);
+        Plotly.restyle(id, update_bot, 1);
     });
 }
 
@@ -140,24 +162,25 @@ function populate_messages_sent_over_time(data) {
     });
 
     function aggregate_data(aggregation) {
-        var start, is_boundary;
+        var start;
+        var is_boundary;
         if (aggregation === 'day') {
             start = floor_to_local_day(start_dates[0]);
-            is_boundary = function(date) {
+            is_boundary = function (date) {
                 return date.getHours() === 0;
-            }
+            };
         } else if (aggregation === 'week') {
             start = floor_to_local_week(start_dates[0]);
-            is_boundary = function(date) {
+            is_boundary = function (date) {
                 return date.getHours() === 0 && date.getDay() === 0;
-            }
+            };
         }
         var dates = [start];
-        var values = {'human': [], 'bot': []};
-        var current = {'human': 0, 'bot': 0};
+        var values = {human: [], bot: []};
+        var current = {human: 0, bot: 0};
         var i_init = 0;
         if (is_boundary(start_dates[0])) {
-            current = {'human': data.realm.human[0], 'bot': data.realm.bot[0]};
+            current = {human: data.realm.human[0], bot: data.realm.bot[0]};
             i_init = 1;
         }
         for (var i = i_init; i < start_dates.length; i += 1) {
@@ -165,43 +188,43 @@ function populate_messages_sent_over_time(data) {
                 dates.push(start_dates[i]);
                 values.human.push(current.human);
                 values.bot.push(current.bot);
-                current = {'human': 0, 'bot': 0};
+                current = {human: 0, bot: 0};
             }
             current.human += data.realm.human[i];
             current.bot += data.realm.bot[i];
         }
         values.human.push(current.human);
         values.bot.push(current.bot);
-        return {'dates': dates, 'values': values};
+        return {dates: dates, values: values};
     }
 
     // Generate traces
-    var date_formatter = function(date) {
+    var date_formatter = function (date) {
         return format_date(date, true);
     };
-    hourly_traces = messages_sent_over_time_traces(start_dates, data.realm, 'bar', date_formatter);
+    var hourly_traces = messages_sent_over_time_traces(start_dates, data.realm, 'bar', date_formatter);
 
     var info = aggregate_data('day');
-    date_formatter = function(date) {
+    date_formatter = function (date) {
         return format_date(date, false);
     };
-    daily_traces = messages_sent_over_time_traces(info.dates, info.values, 'bar', date_formatter);
+    var daily_traces = messages_sent_over_time_traces(info.dates, info.values, 'bar', date_formatter);
 
-    info = aggregate_data('week')
-    date_formatter = function(date) {
+    info = aggregate_data('week');
+    date_formatter = function (date) {
         // return i18n.t("Week of __date__", {date: format_date(date, false)});
         return "Week of " + format_date(date, false);
     };
-    weekly_traces = messages_sent_over_time_traces(info.dates, info.values, 'bar', date_formatter);
+    var weekly_traces = messages_sent_over_time_traces(info.dates, info.values, 'bar', date_formatter);
 
     var dates = data.end_times.map(function (timestamp) {
         return new Date(timestamp*1000);
     });
-    values = {'human': partial_sums(data.realm.human), 'bot': partial_sums(data.realm.bot)};
-    date_formatter = function(date) {
+    var values = {human: partial_sums(data.realm.human), bot: partial_sums(data.realm.bot)};
+    date_formatter = function (date) {
         return format_date(date, true);
     };
-    cumulative_traces = messages_sent_over_time_traces(dates, values, 'scatter', date_formatter);
+    var cumulative_traces = messages_sent_over_time_traces(dates, values, 'scatter', date_formatter);
 
     // Generate plot
     var layout = messages_sent_over_time_layout();
@@ -221,7 +244,6 @@ function populate_messages_sent_over_time(data) {
         $('#weekly_button').css('background', '#F0F0F0');
         $('#hourly_button').css('background', '#F0F0F0');
         $('#cumulative_button').css('background', '#F0F0F0');
-        $(this).css('background', '#D8D8D8');
         layout.xaxis.rangeselector = rangeselector;
         if (clicked_cumulative) {
             // Redraw plot entirely if switching from line graph to bar
@@ -237,27 +259,31 @@ function populate_messages_sent_over_time(data) {
     }
 
     $('#hourly_button').click(function () {
-        rangeselector = messages_sent_over_time_rangeselector(
+        var rangeselector = messages_sent_over_time_rangeselector(
             0.66, -0.62, 24, 'Last 24 Hours', 'hour', 72, 'Last 72 Hours', 'hour');
         update_plot_on_aggregation_click(rangeselector, hourly_traces);
+        $(this).css('background', '#D8D8D8');
         clicked_cumulative = false;
     });
 
     $('#daily_button').click(function () {
         update_plot_on_aggregation_click(default_rangeselector, daily_traces);
+        $(this).css('background', '#D8D8D8');
         clicked_cumulative = false;
     });
 
     $('#weekly_button').click(function () {
-        rangeselector = messages_sent_over_time_rangeselector(
+        var rangeselector = messages_sent_over_time_rangeselector(
             0.656, -0.62, 2, 'Last 2 Months', 'month', 6, 'Last 6 Months', 'month');
         update_plot_on_aggregation_click(rangeselector, weekly_traces);
+        $(this).css('background', '#D8D8D8');
         clicked_cumulative = false;
     });
 
     $('#cumulative_button').click(function () {
         clicked_cumulative = false;
         update_plot_on_aggregation_click(default_rangeselector, cumulative_traces);
+        $(this).css('background', '#D8D8D8');
         clicked_cumulative = true;
     });
 }
