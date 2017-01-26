@@ -899,7 +899,6 @@ $(function () {
 
     // Search People or Streams
     $(document).on('input', '.add-user-list-filter', function (e) {
-        var users = people.get_rest_of_realm();
         var streams = stream_data.get_streams_for_settings_page();
 
         var user_list = $(".add-user-list-filter");
@@ -908,7 +907,6 @@ $(function () {
         }
         var search_term = user_list.expectOne().val().trim();
         var search_terms = search_term.toLowerCase().split(",");
-        var filtered_users = people.filter_people_by_search_terms(users, search_terms);
 
         _.each(streams, function (stream) {
             var flag = true;
@@ -927,10 +925,24 @@ $(function () {
             }
         });
 
-        // Hide users which aren't in filtered users
-        _.each(users, function (user) {
-            var display_type = filtered_users.hasOwnProperty(user.email)? "block" : "none";
-            $("label.add-user-label[data-user-id='" + user.user_id + "']").css({display: display_type});
+        var users = people.get_rest_of_realm();
+        var filtered_users = people.filter_people_by_search_terms(users, search_terms);
+        var user_labels = $("#user-checkboxes label.add-user-label");
+
+        // Be careful about modifying the follow code.  A naive implementation
+        // will work very poorly with a large user population (~1000 users).
+        //
+        // I tested using: `./manage.py populate_db --extra-users 3500`
+        //
+        // This would break the previous implementation, whereas the new
+        // implementation is merely sluggish.
+        user_labels.each(function () {
+            var elem = $(this);
+            var user_id = elem.attr('data-user-id');
+            var user = people.get_person_from_user_id(user_id);
+            var user_checked = filtered_users.hasOwnProperty(user.email);
+            var display = user_checked ? "block" : "none";
+            elem.css({display: display});
         });
 
         update_announce_stream_state();
