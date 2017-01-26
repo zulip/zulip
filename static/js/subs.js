@@ -17,6 +17,11 @@ function button_for_sub(sub) {
     return $(".stream-row[data-stream-id='" + id + "'] .check");
 }
 
+function settings_button_for_sub(sub) {
+    var id = parseInt(sub.stream_id, 10);
+    return $(".subscription_settings[data-stream-id='" + id + "'] .subscribe-button");
+}
+
 function get_color() {
     var used_colors = stream_data.get_colors();
     var color = stream_color.pick_color(used_colors);
@@ -404,11 +409,13 @@ exports.mark_subscribed = function (stream_name, attrs) {
     }
     var settings = settings_for_sub(sub);
     var button = button_for_sub(sub);
+    var settings_button = settings_button_for_sub(sub).removeClass("unsubscribed");
 
     if (button.length !== 0) {
         exports.rerender_subscribers_count(sub);
 
         button.toggleClass("checked");
+        settings_button.text(i18n.t("Unsubscribe"));
         // Add the user to the member list if they're currently
         // viewing the members of this stream
         if (sub.render_subscribers && settings.hasClass('in')) {
@@ -448,7 +455,10 @@ exports.mark_sub_unsubscribed = function (sub) {
         stream_data.unsubscribe_myself(sub);
 
         var button = button_for_sub(sub);
+        var settings_button = settings_button_for_sub(sub).addClass("unsubscribed");
+
         button.toggleClass("checked");
+        settings_button.text(i18n.t("Subscribe"));
 
         var settings = settings_for_sub(sub);
         if (settings.hasClass('in')) {

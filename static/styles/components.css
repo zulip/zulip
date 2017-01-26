@@ -83,6 +83,10 @@
     box-shadow: none !important;
 }
 
+.new-style .button.rounded {
+    border-radius: 4px;
+}
+
 .new-style .button.green {
     background-color: #64ad89;
 }
