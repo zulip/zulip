@@ -320,6 +320,11 @@ class LoginTest(ZulipTestCase):
         self.login(email, password)
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
+    def test_login_page_redirects_when_logged_in(self):
+	self.login("cordelia@zulip.com")
+	response = self.client_get("/login/")
+	self.assertEqual(response["Location"], "/")
+
 class InviteUserTest(ZulipTestCase):
 
     def invite(self, users, streams):

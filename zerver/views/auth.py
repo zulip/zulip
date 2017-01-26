@@ -327,10 +327,13 @@ def log_into_subdomain(request):
 
 def login_page(request, **kwargs):
     # type: (HttpRequest, **Any) -> HttpResponse
+
     if is_subdomain_root_or_alias(request) and settings.REALMS_HAVE_SUBDOMAINS:
         redirect_url = reverse('zerver.views.registration.find_my_team')
         return HttpResponseRedirect(redirect_url)
 
+    if request.user.is_authenticated():
+        return HttpResponseRedirect("/")
     extra_context = kwargs.pop('extra_context', {})
     if dev_auth_enabled():
         # Development environments usually have only a few users, but
