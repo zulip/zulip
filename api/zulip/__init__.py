@@ -176,6 +176,12 @@ def get_default_config_filename():
                            "  mv ~/.humbugrc ~/.zuliprc\n")
     return config_file
 
+def get_env_variable(keyname):
+    try:
+       return os.environ[keyname]
+    except KeyError:
+       return None
+
 class Client(object):
     def __init__(self, email=None, api_key=None, config_file=None,
                  verbose=False, retry_on_errors=True,
@@ -188,6 +194,21 @@ class Client(object):
 
         if config_file is None:
             config_file = get_default_config_filename()
+
+        # Fill values from Environment Variables if not available in Constructor
+        if api_key is None:
+            api_key = get_env_variable("ZULIP_API_KEY")
+        if email is None:
+            email = get_env_variable("ZULIP_EMAIL")
+        if site is None:
+            site = get_env_variable("ZULIP_SITE")
+        if client_cert is None:
+            client_cert = get_env_variable("ZULIP_CERT")
+        if client_cert_key is None:
+            client_cert_key = get_env_variable("ZULIP_KEY")
+        if cert_bundle is None:
+            cert_bundle = get_env_variable("ZULIP_BUNDLE")
+
         if os.path.exists(config_file):
             config = SafeConfigParser()
             with open(config_file, 'r') as f:
