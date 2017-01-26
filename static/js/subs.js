@@ -790,6 +790,25 @@ function show_new_stream_modal() {
     $('#announce-new-stream input').prop('checked', true);
 
     $("#stream_name_error").hide();
+
+    $("#stream-checkboxes label.checkbox").on('change', function (e) {
+        var elem = $(this);
+        var stream_id = elem.attr('data-stream-id');
+        var checked = elem.find('input').prop('checked');
+        var subscriber_ids = stream_data.get_sub_by_id(stream_id).subscribers;
+
+        $('#user-checkboxes label.checkbox').each(function () {
+            var user_elem = $(this);
+            var user_id = user_elem.attr('data-user-id');
+
+            if (subscriber_ids.has(user_id)) {
+                user_elem.find('input').prop('checked', checked);
+            }
+        });
+
+        update_announce_stream_state();
+        e.preventDefault();
+    });
 }
 
 exports.invite_user_to_stream = function (user_email, stream_name, success, failure) {
@@ -979,32 +998,6 @@ $(function () {
                     return $(elem).val();
                 }
             );
-
-            var checked_streams = _.map(
-                $("#stream_creation_form input:checkbox[name=stream]:checked"),
-                function (elem) {
-                    return $(elem).val();
-                }
-            );
-
-            var checked_stream_emails = [];
-            var stream_emails = [];
-
-            _.each(checked_streams, function (checked_stream) {
-                stream_emails = [];
-                var subscriber_ids = stream_data.get_sub(checked_stream).subscribers.keys();
-                _.each(subscriber_ids, function (subscriber_id) {
-                    stream_emails.push(people.get_person_from_user_id(subscriber_id).email);
-                });
-                checked_stream_emails = _.union(checked_stream_emails, stream_emails);
-            });
-
-            // If a stream was checked and the checkboxes are not visible,
-            // don't add checked streams
-            if ($('#stream-checkboxes').css('display') !== 'none') {
-                principals = _.union(principals, checked_stream_emails);
-            }
-
 
             // You are always subscribed to streams you create.
             principals.push(people.my_current_email());
