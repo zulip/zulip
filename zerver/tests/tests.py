@@ -2296,6 +2296,9 @@ class TestMissedMessages(ZulipTestCase):
 class TestOpenRealms(ZulipTestCase):
     def test_open_realm_logic(self):
         # type: () -> None
+        realm = get_realm('simple')
+        do_deactivate_realm(realm)
+
         mit_realm = get_realm("mit")
         self.assertEqual(get_unique_open_realm(), None)
         mit_realm.restricted_to_domain = False
