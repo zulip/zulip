@@ -274,9 +274,11 @@ does the following:
 
 You will need an active internet connection during the entire processes. (See
 [Specifying a proxy](#specifying-a-proxy) if you need a proxy to access the
-internet.) And if you're running into any problems, please come chat with us
-[in the `provision` stream of our developers'
-chat](https://chat.zulip.org/#narrow/stream/provision).
+internet.) `vagrant up` can fail if your Internet is flanky. To retry you
+should do `vagrant provision` instead of `vagrant up`. If you run into any other
+problem see our [Troubleshooting & Common Errors](#troubleshooting-common-errors).
+If that doesn't help, please visit [the `provision` stream in the Zulip developers'
+chat](https://chat.zulip.org/#narrow/stream/provision) for real-time help.
 
 On Windows, you will see `The system cannot find the path specified.` message
 several times. This is expected behavior and is not an error.
