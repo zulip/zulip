@@ -861,7 +861,7 @@ exports.change_stream_description = function (e) {
         // Stream names might contain unsafe characters so we must encode it first.
         url: '/json/streams/' + stream_id,
         data: {
-            description: JSON.stringify(description)
+            description: JSON.stringify(description),
         },
         success: function () {
             // The event from the server will update the rest of the UI
@@ -871,7 +871,7 @@ exports.change_stream_description = function (e) {
         error: function (xhr) {
             ui.report_error(i18n.t("Error updating the stream description"), xhr,
                             $("#subscriptions-status"), 'subscriptions-status');
-        }
+        },
     });
 };
 
@@ -879,7 +879,6 @@ exports.change_stream_name = function (e) {
     e.preventDefault();
     var sub_settings = $(e.target).closest('.subscription_settings');
     var stream_id = $(e.target).closest(".subscription_settings").attr("data-stream-id");
-    var sub = stream_data.get_sub_by_id(stream_id);
     var new_name_box = sub_settings.find('.stream-name-editable');
     var new_name = $.trim(new_name_box.text());
 
@@ -897,7 +896,7 @@ exports.change_stream_name = function (e) {
         error: function (xhr) {
             ui.report_error(i18n.t("Error renaming stream"), xhr,
                             $("#subscriptions-status"), 'subscriptions-status');
-        }
+        },
     });
 };
 

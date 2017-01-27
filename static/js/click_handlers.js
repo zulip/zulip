@@ -424,7 +424,7 @@ $(function () {
     (function () {
         var map = {
             ".stream-description-editable": subs.change_stream_description,
-            ".stream-name-editable": subs.change_stream_name
+            ".stream-name-editable": subs.change_stream_name,
         };
 
         $(document).on("keydown", ".editable-section", function (e) {
