@@ -105,6 +105,7 @@ as an **organization**.
 * [Configure audible notifications](/help/configure-audible-notifications)
 * Configure email notifications
 * [Configure mobile push notifications](/help/configure-mobile-notifications)
+* [Configure email digest notifications](/help/configure-email-digest-notifications)
 * [Add an alert word](/help/alert-words)
 
 ## Tools & Customization
