@@ -282,35 +282,67 @@ form#add_new_subscription {
 
 .subscriber-list-box {
     text-align: center;
+    border: 1px solid #ddd;
+    border-radius: 4px;
 }
 
 .subscriber_list_container {
-    margin-top: 10px;
-    display: inline-block;
-    margin: auto;
     max-height: 300px;
     overflow: auto;
     text-align: left;
 }
 
 .subscriber-list {
-    width: auto;
+    width: 100%;
     margin: auto;
-    background: #efefef;
     border-radius: 6px;
 }
 
-.subscriber-list tr:nth-child(even) {
-   background: #fafafa;
+.subscriber-list tr {
+   border-bottom: 1px solid #eee;
+}
+
+.subscriber-list tr:last-of-type {
+    border-bottom: none;
+}
+
+.subscriber-list tr td {
+    padding: 4px 0px;
+}
+
+.subscriber-list tr td:first-of-type {
+    padding-left: 10px;
+}
+
+.subscriber-list tr td:last-of-type {
+    padding-right: 10px;
+}
+
+.subscriber-list tr td.unsubscribe {
+    text-align: right;
+}
+
+.subscriber-list .subscriber_list_remove {
+    display: inline-block;
+}
+
+.subscriber-list tbody:empty::after,
+.subscriber-list:empty::after {
+    content: "No subscribers to this stream.";
+    display: block;
+
+    text-align: center;
+    color: #aaa;
+}
+
+.subscriber-list:empty {
+    display: block;
+    padding: 5px;
 }
 
 .subscriber-name,
 .subscriber-email {
     padding: 5px;
-}
-
-.subscriber-name {
-    padding-left: 8px;
 }
 
 .subscriber-email {
@@ -319,8 +351,12 @@ form#add_new_subscription {
 }
 
 .subscriber_list_add {
-    margin: auto;
+    margin: 10px auto;
     text-align: center;
+}
+
+.subscriber_list_add .form-inline {
+    margin-bottom: 0px;
 }
 
 .remove-subscriber-form {
