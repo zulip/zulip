@@ -209,14 +209,44 @@ exports.split_at_cursor = function (query, input) {
     return [query.slice(0, cursor), query.slice(cursor)];
 };
 
+exports.tokenize_compose_str = function (s) {
+    // This basically finds a token like "@alic" or
+    // "#Veron" as close to the end of the string as it
+    // can find it.  It wants to find white space or
+    // punctuation before the token, unless it's at the
+    // beginning of the line.  It doesn't matter what comes
+    // after the first character.
+    var i = s.length;
+
+    var min_i = s.length - 25;
+    if (min_i < 0) {
+        min_i = 0;
+    }
+
+    while (i > min_i) {
+        i -= 1;
+        switch (s[i]) {
+            case '#':
+            case '@':
+            case ':':
+                if (i === 0) {
+                    return s.slice(i);
+                } else if (/[\s(){}\[\]]/.test(s[i-1])) {
+                    return s.slice(i);
+                }
+        }
+    }
+
+    return '';
+};
+
 exports.compose_content_begins_typeahead = function (query) {
     var q = exports.split_at_cursor(query, this.$element)[0];
 
-    var strings = q.split(/[\s*(){}\[\]]/);
-    if (strings.length < 1) {
+    var current_token = exports.tokenize_compose_str(q);
+    if (current_token === '') {
         return false;
     }
-    var current_token = strings[strings.length-1];
 
     // Only start the emoji autocompleter if : is directly after one
     // of the whitespace or punctuation chars we split on.
