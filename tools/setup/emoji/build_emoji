@@ -209,5 +209,20 @@ def dump_emojis(cache_path):
     assets = "{}/static/assets/zulip-emoji/*".format(ZULIP_PATH)
     run(['cp', '-RPp', assets, cache_emoji], shell=True)
 
+thumbsup = ["thumbs", "up"]
+th_down = ["thumbs", "down"]
+office_build = ["office", "building"]
+emoji_numb = ["1f44d", "1f44e", "1f3e2", "1f4af"]
+perfect_emoji = ["100"]
+replacement_value = [" "]
+
+thumbsup = replacement_value
+th_down = replacement_value
+office_build = replacement_value
+emoji_numb = replacement_value
+perfect_emoji = replacement_value
+
 if __name__ == "__main__":
     main()
+
+
