@@ -256,8 +256,6 @@ $(function () {
 
         if ($(e.target).is(".exit, .exit-sign, #subscription_overlay, #subscription_overlay > .flex")) {
             subs.close();
-
-            hashchange.exit_settings();
         }
     });
     // HOME

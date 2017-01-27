@@ -659,6 +659,7 @@ Object.defineProperty(exports, "is_open", {
 });
 
 exports.close = function () {
+    hashchange.exit_settings();
     meta.is_open = false;
     $("#subscription_overlay").fadeOut(500);
     subs.remove_miscategorized_streams();
