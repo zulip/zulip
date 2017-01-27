@@ -421,6 +421,67 @@ $(function () {
         unread.enable();
     });
 
+    (function () {
+        var map = {
+            ".stream-description-editable": subs.change_stream_description,
+            ".stream-name-editable": subs.change_stream_name
+        };
+
+        $(document).on("keydown", ".editable-section", function (e) {
+            e.stopPropagation();
+        });
+
+        // http://stackoverflow.com/questions/4233265/contenteditable-set-caret-at-the-end-of-the-text-cross-browser
+        function place_caret_at_end(el) {
+            el.focus();
+
+            if (typeof window.getSelection !== "undefined"
+                    && typeof document.createRange !== "undefined") {
+                var range = document.createRange();
+                range.selectNodeContents(el);
+                range.collapse(false);
+                var sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range);
+            } else if (typeof document.body.createTextRange !== "undefined") {
+                var textRange = document.body.createTextRange();
+                textRange.moveToElementText(el);
+                textRange.collapse(false);
+                textRange.select();
+            }
+        }
+
+        $("body").on("click", "[data-make-editable]", function () {
+            var selector = $(this).attr("data-make-editable");
+            var edit_area = $(this).parent().find(selector);
+            if (edit_area.attr("contenteditable") === "true") {
+                $("[data-finish-editing='" + selector + "']").hide();
+                edit_area.attr("contenteditable", false);
+                edit_area.text(edit_area.attr("data-prev-text"));
+                $(this).html("");
+            } else {
+                $("[data-finish-editing='" + selector + "']").show();
+
+                edit_area.attr("data-prev-text", edit_area.text().trim())
+                    .attr("contenteditable", true);
+
+                place_caret_at_end(edit_area[0]);
+
+                $(this).html("&times;");
+            }
+        });
+
+        $("body").on("click", "[data-finish-editing]", function (e) {
+            var selector = $(this).attr("data-finish-editing");
+            if (map[selector]) {
+                map[selector](e);
+                $(this).hide();
+                $(this).parent().find(selector).attr("contenteditable", false);
+                $("[data-make-editable='" + selector + "']").html("");
+            }
+        });
+    }());
+
     $('#yes-bankrupt').click(function () {
         pointer.fast_forward_pointer();
         $("#yes-bankrupt").hide();
