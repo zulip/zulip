@@ -373,9 +373,23 @@ exports.hide_user_sidebar_popover = function () {
 };
 
 function render_emoji_popover() {
-    var content = templates.render('emoji_popover_content', {
-        emoji_list: emoji.emojis_name_to_css_class,
-    });
+    var content = (function () {
+        var map = {};
+        for (var x in emoji.emojis_name_to_css_class) {
+            if (!emoji.realm_emojis[x]) {
+                map[x] = {
+                    name: x,
+                    css_name: emoji.emojis_name_to_css_class[x],
+                    url: emoji.emojis_by_name[x],
+                };
+            }
+        }
+
+        return templates.render('emoji_popover_content', {
+            emoji_list: map,
+            realm_emoji: emoji.realm_emojis,
+        });
+    }());
 
     $('.emoji_popover').append(content);
 

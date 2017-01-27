@@ -18,7 +18,7 @@ var unicode_emoji_names = ["1f198", "1f3ed", "0034", "1f341", "1f3d7", "26f9", "
 emoji_names.push("zulip");
 exports.realm_emojis.zulip = {
     emoji_name: 'zulip',
-    emoji_url: '/static/third/gemoji/images/emoji/zulip.png',
+    emoji_url: '/static/generated/emoji/images/emoji/zulip.png',
 };
 
 _.each(emoji_names, function (value) {
@@ -40,7 +40,7 @@ exports.update_emojis = function update_emojis(realm_emojis) {
     // Copy the default emoji list and add realm-specific emoji to it
     exports.emojis = default_emojis.slice(0);
     _.each(realm_emojis, function (data, name) {
-        exports.emojis.push({emoji_name: name, emoji_url: data.display_url});
+        exports.emojis.push({emoji_name: name, emoji_url: data.display_url, is_realm_emoji: true});
         exports.realm_emojis[name] = {emoji_name: name, emoji_url: data.display_url};
     });
     exports.emojis_by_name = {};

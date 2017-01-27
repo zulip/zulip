@@ -2123,6 +2123,12 @@ button.topic_edit_cancel {
     margin-top: -7px;
 }
 
+.emoji.realm-emoji {
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
 .twitter-tweet {
     border: 1px solid #ddd;
     padding: .5em .75em;

@@ -1,5 +1,11 @@
 {{! Contents of the "emoji map" popup }}
 {{#each emoji_list}}
-    <div class="emoji emoji-{{this}}" title= ":{{@key}}:" />
+    {{#with this}}
+    <div class="emoji emoji-{{css_name}}" title=":{{name}}:" />
+    {{/with}}
 {{/each}}
-
+{{#each realm_emoji}}
+    {{#with this}}
+    <div class="emoji realm-emoji emoji-{{emoji_name}}" title=":{{emoji_name}}:" style="background-image: url('{{emoji_url}}')"></div>
+    {{/with}}
+{{/each}}
