@@ -96,7 +96,7 @@ body {
     display: inline-block;
     vertical-align: top;
 
-    max-width: calc(100% - 28px);
+    max-width: calc(100% - 30px);
 
     position: relative;
     top: -2px;
