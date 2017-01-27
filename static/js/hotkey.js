@@ -119,6 +119,9 @@ function process_hotkey(e) {
     }
 
     if ($(e.target).is(".editable-section")) {
+        if (event_name === "enter") {
+            $(e.target).parent().find(".checkmark").click();
+        }
         return false;
     }
 
