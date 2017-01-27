@@ -198,6 +198,8 @@ function process_hotkey(e) {
         } else if ($("#subscription_overlay").is(":visible")) {
             subs.close();
             return true;
+        } else if ($('#markdown-help').hasClass('in')) {
+            return false;
         }
     }
 
