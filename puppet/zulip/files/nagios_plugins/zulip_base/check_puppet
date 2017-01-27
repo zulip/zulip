@@ -1,0 +1,34 @@
+#!/bin/bash
+
+PUPPET_PATH=/root/zulip
+if [ -L "$PUPPET_PATH" ]; then
+    echo "$PUPPET_PATH is a symlink; not running"
+    exit 1
+fi
+
+cd "$PUPPET_PATH"
+git fetch
+if ! git diff --exit-code; then
+    echo "$PUPPET_PATH repository is not clean; not running"
+    exit 1
+fi
+
+if ! git branch | grep -q '^[*] master$'; then
+    echo "master is not checked out in $PUPPET_PATH repository"
+    exit 1
+fi
+
+if ! git merge-base --is-ancestor master origin/master; then
+    echo "master is not an ancestor of origin/master"
+    exit 1
+fi
+
+git pull --rebase
+
+if ! /root/zulip/scripts/zulip-puppet-apply --test; then
+    echo "Puppet changes available!"
+    exit 1
+fi
+
+echo "Puppet state is up-to-date."
+exit 0
