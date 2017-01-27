@@ -105,7 +105,7 @@
 
 .reaction-popover {
     display: inline-block;
-    width: 229px;
+    width: 231px;
 }
 
 .reaction-popover-top {
@@ -121,7 +121,7 @@
 }
 
 .reaction-popover-filter {
-    width: calc(100% - 46px);
+    width: calc(100% - 48px);
     margin: auto;
     padding-left: 3em;
 }
