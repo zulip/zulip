@@ -205,6 +205,11 @@ function process_hotkey(e) {
         } else if ($("#subscription_overlay").is(":visible")) {
             subs.close();
             return true;
+        } else if ($('#markdown-help').hasClass('in') ||
+            $('#keyboard-shortcuts').hasClass('in') ||
+            $('#search-operators').hasClass('in') ||
+            $('#invite-user').hasClass('in')) {
+            return false;
         }
     }
 
