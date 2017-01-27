@@ -270,13 +270,20 @@ does the following:
   virtual machine/container at `~/zulip`
 - runs the `tools/provision` script inside the virtual machine/container, which
   downloads all required dependencies, sets up the python environment for
-  the Zulip development server, and initializes a default test database.
+  the Zulip development server, and initializes a default test
+  database.  We call this process "provisioning".
 
-You will need an active internet connection during the entire processes. (See
-[Specifying a proxy](#specifying-a-proxy) if you need a proxy to access the
-internet.) And if you're running into any problems, please come chat with us
-[in the `provision` stream of our developers'
-chat](https://chat.zulip.org/#narrow/stream/provision).
+You will need an active internet connection during the entire
+process. (See [Specifying a proxy](#specifying-a-proxy) if you need a
+proxy to access the internet.) `vagrant up` can fail while
+provisioning if your Internet connection is unreliable.  To retry, you
+can use `vagrant provision` (`vagrant up` will just boot the guest
+without provisioning after the first time).  Other common issues are
+documented in the
+[Troubleshooting & Common Errors](#troubleshooting-common-errors)
+section.  If that doesn't help, please visit
+[the `provision` stream in the Zulip developers' chat](https://chat.zulip.org/#narrow/stream/provision)
+for real-time help.
 
 On Windows, you will see `The system cannot find the path specified.` message
 several times. This is expected behavior and is not an error.
