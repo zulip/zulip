@@ -51,6 +51,7 @@ class AdminZulipHandler(logging.Handler):
 
             report = dict(
                 node = platform.node(),
+                host = request.get_host().split(':')[0],
                 method = request.method,
                 path = request.path,
                 data = data,

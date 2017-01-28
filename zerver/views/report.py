@@ -96,6 +96,7 @@ def json_report_error(request, user_profile, message=REQ(), stacktrace=REQ(),
     queue_json_publish('error_reports', dict(
         type = "browser",
         report = dict(
+            host = request.get_host().split(":")[0],
             user_email = user_profile.email,
             user_full_name = user_profile.full_name,
             user_visible = ui_message,
