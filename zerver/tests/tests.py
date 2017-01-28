@@ -1203,12 +1203,16 @@ class BotTest(ZulipTestCase):
                 dict(file1=fp1, file2=fp2))
         self.assert_json_error(result, 'You may only upload one file at a time')
 
+        profile = get_user_profile_by_email("hambot-bot@zulip.com")
+        self.assertEqual(profile.avatar_version, 1)
+
         # HAPPY PATH
         with get_test_image_file('img.png') as fp:
             result = self.client_patch_multipart(
                 '/json/bots/hambot-bot@zulip.com',
                 dict(file=fp))
             profile = get_user_profile_by_email('hambot-bot@zulip.com')
+            self.assertEqual(profile.avatar_version, 2)
             # Make sure that avatar image that we've uploaded is same with avatar image in the server
             self.assertTrue(filecmp.cmp(fp.name,
                                         os.path.splitext(avatar_disk_path(profile))[0] +
