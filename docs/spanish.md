@@ -8,9 +8,11 @@ Use informal Spanish for translation:
   by machines.
 
 * Imperative, active, and continuous verbs, e.g. *manage streams* -
-  *manejar canales*, not *manejo de canales*.
+  *gestionar canales*, not *gestión de canales*.
 
-* Not using reflexive *se* e.g. *log out* should be *salir*, not *salirse*.
+* Not using reflexive *se* e.g. *log out* should be *salir*, not *salirse*,
+  whenever the infinitive form is possible without making the translation
+  awkward.
 
 * Warm and friendly phrasing whenever appropriate.
 
@@ -20,6 +22,10 @@ Use informal Spanish for translation:
   of English terms - this can be tricky, try to check how other
   resources were translated (e.g. GMail, Microsoft websites, Facebook)
   to decide what wouldn't sound awkward / rude in Spanish.
+
+* Latest RAE rule ("solo" should
+  [**never**](http://www.rae.es/consultas/el-adverbio-solo-y-los-pronombres-demostrativos-sin-tilde)
+  have accent, even when it can be replaced with "solamente").
 
 Some terms are very tricky to translate, so be sure to communicate
 with other Spanish speakers in the community. It's all about making
@@ -48,21 +54,20 @@ Zulip friendly and usable.
 * Alert word - **Alerta**: this is only *alert*. Nonetheless, adding *word* may
   make the term confusing (something like *danger!* could be a "palabra de
   alerta" as well). Google Alerts uses "alerta" in its Spanish translation.
-* View / Filter - **Vista**
+* View - **Vista**
+* Filter - **Filtro**: as used with narrowing (see below).
 * Home - **Inicio**: we never use the term "Hogar" (literally home) in Spanish.
 * Emoji - **Emoticono** (plural: **emoticonos**)
 
 ## Frases
-* Subscribe/Unsubscribe to a stream - **Suscribirte/Desuscribirte a un canal**
+* Subscribe/Unsubscribe to a stream - **Suscribir a/Desuscribir de un canal**
 * Narrow to - **Filtrar solo**: this is *filter only*, because there's no other
-  word that's common enough in Spanish for "to narrow" except for "filtrar".
-  This is why we'll use "filtrar" for "to narrow" and not for the English Zulip
-  meaning "filter", for which we'll use "view" instead.
+  word that's common enough in Spanish for *to narrow* except for "filtrar".
 * Mute/Unmute - **Silenciar/No silenciar**
 * Deactivate/Reactivate - **Desactivar/Reactivar**
 * Search - **Buscar**
 * Pin - **Fijar** (lit. *to fixate*)
-* Mention/@mention - **Mención/@mención**
+* Mention/@mention - **Mencionar/@mención**
 * Invalid - **Inválido**
 * Customization - **Personalización**
 * I want - **Yo quiero**
