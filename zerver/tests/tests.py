@@ -1995,7 +1995,7 @@ class HomeTest(ZulipTestCase):
                 result = self.client_get('/', dict(stream='Denmark'))
 
             html = result.content.decode('utf-8')
-            self.assertIn('There is a new terms of service', html)
+            self.assertIn('There are new Terms of Service', html)
 
     def test_bad_narrow(self):
         # type: () -> None

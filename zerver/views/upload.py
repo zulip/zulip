@@ -70,7 +70,8 @@ def upload_file_backend(request, user_profile):
 
     user_file = list(request.FILES.values())[0]
     if ((settings.MAX_FILE_UPLOAD_SIZE * 1024 * 1024) < user_file._get_size()):
-        return json_error(_("File Upload is larger than allowed limit"))
+        return json_error(_("Uploaded file is larger than the allowed limit of %s MB") % (
+            settings.MAX_FILE_UPLOAD_SIZE))
 
     if not isinstance(user_file.name, str):
         # It seems that in Python 2 unicode strings containing bytes are

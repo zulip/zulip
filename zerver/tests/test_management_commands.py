@@ -89,7 +89,7 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
 
             # Generated link used for creating realm
             result = self.client_get(generated_link)
-            self.assert_in_success_response(["The organization creation link has been expired or is not valid."], result)
+            self.assert_in_success_response(["The organization creation link has expired or is not valid."], result)
 
     def test_realm_creation_with_random_link(self):
         # type: () -> None
@@ -97,7 +97,7 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
             # Realm creation attempt with an invalid link should fail
             random_link = "/create_realm/5e89081eb13984e0f3b130bf7a4121d153f1614b"
             result = self.client_get(random_link)
-            self.assert_in_success_response(["The organization creation link has been expired or is not valid."], result)
+            self.assert_in_success_response(["The organization creation link has expired or is not valid."], result)
 
     def test_realm_creation_with_expired_link(self):
         # type: () -> None
@@ -110,4 +110,4 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
             obj.save()
 
             result = self.client_get(generated_link)
-            self.assert_in_success_response(["The organization creation link has been expired or is not valid."], result)
+            self.assert_in_success_response(["The organization creation link has expired or is not valid."], result)

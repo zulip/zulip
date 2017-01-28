@@ -89,7 +89,7 @@ class FileUploadTest(ZulipTestCase):
         # would be 1MB.
         with self.settings(MAX_FILE_UPLOAD_SIZE=0):
             result = self.client_post("/json/upload_file", {'f1': fp})
-        self.assert_json_error(result, 'File Upload is larger than allowed limit')
+        self.assert_json_error(result, 'Uploaded file is larger than the allowed limit of 0 MB')
 
     def test_multiple_upload_failure(self):
         # type: () -> None

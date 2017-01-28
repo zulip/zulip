@@ -342,7 +342,7 @@ class RealmEmoji(ModelReprMixin, models.Model):
     # Second part of the regex (negative lookbehind) disallows names ending with one of the punctuation characters
     name = models.TextField(validators=[MinLengthValidator(1),
                                         RegexValidator(regex=r'^[0-9a-zA-Z.\-_]+(?<![.\-_])$',
-                                                       message=_("Invalid characters in Emoji name"))]) # type: Text
+                                                       message=_("Invalid characters in emoji name"))]) # type: Text
     # URLs start having browser compatibility problem below 2000
     # characters, so 1000 seems like a safe limit.
     img_url = models.URLField(max_length=1000) # type: Text

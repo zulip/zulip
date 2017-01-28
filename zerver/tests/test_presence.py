@@ -51,7 +51,7 @@ class UserPresenceTests(ZulipTestCase):
         email = "hamlet@zulip.com"
         self.login(email)
         result = self.client_post("/json/users/me/presence", {'status': 'foo'})
-        self.assert_json_error(result, 'Invalid presence status: foo')
+        self.assert_json_error(result, 'Invalid status: foo')
 
     def test_set_idle(self):
         # type: () -> None
