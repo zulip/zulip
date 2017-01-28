@@ -105,41 +105,34 @@
 
 .reaction-popover {
     display: inline-block;
-    width: 20em;
-    margin-right: 0px;
-    margin-left: -14px;
-    margin-top: -9px;
-    margin-bottom: -9px;
+    width: 231px;
 }
 
 .reaction-popover-top {
-    padding: 0.8em;
     padding-bottom: 0;
-    width: 100%;
 }
 
 .reaction-popover-top .icon-vector-search {
-    position: absolute;
-    right: 2.3em;
-    top: 1.3em;
+    display: inline-block;
+    vertical-align: top;
+    padding: 8px;
     color: #bbb;
+    cursor: pointer;
 }
 
 .reaction-popover-filter {
-    width: 87%;
+    width: calc(100% - 48px);
     margin: auto;
     padding-left: 3em;
 }
 
 .reaction-popover-emoji-map {
     margin: 0;
-    padding: 0.5em;
-    padding-top: 0;
+    padding: 0.5em 0;
     overflow: hidden;
     overflow-y: scroll;
     display: inline-block;
     height: 16.5em;
-    width: 100%;
 }
 
 .reaction-popover-reaction {

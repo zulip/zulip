@@ -320,6 +320,15 @@ class LoginTest(ZulipTestCase):
         self.login(email, password)
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
+    def test_login_page_redirects_logged_in_user(self):
+        # type: () -> None
+        """
+        You will be redirected to the home page if you land on the login page inspite of being logged in.
+        """
+        self.login("cordelia@zulip.com")
+        response = self.client_get("/login/")
+        self.assertEqual(response["Location"], "/")
+
 class InviteUserTest(ZulipTestCase):
 
     def invite(self, users, streams):

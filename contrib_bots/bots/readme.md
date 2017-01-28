@@ -1,15 +1,12 @@
-# Contrib Bots:
+# Contrib bots
 
 This is the documentation for an experimental new system for writing
-bots that react to messages.
+bots that react to messages. It explains how to run the code, and also
+talks about the architecture for creating such bots.
 
-This directory contains library code for running Zulip
-bots that react to messages sent by users.
+This directory contains library code for running them.
 
-This document explains how to run the code, and it also
-talks about the architecture for creating bots.
-
-## Design Goals
+## Design goals
 
 The goal is to have a common framework for hosting a bot that reacts
 to messages in any of the following settings:
@@ -27,7 +24,7 @@ to messages in any of the following settings:
   account specific authentication, for example: a gmail bot that lets
   one send emails directly through Zulip.
 
-## Running Bots
+## Running bots
 
 Here is an example of running the "follow-up" bot from
 inside a Zulip repo (and in your remote instance):
@@ -37,17 +34,17 @@ inside a Zulip repo (and in your remote instance):
 
 Once the bot code starts running, you will see a
 message explaining how to use the bot, as well as
-some log messages.  You can use the `--quiet` option
+some log messages. You can use the `--quiet` option
 to suppress these messages.
 
 The bot code will run continuously until you end the program with
 control-C (or otherwise).
 
-### Zulip Configuration
+### Zulip configuration
 
 For this document we assume you have some prior experience
 with using the Zulip API, but here is a quick review of
-what a `.zuliprc` files looks like.  You can connect to the
+what a `.zuliprc` files looks like. You can connect to the
 API as your own human user, or you can go into the Zulip settings
 page to create a user-owned bot.
 
@@ -59,22 +56,22 @@ page to create a user-owned bot.
 When you run your bot, make sure to point it to the correct location
 of your `.zuliprc`.
 
-### Third Party Configuration
+### Third party configuration
 
 If your bot interacts with a non-Zulip service, you may
 have to configure keys or usernames or URLs or similar
 information to hit the other service.
 
 Do **NOT** put third party configuration information in your
-`.zuliprc` file.  Do not put third party configuration
-information anywhere in your Zulip directory.  Instead,
+`.zuliprc` file. Do not put third party configuration
+information anywhere in your Zulip directory. Instead,
 create a separate configuration file for the third party's
 configuration in your home directory.
 
 Any bots that require this will have instructions on
 exactly how to create or access this information.
 
-### Python Dependencies
+### Python dependencies
 
 If your module requires Python modules that are not either
 part of the standard Python library or the Zulip API
@@ -83,7 +80,7 @@ of your bot explaining how to install the dependencies/modules.
 
 Right now we don't support any kind of automatic build
 environment for bots, so it's currently up to the users
-of the bots to manage their dependencies.  This may change
+of the bots to manage their dependencies. This may change
 in the future.
 
 ## Architecture
@@ -92,7 +89,7 @@ In order to make bot development easy, we separate
 out boilerplate code (loading up the Client API, etc.)
 from bot-specific code (actions of the bot/what the bot does).
 
-All of the boilerplate code lives in `../run.py`.  The
+All of the boilerplate code lives in `../run.py`. The
 runner code does things like find where it can import
 the Zulip API, instantiate a client with correct
 credentials, set up the logging level, find the
@@ -137,6 +134,6 @@ in a server-side environment.
 
 If you are not interested in running your bots on the
 server, then you can still use the full Zulip API and run
-them locally.  The hope, though, is that this
+them locally. The hope, though, is that this
 architecture will make writing simple bots a quick/easy
 process.
