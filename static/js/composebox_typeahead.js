@@ -464,6 +464,10 @@ exports.initialize = function () {
         },
         matcher: function (item) {
             var current_recipient = get_last_recipient_in_pm(this.query);
+            // If you type just a comma, there won't be any recipients.
+            if (!current_recipient) {
+                return false;
+            }
             // If the name is only whitespace (does not contain any non-whitespace),
             // we're between typing names; don't autocomplete anything for us.
             if (! current_recipient.match(/\S/)) {
