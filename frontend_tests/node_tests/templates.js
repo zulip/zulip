@@ -377,9 +377,23 @@ function render(template_name, args) {
 }());
 
 (function emoji_popover_content() {
-    var args = {
-        emoji_list: global.emoji.emojis_name_to_css_class,
-    };
+    var args = (function () {
+        var map = {};
+        for (var x in global.emoji.emojis_name_to_css_class) {
+            if (!global.emoji.realm_emojis[x]) {
+                map[x] = {
+                    name: x,
+                    css_name: global.emoji.emojis_name_to_css_class[x],
+                    url: global.emoji.emojis_by_name[x],
+                };
+            }
+        }
+
+        return {
+            emoji_list: map,
+            realm_emoji: global.emoji.realm_emojis,
+        };
+    }());
 
     var html = '<div style="height: 250px">';
     html += render('emoji_popover_content', args);
