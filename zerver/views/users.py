@@ -17,7 +17,7 @@ from zerver.forms import CreateUserForm
 from zerver.lib.actions import do_change_is_admin, \
     do_create_user, do_deactivate_user, do_reactivate_user, \
     do_change_default_events_register_stream, do_change_default_sending_stream, \
-    do_change_default_all_public_streams, do_regenerate_api_key, do_change_avatar_source
+    do_change_default_all_public_streams, do_regenerate_api_key, do_change_avatar_fields
 from zerver.lib.avatar import avatar_url, get_avatar_url
 from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import access_stream_by_name
@@ -175,7 +175,7 @@ def patch_bot_backend(request, user_profile, email,
         user_file = list(request.FILES.values())[0]
         upload_avatar_image(user_file, user_profile, bot.email)
         avatar_source = UserProfile.AVATAR_FROM_USER
-        do_change_avatar_source(bot, avatar_source)
+        do_change_avatar_fields(bot, avatar_source)
     else:
         return json_error(_("You may only upload one file at a time"))
 

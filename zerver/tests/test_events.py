@@ -18,7 +18,7 @@ from zerver.lib.actions import (
     do_add_alert_words,
     check_add_realm_emoji,
     do_add_realm_filter,
-    do_change_avatar_source,
+    do_change_avatar_fields,
     do_change_default_all_public_streams,
     do_change_default_events_register_stream,
     do_change_default_sending_stream,
@@ -877,7 +877,7 @@ class EventsRegisterTest(ZulipTestCase):
 
     def test_change_bot_avatar_source(self):
         # type: () -> None
-        action = lambda: do_change_avatar_source(self.bot, self.bot.AVATAR_FROM_USER)
+        action = lambda: do_change_avatar_fields(self.bot, self.bot.AVATAR_FROM_USER)
         events = self.do_test(action)
         error = self.realm_bot_schema('avatar_url', check_string)('events[0]', events[0])
         self.assert_on_error(error)

@@ -1885,10 +1885,11 @@ def do_regenerate_api_key(user_profile, log=True):
                                  )),
                    bot_owner_userids(user_profile))
 
-def do_change_avatar_source(user_profile, avatar_source, log=True):
+def do_change_avatar_fields(user_profile, avatar_source, log=True):
     # type: (UserProfile, Text, bool) -> None
     user_profile.avatar_source = avatar_source
-    user_profile.save(update_fields=["avatar_source"])
+    user_profile.avatar_version += 1
+    user_profile.save(update_fields=["avatar_source", "avatar_version"])
 
     if log:
         log_event({'type': 'user_change_avatar_source',
