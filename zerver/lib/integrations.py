@@ -132,6 +132,7 @@ WEBHOOK_INTEGRATIONS = [
         function='zerver.webhooks.github_webhook.view.api_github_webhook'
     ),
     WebhookIntegration('gitlab', display_name='GitLab'),
+    WebhookIntegration('gogs'),
     WebhookIntegration('gosquared', display_name='GoSquared'),
     WebhookIntegration('greenhouse', display_name='Greenhouse'),
     WebhookIntegration('hellosign', display_name='HelloSign'),
