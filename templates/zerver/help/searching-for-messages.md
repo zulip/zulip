@@ -12,15 +12,17 @@ represents the criteria that fits the specified operator. Operators allow you to
 instantly find messages that meet the specified criteria, such as messages that
 belong to a specific stream or topic.
 
-It is important to note that spaces in `operand` must be replaced with `+`.
-Multiple search operators can be used in a single query by separating each
-operator with spaces in your search bar. For example, combining the
-`stream`, `topic`, and `near:1` search operators will allow you to narrow
-your view to the first message in a particular topic.
+It is important to note that spaces in `operand` must be replaced with
+`+`.  Multiple search operators can be used in a single query by
+separating each operator with spaces in your search bar. For example,
+a query like `stream:announce topic:zulip near:1` would show the
+very oldest messages in a that stream and topic.
 
-Most importantly, you can search an individual stream for results from
-before you joined, but search results will only include messages from after
-you first joined Zulip if you search the entire organization.
+By default, search will only display messages that you actually
+received.  However, if your search operators include narrowing to a
+public stream, you have full access to that stream's history, and thus
+can search messages from before you subscribed to the stream (or even
+joined your Zulip organization).
 
 ## Features and limitations
 
