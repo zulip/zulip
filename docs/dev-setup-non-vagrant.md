@@ -94,7 +94,7 @@ wget https://dl.dropboxusercontent.com/u/283158365/zuliposs/postgresql-9.1-tsear
 sudo dpkg -i postgresql-9.1-tsearch-extras_0.1.2_amd64.deb
 
 # If on 14.04:
-https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+files/postgresql-9.3-tsearch-extras_0.1.3_amd64.deb
+wget https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+files/postgresql-9.3-tsearch-extras_0.1.3_amd64.deb
 sudo dpkg -i postgresql-9.3-tsearch-extras_0.1.3_amd64.deb
 
 # If on 15.04 or jessie:
