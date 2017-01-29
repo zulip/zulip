@@ -1686,6 +1686,16 @@ nav a .no-style {
     visibility: hidden;
 }
 
+#searchbox a.search_icon {
+    color: #ccc;
+    text-decoration: none;
+}
+
+#searchbox a.search_icon:hover {
+    color: #000;
+    text-decoration: none;
+}
+
 .highlight {
     background-color: #FCEA81;
 }
