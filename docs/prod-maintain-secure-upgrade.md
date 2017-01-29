@@ -21,7 +21,7 @@ upgrade.**
 
 To upgrade to a new version of the zulip server, download the appropriate
 release tarball from
-[https://www.zulip.com/dist/releases/](https://www.zulip.com/dist/releases/)
+[https://www.zulip.org/dist/releases/](https://www.zulip.org/dist/releases/)
 
 You also have the option of creating your own release tarballs from a
 copy of the zulip.git repository using

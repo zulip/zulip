@@ -40,7 +40,7 @@ package_info = dict(
         'License :: OSI Approved :: MIT License',
         'Topic :: Communications :: Chat',
     ],
-    url='https://www.zulip.com/dist/api/',
+    url='https://www.zulip.org/dist/api/',
     packages=['zulip'],
     data_files=[('share/zulip/examples',
                  ["examples/zuliprc",

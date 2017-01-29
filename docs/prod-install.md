@@ -33,13 +33,13 @@ paths, and move on to the next step.
 ## Step 2: Download and install latest release
 
 If you haven't already, download and unpack [the latest built server
-tarball](https://www.zulip.com/dist/releases/zulip-server-latest.tar.gz)
+tarball](https://www.zulip.org/dist/releases/zulip-server-latest.tar.gz)
 with the following commands:
 
 ```
 sudo -i  # If not already root
 cd /root
-wget https://www.zulip.com/dist/releases/zulip-server-latest.tar.gz
+wget https://www.zulip.org/dist/releases/zulip-server-latest.tar.gz
 rm -rf /root/zulip && mkdir /root/zulip
 tar -xf zulip-server-latest.tar.gz --directory=/root/zulip --strip-components=1
 ```
