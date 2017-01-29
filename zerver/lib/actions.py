@@ -3331,6 +3331,9 @@ def apply_events(state, events, user_profile):
         elif event['type'] == "update_message":
             # The client will get the updated message directly
             pass
+        elif event['type'] == "reaction":
+            # The client will get the message with the reactions directly
+            pass
         elif event['type'] == "referral":
             state['referrals'] = event['referrals']
         elif event['type'] == "update_message_flags":
