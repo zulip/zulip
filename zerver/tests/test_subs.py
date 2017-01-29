@@ -2383,3 +2383,80 @@ class GetSubscribersTest(ZulipTestCase):
         result = self.make_subscriber_request(stream_id, email=other_email)
         self.assert_json_error(result,
                                "Unable to retrieve subscribers for invite-only stream")
+
+from zerver.lib.streams import access_stream_by_id, access_stream_by_name
+class AccessStreamTest(ZulipTestCase):
+    def test_access_stream(self):
+        # type: () -> None
+        """
+        A comprehensive security test for the access_stream_by_* API functions.
+        """
+        # Create a private stream for which Hamlet is the only subscriber.
+        hamlet_email = "hamlet@zulip.com"
+        hamlet = get_user_profile_by_email(hamlet_email)
+
+        stream_name = "new_private_stream"
+        self.login(hamlet_email)
+        self.common_subscribe_to_streams(hamlet_email, [stream_name],
+                                         invite_only=True)
+        stream = get_stream(stream_name, hamlet.realm)
+
+        othello_email = "othello@zulip.com"
+        othello = get_user_profile_by_email(othello_email)
+
+        # Nobody can access a stream that doesn't exist
+        with self.assertRaisesRegex(JsonableError, "Invalid stream id"):
+            access_stream_by_id(hamlet, 501232)
+        with self.assertRaisesRegex(JsonableError, "Invalid stream name 'invalid stream'"):
+            access_stream_by_name(hamlet, "invalid stream")
+
+        # Hamlet can access the private stream
+        (stream_ret, rec_ret, sub_ret) = access_stream_by_id(hamlet, stream.id)
+        self.assertEqual(stream, stream_ret)
+        self.assertEqual(sub_ret.recipient, rec_ret)
+        self.assertEqual(sub_ret.recipient.type_id, stream.id)
+        (stream_ret2, rec_ret2, sub_ret2) = access_stream_by_name(hamlet, stream.name)
+        self.assertEqual(stream_ret, stream_ret2)
+        self.assertEqual(sub_ret, sub_ret2)
+        self.assertEqual(rec_ret, rec_ret2)
+
+        # Othello cannot access the private stream
+        with self.assertRaisesRegex(JsonableError, "Invalid stream id"):
+            access_stream_by_id(othello, stream.id)
+        with self.assertRaisesRegex(JsonableError, "Invalid stream name 'new_private_stream'"):
+            access_stream_by_name(othello, stream.name)
+
+        # Both Othello and Hamlet can access a public stream that only
+        # Hamlet is subscribed to in this realm
+        public_stream_name = "public_stream"
+        self.common_subscribe_to_streams(hamlet_email, [public_stream_name],
+                                         invite_only=False)
+        public_stream = get_stream(public_stream_name, hamlet.realm)
+        access_stream_by_id(othello, public_stream.id)
+        access_stream_by_name(othello, public_stream.name)
+        access_stream_by_id(hamlet, public_stream.id)
+        access_stream_by_name(hamlet, public_stream.name)
+
+        # Nobody can access a public stream in another realm
+        mit_realm = get_realm("mit")
+        mit_stream, _ = create_stream_if_needed(mit_realm, "mit_stream", invite_only=False)
+        sipbtest = get_user_profile_by_email("sipbtest@mit.edu")
+        with self.assertRaisesRegex(JsonableError, "Invalid stream id"):
+            access_stream_by_id(hamlet, mit_stream.id)
+        with self.assertRaisesRegex(JsonableError, "Invalid stream name 'mit_stream'"):
+            access_stream_by_name(hamlet, mit_stream.name)
+        with self.assertRaisesRegex(JsonableError, "Invalid stream id"):
+            access_stream_by_id(sipbtest, stream.id)
+        with self.assertRaisesRegex(JsonableError, "Invalid stream name 'new_private_stream'"):
+            access_stream_by_name(sipbtest, stream.name)
+
+        # MIT realm users cannot access even public streams in their realm
+        with self.assertRaisesRegex(JsonableError, "Invalid stream id"):
+            access_stream_by_id(sipbtest, mit_stream.id)
+        with self.assertRaisesRegex(JsonableError, "Invalid stream name 'mit_stream'"):
+            access_stream_by_name(sipbtest, mit_stream.name)
+
+        # But they can access streams they are subscribed to
+        self.common_subscribe_to_streams(sipbtest.email, [mit_stream.name])
+        access_stream_by_id(sipbtest, mit_stream.id)
+        access_stream_by_name(sipbtest, mit_stream.name)

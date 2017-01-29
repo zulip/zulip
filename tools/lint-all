@@ -383,6 +383,7 @@ def build_custom_checkers(by_lang):
              ('zerver/decorator.py', 'raise JsonableError(reason % (role,))'),
              ('zerver/lib/actions.py', 'raise JsonableError(e.messages[0])'),
              ('zerver/views/messages.py', 'raise JsonableError(error)'),
+             ('zerver/lib/streams.py', 'raise JsonableError(error)'),
              ('zerver/lib/request.py', 'raise JsonableError(error)'),
              ('zerver/views/streams.py', 'raise JsonableError(response.content)'),
          ]),
