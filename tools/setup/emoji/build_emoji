@@ -225,8 +225,15 @@ def dump_emojis(cache_path):
 
     EMOJI_CODES_PATH = os.path.join(cache_path, 'emoji_codes.js')
     emoji_codes_file = open(EMOJI_CODES_PATH, 'w')
+
+    # put thumbs_up before thumbs_down
+    names = emoji_names_for_picker(emoji_map)
+    down_index = names.index('thumbs_down')
+    up_index = names.index('thumbs_up')
+    names[down_index], names[up_index] = ('thumbs_up', 'thumbs_down')
+
     emoji_codes_file.write(EMOJI_CODES_FILE_TEMPLATE % {
-        'names': emoji_names_for_picker(emoji_map),
+        'names': names,
         'codepoints': sorted([str(code_point) for code_point in set(emoji_map.values())])
     })
     emoji_codes_file.close()
