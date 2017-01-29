@@ -28,6 +28,10 @@ exports.init = function () {
 exports.init();
 
 exports.get_person_from_user_id = function (user_id) {
+    if (!people_by_user_id_dict.has(user_id)) {
+        blueslip.error('Unknown user_id for get_user_id: ' + user_id);
+        return undefined;
+    }
     return people_by_user_id_dict.get(user_id);
 };
 
@@ -90,6 +94,25 @@ exports.emails_strings_to_user_ids_string = function (emails_string) {
     user_ids.sort();
 
     return user_ids.join(',');
+};
+
+exports.get_full_name = function (user_id) {
+    return people_by_user_id_dict.get(user_id).full_name;
+};
+
+exports.get_recipients = function (user_ids_string) {
+    // See message_store.get_pm_full_names() for a similar function.
+
+    var user_ids = user_ids_string.split(',');
+    var other_ids = _.reject(user_ids, exports.is_my_user_id);
+
+    if (other_ids.length === 0) {
+        // private message with oneself
+        return exports.my_full_name();
+    }
+
+    var names = _.map(other_ids, exports.get_full_name).sort();
+    return names.join(', ');
 };
 
 exports.emails_to_slug = function (emails_string) {

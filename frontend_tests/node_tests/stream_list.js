@@ -2,24 +2,17 @@ global.stub_out_jquery();
 
 add_dependencies({
     Handlebars: 'handlebars',
-    templates: 'js/templates',
+    hashchange: 'js/hashchange',
     muting: 'js/muting',
     narrow: 'js/narrow',
-    people: 'js/people',
     stream_color: 'js/stream_color',
     stream_data: 'js/stream_data',
     subs: 'js/subs',
+    templates: 'js/templates',
+    unread: 'js/unread',
     util: 'js/util',
-    hashchange: 'js/hashchange',
 });
 
-set_global('unread', {});
-set_global('message_store', {
-    recent_private_messages: new global.Array(),
-});
-
-// TODO: move pm_list-related tests to their own module
-var pm_list = require('js/pm_list.js');
 var stream_list = require('js/stream_list.js');
 
 var jsdom = require("jsdom");
@@ -30,43 +23,8 @@ $.fn.expectOne = function () {
     return this;
 };
 
-global.compile_template('sidebar_private_message_list');
 global.compile_template('stream_sidebar_row');
 global.compile_template('stream_privacy');
-
-var alice = {
-    email: 'alice@zulip.com',
-    user_id: 101,
-    full_name: 'Alice',
-};
-var bob = {
-    email: 'bob@zulip.com',
-    user_id: 102,
-    full_name: 'Bob',
-};
-global.people.add_in_realm(alice);
-global.people.add_in_realm(bob);
-
-(function test_build_private_messages_list() {
-    var active_conversation = "alice@zulip.com,bob@zulip.com";
-    var max_conversations = 5;
-
-
-    var conversations = {user_ids_string: '101,102',
-                         display_reply_to: active_conversation,
-                         timestamp: 0 };
-    global.message_store.recent_private_messages.push(conversations);
-
-    global.unread.num_unread_for_person = function () {
-        return 1;
-    };
-
-    var convos_html = pm_list._build_private_messages_list(active_conversation, max_conversations);
-    global.write_test_output("test_build_private_messages_list", convos_html);
-
-    var conversation = $(convos_html).find('a').text().trim();
-    assert.equal(conversation, active_conversation);
-}());
 
 function clear_filters() {
     var stream_search_box = $('<input class="stream-list-filter" type="text" placeholder="Search streams">');

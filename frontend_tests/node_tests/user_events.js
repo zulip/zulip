@@ -19,6 +19,13 @@ set_global('page_params', {
     is_admin: true,
 });
 
+set_global('pm_list', {
+    update_private_messages: function () {},
+});
+
+set_global('message_live_update', {
+});
+
 var me = {
     email: 'me@example.com',
     user_id: 30,
@@ -49,16 +56,27 @@ initialize();
     assert.equal(person.full_name, 'Isaac Newton');
     assert.equal(person.is_admin, true);
 
+    var user_id;
+    var full_name;
+    global.message_live_update.update_user_full_name = function (user_id_arg, full_name_arg) {
+        user_id = user_id_arg;
+        full_name = full_name_arg;
+    };
+
     user_events.update_person({user_id: isaac.user_id, full_name: 'Sir Isaac'});
     person = people.get_by_email(isaac.email);
     assert.equal(person.full_name, 'Sir Isaac');
     assert.equal(person.is_admin, true);
+    assert.equal(user_id, isaac.user_id);
+    assert.equal(full_name, 'Sir Isaac');
 
     user_events.update_person({user_id: me.user_id, is_admin: false});
     assert(!global.page_params.is_admin);
 
     user_events.update_person({user_id: me.user_id, full_name: 'Me V2'});
     assert.equal(people.my_full_name(), 'Me V2');
+    assert.equal(user_id, me.user_id);
+    assert.equal(full_name, 'Me V2');
 
 }());
 

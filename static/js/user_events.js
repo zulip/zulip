@@ -21,8 +21,8 @@ exports.update_person = function update(person) {
 
         admin.update_user_full_name(person.email, person.full_name);
         activity.redraw();
-        // TODO: update sender names on messages
-
+        message_live_update.update_user_full_name(person.user_id, person.full_name);
+        pm_list.update_private_messages();
     }
 
     if (_.has(person, 'is_admin')) {
