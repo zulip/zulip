@@ -2,31 +2,37 @@
 
 Zulip allows users to send private messages to each other.
 
-## There are two ways to send a Private Message:
+You can send a private message by using the compose box or the user list.
+### Sending a private message through the compose box
 
-### Way 1:
+1. Click on the **New Private Message** button located at the bottom of your
+screen. The message box, like the one shown below, will appear at the bottom
+center of the screen.
 
-* To submit a new private message, first click on the `New Private
-  Message` button located at the bottom of your screen.
+2. In the field labeled **one or more people...**, input the username or email
+address of the user you want to privately message. When you begin typing an
+email address or username, autocomplete suggestions will appear.
 
-* The following box will be displayed
-![New stream message](/static/images/help/private-box.png)
+    !!! warn ""
+        If you attempt to input a nonexistent username or email address, an
+        error message will appear and the message will not be delivered.
 
-* In the **one or more people...** field, input the username or email
-address of the user you want to privately message.  When you begin
-typing an email address or username, autocomplete suggestions will
-appear.
+3. Enter your message in the box labeled **Compose your message here...**. You
+can now send your private message.
 
-* If you attempt to input a nonexistent username or email address, an
-  error message will appear.
+### Sending a private message through the user list.
 
-### Way 2:
+1. Hover over the user's name in the user list on the right
+sidebar
+2. Click on down chevron (<i class="icon-vector-chevron-down"></i>)
+that gets visible when hovering over the name and click on the option
+**Compose a private message to <user's name>** and write the message in the
+compose box.
 
-* You also can click on the **user's name** in the `USERS` panel on
-the right and click on `down arrow` that gets visible when hovering
-over the name and click on the option `Compose a private message to
-<user's name>` and write the message in the compose box.
+3. Enter your message in the box labeled **Compose your message here...**. You
+can now send your private message.
 
-You can always discard your message by clicking the **x**
-(<i class="icon-vector-remove"></i>) icon located at the top-right corner
-of your compose box.
+!!! tip ""
+    You can always close the message box by clicking the **x**
+    (<i class="icon-vector-remove"></i>) icon located at the top-right corner of
+    your messaging box.
