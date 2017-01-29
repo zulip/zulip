@@ -216,6 +216,8 @@ class StreamAdminTest(ZulipTestCase):
             result = self.client_patch('/json/streams/%d' % (stream_id,),
                                        {'description': ujson.dumps('Test description')})
         self.assert_json_success(result)
+        # Should be just a description change event
+        self.assert_length(events, 1)
 
         cordelia = get_user_profile_by_email('cordelia@zulip.com')
         prospero = get_user_profile_by_email('prospero@zulip.com')
@@ -231,6 +233,8 @@ class StreamAdminTest(ZulipTestCase):
             result = self.client_patch('/json/streams/%d' % (stream_id,),
                                        {'new_name': ujson.dumps('whatever')})
         self.assert_json_success(result)
+        # Should be a name event and an email address event
+        self.assert_length(events, 2)
 
         notified_user_ids = set(events[-1]['users'])
         self.assertIn(user_profile.id, notified_user_ids)
