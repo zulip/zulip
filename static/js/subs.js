@@ -553,6 +553,34 @@ function actually_filter_streams() {
     exports.filter_table({ input: query, subscribed_only: subscribed_only });
 }
 
+function redraw_privacy_related_stuff(sub_row, sub) {
+    var stream_settings = settings_for_sub(sub);
+    var html;
+
+    sub = stream_data.add_admin_options(sub);
+
+    html = templates.render('subscription_setting_icon', sub);
+    sub_row.find('.icon').expectOne().replaceWith($(html));
+
+    html = templates.render('subscription_type', sub);
+    stream_settings.find('.subscription-type').expectOne().html(html);
+
+    if (sub.invite_only) {
+        stream_settings.find(".large-icon")
+            .removeClass("hash").addClass("lock")
+            .html("<i class='icon-vector-lock'></i>");
+    } else {
+        stream_settings.find(".large-icon")
+            .addClass("hash").removeClass("lock")
+            .html("");
+    }
+
+    html = templates.render('change_stream_privacy', sub);
+    stream_settings.find('.change-stream-privacy').expectOne().html(html);
+
+    stream_list.redraw_stream_privacy(sub.name);
+}
+
 var filter_streams = _.throttle(actually_filter_streams, 50);
 
 exports.setup_page = function (callback) {
@@ -1280,34 +1308,6 @@ $(function () {
         exports.remove_user_from_stream(principal, stream_name, removal_success,
                                         removal_failure);
     });
-
-    function redraw_privacy_related_stuff(sub_row, sub) {
-        var stream_settings = settings_for_sub(sub);
-        var html;
-
-        sub = stream_data.add_admin_options(sub);
-
-        html = templates.render('subscription_setting_icon', sub);
-        sub_row.find('.icon').expectOne().replaceWith($(html));
-
-        html = templates.render('subscription_type', sub);
-        stream_settings.find('.subscription-type').expectOne().html(html);
-
-        if (sub.invite_only) {
-            stream_settings.find(".large-icon")
-                .removeClass("hash").addClass("lock")
-                .html("<i class='icon-vector-lock'></i>");
-        } else {
-            stream_settings.find(".large-icon")
-                .addClass("hash").removeClass("lock")
-                .html("");
-        }
-
-        html = templates.render('change_stream_privacy', sub);
-        stream_settings.find('.change-stream-privacy').expectOne().html(html);
-
-        stream_list.redraw_stream_privacy(sub.name);
-    }
 
     function change_stream_privacy(e, is_private, success_message, error_message, invite_only) {
         e.preventDefault();
