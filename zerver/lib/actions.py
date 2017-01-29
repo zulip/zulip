@@ -1669,12 +1669,31 @@ def bulk_add_subscriptions(streams, users):
         sub_tuples_by_user[sub.user_profile.id].append((sub, stream))
         new_streams.add((sub.user_profile.id, stream.id))
 
+    # We now send several types of events to notify browsers.  The
+    # first batch is notifications to users on invite-only streams
+    # that the stream exists.
+    for stream in streams:
+        new_users = [user for user in users if (user.id, stream.id) in new_streams]
+
+        # Users newly added to invite-only streams need a `create`
+        # notification, since they didn't have the invite-only stream
+        # in their browser yet.
+        if stream.invite_only:
+            event = dict(type="stream", op="create",
+                         streams=[stream.to_dict()])
+            send_event(event, [user.id for user in new_users])
+
+    # The second batch is events for the users themselves that they
+    # were subscribed to the new streams.
     for user_profile in users:
         if len(sub_tuples_by_user[user_profile.id]) == 0:
             continue
         sub_pairs = sub_tuples_by_user[user_profile.id]
         notify_subscriptions_added(user_profile, sub_pairs, fetch_stream_subscriber_emails)
 
+    # The second batch is events for other users who are tracking the
+    # subscribers lists of streams in their browser; everyone for
+    # public streams and only existing subscribers for private streams.
     for stream in streams:
         if stream.realm.is_zephyr_mirror_realm and not stream.invite_only:
             continue

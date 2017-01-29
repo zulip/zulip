@@ -40,7 +40,7 @@ from zerver.lib.actions import (
     gather_subscriptions_helper, bulk_add_subscriptions, bulk_remove_subscriptions,
     gather_subscriptions, get_default_streams_for_realm, get_realm, get_stream,
     get_user_profile_by_email, set_default_streams, get_subscription,
-    create_streams_if_needed, active_user_ids
+    create_stream_if_needed, create_streams_if_needed, active_user_ids
 )
 
 from zerver.views.streams import (
@@ -1544,6 +1544,49 @@ class SubscriptionAPITest(ZulipTestCase):
         # We don't send a peer_add event to othello
         self.assertNotIn(user_profile.id, add_peer_event['users'])
         self.assertEqual(len(add_peer_event['users']), 16)
+        self.assertEqual(add_peer_event['event']['type'], 'subscription')
+        self.assertEqual(add_peer_event['event']['op'], 'peer_add')
+        self.assertEqual(add_peer_event['event']['user_id'], user_profile.id)
+
+    def test_private_stream_subscription(self):
+        # type: () -> None
+        realm = get_realm("zulip")
+
+        # Create a private stream with Hamlet subscribed
+        stream_name = "private"
+        (stream, _) = create_stream_if_needed(realm, stream_name, invite_only=True)
+
+        existing_email = "hamlet@zulip.com"
+        existing_user_profile = get_user_profile_by_email(existing_email)
+        bulk_add_subscriptions([stream], [existing_user_profile])
+
+        # Now subscribe Cordelia to the stream, capturing events
+        email = 'cordelia@zulip.com'
+        user_profile = get_user_profile_by_email(email)
+
+        events = []
+        with tornado_redirected_to_list(events):
+            bulk_add_subscriptions([stream], [user_profile])
+
+        self.assert_length(events, 3)
+        create_event, add_event, add_peer_event = events
+
+        self.assertEqual(create_event['event']['type'], 'stream')
+        self.assertEqual(create_event['event']['op'], 'create')
+        self.assertEqual(create_event['users'], [user_profile.id])
+        self.assertEqual(create_event['event']['streams'][0]['name'], stream_name)
+
+        self.assertEqual(add_event['event']['type'], 'subscription')
+        self.assertEqual(add_event['event']['op'], 'add')
+        self.assertEqual(add_event['users'], [user_profile.id])
+        self.assertEqual(
+            set(add_event['event']['subscriptions'][0]['subscribers']),
+            set([user_profile.email, existing_user_profile.email])
+        )
+
+        # We don't send a peer_add event to othello
+        self.assertNotIn(user_profile.id, add_peer_event['users'])
+        self.assertEqual(len(add_peer_event['users']), 1)
         self.assertEqual(add_peer_event['event']['type'], 'subscription')
         self.assertEqual(add_peer_event['event']['op'], 'peer_add')
         self.assertEqual(add_peer_event['event']['user_id'], user_profile.id)
