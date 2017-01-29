@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+#
+# See docs/emoji.md for a high-level explanation of how this system
+# works.
 from __future__ import print_function
 import os
 import glob

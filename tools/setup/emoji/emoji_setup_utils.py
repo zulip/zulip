@@ -1,4 +1,12 @@
 from __future__ import absolute_import
+# This tool contains all of the rules that we use to decide which of
+# the various emoji names in emoji-map.json we should actually use in
+# autocomplete and emoji pickers.  You can't do all of them, because
+# otherwise there will be a ton of duplicates alphabetically next to
+# each other, which is confusing and looks bad (e.g. `angry` and
+# `angry_face` or `ab` and `ab_button` will always sort next to each
+# other, and you really want to just pick one).  See docs/emoji.md for
+# details on how this system works.
 
 from collections import defaultdict
 from itertools import permutations, chain
@@ -7,8 +15,10 @@ import ujson
 from six.moves import range, zip
 from typing import Text
 
-# the corresponding code point will be set to exactly these names as a final pass,
-# overriding any other rules
+# the corresponding code point will be set to exactly these names as a
+# final pass, overriding any other rules.  This is useful for cases
+# where the two names are very different, users might reasonably type
+# either name and be surprised when they can't find the relevant emoji.
 whitelisted_names = [
     ['date', 'calendar'], ['shirt', 'tshirt'], ['cupid', 'heart_with_arrow'],
     ['tada', 'party_popper'], ['parking', 'p_button'], ['car', 'automobile'],
@@ -48,6 +58,11 @@ whitelisted_names = [
     # ['ocean', 'water_wave'], wave is so common that we want it to point only to :wave:
 ]
 
+# We blacklist certain names in cases where the algorithms below would
+# choose incorrectly which one to keep.  For example, with `football`,
+# by default, our algorithm would pick just `football`, but we given
+# that :rugby_football: also exists, we want to keep
+# :american_football: instead.  So we just remove the shorter names here.
 blacklisted_names = frozenset([
     # would be chosen by words_supersets or superstrings
     'football', # american_football
@@ -135,8 +150,12 @@ def ideographless(names):
         return []
     return [name for name, has_ideograph in zip(names, has_ideographs) if not has_ideograph]
 
-# subsumed by longer, but still useful for breaking up a hand review of the
-# blacklist decisions
+# In the absence of a good reason not to, we prefer :angry: over
+# :angry_face:, since it's shorter and communicates the same idea.
+#
+# This rule is subsumed by the longer rule, but still useful for
+# breaking up a hand review of the whitelist/blacklist decisions,
+# since these cases are much more clear than the "longer" ones.
 def word_superset(names):
     # type: (List[str]) -> List[str]
     bags_of_words = [frozenset(name.split('_')) for name in names]
@@ -146,8 +165,12 @@ def word_superset(names):
             bad_names.add(names[j])
     return list(bad_names)
 
-# subsumed by longer, but still useful for breaking up a hand review of the
-# blacklist decisions
+# We prefer :dog: over :dog2: if they both point to the same unicode
+# character.
+#
+# This rule is subsumed by the longer rule, but still useful for
+# breaking up a hand review of the whitelist/blacklist decisions,
+# since these cases are much more clear than the "longer" ones.
 def superstring(names):
     # type: (List[str]) -> List[str]
     bad_names = set()
@@ -156,13 +179,21 @@ def superstring(names):
             bad_names.add(name2)
     return list(bad_names)
 
+# The shorter one is usually a better name.
 def longer(names):
     # type: (List[str]) -> List[str]
     lengths = [len(name) for name in names]
     min_length = min(lengths)
     return [name for name, length in zip(names, lengths) if length > min_length]
 
-
+# A lot of emoji that have a color in their name aren't actually the
+# right color, which is super confusing.  A big part of the reason is
+# that "black" and "white" actually mean filled-in and not-filled-in
+# to the Unicode committee, which is a poor choice by explains why
+# something with "black" in its name might be any solid color.  Users
+# want the emoji to have reasonable names, though, so we have to
+# correct the names with "black" or "white" in them.
+#
 # Ones found after a few minutes of inspection, and after all the other filters
 # have been applied. Probably others remaining.
 miscolored_names = frozenset(['eight_pointed_black_star', 'large_blue_diamond',
