@@ -83,7 +83,6 @@ class TemplateTestCase(ZulipTestCase):
             'confirmation/mituser_invite_email_subject.txt',
             'corporate/mit.html',
             'corporate/privacy.html',
-            'corporate/terms-enterprise.html',
             'corporate/zephyr.html',
             'corporate/zephyr-mirror.html',
             'pipeline/css.jinja',
