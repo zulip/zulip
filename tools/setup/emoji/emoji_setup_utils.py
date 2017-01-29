@@ -43,6 +43,8 @@ whitelisted_names = [
     ['poop', 'pile_of_poo'],
     # github/slack remove cooking, but their emoji for this is an uncooked egg
     ['egg', 'cooking'],
+    # to match two_{men,women}_holding_hands
+    ['couple', 'man_and_woman_holding_hands'],
     # ['ocean', 'water_wave'], wave is so common that we want it to point only to :wave:
 ]
 
@@ -168,7 +170,7 @@ miscolored_names = frozenset(['eight_pointed_black_star', 'large_blue_diamond',
 def google_color_bug(names):
     # type: (List[str]) -> List[str]
     return [name for name in names if
-            name[:5] == 'black' or name in miscolored_names]
+            name[:5] == 'black' or name[:5] == 'white' or name in miscolored_names]
 
 def emoji_names_for_picker(emoji_map):
     # type: (Dict[Text, Text]) -> List[str]
