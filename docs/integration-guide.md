@@ -107,7 +107,7 @@ Here's how we recommend doing it:
   obscure what's common to all webhook integrations.  In addition to
   writing the integration itself, you'll need to create `Integration`
   object and add it to `WEBHOOK_INTEGRATIONS` in
-  `zerver/lib/integrations.py';` search for `webhook` in that
+  `zerver/lib/integrations.py;` search for `webhook` in that
   file to find the existing ones (and please add yours in the
   alphabetically correct place).
 
@@ -115,8 +115,8 @@ Here's how we recommend doing it:
   `zerver/webhooks/mywebhook` directory.  You can now iterate on
   debugging the tests and webhooks handler until they work, all
   without ever needing to post directly from the service you're
-  integrating with to your Zulip development machine.  To run just the
-  tests from the test class you wrote, you can use e.g.
+  integrating with to your Zulip development machine.  You can run
+  just the tests for one integration like this:
 
   ```
   test-backend zerver/webhooks/pagerduty/
@@ -454,6 +454,8 @@ Using either method will create a message in Zulip:
 Every webhook integration should have a corresponding test file:
 `zerver/webhooks/mywebhook/tests.py`.
 
+The Hello World integration's tests are in zerver/webhooks/helloworld/tests.py
+
 You should name the class `<WebhookName>HookTests` and have it inherit from
 the base class `WebhookTestCase`. For our HelloWorld webhook, we name the test
 class `HelloWorldHookTests`:
@@ -552,7 +554,7 @@ in `zerver/lib/integrations.py`, this div will be generated automatically.
 The second part is a content of a `div` with the webhook's usage instructions.
 Because there is an entry for the Hello World webhook in WEBHOOK_INTEGRATIONS
 in `zerver/lib/integrations.py`, this div will also be generated automatically.
-
+The integration's author needs to write the content only.
 
 ```
 <p>Learn how Zulip integrations work with this simple Hello World example!</p>
