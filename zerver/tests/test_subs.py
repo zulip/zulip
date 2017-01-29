@@ -1564,7 +1564,7 @@ class SubscriptionAPITest(ZulipTestCase):
         email = 'cordelia@zulip.com'
         user_profile = get_user_profile_by_email(email)
 
-        events = []
+        events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
             bulk_add_subscriptions([stream], [user_profile])
 
