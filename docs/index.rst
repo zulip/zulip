@@ -123,6 +123,7 @@ Contents:
    front-end-build-process
    schema-migrations
    html_css
+   emoji
    full-text-search
    translating
    logging
