@@ -537,24 +537,21 @@ DONE!
 
 ### Step 5: Create documentation
 
-Next, we add end-user documentation for our webhook integration to
-`zever/webhooks/mywebhook/doc.html`. This is what generates the page
-displayed for your webhook from the Integrations page (in the gear menu.)
-You can see an example at [https://zulipchat.com/integrations](https://zulipchat.com/integrations).
+Next, we add end-user documentation for our webhook integration.  You
+can see the existing examples at
+[https://zulipchat.com/integrations](https://zulipchat.com/integrations)
+or by accessing `/integrations` in your Zulip development environemtn.
 
 There are two parts to the end-user documentation on this page.
 
-The first is a `div` with class `integration-lozenge` for each integration.
-This div shows the logo of your webhook, its name, and a link to its
-installation and usage instructions.
+The first is the lozenge in the grid of integrations, showing your
+integration logo and name, which links to the full documentation.
+This is generated automatically once you've registered the integration
+in WEBHOOK_INTEGRATIONS in `zerver/lib/integrations.py`, and supports
+some customization via options to the `WebhookIntegration` class.
 
-Because there is an entry for the Hello World webhook in WEBHOOK_INTEGRATIONS
-in `zerver/lib/integrations.py`, this div will be generated automatically.
-
-The second part is a content of a `div` with the webhook's usage instructions.
-Because there is an entry for the Hello World webhook in WEBHOOK_INTEGRATIONS
-in `zerver/lib/integrations.py`, this div will also be generated automatically.
-The integration's author needs to write the content only.
+Second, you need to write the actual documentation content in
+`zerver/webhooks/mywebhook/doc.html`.
 
 ```
 <p>Learn how Zulip integrations work with this simple Hello World example!</p>
