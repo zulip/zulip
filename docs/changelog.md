@@ -103,6 +103,9 @@ Full feature Changelog:
   streams.
 - Documented preliminary design for interactive bot system.
 
+### 1.4.3 - 2017-01-29
+- CVE-2017-0881: Users could subscribe to invite-only streams.
+
 ### 1.4.2 - 2016-09-27
 
 - Upgraded Django to version 1.8.15 (with the Zulip patches applied),
