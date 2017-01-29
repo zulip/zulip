@@ -375,7 +375,7 @@ def authenticated_rest_api_view(is_webhook=False):
                     return json_error(_("Only Basic authentication is supported."))
                 role, api_key = base64.b64decode(force_bytes(credentials)).decode('utf-8').split(":")
             except ValueError:
-                json_error(_("Invalid authorization header for basic auth"))
+                return json_unauthorized(_("Invalid authorization header for basic auth"))
             except KeyError:
                 return json_unauthorized("Missing authorization header for basic auth")
 
