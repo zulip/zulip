@@ -160,6 +160,16 @@ def longer(names):
     min_length = min(lengths)
     return [name for name, length in zip(names, lengths) if length > min_length]
 
+
+# Ones found after a few minutes of inspection, and after all the other filters
+# have been applied. Probably others remaining.
+miscolored_names = frozenset(['eight_pointed_black_star', 'large_blue_diamond',
+                              'small_blue_diamond'])
+def google_color_bug(names):
+    # type: (List[str]) -> List[str]
+    return [name for name in names if
+            name[:5] == 'black' or name in miscolored_names]
+
 def emoji_names_for_picker(emoji_map):
     # type: (Dict[Text, Text]) -> List[str]
     codepoint_to_names = defaultdict(list) # type: Dict[Text, List[str]]
@@ -168,7 +178,8 @@ def emoji_names_for_picker(emoji_map):
 
     # blacklisted must come first, followed by {one_lettered, ideographless}
     # Each function here returns a list of names to be removed from a list of names
-    for func in [blacklisted, one_lettered, ideographless, word_superset, superstring, longer]:
+    for func in [blacklisted, one_lettered, ideographless, word_superset,
+                 superstring, longer, google_color_bug]:
         for codepoint, names in codepoint_to_names.items():
             codepoint_to_names[codepoint] = [name for name in names if name not in func(names)]
 
