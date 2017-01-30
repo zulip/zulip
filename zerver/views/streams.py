@@ -214,11 +214,6 @@ def compose_views(request, user_profile, method_kwarg_pairs):
             json_dict.update(ujson.loads(response.content))
     return json_success(json_dict)
 
-@authenticated_json_post_view
-def json_remove_subscriptions(request, user_profile):
-    # type: (HttpRequest, UserProfile) -> HttpResponse
-    return remove_subscriptions_backend(request, user_profile)
-
 @has_request_variables
 def remove_subscriptions_backend(request, user_profile,
                                  streams_raw = REQ("subscriptions", validator=check_list(check_string)),
