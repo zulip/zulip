@@ -2380,8 +2380,7 @@ class GetSubscribersTest(ZulipTestCase):
         # Try to fetch the subscriber list as a non-member.
         stream_id = get_stream(stream_name, user_profile.realm).id
         result = self.make_subscriber_request(stream_id, email=other_email)
-        self.assert_json_error(result,
-                               "Unable to retrieve subscribers for invite-only stream")
+        self.assert_json_error(result, "Invalid stream id")
 
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name
 class AccessStreamTest(ZulipTestCase):

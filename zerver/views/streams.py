@@ -407,7 +407,7 @@ def add_subscriptions_backend(request, user_profile,
 def get_subscribers_backend(request, user_profile,
                             stream_id=REQ('stream', converter=to_non_negative_int)):
     # type: (HttpRequest, UserProfile, int) -> HttpResponse
-    stream = get_and_validate_stream_by_id(stream_id, user_profile.realm)
+    (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
     subscribers = get_subscriber_emails(stream, user_profile)
 
     return json_success({'subscribers': subscribers})
