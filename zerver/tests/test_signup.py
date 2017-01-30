@@ -93,6 +93,8 @@ class PublicURLTest(ZulipTestCase):
         # Add all files in 'templates/zerver/help' directory (except for 'main.html' and
         # 'index.md') to `get_urls['200']` list.
         for doc in os.listdir('./templates/zerver/help'):
+            if doc.startswith(".") or '~' in doc or '#' in doc:
+                continue
             if doc not in {'main.html', 'index.md', 'include'}:
                 get_urls[200].append('/help/' + os.path.splitext(doc)[0]) # Strip the extension.
 
