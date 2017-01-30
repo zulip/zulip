@@ -194,6 +194,13 @@ def build_custom_checkers(by_lang):
                 exclude_list = rule.get('exclude_line', set())
                 if (fn, line_fully_stripped) in exclude_list:
                     continue
+                if rule.get("include_only"):
+                    found = False
+                    for item in rule.get("include_only", set()):
+                        if item in fn:
+                            found = True
+                    if not found:
+                        continue
                 try:
                     line_to_check = line_fully_stripped
                     if rule.get('strip') is not None:
@@ -401,6 +408,14 @@ def build_custom_checkers(by_lang):
         {'pattern': '[^r][M]essage.objects.get',
          'exclude': set(["zerver/tests", "zerver/worker/queue_processors.py"]),
          'description': 'Please use access_message() to fetch Message objects',
+         },
+        {'pattern': '[S]tream.objects.get',
+         'include_only': set(["zerver/views/"]),
+         'description': 'Please use access_stream_by_*() to fetch Stream objects',
+         },
+        {'pattern': '[S]tream.objects.filter',
+         'include_only': set(["zerver/views/"]),
+         'description': 'Please use access_stream_by_*() to fetch Stream objects',
          },
         # This rule might give false positives in virtualenv setup files which should be excluded,
         # and comments which should be rewritten to avoid use of "python2", "python3", etc.
