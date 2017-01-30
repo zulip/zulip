@@ -420,8 +420,6 @@ def build_custom_checkers(by_lang):
          'exclude': set(['zerver/views/messages.py']),
          'exclude_line': set([
              # This is a check for whether a stream rename is invalid because it already exists
-             ('zerver/views/streams.py', 'if get_stream(new_name, user_profile.realm) is not None:'),
-             # This is a check for whether a stream rename is invalid because it already exists
              ('zerver/lib/actions.py', 'existing_deactivated_stream = get_stream(new_name, stream.realm)'),
              # This one in check_message is kinda terrible, since it's
              # how most instances are written, but better to exclude something than nothing

@@ -12,14 +12,14 @@ from zerver.decorator import authenticated_json_post_view, \
     get_user_profile_by_email, require_realm_admin, to_non_negative_int
 from zerver.lib.actions import bulk_remove_subscriptions, \
     do_change_subscription_property, internal_prep_message, \
-    check_stream_name, gather_subscriptions, subscribed_to_stream, \
+    gather_subscriptions, subscribed_to_stream, \
     bulk_add_subscriptions, do_send_messages, get_subscriber_emails, do_rename_stream, \
     do_deactivate_stream, do_change_stream_invite_only, do_add_default_stream, \
     do_change_stream_description, do_get_streams, \
     do_remove_default_stream, get_topic_history_for_stream
 from zerver.lib.response import json_success, json_error, json_response
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, \
-    filter_stream_authorization, list_to_streams
+    check_stream_name_available, filter_stream_authorization, list_to_streams
 from zerver.lib.validator import check_string, check_list, check_dict, \
     check_bool, check_variable_type
 from zerver.models import UserProfile, Stream, Realm, Subscription, \
@@ -99,11 +99,9 @@ def update_stream_backend(request, user_profile, stream_id,
     if new_name is not None:
         new_name = new_name.strip()
         # Will raise if the new name has invalid characters.
-        check_stream_name(new_name)
         if stream.name.lower() == new_name.lower():
             return json_error(_("Stream already has that name!"))
-        if get_stream(new_name, user_profile.realm) is not None:
-            raise JsonableError(_("Stream name '%s' is already taken") % (new_name,))
+        check_stream_name_available(user_profile.realm, new_name)
         do_rename_stream(stream, new_name)
     if is_private is not None:
         do_change_stream_invite_only(stream, is_private)

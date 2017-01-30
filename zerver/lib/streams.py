@@ -5,10 +5,10 @@ from typing import Any, Iterable, List, Mapping, Set, Text, Tuple
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
-from zerver.lib.actions import create_streams_if_needed
+from zerver.lib.actions import check_stream_name, create_streams_if_needed
 from zerver.lib.request import JsonableError
 from zerver.models import UserProfile, Stream, Subscription, \
-    Recipient, bulk_get_recipients, get_recipient, get_stream, \
+    Realm, Recipient, bulk_get_recipients, get_recipient, get_stream, \
     bulk_get_streams, valid_stream_name
 
 def access_stream_common(user_profile, stream, error):
@@ -54,6 +54,12 @@ def access_stream_by_id(user_profile, stream_id):
 
     (recipient, sub) = access_stream_common(user_profile, stream, error)
     return (stream, recipient, sub)
+
+def check_stream_name_available(realm, name):
+    # type: (Realm, Text) -> None
+    check_stream_name(name)
+    if get_stream(name, realm) is not None:
+        raise JsonableError(_("Stream name '%s' is already taken") % (name,))
 
 def access_stream_by_name(user_profile, stream_name):
     # type: (UserProfile, Text) -> Tuple[Stream, Recipient, Subscription]
