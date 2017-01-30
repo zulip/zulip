@@ -2382,12 +2382,11 @@ def notify_default_streams(realm):
     )
     send_event(event, active_user_ids(realm))
 
-def do_add_default_stream(realm, stream_name):
-    # type: (Realm, Text) -> None
-    stream, _ = create_stream_if_needed(realm, stream_name)
-    if not DefaultStream.objects.filter(realm=realm, stream=stream).exists():
-        DefaultStream.objects.create(realm=realm, stream=stream)
-        notify_default_streams(realm)
+def do_add_default_stream(stream):
+    # type: (Stream) -> None
+    if not DefaultStream.objects.filter(realm=stream.realm, stream=stream).exists():
+        DefaultStream.objects.create(realm=stream.realm, stream=stream)
+        notify_default_streams(stream.realm)
 
 def do_remove_default_stream(realm, stream_name):
     # type: (Realm, Text) -> None

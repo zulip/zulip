@@ -442,7 +442,8 @@ class EventsRegisterTest(ZulipTestCase):
             ]))),
         ])
 
-        events = self.do_test(lambda: do_add_default_stream(self.user_profile.realm, "Scotland"))
+        stream = get_stream("Scotland", self.user_profile.realm)
+        events = self.do_test(lambda: do_add_default_stream(stream))
         error = default_streams_checker('events[0]', events[0])
         self.assert_on_error(error)
 

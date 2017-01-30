@@ -704,13 +704,14 @@ class DefaultStreamTest(ZulipTestCase):
     def test_add_and_remove_default_stream(self):
         # type: () -> None
         realm = get_realm("zulip")
+        (stream, _) = create_stream_if_needed(realm, "Added Stream")
         orig_stream_names = self.get_default_stream_names(realm)
-        do_add_default_stream(realm, 'Added Stream')
+        do_add_default_stream(stream)
         new_stream_names = self.get_default_stream_names(realm)
         added_stream_names = new_stream_names - orig_stream_names
         self.assertEqual(added_stream_names, set(['Added Stream']))
         # idempotentcy--2nd call to add_default_stream should be a noop
-        do_add_default_stream(realm, 'Added Stream')
+        do_add_default_stream(stream)
         self.assertEqual(self.get_default_stream_names(realm), new_stream_names)
 
         # start removing
@@ -726,6 +727,7 @@ class DefaultStreamTest(ZulipTestCase):
         user_profile = get_user_profile_by_email('hamlet@zulip.com')
         do_change_is_admin(user_profile, True)
         stream_name = 'stream ADDED via api'
+        (stream, _) = create_stream_if_needed(user_profile.realm, stream_name)
         result = self.client_post('/json/default_streams', dict(stream_name=stream_name))
         self.assert_json_success(result)
         self.assertTrue(stream_name in self.get_default_stream_names(user_profile.realm))
