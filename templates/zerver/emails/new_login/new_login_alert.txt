@@ -1,0 +1,18 @@
+{# Informs user of a new login to their account #}
+
+Hello, {{ user.short_name | title }}.
+
+This is a notification that a new login to your Zulip account has just occured.
+
+Details
+Account: {{ user.email }}
+Date/Time: {{ device_info.login_time }}
+Device: {{ device_info.device_browser | title }} on {{ device_info.device_os | title }}
+IP Address: {{ device_info.device_ip }}
+
+If you do not recoginize this login activity, or think your account may have been compromised, contact Zulip Support at {{ zulip_support }}.
+
+If you recognize this login activity, kindly disregard this notice.
+
+Thanks,
+Zulip Account Security
