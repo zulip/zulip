@@ -4,6 +4,7 @@ from six import binary_type
 from typing import Any, AnyStr, Callable, Iterable, MutableMapping, Optional, Text
 
 from django.conf import settings
+from django.core.exceptions import DisallowedHost
 from django.utils.translation import ugettext as _
 
 from zerver.lib.response import json_error
@@ -349,6 +350,16 @@ class FlushDisplayRecipientCache(object):
 class SessionHostDomainMiddleware(SessionMiddleware):
     def process_response(self, request, response):
         # type: (HttpRequest, HttpResponse) -> HttpResponse
+        try:
+            request.get_host()
+        except DisallowedHost:
+            # If we get a DisallowedHost exception trying to access
+            # the host, (1) the request is failed anyway and so the
+            # below code will do nothing, and (2) the below will
+            # trigger a recursive exception, breaking things, so we
+            # just return here.
+            return response
+
         if settings.REALMS_HAVE_SUBDOMAINS:
             if (not request.path.startswith("/static/") and not request.path.startswith("/api/") and
                     not request.path.startswith("/json/")):
