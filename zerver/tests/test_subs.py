@@ -25,6 +25,10 @@ from zerver.lib.response import (
     json_success,
 )
 
+from zerver.lib.streams import (
+    access_stream_by_id, access_stream_by_name
+)
+
 from zerver.lib.test_runner import (
     slow
 )
@@ -2413,7 +2417,6 @@ class GetSubscribersTest(ZulipTestCase):
         result = self.make_subscriber_request(stream_id, email=other_email)
         self.assert_json_error(result, "Invalid stream id")
 
-from zerver.lib.streams import access_stream_by_id, access_stream_by_name
 class AccessStreamTest(ZulipTestCase):
     def test_access_stream(self):
         # type: () -> None
