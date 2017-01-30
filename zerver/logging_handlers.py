@@ -49,9 +49,16 @@ class AdminZulipHandler(logging.Handler):
             data = request.GET if request.method == 'GET' else \
                 exception_filter.get_post_parameters(request)
 
+            try:
+                host = request.get_host().split(':')[0]
+            except Exception:
+                # request.get_host() will throw a DisallowedHost
+                # exception if the host is invalid
+                host = platform.node()
+
             report = dict(
                 node = platform.node(),
-                host = request.get_host().split(':')[0],
+                host = host,
                 method = request.method,
                 path = request.path,
                 data = data,
@@ -67,6 +74,7 @@ class AdminZulipHandler(logging.Handler):
             traceback.print_exc()
             report = dict(
                 node = platform.node(),
+                host = platform.node(),
                 message = record.getMessage(),
             )
 
