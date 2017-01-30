@@ -24,7 +24,7 @@ exports.toggle = (function () {
             opts.values.forEach(function (value, i) {
                 // create a tab with a tab-id so they don't have to be referenced
                 // by text value which can be inconsistent.
-                var tab = $("<div class='ind-tab' data-tab-id='" + i + "'>" + value.label + "</div>");
+                var tab = $("<div class='ind-tab' data-tab-key='" + value.key + "' data-tab-id='" + i + "'>" + value.label + "</div>");
 
                 // add proper classes for styling in CSS.
                 if (i === 0) {
@@ -54,7 +54,7 @@ exports.toggle = (function () {
                         var id = +$(this).data("tab-id");
                         if (last_value !== opts.values[id].label) {
                             last_value = opts.values[id].label;
-                            opts.callback(last_value);
+                            opts.callback(last_value, opts.values[id].key);
                         }
                     }
                 });
@@ -81,7 +81,7 @@ exports.toggle = (function () {
             // and when found, select that one and provide the proper callback.
             goto: function (name) {
                 var value = _.find(opts.values, function (o) {
-                    return o.label === name;
+                    return o.label === name || o.key === name;
                 });
 
                 var idx = opts.values.indexOf(value);
@@ -90,8 +90,7 @@ exports.toggle = (function () {
                     meta.$ind_tab.removeClass("selected");
                     meta.$ind_tab.filter("[data-tab-id='" + idx + "']").addClass("selected");
 
-                    value.label = name;
-                    opts.callback(name);
+                    opts.callback(value.label, value.key);
                 }
             },
         };
