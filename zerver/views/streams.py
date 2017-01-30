@@ -93,7 +93,7 @@ def update_stream_backend(request, user_profile, stream_id,
     (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
 
     if description is not None:
-        do_change_stream_description(user_profile.realm, stream.name, description)
+        do_change_stream_description(stream, description)
     if new_name is not None:
         new_name = new_name.strip()
         # Will raise if the new name has invalid characters.

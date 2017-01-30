@@ -2115,14 +2115,13 @@ def do_rename_stream(stream, new_name, log=True):
     # email forwarding address to display the correctly-escaped new name.
     return {"email_address": new_email}
 
-def do_change_stream_description(realm, stream_name, new_description):
-    # type: (Realm, Text, Text) -> None
-    stream = get_stream(stream_name, realm)
+def do_change_stream_description(stream, new_description):
+    # type: (Stream, Text) -> None
     stream.description = new_description
     stream.save(update_fields=['description'])
 
     event = dict(type='stream', op='update',
-                 property='description', name=stream_name,
+                 property='description', name=stream.name,
                  value=new_description)
     send_event(event, can_access_stream_user_ids(stream))
 
