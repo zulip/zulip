@@ -1,0 +1,41 @@
+<p>Get notifications from Slack for messages on your team's public channels</p>
+
+<p>
+    There are two ways in which you may want to receive a notification:
+    <ul type="disc">
+        <li>Slack Channel to a single Zulip stream with different topics</li>
+        <li>Multiple Zulip streams for multiple Slack channels</li>
+    </ul>
+</p>
+
+<p>
+    If you want a single Zulip stream to receive notifications from Slack then first create your desired stream.
+</p>
+
+
+<p>
+    Go to the following URL: <code>https://api.slack.com</code><br/>
+    Next, under the category of App features click on <b>Legacy custom integrations</b>.<br/>
+    <img class="screenshot" src="/static/images/integrations/slack/001.png"/><br/><br/>
+    Now, click on <b>Outgoing Webhooks</b> under <b>Custom Integrations</b>.<br/>
+    <img class="screenshot" src="/static/images/integrations/slack/002.png"/><br/><br/>
+    Then click the hyperlink <b>outgoing webhook integration</b> which can be found in the page.
+    <img class="screenshot" src="/static/images/integrations/slack/003.png"/><br/><br/>
+    Next, click the <b>Add Outgoing Webhook integration</b> button.
+    <img class="screenshot" src="/static/images/integrations/slack/004.png"/><br/><br/>
+</p><br/>
+<p>
+    Now, under <code> Integration Settings, </code> fill in the channel you'd like to get your notifications from.<br/><br/>
+    Then fill in <code>{{ external_api_uri_subdomain }}/v1/external/slack?api_key=abcdefgh&amp;stream=slack&amp;channels_map_topics=1</code> as your URL.<br/><br/>
+    <img class="screenshot" src="/static/images/integrations/slack/005.png"/><br/><br/>
+    Finally, save your settings.<br/><br/>
+</p>
+<p>
+    In case you want your Slack channels mapped to multiple Zulip streams, you have to
+    change the parameter <code>channels_map_to_topics=1</code> to <code>channels_map_to_topics=0</code> in your URL.
+    The resulting URL will be
+    <code>{{ external_api_uri_subdomain }}/v1/external/slack?api_key=abcdefgh&amp;stream=slack&amp;channels_map_topics=0</code>
+</p>
+<p><b>Congratulations, you're done!</b></p>
+<p><b>This integration is not created by, affiliated with, or supported by Slack Technologies, Inc.</b></p>
+

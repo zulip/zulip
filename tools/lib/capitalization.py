@@ -27,6 +27,7 @@ IGNORED_PHRASES = [
     r"MiB",
     r"Pivotal",
     r'REMOTE_USER',
+    r'Slack',
     r"SSO",
     r'Terms of Service',
     r"URL",

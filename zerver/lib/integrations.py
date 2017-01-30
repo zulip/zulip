@@ -151,6 +151,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('pivotal', display_name='Pivotal Tracker'),
     WebhookIntegration('semaphore'),
     WebhookIntegration('sentry'),
+    WebhookIntegration('slack'),
     WebhookIntegration('solano', display_name='Solano Labs'),
     WebhookIntegration('splunk', display_name='Splunk'),
     WebhookIntegration('stash'),
