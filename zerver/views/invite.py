@@ -12,8 +12,9 @@ from zerver.lib.actions import do_invite_users, do_refer_friend, \
     get_default_subs, internal_send_message
 from zerver.lib.request import REQ, has_request_variables, JsonableError
 from zerver.lib.response import json_success, json_error
+from zerver.lib.streams import access_stream_by_name
 from zerver.lib.validator import check_string, check_list
-from zerver.models import PreregistrationUser, Stream, UserProfile, get_stream
+from zerver.models import PreregistrationUser, Stream, UserProfile
 
 import re
 
@@ -38,8 +39,9 @@ def json_invite_users(request, user_profile, invitee_emails_raw=REQ("invitee_ema
 
     streams = [] # type: List[Stream]
     for stream_name in stream_names:
-        stream = get_stream(stream_name, user_profile.realm)
-        if stream is None:
+        try:
+            (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
+        except JsonableError:
             return json_error(_("Stream does not exist: %s. No invites were sent.") % (stream_name,))
         streams.append(stream)
 
