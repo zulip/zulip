@@ -12,7 +12,7 @@ from zerver.decorator import authenticated_json_post_view, \
     get_user_profile_by_email, require_realm_admin, to_non_negative_int
 from zerver.lib.actions import bulk_remove_subscriptions, \
     do_change_subscription_property, internal_prep_message, \
-    gather_subscriptions, subscribed_to_stream, \
+    check_stream_name, gather_subscriptions, subscribed_to_stream, \
     bulk_add_subscriptions, do_send_messages, get_subscriber_emails, do_rename_stream, \
     do_deactivate_stream, do_change_stream_invite_only, do_add_default_stream, \
     do_change_stream_description, do_get_streams, \
@@ -96,6 +96,9 @@ def update_stream_backend(request, user_profile, stream_id,
         do_change_stream_description(user_profile.realm, stream.name, description)
     if new_name is not None:
         new_name = new_name.strip()
+        # Will raise if the new name has invalid characters.
+        check_stream_name(new_name)
+
         do_rename_stream(user_profile.realm, stream.name, new_name)
     if is_private is not None:
         do_change_stream_invite_only(stream, is_private)
