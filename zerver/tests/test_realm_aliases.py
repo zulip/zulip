@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
-from zerver.lib.actions import do_create_realm
+from zerver.lib.actions import do_change_is_admin, do_create_realm
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import get_realm, get_realm_by_email_domain, \
-    GetRealmByDomainException, RealmAlias
+    get_user_profile_by_email, GetRealmByDomainException, RealmAlias
 import ujson
 
 
@@ -44,11 +44,15 @@ class RealmAliasTest(ZulipTestCase):
         result = self.client_post("/json/realm/domains", info=data)
         self.assert_json_error(result, 'The domain zulip.org is already a part of your organization.')
 
-        realm1, created = do_create_realm('testrealm', 'Test Realm')
-        RealmAlias.objects.create(realm=realm1, domain='testrealm.com')
-        data = {'domain': ujson.dumps('testrealm.com')}
+        self.login("sipbtest@mit.edu")
+        mit_user_profile = get_user_profile_by_email("sipbtest@mit.edu")
+        do_change_is_admin(mit_user_profile, True)
         result = self.client_post("/json/realm/domains", info=data)
-        self.assert_json_error(result, 'The domain testrealm.com belongs to another organization.')
+        self.assert_json_error(result, 'The domain zulip.org belongs to another organization.')
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True):
+            result = self.client_post("/json/realm/domains", info=data,
+                                      HTTP_HOST=mit_user_profile.realm.host)
+            self.assert_json_success(result)
 
     def test_delete(self):
         # type: () -> None
