@@ -247,8 +247,18 @@ class StreamAdminTest(ZulipTestCase):
         self.login(email)
         user_profile = get_user_profile_by_email(email)
         realm = user_profile.realm
-        self.subscribe_to_stream(email, 'stream_name1')
+        stream = self.subscribe_to_stream(email, 'stream_name1')
         do_change_is_admin(user_profile, True)
+
+        result = self.client_patch('/json/streams/%d' % (stream.id,),
+                                   {'new_name': ujson.dumps('stream_name1')})
+        self.assert_json_error(result, "Stream already has that name!")
+        result = self.client_patch('/json/streams/%d' % (stream.id,),
+                                   {'new_name': ujson.dumps('Denmark')})
+        self.assert_json_error(result, "Stream name 'Denmark' is already taken")
+        result = self.client_patch('/json/streams/%d' % (stream.id,),
+                                   {'new_name': ujson.dumps('denmark ')})
+        self.assert_json_error(result, "Stream name 'denmark' is already taken")
 
         events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
