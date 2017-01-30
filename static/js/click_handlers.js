@@ -353,7 +353,9 @@ $(function () {
         compose.cancel();
     });
 
-    $("#join_unsub_stream").click(function () {
+    $("#join_unsub_stream").click(function (e) {
+        e.preventDefault();
+        e.stopPropagation();
         subs.launch();
         components.toggle.lookup("stream-filter-toggle").goto("All streams");
     });
