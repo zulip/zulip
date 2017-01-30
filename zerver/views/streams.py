@@ -485,13 +485,10 @@ def get_and_validate_stream_by_id(stream_id, realm):
     return stream
 
 @has_request_variables
-def json_get_stream_id(request, user_profile, stream=REQ()):
+def json_get_stream_id(request, user_profile, stream_name=REQ('stream')):
     # type: (HttpRequest, UserProfile, Text) -> HttpResponse
-    try:
-        stream_id = Stream.objects.get(realm=user_profile.realm, name=stream).id
-    except Stream.DoesNotExist:
-        return json_error(_("No such stream name"))
-    return json_success({'stream_id': stream_id})
+    (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
+    return json_success({'stream_id': stream.id})
 
 @authenticated_json_view
 @has_request_variables

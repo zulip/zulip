@@ -2073,7 +2073,7 @@ class StreamIdTest(ZulipTestCase):
     def test_get_stream_id_wrong_name(self):
         # type: () -> None
         result = self.client_get("/json/get_stream_id?stream=wrongname")
-        self.assert_json_error(result, u'No such stream name')
+        self.assert_json_error(result, u"Invalid stream name 'wrongname'")
 
 class InviteOnlyStreamTest(ZulipTestCase):
     def test_must_be_subbed_to_send(self):
