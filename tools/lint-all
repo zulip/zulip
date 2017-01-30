@@ -368,6 +368,7 @@ def build_custom_checkers(by_lang):
              ('zerver/middleware.py',
               'return json_error(exception.to_json_error_msg(), status=status_code)'),
              ('zerver/tornado/views.py', 'return json_error(result["message"])'),
+             ('zerver/views/compatibility.py', 'return json_error("Client is too old")'),
              ('zerver/views/invite.py',
               'return json_error(data=error_data, msg=ret_error)'),
              ('zerver/views/streams.py', 'return json_error(property_conversion)'),
