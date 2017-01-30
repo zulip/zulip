@@ -1,0 +1,34 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>Zulip</title>
+    </head>
+    <body>
+        <table width="80%" style="align:center; max-width:800px" align="center">
+            <tr>
+                <td>
+                    <a href="{{ realm_uri }}"><img style="max-height:75px; height:75px;"  height="75px" alt="Zulip" title="{{ _('Zulip') }}" src="{{ realm_uri }}/static/images/landing-page/zulip-header.png" /></a>
+                    <h3 style="font-family:Arial; font-size:30px; margin: 5px 0px; color:#555">New login to Zulip</h3>
+                </td>
+            </tr>
+            <tr>
+                <td style="font-size:16px; font-family:Helvetica;">
+                    <p><b>Hello, {{ user.full_name | title }}.</b></p>
+                    <p>This is a notification that a new login to your Zulip account has just occured.</p>
+                    <p><b>Login details:</b></p>
+                    <blockquote>
+                        <p>Server: {{ realm_uri }}</p>
+                        <p>Account: {{ user.email }}</p>
+                        <p>Time: {{ device_info.login_time }}</p>
+                        <p>Device: {{ device_info.device_browser if device_info.device_browser else 'An unknown browser' }} on {{ device_info.device_os if device_info.device_os else 'an unknown operating system' }}.</p>
+                        <p>IP Address: {{ device_info.device_ip }}</p>
+                    </blockquote>
+                    <p><b>If you do not recoginize this login activity or think your account may have been compromised, contact Zulip Support at {{ zulip_support }}.</b></p>
+                    <p>If you recognize this login activity, you can archive this notice.</p>
+                    <p>Thanks,<br />Zulip Account Security</p>
+                </td>
+            </tr>
+        </table>
+    </body>
+</html>

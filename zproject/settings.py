@@ -152,6 +152,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'CAMO_URI': '',
                     'ENABLE_FEEDBACK': PRODUCTION,
                     'SEND_MISSED_MESSAGE_EMAILS_AS_USER': False,
+                    'SEND_LOGIN_EMAILS': True,
                     'SERVER_EMAIL': None,
                     'FEEDBACK_EMAIL': None,
                     'FEEDBACK_STREAM': None,
@@ -314,8 +315,10 @@ TEMPLATES = [
 ]
 
 MIDDLEWARE_CLASSES = (
-    # Our logging middleware should be the first middleware item.
+    # With the exception of it's dependencies,
+    # our logging middleware should be the top middleware item.
     'zerver.middleware.TagRequests',
+    'zerver.middleware.SetRemoteAddrFromForwardedFor',
     'zerver.middleware.LogRequests',
     'zerver.middleware.JsonErrorHandler',
     'zerver.middleware.RateLimitMiddleware',

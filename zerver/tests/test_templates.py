@@ -177,6 +177,12 @@ class TemplateTestCase(ZulipTestCase):
             messages=[dict(header='Header')],
             new_streams=dict(html=''),
             data=dict(title='Title'),
+            device_info={"device_browser": "Chrome",
+                         "device_os": "Windows",
+                         "device_ip": "127.0.0.1",
+                         "login_time": "9:33am NewYork, NewYork",
+                         },
+            zulip_support="zulip-admin@example.com",
         )
 
         context.update(kwargs)
