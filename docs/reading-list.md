@@ -174,6 +174,10 @@ You may want to take a look first at our [Git and GitHub guide][].
 
 ## Community experience
 
+*Book* - [Producing Open Source Software][]
+
+[Producing Open Source Software]: http://producingoss.com/en/
+
 *Article* - [Advice on Starting And Running A New Open Source Project][]
 
 [Advice on Starting And Running A New Open Source Project]: https://www.harihareswara.net/sumana/2016/08/04/1
