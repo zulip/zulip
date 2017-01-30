@@ -1049,19 +1049,6 @@ def check_typing_notification(sender, notification_to, operator):
         raise ValueError('Forbidden recipient type')
     return {'sender': sender, 'recipient': recipient, 'op': operator}
 
-def do_create_stream(realm, stream_name):
-    # type: (Realm, Text) -> None
-    # This is used by a management command now, mostly to facilitate testing.  It
-    # doesn't simulate every single aspect of creating a subscription; for example,
-    # we don't send Zulips to users to tell them they have been subscribed.
-    stream = Stream()
-    stream.realm = realm
-    stream.name = stream_name
-    stream.save()
-    Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
-    subscribers = UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False)
-    bulk_add_subscriptions([stream], subscribers)
-
 def create_stream_if_needed(realm, stream_name, invite_only=False, stream_description = ""):
     # type: (Realm, Text, bool, Text) -> Tuple[Stream, bool]
     (stream, created) = Stream.objects.get_or_create(
