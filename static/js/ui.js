@@ -285,13 +285,14 @@ $(document).ready(function () {
         name: "info-overlay-toggle",
         selected: 0,
         values: [
-            { label: "Keyboard Shortcuts" },
-            { label: "Message Formatting" },
-            { label: "Search Help" },
+            { label: "Keyboard shortcuts", key: "keyboard-shortcuts" },
+            { label: "Message formatting", key: "markdown-help" },
+            { label: "Search operators", key: "search-operators" },
         ],
-        callback: function () {
-
-        }
+        callback: function (name, key) {
+            $(".overlay-modal").hide();
+            $("#" + key).show();
+        },
     }).get();
 
     $(".informational-overlays .overlay-tabs")
@@ -300,8 +301,6 @@ $(document).ready(function () {
 
 exports.show_info_overlay = function (target) {
     var el = {
-        tabs: $(".informational-overlays .tab"),
-        modals: $(".informational-overlays .overlay-modal"),
         overlay: $(".informational-overlays"),
     };
 
@@ -309,15 +308,13 @@ exports.show_info_overlay = function (target) {
         $(el.overlay).addClass("show");
     }
 
-    el.tabs.removeClass("active");
-    el.modals.hide();
-
-    $(".informational-overlays .tab[data-overlay-trigger='" + target + "']").addClass("active");
-    $("#" + target).show();
+    if (target) {
+        components.toggle.lookup("info-overlay-toggle").goto(target);
+    }
 };
 
 exports.hide_info_overlay = function () {
-    $(".informational-overlays").click();
+    $(".informational-overlays").removeClass("show");
 };
 
 exports.lightbox_photo = function (image, user) {
