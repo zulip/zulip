@@ -2067,9 +2067,6 @@ def do_rename_stream(realm, old_name, new_name, log=True):
     if not stream:
         raise JsonableError(_('Unknown stream "%s"') % (old_name,))
 
-    if get_stream(new_name, realm) is not None:
-        raise JsonableError(_('Stream name "%s" is already taken') % (new_name,))
-
     old_name = stream.name
     stream.name = new_name
     stream.save(update_fields=["name"])

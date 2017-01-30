@@ -416,6 +416,9 @@ def build_custom_checkers(by_lang):
         {'pattern': 'get_stream[(]',
          'include_only': set(["zerver/views/"]),
          'exclude': set(['zerver/views/messages.py']),
+         'exclude_line': set([
+             ('zerver/views/streams.py', 'if get_stream(new_name, user_profile.realm) is not None:'),
+         ]),
          'description': 'Please use access_stream_by_*() to fetch Stream objects',
          },
         {'pattern': '[S]tream.objects.filter',
