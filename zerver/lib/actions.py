@@ -2057,23 +2057,15 @@ def do_change_stream_invite_only(stream, invite_only):
     stream.invite_only = invite_only
     stream.save(update_fields=['invite_only'])
 
-def do_rename_stream(realm, old_name, new_name, log=True):
-    # type: (Realm, Text, Text, bool) -> Dict[str, Text]
-    old_name = old_name
-    new_name = new_name
-
-    stream = get_stream(old_name, realm)
-
-    if not stream:
-        raise JsonableError(_('Unknown stream "%s"') % (old_name,))
-
+def do_rename_stream(stream, new_name, log=True):
+    # type: (Stream, Text, bool) -> Dict[str, Text]
     old_name = stream.name
     stream.name = new_name
     stream.save(update_fields=["name"])
 
     if log:
         log_event({'type': 'stream_name_change',
-                   'domain': realm.domain,
+                   'domain': stream.realm.domain,
                    'new_name': new_name})
 
     recipient = get_recipient(Recipient.STREAM, stream.id)
@@ -2081,8 +2073,8 @@ def do_rename_stream(realm, old_name, new_name, log=True):
 
     # Update the display recipient and stream, which are easy single
     # items to set.
-    old_cache_key = get_stream_cache_key(old_name, realm)
-    new_cache_key = get_stream_cache_key(stream.name, realm)
+    old_cache_key = get_stream_cache_key(old_name, stream.realm)
+    new_cache_key = get_stream_cache_key(stream.name, stream.realm)
     if old_cache_key != new_cache_key:
         cache_delete(old_cache_key)
         cache_set(new_cache_key, stream)

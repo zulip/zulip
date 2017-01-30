@@ -916,12 +916,11 @@ class EventsRegisterTest(ZulipTestCase):
 
     def test_rename_stream(self):
         # type: () -> None
-        realm = get_realm('zulip')
         stream = self.make_stream('old_name')
         new_name = u'stream with a brand new name'
         self.subscribe_to_stream(self.user_profile.email, stream.name)
 
-        action = lambda: do_rename_stream(realm, stream.name, new_name)
+        action = lambda: do_rename_stream(stream, new_name)
         events = self.do_test(action)
 
         schema_checker = check_dict([

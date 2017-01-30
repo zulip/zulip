@@ -8,7 +8,7 @@ from django.core.management.base import BaseCommand
 
 from zerver.lib.actions import do_rename_stream
 from zerver.lib.str_utils import force_text
-from zerver.models import Realm, get_realm
+from zerver.models import Realm, get_realm, get_stream
 
 import sys
 
@@ -36,5 +36,5 @@ class Command(BaseCommand):
             print("Unknown subdomain or string_id %s" % (string_id,))
             exit(1)
 
-        do_rename_stream(realm, force_text(old_name, encoding),
-                         force_text(new_name, encoding))
+        stream = get_stream(force_text(old_name, encoding), realm)
+        do_rename_stream(stream, force_text(new_name, encoding))

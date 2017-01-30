@@ -102,7 +102,7 @@ def update_stream_backend(request, user_profile, stream_id,
             return json_error(_("Stream already has that name!"))
         if get_stream(new_name, user_profile.realm) is not None:
             raise JsonableError(_('Stream name "%s" is already taken') % (new_name,))
-        do_rename_stream(user_profile.realm, stream.name, new_name)
+        do_rename_stream(stream, new_name)
     if is_private is not None:
         do_change_stream_invite_only(stream, is_private)
     return json_success()
