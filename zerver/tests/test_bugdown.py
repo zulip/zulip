@@ -273,7 +273,8 @@ class BugdownTest(TestCase):
         # type: () -> None
         # Don't fail on bad dropbox links
         msg = "https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM"
-        converted = bugdown_convert(msg)
+        with mock.patch('zerver.lib.bugdown.fetch_open_graph_image', return_value=None):
+            converted = bugdown_convert(msg)
         self.assertEqual(converted, '<p><a href="https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM" target="_blank" title="https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM">https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM</a></p>')
 
     def test_twitter_id_extraction(self):
