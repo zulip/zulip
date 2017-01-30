@@ -551,7 +551,7 @@ class DeactivatedRealmTest(ZulipTestCase):
         email = "hamlet@zulip.com"
         api_key = self.get_api_key(email)
         url = "/api/v1/external/jira?api_key=%s&stream=jira_custom" % (api_key,)
-        data = self.fixture_data('jira', "created")
+        data = self.fixture_data('jira', "created_v2")
         result = self.client_post(url, data,
                                   content_type="application/json")
         self.assert_json_error_contains(result, "has been deactivated", status_code=400)
@@ -689,7 +689,7 @@ class InactiveUserTest(ZulipTestCase):
 
         api_key = self.get_api_key(email)
         url = "/api/v1/external/jira?api_key=%s&stream=jira_custom" % (api_key,)
-        data = self.fixture_data('jira', "created")
+        data = self.fixture_data('jira', "created_v2")
         result = self.client_post(url, data,
                                   content_type="application/json")
         self.assert_json_error_contains(result, "Account not active", status_code=400)
