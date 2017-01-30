@@ -18,6 +18,7 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
     do_change_stream_description, do_get_streams, do_make_stream_private, \
     do_remove_default_stream, get_topic_history_for_stream
 from zerver.lib.response import json_success, json_error, json_response
+from zerver.lib.streams import access_stream_by_id, access_stream_by_name
 from zerver.lib.validator import check_string, check_list, check_dict, \
     check_bool, check_variable_type
 from zerver.models import UserProfile, Stream, Realm, Subscription, \
@@ -507,20 +508,6 @@ def json_get_stream_id(request, user_profile, stream=REQ()):
         return json_error(_("No such stream name"))
     return json_success({'stream_id': stream_id})
 
-def get_subscription_or_die(stream_name, user_profile):
-    # type: (Text, UserProfile) -> Subscription
-    stream = get_stream(stream_name, user_profile.realm)
-    if not stream:
-        raise JsonableError(_("Invalid stream %s") % (stream_name,))
-    recipient = get_recipient(Recipient.STREAM, stream.id)
-    subscription = Subscription.objects.filter(user_profile=user_profile,
-                                               recipient=recipient, active=True)
-
-    if not subscription.exists():
-        raise JsonableError(_("Not subscribed to stream %s") % (stream_name,))
-
-    return subscription
-
 @authenticated_json_view
 @has_request_variables
 def json_subscription_property(request, user_profile, subscription_data=REQ(
@@ -557,7 +544,9 @@ def json_subscription_property(request, user_profile, subscription_data=REQ(
         if property not in property_converters:
             return json_error(_("Unknown subscription property: %s") % (property,))
 
-        sub = get_subscription_or_die(stream_name, user_profile)[0]
+        (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
+        if sub is None:
+            return json_error(_("Not subscribed to stream %s") % (stream_name,))
 
         property_conversion = property_converters[property](property, value)
         if property_conversion:

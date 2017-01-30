@@ -930,7 +930,7 @@ class SubscriptionPropertiesTest(ZulipTestCase):
                                                 "stream": stream_name,
                                                 "value": False}])})
 
-        self.assert_json_error(result, "Invalid stream %s" % (stream_name,))
+        self.assert_json_error(result, "Invalid stream name '%s'" % (stream_name,))
 
     def test_set_invalid_property(self):
         # type: () -> None
