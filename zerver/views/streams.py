@@ -100,7 +100,7 @@ def update_stream_backend(request, user_profile, stream_id,
         if is_private:
             do_make_stream_private(user_profile.realm, stream.name)
         else:
-            do_make_stream_public(user_profile, user_profile.realm, stream.name)
+            do_make_stream_public(user_profile.realm, stream)
     return json_success()
 
 def list_subscriptions_backend(request, user_profile):
