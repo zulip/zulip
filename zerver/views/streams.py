@@ -432,17 +432,7 @@ def get_streams_backend(request, user_profile,
 def get_topics_backend(request, user_profile,
                        stream_id=REQ(converter=to_non_negative_int)):
     # type: (HttpRequest, UserProfile, int) -> HttpResponse
-    stream = get_and_validate_stream_by_id(stream_id, user_profile.realm)
-
-    if stream.realm_id != user_profile.realm_id:
-        return json_error(_("Invalid stream id"))
-
-    recipient = get_recipient(Recipient.STREAM, stream.id)
-
-    if not stream.is_public():
-        if not is_active_subscriber(user_profile=user_profile,
-                                    recipient=recipient):
-            return json_error(_("Invalid stream id"))
+    (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
 
     result = get_topic_history_for_stream(
         user_profile=user_profile,
