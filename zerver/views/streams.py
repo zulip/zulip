@@ -165,17 +165,16 @@ def update_stream_backend(request, user_profile, stream_id,
                           new_name=REQ(validator=check_string, default=None)):
     # type: (HttpRequest, UserProfile, int, Optional[Text], Optional[bool], Optional[Text]) -> HttpResponse
     stream = get_and_validate_stream_by_id(stream_id, user_profile.realm)
-    stream_name = stream.name
 
     if description is not None:
-        do_change_stream_description(user_profile.realm, stream_name, description)
-    if stream_name is not None and new_name is not None:
-        do_rename_stream(user_profile.realm, stream_name, new_name)
+        do_change_stream_description(user_profile.realm, stream.name, description)
+    if new_name is not None:
+        do_rename_stream(user_profile.realm, stream.name, new_name)
     if is_private is not None:
         if is_private:
-            do_make_stream_private(user_profile.realm, stream_name)
+            do_make_stream_private(user_profile.realm, stream.name)
         else:
-            do_make_stream_public(user_profile, user_profile.realm, stream_name)
+            do_make_stream_public(user_profile, user_profile.realm, stream.name)
     return json_success()
 
 def list_subscriptions_backend(request, user_profile):
