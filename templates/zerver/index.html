@@ -123,14 +123,10 @@ var page_params = {{ page_params }};
     {% include "zerver/image-overlay.html" %}
     {% include "zerver/subscriptions.html" %}
 </div><!--/row-->
-    <div class="informational-overlays">
+    <div class="informational-overlays new-style">
         <div class="overlay-content">
             <h1>Zulip Usage Guide</h1>
             <div class="overlay-tabs">
-                <div class="tab active" data-overlay-trigger="keyboard-shortcuts">Keyboard Shortcuts</div>
-                <div class="tab" data-overlay-trigger="search-operators">Search Help</div>
-                <div class="tab last" data-overlay-trigger="markdown-help">Markdown Formatting</div>
-                <div class="float-clear"></div>
             </div>
             <div class="overlay-body">
                 {% include "zerver/keyboard_shortcuts.html" %}

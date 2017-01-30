@@ -280,6 +280,24 @@ exports.lightbox = function (data) {
     popovers.hide_all();
 };
 
+$(document).ready(function () {
+    var info_overlay_toggle = components.toggle({
+        name: "info-overlay-toggle",
+        selected: 0,
+        values: [
+            { label: "Keyboard Shortcuts" },
+            { label: "Message Formatting" },
+            { label: "Search Help" },
+        ],
+        callback: function () {
+
+        }
+    }).get();
+
+    $(".informational-overlays .overlay-tabs")
+        .append($(info_overlay_toggle).addClass("large"));
+});
+
 exports.show_info_overlay = function (target) {
     var el = {
         tabs: $(".informational-overlays .tab"),

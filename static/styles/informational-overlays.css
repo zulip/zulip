@@ -42,30 +42,9 @@
 }
 
 .informational-overlays .overlay-tabs {
+    padding: 10px 0px;
     border-bottom: 1px solid #eee;
-    background-color: #888;
-}
-
-.informational-overlays .overlay-tabs .tab {
-    float: left;
-    width: calc(33.33% - 1.1px);
-
     text-align: center;
-    padding: 12px 0px;
-    border-right: 1px solid #eee;
-    background-color: #fff;
-
-    cursor: pointer;
-}
-
-.informational-overlays .overlay-tabs .tab:last-of-type {
-    border-right: none;
-}
-
-.informational-overlays .overlay-tabs .tab.active {
-    background-color: #888;
-    color: #fff;
-    border-color: transparent;
 }
 
 .informational-overlays .overlay-modal .modal-body {
