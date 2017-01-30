@@ -18,12 +18,13 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
     do_change_stream_description, do_get_streams, do_make_stream_private, \
     do_remove_default_stream, get_topic_history_for_stream
 from zerver.lib.response import json_success, json_error, json_response
-from zerver.lib.streams import access_stream_by_id, access_stream_by_name
+from zerver.lib.streams import access_stream_by_id, access_stream_by_name, \
+    filter_stream_authorization
 from zerver.lib.validator import check_string, check_list, check_dict, \
     check_bool, check_variable_type
 from zerver.models import UserProfile, Stream, Realm, Subscription, \
     Recipient, get_recipient, get_stream, bulk_get_streams, \
-    bulk_get_recipients, valid_stream_name, get_active_user_dicts_in_realm
+    valid_stream_name, get_active_user_dicts_in_realm
 
 from collections import defaultdict
 import ujson
@@ -249,31 +250,6 @@ def remove_subscriptions_backend(request, user_profile,
         result["not_subscribed"].append(stream.name)
 
     return json_success(result)
-
-def filter_stream_authorization(user_profile, streams):
-    # type: (UserProfile, Iterable[Stream]) -> Tuple[List[Stream], List[Stream]]
-    streams_subscribed = set() # type: Set[int]
-    recipients_map = bulk_get_recipients(Recipient.STREAM, [stream.id for stream in streams])
-    subs = Subscription.objects.filter(user_profile=user_profile,
-                                       recipient__in=list(recipients_map.values()),
-                                       active=True)
-
-    for sub in subs:
-        streams_subscribed.add(sub.recipient.type_id)
-
-    unauthorized_streams = [] # type: List[Stream]
-    for stream in streams:
-        # The user is authorized for his own streams
-        if stream.id in streams_subscribed:
-            continue
-
-        # The user is not authorized for invite_only streams
-        if stream.invite_only:
-            unauthorized_streams.append(stream)
-
-    authorized_streams = [stream for stream in streams if
-                          stream.id not in set(stream.id for stream in unauthorized_streams)]
-    return authorized_streams, unauthorized_streams
 
 @has_request_variables
 def add_subscriptions_backend(request, user_profile,

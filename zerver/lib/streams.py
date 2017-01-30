@@ -1,13 +1,13 @@
 from __future__ import absolute_import
 
-from typing import Text, Tuple
+from typing import Iterable, List, Text, Tuple
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
 from zerver.lib.request import JsonableError
 from zerver.models import UserProfile, Stream, Subscription, \
-    Recipient, get_recipient, get_stream
+    Recipient, bulk_get_recipients, get_recipient, get_stream
 
 def access_stream_common(user_profile, stream, error):
     # type: (UserProfile, Stream, Text) -> Tuple[Recipient, Subscription]
@@ -62,3 +62,28 @@ def access_stream_by_name(user_profile, stream_name):
 
     (recipient, sub) = access_stream_common(user_profile, stream, error)
     return (stream, recipient, sub)
+
+def filter_stream_authorization(user_profile, streams):
+    # type: (UserProfile, Iterable[Stream]) -> Tuple[List[Stream], List[Stream]]
+    streams_subscribed = set() # type: Set[int]
+    recipients_map = bulk_get_recipients(Recipient.STREAM, [stream.id for stream in streams])
+    subs = Subscription.objects.filter(user_profile=user_profile,
+                                       recipient__in=list(recipients_map.values()),
+                                       active=True)
+
+    for sub in subs:
+        streams_subscribed.add(sub.recipient.type_id)
+
+    unauthorized_streams = [] # type: List[Stream]
+    for stream in streams:
+        # The user is authorized for his own streams
+        if stream.id in streams_subscribed:
+            continue
+
+        # The user is not authorized for invite_only streams
+        if stream.invite_only:
+            unauthorized_streams.append(stream)
+
+    authorized_streams = [stream for stream in streams if
+                          stream.id not in set(stream.id for stream in unauthorized_streams)]
+    return authorized_streams, unauthorized_streams
