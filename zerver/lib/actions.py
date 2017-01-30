@@ -1518,15 +1518,6 @@ def maybe_get_subscriber_emails(stream, user_profile):
         subscribers = []
     return subscribers
 
-def set_stream_color(user_profile, stream_name, color=None):
-    # type: (UserProfile, Text, Optional[Text]) -> Text
-    subscription = get_subscription(stream_name, user_profile)
-    if not color:
-        color = pick_color(user_profile)
-    subscription.color = color
-    subscription.save(update_fields=["color"])
-    return color
-
 def notify_subscriptions_added(user_profile, sub_pairs, stream_emails, no_log=False):
     # type: (UserProfile, Iterable[Tuple[Subscription, Stream]], Callable[[Stream], List[Text]], bool) -> None
     if not no_log:
