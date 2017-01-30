@@ -1,11 +1,9 @@
-# Change your [organization](/#administration) settings
+# Change your organization settings
 
 {!admin-only.md!}
 
-1. Click the cog (<i class="icon-vector-cog"></i>) icon in the top right corner.
-2. From the dropdown menu, choose the **Administration** option.
-
-    ![administration-settings-dropdown](/static/images/help/administration.png)
+{!go-to-the.md!} [Organization settings](/#administration/organization-settings)
+{!admin.md!}
 
 3. Click on the tabs on the left to select the settings you'd like to edit.
 
