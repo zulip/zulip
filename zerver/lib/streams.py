@@ -9,7 +9,7 @@ from zerver.lib.actions import check_stream_name, create_streams_if_needed
 from zerver.lib.request import JsonableError
 from zerver.models import UserProfile, Stream, Subscription, \
     Realm, Recipient, bulk_get_recipients, get_recipient, get_stream, \
-    bulk_get_streams, valid_stream_name
+    bulk_get_streams
 
 def access_stream_common(user_profile, stream, error):
     # type: (UserProfile, Stream, Text) -> Tuple[Recipient, Subscription]
@@ -101,9 +101,7 @@ def list_to_streams(streams_raw, user_profile, autocreate=False):
     """Converts list of dicts to a list of Streams, validating input in the process
 
     For each stream name, we validate it to ensure it meets our
-    requirements for a proper stream name: that is, that it is shorter
-    than Stream.MAX_NAME_LENGTH characters and passes
-    valid_stream_name.
+    requirements for a proper stream name using check_stream_name.
 
     This function in autocreate mode should be atomic: either an exception will be raised
     during a precheck, or all the streams specified will have been created if applicable.
@@ -121,10 +119,7 @@ def list_to_streams(streams_raw, user_profile, autocreate=False):
         # Stream names should already have been stripped by the
         # caller, but it makes sense to verify anyway.
         assert stream_name == stream_name.strip()
-        if len(stream_name) > Stream.MAX_NAME_LENGTH:
-            raise JsonableError(_("Stream name (%s) too long.") % (stream_name,))
-        if not valid_stream_name(stream_name):
-            raise JsonableError(_("Invalid stream name (%s).") % (stream_name,))
+        check_stream_name(stream_name)
 
     existing_streams = [] # type: List[Stream]
     missing_stream_dicts = [] # type: List[Mapping[str, Any]]

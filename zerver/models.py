@@ -725,10 +725,6 @@ class Stream(ModelReprMixin, models.Model):
 post_save.connect(flush_stream, sender=Stream)
 post_delete.connect(flush_stream, sender=Stream)
 
-def valid_stream_name(name):
-    # type: (Text) -> bool
-    return name != ""
-
 # The Recipient table is used to map Messages to the set of users who
 # received the message.  It is implemented as a set of triples (id,
 # type_id, type). We have 3 types of recipients: Huddles (for group

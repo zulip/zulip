@@ -26,7 +26,7 @@ from zerver.lib.message import (
     render_markdown,
 )
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, RealmAlias, \
-    Subscription, Recipient, Message, Attachment, UserMessage, valid_stream_name, \
+    Subscription, Recipient, Message, Attachment, UserMessage, \
     Client, DefaultStream, UserPresence, Referral, PushDeviceToken, MAX_SUBJECT_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle, \
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
@@ -1186,12 +1186,10 @@ def check_send_message(sender, client, message_type_name, message_to,
 
 def check_stream_name(stream_name):
     # type: (Text) -> None
-    if stream_name == "":
-        raise JsonableError(_("Stream can't be empty"))
+    if stream_name.strip() == "":
+        raise JsonableError(_("Invalid stream name '%s'" % (stream_name)))
     if len(stream_name) > Stream.MAX_NAME_LENGTH:
-        raise JsonableError(_("Stream name too long"))
-    if not valid_stream_name(stream_name):
-        raise JsonableError(_("Invalid stream name"))
+        raise JsonableError(_("Stream name too long (limit: %s characters)" % (Stream.MAX_NAME_LENGTH)))
 
 def send_pm_if_empty_stream(sender, stream, stream_name, realm):
     # type: (UserProfile, Stream, Text, Realm) -> None
@@ -1274,9 +1272,6 @@ def check_message(sender, client, message_type_name, message_to,
         if subject == "":
             raise JsonableError(_("Topic can't be empty"))
         subject = truncate_topic(subject)
-        ## FIXME: Commented out temporarily while we figure out what we want
-        # if not valid_stream_name(subject):
-        #     return json_error(_("Invalid subject name"))
 
         stream = get_stream(stream_name, realm)
 

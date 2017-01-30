@@ -43,7 +43,7 @@ from zerver.lib.actions import (
     do_create_realm, do_remove_default_stream, do_set_realm_create_stream_by_admins_only,
     gather_subscriptions_helper, bulk_add_subscriptions, bulk_remove_subscriptions,
     gather_subscriptions, get_default_streams_for_realm, get_realm, get_stream,
-    get_user_profile_by_email, set_default_streams,
+    get_user_profile_by_email, set_default_streams, check_stream_name,
     create_stream_if_needed, create_streams_if_needed, active_user_ids
 )
 
@@ -1078,7 +1078,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
             **self.api_auth(email)
         )
         self.assert_json_error(result,
-                               "Invalid stream name (%s)." % (invalid_stream_name,))
+                               "Invalid stream name '%s'" % (invalid_stream_name,))
 
     def test_stream_name_too_long(self):
         # type: () -> None
@@ -1095,7 +1095,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
             **self.api_auth(email)
         )
         self.assert_json_error(result,
-                               "Stream name (%s) too long." % (long_stream_name,))
+                               "Stream name too long (limit: 60 characters)")
 
     def test_compose_views_rollback(self):
         # type: () -> None
@@ -1403,7 +1403,7 @@ class SubscriptionAPITest(ZulipTestCase):
         long_stream_name = "a" * 61
         result = self.common_subscribe_to_streams(self.test_email, [long_stream_name])
         self.assert_json_error(result,
-                               "Stream name (%s) too long." % (long_stream_name,))
+                               "Stream name too long (limit: 60 characters)")
 
     def test_user_settings_for_adding_streams(self):
         # type: () -> None
@@ -1431,7 +1431,7 @@ class SubscriptionAPITest(ZulipTestCase):
         invalid_stream_name = ""
         result = self.common_subscribe_to_streams(self.test_email, [invalid_stream_name])
         self.assert_json_error(result,
-                               "Invalid stream name (%s)." % (invalid_stream_name,))
+                               "Invalid stream name '%s'" % (invalid_stream_name,))
 
     def assert_adding_subscriptions_for_principal(self, invitee, streams, invite_only=False):
         # type: (Text, List[Text], bool) -> None
@@ -1935,7 +1935,7 @@ class SubscriptionAPITest(ZulipTestCase):
         invalid_stream_name = ""
         result = self.client_post("/json/subscriptions/exists",
                                   {"stream": invalid_stream_name})
-        self.assert_json_error(result, "Invalid characters in stream name")
+        self.assert_json_error(result, "Invalid stream name ''")
 
     def test_existing_subscriptions_autosubscription(self):
         # type: () -> None
