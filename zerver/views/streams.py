@@ -135,12 +135,8 @@ def principal_to_user_profile(agent, principal):
 @require_realm_admin
 def deactivate_stream_backend(request, user_profile, stream_id):
     # type: (HttpRequest, UserProfile, int) -> HttpResponse
-    target = get_and_validate_stream_by_id(stream_id, user_profile.realm)
-
-    if target.invite_only and not subscribed_to_stream(user_profile, target):
-        return json_error(_('Cannot administer invite-only streams this way'))
-
-    do_deactivate_stream(target)
+    (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
+    do_deactivate_stream(stream)
     return json_success()
 
 @require_realm_admin

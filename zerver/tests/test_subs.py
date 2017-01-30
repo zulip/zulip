@@ -485,8 +485,7 @@ class StreamAdminTest(ZulipTestCase):
             "privstream", subscribed=False, invite_only=True)
 
         result = self.client_delete('/json/streams/' + str(priv_stream.id))
-        self.assert_json_error(
-            result, "Cannot administer invite-only streams this way")
+        self.assert_json_error(result, "Invalid stream id")
 
     def attempt_unsubscribe_of_principal(self, is_admin=False, is_subbed=True,
                                          invite_only=False, other_user_subbed=True):
