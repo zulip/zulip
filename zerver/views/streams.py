@@ -164,7 +164,7 @@ def update_stream_backend(request, user_profile, stream_id,
                           is_private=REQ(validator=check_bool, default=None),
                           new_name=REQ(validator=check_string, default=None)):
     # type: (HttpRequest, UserProfile, int, Optional[Text], Optional[bool], Optional[Text]) -> HttpResponse
-    stream = get_and_validate_stream_by_id(stream_id, user_profile.realm)
+    (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
 
     if description is not None:
         do_change_stream_description(user_profile.realm, stream.name, description)

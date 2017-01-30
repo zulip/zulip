@@ -122,7 +122,7 @@ class StreamAdminTest(ZulipTestCase):
         }
         stream_id = get_stream('private_stream', user_profile.realm).id
         result = self.client_patch("/json/streams/%d" % (stream_id,), params)
-        self.assert_json_error(result, 'You are not invited to this stream.')
+        self.assert_json_error(result, 'Invalid stream id')
 
         self.subscribe_to_stream(email, 'private_stream')
 
