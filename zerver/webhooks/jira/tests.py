@@ -11,7 +11,14 @@ class JiraHookTests(WebhookTestCase):
         url = self.build_webhook_url()
 
         result = self.client_post(url,
-                                  self.get_body('unknown'),
+                                  self.get_body('unknown_v1'),
+                                  stream_name="jira",
+                                  content_type="application/json")
+
+        self.assert_json_error(result, "Got JIRA event type we don't support: jira:issue_unknown")
+
+        result = self.client_post(url,
+                                  self.get_body('unknown_v2'),
                                   stream_name="jira",
                                   content_type="application/json")
 
@@ -23,7 +30,7 @@ class JiraHookTests(WebhookTestCase):
         url = "/api/v1/external/jira?api_key=%s&stream=jira_custom" % (api_key,)
         msg = self.send_json_payload(self.TEST_USER_EMAIL,
                                      url,
-                                     self.get_body('created'),
+                                     self.get_body('created_v2'),
                                      stream_name="jira_custom",
                                      content_type="application/json")
         self.assertEqual(msg.topic_name(), "BUG-15: New bug with hook")
@@ -37,7 +44,8 @@ class JiraHookTests(WebhookTestCase):
         expected_message = """Leo Franchi **created** [BUG-15](http://lfranchi.com:8080/browse/BUG-15) priority Major, assigned to **no one**:
 
 > New bug with hook"""
-        self.send_and_test_stream_message('created', expected_subject, expected_message)
+        self.send_and_test_stream_message('created_v1', expected_subject, expected_message)
+        self.send_and_test_stream_message('created_v2', expected_subject, expected_message)
 
     def test_created_assignee(self):
         # type: () -> None
@@ -45,7 +53,8 @@ class JiraHookTests(WebhookTestCase):
         expected_message = """Leonardo Franchi [Administrator] **created** [TEST-4](https://zulipp.atlassian.net/browse/TEST-4) priority Major, assigned to **Leonardo Franchi [Administrator]**:
 
 > Test Created Assignee"""
-        self.send_and_test_stream_message('created_assignee', expected_subject, expected_message)
+        self.send_and_test_stream_message('created_assignee_v1', expected_subject, expected_message)
+        self.send_and_test_stream_message('created_assignee_v2', expected_subject, expected_message)
 
     def test_commented(self):
         # type: () -> None
@@ -55,7 +64,8 @@ class JiraHookTests(WebhookTestCase):
 
 Adding a comment. Oh, what a comment it is!
 """
-        self.send_and_test_stream_message('commented', expected_subject, expected_message)
+        self.send_and_test_stream_message('commented_v1', expected_subject, expected_message)
+        self.send_and_test_stream_message('commented_v2', expected_subject, expected_message)
 
     def test_comment_edited(self):
             # type: () -> None
@@ -65,34 +75,37 @@ Adding a comment. Oh, what a comment it is!
 
 Adding a comment. Oh, what a comment it is!
 """
-            self.send_and_test_stream_message('comment_edited', expected_subject, expected_message)
+            self.send_and_test_stream_message('comment_edited_v2', expected_subject, expected_message)
 
     def test_comment_deleted(self):
         # type: () -> None
         expected_subject = "TOM-1: New Issue"
         expected_message = "Tomasz Kolek **deleted comment from** [TOM-1](https://zuliptomek.atlassian.net/browse/TOM-1) (assigned to **kolaszek@go2.pl**)"
-        self.send_and_test_stream_message('comment_deleted', expected_subject, expected_message)
+        self.send_and_test_stream_message('comment_deleted_v2', expected_subject, expected_message)
 
     def test_commented_markup(self):
         # type: () -> None
         expected_subject = "TEST-7: Testing of rich text"
         expected_message = """Leonardo Franchi [Administrator] **added comment to** [TEST-7](https://zulipp.atlassian.net/browse/TEST-7):\n\n\nThis is a comment that likes to **exercise** a lot of _different_ `conventions` that `jira uses`.\r\n\r\n~~~\n\r\nthis code is not highlighted, but monospaced\r\n\n~~~\r\n\r\n~~~\n\r\ndef python():\r\n    print "likes to be formatted"\r\n\n~~~\r\n\r\n[http://www.google.com](http://www.google.com) is a bare link, and [Google](http://www.google.com) is given a title.\r\n\r\nThanks!\r\n\r\n~~~ quote\n\r\nSomeone said somewhere\r\n\n~~~\n"""
-        self.send_and_test_stream_message('commented_markup', expected_subject, expected_message)
+        self.send_and_test_stream_message('commented_markup_v1', expected_subject, expected_message)
+        self.send_and_test_stream_message('commented_markup_v2', expected_subject, expected_message)
 
     def test_deleted(self):
         # type: () -> None
         expected_subject = "BUG-15: New bug with hook"
         expected_message = "Leo Franchi **deleted** [BUG-15](http://lfranchi.com:8080/browse/BUG-15)!"
-        self.send_and_test_stream_message('deleted', expected_subject, expected_message)
+        self.send_and_test_stream_message('deleted_v1', expected_subject, expected_message)
+        self.send_and_test_stream_message('deleted_v2', expected_subject, expected_message)
 
     def test_reassigned(self):
         # type: () -> None
         expected_subject = "BUG-15: New bug with hook"
         expected_message = """Leo Franchi **updated** [BUG-15](http://lfranchi.com:8080/browse/BUG-15) (assigned to **Othello, the Moor of Venice**):
 
-* Changed assignee from **None** to **Othello, the Moor of Venice**
+* Changed assignee to **Othello, the Moor of Venice**
 """
-        self.send_and_test_stream_message('reassigned', expected_subject, expected_message)
+        self.send_and_test_stream_message('reassigned_v1', expected_subject, expected_message)
+        self.send_and_test_stream_message('reassigned_v2', expected_subject, expected_message)
 
     def test_priority_updated(self):
         # type: () -> None
@@ -101,7 +114,18 @@ Adding a comment. Oh, what a comment it is!
 
 * Changed priority from **Critical** to **Major**
 """
-        self.send_and_test_stream_message('updated_priority', expected_subject, expected_message)
+        self.send_and_test_stream_message('updated_priority_v1', expected_subject, expected_message)
+        self.send_and_test_stream_message('updated_priority_v2', expected_subject, expected_message)
+
+    def test_status_changed(self):
+            # type: () -> None
+            expected_subject = "TEST-1: Fix That"
+            expected_message = """Leonardo Franchi [Administrator] **updated** [TEST-1](https://zulipp.atlassian.net/browse/TEST-1):
+
+* Changed status from **To Do** to **In Progress**
+"""
+            self.send_and_test_stream_message('change_status_v1', expected_subject, expected_message)
+            self.send_and_test_stream_message('change_status_v2', expected_subject, expected_message)
 
     def get_body(self, fixture_name):
         # type: (Text) -> Text

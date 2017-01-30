@@ -140,6 +140,32 @@ def get_issue_subject(payload):
     # type: (Dict[str, Any]) -> Text
     return "{}: {}".format(get_issue_id(payload), get_issue_title(payload))
 
+def get_sub_event_for_update_issue(payload):
+    # type: (Dict[str, Any]) -> Text
+    sub_event = payload.get('issue_event_type_name', '')
+    if sub_event == '':
+        if payload.get('comment'):
+            return 'issue_commented'
+        elif payload.get('transition'):
+            return 'issue_transited'
+    return sub_event
+
+def get_event_type(payload):
+    # type: (Dict[str, Any]) -> Text
+    event = payload.get('webhookEvent')
+    if event is None and payload.get('transition'):
+        event = 'jira:issue_updated'
+    return event
+
+def add_change_info(content, field, from_field, to_field):
+    # type: (Text, Text, Text, Text) -> Text
+    content += "* Changed {}".format(field)
+    if from_field:
+        content += " from **{}**".format(from_field)
+    if to_field:
+        content += " to {}\n".format(to_field)
+    return content
+
 def handle_updated_issue_event(payload, user_profile):
     # Reassigned, commented, reopened, and resolved events are all bundled
     # into this one 'updated' event type, so we try to extract the meaningful
@@ -156,7 +182,7 @@ def handle_updated_issue_event(payload, user_profile):
     else:
         assignee_blurb = ''
 
-    sub_event = payload.get('issue_event_type_name')
+    sub_event = get_sub_event_for_update_issue(payload)
     if 'comment' in sub_event:
         if sub_event == 'issue_commented':
             verb = 'added comment to'
@@ -164,13 +190,13 @@ def handle_updated_issue_event(payload, user_profile):
             verb = 'edited comment on'
         else:
             verb = 'deleted comment from'
-        content = "{} **{}** {}{}".format(get_issue_author(payload), verb, issue, assignee_blurb)
+        content = u"{} **{}** {}{}".format(get_issue_author(payload), verb, issue, assignee_blurb)
         comment = get_in(payload, ['comment', 'body'])
         if comment:
             comment = convert_jira_markup(comment, user_profile.realm)
-            content = "{}:\n\n\n{}\n".format(content, comment)
+            content = u"{}:\n\n\n{}\n".format(content, comment)
     else:
-        content = "{} **updated** {}{}:\n\n".format(get_issue_author(payload), issue, assignee_blurb)
+        content = u"{} **updated** {}{}:\n\n".format(get_issue_author(payload), issue, assignee_blurb)
         changelog = get_in(payload, ['changelog'])
 
         if changelog != '':
@@ -187,7 +213,13 @@ def handle_updated_issue_event(payload, user_profile):
 
                 from_field_string = item.get('fromString')
                 if target_field_string or from_field_string:
-                    content += "* Changed {} from **{}** to {}\n".format(field, from_field_string, target_field_string)
+                    content = add_change_info(content, field, from_field_string, target_field_string)
+
+        elif sub_event == 'issue_transited':
+            from_field_string = get_in(payload, ['transition', 'from_status'])
+            target_field_string = '**{}**'.format(get_in(payload, ['transition', 'to_status']))
+            if target_field_string or from_field_string:
+                content = add_change_info(content, 'status', from_field_string, target_field_string)
 
     return content
 
@@ -212,7 +244,7 @@ def api_jira_webhook(request, user_profile, client,
                      stream=REQ(default='jira')):
     # type: (HttpRequest, UserProfile, Client, Dict[str, Any], Text) -> HttpResponse
 
-    event = payload.get('webhookEvent')
+    event = get_event_type(payload)
     if event == 'jira:issue_created':
         subject = get_issue_subject(payload)
         content = handle_created_issue_event(payload)
