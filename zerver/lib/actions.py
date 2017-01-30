@@ -2057,14 +2057,8 @@ def do_make_stream_public(realm, stream):
     stream.invite_only = False
     stream.save(update_fields=['invite_only'])
 
-def do_make_stream_private(realm, stream_name):
-    # type: (Realm, Text) -> None
-    stream_name = stream_name.strip()
-    stream = get_stream(stream_name, realm)
-
-    if not stream:
-        raise JsonableError(_('Unknown stream "%s"') % (stream_name,))
-
+def do_make_stream_private(realm, stream):
+    # type: (Realm, Stream) -> None
     stream.invite_only = True
     stream.save(update_fields=['invite_only'])
 

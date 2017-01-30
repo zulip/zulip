@@ -98,7 +98,7 @@ def update_stream_backend(request, user_profile, stream_id,
         do_rename_stream(user_profile.realm, stream.name, new_name)
     if is_private is not None:
         if is_private:
-            do_make_stream_private(user_profile.realm, stream.name)
+            do_make_stream_private(user_profile.realm, stream)
         else:
             do_make_stream_public(user_profile.realm, stream)
     return json_success()

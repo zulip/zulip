@@ -945,7 +945,7 @@ class BotTest(ZulipTestCase):
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
         stream = get_stream("Denmark", user_profile.realm)
         self.subscribe_to_stream(user_profile.email, stream.name)
-        do_make_stream_private(user_profile.realm, "Denmark")
+        do_make_stream_private(user_profile.realm, stream)
 
         self.assert_num_bots_equal(0)
         events = [] # type: List[Dict[str, Any]]
@@ -980,8 +980,9 @@ class BotTest(ZulipTestCase):
         # type: () -> None
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        stream = get_stream("Denmark", user_profile.realm)
         self.unsubscribe_from_stream("hamlet@zulip.com", "Denmark")
-        do_make_stream_private(user_profile.realm, "Denmark")
+        do_make_stream_private(user_profile.realm, stream)
 
         bot_info = {
             'full_name': 'The Bot of Hamlet',
@@ -1006,8 +1007,8 @@ class BotTest(ZulipTestCase):
         # type: () -> None
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
-        self.subscribe_to_stream(user_profile.email, 'Denmark')
-        do_make_stream_private(user_profile.realm, "Denmark")
+        stream = self.subscribe_to_stream(user_profile.email, 'Denmark')
+        do_make_stream_private(user_profile.realm, stream)
 
         self.assert_num_bots_equal(0)
         events = [] # type: List[Dict[str, Any]]
@@ -1042,8 +1043,9 @@ class BotTest(ZulipTestCase):
         # type: () -> None
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        stream = get_stream("Denmark", user_profile.realm)
         self.unsubscribe_from_stream("hamlet@zulip.com", "Denmark")
-        do_make_stream_private(user_profile.realm, "Denmark")
+        do_make_stream_private(user_profile.realm, stream)
 
         self.assert_num_bots_equal(0)
         bot_info = {
@@ -1284,8 +1286,8 @@ class BotTest(ZulipTestCase):
         # type: () -> None
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
-        self.subscribe_to_stream(user_profile.email, "Denmark")
-        do_make_stream_private(user_profile.realm, "Denmark")
+        stream = self.subscribe_to_stream(user_profile.email, "Denmark")
+        do_make_stream_private(user_profile.realm, stream)
 
         bot_info = {
             'full_name': 'The Bot of Hamlet',
@@ -1310,8 +1312,9 @@ class BotTest(ZulipTestCase):
         # type: () -> None
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        stream = get_stream("Denmark", user_profile.realm)
         self.unsubscribe_from_stream("hamlet@zulip.com", "Denmark")
-        do_make_stream_private(user_profile.realm, "Denmark")
+        do_make_stream_private(user_profile.realm, stream)
 
         bot_info = {
             'full_name': 'The Bot of Hamlet',
@@ -1366,8 +1369,8 @@ class BotTest(ZulipTestCase):
         # type: () -> None
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
-        self.subscribe_to_stream(user_profile.email, "Denmark")
-        do_make_stream_private(user_profile.realm, "Denmark")
+        stream = self.subscribe_to_stream(user_profile.email, "Denmark")
+        do_make_stream_private(user_profile.realm, stream)
 
         bot_info = {
             'full_name': 'The Bot of Hamlet',
@@ -1391,8 +1394,9 @@ class BotTest(ZulipTestCase):
         # type: () -> None
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        stream = get_stream("Denmark", user_profile.realm)
         self.unsubscribe_from_stream("hamlet@zulip.com", "Denmark")
-        do_make_stream_private(user_profile.realm, "Denmark")
+        do_make_stream_private(user_profile.realm, stream)
 
         bot_info = {
             'full_name': 'The Bot of Hamlet',
