@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
+from zerver.lib.actions import do_create_realm
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import get_realm, get_realm_by_email_domain, \
     GetRealmByDomainException, RealmAlias
@@ -42,6 +43,12 @@ class RealmAliasTest(ZulipTestCase):
 
         result = self.client_post("/json/realm/domains", info=data)
         self.assert_json_error(result, 'The domain zulip.org is already a part of your organization.')
+
+        realm1, created = do_create_realm('testrealm', 'Test Realm')
+        RealmAlias.objects.create(realm=realm1, domain='testrealm.com')
+        data = {'domain': ujson.dumps('testrealm.com')}
+        result = self.client_post("/json/realm/domains", info=data)
+        self.assert_json_error(result, 'The domain testrealm.com belongs to another organization.')
 
     def test_delete(self):
         # type: () -> None
