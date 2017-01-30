@@ -989,7 +989,7 @@ class BotTest(ZulipTestCase):
             'default_sending_stream': 'Denmark',
         }
         result = self.client_post("/json/bots", bot_info)
-        self.assert_json_error(result, 'Insufficient permission')
+        self.assert_json_error(result, "Invalid stream name 'Denmark'")
 
     def test_add_bot_with_default_events_register_stream(self):
         # type: () -> None
@@ -1052,7 +1052,7 @@ class BotTest(ZulipTestCase):
             'default_events_register_stream': 'Denmark',
         }
         result = self.client_post("/json/bots", bot_info)
-        self.assert_json_error(result, 'Insufficient permission')
+        self.assert_json_error(result, "Invalid stream name 'Denmark'")
 
     def test_add_bot_with_default_all_public_streams(self):
         # type: () -> None
@@ -1273,7 +1273,8 @@ class BotTest(ZulipTestCase):
         result = self.client_patch("/json/bots/hambot-bot@zulip.com", bot_info)
         self.assert_json_success(result)
 
-        default_sending_stream = ujson.loads(result.content)['default_sending_stream']
+        default_sending_stream = get_user_profile_by_email(
+            "hambot-bot@zulip.com").default_sending_stream
         self.assertEqual(None, default_sending_stream)
 
         bot = self.get_bot()
@@ -1323,7 +1324,7 @@ class BotTest(ZulipTestCase):
             'default_sending_stream': 'Denmark',
         }
         result = self.client_patch("/json/bots/hambot-bot@zulip.com", bot_info)
-        self.assert_json_error(result, 'Insufficient permission')
+        self.assert_json_error(result, "Invalid stream name 'Denmark'")
 
     def test_patch_bot_to_stream_not_found(self):
         # type: () -> None
@@ -1338,7 +1339,7 @@ class BotTest(ZulipTestCase):
             'default_sending_stream': 'missing',
         }
         result = self.client_patch("/json/bots/hambot-bot@zulip.com", bot_info)
-        self.assert_json_error(result, 'No such stream \'missing\'')
+        self.assert_json_error(result, "Invalid stream name 'missing'")
 
     def test_patch_bot_events_register_stream(self):
         # type: () -> None
@@ -1403,7 +1404,7 @@ class BotTest(ZulipTestCase):
             'default_events_register_stream': 'Denmark',
         }
         result = self.client_patch("/json/bots/hambot-bot@zulip.com", bot_info)
-        self.assert_json_error(result, 'Insufficient permission')
+        self.assert_json_error(result, "Invalid stream name 'Denmark'")
 
     def test_patch_bot_events_register_stream_none(self):
         # type: () -> None
@@ -1420,7 +1421,8 @@ class BotTest(ZulipTestCase):
         result = self.client_patch("/json/bots/hambot-bot@zulip.com", bot_info)
         self.assert_json_success(result)
 
-        default_events_register_stream = ujson.loads(result.content)['default_events_register_stream']
+        default_events_register_stream = get_user_profile_by_email(
+            "hambot-bot@zulip.com").default_events_register_stream
         self.assertEqual(None, default_events_register_stream)
 
         bot = self.get_bot()
@@ -1439,7 +1441,7 @@ class BotTest(ZulipTestCase):
             'default_events_register_stream': 'missing',
         }
         result = self.client_patch("/json/bots/hambot-bot@zulip.com", bot_info)
-        self.assert_json_error(result, 'No such stream \'missing\'')
+        self.assert_json_error(result, "Invalid stream name 'missing'")
 
     def test_patch_bot_default_all_public_streams_true(self):
         # type: () -> None
