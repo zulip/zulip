@@ -60,11 +60,10 @@ from zerver.lib.actions import (
     do_add_realm_alias,
     do_remove_realm_alias,
     fetch_initial_state_data,
-    get_subscription
 )
 
 from zerver.lib.message import render_markdown
-from zerver.lib.test_helpers import POSTRequestMock
+from zerver.lib.test_helpers import POSTRequestMock, get_subscription
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )

@@ -9,7 +9,7 @@ from django.utils.translation import ugettext as _
 from zerver.lib import cache
 
 from zerver.lib.test_helpers import (
-    queries_captured, tornado_redirected_to_list
+    get_subscription, queries_captured, tornado_redirected_to_list
 )
 
 from zerver.lib.test_classes import (
@@ -39,7 +39,7 @@ from zerver.lib.actions import (
     do_create_realm, do_remove_default_stream, do_set_realm_create_stream_by_admins_only,
     gather_subscriptions_helper, bulk_add_subscriptions, bulk_remove_subscriptions,
     gather_subscriptions, get_default_streams_for_realm, get_realm, get_stream,
-    get_user_profile_by_email, set_default_streams, get_subscription,
+    get_user_profile_by_email, set_default_streams,
     create_stream_if_needed, create_streams_if_needed, active_user_ids
 )
 

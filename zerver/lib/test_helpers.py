@@ -30,6 +30,7 @@ from zerver.lib.actions import (
 )
 
 from zerver.models import (
+    get_recipient,
     get_stream,
     get_user_profile_by_email,
     Client,
@@ -205,6 +206,13 @@ def most_recent_message(user_profile):
     # type: (UserProfile) -> Message
     usermessage = most_recent_usermessage(user_profile)
     return usermessage.message
+
+def get_subscription(stream_name, user_profile):
+    # type: (Text, UserProfile) -> Subscription
+    stream = get_stream(stream_name, user_profile.realm)
+    recipient = get_recipient(Recipient.STREAM, stream.id)
+    return Subscription.objects.get(user_profile=user_profile,
+                                    recipient=recipient, active=True)
 
 def get_user_messages(user_profile):
     # type: (UserProfile) -> List[Message]

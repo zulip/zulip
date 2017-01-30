@@ -1409,13 +1409,6 @@ def pick_color_helper(user_profile, subs):
     else:
         return STREAM_ASSIGNMENT_COLORS[len(used_colors) % len(STREAM_ASSIGNMENT_COLORS)]
 
-def get_subscription(stream_name, user_profile):
-    # type: (Text, UserProfile) -> Subscription
-    stream = get_stream(stream_name, user_profile.realm)
-    recipient = get_recipient(Recipient.STREAM, stream.id)
-    return Subscription.objects.get(user_profile=user_profile,
-                                    recipient=recipient, active=True)
-
 def validate_user_access_to_subscribers(user_profile, stream):
     # type: (Optional[UserProfile], Stream) -> None
     """ Validates whether the user can view the subscribers of a stream.  Raises a JsonableError if:
