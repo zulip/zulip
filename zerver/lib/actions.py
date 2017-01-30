@@ -2059,8 +2059,8 @@ def do_change_stream_invite_only(stream, invite_only):
 
 def do_rename_stream(realm, old_name, new_name, log=True):
     # type: (Realm, Text, Text, bool) -> Dict[str, Text]
-    old_name = old_name.strip()
-    new_name = new_name.strip()
+    old_name = old_name
+    new_name = new_name
 
     stream = get_stream(old_name, realm)
 

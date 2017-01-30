@@ -95,6 +95,7 @@ def update_stream_backend(request, user_profile, stream_id,
     if description is not None:
         do_change_stream_description(user_profile.realm, stream.name, description)
     if new_name is not None:
+        new_name = new_name.strip()
         do_rename_stream(user_profile.realm, stream.name, new_name)
     if is_private is not None:
         do_change_stream_invite_only(stream, is_private)
