@@ -16,7 +16,7 @@ from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
     Recipient, Realm, UserMessage, DefaultStream, RealmEmoji, RealmAlias, \
     RealmFilter, \
     PreregistrationUser, get_client, UserActivity, \
-    get_stream, UserPresence, get_recipient, name_changes_disabled, email_to_username, \
+    UserPresence, get_recipient, name_changes_disabled, email_to_username, \
     list_of_domains_for_realm
 from zerver.lib.actions import update_user_presence, do_change_tos_version, \
     do_events_register, do_update_pointer, get_cross_realm_dicts, realm_user_count
@@ -126,7 +126,7 @@ def home_real(request):
             narrow = [["stream", narrow_stream.name]]
         except Exception:
             logging.exception("Narrow parsing")
-        if narrow_topic is not None:
+        if narrow_stream is not None and narrow_topic is not None:
             narrow.append(["topic", narrow_topic])
 
     register_ret = do_events_register(user_profile, request.client,
