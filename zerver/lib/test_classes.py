@@ -379,7 +379,7 @@ class ZulipTestCase(TestCase):
 
     # Subscribe to a stream directly
     def subscribe_to_stream(self, email, stream_name, realm=None):
-        # type: (Text, Text, Optional[Realm]) -> None
+        # type: (Text, Text, Optional[Realm]) -> Stream
         if realm is None:
             realm = get_realm_by_email_domain(email)
         stream = get_stream(stream_name, realm)
@@ -387,6 +387,7 @@ class ZulipTestCase(TestCase):
             stream, _ = create_stream_if_needed(realm, stream_name)
         user_profile = get_user_profile_by_email(email)
         bulk_add_subscriptions([stream], [user_profile])
+        return stream
 
     def unsubscribe_from_stream(self, email, stream_name):
         # type: (Text, Text) -> None
