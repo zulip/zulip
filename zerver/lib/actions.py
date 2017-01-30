@@ -2388,13 +2388,10 @@ def do_add_default_stream(stream):
         DefaultStream.objects.create(realm=stream.realm, stream=stream)
         notify_default_streams(stream.realm)
 
-def do_remove_default_stream(realm, stream_name):
-    # type: (Realm, Text) -> None
-    stream = get_stream(stream_name, realm)
-    if stream is None:
-        raise JsonableError(_("Stream does not exist"))
-    DefaultStream.objects.filter(realm=realm, stream=stream).delete()
-    notify_default_streams(realm)
+def do_remove_default_stream(stream):
+    # type: (Stream) -> None
+    DefaultStream.objects.filter(realm=stream.realm, stream=stream).delete()
+    notify_default_streams(stream.realm)
 
 def get_default_streams_for_realm(realm):
     # type: (Realm) -> List[Stream]

@@ -81,7 +81,8 @@ def add_default_stream(request, user_profile, stream_name=REQ()):
 @has_request_variables
 def remove_default_stream(request, user_profile, stream_name=REQ()):
     # type: (HttpRequest, UserProfile, Text) -> HttpResponse
-    do_remove_default_stream(user_profile.realm, stream_name)
+    (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
+    do_remove_default_stream(stream)
     return json_success()
 
 @require_realm_admin

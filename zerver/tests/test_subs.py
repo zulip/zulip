@@ -715,10 +715,10 @@ class DefaultStreamTest(ZulipTestCase):
         self.assertEqual(self.get_default_stream_names(realm), new_stream_names)
 
         # start removing
-        do_remove_default_stream(realm, 'Added Stream')
+        do_remove_default_stream(stream)
         self.assertEqual(self.get_default_stream_names(realm), orig_stream_names)
         # idempotentcy--2nd call to remove_default_stream should be a noop
-        do_remove_default_stream(realm, 'Added Stream')
+        do_remove_default_stream(stream)
         self.assertEqual(self.get_default_stream_names(realm), orig_stream_names)
 
     def test_api_calls(self):

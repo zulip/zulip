@@ -34,6 +34,7 @@ from zerver.lib.actions import (
     do_remove_realm_filter,
     do_rename_stream,
     do_add_default_stream,
+    do_remove_default_stream,
     do_set_muted_topics,
     do_set_realm_create_stream_by_admins_only,
     do_set_realm_name,
@@ -444,6 +445,8 @@ class EventsRegisterTest(ZulipTestCase):
 
         stream = get_stream("Scotland", self.user_profile.realm)
         events = self.do_test(lambda: do_add_default_stream(stream))
+        error = default_streams_checker('events[0]', events[0])
+        events = self.do_test(lambda: do_remove_default_stream(stream))
         error = default_streams_checker('events[0]', events[0])
         self.assert_on_error(error)
 
