@@ -32,7 +32,7 @@ from zerver.lib.actions import \
     get_emails_from_user_ids, do_deactivate_user, do_reactivate_user, \
     do_change_is_admin, extract_recipients, \
     do_set_realm_name, do_deactivate_realm, \
-    do_make_stream_private
+    do_change_stream_invite_only
 from zerver.lib.notifications import handle_missedmessage_emails
 from zerver.lib.session_user import get_session_dict_user
 from zerver.middleware import is_slow_query
@@ -945,7 +945,7 @@ class BotTest(ZulipTestCase):
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
         stream = get_stream("Denmark", user_profile.realm)
         self.subscribe_to_stream(user_profile.email, stream.name)
-        do_make_stream_private(user_profile.realm, stream)
+        do_change_stream_invite_only(stream, True)
 
         self.assert_num_bots_equal(0)
         events = [] # type: List[Dict[str, Any]]
@@ -982,7 +982,7 @@ class BotTest(ZulipTestCase):
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
         stream = get_stream("Denmark", user_profile.realm)
         self.unsubscribe_from_stream("hamlet@zulip.com", "Denmark")
-        do_make_stream_private(user_profile.realm, stream)
+        do_change_stream_invite_only(stream, True)
 
         bot_info = {
             'full_name': 'The Bot of Hamlet',
@@ -1008,7 +1008,7 @@ class BotTest(ZulipTestCase):
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
         stream = self.subscribe_to_stream(user_profile.email, 'Denmark')
-        do_make_stream_private(user_profile.realm, stream)
+        do_change_stream_invite_only(stream, True)
 
         self.assert_num_bots_equal(0)
         events = [] # type: List[Dict[str, Any]]
@@ -1045,7 +1045,7 @@ class BotTest(ZulipTestCase):
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
         stream = get_stream("Denmark", user_profile.realm)
         self.unsubscribe_from_stream("hamlet@zulip.com", "Denmark")
-        do_make_stream_private(user_profile.realm, stream)
+        do_change_stream_invite_only(stream, True)
 
         self.assert_num_bots_equal(0)
         bot_info = {
@@ -1287,7 +1287,7 @@ class BotTest(ZulipTestCase):
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
         stream = self.subscribe_to_stream(user_profile.email, "Denmark")
-        do_make_stream_private(user_profile.realm, stream)
+        do_change_stream_invite_only(stream, True)
 
         bot_info = {
             'full_name': 'The Bot of Hamlet',
@@ -1314,7 +1314,7 @@ class BotTest(ZulipTestCase):
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
         stream = get_stream("Denmark", user_profile.realm)
         self.unsubscribe_from_stream("hamlet@zulip.com", "Denmark")
-        do_make_stream_private(user_profile.realm, stream)
+        do_change_stream_invite_only(stream, True)
 
         bot_info = {
             'full_name': 'The Bot of Hamlet',
@@ -1370,7 +1370,7 @@ class BotTest(ZulipTestCase):
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
         stream = self.subscribe_to_stream(user_profile.email, "Denmark")
-        do_make_stream_private(user_profile.realm, stream)
+        do_change_stream_invite_only(stream, True)
 
         bot_info = {
             'full_name': 'The Bot of Hamlet',
@@ -1396,7 +1396,7 @@ class BotTest(ZulipTestCase):
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
         stream = get_stream("Denmark", user_profile.realm)
         self.unsubscribe_from_stream("hamlet@zulip.com", "Denmark")
-        do_make_stream_private(user_profile.realm, stream)
+        do_change_stream_invite_only(stream, True)
 
         bot_info = {
             'full_name': 'The Bot of Hamlet',

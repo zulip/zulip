@@ -2052,14 +2052,9 @@ def do_change_bot_type(user_profile, value):
     user_profile.bot_type = value
     user_profile.save(update_fields=["bot_type"])
 
-def do_make_stream_public(realm, stream):
-    # type: (Realm, Stream) -> None
-    stream.invite_only = False
-    stream.save(update_fields=['invite_only'])
-
-def do_make_stream_private(realm, stream):
-    # type: (Realm, Stream) -> None
-    stream.invite_only = True
+def do_change_stream_invite_only(stream, invite_only):
+    # type: (Stream, bool) -> None
+    stream.invite_only = invite_only
     stream.save(update_fields=['invite_only'])
 
 def do_rename_stream(realm, old_name, new_name, log=True):

@@ -14,8 +14,8 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
     do_change_subscription_property, internal_prep_message, \
     gather_subscriptions, subscribed_to_stream, \
     bulk_add_subscriptions, do_send_messages, get_subscriber_emails, do_rename_stream, \
-    do_deactivate_stream, do_make_stream_public, do_add_default_stream, \
-    do_change_stream_description, do_get_streams, do_make_stream_private, \
+    do_deactivate_stream, do_change_stream_invite_only, do_add_default_stream, \
+    do_change_stream_description, do_get_streams, \
     do_remove_default_stream, get_topic_history_for_stream
 from zerver.lib.response import json_success, json_error, json_response
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, \
@@ -97,10 +97,7 @@ def update_stream_backend(request, user_profile, stream_id,
     if new_name is not None:
         do_rename_stream(user_profile.realm, stream.name, new_name)
     if is_private is not None:
-        if is_private:
-            do_make_stream_private(user_profile.realm, stream)
-        else:
-            do_make_stream_public(user_profile.realm, stream)
+        do_change_stream_invite_only(stream, is_private)
     return json_success()
 
 def list_subscriptions_backend(request, user_profile):
