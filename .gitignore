@@ -27,3 +27,4 @@ npm-debug.log
 var/*
 .vscode/
 tools/conf.ini
+tools/custom_provision
