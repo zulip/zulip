@@ -24,6 +24,7 @@ from zerver.lib.avatar import avatar_url
 from zerver.lib.i18n import get_language_list, get_language_name, \
     get_language_list_for_templates
 from zerver.lib.push_notifications import num_push_devices_for_user
+from zerver.lib.streams import access_stream_by_name
 from zerver.lib.utils import statsd, get_subdomain
 from zproject.backends import password_auth_enabled
 from zproject.jinja2 import render_to_response
@@ -119,9 +120,9 @@ def home_real(request):
     narrow_topic = request.GET.get("topic")
     if request.GET.get("stream"):
         try:
-            narrow_stream = get_stream(request.GET.get("stream"), user_profile.realm)
-            assert(narrow_stream is not None)
-            assert(narrow_stream.is_public())
+            narrow_stream_name = request.GET.get("stream")
+            (narrow_stream, ignored_rec, ignored_sub) = access_stream_by_name(
+                user_profile, narrow_stream_name)
             narrow = [["stream", narrow_stream.name]]
         except Exception:
             logging.exception("Narrow parsing")
