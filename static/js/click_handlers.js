@@ -329,7 +329,7 @@ $(function () {
 
     $(".informational-overlays").click(function (e) {
         if ($(e.target).is(".informational-overlays, [data-dismiss]")) {
-            $(this).removeClass("show");
+            ui.hide_info_overlay();
         }
     });
 
