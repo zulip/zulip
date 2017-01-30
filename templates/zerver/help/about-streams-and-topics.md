@@ -47,7 +47,7 @@ Only organization administrators can modify a stream; they can:
 * [delete a stream](/help/delete-a-stream)
 * [change the description of a stream](/help/change-the-stream-description)
 * [remove users from a stream](/help/remove-someone-from-a-stream)
-* [change the accessibility of a stream](/help/change-the-accessibility-of-a-stream)
+* [change the privacy of a stream](/help/change-the-privacy-of-a-stream)
 
 ## About topics
 

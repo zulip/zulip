@@ -84,7 +84,7 @@ as an **organization**.
 * [Change the stream description](/help/change-the-stream-description)
 * [Rename a stream](/help/rename-a-stream)
 * [Unsubscribe from a stream](/help/unsubscribe-from-a-stream)
-* [Change the accessibility of a stream](/help/change-the-accessibility-of-a-stream)
+* [Change the privacy of a stream](/help/change-the-privacy-of-a-stream)
 * [Organize the Streams sidebar](/help/organize-the-streams-sidebar)
 * [Pin a stream](/help/pin-a-stream)
 * [Change the color of a stream](/help/change-the-color-of-a-stream)
@@ -141,7 +141,7 @@ as an **organization**.
 * [Set default streams for new users](/help/set-default-streams-for-new-users)
 * [Rename a stream](/help/rename-a-stream)
 * [Change a stream's description](/help/change-the-stream-description)
-* [Make a public stream private](/help/change-the-accessibility-of-a-stream#make-a-public-stream-private)
+* [Make a public stream private](/help/change-the-privacy-of-a-stream#make-a-public-stream-private)
 * [Add someone to a stream](/help/add-or-invite-someone-to-a-stream)
 * [Remove someone from a stream](/help/remove-someone-from-a-stream)
 
