@@ -1,4 +1,4 @@
-# Sharing a message or conversation
+# Share a message or conversation
 
 A message or conversation can be shared on Zulip by creating
  a link to the conversation and sharing the link.

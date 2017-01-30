@@ -1,4 +1,4 @@
-# Reply to a Message
+# Reply to a message
 There are three ways to reply to a message in Zulip.
 
 ## Click on a message

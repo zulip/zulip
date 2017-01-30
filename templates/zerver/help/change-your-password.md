@@ -1,4 +1,4 @@
-# Change Your Password
+# Change your password
 
 ## If you know your current password
 

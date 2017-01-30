@@ -1,1 +1,1 @@
-tab of the [Settings](/help/edit-settings) page.
+tab of the [Settings](/help/change-your-settings) page.
