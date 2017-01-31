@@ -576,7 +576,7 @@ td.pointer {
 }
 
 .include-sender .message_time {
-    top: -4px;
+    top: 0px;
 }
 
 .message_time {
@@ -590,10 +590,8 @@ td.pointer {
     right: -105px;
     line-height: 20px;
     text-align: right;
-    -webkit-transition: background-color 2.7s ease-in, color 2.7s ease-in;
-    -moz-transition: background-color 2.7s ease-in, color 2.7s ease-in;
-    -o-transition: background-color 2.7s ease-in, color 2.7s ease-in;
-    transition: background-color 2.7s ease-in, color 2.7s ease-in;
+    opacity: 1;
+    transition: all 0.2s ease;
 }
 
 .status-time {
@@ -603,9 +601,12 @@ td.pointer {
 .message_controls {
     display: inline-block;
     position: absolute;
+    right: -60px;
     top: 2px;
     right: -56px;
+    transform: translateX(5px);
     z-index: 1;
+    transition: all 0.3s ease;
 }
 
 .message_controls > div {
@@ -622,10 +623,14 @@ td.pointer {
 
 .message_controls > div {
     padding: 0px 1px;
+
+    opacity: 0;
+    transition: all 0.2s ease;
 }
 
-.include-sender .message_controls {
-    top: -3px;
+.message_hovered .message_controls {
+    transform: translateX(0px);
+    opacity: 1;
 }
 
 .message_data {
@@ -2291,6 +2296,7 @@ button.topic_edit_cancel {
 }
 
 .empty-star {
+    display: inline-block;
     color: #bbb;
 }
 
