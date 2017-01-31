@@ -1,8 +1,8 @@
-# Zulip User Documentation (draft)
+# Zulip User Documentation
 
-Zulip is a chat app. Its most distinctive characteristic is that
-conversation among a group of people can be divided according to
-subject “**streams**” and further subdivided into “**topics**”, so
+Zulip is a group chat app. Its most distinctive characteristic is that
+conversation within an organization can be divided into “**streams**”
+and further subdivided into “**topics**”, so that
 much finer-grained conversations are possible than with IRC or other
 chat tools.
 
@@ -16,7 +16,6 @@ as an **organization**.
 
 ---
 
-# Using Zulip
 ## Basics
 * [The Zulip browser window](/help/the-zulip-browser-window)
 - [Zulip glossary](/help/zulip-glossary)
@@ -63,11 +62,10 @@ as an **organization**.
 * [Collapse a message](/help/collapse-a-message)
 * [Star a message](/help/star-a-message)
 * [Share a message or conversation](/help/share-a-message-or-conversation)
+* [Searching for messages](/help/searching-for-messages)
 ### Editing
 * [Edit or delete a message](/help/edit-or-delete-a-message)
 * [Change the topic of a message](/help/change-the-topic-of-a-message)
-### Searching
-* [Searching for messages](/help/searching-for-messages)
 
 ## People
 * [Check whether someone is here or away](/help/check-whether-someone-is-here-or-away)
@@ -113,8 +111,8 @@ as an **organization**.
 ## Apps
 * Zulip on Mac OS
 * Zulip on Linux
-* [Zulip on Windows](/help/zulip-on-windows)
-* [Zulip on Android](/help/zulip-on-android)
+* [Tips for Zulip on Windows](/help/zulip-on-windows)
+* [Tips for Zulip on Android](/help/zulip-on-android)
 * Zulip on iOS
 * Zulip in a terminal
 * Connect to Zulip over IRC/etc (not implemented?)
