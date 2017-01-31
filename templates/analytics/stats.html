@@ -4,16 +4,33 @@
 {{ minified_js('stats')|safe }}
 <html>
 <style type="text/css">
+    .app-main {
+        padding: 0;
+
+        width: auto;
+        max-width: none;
+    }
+
     p {
         margin-bottom: 0px;
     }
+
+    .alert {
+        display: none;
+    }
+
+    .analytics-page-header {
+        margin-top: 20px;
+        text-align: center;
+    }
+
     .sidebar {
-        width: 250px;
+        width: 300px;
         height: calc(100vh - 94px);
         z-index: 2;
         display: inline-block;
         vertical-align: top;
-        border-right: solid #eee;
+        border-right: 1px solid #eee;
     }
     .nav {
         margin-left: 20px;
@@ -25,11 +42,12 @@
         margin-bottom: 7px;
     }
     .nav-link {
+        display: block;
         font-size: 16px;
         margin-left: 25px;
     }
     .page-content {
-        width: calc(100% - 258px);
+        width: calc(100% - 300px - 8px);
         height: calc(100vh - 94px);
         overflow: auto;
         display: inline-block;
@@ -77,7 +95,7 @@
     }
     #button_container {
         position: absolute;
-        top: -15px;
+        top: -12px;
         z-index: 1
     }
     #hourly_button {
@@ -198,7 +216,7 @@
 </div>
 <div class="page-content">
   <div id="id_stats_errors" class="alert alert-error"></div>
-  <h3 class="login-page-header">Analytics</h3>
+  <h1 class="analytics-page-header">Analytics</h1>
   <div class="center-container">
     <div class="center-block">
       <p class="graph-title" id="messages_timescale_anchor"> Messages Sent by Humans and Bots </p>
@@ -213,12 +231,6 @@
         <div id="hoverinfo"></div>
         <div id="id_messages_sent_over_time"></div>
       </div>
-    </div>
-  </div>
-  <div class="center-container">
-    <div class="center-block">
-      <p class="graph-title" id="users_anchor"> Number of Users</p>
-      <div id="id_number_of_users"></div>
     </div>
   </div>
   <div id="pie_container">
@@ -241,6 +253,12 @@
       <button class="pie-button" type="button" id='messages_by_type_cumulative_button'> All time </button>
       <button class="pie-button" type="button" id='messages_by_type_thirty_days_button'> Last 30 Days </button>
       <button class="pie-button" type="button" id='messages_by_type_ten_days_button'> Last 10 Days </button>
+    </div>
+  </div>
+  <div class="center-container">
+    <div class="center-block">
+      <p class="graph-title" id="users_anchor"> Number of Users</p>
+      <div id="id_number_of_users"></div>
     </div>
   </div>
 </div>

@@ -88,7 +88,7 @@ function messages_sent_over_time_layout() {
     return {
         barmode: 'group',
         width: 750,
-        height: 500,
+        height: 400,
         margin: {
             l: 40, r: 0, b: 150, t: 0,
         },
@@ -289,6 +289,11 @@ function populate_messages_sent_over_time(data) {
     });
 }
 
+function throw_error(msg) {
+    $('#id_stats_errors').show()
+        .text(msg);
+}
+
 $.get({
     url: '/json/analytics/chart_data',
     data: {chart_name: 'messages_sent_over_time', min_length: '10'},
@@ -297,7 +302,7 @@ $.get({
         populate_messages_sent_over_time(data);
     },
     error: function (xhr) {
-        $('#id_stats_errors').text($.parseJSON(xhr.responseText).msg);
+        throw_error($.parseJSON(xhr.responseText).msg);
     },
 });
 
@@ -348,7 +353,7 @@ $.get({
         populate_number_of_users(data);
     },
     error: function (xhr) {
-        $('#id_stats_errors').text($.parseJSON(xhr.responseText).msg);
+        throw_error($.parseJSON(xhr.responseText).msg);
     },
 });
 
@@ -593,7 +598,7 @@ $.get({
         populate_messages_sent_by_client(data);
     },
     error: function (xhr) {
-        $('#id_stats_errors').text($.parseJSON(xhr.responseText).msg);
+        throw_error($.parseJSON(xhr.responseText).msg);
     },
 });
 
@@ -772,7 +777,6 @@ $.get({
         populate_messages_sent_by_message_type(data);
     },
     error: function (xhr) {
-        $('#id_stats_errors').text($.parseJSON(xhr.responseText).msg);
+        throw_error($.parseJSON(xhr.responseText).msg);
     },
 });
-
