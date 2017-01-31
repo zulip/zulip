@@ -21,7 +21,7 @@ exports.init = function () {
     // People in this realm
     realm_people_dict = new Dict({fold_case: true});
     cross_realm_dict = new Dict({fold_case: true});
-    pm_recipient_count_dict = new Dict({fold_case: true});
+    pm_recipient_count_dict = new Dict();
 };
 
 // WE INITIALIZE DATA STRUCTURES HERE!
@@ -249,14 +249,15 @@ exports.get_recipient_count = function (person) {
         return person.pm_recipient_count;
     }
 
-    var count = pm_recipient_count_dict.get(person.email);
+    var user_id = person.user_id || person.id;
+    var count = pm_recipient_count_dict.get(user_id);
 
     return count || 0;
 };
 
-exports.incr_recipient_count = function (email) {
-    var old_count = pm_recipient_count_dict.get(email) || 0;
-    pm_recipient_count_dict.set(email, old_count + 1);
+exports.incr_recipient_count = function (user_id) {
+    var old_count = pm_recipient_count_dict.get(user_id) || 0;
+    pm_recipient_count_dict.set(user_id, old_count + 1);
 };
 
 exports.filter_people_by_search_terms = function (users, search_terms) {
@@ -386,10 +387,13 @@ exports.extract_people_from_message = function (message) {
     // Add new people involved in this message to the people list
     _.each(involved_people, function (person) {
         if (!person.unknown_local_echo_user) {
+
+            var user_id = person.user_id || person.id;
+
             if (! exports.get_by_email(person.email)) {
                 exports.add({
                     email: person.email,
-                    user_id: person.user_id || person.id,
+                    user_id: user_id,
                     full_name: person.full_name,
                     is_admin: person.is_realm_admin || false,
                     is_bot: person.is_bot || false,
@@ -398,7 +402,7 @@ exports.extract_people_from_message = function (message) {
 
             if (message.type === 'private' && message.sent_by_me) {
                 // Track the number of PMs we've sent to this person to improve autocomplete
-                exports.incr_recipient_count(person.email);
+                exports.incr_recipient_count(user_id);
             }
         }
     });
