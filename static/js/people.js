@@ -20,7 +20,7 @@ exports.init = function () {
     people_by_user_id_dict = new Dict();
     // People in this realm
     realm_people_dict = new Dict({fold_case: true});
-    cross_realm_dict = new Dict({fold_case: true});
+    cross_realm_dict = new Dict(); // keyed by user_id
     pm_recipient_count_dict = new Dict();
 };
 
@@ -238,7 +238,11 @@ exports.get_realm_persons = function () {
 };
 
 exports.is_cross_realm_email = function (email) {
-    return cross_realm_dict.has(email);
+    var person = people_dict.get(email);
+    if (!person) {
+        return undefined;
+    }
+    return cross_realm_dict.has(person.user_id);
 };
 
 exports.get_recipient_count = function (person) {
@@ -456,7 +460,7 @@ $(function () {
         if (!people_dict.has(person.email)) {
             exports.add(person);
         }
-        cross_realm_dict.set(person.email, person);
+        cross_realm_dict.set(person.user_id, person);
     });
 
     exports.initialize_current_user(page_params.user_id);
