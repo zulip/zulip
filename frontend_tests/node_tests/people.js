@@ -135,11 +135,11 @@ initialize();
 initialize();
 
 (function test_recipient_counts() {
-    var email = 'anybody@example.com';
-    assert.equal(people.get_recipient_count({email: email}), 0);
-    people.incr_recipient_count(email);
-    people.incr_recipient_count(email);
-    assert.equal(people.get_recipient_count({email: email}), 2);
+    var user_id = 99;
+    assert.equal(people.get_recipient_count({id: user_id}), 0);
+    people.incr_recipient_count(user_id);
+    people.incr_recipient_count(user_id);
+    assert.equal(people.get_recipient_count({user_id: user_id}), 2);
 
     assert.equal(people.get_recipient_count({pm_recipient_count: 5}), 5);
 }());

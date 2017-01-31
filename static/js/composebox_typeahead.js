@@ -286,6 +286,7 @@ exports.compose_content_begins_typeahead = function (query) {
         var everyone_item = {
             special_item_text: "everyone (Notify everyone)",
             email: "everyone",
+            pm_recipient_count: Infinity,
             full_name: "everyone",
         };
         var persons = people.get_realm_persons();
