@@ -1,6 +1,8 @@
 var admin = (function () {
 
-var meta = {};
+var meta = {
+    loaded: false,
+};
 var exports = {};
 var all_streams = [];
 
@@ -27,6 +29,10 @@ function get_email_for_user_row(row) {
 }
 
 exports.update_user_full_name = function (email, new_full_name) {
+    if (!meta.loaded) {
+        return;
+    }
+
     var user_info = get_user_info(email);
 
     var user_row = user_info.user_row;
@@ -130,6 +136,10 @@ function get_non_default_streams_names(streams_data) {
 }
 
 exports.update_default_streams_table = function () {
+    if (!meta.loaded) {
+        return;
+    }
+
     if ($('#administration').hasClass('active')) {
         $("#admin_default_streams_table").expectOne().find("tr.default_stream_row").remove();
         populate_default_streams(page_params.realm_default_streams);
@@ -156,6 +166,10 @@ function make_stream_default(stream_name) {
 }
 
 exports.populate_emoji = function (emoji_data) {
+    if (!meta.loaded) {
+        return;
+    }
+
     var emoji_table = $('#admin_emoji_table').expectOne();
     emoji_table.find('tr.emoji_row').remove();
     _.each(emoji_data, function (data, name) {
@@ -171,6 +185,10 @@ exports.populate_emoji = function (emoji_data) {
 };
 
 exports.populate_filters = function (filters_data) {
+    if (!meta.loaded) {
+        return;
+    }
+
     var filters_table = $("#admin_filters_table").expectOne();
     filters_table.find("tr.filter_row").remove();
     _.each(filters_data, function (filter) {
@@ -190,6 +208,10 @@ exports.populate_filters = function (filters_data) {
 };
 
 exports.populate_realm_aliases = function (aliases) {
+    if (!meta.loaded) {
+        return;
+    }
+
     var domains_list = _.map(page_params.domains, function (ADomain) {
         return ADomain.domain;
     });
@@ -207,10 +229,18 @@ exports.populate_realm_aliases = function (aliases) {
 };
 
 exports.reset_realm_default_language = function () {
+    if (!meta.loaded) {
+        return;
+    }
+
     $("#id_realm_default_language").val(page_params.realm_default_language);
 };
 
 exports.populate_auth_methods = function (auth_methods) {
+    if (!meta.loaded) {
+        return;
+    }
+
     var auth_methods_table = $("#admin_auth_methods_table").expectOne();
     auth_methods_table.find('tr.method_row').remove();
     _.each(_.keys(auth_methods).sort(), function (key) {
@@ -286,6 +316,10 @@ function _setup_page() {
         success: populate_streams,
         error: failed_listing_streams,
     });
+
+    // We set this flag before we're fully loaded so that the populate
+    // methods don't short-circuit.
+    meta.loaded = true;
 
     // Populate authentication methods table
     exports.populate_auth_methods(page_params.realm_authentication_methods);
