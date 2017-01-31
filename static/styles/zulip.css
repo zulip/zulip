@@ -36,8 +36,15 @@ blockquote p {
     font-weight: normal;
 }
 
+/* master link color: #65b5de */
 a {
     cursor: pointer;
+    color: #65b5de;
+}
+
+a:hover {
+    color: #0d86c3;
+    text-decoration: none;
 }
 
 .no-select {
@@ -674,11 +681,6 @@ td.pointer {
     margin-left: 0px;
 }
 
-.stream_label:hover {
-    color: inherit !important;
-    text-decoration: none;
-}
-
 .stream_topic {
     display: inline-block;
     vertical-align: top;
@@ -1001,11 +1003,11 @@ td.pointer {
 
 .sender_name_hovered .sender_name,
 .sender_name_hovered .sender_name-in-status {
-    color: #0088CC;
+    color: #65b5de;
 }
 
 .sender_name_hovered .inline_profile_picture {
-    border-color: #0088CC;
+    border-color: #65b5de;
 }
 
 .message_sender .bot-icon {
@@ -1023,7 +1025,7 @@ td.pointer {
 }
 
 .actions_hover:hover {
-    color: #0088CC;
+    color: #65b5de;
 }
 
 .message_failed,
@@ -1152,7 +1154,7 @@ a.dark_background:hover,
 
 .actions_hovered .message_time,
 .actions_hovered .info {
-    color: #0088CC;
+    color: #65b5de;
     cursor: pointer;
 }
 
@@ -1282,7 +1284,7 @@ div.focused_table {
 .message_length_controller {
     display: none;
     text-align: center;
-    color: #0088CC;
+    color: #65b5de;
 
     /* to match .message_content */
     margin-left: 5px;
