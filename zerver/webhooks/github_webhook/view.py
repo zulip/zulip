@@ -369,9 +369,10 @@ def api_github_webhook(
         payload=REQ(argument_type='body'), stream=REQ(default='github')):
     # type: (HttpRequest, UserProfile, Client, Dict[str, Any], Text) -> HttpResponse
     event = get_event(request, payload)
-    subject = get_subject_based_on_type(payload, event)
-    body = get_body_function_based_on_type(event)(payload)
-    check_send_message(user_profile, client, 'stream', [stream], subject, body)
+    if event != 'ping':
+        subject = get_subject_based_on_type(payload, event)
+        body = get_body_function_based_on_type(event)(payload)
+        check_send_message(user_profile, client, 'stream', [stream], subject, body)
     return json_success()
 
 def get_event(request, payload):
@@ -389,7 +390,7 @@ def get_event(request, payload):
             return "push_commits"
         else:
             return "push_tags"
-    elif event in list(EVENT_FUNCTION_MAPPER.keys()):
+    elif event in list(EVENT_FUNCTION_MAPPER.keys()) or event == 'ping':
         return event
     raise UnknownEventType(u'Event {} is unknown and cannot be handled'.format(event))
 

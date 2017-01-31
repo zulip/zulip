@@ -17,6 +17,12 @@ class GithubWebhookTest(WebhookTestCase):
     EXPECTED_SUBJECT_BRANCH_EVENTS = u"public-repo / changes"
     EXPECTED_SUBJECT_WIKI_EVENTS = u"public-repo / Wiki Pages"
 
+    def test_ping_event(self):
+        # type: () -> None
+        payload = self.get_body('ping')
+        result = self.client_post(self.url, payload, HTTP_X_GITHUB_EVENT='ping', content_type="application/json")
+        self.assert_json_success(result)
+
     def test_push_1_commit(self):
         # type: () -> None
         expected_message = u"baxterthehacker [pushed](https://github.com/baxterthehacker/public-repo/compare/9049f1265b7d...0d1a26e67d8f) to branch changes\n\n* [0d1a26e](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c): Update README.md"
