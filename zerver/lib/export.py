@@ -1360,7 +1360,7 @@ def import_uploads_s3(bucket_name, import_dir, processing_avatars=False):
         key.set_metadata("realm_id", str(user_profile.realm_id))
         key.set_metadata("orig_last_modified", record['last_modified'])
 
-        headers = {'Content-Type': record['content_type']}
+        headers = {u'Content-Type': record['content_type']}
 
         key.set_contents_from_filename(os.path.join(import_dir, record['path']), headers=headers)
 
