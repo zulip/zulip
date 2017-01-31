@@ -3,7 +3,7 @@
 <form id="message_edit_form" class="form-horizontal">
 {{#if is_stream}}
     <div class="control-group no-margin">
-        <label class="control-label edit-control-label" for="message_edit_topic">{{t "Topic" }}</label>
+        <label class="edit-control-label" for="message_edit_topic">{{t "Topic" }}</label>
         <div class="controls edit-controls">
           <input type="text" placeholder="{{topic}}" value="{{topic}}" class="message_edit_topic" id="message_edit_topic" />
           <select class='message_edit_topic_propagate' style='display:none;'>
@@ -16,10 +16,11 @@
 {{/if}}
     <div class="control-group no-margin">
         <div class="controls edit-controls">
+            <label class="edit-control-label" for="message_edit_topic">{{t "Content" }}</label>
             <textarea class="message_edit_content" id="message_edit_content">{{content}}</textarea>
         </div>
     </div>
-    <div class="control-group">
+    <div class="control-group action-buttons">
         <div class="controls edit-controls">
             {{#if is_editable}}
             <button type="button" class="message_edit_save btn btn-primary btn-small">{{t "Save" }}</button>
