@@ -14,11 +14,13 @@ var my_user_id;
 // can easily clear data.
 exports.init = function () {
     // The following three Dicts point to the same objects
-    // All people we've seen
+    // (all people we've seen), but people_dict can have duplicate
+    // keys related to email changes.  We want to deprecate
+    // people_dict over time and always do lookups by user_id.
     people_dict = new Dict({fold_case: true});
     people_by_name_dict = new Dict({fold_case: true});
     people_by_user_id_dict = new Dict();
-    // People in this realm
+
     realm_people_dict = new Dict();
     cross_realm_dict = new Dict(); // keyed by user_id
     pm_recipient_count_dict = new Dict();
@@ -35,12 +37,35 @@ exports.get_person_from_user_id = function (user_id) {
     return people_by_user_id_dict.get(user_id);
 };
 
-exports.get_by_email = function get_by_email(email) {
-    return people_dict.get(email);
+exports.get_by_email = function (email) {
+    var person = people_dict.get(email);
+
+    if (!person) {
+        return undefined;
+    }
+
+    if (person.email.toLowerCase() !== email.toLowerCase()) {
+        blueslip.warn(
+            'Obsolete email passed to get_by_email: ' + email +
+            ' new email = ' + person.email
+        );
+    }
+
+    return person;
+};
+
+exports.update_email = function (user_id, new_email) {
+    var person = people_by_user_id_dict.get(user_id);
+    person.email = new_email;
+    people_dict.set(new_email, person);
+
+    // For legacy reasons we don't delete the old email
+    // keys in our dictionaries, so that reverse lookups
+    // still work correctly.
 };
 
 exports.get_user_id = function (email) {
-    var person = people_dict.get(email);
+    var person = people.get_by_email(email);
     if (person === undefined) {
         // Our blueslip reporting here is a bit complicated, but
         // there are known race conditions after reload, and we
@@ -115,7 +140,7 @@ exports.user_ids_string_to_emails_string = function (user_ids_string) {
 exports.emails_strings_to_user_ids_string = function (emails_string) {
     var emails = emails_string.split(',');
     var user_ids = _.map(emails, function (email) {
-        var person = people_dict.get(email);
+        var person = people.get_by_email(email);
         if (person) {
             return person.user_id;
         }
@@ -226,7 +251,7 @@ exports.small_avatar_url = function (message) {
 };
 
 exports.realm_get = function realm_get(email) {
-    var person = people_dict.get(email);
+    var person = people.get_by_email(email);
     if (!person) {
         return undefined;
     }
@@ -234,7 +259,7 @@ exports.realm_get = function realm_get(email) {
 };
 
 exports.get_all_persons = function () {
-    return people_dict.values();
+    return people_by_user_id_dict.values();
 };
 
 exports.get_realm_persons = function () {
@@ -242,7 +267,7 @@ exports.get_realm_persons = function () {
 };
 
 exports.is_cross_realm_email = function (email) {
-    var person = people_dict.get(email);
+    var person = people.get_by_email(email);
     if (!person) {
         return undefined;
     }
