@@ -90,7 +90,7 @@ p.n-margin {
 .top-messages-logo {
     position: absolute;
     left: calc(50% - 12px);
-    top: 25px;
+    top: 22px;
     width: 24px;
     height: 24px;
 }
@@ -2021,7 +2021,7 @@ div.floating_recipient {
 #loading_more_messages_indicator_box {
     position: relative;
     left: -50%;
-    top: -40px;
+    top: -45px;
     z-index: 1;
     -webkit-border-radius: 6px;
     -moz-border-radius: 6px;
