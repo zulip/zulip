@@ -139,6 +139,9 @@ function clear_preview_area() {
     $("#preview_message_area").hide();
     $("#preview_content").empty();
     $("#markdown_preview").show();
+    if (message_snapshot !== undefined) {
+        $('#restore-draft').show();
+    }
 }
 
 function hide_box() {
@@ -1019,6 +1022,7 @@ $(function () {
         var message = $("#new_message_content").val();
         $("#new_message_content").hide();
         $("#markdown_preview").hide();
+        $("#restore-draft").hide();
         $("#undo_markdown_preview").show();
         $("#preview_message_area").show();
 
