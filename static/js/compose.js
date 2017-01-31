@@ -564,7 +564,6 @@ exports.transmit_message = function (request, success, error) {
 };
 
 function send_message(request) {
-    console.log("Reached Here!");
     if (request === undefined) {
         request = create_message_object();
     }
