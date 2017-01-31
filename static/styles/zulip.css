@@ -1796,6 +1796,13 @@ div.floating_recipient {
     line-height: 38px;
 }
 
+.settings-section #admin_page_users_loading_indicator,
+.settings-section #admin_page_deactivated_users_loading_indicator,
+.settings-section #admin_page_bots_loading_indicator,
+.settings-section #admin_page_streams_loading_indicator {
+    margin: 0 auto;
+}
+
 .settings-section .loading_indicator_text {
     font-size: 12px;
     font-weight: 400;
@@ -1806,8 +1813,8 @@ div.floating_recipient {
 }
 
 .settings-section .loading_indicator_spinner {
-    width: 12px;
-    height: 12px;
+    width: 100%;
+    height: 100%;
     vertical-align: middle;
     display: inline-block;
 }
