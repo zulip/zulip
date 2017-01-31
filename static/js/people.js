@@ -19,7 +19,7 @@ exports.init = function () {
     people_by_name_dict = new Dict({fold_case: true});
     people_by_user_id_dict = new Dict();
     // People in this realm
-    realm_people_dict = new Dict({fold_case: true});
+    realm_people_dict = new Dict();
     cross_realm_dict = new Dict(); // keyed by user_id
     pm_recipient_count_dict = new Dict();
 };
@@ -226,7 +226,11 @@ exports.small_avatar_url = function (message) {
 };
 
 exports.realm_get = function realm_get(email) {
-    return realm_people_dict.get(email);
+    var person = people_dict.get(email);
+    if (!person) {
+        return undefined;
+    }
+    return realm_people_dict.get(person.user_id);
 };
 
 exports.get_all_persons = function () {
@@ -361,8 +365,8 @@ exports.add = function add(person) {
     people_by_name_dict.set(person.full_name, person);
 };
 
-exports.add_in_realm = function add_in_realm(person) {
-    realm_people_dict.set(person.email, person);
+exports.add_in_realm = function (person) {
+    realm_people_dict.set(person.user_id, person);
     exports.add(person);
 };
 
@@ -370,7 +374,7 @@ exports.deactivate = function (person) {
     // We don't fully remove a person from all of our data
     // structures, because deactivated users can be part
     // of somebody's PM list.
-    realm_people_dict.del(person.email);
+    realm_people_dict.del(person.user_id);
 };
 
 exports.extract_people_from_message = function (message) {
