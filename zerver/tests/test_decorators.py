@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import mock
 
-from typing import Any, Iterable, Optional, Text
+from typing import Any, Iterable, List, Optional, Text, Tuple
 from django.test import TestCase
 from django.utils.translation import ugettext as _
 from django.http import HttpResponse, HttpRequest
@@ -31,7 +31,7 @@ from zerver.decorator import (
     return_success_on_head_request
 )
 from zerver.lib.validator import (
-    check_string, check_dict, check_bool, check_int, check_list
+    check_string, check_dict, check_bool, check_int, check_list, Validator
 )
 from zerver.models import \
     get_realm, get_user_profile_by_email, UserProfile, Client
@@ -427,7 +427,7 @@ class ValidatorTestCase(TestCase):
         keys = [
             ('names', check_list(check_string)),
             ('city', check_string),
-        ]
+        ] # type: List[Tuple[str, Validator]]
 
         x = {
             'names': ['alice', 'bob'],
