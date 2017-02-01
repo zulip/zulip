@@ -57,6 +57,14 @@ body {
     font-size: 17px;
 }
 
+*[id]:before {
+    display: block;
+    content: " ";
+    margin-top: -40px;
+    height: 40px;
+    visibility: hidden;
+}
+
 .markdown ul,
 .markdown ol {
     margin-left: 30px;
