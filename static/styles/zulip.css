@@ -463,6 +463,7 @@ li.actual-dropdown-menu i {
     /* In gear menu, make icons the same width so labels line up. */
     display: inline-block;
     width: 14px;
+    text-align: center;
 }
 
 .message_area_padder {
