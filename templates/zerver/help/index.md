@@ -16,9 +16,6 @@ as an **organization**.
 
 ---
 
-## Basics
-* [The Zulip browser window](/help/the-zulip-browser-window)
-* [Zulip glossary](/help/zulip-glossary)
 ## Account Basics
 * [Change your name](/help/change-your-name)
 * [Change your password](/help/change-your-password)
@@ -105,14 +102,16 @@ as an **organization**.
 * [Keyboard shortcuts](/help/keyboard-shortcuts)
 * [Add a bot or integration](/help/add-a-bot-or-integration)
 
-## Apps
-<!-- Zulip on Mac OS -->
-<!-- Zulip on Linux -->
+## Misc
 * [Tips for Zulip on Windows](/help/zulip-on-windows)
 * [Tips for Zulip on Android](/help/zulip-on-android)
+<!-- Zulip on Mac OS -->
+<!-- Zulip on Linux -->
 <!-- Zulip on iOS -->
 <!-- Zulip in a terminal -->
 <!-- Connect to Zulip over IRC/etc (not implemented?) -->
+* [The Zulip browser window](/help/the-zulip-browser-window)
+* [Zulip glossary](/help/zulip-glossary)
 
 # Administering a Zulip organization
 
