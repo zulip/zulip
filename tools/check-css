@@ -32,8 +32,12 @@ def check_our_files():
         try:
             validate(fn)
         except CssParserException as e:
-            print('CssParserException raised while parsing file %s' % (fn,))
-            print(e)
+            msg = '''
+                ERROR! Some CSS seems to be misformatted.
+                {}
+                See line {} in file {}
+                '''.format(e.msg, e.token.line, fn)
+            print(msg)
             sys.exit(1)
 
 if __name__ == '__main__':
