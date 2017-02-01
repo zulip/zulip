@@ -89,7 +89,12 @@ def simulated_queue_client(client):
 def tornado_redirected_to_list(lst):
     # type: (List[Mapping[str, Any]]) -> Iterator[None]
     real_event_queue_process_notification = event_queue.process_notification
-    event_queue.process_notification = lst.append
+    event_queue.process_notification = lambda notice: lst.append(notice)
+    # process_notification takes a single parameter called 'notice'.
+    # lst.append takes a single argument called 'object'.
+    # Some code might call process_notification using keyword arguments,
+    # so mypy doesn't allow assigning lst.append to process_notification
+    # So explicitly change parameter name to 'notice' to work around this problem
     yield
     event_queue.process_notification = real_event_queue_process_notification
 
