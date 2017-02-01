@@ -264,6 +264,11 @@ class StreamAdminTest(ZulipTestCase):
                                    {'new_name': ujson.dumps('denmark ')})
         self.assert_json_error(result, "Stream name 'denmark' is already taken")
 
+        # Do a rename that is case-only--this should succeed.
+        result = self.client_patch('/json/streams/%d' % (stream.id,),
+                                   {'new_name': ujson.dumps('sTREAm_name1')})
+        self.assert_json_success(result)
+
         events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
             stream_id = get_stream('stream_name1', user_profile.realm).id
@@ -277,7 +282,7 @@ class StreamAdminTest(ZulipTestCase):
             type='stream',
             property='name',
             value='stream_name2',
-            name='stream_name1'
+            name='sTREAm_name1'
         ))
         notified_user_ids = set(events[1]['users'])
 
