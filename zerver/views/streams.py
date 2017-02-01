@@ -98,10 +98,12 @@ def update_stream_backend(request, user_profile, stream_id,
         do_change_stream_description(stream, description)
     if new_name is not None:
         new_name = new_name.strip()
-        # Will raise if the new name has invalid characters.
-        if stream.name.lower() == new_name.lower():
+        if stream.name == new_name:
             return json_error(_("Stream already has that name!"))
-        check_stream_name_available(user_profile.realm, new_name)
+        if stream.name.lower() != new_name.lower():
+            # Check that the stream name is available (unless we are
+            # are only changing the casing of the stream name).
+            check_stream_name_available(user_profile.realm, new_name)
         do_rename_stream(stream, new_name)
     if is_private is not None:
         do_change_stream_invite_only(stream, is_private)
