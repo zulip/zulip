@@ -1130,7 +1130,7 @@ msgid "Settings"
 msgstr "സജ്ജീകരണങ്ങൾ"
 
 #: templates/zerver/navbar.html:69 templates/zerver/search_operators.html:5
-msgid "Search help"
+msgid "Search operators"
 msgstr "സഹായം തിരിയുക"
 
 #: templates/zerver/navbar.html:75

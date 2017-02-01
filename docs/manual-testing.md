@@ -451,7 +451,7 @@ Here are the tasks for this section:
 Make sure that these options launch appropriate help screens:
 - Proofread and try a couple random options:
     - Message formatting
-    - Search help
+    - Search operators
 - Make sure help launches in a separate browser tab:
     - Desktop and mobile apps
     - Integrations
