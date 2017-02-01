@@ -59,9 +59,15 @@
                       <i class="icon-vector-wrench"></i> {{ _('Settings') }}
                     </a>
                   </li>
+                  <li title="{{ _('Administration') }}" class="admin-menu-item">
+                    <a href="#administration" role="button" data-toggle="tab">
+                      <i class="icon-vector-bolt"></i> {{ _('Administration') }}
+                    </a>
+                  </li>
+                  <li class="divider"></li>
                   <li title="{{ _('Keyboard shortcuts') }}">
                     <a href="#keyboard-shortcuts" role="button" data-toggle="modal">
-                      <i class="icon-vector-question-sign"></i> {{ _('Keyboard shortcuts') }}
+                      <i class="icon-vector-keyboard"></i> {{ _('Keyboard shortcuts') }}
                     </a>
                   </li>
                   <li title="{{ _('Message formatting') }}">
@@ -69,9 +75,9 @@
                       <i class="icon-vector-pencil"></i> {{ _('Message formatting') }}
                     </a>
                   </li>
-                  <li title="{{ _('Search help') }}">
+                  <li title="{{ _('Search operators') }}">
                     <a href="#search-operators" role="button" data-toggle="modal">
-                      <i class="icon-vector-search"></i> {{ _('Search help') }}
+                      <i class="icon-vector-search"></i> {{ _('Search operators') }}
                     </a>
                   </li>
                   <li class="divider"></li>
@@ -91,18 +97,6 @@
                     </a>
                   </li>
                   <li class="divider"></li>
-                  <li title="{{ _('Administration') }}" class="admin-menu-item">
-                    <a href="#administration" role="button" data-toggle="tab">
-                      <i class="icon-vector-bolt"></i> {{ _('Administration') }}
-                    </a>
-                  </li>
-                  {% if show_invites %}
-                  <li title="{% trans %}Invite more users to {{product_name}}.{% endtrans %}}">
-                    <a href="#invite-user" role="button" data-toggle="modal">
-                      <i class="icon-vector-plus-sign"></i> {{ _('Invite users') }}
-                    </a>
-                  </li>
-                  {% endif %}
                   {% if enable_feedback %}
                   <li title="{{ _('Feedback') }}">
                     <a href="#feedback" class="feedback">
@@ -110,7 +104,14 @@
                     </a>
                   </li>
                   {% endif %}
+                  {% if show_invites %}
+                  <li title="{% trans %}Invite more users to {{product_name}}.{% endtrans %}}">
+                    <a href="#invite-user" role="button" data-toggle="modal">
+                      <i class="icon-vector-plus-sign"></i> {{ _('Invite users') }}
+                    </a>
+                  </li>
                   <li class="divider"></li>
+                  {% endif %}
                   {% if show_webathena %}
                   <li title="{% trans %}Grant {{product_name}} the Kerberos tickets needed to run your Zephyr mirror via Webathena{% endtrans %}" id="webathena_login_menu">
                     <a href="#webathena" class="webathena_login">
