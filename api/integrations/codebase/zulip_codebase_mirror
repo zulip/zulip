@@ -77,7 +77,7 @@ def make_api_call(path):
     # type: (str) -> Optional[List[Dict[str, Any]]]
     response = requests.get("https://api3.codebasehq.com/%s" % (path,),
                             auth=(config.CODEBASE_API_USERNAME, config.CODEBASE_API_KEY),
-                            params={'raw': True},
+                            params={'raw': 'True'},
                             headers = {"User-Agent": user_agent,
                                        "Content-Type": "application/json",
                                        "Accept": "application/json"})
