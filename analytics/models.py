@@ -86,6 +86,7 @@ class RealmCount(BaseCount):
 
     class Meta(object):
         unique_together = ("realm", "property", "subgroup", "end_time")
+        index_together = ["property", "end_time"]
 
     @staticmethod
     def extended_id():
@@ -107,6 +108,9 @@ class UserCount(BaseCount):
 
     class Meta(object):
         unique_together = ("user", "property", "subgroup", "end_time")
+        # This index dramatically improves the performance of
+        # aggregating from users to realms
+        index_together = ["property", "realm", "end_time"]
 
     @staticmethod
     def extended_id():
@@ -128,6 +132,9 @@ class StreamCount(BaseCount):
 
     class Meta(object):
         unique_together = ("stream", "property", "subgroup", "end_time")
+        # This index dramatically improves the performance of
+        # aggregating from streams to realms
+        index_together = ["property", "realm", "end_time"]
 
     @staticmethod
     def extended_id():
