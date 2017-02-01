@@ -347,7 +347,7 @@ def login_page(request, **kwargs):
             if not u.is_realm_admin and u.realm.string_id == 'zulip']
         extra_context['community_users'] = [
             u.email for u in users
-            if u.realm.string_id == 'simple']
+            if u.realm.string_id != 'zulip']
     template_response = django_login_page(
         request, authentication_form=OurAuthenticationForm,
         extra_context=extra_context, **kwargs)
