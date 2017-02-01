@@ -79,17 +79,15 @@ body {
     list-style: none;
 }
 
-.markdown ol li {
+.markdown ol > li {
     counter-increment: item;
     margin-bottom: 5px;
 }
 
-.markdown ol li:before {
+.markdown ol > li:before {
     content: counter(item);
-
     display: inline-block;
     vertical-align: top;
-
     padding: 3px 6.5px 3px 7.5px;
     margin-right: 5px;
     background-color: #52c2af;
@@ -100,14 +98,23 @@ body {
     text-align: center;
 }
 
-.markdown ol li p {
+.markdown ol > li > p {
     display: inline-block;
     vertical-align: top;
-
     max-width: calc(100% - 30px);
-
     position: relative;
     top: -2px;
+}
+
+.markdown ol > li > ul {
+    padding-left: 20px;
+}
+
+.markdown ol > li > p:not(:first-child) {
+    padding-left: 30px;
+}
+.markdown ul > li:before {
+    content: none;
 }
 
 .title {
@@ -1199,12 +1206,17 @@ a.bottom-signup-button {
 .markdown .tip::before {
     display: inline;
     content: "\f0eb   Tip:  ";
-    font-family: FontAwesome, "Yantramanav";
+    font-family: FontAwesome, "Yantramanav", Humbug;
     font-weight: 600;
 }
 
 .markdown .tip p:first-of-type {
     display: inline;
+}
+
+.markdown ol > li > div.tip,
+.markdown ol > li > div.warn {
+    margin: 0px 30px 15px;
 }
 
 .markdown .indicator {
@@ -1239,7 +1251,7 @@ a.bottom-signup-button {
 }
 
 .markdown ul {
-    margin: 15px 10px 15px 25px;
+    margin: 0px 10px 15px 25px;
 }
 
 .markdown ul li {
