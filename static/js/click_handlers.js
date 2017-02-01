@@ -328,7 +328,7 @@ $(function () {
     });
 
     $(".informational-overlays").click(function (e) {
-        if ($(e.target).is(".informational-overlays, [data-dismiss]")) {
+        if ($(e.target).is(".informational-overlays, .exit")) {
             ui.hide_info_overlay();
         }
     });

@@ -32,19 +32,25 @@
     background-color: #fff;
 }
 
-.informational-overlays .overlay-content h1 {
-    padding: 0px 0px 7px 10px;
-
-    font-weight: 300;
-    font-size: 1.8em;
-
-    border-bottom: 1px solid #eee;
-}
-
 .informational-overlays .overlay-tabs {
     padding: 10px 0px;
     border-bottom: 1px solid #eee;
-    text-align: center;
+}
+
+.informational-overlays .overlay-tabs .tab-switcher {
+    margin-left: 15px ;
+}
+
+.informational-overlays .overlay-tabs .exit {
+    float: right;
+    font-size: 1.8em;
+    color: #aaa;
+    font-weight: 600;
+    margin: 1px 15px;
+}
+
+.informational-overlays .overlay-modal {
+    padding-bottom: 10px;
 }
 
 .informational-overlays .overlay-modal .modal-body {
