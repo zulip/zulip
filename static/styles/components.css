@@ -297,3 +297,19 @@
     -webkit-transform: scale(1);
     transform: scale(1);
 }
+
+/* -- standard input -- */
+.new-style .input {
+    box-shadow: none;
+    padding: 4px 6px 2px 4px;
+    border: 1px solid #ddd;
+
+    transition: all 0.3s ease;
+}
+
+.new-style .input:focus,
+.new-style .input:hover {
+    border: 1px solid #aaa;
+    outline: none;
+    box-shadow: none;
+}

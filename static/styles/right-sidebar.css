@@ -34,6 +34,7 @@
 #user_presences li,
 #group-pms li {
     list-style-type: none;
+    line-height: 1.5;
 }
 
 .user-status-indicator,
@@ -42,7 +43,7 @@
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    border: 1px solid;
+    border: 2px solid;
     float: left;
     position: relative;
     top: 5px;
@@ -70,12 +71,12 @@
 
 .user_offline .user-status-indicator {
     background-color: none;
-    border-color: gray;
+    border-color: #CCC;
 }
 
 #user_presences a,
 #group-pms a {
-    color: #333;
+    color: #444;
 }
 
 #invite-user-link i {
@@ -171,6 +172,9 @@
 
 #group-pm-list {
     display: none;
+    border-top: 1px solid #eee;
+    padding-top: 10px;
+    margin-top: 10px;
 }
 
 #group-pm-list.show {
@@ -228,4 +232,8 @@
     -webkit-box-shadow: none;
     -moz-box-shadow: none;
     z-index: 5;
+}
+
+.user-list-filter {
+    width: calc(100% - 24px);
 }
