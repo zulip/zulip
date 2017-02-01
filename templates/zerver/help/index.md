@@ -18,11 +18,10 @@ as an **organization**.
 
 ## Basics
 * [The Zulip browser window](/help/the-zulip-browser-window)
-- [Zulip glossary](/help/zulip-glossary)
+* [Zulip glossary](/help/zulip-glossary)
 ## Account Basics
 * [Change your name](/help/change-your-name)
 * [Change your password](/help/change-your-password)
-* Change your email address (not implemented)
 * [Change your settings](/help/change-your-settings)
 * [Change your avatar](/help/change-your-avatar)
 * [Change your language](/help/change-your-language)
@@ -31,8 +30,7 @@ as an **organization**.
 * [Join a Zulip organization](/help/join-a-zulip-organization)
 * [Signing in](/help/signing-in)
 * [Signing out](/help/signing-out)
-* Find your Zulip organization
-* Set up two-factor authentication (not implemented)
+<!-- Find your Zulip organization -->
 * [Deactivate your account](/help/deactivate-your-account)
 
 ## Messages
@@ -44,11 +42,11 @@ as an **organization**.
 * [Add emoji](/help/add-emoji)
 * [Upload and share files](/help/upload-and-share-files)
 * [Restore the last unsent message](/help/restore-the-last-unsent-message)
-* Automatically link to an external issue tracker (improve wording)
-* Add a link preview
+<!-- Automatically link to an external issue tracker (improve wording) -->
+<!-- Add a link preview -->
 * [Enable or disable Press Enter to send](/help/enable-or-disable-pressing-enter-to-send)
 * [Verify that your message has been successfully sent](/help/verify-that-your-message-has-been-successfully-sent)
-* What to do if the server returns an error
+<!-- What to do if the server returns an error -->
 * [Send a status message](/help/send-a-status-message)
 * [@-mention a team member](/help/at-mention-a-team-member)
 * [Make an announcement](/help/make-an-announcement)
@@ -85,7 +83,6 @@ as an **organization**.
 * [Add or invite someone to a stream](/help/add-or-invite-someone-to-a-stream)
 * [Change the stream description](/help/change-the-stream-description)
 * [Rename a stream](/help/rename-a-stream)
-* Preview a stream (not implemented)
 * [Unsubscribe from a stream](/help/unsubscribe-from-a-stream)
 * [Change the accessibility of a stream](/help/change-the-accessibility-of-a-stream)
 * [Organize the Streams sidebar](/help/organize-the-streams-sidebar)
@@ -109,13 +106,13 @@ as an **organization**.
 * [Add a bot or integration](/help/add-a-bot-or-integration)
 
 ## Apps
-* Zulip on Mac OS
-* Zulip on Linux
+<!-- Zulip on Mac OS -->
+<!-- Zulip on Linux -->
 * [Tips for Zulip on Windows](/help/zulip-on-windows)
 * [Tips for Zulip on Android](/help/zulip-on-android)
-* Zulip on iOS
-* Zulip in a terminal
-* Connect to Zulip over IRC/etc (not implemented?)
+<!-- Zulip on iOS -->
+<!-- Zulip in a terminal -->
+<!-- Connect to Zulip over IRC/etc (not implemented?) -->
 
 # Administering a Zulip organization
 
@@ -129,9 +126,8 @@ as an **organization**.
 * [Restrict editing of old messages and topics](/help/restrict-editing-of-old-messages-and-topics)
 * [Change the default language for your organization](/help/change-the-default-language-for-your-organization)
 * [Add custom emoji](/help/add-custom-emoji)
-* Configure authentication methods
+<!-- Configure authentication methods -->
 * [Add a custom linkification filter](/help/add-a-custom-linkification-filter)
-* Delete your organization (not implemented)
 
 ## Users & Bots
 * [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)
