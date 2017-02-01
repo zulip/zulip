@@ -42,7 +42,7 @@ be unique to all other stream names and can be no longer than
         what's being discussed in your stream. The description can be
         seen under the stream name in the stream overview.
 
-7. The **Stream accessibility** option controls the privacy of your
+7. The **Stream privacy** option controls the privacy of your
 stream. There are two options:
     * **Anybody can join** - This option makes your stream **public**
     and accessible to all users.
