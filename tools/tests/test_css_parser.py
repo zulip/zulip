@@ -193,6 +193,16 @@ class ParserTestSadPath(unittest.TestCase):
         error = 'Missing selector'
         self._assert_error(my_css, error)
 
+    def test_missing_value(self):
+        # type: () -> None
+        my_css = '''
+            h1
+            {
+                bottom:
+            }'''
+        error = 'Missing value'
+        self._assert_error(my_css, error)
+
     def test_disallow_comments_in_selectors(self):
         # type: () -> None
         my_css = '''
