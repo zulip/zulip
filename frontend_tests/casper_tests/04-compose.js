@@ -171,7 +171,7 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitWhileVisible("#markdown_preview", function () {
+    casper.waitForSelectorTextChange("#preview_content", function () {
         casper.test.assertEquals(casper.getHTML('#preview_content'), "<p><strong>Markdown Preview</strong> &gt;&gt; Test for markdown preview</p>", "Check markdown is previewed properly");
     });
 });
