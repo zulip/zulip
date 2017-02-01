@@ -57,7 +57,10 @@ body {
     font-size: 17px;
 }
 
-*[id]:before {
+.markdown h1[id]:before,
+.markdown h2[id]:before,
+.markdown h3[id]:before,
+.markdown h4[id]:before {
     display: block;
     content: " ";
     margin-top: -40px;
