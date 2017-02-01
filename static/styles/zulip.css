@@ -237,7 +237,6 @@ p.n-margin {
     background-color: #ffffff;
     border-left: 1px solid #eee;
     border-right: 1px solid #eee;
-    padding: 0px 5px;
 }
 
 .column-middle {
@@ -651,7 +650,7 @@ td.pointer {
     font-weight: 500;
     line-height: 14px;
     position: relative;
-    margin-bottom: 5px;
+    margin: 0px 10px 5px 10px;
     z-index: 0;
 }
 
