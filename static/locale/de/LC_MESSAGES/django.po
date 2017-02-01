@@ -1136,7 +1136,7 @@ msgid "Settings"
 msgstr "Einstellungen"
 
 #: templates/zerver/navbar.html:69 templates/zerver/search_operators.html:5
-msgid "Search help"
+msgid "Search operators"
 msgstr "Hilfe suchen"
 
 #: templates/zerver/navbar.html:75

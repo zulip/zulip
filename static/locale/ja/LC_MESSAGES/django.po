@@ -1130,7 +1130,7 @@ msgid "Settings"
 msgstr "設定"
 
 #: templates/zerver/navbar.html:69 templates/zerver/search_operators.html:5
-msgid "Search help"
+msgid "Search operators"
 msgstr "ヘルプを検索"
 
 #: templates/zerver/navbar.html:75
