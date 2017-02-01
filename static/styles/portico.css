@@ -1512,3 +1512,8 @@ label.label-title {
     height: 40px;
     border-radius: 5px;
 }
+
+.documentation-footer {
+    font-size: .85rem;
+    color: #AAA;
+}
