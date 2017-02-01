@@ -67,3 +67,4 @@ def generate_time_series_data(days=100, business_hours_base=10, non_business_hou
         for i in range(1, length):
             values[i] = values[i-1] + values[i]
     return [max(v, 0) for v in values]
+
