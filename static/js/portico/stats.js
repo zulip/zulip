@@ -90,7 +90,7 @@ function messages_sent_over_time_layout() {
         width: 750,
         height: 400,
         margin: {
-            l: 40, r: 0, b: 150, t: 0,
+            l: 40, r: 0, b: 40, t: 0,
         },
         xaxis: {
             fixedrange: true,
@@ -114,40 +114,36 @@ function messages_sent_over_time_layout() {
 
 function hover(id) {
     var myPlot = document.getElementById(id);
-    // might be multiple hoverinfo's?
-    var hoverInfo = document.getElementById('hoverinfo');
     myPlot.on('plotly_hover', function (data) {
-        var date_text;
-        var infotext = data.points.map(function (d) {
-            var text = d.data.text;
-            var index = data.points[0].pointNumber;
-            date_text = text[index];
-            return (d.data.name + ': ' + d.y);
-        });
-        hoverInfo.innerHTML = date_text + '<br/>' + infotext.join('<br/>');
-        var human_colors = data.points[0].data.x.map(function () {
-            return '#1f77b4';
-        });
-        var bot_colors = data.points[0].data.x.map(function () {
-            return '#ff7f00';
-        });
-        human_colors[data.points[0].pointNumber] = '#185a88';
-        bot_colors[data.points[0].pointNumber] = '#cc6600';
-        var update_human = {marker:{color: human_colors}};
-        var update_bot = {marker:{color: bot_colors}};
-        Plotly.restyle(id, update_human, 0);
-        Plotly.restyle(id, update_bot, 1);
-        var legendBoxes = document.getElementById(id).getElementsByClassName("legendbar");
-        Plotly.d3.select(legendBoxes[0]).style("fill", "#1f77b4");
-        Plotly.d3.select(legendBoxes[1]).style("fill", "#ff7f00");
+        var date_text = data.points[0].data.text[data.points[0].pointNumber];
+        $('#hover_date').text(date_text);
+        $('#hover_humans').text("Humans:");
+        $('#hover_humans_value').text(data.points[0].y);
+        $('#hover_bots').text("Bots:");
+        $('#hover_bots_value').text(data.points[1].y);
 
+        // var human_colors = data.points[0].data.x.map(function () {
+        //     return '#1f77b4';
+        // });
+        // var bot_colors = data.points[0].data.x.map(function () {
+        //     return '#ff7f00';
+        // });
+        // human_colors[data.points[0].pointNumber] = '#185a88';
+        // bot_colors[data.points[0].pointNumber] = '#cc6600';
+        // var update_human = {marker:{color: human_colors}};
+        // var update_bot = {marker:{color: bot_colors}};
+        // Plotly.restyle(id, update_human, 0);
+        // Plotly.restyle(id, update_bot, 1);
+        // var legendBoxes = document.getElementById(id).getElementsByClassName("legendbar");
+        // Plotly.d3.select(legendBoxes[0]).style("fill", "#1f77b4");
+        // Plotly.d3.select(legendBoxes[1]).style("fill", "#ff7f00");
     });
-    myPlot.on('plotly_unhover', function () {
-        var update_human = {marker:{color: '#1f77b4'}};
-        var update_bot = {marker:{color: '#ff7f00'}};
-        Plotly.restyle(id, update_human, 0);
-        Plotly.restyle(id, update_bot, 1);
-    });
+    // myPlot.on('plotly_unhover', function () {
+    //     var update_human = {marker:{color: '#1f77b4'}};
+    //     var update_bot = {marker:{color: '#ff7f00'}};
+    //     Plotly.restyle(id, update_human, 0);
+    //     Plotly.restyle(id, update_bot, 1);
+    // });
 }
 
 function populate_messages_sent_over_time(data) {
@@ -318,19 +314,19 @@ function populate_number_of_users(data) {
         width: 750,
         height: 370,
         margin: {
-            l: 40, r: 0, b: 0, t: 20,
+            l: 40, r: 0, b: 100, t: 20,
         },
         xaxis: {
             rangeselector: {
-                x: 0.75,
-                y:-0.2,
+                x: 0.808,
+                y: -0.2,
                 buttons: [
                     {count:30,
                         label:'Last 30 Days',
-                        step:'day',
+                        step: 'day',
                         stepmode:'backward'},
                     {
-                        step:'all',
+                        step: 'all',
                         label: 'All time',
                     },
                 ],
@@ -452,10 +448,10 @@ function populate_messages_sent_by_client(data) {
                                realm_labels_cumulative, realm_text_cumulative);
     var layout = {
         margin: {
-            l: 0, r: 0, b: 50, t: 30,
+            l: 90, r: 0, b: 0, t: 0,
         },
-        width: 375,
-        height: 400,
+        width: 450,
+        height: 300,
     };
     Plotly.newPlot('id_messages_sent_by_client', trace, layout, {displayModeBar: false});
 
@@ -649,10 +645,10 @@ function populate_messages_sent_by_message_type(data) {
 
     var layout = {
         margin: {
-            l: 0, r: 0, b: 50, t: 30,
+            l: 90, r: 0, b: 0, t: 0,
         },
-        width: 375,
-        height: 400,
+        width: 465,
+        height: 300,
     };
     Plotly.newPlot('id_messages_sent_by_message_type', trace, layout, {displayModeBar: false});
 

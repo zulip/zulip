@@ -2,215 +2,17 @@
 {% block portico_content %}
 
 {{ minified_js('stats')|safe }}
+{% stylesheet 'stats' %}
+
 <html>
-<style type="text/css">
-    .app-main {
-        padding: 0;
-
-        width: auto;
-        max-width: none;
-    }
-
-    p {
-        margin-bottom: 0px;
-    }
-
-    .alert {
-        display: none;
-    }
-
-    .analytics-page-header {
-        margin-top: 20px;
-        text-align: center;
-    }
-
-    .sidebar {
-        width: 300px;
-        height: calc(100vh - 94px);
-        z-index: 2;
-        display: inline-block;
-        vertical-align: top;
-        border-right: 1px solid #eee;
-    }
-    .nav {
-        margin-left: 20px;
-    }
-    .nav-subtitle {
-        font-size: 20px;
-        font-weight: 300;
-        margin-top: 40px;
-        margin-bottom: 7px;
-    }
-    .nav-link {
-        display: block;
-        font-size: 16px;
-        margin-left: 25px;
-    }
-    .page-content {
-        width: calc(100% - 300px - 8px);
-        height: calc(100vh - 94px);
-        overflow: auto;
-        display: inline-block;
-        vertical-align: top;
-    }
-    .center-container {
-        min-height: 0px;
-    }
-    .graph-title {
-        text-align: center;
-        font-size: 22px;
-        margin-bottom: 60px;
-    }
-    #button_label {
-        font-size: 12px;
-    }
-    #graph_container {
-        position: relative;
-    }
-    #button_label {
-        font-size: 16px;
-        margin-left: 50px;
-        margin-bottom: 0px;
-    }
-    #hoverinfo {
-        position: absolute;
-        width: 250px;
-        left: 40px;
-        top: 360px;
-        z-index: 1;
-        font-size: 14px;
-    }
-    .button {
-        font-family: 'Humbug', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-        border: none;
-        border-radius: 4px;
-    }
-    .pie-button {
-        font-family: 'Humbug', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-        font-weight: inherit;
-        border: none;
-        border-radius: 4px;
-        padding: 0px 5px 0px 5px;
-        margin: 5px 0px 0px 0px;
-    }
-    #button_container {
-        position: absolute;
-        top: -12px;
-        z-index: 1
-    }
-    #hourly_button {
-        padding: 0px 5px 0px 5px;
-        font-size: 14px;
-        margin-left: 50px;
-        margin-top: 0px;
-        background: #F0F0F0;
-    }
-    #daily_button {
-        padding: 0px 5px 0px 5px;
-        font-size: 14px;
-        margin-top: 0px;
-        background: #D8D8D8;
-    }
-    #weekly_button {
-        padding: 0px 5px 0px 5px;
-        font-size: 14px;
-        margin-top: 0px;
-        background: #F0F0F0;
-    }
-    #cumulative_button {
-        padding: 0px 5px 0px 5px;
-        font-size: 14px;
-        margin-top: 0px;
-        background: #F0F0F0;
-    }
-    #messages_by_client_realm_button {
-        font-size: 14px;
-        background: #D8D8D8;
-    }
-    #messages_by_client_user_button {
-        font-size: 14px;
-        background: #F0F0F0;
-    }
-    #messages_by_client_cumulative_button {
-        font-size: 14px;
-        margin-left: 50px;
-        background: #D8D8D8;
-    }
-    #messages_by_client_ten_days_button {
-        font-size: 14px;
-        background: #F0F0F0;
-    }
-    #messages_by_client_thirty_days_button {
-        font-size: 14px;
-        background: #F0F0F0;
-    }
-    #messages_by_type_realm_button {
-        font-size: 14px;
-        margin-left: 50px;
-        margin-bottom: 100px;
-        background: #D8D8D8;
-    }
-    #messages_by_type_user_button {
-        font-size: 14px;
-        background: #F0F0F0;
-        margin-bottom: 100px;
-    }
-    #messages_by_type_cumulative_button {
-        font-size: 14px;
-        margin-left: 50px;
-        background: #D8D8D8;
-        vertical-align: top;
-    }
-    #messages_by_type_ten_days_button {
-        font-size: 14px;
-        background: #F0F0F0;
-        vertical-align: top;
-    }
-    #messages_by_type_thirty_days_button {
-        font-size: 14px;
-        background: #F0F0F0;
-        vertical-align: top;
-
-    }
-    #pie_container {
-        text-align: center;
-    }
-    #pie_1 {
-        display: inline-block;
-        vertical-align: top;
-        margin: 100px 40px 0px 0px;
-    }
-    #pie_2 {
-        display: inline-block;
-        vertical-align: top;
-        margin: 100px 0px 0px 0px;
-    }
-    #pie1_total {
-        font-size: 15px;
-        text-align: left;
-        margin: 0px 0px 10px 5px;
-    }
-    #pie2_total {
-        font-size: 15px;
-        text-align: left;
-        margin: 0px 0px 10px 50px;
-    }
-    @media(max-width: 1127px) {
-        #pie_1 {
-            margin-right: 0px;
-            margin-bottom: 40px;
-        }
-    }
-
-</style>
 <body>
 <div class="sidebar">
     <nav class="nav">
-        <p class="nav-subtitle">Message Data</p>
+        <p class="nav-subtitle">Messages</p>
         <a href="#messages_timescale_anchor" class="nav-link">Messages Sent Over Time</a>
         <a href="#messages_by_client_anchor" class="nav-link">Messages Sent by Client</a>
-        <a href="#messages_by_type_anchor" class="nav-link">Messages Sent by Type</a>
-        <p class="nav-subtitle">User Data</p>
+        <a href="#messages_by_type_anchor" class="nav-link">Messages Sent by Recipient Type</a>
+        <p class="nav-subtitle">Users</p>
         <a href="#users_anchor" class="nav-link">Number of Users</a>
     </nav>
 </div>
@@ -219,40 +21,46 @@
   <h1 class="analytics-page-header">Analytics</h1>
   <div class="center-container">
     <div class="center-block">
-      <p class="graph-title" id="messages_timescale_anchor"> Messages Sent by Humans and Bots </p>
+      <p class="graph-title" id="messages_timescale_anchor"> Messages Sent Over Time</p>
       <div id="graph_container">
         <div id="button_container">
           <p id="button_label"> Aggregation </p>
-          <button class="button" type="button" id='hourly_button'> hourly </button>
-          <button class="button" type="button" id='daily_button'> daily </button>
-          <button class="button" type="button" id='weekly_button'> weekly </button>
-          <button class="button" type="button" id='cumulative_button'> cumulative </button>
+          <button class="button" type="button" id='hourly_button'> Hourly </button>
+          <button class="button" type="button" id='daily_button'> Daily </button>
+          <button class="button" type="button" id='weekly_button'> Weekly </button>
+          <button class="button" type="button" id='cumulative_button'> Cumulative </button>
         </div>
-        <div id="hoverinfo"></div>
         <div id="id_messages_sent_over_time"></div>
+        <div id="hoverinfo">
+            <span id="hover_date"></span>
+            <span id="hover_humans"></span>
+            <span id="hover_humans_value"></span>
+            <span id="hover_bots"></span>
+            <span id="hover_bots_value"></span>
+        </div>
       </div>
     </div>
   </div>
   <div id="pie_container">
-    <div id="pie_1">
+    <div id="pie_messages_sent_by_client">
       <p class="graph-title" id="messages_by_client_anchor"> Messages Sent by Client</p>
       <div id="id_messages_sent_by_client"></div>
       <div id="pie1_total"> </div>
-      <button class="pie-button" type="button" id='messages_by_client_realm_button'> Everyone </button>
       <button class="pie-button" type="button" id='messages_by_client_user_button'> Me </button>
-      <button class="pie-button" type="button" id='messages_by_client_cumulative_button'> All time </button>
-      <button class="pie-button" type="button" id='messages_by_client_thirty_days_button'> Last 30 Days </button>
+      <button class="pie-button" type="button" id='messages_by_client_realm_button'> Everyone </button>
       <button class="pie-button" type="button" id='messages_by_client_ten_days_button'> Last 10 Days </button>
+      <button class="pie-button" type="button" id='messages_by_client_thirty_days_button'> Last 30 Days </button>
+      <button class="pie-button" type="button" id='messages_by_client_cumulative_button'> All time </button>
     </div>
-    <div id="pie_2">
-      <p class="graph-title" id="messages_by_type_anchor"> Messages Sent by Message Type</p>
+    <div id="pie_messages_sent_by_type">
+      <p class="graph-title" id="messages_by_type_anchor"> Messages Sent by Recipient Type</p>
       <div id="id_messages_sent_by_message_type"></div>
       <div id="pie2_total"> </div>
-      <button class="pie-button" type="button" id='messages_by_type_realm_button'> Everyone </button>
       <button class="pie-button" type="button" id='messages_by_type_user_button'> Me </button>
-      <button class="pie-button" type="button" id='messages_by_type_cumulative_button'> All time </button>
-      <button class="pie-button" type="button" id='messages_by_type_thirty_days_button'> Last 30 Days </button>
+      <button class="pie-button" type="button" id='messages_by_type_realm_button'> Everyone </button>
       <button class="pie-button" type="button" id='messages_by_type_ten_days_button'> Last 10 Days </button>
+      <button class="pie-button" type="button" id='messages_by_type_thirty_days_button'> Last 30 Days </button>
+      <button class="pie-button" type="button" id='messages_by_type_cumulative_button'> All time </button>
     </div>
   </div>
   <div class="center-container">
@@ -266,16 +74,3 @@
 </html>
 
 {% endblock %}
-<script type="text/javascript">
-    // $(document).on('click', 'a', function(event){
-    //     console.log("clicked")
-    //     event.preventDefault();
-
-    //     $('html, body').animate({
-    //         scrollTop: $( $.attr(this, 'href') ).offset().top
-    //     }, 500);
-
-    //     // // ref is the height in 'px' to scroll to.
-    //     // $("body").animate({ scrollTop: $ref + "px" }, 500);
-    // });
-</script>
