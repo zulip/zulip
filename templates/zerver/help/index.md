@@ -60,7 +60,7 @@ as an **organization**.
 * [Collapse a message](/help/collapse-a-message)
 * [Star a message](/help/star-a-message)
 * [Share a message or conversation](/help/share-a-message-or-conversation)
-* [Searching for messages](/help/searching-for-messages)
+* [Search for messages](/help/search-for-messages)
 ### Editing
 * [Edit or delete a message](/help/edit-or-delete-a-message)
 * [Change the topic of a message](/help/change-the-topic-of-a-message)

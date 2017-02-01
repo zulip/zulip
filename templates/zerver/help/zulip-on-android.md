@@ -109,11 +109,11 @@ topic over a message.
 
 ### Searching for messages
 
-You can search your organization for specific messages by using [search operators](/help/searching-for-messages).
+You can search your organization for specific messages by using [search operators](/help/search-for-messages).
 
 1. Tap the search (![search](/static/images/help/android-magnifying-icon.png))
 icon at the top of the screen.
-2. Enter the [search operators](/help/searching-for-messages#search-operators)
+2. Enter the [search operators](/help/search-for-messages#search-operators)
 that you want to use to narrow your messages.
 3. Press the **Enter** key in your keyboard to begin your search.
 
