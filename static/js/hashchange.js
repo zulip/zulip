@@ -210,6 +210,7 @@ function do_hashchange(from_reload) {
 var ignore = {
     flag: false,
     prev: null,
+    old_hash: typeof window !== "undefined" ? window.location.hash : "#",
 };
 
 function get_main_hash(hash) {
@@ -231,8 +232,9 @@ function hide_overlays() {
 function hashchanged(from_reload, e) {
     var old_hash;
     if (e) {
-        old_hash = "#" + e.oldURL.split(/#/).slice(1).join("");
+        old_hash = "#" + (e.oldURL || ignore.old_hash).split(/#/).slice(1).join("");
         ignore.last = old_hash;
+        ignore.old_hash = window.location.hash;
     }
 
     var base = get_main_hash(window.location.hash);
