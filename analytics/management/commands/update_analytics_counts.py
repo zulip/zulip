@@ -14,7 +14,7 @@ from django.utils.dateparse import parse_datetime
 from django.conf import settings
 
 from analytics.models import RealmCount, UserCount
-from analytics.lib.counts import COUNT_STATS, process_count_stat
+from analytics.lib.counts import COUNT_STATS, logger, process_count_stat
 from zerver.lib.timestamp import datetime_to_string, is_timezone_aware
 from zerver.models import UserProfile, Message
 
@@ -64,8 +64,12 @@ class Command(BaseCommand):
         if not (is_timezone_aware(fill_to_time)):
             raise ValueError("--time must be timezone aware. Maybe you meant to use the --utc option?")
 
+        logger.info("Starting updating analytics counts through %s" % (fill_to_time,))
+
         if options['stat'] is not None:
             process_count_stat(COUNT_STATS[options['stat']], fill_to_time)
         else:
             for stat in COUNT_STATS.values():
                 process_count_stat(stat, fill_to_time)
+
+        logger.info("Finished updating analytics counts through %s" % (fill_to_time,))
