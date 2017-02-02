@@ -40,6 +40,7 @@ function format_date(date, include_hour) {
     var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     var month_str = months[date.getMonth()];
+    var year = date.getFullYear();
     var day = date.getDate();
     if (include_hour) {
         var hour = date.getHours();
@@ -55,7 +56,7 @@ function format_date(date, include_hour) {
         }
         return month_str + ' ' + day + ', ' + hour_str;
     }
-    return month_str + ' ' + day;
+    return month_str + ' ' + day + ', ' + year;
 }
 
 function messages_sent_over_time_rangeselector(
@@ -317,7 +318,7 @@ function populate_messages_sent_over_time(data) {
 
     $('#daily_button').click(function () {
         update_plot_on_aggregation_click(default_rangeselector, daily_traces);
-        $(this).css('fill', '#D8D8D8');
+        $(this).css('background', '#D8D8D8');
         clicked_cumulative = false;
     });
 
@@ -331,6 +332,9 @@ function populate_messages_sent_over_time(data) {
         $('.legend').click(function () {
             fix_legend_colors();
         });
+        $('.rangeselector').click(function () {
+            fix_legend_colors();
+        });
     });
 
     $('#cumulative_button').click(function () {
@@ -341,6 +345,10 @@ function populate_messages_sent_over_time(data) {
     });
 
     $('.legend').click(function () {
+        fix_legend_colors();
+    });
+
+    $('.rangeselector').click(function () {
         fix_legend_colors();
     });
 }
@@ -362,17 +370,25 @@ $.get({
     },
 });
 
+function users_hover(id) {
+    var myPlot = document.getElementById(id);
+    myPlot.on('plotly_hover', function (data) {
+        var date_text = data.points[0].data.text[data.points[0].pointNumber];
+        $('#users_hover_date').text(date_text);
+        $('#users_hover_humans').text("Users:");
+        $('#users_hover_humans_value').text(data.points[0].y);
+    });
+}
 
 function populate_number_of_users(data) {
     var end_dates = data.end_times.map(function (timestamp) {
             return new Date(timestamp*1000);
     });
-    var total_users = 0;
-    for (var i = 0; i < data.realm.human.length; i += 1) {
-        total_users += data.realm.human[i];
-    }
+    var users_text = end_dates.map(function (date) {
+        return format_date(date, false);
+    });
     var trace_humans = {x: end_dates, y: data.realm.human, type: 'scatter',  name: "Active users",
-                        hoverinfo: 'y', text: '', visible: true};
+                        hoverinfo: 'none', text: users_text, visible: true};
     var layout = {
         width: 750,
         height: 370,
@@ -380,6 +396,7 @@ function populate_number_of_users(data) {
             l: 40, r: 0, b: 100, t: 20,
         },
         xaxis: {
+            fixedrange: true,
             rangeselector: {
                 x: 0.808,
                 y: -0.2,
@@ -402,9 +419,10 @@ function populate_number_of_users(data) {
     };
     Plotly.newPlot('id_number_of_users',
                    [trace_humans], layout, {displayModeBar: false});
+    users_hover('id_number_of_users');
+    var total_users = data.realm.human[data.realm.human.length - 1];
     var total = document.getElementById('number_of_users_total');
-    total.innerHTML = "Total Users: " +
-        total_users.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    total.innerHTML = total_users.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
 $.get({
