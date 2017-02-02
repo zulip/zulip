@@ -143,7 +143,7 @@ p {
     padding: 0px 5px 0px 5px;
     font-size: 12.5px;
     margin-top: 0px;
-    background: #D8D8D8;
+    background: #F0F0F0;
 }
 
 #weekly_button {
@@ -243,6 +243,15 @@ p {
     font-size: 13px;
     text-align: left;
     margin: 0px 0px 5px 53px;
+}
+
+#number_of_users_total {
+    position: relative;
+    top: -65px;
+    font-size: 13px;
+    text-align: left;
+    margin: 0px 0px 5px 35px;
+    width: 300px;
 }
 
 @media (max-width: 1127px) {
