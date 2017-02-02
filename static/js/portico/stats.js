@@ -360,7 +360,7 @@ function make_pie_trace(data, values, labels, text) {
         type: 'pie',
         direction: 'clockwise',
         rotation: -180,
-        sort: true,
+        sort: false,
         // textposition: textposition,
         textinfo: "text",
         text: text,
@@ -398,6 +398,24 @@ function get_labels_and_data(names, data_subgroup, time_frame_integer) {
                 labels.push(names[key]);
             }
         }
+    }
+    labels = labels.sort(function (a, b) {
+        return values[labels.indexOf(b)] - values[labels.indexOf(a)];
+    });
+    // Sort descending, using numeric comparison instead of the default string
+    // comparison
+    values = values.sort(function (a, b) {
+        return b - a;
+    });
+    if (values.length > 6) {
+        labels = labels.slice(0, 5);
+        labels.push("Other");
+        var sum_remaining = 0;
+        for (var j=5; j<values.length; j+=1) {
+            sum_remaining += values[j];
+        }
+        values = values.slice(0, 5);
+        values.push(sum_remaining);
     }
     return [labels, values];
 }
