@@ -416,7 +416,7 @@ exports.register_click_handlers = function () {
 
 
     $("body").on("click", ".actions_popover .reaction_button", function (e) {
-        var msgid = $(e.currentTarget).data('msgid');
+        var msgid = $(e.currentTarget).data('message-id');
         e.preventDefault();
         e.stopPropagation();
         // HACK: Because we need the popover to be based off an
@@ -763,14 +763,14 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
     $('body').on('click', '.popover_narrow_by_conversation_and_time', function (e) {
-        var msgid = $(e.currentTarget).data('msgid');
+        var msgid = $(e.currentTarget).data('message-id');
         popovers.hide_actions_popover();
         narrow.by_conversation_and_time(msgid, {trigger: 'popover'});
         e.stopPropagation();
         e.preventDefault();
     });
     $('body').on('click', '.popover_toggle_collapse', function (e) {
-        var msgid = $(e.currentTarget).data('msgid');
+        var msgid = $(e.currentTarget).data('message-id');
         var row = current_msg_list.get_row(msgid);
         var message = current_msg_list.get(rows.id(row));
 
@@ -788,7 +788,7 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
     $('body').on('click', '.popover_edit_message', function (e) {
-        var msgid = $(e.currentTarget).data('msgid');
+        var msgid = $(e.currentTarget).data('message-id');
         var row = current_msg_list.get_row(msgid);
         popovers.hide_actions_popover();
         message_edit.start(row);
