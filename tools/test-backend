@@ -164,9 +164,8 @@ if __name__ == "__main__":
         subprocess.call(generate_fixtures_command)
 
     TestRunner = get_runner(settings)
-    test_runner = TestRunner()
-    failures = test_runner.run_tests(suites, fatal_errors=options.fatal_errors,
-                                     full_suite=full_suite)
+    test_runner = TestRunner(failfast=options.fatal_errors)
+    failures = test_runner.run_tests(suites, full_suite=full_suite)
 
     templates_not_rendered = test_runner.get_shallow_tested_templates()
     # We only check the templates if all the tests ran and passed
