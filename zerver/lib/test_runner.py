@@ -174,8 +174,8 @@ class Runner(DiscoverRunner):
         # type: () -> Set[str]
         return self.shallow_tested_templates
 
-    def run_suite(self, suite, fatal_errors=True):
-        # type: (Iterable[TestCase], bool) -> bool
+    def run_suite(self, suite, **kwargs):
+        # type: (Iterable[TestCase], **Any) -> bool
         failed = False
         for test in suite:
             # The attributes __unittest_skip__ and __unittest_skip_why__ are undocumented
@@ -183,7 +183,7 @@ class Runner(DiscoverRunner):
                 print('Skipping', full_test_name(test), "(%s)" % (test.__unittest_skip_why__,))
             elif run_test(test):
                 failed = True
-                if fatal_errors:
+                if self.failfast:
                     return failed
         return failed
 
@@ -207,7 +207,7 @@ class Runner(DiscoverRunner):
         # run a single test and getting an SA connection causes data from
         # a Django connection to be rolled back mid-test.
         get_sqlalchemy_connection()
-        failed = self.run_suite(suite, fatal_errors=kwargs.get('fatal_errors'))
+        failed = self.run_suite(suite)
         self.teardown_test_environment()
         if not failed:
             write_instrumentation_reports(full_suite=full_suite)
