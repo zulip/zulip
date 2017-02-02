@@ -19,24 +19,21 @@ missed-message emails, desktop apps, and much more.
 Further information on the Zulip project and its features can be found
 at https://www.zulip.org.
 
-[![Build Status](https://travis-ci.org/zulip/zulip.svg?branch=master)](https://travis-ci.org/zulip/zulip) [![Coverage Status](https://coveralls.io/repos/github/zulip/zulip/badge.svg?branch=master)](https://coveralls.io/github/zulip/zulip?branch=master) [![docs](https://readthedocs.org/projects/pip/badge/?version=latest)](http://zulip.readthedocs.io/en/latest/) [![Zulip chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://chat.zulip.org)
+[![Build Status](https://travis-ci.org/zulip/zulip.svg?branch=master)](https://travis-ci.org/zulip/zulip) [![Coverage Status](https://coveralls.io/repos/github/zulip/zulip/badge.svg?branch=master)](https://coveralls.io/github/zulip/zulip?branch=master) [![docs](https://readthedocs.org/projects/zulip/badge/?version=latest)](http://zulip.readthedocs.io/en/latest/) [![Zulip chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://chat.zulip.org)
 
 ## Community
 
 There are several places online where folks discuss Zulip.
 
-One of those places is our [public Zulip instance](https://chat.zulip.org/).
-You can go through the simple signup process at that link, and then you
-will soon be talking to core Zulip developers and other users.  To get
-help in real time, you will have the best luck finding core developers
-roughly between 16:00 UTC and 23:59 UTC.  Most questions get a reply
-within minutes to a few hours, depending on time of day.
+* The primary place is the
+  [Zulip development community Zulip server](chat-zulip-org.html).
 
-For Google Summer of Code students and applicants, we have [a mailing
-list](https://groups.google.com/forum/#!forum/zulip-gsoc) for help,
-questions, and announcements.
+* For Google Summer of Code students and applicants, we have
+[a mailing list](https://groups.google.com/forum/#!forum/zulip-gsoc)
+for help, questions, and announcements.  But it's often simpler to
+visit chat.zulip.org instead.
 
-We have
+* We have
 [a public mailing list](https://groups.google.com/forum/#!forum/zulip-devel)
 that is currently pretty low traffic because most discussions happen
 in our public Zulip instance.  We use it to announce Zulip developer
@@ -47,13 +44,14 @@ ask for generic help getting started as a contributor (e.g. because
 you want to do Google Summer of Code).  The rest of this page covers
 how to get involved in the Zulip project in detail.
 
-Zulip also has a [blog](https://blog.zulip.org/).
+* Zulip also has a [blog](https://blog.zulip.org/) and
+  [twitter account](https://twitter.com/zuliposs).
 
-Last but not least, we use [GitHub](https://github.com/zulip/zulip) to
-track Zulip-related issues (and store our code, of course).
+* Last but not least, we use [GitHub](https://github.com/zulip/zulip)
+to track Zulip-related issues (and store our code, of course).
 Anybody with a GitHub account should be able to create Issues there
-pertaining to bugs or enhancement requests.  We also use Pull
-Requests as our primary mechanism to receive code contributions.
+pertaining to bugs or enhancement requests.  We also use Pull Requests
+as our primary mechanism to receive code contributions.
 
 The Zulip community has a [Code of Conduct][code-of-conduct].
 
@@ -73,12 +71,16 @@ documentation](https://zulip.readthedocs.io/en/latest/prod-install.html).
 
 ## Ways to contribute
 
-Zulip welcomes all forms of contributions!  The page documents the
+Zulip welcomes all forms of contributions!  This page documents the
 Zulip development process.
 
 * **Pull requests**. Before a pull request can be merged, you need to
 sign the [Dropbox Contributor License Agreement][cla].  Also,
 please skim our [commit message style guidelines][doc-commit-style].
+We encourage early pull requests for work in progress. Prefix the title
+of your pull request with `[WIP]` and reference it when asking for
+community feedback. When you are ready for final review, remove
+the `[WIP]`.
 
 * **Testing**. The Zulip automated tests all run automatically when
 you submit a pull request, but you can also run them all in your

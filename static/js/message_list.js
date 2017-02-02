@@ -631,6 +631,20 @@ exports.MessageList.prototype = {
             }
         }, 0);
     },
+
+    get_last_own_editable_message: function MessageList_get_last_own_editable_message() {
+        var msg_index = _.findLastIndex(this._items, {sender_id: page_params.user_id});
+        if (msg_index === -1) {
+            return;
+        }
+        var msg = this._items[msg_index];
+        var msg_editability_type = message_edit.get_editability(msg, 5);
+        if (msg_editability_type !== message_edit.editability_types.NO &&
+            msg_editability_type !== message_edit.editability_types.NO_LONGER) {
+            return msg;
+        }
+        return;
+    },
 };
 
 exports.all = new exports.MessageList(

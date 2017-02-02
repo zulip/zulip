@@ -391,6 +391,10 @@ exports.refresh_pinned_or_unpinned_stream = function (sub) {
     exports.update_streams_sidebar();
 };
 
+function deselect_top_left_corner_items() {
+    $("ul.filters li").removeClass('active-filter active-sub-filter');
+}
+
 $(function () {
     // TODO, Eventually topic_list won't be a big singleton,
     // and we can create more component-based click handlers for
@@ -403,6 +407,7 @@ $(function () {
     pm_list.set_click_handlers();
 
     $(document).on('narrow_activated.zulip', function (event) {
+        deselect_top_left_corner_items();
         reset_to_unnarrowed(narrow.stream() === zoomed_stream);
 
         // TODO: handle confused filters like "in:all stream:foo"
@@ -434,11 +439,12 @@ $(function () {
                 stream_li.addClass('active-filter');
             }
             rebuild_recent_topics(op_stream[0]);
-            unread.process_visible();
+            unread_ui.process_visible();
         }
     });
 
     $(document).on('narrow_deactivated.zulip', function () {
+        deselect_top_left_corner_items();
         reset_to_unnarrowed();
         pm_list.close();
         $("#global_filters li[data-name='home']").addClass('active-filter');

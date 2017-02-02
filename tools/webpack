@@ -6,6 +6,10 @@ import os
 import subprocess
 import sys
 
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
 from django.conf import settings

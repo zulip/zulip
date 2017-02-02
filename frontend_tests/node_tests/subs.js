@@ -41,10 +41,16 @@ i18n.init({
         name: 'Pomona',
         stream_id: 3,
     };
+    var cpp = {
+        subscribed: true,
+        name: 'C++',
+        stream_id: 4,
+    };
 
     var elem_1 = $(global.render_template("subscription", denmark));
     var elem_2 = $(global.render_template("subscription", poland));
     var elem_3 = $(global.render_template("subscription", pomona));
+    var elem_4 = $(global.render_template("subscription", cpp));
 
     $("body").empty();
     $("body").append('<div id="subscriptions_table"></div>');
@@ -54,6 +60,7 @@ i18n.init({
     stream_data.add_sub("Denmark", denmark);
     stream_data.add_sub("Poland", poland);
     stream_data.add_sub("Pomona", pomona);
+    stream_data.add_sub("C++", cpp);
 
     streams_list.append(elem_1);
     streams_list.append(elem_2);
@@ -81,6 +88,13 @@ i18n.init({
     assert(elem_1.hasClass("notdisplayed"));
     assert(!elem_2.hasClass("notdisplayed"));
     assert(!elem_3.hasClass("notdisplayed"));
+
+    // Search handles unusual characters like C++
+    subs.filter_table({input: "c++", subscribed_only: false});
+    assert(elem_1.hasClass("notdisplayed"));
+    assert(elem_2.hasClass("notdisplayed"));
+    assert(elem_3.hasClass("notdisplayed"));
+    assert(!elem_4.hasClass("notdisplayed"));
 
     // Search subscribed streams only
     subs.filter_table({input: "d", subscribed_only: true});

@@ -76,7 +76,6 @@ function zoom_in() {
 exports.close = function () {
     private_messages_open = false;
     zoomed_in = false;
-    $("ul.filters li").removeClass('active-filter active-sub-filter');
     remove_expanded_private_messages();
 };
 
@@ -166,6 +165,7 @@ exports.update_private_messages = function () {
         exports.rebuild_recent("");
     } else if (is_pm_filter) {
         exports.rebuild_recent("");
+        $("#global_filters li[data-name='private']").addClass('active-filter');
     }
 };
 

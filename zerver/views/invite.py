@@ -4,8 +4,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
-from typing import Text
-from typing import Set
+from typing import Optional, Set, Text
 
 from zerver.decorator import authenticated_json_post_view
 from zerver.lib.actions import do_invite_users, do_refer_friend, \
@@ -33,7 +32,7 @@ def json_invite_users(request, user_profile, invitee_emails_raw=REQ("invitee_ema
 
     # We unconditionally sub you to the notifications stream if it
     # exists and is public.
-    notifications_stream = user_profile.realm.notifications_stream
+    notifications_stream = user_profile.realm.notifications_stream  # type: Optional[Stream]
     if notifications_stream and not notifications_stream.invite_only:
         stream_names.append(notifications_stream.name)
 

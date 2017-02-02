@@ -390,6 +390,7 @@ exports.restore_message = function () {
     clear_message_snapshot();
     compose_fade.clear_compose();
     compose.start(snapshot_copy.type, snapshot_copy);
+    exports.autosize_textarea();
 
     if (snapshot_copy.content !== undefined &&
         util.is_all_or_everyone_mentioned(snapshot_copy.content)) {
@@ -625,7 +626,7 @@ exports.respond_to_message = function (opts) {
         return;
     }
 
-    unread.mark_message_as_read(message);
+    unread_ui.mark_message_as_read(message);
 
     var stream = '';
     var subject = '';
@@ -635,11 +636,15 @@ exports.respond_to_message = function (opts) {
     }
 
     var pm_recipient = message.reply_to;
-    if (opts.reply_type === "personal" && message.type === "private") {
-        // reply_to for private messages is everyone involved, so for
-        // personals replies we need to set the private message
-        // recipient to just the sender
-        pm_recipient = message.sender_email;
+    if (message.type === "private") {
+        if (opts.reply_type === "personal") {
+            // reply_to for private messages is everyone involved, so for
+            // personals replies we need to set the private message
+            // recipient to just the sender
+            pm_recipient = people.get_person_from_user_id(message.sender_id).email;
+        } else {
+            pm_recipient = people.pm_reply_to(message);
+        }
     }
     if (opts.reply_type === 'personal' || message.type === 'private') {
         msg_type = 'private';
@@ -706,7 +711,7 @@ exports.composing = function () {
     return is_composing_message;
 };
 
-function get_or_set(fieldname, keep_outside_whitespace) {
+function get_or_set(fieldname, keep_leading_whitespace) {
     // We can't hoist the assignment of 'elem' out of this lambda,
     // because the DOM element might not exist yet when get_or_set
     // is called.
@@ -716,12 +721,14 @@ function get_or_set(fieldname, keep_outside_whitespace) {
         if (newval !== undefined) {
             elem.val(newval);
         }
-        return keep_outside_whitespace ? oldval : $.trim(oldval);
+        return keep_leading_whitespace ? util.rtrim(oldval) : $.trim(oldval);
     };
 }
 
 exports.stream_name     = get_or_set('stream');
 exports.subject         = get_or_set('subject');
+// We can't trim leading whitespace in `new_message_content` because
+// of the indented syntax for multi-line code blocks.
 exports.message_content = get_or_set('new_message_content', true);
 exports.recipient       = get_or_set('private_message_recipient');
 
@@ -729,6 +736,17 @@ exports.has_message_content = function () {
     return exports.message_content() !== "";
 };
 
+exports.update_email = function (user_id, new_email) {
+    var reply_to = exports.recipient();
+
+    if (!reply_to) {
+        return;
+    }
+
+    reply_to = people.update_email_in_reply_to(reply_to, user_id, new_email);
+
+    exports.recipient(reply_to);
+};
 
 // *Synchronously* check if a stream exists.
 exports.check_stream_existence = function (stream_name, autosubscribe) {

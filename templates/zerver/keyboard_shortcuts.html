@@ -1,9 +1,5 @@
-<div class="modal hide" id="keyboard-shortcuts" tabindex="-1" role="dialog"
+<div class="overlay-modal" id="keyboard-shortcuts" tabindex="-1" role="dialog"
      aria-labelledby="keyboard-shortcuts-label" aria-hidden="true">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-    <h3 id="keyboard-shortcuts-label">{% trans %}Keyboard shortcuts{% endtrans %}</h3>
-  </div>
   <div class="modal-body">
     <div>
       <table class="hotkeys_table table table-striped table-bordered table-condensed">
@@ -115,16 +111,20 @@
       <table class="hotkeys_table table table-striped table-bordered table-condensed">
         <thead>
           <tr>
-            <th colspan="2">{{ _("Menus") }}</th>
+            <th colspan="2">{{ _("Other") }}</th>
           </tr>
         </thead>
         <tr>
+          <td class="hotkey">Left</td>
+          <td class="definition">{% trans %}Edit your last message{% endtrans %}</td>
+        </tr>
+        <tr>
           <td class="hotkey">i</td>
-          <td class="definition">{% trans %}Open message actions menu{% endtrans %}</td>
+          <td class="definition">{% trans %}Open message menu{% endtrans %}</td>
         </tr>
         <tr id="edit-message-hotkey-help">
           <td class="hotkey">i then Enter</td>
-          <td class="definition">{% trans %}Edit a message you sent{% endtrans %}</td>
+          <td class="definition">{% trans %}Edit selected message{% endtrans %}</td>
         </tr>
         <tr>
           <td class="hotkey">?</td>
@@ -132,8 +132,5 @@
         </tr>
       </table>
     </div>
-  </div>
-  <div class="modal-footer">
-    <button class="btn btn-primary" data-dismiss="modal" aria-hidden="true">{{ _("Close") }}</button>
   </div>
 </div>

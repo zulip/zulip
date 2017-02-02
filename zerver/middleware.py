@@ -107,7 +107,7 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
     if error_content is not None:
         error_content_iter = (error_content,)
 
-# For statsd timer name
+    # For statsd timer name
     if path == '/':
         statsd_path = u'webreq'
     else:
@@ -217,6 +217,7 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
 
     # Log some additional data whenever we return certain 40x errors
     if 400 <= status_code < 500 and status_code not in [401, 404, 405]:
+        assert error_content_iter is not None
         error_content_list = list(error_content_iter)
         if error_content_list:
             error_data = u''

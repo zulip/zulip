@@ -18,6 +18,7 @@ import sys
 import six.moves.configparser
 
 from zerver.lib.db import TimeTrackingConnection
+import zerver.lib.logging_util
 import six
 
 ########################################################################
@@ -641,6 +642,8 @@ else:
     else:
         STATIC_ROOT = os.path.abspath('prod-static/serve')
 
+# If changing this, you need to also the hack modifications to this in
+# our compilemessages management command.
 LOCALE_PATHS = (os.path.join(STATIC_ROOT, 'locale'),)
 
 # We want all temporary uploaded files to be stored on disk.
@@ -689,6 +692,7 @@ PIPELINE = {
                 'styles/zulip.css',
                 'styles/settings.css',
                 'styles/subscriptions.css',
+                'styles/informational-overlays.css',
                 'styles/compose.css',
                 'styles/reactions.css',
                 'styles/left-sidebar.css',
@@ -710,6 +714,7 @@ PIPELINE = {
                 'styles/zulip.css',
                 'styles/settings.css',
                 'styles/subscriptions.css',
+                'styles/informational-overlays.css',
                 'styles/compose.css',
                 'styles/reactions.css',
                 'styles/left-sidebar.css',
@@ -751,6 +756,13 @@ JS_SPECS = {
             'node_modules/jquery-validation/dist/jquery.validate.js',
         ],
         'output_filename': 'min/signup.js'
+    },
+    'zxcvbn': {
+        'source_filenames': [],
+        'minifed_source_filenames': [
+            'node_modules/zxcvbn/dist/zxcvbn.js',
+        ],
+        'output_filename': 'min/zxcvbn.js'
     },
     'api': {
         'source_filenames': ['js/portico/api.js'],
@@ -870,10 +882,10 @@ JS_SPECS = {
     'stats': {
         'source_filenames': [
             'node_modules/jquery/dist/jquery.js',
-            'js/portico/stats.js',
+            'js/stats/stats.js',
         ],
         'minifed_source_filenames': [
-            'node_modules/plotly.js/dist/plotly.min.js',
+            'node_modules/plotly.js/dist/plotly-basic.min.js',
         ],
         'output_filename': 'min/stats.js'
     },
@@ -952,11 +964,18 @@ LOGGING = {
         'require_debug_false': {
             '()': 'django.utils.log.RequireDebugFalse',
         },
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
         'nop': {
             '()': 'zerver.lib.logging_util.ReturnTrue',
         },
         'require_really_deployed': {
             '()': 'zerver.lib.logging_util.RequireReallyDeployed',
+        },
+        'skip_200_and_304': {
+            '()': 'django.utils.log.CallbackFilter',
+            'callback': zerver.lib.logging_util.skip_200_and_304,
         },
     },
     'handlers': {
@@ -1019,6 +1038,16 @@ LOGGING = {
         },
         'django.security.DisallowedHost': {
             'handlers': ['file'],
+            'propagate': False,
+        },
+        'django.server': {
+            'propagate': False,
+            'filters': ['skip_200_and_304'],
+        },
+        'django.template': {
+            'handlers': ['console'],
+            'filters': ['require_debug_true'],
+            'level': 'DEBUG',
             'propagate': False,
         },
         ## Uncomment the following to get all database queries logged to the console

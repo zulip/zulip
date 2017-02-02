@@ -2,7 +2,7 @@ var common = require('../casper_lib/common.js').common;
 
 common.start_and_log_in();
 
-casper.waitForSelector('#new_message_content', function () {
+casper.waitUntilVisible('#new_message_content', function () {
     casper.test.info('compose box visible');
     casper.page.sendEvent('keypress', "c"); // brings up the compose box
 });
@@ -47,7 +47,7 @@ casper.then(function () {
 
 casper.then(function () {
     common.expected_messages('zhome', ['Verona > Test mention all'],
-     ["<p><span class=\"user-mention user-mention-me\" data-user-id=\"*\">@all</span> </p>"]);
+     ["<p><span class=\"user-mention user-mention-me\" data-user-id=\"*\">@all</span></p>"]);
 });
 
 

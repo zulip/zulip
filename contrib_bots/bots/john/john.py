@@ -15,10 +15,10 @@ CONTRIB_BOTS_DIR = os.path.dirname(os.path.abspath(__file__))
 os.chdir(os.path.dirname(CONTRIB_BOTS_DIR))
 sys.path.insert(0, os.path.dirname(CONTRIB_BOTS_DIR))
 
-JOKES_PATH = os.path.join(CONTRIB_BOTS_DIR, 'John/var/jokes.json')
-DATABASE_PATH = os.path.join(CONTRIB_BOTS_DIR, 'John/var/database.db')
-DIRECTORY_PATH = os.path.join(CONTRIB_BOTS_DIR, 'John')
-VAR_PATH = os.path.join(CONTRIB_BOTS_DIR, 'John/var')
+JOKES_PATH = os.path.join(CONTRIB_BOTS_DIR, 'assets/var/jokes.json')
+DATABASE_PATH = os.path.join(CONTRIB_BOTS_DIR, 'assets/var/database.db')
+DIRECTORY_PATH = os.path.join(CONTRIB_BOTS_DIR, 'assets')
+VAR_PATH = os.path.join(CONTRIB_BOTS_DIR, 'assets/var')
 
 if not os.path.exists(DIRECTORY_PATH):
     os.makedirs(DIRECTORY_PATH)
@@ -38,7 +38,7 @@ def create_chat_bot(no_learn):
                            "response_selection_method": "chatterbot.response_selection.get_random_response",
                            "statement_comparison_function": "chatterbot.comparisons.levenshtein_distance"
                        }],
-                   output_adapter="chatterbot.output.OutputFormatAdapter",
+                   output_adapter="chatterbot.output.OutputAdapter",
                    output_format='text',
                    database=DATABASE_PATH,
                    silence_performance_warning="True",
@@ -124,7 +124,7 @@ class JohnHandler(object):
             type='stream',
             to='VirtualHelp',
             subject="John",
-            content=bota.get_response(original_content)
+            content=str(bota.get_response(original_content))
         ))
 
 handler_class = JohnHandler

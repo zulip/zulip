@@ -5,15 +5,6 @@ import subprocess
 import sys
 import os
 import glob
-try:
-    # We don't actually need typing, but it's a good guard for being
-    # outside a Zulip virtualenv.
-    from typing import Iterable
-except ImportError as e:
-    print("ImportError: {}".format(e))
-    print("You need to run the Zulip tests inside a Zulip dev environment.")
-    print("If you are using Vagrant, you can `vagrant ssh` to enter the Vagrant guest.")
-    sys.exit(1)
 
 #
 # In order to use remote casperjs debugging, pass the --remote-debug flag
@@ -49,8 +40,14 @@ parser.add_option('--remote-debug',
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(TOOLS_DIR))
 
+# check for the venv
+from tools.lib import sanity_check
+sanity_check.check_venv(__file__)
+
 from tools.lib.test_script import get_provisioning_status
 from tools.lib.test_server import test_server_running
+
+from typing import Iterable
 
 if not options.force:
     ok, msg = get_provisioning_status()

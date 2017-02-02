@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 import datetime
 import time
-from typing import Any
+from typing import Any, Text
 
 from django.http import HttpRequest, HttpResponse
 from django.utils import timezone
@@ -13,12 +13,37 @@ from zerver.lib.actions import get_status_dict, update_user_presence
 from zerver.lib.request import has_request_variables, REQ, JsonableError
 from zerver.lib.response import json_success, json_error
 from zerver.lib.validator import check_bool
-from zerver.models import UserActivity, UserPresence, UserProfile
+from zerver.models import UserActivity, UserPresence, UserProfile, \
+    get_user_profile_by_email
 
 def get_status_list(requesting_user_profile):
     # type: (UserProfile) -> Dict[str, Any]
     return {'presences': get_status_dict(requesting_user_profile),
             'server_timestamp': time.time()}
+
+def get_presence_backend(request, user_profile, email):
+    # type: (HttpRequest, UserProfile, Text) -> HttpResponse
+    try:
+        target = get_user_profile_by_email(email)
+    except UserProfile.DoesNotExist:
+        return json_error(_('No such user'))
+    if target.realm != user_profile.realm:
+        return json_error(_('No such user'))
+    if not target.is_active:
+        return json_error(_('No such user'))
+    if target.is_bot:
+        return json_error(_('No presence for bot users'))
+
+    presence_dict = UserPresence.get_status_dict_by_user(target)
+    if len(presence_dict) == 0:
+        return json_error(_('No presence data for %s' % (target.email,)))
+
+    # For initial version, we just include the status and timestamp keys
+    result = dict(presence=presence_dict[target.email])
+    for val in result['presence'].values():
+        del val['client']
+        del val['pushable']
+    return json_success(result)
 
 @has_request_variables
 def update_active_status_backend(request, user_profile, status=REQ(),

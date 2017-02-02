@@ -50,7 +50,8 @@ Then, run the Zulip install script:
 ```
 
 This may take a while to run, since it will install a large number of
-dependencies.
+dependencies. It also creates `zulip` user, which will be used to run
+the various Zulip servers.
 
 The Zulip install script is designed to be idempotent, so if it fails,
 you can just rerun it after correcting the issue that caused it to
@@ -84,15 +85,17 @@ These settings include:
 - `EMAIL_*`, `DEFAULT_FROM_EMAIL`, and `NOREPLY_EMAIL_ADDRESS`:
   Regardless of which authentication backends you enable, you must
   provide settings for an outgoing SMTP server so Zulip can send
-  emails when needed (and don't forget to set `email_password` in
-  the `zulip-secrets.conf` file).  We highly recommend testing
-  your configuration using `manage.py send_test_email` to confirm
-  your outgoing email configuration is working correctly.
+  emails when needed (and don't forget to set `email_password` in the
+  `zulip-secrets.conf` file).  We highly recommend testing your
+  configuration using `su zulip` and then
+  `/home/zulip/deployments/current/manage.py send_test_email` to
+  confirm your outgoing email configuration is working correctly.
 
 ## Step 4: Initialize Zulip database
 
-At this point, you are done doing things as root.  To initialize the
-Zulip database for your production install, run:
+At this point, you are done doing things as root. The remaining
+commands are run as the `zulip` user using `su zulip`. To initialize
+the Zulip database for your production install, run:
 
 ```
 su zulip -c /home/zulip/deployments/current/scripts/setup/initialize-database
@@ -109,16 +112,20 @@ in your Zulip installation.
 ## Step 5: Create a Zulip organization and login
 
 * If you haven't already, verify that your server can send email using
-`./manage.py send_test_email username@example.com`.  You'll need
-working outgoing email to complete the setup process.
+
+  ```
+  su zulip
+  /home/zulip/deployments/current/manage.py send_test_email user@example.com
+  ```
+
+  You'll need working outgoing email to complete the setup process.
 
 * Run the organization (realm) creation [management
 command](prod-maintain-secure-upgrade.html#management-commands) :
 
   ```
   su zulip # If you weren't already the zulip user
-  cd /home/zulip/deployments/current
-  ./manage.py generate_realm_creation_link
+  /home/zulip/deployments/current/manage.py generate_realm_creation_link
   ```
 
   This will print out a secure 1-time use link that allows creation of a
@@ -162,9 +169,9 @@ Next, you'll likely want to do one of the following:
 
 If you get an error after `scripts/setup/install` completes, check
 `/var/log/zulip/errors.log` for a traceback, and consult the
-[troubleshooting section](prod-troubleshooting.html) for advice on
-how to debug.  If that doesn't help, please visit [the "installation
-help" stream in the Zulip developers'
-chat](https://chat.zulip.org/#narrow/stream/installation.20help)
-for realtime help or email zulip-help@googlegroups.com with the
+[troubleshooting section](prod-troubleshooting.html) for advice on how
+to debug.  If that doesn't help, please visit
+[#production help](https://chat.zulip.org/#narrow/stream/production.20help)
+in the [Zulip developerment community server](chat-zulip-org.html) for
+realtime help or email zulip-help@googlegroups.com with the full
 traceback and we'll try to help you out!

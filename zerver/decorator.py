@@ -126,10 +126,13 @@ def get_client_name(request, is_json_view):
     # User-Agent.
     if 'client' in request.GET:
         return request.GET['client']
-    elif 'client' in request.POST:
+    if 'client' in request.POST:
         return request.POST['client']
-    elif "HTTP_USER_AGENT" in request.META:
+    if "HTTP_USER_AGENT" in request.META:
         user_agent = parse_user_agent(request.META["HTTP_USER_AGENT"])
+    else:
+        user_agent = None
+    if user_agent is not None:
         # We could check for a browser's name being "Mozilla", but
         # e.g. Opera and MobileSafari don't set that, and it seems
         # more robust to just key off whether it was a json view
@@ -341,10 +344,10 @@ def authenticated_api_view(is_webhook=False):
                                     api_key_legacy=REQ('api-key', default=None),
                                     *args, **kwargs):
             # type: (HttpRequest, Text, Optional[Text], Optional[Text], *Any, **Any) -> HttpResponse
-            if not api_key and not api_key_legacy:
-                raise RequestVariableMissingError("api_key")
-            elif not api_key:
+            if api_key is None:
                 api_key = api_key_legacy
+            if api_key is None:
+                raise RequestVariableMissingError("api_key")
             user_profile = validate_api_key(request, email, api_key, is_webhook)
             request.user = user_profile
             request._email = user_profile.email
@@ -640,7 +643,7 @@ def profiled(func):
         # type: (*Any, **Any) -> Any
         fn = func.__name__ + ".profile"
         prof = cProfile.Profile()
-        retval = prof.runcall(func, *args, **kwargs)
+        retval = prof.runcall(func, *args, **kwargs) # type: Any
         prof.dump_stats(fn)
         return retval
     return wrapped_func # type: ignore # https://github.com/python/mypy/issues/1927

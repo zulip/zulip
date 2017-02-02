@@ -60,6 +60,9 @@ var page_params = {{ page_params }};
 <div id="right-screen" class="screen"></div>
 <div id="clear-screen" class="screen"></div>
 
+<div id="settings_overlay_container" data-overlay="settings">
+  {% include "zerver/settings_overlay.html" %}
+</div>
 {% include "zerver/navbar.html" %}
 
 <div class="fixed-app">
@@ -120,9 +123,18 @@ var page_params = {{ page_params }};
     {% include "zerver/image-overlay.html" %}
     {% include "zerver/subscriptions.html" %}
 </div><!--/row-->
-    {% include "zerver/keyboard_shortcuts.html" %}
-    {% include "zerver/search_operators.html" %}
-    {% include "zerver/markdown_help.html" %}
+    <div class="informational-overlays new-style">
+        <div class="overlay-content">
+            <div class="overlay-tabs">
+                <button class="button no-style exit">&times;</button>
+            </div>
+            <div class="overlay-body">
+                {% include "zerver/keyboard_shortcuts.html" %}
+                {% include "zerver/search_operators.html" %}
+                {% include "zerver/markdown_help.html" %}
+            </div>
+        </div>
+    </div>
     {% include "zerver/invite_user.html" %}
     {% include "zerver/bankruptcy.html" %}
     {% include "zerver/logout.html" %}

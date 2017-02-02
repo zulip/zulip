@@ -1,8 +1,8 @@
 from __future__ import absolute_import
 from __future__ import print_function
 import datetime
-from boto.s3.key import Key
-from boto.s3.connection import S3Connection
+
+import boto3
 from django.conf import settings
 from django.db import connection
 from django.forms.models import model_to_dict
@@ -839,8 +839,11 @@ def export_uploads_and_avatars(realm, output_dir):
 
 def export_files_from_s3(realm, bucket_name, output_dir, processing_avatars=False):
     # type: (Realm, str, Path, bool) -> None
-    conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-    bucket = conn.get_bucket(bucket_name, validate=True)
+    session = boto3.Session(aws_access_key_id=settings.S3_KEY,
+                            aws_secret_access_key=settings.S3_SECRET_KEY)
+    s3 = session.resource('s3')
+    client = session.client('s3')
+    bucket = s3.Bucket(bucket_name)
     records = []
 
     logging.info("Downloading uploaded files from %s" % (bucket_name))
@@ -848,14 +851,14 @@ def export_files_from_s3(realm, bucket_name, output_dir, processing_avatars=Fals
     avatar_hash_values = set()
     user_ids = set()
     if processing_avatars:
-        bucket_list = bucket.list()
+        bucket_list = bucket.objects.all()
         for user_profile in UserProfile.objects.filter(realm=realm):
             avatar_hash = user_avatar_hash(user_profile.email)
             avatar_hash_values.add(avatar_hash)
             avatar_hash_values.add(avatar_hash + ".original")
             user_ids.add(user_profile.id)
     else:
-        bucket_list = bucket.list(prefix="%s/" % (realm.id,))
+        bucket_list = bucket.objects.filter(Prefix="%s/" % (realm.id,))
 
     if settings.EMAIL_GATEWAY_BOT is not None:
         email_gateway_bot = get_user_profile_by_email(settings.EMAIL_GATEWAY_BOT)
@@ -864,28 +867,29 @@ def export_files_from_s3(realm, bucket_name, output_dir, processing_avatars=Fals
 
     count = 0
     for bkey in bucket_list:
-        if processing_avatars and bkey.name not in avatar_hash_values:
+        if processing_avatars and bkey.key not in avatar_hash_values:
             continue
-        key = bucket.get_key(bkey.name)
+        key_name = bkey.key
+        key = client.get_object(Bucket=bucket_name, Key=key_name)
 
         # This can happen if an email address has moved realms
-        if 'realm_id' in key.metadata and key.metadata['realm_id'] != str(realm.id):
-            if email_gateway_bot is None or key.metadata['user_profile_id'] != str(email_gateway_bot.id):
-                raise Exception("Key metadata problem: %s %s / %s" % (key.name, key.metadata, realm.id))
+        if 'realm_id' in key.metadata and key['Metadata']['realm_id'] != str(realm.id):
+            if email_gateway_bot is None or key['Metadata']['user_profile_id'] != str(email_gateway_bot.id):
+                raise Exception("Key metadata problem: %s %s / %s" % (key_name, key['Metadata'], realm.id))
             # Email gateway bot sends messages, potentially including attachments, cross-realm.
-            print("File uploaded by email gateway bot: %s / %s" % (key.name, key.metadata))
+            print("File uploaded by email gateway bot: %s / %s" % (key_name, key['Metadata']))
         elif processing_avatars:
-            if 'user_profile_id' not in key.metadata:
+            if 'user_profile_id' not in key['Metadata']:
                 raise Exception("Missing user_profile_id in key metadata: %s" % (key.metadata,))
             if int(key.metadata['user_profile_id']) not in user_ids:
                 raise Exception("Wrong user_profile_id in key metadata: %s" % (key.metadata,))
-        elif 'realm_id' not in key.metadata:
+        elif 'realm_id' not in key['Metadata']:
             raise Exception("Missing realm_id in key metadata: %s" % (key.metadata,))
 
-        record = dict(s3_path=key.name, bucket=bucket_name,
-                      size=key.size, last_modified=key.last_modified,
-                      content_type=key.content_type, md5=key.md5)
-        record.update(key.metadata)
+        record = dict(s3_path=key_name, bucket=bucket_name,
+                      size=bkey.size, last_modified=key['LastModified'],
+                      content_type=key['ContentType'], md5=key.md5)
+        record.update(key['Metadata'])
 
         # A few early avatars don't have 'realm_id' on the object; fix their metadata
         user_profile = get_user_profile_by_id(record['user_profile_id'])
@@ -895,19 +899,19 @@ def export_files_from_s3(realm, bucket_name, output_dir, processing_avatars=Fals
 
         if processing_avatars:
             dirname = output_dir
-            filename = os.path.join(dirname, key.name)
-            record['path'] = key.name
+            filename = os.path.join(dirname, key_name)
+            record['path'] = key_name
         else:
-            fields = key.name.split('/')
+            fields = key_name.split('/')
             if len(fields) != 3:
-                raise Exception("Suspicious key %s" % (key.name))
+                raise Exception("Suspicious key %s" % (key_name))
             dirname = os.path.join(output_dir, fields[1])
             filename = os.path.join(dirname, fields[2])
             record['path'] = os.path.join(fields[1], fields[2])
 
         if not os.path.exists(dirname):
             os.makedirs(dirname)
-        key.get_contents_to_filename(filename)
+        client.download_file(bucket_name, key_name, filename)
 
         records.append(record)
         count += 1
@@ -1330,39 +1334,37 @@ def import_uploads_local(import_dir, processing_avatars=False):
 
 def import_uploads_s3(bucket_name, import_dir, processing_avatars=False):
     # type: (str, Path, bool) -> None
-    conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-    bucket = conn.get_bucket(bucket_name, validate=True)
+    session = boto3.Session(aws_access_key_id=settings.S3_KEY,
+                            aws_secret_access_key=settings.S3_SECRET_KEY)
+    s3 = session.resource('s3')
+    bucket = s3.Bucket(bucket_name)
 
     records_filename = os.path.join(import_dir, "records.json")
     with open(records_filename) as records_file:
         records = ujson.loads(records_file.read())
 
     for record in records:
-        key = Key(bucket)
-
         if processing_avatars:
             # For avatars, we need to rehash the user's email with the
             # new server's avatar salt
             avatar_hash = user_avatar_hash(record['user_profile_email'])
-            key.key = avatar_hash
+            key_name = avatar_hash
             if record['s3_path'].endswith('.original'):
-                key.key += '.original'
+                key_name += '.original'
         else:
-            key.key = record['s3_path']
+            key_name = record['s3_path']
 
+        key = s3.Object(bucket, key_name)
         user_profile_id = int(record['user_profile_id'])
         # Support email gateway bot and other cross-realm messages
         if user_profile_id in id_maps["user_profile"]:
             logging.info("Uploaded by ID mapped user: %s!" % (user_profile_id,))
             user_profile_id = id_maps["user_profile"][user_profile_id]
         user_profile = get_user_profile_by_id(user_profile_id)
-        key.set_metadata("user_profile_id", str(user_profile.id))
-        key.set_metadata("realm_id", str(user_profile.realm_id))
-        key.set_metadata("orig_last_modified", record['last_modified'])
-
-        headers = {'Content-Type': record['content_type']}
-
-        key.set_contents_from_filename(os.path.join(import_dir, record['path']), headers=headers)
+        
+        key.put(Metadata={"user_profile_id": str(user_profile.id), "realm_id": str(user_profile.realm_id),
+                "orig_last_modified": record['last_modified']})
+        key.put(Body=open(os.path.join(import_dir, record['path']), 'rb'), ContentType=record['content_type'])
 
 def import_uploads(import_dir, processing_avatars=False):
     # type: (Path, bool) -> None

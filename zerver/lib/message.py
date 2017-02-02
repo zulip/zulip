@@ -19,6 +19,7 @@ from zerver.lib.timestamp import datetime_to_timestamp
 
 from zerver.models import (
     get_display_recipient_by_id,
+    get_user_profile_by_id,
     Message,
     Realm,
     Recipient,
@@ -145,7 +146,7 @@ class MessageDict(object):
             recipient_type_id,
             reactions
     ):
-        # type: (bool, Message, int, datetime.datetime, Text, Text, Text, datetime.datetime, Text, Optional[int], int, Text, int, Text, Text, Text, Text, bool, Text, int, int, int, List[Dict[str, Any]]) -> Dict[str, Any]
+        # type: (bool, Optional[Message], int, Optional[datetime.datetime], Optional[Text], Text, Text, datetime.datetime, Optional[Text], Optional[int], int, Text, int, Text, Text, Text, Text, bool, Text, int, int, int, List[Dict[str, Any]]) -> Dict[str, Any]
 
         avatar_url = get_avatar_url(sender_avatar_source, sender_email)
 
@@ -329,9 +330,17 @@ def render_markdown(message, content, realm=None, realm_alert_words=None, messag
             if user_id in message_user_ids:
                 possible_words.update(set(words))
 
+    if message is None:
+        # If we don't have a message, then we are in the compose preview
+        # codepath, so we know we are dealing with a human.
+        sent_by_bot = False
+    else:
+        sent_by_bot = get_user_profile_by_id(message.sender_id).is_bot
+
     # DO MAIN WORK HERE -- call bugdown to convert
     rendered_content = bugdown.convert(content, message=message, message_realm=realm,
-                                       possible_words=possible_words)
+                                       possible_words=possible_words,
+                                       sent_by_bot=sent_by_bot)
 
     if message is not None:
         message.user_ids_with_alert_words = set()

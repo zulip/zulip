@@ -65,6 +65,12 @@ class ConfirmationManager(models.Manager):
                 confirmation = self.get(confirmation_key=confirmation_key)
             except self.model.DoesNotExist:
                 return False
+
+            max_days = self.get_link_validity_in_days()
+            time_elapsed = now() - confirmation.date_sent
+            if time_elapsed.total_seconds() > max_days * 24 * 3600:
+                return False
+
             obj = confirmation.content_object
             status_field = get_status_field(obj._meta.app_label, obj._meta.model_name)
             setattr(obj, status_field, getattr(settings, 'STATUS_ACTIVE', 1))
@@ -82,10 +88,14 @@ class ConfirmationManager(models.Manager):
         # type: (Text, Optional[str]) -> Text
         return generate_activation_url(confirmation_key, host=host)
 
+    def get_link_validity_in_days(self):
+        # type: () -> int
+        return getattr(settings, 'EMAIL_CONFIRMATION_DAYS', 10)
+
     def send_confirmation(self, obj, email_address, additional_context=None,
-                          subject_template_path=None, body_template_path=None,
+                          subject_template_path=None, body_template_path=None, html_body_template_path=None,
                           host=None):
-        # type: (ContentType, Text, Optional[Dict[str, Any]], Optional[str], Optional[str], Optional[str]) -> Confirmation
+        # type: (ContentType, Text, Optional[Dict[str, Any]], Optional[str], Optional[str], Optional[str], Optional[str]) -> Confirmation
         confirmation_key = generate_key()
         current_site = Site.objects.get_current()
         activate_url = self.get_activation_url(confirmation_key, host=host)
@@ -103,8 +113,8 @@ class ConfirmationManager(models.Manager):
         else:
             template_name = obj._meta.model_name
         templates = [
-            'confirmation/%s_confirmation_email_subject.txt' % (template_name,),
-            'confirmation/confirmation_email_subject.txt',
+            'confirmation/%s_confirmation_email.subject' % (template_name,),
+            'confirmation/confirmation_email.subject',
         ]
         if subject_template_path:
             template = loader.get_template(subject_template_path)
@@ -112,15 +122,21 @@ class ConfirmationManager(models.Manager):
             template = loader.select_template(templates)
         subject = template.render(context).strip().replace(u'\n', u' ') # no newlines, please
         templates = [
-            'confirmation/%s_confirmation_email_body.txt' % (template_name,),
-            'confirmation/confirmation_email_body.txt',
+            'confirmation/%s_confirmation_email.txt' % (template_name,),
+            'confirmation/confirmation_email.txt',
         ]
         if body_template_path:
             template = loader.get_template(body_template_path)
         else:
             template = loader.select_template(templates)
+        if html_body_template_path:
+            html_template = loader.get_template(html_body_template_path)
+        else:
+            html_template = loader.get_template('confirmation/%s_confirmation_email.html' % (template_name,))
         body = template.render(context)
-        send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [email_address])
+        if html_template:
+            html_content = html_template.render(context)
+        send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [email_address], html_message=html_content)
         return self.create(content_object=obj, date_sent=now(), confirmation_key=confirmation_key)
 
 

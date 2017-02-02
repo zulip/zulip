@@ -92,7 +92,7 @@ function dispatch_normal_event(event) {
             bot_data.remove(event.bot.email);
         } else if (event.op === 'update') {
             bot_data.update(event.bot.email, event.bot);
-            admin.update_user_full_name(event.bot.email, event.bot.full_name);
+            admin.update_user_full_name(event.bot.user_id, event.bot.full_name);
         }
         break;
 
@@ -108,10 +108,17 @@ function dispatch_normal_event(event) {
         break;
 
     case 'realm_domains':
+        var i;
         if (event.op === 'add') {
             page_params.domains.push(event.alias);
+        } else if (event.op === 'change') {
+            for (i = 0; i < page_params.domains.length; i += 1) {
+                if (page_params.domains[i].domain === event.alias.domain) {
+                    page_params.domains[i].allow_subdomains = event.alias.allow_subdomains;
+                    break;
+                }
+            }
         } else if (event.op === 'remove') {
-            var i;
             for (i = 0; i < page_params.domains.length; i += 1) {
                 if (page_params.domains[i].domain === event.domain) {
                     page_params.domains.splice(i, 1);
@@ -121,6 +128,7 @@ function dispatch_normal_event(event) {
         }
         admin.populate_realm_aliases(page_params.domains);
         break;
+
     case 'realm_user':
         if (event.op === 'add') {
             people.add_in_realm(event.person);
@@ -223,7 +231,7 @@ function dispatch_normal_event(event) {
             var msgs_to_update = _.map(event.messages, function (message_id) {
                 return message_store.get(message_id);
             });
-            unread.mark_messages_as_read(msgs_to_update, {from: "server"});
+            unread_ui.mark_messages_as_read(msgs_to_update, {from: "server"});
             break;
         }
         break;

@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 from django.conf import settings
+from typing import Optional
 
 import logging
 import traceback
@@ -32,7 +33,7 @@ class AdminZulipHandler(logging.Handler):
             exception_filter = get_exception_reporter_filter(request)
 
             if record.exc_info:
-                stack_trace = ''.join(traceback.format_exception(*record.exc_info))
+                stack_trace = ''.join(traceback.format_exception(*record.exc_info))  # type: Optional[str]
             else:
                 stack_trace = None
 
@@ -46,8 +47,13 @@ class AdminZulipHandler(logging.Handler):
                 user_full_name = None
                 user_email = None
 
-            data = request.GET if request.method == 'GET' else \
-                exception_filter.get_post_parameters(request)
+            try:
+                data = request.GET if request.method == 'GET' else \
+                    exception_filter.get_post_parameters(request)
+            except Exception:
+                # exception_filter.get_post_parameters will throw
+                # RequestDataTooBig if there's a really big file uploaded
+                data = {}
 
             try:
                 host = request.get_host().split(':')[0]

@@ -8,14 +8,13 @@ import sys
 import logging
 
 from six.moves import filter
-try:
-    import lister
-    from typing import cast, Callable, Dict, Iterable, List
-except ImportError as e:
-    print("ImportError: {}".format(e))
-    print("You need to run the Zulip linters inside a Zulip dev environment.")
-    print("If you are using Vagrant, you can `vagrant ssh` to enter the Vagrant guest.")
-    sys.exit(1)
+
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+
+import lister
+from typing import cast, Callable, Dict, Iterable, List
 
 EXCLUDED_FILES = [
     ## Test data Files for testing modules in tests

@@ -40,9 +40,9 @@ location /static/ {
 }
 ```
 
-## Nginx routes other requests [between tornado and django][tornado-django]
+## Nginx routes other requests [between django and tornado][tornado-django]
 
-[tornado-django]: architecture-overview.html?highlight=tornado#tornado-and-django
+[tornado-django]: architecture-overview.html?highlight=tornado#django-and-tornado
 
 All our connected clients hold open long-polling connections so that
 they can receive events (messages, presence notifications, and so on) in

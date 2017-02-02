@@ -1,13 +1,41 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import, print_function
+
 import os
-from mock import patch, MagicMock
-from django.test import TestCase
+import glob
+from datetime import timedelta
+from mock import MagicMock, patch
+from six.moves import map, filter
+
 from django.conf import settings
 from django.core.management import call_command
+from django.test import TestCase
+from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import stdout_suppressed
 from zerver.models import get_realm
 from confirmation.models import RealmCreationKey, generate_realm_creation_url
-from datetime import timedelta
-from zerver.lib.test_classes import ZulipTestCase
+
+class TestCommandsCanStart(TestCase):
+
+    def setUp(self):
+        # type: () -> None
+        self.commands = filter(
+            lambda filename: filename != '__init__',
+            map(
+                lambda file: os.path.basename(file).replace('.py', ''),
+                glob.iglob('*/management/commands/*.py')
+            )
+        )
+
+    def test_management_commands_show_help(self):
+        # type: () -> None
+        with stdout_suppressed() as stdout:
+            for command in self.commands:
+                print('Testing management command: {}'.format(command),
+                      file=stdout)
+
+                with self.assertRaises(SystemExit):
+                    call_command(command, '--help')
 
 class TestSendWebhookFixtureMessage(TestCase):
     COMMAND_NAME = 'send_webhook_fixture_message'

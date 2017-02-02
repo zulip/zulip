@@ -1,18 +1,15 @@
-<h1><i class="icon-vector-wrench settings-icon"></i>{{t "Settings" }}</h1>
-
 <div id="settings-change-box" class="new-style">
+    <div class="alert" id="settings-status"></div>
 
-  <div class="alert" id="settings-status"></div>
+    {{ partial "account-settings" }}
 
-  {{ partial "account-settings" }}
+    {{ partial "display-settings" }}
 
-  {{ partial "display-settings" }}
+    {{ partial "notification-settings" }}
 
-  {{ partial "notification-settings" }}
+    {{ partial "bot-settings" }}
+
+    {{ partial "alert-word-settings" }}
+
+    {{ partial "ui-settings" }}
 </div>
-
-{{ partial "bot-settings" }}
-
-{{ partial "alert-word-settings" }}
-
-{{ partial "ui-settings" }}

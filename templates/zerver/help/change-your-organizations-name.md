@@ -4,7 +4,7 @@
 
 {!follow-steps.md!} change the name of your organization.
 
-{!go-to-the.md!} [Organization Settings](/#administration/organization-settings)
+{!go-to-the.md!} [Organization settings](/#administration/organization-settings)
 {!admin.md!}
 
 4. Edit your organization's name in the **Your organization's name** textbox.

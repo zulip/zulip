@@ -252,15 +252,6 @@ class RealmTest(ZulipTestCase):
         realm = get_realm('zulip')
         self.assertEqual(realm.default_language, new_lang)
 
-        # Test setting zh_CN, we set zh_HANS instead of zh_CN in db
-        chinese = "zh_CN"
-        simplified_chinese = "zh_HANS"
-        req = dict(default_language=ujson.dumps(chinese))
-        result = self.client_patch('/json/realm', req)
-        self.assert_json_success(result)
-        realm = get_realm('zulip')
-        self.assertEqual(realm.default_language, simplified_chinese)
-
         # Test to make sure that when invalid languages are passed
         # as the default realm language, correct validation error is
         # raised and the invalid language is not saved in db
@@ -379,6 +370,14 @@ class PermissionTest(ZulipTestCase):
         req = dict(full_name=ujson.dumps(new_name))
         result = self.client_patch('/json/users/hamlet@zulip.com', req)
         self.assert_json_error(result, 'Name too long!')
+
+    def test_admin_cannot_set_full_name_with_invalid_characters(self):
+        # type: () -> None
+        new_name = 'Opheli*'
+        self.login('iago@zulip.com')
+        req = dict(full_name=ujson.dumps(new_name))
+        result = self.client_patch('/json/users/hamlet@zulip.com', req)
+        self.assert_json_error(result, 'Invalid characters in name!')
 
 class ZephyrTest(ZulipTestCase):
     def test_webathena_kerberos_login(self):
@@ -824,6 +823,7 @@ class BotTest(ZulipTestCase):
         self.assertEqual(len(bots), 1)
         bot = bots[0]
         self.assertEqual(bot['bot_owner'], 'hamlet@zulip.com')
+        self.assertEqual(bot['user_id'], get_user_profile_by_email('hambot-bot@zulip.com').id)
 
     def test_add_bot_with_username_in_use(self):
         # type: () -> None
@@ -1618,6 +1618,16 @@ class ChangeSettingsTest(ZulipTestCase):
                                        dict(full_name='x' * 1000))
         self.assert_json_error(json_result, 'Name too long!')
 
+    def test_illegal_characters_in_name_changes(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        self.login(email)
+
+        # Now try a name with invalid characters
+        json_result = self.client_post("/json/settings/change",
+                                       dict(full_name='Opheli*'))
+        self.assert_json_error(json_result, 'Invalid characters in name!')
+
     # This is basically a don't-explode test.
     def test_notify_settings(self):
         # type: () -> None
@@ -1960,8 +1970,8 @@ class HomeTest(ZulipTestCase):
     def _get_home_page(self, **kwargs):
         # type: (**Any) -> HttpResponse
         with \
-                patch('zerver.lib.actions.request_event_queue', return_value=42), \
-                patch('zerver.lib.actions.get_user_events', return_value=[]):
+                patch('zerver.lib.events.request_event_queue', return_value=42), \
+                patch('zerver.lib.events.get_user_events', return_value=[]):
             result = self.client_get('/', dict(**kwargs))
         return result
 

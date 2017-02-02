@@ -16,6 +16,7 @@ from django.db.utils import IntegrityError
 from django.utils.translation import ugettext as _
 
 from zerver.lib.avatar import avatar_url
+from zerver.lib.cache import get_cache_backend
 from zerver.lib.initial_password import initial_password
 from zerver.lib.db import TimeTrackingCursor
 from zerver.lib.str_utils import force_text
@@ -89,7 +90,12 @@ def simulated_queue_client(client):
 def tornado_redirected_to_list(lst):
     # type: (List[Mapping[str, Any]]) -> Iterator[None]
     real_event_queue_process_notification = event_queue.process_notification
-    event_queue.process_notification = lst.append
+    event_queue.process_notification = lambda notice: lst.append(notice)
+    # process_notification takes a single parameter called 'notice'.
+    # lst.append takes a single argument called 'object'.
+    # Some code might call process_notification using keyword arguments,
+    # so mypy doesn't allow assigning lst.append to process_notification
+    # So explicitly change parameter name to 'notice' to work around this problem
     yield
     event_queue.process_notification = real_event_queue_process_notification
 
@@ -99,14 +105,14 @@ def simulated_empty_cache():
     cache_queries = [] # type: List[Tuple[str, Union[Text, List[Text]], Text]]
 
     def my_cache_get(key, cache_name=None):
-        # type: (Text, Optional[str]) -> Any
+        # type: (Text, Optional[str]) -> Optional[Dict[Text, Any]]
         cache_queries.append(('get', key, cache_name))
         return None
 
     def my_cache_get_many(keys, cache_name=None):
         # type: (List[Text], Optional[str]) -> Dict[Text, Any]
         cache_queries.append(('getmany', keys, cache_name))
-        return None
+        return {}
 
     old_get = cache.cache_get
     old_get_many = cache.cache_get_many
@@ -128,6 +134,8 @@ def queries_captured(include_savepoints=False):
 
     def wrapper_execute(self, action, sql, params=()):
         # type: (TimeTrackingCursor, Callable, NonBinaryStr, Iterable[Any]) -> None
+        cache = get_cache_backend(None)
+        cache.clear()
         start = time.time()
         try:
             return action(sql, params)
@@ -157,6 +165,16 @@ def queries_captured(include_savepoints=False):
 
     TimeTrackingCursor.execute = old_execute # type: ignore # https://github.com/JukkaL/mypy/issues/1167
     TimeTrackingCursor.executemany = old_executemany # type: ignore # https://github.com/JukkaL/mypy/issues/1167
+
+@contextmanager
+def stdout_suppressed():
+    # type: () -> Iterator[IO[str]]
+    """Redirect stdout to /dev/null."""
+
+    with open(os.devnull, 'a') as devnull:
+        stdout, sys.stdout = sys.stdout, devnull  # type: ignore
+        yield stdout
+        sys.stdout = stdout
 
 def get_test_image_file(filename):
     # type: (str) -> IO[Any]
@@ -267,6 +285,15 @@ INSTRUMENTED_CALLS = [] # type: List[Dict[str, Any]]
 
 UrlFuncT = Callable[..., HttpResponse] # TODO: make more specific
 
+def process_instrumented_calls(func):
+    # type: (Callable) -> None
+    for call in INSTRUMENTED_CALLS:
+        func(call)
+
+def append_instrumentation_data(data):
+    # type: (Dict[str, Any]) -> None
+    INSTRUMENTED_CALLS.append(data)
+
 def instrument_url(f):
     # type: (UrlFuncT) -> UrlFuncT
     if not INSTRUMENTING:
@@ -283,7 +310,7 @@ def instrument_url(f):
             else:
                 extra_info = ''
 
-            INSTRUMENTED_CALLS.append(dict(
+            append_instrumentation_data(dict(
                 url=url,
                 status_code=result.status_code,
                 method=f.__name__,

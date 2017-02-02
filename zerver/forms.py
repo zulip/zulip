@@ -13,6 +13,8 @@ from jinja2 import Markup as mark_safe
 
 from zerver.lib.actions import do_change_password, is_inactive, user_email_is_unique
 from zerver.lib.name_restrictions import is_reserved_subdomain, is_disposable_domain
+from zerver.lib.request import JsonableError
+from zerver.lib.users import check_full_name
 from zerver.lib.utils import get_subdomain, check_subdomain
 from zerver.models import Realm, get_user_profile_by_email, UserProfile, \
     get_realm_by_email_domain, get_realm, \
@@ -68,6 +70,13 @@ class RegistrationForm(forms.Form):
 
     if settings.TERMS_OF_SERVICE:
         terms = forms.BooleanField(required=True)
+
+    def clean_full_name(self):
+        # type: () -> Text
+        try:
+            return check_full_name(self.cleaned_data['full_name'])
+        except JsonableError as e:
+            raise ValidationError(e.error)
 
     def clean_realm_subdomain(self):
         # type: () -> str

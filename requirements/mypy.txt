@@ -1,3 +1,3 @@
 six==1.10.0
-mypy-lang==0.4.6
+mypy==0.471
 typed-ast==0.6.1

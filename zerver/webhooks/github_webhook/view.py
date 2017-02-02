@@ -362,7 +362,7 @@ EVENT_FUNCTION_MAPPER = {
     'watch': get_watch_body,
 }
 
-@api_key_only_webhook_view('Github')
+@api_key_only_webhook_view('GitHub')
 @has_request_variables
 def api_github_webhook(
         request, user_profile, client,

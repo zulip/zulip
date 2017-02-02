@@ -97,13 +97,23 @@ function message_matches_search_term(message, operator, operand) {
 
 
     case 'sender':
-        return (message.sender_email.toLowerCase() === operand.toLowerCase());
+        return people.id_matches_email_operand(message.sender_id, operand);
 
     case 'pm-with':
         // TODO: use user_ids, not emails here
-        return (message.type === 'private') &&
-            (util.normalize_recipients(message.reply_to) ===
-            util.normalize_recipients(operand));
+        if (message.type !== 'private') {
+            return false;
+        }
+        var operand_ids = people.pm_with_operand_ids(operand);
+        if (!operand_ids) {
+            return false;
+        }
+        var message_ids = people.pm_with_user_ids(message);
+        if (!message_ids) {
+            return false;
+        }
+
+        return _.isEqual(operand_ids, message_ids);
     }
 
     return true; // unknown operators return true (effectively ignored)
@@ -350,6 +360,21 @@ Filter.prototype = {
 
     has_topic: function Filter_has_topic(stream_name, topic) {
         return this.has_operand('stream', stream_name) && this.has_operand('topic', topic);
+    },
+
+    update_email: function (user_id, new_email) {
+        _.each(this._operators, function (term) {
+            switch (term.operator) {
+                case 'pm-with':
+                case 'sender':
+                case 'from':
+                    term.operand = people.update_email_in_reply_to(
+                        term.operand,
+                        user_id,
+                        new_email
+                    );
+            }
+        });
     },
 
     // Build a filter function from a list of operators.

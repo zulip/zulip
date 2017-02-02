@@ -4,8 +4,16 @@
     max-width: none;
 }
 
+body {
+    font-family: 'Humbug', 'Helvetica Neue', sans-serif !important;
+}
+
 p {
     margin-bottom: 0px;
+}
+
+svg {
+    -webkit-font-smoothing: antialiased;
 }
 
 .alert {
@@ -13,9 +21,10 @@ p {
 }
 
 .analytics-page-header {
-    margin-top: 20px;
+    margin-top: 30px;
     margin-bottom: 50px;
     text-align: center;
+    font-size: 36px;
 }
 
 .sidebar {
@@ -40,13 +49,12 @@ p {
 
 .nav-link {
     display: block;
-    font-size: 16px;
+    font-size: 17px;
     margin-left: 25px;
 }
 
 .page-content {
     width: calc(100% - 300px - 8px);
-    height: calc(100vh - 94px);
     overflow: auto;
     display: inline-block;
     vertical-align: top;
@@ -58,12 +66,8 @@ p {
 
 .graph-title {
     text-align: center;
-    font-size: 22px;
+    font-size: 20px;
     margin-bottom: 30px;
-}
-
-#button_label {
-    font-size: 12px;
 }
 
 #graph_container {
@@ -71,7 +75,7 @@ p {
 }
 
 #button_label {
-    font-size: 16px;
+    font-size: 15px;
     margin-left: 40px;
     margin-bottom: 0px;
 }
@@ -86,22 +90,36 @@ p {
     margin-left: 40px;
 }
 
+#id_messages_sent_over_time {
+    user-select: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+#id_messages_sent_over_time[last_value_is_partial='true'] .points path:last-of-type {
+    opacity: 0.5;
+}
+
 #hover_date {
     font-weight: 400;
 }
 
-#hover_humans {
+#hover_human {
     font-weight: 400;
     margin-left: 18px;
+    display: none;
 }
 
-#hover_bots {
+#hover_bot {
     font-weight: 400;
     margin-left: 8px;
+    display: none;
 }
 
 .button {
-    font-family: 'Humbug', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'Humbug', 'Helvetica Neue', sans-serif !important;
     border: none;
     border-radius: 4px;
     outline: none;
@@ -112,7 +130,7 @@ p {
 }
 
 .pie-button {
-    font-family: 'Humbug', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'Humbug', 'Helvetica Neue', sans-serif !important;
     font-weight: inherit;
     border: none;
     border-radius: 4px;
@@ -132,8 +150,7 @@ p {
 
 #hourly_button {
     padding: 0px 5px 0px 5px;
-    font-size: 13.5px;
-    font-weight: 600px !important;
+    font-size: 14px;
     margin-left: 40px;
     margin-top: 0px;
     background: #F0F0F0;
@@ -141,21 +158,21 @@ p {
 
 #daily_button {
     padding: 0px 5px 0px 5px;
-    font-size: 13.5px;
+    font-size: 14px;
     margin-top: 0px;
-    background: #D8D8D8;
+    background: #F0F0F0;
 }
 
 #weekly_button {
     padding: 0px 5px 0px 5px;
-    font-size: 13.5px;
+    font-size: 14px;
     margin-top: 0px;
     background: #F0F0F0;
 }
 
 #cumulative_button {
     padding: 0px 5px 0px 5px;
-    font-size: 13.5px;
+    font-size: 14px;
     margin-top: 0px;
     background: #F0F0F0;
 }
@@ -234,15 +251,58 @@ p {
 }
 
 #pie_messages_sent_by_client_total {
-    font-size: 15px;
+    font-size: 14px;
     text-align: left;
-    margin: 0px 0px 10px 5px;
+    margin: 0px 0px 5px 45px;
 }
 
 #pie_messages_sent_by_type_total {
-    font-size: 15px;
+    font-size: 14px;
     text-align: left;
-    margin: 0px 0px 10px 50px;
+    margin: 0px 0px 5px 53px;
+}
+
+#users_hover_info {
+    position: relative;
+    top: -65px;
+    height: 0;
+    width: 400px;
+    z-index: 1;
+    font-size: 14px;
+    margin-left: 20px;
+}
+
+#users_hover_date {
+    font-weight: 400;
+    margin-left: 18px;
+}
+
+#users_hover_humans {
+    font-weight: 400;
+    margin-left: 18px;
+    display: none;
+}
+
+#users_total {
+    position: relative;
+    top: -65px;
+    height: 0;
+    width: 400px;
+    z-index: 1;
+    font-size: 13px;
+    margin-left: 320px;
+}
+
+#number_of_users {
+    font-weight: 400;
+    margin-left: 20px;
+}
+
+#number_of_users_today {
+    top: -65px;
+    font-size: 13px;
+    text-align: left;
+    margin: 0px 0px 8px 0px;
 }
 
 @media (max-width: 1127px) {

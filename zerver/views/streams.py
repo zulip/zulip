@@ -198,9 +198,9 @@ def add_subscriptions_backend(request, user_profile,
                                                 validator=check_list(check_dict([('name', check_string)]))),
                               invite_only = REQ(validator=check_bool, default=False),
                               announce = REQ(validator=check_bool, default=False),
-                              principals = REQ(validator=check_list(check_string), default=None),
+                              principals = REQ(validator=check_list(check_string), default=[]),
                               authorization_errors_fatal = REQ(validator=check_bool, default=True)):
-    # type: (HttpRequest, UserProfile, Iterable[Mapping[str, Text]], bool, bool, Optional[List[Text]], bool) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Iterable[Mapping[str, Text]], bool, bool, List[Text], bool) -> HttpResponse
     stream_dicts = []
     for stream_dict in streams_raw:
         stream_dict_copy = {} # type: Dict[str, Any]
@@ -223,7 +223,7 @@ def add_subscriptions_backend(request, user_profile,
     # Newly created streams are also authorized for the creator
     streams = authorized_streams + created_streams
 
-    if principals is not None:
+    if len(principals) > 0:
         if user_profile.realm.is_zephyr_mirror_realm and not all(stream.invite_only for stream in streams):
             return json_error(_("You can only invite other Zephyr mirroring users to invite-only streams."))
         subscribers = set(principal_to_user_profile(user_profile, principal) for principal in principals)
@@ -244,7 +244,7 @@ def add_subscriptions_backend(request, user_profile,
     # Inform the user if someone else subscribed them to stuff,
     # or if a new stream was created with the "announce" option.
     notifications = []
-    if principals and result["subscribed"]:
+    if len(principals) > 0 and result["subscribed"]:
         for email, subscriptions in six.iteritems(result["subscribed"]):
             if email == user_profile.email:
                 # Don't send a Zulip if you invited yourself.
@@ -276,7 +276,7 @@ def add_subscriptions_backend(request, user_profile,
                 "private", email, "", msg))
 
     if announce and len(created_streams) > 0:
-        notifications_stream = user_profile.realm.notifications_stream
+        notifications_stream = user_profile.realm.notifications_stream  # type: Optional[Stream]
         if notifications_stream is not None:
             if len(created_streams) > 1:
                 stream_msg = "the following streams: %s" % (", ".join('#**%s**' % s.name for s in created_streams))

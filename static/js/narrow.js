@@ -32,6 +32,13 @@ exports.operators = function () {
     return current_filter.operators();
 };
 
+exports.update_email = function (user_id, new_email) {
+    if (current_filter !== undefined) {
+        current_filter.update_email(user_id, new_email);
+    }
+};
+
+
 /* Operators we should send to the server. */
 exports.public_operators = function () {
     if (current_filter === undefined) {
@@ -381,7 +388,7 @@ exports.by_subject = function (target_id, opts) {
         exports.by_recipient(target_id, opts);
         return;
     }
-    unread.mark_message_as_read(original);
+    unread_ui.mark_message_as_read(original);
     var search_terms = [
         {operator: 'stream', operand: original.stream},
         {operator: 'topic', operand: original.subject},
@@ -395,7 +402,7 @@ exports.by_recipient = function (target_id, opts) {
     opts = _.defaults({}, opts, {then_select_id: target_id});
     // don't use current_msg_list as it won't work for muted messages or for out-of-narrow links
     var message = message_store.get(target_id);
-    unread.mark_message_as_read(message);
+    unread_ui.mark_message_as_read(message);
     switch (message.type) {
     case 'private':
         exports.by('pm-with', message.reply_to, opts);

@@ -13,7 +13,9 @@ render tweets nicely).  The frontend implementation is in JavaScript,
 based on [marked.js](https://github.com/chjj/marked)
 (`static/js/echo.js`), and is used to preview and locally echo
 messages the moment the sender hits enter, without waiting for round
-trip from the server.
+trip from the server.  Those frontend renderings are only shown to the
+sender of a message, and they are (ideally) identical to the backend
+rendering.
 
 The JavaScript markdown implementation has a function,
 `echo.contains_bugdown`, that is used to check whether a message
@@ -37,6 +39,18 @@ The Python-Markdown implementation is tested by
 ("test fixtures") is present in `zerver/fixtures/bugdown-data.json`,
 and is automatically used by both test suites; as a result, it the
 preferred place to add new tests for Zulip's markdown system.
+
+If you're going to manually test some changes in the frontend Markdown
+implementation, the easiest way to do this is as follows:
+
+1. Login to your development server.
+2. Stop your Zulip server with ctrl-C, leaving the browser open.
+3. Compose and send the messages you'd like to test.  They will be
+   locally echoed using the frontend rendering.
+
+This procedure prevents any server-side rendering.  If you don't do
+this, backend will likely render the Markdown you're testing and swap
+it in before you can see the frontend's rendering.
 
 ## Changing Zulip's markdown processor
 
@@ -121,16 +135,17 @@ be non-standard.
 
 ### Basic syntax
 
-* Enable `nl2br</tt> extension: this means one newline creates a line
+* Enable `nl2br` extension: this means one newline creates a line
   break (not paragraph break).
 
-* Disable italics entirely.  This resolves an issue where people were
-  using `*` and `_` and hitting it by mistake too often.  E.g. with
-  stock Markdown `You should use char * instead of void * there` would
-  trigger italics.
+* Allow only `*` syntax for italics, not `_`. This resolves an issue where
+  people were using `_` and hitting it by mistake too often. Asterisks
+  surrounded by spaces won't trigger italics, either (e.g. with stock Markdown
+  `You should use char * instead of void * there` would produce undesired
+  results).
 
 * Allow only `**` syntax for bold, not `__` (easy to hit by mistake if
-  discussing Python `__init__` or something)
+  discussing Python `__init__` or something).
 
 * Add `~~` syntax for strikethrough.
 
@@ -142,14 +157,14 @@ be non-standard.
 ### Lists
 
 * Allow tacking a bulleted list or block quote onto the end of a
-  paragraph, i.e. without a blank line before it
+  paragraph, i.e. without a blank line before it.
 
 * Allow only `*` for bulleted lists, not `+` or `-` (previously
   created confusion with diff-style text sloppily not included in a
-  code block)
+  code block).
 
-* Disable ordered list syntax: it automatically renumbers, which can
-  be really confusing when sending a numbered list across multiple
+* Disable ordered list syntax: stock Markdown automatically renumbers, which
+  can be really confusing when sending a numbered list across multiple
   messages.
 
 ### Links
@@ -162,16 +177,17 @@ be non-standard.
   is the default behavior.
 
 * Set `target="_blank"` and `title=`(the url) on every link tag so
-  clicking always opens a new window
+  clicking always opens a new window.
 
-* Disable link-by-reference syntax, `[foo][bar]` ... `[bar]: http://google.com`
+* Disable link-by-reference syntax,
+  `[foo][bar]` ... `[bar]: http://google.com`.
 
-* Enable linking to other streams using `#**streamName**`
+* Enable linking to other streams using `#**streamName**`.
 
 
 ### Code
 
-* Enable fenced code block extension, with syntax highlighting
+* Enable fenced code block extension, with syntax highlighting.
 
 * Disable line-numbering within fenced code blocks -- the `<table>`
   output confused our web client code.
@@ -181,7 +197,8 @@ be non-standard.
 * Disable headings, both `# foo` and `== foo ==` syntax: they don't
   make much sense for chat messages.
 
-* Disabled images.
+* Disabled images with `![]()` (images from links are shown as an inline
+  preview).
 
 * Allow embedding any avatar as a tiny (list bullet size) image.  This
   is used primarily by version control integrations.

@@ -7,7 +7,7 @@ if [ "$(uname)" = "OpenBSD" ]; then
   DEFAULT_USER="_postgresql"
 fi
 
-ROOT_POSTGRES="sudo -u "$DEFAULT_USER" psql"
+ROOT_POSTGRES="sudo -i -u "$DEFAULT_USER" psql"
 DEFAULT_DB=""
 if [ "$(uname)" = "Darwin" ]; then
    ROOT_POSTGRES="psql"
@@ -38,6 +38,15 @@ else
 fi
 
 DBNAME_BASE=${DBNAME}_base
+
+if ! pg_isready -U "$DEFAULT_USER" -q; then
+    set +x
+    echo
+    echo 'ERROR: PostgreSQL Server is not running! Ensure the service is enabled.'
+    echo 'ERROR: Try `sudo service postgresql start`?'
+    echo "ERROR: You can easily test if you fixed it using: pg_isready -U \$DEFAULT_USER"
+    exit 1
+fi
 
 $ROOT_POSTGRES "$DEFAULT_DB" << EOF
 CREATE USER $USERNAME;

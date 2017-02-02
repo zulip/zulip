@@ -72,7 +72,7 @@ $(function () {
         // lists.
         var message = ui.find_message(message_id);
 
-        unread.mark_message_as_read(message);
+        unread_ui.mark_message_as_read(message);
         ui.update_starred(message.id, message.starred !== true);
         message_flags.send_starred([message], message.starred);
     }
@@ -161,6 +161,16 @@ $(function () {
 
     $(window).on("focus", function () {
         meta.focusing = true;
+    });
+
+    // MUTING
+
+    $('body').on('click', '.on_hover_topic_mute', function (e) {
+        e.stopPropagation();
+        var stream_id = $(e.currentTarget).attr('data-stream-id');
+        var topic = $(e.currentTarget).attr('data-topic-name');
+        var stream = stream_data.get_sub_by_id(stream_id);
+        popovers.topic_ops.mute(stream.name, topic);
     });
 
     // RECIPIENT BARS
@@ -294,9 +304,10 @@ $(function () {
     popovers.register_click_handlers();
     notifications.register_click_handlers();
 
-    $('.logout_button').click(function () {
+    $('body').on('click', '.logout_button', function () {
         $('#logout_form').submit();
     });
+
     $('.restart_get_events_button').click(function () {
         server_events.restart_get_events({dont_block: true});
     });
@@ -325,6 +336,16 @@ $(function () {
     $('.empty_feed_compose_private').click(function (e) {
         compose.start('private', {trigger: 'empty feed message'});
         e.preventDefault();
+    });
+
+    $(".informational-overlays").click(function (e) {
+        if ($(e.target).is(".informational-overlays, .exit")) {
+            ui.hide_info_overlay();
+        }
+    });
+
+    $("body").on("click", "[data-overlay-trigger]", function () {
+        ui.show_info_overlay($(this).attr("data-overlay-trigger"));
     });
 
     function handle_compose_click(e) {
@@ -418,7 +439,7 @@ $(function () {
     // BANKRUPTCY
 
     $(".bankruptcy_button").click(function () {
-        unread.enable();
+        unread_ui.enable();
     });
 
     (function () {
@@ -558,6 +579,58 @@ $(function () {
     $('a.dropdown-toggle, .dropdown-menu a').on('touchstart', function (e) {
         e.stopPropagation();
     });
+
+    $("#settings_overlay_container .sidebar").on("click", "li[data-section]", function () {
+        var $this = $(this);
+
+        $("#settings_overlay_container .sidebar li").removeClass("active no-border");
+            $this.addClass("active");
+        $this.prev().addClass("no-border");
+    });
+
+    $("#settings_overlay_container .sidebar").on("click", "li[data-section]", function () {
+        var $this = $(this);
+        var section = $this.data("section");
+        var sel = "[data-name='" + section + "']";
+
+        $("#settings_overlay_container .sidebar li").removeClass("active no-border");
+        $this.addClass("active");
+        $this.prev().addClass("no-border");
+
+        if ($this.hasClass("admin")) {
+            window.location.hash = "administration/" + section;
+        } else {
+            window.location.hash = "settings/" + section;
+        }
+
+        $(".settings-section, .settings-wrapper").removeClass("show");
+        $(".settings-section" + sel + ", .settings-wrapper" + sel).addClass("show");
+    });
+
+    $("#settings_overlay_container").on("click", function (e) {
+        var $target = $(e.target);
+        if ($target.is(".exit-sign, .exit")) {
+            hashchange.exit_settings();
+        }
+    });
+
+    (function () {
+        var $parent = $("#settings_overlay_container .sidebar .tab-switcher");
+        var $tabs = $parent.find(".ind-tab");
+        $tabs.click(function () {
+            $tabs.removeClass("selected");
+            $(this).addClass("selected");
+
+            $(".sidebar li").hide();
+            if ($(this).data("name") === "admin") {
+                $("li.admin").show();
+                $("li[data-section='organization-settings']").click();
+            } else {
+                $("li:not(.admin)").show();
+                $("li[data-section='your-account']").click();
+            }
+        });
+    }());
 });
 
 return exports;

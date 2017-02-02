@@ -1,14 +1,18 @@
-{% extends "zerver/portico.html" %}
-{% block portico_content %}
+{% extends "zerver/base.html" %}
+
+{% block customhead %}
+{% stylesheet 'portico' %}
+{% endblock %}
+
+{% block content %}
+<div class="app portico-page">
 
 {{ minified_js('stats')|safe }}
 {% stylesheet 'stats' %}
 
-<html>
-<body>
 <div class="sidebar">
     <nav class="nav">
-        <p class="nav-subtitle">Messages</p>
+        <p class="nav-subtitle">Messages Sent</p>
         <a href="#messages_timescale_anchor" class="nav-link">Messages Sent Over Time</a>
         <a href="#messages_by_client_anchor" class="nav-link">Messages Sent by Client</a>
         <a href="#messages_by_type_anchor" class="nav-link">Messages Sent by Recipient Type</a>
@@ -18,10 +22,10 @@
 </div>
 <div class="page-content">
   <div id="id_stats_errors" class="alert alert-error"></div>
-  <h1 class="analytics-page-header">Analytics</h1>
+  <h1 class="analytics-page-header">Zulip Analytics for {{ realm_name }}</h1>
   <div class="center-container">
     <div class="center-block">
-      <p class="graph-title" id="messages_timescale_anchor"> Messages Sent Over Time</p>
+      <p class="graph-title" id="messages_timescale_anchor">Messages Sent Over Time</p>
       <div id="graph_container">
         <div id="button_container">
           <p id="button_label"> Aggregation </p>
@@ -33,19 +37,18 @@
         <div id="id_messages_sent_over_time"></div>
         <div id="hoverinfo">
             <span id="hover_date"></span>
-            <span id="hover_humans"></span>
-            <span id="hover_humans_value"></span>
-            <span id="hover_bots"></span>
-            <span id="hover_bots_value"></span>
+            <span id="hover_human">Humans:</span>
+            <span id="hover_human_value"></span>
+            <span id="hover_bot">Bots:</span>
+            <span id="hover_bot_value"></span>
         </div>
       </div>
     </div>
   </div>
   <div id="pie_container">
     <div id="pie_messages_sent_by_client">
-      <p class="graph-title" id="messages_by_client_anchor"> Messages Sent by Client</p>
+      <p class="graph-title" id="messages_by_client_anchor">Messages Sent by Client</p>
       <div id="id_messages_sent_by_client"></div>
-      <div id="pie1_total"> </div>
       <button class="pie-button" type="button" id='messages_by_client_user_button'> Me </button>
       <button class="pie-button" type="button" id='messages_by_client_realm_button'> Everyone </button>
       <button class="pie-button" type="button" id='messages_by_client_ten_days_button'> Last 10 Days </button>
@@ -53,9 +56,9 @@
       <button class="pie-button" type="button" id='messages_by_client_cumulative_button'> All time </button>
     </div>
     <div id="pie_messages_sent_by_type">
-      <p class="graph-title" id="messages_by_type_anchor"> Messages Sent by Recipient Type</p>
+      <p class="graph-title" id="messages_by_type_anchor">Messages Sent by Recipient Type</p>
       <div id="id_messages_sent_by_message_type"></div>
-      <div id="pie2_total"> </div>
+      <div id="pie_messages_sent_by_type_total"> </div>
       <button class="pie-button" type="button" id='messages_by_type_user_button'> Me </button>
       <button class="pie-button" type="button" id='messages_by_type_realm_button'> Everyone </button>
       <button class="pie-button" type="button" id='messages_by_type_ten_days_button'> Last 10 Days </button>
@@ -65,12 +68,20 @@
   </div>
   <div class="center-container">
     <div class="center-block">
-      <p class="graph-title" id="users_anchor"> Number of Users</p>
+      <p class="graph-title" id="users_anchor">Number of Users</p>
       <div id="id_number_of_users"></div>
+      <div id="users_hover_info">
+        <span id="users_hover_date"></span>
+        <span id="users_hover_humans">Users:</span>
+        <span id="users_hover_humans_value"></span>
+      </div>
+      <div id="users_total">
+        <span id="number_of_users">Today:</span>
+        <span id="number_of_users_today"> </span>
+      </div>
     </div>
   </div>
 </div>
-</body>
-</html>
 
+</div>
 {% endblock %}

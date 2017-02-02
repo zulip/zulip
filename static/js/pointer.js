@@ -61,7 +61,7 @@ exports.fast_forward_pointer = function () {
         url: '/json/users/me',
         idempotent: true,
         success: function (data) {
-            unread.mark_all_as_read(function () {
+            unread_ui.mark_all_as_read(function () {
                 pointer.furthest_read = data.max_message_id;
                 unconditionally_send_pointer_update().then(function () {
                     ui.change_tab_to('#home');
@@ -183,7 +183,7 @@ exports.initialize = function initialize() {
             } else {
                 messages = event.msg_list.message_range(event.previously_selected, event.id);
             }
-            unread.mark_messages_as_read(messages, {from: 'pointer'});
+            unread_ui.mark_messages_as_read(messages, {from: 'pointer'});
         }
     });
 };

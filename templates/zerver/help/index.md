@@ -115,7 +115,7 @@ as an **organization**.
 
 # Administering a Zulip organization
 
-## Organization Settings
+## Organization settings
 * [Change your organization settings](/help/change-your-organization-settings)
 * [Change your organization's name](/help/change-your-organizations-name)
 * [Restrict user email addresses to certain domains](/help/restrict-user-email-addresses-to-certain-domains)

@@ -4,22 +4,20 @@ var exports = {};
 
 var muted_topics = new Dict({fold_case: true});
 
-exports.mute_topic = function (stream, topic) {
+exports.add_muted_topic = function (stream, topic) {
     var sub_dict = muted_topics.get(stream);
     if (!sub_dict) {
         sub_dict = new Dict({fold_case: true});
         muted_topics.set(stream, sub_dict);
     }
     sub_dict.set(topic, true);
-    unread.update_unread_counts();
 };
 
-exports.unmute_topic = function (stream, topic) {
+exports.remove_muted_topic = function (stream, topic) {
     var sub_dict = muted_topics.get(stream);
     if (sub_dict) {
         sub_dict.del(topic);
     }
-    unread.update_unread_counts();
 };
 
 exports.is_topic_muted = function (stream, topic) {
@@ -47,7 +45,7 @@ exports.set_muted_topics = function (tuples) {
         var stream = tuple[0];
         var topic = tuple[1];
 
-        exports.mute_topic(stream, topic);
+        exports.add_muted_topic(stream, topic);
     });
 };
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 echo 'Testing whether migrations are consistent with models'
-if ./manage.py makemigrations -e --dry-run; then
+if ! ./manage.py makemigrations --check --dry-run; then
     echo
     echo 'ERROR: Migrations are not consistent with models!  Fix with `./manage.py makemigrations`.'
     echo

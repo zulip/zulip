@@ -1,104 +1,23 @@
-<div class="row-fluid">
-  <div class="span12">
-    <div class="administration">
-      <div class="alert" id="administration-status"></div>
-      <h1><i class="icon-vector-bolt administration-icon"></i>{{t "Administration" }}</h1>
-      <ul class="nav nav-tabs" role="tablist">
-        <li role="presentation" class="active">
-          <a href="#organization" aria-controls="organization" role="tab" data-toggle="tab"><i class="icon-vector-gear settings-section-icon"></i> {{t "Organization settings" }}</a>
-        </li>
-        <li role="presentation">
-          <a href="#users" aria-controls="users" role="tab" data-toggle="tab"><i class="icon-vector-user settings-section-icon"></i> {{t "Users" }}</a>
-        </li>
-        <li role="presentation">
-          <a href="#deactivated-users" aria-controls="deactivated-users" role="tab" data-toggle="tab"><i class="icon-vector-trash settings-section-icon"></i> {{t "Deactivated users" }}</a>
-        </li>
-        <li role="presentation">
-          <a href="#bots" aria-controls="bots" role="tab" data-toggle="tab"><i class="icon-vector-github settings-section-icon"></i> {{t "Bots" }}</a>
-        </li>
-        <li role="presentation">
-          <a href="#streams" aria-controls="streams" role="tab" data-toggle="tab"><i class="icon-vector-exchange settings-section-icon"></i> {{t "Delete streams" }}</a>
-        </li>
-        <li role="presentation">
-          <a href="#default-streams" aria-controls="default-streams" role="tab" data-toggle="tab"><i class="icon-vector-exchange settings-section-icon"></i> {{t "Default streams" }}</a>
-        </li>
-      </ul>
-      <div class="tab-content">
-        <div role="tabpanel" class="tab-pane active" id="organization">
-          {{ partial "organization-settings-admin" }}
-          {{ partial "emoji-settings-admin" }}
-          {{ partial "realm-filter-settings-admin" }}
-          {{ partial "auth-methods-settings-admin" }}
-        </div>
-        <div role="tabpanel" class="tab-pane" id="users">
-          {{ partial "user-list-admin" }}
-        </div>
-        <div role="tabpanel" class="tab-pane" id="deactivated-users">
-          {{ partial "deactivated-users-admin" }}
-        </div>
-        <div role="tabpanel" class="tab-pane" id="bots">
-          {{ partial "bot-list-admin" }}
-        </div>
-        <div role="tabpanel" class="tab-pane" id="streams">
-          {{ partial "streams-list-admin" }}
-        </div>
-        <div role="tabpanel" class="tab-pane" id="default-streams">
-          {{ partial "default-streams-list-admin" }}
-        </div>
-      </div>
+<div class="alert" id="administration-status"></div>
 
-      <div id="deactivation_user_modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="deactivation_user_modal_label" aria-hidden="true">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-          <h3 id="deactivation_user_modal_label">{{t "Deactivate" }} <span class="email"></span></h3>
-        </div>
-        <div class="modal-body">
-          <p>{{#tr this}}By deactivating <strong><span class="user_name"></span></strong> &lt;<span class="email"></span>&gt;, they will be logged out immediately.{{/tr}}</p>
-          <p>{{t "Their password will be cleared from our systems, and any bots they maintain will be disabled." }}</p>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">{{t "Cancel" }}</button>
-          <button class="button btn-danger" id="do_deactivate_user_button">{{t "Deactivate now" }}</button>
-        </div>
-      </div>
-      <div id="deactivation_stream_modal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="deactivation_stream_modal_label" aria-hidden="true">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-          <h3 id="deactivation_stream_modal_label">{{t "Delete stream" }} <span class="stream_name"></span></h3>
-        </div>
-        <div class="modal-body">
-          <p>{{t "Deleting this stream will immediately unsubscribe everyone, and the stream's content will not be recoverable." }} <strong>{{t "Are you sure you want to do this?" }}</strong></p>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">{{t "Cancel" }}</button>
-          <button class="button btn-danger" id="do_deactivate_stream_button">{{t "Yes, delete this stream" }}</button>
-        </div>
-      </div>
-      <div id="realm_aliases_modal" class="modal hide" tabindex="-1" role="dialog" aria-labelledby="realm_aliases_modal_label" aria-hidden="true">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-          <h3 id="realm_aliases_modal_label">{{t "Allowed domains" }}</h3>
-        </div>
-        <div class="modal-body">
-          <table class="table table-condensed table-stripped" id="alias_table">
-            <thead>
-              <th>{{t "Domain" }}</th>
-              <th>{{t "Action" }}</th>
-            </thead>
-            <tbody>
-            </tbody>
-            <tfoot>
-              <tr>
-                <td><input type="text" id="new_alias" placeholder={{t "acme.com" }}></input></td>
-                <td><button type="button" class="btn btn-primary" id="add_alias">{{t "Add" }}</button></td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-        <div class="modal-footer centered-footer">
-          <div class="aliases_info"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+{{ partial "deactivation-user-modal" }}
+{{ partial "deactivation-stream-modal" }}
+{{ partial "realm-domains-modal" }}
+
+{{ partial "organization-settings-admin" }}
+
+{{ partial "emoji-settings-admin" }}
+
+{{ partial "user-list-admin" }}
+
+{{ partial "deactivated-users-admin" }}
+
+{{ partial "bot-list-admin" }}
+
+{{ partial "streams-list-admin" }}
+
+{{ partial "default-streams-list-admin" }}
+
+{{ partial "auth-methods-settings-admin" }}
+
+{{ partial "realm-filter-settings-admin" }}

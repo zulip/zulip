@@ -77,6 +77,7 @@ Contents:
    :caption: Developer tutorials
 
    integration-guide
+   webhook-walkthrough
    new-feature-tutorial
    writing-views
    life-of-a-request
@@ -93,6 +94,7 @@ Contents:
    code-style
    mypy
    code-reviewing
+   chat-zulip-org
 
 .. _code-testing:
 
@@ -114,6 +116,7 @@ Contents:
    :caption: Subsystem documentation
 
    settings
+   events-system
    queuing
    bots-guide
    custom-apps

@@ -162,6 +162,75 @@ function get_private_suggestions(all_people, operators, person_operator_matches)
     return suggestions;
 }
 
+function get_group_suggestions(all_people, operators) {
+    if (operators.length === 0) {
+        return [];
+    }
+
+    if ((operators[0].operator === 'is') && (operators[0].operand === 'private')) {
+        operators = operators.slice(1);
+    }
+
+    if (operators.length !== 1 || operators[0].operator !== 'pm-with') {
+        return [];
+    }
+
+    var operand = operators[0].operand;
+    var negated = operators[0].negated;
+
+    // The operand has the form "part1,part2,pa", where all but the last part
+    // are emails, and the last part is an arbitrary query.
+    //
+    // We only generate group suggestions when there's more than one part, and
+    // we only use the last part to generate suggestions.
+    var all_but_last_part;
+    var last_part;
+
+    var last_comma_index = operand.lastIndexOf(',');
+    if (last_comma_index < 0) {
+        return [];
+    }
+
+    // Neither all_but_last_part nor last_part include the final comma.
+    all_but_last_part = operand.slice(0, last_comma_index);
+    last_part = operand.slice(last_comma_index + 1);
+
+    // We don't suggest a person if their email is already present in the
+    // operand (not including the last part).
+    var parts = all_but_last_part.split(',');
+    var people = _.filter(all_people, function (person) {
+        if (_.contains(parts, person.email)) {
+            return false;
+        }
+        return (last_part === '') || person_matches_query(person, last_part);
+    });
+
+    people.sort(typeahead_helper.compare_by_pms);
+
+    // Take top 15 people, since they're ordered by pm_recipient_count.
+    people = people.slice(0, 15);
+
+    var prefix = Filter.operator_to_prefix('pm-with', negated);
+
+    var suggestions = _.map(people, function (person) {
+        var term = {
+            operator: 'pm-with',
+            operand: all_but_last_part + ',' + person.email,
+            negated: negated,
+        };
+        var name = highlight_person(last_part, person);
+        var description = prefix + ' ' + all_but_last_part + ',' + name;
+        var terms = [term];
+        if (negated) {
+            terms = [{operator: 'is', operand: 'private'}, term];
+        }
+        var search_string = Filter.unparse(terms);
+        return {description: description, search_string: search_string};
+    });
+
+    return suggestions;
+}
+
 function get_person_suggestions(all_people, query, autocomplete_operator) {
     if (query === '') {
         return [];
@@ -427,6 +496,9 @@ exports.get_suggestions = function (query) {
     result = result.concat(suggestions);
 
     suggestions = get_person_suggestions(persons, query, 'sender');
+    result = result.concat(suggestions);
+
+    suggestions = get_group_suggestions(persons, operators);
     result = result.concat(suggestions);
 
     suggestions = get_private_suggestions(persons, operators, ['pm-with', 'sender', 'from']);

@@ -83,11 +83,11 @@ def _check_hash(target_hash_file, **options):
     with open(target_hash_file) as f:
         target_hash_content = hashlib.sha1(f.read().encode('utf8')).hexdigest()
 
-    if os.path.exists(source_hash_file):
+    if not os.path.exists(source_hash_file):
+        source_hash_content = None
+    else:
         with open(source_hash_file) as f:
             source_hash_content = f.read().strip()
-    else:
-        source_hash_content = None
 
     with open(source_hash_file, 'w') as f:
         f.write(target_hash_content)
@@ -99,7 +99,7 @@ def is_template_database_current(
         migration_status='var/migration-status',
         settings='zproject.test_settings',
         check_files=None):
-    # type: (Optional[Text], Optional[Text], Optional[Text], Optional[List[str]]) -> bool
+    # type: (Text, Text, Text, Optional[List[str]]) -> bool
     # Using str type for check_files because re.split doesn't accept unicode
     if check_files is None:
         check_files = [

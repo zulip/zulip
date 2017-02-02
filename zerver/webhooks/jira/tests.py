@@ -62,8 +62,7 @@ class JiraHookTests(WebhookTestCase):
         expected_message = """Leo Franchi **added comment to** [BUG-15](http://lfranchi.com:8080/browse/BUG-15) (assigned to **Othello, the Moor of Venice**):
 
 
-Adding a comment. Oh, what a comment it is!
-"""
+Adding a comment. Oh, what a comment it is!"""
         self.send_and_test_stream_message('commented_v1', expected_subject, expected_message)
         self.send_and_test_stream_message('commented_v2', expected_subject, expected_message)
 
@@ -73,8 +72,7 @@ Adding a comment. Oh, what a comment it is!
             expected_message = """Leo Franchi **edited comment on** [BUG-15](http://lfranchi.com:8080/browse/BUG-15) (assigned to **Othello, the Moor of Venice**):
 
 
-Adding a comment. Oh, what a comment it is!
-"""
+Adding a comment. Oh, what a comment it is!"""
             self.send_and_test_stream_message('comment_edited_v2', expected_subject, expected_message)
 
     def test_comment_deleted(self):
@@ -86,7 +84,7 @@ Adding a comment. Oh, what a comment it is!
     def test_commented_markup(self):
         # type: () -> None
         expected_subject = "TEST-7: Testing of rich text"
-        expected_message = """Leonardo Franchi [Administrator] **added comment to** [TEST-7](https://zulipp.atlassian.net/browse/TEST-7):\n\n\nThis is a comment that likes to **exercise** a lot of _different_ `conventions` that `jira uses`.\r\n\r\n~~~\n\r\nthis code is not highlighted, but monospaced\r\n\n~~~\r\n\r\n~~~\n\r\ndef python():\r\n    print "likes to be formatted"\r\n\n~~~\r\n\r\n[http://www.google.com](http://www.google.com) is a bare link, and [Google](http://www.google.com) is given a title.\r\n\r\nThanks!\r\n\r\n~~~ quote\n\r\nSomeone said somewhere\r\n\n~~~\n"""
+        expected_message = """Leonardo Franchi [Administrator] **added comment to** [TEST-7](https://zulipp.atlassian.net/browse/TEST-7):\n\n\nThis is a comment that likes to **exercise** a lot of _different_ `conventions` that `jira uses`.\r\n\r\n~~~\n\r\nthis code is not highlighted, but monospaced\r\n\n~~~\r\n\r\n~~~\n\r\ndef python():\r\n    print "likes to be formatted"\r\n\n~~~\r\n\r\n[http://www.google.com](http://www.google.com) is a bare link, and [Google](http://www.google.com) is given a title.\r\n\r\nThanks!\r\n\r\n~~~ quote\n\r\nSomeone said somewhere\r\n\n~~~"""
         self.send_and_test_stream_message('commented_markup_v1', expected_subject, expected_message)
         self.send_and_test_stream_message('commented_markup_v2', expected_subject, expected_message)
 
@@ -102,8 +100,7 @@ Adding a comment. Oh, what a comment it is!
         expected_subject = "BUG-15: New bug with hook"
         expected_message = """Leo Franchi **updated** [BUG-15](http://lfranchi.com:8080/browse/BUG-15) (assigned to **Othello, the Moor of Venice**):
 
-* Changed assignee to **Othello, the Moor of Venice**
-"""
+* Changed assignee to **Othello, the Moor of Venice**"""
         self.send_and_test_stream_message('reassigned_v1', expected_subject, expected_message)
         self.send_and_test_stream_message('reassigned_v2', expected_subject, expected_message)
 
@@ -112,8 +109,7 @@ Adding a comment. Oh, what a comment it is!
         expected_subject = "TEST-1: Fix That"
         expected_message = """Leonardo Franchi [Administrator] **updated** [TEST-1](https://zulipp.atlassian.net/browse/TEST-1) (assigned to **leo@zulip.com**):
 
-* Changed priority from **Critical** to **Major**
-"""
+* Changed priority from **Critical** to **Major**"""
         self.send_and_test_stream_message('updated_priority_v1', expected_subject, expected_message)
         self.send_and_test_stream_message('updated_priority_v2', expected_subject, expected_message)
 
@@ -122,8 +118,7 @@ Adding a comment. Oh, what a comment it is!
             expected_subject = "TEST-1: Fix That"
             expected_message = """Leonardo Franchi [Administrator] **updated** [TEST-1](https://zulipp.atlassian.net/browse/TEST-1):
 
-* Changed status from **To Do** to **In Progress**
-"""
+* Changed status from **To Do** to **In Progress**"""
             self.send_and_test_stream_message('change_status_v1', expected_subject, expected_message)
             self.send_and_test_stream_message('change_status_v2', expected_subject, expected_message)
 

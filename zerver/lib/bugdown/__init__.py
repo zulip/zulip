@@ -101,9 +101,9 @@ def walk_tree(root, processor, stop_after_first=False):
     return results
 
 # height is not actually used
-def add_a(root, url, link, height="", title=None, desc=None,
+def add_a(root, url, link, title=None, desc=None,
           class_attr="message_inline_image", data_id=None):
-    # type: (Element, Text, Text, Text, Optional[Text], Optional[Text], Text, Optional[Text]) -> None
+    # type: (Element, Text, Text, Optional[Text], Optional[Text], Text, Optional[Text]) -> None
     title = title if title is not None else url_filename(link)
     title = title if title else ""
     desc = desc if desc is not None else ""
@@ -610,7 +610,12 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             youtube = self.youtube_image(url)
             if youtube is not None:
                 yt_id = self.youtube_id(url)
-                add_a(root, youtube, url, None, None, None, "youtube-video message_inline_image", yt_id)
+                add_a(root, youtube, url, None, None, "youtube-video message_inline_image", yt_id)
+                continue
+
+            global db_data
+
+            if db_data and db_data['sent_by_bot']:
                 continue
 
             if current_message is None or not settings.INLINE_URL_EMBED_PREVIEW:
@@ -739,7 +744,7 @@ def fixup_link(link, target_blank=True):
 
 
 def sanitize_url(url):
-    # type: (Text) -> Text
+    # type: (Text) -> Optional[Text]
     """
     Sanitize a url against xss attacks.
     See the docstring on markdown.inlinepatterns.LinkPattern.sanitize_url.
@@ -918,7 +923,7 @@ class RealmFilterPattern(markdown.inlinepatterns.Pattern):
 
 class UserMentionPattern(markdown.inlinepatterns.Pattern):
     def find_user_for_mention(self, name):
-        # type: (Text) -> Tuple[bool, Dict[str, Any]]
+        # type: (Text) -> Tuple[bool, Optional[Dict[str, Any]]]
         if db_data is None:
             return (False, None)
 
@@ -961,7 +966,7 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
 
 class StreamPattern(VerbosePattern):
     def find_stream_by_name(self, name):
-        # type: (Match[Text]) -> Dict[str, Any]
+        # type: (Match[Text]) -> Optional[Dict[str, Any]]
         if db_data is None:
             return None
         stream = db_data['stream_names'].get(name)
@@ -1283,7 +1288,7 @@ current_message = None # type: Optional[Message]
 # We avoid doing DB queries in our markdown thread to avoid the overhead of
 # opening a new DB connection. These connections tend to live longer than the
 # threads themselves, as well.
-db_data = None # type: Dict[Text, Any]
+db_data = None # type: Optional[Dict[Text, Any]]
 
 def log_bugdown_error(msg):
     # type: (str) -> None
@@ -1293,8 +1298,8 @@ def log_bugdown_error(msg):
     could cause an infinite exception loop."""
     logging.getLogger('').error(msg)
 
-def do_convert(content, message=None, message_realm=None, possible_words=None):
-    # type: (Text, Optional[Message], Optional[Realm], Optional[Set[Text]]) -> Optional[Text]
+def do_convert(content, message=None, message_realm=None, possible_words=None, sent_by_bot=False):
+    # type: (Text, Optional[Message], Optional[Realm], Optional[Set[Text]], Optional[bool]) -> Text
     """Convert Markdown to HTML, with Zulip-specific settings and hacks."""
     from zerver.models import get_active_user_dicts_in_realm, get_active_streams, UserProfile
 
@@ -1310,7 +1315,7 @@ def do_convert(content, message=None, message_realm=None, possible_words=None):
     else:
         realm_filters_key = message_realm.id
 
-    if (message and message.sender.realm.is_zephyr_mirror_realm and
+    if (message is not None and message.sender.realm.is_zephyr_mirror_realm and
             message.sending_client.name == "zephyr_mirror"):
         # Use slightly customized Markdown processor for content
         # delivered via zephyr_mirror
@@ -1344,6 +1349,7 @@ def do_convert(content, message=None, message_realm=None, possible_words=None):
                    'full_names': dict((user['full_name'].lower(), user) for user in realm_users),
                    'short_names': dict((user['short_name'].lower(), user) for user in realm_users),
                    'emoji': message_realm.get_emoji(),
+                   'sent_by_bot': sent_by_bot,
                    'stream_names': dict((stream['name'], stream) for stream in realm_streams)}
 
     try:
@@ -1398,9 +1404,9 @@ def bugdown_stats_finish():
     bugdown_total_requests += 1
     bugdown_total_time += (time.time() - bugdown_time_start)
 
-def convert(content, message=None, message_realm=None, possible_words=None):
-    # type: (Text, Optional[Message], Optional[Realm], Optional[Set[Text]]) -> Optional[Text]
+def convert(content, message=None, message_realm=None, possible_words=None, sent_by_bot=False):
+    # type: (Text, Optional[Message], Optional[Realm], Optional[Set[Text]], Optional[bool]) -> Text
     bugdown_stats_start()
-    ret = do_convert(content, message, message_realm, possible_words)
+    ret = do_convert(content, message, message_realm, possible_words, sent_by_bot)
     bugdown_stats_finish()
     return ret
