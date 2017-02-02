@@ -91,6 +91,11 @@ class GithubWebhookTest(WebhookTestCase):
         expected_message = u"baxterthehacker opened [PR](https://github.com/baxterthehacker/public-repo/pull/1)\nfrom `changes` to `master`\n\n~~~ quote\nThis is a pretty simple change that we need to pull into master.\n~~~"
         self.send_and_test_stream_message('opened_pull_request', self.EXPECTED_SUBJECT_PR_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='pull_request')
 
+    def test_pull_request_synchronized_msg(self):
+        # type: () -> None
+        expected_message = u"baxterthehacker updated [PR](https://github.com/baxterthehacker/public-repo/pull/1)\nfrom `changes` to `master`"
+        self.send_and_test_stream_message('synchronized_pull_request', self.EXPECTED_SUBJECT_PR_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='pull_request')
+
     def test_pull_request_closed_msg(self):
         # type: () -> None
         expected_message = u"baxterthehacker closed without merge [PR](https://github.com/baxterthehacker/public-repo/pull/1)"
