@@ -757,7 +757,22 @@ exports.register_click_handlers = function () {
     });
 
     $('body').on('click', '.respond_button', function (e) {
+        var textarea = $("#new_message_content");
+        var msgid = $(e.currentTarget).data("message-id");
+
         compose.respond_to_message({trigger: 'popover respond'});
+        channel.get({
+            url: '/json/messages/' + msgid,
+            idempotent: true,
+            success: function (data) {
+                if (textarea.val() === "") {
+                    textarea.val("```quote\n" + data.raw_content +"\n```\n");
+                } else {
+                    textarea.val(textarea.val() + "\n```quote\n" + data.raw_content +"\n```\n");
+                }
+                $("#new_message_content").trigger("autosize.resize");
+            },
+        });
         popovers.hide_actions_popover();
         e.stopPropagation();
         e.preventDefault();

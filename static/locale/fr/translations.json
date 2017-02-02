@@ -89,7 +89,7 @@
   "Stream description (optional)": "Stream description (optional)", 
   "Narrow to stream &quot;__display_recipient__&quot;, topic &quot;__subject__&quot;": "Narrow to stream &quot;__display_recipient__&quot;, topic &quot;__subject__&quot;", 
   "Default language changed!": "Default language changed!", 
-  "Reply": "Reply", 
+  "Quote and reply": "Quote and reply", 
   "Unmute the topic <b>__subject__</b>": "Unmute the topic <b>__subject__</b>", 
   "Save": "Save", 
   "Custom linkification filters": "Custom linkification filters", 

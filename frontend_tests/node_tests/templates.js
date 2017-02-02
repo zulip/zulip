@@ -88,7 +88,7 @@ function render(template_name, args) {
     html += render('actions_popover_content', args);
     html += "</div>";
     var link = $(html).find("a.respond_button");
-    assert.equal(link.text().trim(), 'Reply');
+    assert.equal(link.text().trim(), 'Quote and reply');
     global.write_handlebars_output("actions_popover_content", html);
 }());
 
