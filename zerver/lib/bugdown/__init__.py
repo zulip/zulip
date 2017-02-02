@@ -940,9 +940,11 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
 
             if wildcard:
                 current_message.mentions_wildcard = True
+                email = '*'
                 user_id = "*"
             elif user:
                 current_message.mentions_user_ids.add(user['id'])
+                email = user['email']
                 name = user['full_name']
                 user_id = str(user['id'])
             else:
@@ -951,6 +953,7 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
 
             el = markdown.util.etree.Element("span")
             el.set('class', 'user-mention')
+            el.set('data-user-email', email)
             el.set('data-user-id', user_id)
             el.text = "@%s" % (name,)
             return el
