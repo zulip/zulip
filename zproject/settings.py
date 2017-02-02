@@ -177,7 +177,10 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'DBX_APNS_CERT_FILE': None,
                     'DBX_APNS_KEY_FILE': None,
                     'PERSONAL_ZMIRROR_SERVER': None,
-                    'EXTRA_INSTALLED_APPS': [],
+                    # Structurally, we will probably eventually merge
+                    # analytics into part of the main server, rather
+                    # than a separate app.
+                    'EXTRA_INSTALLED_APPS': ['analytics'],
                     'DEFAULT_NEW_REALM_STREAMS': {
                         "social": {"description": "For socializing", "invite_only": False},
                         "general": {"description": "For general stuff", "invite_only": False},
