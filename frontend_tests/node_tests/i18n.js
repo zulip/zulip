@@ -16,7 +16,7 @@ i18n.init({
     resources: {
         fr: {
             translation: {
-                Reply: "French",
+                "Quote and reply": "French",
                 "You'll receive notifications when a message arrives and __page_params.product_name__ isn't in focus or the message is offscreen.": "Some French text with __page_params.product_name__",
             },
         },
