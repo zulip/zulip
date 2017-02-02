@@ -1827,6 +1827,8 @@ div.floating_recipient {
     border-collapse: separate;
     width: 100%;
     position: relative;
+    top: 3px;
+    background-color: #fff;
 }
 
 #floating_recipient_bar {
