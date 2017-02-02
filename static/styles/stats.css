@@ -4,6 +4,10 @@
     max-width: none;
 }
 
+body {
+    font-family: 'Open Sans', verdana, arial, sans-serif;
+}
+
 p {
     margin-bottom: 0px;
 }
@@ -13,9 +17,10 @@ p {
 }
 
 .analytics-page-header {
-    margin-top: 20px;
+    margin-top: 30px;
     margin-bottom: 50px;
     text-align: center;
+    font-size: 32px;
 }
 
 .sidebar {
@@ -32,7 +37,7 @@ p {
 }
 
 .nav-subtitle {
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 300;
     margin-top: 40px;
     margin-bottom: 7px;
@@ -40,7 +45,7 @@ p {
 
 .nav-link {
     display: block;
-    font-size: 16px;
+    font-size: 15px;
     margin-left: 25px;
 }
 
@@ -58,12 +63,8 @@ p {
 
 .graph-title {
     text-align: center;
-    font-size: 22px;
+    font-size: 20px;
     margin-bottom: 30px;
-}
-
-#button_label {
-    font-size: 12px;
 }
 
 #graph_container {
@@ -71,7 +72,7 @@ p {
 }
 
 #button_label {
-    font-size: 16px;
+    font-size: 15px;
     margin-left: 40px;
     margin-bottom: 0px;
 }
@@ -82,7 +83,7 @@ p {
     height: 0;
     width: 350px;
     z-index: 1;
-    font-size: 14px;
+    font-size: 13px;
     margin-left: 40px;
 }
 
@@ -101,7 +102,7 @@ p {
 }
 
 .button {
-    font-family: 'Humbug', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'Open Sans', verdana, arial, sans-serif;
     border: none;
     border-radius: 4px;
     outline: none;
@@ -112,7 +113,7 @@ p {
 }
 
 .pie-button {
-    font-family: 'Humbug', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'Open Sans', verdana, arial, sans-serif;
     font-weight: inherit;
     border: none;
     border-radius: 4px;
@@ -132,8 +133,7 @@ p {
 
 #hourly_button {
     padding: 0px 5px 0px 5px;
-    font-size: 13.5px;
-    font-weight: 600px !important;
+    font-size: 12.5px;
     margin-left: 40px;
     margin-top: 0px;
     background: #F0F0F0;
@@ -141,78 +141,78 @@ p {
 
 #daily_button {
     padding: 0px 5px 0px 5px;
-    font-size: 13.5px;
+    font-size: 12.5px;
     margin-top: 0px;
     background: #D8D8D8;
 }
 
 #weekly_button {
     padding: 0px 5px 0px 5px;
-    font-size: 13.5px;
+    font-size: 12.5px;
     margin-top: 0px;
     background: #F0F0F0;
 }
 
 #cumulative_button {
     padding: 0px 5px 0px 5px;
-    font-size: 13.5px;
+    font-size: 12.5px;
     margin-top: 0px;
     background: #F0F0F0;
 }
 
 #messages_by_client_realm_button {
-    font-size: 14px;
+    font-size: 12px;
     background: #D8D8D8;
 }
 
 #messages_by_client_user_button {
-    font-size: 14px;
+    font-size: 12px;
     background: #F0F0F0;
 }
 
 #messages_by_client_cumulative_button {
-    font-size: 14px;
+    font-size: 12px;
     background: #D8D8D8;
 }
 
 #messages_by_client_ten_days_button {
-    font-size: 14px;
+    font-size: 12px;
     margin-left: 50px;
     background: #F0F0F0;
 }
 
 #messages_by_client_thirty_days_button {
-    font-size: 14px;
+    font-size: 12px;
     background: #F0F0F0;
 }
 
 #messages_by_type_realm_button {
-    font-size: 14px;
+    font-size: 12px;
     margin-bottom: 100px;
     background: #D8D8D8;
 }
 
 #messages_by_type_user_button {
-    font-size: 14px;
+    font-size: 12px;
     background: #F0F0F0;
     margin-bottom: 100px;
 }
 
 #messages_by_type_cumulative_button {
-    font-size: 14px;
+    font-size: 12px;
     background: #D8D8D8;
     vertical-align: top;
 }
 
 #messages_by_type_ten_days_button {
-    font-size: 14px;
+    font-size: 12px;
     background: #F0F0F0;
     vertical-align: top;
     margin-left: 50px;
 }
 
 #messages_by_type_thirty_days_button {
-    font-size: 14px;
+    font-size: 12px;
     background: #F0F0F0;
     vertical-align: top;
 }
@@ -234,15 +234,15 @@ p {
 }
 
 #pie_messages_sent_by_client_total {
-    font-size: 15px;
+    font-size: 13px;
     text-align: left;
-    margin: 0px 0px 10px 5px;
+    margin: 0px 0px 5px 45px;
 }
 
 #pie_messages_sent_by_type_total {
-    font-size: 15px;
+    font-size: 13px;
     text-align: left;
-    margin: 0px 0px 10px 50px;
+    margin: 0px 0px 5px 53px;
 }
 
 @media (max-width: 1127px) {

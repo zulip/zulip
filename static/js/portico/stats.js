@@ -258,6 +258,7 @@ function populate_messages_sent_over_time(data) {
         var rangeselector = messages_sent_over_time_rangeselector(
             0.66, -0.62, 24, 'Last 24 Hours', 'hour', 72, 'Last 72 Hours', 'hour');
         update_plot_on_aggregation_click(rangeselector, hourly_traces);
+        $("g.button:contains('72')").css('font-family', 'arial !important');
         $(this).css('background', '#D8D8D8');
         clicked_cumulative = false;
 
@@ -265,7 +266,7 @@ function populate_messages_sent_over_time(data) {
 
     $('#daily_button').click(function () {
         update_plot_on_aggregation_click(default_rangeselector, daily_traces);
-        $(this).css('background', '#D8D8D8');
+        $(this).css('fill', '#D8D8D8');
         clicked_cumulative = false;
     });
 
@@ -307,9 +308,8 @@ function populate_number_of_users(data) {
     var end_dates = data.end_times.map(function (timestamp) {
             return new Date(timestamp*1000);
     });
-    var trace_humans = {x: end_dates, y: data.realm.human, type: 'bar',  name: "Active users",
+    var trace_humans = {x: end_dates, y: data.realm.human, type: 'scatter',  name: "Active users",
                         hoverinfo: 'y', text: '', visible: true};
-
     var layout = {
         width: 750,
         height: 370,
@@ -389,13 +389,17 @@ function get_labels_and_data(names, data_subgroup, time_frame_integer) {
     var values = [];
     for (var key in data_subgroup) {
         if (data_subgroup.hasOwnProperty(key)) {
+            if (data_subgroup[key].length < time_frame_integer) {
+                time_frame_integer = data_subgroup[key].length;
+            }
             var sum = 0;
-            for (var i = time_frame_integer - 1; i >= 0; i-=1) {
-                sum += data_subgroup[key][i];
+            for (var i = 1; i < time_frame_integer; i += 1) {
+                sum += data_subgroup[key][data_subgroup[key].length-i];
             }
             if (sum > 0) {
                 values.push(sum);
-                labels.push(names[key]);
+                var label = names.hasOwnProperty(key) ? names[key] : key;
+                labels.push(label);
             }
         }
     }
@@ -473,7 +477,7 @@ function populate_messages_sent_by_client(data) {
     };
     Plotly.newPlot('id_messages_sent_by_client', trace, layout, {displayModeBar: false});
 
-    var total = document.getElementById('pie1_total');
+    var total = document.getElementById('pie_messages_sent_by_client_total');
     total.innerHTML = "Total messages: " +
         realm_total_cumulative.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
@@ -657,7 +661,7 @@ function populate_messages_sent_by_message_type(data) {
     var trace = make_pie_trace(data, realm_values_cumulative,
                                realm_labels_cumulative, realm_text_cumulative);
 
-    var total = document.getElementById('pie2_total');
+    var total = document.getElementById('pie_messages_sent_by_type_total');
     total.innerHTML = "Total messages: " +
         realm_total_cumulative.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
