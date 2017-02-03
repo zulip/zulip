@@ -85,7 +85,8 @@ SSO_APPEND_DOMAIN = None # type: str
 # https://support.google.com/mail/answer/14257.
 #
 # You can quickly test your sending email configuration using:
-#   ./manage.py send_test_email username@example.com
+#   su zulip
+#   /home/zulip/deployments/current/manage.py send_test_email username@example.com
 #
 # A common problem is hosting providers that block outgoing SMTP traffic.
 #

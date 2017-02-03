@@ -84,10 +84,11 @@ These settings include:
 - `EMAIL_*`, `DEFAULT_FROM_EMAIL`, and `NOREPLY_EMAIL_ADDRESS`:
   Regardless of which authentication backends you enable, you must
   provide settings for an outgoing SMTP server so Zulip can send
-  emails when needed (and don't forget to set `email_password` in
-  the `zulip-secrets.conf` file).  We highly recommend testing
-  your configuration using `manage.py send_test_email` to confirm
-  your outgoing email configuration is working correctly.
+  emails when needed (and don't forget to set `email_password` in the
+  `zulip-secrets.conf` file).  We highly recommend testing your
+  configuration using `su zulip` and then
+  `/home/zulip/deployments/current/manage.py send_test_email` to
+  confirm your outgoing email configuration is working correctly.
 
 ## Step 4: Initialize Zulip database
 
@@ -109,16 +110,20 @@ in your Zulip installation.
 ## Step 5: Create a Zulip organization and login
 
 * If you haven't already, verify that your server can send email using
-`./manage.py send_test_email username@example.com`.  You'll need
-working outgoing email to complete the setup process.
+
+  ```
+  su zulip
+  /home/zulip/deployments/current/manage.py send_test_email user@example.com
+  ```
+
+  You'll need working outgoing email to complete the setup process.
 
 * Run the organization (realm) creation [management
 command](prod-maintain-secure-upgrade.html#management-commands) :
 
   ```
   su zulip # If you weren't already the zulip user
-  cd /home/zulip/deployments/current
-  ./manage.py generate_realm_creation_link
+  /home/zulip/deployments/current/manage.py generate_realm_creation_link
   ```
 
   This will print out a secure 1-time use link that allows creation of a
