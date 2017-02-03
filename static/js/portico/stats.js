@@ -24,14 +24,15 @@ function floor_to_local_week(date) {
     return date_copy;
 }
 
-function messages_sent_over_time_traces(dates, values, type, date_formatter) {
+function messages_sent_over_time_traces(dates, values, type,
+                                        date_formatter, human_colors, bot_colors) {
     var text = dates.map(function (date) {
         return date_formatter(date);
     });
-    var common = { x: dates, type: type, hoverinfo: 'none', text: text, visible: true};
+    var common = { x: dates, type: type, hoverinfo: 'none', text: text};
     return {
-        human: $.extend({ name: "Humans", y: values.human, marker: {color: '#1f77b4'}}, common),
-        bot: $.extend({ name: "Bots", y: values.bot,  marker: {color: '#ff7f00'}}, common),
+        human: $.extend({ name: "Humans", y: values.human, marker: {color: human_colors}, visible: true},  common),
+        bot: $.extend({ name: "Bots", y: values.bot,  marker: {color: bot_colors}, visible: 'legendonly'},  common),
     };
 }
 
@@ -39,6 +40,7 @@ function format_date(date, include_hour) {
     var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     var month_str = months[date.getMonth()];
+    var year = date.getFullYear();
     var day = date.getDate();
     if (include_hour) {
         var hour = date.getHours();
@@ -54,7 +56,7 @@ function format_date(date, include_hour) {
         }
         return month_str + ' ' + day + ', ' + hour_str;
     }
-    return month_str + ' ' + day;
+    return month_str + ' ' + day + ', ' + year;
 }
 
 function messages_sent_over_time_rangeselector(
@@ -108,6 +110,16 @@ function messages_sent_over_time_layout() {
             x: 0.75,
             y: 1.12,
             orientation: 'h',
+            font: {
+                family: 'Humbug',
+                size: 14,
+                color: '#000000',
+            },
+        },
+        font: {
+            family: 'Humbug',
+            size: 14,
+            color: '#000000',
         },
     };
 }
@@ -117,11 +129,37 @@ function hover(id) {
     myPlot.on('plotly_hover', function (data) {
         var date_text = data.points[0].data.text[data.points[0].pointNumber];
         $('#hover_date').text(date_text);
-        $('#hover_humans').text("Humans:");
-        $('#hover_humans_value').text(data.points[0].y);
-        $('#hover_bots').text("Bots:");
-        $('#hover_bots_value').text(data.points[1].y);
-
+        var humans_visible = false;
+        var humans_trace_index = null;
+        var bots_visible = false;
+        var bots_trace_index = null;
+        for (var i = 0; i < data.points.length; i += 1) {
+            if (data.points[i].fullData.name === "Bots" && data.points[i].fullData.visible === true) {
+                bots_visible = true;
+                bots_trace_index = i;
+            } else if (data.points[i].fullData.name === "Humans" && data.points[i].fullData.visible === true) {
+                humans_visible = true;
+                humans_trace_index = i;
+            }
+        }
+        if (humans_visible) {
+            $('#hover_humans').show();
+            $('#hover_humans_value').show();
+            $('#hover_humans').text("Humans:");
+            $('#hover_humans_value').text(data.points[humans_trace_index].y);
+        } else {
+            $('#hover_humans').hide();
+            $('#hover_humans_value').hide();
+        }
+        if (bots_visible) {
+            $('#hover_bots').show();
+            $('#hover_bots_value').show();
+            $('#hover_bots').text("Bots:");
+            $('#hover_bots_value').text(data.points[bots_trace_index].y);
+        } else {
+            $('#hover_bots').hide();
+            $('#hover_bots_value').hide();
+        }
         // var human_colors = data.points[0].data.x.map(function () {
         //     return '#1f77b4';
         // });
@@ -144,6 +182,12 @@ function hover(id) {
     //     Plotly.restyle(id, update_human, 0);
     //     Plotly.restyle(id, update_bot, 1);
     // });
+}
+
+function fix_legend_colors() {
+    var legendBoxes = document.getElementById('id_messages_sent_over_time').getElementsByClassName("legendbar");
+    Plotly.d3.select(legendBoxes[0]).style("fill", "#1f77b4");
+    Plotly.d3.select(legendBoxes[1]).style("fill", "#ff7f00");
 }
 
 function populate_messages_sent_over_time(data) {
@@ -198,21 +242,30 @@ function populate_messages_sent_over_time(data) {
     var date_formatter = function (date) {
         return format_date(date, true);
     };
-    var hourly_traces = messages_sent_over_time_traces(start_dates, data.realm, 'bar', date_formatter);
+    var hourly_traces = messages_sent_over_time_traces(start_dates, data.realm, 'bar', date_formatter, '#1f77b4', '#ff7f00');
 
     var info = aggregate_data('day');
     date_formatter = function (date) {
         return format_date(date, false);
     };
-    var daily_traces = messages_sent_over_time_traces(info.dates, info.values, 'bar', date_formatter);
+    var daily_traces = messages_sent_over_time_traces(info.dates, info.values, 'bar', date_formatter, '#1f77b4', '#ff7f00');
 
     info = aggregate_data('week');
     date_formatter = function (date) {
         // return i18n.t("Week of __date__", {date: format_date(date, false)});
         return "Week of " + format_date(date, false);
     };
-    var weekly_traces = messages_sent_over_time_traces(info.dates, info.values, 'bar', date_formatter);
+    var human_colors = info.dates.map(function () {
+        return '#1f77b4';
+    });
+    var bot_colors = info.dates.map(function () {
+        return '#ff7f00';
+    });
 
+    human_colors[info.dates.length-1] = '#66b0e5';
+    bot_colors[info.dates.length-1] = '#ffa64d';
+
+    var weekly_traces = messages_sent_over_time_traces(info.dates, info.values, 'bar', date_formatter, human_colors, bot_colors);
     var dates = data.end_times.map(function (timestamp) {
         return new Date(timestamp*1000);
     });
@@ -220,7 +273,7 @@ function populate_messages_sent_over_time(data) {
     date_formatter = function (date) {
         return format_date(date, true);
     };
-    var cumulative_traces = messages_sent_over_time_traces(dates, values, 'scatter', date_formatter);
+    var cumulative_traces = messages_sent_over_time_traces(dates, values, 'scatter', date_formatter, '#1f77b4', '#ff7f00');
 
     // Generate plot
     var layout = messages_sent_over_time_layout();
@@ -228,9 +281,18 @@ function populate_messages_sent_over_time(data) {
         0.68, -0.62, 10, 'Last 10 Days', 'day', 30, 'Last 30 Days', 'day');
     layout.xaxis.rangeselector = default_rangeselector;
 
-    Plotly.newPlot('id_messages_sent_over_time',
+    if (info.dates.length < 12) {
+        Plotly.newPlot('id_messages_sent_over_time',
                    [daily_traces.human, daily_traces.bot], layout, {displayModeBar: false});
+        $('#daily_button').css('background', '#D8D8D8');
+    } else {
+        Plotly.newPlot('id_messages_sent_over_time',
+                   [weekly_traces.human, weekly_traces.bot], layout, {displayModeBar: false});
+        $('#weekly_button').css('background', '#D8D8D8');
+    }
+
     hover('id_messages_sent_over_time');
+    fix_legend_colors();
 
     // Click handlers for aggregation buttons
     var clicked_cumulative = false;
@@ -275,6 +337,13 @@ function populate_messages_sent_over_time(data) {
         update_plot_on_aggregation_click(rangeselector, weekly_traces);
         $(this).css('background', '#D8D8D8');
         clicked_cumulative = false;
+        fix_legend_colors();
+        $('.legend').click(function () {
+            fix_legend_colors();
+        });
+        $('.rangeselector').click(function () {
+            fix_legend_colors();
+        });
     });
 
     $('#cumulative_button').click(function () {
@@ -282,6 +351,14 @@ function populate_messages_sent_over_time(data) {
         update_plot_on_aggregation_click(default_rangeselector, cumulative_traces);
         $(this).css('background', '#D8D8D8');
         clicked_cumulative = true;
+    });
+
+    $('.legend').click(function () {
+        fix_legend_colors();
+    });
+
+    $('.rangeselector').click(function () {
+        fix_legend_colors();
     });
 }
 
@@ -302,14 +379,25 @@ $.get({
     },
 });
 
+function users_hover(id) {
+    var myPlot = document.getElementById(id);
+    myPlot.on('plotly_hover', function (data) {
+        var date_text = data.points[0].data.text[data.points[0].pointNumber];
+        $('#users_hover_date').text(date_text);
+        $('#users_hover_humans').text("Users:");
+        $('#users_hover_humans_value').text(data.points[0].y);
+    });
+}
 
 function populate_number_of_users(data) {
     var end_dates = data.end_times.map(function (timestamp) {
             return new Date(timestamp*1000);
     });
-    var trace_humans = {x: end_dates, y: data.realm.human, type: 'bar',  name: "Active users",
-                        hoverinfo: 'y', text: '', visible: true};
-
+    var users_text = end_dates.map(function (date) {
+        return format_date(date, false);
+    });
+    var trace_humans = {x: end_dates, y: data.realm.human, type: 'scatter',  name: "Active users",
+                        hoverinfo: 'none', text: users_text, visible: true};
     var layout = {
         width: 750,
         height: 370,
@@ -317,6 +405,7 @@ function populate_number_of_users(data) {
             l: 40, r: 0, b: 100, t: 20,
         },
         xaxis: {
+            fixedrange: true,
             rangeselector: {
                 x: 0.808,
                 y: -0.2,
@@ -336,9 +425,18 @@ function populate_number_of_users(data) {
             fixedrange: true,
             rangemode: 'tozero',
         },
+        font: {
+            family: 'Humbug',
+            size: 14,
+            color: '#000000',
+        },
     };
     Plotly.newPlot('id_number_of_users',
                    [trace_humans], layout, {displayModeBar: false});
+    users_hover('id_number_of_users');
+    var total_users = data.realm.human[data.realm.human.length - 1];
+    var total = document.getElementById('number_of_users_total');
+    total.innerHTML = total_users.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
 $.get({
@@ -359,12 +457,16 @@ function make_pie_trace(data, values, labels, text) {
         labels: labels,
         type: 'pie',
         direction: 'clockwise',
-        rotation: -180,
+        rotation: -90,
         sort: false,
         // textposition: textposition,
         textinfo: "text",
         text: text,
         hoverinfo: "label+text",
+        pull: 0.1,
+        marker: {
+            colors: ['#137061', '#0e836f', '#13a188', '#2bbba2', '#51d5be', '#7ce4d3'],
+        },
     }];
     return trace;
 }
@@ -389,13 +491,17 @@ function get_labels_and_data(names, data_subgroup, time_frame_integer) {
     var values = [];
     for (var key in data_subgroup) {
         if (data_subgroup.hasOwnProperty(key)) {
+            if (data_subgroup[key].length < time_frame_integer) {
+                time_frame_integer = data_subgroup[key].length;
+            }
             var sum = 0;
-            for (var i = time_frame_integer - 1; i >= 0; i-=1) {
-                sum += data_subgroup[key][i];
+            for (var i = 1; i < time_frame_integer; i += 1) {
+                sum += data_subgroup[key][data_subgroup[key].length-i];
             }
             if (sum > 0) {
                 values.push(sum);
-                labels.push(names[key]);
+                var label = names.hasOwnProperty(key) ? names[key] : key;
+                labels.push(label);
             }
         }
     }
@@ -470,10 +576,15 @@ function populate_messages_sent_by_client(data) {
         },
         width: 450,
         height: 300,
+        font: {
+            family: 'Humbug',
+            size: 14,
+            color: '#000000',
+        },
     };
     Plotly.newPlot('id_messages_sent_by_client', trace, layout, {displayModeBar: false});
 
-    var total = document.getElementById('pie1_total');
+    var total = document.getElementById('pie_messages_sent_by_client_total');
     total.innerHTML = "Total messages: " +
         realm_total_cumulative.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
@@ -657,7 +768,7 @@ function populate_messages_sent_by_message_type(data) {
     var trace = make_pie_trace(data, realm_values_cumulative,
                                realm_labels_cumulative, realm_text_cumulative);
 
-    var total = document.getElementById('pie2_total');
+    var total = document.getElementById('pie_messages_sent_by_type_total');
     total.innerHTML = "Total messages: " +
         realm_total_cumulative.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
@@ -667,6 +778,11 @@ function populate_messages_sent_by_message_type(data) {
         },
         width: 465,
         height: 300,
+        font: {
+            family: 'Humbug',
+            size: 14,
+            color: '#000000',
+        },
     };
     Plotly.newPlot('id_messages_sent_by_message_type', trace, layout, {displayModeBar: false});
 
