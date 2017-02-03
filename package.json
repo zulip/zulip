@@ -24,6 +24,7 @@
   "devDependencies": {
     "casperjs": "1.1.3",
     "cssstyle": "0.2.29",
+    "danger": "^0.11.2",
     "eslint": "3.9.1",
     "htmlparser2": "3.8.3",
     "istanbul": "0.4.5",
@@ -35,7 +36,8 @@
   },
   "scripts": {
     "lint": "eslint --quiet",
-    "lint-loud": "eslint static/js frontend_tests"
+    "lint-loud": "eslint static/js frontend_tests",
+    "danger": "danger"
   },
   "repository": {
     "type": "git",
