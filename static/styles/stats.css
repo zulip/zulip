@@ -5,11 +5,15 @@
 }
 
 body {
-    font-family: 'Open Sans', verdana, arial, sans-serif;
+    font-family: 'Humbug', 'Helvetica Neue', sans-serif !important;
 }
 
 p {
     margin-bottom: 0px;
+}
+
+svg {
+    -webkit-font-smoothing: antialiased;
 }
 
 .alert {
@@ -20,7 +24,7 @@ p {
     margin-top: 30px;
     margin-bottom: 50px;
     text-align: center;
-    font-size: 32px;
+    font-size: 36px;
 }
 
 .sidebar {
@@ -37,7 +41,7 @@ p {
 }
 
 .nav-subtitle {
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 300;
     margin-top: 40px;
     margin-bottom: 7px;
@@ -45,7 +49,7 @@ p {
 
 .nav-link {
     display: block;
-    font-size: 15px;
+    font-size: 17px;
     margin-left: 25px;
 }
 
@@ -83,7 +87,7 @@ p {
     height: 0;
     width: 350px;
     z-index: 1;
-    font-size: 13px;
+    font-size: 14px;
     margin-left: 40px;
 }
 
@@ -102,7 +106,7 @@ p {
 }
 
 .button {
-    font-family: 'Open Sans', verdana, arial, sans-serif;
+    font-family: 'Humbug', 'Helvetica Neue', sans-serif !important;
     border: none;
     border-radius: 4px;
     outline: none;
@@ -113,7 +117,7 @@ p {
 }
 
 .pie-button {
-    font-family: 'Open Sans', verdana, arial, sans-serif;
+    font-family: 'Humbug', 'Helvetica Neue', sans-serif !important;
     font-weight: inherit;
     border: none;
     border-radius: 4px;
@@ -133,7 +137,7 @@ p {
 
 #hourly_button {
     padding: 0px 5px 0px 5px;
-    font-size: 12.5px;
+    font-size: 14px;
     margin-left: 40px;
     margin-top: 0px;
     background: #F0F0F0;
@@ -141,78 +145,78 @@ p {
 
 #daily_button {
     padding: 0px 5px 0px 5px;
-    font-size: 12.5px;
+    font-size: 14px;
     margin-top: 0px;
     background: #F0F0F0;
 }
 
 #weekly_button {
     padding: 0px 5px 0px 5px;
-    font-size: 12.5px;
+    font-size: 14px;
     margin-top: 0px;
     background: #F0F0F0;
 }
 
 #cumulative_button {
     padding: 0px 5px 0px 5px;
-    font-size: 12.5px;
+    font-size: 14px;
     margin-top: 0px;
     background: #F0F0F0;
 }
 
 #messages_by_client_realm_button {
-    font-size: 12px;
+    font-size: 14px;
     background: #D8D8D8;
 }
 
 #messages_by_client_user_button {
-    font-size: 12px;
+    font-size: 14px;
     background: #F0F0F0;
 }
 
 #messages_by_client_cumulative_button {
-    font-size: 12px;
+    font-size: 14px;
     background: #D8D8D8;
 }
 
 #messages_by_client_ten_days_button {
-    font-size: 12px;
+    font-size: 14px;
     margin-left: 50px;
     background: #F0F0F0;
 }
 
 #messages_by_client_thirty_days_button {
-    font-size: 12px;
+    font-size: 14px;
     background: #F0F0F0;
 }
 
 #messages_by_type_realm_button {
-    font-size: 12px;
+    font-size: 14px;
     margin-bottom: 100px;
     background: #D8D8D8;
 }
 
 #messages_by_type_user_button {
-    font-size: 12px;
+    font-size: 14px;
     background: #F0F0F0;
     margin-bottom: 100px;
 }
 
 #messages_by_type_cumulative_button {
-    font-size: 12px;
+    font-size: 14px;
     background: #D8D8D8;
     vertical-align: top;
 }
 
 #messages_by_type_ten_days_button {
-    font-size: 12px;
+    font-size: 14px;
     background: #F0F0F0;
     vertical-align: top;
     margin-left: 50px;
 }
 
 #messages_by_type_thirty_days_button {
-    font-size: 12px;
+    font-size: 14px;
     background: #F0F0F0;
     vertical-align: top;
 }
@@ -234,13 +238,13 @@ p {
 }
 
 #pie_messages_sent_by_client_total {
-    font-size: 13px;
+    font-size: 14px;
     text-align: left;
     margin: 0px 0px 5px 45px;
 }
 
 #pie_messages_sent_by_type_total {
-    font-size: 13px;
+    font-size: 14px;
     text-align: left;
     margin: 0px 0px 5px 53px;
 }
@@ -251,7 +255,7 @@ p {
     height: 0;
     width: 400px;
     z-index: 1;
-    font-size: 13px;
+    font-size: 14px;
     margin-left: 20px;
 }
 

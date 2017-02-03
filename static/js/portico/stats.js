@@ -110,6 +110,16 @@ function messages_sent_over_time_layout() {
             x: 0.75,
             y: 1.12,
             orientation: 'h',
+            font: {
+                family: 'Humbug',
+                size: 14,
+                color: '#000000',
+            },
+        },
+        font: {
+            family: 'Humbug',
+            size: 14,
+            color: '#000000',
         },
     };
 }
@@ -310,7 +320,6 @@ function populate_messages_sent_over_time(data) {
         var rangeselector = messages_sent_over_time_rangeselector(
             0.66, -0.62, 24, 'Last 24 Hours', 'hour', 72, 'Last 72 Hours', 'hour');
         update_plot_on_aggregation_click(rangeselector, hourly_traces);
-        $("g.button:contains('72')").css('font-family', 'arial !important');
         $(this).css('background', '#D8D8D8');
         clicked_cumulative = false;
 
@@ -416,6 +425,11 @@ function populate_number_of_users(data) {
             fixedrange: true,
             rangemode: 'tozero',
         },
+        font: {
+            family: 'Humbug',
+            size: 14,
+            color: '#000000',
+        },
     };
     Plotly.newPlot('id_number_of_users',
                    [trace_humans], layout, {displayModeBar: false});
@@ -443,12 +457,16 @@ function make_pie_trace(data, values, labels, text) {
         labels: labels,
         type: 'pie',
         direction: 'clockwise',
-        rotation: -180,
+        rotation: -90,
         sort: false,
         // textposition: textposition,
         textinfo: "text",
         text: text,
         hoverinfo: "label+text",
+        pull: 0.1,
+        marker: {
+            colors: ['#137061', '#0e836f', '#13a188', '#2bbba2', '#51d5be', '#7ce4d3'],
+        },
     }];
     return trace;
 }
@@ -558,6 +576,11 @@ function populate_messages_sent_by_client(data) {
         },
         width: 450,
         height: 300,
+        font: {
+            family: 'Humbug',
+            size: 14,
+            color: '#000000',
+        },
     };
     Plotly.newPlot('id_messages_sent_by_client', trace, layout, {displayModeBar: false});
 
@@ -755,6 +778,11 @@ function populate_messages_sent_by_message_type(data) {
         },
         width: 465,
         height: 300,
+        font: {
+            family: 'Humbug',
+            size: 14,
+            color: '#000000',
+        },
     };
     Plotly.newPlot('id_messages_sent_by_message_type', trace, layout, {displayModeBar: false});
 
