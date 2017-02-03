@@ -3,7 +3,6 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
-# Kouhei Sutou <kou@cozmixng.org>, 2016
 msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
@@ -11,12 +10,12 @@ msgstr ""
 "POT-Creation-Date: 2017-02-03 13:20-0500\n"
 "PO-Revision-Date: 2017-02-03 18:21+0000\n"
 "Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
-"Language-Team: Japanese (http://www.transifex.com/zulip/zulip/language/ja/)\n"
+"Language-Team: Bulgarian (http://www.transifex.com/zulip/zulip/language/bg/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: ja\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
+"Language: bg\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: analytics/views.py:57
 #, python-format
@@ -30,28 +29,28 @@ msgstr ""
 
 #: confirmation/models.py:131
 msgid "sent"
-msgstr "送信時刻"
+msgstr ""
 
 #: confirmation/models.py:132 confirmation/models.py:145
 msgid "activation key"
-msgstr "有効化キー"
+msgstr ""
 
 #: confirmation/models.py:137
 msgid "confirmation email"
-msgstr "確認メール"
+msgstr ""
 
 #: confirmation/models.py:138
 msgid "confirmation emails"
-msgstr "確認メール"
+msgstr ""
 
 #: confirmation/models.py:142
 #, python-format
 msgid "confirmation email for %s"
-msgstr "%s用の確認メール"
+msgstr ""
 
 #: confirmation/models.py:146
 msgid "created"
-msgstr "作成日時"
+msgstr ""
 
 #: templates/zerver/accounts_accept_terms.html:14
 msgid "There are new Terms of Service."
@@ -59,18 +58,18 @@ msgstr ""
 
 #: templates/zerver/accounts_accept_terms.html:15
 msgid "Accept the terms of service"
-msgstr "このサービス利用規約に同意する"
+msgstr ""
 
 #: templates/zerver/accounts_accept_terms.html:22
 #: templates/zerver/login.html:100 templates/zerver/register.html:29
 #: templates/zerver/reset.html:11 templates/zerver/reset_confirm.html:20
 msgid "Email"
-msgstr "メール"
+msgstr ""
 
 #: templates/zerver/accounts_accept_terms.html:41
 #, python-format
 msgid "I agree to the <a href=\"%(server_uri)s/terms\">Terms of Service</a>"
-msgstr "<a href=\"%(server_uri)s/terms\">サービス利用規約</a>に同意します"
+msgstr ""
 
 #: templates/zerver/accounts_accept_terms.html:53
 msgid "Enter"
@@ -79,61 +78,61 @@ msgstr ""
 #: templates/zerver/accounts_home.html:18
 #: templates/zerver/create_realm.html:18
 msgid "Let's get started"
-msgstr "はじめましょう"
+msgstr ""
 
 #: templates/zerver/accounts_home.html:23
 #: templates/zerver/create_realm.html:23
 msgid "Enter your work email address"
-msgstr "仕事のメールアドレスを入力"
+msgstr ""
 
 #: templates/zerver/accounts_home.html:25
 msgid "Sign up"
-msgstr "登録"
+msgstr ""
 
 #: templates/zerver/accounts_home.html:34
 msgid ""
 "Please use your\n"
 "            company email address to sign up. Otherwise, we won’t be able to\n"
 "            connect you with your coworkers"
-msgstr "登録には会社のメールアドレスを使ってください。そうしないと会社の同僚と連携することができません。"
+msgstr ""
 
 #: templates/zerver/accounts_home.html:39
 msgid "Sign up with Google"
-msgstr "Googleアカウントで登録"
+msgstr ""
 
 #: templates/zerver/accounts_send_confirm.html:7
 msgid "Thanks for signing up!"
-msgstr "登録ありがとうございます！"
+msgstr ""
 
 #: templates/zerver/accounts_send_confirm.html:8
 msgid "Check your email so we can get started."
-msgstr "はじめるにはメールを確認してください。"
+msgstr ""
 
 #: templates/zerver/accounts_send_confirm.html:10
 msgid ""
 "In the Zulip development environment, outgoing emails are printed to the "
 "run-dev.py console"
-msgstr "Zulipの開発環境では送信されるメールの内容はrun-dev.pyのコンソールに出力されます。"
+msgstr ""
 
 #: templates/zerver/accounts_send_confirm.html:13
 msgid "Still no email? We can <a href=\"#\" id=\"resend_email_link\">resend it</a>."
-msgstr "まだメールが届きませんか？<a href=\"#\" id=\"resend_email_link\">再送</a>しますか？"
+msgstr ""
 
 #: templates/zerver/accounts_send_confirm.html:14
 msgid "Just in case, take a look at your Spam folder."
-msgstr "念のため、迷惑メールフォルダーを確認してください。"
+msgstr ""
 
 #: templates/zerver/apps.html:5
 msgid "Do we have apps? Appsolutely."
-msgstr "アプリケーションはありますか？もちろん。"
+msgstr ""
 
 #: templates/zerver/apps.html:6
 msgid "Ok, I take it back, I'm sorry, please don't go."
-msgstr "　"
+msgstr ""
 
 #: templates/zerver/apps.html:8
 msgid "Installation instructions"
-msgstr "インストール方法"
+msgstr ""
 
 #: templates/zerver/apps.html:23
 #, python-format
@@ -142,7 +141,7 @@ msgid ""
 "          and you can easily grab it from\n"
 "          the <a href=\"https://play.google.com/store/apps/details?id=com.zulip.android\">Google\n"
 "          Play Store</a>"
-msgstr "ZulipにはAndroid用の無料で使える<strong>100%%ネイティブアプリ</strong>があります。\n          <a href=\"https://play.google.com/store/apps/details?id=com.zulip.android\">Google\n          Playストア</a>から簡単に入手できます。"
+msgstr ""
 
 #: templates/zerver/apps.html:37
 #, python-format
@@ -150,7 +149,7 @@ msgid ""
 "Zulip has a free, <strong>100%% native app</strong> for iPhone and\n"
 "        iPad. Please grab it from\n"
 "        the <a href=\"http://itunes.com/apps/zulip\">App Store</a>"
-msgstr "ZulipにはiPhoneとiPad用の無料で使える<strong>100%%ネイティブアプリ</strong>があります。\n        <a href=\"http://itunes.com/apps/zulip\">App Store</a>から入手してください。"
+msgstr ""
 
 #: templates/zerver/apps.html:47
 msgid ""
@@ -164,7 +163,7 @@ msgid ""
 "          Chromium and Node.js, so in the future we'll be able to\n"
 "          concentrate on writing JavaScript instead of futzing with\n"
 "          Qt/WebKit and C++.)"
-msgstr "<a href=\"https://github.com/zulip/zulip-electron\">新しいクロスプラットフォームのデスクトップクライアント</a>を今すぐ試せます。\n          Mac、Windows、Linux上で動きます。（<a href=\"http://electron.atom.io/\">Electron</a>で実装されています。\n          ElectronはGitHubがメンテナンスしているデスクトップアプリケーションフレームワークで、ChromiumとNode.jsを使っています。\n          将来的にはQt/WebKitとC++ではなくJavaScriptで実装できるようになるでしょう。）"
+msgstr ""
 
 #: templates/zerver/apps.html:57
 msgid ""
@@ -173,11 +172,11 @@ msgid ""
 "          anything that doesn't feel\n"
 "          right, <a href=\"https://github.com/zulip/zulip-electron/issues/new\">please\n"
 "          let us know</a>."
-msgstr "コマンドラインでインストールしなければいけません。いくつか曖昧な部分があるかもしれません。\n          もし、なにか不安なことがあったら<a href=\"https://github.com/zulip/zulip-electron/issues/new\">教えてください</a>。"
+msgstr ""
 
 #: templates/zerver/apps.html:67
 msgid "Download the beta of Zulip for desktop"
-msgstr "デスクトップ用Zulipのベータ版をダウンロード"
+msgstr ""
 
 #: templates/zerver/apps.html:76
 msgid ""
@@ -185,32 +184,32 @@ msgid ""
 "        better than a Zulip app for Mac? Enjoy notifications for\n"
 "        messages and PMs in your dock whether you're in Sublime,\n"
 "        emacs, or Photoshop."
-msgstr "Macが好きでZulipも好きならMac用Zulipアプリはどうですか？\n        SublimeやEmacs、Photoshopを使っていても、ドックでメッセージとプライベートメッセージを通知します。"
+msgstr ""
 
 #: templates/zerver/apps.html:83 templates/zerver/apps.html:85
 msgid "Download Zulip for Mac"
-msgstr "Mac用Zulipをダウンロード"
+msgstr ""
 
 #: templates/zerver/apps.html:93
 msgid ""
 "Zulip provides a native Linux app that runs standalone\n"
 "        outside of your browser. How you install it depends on what\n"
 "        you're running:"
-msgstr "Zulipはブラウザーの外でスタンドアローンで動くネイティブLinuxアプリを提供しています。インストール方法はディストリビューション次第です。"
+msgstr ""
 
 #: templates/zerver/apps.html:97
 msgid "Debian and Ubuntu"
-msgstr "DebianとUbuntu"
+msgstr ""
 
 #: templates/zerver/apps.html:98
 msgid ""
 "We have an APT repository for Zulip, so adding and installing the app is "
 "easy:"
-msgstr "Zulip用のAPIリポジトリーがあります。アプリケーションのインストールは簡単です。"
+msgstr ""
 
 #: templates/zerver/apps.html:111
 msgid "Other"
-msgstr "その他"
+msgstr ""
 
 #: templates/zerver/apps.html:113
 msgid ""
@@ -237,11 +236,11 @@ msgstr ""
 msgid ""
 "We proudly present <b>Zulip for Windows</b>: the second-best app for Windows on the market today (after\n"
 "        Solitaire, obviously.)"
-msgstr "<b>Windows用Zulip</b>を提供できることを誇りに思います。これは現在の市場で2番目に優れたWindows用アプリです。（1番目は明らかにソリティアです。）"
+msgstr ""
 
 #: templates/zerver/apps.html:131 templates/zerver/apps.html:133
 msgid "Download Zulip for Windows"
-msgstr "Windows用Zulipをダウンロード"
+msgstr ""
 
 #: templates/zerver/apps.html:141
 msgid ""
@@ -253,24 +252,24 @@ msgstr ""
 
 #: templates/zerver/bankruptcy.html:6
 msgid "Welcome back"
-msgstr "おひさしぶり"
+msgstr ""
 
 #: templates/zerver/bankruptcy.html:13
 msgid "Yes, please!"
-msgstr "はい、そうしてください！"
+msgstr ""
 
 #: templates/zerver/bankruptcy.html:15
 msgid "No, I'll catch up."
-msgstr "いいえ、未読のメッセージを確認します。"
+msgstr ""
 
 #: templates/zerver/closed_realm.html:4
 msgid "Closed realm"
-msgstr "アクセスが限定された領域"
+msgstr ""
 
 #: templates/zerver/closed_realm.html:6 templates/zerver/deactivated.html:6
 #: templates/zerver/invalid_realm.html:6
 msgid "Hi there! Thank you for your interest in Zulip."
-msgstr "ようこそ！Zulipに興味を持ってくれてありがとうございます。"
+msgstr ""
 
 #: templates/zerver/closed_realm.html:8
 #, python-format
@@ -278,7 +277,7 @@ msgid ""
 "The organization you are trying to join, %(closed_domain_name)s, only allows"
 " users with e-mail addresses within the organization. Please ask for a new "
 "invite to an appropriate e-mail address."
-msgstr "参加しようとした組織%(closed_domain_name)sは、この組織のメールアドレスを持っている人だけしかアクセスできません。適切なメールアドレスに招待してもらうように頼んでください。"
+msgstr ""
 
 #: templates/zerver/compose.html:9
 msgid "New stream message (c)"
@@ -287,7 +286,7 @@ msgstr ""
 #: templates/zerver/compose.html:10
 #: templates/zerver/keyboard_shortcuts.html:65
 msgid "New stream message"
-msgstr "新しいストリームのメッセージ"
+msgstr ""
 
 #: templates/zerver/compose.html:16
 msgid "New private message (C)"
@@ -296,39 +295,39 @@ msgstr ""
 #: templates/zerver/compose.html:17
 #: templates/zerver/keyboard_shortcuts.html:69
 msgid "New private message"
-msgstr "新しいプライベートメッセージ"
+msgstr ""
 
 #: templates/zerver/compose.html:46
 msgid "This is an invite-only stream"
-msgstr "招待された人だけが購読できるストリーム"
+msgstr ""
 
 #: templates/zerver/compose.html:50
 msgid "Stream"
-msgstr "ストリーム"
+msgstr ""
 
 #: templates/zerver/compose.html:54
 msgid "Topic"
-msgstr "トピック"
+msgstr ""
 
 #: templates/zerver/compose.html:63
 msgid "You and"
-msgstr "あなたと"
+msgstr ""
 
 #: templates/zerver/compose.html:65
 msgid "one or more people..."
-msgstr "1人以上のだれか…"
+msgstr ""
 
 #: templates/zerver/compose.html:72
 msgid "Compose your message here..."
-msgstr "ここでメッセージを作成"
+msgstr ""
 
 #: templates/zerver/compose.html:84
 msgid "Attach files from Dropbox"
-msgstr "Dropboxからファイルを添付"
+msgstr ""
 
 #: templates/zerver/compose.html:86
 msgid "Attach files"
-msgstr "ファイルを添付"
+msgstr ""
 
 #: templates/zerver/compose.html:88
 msgid "Formatting"
@@ -336,23 +335,23 @@ msgstr ""
 
 #: templates/zerver/compose.html:89
 msgid "Write"
-msgstr "書く"
+msgstr ""
 
 #: templates/zerver/compose.html:90
 msgid "Preview"
-msgstr "プレビュー"
+msgstr ""
 
 #: templates/zerver/compose.html:91
 msgid "Restore draft"
-msgstr "下書きを使う"
+msgstr ""
 
 #: templates/zerver/compose.html:92
 msgid "Sending..."
-msgstr "送信中…"
+msgstr ""
 
 #: templates/zerver/compose.html:94
 msgid "Press Enter to send"
-msgstr "Enterで送信"
+msgstr ""
 
 #: templates/zerver/compose.html:96
 msgid "Send"
@@ -360,11 +359,11 @@ msgstr ""
 
 #: templates/zerver/create_realm.html:25
 msgid "Create organization"
-msgstr "組織を作る"
+msgstr ""
 
 #: templates/zerver/deactivated.html:4
 msgid "Deactivated organization"
-msgstr "無効化された組織"
+msgstr ""
 
 #: templates/zerver/deactivated.html:9
 #, python-format
@@ -374,66 +373,66 @@ msgid ""
 "  Please contact <a href=\"mailto:%(zulip_administrator)s\">%(zulip_administrator)s</a> to reactivate\n"
 "  this group.\n"
 "  "
-msgstr "\n  参加しようとした組織%(deactivated_domain_name)sは無効になっています。\n  この組織を再度有効にするには<a href=\"mailto:%(zulip_administrator)s\">%(zulip_administrator)s</a>に連絡をとってください。"
+msgstr ""
 
 #: templates/zerver/emails/followup/day1.html:10
 #: templates/zerver/emails/followup/day2.html:10
 #: templates/zerver/emails/invitation/invitation_reminder_email.html:12
 msgid "Zulip"
-msgstr "Zulip"
+msgstr ""
 
 #: templates/zerver/features.html:4
 msgid "Zulip Features"
-msgstr "Zulipの機能"
+msgstr ""
 
 #: templates/zerver/features.html:7
 msgid "Threaded group conversations"
-msgstr "スレッド化されたグループの会話"
+msgstr ""
 
 #: templates/zerver/features.html:8
 msgid ""
 "Talk about multiple topics at once without getting lost or\n"
 "        overwhelmed."
-msgstr "トピックを見失ったり困惑したりせずに同時に複数のトピックを話せます。"
+msgstr ""
 
 #: templates/zerver/features.html:13
 msgid "One-on-one and group private conversations"
-msgstr "1対1でのプライベートな会話とグループでのプライベートな会話"
+msgstr ""
 
 #: templates/zerver/features.html:14
 msgid "Have private conversations with one or as many people as you need."
-msgstr "1人以上必要なだけの人とプライベートな会話をできます。"
+msgstr ""
 
 #: templates/zerver/features.html:18
 msgid "Persistence"
-msgstr "永続性"
+msgstr ""
 
 #: templates/zerver/features.html:19
 msgid ""
 "We're always receiving messages for you, even when you're\n"
 "        logged out."
-msgstr "ログアウトしているときでも、いつでもあなた宛のメッセージを受け取ります。"
+msgstr ""
 
 #: templates/zerver/features.html:24
 msgid "History"
-msgstr "履歴"
+msgstr ""
 
 #: templates/zerver/features.html:25
 msgid ""
 "Join a stream and see its history, so even new team\n"
 "        members are never out of the loop."
-msgstr "ストリームに参加して履歴を見ましょう。新しいチームメンバーも同じことができます。"
+msgstr ""
 
 #: templates/zerver/features.html:30
 msgid "Full-history search"
-msgstr "すべての履歴を検索可能"
+msgstr ""
 
 #: templates/zerver/features.html:31
 msgid ""
 "Search is both snappy and smart, helping you look for text,\n"
 "        people, and threads of conversation, with advanced search\n"
 "        operators for fine-grained control."
-msgstr "検索はきびきびしていて賢いです。テキスト・人・会話のスレッドを探せます。高度な検索のための適度なサイズのUIがあります。"
+msgstr ""
 
 #: templates/zerver/features.html:37
 msgid "Team presence"
@@ -441,99 +440,99 @@ msgstr ""
 
 #: templates/zerver/features.html:38
 msgid "See who is online at a glance."
-msgstr "だれがオンライン化ひと目でわかります。"
+msgstr ""
 
 #: templates/zerver/features.html:42
 msgid "Inline image, video, and tweet previews"
-msgstr "インライン画像・インライン動画・ツイートプレビュー"
+msgstr ""
 
 #: templates/zerver/features.html:43
 msgid ""
 "Send a link and we'll automatically generate an inline\n"
 "        preview."
-msgstr "リンクを送ると自動でインラインプレビューを生成します。"
+msgstr ""
 
 #: templates/zerver/features.html:48
 msgid "Drag-and-drop file uploads"
-msgstr "ドラッグ&ドロップファイルアップロード"
+msgstr ""
 
 #: templates/zerver/features.html:49
 msgid ""
 "Drag a file into the compose box and we'll upload and\n"
 "        preview it for you. Sharing and discussing work with team\n"
 "        mates has never been easier."
-msgstr "ファイルをメッセージ作成ボックスにドラッグすると、それをアップロードしてプレビューします。チームメイトととの作業の共有・議論が捗ります。"
+msgstr ""
 
 #: templates/zerver/features.html:55
 msgid "@-notifications"
-msgstr "@による言及"
+msgstr ""
 
 #: templates/zerver/features.html:56
 msgid ""
 "Want someone's attention in a conversation? @-notify them\n"
 "        and they'll be right over."
-msgstr "会話中に○○さんに見て欲しいことはありませんか？@で通知するとすぐに気づいてくれるでしょう。"
+msgstr ""
 
 #: templates/zerver/features.html:61
 msgid "Stream-wide announcements"
-msgstr "ストリーム全体へのアナウンス"
+msgstr ""
 
 #: templates/zerver/features.html:62
 msgid ""
 "Use <code>@all</code> or <code>@everyone</code> to get the\n"
 "        attention of everyone in a stream."
-msgstr "ストリーム内の全員に連絡するときは<code>@all</code>または<code>@everyone</code>を使います。"
+msgstr ""
 
 #: templates/zerver/features.html:67
 msgid "Emails for important missed messages"
-msgstr "重要なメッセージを見逃さないためのメール通知"
+msgstr ""
 
 #: templates/zerver/features.html:68
 msgid ""
 "If you're missing important conversations when you're away from\n"
 "        Zulip, we'll send you an email summary so you're always in the\n"
 "        loop."
-msgstr "Zulipにログインしていないときに重要な会話があった場合はメールでサマリーを送ります。重要な会話を見逃すことはありません。"
+msgstr ""
 
 #: templates/zerver/features.html:74
 msgid "Desktop notifications"
-msgstr "デスクトップへ通知"
+msgstr ""
 
 #: templates/zerver/features.html:75
 msgid "Configurable for private and stream messages."
-msgstr "プライベートメッセージとストリームのメッセージを設定できます。"
+msgstr ""
 
 #: templates/zerver/features.html:79
 msgid "Audible notifications"
-msgstr "音で通知"
+msgstr ""
 
 #: templates/zerver/features.html:80
 msgid ""
 "So you don't miss important messages even when your eyes\n"
 "        are elsewhere."
-msgstr "別の場所を見ているときでも重要なメッセージを見逃さずに済みます。"
+msgstr ""
 
 #: templates/zerver/features.html:85
 msgid "Hotkeys"
-msgstr "ホットキー"
+msgstr ""
 
 #: templates/zerver/features.html:86
 msgid "Communicate as efficiently as you use your favorite text editor."
-msgstr "お気に入りのテキストエディターを使っているように効率的にやりとりできます。"
+msgstr ""
 
 #: templates/zerver/features.html:90
 msgid "Emoji"
-msgstr "絵文字"
+msgstr ""
 
 #: templates/zerver/features.html:91
 msgid ""
 "Sometimes it's the simple things in life, like being able\n"
 "        to give a <tt>:thumbsup:</tt> while chatting."
-msgstr "ときどき現実でもやっているように、チャット中でも<tt>:thumbsup:</tt>できます。"
+msgstr ""
 
 #: templates/zerver/features.html:96
 msgid "Code"
-msgstr "コード"
+msgstr ""
 
 #: templates/zerver/features.html:97
 msgid ""
@@ -543,46 +542,46 @@ msgstr ""
 
 #: templates/zerver/features.html:102
 msgid "Lightweight markup"
-msgstr "簡単なマークアップ"
+msgstr ""
 
 #: templates/zerver/features.html:103
 msgid ""
 "Get bulleted lists, clickable links, and nicely-formatted\n"
 "        e-mail pastes automatically."
-msgstr "リストもクリックできるリンクもできますし、メールは貼り付けると自動でいい感じにフォーマットします。"
+msgstr ""
 
 #: templates/zerver/features.html:108
 msgid "Message editing"
-msgstr "メッセージ編集"
+msgstr ""
 
 #: templates/zerver/features.html:109
 msgid "Don't worry, you can always fix that typo."
-msgstr "気にしなくても大丈夫です。いつでも誤字・脱字を直せます。"
+msgstr ""
 
 #: templates/zerver/features.html:113
 msgid "Invite-only streams"
-msgstr "招待専用ストリーム"
+msgstr ""
 
 #: templates/zerver/features.html:114
 msgid ""
 "Enjoy the benefits of threaded conversations while\n"
 "        controlling your audience and privacy."
-msgstr "参加者とプライバシーを制御しながらスレッド化された会話の便利さを楽しんでください。"
+msgstr ""
 
 #: templates/zerver/features.html:119 templates/zerver/left-sidebar.html:8
 msgid "Starred messages"
-msgstr "スター付きメッセージ"
+msgstr ""
 
 #: templates/zerver/features.html:120
 msgid ""
 "Keep a todo list or keep track of interesting\n"
 "        conversations."
-msgstr "TODOリストをメンテナンスしたり興味のある会話を確認し続けるために使えます。"
+msgstr ""
 
 #: templates/zerver/features.html:125 templates/zerver/navbar.html:94
 #: templates/zerver/navbar.html:96
 msgid "Integrations"
-msgstr "連携"
+msgstr ""
 
 #: templates/zerver/features.html:126
 #, python-format
@@ -594,7 +593,7 @@ msgstr ""
 
 #: templates/zerver/features.html:132
 msgid "API"
-msgstr "API"
+msgstr ""
 
 #: templates/zerver/features.html:133
 #, python-format
@@ -603,27 +602,27 @@ msgid ""
 "        dead-simple RESTful <a href=\"%(server_uri)s/api\">API and Python bindings</a>\n"
 "        that will make integrations&mdash;both sending and\n"
 "        receiving&mdash;a snap!"
-msgstr "独自の通知を作りたいですか？\n        非常にシンプルなRESTful <a href=\"%(server_uri)s/api\">APIとPythonバインディング</a>があります。\n        これらを使うと簡単に送信も受信もできるのですぐに連携できます！"
+msgstr ""
 
 #: templates/zerver/features.html:140
 msgid "Mobile apps"
-msgstr "モバイルアプリ"
+msgstr ""
 
 #: templates/zerver/features.html:141
 msgid ""
 "Check Zulip on the go with native <a href=\"/apps\">iOS and\n"
 "        Android apps</a>"
-msgstr "Zulipの<a href=\"/apps\">OSとAndroidのネイティブアプリ</a>をチェックしてください。"
+msgstr ""
 
 #: templates/zerver/features.html:146
 msgid "Desktop apps"
-msgstr "デスクトップアプリ"
+msgstr ""
 
 #: templates/zerver/features.html:147
 msgid ""
 "Prefer Zulip in its own window and rich, OS-level notifications?\n"
 "          Enjoy <a href=\"/apps\">Zulip on your desktop</a>"
-msgstr "Zulip独自のウィンドウやリッチなOSレベルの通知が好みですか？\n          <a href=\"/apps\">デスクトップ用Zulipアプリ</a>を楽しんでください。"
+msgstr ""
 
 #: templates/zerver/find_my_team.html:7
 msgid "Find your team"
@@ -639,7 +638,7 @@ msgstr ""
 
 #: templates/zerver/hello.html:10 templates/zerver/login.html:16
 msgid "Zulip has been released as open source software!"
-msgstr "Zulipはオープンソースソフトウェアとして"
+msgstr ""
 
 #: templates/zerver/hello.html:13
 msgid ""
@@ -647,27 +646,27 @@ msgid ""
 "zulip-a-dropbox-hack-week-project\" target=\"_blank\">announcement</a> or go"
 " to <a href=\"https://www.zulip.org\" target=\"_blank\">the Zulip open "
 "source project website</a>."
-msgstr "<a href=\"https://blogs.dropbox.com/tech/2015/09/open-sourcing-zulip-a-dropbox-hack-week-project\" target=\"_blank\">アナウンス</a>を読むか<a href=\"https://www.zulip.org\" target=\"_blank\">ZulipオープンソースプロジェクトのWebサイト</a>を見てください。"
+msgstr ""
 
 #: templates/zerver/hello.html:26
 msgid "Finally, workplace chat that actually improves your productivity.*"
-msgstr "最後に、実際に生産性を高める職場用チャット。*"
+msgstr ""
 
 #: templates/zerver/hello.html:28
 msgid "* It's also great for sharing cat pictures."
-msgstr "* ネコ画像を共有する目的にも便利に使えます。"
+msgstr ""
 
 #: templates/zerver/hello.html:31
 msgid "Log in now!"
-msgstr "すぐにログイン！"
+msgstr ""
 
 #: templates/zerver/hello.html:33
 msgid "Register now!"
-msgstr "すぐに登録！"
+msgstr ""
 
 #: templates/zerver/hello.html:44
 msgid "Make sense of your messages."
-msgstr "メッセージが伝わります。"
+msgstr ""
 
 #: templates/zerver/hello.html:47
 msgid ""
@@ -675,17 +674,17 @@ msgid ""
 "      easy to keep conversations straight. Are other users discussing\n"
 "      a software bug and the content of your website at the same time?\n"
 "      No problem."
-msgstr "Zulipのすべての会話には<em>トピック</em>がついています。そのため会話がブレにくいです。他のユーザーたちがソフトウェアのバグとWebサイトの内容を同時に話していても大丈夫です。"
+msgstr ""
 
 #: templates/zerver/hello.html:64
 msgid "Never miss the conversations you care about."
-msgstr "大事な会話を見逃しません。"
+msgstr ""
 
 #: templates/zerver/hello.html:67
 msgid ""
 "Sometimes, important things get discussed when you&rsquo;re not\n"
 "      around. Unfortunately, so do a lot of unimportant things."
-msgstr "たまにあなたがいないときに重要なことが話されていることがあります。多くの場合は重要ではないことが話されています。"
+msgstr ""
 
 #: templates/zerver/hello.html:70
 msgid ""
@@ -693,22 +692,22 @@ msgid ""
 "        you missed, so you can focus on that important project\n"
 "        without having to catch up on how Jim&rsquo;s guitar\n"
 "        lessons are going."
-msgstr "Zulipでは未読の会話を簡単にレビューできます。ジムのギターのレッスンがどうなったかを読む必要はありません。重要なプロジェクトだけに注目できます。"
+msgstr ""
 
 #: templates/zerver/hello.html:86
 msgid "Fast and powerful search."
-msgstr "高速で高機能な検索。"
+msgstr ""
 
 #: templates/zerver/hello.html:89
 msgid ""
 "An impressive amount of knowledge lives in your chat system.  Zulip&rsquo;s\n"
 "      Gmail-style search will delight you with how quickly you can find\n"
 "      exactly what you&rsquo;re looking for."
-msgstr "チャットシステム内には非常に多くの知見があります。\nZulipのGmailスタイルの検索を使うと探している知見を素早く見つけられます。"
+msgstr ""
 
 #: templates/zerver/hello.html:104
 msgid "Integrations that don't intrude."
-msgstr "邪魔をしない連携"
+msgstr ""
 
 #: templates/zerver/hello.html:107
 msgid ""
@@ -718,27 +717,27 @@ msgid ""
 "      Zulip categorizes messages, automated messages never overwhelm\n"
 "      you. As with any topic in Zulip, they&rsquo;re easy to focus on,\n"
 "      skim, defer to later, or ignore&mdash;as appropriate."
-msgstr "Zulipには<a href=\"/integrations\">たくさんの組込みの連携機能</a>と強力な<a href=\"/api\">API</a>があります。\n      しかし、興味深いことがあります。Zulipがメッセージをカテゴリー化するため、大量の自動投稿されたメッセージに圧倒されることはありません。\n      Zulipの他のトピックと同様に、注目することも、流し読みすることも、後で読むことも、無視することだって簡単にできます。簡単に適切に処理できるのです。"
+msgstr ""
 
 #: templates/zerver/hello.html:125
 msgid "As technical as you want to be."
-msgstr "技術的な用途に使えます。"
+msgstr ""
 
 #: templates/zerver/hello.html:128
 msgid "Keyboard shortcuts? Check."
-msgstr "キーボードショットカット？あります。"
+msgstr ""
 
 #: templates/zerver/hello.html:129
 msgid "Syntax highlighting? Check."
-msgstr "シンタックスハイライト？あります。"
+msgstr ""
 
 #: templates/zerver/hello.html:130
 msgid "Discuss code and technical topics with ease."
-msgstr "簡単にコードと技術的なトピックについて話せます。"
+msgstr ""
 
 #: templates/zerver/hello.html:143
 msgid "Everything else you need to be productive."
-msgstr "すべてあります。あとはあなたが生産的になるだけです。"
+msgstr ""
 
 #: templates/zerver/hello.html:146
 msgid ""
@@ -747,24 +746,24 @@ msgid ""
 "        emails, desktop apps, and <a href=\"/features\">everything else\n"
 "        you might want</a>. Including emoji, naturally. And it's all\n"
 "        open source under the Apache license!"
-msgstr "ドラッグ&ドロップでのファイルアップロード、画像の貼付け、グループでのプライベートメッセージ、音での通知、見逃したメッセージのメールでの通知、デスクトップアプリ、他にも<a href=\"/features\">欲しいものはすべてあります</a>。もちろん絵文字もあります。さらに、すべてApacheライセンスのオープンソースです！"
+msgstr ""
 
 #: templates/zerver/hello.html:163
 msgid "On the platform of your choice."
-msgstr "あなたのプラットフォーム上で動きます。"
+msgstr ""
 
 #: templates/zerver/hello.html:199
 msgid "Log in now"
-msgstr "すぐにログイン"
+msgstr ""
 
 #: templates/zerver/hello.html:201
 msgid "Register now"
-msgstr "すぐに登録"
+msgstr ""
 
 #: templates/zerver/home.html:14
 #, python-format
 msgid "Welcome to %(product_name)s."
-msgstr "%(product_name)sへようこそ。"
+msgstr ""
 
 #: templates/zerver/home.html:15
 msgid ""
@@ -777,11 +776,11 @@ msgid ""
 "        and <a href=\"#\" class=\"empty_feed_compose_stream\">\n"
 "        compose a new stream message</a>.</p>\n"
 "        "
-msgstr "\n        <p>見ての通り、まだあなた向けのメッセージはありません。いずれだれかがあなた向けのメッセージを送るでしょう。</p>\n\n        <p>あるいは、<strong>自分でなんとかすることもできます</strong>。つまり、<a href=\"#\" class=\"empty_feed_compose_stream\">新しくこのストリーム向けのメッセージを作成する</a>のです。</p>\n        "
+msgstr ""
 
 #: templates/zerver/home.html:26
 msgid "Nothing's been sent here yet!"
-msgstr "まだ送信されたメッセージがありません！"
+msgstr ""
 
 #: templates/zerver/home.html:28
 msgid ""
@@ -789,11 +788,11 @@ msgid ""
 "        <p>Why not <a href=\"#\" class=\"empty_feed_compose_stream\">\n"
 "            start the conversation</a>?</p>\n"
 "        "
-msgstr "\n        <p><a href=\"#\" class=\"empty_feed_compose_stream\">会話を始めませんか</a>？</p>\n        "
+msgstr ""
 
 #: templates/zerver/home.html:34
 msgid "You have no private messages yet!"
-msgstr "まだプライベートメッセージがありません！"
+msgstr ""
 
 #: templates/zerver/home.html:36 templates/zerver/home.html:44
 #: templates/zerver/home.html:52
@@ -802,32 +801,32 @@ msgid ""
 "        <p>Why not <a href=\"#\" class=\"empty_feed_compose_private\">\n"
 "            start the conversation</a>?</p>\n"
 "        "
-msgstr "\n        <p><a href=\"#\" class=\"empty_feed_compose_private\">会話を始めませんか</a>？</p>\n        "
+msgstr ""
 
 #: templates/zerver/home.html:42
 msgid "You have no private messages with this person yet!"
-msgstr "まだこの人とのプライベートメッセージがありません！"
+msgstr ""
 
 #: templates/zerver/home.html:50
 msgid "You have no private messages with these people yet!"
-msgstr "まだこの人たちとのプライベートメッセージがありません！"
+msgstr ""
 
 #: templates/zerver/home.html:58
 msgid "You haven't received any messages sent by this user yet!"
-msgstr "まだこのユーザーから送られたメッセージはありません！"
+msgstr ""
 
 #: templates/zerver/home.html:61
 msgid "This user does not exist!"
-msgstr "このユーザーは存在しません！"
+msgstr ""
 
 #: templates/zerver/home.html:64
 msgid ""
 "You aren't subscribed to this stream and nobody has talked about that yet!"
-msgstr "このストリームを購読していませんし、まだだれも会話していません！"
+msgstr ""
 
 #: templates/zerver/home.html:67
 msgid "Subscribe"
-msgstr "購読"
+msgstr ""
 
 #: templates/zerver/home.html:72
 msgid "You are not subscribed to this stream."
@@ -835,7 +834,7 @@ msgstr ""
 
 #: templates/zerver/home.html:75
 msgid "You haven't starred anything yet!"
-msgstr "まだどのメッセージにもスターを付けていません！"
+msgstr ""
 
 #: templates/zerver/home.html:78
 msgid "You haven't been mentioned yet!"
@@ -843,17 +842,17 @@ msgstr ""
 
 #: templates/zerver/home.html:81
 msgid "Nobody has talked about that yet!"
-msgstr "まだだれもこの話題を話していません！"
+msgstr ""
 
 #: templates/zerver/index.html:53
 msgid "Loading..."
-msgstr "ロード中…"
+msgstr ""
 
 #: templates/zerver/index.html:54
 msgid ""
 "If this message does not go away, please wait a couple seconds and <a "
 "href=\"javascript:location.reload(true)\">reload</a> the page."
-msgstr "このメッセージが消えない場合は数秒待ってからこのページを<a href=\"javascript:location.reload(true)\">リロード</a>してください。"
+msgstr ""
 
 #: templates/zerver/invalid_realm.html:4
 msgid "Organization does not exist"
@@ -861,95 +860,95 @@ msgstr ""
 
 #: templates/zerver/invalid_realm.html:7
 msgid "There is no Zulip organization hosted at this subdomain"
-msgstr "このサブドメインでホストしているZulipの組織はありません。"
+msgstr ""
 
 #: templates/zerver/invite_user.html:5
 #, python-format
 msgid "Invite users to %(product_name)s"
-msgstr "ユーザーを%(product_name)sに招待します。"
+msgstr ""
 
 #: templates/zerver/invite_user.html:12
 msgid "Emails (one on each line or comma-separated)"
-msgstr "メールアドレス（1行に1つかカンマで区切る）"
+msgstr ""
 
 #: templates/zerver/invite_user.html:16
 msgid "One or more email addresses..."
-msgstr "1つ以上のメールアドレス…"
+msgstr ""
 
 #: templates/zerver/invite_user.html:24
 msgid "Streams they should join"
-msgstr "彼らが購読するストリーム"
+msgstr ""
 
 #: templates/zerver/invite_user.html:29
 msgid "Cancel"
-msgstr "キャンセル"
+msgstr ""
 
 #: templates/zerver/invite_user.html:30
 msgid "Invite"
-msgstr "招待"
+msgstr ""
 
 #: templates/zerver/keyboard_shortcuts.html:5 templates/zerver/navbar.html:73
 #: templates/zerver/navbar.html:75
 msgid "Keyboard shortcuts"
-msgstr "キーボードショートカット"
+msgstr ""
 
 #: templates/zerver/keyboard_shortcuts.html:12
 msgid "Navigation"
-msgstr "ナビゲーション"
+msgstr ""
 
 #: templates/zerver/keyboard_shortcuts.html:17
 msgid "Initiate a search"
-msgstr "検索開始"
+msgstr ""
 
 #: templates/zerver/keyboard_shortcuts.html:21
 #: templates/zerver/right-sidebar.html:42
 msgid "Search people"
-msgstr "人を検索"
+msgstr ""
 
 #: templates/zerver/keyboard_shortcuts.html:25
 #: templates/zerver/left-sidebar.html:31
 msgid "Search streams"
-msgstr "ストリームを検索"
+msgstr ""
 
 #: templates/zerver/keyboard_shortcuts.html:29
 msgid "Previous message"
-msgstr "前のメッセージ"
+msgstr ""
 
 #: templates/zerver/keyboard_shortcuts.html:33
 msgid "Next message"
-msgstr "次のメッセージ"
+msgstr ""
 
 #: templates/zerver/keyboard_shortcuts.html:37
 msgid "Scroll up"
-msgstr "上へスクロール"
+msgstr ""
 
 #: templates/zerver/keyboard_shortcuts.html:41
 msgid "Scroll down"
-msgstr "下へスクロール"
+msgstr ""
 
 #: templates/zerver/keyboard_shortcuts.html:45
 msgid "Last message"
-msgstr "最後のメッセージ"
+msgstr ""
 
 #: templates/zerver/keyboard_shortcuts.html:52
 msgid "Composing messages"
-msgstr "メッセージ作成"
+msgstr ""
 
 #: templates/zerver/keyboard_shortcuts.html:57
 msgid "Reply to message"
-msgstr "メッセージへ返信"
+msgstr ""
 
 #: templates/zerver/keyboard_shortcuts.html:61
 msgid "Reply to author"
-msgstr "送信者へ返信"
+msgstr ""
 
 #: templates/zerver/keyboard_shortcuts.html:73
 msgid "Send message"
-msgstr "メッセージを送信"
+msgstr ""
 
 #: templates/zerver/keyboard_shortcuts.html:77
 msgid "Cancel compose"
-msgstr "作成を中止"
+msgstr ""
 
 #: templates/zerver/keyboard_shortcuts.html:81
 msgid "Compose a reply @-mentioning author"
@@ -957,61 +956,61 @@ msgstr ""
 
 #: templates/zerver/keyboard_shortcuts.html:90
 msgid "Narrowing"
-msgstr "限定表示"
+msgstr ""
 
 #: templates/zerver/keyboard_shortcuts.html:95
 msgid "Narrow by stream"
-msgstr "ストリームだけ表示"
+msgstr ""
 
 #: templates/zerver/keyboard_shortcuts.html:99
 msgid "Narrow by topic"
-msgstr "トピックだけ表示"
+msgstr ""
 
 #: templates/zerver/keyboard_shortcuts.html:103
 msgid "Narrow to all private messages"
-msgstr "すべてのプライベートメッセージだけ表示"
+msgstr ""
 
 #: templates/zerver/keyboard_shortcuts.html:107
 msgid "Cycle between stream narrows"
-msgstr "表示対象のストリームを循環"
+msgstr ""
 
 #: templates/zerver/keyboard_shortcuts.html:111
 msgid "Return to home view"
-msgstr "ホームビューへ戻る"
+msgstr ""
 
 #: templates/zerver/keyboard_shortcuts.html:118
 msgid "Menus"
-msgstr "メニュー"
+msgstr ""
 
 #: templates/zerver/keyboard_shortcuts.html:123
 msgid "Open message actions menu"
-msgstr "メッセージアクションメニューを開く"
+msgstr ""
 
 #: templates/zerver/keyboard_shortcuts.html:127
 msgid "Edit a message you sent"
-msgstr "送信したメッセージを編集"
+msgstr ""
 
 #: templates/zerver/keyboard_shortcuts.html:131
 msgid "Show these keyboard shortcuts"
-msgstr "これらのキーボードショートカットを表示"
+msgstr ""
 
 #: templates/zerver/keyboard_shortcuts.html:137
 #: templates/zerver/markdown_help.html:110
 #: templates/zerver/search_operators.html:93
 msgid "Close"
-msgstr "閉じる"
+msgstr ""
 
 #: templates/zerver/left-sidebar.html:6
 msgid "Home"
-msgstr "ホーム"
+msgstr ""
 
 #: templates/zerver/left-sidebar.html:7
 msgid "Private messages"
-msgstr "プライベートメッセージ"
+msgstr ""
 
 #: templates/zerver/left-sidebar.html:9
 msgid "@-mentions"
-msgstr "@での言及"
+msgstr ""
 
 #: templates/zerver/left-sidebar.html:12
 msgid "Subscribed streams"
@@ -1019,7 +1018,7 @@ msgstr ""
 
 #: templates/zerver/left-sidebar.html:12
 msgid "STREAMS"
-msgstr "ストリーム"
+msgstr ""
 
 #: templates/zerver/left-sidebar.html:14
 msgid "Subscribe, add, or configure streams"
@@ -1035,7 +1034,7 @@ msgstr ""
 
 #: templates/zerver/left-sidebar.html:25
 msgid "All streams"
-msgstr "すべてのストリーム"
+msgstr ""
 
 #: templates/zerver/left-sidebar.html:37
 msgid "SHARE THE LOVE"
@@ -1044,12 +1043,12 @@ msgstr ""
 #: templates/zerver/left-sidebar.html:41
 msgid ""
 "<strong>Thanks!</strong> A hand-crafted, artisanal invite is on the way."
-msgstr "<strong>ありがとうございます！</strong>手作業で丹念に作られた職人技の招待が進行中です。"
+msgstr ""
 
 #: templates/zerver/left-sidebar.html:45
 msgid ""
 "Know someone who would love Zulip for their company or group? Invite 'em!"
-msgstr "会社やグループでZulipを大好きな人を知っていますか？招待しましょう！"
+msgstr ""
 
 #: templates/zerver/left-sidebar.html:50
 msgid ""
@@ -1058,7 +1057,7 @@ msgid ""
 "                                                     href=\"http://www.youtube.com/watch?v=PW71En5Pa5s#t=2m01s\">song\n"
 "                                that expresses how we feel when you're\n"
 "                                logged out</a>."
-msgstr "すぐにもっと招待しますが、今のところは<a target=\"_blank\"\n                                                     href=\"http://www.youtube.com/watch?v=PW71En5Pa5s#t=2m01s\">あなたがログアウトしたときに私たちがどう感じるかを表した歌</a>を楽しんでください。"
+msgstr ""
 
 #: templates/zerver/left-sidebar.html:66
 msgid "invites remaining"
@@ -1075,7 +1074,7 @@ msgstr ""
 
 #: templates/zerver/login.html:47
 msgid "Zulip Dev Login"
-msgstr "Zulip開発用ログイン"
+msgstr ""
 
 #: templates/zerver/login.html:49
 msgid "Choose a user:"
@@ -1087,7 +1086,7 @@ msgstr ""
 
 #: templates/zerver/login.html:59
 msgid "Sign in with SSO"
-msgstr "SSOで登録"
+msgstr ""
 
 #: templates/zerver/login.html:68
 msgid "Zulip is not currently available for your domain."
@@ -1101,23 +1100,23 @@ msgstr ""
 #: templates/zerver/login.html:115 templates/zerver/register.html:53
 #: templates/zerver/reset_confirm.html:27
 msgid "Password"
-msgstr "パスワード"
+msgstr ""
 
 #: templates/zerver/login.html:126
 msgid "Forgot password?"
-msgstr "パスワードを忘れましたか？"
+msgstr ""
 
 #: templates/zerver/login.html:139
 msgid "or Choose a user"
-msgstr "あるいはユーザーを選んでください"
+msgstr ""
 
 #: templates/zerver/login.html:142
 msgid "Administrators"
-msgstr "管理者"
+msgstr ""
 
 #: templates/zerver/login.html:147
 msgid "Normal users"
-msgstr "一般ユーザー"
+msgstr ""
 
 #: templates/zerver/login.html:152
 msgid "Community users"
@@ -1125,28 +1124,28 @@ msgstr ""
 
 #: templates/zerver/login.html:163
 msgid "Sign in with Google"
-msgstr "Googleアカウントで登録"
+msgstr ""
 
 #: templates/zerver/login.html:170
 msgid "Sign in with GitHub"
-msgstr "GitHubで登録"
+msgstr ""
 
 #: templates/zerver/markdown_help.html:5 templates/zerver/navbar.html:78
 #: templates/zerver/navbar.html:80
 msgid "Message formatting"
-msgstr "メッセージのフォーマットルール"
+msgstr ""
 
 #: templates/zerver/markdown_help.html:11
 msgid "You type"
-msgstr "入力"
+msgstr ""
 
 #: templates/zerver/markdown_help.html:12
 msgid "You get"
-msgstr "出力"
+msgstr ""
 
 #: templates/zerver/markdown_help.html:85
 msgid "You can also make a code block by indenting each line with 4 spaces."
-msgstr "各行を4スペースでインデントすることでコードブロックにすることもできます。"
+msgstr ""
 
 #: templates/zerver/markdown_help.html:99
 msgid ""
@@ -1155,11 +1154,11 @@ msgid ""
 "          with this <a target=\"_blank\"\n"
 "          href=\"https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables\">Markdown-ish\n"
 "          table syntax</a>"
-msgstr "<a target=\"_blank\"\n          href=\"https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables\">Markdown風なテーブル構文</a>を使って<a target=\"_blank\"\n          href=\"https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables\">テーブル</a>を作ることもできます。"
+msgstr ""
 
 #: templates/zerver/navbar.html:24
 msgid "Search"
-msgstr "検索"
+msgstr ""
 
 #: templates/zerver/navbar.html:52 templates/zerver/navbar.html:54
 msgid "Manage streams"
@@ -1167,11 +1166,11 @@ msgstr ""
 
 #: templates/zerver/navbar.html:57 templates/zerver/navbar.html:59
 msgid "Settings"
-msgstr "設定"
+msgstr ""
 
 #: templates/zerver/navbar.html:62 templates/zerver/navbar.html:64
 msgid "Administration"
-msgstr "管理"
+msgstr ""
 
 #: templates/zerver/navbar.html:68 templates/zerver/navbar.html:70
 #: templates/zerver/portico.html:77
@@ -1185,15 +1184,15 @@ msgstr ""
 
 #: templates/zerver/navbar.html:89 templates/zerver/navbar.html:91
 msgid "Desktop & mobile apps"
-msgstr "デスクトップアプリとモバイルアプリ"
+msgstr ""
 
 #: templates/zerver/navbar.html:99 templates/zerver/navbar.html:101
 msgid "API documentation"
-msgstr "APIドキュメント"
+msgstr ""
 
 #: templates/zerver/navbar.html:106 templates/zerver/navbar.html:108
 msgid "Feedback"
-msgstr "フィードバック"
+msgstr ""
 
 #: templates/zerver/navbar.html:113
 #, python-format
@@ -1202,7 +1201,7 @@ msgstr ""
 
 #: templates/zerver/navbar.html:115
 msgid "Invite users"
-msgstr "ユーザーを招待"
+msgstr ""
 
 #: templates/zerver/navbar.html:121
 #, python-format
@@ -1217,28 +1216,28 @@ msgstr ""
 
 #: templates/zerver/navbar.html:127 templates/zerver/navbar.html:129
 msgid "Log out"
-msgstr "ログアウト"
+msgstr ""
 
 #: templates/zerver/navbar.html:133 templates/zerver/navbar.html:135
 msgid "Debug"
-msgstr "デバッグ"
+msgstr ""
 
 #: templates/zerver/portico.html:29 templates/zerver/portico.html:82
 msgid "Log in"
-msgstr "ログイン"
+msgstr ""
 
 #: templates/zerver/portico.html:34
 msgid "Log In"
-msgstr "ログイン"
+msgstr ""
 
 #: templates/zerver/portico.html:36 templates/zerver/portico.html:88
 #: templates/zerver/register.html:188
 msgid "Register"
-msgstr "登録"
+msgstr ""
 
 #: templates/zerver/portico.html:59
 msgid "About"
-msgstr "Zulipについて"
+msgstr ""
 
 #: templates/zerver/portico.html:69
 msgid "Legal"
@@ -1246,7 +1245,7 @@ msgstr ""
 
 #: templates/zerver/portico.html:71
 msgid "Privacy"
-msgstr "プライバシー"
+msgstr ""
 
 #: templates/zerver/portico.html:75
 msgid "Features"
@@ -1254,7 +1253,7 @@ msgstr ""
 
 #: templates/zerver/portico.html:92
 msgid "Create new organization"
-msgstr "新しい組織を作成"
+msgstr ""
 
 #: templates/zerver/portico.html:97
 msgid "Find my team"
@@ -1264,13 +1263,13 @@ msgstr ""
 msgid ""
 "This server does not allow members of the public to create new "
 "organizations."
-msgstr "このサーバーでは新しい組織を作成できるメンバーが限られています。"
+msgstr ""
 
 #: templates/zerver/realm_creation_failed.html:9
 msgid ""
 "Zulip is open source, so you can install your own Zulip server by following "
 "the instructions on <a href=\"https://www.zulip.org/\">www.zulip.org</a>"
-msgstr "Zulipはオープンソースなので<a href=\"https://www.zulip.org/\">www.zulip.org</a>にある手順で自分用のZulipをインストールできます。"
+msgstr ""
 
 #: templates/zerver/register.html:18
 msgid ""
@@ -1284,7 +1283,7 @@ msgstr ""
 
 #: templates/zerver/register.html:35
 msgid "Full name"
-msgstr "姓名"
+msgstr ""
 
 #: templates/zerver/register.html:61
 msgid ""
@@ -1294,11 +1293,11 @@ msgstr ""
 
 #: templates/zerver/register.html:71 templates/zerver/reset_confirm.html:42
 msgid "Password strength"
-msgstr "パスワード強度"
+msgstr ""
 
 #: templates/zerver/register.html:79
 msgid "Organization name"
-msgstr "組織名"
+msgstr ""
 
 #: templates/zerver/register.html:81
 msgid "Acme"
@@ -1310,7 +1309,7 @@ msgstr ""
 
 #: templates/zerver/register.html:97
 msgid "Subdomain"
-msgstr "サブドメイン"
+msgstr ""
 
 #: templates/zerver/register.html:99
 msgid "Short Name"
@@ -1322,7 +1321,7 @@ msgstr ""
 
 #: templates/zerver/register.html:118
 msgid "The address you'll use to sign in to your organization."
-msgstr "この組織に登録するために使うアドレス。"
+msgstr ""
 
 #: templates/zerver/register.html:120
 msgid "A short, unique name for your organization, with no spaces."
@@ -1330,7 +1329,7 @@ msgstr ""
 
 #: templates/zerver/register.html:126
 msgid "Organization Type"
-msgstr "組織の種類"
+msgstr ""
 
 #: templates/zerver/register.html:140
 msgid ""
@@ -1373,7 +1372,7 @@ msgstr ""
 
 #: templates/zerver/reset_confirm.html:50
 msgid "Confirm password"
-msgstr "パスワードを確認"
+msgstr ""
 
 #: templates/zerver/reset_confirm.html:74
 msgid "Sorry, the link you provided is invalid or has already been used."
@@ -1381,7 +1380,7 @@ msgstr ""
 
 #: templates/zerver/reset_done.html:3
 msgid "We've reset your password!"
-msgstr "パスワードを"
+msgstr ""
 
 #: templates/zerver/reset_done.html:4
 #, python-format
