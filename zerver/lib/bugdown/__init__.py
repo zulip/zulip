@@ -613,6 +613,11 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 add_a(root, youtube, url, None, None, None, "youtube-video message_inline_image", yt_id)
                 continue
 
+            global db_data
+
+            if db_data and db_data['sent_by_bot']:
+                continue
+
             if current_message is None or not settings.INLINE_URL_EMBED_PREVIEW:
                 continue
             try:
