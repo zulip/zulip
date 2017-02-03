@@ -462,6 +462,12 @@ much faster than the original `vagrant up` since the base image is
 already cached on your machine (it takes about 5 minutes to run with a
 fast Internet connection).
 
+The additional programs (eg Zsh) you installed in the development environment
+would be lost when you recreate it. You can create a file called
+`tools/custom_provision` and place the commands in it to avoid
+manually entering them each time after you recreate the development environment.
+Vagrant would run `tools/custom_provision` at the time of provision.
+
 #### Shutting down the development environment for use later
 
 To shut down but preserve the development environment so you can use

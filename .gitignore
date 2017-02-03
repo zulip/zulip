@@ -25,3 +25,4 @@ npm-debug.log
 *.mo
 var/*
 .vscode/
+tools/custom_provision

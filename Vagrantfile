@@ -101,6 +101,10 @@ if [ -d "/sys/fs/selinux" ]; then
 fi
 ln -nsf /srv/zulip ~/zulip
 /srv/zulip/tools/provision
+if [ -f /srv/zulip/tools/custom_provision ]; then
+  chmod +x /srv/zulip/tools/custom_provision
+  /srv/zulip/tools/custom_provision
+fi
 SCRIPT
 
   config.vm.provision "shell",
