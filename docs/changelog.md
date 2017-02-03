@@ -6,17 +6,17 @@ All notable changes to the Zulip server are documented in this file.
 
 Highlights:
 
-- Completely redesigned the Manage streams page.
+- Completely redesigned the Manage streams interface.
 - Added support for emoji reactions to messages.
-- Added support for open graph previews of links (off by default).
 - Added a lightbox for viewing images and videos.
-- Added extensive user documentation under /help/.
+- Added an extensive user documentation site at /help/.
 - Added admin setting to auto-linkify certain strings (useful for
   issue numbers and Git commit IDs).
-
-Partially merged highlights:
-- Added backend support for typing notifications.
-- Added partial support for message retention policy.
+- Upgraded how the main application runs from FastCGI on Django 1.8 to
+  uwsgi and Django 1.10.
+- Added preliminary support for open graph previews of links (the
+  setting, `settings.INLINE_URL_PREVIEWS`, is disabled by default in
+  this release).
 
 Full feature Changelog:
 
@@ -37,12 +37,13 @@ Full feature Changelog:
   search in all languages (not just English).
 - Added AppFollow, GitLab, Google Calendar, GoSquared, HelloSign,
   Heroku, Librato, MailChimp, Mention, Papertrail, Sentry, Solano
-  Labs, and Stripe integrations.
+  Labs, Stripe and Zapier integrations.
 - Added a webhook integration for GitHub, replacing the deprecated
   github-services hook.
 - Normalized the message formatting for all the Zulip Git integrations.
 - Added support for VMWare Fusion Vagrant provider for faster OSX
   development.
+- Added a shields.io style badge for joining a Zulip server.
 - Added admin setting for which email domains can join a realm.
 - Added admin setting for controlling who can create streams.
 - Added admin setting to limit stream creation to older users.
@@ -63,6 +64,8 @@ Full feature Changelog:
 - Added buttons to download .zuliprc files.
 - Added italics and strikethrough support in markdown implementation.
 - Added errors for common installations mistakes (e.g. too little RAM).
+- Added a new /authors page showing the contributors to the current
+  Zulip version.
 - Upgraded all Python dependencies to modern versions, including
   Django 1.10 (all of Zulip's patches have been merged into mainline).
 - Increased backend test coverage of Python codebase to 90%.
@@ -73,6 +76,7 @@ Full feature Changelog:
 - Fixed problems with rabbitmq when installing Zulip.
 - Fixed JavaScript not being gzip-compressed properly.
 - Fixed a major performance bug in the Tornado service.
+- Fixed a frontend performance bug creating streams in very large realms.
 - Fixed numerous bugs where strings were not properly tagged for translation.
 - Fixed several real-time sync bugs, and removed several AJAX calls.
   Zulip should be more performant than ever before.
@@ -86,8 +90,11 @@ Full feature Changelog:
   implementations.
 - Fixed various popover-related UI bugs.
 - Fixed duplicate notifications with multiple open Zulip tabs.
+- Fixed support for emailing the server administrator about backend exceptions.
+- Cleaned up the "edit message" form.
 - Eliminated most of the legacy API endpoints.
 - Improved typeahead and autocomplete across the application.
+  Highlights include much better handling of many users with similar names.
 - Improved the color scheme for code blocks.
 - Improved the message editing UI in several ways.
 - Improved how dates are displayed in the UI.
@@ -95,8 +102,9 @@ Full feature Changelog:
 - Upgraded jQuery to the latest 1.12 release.
 - Made numerous improvements to the development tooling.
 - Made extensive improvements to code organization.
-- Integrated and cleared errors from several new linters.
 - Restyled all the registration pages to look nicer and be responsive.
+- Extensively refactored views to use common functions for fetching
+  stream and message objects.
 - Suppressed @-all mentions being treated as mentions on muted
   streams.
 - Documented preliminary design for interactive bot system.
