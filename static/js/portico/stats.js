@@ -385,36 +385,43 @@ function round_percentages(values) {
 }
 
 function get_labels_and_data(names, data_subgroup, time_frame_integer) {
-    var labels = [];
-    var values = [];
+    var data = [];
     for (var key in data_subgroup) {
-        if (data_subgroup.hasOwnProperty(key)) {
-            var sum = 0;
-            for (var i = time_frame_integer - 1; i >= 0; i-=1) {
-                sum += data_subgroup[key][i];
-            }
-            if (sum > 0) {
-                values.push(sum);
-                labels.push(names[key]);
-            }
+        if (data_subgroup[key].length < time_frame_integer) {
+            time_frame_integer = data_subgroup[key].length;
+        }
+        var sum = 0;
+        for (var i=1; i<=time_frame_integer; i+=1) {
+            sum += data_subgroup[key][data_subgroup[key].length-i];
+        }
+        if (sum > 0) {
+            data.push({
+                value: sum,
+                label: names.hasOwnProperty(key) ? names[key] : key,
+            });
         }
     }
-    labels = labels.sort(function (a, b) {
-        return values[labels.indexOf(b)] - values[labels.indexOf(a)];
+    data.sort(function (a, b) {
+        return b.value - a.value;
     });
-    // Sort descending, using numeric comparison instead of the default string
-    // comparison
-    values = values.sort(function (a, b) {
-        return b - a;
-    });
-    if (values.length > 6) {
-        labels = labels.slice(0, 5);
-        labels.push("Other");
-        var sum_remaining = 0;
-        for (var j=5; j<values.length; j+=1) {
-            sum_remaining += values[j];
+    var labels = [];
+    var values = [];
+    var j;
+    if (data.length <= 6) {
+        for (j=0; j<data.length; j+=1) {
+            labels.push(data[j].label);
+            values.push(data[j].value);
         }
-        values = values.slice(0, 5);
+    } else {
+        for (j=0; j<5; j+=1) {
+            labels.push(data[j].label);
+            values.push(data[j].value);
+        }
+        var sum_remaining = 0;
+        for (j=5; j<data.length; j+=1) {
+            sum_remaining += data[j].value;
+        }
+        labels.push("Other");
         values.push(sum_remaining);
     }
     return [labels, values];
