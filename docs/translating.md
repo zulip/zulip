@@ -89,10 +89,15 @@ Zulip:
 
 Some useful tips for your translating journey:
 
+- Follow your language's [translation guide](#translation-style-guides).
+  Keeping it open in a tab while translating is very handy.  If one
+  doesn't exist one, write one as you go; they're easiest to write as
+  you go along and will help any future translators a lot.
+
 - Don't translate variables or code (usually preceded by a `%`, or inside
   HTML tags `<...>`).
 
-- In case of doubt, ask for context in our [developers' Zulip
+- When in doubt, ask for context in our [developers' Zulip
   chat](https://chat.zulip.org/#narrow/stream/translation).
 
 - If there are multiple possible translations for a term, search for it in
@@ -101,9 +106,6 @@ Some useful tips for your translating journey:
   It will show if anyone translated that term before, so we can achieve good
   consistency with all the translations, no matter who makes them.
 
-- Follow your language's [translation guide](#translation-style-guides).
-  Keeping it open in a tab while translating is very handy.
-
 - Pay attention to capital letters and punctuation. Details make the
   difference!
 
@@ -111,6 +113,10 @@ Some useful tips for your translating journey:
   `Tab` for saving and going to the next string.
 
 ## Testing translations
+
+This section assumes you have a
+[Zulip development environment](readme-symlink.html#installing-the-zulip-development-environment)
+setup.
 
 First of all, download the updated resource files from Transifex using the
 `tx pull -a` command (it will require some
@@ -124,7 +130,7 @@ Then, make sure that you have compiled the translation strings using
 Django figures out the effective language by going through the following
 steps:
 
-1. It looks for the language code in the url.
+1. It looks for the language code in the url (e.g. `/de/`).
 2. It looks for the `LANGUAGE_SESSION_KEY` key in the current user's
 session.
 3. It looks for the cookie named 'django_language'. You can set a
@@ -152,6 +158,9 @@ print(response.content)
 Zulip allows you to set the default language through the settings
 page, in the 'Display settings' section. The URL will be
 `/#settings/display-settings` on your realm.
+
+Organizations can set the default language for new users in their
+organization on the `/#administration` page.
 
 ## Translation resource files
 
@@ -291,9 +300,7 @@ the `count` in the context.
 ## Transifex config
 
 The config file that maps the resources from Zulip to Transifex is
-located at `.tx/config`. Django  recognizes `zh_CN` instead of `zh-HANS`
-for simplified Chinese language (this is fixed in Django 1.9). This
-idiosyncrasy is also handled in the Transifex config file.
+located at `.tx/config`.
 
 # Transifex CLI setup
 
