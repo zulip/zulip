@@ -7,7 +7,7 @@ from argparse import ArgumentParser
 from django.core.management.base import BaseCommand
 from confirmation.models import Confirmation
 from zerver.models import UserProfile, PreregistrationUser, \
-    get_user_profile_by_email, get_realm_by_string_id, email_allowed_for_realm
+    get_user_profile_by_email, get_realm, email_allowed_for_realm
 
 class Command(BaseCommand):
     help = "Generate activation links for users and print them to stdout."
@@ -44,7 +44,7 @@ class Command(BaseCommand):
         realm = None
         string_id = options["string_id"]
         if string_id:
-            realm = get_realm_by_string_id(string_id)
+            realm = get_realm(string_id)
         if not realm:
             print("The realm %s doesn't exist yet, please create it first." % (string_id,))
             print("Don't forget default streams!")

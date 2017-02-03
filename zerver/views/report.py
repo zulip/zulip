@@ -80,7 +80,9 @@ def json_report_error(request, user_profile, message=REQ(), stacktrace=REQ(),
                       href=REQ(), log=REQ(),
                       more_info=REQ(validator=check_dict([]), default=None)):
     # type: (HttpRequest, UserProfile, Text, Text, bool, Text, Text, Text, Dict[str, Any]) -> HttpResponse
-    if not settings.ERROR_REPORTING:
+    """Accepts an error report and stores in a queue for processing.  The
+    actual error reports are later handled by do_report_error (below)"""
+    if not settings.BROWSER_ERROR_REPORTING:
         return json_success()
 
     if js_source_map:
@@ -94,6 +96,7 @@ def json_report_error(request, user_profile, message=REQ(), stacktrace=REQ(),
     queue_json_publish('error_reports', dict(
         type = "browser",
         report = dict(
+            host = request.get_host().split(":")[0],
             user_email = user_profile.email,
             user_full_name = user_profile.full_name,
             user_visible = ui_message,

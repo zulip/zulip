@@ -7,31 +7,23 @@ from argparse import ArgumentParser
 from django.db import connection
 from django.core.management.base import BaseCommand
 
+from analytics.lib.counts import do_drop_all_analytics_tables
+
 from typing import Any
 
-CLEAR_QUERY = """
-DELETE FROM ONLY analytics_installationcount;
-DELETE FROM ONLY analytics_realmcount;
-DELETE FROM ONLY analytics_usercount;
-DELETE FROM ONLY analytics_streamcount;
-DELETE FROM ONLY analytics_fillstate;
-"""
-
 class Command(BaseCommand):
-    help = """Clear Analytics tables."""
+    help = """Clear analytics tables."""
 
     def add_arguments(self, parser):
         # type: (ArgumentParser) -> None
         parser.add_argument('--force',
                             action='store_true',
-                            help="Clear analytics Tables.")
+                            help="Clear analytics tables.")
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
         if options['force']:
-            cursor = connection.cursor()
-            cursor.execute(CLEAR_QUERY)
-            cursor.close()
+            do_drop_all_analytics_tables()
         else:
             print("Would delete all data from analytics tables (!); use --force to do so.")
             sys.exit(1)

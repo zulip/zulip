@@ -87,14 +87,16 @@ redirects the browser to a login page. This is used in the root path
 (`/`) of the website for the web client. If a request comes from a
 browser without a valid session cookie, they are redirected to a login
 page.  It is a small fork of Django's
-[login_required](https://docs.djangoproject.com/en/1.8/topics/auth/default/#django.contrib.auth.decorators.login_required),
-adding a few extra checks specific to Zulip.
+[login_required][login-required-link], adding a few extra checks
+specific to Zulip.
 
 ```py
 @zulip_login_required
 def home(request):
     # type: (HttpRequest) -> HttpResponse
 ```
+
+[login-required-link]: https://docs.djangoproject.com/en/1.8/topics/auth/default/#django.contrib.auth.decorators.login_required
 
 ### Writing a template
 
@@ -109,7 +111,8 @@ request bodies, and return JSON-string responses.  Almost all Zulip
 view code is in the implementations of API REST endpoints.
 
 The REST API does authentication of the user through `rest_dispatch`,
-which is documented in detail at [zerver/lib/rest.py](https://github.com/zulip/zulip/blob/master/zerver/lib/rest.py).
+which is documented in detail at
+[zerver/lib/rest.py](https://github.com/zulip/zulip/blob/master/zerver/lib/rest.py).
 This method will authenticate the user either through a session token
 from a cookie on the browser, or from a base64 encoded `email:api-key`
 string given via HTTP Basic Auth for API clients.
@@ -194,7 +197,9 @@ REQ also helps us with request variable validation. For example:
   integer (`converter` differs from `validator` in that it does not
   automatically marshall the input from JSON).
 
-See [zerver/lib/validator.py](https://github.com/zulip/zulip/blob/master/zerver/lib/validator.py) for more validators and their documentation.
+See
+[zerver/lib/validator.py](https://github.com/zulip/zulip/blob/master/zerver/lib/validator.py)
+for more validators and their documentation.
 
 ### Deciding which HTTP verb to use
 

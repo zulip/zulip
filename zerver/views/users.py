@@ -1,28 +1,33 @@
 from __future__ import absolute_import
+from typing import Text, Union, Optional, Dict, Any, List, Tuple
+
+import os
+import simplejson as json
 
 from django.http import HttpRequest, HttpResponse
 
 from django.utils.translation import ugettext as _
 from django.shortcuts import redirect
+from django.conf import settings
 from six.moves import map
 
 from zerver.decorator import has_request_variables, REQ, JsonableError, \
     require_realm_admin
 from zerver.forms import CreateUserForm
 from zerver.lib.actions import do_change_full_name, do_change_is_admin, \
-    do_create_user, subscribed_to_stream, do_deactivate_user, do_reactivate_user, \
+    do_create_user, do_deactivate_user, do_reactivate_user, \
     do_change_default_events_register_stream, do_change_default_sending_stream, \
     do_change_default_all_public_streams, do_regenerate_api_key, do_change_avatar_source
 from zerver.lib.avatar import avatar_url, get_avatar_url
 from zerver.lib.response import json_error, json_success
+from zerver.lib.streams import access_stream_by_name
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.validator import check_bool, check_string
 from zerver.lib.utils import generate_random_token
 from zerver.models import UserProfile, Stream, Realm, Message, get_user_profile_by_email, \
-    get_stream, email_allowed_for_realm
+    email_allowed_for_realm
+from zproject.jinja2 import render_to_response
 
-from typing import Text
-from typing import Optional, Dict, Any
 
 def deactivate_user_backend(request, user_profile, email):
     # type: (HttpRequest, UserProfile, Text) -> HttpResponse
@@ -134,16 +139,6 @@ def get_stream_name(stream):
         name = None
     return name
 
-def stream_or_none(stream_name, realm):
-    # type: (Text, Realm) -> Optional[Stream]
-    if stream_name == '':
-        return None
-    else:
-        stream = get_stream(stream_name, realm)
-        if not stream:
-            raise JsonableError(_('No such stream \'%s\'') % (stream_name,))
-        return stream
-
 @has_request_variables
 def patch_bot_backend(request, user_profile, email,
                       full_name=REQ(default=None),
@@ -162,10 +157,18 @@ def patch_bot_backend(request, user_profile, email,
     if full_name is not None:
         do_change_full_name(bot, full_name)
     if default_sending_stream is not None:
-        stream = stream_or_none(default_sending_stream, bot.realm)
+        if default_sending_stream == "":
+            stream = None
+        else:
+            (stream, recipient, sub) = access_stream_by_name(
+                user_profile, default_sending_stream)
         do_change_default_sending_stream(bot, stream)
     if default_events_register_stream is not None:
-        stream = stream_or_none(default_events_register_stream, bot.realm)
+        if default_events_register_stream == "":
+            stream = None
+        else:
+            (stream, recipient, sub) = access_stream_by_name(
+                user_profile, default_events_register_stream)
         do_change_default_events_register_stream(bot, stream)
     if default_all_public_streams is not None:
         do_change_default_all_public_streams(bot, default_all_public_streams)
@@ -236,20 +239,13 @@ def add_bot_backend(request, user_profile, full_name=REQ(), short_name=REQ(),
 
     default_sending_stream = None
     if default_sending_stream_name is not None:
-        default_sending_stream = stream_or_none(default_sending_stream_name, user_profile.realm)
-    if (default_sending_stream and not
-        default_sending_stream.is_public() and not
-            subscribed_to_stream(user_profile, default_sending_stream)):
-
-        return json_error(_('Insufficient permission'))
+        (default_sending_stream, ignored_rec, ignored_sub) = access_stream_by_name(
+            user_profile, default_sending_stream_name)
 
     default_events_register_stream = None
     if default_events_register_stream_name is not None:
-        default_events_register_stream = stream_or_none(default_events_register_stream_name,
-                                                        user_profile.realm)
-    if default_events_register_stream and not default_events_register_stream.is_public() and not \
-            subscribed_to_stream(user_profile, default_events_register_stream):
-        return json_error(_('Insufficient permission'))
+        (default_events_register_stream, ignored_rec, ignored_sub) = access_stream_by_name(
+            user_profile, default_events_register_stream_name)
 
     bot_profile = do_create_user(email=email, password='',
                                  realm=user_profile.realm, full_name=full_name,
@@ -261,11 +257,11 @@ def add_bot_backend(request, user_profile, full_name=REQ(), short_name=REQ(),
                                  default_events_register_stream=default_events_register_stream,
                                  default_all_public_streams=default_all_public_streams)
     json_result = dict(
-            api_key=bot_profile.api_key,
-            avatar_url=avatar_url(bot_profile),
-            default_sending_stream=get_stream_name(bot_profile.default_sending_stream),
-            default_events_register_stream=get_stream_name(bot_profile.default_events_register_stream),
-            default_all_public_streams=bot_profile.default_all_public_streams,
+        api_key=bot_profile.api_key,
+        avatar_url=avatar_url(bot_profile),
+        default_sending_stream=get_stream_name(bot_profile.default_sending_stream),
+        default_events_register_stream=get_stream_name(bot_profile.default_events_register_stream),
+        default_all_public_streams=bot_profile.default_all_public_streams,
     )
     return json_success(json_result)
 
@@ -361,3 +357,15 @@ def get_profile_backend(request, user_profile):
         result['max_message_id'] = messages[0].id
 
     return json_success(result)
+
+def authors_view(request):
+    # type: (HttpRequest) -> HttpResponse
+
+    with open(settings.CONTRIBUTORS_DATA) as f:
+        data = json.load(f)
+
+    return render_to_response(
+        'zerver/authors.html',
+        data,
+        request=request
+    )

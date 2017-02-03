@@ -120,7 +120,7 @@ function render_bots() {
             zuliprc: 'zuliprc', // Most browsers do not allow filename starting with `.`
             default_sending_stream: elem.default_sending_stream,
             default_events_register_stream: elem.default_events_register_stream,
-            default_all_public_streams: elem.default_all_public_streams
+            default_all_public_streams: elem.default_all_public_streams,
         });
     });
 }
@@ -160,12 +160,19 @@ function _setup_page() {
                     $('#create_bot_default_events_register_stream'),
                     [['__all_public__', 'All public streams']]
                 );
-            }
+            },
         });
     }
 
     // Most browsers do not allow filenames to start with `.` without the user manually changing it.
-    var settings_tab = templates.render('settings_tab', {page_params: page_params, zuliprc: 'zuliprc'});
+    // So we use zuliprc, not .zuliprc.
+
+    var settings_tab = templates.render('settings_tab', {
+        full_name: people.my_full_name(),
+        page_params: page_params,
+        zuliprc: 'zuliprc',
+    });
+
     $("#settings").html(settings_tab);
     $("#settings-status").hide();
     $("#notify-settings-status").hide();
@@ -211,7 +218,8 @@ function _setup_page() {
     });
 
     $('#new_password').on('change keyup', function () {
-        password_quality($('#new_password').val(), $('#pw_strength .bar'));
+        var field = $('#new_password');
+        password_quality(field.val(), $('#pw_strength .bar'), field);
     });
 
     if (!page_params.show_digest_email) {
@@ -241,9 +249,10 @@ function _setup_page() {
             if (page_params.password_auth_enabled !== false) {
                 // FIXME: Check that the two password fields match
                 // FIXME: Use the same jQuery validation plugin as the signup form?
+                var field = $('#new_password');
                 var new_pw = $('#new_password').val();
                 if (new_pw !== '') {
-                    var password_ok = password_quality(new_pw);
+                    var password_ok = password_quality(new_pw, undefined, field);
                     if (password_ok === undefined) {
                         // zxcvbn.js didn't load, for whatever reason.
                         settings_change_error(
@@ -268,7 +277,7 @@ function _setup_page() {
             // Whether successful or not, clear the password boxes.
             // TODO: Clear these earlier, while the request is still pending.
             clear_password_change();
-        }
+        },
     });
 
     function update_notification_settings_success(resp, statusText, xhr) {
@@ -308,6 +317,10 @@ function _setup_page() {
             page_params.enable_online_push_notifications = result.enable_online_push_notifications;
         }
 
+        if (result.pm_content_in_desktop_notifications !== undefined) {
+            page_params.pm_content_in_desktop_notifications
+                = result.pm_content_in_desktop_notifications;
+        }
         // Other notification settings.
 
         if (result.enable_digest_emails !== undefined) {
@@ -327,7 +340,7 @@ function _setup_page() {
             url: "/json/settings/notifications",
             data: notification_changes,
             success: success_func,
-            error: error_func
+            error: error_func,
         });
     }
 
@@ -336,7 +349,7 @@ function _setup_page() {
 
         var updated_settings = {};
         _.each(["enable_stream_desktop_notifications", "enable_stream_sounds",
-                "enable_desktop_notifications", "enable_sounds",
+                "enable_desktop_notifications", "pm_content_in_desktop_notifications", "enable_sounds",
                 "enable_offline_email_notifications",
                 "enable_offline_push_notifications", "enable_online_push_notifications",
                 "enable_digest_emails"],
@@ -355,7 +368,7 @@ function _setup_page() {
             url: "/json/settings/notifications",
             data: data,
             success: update_notification_settings_success,
-            error: update_notification_settings_error
+            error: update_notification_settings_error,
         });
     }
 
@@ -416,7 +429,7 @@ function _setup_page() {
             },
             error: function (xhr) {
                 ui.report_error(i18n.t("Error updating user list placement setting"), xhr, $('#display-settings-status').expectOne());
-            }
+            },
         });
     });
 
@@ -440,7 +453,7 @@ function _setup_page() {
             },
             error: function (xhr) {
                 ui.report_error(i18n.t("Error updating time format setting"), xhr, $('#display-settings-status').expectOne());
-            }
+            },
         });
     });
 
@@ -469,7 +482,7 @@ function _setup_page() {
             },
             error: function (xhr) {
                 ui.report_error(i18n.t("Error updating default language setting"), xhr, $('#display-settings-status').expectOne());
-            }
+            },
         });
     });
 
@@ -494,7 +507,7 @@ function _setup_page() {
             },
             error: function (xhr) {
                 ui.report_error(i18n.t("Error deactivating account"), xhr, $('#settings-status').expectOne());
-            }
+            },
         });
     });
 
@@ -516,7 +529,7 @@ function _setup_page() {
             ui.report_error(i18n.t("Error getting API key"), xhr, $('#settings-status').expectOne());
             $("#show_api_key_box").hide();
             $("#get_api_key_box").show();
-        }
+        },
     });
 
     function upload_avatar(file_input) {
@@ -542,7 +555,7 @@ function _setup_page() {
                 $("#user-settings-avatar").expectOne().attr("src", url);
                 $("#user_avatar_delete_button").show();
                 exports.avatar_stamp += 1;
-            }
+            },
         });
 
     }
@@ -606,9 +619,9 @@ function _setup_page() {
                 },
                 complete: function () {
                     $('#create_bot_button').val('Create bot').prop('disabled', false);
-                }
+                },
             });
-        }
+        },
     });
 
     $("#bots_list").on("click", "button.delete_bot", function (e) {
@@ -621,7 +634,7 @@ function _setup_page() {
             },
             error: function (xhr) {
                 $('#bot_delete_error').text(JSON.parse(xhr.responseText).msg).show();
-            }
+            },
         });
     });
 
@@ -638,7 +651,7 @@ function _setup_page() {
             error: function (xhr) {
                 var row = $(e.currentTarget).closest("li");
                 row.find(".api_key_error").text(JSON.parse(xhr.responseText).msg).show();
-            }
+            },
         });
     });
 
@@ -669,6 +682,7 @@ function _setup_page() {
         }
 
         reset_edit_bot.click(function (event) {
+            form.find(".edit_bot_name").val(old_full_name);
             show_row_again();
             $(this).off(event);
         });
@@ -723,9 +737,9 @@ function _setup_page() {
                         loading.destroy_indicator(spinner);
                         edit_button.show();
                         errors.text(JSON.parse(xhr.responseText).msg).show();
-                    }
+                    },
                 });
-            }
+            },
         });
 
 
@@ -743,7 +757,7 @@ function _setup_page() {
 
     $("#download_zuliprc").on("click", function () {
         $(this).attr("href", settings.generate_zuliprc_uri(
-            page_params.email,
+            people.my_current_email(),
             $("#api_key_value").text()
         ));
     });
@@ -757,7 +771,7 @@ function _setup_page() {
             },
             error: function (xhr) {
                 $('#user_api_key_error').text(JSON.parse(xhr.responseText).msg).show();
-            }
+            },
         });
     });
 
@@ -773,7 +787,7 @@ function _setup_page() {
             url: '/json/settings/ui',
             data: labs_updates,
             success: function (resp, statusText, xhr) {
-                var message = i18n.t("Updated __product_name__ Labs settings!  You will need to reload for these changes to take effect.", page_params);
+                var message = i18n.t("Updated settings!  You will need to reload for these changes to take effect.", page_params);
                 var result = JSON.parse(xhr.responseText);
                 var ui_settings_status = $('#ui-settings-status').expectOne();
 
@@ -786,7 +800,7 @@ function _setup_page() {
             },
             error: function (xhr) {
                 ui.report_error(i18n.t("Error changing settings"), xhr, $('#ui-settings-status').expectOne());
-            }
+            },
         });
     });
 }
@@ -803,6 +817,7 @@ function _update_page() {
     $("#enable_offline_email_notifications").prop('checked', page_params.enable_offline_email_notifications);
     $("#enable_offline_push_notifications").prop('checked', page_params.enable_offline_push_notifications);
     $("#enable_online_push_notifications").prop('checked', page_params.enable_online_push_notifications);
+    $("#pm_content_in_desktop_notifications").prop('checked', page_params.pm_content_in_desktop_notifications);
     $("#enable_digest_emails").prop('checked', page_params.enable_digest_emails);
 }
 

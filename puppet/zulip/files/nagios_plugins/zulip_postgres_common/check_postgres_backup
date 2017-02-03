@@ -13,7 +13,7 @@ states = {
     "WARNING": 1,
     "CRITICAL": 2,
     "UNKNOWN": 3
-    }
+}
 
 def report(state, msg):
     # type: (str, str) -> None

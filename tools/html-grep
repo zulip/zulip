@@ -77,7 +77,7 @@ def check_our_files():
         ftypes=['handlebars', 'html'],
     )
 
-    fns = [fn for fn in files if (not 'casperjs' in fn) and (not 'puppet/zulip' in fn)]
+    fns = [fn for fn in files if ('casperjs' not in fn) and ('puppet/zulip' not in fn)]
     grep(fns, set(keywords))
 
 if __name__ == '__main__':

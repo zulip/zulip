@@ -113,6 +113,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'LOCAL_UPLOADS_DIR': None,
                     'MAX_FILE_UPLOAD_SIZE': 25,
                     'ERROR_REPORTING': True,
+                    'BROWSER_ERROR_REPORTING': False,
                     'STAGING_ERROR_NOTIFICATIONS': False,
                     'EVENT_LOGS_ENABLED': False,
                     'SAVE_FRONTEND_STACKTRACES': False,
@@ -157,6 +158,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'REGISTER_LINK_DISABLED': False,
                     'LOGIN_LINK_DISABLED': False,
                     'ABOUT_LINK_DISABLED': False,
+                    'FIND_TEAM_LINK_DISABLED': True,
                     'CUSTOM_LOGO_URL': None,
                     'VERBOSE_SUPPORT_OFFERS': False,
                     'STATSD_HOST': '',
@@ -175,7 +177,10 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'DBX_APNS_CERT_FILE': None,
                     'DBX_APNS_KEY_FILE': None,
                     'PERSONAL_ZMIRROR_SERVER': None,
-                    'EXTRA_INSTALLED_APPS': [],
+                    # Structurally, we will probably eventually merge
+                    # analytics into part of the main server, rather
+                    # than a separate app.
+                    'EXTRA_INSTALLED_APPS': ['analytics'],
                     'DEFAULT_NEW_REALM_STREAMS': {
                         "social": {"description": "For socializing", "invite_only": False},
                         "general": {"description": "For general stuff", "invite_only": False},
@@ -184,12 +189,15 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'REALM_CREATION_LINK_VALIDITY_DAYS': 7,
                     'TERMS_OF_SERVICE': None,
                     'TOS_VERSION': None,
-                    'SYSTEM_ONLY_REALMS': {"zulip.com"},
+                    'SYSTEM_ONLY_REALMS': {"zulip"},
                     'FIRST_TIME_TOS_TEMPLATE': None,
                     'USING_PGROONGA': False,
                     'POST_MIGRATION_CACHE_FLUSHING': False,
                     'ENABLE_FILE_LINKS': False,
                     'USE_WEBSOCKETS': True,
+                    'ANALYTICS_LOCK_DIR': "/home/zulip/deployments/analytics-lock-dir",
+                    'PASSWORD_MIN_LENGTH': 6,
+                    'PASSWORD_MIN_ZXCVBN_QUALITY': 0.5,
                     }
 
 for setting_name, setting_val in six.iteritems(DEFAULT_SETTINGS):
@@ -211,7 +219,6 @@ REQUIRED_SETTINGS = [("EXTERNAL_HOST", "zulip.example.com"),
                      ("AUTHENTICATION_BACKENDS", ()),
                      ("NOREPLY_EMAIL_ADDRESS", "noreply@example.com"),
                      ("DEFAULT_FROM_EMAIL", "Zulip <zulip@example.com>"),
-                     ("ALLOWED_HOSTS", ["*", '127.0.0.1', 'localhost']),
                      ]
 
 if ADMINS == "":
@@ -276,7 +283,8 @@ TEMPLATES = [
     {
         'BACKEND': 'zproject.jinja2.backends.Jinja2',
         'DIRS': [
-             os.path.join(DEPLOY_ROOT, 'templates'),
+            os.path.join(DEPLOY_ROOT, 'templates'),
+            os.path.join(DEPLOY_ROOT, 'zerver', 'webhooks'),
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -297,7 +305,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-             os.path.join(DEPLOY_ROOT, 'django_templates'),
+            os.path.join(DEPLOY_ROOT, 'django_templates'),
         ],
         'APP_DIRS': False,
         'OPTIONS': {
@@ -348,7 +356,7 @@ INSTALLED_APPS = [
     'guardian',
     'pipeline',
     'zerver',
-    'social.apps.django_app.default',
+    'social_django',
 ]
 if USING_PGROONGA:
     INSTALLED_APPS += ['pgroonga']
@@ -376,24 +384,23 @@ DATABASES = {"default": {
     'CONN_MAX_AGE': 600,
     'OPTIONS': {
         'connection_factory': TimeTrackingConnection
-        },
     },
-}
+}}
 
 if DEVELOPMENT:
     LOCAL_DATABASE_PASSWORD = get_secret("local_database_password")
     DATABASES["default"].update({
-            'PASSWORD': LOCAL_DATABASE_PASSWORD,
-            'HOST': 'localhost'
-            })
+        'PASSWORD': LOCAL_DATABASE_PASSWORD,
+        'HOST': 'localhost'
+    })
 elif REMOTE_POSTGRES_HOST != '':
     DATABASES['default'].update({
-            'HOST': REMOTE_POSTGRES_HOST,
-            })
+        'HOST': REMOTE_POSTGRES_HOST,
+    })
     if get_secret("postgres_password") is not None:
         DATABASES['default'].update({
             'PASSWORD': get_secret("postgres_password"),
-            })
+        })
     if REMOTE_POSTGRES_SSLMODE != '':
         DATABASES['default']['OPTIONS']['sslmode'] = REMOTE_POSTGRES_SSLMODE
     else:
@@ -424,9 +431,9 @@ SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 
 CACHES = {
     'default': {
-        'BACKEND':  'django.core.cache.backends.memcached.PyLibMCCache',
+        'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
         'LOCATION': MEMCACHED_LOCATION,
-        'TIMEOUT':  3600,
+        'TIMEOUT': 3600,
         'OPTIONS': {
             'verify_keys': True,
             'tcp_nodelay': True,
@@ -434,8 +441,8 @@ CACHES = {
         }
     },
     'database': {
-        'BACKEND':  'django.core.cache.backends.db.DatabaseCache',
-        'LOCATION':  'third_party_api_results',
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'third_party_api_results',
         # Basically never timeout.  Setting to 0 isn't guaranteed
         # to work, see https://code.djangoproject.com/ticket/9595
         'TIMEOUT': 2000000000,
@@ -452,7 +459,7 @@ CACHES = {
 
 RATE_LIMITING_RULES = [
     (60, 100),     # 100 requests max every minute
-    ]
+]
 DEBUG_RATE_LIMITING = DEBUG
 REDIS_PASSWORD = get_secret('redis_password')
 
@@ -487,9 +494,9 @@ if DEVELOPMENT:
     # Use fast password hashing for creating testing users when not
     # PRODUCTION.  Saves a bunch of time.
     PASSWORD_HASHERS = (
-                'django.contrib.auth.hashers.SHA1PasswordHasher',
-                'django.contrib.auth.hashers.PBKDF2PasswordHasher'
-            )
+        'django.contrib.auth.hashers.SHA1PasswordHasher',
+        'django.contrib.auth.hashers.PBKDF2PasswordHasher'
+    )
     # Also we auto-generate passwords for the default users which you
     # can query using ./manage.py print_initial_password
     INITIAL_PASSWORD_SALT = get_secret("initial_password_salt")
@@ -550,13 +557,13 @@ INTERNAL_BOTS = [{'var_name': 'NOTIFICATION_BOT',
 
 if PRODUCTION:
     INTERNAL_BOTS += [
-                 {'var_name': 'NAGIOS_STAGING_SEND_BOT',
-                  'email_template': 'nagios-staging-send-bot@%s',
-                  'name': 'Nagios Staging Send Bot'},
-                 {'var_name': 'NAGIOS_STAGING_RECEIVE_BOT',
-                  'email_template': 'nagios-staging-receive-bot@%s',
-                  'name': 'Nagios Staging Receive Bot'},
-        ]
+        {'var_name': 'NAGIOS_STAGING_SEND_BOT',
+         'email_template': 'nagios-staging-send-bot@%s',
+         'name': 'Nagios Staging Send Bot'},
+        {'var_name': 'NAGIOS_STAGING_RECEIVE_BOT',
+         'email_template': 'nagios-staging-receive-bot@%s',
+         'name': 'Nagios Staging Receive Bot'},
+    ]
 
 INTERNAL_BOT_DOMAIN = "zulip.com"
 
@@ -657,7 +664,11 @@ PIPELINE = {
         # in frontend_tests/zjsunit/output.js as needed.
         'activity': {
             'source_filenames': ('styles/activity.css',),
-            'output_filename':  'min/activity.css'
+            'output_filename': 'min/activity.css'
+        },
+        'stats': {
+            'source_filenames': ('styles/stats.css',),
+            'output_filename': 'min/stats.css'
         },
         'portico': {
             'source_filenames': (
@@ -679,7 +690,9 @@ PIPELINE = {
                 'styles/settings.css',
                 'styles/subscriptions.css',
                 'styles/compose.css',
+                'styles/reactions.css',
                 'styles/left-sidebar.css',
+                'styles/right-sidebar.css',
                 'styles/overlay.css',
                 'styles/pygments.css',
                 'styles/thirdparty-fonts.css',
@@ -698,7 +711,9 @@ PIPELINE = {
                 'styles/settings.css',
                 'styles/subscriptions.css',
                 'styles/compose.css',
+                'styles/reactions.css',
                 'styles/left-sidebar.css',
+                'styles/right-sidebar.css',
                 'styles/overlay.css',
                 'styles/pygments.css',
                 'styles/thirdparty-fonts.css',
@@ -718,43 +733,42 @@ PIPELINE = {
     },
     'JAVASCRIPT': {},
 }
+
 JS_SPECS = {
     'common': {
-        'source_filenames': (
+        'source_filenames': [
             'node_modules/jquery/dist/jquery.js',
-            'third/underscore/underscore.js',
+            'node_modules/underscore/underscore.js',
             'js/blueslip.js',
             'third/bootstrap/js/bootstrap.js',
             'js/common.js',
-            ),
-        'output_filename':  'min/common.js'
+        ],
+        'output_filename': 'min/common.js'
     },
     'signup': {
-        'source_filenames': (
-            'js/signup.js',
+        'source_filenames': [
+            'js/portico/signup.js',
             'node_modules/jquery-validation/dist/jquery.validate.js',
-            ),
-        'output_filename':  'min/signup.js'
+        ],
+        'output_filename': 'min/signup.js'
     },
     'api': {
-        'source_filenames': ('js/api.js',),
-        'output_filename':  'min/api.js'
+        'source_filenames': ['js/portico/api.js'],
+        'output_filename': 'min/api.js'
     },
     'app_debug': {
-        'source_filenames': ('js/debug.js',),
-        'output_filename':  'min/app_debug.js'
+        'source_filenames': ['js/debug.js'],
+        'output_filename': 'min/app_debug.js'
     },
     'app': {
         'source_filenames': [
             'third/bootstrap-notify/js/bootstrap-notify.js',
             'third/html5-formdata/formdata.js',
             'node_modules/jquery-validation/dist/jquery.validate.js',
-            'node_modules/sockjs-client/sockjs.js',
             'third/jquery-form/jquery.form.js',
             'third/jquery-filedrop/jquery.filedrop.js',
             'third/jquery-caret/jquery.caret.1.5.2.js',
-            'third/xdate/xdate.dev.js',
-            'third/spin/spin.js',
+            'node_modules/xdate/src/xdate.js',
             'third/jquery-mousewheel/jquery.mousewheel.js',
             'third/jquery-throttle-debounce/jquery.ba-throttle-debounce.js',
             'third/jquery-idle/jquery.idle.js',
@@ -762,10 +776,12 @@ JS_SPECS = {
             'third/jquery-perfect-scrollbar/js/perfect-scrollbar.js',
             'third/lazyload/lazyload.js',
             'third/spectrum/spectrum.js',
-            'third/string-prototype-codepointat/codepointat.js',
-            'third/winchan/winchan.js',
+            'third/sockjs/sockjs-0.3.4.js',
+            'node_modules/string.prototype.codepointat/codepointat.js',
+            'node_modules/winchan/winchan.js',
             'third/handlebars/handlebars.runtime.js',
             'third/marked/lib/marked.js',
+            'generated/emoji/emoji_codes.js',
             'templates/compiled.js',
             'js/feature_flags.js',
             'js/loading.js',
@@ -788,6 +804,7 @@ JS_SPECS = {
             'js/filter.js',
             'js/message_list_view.js',
             'js/message_list.js',
+            'js/message_live_update.js',
             'js/narrow.js',
             'js/reload.js',
             'js/compose_fade.js',
@@ -827,6 +844,7 @@ JS_SPECS = {
             'js/server_events.js',
             'js/zulip.js',
             'js/activity.js',
+            'js/user_events.js',
             'js/colorspace.js',
             'js/timerender.js',
             'js/tutorial.js',
@@ -838,28 +856,31 @@ JS_SPECS = {
             'js/referral.js',
             'js/custom_markdown.js',
             'js/bot_data.js',
+            'js/reactions.js',
             # JS bundled by webpack is also included here if PIPELINE_ENABLED setting is true
         ],
         'output_filename': 'min/app.js'
     },
     'activity': {
-        'source_filenames': (
+        'source_filenames': [
             'third/sorttable/sorttable.js',
-        ),
+        ],
         'output_filename': 'min/activity.js'
     },
     'stats': {
-        'source_filenames': (
-            'node_modules/plotly.js/dist/plotly.js',
+        'source_filenames': [
             'node_modules/jquery/dist/jquery.js',
-            'js/stats.js'
-        ),
+            'js/portico/stats.js',
+        ],
+        'minifed_source_filenames': [
+            'node_modules/plotly.js/dist/plotly.min.js',
+        ],
         'output_filename': 'min/stats.js'
     },
     # We also want to minify sockjs separately for the sockjs iframe transport
     'sockjs': {
-        'source_filenames': ('node_modules/sockjs-client/sockjs.js',),
-        'output_filename': 'min/sockjs.min.js'
+        'source_filenames': ['third/sockjs/sockjs-0.3.4.js'],
+        'output_filename': 'min/sockjs-0.3.4.min.js'
     },
 }
 
@@ -887,7 +908,7 @@ ZULIP_PATHS = [
     ("STATS_DIR", "/home/zulip/stats"),
     ("DIGEST_LOG_PATH", "/var/log/zulip/digest.log"),
     ("ANALYTICS_LOG_PATH", "/var/log/zulip/analytics.log"),
-    ]
+]
 
 # The Event log basically logs most significant database changes,
 # which can be useful for debugging.
@@ -940,60 +961,60 @@ LOGGING = {
     },
     'handlers': {
         'zulip_admins': {
-            'level':     'ERROR',
-            'class':     'zerver.logging_handlers.AdminZulipHandler',
+            'level': 'ERROR',
+            'class': 'zerver.logging_handlers.AdminZulipHandler',
             # For testing the handler delete the next line
-            'filters':   ['ZulipLimiter', 'require_debug_false', 'require_really_deployed'],
+            'filters': ['ZulipLimiter', 'require_debug_false', 'require_really_deployed'],
             'formatter': 'default'
         },
         'console': {
-            'level':     'DEBUG',
-            'class':     'logging.StreamHandler',
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
             'formatter': 'default'
         },
         'file': {
-            'level':       'DEBUG',
-            'class':       'logging.handlers.WatchedFileHandler',
-            'formatter':   'default',
-            'filename':    FILE_LOG_PATH,
+            'level': 'DEBUG',
+            'class': 'logging.handlers.WatchedFileHandler',
+            'formatter': 'default',
+            'filename': FILE_LOG_PATH,
         },
         'errors_file': {
-            'level':       'WARNING',
-            'class':       'logging.handlers.WatchedFileHandler',
-            'formatter':   'default',
-            'filename':    ERROR_FILE_LOG_PATH,
+            'level': 'WARNING',
+            'class': 'logging.handlers.WatchedFileHandler',
+            'formatter': 'default',
+            'filename': ERROR_FILE_LOG_PATH,
         },
     },
     'loggers': {
         '': {
             'handlers': ['console', 'file', 'errors_file'],
-            'level':    'INFO',
+            'level': 'INFO',
             'propagate': False,
         },
         'django': {
             'handlers': (['zulip_admins'] if ERROR_REPORTING else [] +
                          ['console', 'file', 'errors_file']),
-            'level':    'INFO',
+            'level': 'INFO',
             'propagate': False,
         },
         'zulip.requests': {
             'handlers': ['console', 'file', 'errors_file'],
-            'level':    'INFO',
+            'level': 'INFO',
             'propagate': False,
         },
         'zulip.queue': {
             'handlers': ['console', 'file', 'errors_file'],
-            'level':    'WARNING',
+            'level': 'WARNING',
             'propagate': False,
         },
         'zulip.management': {
             'handlers': ['file', 'errors_file'],
-            'level':    'INFO',
+            'level': 'INFO',
             'propagate': False,
         },
         'requests': {
             'handlers': ['console', 'file', 'errors_file'],
-            'level':    'WARNING',
+            'level': 'WARNING',
             'propagate': False,
         },
         'django.security.DisallowedHost': {
@@ -1095,3 +1116,5 @@ if PRODUCTION:
 PROFILE_ALL_REQUESTS = False
 
 CROSS_REALM_BOT_EMAILS = set(('feedback@zulip.com', 'notification-bot@zulip.com'))
+
+CONTRIBUTORS_DATA = os.path.join(STATIC_ROOT, 'generated/github-contributors.json')

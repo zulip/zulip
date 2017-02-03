@@ -24,13 +24,6 @@ class FillState(ModelReprMixin, models.Model):
         # type: () -> Text
         return u"<FillState: %s %s %s>" % (self.property, self.end_time, self.state)
 
-def get_fill_state(property):
-    # type: (Text) -> Optional[Dict[str, Any]]
-    try:
-        return FillState.objects.filter(property = property).values('end_time', 'state')[0]
-    except IndexError:
-        return None
-
 # The earliest/starting end_time in FillState
 # We assume there is at least one realm
 def installation_epoch():
@@ -53,7 +46,6 @@ class BaseCount(ModelReprMixin, models.Model):
     property = models.CharField(max_length=32) # type: Text
     subgroup = models.CharField(max_length=16, null=True) # type: Text
     end_time = models.DateTimeField() # type: datetime.datetime
-    interval = models.CharField(max_length=8) # type: Text
     value = models.BigIntegerField() # type: int
     anomaly = models.ForeignKey(Anomaly, null=True) # type: Optional[Anomaly]
 
@@ -73,7 +65,7 @@ class BaseCount(ModelReprMixin, models.Model):
 class InstallationCount(BaseCount):
 
     class Meta(object):
-        unique_together = ("property", "subgroup", "end_time", "interval")
+        unique_together = ("property", "subgroup", "end_time")
 
     @staticmethod
     def extended_id():
@@ -93,7 +85,8 @@ class RealmCount(BaseCount):
     realm = models.ForeignKey(Realm)
 
     class Meta(object):
-        unique_together = ("realm", "property", "subgroup", "end_time", "interval")
+        unique_together = ("realm", "property", "subgroup", "end_time")
+        index_together = ["property", "end_time"]
 
     @staticmethod
     def extended_id():
@@ -114,7 +107,10 @@ class UserCount(BaseCount):
     realm = models.ForeignKey(Realm)
 
     class Meta(object):
-        unique_together = ("user", "property", "subgroup", "end_time", "interval")
+        unique_together = ("user", "property", "subgroup", "end_time")
+        # This index dramatically improves the performance of
+        # aggregating from users to realms
+        index_together = ["property", "realm", "end_time"]
 
     @staticmethod
     def extended_id():
@@ -135,7 +131,10 @@ class StreamCount(BaseCount):
     realm = models.ForeignKey(Realm)
 
     class Meta(object):
-        unique_together = ("stream", "property", "subgroup", "end_time", "interval")
+        unique_together = ("stream", "property", "subgroup", "end_time")
+        # This index dramatically improves the performance of
+        # aggregating from streams to realms
+        index_together = ["property", "realm", "end_time"]
 
     @staticmethod
     def extended_id():

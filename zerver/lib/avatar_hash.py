@@ -25,4 +25,3 @@ def user_avatar_hash(email):
     # replacement.
     user_key = email.lower() + settings.AVATAR_SALT
     return make_safe_digest(user_key, hashlib.sha1)
-

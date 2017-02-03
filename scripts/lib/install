@@ -44,6 +44,8 @@ if [ "$VIRTUALENV_NEEDED" = "yes" ]; then
     "$ZULIP_PATH"/scripts/lib/create-production-venv "$ZULIP_PATH"
 fi
 
+"$ZULIP_PATH"/scripts/lib/install-node
+
 # puppet apply
 mkdir -p /etc/zulip
 (

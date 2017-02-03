@@ -6,8 +6,9 @@ from django.core.handlers.wsgi import WSGIRequest
 from django.core.handlers.base import BaseHandler
 from zerver.models import get_user_profile_by_email, \
     get_user_profile_by_id, get_prereg_user_by_email, get_client, \
-    UserMessage, Message
+    UserMessage, Message, Realm
 from zerver.lib.context_managers import lockfile
+from zerver.lib.error_notify import do_report_error
 from zerver.lib.queue import SimpleQueueClient, queue_json_publish
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.notifications import handle_missedmessage_emails, enqueue_welcome_emails, \
@@ -235,6 +236,7 @@ class FeedbackBot(QueueProcessingWorker):
 
     def consume(self, event):
         # type: (Mapping[str, Any]) -> None
+        logging.info("Received feedback from %s" % (event["sender_email"],))
         if not settings.ENABLE_FEEDBACK:
             return
         if settings.FEEDBACK_EMAIL is not None:
@@ -266,16 +268,16 @@ class ErrorReporter(QueueProcessingWorker):
                 method='POST',
                 url='deployments/report_error',
                 make_request=(lambda type, report: {'type': type, 'report': simplejson.dumps(report)}),
-                )
+            )
         QueueProcessingWorker.start(self)
 
     def consume(self, event):
         # type: (Mapping[str, Any]) -> None
+        logging.info("Processing traceback with type %s for %s" % (event['type'], event.get('user_email')))
         if settings.DEPLOYMENT_ROLE_KEY:
             self.staging_client.forward_error(event['type'], event['report'])
-        elif settings.ZILENCER_ENABLED:
-            from zilencer.views import do_report_error
-            do_report_error(settings.DEPLOYMENT_ROLE_NAME, event['type'], event['report'])
+        elif settings.ERROR_REPORTING:
+            do_report_error(event['report']['host'], event['type'], event['report'])
 
 @assign_queue('slow_queries')
 class SlowQueryWorker(QueueProcessingWorker):
@@ -300,7 +302,9 @@ class SlowQueryWorker(QueueProcessingWorker):
             for query in slow_queries:
                 content += "    %s\n" % (query,)
 
-            internal_send_message(settings.ERROR_BOT, "stream", "logs", topic, content)
+            error_bot_realm = get_user_profile_by_email(settings.ERROR_BOT).realm
+            internal_send_message(error_bot_realm, settings.ERROR_BOT,
+                                  "stream", "logs", topic, content)
 
         reset_queries()
 
@@ -402,10 +406,15 @@ class FetchLinksEmbedData(QueueProcessingWorker):
             ums = UserMessage.objects.filter(
                 message=message.id).select_related("user_profile")
             message_users = {um.user_profile for um in ums}
+
+            # Fetch the realm whose settings we're using for rendering
+            realm = Realm.objects.get(id=event['message_realm_id'])
+
             # If rendering fails, the called code will raise a JsonableError.
             rendered_content = render_incoming_message(
                 message,
-                content=message.content,
-                message_users=message_users)
+                message.content,
+                message_users,
+                realm)
             do_update_embedded_data(
                 message.sender, message, message.content, rendered_content)

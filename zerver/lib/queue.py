@@ -99,10 +99,10 @@ class SimpleQueueClient(object):
         def do_publish():
             # type: () -> None
             self.channel.basic_publish(
-                            exchange='',
-                            routing_key=queue_name,
-                            properties=pika.BasicProperties(delivery_mode=2),
-                            body=body)
+                exchange='',
+                routing_key=queue_name,
+                properties=pika.BasicProperties(delivery_mode=2),
+                body=body)
 
             statsd.incr("rabbitmq.publish.%s" % (queue_name,))
 

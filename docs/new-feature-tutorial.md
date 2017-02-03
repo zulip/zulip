@@ -102,7 +102,9 @@ Create the migration file: `./manage.py makemigrations`. Make sure to
 commit the generated file to git: `git add zerver/migrations/NNNN_realm_invite_by_admins_only.py`
 (NNNN is a number that is equal to the number of migrations.)
 
-If you run into problems, the [Django migration documentation](https://docs.djangoproject.com/en/1.8/topics/migrations/) is helpful.
+If you run into problems, the
+[Django migration documentation](https://docs.djangoproject.com/en/1.8/topics/migrations/)
+is helpful.
 
 ### Test your migration changes
 

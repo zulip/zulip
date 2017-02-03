@@ -37,14 +37,14 @@ import six
 # there is already an ASN.1 implementation, but in the interest of
 # limiting MIT Kerberos's exposure to malformed ccaches, encode it
 # ourselves. To that end, here's the laziest DER encoder ever.
-def der_encode_length(l):
+def der_encode_length(length):
     # type: (int) -> str
-    if l <= 127:
-        return chr(l)
+    if length <= 127:
+        return chr(length)
     out = ""
-    while l > 0:
-        out = chr(l & 0xff) + out
-        l >>= 8
+    while length > 0:
+        out = chr(length & 0xff) + out
+        length >>= 8
     out = chr(len(out) | 0x80) + out
     return out
 
@@ -122,17 +122,17 @@ def der_encode_ticket(tkt):
             [der_encode_integer(5), # tktVno
              der_encode_string(tkt["realm"]),
              der_encode_sequence( # PrincipalName
-                    [der_encode_int32(tkt["sname"]["nameType"]),
-                     der_encode_sequence([der_encode_string(c)
-                                          for c in tkt["sname"]["nameString"]],
-                                         tagged=False)]),
+                 [der_encode_int32(tkt["sname"]["nameType"]),
+                  der_encode_sequence([der_encode_string(c)
+                                       for c in tkt["sname"]["nameString"]],
+                                      tagged=False)]),
              der_encode_sequence( # EncryptedData
-                    [der_encode_int32(tkt["encPart"]["etype"]),
-                     (der_encode_uint32(tkt["encPart"]["kvno"])
-                      if "kvno" in tkt["encPart"]
-                      else None),
-                     der_encode_octet_string(
-                                base64.b64decode(tkt["encPart"]["cipher"]))])]))
+                 [der_encode_int32(tkt["encPart"]["etype"]),
+                  (der_encode_uint32(tkt["encPart"]["kvno"])
+                   if "kvno" in tkt["encPart"]
+                   else None),
+                  der_encode_octet_string(
+                      base64.b64decode(tkt["encPart"]["cipher"]))])]))
 
 # Kerberos ccache writing code. Using format documentation from here:
 # http://www.gnu.org/software/shishi/manual/html_node/The-Credential-Cache-Binary-File-Format.html

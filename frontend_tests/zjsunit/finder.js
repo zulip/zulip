@@ -2,7 +2,7 @@ var finder = (function () {
 
 var exports = {};
 
-var _ = require('third/underscore/underscore.js');
+var _ = require('node_modules/underscore/underscore.js');
 var fs = require('fs');
 var path = require('path');
 

@@ -30,9 +30,15 @@ exports.rename_sub = function (stream_id, new_name) {
     return sub;
 };
 
+exports.subscribe_myself = function (sub) {
+    var user_id = people.my_current_user_id();
+    exports.add_subscriber(sub.name, user_id);
+    sub.subscribed = true;
+};
+
 exports.unsubscribe_myself = function (sub) {
     // Remove user from subscriber's list
-    var user_id = people.get_user_id(page_params.email);
+    var user_id = people.my_current_user_id();
     exports.remove_subscriber(sub.name, user_id);
     sub.subscribed = false;
 };
@@ -204,7 +210,7 @@ exports.create_streams = function (streams) {
         // We handle subscriber stuff in other events.
         var attrs = _.defaults(stream, {
             subscribers: [],
-            subscribed: false
+            subscribed: false,
         });
         exports.create_sub_from_server_data(stream.name, attrs);
     });
@@ -237,7 +243,7 @@ exports.create_sub_from_server_data = function (stream_name, attrs) {
         invite_only: false,
         desktop_notifications: page_params.stream_desktop_notifications_enabled,
         audible_notifications: page_params.stream_sounds_enabled,
-        description: ''
+        description: '',
     });
 
     exports.set_subscribers(sub, subscriber_user_ids);
@@ -272,7 +278,7 @@ exports.add_admin_options = function (sub) {
     return _.extend(sub, {
         is_admin: page_params.is_admin,
         can_make_public: page_params.is_admin && sub.invite_only && sub.subscribed,
-        can_make_private: page_params.is_admin && !sub.invite_only
+        can_make_private: page_params.is_admin && !sub.invite_only,
     });
 };
 
@@ -369,6 +375,17 @@ exports.get_recent_topics = function (stream_name) {
 exports.populate_stream_topics_for_tests = function (stream_map) {
     // This is only used by tests.
     recent_topics = Dict.from(stream_map, {fold_case: true});
+};
+
+exports.get_newbie_stream = function () {
+    // This is the stream that we narrow folks to after the tutorial.
+
+    if (exports.is_subscribed("new members")) {
+        return "new members";
+    } else if (exports.in_home_view(page_params.notifications_stream)) {
+        return page_params.notifications_stream;
+    }
+    return undefined;
 };
 
 return exports;

@@ -55,12 +55,12 @@ def add_bool_columns(db, table, cols):
     coltype = 'boolean'
     val = 'false'
 
-    stmt = (('ALTER TABLE %s ' % (table,))
-            + ', '.join(['ADD %s %s' % (col, coltype) for col in cols]))
+    stmt = (('ALTER TABLE %s ' % (table,)) +
+            ', '.join(['ADD %s %s' % (col, coltype) for col in cols]))
     timed_ddl(db, stmt)
 
-    stmt = (('ALTER TABLE %s ' % (table,))
-            + ', '.join(['ALTER %s SET DEFAULT %s' % (col, val) for col in cols]))
+    stmt = (('ALTER TABLE %s ' % (table,)) +
+            ', '.join(['ALTER %s SET DEFAULT %s' % (col, val) for col in cols]))
     timed_ddl(db, stmt)
 
     vals = [val] * len(cols)
@@ -69,8 +69,8 @@ def add_bool_columns(db, table, cols):
     stmt = 'ANALYZE %s' % (table,)
     timed_ddl(db, stmt)
 
-    stmt = (('ALTER TABLE %s ' % (table,))
-            + ', '.join(['ALTER %s SET NOT NULL' % (col,) for col in cols]))
+    stmt = (('ALTER TABLE %s ' % (table,)) +
+            ', '.join(['ALTER %s SET NOT NULL' % (col,) for col in cols]))
     timed_ddl(db, stmt)
 
 def create_index_if_nonexistant(db, table, col, index):

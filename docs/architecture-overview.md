@@ -36,7 +36,7 @@ repositories.
 We use [Transifex](https://www.transifex.com/zulip/zulip/) to do
 translations.
 
-In this overview we'll mainly discuss the core Zulip server and web
+In this overview, we'll mainly discuss the core Zulip server and web
 application.
 
 Usage assumptions and concepts
@@ -47,7 +47,7 @@ similar groups ranging in size from a small team to more than a thousand
 users. It features real-time notifications, message persistence and
 search, public group conversations (*streams*), invite-only streams,
 private one-on-one and group conversations, inline image previews, team
-presence/buddy list, a rich API, Markdown message support, and numerous
+presence/buddy lists, a rich API, Markdown message support, and numerous
 integrations with other services. The maintainer team aims to support
 users who connect to Zulip using dedicated iOS, Android, Linux, Windows,
 and Mac OS X clients, as well as people using modern web browsers or
@@ -60,10 +60,8 @@ be a user of multiple Zulip realms. The administrators of a realm can
 choose whether to allow anyone to register an account and join, or
 only allow people who have been invited, or restrict registrations to
 members of particular groups (using email domain names or corporate
-single-sign-on login for verification). For more on scalability and
-security considerations, see [the security section of the production
-maintenance
-instructions](prod-maintain-secure-upgrade.html#security-model).
+single-sign-on login for verification). For more on security
+considerations, see [the security model section](security-model.html).
 
 The default Zulip home screen is like a chronologically ordered inbox;
 it displays messages, starting at the oldest message that the user
@@ -75,7 +73,7 @@ users, in strict chronological order. A user can *narrow* to view only
 the messages in a single stream, and can further narrow to focus on a
 *topic* (thread) within that stream. Each narrow has its own URL. The
 user can quickly see what conversation they're in -- the stream and
-topic, or the names of the the user(s) they're private messaging with
+topic, or the names of the user(s) they're private messaging with
 -- using *the recipient bar* displayed atop each conversation.
 
 Zulip's philosophy is to provide sensible defaults but give the user
@@ -86,6 +84,8 @@ real-time notifications they find irrelevant.
 
 Components
 ----------
+
+  ![architecture-simple](images/architecture_simple.png)
 
 ### Tornado and Django
 
@@ -220,10 +220,10 @@ list of stopwords used by a Postgresql extension.
 
 In a development environment, configuration of that postgresql
 extension is handled by `tools/postgres-init-dev-db` (invoked by
-`tools/provision.py`).  That file also manages setting up the
+`tools/provision`).  That file also manages setting up the
 development postgresql user.
 
-`tools/provision.py` also invokes `tools/do-destroy-rebuild-database`
+`tools/provision also invokes `tools/do-destroy-rebuild-database`
 to create the actual database with its schema.
 
 ### Nagios

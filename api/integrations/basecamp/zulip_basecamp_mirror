@@ -32,10 +32,9 @@ import logging
 import time
 import re
 import sys
+from stderror import write
 import os
 from datetime import datetime, timedelta
-from six.moves.html_parser import HTMLParser
-import six
 
 sys.path.insert(0, os.path.dirname(__file__))
 import zulip_basecamp_config as config
@@ -44,7 +43,9 @@ VERSION = "0.9"
 if config.ZULIP_API_PATH is not None:
     sys.path.append(config.ZULIP_API_PATH)
 import zulip
-
+from six.moves.html_parser import HTMLParser
+from typing import Any, Dict
+import six
 
 client = zulip.Client(
     email=config.ZULIP_USER,
@@ -66,22 +67,24 @@ while len(json_implementations):
 
 # void function that checks the permissions of the files this script needs.
 def check_permissions():
+    # type: () -> None
     # check that the log file can be written
     if config.LOG_FILE:
         try:
             open(config.LOG_FILE, "w")
         except IOError as e:
-            sys.stderr("Could not open up log for writing:")
-            sys.stderr(e)
+            sys.stderr.write("Could not open up log for writing:")
+            sys.stderr.write(str(e))
     # check that the resume file can be written (this creates if it doesn't exist)
     try:
         open(config.RESUME_FILE, "a+")
     except IOError as e:
-        sys.stderr("Could not open up the file %s for reading and writing" % (config.RESUME_FILE,))
-        sys.stderr(e)
+        sys.stderr.write("Could not open up the file %s for reading and writing" % (config.RESUME_FILE),)
+        sys.stderr.write(str(e))
 
 # builds the message dict for sending a message with the Zulip API
 def build_message(event):
+    # type: (Dict[str, Any]) -> Dict[str, Any]
     if not ('bucket' in event and 'creator' in event and 'html_url' in event):
         logging.error("Perhaps the Basecamp API changed behavior? "
                       "This event doesn't have the expected format:\n%s" % (event,))
@@ -110,16 +113,17 @@ def build_message(event):
 
 # the main run loop for this mirror script
 def run_mirror():
+    # type: () -> None
     # we should have the right (write) permissions on the resume file, as seen
     # in check_permissions, but it may still be empty or corrupted
     try:
         with open(config.RESUME_FILE) as f:
-            since = f.read()
+            since = f.read() # type: Any
         since = re.search(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}-\d{2}:\d{2}", since)
         assert since, "resume file does not meet expected format"
         since = since.string
     except (AssertionError, IOError) as e:
-        logging.warn("Could not open resume file: %s" % (e.message or e.strerror,))
+        logging.warn("Could not open resume file: %s" % (e,))
         since = (datetime.utcnow() - timedelta(hours=config.BASECAMP_INITIAL_HISTORY_HOURS)).isoformat() + "-00:00"
     try:
         # we use an exponential backoff approach when we get 429 (Too Many Requests).
@@ -136,12 +140,12 @@ def run_mirror():
                 if len(events):
                     logging.info("Got event(s): %s" % (response.text,))
             if response.status_code >= 500:
-                logging.error(response.status_code)
+                logging.error(str(response.status_code))
                 continue
             if response.status_code == 429:
                 # exponential backoff
                 sleepInterval *= 2
-                logging.error(response.status_code)
+                logging.error(str(response.status_code))
                 continue
             if response.status_code == 400:
                 logging.error("Something went wrong. Basecamp must be unhappy for this reason: %s" % (response.text,))
@@ -173,7 +177,7 @@ def run_mirror():
 
 if __name__ == "__main__":
     if not isinstance(config.RESUME_FILE, six.string_types):
-        sys.stderr("RESUME_FILE path not given; refusing to continue")
+        sys.stderr.write("RESUME_FILE path not given; refusing to continue")
     check_permissions()
     if config.LOG_FILE:
         logging.basicConfig(filename=config.LOG_FILE, level=logging.INFO)

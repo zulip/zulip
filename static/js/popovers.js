@@ -4,9 +4,37 @@ var exports = {};
 
 var current_actions_popover_elem;
 var current_message_info_popover_elem;
+var current_message_reactions_popover_elem;
 var emoji_map_is_open = false;
 
 var userlist_placement = "right";
+
+var list_of_popovers = [];
+
+// this utilizes the proxy pattern to intercept all calls to $.fn.popover
+// and push the $.fn.data($o, "popover") results to an array.
+// this is needed so that when we try to unload popovers, we can kill all dead
+// ones that no longer have valid parents in the DOM.
+(function (popover) {
+
+    $.fn.popover = function () {
+        // apply the jQuery object as `this`, and popover function arguments.
+        popover.apply(this, arguments);
+
+        // if there is a valid "popover" key in the jQuery data object then
+        // push it to the array.
+        if (this.data("popover")) {
+            list_of_popovers.push(this.data("popover"));
+        }
+    };
+
+    // add back all shallow properties of $.fn.popover to the new proxied version.
+    for (var x in popover) {
+        if (popover.hasOwnProperty(x)) {
+            $.fn.popover[x] = popover[x];
+        }
+    }
+}($.fn.popover));
 
 function show_message_info_popover(element, id) {
     var last_popover_elem = current_message_info_popover_elem;
@@ -28,7 +56,7 @@ function show_message_info_popover(element, id) {
             message:  message,
             pm_with_uri: narrow.pm_with_uri(message.sender_email),
             sent_by_uri: narrow.by_sender_uri(message.sender_email),
-            narrowed: narrow.active()
+            narrowed: narrow.active(),
         };
 
         var ypos = elt.offset().top - viewport.scrollTop();
@@ -36,16 +64,90 @@ function show_message_info_popover(element, id) {
             placement: (ypos > (viewport.height() - 300)) ? 'top' : 'bottom',
             title:     templates.render('message_info_popover_title',   args),
             content:   templates.render('message_info_popover_content', args),
-            trigger:   "manual"
+            trigger:   "manual",
         });
         elt.popover("show");
         current_message_info_popover_elem = elt;
     }
 }
 
+exports.toggle_reactions_popover = function (element, id) {
+    var last_popover_elem = current_message_reactions_popover_elem;
+    popovers.hide_all();
+    $(element).closest('.message_row').toggleClass('has_popover has_reactions_popover');
+    if (last_popover_elem !== undefined
+        && last_popover_elem.get()[0] === element) {
+        // We want it to be the case that a user can dismiss a popover
+        // by clicking on the same element that caused the popover.
+        return;
+    }
+
+    current_msg_list.select_id(id);
+    var elt = $(element);
+    if (elt.data('popover') === undefined) {
+        var emojis = _.clone(emoji.emojis_name_to_css_class);
+        var emojis_used = reactions.get_emojis_used_by_user_for_message_id(id);
+        var realm_emojis = emoji.realm_emojis;
+        _.each(realm_emojis, function (realm_emoji, realm_emoji_name) {
+            emojis[realm_emoji_name] = {
+                name: realm_emoji_name,
+                is_realm_emoji: true,
+                url: realm_emoji.emoji_url,
+            };
+        });
+        _.each(emojis_used, function (emoji_name) {
+            var is_realm_emoji = emojis[emoji_name].is_realm_emoji;
+            var url = emojis[emoji_name].url;
+            emojis[emoji_name] = {
+                name: emoji_name,
+                has_reacted: true,
+                css_class: emoji.emoji_name_to_css_class(emoji_name),
+                is_realm_emoji: is_realm_emoji,
+                url: url,
+            };
+        });
+
+        var args = {
+            message_id: id,
+            emojis: emojis,
+        };
+
+        var approx_popover_height = 400;
+        var approx_popover_width = 400;
+        var distance_from_bottom = viewport.height() - elt.offset().top;
+        var distance_from_right = viewport.width() - elt.offset().left;
+        var will_extend_beyond_bottom_of_viewport = distance_from_bottom < approx_popover_height;
+        var will_extend_beyond_top_of_viewport = elt.offset().top < approx_popover_height;
+        var will_extend_beyond_left_of_viewport = elt.offset().left < (approx_popover_width / 2);
+        var will_extend_beyond_right_of_viewport = distance_from_right < (approx_popover_width / 2);
+        var placement = 'bottom';
+        if (will_extend_beyond_bottom_of_viewport && !will_extend_beyond_top_of_viewport) {
+            placement = 'top';
+        }
+        if (will_extend_beyond_right_of_viewport && !will_extend_beyond_left_of_viewport) {
+            placement = 'left';
+        }
+        if (will_extend_beyond_left_of_viewport && !will_extend_beyond_right_of_viewport) {
+            placement = 'right';
+        }
+        elt.prop('title', '');
+        elt.popover({
+            placement: placement,
+            title:     "",
+            content:   templates.render('reaction_popover_content', args),
+            trigger:   "manual",
+        });
+        elt.popover("show");
+        elt.prop('title', 'Add reaction...');
+        $('.reaction-popover-filter').focus();
+        current_message_reactions_popover_elem = elt;
+    }
+};
+
 exports.toggle_actions_popover = function (element, id) {
     var last_popover_elem = current_actions_popover_elem;
     popovers.hide_all();
+    $(element).closest('.message_row').toggleClass('has_popover has_actions_popover');
     if (last_popover_elem !== undefined
         && last_popover_elem.get()[0] === element) {
         // We want it to be the case that a user can dismiss a popover
@@ -85,8 +187,9 @@ exports.toggle_actions_popover = function (element, id) {
             editability_menu_item: editability_menu_item,
             can_mute_topic: can_mute_topic,
             can_unmute_topic: can_unmute_topic,
+            should_display_add_reaction_option: message.sent_by_me,
             conversation_time_uri: narrow.by_conversation_and_time_uri(message),
-            narrowed: narrow.active()
+            narrowed: narrow.active(),
         };
 
         var ypos = elt.offset().top - viewport.scrollTop();
@@ -94,7 +197,7 @@ exports.toggle_actions_popover = function (element, id) {
             placement: (ypos > (viewport.height() - 300)) ? 'top' : 'bottom',
             title:     "",
             content:   templates.render('actions_popover_content', args),
-            trigger:   "manual"
+            trigger:   "manual",
         });
         elt.popover("show");
         current_actions_popover_elem = elt;
@@ -163,17 +266,28 @@ exports.topic_ops = {
         popovers.hide_topic_sidebar_popover();
         muting.unmute_topic(stream, topic);
         muting_ui.persist_and_rerender();
-    }
+    },
 };
 
 function message_info_popped() {
     return current_message_info_popover_elem !== undefined;
 }
 
+function reaction_popped() {
+    return current_message_reactions_popover_elem !== undefined;
+}
+
 exports.hide_message_info_popover = function () {
     if (message_info_popped()) {
         current_message_info_popover_elem.popover("destroy");
         current_message_info_popover_elem = undefined;
+    }
+};
+
+exports.hide_reactions_popover = function () {
+    if (reaction_popped()) {
+        current_message_reactions_popover_elem.popover("destroy");
+        current_message_reactions_popover_elem = undefined;
     }
 };
 
@@ -259,9 +373,23 @@ exports.hide_user_sidebar_popover = function () {
 };
 
 function render_emoji_popover() {
-    var content = templates.render('emoji_popover_content', {
-        emoji_list: emoji.emojis_name_to_css_class
-    });
+    var content = (function () {
+        var map = {};
+        for (var x in emoji.emojis_name_to_css_class) {
+            if (!emoji.realm_emojis[x]) {
+                map[x] = {
+                    name: x,
+                    css_name: emoji.emojis_name_to_css_class[x],
+                    url: emoji.emojis_by_name[x],
+                };
+            }
+        }
+
+        return templates.render('emoji_popover_content', {
+            emoji_list: map,
+            realm_emoji: emoji.realm_emojis,
+        });
+    }());
 
     $('.emoji_popover').append(content);
 
@@ -280,6 +408,25 @@ exports.register_click_handlers = function () {
         popovers.toggle_actions_popover(this, rows.id(row));
     });
 
+    $("#main_div").on("click", ".reaction_button", function (e) {
+        var row = $(this).closest(".message_row");
+        e.stopPropagation();
+        popovers.toggle_reactions_popover(this, rows.id(row));
+    });
+
+
+    $("body").on("click", ".actions_popover .reaction_button", function (e) {
+        var msgid = $(e.currentTarget).data('msgid');
+        e.preventDefault();
+        e.stopPropagation();
+        // HACK: Because we need the popover to be based off an
+        // element that definitely exists in the page even if the
+        // message wasn't sent by us and thus the .reaction_hover
+        // element is not present, we use the message's
+        // .icon-vector-chevron-down element as the base for the popover.
+        popovers.toggle_reactions_popover($(".selected_message .icon-vector-chevron-down")[0], msgid);
+    });
+
     $("#main_div").on("click", ".sender_info_hover", function (e) {
         var row = $(this).closest(".message_row");
         e.stopPropagation();
@@ -291,11 +438,11 @@ exports.register_click_handlers = function () {
         var meta = {
           drag: false,
           c: {
-            y: null
+            y: null,
           },
           $popover: $(".emoji_popover"),
           MIN_HEIGHT: 25,
-          MAX_HEIGHT: 300
+          MAX_HEIGHT: 300,
         };
 
         // drag must start within the .drag zone.
@@ -331,7 +478,7 @@ exports.register_click_handlers = function () {
     $(".emoji_popover").on("click", ".emoji", function (e) {
         var emoji_choice = $(e.target).attr("title");
         var textarea = $("#new_message_content");
-        textarea.val(textarea.val() + " " + emoji_choice);
+        textarea.caret(emoji_choice);
         textarea.focus();
         e.stopPropagation();
     });
@@ -439,7 +586,7 @@ exports.register_click_handlers = function () {
             content:   content,
             placement: userlist_placement === "left" ? "right" : "left",
             trigger:   "manual",
-            fixed: true
+            fixed: true,
         });
         target.popover("show");
         current_user_sidebar_user_id = user_id;
@@ -472,13 +619,13 @@ exports.register_click_handlers = function () {
             stream_name: stream_name,
             topic_name: topic_name,
             can_mute_topic: can_mute_topic,
-            can_unmute_topic: can_unmute_topic
+            can_unmute_topic: can_unmute_topic,
         });
 
         $(elt).popover({
             content: content,
             trigger: "manual",
-            fixed: true
+            fixed: true,
         });
 
         $(elt).popover("show");
@@ -496,7 +643,7 @@ exports.register_click_handlers = function () {
 
         var operators = [
             {operator: 'stream', operand: stream_name},
-            {operator: 'topic', operand: topic_name}
+            {operator: 'topic', operand: topic_name},
         ];
         var opts = {select_first_unread: true, trigger: 'sidebar'};
         narrow.activate(operators, opts);
@@ -546,7 +693,7 @@ exports.register_click_handlers = function () {
         $(elt).popover({
             content:   templates.render('stream_sidebar_actions', {stream: stream_data.get_sub(stream)}),
             trigger:   "manual",
-            fixed: true
+            fixed: true,
         });
 
         // This little function is a workaround for the fact that
@@ -715,23 +862,51 @@ exports.register_click_handlers = function () {
         }, true);
     });
 
+    (function () {
+        var last_scroll = 0;
+
+        $('.app').on('scroll', function () {
+            var date = new Date().getTime();
+
+            // only run `popovers.hide_all()` if the last scroll was more
+            // than 250ms ago.
+            if (date - last_scroll > 250) {
+                popovers.hide_all();
+            }
+
+            // update the scroll time on every event to make sure it doesn't
+            // retrigger `hide_all` while still scrolling.
+            last_scroll = date;
+        });
+    }());
+
 };
 
 exports.any_active = function () {
     // True if any popover (that this module manages) is currently shown.
     return popovers.actions_popped() || user_sidebar_popped() || stream_sidebar_popped() ||
-           topic_sidebar_popped() || message_info_popped() || emoji_map_is_open;
+        topic_sidebar_popped() || message_info_popped() || emoji_map_is_open ||
+        reaction_popped();
 };
 
 exports.hide_all = function () {
+    $('.has_popover').removeClass('has_popover has_actions_popover has_reactions_popover');
     popovers.hide_actions_popover();
     popovers.hide_message_info_popover();
+    popovers.hide_reactions_popover();
     popovers.hide_stream_sidebar_popover();
     popovers.hide_topic_sidebar_popover();
     popovers.hide_user_sidebar_popover();
     popovers.hide_userlist_sidebar();
     popovers.hide_streamlist_sidebar();
     popovers.hide_emoji_map_popover();
+
+    // look through all the popovers that have been added and removed.
+    list_of_popovers.forEach(function ($o) {
+        if (!document.body.contains($o.$element[0]) && $o.$tip) {
+            $o.$tip.remove();
+        }
+    });
 };
 
 exports.set_userlist_placement = function (placement) {

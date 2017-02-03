@@ -6,6 +6,7 @@ from django.contrib.auth.forms import SetPasswordForm, AuthenticationForm, \
     PasswordResetForm
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
+from django.core.validators import validate_email
 from django.db.models.query import QuerySet
 from django.utils.translation import ugettext as _
 from jinja2 import Markup as mark_safe
@@ -14,7 +15,7 @@ from zerver.lib.actions import do_change_password, is_inactive, user_email_is_un
 from zerver.lib.name_restrictions import is_reserved_subdomain, is_disposable_domain
 from zerver.lib.utils import get_subdomain, check_subdomain
 from zerver.models import Realm, get_user_profile_by_email, UserProfile, \
-    get_realm_by_email_domain, get_realm_by_string_id, \
+    get_realm_by_email_domain, get_realm, \
     get_unique_open_realm, email_to_domain, email_allowed_for_realm
 from zproject.backends import password_auth_enabled
 
@@ -92,7 +93,7 @@ class RegistrationForm(forms.Form):
         if not re.match('^[a-z0-9-]*$', subdomain):
             raise ValidationError(error_strings['bad character'])
         if is_reserved_subdomain(subdomain) or \
-           get_realm_by_string_id(subdomain) is not None:
+           get_realm(subdomain) is not None:
             raise ValidationError(error_strings['unavailable'])
         return subdomain
 
@@ -201,3 +202,31 @@ Please contact %s to reactivate this group.""" % (
                             (user_profile.email, get_subdomain(self.request)))
             raise ValidationError(mark_safe(WRONG_SUBDOMAIN_ERROR))
         return email
+
+class MultiEmailField(forms.Field):
+    def to_python(self, emails):
+        # type: (Text) -> List[Text]
+        """Normalize data to a list of strings."""
+        if not emails:
+            return []
+
+        return [email.strip() for email in emails.split(',')]
+
+    def validate(self, emails):
+        # type: (List[Text]) -> None
+        """Check if value consists only of valid emails."""
+        super(MultiEmailField, self).validate(emails)
+        for email in emails:
+            validate_email(email)
+
+class FindMyTeamForm(forms.Form):
+    emails = MultiEmailField(
+        help_text="Add up to 10 comma-separated email addresses.")
+
+    def clean_emails(self):
+        # type: () -> List[Text]
+        emails = self.cleaned_data['emails']
+        if len(emails) > 10:
+            raise forms.ValidationError("Please enter at most 10 emails.")
+
+        return emails

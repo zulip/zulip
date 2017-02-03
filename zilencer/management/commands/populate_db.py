@@ -9,13 +9,13 @@ from zerver.models import Message, UserProfile, Stream, Recipient, UserPresence,
     Subscription, get_huddle, Realm, UserMessage, RealmAlias, \
     clear_database, get_client, get_user_profile_by_id, \
     email_to_username
-from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, do_send_message, \
+from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, do_send_messages, \
     do_change_is_admin
 from django.conf import settings
 from zerver.lib.bulk_create import bulk_create_realms, \
     bulk_create_streams, bulk_create_users, bulk_create_huddles, \
     bulk_create_clients
-from zerver.models import DefaultStream, get_stream, get_realm_by_string_id
+from zerver.models import DefaultStream, get_stream, get_realm
 from zilencer.models import Deployment
 
 import random
@@ -34,7 +34,6 @@ def create_users(realm, name_list, bot_type=None):
         user_set.add((email, full_name, short_name, True))
     tos_version = settings.TOS_VERSION if bot_type is None else None
     bulk_create_users(realm, user_set, bot_type=bot_type, tos_version=tos_version)
-
 
 class Command(BaseCommand):
     help = "Populate a test database"
@@ -171,7 +170,7 @@ class Command(BaseCommand):
                     subscriptions_to_add.append(s)
             Subscription.objects.bulk_create(subscriptions_to_add)
         else:
-            zulip_realm = get_realm_by_string_id("zulip")
+            zulip_realm = get_realm("zulip")
             recipient_streams = [klass.type_id for klass in
                                  Recipient.objects.filter(type=Recipient.STREAM)]
 
@@ -223,7 +222,7 @@ class Command(BaseCommand):
                     ("Fred Sipb (MIT)", "sipbtest@mit.edu"),
                     ("Athena Consulting Exchange User (MIT)", "starnine@mit.edu"),
                     ("Esp Classroom (MIT)", "espuser@mit.edu"),
-                    ]
+                ]
                 create_users(mit_realm, testsuite_mit_users)
 
             # These bots are directly referenced from code and thus
@@ -234,7 +233,7 @@ class Command(BaseCommand):
                 ("Zulip New User Bot", "new-user-bot@zulip.com"),
                 ("Zulip Error Bot", "error-bot@zulip.com"),
                 ("Zulip Default Bot", "default-bot@zulip.com"),
-                ]
+            ]
             zulip_realm_bots.extend(all_realm_bots)
             create_users(zulip_realm, zulip_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
 
@@ -242,6 +241,8 @@ class Command(BaseCommand):
                 ("Zulip Webhook Bot", "webhook-bot@zulip.com"),
             ]
             create_users(zulip_realm, zulip_webhook_bots, bot_type=UserProfile.INCOMING_WEBHOOK_BOT)
+
+            create_simple_community_realm()
 
             if not options["test_suite"]:
                 # Initialize the email gateway bot as an API Super User
@@ -294,12 +295,12 @@ class Command(BaseCommand):
                     ("Zulip Commit Bot", "commit-bot@zulip.com"),
                     ("Zulip Trac Bot", "trac-bot@zulip.com"),
                     ("Zulip Nagios Bot", "nagios-bot@zulip.com"),
-                    ]
+                ]
                 create_users(zulip_realm, internal_zulip_users_nosubs, bot_type=UserProfile.DEFAULT_BOT)
 
             zulip_cross_realm_bots = [
                 ("Zulip Feedback Bot", "feedback@zulip.com"),
-                ]
+            ]
             create_users(zulip_realm, zulip_cross_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
 
             # Mark all messages as read
@@ -386,13 +387,41 @@ def send_messages(data):
             stream = Stream.objects.get(id=message.recipient.type_id)
             # Pick a random subscriber to the stream
             message.sender = random.choice(Subscription.objects.filter(
-                    recipient=message.recipient)).user_profile
+                recipient=message.recipient)).user_profile
             message.subject = stream.name + Text(random.randint(1, 3))
             saved_data['subject'] = message.subject
 
         message.pub_date = now()
-        do_send_message(message)
+        do_send_messages([{'message': message}])
 
         recipients[num_messages] = (message_type, message.recipient.id, saved_data)
         num_messages += 1
     return tot_messages
+
+def create_simple_community_realm():
+    # type: () -> None
+    simple_realm = Realm.objects.create(
+        string_id="simple", name="Simple Realm", restricted_to_domain=False,
+        invite_required=False, org_type=Realm.COMMUNITY, domain="simple.com")
+
+    names = [
+        ("alice", "alice@example.com"),
+        ("bob", "bob@foo.edu"),
+        ("cindy", "cindy@foo.tv"),
+    ]
+    create_users(simple_realm, names)
+
+    user_profiles = UserProfile.objects.filter(realm__string_id='simple')
+    create_user_presences(user_profiles)
+
+def create_user_presences(user_profiles):
+    # type: (Iterable[UserProfile]) -> None
+    for user in user_profiles:
+        status = 1 # type: int
+        date = now()
+        client = get_client("website")
+        UserPresence.objects.get_or_create(
+            user_profile=user,
+            client=client,
+            timestamp=date,
+            status=status)

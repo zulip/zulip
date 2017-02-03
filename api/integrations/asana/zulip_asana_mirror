@@ -33,18 +33,20 @@
 from __future__ import print_function
 import base64
 from datetime import datetime, timedelta
+from typing import List, Dict, Optional, Any, Tuple
 
 import json
 import logging
 import os
 import time
 from six.moves import urllib
-
+from six.moves.urllib import request as urllib_request
 import sys
+
 
 try:
     import dateutil.parser
-    import dateutil.tz
+    from dateutil.tz import gettz
 except ImportError as e:
     print(e, file=sys.stderr)
     print("Please install the python-dateutil package.", file=sys.stderr)
@@ -67,20 +69,22 @@ client = zulip.Client(email=config.ZULIP_USER, api_key=config.ZULIP_API_KEY,
                       site=config.ZULIP_SITE, client="ZulipAsana/" + VERSION)
 
 def fetch_from_asana(path):
+    # type: (str) -> Optional[Dict[str, Any]]
     """
     Request a resource through the Asana API, authenticating using
     HTTP basic auth.
     """
-    auth = base64.encodestring('%s:' % (config.ASANA_API_KEY,))
+    auth = base64.encodestring(b'%s:' % (config.ASANA_API_KEY,))
     headers = {"Authorization": "Basic %s" % auth}
 
     url = "https://app.asana.com/api/1.0" + path
-    request = urllib.request.Request(url, None, headers)
-    result = urllib.request.urlopen(request)
+    request = urllib_request.Request(url, None, headers) # type: ignore
+    result = urllib_request.urlopen(request) # type: ignore
 
     return json.load(result)
 
 def send_zulip(topic, content):
+    # type: (str, str) -> Dict[str, str]
     """
     Send a message to Zulip using the configured stream and bot credentials.
     """
@@ -93,11 +97,12 @@ def send_zulip(topic, content):
     return client.send_message(message)
 
 def datestring_to_datetime(datestring):
+    # type: (str) -> datetime
     """
     Given an ISO 8601 datestring, return the corresponding datetime object.
     """
     return dateutil.parser.parse(datestring).replace(
-        tzinfo=dateutil.tz.gettz('Z'))
+        tzinfo=gettz('Z'))
 
 class TaskDict(dict):
     """
@@ -105,9 +110,11 @@ class TaskDict(dict):
     object where each of the keys is an attribute for easy access.
     """
     def __getattr__(self, field):
+        # type: (TaskDict, str) -> Any
         return self.get(field)
 
 def format_topic(task, projects):
+    # type: (TaskDict, Dict[str, str]) -> str
     """
     Return a string that will be the Zulip message topic for this task.
     """
@@ -117,6 +124,7 @@ def format_topic(task, projects):
     return "%s: %s" % (project_name, task.name)
 
 def format_assignee(task, users):
+    # type: (TaskDict, Dict[str, str]) -> str
     """
     Return a string describing the task's assignee.
     """
@@ -130,6 +138,7 @@ def format_assignee(task, users):
     return assignee_info
 
 def format_due_date(task):
+    # type: (TaskDict) -> str
     """
     Return a string describing the task's due date.
     """
@@ -140,6 +149,7 @@ def format_due_date(task):
     return due_date_info
 
 def format_task_creation_event(task, projects, users):
+    # type: (TaskDict, Dict[str, str], Dict[str, str]) -> Tuple[str, str]
     """
     Format the topic and content for a newly-created task.
     """
@@ -159,6 +169,7 @@ def format_task_creation_event(task, projects, users):
     return topic, content
 
 def format_task_completion_event(task, projects, users):
+    # type: (TaskDict, Dict[str, str], Dict[str, str]) -> Tuple[str, str]
     """
     Format the topic and content for a completed task.
     """
@@ -174,12 +185,14 @@ def format_task_completion_event(task, projects, users):
     return topic, content
 
 def since():
+    # type: () -> datetime
     """
     Return a newness threshold for task events to be processed.
     """
     # If we have a record of the last event processed and it is recent, use it,
     # else process everything from ASANA_INITIAL_HISTORY_HOURS ago.
     def default_since():
+        # type: () -> datetime
         return datetime.utcnow() - timedelta(
             hours=config.ASANA_INITIAL_HISTORY_HOURS)
 
@@ -191,8 +204,7 @@ def since():
                 max_timestamp_processed = datetime.fromtimestamp(timestamp)
                 logging.info("Reading from resume file: " + datestring)
         except (ValueError, IOError) as e:
-            logging.warn("Could not open resume file: %s" % (
-                    e.message or e.strerror,))
+            logging.warn("Could not open resume file: " + str(e))
             max_timestamp_processed = default_since()
     else:
         logging.info("No resume file, processing an initial history.")
@@ -203,6 +215,7 @@ def since():
     return max(max_timestamp_processed, default_since())
 
 def process_new_events():
+    # type: () -> None
     """
     Forward new Asana task events to Zulip.
     """
@@ -268,7 +281,7 @@ def process_new_events():
         # resolve.
         if not result.get("result"):
             logging.warn("Malformed result, exiting:")
-            logging.warn(result)
+            logging.warn(str(result))
             return
 
         if result["result"] != "success":

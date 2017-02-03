@@ -156,7 +156,7 @@ Filter.canonicalize_term = function (opts) {
     case 'pm-with':
         operand = operand.toString().toLowerCase();
         if (operand === 'me') {
-            operand = page_params.email;
+            operand = people.my_current_email();
         }
         break;
     case 'search':
@@ -175,7 +175,7 @@ Filter.canonicalize_term = function (opts) {
     return {
         negated: negated,
         operator: operator,
-        operand: operand
+        operand: operand,
     };
 };
 
@@ -195,7 +195,7 @@ function encodeOperand(operand) {
 }
 
 function decodeOperand(encoded, operator) {
-    if (operator !== 'pm-with' && operator !== 'sender') {
+    if (operator !== 'pm-with' && operator !== 'sender' && operator !== 'from') {
         encoded = encoded.replace(/\+/g, ' ');
     }
     return util.robust_uri_decode(encoded);
@@ -236,8 +236,9 @@ Filter.parse = function (str) {
             // it as a search for the given string (which may contain
             // a `:`), not as a search operator.
             if (Filter.operator_to_prefix(operator, negated) === '') {
-                operator = 'search';
-                operand = token;
+                // Put it as a search term, to not have duplicate operators
+                search_term.push(token);
+                return;
             }
             term = {negated: negated, operator: operator, operand: operand};
             operators.push(term);
@@ -372,7 +373,7 @@ Filter.prototype = {
                 return ok;
             });
         };
-    }
+    },
 };
 
 Filter.operator_to_prefix = function (operator, negated) {

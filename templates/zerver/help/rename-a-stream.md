@@ -1,18 +1,26 @@
-# Rename a Stream
+# Rename a stream
 
-**Note:** This feature is only available to administrators.
+{!admin-only.md!}
 
-If you would like to change the name of an existing stream, locate the cog (![cog](/static/images/help/cog.png)) next to **Streams** in your left sidebar. A tooltip labeled **Subscribe, add, or configure streams** will appear.
+{!follow-steps.md!} rename existing streams in your organization.
 
-![Streams Cog](/static/images/help/streams-1.png)
+{!subscriptions.md!}
+{!filter-streams.md!}
 
-After clicking the cog, a modal with an overview of all existing streams will pop up.
+    !!! tip ""
+    {!all-streams.md!}
 
-![Streams Overview](/static/images/help/streams-overview.png)
+3. After selecting a stream, {!stream-settings.md!}
 
-To change the name of a stream, first click on the stream you want to change. After selecting a stream, a list of settings should appear in the right-hand panel under **Stream Settings.** Scroll down to **Administrator settings** to see the option to change the stream's name.
+{!stream-settings-scroll.md!} **Administrator settings** section. This section
+shows all stream settings that can be modified by an organization administrator.
 
-![Stream Settings](/static/images/help/stream-settings-rename.png)
+5. Locate the **Rename stream**, and type in the new stream name in the **Rename stream**
+field.
 
-Once the **Rename stream** field is selected, type in the new stream name. Your new stream name must be unique and no longer than 60 characters.
-If your stream name is valid, clicking the **Rename stream** button will save your changes.
+    !!! tip ""
+        Your new stream name must be unique to all other stream names and no
+        longer than 60 characters.
+
+5. If your stream name is valid, clicking the **Rename stream** button will
+save your changes.

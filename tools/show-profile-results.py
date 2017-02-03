@@ -12,7 +12,7 @@ can find more advanced tools for showing profiler results.
 
 try:
     fn = sys.argv[1]
-except:
+except IndexError:
     print('''
     Please supply a filename.  (If you use the profiled decorator,
     the file will have a suffix of ".profile".)

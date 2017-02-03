@@ -133,13 +133,13 @@ function add_to_visible(candidates, visible,
 var top_of_feed = new util.CachedValue({
     compute_value: function () {
         return $(".floating_recipient").offset().top + $(".floating_recipient").outerHeight();
-    }
+    },
 });
 
 var bottom_of_feed = new util.CachedValue({
     compute_value: function () {
         return $("#compose")[0].getBoundingClientRect().top;
-    }
+    },
 });
 
 function _visible_divs(selected_row, row_min_height, row_to_output, div_class,
@@ -232,7 +232,7 @@ function make_dimen_wrapper(dimen_name, dimen_func) {
     dimensions[dimen_name] = new util.CachedValue({
         compute_value: function () {
             return dimen_func.call(exports.message_pane);
-        }
+        },
     });
     return function viewport_dimension_wrapper() {
         if (arguments.length !== 0) {
@@ -268,7 +268,7 @@ exports.system_initiated_animate_scroll = function (scroll_amount) {
         scrollTop: viewport_offset + scroll_amount,
         always: function () {
             in_stoppable_autoscroll = false;
-        }
+        },
     });
 };
 
@@ -279,7 +279,7 @@ exports.user_initiated_animate_scroll = function (scroll_amount) {
     var viewport_offset = exports.scrollTop();
 
     exports.message_pane.animate({
-        scrollTop: viewport_offset + scroll_amount
+        scrollTop: viewport_offset + scroll_amount,
     });
 };
 

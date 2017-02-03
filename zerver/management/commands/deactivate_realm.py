@@ -9,7 +9,7 @@ from argparse import ArgumentParser
 import sys
 
 from zerver.lib.actions import do_deactivate_realm
-from zerver.models import get_realm_by_string_id
+from zerver.models import get_realm
 
 class Command(BaseCommand):
     help = """Script to deactivate a realm."""
@@ -21,7 +21,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
-        realm = get_realm_by_string_id(options["string_id"])
+        realm = get_realm(options["string_id"])
         if realm is None:
             print("Could not find realm %s" % (options["string_id"],))
             sys.exit(1)

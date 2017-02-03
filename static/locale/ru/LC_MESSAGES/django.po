@@ -1123,7 +1123,7 @@ msgid "Search"
 msgstr "Поиск"
 
 #: templates/zerver/navbar.html:49
-msgid "Manage Streams"
+msgid "Manage streams"
 msgstr "Управлением потоками"
 
 #: templates/zerver/navbar.html:54
@@ -1131,7 +1131,7 @@ msgid "Settings"
 msgstr "Настройки"
 
 #: templates/zerver/navbar.html:69 templates/zerver/search_operators.html:5
-msgid "Search help"
+msgid "Search operators"
 msgstr "Помощь по поиску"
 
 #: templates/zerver/navbar.html:75

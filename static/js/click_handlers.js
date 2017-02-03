@@ -83,6 +83,13 @@ $(function () {
         toggle_star(rows.id($(this).closest(".message_row")));
     });
 
+    $("#main_div").on("click", ".message_reaction", function (e) {
+        e.stopPropagation();
+        var emoji_name = $(this).attr('data-emoji-name');
+        var message_id = $(this).parent().attr('data-message-id');
+        reactions.message_reaction_on_click(message_id, emoji_name);
+    });
+
     $("#main_div").on("click", "a.stream", function (e) {
         e.preventDefault();
         var stream = stream_data.get_sub_by_id($(this).attr('data-stream-id'));
@@ -91,6 +98,14 @@ $(function () {
             return;
         }
         window.location.href = $(this).attr('href');
+    });
+
+    // NOTIFICATION CLICK
+
+    $('body').on('click', '.notification', function () {
+        var payload = $(this).data("narrow");
+        ui.change_tab_to('#home');
+        narrow.activate(payload.raw_operators, payload.opts_notif);
     });
 
     // MESSAGE EDITING
@@ -240,16 +255,13 @@ $(function () {
         }
 
         if ($(e.target).is(".exit, .exit-sign, #subscription_overlay, #subscription_overlay > .flex")) {
-            $("#subscription_overlay").fadeOut(500);
-            subs.remove_miscategorized_streams();
-
-            hashchange.exit_settings();
+            subs.close();
         }
     });
     // HOME
 
     // Capture both the left-sidebar Home click and the tab breadcrumb Home
-    $(document).on('click', "li[data-name='home']", function (e) {
+    $(document).on('click', ".home-link[data-name='home']", function (e) {
         ui.change_tab_to('#home');
         narrow.deactivate();
         // We need to maybe scroll to the selected message
@@ -339,6 +351,13 @@ $(function () {
         compose.cancel();
     });
 
+    $("#join_unsub_stream").click(function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        subs.launch();
+        components.toggle.lookup("stream-filter-toggle").goto("All streams");
+    });
+
     // FEEDBACK
 
     // Keep these 2 feedback bot triggers separate because they have to
@@ -367,8 +386,8 @@ $(function () {
             relay_url: "https://webathena.mit.edu/relay.html",
             params: {
                 realm: "ATHENA.MIT.EDU",
-                principal: principal
-            }
+                principal: principal,
+            },
         }, function (err, r) {
             if (err) {
                 blueslip.warn(err);
@@ -387,7 +406,7 @@ $(function () {
                 },
                 error: function () {
                     $("#zephyr-mirror-error").show();
-                }
+                },
             });
         });
         $('#settings-dropdown').dropdown("toggle");
@@ -401,6 +420,67 @@ $(function () {
     $(".bankruptcy_button").click(function () {
         unread.enable();
     });
+
+    (function () {
+        var map = {
+            ".stream-description-editable": subs.change_stream_description,
+            ".stream-name-editable": subs.change_stream_name,
+        };
+
+        $(document).on("keydown", ".editable-section", function (e) {
+            e.stopPropagation();
+        });
+
+        // http://stackoverflow.com/questions/4233265/contenteditable-set-caret-at-the-end-of-the-text-cross-browser
+        function place_caret_at_end(el) {
+            el.focus();
+
+            if (typeof window.getSelection !== "undefined"
+                    && typeof document.createRange !== "undefined") {
+                var range = document.createRange();
+                range.selectNodeContents(el);
+                range.collapse(false);
+                var sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range);
+            } else if (typeof document.body.createTextRange !== "undefined") {
+                var textRange = document.body.createTextRange();
+                textRange.moveToElementText(el);
+                textRange.collapse(false);
+                textRange.select();
+            }
+        }
+
+        $("body").on("click", "[data-make-editable]", function () {
+            var selector = $(this).attr("data-make-editable");
+            var edit_area = $(this).parent().find(selector);
+            if (edit_area.attr("contenteditable") === "true") {
+                $("[data-finish-editing='" + selector + "']").hide();
+                edit_area.attr("contenteditable", false);
+                edit_area.text(edit_area.attr("data-prev-text"));
+                $(this).html("");
+            } else {
+                $("[data-finish-editing='" + selector + "']").show();
+
+                edit_area.attr("data-prev-text", edit_area.text().trim())
+                    .attr("contenteditable", true);
+
+                place_caret_at_end(edit_area[0]);
+
+                $(this).html("&times;");
+            }
+        });
+
+        $("body").on("click", "[data-finish-editing]", function (e) {
+            var selector = $(this).attr("data-finish-editing");
+            if (map[selector]) {
+                map[selector](e);
+                $(this).hide();
+                $(this).parent().find(selector).attr("contenteditable", false);
+                $("[data-make-editable='" + selector + "']").html("");
+            }
+        });
+    }());
 
     $('#yes-bankrupt').click(function () {
         pointer.fast_forward_pointer();
@@ -425,13 +505,13 @@ $(function () {
             if ($target.parent().hasClass("youtube-video")) {
                 ui.lightbox({
                     type: "youtube",
-                    id: $target.data("id")
+                    id: $target.data("id"),
                 });
             } else {
                 ui.lightbox({
                     type: "photo",
                     image: img,
-                    user: user
+                    user: user,
                 });
             }
         });

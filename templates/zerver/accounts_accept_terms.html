@@ -11,12 +11,12 @@ the registration flow has its own (nearly identical) copy of the fields below in
 {% include special_message_template %}
 {% else %}
 <div class="pitch">
-      <p>{{ _("There is a new terms of service.") }}</p>
+      <p>{{ _("There are new Terms of Service.") }}</p>
       <h3>{{ _("Accept the terms of service") }}</h3>
 </div>
 {% endif %}
 
-<form method="post" class="form-horizontal" id="registration" action="{{ url('zerver.views.accounts_accept_terms') }}">
+<form method="post" class="form-horizontal" id="registration" action="{{ url('zerver.views.home.accounts_accept_terms') }}">
 {{ csrf_input }}
     <div class="control-group">
         <label for="id_email" class="control-label">{{ _("Email") }}</label>
@@ -50,7 +50,7 @@ the registration flow has its own (nearly identical) copy of the fields below in
     <br />
     <div class="control-group">
         <div class="controls">
-            <input type="submit" class="btn btn-primary" value="Enter" /><br />
+            <input type="submit" class="btn btn-primary" value="{{ _('Enter') }}" /><br />
             <input type="hidden" name="next" value="{{ next }}" />
         </div>
     </div>

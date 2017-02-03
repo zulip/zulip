@@ -1,31 +1,31 @@
 -r ipython.txt
 # Django itself; we use a slightly patched version
-Django==1.10.4
+Django==1.10.5
 
 # Needed for rendering backend templates
-Jinja2==2.8
+Jinja2==2.9.4
 
 # Needed for markdown processing
 Markdown==2.6.7
 MarkupSafe==0.23
 
 # Needed for Image Processing
-Pillow==3.4.2
+Pillow==4.0.0
 
 # Needed for markdown processing
 Pygments==2.1.3
 
 # Needed for building complex DB queries
-SQLAlchemy==1.1.3
+SQLAlchemy==1.1.5
 
 # Needed for Tornado >3.2 compatibility
-backports-abc==0.4
+backports-abc==0.5
 
 # Needed for Tornado 4 compatibility
 backports.ssl-match-hostname==3.5.0.1
 
 # Needed for S3 file uploads
-boto==2.43.0
+boto==2.45.0
 
 certifi==2016.9.26
 chardet==2.3.0
@@ -50,7 +50,7 @@ git+https://github.com/umairwaheed/django-guardian.git@a81edc9f8ef8268f3edb73dea
 django-statsd-mozilla==0.3.16
 
 docopt==0.6.2
-fonttools==3.2.1
+fonttools==3.5.0
 
 # Needed for mock 2.0.0
 funcsigs==1.0.2
@@ -61,7 +61,7 @@ python-gcm==0.4
 gitdb==0.6.4
 
 # Needed for Google Apps mobile auth
-google-api-python-client==1.5.5
+google-api-python-client==1.6.1
 
 # Needed for the email mirror
 html2text==2016.9.19
@@ -73,11 +73,17 @@ jwt==0.3.2
 # Needed for USING_MANDRILL option for outgoing email
 mandrill==1.0.57
 
+# Needed for including other markdown files for user docs
+markdown-include==0.5.1
+
 # Needed for mock objects in decorators
 mock==2.0.0
 
-oauth2client==3.0.0
-oauthlib==1.1.2
+oauth2client==4.0.0
+oauthlib==2.0.1
+
+# Required for Pillow==4.0.0
+olefile==0.44
 
 # Needed for mock>1.1.2
 pbr==1.10
@@ -96,19 +102,19 @@ pycrypto==2.6.1
 pylibmc==1.5.1
 
 # Needed for timezone work
-pytz==2016.7
+pytz==2016.10
 
 # Needed for redis
 redis==2.10.5
 
 # Dependencies of our API
-requests==2.11.1
+requests==2.12.5
 
 requests_oauthlib==0.7.0
 rsa==3.4.2
 
 # Dependencies of our API
-simplejson==3.8.2
+simplejson==3.10.0
 
 # Needed for Tornado>3.2
 singledispatch==3.4.0.3
@@ -121,7 +127,7 @@ smmap==0.9.0
 sockjs-tornado==1.0.3
 
 # Needed to parse source maps for error reporting
-sourcemap==0.1.8
+sourcemap==0.2.0
 
 # Needed for django-statsd-mozilla
 statsd==3.2.1
@@ -130,7 +136,7 @@ statsd==3.2.1
 tornado==4.4.2
 
 # Needed for Python static typing
-typing==3.5.2.2
+typing==3.5.3.0
 
 # Fast JSON parser
 ujson==1.35
@@ -138,7 +144,7 @@ ujson==1.35
 uritemplate==3.0.0
 
 # Django extension for static asset pipeline
-django-pipeline==1.6.9
+django-pipeline==1.6.11
 
 # Needed for iOS push notifications
 git+https://github.com/sharmaeklavya2/PyAPNs.git@remove-simplejson#egg=apns==2.0.1
@@ -153,7 +159,7 @@ git+https://github.com/bear/python-twitter@7fafaf291512bd103c3de2cb478ab48377c42
 -r emailmirror.txt
 
 # To parse po files
-polib==1.0.7
+polib==1.0.8
 
 # Needed for sprite generation
 # We're using this version from git to ensure compatibility with
@@ -167,8 +173,8 @@ git+https://github.com/umairwaheed/virtualenv-clone.git@short-version#egg=virtua
 ijson==2.3
 
 #for pep8 linter
-pycodestyle==2.1.0
+pycodestyle==2.2.0
 
 # Needed for link preview
-beautifulsoup4==4.5.1
+beautifulsoup4==4.5.3
 git+https://github.com/rafaelmartins/pyoembed.git@eb9901917c2a44b49e2887c077ead84a722c50dc#egg=pyoembed

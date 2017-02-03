@@ -20,6 +20,10 @@
     padding: 10px 10px 8px 5px;
 }
 
+.autocomplete_secondary {
+    opacity: 0.6;
+}
+
 #compose_buttons {
     text-align: center;
 }

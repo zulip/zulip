@@ -162,11 +162,13 @@ var zero_counts = {
     var counts = unread.get_counts();
     assert.equal(counts.stream_count.get('social'), 1);
     assert.equal(counts.home_unread_messages, 1);
+    assert.equal(unread.num_unread_for_stream('social'), 1);
 
     muting.mute_topic('social', 'test_muting');
     counts = unread.get_counts();
     assert.equal(counts.stream_count.get('social'), 0);
     assert.equal(counts.home_unread_messages, 0);
+    assert.equal(unread.num_unread_for_stream('social'), 0);
 }());
 
 (function test_num_unread_for_subject() {
@@ -398,7 +400,7 @@ var zero_counts = {
 }());
 
 (function test_errors() {
-    global.blueslip.error = function () {};
+    global.blueslip.warn = function () {};
 
     // Test unknown message leads to zero count
     var message = {

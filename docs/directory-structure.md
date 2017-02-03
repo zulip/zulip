@@ -13,15 +13,19 @@ Zulip uses the [Django web
 framework](https://docs.djangoproject.com/en/1.8/), so a lot of these
 paths will be familiar to Django developers.
 
-* `zproject/urls.py` Main [Django routes file](https://docs.djangoproject.com/en/1.8/topics/http/urls/).  Defines which URLs are handled by which view functions or templates.
+* `zproject/urls.py` Main
+  [Django routes file](https://docs.djangoproject.com/en/1.8/topics/http/urls/).
+  Defines which URLs are handled by which view functions or templates.
 
-* `zerver/models.py` Main [Django models](https://docs.djangoproject.com/en/1.8/topics/db/models/) file.  Defines Zulip's database tables.
+* `zerver/models.py` Main
+  [Django models](https://docs.djangoproject.com/en/1.8/topics/db/models/)
+  file.  Defines Zulip's database tables.
 
 * `zerver/lib/actions.py` Most code doing writes to user-facing database tables.
 
 * `zerver/views/*.py` Most [Django views](https://docs.djangoproject.com/en/1.8/topics/http/views/).
 
-* `zerver/views/webhooks/` Webhook views for [Zulip integrations](integration-guide.html).
+* `zerver/webhooks/` Webhook views and tests for [Zulip webhook integrations](integration-guide.html).
 
 * `zerver/tornado/views.py` Tornado views.
 
@@ -40,7 +44,8 @@ paths will be familiar to Django developers.
 See [our translating docs](translating.html) for details on Zulip's
 templating systems.
 
-* `templates/zerver/` For [Jinja2](http://jinja.pocoo.org/) templates for the backend (for zerver app).
+* `templates/zerver/` For [Jinja2](http://jinja.pocoo.org/) templates
+  for the backend (for zerver app).
 
 * `static/templates/` [Handlebars](http://handlebarsjs.com/) templates for the frontend.
 
@@ -107,7 +112,7 @@ Django context (i.e. with database access).
   the development environment setup process.
 
 * `tools/travis/` Subdirectory of `tools/` for things only used to
-  setup and run our tests in Travis CI.  Actually test suites should
+  setup and run our tests in Travis CI.  Actual test suites should
   go in `tools/`.
 
 ---------------------------------------------------------

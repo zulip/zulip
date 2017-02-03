@@ -22,9 +22,8 @@ from zerver.forms import WRONG_SUBDOMAIN_ERROR
 
 from zerver.models import UserProfile, Recipient, \
     Realm, RealmAlias, UserActivity, \
-    get_user_profile_by_email, get_realm_by_string_id, get_realm_by_email_domain, \
-    get_client, get_stream, Message, get_unique_open_realm, \
-    completely_open, GetRealmByDomainException
+    get_user_profile_by_email, get_realm, get_client, get_stream, \
+    Message, get_unique_open_realm, completely_open
 
 from zerver.lib.avatar import get_avatar_url
 from zerver.lib.initial_password import initial_password
@@ -33,11 +32,12 @@ from zerver.lib.actions import \
     get_emails_from_user_ids, do_deactivate_user, do_reactivate_user, \
     do_change_is_admin, extract_recipients, \
     do_set_realm_name, do_deactivate_realm, \
-    do_make_stream_private
+    do_change_stream_invite_only
 from zerver.lib.notifications import handle_missedmessage_emails
 from zerver.lib.session_user import get_session_dict_user
 from zerver.middleware import is_slow_query
 from zerver.lib.avatar import avatar_url
+from zerver.lib.utils import split_by
 
 from zerver.worker import queue_processors
 
@@ -51,6 +51,7 @@ import time
 import ujson
 import random
 import filecmp
+import subprocess
 
 def bail(msg):
     # type: (str) -> None
@@ -114,15 +115,15 @@ class RealmTest(ZulipTestCase):
         cache, and we start by populating the cache for Hamlet, and we end
         by checking the cache to ensure that the new value is there."""
         get_user_profile_by_email('hamlet@zulip.com')
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         new_name = 'Zed You Elle Eye Pea'
         do_set_realm_name(realm, new_name)
-        self.assertEqual(get_realm_by_string_id(realm.string_id).name, new_name)
+        self.assertEqual(get_realm(realm.string_id).name, new_name)
         self.assert_user_profile_cache_gets_new_name('hamlet@zulip.com', new_name)
 
     def test_do_set_realm_name_events(self):
         # type: () -> None
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         new_name = 'Puliz'
         events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
@@ -146,7 +147,7 @@ class RealmTest(ZulipTestCase):
 
         def set_up_db(attr, value):
             # type: (str, Any) -> None
-            realm = get_realm_by_string_id('zulip')
+            realm = get_realm('zulip')
             setattr(realm, attr, value)
             realm.save()
 
@@ -155,7 +156,7 @@ class RealmTest(ZulipTestCase):
             params = {k: ujson.dumps(v) for k, v in kwarg.items()}
             result = self.client_patch('/json/realm', params)
             self.assert_json_success(result)
-            return get_realm_by_string_id('zulip') # refresh data
+            return get_realm('zulip') # refresh data
 
         # name
         realm = update_with_api(name=new_name)
@@ -231,7 +232,7 @@ class RealmTest(ZulipTestCase):
         realm appears to be deactivated.  You can make this test fail
         by disabling cache.flush_realm()."""
         get_user_profile_by_email('hamlet@zulip.com')
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         do_deactivate_realm(realm)
         user = get_user_profile_by_email('hamlet@zulip.com')
         self.assertTrue(user.realm.deactivated)
@@ -239,7 +240,7 @@ class RealmTest(ZulipTestCase):
     def test_do_set_realm_default_language(self):
         # type: () -> None
         new_lang = "de"
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         self.assertNotEqual(realm.default_language, new_lang)
         # we need an admin user.
         email = 'iago@zulip.com'
@@ -248,7 +249,7 @@ class RealmTest(ZulipTestCase):
         req = dict(default_language=ujson.dumps(new_lang))
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         self.assertEqual(realm.default_language, new_lang)
 
         # Test setting zh_CN, we set zh_HANS instead of zh_CN in db
@@ -257,7 +258,7 @@ class RealmTest(ZulipTestCase):
         req = dict(default_language=ujson.dumps(chinese))
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         self.assertEqual(realm.default_language, simplified_chinese)
 
         # Test to make sure that when invalid languages are passed
@@ -267,18 +268,8 @@ class RealmTest(ZulipTestCase):
         req = dict(default_language=ujson.dumps(invalid_lang))
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result, "Invalid language '%s'" % (invalid_lang,))
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         self.assertNotEqual(realm.default_language, invalid_lang)
-
-
-class RealmAliasTest(ZulipTestCase):
-    def test_get_realm_by_email_domain(self):
-        # type: () -> None
-        self.assertEqual(get_realm_by_email_domain('user@zulip.com').string_id, 'zulip')
-        self.assertEqual(get_realm_by_email_domain('user@fakedomain.com'), None)
-        with self.settings(REALMS_HAVE_SUBDOMAINS = True), (
-             self.assertRaises(GetRealmByDomainException)):
-            get_realm_by_email_domain('user@zulip.com')
 
 
 class PermissionTest(ZulipTestCase):
@@ -468,50 +459,45 @@ class AdminCreateUserTest(ZulipTestCase):
         admin = get_user_profile_by_email(admin_email)
         do_change_is_admin(admin, True)
 
-        result = self.client_put("/json/users", dict())
+        result = self.client_post("/json/users", dict())
         self.assert_json_error(result, "Missing 'email' argument")
 
-        result = self.client_put("/json/users", dict(
+        result = self.client_post("/json/users", dict(
             email='romeo@not-zulip.com',
-            )
-        )
+        ))
         self.assert_json_error(result, "Missing 'password' argument")
 
-        result = self.client_put("/json/users", dict(
+        result = self.client_post("/json/users", dict(
             email='romeo@not-zulip.com',
             password='xxxx',
-            )
-        )
+        ))
         self.assert_json_error(result, "Missing 'full_name' argument")
 
-        result = self.client_put("/json/users", dict(
+        result = self.client_post("/json/users", dict(
             email='romeo@not-zulip.com',
             password='xxxx',
             full_name='Romeo Montague',
-            )
-        )
+        ))
         self.assert_json_error(result, "Missing 'short_name' argument")
 
-        result = self.client_put("/json/users", dict(
+        result = self.client_post("/json/users", dict(
             email='broken',
             password='xxxx',
             full_name='Romeo Montague',
             short_name='Romeo',
-            )
-        )
+        ))
         self.assert_json_error(result, "Bad name or username")
 
-        result = self.client_put("/json/users", dict(
+        result = self.client_post("/json/users", dict(
             email='romeo@not-zulip.com',
             password='xxxx',
             full_name='Romeo Montague',
             short_name='Romeo',
-            )
-        )
+        ))
         self.assert_json_error(result,
                                "Email 'romeo@not-zulip.com' does not belong to domain 'zulip.com'")
 
-        RealmAlias.objects.create(realm=get_realm_by_string_id('zulip'), domain='zulip.net')
+        RealmAlias.objects.create(realm=get_realm('zulip'), domain='zulip.net')
 
         # HAPPY PATH STARTS HERE
         valid_params = dict(
@@ -520,7 +506,7 @@ class AdminCreateUserTest(ZulipTestCase):
             full_name='Romeo Montague',
             short_name='Romeo',
         )
-        result = self.client_put("/json/users", valid_params)
+        result = self.client_post("/json/users", valid_params)
         self.assert_json_success(result)
 
         new_user = get_user_profile_by_email('romeo@zulip.net')
@@ -529,7 +515,7 @@ class AdminCreateUserTest(ZulipTestCase):
 
         # One more error condition to test--we can't create
         # the same user twice.
-        result = self.client_put("/json/users", valid_params)
+        result = self.client_post("/json/users", valid_params)
         self.assert_json_error(result,
                                "Email 'romeo@zulip.net' already in use")
 
@@ -556,15 +542,15 @@ class WorkerTest(TestCase):
 
         user = get_user_profile_by_email('hamlet@zulip.com')
         UserActivity.objects.filter(
-                user_profile = user.id,
-                client = get_client('ios')
+            user_profile = user.id,
+            client = get_client('ios')
         ).delete()
 
         data = dict(
-                user_profile_id = user.id,
-                client = 'ios',
-                time = time.time(),
-                query = 'send_message'
+            user_profile_id = user.id,
+            client = 'ios',
+            time = time.time(),
+            query = 'send_message'
         )
         fake_client.queue.append(('user_activity', data))
 
@@ -573,8 +559,8 @@ class WorkerTest(TestCase):
             worker.setup()
             worker.start()
             activity_records = UserActivity.objects.filter(
-                    user_profile = user.id,
-                    client = get_client('ios')
+                user_profile = user.id,
+                client = get_client('ios')
             )
             self.assertTrue(len(activity_records), 1)
             self.assertTrue(activity_records[0].count, 1)
@@ -798,7 +784,7 @@ class BotTest(ZulipTestCase):
         bot_info = dict(
             full_name='',
             short_name='',
-            )
+        )
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, 'Bad name or username')
         self.assert_num_bots_equal(0)
@@ -849,7 +835,7 @@ class BotTest(ZulipTestCase):
         bot_info = dict(
             full_name='Duplicate',
             short_name='hambot',
-            )
+        )
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, 'Username already in use')
 
@@ -880,7 +866,7 @@ class BotTest(ZulipTestCase):
                 short_name='whatever',
                 file1=fp1,
                 file2=fp2,
-                )
+            )
             result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, 'You may only upload one file at a time')
         self.assert_num_bots_equal(0)
@@ -959,7 +945,7 @@ class BotTest(ZulipTestCase):
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
         stream = get_stream("Denmark", user_profile.realm)
         self.subscribe_to_stream(user_profile.email, stream.name)
-        do_make_stream_private(user_profile.realm, "Denmark")
+        do_change_stream_invite_only(stream, True)
 
         self.assert_num_bots_equal(0)
         events = [] # type: List[Dict[str, Any]]
@@ -994,16 +980,17 @@ class BotTest(ZulipTestCase):
         # type: () -> None
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        stream = get_stream("Denmark", user_profile.realm)
         self.unsubscribe_from_stream("hamlet@zulip.com", "Denmark")
-        do_make_stream_private(user_profile.realm, "Denmark")
+        do_change_stream_invite_only(stream, True)
 
         bot_info = {
-             'full_name': 'The Bot of Hamlet',
-             'short_name': 'hambot',
-             'default_sending_stream': 'Denmark',
-         }
+            'full_name': 'The Bot of Hamlet',
+            'short_name': 'hambot',
+            'default_sending_stream': 'Denmark',
+        }
         result = self.client_post("/json/bots", bot_info)
-        self.assert_json_error(result, 'Insufficient permission')
+        self.assert_json_error(result, "Invalid stream name 'Denmark'")
 
     def test_add_bot_with_default_events_register_stream(self):
         # type: () -> None
@@ -1020,8 +1007,8 @@ class BotTest(ZulipTestCase):
         # type: () -> None
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
-        self.subscribe_to_stream(user_profile.email, 'Denmark')
-        do_make_stream_private(user_profile.realm, "Denmark")
+        stream = self.subscribe_to_stream(user_profile.email, 'Denmark')
+        do_change_stream_invite_only(stream, True)
 
         self.assert_num_bots_equal(0)
         events = [] # type: List[Dict[str, Any]]
@@ -1056,17 +1043,18 @@ class BotTest(ZulipTestCase):
         # type: () -> None
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        stream = get_stream("Denmark", user_profile.realm)
         self.unsubscribe_from_stream("hamlet@zulip.com", "Denmark")
-        do_make_stream_private(user_profile.realm, "Denmark")
+        do_change_stream_invite_only(stream, True)
 
         self.assert_num_bots_equal(0)
         bot_info = {
-             'full_name': 'The Bot of Hamlet',
-             'short_name': 'hambot',
-             'default_events_register_stream': 'Denmark',
-         }
+            'full_name': 'The Bot of Hamlet',
+            'short_name': 'hambot',
+            'default_events_register_stream': 'Denmark',
+        }
         result = self.client_post("/json/bots", bot_info)
-        self.assert_json_error(result, 'Insufficient permission')
+        self.assert_json_error(result, "Invalid stream name 'Denmark'")
 
     def test_add_bot_with_default_all_public_streams(self):
         # type: () -> None
@@ -1287,7 +1275,8 @@ class BotTest(ZulipTestCase):
         result = self.client_patch("/json/bots/hambot-bot@zulip.com", bot_info)
         self.assert_json_success(result)
 
-        default_sending_stream = ujson.loads(result.content)['default_sending_stream']
+        default_sending_stream = get_user_profile_by_email(
+            "hambot-bot@zulip.com").default_sending_stream
         self.assertEqual(None, default_sending_stream)
 
         bot = self.get_bot()
@@ -1297,8 +1286,8 @@ class BotTest(ZulipTestCase):
         # type: () -> None
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
-        self.subscribe_to_stream(user_profile.email, "Denmark")
-        do_make_stream_private(user_profile.realm, "Denmark")
+        stream = self.subscribe_to_stream(user_profile.email, "Denmark")
+        do_change_stream_invite_only(stream, True)
 
         bot_info = {
             'full_name': 'The Bot of Hamlet',
@@ -1323,8 +1312,9 @@ class BotTest(ZulipTestCase):
         # type: () -> None
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        stream = get_stream("Denmark", user_profile.realm)
         self.unsubscribe_from_stream("hamlet@zulip.com", "Denmark")
-        do_make_stream_private(user_profile.realm, "Denmark")
+        do_change_stream_invite_only(stream, True)
 
         bot_info = {
             'full_name': 'The Bot of Hamlet',
@@ -1337,7 +1327,7 @@ class BotTest(ZulipTestCase):
             'default_sending_stream': 'Denmark',
         }
         result = self.client_patch("/json/bots/hambot-bot@zulip.com", bot_info)
-        self.assert_json_error(result, 'Insufficient permission')
+        self.assert_json_error(result, "Invalid stream name 'Denmark'")
 
     def test_patch_bot_to_stream_not_found(self):
         # type: () -> None
@@ -1352,7 +1342,7 @@ class BotTest(ZulipTestCase):
             'default_sending_stream': 'missing',
         }
         result = self.client_patch("/json/bots/hambot-bot@zulip.com", bot_info)
-        self.assert_json_error(result, 'No such stream \'missing\'')
+        self.assert_json_error(result, "Invalid stream name 'missing'")
 
     def test_patch_bot_events_register_stream(self):
         # type: () -> None
@@ -1379,8 +1369,8 @@ class BotTest(ZulipTestCase):
         # type: () -> None
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
-        self.subscribe_to_stream(user_profile.email, "Denmark")
-        do_make_stream_private(user_profile.realm, "Denmark")
+        stream = self.subscribe_to_stream(user_profile.email, "Denmark")
+        do_change_stream_invite_only(stream, True)
 
         bot_info = {
             'full_name': 'The Bot of Hamlet',
@@ -1404,8 +1394,9 @@ class BotTest(ZulipTestCase):
         # type: () -> None
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        stream = get_stream("Denmark", user_profile.realm)
         self.unsubscribe_from_stream("hamlet@zulip.com", "Denmark")
-        do_make_stream_private(user_profile.realm, "Denmark")
+        do_change_stream_invite_only(stream, True)
 
         bot_info = {
             'full_name': 'The Bot of Hamlet',
@@ -1417,7 +1408,7 @@ class BotTest(ZulipTestCase):
             'default_events_register_stream': 'Denmark',
         }
         result = self.client_patch("/json/bots/hambot-bot@zulip.com", bot_info)
-        self.assert_json_error(result, 'Insufficient permission')
+        self.assert_json_error(result, "Invalid stream name 'Denmark'")
 
     def test_patch_bot_events_register_stream_none(self):
         # type: () -> None
@@ -1434,7 +1425,8 @@ class BotTest(ZulipTestCase):
         result = self.client_patch("/json/bots/hambot-bot@zulip.com", bot_info)
         self.assert_json_success(result)
 
-        default_events_register_stream = ujson.loads(result.content)['default_events_register_stream']
+        default_events_register_stream = get_user_profile_by_email(
+            "hambot-bot@zulip.com").default_events_register_stream
         self.assertEqual(None, default_events_register_stream)
 
         bot = self.get_bot()
@@ -1453,7 +1445,7 @@ class BotTest(ZulipTestCase):
             'default_events_register_stream': 'missing',
         }
         result = self.client_patch("/json/bots/hambot-bot@zulip.com", bot_info)
-        self.assert_json_error(result, 'No such stream \'missing\'')
+        self.assert_json_error(result, "Invalid stream name 'missing'")
 
     def test_patch_bot_default_all_public_streams_true(self):
         # type: () -> None
@@ -1637,6 +1629,7 @@ class ChangeSettingsTest(ZulipTestCase):
         self.check_for_toggle_param_patch("/json/settings/notifications", "enable_offline_push_notifications")
         self.check_for_toggle_param_patch("/json/settings/notifications", "enable_online_push_notifications")
         self.check_for_toggle_param_patch("/json/settings/notifications", "enable_digest_emails")
+        self.check_for_toggle_param_patch("/json/settings/notifications", "pm_content_in_desktop_notifications")
 
     def test_ui_settings(self):
         # type: () -> None
@@ -1725,7 +1718,7 @@ class GetProfileTest(ZulipTestCase):
     def common_update_pointer(self, email, pointer):
         # type: (Text, int) -> None
         self.login(email)
-        result = self.client_put("/json/users/me/pointer", {"pointer": pointer})
+        result = self.client_post("/json/users/me/pointer", {"pointer": pointer})
         self.assert_json_success(result)
 
     def common_get_profile(self, email):
@@ -1811,7 +1804,7 @@ class GetProfileTest(ZulipTestCase):
         json = self.common_get_profile("hamlet@zulip.com")
         self.assertEqual(json["pointer"], id2) # pointer does not move backwards
 
-        result = self.client_put("/json/users/me/pointer", {"pointer": 99999999})
+        result = self.client_post("/json/users/me/pointer", {"pointer": 99999999})
         self.assert_json_error(result, "Invalid message ID")
 
     def test_get_all_profiles_avatar_urls(self):
@@ -1840,7 +1833,7 @@ class HomeTest(ZulipTestCase):
             'Get started',
             'Keyboard shortcuts',
             'Loading...',
-            'Manage Streams',
+            'Manage streams',
             'Narrow by topic',
             'Next message',
             'SHARE THE LOVE',
@@ -1902,6 +1895,7 @@ class HomeTest(ZulipTestCase):
             "notifications_stream",
             "password_auth_enabled",
             "people_list",
+            "pm_content_in_desktop_notifications",
             "poll_timeout",
             "presence_disabled",
             "product_name",
@@ -2007,7 +2001,7 @@ class HomeTest(ZulipTestCase):
                 result = self.client_get('/', dict(stream='Denmark'))
 
             html = result.content.decode('utf-8')
-            self.assertIn('There is a new terms of service', html)
+            self.assertIn('There are new Terms of Service', html)
 
     def test_bad_narrow(self):
         # type: () -> None
@@ -2043,7 +2037,7 @@ class HomeTest(ZulipTestCase):
     def test_notifications_stream(self):
         # type: () -> None
         email = 'hamlet@zulip.com'
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         realm.notifications_stream = get_stream('Denmark', realm)
         realm.save()
         self.login(email)
@@ -2137,6 +2131,28 @@ class HomeTest(ZulipTestCase):
         self.login(email)
         result = self.client_get("/api/v1/generate_204")
         self.assertEqual(result.status_code, 204)
+
+class AuthorsPageTest(ZulipTestCase):
+    def setUp(self):
+        # type: () -> None
+        """ Manual installation which did not execute `tools/provision`
+        would not have the `static/generated/github-contributors.json` fixture
+        file.
+        """
+        if not os.path.exists(settings.CONTRIBUTORS_DATA):
+            # Copy the fixture file in `zerver/fixtures` to `static/generated`
+            update_script = os.path.join(os.path.dirname(__file__),
+                                         '../../tools/update-authors-json')
+            subprocess.check_call([update_script, '--use-fixture'])
+
+    def test_endpoint(self):
+        # type: () -> None
+        result = self.client_get('/authors/')
+        self.assert_in_success_response(
+            ['Contributors', 'Statistic last Updated:', 'commits',
+             '@timabbott'],
+            result
+        )
 
 class MutedTopicsTests(ZulipTestCase):
     def test_json_set(self):
@@ -2286,19 +2302,114 @@ class TestMissedMessages(ZulipTestCase):
 class TestOpenRealms(ZulipTestCase):
     def test_open_realm_logic(self):
         # type: () -> None
-        mit_realm = get_realm_by_string_id("mit")
+        realm = get_realm('simple')
+        do_deactivate_realm(realm)
+
+        mit_realm = get_realm("mit")
         self.assertEqual(get_unique_open_realm(), None)
         mit_realm.restricted_to_domain = False
         mit_realm.save()
         self.assertTrue(completely_open(mit_realm))
         self.assertEqual(get_unique_open_realm(), None)
-        with self.settings(SYSTEM_ONLY_REALMS={"zulip.com"}):
+        with self.settings(SYSTEM_ONLY_REALMS={"zulip"}):
             self.assertEqual(get_unique_open_realm(), mit_realm)
         mit_realm.restricted_to_domain = True
         mit_realm.save()
 
 class TestLoginPage(ZulipTestCase):
-    def test_login_page_with_subdomains(self):
+    def test_login_page_wrong_subdomain_error(self):
         # type: () -> None
         result = self.client_get("/login/?subdomain=1")
         self.assertIn(WRONG_SUBDOMAIN_ERROR, result.content.decode('utf8'))
+
+    @patch('django.http.HttpRequest.get_host')
+    def test_login_page_redirects_for_root_alias(self, mock_get_host):
+        # type: (MagicMock) -> None
+        mock_get_host.return_value = 'www.testserver'
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True,
+                           ROOT_SUBDOMAIN_ALIASES=['www']):
+            result = self.client_get("/en/login/")
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, '/find_my_team/')
+
+    @patch('django.http.HttpRequest.get_host')
+    def test_login_page_redirects_for_root_domain(self, mock_get_host):
+        # type: (MagicMock) -> None
+        mock_get_host.return_value = 'testserver'
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True,
+                           ROOT_SUBDOMAIN_ALIASES=['www']):
+            result = self.client_get("/en/login/")
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, '/find_my_team/')
+
+        mock_get_host.return_value = 'www.testserver.com'
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True,
+                           EXTERNAL_HOST='www.testserver.com',
+                           ROOT_SUBDOMAIN_ALIASES=['test']):
+            result = self.client_get("/en/login/")
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, '/find_my_team/')
+
+    @patch('django.http.HttpRequest.get_host')
+    def test_login_page_works_without_subdomains(self, mock_get_host):
+        # type: (MagicMock) -> None
+        mock_get_host.return_value = 'www.testserver'
+        with self.settings(ROOT_SUBDOMAIN_ALIASES=['www']):
+            result = self.client_get("/en/login/")
+            self.assertEqual(result.status_code, 200)
+
+        mock_get_host.return_value = 'testserver'
+        with self.settings(ROOT_SUBDOMAIN_ALIASES=['www']):
+            result = self.client_get("/en/login/")
+            self.assertEqual(result.status_code, 200)
+
+class TestFindMyTeam(ZulipTestCase):
+    def test_template(self):
+        # type: () -> None
+        result = self.client_get('/find_my_team/')
+        self.assertIn("Find your team", result.content.decode('utf8'))
+
+    def test_result(self):
+        # type: () -> None
+        url = '/find_my_team/?emails=iago@zulip.com,cordelia@zulip.com'
+        result = self.client_get(url)
+        content = result.content.decode('utf8')
+        self.assertIn("Emails sent! You will only receive emails", content)
+        self.assertIn("iago@zulip.com", content)
+        self.assertIn("cordelia@zulip.com", content)
+
+    def test_find_team_zero_emails(self):
+        # type: () -> None
+        data = {'emails': ''}
+        result = self.client_post('/find_my_team/', data)
+        self.assertIn('This field is required', result.content.decode('utf8'))
+        self.assertEqual(result.status_code, 200)
+
+    def test_find_team_one_email(self):
+        # type: () -> None
+        data = {'emails': 'hamlet@zulip.com'}
+        result = self.client_post('/find_my_team/', data)
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, '/find_my_team/?emails=hamlet%40zulip.com')
+
+    def test_find_team_multiple_emails(self):
+        # type: () -> None
+        data = {'emails': 'hamlet@zulip.com,iago@zulip.com'}
+        result = self.client_post('/find_my_team/', data)
+        self.assertEqual(result.status_code, 302)
+        expected = '/find_my_team/?emails=hamlet%40zulip.com%2Ciago%40zulip.com'
+        self.assertEqual(result.url, expected)
+
+    def test_find_team_more_than_ten_emails(self):
+        # type: () -> None
+        data = {'emails': ','.join(['hamlet-{}@zulip.com'.format(i) for i in range(11)])}
+        result = self.client_post('/find_my_team/', data)
+        self.assertEqual(result.status_code, 200)
+        self.assertIn("Please enter at most 10", result.content.decode('utf8'))
+
+class UtilsUnitTest(TestCase):
+    def test_split_by(self):
+        # type: () -> None
+        flat_list = [1, 2, 3, 4, 5, 6, 7]
+        expected_result = [[1, 2], [3, 4], [5, 6], [7, None]]
+        self.assertEqual(split_by(flat_list, 2, None), expected_result)

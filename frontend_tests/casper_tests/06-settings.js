@@ -45,7 +45,7 @@ casper.then(function () {
                 full_name: "IagoNew",
                 old_password: test_credentials.default_user.password,
                 new_password: "qwertyuiop",
-                confirm_password: "qwertyuiop"
+                confirm_password: "qwertyuiop",
             });
             casper.click('input[name="change_settings"]');
         });
@@ -76,7 +76,7 @@ casper.then(function () {
             full_name: "Iago",
             old_password: "qwertyuiop",
             new_password: test_credentials.default_user.password,
-            confirm_password: test_credentials.default_user.password
+            confirm_password: test_credentials.default_user.password,
         });
         casper.click('input[name="change_settings"]');
     });
@@ -94,8 +94,7 @@ casper.then(function () {
         casper.test.assertMatch(
             decodeURIComponent(casper.getElementsAttribute('#download_zuliprc', 'href')),
             regex_zuliprc,
-            'Looks like a zuliprc file'
-        );
+            'Looks like a zuliprc file');
     });
 });
 
@@ -112,7 +111,7 @@ casper.then(function create_bot() {
         bot_name: 'Bot 1',
         bot_short_name: '1',
         bot_default_sending_stream: 'Denmark',
-        bot_default_events_register_stream: 'Rome'
+        bot_default_events_register_stream: 'Rome',
     });
 
     casper.test.info('Submiting the create bot form');
@@ -129,8 +128,7 @@ casper.then(function () {
             casper.test.assertMatch(
                 decodeURIComponent(casper.getElementsAttribute(button_sel, 'href')),
                 regex_zuliprc,
-                'Looks like a bot ~/.zuliprc file'
-            );
+                'Looks like a bot ~/.zuliprc file');
         });
     });
 });
@@ -149,20 +147,16 @@ casper.then(function () {
 
     //     casper.test.assertEqual(
     //         common.get_form_field_value(form_sel + ' [name=bot_name]'),
-    //         'Bot 1'
-    //     );
+    //         'Bot 1');
     //     casper.test.assertEqual(
     //         common.get_form_field_value(form_sel + ' [name=bot_default_sending_stream]'),
-    //         'Denmark'
-    //     );
+    //         'Denmark');
     //     casper.test.assertEqual(
     //         common.get_form_field_value(form_sel + ' [name=bot_default_events_register_stream]'),
-    //         'Rome'
-    //     );
+    //         'Rome');
         casper.test.assertEqual(
             common.get_form_field_value(form_sel + ' [name=bot_name]'),
-            'Bot 1'
-        );
+            'Bot 1');
     });
 });
 

@@ -1,5 +1,7 @@
+global.stub_out_jquery();
+
 add_dependencies({
-    util: 'js/util.js',
+    people: 'js/people.js',
 });
 
 var _ = global._;
@@ -15,9 +17,16 @@ set_global('document', null);
 var page_params = {
     bot_list: [{email: 'bot0@zulip.com', full_name: 'Bot 0'}],
     is_admin: false,
-    email: 'owner@zulip.com',
 };
 set_global('page_params', page_params);
+
+global.people.add({
+    email: 'owner@zulip.com',
+    full_name: 'The Human Boss',
+    user_id: 42,
+});
+
+global.people.initialize_current_user(42);
 
 var patched_underscore = _.clone(_);
 patched_underscore.debounce = function (f) { return f; };

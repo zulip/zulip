@@ -63,9 +63,9 @@ def get_display_recipient_by_id(recipient_id, recipient_type, recipient_type_id)
 def get_display_recipient(recipient):
     # type: (Recipient) -> Union[Text, List[Dict[str, Any]]]
     return get_display_recipient_by_id(
-            recipient.id,
-            recipient.type,
-            recipient.type_id
+        recipient.id,
+        recipient.type,
+        recipient.type_id
     )
 
 def flush_per_request_caches():
@@ -242,27 +242,9 @@ class Realm(ModelReprMixin, models.Model):
 
 post_save.connect(flush_realm, sender=Realm)
 
-# This function is about to be deprecated. Consider using
-# get_realm_by_string_id instead.
-def get_realm(domain):
+def get_realm(string_id):
     # type: (Text) -> Optional[Realm]
-    if not domain:
-        return None
-    try:
-        return Realm.objects.get(domain__iexact=domain.strip())
-    except Realm.DoesNotExist:
-        return None
-
-# Added to assist with the domain to string_id transition. Will eventually
-# be renamed and replace get_realm.
-def get_realm_by_string_id(string_id):
-    # type: (Text) -> Optional[Realm]
-    if not string_id:
-        return None
-    try:
-        return Realm.objects.get(string_id=string_id)
-    except Realm.DoesNotExist:
-        return None
+    return Realm.objects.filter(string_id=string_id).first()
 
 def completely_open(realm):
     # type: (Realm) -> bool
@@ -283,7 +265,7 @@ def get_unique_open_realm():
     # On production installations, the (usually "zulip.com") system
     # realm is an empty realm just used for system bots, so don't
     # include it in this accounting.
-    realms = realms.exclude(domain__in=settings.SYSTEM_ONLY_REALMS)
+    realms = realms.exclude(string_id__in=settings.SYSTEM_ONLY_REALMS)
     if len(realms) != 1:
         return None
     realm = realms[0]
@@ -352,7 +334,7 @@ def email_allowed_for_realm(email, realm):
 
 def list_of_domains_for_realm(realm):
     # type: (Realm) -> List[Text]
-    return list(RealmAlias.objects.filter(realm = realm).values_list('domain', flat=True))
+    return list(RealmAlias.objects.filter(realm=realm).values('domain'))
 
 class RealmEmoji(ModelReprMixin, models.Model):
     author = models.ForeignKey('UserProfile', blank=True, null=True)
@@ -360,7 +342,7 @@ class RealmEmoji(ModelReprMixin, models.Model):
     # Second part of the regex (negative lookbehind) disallows names ending with one of the punctuation characters
     name = models.TextField(validators=[MinLengthValidator(1),
                                         RegexValidator(regex=r'^[0-9a-zA-Z.\-_]+(?<![.\-_])$',
-                                                       message=_("Invalid characters in Emoji name"))]) # type: Text
+                                                       message=_("Invalid characters in emoji name"))]) # type: Text
     # URLs start having browser compatibility problem below 2000
     # characters, so 1000 seems like a safe limit.
     img_url = models.URLField(max_length=1000) # type: Text
@@ -431,47 +413,46 @@ class RealmFilter(models.Model):
         # type: () -> Text
         return u"<RealmFilter(%s): %s %s>" % (self.realm.domain, self.pattern, self.url_format_string)
 
-def get_realm_filters_cache_key(domain):
-    # type: (Text) -> Text
-    return u'all_realm_filters:%s' % (domain,)
+def get_realm_filters_cache_key(realm_id):
+    # type: (int) -> Text
+    return u'all_realm_filters:%s' % (realm_id,)
 
 # We have a per-process cache to avoid doing 1000 remote cache queries during page load
-per_request_realm_filters_cache = {} # type: Dict[Text, List[Tuple[Text, Text, int]]]
+per_request_realm_filters_cache = {} # type: Dict[int, List[Tuple[Text, Text, int]]]
 
-def domain_in_local_realm_filters_cache(domain):
-    # type: (Text) -> bool
-    return domain in per_request_realm_filters_cache
+def realm_in_local_realm_filters_cache(realm_id):
+    # type: (int) -> bool
+    return realm_id in per_request_realm_filters_cache
 
-def realm_filters_for_domain(domain):
-    # type: (Text) -> List[Tuple[Text, Text, int]]
-    domain = domain.lower()
-    if not domain_in_local_realm_filters_cache(domain):
-        per_request_realm_filters_cache[domain] = realm_filters_for_domain_remote_cache(domain)
-    return per_request_realm_filters_cache[domain]
+def realm_filters_for_realm(realm_id):
+    # type: (int) -> List[Tuple[Text, Text, int]]
+    if not realm_in_local_realm_filters_cache(realm_id):
+        per_request_realm_filters_cache[realm_id] = realm_filters_for_realm_remote_cache(realm_id)
+    return per_request_realm_filters_cache[realm_id]
 
 @cache_with_key(get_realm_filters_cache_key, timeout=3600*24*7)
-def realm_filters_for_domain_remote_cache(domain):
-    # type: (Text) -> List[Tuple[Text, Text, int]]
+def realm_filters_for_realm_remote_cache(realm_id):
+    # type: (int) -> List[Tuple[Text, Text, int]]
     filters = []
-    for realm_filter in RealmFilter.objects.filter(realm=get_realm(domain)):
+    for realm_filter in RealmFilter.objects.filter(realm_id=realm_id):
         filters.append((realm_filter.pattern, realm_filter.url_format_string, realm_filter.id))
 
     return filters
 
 def all_realm_filters():
-    # type: () -> Dict[Text, List[Tuple[Text, Text, int]]]
-    filters = defaultdict(list) # type: Dict[Text, List[Tuple[Text, Text, int]]]
+    # type: () -> Dict[int, List[Tuple[Text, Text, int]]]
+    filters = defaultdict(list) # type: Dict[int, List[Tuple[Text, Text, int]]]
     for realm_filter in RealmFilter.objects.all():
-        filters[realm_filter.realm.domain].append((realm_filter.pattern, realm_filter.url_format_string, realm_filter.id))
+        filters[realm_filter.realm_id].append((realm_filter.pattern, realm_filter.url_format_string, realm_filter.id))
 
     return filters
 
 def flush_realm_filter(sender, **kwargs):
     # type: (Any, **Any) -> None
-    realm = kwargs['instance'].realm
-    cache_delete(get_realm_filters_cache_key(realm.domain))
+    realm_id = kwargs['instance'].realm_id
+    cache_delete(get_realm_filters_cache_key(realm_id))
     try:
-        per_request_realm_filters_cache.pop(realm.domain.lower())
+        per_request_realm_filters_cache.pop(realm_id)
     except KeyError:
         pass
 
@@ -521,6 +502,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
 
     # PM + @-mention notifications.
     enable_desktop_notifications = models.BooleanField(default=True) # type: bool
+    pm_content_in_desktop_notifications = models.BooleanField(default=True)  # type: bool
     enable_sounds = models.BooleanField(default=True) # type: bool
     enable_offline_email_notifications = models.BooleanField(default=True) # type: bool
     enable_offline_push_notifications = models.BooleanField(default=True) # type: bool
@@ -560,16 +542,17 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     AVATAR_FROM_GRAVATAR = u'G'
     AVATAR_FROM_USER = u'U'
     AVATAR_SOURCES = (
-            (AVATAR_FROM_GRAVATAR, 'Hosted by Gravatar'),
-            (AVATAR_FROM_USER, 'Uploaded by user'),
+        (AVATAR_FROM_GRAVATAR, 'Hosted by Gravatar'),
+        (AVATAR_FROM_USER, 'Uploaded by user'),
     )
     avatar_source = models.CharField(default=AVATAR_FROM_GRAVATAR, choices=AVATAR_SOURCES, max_length=1) # type: Text
+    avatar_version = models.PositiveSmallIntegerField(default=1) # type: int
 
     TUTORIAL_WAITING  = u'W'
     TUTORIAL_STARTED  = u'S'
     TUTORIAL_FINISHED = u'F'
-    TUTORIAL_STATES   = ((TUTORIAL_WAITING,  "Waiting"),
-                         (TUTORIAL_STARTED,  "Started"),
+    TUTORIAL_STATES   = ((TUTORIAL_WAITING, "Waiting"),
+                         (TUTORIAL_STARTED, "Started"),
                          (TUTORIAL_FINISHED, "Finished"))
 
     tutorial_status = models.CharField(default=TUTORIAL_WAITING, choices=TUTORIAL_STATES, max_length=1) # type: Text
@@ -672,8 +655,8 @@ class PushDeviceToken(models.Model):
     GCM = 2
 
     KINDS = (
-        (APNS,  'apns'),
-        (GCM,   'gcm'),
+        (APNS, 'apns'),
+        (GCM, 'gcm'),
     )
 
     kind = models.PositiveSmallIntegerField(choices=KINDS) # type: int
@@ -725,10 +708,10 @@ class Stream(ModelReprMixin, models.Model):
     def num_subscribers(self):
         # type: () -> int
         return Subscription.objects.filter(
-                recipient__type=Recipient.STREAM,
-                recipient__type_id=self.id,
-                user_profile__is_active=True,
-                active=True
+            recipient__type=Recipient.STREAM,
+            recipient__type_id=self.id,
+            user_profile__is_active=True,
+            active=True
         ).count()
 
     # This is stream information that is sent to clients
@@ -741,10 +724,6 @@ class Stream(ModelReprMixin, models.Model):
 
 post_save.connect(flush_stream, sender=Stream)
 post_delete.connect(flush_stream, sender=Stream)
-
-def valid_stream_name(name):
-    # type: (Text) -> bool
-    return name != ""
 
 # The Recipient table is used to map Messages to the set of users who
 # received the message.  It is implemented as a set of triples (id,
@@ -767,8 +746,8 @@ class Recipient(ModelReprMixin, models.Model):
     # N.B. If we used Django's choice=... we would get this for free (kinda)
     _type_names = {
         PERSONAL: 'personal',
-        STREAM:   'stream',
-        HUDDLE:   'huddle'}
+        STREAM: 'stream',
+        HUDDLE: 'huddle'}
 
     def type_name(self):
         # type: () -> str
@@ -997,7 +976,7 @@ class Message(ModelReprMixin, models.Model):
 
         return (sending_client in ('zulipandroid', 'zulipios', 'zulipdesktop',
                                    'website', 'ios', 'android')) or (
-                                   'desktop app' in sending_client)
+                                       'desktop app' in sending_client)
 
     @staticmethod
     def content_has_attachment(content):
@@ -1250,16 +1229,16 @@ def get_huddle(id_list):
 @cache_with_key(lambda huddle_hash, id_list: huddle_hash_cache_key(huddle_hash), timeout=3600*24*7)
 def get_huddle_backend(huddle_hash, id_list):
     # type: (Text, List[int]) -> Huddle
-    (huddle, created) = Huddle.objects.get_or_create(huddle_hash=huddle_hash)
-    if created:
-        with transaction.atomic():
+    with transaction.atomic():
+        (huddle, created) = Huddle.objects.get_or_create(huddle_hash=huddle_hash)
+        if created:
             recipient = Recipient.objects.create(type_id=huddle.id,
                                                  type=Recipient.HUDDLE)
             subs_to_create = [Subscription(recipient=recipient,
                                            user_profile=get_user_profile_by_id(user_profile_id))
                               for user_profile_id in id_list]
             Subscription.objects.bulk_create(subs_to_create)
-    return huddle
+        return huddle
 
 def clear_database():
     # type: () -> None
@@ -1312,34 +1291,34 @@ class UserPresence(models.Model):
         user_statuses = defaultdict(dict) # type: defaultdict[Any, Dict[Any, Any]]
 
         query = UserPresence.objects.filter(
-                user_profile__realm_id=realm_id,
-                user_profile__is_active=True,
-                user_profile__is_bot=False
+            user_profile__realm_id=realm_id,
+            user_profile__is_active=True,
+            user_profile__is_bot=False
         ).values(
-                'client__name',
-                'status',
-                'timestamp',
-                'user_profile__email',
-                'user_profile__id',
-                'user_profile__enable_offline_push_notifications',
-                'user_profile__is_mirror_dummy',
+            'client__name',
+            'status',
+            'timestamp',
+            'user_profile__email',
+            'user_profile__id',
+            'user_profile__enable_offline_push_notifications',
+            'user_profile__is_mirror_dummy',
         )
 
         mobile_user_ids = [row['user'] for row in PushDeviceToken.objects.filter(
-                user__realm_id=1,
-                user__is_active=True,
-                user__is_bot=False,
+            user__realm_id=1,
+            user__is_active=True,
+            user__is_bot=False,
         ).distinct("user").values("user")]
 
         for row in query:
             info = UserPresence.to_presence_dict(
-                    client_name=row['client__name'],
-                    status=row['status'],
-                    dt=row['timestamp'],
-                    push_enabled=row['user_profile__enable_offline_push_notifications'],
-                    has_push_devices=row['user_profile__id'] in mobile_user_ids,
-                    is_mirror_dummy=row['user_profile__is_mirror_dummy'],
-                    )
+                client_name=row['client__name'],
+                status=row['status'],
+                dt=row['timestamp'],
+                push_enabled=row['user_profile__enable_offline_push_notifications'],
+                has_push_devices=row['user_profile__id'] in mobile_user_ids,
+                is_mirror_dummy=row['user_profile__is_mirror_dummy'],
+            )
             user_statuses[row['user_profile__email']][row['client__name']] = info
 
         return user_statuses
@@ -1352,18 +1331,18 @@ class UserPresence(models.Model):
 
         timestamp = datetime_to_timestamp(dt)
         return dict(
-                client=client_name,
-                status=presence_val,
-                timestamp=timestamp,
-                pushable=(push_enabled and has_push_devices),
+            client=client_name,
+            status=presence_val,
+            timestamp=timestamp,
+            pushable=(push_enabled and has_push_devices),
         )
 
     def to_dict(self):
         # type: () -> Dict[str, Any]
         return UserPresence.to_presence_dict(
-                client_name=self.client.name,
-                status=self.status,
-                dt=self.timestamp
+            client_name=self.client.name,
+            status=self.status,
+            dt=self.timestamp
         )
 
     @staticmethod

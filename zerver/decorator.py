@@ -17,7 +17,7 @@ from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import statsd, get_subdomain, check_subdomain
 from zerver.exceptions import RateLimited
 from zerver.lib.rate_limiter import incr_ratelimit, is_ratelimited, \
-     api_calls_left
+    api_calls_left
 from zerver.lib.request import REQ, has_request_variables, JsonableError, RequestVariableMissingError
 from django.core.handlers import base
 
@@ -94,9 +94,9 @@ def require_post(func):
     @wraps(func)
     def wrapper(request, *args, **kwargs):
         # type: (HttpRequest, *Any, **Any) -> HttpResponse
-        if (request.method != "POST"
-            and not (request.method == "SOCKET"
-                     and request.META['zulip.emulated_method'] == "POST")):
+        if (request.method != "POST" and
+            not (request.method == "SOCKET" and
+                 request.META['zulip.emulated_method'] == "POST")):
             if request.method == "SOCKET":
                 err_method = "SOCKET/%s" % (request.META['zulip.emulated_method'],)
             else:
@@ -191,11 +191,11 @@ def validate_api_key(request, role, api_key, is_webhook=False):
     except AttributeError:
         # Deployment objects don't have realms
         pass
-    if (not check_subdomain(get_subdomain(request), profile.realm.subdomain)
+    if (not check_subdomain(get_subdomain(request), profile.realm.subdomain) and
         # Allow access to localhost for Tornado
-        and not (settings.RUNNING_INSIDE_TORNADO and
-                 request.META["SERVER_NAME"] == "127.0.0.1" and
-                 request.META["REMOTE_ADDR"] == "127.0.0.1")):
+        not (settings.RUNNING_INSIDE_TORNADO and
+             request.META["SERVER_NAME"] == "127.0.0.1" and
+             request.META["REMOTE_ADDR"] == "127.0.0.1")):
         logging.warning("User %s attempted to access API on wrong subdomain %s" % (
             profile.email, get_subdomain(request)))
         raise JsonableError(_("Account is not associated with this subdomain"))
@@ -375,7 +375,7 @@ def authenticated_rest_api_view(is_webhook=False):
                     return json_error(_("Only Basic authentication is supported."))
                 role, api_key = base64.b64decode(force_bytes(credentials)).decode('utf-8').split(":")
             except ValueError:
-                json_error(_("Invalid authorization header for basic auth"))
+                return json_unauthorized(_("Invalid authorization header for basic auth"))
             except KeyError:
                 return json_unauthorized("Missing authorization header for basic auth")
 
@@ -486,17 +486,17 @@ def is_local_addr(addr):
 # secret, and also the originating IP (for now).
 def authenticate_notify(request):
     # type: (HttpRequest) -> bool
-    return (is_local_addr(request.META['REMOTE_ADDR'])
-            and request.POST.get('secret') == settings.SHARED_SECRET)
+    return (is_local_addr(request.META['REMOTE_ADDR']) and
+            request.POST.get('secret') == settings.SHARED_SECRET)
 
 def client_is_exempt_from_rate_limiting(request):
     # type: (HttpRequest) -> bool
 
     # Don't rate limit requests from Django that come from our own servers,
     # and don't rate-limit dev instances
-    return ((request.client and request.client.name.lower() == 'internal')
-            and (is_local_addr(request.META['REMOTE_ADDR']) or
-            settings.DEBUG_RATE_LIMITING))
+    return ((request.client and request.client.name.lower() == 'internal') and
+            (is_local_addr(request.META['REMOTE_ADDR']) or
+             settings.DEBUG_RATE_LIMITING))
 
 def internal_notify_view(view_func):
     # type: (ViewFuncT) -> ViewFuncT
@@ -576,8 +576,8 @@ def rate_limit_user(request, user, domain):
 
 def rate_limit(domain='all'):
     # type: (Text) -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]
-    """Rate-limits a view. Takes an optional 'domain' param if you wish to rate limit different
-    types of API calls independently.
+    """Rate-limits a view. Takes an optional 'domain' param if you wish to
+    rate limit different types of API calls independently.
 
     Returns a decorator"""
     def wrapper(func):
@@ -597,7 +597,7 @@ def rate_limit(domain='all'):
 
             try:
                 user = request.user
-            except:
+            except Exception:
                 # TODO: This logic is not tested, and I'm not sure we are
                 # doing the right thing here.
                 user = None

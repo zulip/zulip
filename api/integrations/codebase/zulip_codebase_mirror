@@ -38,8 +38,6 @@ import sys
 import os
 
 from datetime import datetime, timedelta
-import six
-
 
 try:
     import dateutil.parser
@@ -54,7 +52,9 @@ VERSION = "0.9"
 
 if config.ZULIP_API_PATH is not None:
     sys.path.append(config.ZULIP_API_PATH)
+import six
 import zulip
+from typing import Any, List, Dict, Optional
 
 client = zulip.Client(
     email=config.ZULIP_USER,
@@ -74,6 +74,7 @@ while len(json_implementations):
         continue
 
 def make_api_call(path):
+    # type: (str) -> Optional[List[Dict[str, Any]]]
     response = requests.get("https://api3.codebasehq.com/%s" % (path,),
                             auth=(config.CODEBASE_API_USERNAME, config.CODEBASE_API_KEY),
                             params={'raw': True},
@@ -84,7 +85,7 @@ def make_api_call(path):
         return json.loads(response.text)
 
     if response.status_code >= 500:
-        logging.error(response.status_code)
+        logging.error(str(response.status_code))
         return None
     if response.status_code == 403:
         logging.error("Bad authorization from Codebase. Please check your credentials")
@@ -94,9 +95,11 @@ def make_api_call(path):
         return None
 
 def make_url(path):
+    # type: (str) -> str
     return "%s/%s" % (config.CODEBASE_ROOT_URL, path)
 
 def handle_event(event):
+    # type: (Dict[str, Any]) -> None
     event = event['event']
     event_type = event['type']
     actor_name = event['actor_name']
@@ -261,9 +264,11 @@ def handle_event(event):
 
 # the main run loop for this mirror script
 def run_mirror():
+    # type: () -> None
     # we should have the right (write) permissions on the resume file, as seen
     # in check_permissions, but it may still be empty or corrupted
     def default_since():
+        # type: () -> datetime
         return datetime.utcnow() - timedelta(hours=config.CODEBASE_INITIAL_HISTORY_HOURS)
 
     try:
@@ -272,10 +277,9 @@ def run_mirror():
         if timestamp == '':
             since = default_since()
         else:
-            timestamp = int(timestamp, 10)
-            since = datetime.fromtimestamp(timestamp)
+            since = datetime.fromtimestamp(float(timestamp))
     except (ValueError, IOError) as e:
-        logging.warn("Could not open resume file: %s" % (e.message or e.strerror,))
+        logging.warn("Could not open resume file: %s" % (str(e)))
         since = default_since()
 
     try:
@@ -302,23 +306,24 @@ def run_mirror():
 
 # void function that checks the permissions of the files this script needs.
 def check_permissions():
+    # type: () -> None
     # check that the log file can be written
     if config.LOG_FILE:
         try:
             open(config.LOG_FILE, "w")
         except IOError as e:
-            sys.stderr("Could not open up log for writing:")
-            sys.stderr(e)
+            sys.stderr.write("Could not open up log for writing:")
+            sys.stderr.write(str(e))
     # check that the resume file can be written (this creates if it doesn't exist)
     try:
         open(config.RESUME_FILE, "a+")
     except IOError as e:
-        sys.stderr("Could not open up the file %s for reading and writing" % (config.RESUME_FILE,))
-        sys.stderr(e)
+        sys.stderr.write("Could not open up the file %s for reading and writing" % (config.RESUME_FILE,))
+        sys.stderr.write(str(e))
 
 if __name__ == "__main__":
     if not isinstance(config.RESUME_FILE, six.string_types):
-        sys.stderr("RESUME_FILE path not given; refusing to continue")
+        sys.stderr.write("RESUME_FILE path not given; refusing to continue")
     check_permissions()
     if config.LOG_FILE:
         logging.basicConfig(filename=config.LOG_FILE, level=logging.WARNING)

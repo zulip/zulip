@@ -26,7 +26,7 @@ def update_active_status_backend(request, user_profile, status=REQ(),
     # type: (HttpRequest, UserProfile, str, bool) -> HttpResponse
     status_val = UserPresence.status_from_string(status)
     if status_val is None:
-        raise JsonableError(_("Invalid presence status: %s") % (status,))
+        raise JsonableError(_("Invalid status: %s") % (status,))
     else:
         update_user_presence(user_profile, request.client, timezone.now(),
                              status_val, new_user_input)

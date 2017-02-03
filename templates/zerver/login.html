@@ -143,8 +143,14 @@ autofocus('#id_username');
                     {% for user_email in direct_admins %}
                     <p><input type="submit" name="direct_email" class="btn-direct btn-admin" value="{{ user_email }}" /></p>
                     {% endfor %}
+
                     <p>({{ _('Normal users') }})</p>
                     {% for user_email in direct_users %}
+                    <p><input type="submit" name="direct_email" class="btn-direct btn-user" value="{{ user_email }}" /></p>
+                    {% endfor %}
+
+                    <p>({{ _('Community users') }})</p>
+                    {% for user_email in community_users %}
                     <p><input type="submit" name="direct_email" class="btn-direct btn-user" value="{{ user_email }}" /></p>
                     {% endfor %}
                 </div>

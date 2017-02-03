@@ -29,12 +29,13 @@ languages (e.g. what word to translate words like "home" to):
 
 * [Chinese](chinese.html)
 * [Polish](polish.html)
+* [Russian](russian.html)
 * [Spanish](spanish.html)
 
-## Setting Default Language in Zulip
+## Setting Default language in Zulip
 
 Zulip allows you to set the default language through the settings
-page, in the 'Display Settings' section. The URL will be
+page, in the 'Display settings' section. The URL will be
 `/#settings/display-settings` on your realm.
 
 ## Translation Resource Files
@@ -165,7 +166,7 @@ is used to enclose the variables can be changed in
 `/static/js/src/main.js`.
 
 `i18next` also supports plural translations. To support plurals make
-sure your resource file contatins the related keys:
+sure your resource file contains the related keys:
 
 ```
 {

@@ -6,23 +6,25 @@ from django.contrib.auth.views import login as django_login_page, \
     logout_then_login as django_logout_then_login
 from django.core.urlresolvers import reverse
 from zerver.decorator import authenticated_json_post_view, require_post
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, \
+    HttpResponseNotFound
 from django.middleware.csrf import get_token
 from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.translation import ugettext as _
 from django.core import signing
-from typing import Text
 from six.moves import urllib
 from typing import Any, Dict, Optional, Tuple, Text
 
 from confirmation.models import Confirmation
-from zerver.forms import HomepageForm, OurAuthenticationForm, WRONG_SUBDOMAIN_ERROR
+from zerver.forms import HomepageForm, OurAuthenticationForm, \
+    WRONG_SUBDOMAIN_ERROR
+
 from zerver.lib.request import REQ, has_request_variables, JsonableError
 from zerver.lib.response import json_success, json_error
-from zerver.lib.utils import get_subdomain
+from zerver.lib.utils import get_subdomain, is_subdomain_root_or_alias
 from zerver.models import PreregistrationUser, UserProfile, remote_user_to_email, Realm
-from zerver.views import create_preregistration_user, get_realm_from_request, \
+from zerver.views.registration import create_preregistration_user, get_realm_from_request, \
     redirect_and_log_into_subdomain
 from zproject.backends import password_auth_enabled, dev_auth_enabled, google_auth_enabled
 from zproject.jinja2 import render_to_response
@@ -325,6 +327,12 @@ def log_into_subdomain(request):
 
 def login_page(request, **kwargs):
     # type: (HttpRequest, **Any) -> HttpResponse
+    if request.user.is_authenticated():
+        return HttpResponseRedirect("/")
+    if is_subdomain_root_or_alias(request) and settings.REALMS_HAVE_SUBDOMAINS:
+        redirect_url = reverse('zerver.views.registration.find_my_team')
+        return HttpResponseRedirect(redirect_url)
+
     extra_context = kwargs.pop('extra_context', {})
     if dev_auth_enabled():
         # Development environments usually have only a few users, but
@@ -334,7 +342,12 @@ def login_page(request, **kwargs):
         users_query = UserProfile.objects.select_related().filter(is_bot=False, is_active=True)
         users = users_query.order_by('email')[0:MAX_DEV_BACKEND_USERS]
         extra_context['direct_admins'] = [u.email for u in users if u.is_realm_admin]
-        extra_context['direct_users'] = [u.email for u in users if not u.is_realm_admin]
+        extra_context['direct_users'] = [
+            u.email for u in users
+            if not u.is_realm_admin and u.realm.string_id == 'zulip']
+        extra_context['community_users'] = [
+            u.email for u in users
+            if u.realm.string_id != 'zulip']
     template_response = django_login_page(
         request, authentication_form=OurAuthenticationForm,
         extra_context=extra_context, **kwargs)
@@ -383,10 +396,10 @@ def api_dev_fetch_api_key(request, username=REQ()):
     user_profile = authenticate(username=username,
                                 realm_subdomain=get_subdomain(request),
                                 return_data=return_data)
-    if return_data.get("inactive_realm") == True:
+    if return_data.get("inactive_realm"):
         return json_error(_("Your realm has been deactivated."),
                           data={"reason": "realm deactivated"}, status=403)
-    if return_data.get("inactive_user") == True:
+    if return_data.get("inactive_user"):
         return json_error(_("Your account has been disabled."),
                           data={"reason": "user disable"}, status=403)
     login(request, user_profile)
@@ -418,17 +431,17 @@ def api_fetch_api_key(request, username=REQ(), password=REQ()):
                                     password=password,
                                     realm_subdomain=get_subdomain(request),
                                     return_data=return_data)
-    if return_data.get("inactive_user") == True:
+    if return_data.get("inactive_user"):
         return json_error(_("Your account has been disabled."),
                           data={"reason": "user disable"}, status=403)
-    if return_data.get("inactive_realm") == True:
+    if return_data.get("inactive_realm"):
         return json_error(_("Your realm has been deactivated."),
                           data={"reason": "realm deactivated"}, status=403)
-    if return_data.get("password_auth_disabled") == True:
+    if return_data.get("password_auth_disabled"):
         return json_error(_("Password auth is disabled in your team."),
                           data={"reason": "password auth disabled"}, status=403)
     if user_profile is None:
-        if return_data.get("valid_attestation") == True:
+        if return_data.get("valid_attestation"):
             # We can leak that the user is unregistered iff they present a valid authentication string for the user.
             return json_error(_("This user is not registered; do so from a browser."),
                               data={"reason": "unregistered"}, status=403)

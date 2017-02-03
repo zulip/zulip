@@ -36,7 +36,7 @@ from zerver.lib.timeout import timeout, TimeoutExpired
 from zerver.lib.cache import (
     cache_with_key, cache_get_many, cache_set_many, NotFoundInCache)
 from zerver.lib.url_preview import preview as link_preview
-from zerver.models import Message
+from zerver.models import Message, Realm
 import zerver.lib.alert_words as alert_words
 import zerver.lib.mention as mention
 from zerver.lib.str_utils import force_text, force_str
@@ -132,9 +132,20 @@ def add_embed(root, link, extracted_data):
     container = markdown.util.etree.SubElement(root, "div")
     container.set("class", "message_embed")
 
+    img_link = extracted_data.get('image')
+    if img_link:
+        img = markdown.util.etree.SubElement(container, "a")
+        img.set("style", "background-image: url(" + img_link + ")")
+        img.set("href", link)
+        img.set("target", "_blank")
+        img.set("class", "message_embed_image")
+
+    data_container = markdown.util.etree.SubElement(container, "div")
+    data_container.set("class", "data-container")
+
     title = extracted_data.get('title')
     if title:
-        title_elm = markdown.util.etree.SubElement(container, "div")
+        title_elm = markdown.util.etree.SubElement(data_container, "div")
         title_elm.set("class", "message_embed_title")
         a = markdown.util.etree.SubElement(title_elm, "a")
         a.set("href", link)
@@ -144,15 +155,9 @@ def add_embed(root, link, extracted_data):
 
     description = extracted_data.get('description')
     if description:
-        description_elm = markdown.util.etree.SubElement(container, "div")
+        description_elm = markdown.util.etree.SubElement(data_container, "div")
         description_elm.set("class", "message_embed_description")
         description_elm.text = description
-
-    img_link = extracted_data.get('image')
-    if img_link:
-        img = markdown.util.etree.SubElement(container, "img")
-        img.set("src", img_link)
-        img.set("class", "message_embed_image")
 
 
 @cache_with_key(lambda tweet_id: tweet_id, cache_name="database", with_statsd_key="tweet_data")
@@ -653,7 +658,7 @@ class UnicodeEmoji(markdown.inlinepatterns.Pattern):
         orig_syntax = match.group('syntax')
         name = hex(ord(orig_syntax))[2:]
         if name in unicode_emoji_list:
-            src = '/static/generated/emoji/images/emoji/unicode/%s.png' % (name)
+            src = '/static/generated/emoji/images/emoji/unicode/%s.png' % (name,)
             return make_emoji(name, src, orig_syntax)
         else:
             return None
@@ -671,7 +676,7 @@ class Emoji(markdown.inlinepatterns.Pattern):
         if current_message and name in realm_emoji:
             return make_emoji(name, realm_emoji[name]['display_url'], orig_syntax)
         elif name in emoji_list:
-            src = '/static/generated/emoji/images/emoji/%s.png' % (name)
+            src = '/static/generated/emoji/images/emoji/%s.png' % (name,)
             return make_emoji(name, src, orig_syntax)
         else:
             return None
@@ -730,7 +735,7 @@ def fixup_link(link, target_blank=True):
     """Set certain attributes we want on every link."""
     if target_blank:
         link.set('target', '_blank')
-    link.set('title',  url_filename(link.get('href')))
+    link.set('title', url_filename(link.get('href')))
 
 
 def sanitize_url(url):
@@ -935,11 +940,13 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
 
             if wildcard:
                 current_message.mentions_wildcard = True
-                email = "*"
+                email = '*'
+                user_id = "*"
             elif user:
                 current_message.mentions_user_ids.add(user['id'])
-                name = user['full_name']
                 email = user['email']
+                name = user['full_name']
+                user_id = str(user['id'])
             else:
                 # Don't highlight @mentions that don't refer to a valid user
                 return None
@@ -947,6 +954,7 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
             el = markdown.util.etree.Element("span")
             el.set('class', 'user-mention')
             el.set('data-user-email', email)
+            el.set('data-user-id', user_id)
             el.text = "@%s" % (name,)
             return el
 
@@ -1022,12 +1030,17 @@ class AtomicLinkPattern(LinkPattern):
             ret.text = markdown.util.AtomicString(ret.text)
         return ret
 
+# These are used as keys ("realm_filters_keys") to md_engines and the respective
+# realm filter caches
+DEFAULT_BUGDOWN_KEY = -1
+ZEPHYR_MIRROR_BUGDOWN_KEY = -2
+
 class Bugdown(markdown.Extension):
     def __init__(self, *args, **kwargs):
         # type: (*Any, **Union[bool, None, Text]) -> None
         # define default configs
         self.config = {
-            "realm_filters": [kwargs['realm_filters'], "Realm-specific filters for domain"],
+            "realm_filters": [kwargs['realm_filters'], "Realm-specific filters for realm"],
             "realm": [kwargs['realm'], "Realm name"]
         }
 
@@ -1163,7 +1176,7 @@ class Bugdown(markdown.Extension):
         if settings.CAMO_URI:
             md.treeprocessors.add("rewrite_to_https", InlineHttpsProcessor(md), "_end")
 
-        if self.getConfig("realm") == "zephyr_mirror":
+        if self.getConfig("realm") == ZEPHYR_MIRROR_BUGDOWN_KEY:
             # Disable almost all inline patterns for zephyr mirror
             # users' traffic that is mirrored.  Note that
             # inline_interesting_links is a treeprocessor and thus is
@@ -1181,37 +1194,37 @@ class Bugdown(markdown.Extension):
                 if k not in ["paragraph"]:
                     del md.parser.blockprocessors[k]
 
-md_engines = {}
-realm_filter_data = {} # type: Dict[Text, List[Tuple[Text, Text, int]]]
+md_engines = {} # type: Dict[int, markdown.Markdown]
+realm_filter_data = {} # type: Dict[int, List[Tuple[Text, Text, int]]]
 
 class EscapeHtml(markdown.Extension):
     def extendMarkdown(self, md, md_globals):
-    # type: (markdown.Markdown, Dict[str, Any]) -> None
+        # type: (markdown.Markdown, Dict[str, Any]) -> None
         del md.preprocessors['html_block']
         del md.inlinePatterns['html']
 
 def make_md_engine(key, opts):
-    # type: (Text, Dict[str, Any]) -> None
+    # type: (int, Dict[str, Any]) -> None
     md_engines[key] = markdown.Markdown(
         output_format = 'html',
         extensions    = [
-                         'markdown.extensions.nl2br',
-                         'markdown.extensions.tables',
-                         codehilite.makeExtension(
-                                linenums=False,
-                                guess_lang=False
-                         ),
-                         fenced_code.makeExtension(),
-                         EscapeHtml(),
-                         Bugdown(realm_filters=opts["realm_filters"][0],
-                                 realm=opts["realm"][0])])
+            'markdown.extensions.nl2br',
+            'markdown.extensions.tables',
+            codehilite.makeExtension(
+                linenums=False,
+                guess_lang=False
+            ),
+            fenced_code.makeExtension(),
+            EscapeHtml(),
+            Bugdown(realm_filters=opts["realm_filters"][0],
+                    realm=opts["realm"][0])])
 
-def subject_links(domain, subject):
-    # type: (Text, Text) -> List[Text]
-    from zerver.models import get_realm, RealmFilter, realm_filters_for_domain
+def subject_links(realm_filters_key, subject):
+    # type: (int, Text) -> List[Text]
+    from zerver.models import RealmFilter, realm_filters_for_realm
     matches = [] # type: List[Text]
 
-    realm_filters = realm_filters_for_domain(domain)
+    realm_filters = realm_filters_for_realm(realm_filters_key)
 
     for realm_filter in realm_filters:
         pattern = prepare_realm_pattern(realm_filter[0])
@@ -1219,35 +1232,37 @@ def subject_links(domain, subject):
             matches += [realm_filter[1] % m.groupdict()]
     return matches
 
-def make_realm_filters(domain, filters):
-    # type: (Text, List[Tuple[Text, Text, int]]) -> None
+def make_realm_filters(realm_filters_key, filters):
+    # type: (int, List[Tuple[Text, Text, int]]) -> None
     global md_engines, realm_filter_data
-    if domain in md_engines:
-        del md_engines[domain]
-    realm_filter_data[domain] = filters
+    if realm_filters_key in md_engines:
+        del md_engines[realm_filters_key]
+    realm_filter_data[realm_filters_key] = filters
 
     # Because of how the Markdown config API works, this has confusing
     # large number of layers of dicts/arrays :(
-    make_md_engine(domain, {"realm_filters": [filters, "Realm-specific filters for %s" % (domain,)],
-                            "realm": [domain, "Realm name"]})
+    make_md_engine(realm_filters_key,
+                   {"realm_filters": [
+                       filters, "Realm-specific filters for realm_filters_key %s" % (realm_filters_key,)],
+                    "realm": [realm_filters_key, "Realm name"]})
 
-def maybe_update_realm_filters(domain):
-    # type: (Optional[Text]) -> None
-    from zerver.models import realm_filters_for_domain, all_realm_filters
+def maybe_update_realm_filters(realm_filters_key):
+    # type: (Optional[int]) -> None
+    from zerver.models import realm_filters_for_realm, all_realm_filters
 
-    # If domain is None, load all filters
-    if domain is None:
+    # If realm_filters_key is None, load all filters
+    if realm_filters_key is None:
         all_filters = all_realm_filters()
-        all_filters['default'] = []
-        for domain, filters in six.iteritems(all_filters):
-            make_realm_filters(domain, filters)
+        all_filters[DEFAULT_BUGDOWN_KEY] = []
+        for realm_filters_key, filters in six.iteritems(all_filters):
+            make_realm_filters(realm_filters_key, filters)
         # Hack to ensure that getConfig("realm") is right for mirrored Zephyrs
-        make_realm_filters("zephyr_mirror", [])
+        make_realm_filters(ZEPHYR_MIRROR_BUGDOWN_KEY, [])
     else:
-        realm_filters = realm_filters_for_domain(domain)
-        if domain not in realm_filter_data or realm_filter_data[domain] != realm_filters:
+        realm_filters = realm_filters_for_realm(realm_filters_key)
+        if realm_filters_key not in realm_filter_data or realm_filter_data[realm_filters_key] != realm_filters:
             # Data has changed, re-load filters
-            make_realm_filters(domain, realm_filters)
+            make_realm_filters(realm_filters_key, realm_filters)
 
 # We want to log Markdown parser failures, but shouldn't log the actual input
 # message for privacy reasons.  The compromise is to replace all alphanumeric
@@ -1278,21 +1293,38 @@ def log_bugdown_error(msg):
     could cause an infinite exception loop."""
     logging.getLogger('').error(msg)
 
-def do_convert(content, realm_domain=None, message=None, possible_words=None):
-    # type: (Text, Optional[Text], Optional[Message], Optional[Set[Text]]) -> Optional[Text]
+def do_convert(content, message=None, message_realm=None, possible_words=None):
+    # type: (Text, Optional[Message], Optional[Realm], Optional[Set[Text]]) -> Optional[Text]
     """Convert Markdown to HTML, with Zulip-specific settings and hacks."""
     from zerver.models import get_active_user_dicts_in_realm, get_active_streams, UserProfile
 
+    # This logic is a bit convoluted, but the overall goal is to support a range of use cases:
+    # * Nothing is passed in other than content -> just run default options (e.g. for docs)
+    # * message is passed, but no realm is -> look up realm from message
+    # * message_realm is passed -> use that realm for bugdown purposes
     if message:
-        maybe_update_realm_filters(message.get_realm().domain)
-
-    if realm_domain in md_engines:
-        _md_engine = md_engines[realm_domain]
+        if message_realm is None:
+            message_realm = message.get_realm()
+    if message_realm is None:
+        realm_filters_key = DEFAULT_BUGDOWN_KEY
     else:
-        if 'default' not in md_engines:
-            maybe_update_realm_filters(domain=None)
+        realm_filters_key = message_realm.id
 
-        _md_engine = md_engines["default"]
+    if (message and message.sender.realm.is_zephyr_mirror_realm and
+            message.sending_client.name == "zephyr_mirror"):
+        # Use slightly customized Markdown processor for content
+        # delivered via zephyr_mirror
+        realm_filters_key = ZEPHYR_MIRROR_BUGDOWN_KEY
+
+    maybe_update_realm_filters(realm_filters_key)
+
+    if realm_filters_key in md_engines:
+        _md_engine = md_engines[realm_filters_key]
+    else:
+        if DEFAULT_BUGDOWN_KEY not in md_engines:
+            maybe_update_realm_filters(realm_filters_key=None)
+
+        _md_engine = md_engines[DEFAULT_BUGDOWN_KEY]
     # Reset the parser; otherwise it will get slower over time.
     _md_engine.reset()
 
@@ -1302,17 +1334,17 @@ def do_convert(content, realm_domain=None, message=None, possible_words=None):
     # Pre-fetch data from the DB that is used in the bugdown thread
     global db_data
     if message:
-        realm_users = get_active_user_dicts_in_realm(message.get_realm())
-        realm_streams = get_active_streams(message.get_realm()).values('id', 'name')
+        realm_users = get_active_user_dicts_in_realm(message_realm)
+        realm_streams = get_active_streams(message_realm).values('id', 'name')
 
         if possible_words is None:
             possible_words = set() # Set[Text]
 
-        db_data = {'possible_words':    possible_words,
-                   'full_names':        dict((user['full_name'].lower(), user) for user in realm_users),
-                   'short_names':       dict((user['short_name'].lower(), user) for user in realm_users),
-                   'emoji':             message.get_realm().get_emoji(),
-                   'stream_names':      dict((stream['name'], stream) for stream in realm_streams)}
+        db_data = {'possible_words': possible_words,
+                   'full_names': dict((user['full_name'].lower(), user) for user in realm_users),
+                   'short_names': dict((user['short_name'].lower(), user) for user in realm_users),
+                   'emoji': message_realm.get_emoji(),
+                   'stream_names': dict((stream['name'], stream) for stream in realm_streams)}
 
     try:
         # Spend at most 5 seconds rendering.
@@ -1321,6 +1353,7 @@ def do_convert(content, realm_domain=None, message=None, possible_words=None):
         return timeout(5, _md_engine.convert, content)
     except:
         from zerver.lib.actions import internal_send_message
+        from zerver.models import get_user_profile_by_email
 
         cleaned = _sanitize_for_log(content)
 
@@ -1329,11 +1362,12 @@ def do_convert(content, realm_domain=None, message=None, possible_words=None):
                           % (traceback.format_exc(), cleaned))
         subject = "Markdown parser failure on %s" % (platform.node(),)
         if settings.ERROR_BOT is not None:
-            internal_send_message(settings.ERROR_BOT, "stream",
+            error_bot_realm = get_user_profile_by_email(settings.ERROR_BOT).realm
+            internal_send_message(error_bot_realm, settings.ERROR_BOT, "stream",
                                   "errors", subject, "Markdown parser failed, email sent with details.")
-        mail.mail_admins(subject, "Failed message: %s\n\n%s\n\n" % (
-                                    cleaned, traceback.format_exc()),
-                         fail_silently=False)
+        mail.mail_admins(
+            subject, "Failed message: %s\n\n%s\n\n" % (cleaned, traceback.format_exc()),
+            fail_silently=False)
         raise BugdownRenderingException()
     finally:
         current_message = None
@@ -1364,9 +1398,9 @@ def bugdown_stats_finish():
     bugdown_total_requests += 1
     bugdown_total_time += (time.time() - bugdown_time_start)
 
-def convert(content, realm_domain=None, message=None, possible_words=None):
-    # type: (Text, Optional[Text], Optional[Message], Optional[Set[Text]]) -> Optional[Text]
+def convert(content, message=None, message_realm=None, possible_words=None):
+    # type: (Text, Optional[Message], Optional[Realm], Optional[Set[Text]]) -> Optional[Text]
     bugdown_stats_start()
-    ret = do_convert(content, realm_domain, message, possible_words)
+    ret = do_convert(content, message, message_realm, possible_words)
     bugdown_stats_finish()
     return ret

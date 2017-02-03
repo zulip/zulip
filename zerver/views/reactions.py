@@ -7,7 +7,7 @@ from typing import Text
 from zerver.decorator import authenticated_json_post_view,\
     has_request_variables, REQ, to_non_negative_int
 from zerver.lib.actions import do_add_reaction, do_remove_reaction
-from zerver.lib.bugdown import emoji_list
+from zerver.lib.emoji import check_valid_emoji
 from zerver.lib.message import access_message
 from zerver.lib.request import JsonableError
 from zerver.lib.response import json_success
@@ -21,9 +21,7 @@ def add_reaction_backend(request, user_profile, message_id, emoji_name):
     # cannot see the message (e.g. for messages to private streams).
     message = access_message(user_profile, message_id)[0]
 
-    existing_emojis = set(message.sender.realm.get_emoji().keys()) or set(emoji_list)
-    if emoji_name not in existing_emojis:
-        raise JsonableError(_("Emoji '%s' does not exist" % (emoji_name,)))
+    check_valid_emoji(message.sender.realm, emoji_name)
 
     # We could probably just make this check be a try/except for the
     # IntegrityError from it already existing, but this is a bit cleaner.
@@ -44,9 +42,7 @@ def remove_reaction_backend(request, user_profile, message_id, emoji_name):
     # cannot see the message (e.g. for messages to private streams).
     message = access_message(user_profile, message_id)[0]
 
-    existing_emojis = set(message.sender.realm.get_emoji().keys()) or set(emoji_list)
-    if emoji_name not in existing_emojis:
-        raise JsonableError(_("Emoji '%s' does not exist" % (emoji_name,)))
+    check_valid_emoji(message.sender.realm, emoji_name)
 
     # We could probably just make this check be a try/except for the
     # IntegrityError from it already existing, but this is a bit cleaner.

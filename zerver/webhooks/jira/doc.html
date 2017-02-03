@@ -1,0 +1,45 @@
+<p>
+    <em>
+        If you are running JIRA version 5.2 or greater, or if you are
+        using the hosted JIRA provided by Atlassian, you can use the built-in
+        web-hook support to connect to Zulip &mdash; read on. For older,
+        self-hosted JIRA installs, you can use our <a href="#jira-plugin">JIRA Plugin</a>.
+    </em>
+</p>
+
+<p>
+    First, create the stream you'd like to use for JIRA notifications, and
+    subscribe all interested parties to this stream. We recommend the
+    name <code>jira</code>.
+</p>
+
+<p>
+    In your JIRA administration control panel, go to the Webhooks page. If you are using the OnDemand
+    hosted JIRA, follow the instructions
+    <a href="https://developer.atlassian.com/jiradev/jira-apis/webhooks#Webhooks-jiraadmin">
+        on the Atlassian wiki
+    </a>
+    for locating the Webhook UI.
+</p>
+<p>Give your new web hook a name, and for the URL provide the following:</p>
+<p>
+    <code>{{ external_api_uri_subdomain }}/v1/external/jira?api_key=abcdefgh&amp;stream=jira</code>
+</p>
+
+<p>
+    where <code>api_key</code> is the API key of your Zulip bot,
+    and <code>stream</code> is the stream name you want the
+    notifications sent to.
+</p>
+
+<p>
+    Next, go back to Zulip and set up a stream called "jira," if it does not already exist.
+    (If you prefer your JIRA notifications to go to a stream other than "jira," then change the URL above to match
+    it.)
+</p>
+
+<p>
+    <b>Congratulations! You're done!</b><br/>
+    Updates from JIRA will be sent to the Zulip stream you specified in the JIRA web-hook.
+</p>
+<img class="screenshot" src="/static/images/integrations/jira/001.png"/>

@@ -37,12 +37,20 @@ function dispatch_normal_event(event) {
         var reload_options = {save_pointer: true,
                               save_narrow: true,
                               save_compose: true,
-                              message: "The application has been updated; reloading!"
+                              message: "The application has been updated; reloading!",
                              };
         if (event.immediate) {
             reload_options.immediate = true;
         }
         reload.initiate(reload_options);
+        break;
+
+    case 'reaction':
+        if (event.op === 'add') {
+            reactions.add_reaction(event);
+        } else if (event.op === 'remove') {
+            reactions.remove_reaction(event);
+        }
         break;
 
     case 'realm':
@@ -99,14 +107,27 @@ function dispatch_normal_event(event) {
         admin.populate_filters(page_params.realm_filters);
         break;
 
+    case 'realm_domains':
+        if (event.op === 'add') {
+            page_params.domains.push(event.alias);
+        } else if (event.op === 'remove') {
+            var i;
+            for (i = 0; i < page_params.domains.length; i += 1) {
+                if (page_params.domains[i].domain === event.domain) {
+                    page_params.domains.splice(i, 1);
+                    break;
+                }
+            }
+        }
+        admin.populate_realm_aliases(page_params.domains);
+        break;
     case 'realm_user':
         if (event.op === 'add') {
             people.add_in_realm(event.person);
         } else if (event.op === 'remove') {
             people.deactivate(event.person);
         } else if (event.op === 'update') {
-            people.update(event.person);
-            admin.update_user_full_name(event.person.email, event.person.full_name);
+            user_events.update_person(event.person);
         }
         break;
 
@@ -400,7 +421,7 @@ function get_events(options) {
             }
             var retry_sec = Math.min(90, Math.exp(get_events_failures/2));
             get_events_timeout = setTimeout(get_events, retry_sec*1000);
-        }
+        },
     });
 }
 
@@ -458,7 +479,7 @@ exports.cleanup_event_queue = function cleanup_event_queue() {
     page_params.event_queue_expired = true;
     channel.del({
         url:      '/json/events',
-        data:     {queue_id: page_params.event_queue_id}
+        data:     {queue_id: page_params.event_queue_id},
     });
 };
 

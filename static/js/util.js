@@ -62,13 +62,6 @@ exports.same_stream_and_topic = function util_same_stream_and_topic(a, b) {
             (a.subject.toLowerCase() === b.subject.toLowerCase()));
 };
 
-exports.is_current_user = function (email) {
-    if (email === null || email === undefined) {
-        return false;
-    }
-    return email.toLowerCase() === page_params.email.toLowerCase();
-};
-
 exports.is_pm_recipient = function (email, message) {
     var recipients = message.reply_to.toLowerCase().split(',');
     return recipients.indexOf(email.toLowerCase()) !== -1;
@@ -214,7 +207,7 @@ exports.CachedValue.prototype = {
 
     reset: function CachedValue_reset() {
         this._value = unassigned_value_sentinel;
-    }
+    },
 };
 
 exports.execute_early = function (func) {

@@ -18,7 +18,7 @@ Zulip has three major documentation systems:
   to eventually have around 100 pages written using this system.  The
   target audience for this system is individual Zulip users.
 
-These three systems are documented in detail below.
+These three systems are documented in detail.
 
 ## Developer and sysadmin documentation
 
@@ -75,60 +75,5 @@ important elements of the product clearly.
 
 ## General user documentation
 
-Our goal is for Zulip to have complete, high-quality user-facing
-documentation about how to use every feature and how to do common
-tasks (like setting up a new Zulip organization well).  This system is
-designed to make writing and maintaining such documentation highly
-efficient.
-
-The user documentation is available under `/help/` on any Zulip
-server;
-(e.g. [https://chat.zulip.org/help/](https://chat.zulip.org/help/) or
-`http://localhost:9991/help/` in the Zulip development environment).
-The user documentation is not hosted on ReadTheDocs, since Zulip
-supports running a server completely disconnected from the Internet,
-and we'd like the documentation to be available in that environment.
-
-The source for this user documentation is the Markdown files under
-`templates/zerver/help/` in the
-[main Zulip server repository](https://github.com/zulip/zulip).  The
-file `foo.md` is automatically rendered by the `render_markdown_path`
-function in `zerver/templatetags/app_filters.py` when the user
-accesses a URL of the form `/help/foo`; with special cases for
-`/help/` going to `index.md` and `/help/unknown_article` going to
-`missing.md` (with a 404 response).  Images are usually linked from
-`static/images/help/`.
-
-This means that you can contribute to the Zulip user documentation by
-just adding to or editing the collection of markdown files under
-`templates/zerver/help`.  If you have the Zulip development
-environment setup, you simply need to reload your browser on
-`http://localhost:9991/help/foo` to see the latest version of `foo.md`
-rendered.
-
-Since raw HTML is supported in Markdown, you can include arbitraty
-HTML in your documentation in order to do fancy things like
-highlighting an important aspect of your code.  We'll likely add a
-library of common components over time, which will be documented
-below.
-
-### Supported features
-
-* All the usual features of Markdown with raw HTML enabled so you can
-  do custom things with HTML/CSS as needed.  The goal is to make
-  reusable markdown syntax for things we need often, though.
-* Code blocks with syntax highlighting, similar to Zulip's own markdown.
-* Anchor tags for linking to headers in other documents.
-* You can create special highlight warning blocks using e.g.:
-```
-!!! warn "title of warning"
-    Body of warning
-```
-
-  to create a special warning block with title "title of warning" to
-  highlight something important.  The whitespace is important.  Often,
-  we just use "" as the title.  `!!! tip "title"` is useful for less
-  scary tips.  See
-  [the python-markdown docs on this extension](https://pythonhosted.org/Markdown/extensions/admonition.html)
-  for details on how this extension works; essentially the value
-  `warn` or `tip` is an extra CSS class added to the admonition.
+To learn more about Zulip's general user documentation, visit our guide
+on writing user documentation [here](user-docs.html).

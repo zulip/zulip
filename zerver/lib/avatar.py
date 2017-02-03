@@ -12,9 +12,9 @@ from zerver.lib.upload import upload_backend, MEDIUM_AVATAR_SIZE
 def avatar_url(user_profile, medium=False):
     # type: (UserProfile, bool) -> Text
     return get_avatar_url(
-            user_profile.avatar_source,
-            user_profile.email,
-            medium=medium)
+        user_profile.avatar_source,
+        user_profile.email,
+        medium=medium)
 
 def get_avatar_url(avatar_source, email, medium=False):
     # type: (Text, Text, bool) -> Text

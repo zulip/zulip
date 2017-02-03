@@ -19,4 +19,3 @@ def set_descriptor_by_handler_id(handler_id, client_descriptor):
 def clear_descriptor_by_handler_id(handler_id, client_descriptor):
     # type: (int, Optional[zerver.tornado.event_queue.ClientDescriptor]) -> None
     del descriptors_by_handler_id[handler_id]
-

@@ -1,5 +1,5 @@
-Zulip 2016 Roadmap
-==================
+Zulip Roadmap
+=============
 
 ## Introduction
 
@@ -77,7 +77,8 @@ the end of 2016.
   "reactions"](https://github.com/zulip/zulip/issues/541)
 * [Open graph previews of generic
   websites](https://github.com/zulip/zulip/issues/406)
-* [Add a "join Zulip chat" badge for projects that use Zulip to document that nicely](https://github.com/zulip/zulip/issues/2270)
+* [Add a "join Zulip chat" badge for projects that use Zulip to
+  document that nicely](https://github.com/zulip/zulip/issues/2270)
 
 ## Real-time sync
 
@@ -217,8 +218,10 @@ process and make bots that receive messages just as easy to build.
 
 * [Add an outgoing webhook integration system](https://github.com/zulip/zulip/issues/735)
 * [Make setting up a new integration a smooth flow](https://github.com/zulip/zulip/issues/692)
-* [Default new incoming webhooks to permissions-limited incoming webhook bots](https://github.com/zulip/zulip/issues/2186)
-* [Change how Zulip displays bot names to distinguish them from human users](https://github.com/zulip/zulip/issues/1107)
+* [Default new incoming webhooks to permissions-limited incoming webhook
+  bots](https://github.com/zulip/zulip/issues/2186)
+* [Change how Zulip displays bot names to distinguish them from human
+  users](https://github.com/zulip/zulip/issues/1107)
 
 ## Android app
 

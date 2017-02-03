@@ -4,6 +4,7 @@ from __future__ import print_function
 
 from typing import Any, Callable, Iterable, Tuple
 
+from django.test import override_settings
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
@@ -107,6 +108,7 @@ class TestReport(ZulipTestCase):
         ]
         self.assertEqual(stats_mock.func_calls, expected_calls)
 
+    @override_settings(BROWSER_ERROR_REPORTING=True)
     def test_report_error(self):
         # type: () -> None
         email = 'hamlet@zulip.com'
@@ -138,6 +140,6 @@ class TestReport(ZulipTestCase):
         self.assertEqual(report['more_info'], dict(foo='bar'))
         self.assertEqual(report['user_email'], email)
 
-        with self.settings(ERROR_REPORTING=False):
+        with self.settings(BROWSER_ERROR_REPORTING=False):
             result = self.client_post("/json/report_error", params)
         self.assert_json_success(result)

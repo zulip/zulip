@@ -4,7 +4,7 @@
 
     <thead class="activity_head">
     <tr>
-        <th>Domain</th>
+        <th>Realm</th>
         <th>Active users</th>
         <th>At-risk users</th>
         <th>Total users</th>
@@ -20,9 +20,9 @@
     {% for row in rows %}
         <tr>
 
-            {# Domain #}
+            {# Realm #}
             <td>
-                {{ row.domain }}
+                {{ row.string_id }}
             </td>
 
             {# Active users #}

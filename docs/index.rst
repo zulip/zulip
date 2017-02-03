@@ -54,6 +54,7 @@ Contents:
    prod-troubleshooting
    prod-customize
    prod-maintain-secure-upgrade
+   security-model
    prod-authentication-methods
    prod-postgres
 
@@ -79,6 +80,7 @@ Contents:
    new-feature-tutorial
    writing-views
    life-of-a-request
+   reading-list
 
 .. _code-docs:
 
@@ -121,8 +123,10 @@ Contents:
    front-end-build-process
    schema-migrations
    html_css
+   emoji
    full-text-search
    translating
    logging
    release-checklist
    README
+   user-docs

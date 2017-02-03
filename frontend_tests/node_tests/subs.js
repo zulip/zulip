@@ -34,12 +34,12 @@ i18n.init({
     var poland = {
         subscribed: true,
         name: 'Poland',
-        stream_id: 2
+        stream_id: 2,
     };
     var pomona = {
         subscribed: true,
         name: 'Pomona',
-        stream_id: 3
+        stream_id: 3,
     };
 
     var elem_1 = $(global.render_template("subscription", denmark));
@@ -72,7 +72,7 @@ i18n.init({
     assert(elem_3.hasClass("notdisplayed"));
 
     subs.filter_table({input: "Den, Pol", subscribed_only: false});
-    assert(elem_1.hasClass("notdisplayed"));
+    assert(!elem_1.hasClass("notdisplayed"));
     assert(!elem_2.hasClass("notdisplayed"));
     assert(elem_3.hasClass("notdisplayed"));
 

@@ -25,7 +25,7 @@ AUTHENTICATION_BACKENDS = (
     # 'zproject.backends.GitHubAuthBackend', # GitHub auth, setup below
     # 'zproject.backends.ZulipLDAPAuthBackend', # LDAP, setup below
     # 'zproject.backends.ZulipRemoteUserBackend', # Local SSO, setup docs on readthedocs
-    )
+)
 
 # To enable Google authentication, you need to do the following:
 #
@@ -104,14 +104,14 @@ DEFAULT_FROM_EMAIL = "Zulip <zulip@example.com>"
 NOREPLY_EMAIL_ADDRESS = "noreply@example.com"
 
 # A comma-separated list of strings representing the host/domain names
-# that this Django site can serve. You should reset it to be a list of
-# domains/IP addresses for your site. This is a security measure to
-# prevent an attacker from poisoning caches and triggering password
-# reset emails with links to malicious hosts by submitting requests
-# with a fake HTTP Host header. See Django's documentation here:
+# that your users will enter in their browsers to access your Zulip
+# server. This is a security measure to prevent an attacker from
+# poisoning caches and triggering password reset emails with links to
+# malicious hosts by submitting requests with a fake HTTP Host
+# header. See Django's documentation here:
 # <https://docs.djangoproject.com/en/1.9/ref/settings/#allowed-hosts>.
 # Zulip adds 'localhost' to the list automatically.
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [EXTERNAL_HOST]
 
 ### OPTIONAL SETTINGS
 
@@ -120,6 +120,11 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
 # Session cookie expiry in seconds after the last page load
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 7 * 2 # 2 weeks
+
+# Password strength requirements; learn about configuration at
+# http://zulip.readthedocs.io/en/latest/security-model.html.
+# PASSWORD_MIN_LENGTH = 6
+# PASSWORD_MIN_ZXCVBN_QUALITY = 0.5
 
 # Controls whether or not there is a feedback button in the UI.
 ENABLE_FEEDBACK = False
@@ -130,11 +135,11 @@ ENABLE_FEEDBACK = False
 # be sent to that email address.
 FEEDBACK_EMAIL = ZULIP_ADMINISTRATOR
 
-# Controls whether or not error reports are sent to Zulip.  Error
-# reports are used to improve the quality of the product and do not
-# include message contents; please contact Zulip support with any
-# questions.
-ERROR_REPORTING = True
+# Controls whether or not error reports (tracebacks) are emailed to the
+# server administrators.
+#ERROR_REPORTING = True
+# For frontend (JavaScript) tracebacks
+#BROWSER_ERROR_REPORTING = False
 
 # Controls whether or not Zulip will provide inline image preview when
 # a link to an image is referenced in a message.

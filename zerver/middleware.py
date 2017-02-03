@@ -4,6 +4,7 @@ from six import binary_type
 from typing import Any, AnyStr, Callable, Iterable, MutableMapping, Optional, Text
 
 from django.conf import settings
+from django.core.exceptions import DisallowedHost
 from django.utils.translation import ugettext as _
 
 from zerver.lib.response import json_error
@@ -14,7 +15,7 @@ from zerver.lib.utils import statsd, get_subdomain
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.cache import get_remote_cache_time, get_remote_cache_requests
 from zerver.lib.bugdown import get_bugdown_time, get_bugdown_requests
-from zerver.models import flush_per_request_caches, get_realm_by_string_id
+from zerver.models import flush_per_request_caches, get_realm
 from zerver.exceptions import RateLimited
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.views.csrf import csrf_failure as html_csrf_failure
@@ -349,15 +350,25 @@ class FlushDisplayRecipientCache(object):
 class SessionHostDomainMiddleware(SessionMiddleware):
     def process_response(self, request, response):
         # type: (HttpRequest, HttpResponse) -> HttpResponse
+        try:
+            request.get_host()
+        except DisallowedHost:
+            # If we get a DisallowedHost exception trying to access
+            # the host, (1) the request is failed anyway and so the
+            # below code will do nothing, and (2) the below will
+            # trigger a recursive exception, breaking things, so we
+            # just return here.
+            return response
+
         if settings.REALMS_HAVE_SUBDOMAINS:
-            if (not request.path.startswith("/static/") and not request.path.startswith("/api/")
-                    and not request.path.startswith("/json/")):
+            if (not request.path.startswith("/static/") and not request.path.startswith("/api/") and
+                    not request.path.startswith("/json/")):
                 subdomain = get_subdomain(request)
                 if (request.get_host() == "127.0.0.1:9991" or request.get_host() == "localhost:9991"):
                     return redirect("%s%s" % (settings.EXTERNAL_URI_SCHEME,
                                               settings.EXTERNAL_HOST))
                 if subdomain != "":
-                    realm = get_realm_by_string_id(subdomain)
+                    realm = get_realm(subdomain)
                     if (realm is None):
                         return render_to_response("zerver/invalid_realm.html")
         """

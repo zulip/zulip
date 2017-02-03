@@ -13,13 +13,14 @@ var exports = {};
         channel.post({
             url: '/json/users/me/subscriptions',
             data: {
-                subscriptions: JSON.stringify([{name: stream_name}])
-            }
+                subscriptions: JSON.stringify([{name: stream_name}]),
+            },
         }).then(
             function (data) {
                 if (!$.isEmptyObject(data.already_subscribed)) {
                     // Display the canonical stream capitalization.
-                    var true_stream_name = data.already_subscribed[page_params.email][0];
+                    var my_email = people.my_current_email();
+                    var true_stream_name = data.already_subscribed[my_email][0];
                     ui.report_success(i18n.t("Already subscribed to __stream__", {stream: true_stream_name}),
                                       $status_message);
                 }
@@ -33,8 +34,8 @@ var exports = {};
         channel.del({
             url: '/json/users/me/subscriptions',
             data: {
-                subscriptions: JSON.stringify([stream_name])
-            }
+                subscriptions: JSON.stringify([stream_name]),
+            },
         }).then(
             function () {
                 $status_message.hide();

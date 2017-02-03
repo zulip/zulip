@@ -2,7 +2,9 @@
 # This tools generates /etc/zulip/zulip-secrets.conf
 
 from __future__ import print_function
-import sys, os, os.path
+import sys
+import os
+import os.path
 from os.path import dirname, abspath
 if False:
     from typing import Dict, Optional, Text

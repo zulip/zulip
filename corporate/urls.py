@@ -6,8 +6,7 @@ i18n_urlpatterns = [
     url(r'^zephyr/$', TemplateView.as_view(template_name='corporate/zephyr.html')),
     url(r'^zephyr-mirror/$', TemplateView.as_view(template_name='corporate/zephyr-mirror.html')),
 
-    # Terms of service and privacy policy
-    url(r'^terms-enterprise/$',  TemplateView.as_view(template_name='corporate/terms-enterprise.html')),
+    # Privacy policy
     url(r'^privacy/$', TemplateView.as_view(template_name='corporate/privacy.html')),
 ]
 

@@ -46,7 +46,7 @@ while backoff.keep_going():
     print("Starting Jabber mirroring bot")
     try:
         ret = subprocess.call(args)
-    except:
+    except Exception:
         traceback.print_exc()
     else:
         if ret == 2:

@@ -2,34 +2,51 @@
 
 Use semi-formal Polish for translation, some specifics:
 
-  * informal "you" (*ty*) instead of more formal approaches (e.g. plural "you" (*wy*), using any formal titles like *Państwo*, *Pan/Pani*)
+* Informal "you" (*ty*) instead of more formal approaches (e.g. plural
+  "you" (*wy*), using any formal titles like *Państwo*, *Pan/Pani*).
 
-  * imperative, active and continuous verbs, e.g. *manage streams* - *zarządzaj kanałami*, not *zarządź kanałami*
+* Imperative, active and continuous verbs, e.g. *manage streams* -
+  *zarządzaj kanałami*, not *zarządź kanałami*.
 
-  * not using reflexive *się*, e.g. *log out* would be simply *wyloguj*, not *wyloguj się*
+* Not using reflexive *się*, e.g. *log out* would be simply *wyloguj*,
+  not *wyloguj się*.
 
-  * warm and friendly phrasing whenever appropriate
+* Warm and friendly phrasing whenever appropriate.
 
-  * no slang or regional phrases that could be unclear or too informal, e.g. *zajawka*
+* No slang or regional phrases that could be unclear or too informal,
+  e.g. *zajawka*.
 
-  * consistent usage of Zulip-specific terms and common verbs for actions, even if it means repeating - this is one of the key aspects of "semi-formal", as synonyms would be often more appropriate in written Polish
+* Consistent usage of Zulip-specific terms and common verbs for
+  actions, even if it means repeating - this is one of the key aspects
+  of "semi-formal", as synonyms would be often more appropriate in
+  written Polish.
 
-  * mindful usage of long words and phrases - it's sometimes hard to translate English to Polish concisely, be mindful of how it looks on the frontend after translating
+* Mindful usage of long words and phrases - it's sometimes hard to
+  translate English to Polish concisely, be mindful of how it looks on
+  the frontend after translating.
 
-  * balance common verbs and nouns with specific IT-related translation of English terms - this can be tricky, try to check how other resources were translated (e.g. GMail, Microsoft websites, Facebook) to decide what wouldn't sound awkward in Polish
+* Balance common verbs and nouns with specific IT-related translations
+  of English terms - this can be tricky, try to check how other
+  resources were translated (e.g. GMail, Microsoft websites, Facebook)
+  to decide what wouldn't sound awkward in Polish.
 
-Some terms are very tricky to translate, so be sure to communicate with other Polish speakers in the community. It's all about making Zulip friendly and usable.
+Some terms are very tricky to translate, so be sure to communicate
+with other Polish speakers in the community. It's all about making
+Zulip friendly and usable.
 
 # Common translations
 
 ## Special terms used in Zulip
-**customization**: personalizacja, *kastomizacja* could be too awkward and *dostosowanie do potrzeb klienta* is too long
+
+**customization**: personalizacja, *kastomizacja* could be too awkward
+  and *dostosowanie do potrzeb klienta* is too long
 
 **emoji**: emoji, both in singular and plural, *ikona emoji* is a pleonasm
 
 **filter**: filtr (noun) and filtrowanie (verb)
 
-**group PM**: czat grupowy, different from *wiadomość* since the usage of *czat grupowy* seems more common
+**group PM**: czat grupowy, different from *wiadomość* since the usage
+  of *czat grupowy* seems more common
 
 **home**: strona główna
 
@@ -55,7 +72,9 @@ Some terms are very tricky to translate, so be sure to communicate with other Po
 
 **stream**: kanał, similar to a tv channel - *strumień* sounds a bit artificial
 
-**subscribing to a stream**: (za)subskrybowanie kanału (noun) and (za)subskrybować kanał (verb), perfective form depending on the context
+**subscribing to a stream**: (za)subskrybowanie kanału (noun) and
+  (za)subskrybować kanał (verb), perfective form depending on the
+  context
 
 **topic**: wątek
 

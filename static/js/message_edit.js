@@ -12,7 +12,7 @@ var editability_types = {
     // Similar story for messages whose topic you can change only because
     // you are an admin.
     TOPIC_ONLY: 3,
-    FULL: 4
+    FULL: 4,
 };
 exports.editability_types = editability_types;
 
@@ -21,9 +21,14 @@ function get_editability(message, edit_limit_seconds_buffer) {
     if (!(message && message.sent_by_me)) {
         return editability_types.NO;
     }
+    // If the server returns the message with an error (e.g. due to
+    // malformed markdown), you can edit the message regardless of the realm
+    // message editing policy, since the message hasn't actually been sent yet
     if (message.failed_request) {
         return editability_types.FULL;
     }
+    // Locally echoed messages are not editable, since the message hasn't
+    // finished being sent yet.
     if (message.local_id !== undefined) {
         return editability_types.NO;
     }
@@ -115,7 +120,7 @@ exports.save = function (row, from_topic_edited_only) {
                 var message = channel.xhr_error_message("Error saving edit", xhr);
                 row.find(".edit_error").text(message).show();
             }
-        }
+        },
     });
     // The message will automatically get replaced via message_list.update_message.
 };
@@ -175,7 +180,6 @@ function edit_message(row, raw_content) {
          is_editable: is_editable,
          has_been_editable: (editability !== editability_types.NO),
          topic: message.subject,
-         empty_topic_placeholder: compose.empty_topic_placeholder(),
          content: raw_content,
          minutes_to_edit: Math.floor(page_params.realm_message_content_edit_limit_seconds / 60)}));
 
@@ -216,7 +220,7 @@ function edit_message(row, raw_content) {
             animation: false,
             placement: 'left',
             template: '<div class="tooltip" role="tooltip"><div class="tooltip-arrow"></div>' +
-                '<div class="tooltip-inner message-edit-tooltip-inner"></div></div>'
+                '<div class="tooltip-inner message-edit-tooltip-inner"></div></div>',
         });
     }
 
@@ -309,7 +313,7 @@ exports.start = function (row) {
                 message.raw_content = data.raw_content;
                 start_edit_maintaining_scroll(row, data.raw_content);
             }
-        }
+        },
     });
 };
 

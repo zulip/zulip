@@ -17,7 +17,7 @@ can do that by just running:
 
 ```
 # From a clone of zulip.git
-./tools/provision.py
+./tools/provision
 source /srv/zulip-venv/bin/activate
 ./tools/run-dev.py  # starts the development server
 ```
@@ -94,7 +94,7 @@ wget https://dl.dropboxusercontent.com/u/283158365/zuliposs/postgresql-9.1-tsear
 sudo dpkg -i postgresql-9.1-tsearch-extras_0.1.2_amd64.deb
 
 # If on 14.04:
-https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+files/postgresql-9.3-tsearch-extras_0.1.3_amd64.deb
+wget https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+files/postgresql-9.3-tsearch-extras_0.1.3_amd64.deb
 sudo dpkg -i postgresql-9.3-tsearch-extras_0.1.3_amd64.deb
 
 # If on 15.04 or jessie:
@@ -111,7 +111,9 @@ git](https://github.com/zulip/tsearch_extras).
 
 Now continue with the [All Systems](#all-systems) instructions below.
 
-#### Using the [official Zulip PPA](https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+packages) (for 14.04 Trusty or 16.04 Xenial):
+#### Using the [official Zulip PPA][zulip-ppa] (for 14.04 Trusty or 16.04 Xenial):
+
+[zulip-ppa]: https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+packages
 
 Start by cloning this repository: `git clone
 https://github.com/zulip/zulip.git`
@@ -320,14 +322,18 @@ Now run these commands:
 ./tools/install-mypy
 ./tools/setup/emoji/build_emoji
 ./scripts/setup/generate_secrets.py --development
-if [ $(uname) = "OpenBSD" ]; then sudo cp ./puppet/zulip/files/postgresql/zulip_english.stop /var/postgresql/tsearch_data/; else sudo cp ./puppet/zulip/files/postgresql/zulip_english.stop /usr/share/postgresql/9.*/tsearch_data/; fi
+if [ $(uname) = "OpenBSD" ]; then
+    sudo cp ./puppet/zulip/files/postgresql/zulip_english.stop /var/postgresql/tsearch_data/
+else
+    sudo cp ./puppet/zulip/files/postgresql/zulip_english.stop /usr/share/postgresql/9.*/tsearch_data/
+fi
 ./scripts/setup/configure-rabbitmq
 ./tools/setup/postgres-init-dev-db
 ./tools/do-destroy-rebuild-database
 ./tools/setup/postgres-init-test-db
 ./tools/do-destroy-rebuild-test-database
 ./manage.py compilemessages
-sudo ./tools/setup/install-node
+sudo ./scripts/lib/install-node
 npm install
 ```
 
@@ -389,7 +395,7 @@ docker build -t user/zulipdev .
 Commit and tag the provisioned images. The below will install Zulip's dependencies:
 ```
 docker run -itv $(pwd):/srv/zulip -p 9991:9991 user/zulipdev /bin/bash
-$ /usr/bin/python /srv/zulip/tools/provision.py --docker
+# /bin/bash /srv/zulip/tools/provision --docker
 docker ps -af ancestor=user/zulipdev
 docker commit -m "Zulip installed" <container id> user/zulipdev:v2
 ```

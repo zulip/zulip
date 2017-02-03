@@ -26,7 +26,7 @@ function is_mobile(device) {
 
 var presence_descriptions = {
     active: 'is active',
-    idle:   'is not active'
+    idle:   'is not active',
 };
 
 /* Keep in sync with views.py:update_active_status_backend() */
@@ -250,11 +250,8 @@ function filter_user_ids(user_ids) {
         return people.get_person_from_user_id(user_id);
     });
 
-    var email_dict = people.filter_people_by_search_terms(persons, search_terms);
-    user_ids = _.map(_.keys(email_dict), function (email) {
-        return people.get_user_id(email);
-    });
-    return user_ids;
+    var user_id_dict = people.filter_people_by_search_terms(persons, search_terms);
+    return user_id_dict.keys();
 }
 
 function filter_and_sort(users) {
@@ -294,12 +291,13 @@ exports.update_users = function (user_list) {
         var presence = exports.presence_info[user_id].status;
         var person = people.get_person_from_user_id(user_id);
         return {
+            href: narrow.pm_with_uri(person.email),
             name: person.full_name,
             user_id: user_id,
             num_unread: get_num_unread(user_id),
             type: presence,
             type_desc: presence_descriptions[presence],
-            mobile: exports.presence_info[user_id].mobile
+            mobile: exports.presence_info[user_id].mobile,
         };
     }
 
@@ -330,11 +328,11 @@ function actually_update_users_for_search() {
 var update_users_for_search = _.throttle(actually_update_users_for_search, 50);
 
 function show_huddles() {
-    $('#group-pm-list').expectOne().show();
+    $('#group-pm-list').addClass("show");
 }
 
 function hide_huddles() {
-    $('#group-pm-list').expectOne().hide();
+    $('#group-pm-list').removeClass("show");
 }
 
 exports.update_huddles = function () {
@@ -353,8 +351,9 @@ exports.update_huddles = function () {
         return {
             user_ids_string: huddle,
             name: exports.full_huddle_name(huddle),
+            href: narrow.huddle_with_uri(huddle),
             fraction_present: exports.huddle_fraction_present(huddle, exports.presence_info),
-            short_name: exports.short_huddle_name(huddle)
+            short_name: exports.short_huddle_name(huddle),
         };
     });
 
@@ -429,7 +428,7 @@ function focus_ping() {
 
             // Ping returns the active peer list
             _.each(data.presences, function (presence, this_email) {
-                if (!util.is_current_user(this_email)) {
+                if (!people.is_current_user(this_email)) {
                     var user_id = people.get_user_id(this_email);
                     if (user_id) {
                         var status = status_from_timestamp(data.server_timestamp,
@@ -440,7 +439,7 @@ function focus_ping() {
             });
             exports.update_users();
             exports.update_huddles();
-        }
+        },
     });
 }
 
@@ -479,7 +478,7 @@ exports.set_user_statuses = function (users, server_time) {
     var updated_users = {};
     var status;
     _.each(users, function (presence, email) {
-        if (util.is_current_user(email)) {
+        if (people.is_current_user(email)) {
             return;
         }
         status = status_from_timestamp(server_time, presence);
@@ -493,6 +492,11 @@ exports.set_user_statuses = function (users, server_time) {
     });
 
     exports.update_users(updated_users);
+    exports.update_huddles();
+};
+
+exports.redraw = function () {
+    exports.update_users();
     exports.update_huddles();
 };
 

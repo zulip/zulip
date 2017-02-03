@@ -21,8 +21,6 @@ import random
 import traceback
 from zerver.models import UserProfile, Client
 from zerver.decorator import RespondAsynchronously
-from zerver.lib.cache import cache_get_many, \
-    user_profile_by_id_cache_key, cache_save_user_profile, cache_with_key
 from zerver.tornado.handlers import clear_handler_by_id, get_handler_by_id, \
     finish_handler, handler_stats_string
 from zerver.lib.utils import statsd
@@ -171,8 +169,8 @@ class ClientDescriptor(object):
         if not hasattr(self, 'queue_timeout'):
             self.queue_timeout = IDLE_EVENT_QUEUE_TIMEOUT_SECS
 
-        return (self.current_handler_id is None
-                and now - self.last_connection_time >= self.queue_timeout)
+        return (self.current_handler_id is None and
+                now - self.last_connection_time >= self.queue_timeout)
 
     def connect_handler(self, handler_id, client_name):
         # type: (int, Text) -> None
@@ -410,8 +408,8 @@ def gc_event_queues():
     # not have a current handler.
     do_gc_event_queues(to_remove, affected_users, affected_realms)
 
-    logging.info(('Tornado removed %d idle event queues owned by %d users in %.3fs.'
-                  + '  Now %d active queues, %s')
+    logging.info(('Tornado removed %d idle event queues owned by %d users in %.3fs.' +
+                  '  Now %d active queues, %s')
                  % (len(to_remove), len(affected_users), time.time() - start,
                     len(clients), handler_stats_string()))
     statsd.gauge('tornado.active_queues', len(clients))
@@ -814,8 +812,8 @@ def send_notification_http(data):
     # type: (Mapping[str, Any]) -> None
     if settings.TORNADO_SERVER and not settings.RUNNING_INSIDE_TORNADO:
         requests_client.post(settings.TORNADO_SERVER + '/notify_tornado', data=dict(
-                data   = ujson.dumps(data),
-                secret = settings.SHARED_SECRET))
+            data   = ujson.dumps(data),
+            secret = settings.SHARED_SECRET))
     else:
         process_notification(data)
 

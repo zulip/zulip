@@ -48,6 +48,15 @@ class zulip_ops::nagios {
     source     => 'puppet:///modules/zulip_ops/pagerduty_nagios.pl',
   }
 
+  file { [ '/etc/nagios3/conf.d/extinfo_nagios2.cfg',
+           '/etc/nagios3/conf.d/services_nagios2.cfg',
+           '/etc/nagios3/conf.d/contacts_nagios2.cfg',
+           '/etc/nagios3/conf.d/hostgroups_nagios2.cfg',
+           '/etc/nagios3/conf.d/localhost_nagios2.cfg',
+           ]:
+    ensure     => absent,
+  }
+
   file { '/etc/nagios3/conf.d/zulip_nagios.cfg':
     ensure     => file,
     mode       => 644,

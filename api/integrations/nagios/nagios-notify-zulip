@@ -9,10 +9,10 @@ VERSION = "0.9"
 # In Nagios, "output" means "first line of output", and "long
 # output" means "other lines of output".
 parser = optparse.OptionParser()  # type: optparse.OptionParser
-parser.add_option('--output',      default='')
+parser.add_option('--output', default='')
 parser.add_option('--long-output', default='')
-parser.add_option('--stream',      default='nagios')
-parser.add_option('--config',      default='/etc/nagios3/zuliprc')
+parser.add_option('--stream', default='nagios')
+parser.add_option('--config', default='/etc/nagios3/zuliprc')
 for opt in ('type', 'host', 'service', 'state'):
     parser.add_option('--' + opt)
 (opts, args) = parser.parse_args()  # type: Any, List[Text]

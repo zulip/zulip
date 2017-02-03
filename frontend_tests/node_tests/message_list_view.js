@@ -1,9 +1,9 @@
-var _ = require('third/underscore/underscore.js');
+var _ = require('node_modules/underscore/underscore.js');
 var MessageListView = require('js/message_list_view.js');
 
 add_dependencies({
     $: 'jquery',
-    XDate: 'third/xdate/xdate.dev.js',
+    XDate: 'node_modules/xdate/src/xdate.js',
     util: 'js/util.js',
 });
 
@@ -12,7 +12,7 @@ set_global('page_params', {
 });
 set_global('home_msg_list', null);
 set_global('feature_flags', {twenty_four_hour_time: false});
-set_global('ui', {small_avatar_url: function () { return ''; }});
+set_global('people', {small_avatar_url: function () { return ''; }});
 set_global('notifications', {speaking_at_me: function () {}});
 set_global('unread', {message_unread: function () {}});
 // timerender calls setInterval when imported
@@ -26,7 +26,7 @@ set_global('timerender', {
 });
 
 (function test_merge_message_groups() {
-    // MessageListView has lots of DOM code, so we are going to test the mesage
+    // MessageListView has lots of DOM code, so we are going to test the message
     // group mearging logic on its own.
 
     function build_message_context(message, message_context) {

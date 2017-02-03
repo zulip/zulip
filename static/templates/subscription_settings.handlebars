@@ -10,11 +10,22 @@
     <div class="large-icon hash" style="color: {{color}}"></div>
     {{/if}}
     <div class="stream-name">
-      {{name}}
+      <span class="stream-name-editable editable-section">{{name}}</span>
+      {{#if is_admin}}
+        <span class="editable" data-make-editable=".stream-name-editable"></span>
+        <span class="checkmark" data-finish-editing=".stream-name-editable">✓</span>
+      {{/if}}
     </div>
+    <button class="button small white rounded subscribe-button sub_unsub_button {{#unless subscribed }}unsubscribed{{/unless}}" type="button" name="button">
+        {{#if subscribed }}Unsubscribe{{else}}Subscribe{{/if}}</button>
   </div>
-  <div class="stream-description" data-no-description="{{t 'No description.' }}">{{description}}</div>
-
+  <div class="stream-description" data-no-description="{{t 'No description.' }}">
+      <span class="stream-description-editable editable-section">{{description}}</span>
+      {{#if is_admin}}
+        <span class="editable" data-make-editable=".stream-description-editable"></span>
+        <span class="checkmark" data-finish-editing=".stream-description-editable">✓</span>
+      {{/if}}
+  </div>
   <div class="regular_subscription_settings collapse {{#subscribed}}in{{/subscribed}}">
     <div class="subscription-type">
       {{partial "subscription_type"}}
@@ -70,19 +81,6 @@
   {{#if is_admin}}
     <div class="admin-settings">
       <div class="sub_settings_title">{{t "Administrator settings" }}</div>
-      <div class="rename-stream">
-        <form class="form-inline">
-          <input type="text" name="new-name" value="" class="input-block new-stream-name" tabindex="-1" />
-          <input type="submit" name="rename" value="{{t 'Rename stream' }}" class="btn btn-danger stream-rename-button" tabindex="-1" />
-        </form>
-      </div>
-      <div class="change-stream-description">
-        <form class="form-inline">
-          <input type="hidden" name="stream_name" value="{{name}}" />
-          <input type="text" name="description" value="{{description}}" class="input-block description" tabindex="-1" />
-          <input type="submit" name="change-stream-description" value="{{t 'Change stream description' }}" class="btn btn-danger change-stream-description-button" tabindex="-1" />
-        </form>
-      </div>
       <div class="change-stream-privacy">
         {{partial "change_stream_privacy"}}
       </div>

@@ -31,7 +31,7 @@ from zerver.lib.test_classes import (
 from zerver.models import (
     MAX_MESSAGE_LENGTH, MAX_SUBJECT_LENGTH,
     Message, Realm, Recipient, Stream, UserMessage, UserProfile, Attachment, RealmAlias,
-    get_realm_by_string_id, get_stream, get_user_profile_by_email,
+    get_realm, get_stream, get_user_profile_by_email,
     Reaction, sew_messages_and_reactions
 )
 
@@ -63,7 +63,7 @@ class TopicHistoryTest(ZulipTestCase):
         self.login(email)
 
         user_profile = get_user_profile_by_email(email)
-        stream = Stream.objects.get(name=stream_name)
+        stream = get_stream(stream_name, user_profile.realm)
         recipient = get_recipient(Recipient.STREAM, stream.id)
 
         def create_test_message(topic, read, starred=False):
@@ -127,7 +127,7 @@ class TopicHistoryTest(ZulipTestCase):
         # out of realm
         bad_stream = self.make_stream(
             'mit_stream',
-            realm=get_realm_by_string_id('mit')
+            realm=get_realm('mit')
         )
         endpoint = '/json/users/me/%s/topics' % (bad_stream.id,)
         result = self.client_get(endpoint, dict())
@@ -158,13 +158,12 @@ class TestCrossRealmPMs(ZulipTestCase):
         # We need to save the object before we can access
         # the many-to-many relationship 'realms'
         dep.save()
-        dep.realms = [get_realm_by_string_id("zulip")]
+        dep.realms = [get_realm("zulip")]
         dep.save()
 
     def create_user(self, email):
         # type: (Text) -> UserProfile
-        username, domain = email.split('@')
-        self.register(username, 'test', domain=domain)
+        self.register(email, 'test')
         return get_user_profile_by_email(email)
 
     @override_settings(CROSS_REALM_BOT_EMAILS=['feedback@zulip.com',
@@ -273,7 +272,7 @@ class PersonalMessagesTest(ZulipTestCase):
         Newly created users are auto-subbed to the ability to receive
         personals.
         """
-        self.register("test", "test")
+        self.register("test@zulip.com", "test")
         user_profile = get_user_profile_by_email('test@zulip.com')
         old_messages_count = message_stream_count(user_profile)
         self.send_message("test@zulip.com", "test@zulip.com", Recipient.PERSONAL)
@@ -302,7 +301,7 @@ class PersonalMessagesTest(ZulipTestCase):
         If you send a personal to yourself, only you see it.
         """
         old_user_profiles = list(UserProfile.objects.all())
-        self.register("test1", "test1")
+        self.register("test1@zulip.com", "test1")
 
         old_messages = []
         for user_profile in old_user_profiles:
@@ -383,7 +382,7 @@ class StreamMessagesTest(ZulipTestCase):
         """
         Check that messages sent to a stream reach all subscribers to that stream.
         """
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         subscribers = self.users_subscribed_to_stream(stream_name, realm)
         old_subscriber_messages = []
         for subscriber in subscribers:
@@ -440,6 +439,20 @@ class StreamMessagesTest(ZulipTestCase):
             send_message()
 
         self.assert_max_length(queries, 8)
+
+    def test_stream_message_dict(self):
+        # type: () -> None
+        user_profile = get_user_profile_by_email("iago@zulip.com")
+        self.subscribe_to_stream(user_profile.email, "Denmark")
+        self.send_message("hamlet@zulip.com", "Denmark", Recipient.STREAM,
+                          content="whatever", subject="my topic")
+        message = most_recent_message(user_profile)
+        row = Message.get_raw_db_rows([message.id])[0]
+        dct = MessageDict.build_dict_from_raw_db_row(row, apply_markdown=True)
+        self.assertEqual(dct['display_recipient'], 'Denmark')
+
+        stream = get_stream('Denmark', user_profile.realm)
+        self.assertEqual(dct['stream_id'], stream.id)
 
     def test_stream_message_unicode(self):
         # type: () -> None
@@ -508,7 +521,7 @@ class StreamMessagesTest(ZulipTestCase):
 
         # Subscribe everyone to a stream with non-ASCII characters.
         non_ascii_stream_name = u"hümbüǵ"
-        realm = get_realm_by_string_id("zulip")
+        realm = get_realm("zulip")
         stream = self.make_stream(non_ascii_stream_name)
         for user_profile in UserProfile.objects.filter(realm=realm):
             self.subscribe_to_stream(user_profile.email, stream.name)
@@ -559,7 +572,7 @@ class MessageDictTest(ZulipTestCase):
         delay = time.time() - t
         # Make sure we don't take longer than 1ms per message to extract messages.
         self.assertTrue(delay < 0.001 * num_ids)
-        self.assert_max_length(queries, 7)
+        self.assert_max_length(queries, 11)
         self.assertEqual(len(rows), num_ids)
 
     def test_applying_markdown(self):
@@ -893,7 +906,7 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "client": "test suite",
                                                      "content": "Test message",
                                                      "subject": "Test subject",
-                                                     "domain": "mit.edu"})
+                                                     "realm_str": "mit"})
         self.assert_json_error(result, "User not authorized for this query")
 
     def test_send_message_as_superuser_to_domain_that_dont_exist(self):
@@ -910,10 +923,10 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "client": "test suite",
                                                      "content": "Test message",
                                                      "subject": "Test subject",
-                                                     "domain": "non-existing"})
+                                                     "realm_str": "non-existing"})
         user.is_api_super_user = False
         user.save()
-        self.assert_json_error(result, "Unknown domain non-existing")
+        self.assert_json_error(result, "Unknown realm non-existing")
 
     def test_send_message_when_sender_is_not_set(self):
         # type: () -> None
@@ -952,7 +965,6 @@ class MessagePOSTTest(ZulipTestCase):
         create_mirrored_message_users_mock.return_value = (True, True)
         email = "starnine@mit.edu"
         user = get_user_profile_by_email(email)
-        domain = user.realm.domain
         user.realm.domain = 'not_mit.edu'
         user.realm.save()
         self.login("starnine@mit.edu")
@@ -962,8 +974,6 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "client": "zephyr_mirror",
                                                      "to": "starnine@mit.edu"}, name='gownooo')
         self.assert_json_error(result, "Invalid mirrored realm")
-        user.realm.domain = domain
-        user.realm.save()
 
 class EditMessageTest(ZulipTestCase):
     def check_message(self, msg_id, subject=None, content=None):
@@ -1517,7 +1527,7 @@ class StarTests(ZulipTestCase):
 
         sent_message = UserMessage.objects.filter(
             user_profile=get_user_profile_by_email(test_email)
-            ).order_by("id").reverse()[0]
+        ).order_by("id").reverse()[0]
         self.assertEqual(sent_message.message.content, content)
         self.assertFalse(sent_message.flags.starred)
 
@@ -1548,10 +1558,10 @@ class AttachmentTest(ZulipTestCase):
         sender_email = "hamlet@zulip.com"
         user_profile = get_user_profile_by_email(sender_email)
         dummy_files = [
-                        ('zulip.txt', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt'),
-                        ('temp_file.py', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py'),
-                        ('abc.py', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py')
-                    ]
+            ('zulip.txt', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt'),
+            ('temp_file.py', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py'),
+            ('abc.py', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py')
+        ]
 
         for file_name, path_id in dummy_files:
             create_attachment(file_name, path_id, user_profile)
@@ -1620,14 +1630,14 @@ class CheckMessageTest(ZulipTestCase):
         an unsubscribed stream"""
         parent = get_user_profile_by_email('othello@zulip.com')
         bot = do_create_user(
-                email='othello-bot@zulip.com',
-                password='',
-                realm=parent.realm,
-                full_name='',
-                short_name='',
-                active=True,
-                bot_type=UserProfile.DEFAULT_BOT,
-                bot_owner=parent
+            email='othello-bot@zulip.com',
+            password='',
+            realm=parent.realm,
+            full_name='',
+            short_name='',
+            active=True,
+            bot_type=UserProfile.DEFAULT_BOT,
+            bot_owner=parent
         )
         bot.last_reminder = None
 

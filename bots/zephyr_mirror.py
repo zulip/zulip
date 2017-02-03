@@ -77,15 +77,16 @@ while backoff.keep_going():
     print("Starting zephyr mirroring bot")
     try:
         subprocess.call(args)
-    except:
+    except Exception:
         traceback.print_exc()
     backoff.fail()
 
-print("")
-print("")
-print("ERROR: The Zephyr mirroring bot is unable to continue mirroring Zephyrs.")
-print("This is often caused by failing to maintain unexpired Kerberos tickets")
-print("or AFS tokens.  See https://zulip.com/zephyr for documentation on how to")
-print("maintain unexpired Kerberos tickets and AFS tokens.")
-print("")
+
+error_message = """
+ERROR: The Zephyr mirroring bot is unable to continue mirroring Zephyrs.
+This is often caused by failing to maintain unexpired Kerberos tickets
+or AFS tokens.  See https://zulip.com/zephyr for documentation on how to
+maintain unexpired Kerberos tickets and AFS tokens.
+"""
+print(error_message)
 sys.exit(1)

@@ -98,7 +98,7 @@ def build_message_list(user_profile, messages):
         # structure of the URL to leverage.
         content = re.sub(
             r"/user_uploads/(\S*)",
-            settings.EXTERNAL_HOST + r"/user_uploads/\1", content)
+            user_profile.realm.uri + r"/user_uploads/\1", content)
 
         # Our proxying user-uploaded images seems to break inline images in HTML
         # emails, so scrub the image but leave the link.
@@ -108,8 +108,8 @@ def build_message_list(user_profile, messages):
         # URLs for emoji are of the form
         # "static/generated/emoji/images/emoji/snowflake.png".
         content = re.sub(
-            r"static/generated/emoji/images/emoji/",
-            settings.EXTERNAL_HOST + r"/static/generated/emoji/images/emoji/",
+            r"/static/generated/emoji/images/emoji/",
+            user_profile.realm.uri + r"/static/generated/emoji/images/emoji/",
             content)
 
         return content
@@ -147,7 +147,7 @@ def build_message_list(user_profile, messages):
         # type: (UserProfile, Message) -> Dict[str, Any]
         disp_recipient = get_display_recipient(message.recipient)
         if message.recipient.type == Recipient.PERSONAL:
-            header = u"You and %s" % (message.sender.full_name)
+            header = u"You and %s" % (message.sender.full_name,)
             html_link = pm_narrow_url(user_profile.realm, [message.sender.email])
             header_html = u"<a style='color: #ffffff;' href='%s'>%s</a>" % (html_link, header)
         elif message.recipient.type == Recipient.HUDDLE:
@@ -280,7 +280,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
         from_email = '"%s" <%s>' % (sender_str, sender.email)
 
     text_content = loader.render_to_string('zerver/missed_message_email.txt', template_payload)
-    html_content = loader.render_to_string('zerver/missed_message_email_html.txt', template_payload)
+    html_content = loader.render_to_string('zerver/missed_message_email.html', template_payload)
 
     msg = EmailMultiAlternatives(subject, text_content, from_email, [user_profile.email],
                                  headers = headers)
@@ -438,7 +438,7 @@ def send_future_email(recipients, email_html, email_text, subject,
                         user_profile = get_user_profile_by_email(bounce_email)
                         do_change_enable_digest_emails(user_profile, False)
                         log_digest_event("%s\nTurned off digest emails for %s" % (
-                                str(problems), bounce_email))
+                            str(problems), bounce_email))
                         continue
                 elif problem["reject_reason"] == "soft-bounce":
                     # A soft bounce is temporary; let it try to resolve itself.
@@ -453,7 +453,7 @@ def send_local_email_template_with_delay(recipients, template_prefix,
                                          tags=[], sender={'email': settings.NOREPLY_EMAIL_ADDRESS, 'name': 'Zulip'}):
     # type: (List[Dict[str, Any]], Text, Dict[str, Text], datetime.timedelta, Iterable[Text], Dict[str, Text]) -> None
     html_content = loader.render_to_string(template_prefix + ".html", template_payload)
-    text_content = loader.render_to_string(template_prefix + ".text", template_payload)
+    text_content = loader.render_to_string(template_prefix + ".txt", template_payload)
     subject = loader.render_to_string(template_prefix + ".subject", template_payload).strip()
 
     send_future_email(recipients,

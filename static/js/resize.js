@@ -23,7 +23,7 @@ function size_blocks(blocks, usable_height) {
     _.each(blocks, function (block) {
         var ratio = block.real_height / sum_height;
         ratio = confine_to_range(0.05, ratio, 0.85);
-        block.max_height = confine_to_range(40, usable_height * ratio, 1.2 * block.real_height);
+        block.max_height = confine_to_range(80, usable_height * ratio, 1.2 * block.real_height);
     });
 }
 
@@ -33,11 +33,11 @@ function set_user_list_heights(res, usable_height, user_presences, group_pms) {
     //    res.group_pms_max_height
     var blocks = [
         {
-            real_height: user_presences.prop('scrollHeight')
+            real_height: user_presences.prop('scrollHeight'),
         },
         {
-            real_height: group_pms.prop('scrollHeight')
-        }
+            real_height: group_pms.prop('scrollHeight'),
+        },
     ];
 
     size_blocks(blocks, usable_height);
@@ -73,7 +73,7 @@ function get_new_heights() {
     }
 
     // Don't let us crush the stream sidebar completely out of view
-    res.stream_filters_max_height = Math.max(40, res.stream_filters_max_height);
+    res.stream_filters_max_height = Math.max(80, res.stream_filters_max_height);
 
     // RIGHT SIDEBAR
     var user_presences = $('#user_presences').expectOne();
@@ -143,14 +143,14 @@ function left_userlist_get_new_heights() {
 
     var blocks = [
         {
-            real_height: stream_filters_real_height
+            real_height: stream_filters_real_height,
         },
         {
-            real_height: user_list_real_height
+            real_height: user_list_real_height,
         },
         {
-            real_height: group_pms_real_height
-        }
+            real_height: group_pms_real_height,
+        },
     ];
 
     size_blocks(blocks, res.total_leftlist_height);

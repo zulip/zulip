@@ -1,27 +1,19 @@
 # Change a user's name
-An administrator can change the name of another user.
-Ordinary users can change their own names,
-so administrators should generally try to teach users how to do this for themselves,
-but administrators can do it when users are unavailable.
 
-Follow the following steps to change the name of a user using an administrator account:
-* Click on the cog (![cog](/static/images/help/cog.png)) icon in the upper right corner
-of the right sidebar.
+{!admin-only.md!}
 
-* Choose **Administration** in the panel below:
+Ordinary users can [change their own names](/help/change-your-name), but
+administrators can change users' names when users are
+unavailable. {!follow-steps.md!} change the name of a user.
 
-![admin-panel](/static/images/help/admin.png)
+{!go-to-the.md!} [Users](/#administration/user-list-admin)
+{!admin.md!}
 
-* The following window will appear:
-![admin-window](/static/images/help/admin-window.png)
+2. Click on the pencil (<i class="icon-vector-pencil"></i>) icon next to
+the name of the user you want to change.
 
-* Click on the tab named **Users** and you will find a window like the below one:
-![user-name-window](/static/images/help/user-name-window.png)
+3. After clicking on the pencil icon, an input field labeled **Full name** will
+appear to allow you to change the user's name. Enter the user's new name in
+**Full name**.
 
-* Click on the pencil (![pencil](/static/images/help/pencil.png)) icon next to the name of the user
-you want to change.
-
-* You can edit the user's name as shown below:
-![editable-name-window](/static/images/help/editable-name-window.png)
-
-* After editing the name of the user, you can save the changes by clicking on the **Save changes** button.
+{!save-changes.md!} account settings.

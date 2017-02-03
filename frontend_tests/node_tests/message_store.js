@@ -8,10 +8,6 @@ add_dependencies({
 var noop = function () {};
 var people = global.people;
 
-set_global('page_params', {
-    email: 'me@example.com',
-});
-
 set_global('alert_words', {
     process_message: noop,
 });
@@ -45,6 +41,8 @@ people.add_in_realm(alice);
 people.add_in_realm(bob);
 people.add_in_realm(cindy);
 
+global.people.initialize_current_user(me.user_id);
+
 global.util.execute_early = noop;
 
 var message_store = require('js/message_store.js');
@@ -52,6 +50,7 @@ var message_store = require('js/message_store.js');
 (function test_add_message_metadata() {
     var message = {
         sender_email: 'me@example.com',
+        sender_id: me.user_id,
         type: 'private',
         display_recipient: [me, bob, cindy],
         flags: ['has_alert_word'],

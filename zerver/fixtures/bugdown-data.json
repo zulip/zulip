@@ -206,8 +206,8 @@
     },
     {
       "name": "random_emoji_1",
-      "input": ":hankey:",
-      "expected_output": "<p><img alt=\":hankey:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/hankey.png\" title=\":hankey:\"></p>",
+      "input": ":airplane:",
+      "expected_output": "<p><img alt=\":airplane:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/airplane.png\" title=\":airplane:\"></p>",
       "bugdown_matches_marked": true
     },
     {

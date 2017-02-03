@@ -75,9 +75,9 @@ def jid_to_zulip(jid):
 def zulip_to_jid(email, jabber_domain):
     # type: (str, str) -> JID
     jid = JID(email, domain=jabber_domain)
-    if (options.zulip_email_suffix
-        and options.zulip_email_suffix in jid.username
-            and not jid.username.endswith("-bot")):
+    if (options.zulip_email_suffix and
+        options.zulip_email_suffix in jid.username and
+            not jid.username.endswith("-bot")):
         jid.username = jid.username.rpartition(options.zulip_email_suffix)[0]
     return jid
 
@@ -171,7 +171,7 @@ class JabberToZulipBot(ClientXMPP):
             type = "private",
             to = recipient,
             content = msg["body"],
-            )
+        )
         ret = self.zulipToJabber.client.send_message(zulip_message)
         if ret.get("result") != "success":
             logging.error(str(ret))
@@ -199,7 +199,7 @@ class JabberToZulipBot(ClientXMPP):
             subject = subject,
             to = stream,
             content = msg["body"],
-            )
+        )
         ret = self.zulipToJabber.client.send_message(zulip_message)
         if ret.get("result") != "success":
             logging.error(str(ret))
@@ -332,7 +332,7 @@ zulip configuration file under the jabber_mirror section (exceptions are noted
 in their help sections).  Keys have the same name as options with hyphens
 replaced with underscores.  Zulip configuration options go in the api section,
 as normal.'''.replace("\n", " ")
-                                    )
+    )
     parser.add_option(
         '--mode',
         default=None,
@@ -366,10 +366,10 @@ option does not affect login credentials.'''.replace("\n", " "))
         default=None,
         action='store',
         help="Your Jabber JID.  If a resource is specified, "
-        + "it will be used as the nickname when joining MUCs.  "
-        + "Specifying the nickname is mostly useful if you want "
-        + "to run the public mirror from a regular user instead of "
-        + "from a dedicated account.")
+             "it will be used as the nickname when joining MUCs.  "
+             "Specifying the nickname is mostly useful if you want "
+             "to run the public mirror from a regular user instead of "
+             "from a dedicated account.")
     jabber_group.add_option('--jabber-password',
                             default=None,
                             action='store',
@@ -378,7 +378,7 @@ option does not affect login credentials.'''.replace("\n", " "))
                             default=None,
                             action='store',
                             help="Your Jabber conference domain (E.g. conference.jabber.example.com).  "
-                            + "If not specifed, \"conference.\" will be prepended to your JID's domain.")
+                                 "If not specifed, \"conference.\" will be prepended to your JID's domain.")
     jabber_group.add_option('--no-use-tls',
                             default=None,
                             action='store_true')
@@ -413,8 +413,8 @@ option does not affect login credentials.'''.replace("\n", " "))
         pass
     for option in ("jid", "jabber_password", "conference_domain", "mode", "zulip_email_suffix",
                    "jabber_server_address", "jabber_server_port"):
-        if (getattr(options, option) is None
-                and config.has_option("jabber_mirror", option)):
+        if (getattr(options, option) is None and
+                config.has_option("jabber_mirror", option)):
             setattr(options, option, config.get("jabber_mirror", option))
 
     for option in ("no_use_tls",):
@@ -435,7 +435,7 @@ option does not affect login credentials.'''.replace("\n", " "))
 
     if None in (options.jid, options.jabber_password):
         config_error("You must specify your Jabber JID and Jabber password either "
-                     + "in the Zulip configuration file or on the commandline")
+                     "in the Zulip configuration file or on the commandline")
 
     zulipToJabber = ZulipToJabberBot(zulip.init_from_options(options, "JabberMirror/" + __version__))
     # This won't work for open realms that don't have a consistent domain

@@ -21,8 +21,8 @@ def wrapper_execute(self, action, sql, params=()):
         stop = time.time()
         duration = stop - start
         self.connection.queries.append({
-                'time': "%.3f" % duration,
-                })
+            'time': "%.3f" % duration,
+        })
 
 class TimeTrackingCursor(cursor):
     """A psycopg2 cursor class that tracks the time spent executing queries."""

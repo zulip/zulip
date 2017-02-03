@@ -22,14 +22,6 @@ from zerver.lib.utils import generate_random_token
 from zerver.models import PreregistrationUser
 from typing import Optional, Union, Any, Text
 
-try:
-    import mailer
-    send_mail = mailer.send_mail
-except ImportError:
-    # no mailer app present, stick with default
-    pass
-
-
 B16_RE = re.compile('^[a-f0-9]{40}$')
 
 def check_key_is_valid(creation_key):
@@ -84,7 +76,11 @@ class ConfirmationManager(models.Manager):
         # type: (Union[ContentType, int], Optional[str]) -> Text
         key = generate_key()
         self.create(content_object=obj, date_sent=now(), confirmation_key=key)
-        return generate_activation_url(key, host=host)
+        return self.get_activation_url(key, host=host)
+
+    def get_activation_url(self, confirmation_key, host=None):
+        # type: (Text, Optional[str]) -> Text
+        return generate_activation_url(confirmation_key, host=host)
 
     def send_confirmation(self, obj, email_address, additional_context=None,
                           subject_template_path=None, body_template_path=None,
@@ -92,7 +88,7 @@ class ConfirmationManager(models.Manager):
         # type: (ContentType, Text, Optional[Dict[str, Any]], Optional[str], Optional[str], Optional[str]) -> Confirmation
         confirmation_key = generate_key()
         current_site = Site.objects.get_current()
-        activate_url = generate_activation_url(confirmation_key, host=host)
+        activate_url = self.get_activation_url(confirmation_key, host=host)
         context = Context({
             'activate_url': activate_url,
             'current_site': current_site,

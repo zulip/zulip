@@ -5,7 +5,7 @@ from typing import Any
 
 from optparse import make_option
 from django.core.management.base import BaseCommand, CommandParser
-from zerver.models import get_realm_by_string_id, Message, Realm, Stream, Recipient
+from zerver.models import get_realm, Message, Realm, Stream, Recipient
 
 import datetime
 import time
@@ -27,7 +27,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
-        realm = get_realm_by_string_id(options["string_id"])
+        realm = get_realm(options["string_id"])
         streams = Stream.objects.filter(realm=realm, invite_only=False)
         recipients = Recipient.objects.filter(
             type=Recipient.STREAM, type_id__in=[stream.id for stream in streams])

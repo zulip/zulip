@@ -7,7 +7,7 @@ exports.narrowed = undefined;
 exports.MessageList = function (table_name, filter, opts) {
     _.extend(this, {
         collapse_messages: true,
-        muting_enabled: true
+        muting_enabled: true,
     }, opts);
     this.view = new MessageListView(this, table_name, this.collapse_messages);
 
@@ -150,11 +150,11 @@ exports.MessageList.prototype = {
                 use_closest: false,
                 empty_ok: false,
                 mark_read: true,
-                force_rerender: false
+                force_rerender: false,
             }, opts, {
                 id: id,
                 msg_list: this,
-                previously_selected: this._selected_id
+                previously_selected: this._selected_id,
             });
 
         id = parseFloat(id);
@@ -179,7 +179,7 @@ exports.MessageList.prototype = {
             var error_data = {
                 table_name: this.table_name,
                 id: id,
-                items_length: this._items.length
+                items_length: this._items.length,
             };
             blueslip.fatal("Cannot select id -1", error_data);
         }
@@ -555,13 +555,21 @@ exports.MessageList.prototype = {
         return item_list[cur_idx];
     },
 
-    change_display_recipient: function MessageList_change_display_recipient(old_recipient,
-                                                                            new_recipient) {
-        // This method only works for streams.
+    update_user_full_name: function (user_id, full_name) {
         _.each(this._items, function (item) {
-            if (item.display_recipient === old_recipient) {
-                item.display_recipient = new_recipient;
-                item.stream = new_recipient;
+            if (item.sender_id && (item.sender_id === user_id)) {
+                item.sender_full_name = full_name;
+            }
+        });
+        this.view.rerender_the_whole_thing();
+    },
+
+    update_stream_name: function MessageList_update_stream_name(stream_id,
+                                                                new_stream_name) {
+        _.each(this._items, function (item) {
+            if (item.stream_id && (item.stream_id === stream_id)) {
+                item.display_recipient = new_stream_name;
+                item.stream = new_stream_name;
             }
         });
         this.view.rerender_the_whole_thing();
@@ -622,7 +630,7 @@ exports.MessageList.prototype = {
                 }
             }
         }, 0);
-    }
+    },
 };
 
 exports.all = new exports.MessageList(

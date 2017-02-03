@@ -53,9 +53,9 @@ function clear_out_file_list(jq_file_list) {
     //    $("#file_input").val("");
 }
 
-function autosize_textarea() {
+exports.autosize_textarea = function () {
     $("#new_message_content").trigger("autosize.resize");
-}
+};
 
 // Show the compose box.
 function show_box(tabname, focus_area, opts) {
@@ -129,7 +129,7 @@ function clear_box() {
     clear_all_everyone_warnings();
     user_acknowledged_all_everyone = undefined;
     $("#compose").find('input[type=text], textarea').val('');
-    autosize_textarea();
+    exports.autosize_textarea();
     $("#send-status").hide(0);
 }
 
@@ -139,6 +139,9 @@ function clear_preview_area() {
     $("#preview_message_area").hide();
     $("#preview_content").empty();
     $("#markdown_preview").show();
+    if (message_snapshot !== undefined) {
+        $('#restore-draft').show();
+    }
 }
 
 function hide_box() {
@@ -191,7 +194,7 @@ function update_fade() {
 $(function () {
     $('#stream,#subject,#private_message_recipient').bind({
          keyup: update_fade,
-         change: update_fade
+         change: update_fade,
     });
 });
 
@@ -201,7 +204,7 @@ function fill_in_opts_from_current_narrowed_view(msg_type, opts) {
         stream:           '',
         subject:          '',
         private_message_recipient: '',
-        trigger:          'unknown'
+        trigger:          'unknown',
     };
 
     // Set default parameters based on the current narrowed view.
@@ -424,7 +427,7 @@ function send_message_ajax(request, success, error) {
 
             var response = channel.xhr_error_message("Error sending message", xhr);
             error(response);
-        }
+        },
     });
 }
 
@@ -438,7 +441,7 @@ function report_send_time(send_time, receive_time, display_time, locally_echoed,
     }
     channel.post({
         url: '/json/report_send_time',
-        data: data
+        data: data,
     });
 }
 
@@ -527,7 +530,7 @@ function process_send_time(message_id, start_time, locally_echoed) {
 
 function clear_compose_box() {
     $("#new_message_content").val('').focus();
-    autosize_textarea();
+    exports.autosize_textarea();
     $("#send-status").hide(0);
     clear_message_snapshot();
     $("#compose-send-button").removeAttr('disabled');
@@ -634,7 +637,7 @@ exports.respond_to_message = function (opts) {
     var pm_recipient = message.reply_to;
     if (opts.reply_type === "personal" && message.type === "private") {
         // reply_to for private messages is everyone involved, so for
-        // personals replies we need to set the the private message
+        // personals replies we need to set the private message
         // recipient to just the sender
         pm_recipient = message.sender_email;
     }
@@ -751,7 +754,7 @@ exports.check_stream_existence = function (stream_name, autosubscribe) {
             } else {
                 result = "error";
             }
-        }
+        },
     });
     return result;
 };
@@ -771,21 +774,7 @@ function check_stream_for_send(stream_name, autosubscribe) {
     return result;
 }
 
-function validate_stream_message() {
-    var stream_name = exports.stream_name();
-    if (stream_name === "") {
-        compose_error(i18n.t("Please specify a stream"), $("#stream"));
-        return false;
-    }
-
-    if (page_params.mandatory_topics) {
-        var topic = exports.subject();
-        if (topic === "") {
-            compose_error(i18n.t("Please specify a topic"), $("#subject"));
-            return false;
-        }
-    }
-
+function validate_stream_message_mentions(stream_name) {
     var current_stream = stream_data.get_sub(stream_name);
     var stream_count = current_stream.subscribers.num_items();
 
@@ -808,6 +797,10 @@ function validate_stream_message() {
     // at this point, the user has either acknowledged the warning or removed @all / @everyone
     user_acknowledged_all_everyone = undefined;
 
+    return true;
+}
+
+function validate_stream_message_address_info(stream_name) {
     var response;
 
     if (!stream_data.is_subscribed(stream_name)) {
@@ -820,10 +813,6 @@ function validate_stream_message() {
             return false;
         case "error":
             return false;
-        case "subscribed":
-            // You're actually subscribed to the stream, but this
-            // browser window doesn't know it.
-            return true;
         case "not-subscribed":
             response = "<p>You're not subscribed to the stream <b>" +
                 Handlebars.Utils.escapeExpression(stream_name) + "</b>.</p>" +
@@ -831,6 +820,29 @@ function validate_stream_message() {
             compose_error(response, $('#stream'));
             return false;
         }
+    }
+
+    return true;
+}
+
+function validate_stream_message() {
+    var stream_name = exports.stream_name();
+    if (stream_name === "") {
+        compose_error(i18n.t("Please specify a stream"), $("#stream"));
+        return false;
+    }
+
+    if (page_params.mandatory_topics) {
+        var topic = exports.subject();
+        if (topic === "") {
+            compose_error(i18n.t("Please specify a topic"), $("#subject"));
+            return false;
+        }
+    }
+
+    if (!validate_stream_message_address_info(stream_name) ||
+        !validate_stream_message_mentions(stream_name)) {
+        return false;
     }
 
     return true;
@@ -1010,6 +1022,7 @@ $(function () {
         var message = $("#new_message_content").val();
         $("#new_message_content").hide();
         $("#markdown_preview").hide();
+        $("#restore-draft").hide();
         $("#undo_markdown_preview").show();
         $("#preview_message_area").show();
 
@@ -1029,7 +1042,7 @@ $(function () {
                 // incorrect wrong, users will see a brief flicker).
                 $("#preview_content").html(echo.apply_markdown(message));
             }
-            channel.get({
+            channel.post({
                 url: '/json/messages/render',
                 idempotent: true,
                 data: {content: message},
@@ -1044,7 +1057,7 @@ $(function () {
                         loading.destroy_indicator($("#markdown_preview_spinner"));
                     }
                     $("#preview_content").html(i18n.t("Failed to generate preview"));
-                }
+                },
             });
         }
     });
@@ -1067,7 +1080,7 @@ $(function () {
             // Optional. A value of false (default) limits selection to a single file, while
             // true enables multiple file selection.
             multiselect: true,
-            iframe: true
+            iframe: true,
         };
         Dropbox.choose(options);
     });
@@ -1136,7 +1149,7 @@ $(function () {
             // This is a dropped file, so make the filename a link to the image
             textbox.val(textbox.val() + "[" + filename + "](" + uri + ")" + " ");
         }
-        autosize_textarea();
+        exports.autosize_textarea();
         $("#compose-send-button").removeAttr("disabled");
         $("#send-status").removeClass("alert-info")
                          .hide();
@@ -1165,7 +1178,7 @@ $(function () {
         maxfilesize: page_params.maxfilesize,
         data: {
             // the token isn't automatically included in filedrop's post
-            csrfmiddlewaretoken: csrf_token
+            csrfmiddlewaretoken: csrf_token,
         },
         raw_droppable: ['text/uri-list', 'text/plain'],
         drop: uploadStarted,
@@ -1178,8 +1191,8 @@ $(function () {
                 compose.start('stream');
             }
             textbox.val(textbox.val() + contents);
-            autosize_textarea();
-        }
+            exports.autosize_textarea();
+        },
     });
 
     if (page_params.narrow !== undefined) {

@@ -16,7 +16,7 @@ exports.set_focused_recipient = function (msg_type) {
     // Construct focused_recipient as a mocked up element which has all the
     // fields of a message used by util.same_recipient()
     focused_recipient = {
-        type: msg_type
+        type: msg_type,
     };
 
     if (focused_recipient.type === "stream") {
@@ -106,7 +106,7 @@ exports.would_receive_message = function (email) {
     // helpful if we want to emphasize the '.unfaded' class later (applied
     // to users who will definitely receive the message).
 
-    if (util.is_current_user(email)) {
+    if (people.is_current_user(email)) {
         // We never want to fade you yourself, so pretend it's true even if
         // it's not.
         return true;

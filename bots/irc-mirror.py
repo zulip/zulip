@@ -65,11 +65,11 @@ class IRCBot(irc.bot.SingleServerIRCBot):
 
         # Forward the PM to Zulip
         print(zulip_client.send_message({
-                "sender": sender,
-                "type": "private",
-                "to": "username@example.com",
-                "content": content,
-                }))
+            "sender": sender,
+            "type": "private",
+            "to": "username@example.com",
+            "content": content,
+        }))
 
     def on_pubmsg(self, c, e):
         # type: (ServerConnection, Event) -> None
@@ -81,13 +81,13 @@ class IRCBot(irc.bot.SingleServerIRCBot):
 
         # Forward the stream message to Zulip
         print(zulip_client.send_message({
-                "forged": "yes",
-                "sender": sender,
-                "type": "stream",
-                "to": stream,
-                "subject": "IRC",
-                "content": content,
-                }))
+            "forged": "yes",
+            "sender": sender,
+            "type": "stream",
+            "to": stream,
+            "subject": "IRC",
+            "content": content,
+        }))
 
     def on_dccmsg(self, c, e):
         # type: (ServerConnection, Event) -> None

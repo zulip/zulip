@@ -6,7 +6,7 @@ from typing import Any, Text
 
 from django.core.management.base import BaseCommand, CommandParser
 
-from zerver.models import get_realm_by_string_id
+from zerver.models import get_realm
 from zerver.lib.actions import set_default_streams
 
 from optparse import make_option
@@ -58,5 +58,5 @@ set of streams (which can be empty, with `--streams=`).", file=sys.stderr)
             stream.strip(): {"description": stream.strip(), "invite_only": False}
             for stream in options["streams"].split(",")
         } # type: Dict[Text, Dict[Text, Any]]
-        realm = get_realm_by_string_id(options["string_id"])
+        realm = get_realm(options["string_id"])
         set_default_streams(realm, stream_dict)

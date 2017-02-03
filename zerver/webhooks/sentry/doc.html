@@ -1,0 +1,38 @@
+<p>
+    Zulip supports integration with Sentry and can notify you of
+    issues that occurred in your project.
+</p>
+
+<p>
+    First, create the stream you'd like to use for Sentry notifications,
+    and subscribe all interested parties to this stream. We
+    recommend the name <code>sentry</code>. Then, construct
+    the Sentry webhook URL as follows:
+</p>
+
+<p><code>{{ external_api_uri_subdomain }}/v1/external/sentry?api_key=abcdefgh&amp;stream=sentry</code></p>
+
+<p>
+    where <code>api_key</code> is the API key of your Zulip bot,
+    and <code>stream</code> is the stream name you want the
+    notifications sent to.
+</p>
+
+<p>Next, from Sentry dashboard choose your project.</p>
+<img class="screenshot" src="/static/images/integrations/sentry/001.png"/><br/><br/>
+<p>From the menu on the right, choose <code>Settings</code></p>
+<img class="screenshot" src="/static/images/integrations/sentry/002.png"/><br/>
+<p>On the settings page, from the menu on the left, choose <code>Notifications</code><br/>
+    In the <code>Inactive Integrations</code> section, choose <code>WEBHOOKS</code></p>
+<img class="screenshot" src="/static/images/integrations/sentry/003.png"/><br/>
+<p>In the <code>WebHooks</code> box, insert the above webhook
+    URL into the <code>Callback URLs*</code> field.</p>
+<img class="screenshot" src="/static/images/integrations/sentry/004.png"/><br/>
+<p>And click <code>Save Changes</code></p>
+
+<p>
+    <b>Congratulations! You're done!</b><br/> You will receive Zulip notifications
+    like this whenever a new Sentry alert is triggered:
+</p>
+
+<img class="screenshot" src="/static/images/integrations/sentry/005.png"/>

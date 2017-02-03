@@ -30,6 +30,7 @@ set_global('page_params', {
 
 add_dependencies({
     marked: 'third/marked/lib/marked.js',
+    emoji_codes: 'generated/emoji/emoji_codes.js',
     emoji: 'js/emoji.js',
     people: 'js/people.js',
     stream_data: 'js/stream_data.js',
@@ -58,11 +59,20 @@ set_global('window', window);
 
 var people = global.people;
 
-people.add({
+var cordelia = {
     full_name: 'Cordelia Lear',
     user_id: 101,
     email: 'cordelia@zulip.com',
+};
+people.add(cordelia);
+
+people.add({
+    full_name: 'Leo',
+    user_id: 102,
+    email: 'leo@zulip.com',
 });
+
+people.initialize_current_user(cordelia.user_id);
 
 var stream_data = global.stream_data;
 var denmark = {
@@ -137,7 +147,9 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
 (function test_marked_shared() {
   var tests = bugdown_data.regular_tests;
   tests.forEach(function (test) {
-    var output = echo.apply_markdown(test.input);
+    var message = {raw_content: test.input};
+    echo.apply_markdown(message);
+    var output = message.content;
 
     if (test.bugdown_matches_marked) {
       assert.equal(test.expected_output, output);
@@ -145,6 +157,20 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
       assert.notEqual(test.expected_output, output);
     }
   });
+}());
+
+(function test_message_flags() {
+    var message = {raw_content: '@**Leo**'};
+    echo.apply_markdown(message);
+    assert(!_.contains(message.flags, 'mentioned'));
+
+    message = {raw_content: '@**Cordelia Lear**'};
+    echo.apply_markdown(message);
+    assert(_.contains(message.flags, 'mentioned'));
+
+    message = {raw_content: '@**all**'};
+    echo.apply_markdown(message);
+    assert(_.contains(message.flags, 'mentioned'));
 }());
 
 (function test_marked() {
@@ -164,7 +190,7 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
     {input: '\n~~~quote\nquote this for me\n~~~\nthanks\n',
      expected: '<blockquote>\n<p>quote this for me</p>\n</blockquote>\n<p>thanks</p>'},
     {input: 'This is a @**Cordelia Lear** mention',
-     expected: '<p>This is a <span class="user-mention" data-user-email="cordelia@zulip.com">@Cordelia Lear</span> mention</p>'},
+     expected: '<p>This is a <span class="user-mention" data-user-id="101">@Cordelia Lear</span> mention</p>'},
     {input: 'These @ @**** are not mentions',
      expected: '<p>These @ @<em>**</em> are not mentions</p>'},
     {input: 'These # #**** are not mentions',
@@ -201,7 +227,9 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
     var input = test_case.input;
     var expected = test_case.expected;
 
-    var output = echo.apply_markdown(input);
+    var message = {raw_content: input};
+    echo.apply_markdown(message);
+    var output = message.content;
 
     assert.equal(expected, output);
   });
@@ -244,30 +272,34 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
 
 (function test_message_flags() {
   var input = "/me is testing this";
-  var message = {subject: "No links here", content: echo.apply_markdown(input), raw_content: input};
+  var message = {subject: "No links here", raw_content: input};
+  message.flags = ['read'];
+  echo.apply_markdown(message);
   echo._add_message_flags(message);
 
   assert.equal(message.flags.length, 2);
   assert(message.flags.indexOf('read') !== -1);
   assert(message.flags.indexOf('is_me_message') !== -1);
 
-  input = "testing this @**all**";
-  message = {subject: "No links here", content: echo.apply_markdown(input), raw_content: input};
+  input = "testing this @**all** @**Cordelia Lear**";
+  message = {subject: "No links here", raw_content: input};
+  echo.apply_markdown(message);
   echo._add_message_flags(message);
 
-  assert.equal(message.flags.length, 2);
-  assert(message.flags.indexOf('read') !== -1);
+  assert.equal(message.flags.length, 1);
   assert(message.flags.indexOf('mentioned') !== -1);
 
   input = "test @all";
-  message = {subject: "No links here", content: echo.apply_markdown(input), raw_content: input};
+  message = {subject: "No links here", raw_content: input};
+  echo.apply_markdown(message);
   echo._add_message_flags(message);
-  assert.equal(message.flags.length, 2);
+  assert.equal(message.flags.length, 1);
   assert(message.flags.indexOf('mentioned') !== -1);
 
   input = "test @any";
-  message = {subject: "No links here", content: echo.apply_markdown(input), raw_content: input};
+  message = {subject: "No links here", raw_content: input};
+  echo.apply_markdown(message);
   echo._add_message_flags(message);
-  assert.equal(message.flags.length, 1);
+  assert.equal(message.flags.length, 0);
   assert(message.flags.indexOf('mentioned') === -1);
 }());

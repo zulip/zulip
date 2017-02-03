@@ -12,7 +12,7 @@ from sqlalchemy.sql import compiler # type: ignore
 
 from zerver.models import (
     Realm, Recipient, Stream, Subscription, UserProfile, Attachment,
-    get_display_recipient, get_recipient, get_realm_by_string_id, get_stream, get_user_profile_by_email,
+    get_display_recipient, get_recipient, get_realm, get_stream, get_user_profile_by_email,
     Reaction
 )
 from zerver.lib.message import (
@@ -61,7 +61,7 @@ def get_recipient_id_for_stream_name(realm, stream_name):
 
 def mute_stream(realm, user_profile, stream_name):
     # type: (Realm, Text, Text) -> None
-    stream = Stream.objects.get(realm=realm, name=stream_name)
+    stream = get_stream(stream_name, realm)
     recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
     subscription = Subscription.objects.get(recipient=recipient, user_profile=user_profile)
     subscription.in_home_view = False
@@ -70,7 +70,7 @@ def mute_stream(realm, user_profile, stream_name):
 class NarrowBuilderTest(ZulipTestCase):
     def setUp(self):
         # type: () -> None
-        self.realm = get_realm_by_string_id('zulip')
+        self.realm = get_realm('zulip')
         self.user_profile = get_user_profile_by_email("hamlet@zulip.com")
         self.builder = NarrowBuilder(self.user_profile, column('id'))
         self.raw_query = select([column("id")], None, "zerver_message")
@@ -333,7 +333,7 @@ class BuildNarrowFilterTest(TestCase):
 class IncludeHistoryTest(ZulipTestCase):
     def test_ok_to_include_history(self):
         # type: () -> None
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         self.make_stream('public_stream', realm=realm)
 
         # Negated stream searches should not include history.
@@ -470,8 +470,8 @@ class GetOldMessagesTest(ZulipTestCase):
             return ','.join(sorted(set([r['email'] for r in dr] + [me])))
 
         personals = [m for m in get_user_messages(get_user_profile_by_email(me))
-                     if m.recipient.type == Recipient.PERSONAL
-                     or m.recipient.type == Recipient.HUDDLE]
+                     if m.recipient.type == Recipient.PERSONAL or
+                     m.recipient.type == Recipient.HUDDLE]
         if not personals:
             # FIXME: This is bad.  We should use test data that is guaranteed
             # to contain some personals for every user.  See #617.
@@ -694,6 +694,19 @@ class GetOldMessagesTest(ZulipTestCase):
             meeting_message['match_content'],
             '<p>I am hungry!</p>')
 
+        # Should not crash when multiple search operands are present
+        multi_search_narrow = [
+            dict(operator='search', operand='discuss'),
+            dict(operator='search', operand='after'),
+        ]
+        multi_search_result = self.get_and_check_messages(dict(
+            narrow=ujson.dumps(multi_search_narrow),
+            anchor=0,
+            num_after=10,
+        )) # type: Dict[str, Dict]
+        self.assertEqual(len(multi_search_result['messages']), 1)
+        self.assertEqual(multi_search_result['messages'][0]['match_content'], '<p><span class="highlight">discuss</span> lunch <span class="highlight">after</span> lunch</p>')
+
     @override_settings(USING_PGROONGA=True)
     def test_get_old_messages_with_search_pgroonga(self):
         # type: () -> None
@@ -753,6 +766,19 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(
             english_message['match_content'],
             u'<p>I want to go to <span class="highlight">日本</span>!</p>')
+
+        # Should not crash when multiple search operands are present
+        multi_search_narrow = [
+            dict(operator='search', operand='can'),
+            dict(operator='search', operand='speak'),
+        ]
+        multi_search_result = self.get_and_check_messages(dict(
+            narrow=ujson.dumps(multi_search_narrow),
+            anchor=0,
+            num_after=10,
+        )) # type: Dict[str, Dict]
+        self.assertEqual(len(multi_search_result['messages']), 1)
+        self.assertEqual(multi_search_result['messages'][0]['match_content'], '<p><span class="highlight">Can</span> you <span class="highlight">speak</span> Japanese?</p>')
 
     def test_get_old_messages_with_only_searching_anchor(self):
         # type: () -> None
@@ -1006,7 +1032,7 @@ class GetOldMessagesTest(ZulipTestCase):
         doing.
         """
 
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         self.make_stream('web stuff')
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
         user_profile.muted_topics = ujson.dumps([['Scotland', 'golf'], ['web stuff', 'css'], ['bogus', 'bogus']])
@@ -1042,7 +1068,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
     def test_exclude_muting_conditions(self):
         # type: () -> None
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         self.make_stream('web stuff')
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
 

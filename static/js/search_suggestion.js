@@ -66,7 +66,7 @@ function get_stream_suggestions(operators) {
         var description = prefix + ' ' + highlighted_stream;
         var term = {
             operator: 'stream',
-            operand: stream
+            operand: stream,
         };
         var search_string = Filter.unparse([term]);
         return {description: description, search_string: search_string};
@@ -142,7 +142,7 @@ function get_private_suggestions(all_people, operators, person_operator_matches)
         var term = {
             operator: matching_operator,
             operand: person.email,
-            negated: negated
+            negated: negated,
         };
         var name = highlight_person(query, person);
         var description = prefix + ' ' + name;
@@ -156,7 +156,7 @@ function get_private_suggestions(all_people, operators, person_operator_matches)
 
     suggestions.push({
         search_string: 'is:private',
-        description: 'Private messages'
+        description: 'Private messages',
     });
 
     return suggestions;
@@ -324,32 +324,28 @@ function get_special_filter_suggestions(query, operators) {
     var suggestions = [
         {
             search_string: '',
-            description: 'Home'
+            description: 'Home',
         },
         {
             search_string: 'in:all',
-            description: 'All messages'
+            description: 'All messages',
         },
         {
             search_string: 'is:private',
-            description: 'Private messages'
+            description: 'Private messages',
         },
         {
             search_string: 'is:starred',
-            description: 'Starred messages'
+            description: 'Starred messages',
         },
         {
             search_string: 'is:mentioned',
-            description: '@-mentions'
+            description: '@-mentions',
         },
         {
             search_string: 'is:alerted',
-            description: 'Alerted messages'
+            description: 'Alerted messages',
         },
-        {
-            search_string: 'sender:' + page_params.email,
-            description: 'Sent by me'
-        }
     ];
 
     query = query.toLowerCase();
@@ -366,6 +362,39 @@ function get_special_filter_suggestions(query, operators) {
     });
 
     return suggestions;
+}
+
+function get_sent_by_me_suggestions(query, operators) {
+    if (operators.length >= 2) {
+        return [];
+    }
+
+    var sender_query = 'sender:' + people.my_current_email();
+    var from_query = 'from:' + people.my_current_email();
+    var description = 'Sent by me';
+
+    query = query.toLowerCase();
+
+    if (query === sender_query || query === from_query) {
+        return [];
+    } else if (query === '' ||
+        sender_query.indexOf(query) === 0 ||
+        description.toLowerCase().indexOf(query) === 0) {
+        return [
+            {
+                search_string: sender_query,
+                description: description,
+            },
+        ];
+    } else if (from_query.indexOf(query) === 0) {
+        return [
+            {
+                search_string: from_query,
+                description: description,
+            },
+        ];
+    }
+    return [];
 }
 
 exports.get_suggestions = function (query) {
@@ -386,6 +415,9 @@ exports.get_suggestions = function (query) {
     suggestions = get_special_filter_suggestions(query, operators);
     result = result.concat(suggestions);
 
+    suggestions = get_sent_by_me_suggestions(query, operators);
+    result = result.concat(suggestions);
+
     suggestions = get_stream_suggestions(operators);
     result = result.concat(suggestions);
 
@@ -397,7 +429,7 @@ exports.get_suggestions = function (query) {
     suggestions = get_person_suggestions(persons, query, 'sender');
     result = result.concat(suggestions);
 
-    suggestions = get_private_suggestions(persons, operators, ['pm-with', 'sender']);
+    suggestions = get_private_suggestions(persons, operators, ['pm-with', 'sender', 'from']);
     result = result.concat(suggestions);
 
     suggestions = get_topic_suggestions(operators);
@@ -421,7 +453,7 @@ exports.get_suggestions = function (query) {
     });
     return {
         strings: strings,
-        lookup_table: lookup_table
+        lookup_table: lookup_table,
     };
 };
 

@@ -80,9 +80,9 @@
 
         <p style="text-align: center">
         {% if only_sso %}
-          <a href="https://zulip.com/dist/apps/sso/mac/Zulip-latest.dmg" class="btn btn-large btn-primary btn-app-download"><i class="icon-vector-download"></i> {% trans %}Download Zulip for Mac{% endtrans %}</a>
+          <a href="https://zulip.org/dist/apps/sso/mac/Zulip-latest.dmg" class="btn btn-large btn-primary btn-app-download"><i class="icon-vector-download"></i> {% trans %}Download Zulip for Mac{% endtrans %}</a>
         {% else %}
-          <a href="https://zulip.com/dist/apps/mac/Zulip-latest.dmg" class="btn btn-large btn-primary btn-app-download"><i class="icon-vector-download"></i> {% trans %}Download Zulip for Mac{% endtrans %}</a>
+          <a href="https://zulip.org/dist/apps/mac/Zulip-latest.dmg" class="btn btn-large btn-primary btn-app-download"><i class="icon-vector-download"></i> {% trans %}Download Zulip for Mac{% endtrans %}</a>
         {% endif %}
         </p>
 
@@ -96,7 +96,7 @@
 
         <h3>{% trans %}Debian and Ubuntu{% endtrans %}</h3>
         {% trans %}We have an APT repository for Zulip, so adding and installing the app is easy:{% endtrans %}
-        <div class="codehilite"><pre>wget https://zulip.com/dist/keys/user-apt.asc
+        <div class="codehilite"><pre>wget https://zulip.org/dist/keys/user-apt.asc
 cat user-apt.asc | sudo apt-key add -
 sudo apt-add-repository http://apt.zulip.com/user/
 sudo apt-get update
@@ -110,17 +110,17 @@ sudo apt-get install zulip-desktop
 
         <h3>{{ _("Other") }}</h3>
         {% if only_sso %}
-          <p>{% trans %}We provide a <a href="https://zulip.com/dist/apps/sso/linux/zulip-desktop_latest.bin.tar.gz">binary tarball</a> of the Zulip application, built for 64-bit systems.{% endtrans %}
+          <p>{% trans %}We provide a <a href="https://zulip.org/dist/apps/sso/linux/zulip-desktop_latest.bin.tar.gz">binary tarball</a> of the Zulip application, built for 64-bit systems.{% endtrans %}
           </p>
         {% else %}
-          <p>{% trans %}We provide a <a href="https://zulip.com/dist/apps/linux/zulip-desktop_latest.bin.tar.gz">binary tarball</a> of the Zulip application, built for 64-bit systems.{% endtrans %}
+          <p>{% trans %}We provide a <a href="https://zulip.org/dist/apps/linux/zulip-desktop_latest.bin.tar.gz">binary tarball</a> of the Zulip application, built for 64-bit systems.{% endtrans %}
           </p>
         {% endif %}
       </div>
 
       <div class="tab-pane" id="windows">
         <p>{% trans %}Windows. It's the best OS for your needs: gaming,
-        coding, expense reports. But you always felt that something
+        coding, expense reports, etc. But you always felt that something
         was missing... until now.{% endtrans %}</p>
 
         <p>{% trans %}We proudly present <b>Zulip for Windows</b>: the second-best app for Windows on the market today (after
@@ -128,9 +128,9 @@ sudo apt-get install zulip-desktop
 
         <p style="text-align: center">
           {% if only_sso %}
-            <a href="https://zulip.com/dist/apps/sso/win/zulip-latest.exe" class="btn btn-large btn-primary btn-app-download"><i class="icon-vector-download"></i> {% trans %}Download Zulip for Windows{% endtrans %}</a>
+            <a href="https://zulip.org/dist/apps/sso/win/zulip-latest.exe" class="btn btn-large btn-primary btn-app-download"><i class="icon-vector-download"></i> {% trans %}Download Zulip for Windows{% endtrans %}</a>
           {% else %}
-            <a href="https://zulip.com/dist/apps/win/zulip-latest.exe" class="btn btn-large btn-primary btn-app-download"><i class="icon-vector-download"></i> {% trans %}Download Zulip for Windows{% endtrans %}</a>
+            <a href="https://zulip.org/dist/apps/win/zulip-latest.exe" class="btn btn-large btn-primary btn-app-download"><i class="icon-vector-download"></i> {% trans %}Download Zulip for Windows{% endtrans %}</a>
           {% endif %}
         </p>
 
@@ -139,7 +139,7 @@ sudo apt-get install zulip-desktop
 
       <div class="tab-pane" id="plan9">
         <p>{% trans %}First, connect to our hosted 9P filesystem
-        at <code>plan9.zulip.com</code> and then... no, we're
+        at <code>plan9.zulip.org</code> and then... no, we're
         totally kidding. There definitely isn't a version of Zulip
         for Plan 9.{% endtrans %}</p>
       </div>

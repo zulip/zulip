@@ -1,75 +1,33 @@
-# Private Group Messages
-## There are three ways to send a private message to a group of people:
-### First Way:
-To send a new private group message,
-first click on the `New private message`
-button located at the bottom of your screen.
+# Send a group of people a private message
 
-![New private message](/static/images/help/private-message.png)
+You can easily send a new group private message through the compose box.
 
-The following box will be displayed:
+!!! tip ""
+    You can view your group private messages conversations by clicking the
+    **Private messages** filter in the left sidebar or a group under the
+    **Group PMs** section in the right sidebar.
 
-![New stream message](/static/images/help/private-box.png)
+1. Click the **New private message** button located in the compose box at
+the bottom of your screen.
 
-In the **one or more people...** field,
-input the usernames or email addresses of the users
-you want to send a private group message to.
-Each username or email address should be separated by a comma (`,`).
-When you begin typing an email address or username,
-autocomplete suggestions will appear for individuals.
-The list of users in this field creates the group
-to which the private message will be sent.
+2. Upon clicking on the the **New private message** button, the
+compose box open, showing the **one or more people...** and **Compose
+your message here...** inputs.
 
-If you attempt to input a nonexistent username or email address,
-an error message will appear.
+    ![Private message](/static/images/help/private-box.png)
 
-### Second Way:
-If you have already private messaged a group of people,
-their names will appear under the **Group PMs** heading
-at the bottom of the user list on the right side of your screen.
+3. In the **one or more people...** field, input all of the usernames or
+emails address of the users you want to send a group private message to.
+When you begin typing an email address or username, autocomplete suggestions
+will appear.
 
-![Group PMs](/static/images/help/group-pms.png)
+5. Enter your message in the **Compose your message here...** field.
 
-Clicking on one of the groups will bring up a messaging box.
-The **one or more people...** field will automatically be filled
-with the users in that existing group.
+6. Once you have finished completing your message and adding the recipients,
+you can now send your message to the specified group of users by pressing
+the Enter key or clicking the **Send** button, depending on your settings.
 
-![pm box](/static/images/help/pm-box-auto-filled-field.png)
-
-You can then type your message to that group of users
-in the **Compose your message here...** field.
-
-### Third Way:
-Within the **Private messages** tab on the left of the screen, you can view and respond to group messages.
-
-![Private messages sidebar](/static/images/help/pms_in_left_sidebar.png)
-
-Clicking on the **Private messages** tab will show all of your private
-messages in the center of your screen.
-
-![Private messages](/static/images/help/private-messages.png)
-
-Clicking on a message from a private group in this view
-will bring up a messaging box with the **one or more people...** field
-filled with the users in that group.
-You can then type a message to that group in the
-**Compose your message here...** field.
-
-Also, you can see your a list of your private group messages under
-**Private messages**
-at the top left corner of your screen.
-
-![Groups left sidebar](/static/images/help/groups-left-sidebar.png)
-
-Clicking on one of these groups will narrow to that group.
-Now, if you click the `New private message` button
-at the bottom of your screen,
-the **one or more people...** field will automatically be filled with
-the users in that private group.
-Alternatively, you can click on a message from a group
-to bring up a messaging box with the **one or more people...** field
-filled with the users in that private group message.  
-
-At any time you can discard your message by clicking the **x**
-(![x](/static/images/help/x.png)) icon
-located at the top-right corner of the messaging box.
+!!! tip ""
+    You can always cancel your message by clicking the x (<i
+    class="icon-vector-remove"></i>) icon located at the top-right corner of
+    your compose box or pressing the `Esc` key.

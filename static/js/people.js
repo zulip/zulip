@@ -8,6 +8,7 @@ var people_by_user_id_dict;
 var realm_people_dict;
 var cross_realm_dict;
 var pm_recipient_count_dict;
+var my_user_id;
 
 // We have an init() function so that our automated tests
 // can easily clear data.
@@ -27,6 +28,10 @@ exports.init = function () {
 exports.init();
 
 exports.get_person_from_user_id = function (user_id) {
+    if (!people_by_user_id_dict.has(user_id)) {
+        blueslip.error('Unknown user_id in get_person_from_user_id: ' + user_id);
+        return undefined;
+    }
     return people_by_user_id_dict.get(user_id);
 };
 
@@ -82,13 +87,107 @@ exports.emails_strings_to_user_ids_string = function (emails_string) {
     });
 
     if (!_.all(user_ids)) {
-        blueslip.error('Unknown emails: ' + emails_string);
+        blueslip.warn('Unknown emails: ' + emails_string);
         return;
     }
 
     user_ids.sort();
 
     return user_ids.join(',');
+};
+
+exports.get_full_name = function (user_id) {
+    return people_by_user_id_dict.get(user_id).full_name;
+};
+
+exports.get_recipients = function (user_ids_string) {
+    // See message_store.get_pm_full_names() for a similar function.
+
+    var user_ids = user_ids_string.split(',');
+    var other_ids = _.reject(user_ids, exports.is_my_user_id);
+
+    if (other_ids.length === 0) {
+        // private message with oneself
+        return exports.my_full_name();
+    }
+
+    var names = _.map(other_ids, exports.get_full_name).sort();
+    return names.join(', ');
+};
+
+exports.emails_to_slug = function (emails_string) {
+    var slug = exports.emails_strings_to_user_ids_string(emails_string);
+
+    if (!slug) {
+        return;
+    }
+
+    slug += '-';
+
+    var emails = emails_string.split(',');
+
+    if (emails.length === 1) {
+        slug += emails[0].split('@')[0].toLowerCase();
+    } else {
+        slug += 'group';
+    }
+
+    return slug;
+};
+
+exports.slug_to_emails = function (slug) {
+    var m = /^([\d,]+)-/.exec(slug);
+    if (m) {
+        var user_ids = m[1];
+        return exports.user_ids_string_to_emails_string(user_ids);
+    }
+};
+
+exports.format_small_avatar_url = function (raw_url, sent_by_me) {
+    var url = raw_url + "&s=50";
+    if (sent_by_me) {
+        url += "&stamp=" + settings.avatar_stamp;
+    }
+    return url;
+};
+
+exports.small_avatar_url = function (message) {
+    // Try to call this function in all places where we need 25px
+    // avatar images, so that the browser can help
+    // us avoid unnecessary network trips.  (For user-uploaded avatars,
+    // the s=25 parameter is essentially ignored, but it's harmless.)
+    //
+    // We actually request these at s=50, so that we look better
+    // on retina displays.
+
+    var url = "";
+    var person;
+
+    if (message.sender_id) {
+        // We should always have message.sender_id, except for in the
+        // tutorial, where it's ok to fall back to the url in the fake
+        // messages.
+        person = exports.get_person_from_user_id(message.sender_id);
+    }
+
+    // The first time we encounter a sender in a message, we may
+    // not have person.avatar_url set, but if we do, then use that.
+    if (person && person.avatar_url) {
+        url = person.avatar_url;
+    } else if (message.avatar_url) {
+        // Here we fall back to using the avatar_url from the message
+        // itself.
+        url = message.avatar_url;
+        if (person) {
+            person.avatar_url = url;
+        }
+    }
+
+    if (url) {
+        url = exports.format_small_avatar_url(url, message.sent_by_me);
+    }
+
+    return url;
 };
 
 exports.realm_get = function realm_get(email) {
@@ -126,7 +225,7 @@ exports.incr_recipient_count = function (email) {
 };
 
 exports.filter_people_by_search_terms = function (users, search_terms) {
-        var filtered_users = {};
+        var filtered_users = new Dict();
 
         var matchers = _.map(search_terms, function (search_term) {
             var termlets = search_term.toLowerCase().split(/\s+/);
@@ -173,7 +272,7 @@ exports.filter_people_by_search_terms = function (users, search_terms) {
             });
 
             if (match) {
-                filtered_users[email] = true;
+                filtered_users.set(person.user_id, true);
             }
         });
         return filtered_users;
@@ -196,8 +295,9 @@ function people_cmp(person1, person2) {
 exports.get_rest_of_realm = function get_rest_of_realm() {
     var people_minus_you = [];
     realm_people_dict.each(function (person) {
-        if (!util.is_current_user(person.email)) {
+        if (!exports.is_current_user(person.email)) {
             people_minus_you.push({email: person.email,
+                                   user_id: person.user_id,
                                    full_name: person.full_name});
         }
     });
@@ -257,7 +357,7 @@ exports.extract_people_from_message = function (message) {
                     user_id: person.user_id || person.id,
                     full_name: person.full_name,
                     is_admin: person.is_realm_admin || false,
-                    is_bot: person.is_bot || false
+                    is_bot: person.is_bot || false,
                 });
             }
 
@@ -269,53 +369,43 @@ exports.extract_people_from_message = function (message) {
     });
 };
 
-exports.update = function update(person) {
-    if (! people_dict.has(person.email)) {
-        blueslip.error("Got update_person event for unexpected user",
-                       {email: person.email});
-        return;
+exports.set_full_name = function (person_obj, new_full_name) {
+    if (people_by_name_dict.has(person_obj.full_name)) {
+        people_by_name_dict.del(person_obj.full_name);
     }
-    var person_obj = people_dict.get(person.email);
+    people_by_name_dict.set(new_full_name, person_obj);
+    person_obj.full_name = new_full_name;
+};
 
-    if (_.has(person, 'full_name')) {
-        if (people_by_name_dict.has(person_obj.full_name)) {
-            people_by_name_dict.set(person.full_name, person_obj);
-            people_by_name_dict.del(person_obj.full_name);
-        }
-
-        person_obj.full_name = person.full_name;
-
-        if (util.is_current_user(person.email)) {
-            page_params.fullname = person.full_name;
-        }
+exports.is_current_user = function (email) {
+    if (email === null || email === undefined) {
+        return false;
     }
 
-    if (_.has(person, 'is_admin')) {
-        person_obj.is_admin = person.is_admin;
+    return email.toLowerCase() === exports.my_current_email().toLowerCase();
+};
 
-        if (util.is_current_user(person.email)) {
-            page_params.is_admin = person.is_admin;
-            admin.show_or_hide_menu_item();
-        }
+exports.initialize_current_user = function (user_id) {
+    my_user_id = user_id;
+};
+
+exports.my_full_name = function () {
+    return people_by_user_id_dict.get(my_user_id).full_name;
+};
+
+exports.my_current_email = function () {
+    return people_by_user_id_dict.get(my_user_id).email;
+};
+
+exports.my_current_user_id = function () {
+    return my_user_id;
+};
+
+exports.is_my_user_id = function (user_id) {
+    if (!user_id) {
+        return false;
     }
-
-    if (_.has(person, 'avatar_url')) {
-        var url = person.avatar_url + "&y=" + new Date().getTime();
-        person_obj.avatar_url = url;
-
-        if (util.is_current_user(person.email)) {
-          page_params.avatar_url = url;
-          $("#user-settings-avatar").attr("src", url);
-        }
-
-        $(".inline_profile_picture.u-" + person.id).css({
-          "background-image": "url(" + url + ")"
-        });
-    }
-
-    activity.set_user_statuses([]);
-
-    // TODO: update sender names on messages
+    return user_id.toString() === my_user_id.toString();
 };
 
 $(function () {
@@ -329,6 +419,8 @@ $(function () {
         }
         cross_realm_dict.set(person.email, person);
     });
+
+    exports.initialize_current_user(page_params.user_id);
 
     delete page_params.people_list; // We are the only consumer of this.
     delete page_params.cross_realm_bots;

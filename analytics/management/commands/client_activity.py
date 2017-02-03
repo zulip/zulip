@@ -8,7 +8,7 @@ from django.core.management.base import BaseCommand
 from django.db.models import Count, QuerySet
 
 from zerver.models import UserActivity, UserProfile, Realm, \
-    get_realm_by_string_id, get_user_profile_by_email
+    get_realm, get_user_profile_by_email
 
 import datetime
 
@@ -68,13 +68,13 @@ Usage examples:
                 # Report activity for a user.
                 user_profile = get_user_profile_by_email(arg)
                 self.compute_activity(UserActivity.objects.filter(
-                        user_profile=user_profile))
+                    user_profile=user_profile))
             except UserProfile.DoesNotExist:
                 try:
                     # Report activity for a realm.
-                    realm = get_realm_by_string_id(arg)
+                    realm = get_realm(arg)
                     self.compute_activity(UserActivity.objects.filter(
-                            user_profile__realm=realm))
+                        user_profile__realm=realm))
                 except Realm.DoesNotExist:
-                    print("Unknown user or domain %s" % (arg,))
+                    print("Unknown user or realm %s" % (arg,))
                     exit(1)

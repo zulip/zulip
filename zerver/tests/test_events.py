@@ -7,8 +7,8 @@ from django.http import HttpRequest, HttpResponse
 from django.test import TestCase
 
 from zerver.models import (
-    get_client, get_realm_by_string_id, get_stream, get_user_profile_by_email,
-    Message, Recipient, UserProfile
+    get_client, get_realm, get_stream, get_user_profile_by_email,
+    Message, RealmAlias, Recipient, UserProfile
 )
 
 from zerver.lib.actions import (
@@ -34,6 +34,7 @@ from zerver.lib.actions import (
     do_remove_realm_filter,
     do_rename_stream,
     do_add_default_stream,
+    do_remove_default_stream,
     do_set_muted_topics,
     do_set_realm_create_stream_by_admins_only,
     do_set_realm_name,
@@ -54,13 +55,15 @@ from zerver.lib.actions import (
     do_change_enable_offline_email_notifications,
     do_change_enable_offline_push_notifications,
     do_change_enable_online_push_notifications,
+    do_change_pm_content_in_desktop_notifications,
     do_change_enable_digest_emails,
+    do_add_realm_alias,
+    do_remove_realm_alias,
     fetch_initial_state_data,
-    get_subscription
 )
 
 from zerver.lib.message import render_markdown
-from zerver.lib.test_helpers import POSTRequestMock
+from zerver.lib.test_helpers import POSTRequestMock, get_subscription
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
@@ -253,7 +256,7 @@ class EventsRegisterTest(ZulipTestCase):
     def create_bot(self, email):
         # type: (str) -> UserProfile
         return do_create_user(email, '123',
-                              get_realm_by_string_id('zulip'), 'Test Bot', 'test',
+                              get_realm('zulip'), 'Test Bot', 'test',
                               bot_type=UserProfile.DEFAULT_BOT, bot_owner=self.user_profile)
 
     def realm_bot_schema(self, field_name, check):
@@ -273,7 +276,7 @@ class EventsRegisterTest(ZulipTestCase):
         client = allocate_client_descriptor(
             dict(user_profile_id = self.user_profile.id,
                  user_profile_email = self.user_profile.email,
-                 realm_id = self.user_profile.realm.id,
+                 realm_id = self.user_profile.realm_id,
                  event_types = event_types,
                  client_type_name = "website",
                  apply_markdown = True,
@@ -281,7 +284,7 @@ class EventsRegisterTest(ZulipTestCase):
                  queue_timeout = 600,
                  last_connection_time = time.time(),
                  narrow = [])
-            )
+        )
         # hybrid_state = initial fetch state + re-applying events triggered by our action
         # normal_state = do action then fetch at the end (the "normal" code path)
         hybrid_state = fetch_initial_state_data(self.user_profile, event_types, "")
@@ -406,7 +409,7 @@ class EventsRegisterTest(ZulipTestCase):
             ])))
         ])
 
-        events = self.do_test(lambda: self.register("test1", "test1"))
+        events = self.do_test(lambda: self.register("test1@zulip.com", "test1"))
         error = realm_user_add_checker('events[0]', events[0])
         self.assert_on_error(error)
         error = stream_create_checker('events[1]', events[1])
@@ -439,7 +442,10 @@ class EventsRegisterTest(ZulipTestCase):
             ]))),
         ])
 
-        events = self.do_test(lambda: do_add_default_stream(self.user_profile.realm, "Scotland"))
+        stream = get_stream("Scotland", self.user_profile.realm)
+        events = self.do_test(lambda: do_add_default_stream(stream))
+        error = default_streams_checker('events[0]', events[0])
+        events = self.do_test(lambda: do_remove_default_stream(stream))
         error = default_streams_checker('events[0]', events[0])
         self.assert_on_error(error)
 
@@ -550,7 +556,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('op', equals('update')),
             ('property', equals('default_language')),
             ('value', check_string),
-            ])
+        ])
         events = self.do_test(lambda: do_set_realm_default_language(self.user_profile.realm, 'de'))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
@@ -628,7 +634,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('setting_name', equals('twenty_four_hour_time')),
             ('user', check_string),
             ('setting', check_bool),
-            ])
+        ])
         # The first False is probably a noop, then we get transitions in both directions.
         for setting_value in [False, True, False]:
             events = self.do_test(lambda: do_change_twenty_four_hour_time(self.user_profile, setting_value))
@@ -642,7 +648,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('setting_name', equals('left_side_userlist')),
             ('user', check_string),
             ('setting', check_bool),
-            ])
+        ])
         # The first False is probably a noop, then we get transitions in both directions.
         for setting_value in [False, True, False]:
             events = self.do_test(lambda: do_change_left_side_userlist(self.user_profile, setting_value))
@@ -656,7 +662,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('notification_name', equals('enable_stream_desktop_notifications')),
             ('user', check_string),
             ('setting', check_bool),
-            ])
+        ])
         # The first False is probably a noop, then we get transitions in both directions.
         for setting_value in [False, True, False]:
             events = self.do_test(lambda: do_change_enable_stream_desktop_notifications(self.user_profile, setting_value))
@@ -670,7 +676,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('notification_name', equals('enable_stream_sounds')),
             ('user', check_string),
             ('setting', check_bool),
-            ])
+        ])
         # The first False is probably a noop, then we get transitions in both directions.
         for setting_value in [False, True, False]:
             events = self.do_test(lambda: do_change_enable_stream_sounds(self.user_profile, setting_value))
@@ -684,7 +690,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('notification_name', equals('enable_desktop_notifications')),
             ('user', check_string),
             ('setting', check_bool),
-            ])
+        ])
         # The first False is probably a noop, then we get transitions in both directions.
         for setting_value in [False, True, False]:
             events = self.do_test(lambda: do_change_enable_desktop_notifications(self.user_profile, setting_value))
@@ -698,7 +704,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('notification_name', equals('enable_sounds')),
             ('user', check_string),
             ('setting', check_bool),
-            ])
+        ])
         # The first False is probably a noop, then we get transitions in both directions.
         for setting_value in [False, True, False]:
             events = self.do_test(lambda: do_change_enable_sounds(self.user_profile, setting_value))
@@ -712,7 +718,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('notification_name', equals('enable_offline_email_notifications')),
             ('user', check_string),
             ('setting', check_bool),
-            ])
+        ])
         # The first False is probably a noop, then we get transitions in both directions.
         for setting_value in [False, True, False]:
             events = self.do_test(lambda: do_change_enable_offline_email_notifications(self.user_profile, setting_value))
@@ -726,7 +732,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('notification_name', equals('enable_offline_push_notifications')),
             ('user', check_string),
             ('setting', check_bool),
-            ])
+        ])
         # The first False is probably a noop, then we get transitions in both directions.
         for setting_value in [False, True, False]:
             events = self.do_test(lambda: do_change_enable_offline_push_notifications(self.user_profile, setting_value))
@@ -740,10 +746,24 @@ class EventsRegisterTest(ZulipTestCase):
             ('notification_name', equals('enable_online_push_notifications')),
             ('user', check_string),
             ('setting', check_bool),
-            ])
+        ])
         # The first False is probably a noop, then we get transitions in both directions.
         for setting_value in [False, True, False]:
             events = self.do_test(lambda: do_change_enable_online_push_notifications(self.user_profile, setting_value))
+            error = schema_checker('events[0]', events[0])
+            self.assert_on_error(error)
+
+    def test_change_pm_content_in_desktop_notifications(self):
+        # type: () -> None
+        schema_checker = check_dict([
+            ('type', equals('update_global_notifications')),
+            ('notification_name', equals('pm_content_in_desktop_notifications')),
+            ('user', check_string),
+            ('setting', check_bool),
+        ])
+        # The first False is probably a noop, then we get transitions in both directions.
+        for setting_value in [False, True, False]:
+            events = self.do_test(lambda: do_change_pm_content_in_desktop_notifications(self.user_profile, setting_value))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
@@ -754,7 +774,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('notification_name', equals('enable_digest_emails')),
             ('user', check_string),
             ('setting', check_bool),
-            ])
+        ])
         # The first False is probably a noop, then we get transitions in both directions.
         for setting_value in [False, True, False]:
             events = self.do_test(lambda: do_change_enable_digest_emails(self.user_profile, setting_value))
@@ -768,12 +788,12 @@ class EventsRegisterTest(ZulipTestCase):
             ('op', equals('update')),
             ('realm_emoji', check_dict([])),
         ])
-        events = self.do_test(lambda: check_add_realm_emoji(get_realm_by_string_id("zulip"), "my_emoji",
+        events = self.do_test(lambda: check_add_realm_emoji(get_realm("zulip"), "my_emoji",
                                                             "https://realm.com/my_emoji"))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
-        events = self.do_test(lambda: do_remove_realm_emoji(get_realm_by_string_id("zulip"), "my_emoji"))
+        events = self.do_test(lambda: do_remove_realm_emoji(get_realm("zulip"), "my_emoji"))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
@@ -783,12 +803,36 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('realm_filters')),
             ('realm_filters', check_list(None)), # TODO: validate tuples in the list
         ])
-        events = self.do_test(lambda: do_add_realm_filter(get_realm_by_string_id("zulip"), "#(?P<id>[123])",
+        events = self.do_test(lambda: do_add_realm_filter(get_realm("zulip"), "#(?P<id>[123])",
                                                           "https://realm.com/my_realm_filter/%(id)s"))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
-        self.do_test(lambda: do_remove_realm_filter(get_realm_by_string_id("zulip"), "#(?P<id>[123])"))
+        self.do_test(lambda: do_remove_realm_filter(get_realm("zulip"), "#(?P<id>[123])"))
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_realm_alias_events(self):
+        # type: () -> None
+        schema_checker = check_dict([
+            ('type', equals('realm_domains')),
+            ('op', equals('add')),
+            ('alias', check_dict([
+                ('domain', check_string),
+            ])),
+        ])
+        realm = get_realm('zulip')
+        events = self.do_test(lambda: do_add_realm_alias(realm, 'zulip.org'))
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        schema_checker = check_dict([
+            ('type', equals('realm_domains')),
+            ('op', equals('remove')),
+            ('domain', check_string),
+        ])
+        alias = RealmAlias.objects.get(realm=realm, domain='zulip.org')
+        events = self.do_test(lambda: do_remove_realm_alias(realm, alias.domain))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
@@ -875,12 +919,11 @@ class EventsRegisterTest(ZulipTestCase):
 
     def test_rename_stream(self):
         # type: () -> None
-        realm = get_realm_by_string_id('zulip')
         stream = self.make_stream('old_name')
         new_name = u'stream with a brand new name'
         self.subscribe_to_stream(self.user_profile.email, stream.name)
 
-        action = lambda: do_rename_stream(realm, stream.name, new_name)
+        action = lambda: do_rename_stream(stream, new_name)
         events = self.do_test(action)
 
         schema_checker = check_dict([
@@ -1013,7 +1056,7 @@ class EventsRegisterTest(ZulipTestCase):
         error = add_schema_checker('events[1]', events[1])
         self.assert_on_error(error)
 
-        action = lambda: do_change_stream_description(get_realm_by_string_id('zulip'), 'test_stream', u'new description')
+        action = lambda: do_change_stream_description(stream, u'new description')
         events = self.do_test(action)
         error = stream_update_schema_checker('events[0]', events[0])
         self.assert_on_error(error)

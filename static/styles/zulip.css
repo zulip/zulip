@@ -69,6 +69,18 @@ p.n-margin {
     border-radius: 4px;
 }
 
+.modal-backdrop {
+    z-index: 102;
+}
+
+.top-messages-logo {
+    position: absolute;
+    left: calc(50% - 12px);
+    top: 67px;
+    width: 24px;
+    height: 24px;
+}
+
 #unmute_muted_topic_notification {
     display: none;
     position: absolute;
@@ -329,6 +341,11 @@ code {
     padding: 0px 4px;
 }
 
+/* This ensures bulleted lists are nicely centered in 1-line messages */
+.message_content ul {
+    margin: 5px 0 5px 20px;
+}
+
 .codehilite {
     display: block !important;
     border: none !important;
@@ -403,7 +420,6 @@ a:hover code {
     font-size: 12px;
 }
 
-
 .logout {
     white-space: nowrap;
 }
@@ -439,183 +455,21 @@ a:hover code {
     position: relative;
 }
 
-#group-pms li:hover,
-#user_presences li:hover {
-    background-color: #e2e8dd;
-}
-
-#user_presences,
-#group-pms {
-    list-style-position: inside; /* Draw the bullets inside our box */
-    margin-left: 0;
-    overflow: hidden;
-}
-
-#user_presences:hover,
-#group-pms:hover {
-    overflow-y: auto;
-}
-
-#user_presences .user_sidebar_entry:hover,
-#group-pms .group-pms-sidebar-entry:hover {
-    cursor: pointer;
-}
-
-#user_presences li {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-.user_sidebar_entry .count,
-.group-pms-sidebar-entry .count {
-    display: none;
-}
-
-#user_presences li,
-#group-pms li {
-    list-style-type: none;
-}
-
-.user-status-indicator,
-.group-pm-status-indicator {
-    display: block;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    border: 1px solid;
-    float: left;
-    position: relative;
-    top: 5px;
-    margin-right: 0.5em;
-}
-
-.user_active .user-status-indicator,
-.group-pm-status-indicator {
-    background-color: #44C21D;
-    border-color: #44C21D;
-}
-
-.user_idle .user-status-indicator {
-    border-color: #EC7E18;
-    background-color: #EC7E18;
-
-    background: -moz-linear-gradient(top,  rgba(255,255,255,0) 50%, rgba(236,126,24,1) 50%); /* FF3.6+ */
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(50%,rgba(255,255,255,0)), color-stop(50%,rgba(236,126,24,1))); /* Chrome,Safari4+ */
-    background: -webkit-linear-gradient(top,  rgba(255,255,255,0) 50%,rgba(236,126,24,1) 50%); /* Chrome10+,Safari5.1+ */
-    background: -o-linear-gradient(top,  rgba(255,255,255,0) 50%,rgba(236,126,24,1) 50%); /* Opera 11.10+ */
-    background: -ms-linear-gradient(top,  rgba(255,255,255,0) 50%,rgba(236,126,24,1) 50%); /* IE10+ */
-    background: linear-gradient(to bottom,  rgba(255,255,255,0) 50%,rgba(236,126,24,1) 50%); /* W3C */
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#ec7e18',GradientType=0 ); /* IE6-9 */
-}
-
-.user_offline .user-status-indicator {
-    background-color: none;
-    border-color: gray;
-}
-
-.user-device-indicator {
-    display: inline-block;
-    font-size: 20px;
-    line-height: 0px;
-    position: absolute;
-    right: 12px;
-    top: 0px;
-    color: #777777;
-}
-
-.user-with-count .user-device-indicator {
-    right: 35px;
-}
-
-#user_presences a,
-#group-pms a {
-    color: #333;
-}
-
-#invite-user-link i {
-    text-decoration: none;
-    margin-right: 5px;
-}
-
 .message_header_stream a.message_label_clickable {
     color: #333;
-}
-
-.group-pms-sidebar-entry .selectable_sidebar_block {
-    width: 235px;
-    display: block;
-}
-
-.user_sidebar_entry .selectable_sidebar_block {
-    width: 218px;
-    display: block;
-}
-
-.user_sidebar_entry .selectable_sidebar_block.user-with-mobile {
-    width: 204px;
-}
-
-.group-pm-link {
-    margin-left: 17px;
-    display: block;
-}
-
-.user_sidebar_entry .selectable_sidebar_block {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.user_sidebar_entry.user-with-count .selectable_sidebar_block {
-    width: 200px;
-}
-
-.user_sidebar_entry.user-with-count .selectable_sidebar_block.user-with-mobile {
-    width: 180px;
-}
-
-.user_sidebar_entry.user-with-count .count {
-    display: inherit;
-}
-
-.group-pms-sidebar-entry.group-with-count .selectable_sidebar_block {
-    width: 170px;
-}
-
-.user_sidebar_entry .count,
-.group-pms-sidebar-entry .count {
-    position: absolute;
-    right: 20px;
-    top: 4px;
-    padding: 2px 3px 1px 3px;
-    background: #80837f;
-    border-radius: 0px;
-    color: #ffffff;
-    font-size: 12px;
-    font-weight: normal;
-    letter-spacing: 0.6px;
-}
-
-.group-pms-sidebar-entry .count {
-    right: 2px;
-}
-
-.user_sidebar_entry .count,
-.group-pms-sidebar-entry .count {
-    line-height: 13px;
-    top: 2px;
 }
 
 li.actual-dropdown-menu i {
     /* In gear menu, make icons the same width so labels line up. */
     display: inline-block;
     width: 14px;
+    text-align: center;
+    margin-right: 3px;
 }
 
 .message_area_padder {
     /* The height of the header and the tabbar plus a small gap */
-    margin-top: 68px;
+    margin-top: 100px;
     /* This is needed for the floating recipient bar
      in Firefox only, for some reason; otherwise it gets
      a scrollbar */
@@ -738,7 +592,8 @@ td.pointer {
     margin-bottom: 10px;
 }
 
-.message_list .message_row:hover .message_time {
+.message_list .message_row:hover .message_time,
+.message_list .has_popover .message_time {
     display: none;
 }
 
@@ -825,11 +680,11 @@ td.pointer {
     line-height: 17px;
 }
 
-.recipient_row_date .hide-date {
+.recipient_row_date.hide-date {
     display: none;
 }
 
-.floating_recipient .recipient_row_date .hide-date {
+.floating_recipient .recipient_row_date.hide-date {
     display: block;
 }
 
@@ -1164,6 +1019,32 @@ a.message_label_clickable:hover {
     opacity: 1.0;
 }
 
+.reactions_hover {
+    display: inline-block;
+    position: relative;
+    left: 22px;
+    width: 0px;
+    height: 0px;
+    color: #bbb;
+    visibility: hidden;
+}
+
+.reactions_hover i {
+    position: absolute;
+    display: block;
+    top: -0.9em;
+    left: 0.4em;
+    border-radius: 1px;
+    padding: 1px 2px;
+}
+
+.message_hovered .reactions_hover,
+.has_reactions_popover .reactions_hover
+ {
+    cursor: pointer;
+    visibility: visible;
+}
+
 /* Brighten text because of the dark background */
 .dark_background a,
 .dark_background a:hover,
@@ -1203,6 +1084,7 @@ a.dark_background:hover,
 }
 
 .message_hovered .info,
+.has_actions_popover .info,
 .message_hovered .empty-star {
     visibility: visible;
 }
@@ -1422,10 +1304,6 @@ blockquote p {
 .home-error-bar {
     margin-top: 5px;
     display: none;
-}
-
-#connection-error {
-    font-size: 13px;
 }
 
 .streamname {
@@ -1648,27 +1526,6 @@ blockquote p {
     color: #ffffff;
 }
 
-#userlist-toggle {
-    display: none;
-    position: absolute;
-    top: 0px;
-    right: 0px;
-    text-align: center;
-    vertical-align: middle;
-    border-left: 2px solid #afbfca;
-}
-
-#userlist-toggle-button {
-    text-decoration: none;
-    background-color: #e4e4e4;
-    color: #858585;
-    display: block;
-    width: 40px;
-    height: 19px;
-    padding-top: 12px;
-    padding-bottom: 9px;
-}
-
 .nav .dropdown-menu {
     left: auto;
     right: 0px;
@@ -1831,6 +1688,16 @@ nav a .no-style {
     visibility: hidden;
 }
 
+#searchbox a.search_icon {
+    color: #ccc;
+    text-decoration: none;
+}
+
+#searchbox a.search_icon:hover {
+    color: #000;
+    text-decoration: none;
+}
+
 .highlight {
     background-color: #FCEA81;
 }
@@ -1926,9 +1793,16 @@ div.floating_recipient {
     /* If you change these, make sure to adjust the constants in
      * loading.make_indicator as well */
     margin-left: 20px;
-    font-size:   33px;
-    font-weight: bold;
+    font-size:   1.2em;
+    font-weight: 300;
     line-height: 38px;
+}
+
+.settings-section #admin_page_users_loading_indicator,
+.settings-section #admin_page_deactivated_users_loading_indicator,
+.settings-section #admin_page_bots_loading_indicator,
+.settings-section #admin_page_streams_loading_indicator {
+    margin: 0 auto;
 }
 
 .settings-section .loading_indicator_text {
@@ -1941,8 +1815,8 @@ div.floating_recipient {
 }
 
 .settings-section .loading_indicator_spinner {
-    width: 12px;
-    height: 12px;
+    width: 100%;
+    height: 100%;
     vertical-align: middle;
     display: inline-block;
 }
@@ -2066,9 +1940,7 @@ div.floating_recipient {
 #loading_more_messages_indicator_box {
     position: relative;
     left: -50%;
-    top: 25px;
-    border: 1px rgb(100, 100, 100) solid;
-    background-color: rgba(230, 230, 230, 0.8);
+    top: -40px;
     z-index: 1;
     -webkit-border-radius: 6px;
        -moz-border-radius: 6px;
@@ -2084,7 +1956,7 @@ div.floating_recipient {
     color: white;
 }
 
-#fmt_help_table {
+.help-table {
     table-layout: fixed;
 }
 
@@ -2249,6 +2121,10 @@ button.topic_edit_cancel {
     text-align: center;
 }
 
+.notification {
+    cursor: pointer;
+}
+
 #empty_narrow_private_message p,
 #empty_narrow_message p {
     text-align: center;
@@ -2264,6 +2140,12 @@ button.topic_edit_cancel {
     position: relative;
     top: 3px;
     margin-top: -7px;
+}
+
+.emoji.realm-emoji {
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
 .twitter-tweet {
@@ -2370,24 +2252,8 @@ button.topic_edit_cancel {
     margin-right: -50%;
 }
 
-#group-pm-list {
-    display: none;
-}
-
-#userlist-header,
-#group-pm-header {
-    border-top: 1px solid #e2e2e2;
-    margin-top: 5px;
-    margin-right: 10px;
-}
-
-.sidebar-items:first-of-type #userlist-header {
-    border-top: none;
-}
-
-#feedback_section {
-    text-align: left;
-    padding-bottom: 10px;
+.include-sender .message_edit {
+    margin-top: -14px;
 }
 
 .message_edit {
@@ -2397,18 +2263,18 @@ button.topic_edit_cancel {
 }
 
 /* Reduce some of the heavy padding from Bootstrap. */
+#message_edit_form {
+    margin-bottom: 10px;
+}
 #message_edit_form .edit-control-label {
-    width: auto;
-    float: left;
-    font-size: 80%;
     vertical-align: top;
     padding-top: 0px;
     margin-right: 10px;
+    font-size: 80%;
 }
 #message_edit_form .edit-controls {
-    margin-left: 35px; /* Match .message_content padding less 7px textarea padding and border */
-    margin-right: -7px;
-    margin-top: 10px;
+    margin-left: 0px;
+    margin-top: 0px;
 }
 #message_edit_form textarea {
     width: 100%;
@@ -2432,6 +2298,10 @@ button.topic_edit_cancel {
     float: right;
     padding-left: 5px;
     padding-top: 3px;
+}
+
+#message_edit_form .action-buttons {
+    margin: 10px 0px;
 }
 
 #topic_edit_form {
@@ -2534,21 +2404,78 @@ button.topic_edit_cancel {
     display: none;
 }
 
-.user-list-filter ,
-.add-user-list-filter {
-    width: 80%;
+/* embed */
+.message_content .message_embed {
+    display: block;
+    position: relative;
+    margin: 5px 0px;
+    border: none;
+    border-left: 3px solid #eee;
+    height: 70px;
+    padding: 5px;
+    z-index: 1;
 }
 
-/* embed */
-.message_embed {
-    border-left: 4px solid #ccc;
-    padding-left: 5px;
+.message_content .message_embed > * {
+    display: inherit;
+    padding: 5px;
+    border: none;
+}
+
+.message_embed .message_embed_title {
+    padding-top: 0px;
+    /* to remove the spacing that the font has from the top of the container. */
+    margin-top: -1px;
+
+    font-size: 1em;
+    font-weight: 600;
+    line-height: normal;
+}
+
+.message_embed .message_embed_description {
+    position: relative;
+    margin-top: -5px;
+    max-width: 500px;
+
+    /* to put it below the container gradient. */
+    z-index: -1;
+}
+
+.message_embed .message_embed_image {
+    display: inline-block;
+    width: 60px;
+    height: 60px;
+    background-size: cover;
+    background-position: center;
+}
+
+.message_embed .data-container {
+    padding: 0px 5px;
+    display: inline-block;
+    vertical-align: top;
+    max-width: calc(100% - 100px);
+    max-height: 70px;
+    overflow: hidden;
+}
+
+.message_embed .data-container div {
     display: block;
-    margin-bottom: 10px;
+    border: none;
 }
-.message_embed_title {
-    font-weight: bold;
-}
-.message_embed_image {
-    max-width: 80px;
+
+@media (max-width: 600px) {
+    .message_content .message_embed {
+        height: auto;
+    }
+
+    .message_embed .message_embed_image {
+        width: 100%;
+        height: 100px;
+    }
+
+    .message_embed .data-container {
+        display: block;
+        max-width: 100%;
+        margin-top: 10px;
+    }
 }

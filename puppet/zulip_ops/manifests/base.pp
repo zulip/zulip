@@ -5,6 +5,10 @@ class zulip_ops::base {
   $org_base_packages = [# Management for our systems
                         "openssh-server",
                         "mosh",
+                        # package management
+                        "aptitude",
+                        # SSL Certificates
+                        "letsencrypt",
                         # Monitoring
                         "munin-node",
                         "munin-plugins-extra" ,
@@ -28,6 +32,7 @@ class zulip_ops::base {
                         "strace",
                         "host",
                         "git",
+                        "nagios-plugins-contrib",
                          ]
   package { $org_base_packages: ensure => "installed" }
 
@@ -41,6 +46,12 @@ class zulip_ops::base {
     ensure     => file,
     mode       => 644,
     source     => 'puppet:///modules/zulip_ops/apt/apt.conf.d/02periodic',
+  }
+
+  file { '/etc/apt/apt.conf.d/50unattended-upgrades':
+    ensure     => file,
+    mode       => 644,
+    source     => 'puppet:///modules/zulip_ops/apt/apt.conf.d/50unattended-upgrades',
   }
 
   file { '/home/zulip/.ssh/authorized_keys':
@@ -59,6 +70,15 @@ class zulip_ops::base {
     mode       => 600,
   }
 
+  file { '/etc/pam.d/common-session':
+    require    => Package['openssh-server'],
+    ensure     => file,
+    source     => 'puppet:///modules/zulip_ops/common-session',
+    owner      => 'root',
+    group      => 'root',
+    mode       => 644,
+  }
+
   file { '/etc/ssh/sshd_config':
     require    => Package['openssh-server'],
     ensure     => file,
@@ -71,6 +91,23 @@ class zulip_ops::base {
   service { 'ssh':
     ensure     => running,
     subscribe  => File['/etc/ssh/sshd_config'],
+  }
+
+  file { '/root/.emacs':
+    ensure     => file,
+    mode       => 600,
+    owner      => "root",
+    group      => "root",
+    source     => 'puppet:///modules/zulip_ops/dot_emacs.el',
+  }
+
+  file { '/home/zulip/.emacs':
+    ensure     => file,
+    mode       => 600,
+    owner      => "zulip",
+    group      => "zulip",
+    source     => 'puppet:///modules/zulip_ops/dot_emacs.el',
+    require    => User['zulip'],
   }
 
   file { '/root/.ssh/authorized_keys':

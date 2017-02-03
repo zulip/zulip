@@ -10,7 +10,7 @@ structured.
 
 Most of the existing JS in Zulip is written in IIFE-wrapped modules, one
 per file in the static/js directory. When running Zulip in development
-mode, each file is loaded seperately. In production mode (and when
+mode, each file is loaded separately. In production mode (and when
 creating a release tarball using tools/build-release-tarball),
 JavaScript files are concatenated and minified.
 
@@ -21,7 +21,7 @@ the concatenated file.
 ## Webpack/CommonJS modules
 
 New JS written for Zulip can be written as CommonJS modules (bundled
-using [webpack](https://webpack.github.io/), though this will taken care
+using [webpack](https://webpack.github.io/), though this will be taken care
 of automatically whenever `run-dev.py` is running). (CommonJS is the
 same module format that Node uses, so see the [Node
 documentation](https://nodejs.org/docs/latest/api/modules.html) for

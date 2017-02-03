@@ -120,13 +120,20 @@ function message_hover(message_row) {
     message = current_msg_list.get(rows.id(message_row));
     message_unhover();
     message_row.addClass('message_hovered');
+    current_message_hover = message_row;
+
+    if (!message.sent_by_me) {
+        // The actions and reactions icon hover logic is handled entirely by CSS
+        return;
+    }
+
+    // But the message edit hover icon is determined by whether the message is still editablex
     if ((message_edit.get_editability(message) === message_edit.editability_types.FULL) &&
         !message.status_message) {
         message_row.find(".edit_content").html('<i class="icon-vector-pencil edit_content_button"></i>');
     } else {
         message_row.find(".edit_content").html('<i class="icon-vector-file-text-alt edit_content_button" data-msgid="' + id + '"></i>');
     }
-    current_message_hover = message_row;
 }
 
 /* Arguments used in the report_* functions are,
@@ -203,6 +210,11 @@ exports.update_starred = function (message_id, starred) {
     // lists.
     var message = exports.find_message(message_id);
 
+    // If it isn't cached in the browser, no need to do anything
+    if (message === undefined) {
+        return;
+    }
+
     unread.mark_message_as_read(message);
 
     message.starred = starred;
@@ -252,24 +264,6 @@ exports.show_failed_message_success = function (message_id) {
     });
 };
 
-exports.small_avatar_url = function (message) {
-    // Try to call this function in all places where we need 25px
-    // avatar images, so that the browser can help
-    // us avoid unnecessary network trips.  (For user-uploaded avatars,
-    // the s=25 parameter is essentially ignored, but it's harmless.)
-    //
-    // We actually request these at s=50, so that we look better
-    // on retina displays.
-    if (message.avatar_url) {
-        var url = message.avatar_url + "&s=50";
-        if (message.sent_by_me) {
-            url += "&stamp=" + settings.avatar_stamp;
-        }
-        return url;
-    }
-    return "";
-};
-
 exports.lightbox = function (data) {
     switch (data.type) {
         case "photo":
@@ -283,6 +277,7 @@ exports.lightbox = function (data) {
     }
 
     $("#overlay").addClass("show");
+    popovers.hide_all();
 };
 
 exports.lightbox_photo = function (image, user) {
@@ -378,7 +373,7 @@ $(function () {
 
     viewport.message_pane.mousewheel(function (e, delta) {
         // Ignore mousewheel events if a modal is visible.  It's weird if the
-        // user can scroll the main view by wheeling over the greyed-out area.
+        // user can scroll the main view by wheeling over the grayed-out area.
         // Similarly, ignore events on settings page etc.
         //
         // We don't handle the compose box here, because it *should* work to
@@ -504,7 +499,7 @@ $(function () {
                         _.pluck(event.msg_list._items, 'id'),
                         _.chain(current_msg_list._items).pluck('id').clone().value().sort()
                     ),
-                    found_in_dom: row_from_dom.length
+                    found_in_dom: row_from_dom.length,
                 });
             }
             if (event.target_scroll_offset !== undefined) {

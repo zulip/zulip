@@ -21,9 +21,19 @@ var people = global.people;
 
 var search = require('js/search_suggestion.js');
 
-set_global('page_params', {
+var bob = {
     email: 'bob@zulip.com',
-});
+    full_name: 'Bob Roberts',
+    user_id: 42,
+};
+
+
+function init() {
+    people.init();
+    people.add(bob);
+    people.initialize_current_user(bob.user_id);
+}
+init();
 
 set_global('narrow', {});
 
@@ -101,6 +111,7 @@ global.stream_data.populate_stream_topics_for_tests({});
     var expected = [
         "is:private",
         "pm-with:alice@zulip.com",
+        "pm-with:bob@zulip.com",
         "pm-with:ted@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
@@ -175,6 +186,16 @@ global.stream_data.populate_stream_topics_for_tests({});
     ];
     assert.deepEqual(suggestions.strings, expected);
 
+    query = 'from:ted';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "from:ted",
+        "from:ted@zulip.com",
+        "is:private",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+
     // Users can enter bizarre queries, and if they do, we want to
     // be conservative with suggestions.
     query = 'is:private near:3';
@@ -194,7 +215,7 @@ global.stream_data.populate_stream_topics_for_tests({});
     assert.deepEqual(suggestions.strings, expected);
 }());
 
-people.init();
+init();
 
 (function test_empty_query_suggestions() {
     var query = '';
@@ -233,6 +254,62 @@ people.init();
     assert.equal(describe('is:alerted'), 'Alerted messages');
     assert.equal(describe('sender:bob@zulip.com'), 'Sent by me');
     assert.equal(describe('stream:devel'), 'Narrow to stream <strong>devel</strong>');
+}());
+
+(function test_sent_by_me_suggestions() {
+    global.stream_data.subscribed_streams = function () {
+        return [];
+    };
+
+    global.narrow.stream = function () {
+        return undefined;
+    };
+
+    var query = '';
+    var suggestions = search.get_suggestions(query);
+    assert(suggestions.strings.indexOf('sender:bob@zulip.com') !== -1);
+    assert.equal(suggestions.lookup_table['sender:bob@zulip.com'].description,
+                 'Sent by me');
+
+    query = 'sender';
+    suggestions = search.get_suggestions(query);
+    var expected = [
+        "sender",
+        "sender:bob@zulip.com",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = 'from';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "from",
+        "from:bob@zulip.com",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = 'sender:bob@zulip.com';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "sender:bob@zulip.com",
+        "is:private",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = 'from:bob@zulip.com';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "from:bob@zulip.com",
+        "is:private",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = 'sent';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "sent",
+        "sender:bob@zulip.com",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
 }());
 
 (function test_topic_suggestions() {

@@ -1122,7 +1122,7 @@ msgid "Search"
 msgstr "Претрага"
 
 #: templates/zerver/navbar.html:49
-msgid "Manage Streams"
+msgid "Manage streams"
 msgstr "Управљајте токовима"
 
 #: templates/zerver/navbar.html:54
@@ -1130,7 +1130,7 @@ msgid "Settings"
 msgstr "Подешавања"
 
 #: templates/zerver/navbar.html:69 templates/zerver/search_operators.html:5
-msgid "Search help"
+msgid "Search operators"
 msgstr "Потражите помоћ"
 
 #: templates/zerver/navbar.html:75

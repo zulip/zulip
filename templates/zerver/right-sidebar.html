@@ -9,16 +9,20 @@
                 <br /><br /> {{ _('Retrying soon...') }} <br /><br />
               </div>
               <div class="alert alert_sidebar alert-error home-error-bar" id="zephyr-mirror-error">
-                <strong>{{ _('Your Zephyr mirror is not working.') }}</strong>
-                  <span id="normal-zephyr-mirror-error-text">{% trans %}We
-                  recommend that you <a class="webathena_login">give
-                  {{product_name}} the ability to mirror the messages for you via
+                {# The below isn't tagged for translation
+                intentionally, because the feature is only used at
+                MIT. #}
+                <strong>Your Zephyr mirror is not working.</strong>
+                <span id="normal-zephyr-mirror-error-text">
+                  We recommend that
+                  you <a class="webathena_login">give Zulip the
+                  ability to mirror the messages for you via
                   WebAthena</a>.  If you'd prefer, you can instead
-                  <a href="/zephyr-mirror" target="_blank">run the Zephyr mirror script yourself</a>
-                  in a screen session{% endtrans %}.</span>
-                  <span id="desktop-zephyr-mirror-error-text" class="notdisplayed">{% trans %}To fix
-                  this, you'll need
-                  to use <a href="https://zephyr.zulip.com">the web interface</a>{% endtrans %}</span>
+                  <a href="/zephyr-mirror" target="_blank">run the
+                  Zephyr mirror script yourself</a> in a screen
+                  session.</span>
+                <span id="desktop-zephyr-mirror-error-text" class="notdisplayed">To fix
+                  this, you'll need to use the web interface.</span>
               </div>
               <div class="alert alert_sidebar alert-error home-error-bar" id="home-error"></div>
               <div class="alert alert_sidebar alert-error home-error-bar" id="reloading-application"></div>

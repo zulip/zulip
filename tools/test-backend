@@ -128,6 +128,7 @@ if __name__ == "__main__":
 
     if len(args) == 0:
         suites = ["zerver.tests",
+                  "zerver.webhooks",
                   "analytics.tests"]
     else:
         suites = args
@@ -172,7 +173,8 @@ if __name__ == "__main__":
                                      full_suite=full_suite)
 
     templates_not_rendered = test_runner.get_shallow_tested_templates()
-    if templates_not_rendered and full_suite:
+    # We only check the templates if all the tests ran and passed
+    if not failures and full_suite and templates_not_rendered:
         missed_count = len(templates_not_rendered)
         print("\nError: %s templates have no tests!" % (missed_count,))
         for template in templates_not_rendered:

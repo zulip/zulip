@@ -2,8 +2,10 @@
 from __future__ import absolute_import
 from __future__ import print_function
 from lib.template_parser import validate
+from lib.html_branches import build_id_dict
 import argparse
 import sys
+import logging
 
 from six.moves import filter
 try:
@@ -15,12 +17,20 @@ except ImportError as e:
     print("If you are using Vagrant, you can `vagrant ssh` to enter the Vagrant guest.")
     sys.exit(1)
 
+EXCLUDED_FILES = [
+    ## Test data Files for testing modules in tests
+    "tools/tests/test_template_data",
+]
+
 def check_our_files():
     # type: () -> None
     parser = argparse.ArgumentParser()
     parser.add_argument('-m', '--modified',
                         action='store_true', default=False,
                         help='only check modified files')
+    parser.add_argument('--all-dups',
+                        action="store_true", default=False,
+                        help='Run lint tool to detect duplicate ids on ignored files as well')
     args = parser.parse_args()
 
     by_lang = cast(
@@ -28,13 +38,13 @@ def check_our_files():
         lister.list_files(
             modified_only=args.modified,
             ftypes=['handlebars', 'html'],
-            group_by_ftype=True))
+            group_by_ftype=True, exclude=EXCLUDED_FILES))
 
     check_handlebar_templates(by_lang['handlebars'], args.modified)
-    check_html_templates(by_lang['html'], args.modified)
+    check_html_templates(by_lang['html'], args.modified, args.all_dups)
 
-def check_html_templates(templates, modified_only):
-    # type: (Iterable[str], bool) -> None
+def check_html_templates(templates, modified_only, all_dups):
+    # type: (Iterable[str], bool, bool) -> None
     # Our files with .html extensions are usually for Django, but we also
     # have a few static .html files.
     # The file base.html has a bit of funny HTML that we can't parse here yet.
@@ -43,10 +53,50 @@ def check_html_templates(templates, modified_only):
     # The casperjs files use HTML5 (whereas Zulip prefers XHTML), and
     # there are also cases where Casper deliberately uses invalid HTML,
     # so we exclude them from our linter.
+    logging.basicConfig(format='%(levelname)s:%(message)s')
     templates = filter(
-        lambda fn: ('base.html' not in fn) and ('casperjs' not in fn),
+        lambda fn: (('base.html' not in fn) and ('casperjs' not in fn)),
         templates)
     templates = sorted(list(templates))
+
+    template_id_dict = build_id_dict(templates)
+    # TODO: Clean up these cases of duplicate ids in the code
+    IGNORE_IDS = [
+        'api-example-tabs',
+        'errors',
+        'email',
+        'messages',
+        'registration',
+        'pw_strength',
+        'id_password',
+        'top_navbar',
+        'id_email',
+        'id_terms',
+        'send_confirm',
+        'register',
+    ]
+    bad_ids_dict = {ids: fns for ids, fns in template_id_dict.items()
+                    if (ids not in IGNORE_IDS) and len(fns) > 1}
+
+    if all_dups:
+        ignorable_ids_dict = {ids: fns for ids, fns in template_id_dict.items()
+                              if ids in IGNORE_IDS and len(fns) > 1}
+
+        for ids, fns in ignorable_ids_dict.items():
+            logging.warning("Duplicate ID(s) detected :Id '" + ids +
+                            "' present at following files:")
+            for fn in fns:
+                print(fn)
+
+    for ids, fns in bad_ids_dict.items():
+        logging.error("Duplicate ID(s) detected :Id '" + ids +
+                      "' present at following files:")
+        for fn in fns:
+            print(fn)
+
+    if list(bad_ids_dict.keys()):
+        print('Exiting--please clean up all duplicates before running this again.')
+        sys.exit(1)
 
     if not modified_only:
         assert len(templates) >= 10 # sanity check that we are actually doing work
@@ -62,7 +112,6 @@ def check_html_templates(templates, modified_only):
             'templates/confirmation/confirm.html',
             'templates/corporate/mit.html',
             'templates/corporate/privacy.html',
-            'templates/corporate/terms-enterprise.html',
             'templates/corporate/zephyr-mirror.html',
             'templates/corporate/zephyr.html',
             'templates/zerver/accounts_home.html',
@@ -84,6 +133,11 @@ def check_html_templates(templates, modified_only):
             'templates/zerver/register.html',
             'templates/zerver/right-sidebar.html',
             'templates/zerver/search_operators.html',
+
+            'zerver/webhooks/deskdotcom/doc.html',
+            'zerver/webhooks/freshdesk/doc.html',
+            'zerver/webhooks/taiga/doc.html',
+            'zerver/webhooks/zendesk/doc.html',
         ]
         validate(fn=fn, check_indent=(fn not in bad_files))
 

@@ -10,7 +10,7 @@ import markdown
 import markdown.extensions.admonition
 import markdown.extensions.codehilite
 import markdown.extensions.toc
-
+import markdown_include.include
 
 register = Library()
 
@@ -72,6 +72,7 @@ def render_markdown_path(markdown_file_path):
                 guess_lang=False
             ),
             zerver.lib.bugdown.fenced_code.makeExtension(),
+            markdown_include.include.makeExtension(base_path='templates/zerver/help/include/'),
         ]
     md_engine = markdown.Markdown(extensions=md_extensions)
     md_engine.reset()

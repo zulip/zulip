@@ -373,9 +373,9 @@ def narrow_parameter(json):
 
         # We have to support a legacy tuple format.
         if isinstance(elem, list):
-            if (len(elem) != 2
-                or any(not isinstance(x, str) and not isinstance(x, Text)
-                       for x in elem)):
+            if (len(elem) != 2 or
+                any(not isinstance(x, str) and not isinstance(x, Text)
+                    for x in elem)):
                 raise ValueError("element is not a string pair")
             return dict(operator=elem[0], operand=elem[1])
 
@@ -542,11 +542,20 @@ def get_old_messages_backend(request, user_profile,
         # Build the query for the narrow
         num_extra_messages = 0
         builder = NarrowBuilder(user_profile, inner_msg_id_col)
+        search_term = None # type: Optional[Dict[str, Any]]
         for term in narrow:
-            if term['operator'] == 'search' and not is_search:
-                query = query.column("subject").column("rendered_content")
-                is_search = True
-            query = builder.add_term(query, term)
+            if term['operator'] == 'search':
+                if not is_search:
+                    search_term = term
+                    query = query.column("subject").column("rendered_content")
+                    is_search = True
+                else:
+                    # Join the search operators if there are multiple of them
+                    search_term['operand'] += ' ' + term['operand']
+            else:
+                query = builder.add_term(query, term)
+        if is_search:
+            query = builder.add_term(query, search_term)
 
     # We add 1 to the number of messages requested if no narrow was
     # specified to ensure that the resulting list always contains the
@@ -798,7 +807,7 @@ def send_message_backend(request, user_profile,
                          forged = REQ(default=False),
                          subject_name = REQ('subject', lambda x: x.strip(), None),
                          message_content = REQ('content'),
-                         domain = REQ('domain', default=None),
+                         realm_str = REQ('realm_str', default=None),
                          local_id = REQ(default=None),
                          queue_id = REQ(default=None)):
     # type: (HttpRequest, UserProfile, Text, List[Text], bool, Optional[Text], Text, Optional[Text], Optional[Text], Optional[Text]) -> HttpResponse
@@ -808,14 +817,14 @@ def send_message_backend(request, user_profile,
         return json_error(_("User not authorized for this query"))
 
     realm = None
-    if domain and domain != user_profile.realm.domain:
+    if realm_str and realm_str != user_profile.realm.string_id:
         if not is_super_user:
             # The email gateway bot needs to be able to send messages in
             # any realm.
             return json_error(_("User not authorized for this query"))
-        realm = get_realm(domain)
+        realm = get_realm(realm_str)
         if not realm:
-            return json_error(_("Unknown domain %s") % (domain,))
+            return json_error(_("Unknown realm %s") % (realm_str,))
 
     if client.name in ["zephyr_mirror", "irc_mirror", "jabber_mirror", "JabberMirror"]:
         # Here's how security works for mirroring:
@@ -857,10 +866,6 @@ def send_message_backend(request, user_profile,
                              forwarder_user_profile=user_profile, realm=realm,
                              local_id=local_id, sender_queue_id=queue_id)
     return json_success({"id": ret})
-
-def json_update_message(request, user_profile, message_id):
-    # type: (HttpRequest, UserProfile, int) -> HttpResponse
-    return update_message_backend(request, user_profile)
 
 @has_request_variables
 def update_message_backend(request, user_profile,
@@ -919,16 +924,27 @@ def update_message_backend(request, user_profile,
         # probably are not relevant for reprocessed alert_words,
         # mentions and similar rendering features.  This may be a
         # decision we change in the future.
-        ums = UserMessage.objects.filter(message=message.id,
-                                         flags=~UserMessage.flags.historical)
-        message_users = {get_user_profile_by_id(um.user_profile_id) for um in ums}
-        # If rendering fails, the called code will raise a JsonableError.
+        ums = UserMessage.objects.filter(
+            message=message.id,
+            flags=~UserMessage.flags.historical)
+
+        message_users = UserProfile.objects.select_related().filter(
+            id__in={um.user_profile_id for um in ums})
+
+        # We render the message using the current user's realm; since
+        # the cross-realm bots never edit messages, this should be
+        # always correct.
+        # Note: If rendering fails, the called code will raise a JsonableError.
         rendered_content = render_incoming_message(message,
-                                                   content=content,
-                                                   message_users=message_users)
+                                                   content,
+                                                   message_users,
+                                                   user_profile.realm)
         links_for_embed |= message.links_for_preview
 
-    do_update_message(user_profile, message, subject, propagate_mode, content, rendered_content)
+    number_changed = do_update_message(user_profile, message, subject,
+                                       propagate_mode, content, rendered_content)
+    # Include the number of messages changed in the logs
+    request._log_data['extra'] = "[%s]" % (number_changed,)
     if links_for_embed and getattr(settings, 'INLINE_URL_EMBED_PREVIEW', None):
         event_data = {
             'message_id': message.id,
@@ -952,7 +968,7 @@ def render_message_backend(request, user_profile, content=REQ()):
     message.content = content
     message.sending_client = request.client
 
-    rendered_content = render_markdown(message, content, domain=user_profile.realm.domain)
+    rendered_content = render_markdown(message, content, realm=user_profile.realm)
     return json_success({"rendered": rendered_content})
 
 @authenticated_json_post_view

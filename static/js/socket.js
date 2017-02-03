@@ -6,7 +6,7 @@ var CLOSE_REASONS = {
     auth_fail:    {code: 4002, msg: "Authentication failed"},
     ack_timeout:  {code: 4003, msg: "ACK timeout"},
     cant_send:    {code: 4004, msg: "User attempted to send while Socket was not ready"},
-    unsuspend:    {code: 4005, msg: "Got unsuspend event"}
+    unsuspend:    {code: 4005, msg: "Got unsuspend event"},
 };
 
 function Socket(url) {
@@ -55,7 +55,7 @@ function Socket(url) {
 
 Socket.prototype = {
     _create_sockjs_object: function Socket__create_sockjs_object() {
-        this._sockjs = new SockJS(this.url, null, {transports: this._supported_protocols});
+        this._sockjs = new SockJS(this.url, null, {protocols_whitelist: this._supported_protocols});
         this._setup_sockjs_callbacks(this._sockjs);
     },
 
@@ -404,7 +404,7 @@ Socket.prototype = {
         }
 
         this._save_localstorage_requests();
-    }
+    },
 };
 
 return Socket;

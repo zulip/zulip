@@ -5,7 +5,7 @@ var emoji_list = [{emoji_name: "tada", emoji_url: "TBD"},
 var stream_list = ['Denmark', 'Sweden'];
 
 set_global('emoji', {emojis: emoji_list});
-set_global('stream_data', {subscribed_streams: function () {
+set_global('stream_data', {subscribed_subs: function () {
     return stream_list;
 }});
 
@@ -75,4 +75,21 @@ global.people.add({
     assert_typeahead_equals("test #", false);
     assert_typeahead_equals("test #D", stream_list);
     assert_typeahead_equals("#s", stream_list);
+}());
+
+(function test_tokenizing() {
+    assert.equal(ct.tokenize_compose_str("foo bar"), "");
+    assert.equal(ct.tokenize_compose_str("foo#@:bar"), "");
+    assert.equal(ct.tokenize_compose_str("foo bar [#alic"), "#alic");
+    assert.equal(ct.tokenize_compose_str("#foo @bar [#alic"), "#alic");
+    assert.equal(ct.tokenize_compose_str("foo bar #alic"), "#alic");
+    assert.equal(ct.tokenize_compose_str("foo bar @alic"), "@alic");
+    assert.equal(ct.tokenize_compose_str("foo bar :smil"), ":smil");
+    assert.equal(ct.tokenize_compose_str(":smil"), ":smil");
+    assert.equal(ct.tokenize_compose_str("foo @alice sm"), "@alice sm");
+
+    // The following cases are kinda judgment calls...
+    assert.equal(ct.tokenize_compose_str(
+        "foo @toomanycharactersisridiculoustocomplete"), "");
+    assert.equal(ct.tokenize_compose_str("foo #streams@foo"), "#streams@foo");
 }());

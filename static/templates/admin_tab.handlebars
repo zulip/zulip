@@ -11,16 +11,16 @@
           <a href="#users" aria-controls="users" role="tab" data-toggle="tab"><i class="icon-vector-user settings-section-icon"></i> {{t "Users" }}</a>
         </li>
         <li role="presentation">
-          <a href="#deactivated-users" aria-controls="deactivated-users" role="tab" data-toggle="tab"><i class="icon-vector-trash settings-section-icon"></i> {{t "Deactivated Users" }}</a>
+          <a href="#deactivated-users" aria-controls="deactivated-users" role="tab" data-toggle="tab"><i class="icon-vector-trash settings-section-icon"></i> {{t "Deactivated users" }}</a>
         </li>
         <li role="presentation">
           <a href="#bots" aria-controls="bots" role="tab" data-toggle="tab"><i class="icon-vector-github settings-section-icon"></i> {{t "Bots" }}</a>
         </li>
         <li role="presentation">
-          <a href="#streams" aria-controls="streams" role="tab" data-toggle="tab"><i class="icon-vector-exchange settings-section-icon"></i> {{t "Streams Deletion" }}</a>
+          <a href="#streams" aria-controls="streams" role="tab" data-toggle="tab"><i class="icon-vector-exchange settings-section-icon"></i> {{t "Delete streams" }}</a>
         </li>
         <li role="presentation">
-          <a href="#default-streams" aria-controls="default-streams" role="tab" data-toggle="tab"><i class="icon-vector-exchange settings-section-icon"></i> {{t "Default Streams" }}</a>
+          <a href="#default-streams" aria-controls="default-streams" role="tab" data-toggle="tab"><i class="icon-vector-exchange settings-section-icon"></i> {{t "Default streams" }}</a>
         </li>
       </ul>
       <div class="tab-content">
@@ -72,6 +72,31 @@
         <div class="modal-footer">
           <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">{{t "Cancel" }}</button>
           <button class="button btn-danger" id="do_deactivate_stream_button">{{t "Yes, delete this stream" }}</button>
+        </div>
+      </div>
+      <div id="realm_aliases_modal" class="modal hide" tabindex="-1" role="dialog" aria-labelledby="realm_aliases_modal_label" aria-hidden="true">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+          <h3 id="realm_aliases_modal_label">{{t "Allowed domains" }}</h3>
+        </div>
+        <div class="modal-body">
+          <table class="table table-condensed table-stripped" id="alias_table">
+            <thead>
+              <th>{{t "Domain" }}</th>
+              <th>{{t "Action" }}</th>
+            </thead>
+            <tbody>
+            </tbody>
+            <tfoot>
+              <tr>
+                <td><input type="text" id="new_alias" placeholder={{t "acme.com" }}></input></td>
+                <td><button type="button" class="btn btn-primary" id="add_alias">{{t "Add" }}</button></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <div class="modal-footer centered-footer">
+          <div class="aliases_info"></div>
         </div>
       </div>
     </div>

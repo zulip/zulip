@@ -48,4 +48,3 @@ def events_register_backend(request, user_profile, apply_markdown=True,
                              event_types, queue_lifespan_secs, all_public_streams,
                              narrow=narrow)
     return json_success(ret)
-
