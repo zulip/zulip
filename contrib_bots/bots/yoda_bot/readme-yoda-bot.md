@@ -10,16 +10,6 @@ It looks for messages starting with '@yoda'. You will need to have a
 Mashape API key. Please see instructions for getting one below.
 
 ## Setup
-This bot uses the python library `unirest` which is not a
-dependency of Zulip. To use this module, you will have to
-install it in your local machine. In your terminal, enter
-the following command:
-    * $ sudo pip install unirest --upgrade
-Note:
-
-You might have to use `pip3` if you are using python 3.
-The install command would also download any dependency
-required by `unirest`.
 
 Before running this bot, make sure to get a Mashape API Key.
 Go to this link:
