@@ -235,7 +235,7 @@ casper.waitForSelector("#settings-change-box", function check_url_preference() {
     casper.test.assertEvalEquals(function () {
         return document.documentElement.lang;
     }, 'de');
-    casper.test.info("Changing language back to English.");
+    casper.test.info("English ist die neue Standardsprache!  Du musst das Fenster neu laden um die Änderungen anzuwenden");
 });
 
 casper.thenClick('#default_language');

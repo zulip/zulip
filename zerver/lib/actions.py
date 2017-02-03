@@ -565,12 +565,6 @@ def do_set_realm_message_editing(realm, allow_message_editing, message_content_e
 def do_set_realm_default_language(realm, default_language):
     # type: (Realm, Text) -> None
 
-    if default_language == 'zh_CN':
-        # NB: remove this once we upgrade to Django 1.9
-        # zh-cn and zh-tw will be replaced by zh-hans and zh-hant in
-        # Django 1.9
-        default_language = 'zh_HANS'
-
     realm.default_language = default_language
     realm.save(update_fields=['default_language'])
     event = dict(
@@ -2304,12 +2298,6 @@ def do_change_left_side_userlist(user_profile, setting_value, log=True):
 def do_change_default_language(user_profile, setting_value, log=True):
     # type: (UserProfile, Text, bool) -> None
 
-    if setting_value == 'zh_CN':
-        # NB: remove this once we upgrade to Django 1.9
-        # zh-cn and zh-tw will be replaced by zh-hans and zh-hant in
-        # Django 1.9
-        setting_value = 'zh_HANS'
-
     user_profile.default_language = setting_value
     user_profile.save(update_fields=["default_language"])
     event = {'type': 'update_display_settings',
@@ -3082,12 +3070,6 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
         state['left_side_userlist'] = user_profile.left_side_userlist
 
         default_language = user_profile.default_language
-        if user_profile.default_language == 'zh_HANS':
-            # NB: remove this once we upgrade to Django 1.9
-            # zh-cn and zh-tw will be replaced by zh-hans and zh-hant in
-            # Django 1.9
-            default_language = 'zh_CN'
-
         state['default_language'] = default_language
 
     if want('update_global_notifications'):
