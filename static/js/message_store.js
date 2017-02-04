@@ -134,6 +134,7 @@ function add_message_metadata(message) {
     var sender = people.get_person_from_user_id(message.sender_id);
     if (sender) {
         message.sender_full_name = sender.full_name;
+        message.sender_email = sender.email;
     }
 
     switch (message.type) {
