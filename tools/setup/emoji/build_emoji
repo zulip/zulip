@@ -233,6 +233,10 @@ def dump_emojis(cache_path):
             os.path.join(cache_emoji, fn)
         )
 
+    # Add zulip emoji to `emoji_map` so that we can avoid
+    # adding unnecessary exceptions to the rendering logic.
+    emoji_map['zulip'] = 'zulip'
+
     EMOJI_CODES_PATH = os.path.join(cache_path, 'emoji_codes.js')
     emoji_codes_file = open(EMOJI_CODES_PATH, 'w')
 
@@ -247,6 +251,12 @@ def dump_emojis(cache_path):
         'codepoints': sorted([str(code_point) for code_point in set(emoji_map.values())])
     })
     emoji_codes_file.close()
+
+    NAME_TO_CODEPOINT_PATH = os.path.join(cache_path, 'name_to_codepoint.json')
+    name_to_codepoint_file = open(NAME_TO_CODEPOINT_PATH, 'w')
+
+    name_to_codepoint_file.write(json.dumps(emoji_map))
+    name_to_codepoint_file.close()
 
 if __name__ == "__main__":
     main()
