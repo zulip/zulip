@@ -390,7 +390,7 @@ exports.extract_people_from_message = function (message) {
 
             var user_id = person.user_id || person.id;
 
-            if (! exports.get_by_email(person.email)) {
+            if (!people_by_user_id_dict.has(user_id)) {
                 exports.add({
                     email: person.email,
                     user_id: user_id,
