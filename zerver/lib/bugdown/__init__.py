@@ -16,6 +16,7 @@ import platform
 import time
 import httplib2
 import itertools
+import ujson
 from six.moves import urllib
 import xml.etree.cElementTree as etree
 from xml.etree.cElementTree import Element, SubElement
@@ -643,9 +644,10 @@ class Avatar(markdown.inlinepatterns.Pattern):
 emoji_tree = os.path.join(settings.STATIC_ROOT, "generated", "emoji", "images", "emoji")
 path_to_emoji = os.path.join(emoji_tree, '*.png')
 path_to_unicode_emoji = os.path.join(emoji_tree, 'unicode', '*.png')
+path_to_name_to_codepoint = os.path.join(settings.STATIC_ROOT, "generated", "emoji", "name_to_codepoint.json")
 
-emoji_list = [os.path.splitext(os.path.basename(fn))[0] for fn in glob.glob(path_to_emoji)]
 unicode_emoji_list = [os.path.splitext(os.path.basename(fn))[0] for fn in glob.glob(path_to_unicode_emoji)]
+name_to_codepoint = ujson.load(open(path_to_name_to_codepoint))
 
 
 def make_emoji(emoji_name, src, display_string):
@@ -680,8 +682,8 @@ class Emoji(markdown.inlinepatterns.Pattern):
 
         if current_message and name in realm_emoji:
             return make_emoji(name, realm_emoji[name]['display_url'], orig_syntax)
-        elif name in emoji_list:
-            src = '/static/generated/emoji/images/emoji/%s.png' % (name,)
+        elif name in name_to_codepoint:
+            src = '/static/generated/emoji/images/emoji/unicode/%s.png' % (name_to_codepoint[name],)
             return make_emoji(name, src, orig_syntax)
         else:
             return None
