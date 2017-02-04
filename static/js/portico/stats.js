@@ -486,6 +486,31 @@ function round_percentages(values) {
     return [total, percents];
 }
 
+function word_wrap(text, width) {
+    var broken_words = [];
+    text.split(' ').forEach(function (word) {
+        var i;
+        for (i=0; i+width<word.length; i+=width-1) {
+            broken_words.push(word.slice(i, i+width-1).concat('-'));
+        }
+        broken_words.push(word.slice(i, word.length));
+    });
+    var lines = [];
+    var line = '';
+    broken_words.forEach(function (word) {
+        if (line === '') {
+            line = word;
+        } else if (line.length + word.length > width) {
+            lines.push(line);
+            line = word;
+        } else {
+            line = line.concat(' ', word);
+        }
+    });
+    lines.push(line);
+    return lines.join("<br>");
+}
+
 function get_labels_and_data(names, data_subgroup, time_frame_integer) {
     var data = [];
     for (var key in data_subgroup) {
@@ -499,7 +524,7 @@ function get_labels_and_data(names, data_subgroup, time_frame_integer) {
         if (sum > 0) {
             data.push({
                 value: sum,
-                label: names.hasOwnProperty(key) ? names[key] : key,
+                label: word_wrap(names.hasOwnProperty(key) ? names[key] : key, 18),
             });
         }
     }
