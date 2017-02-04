@@ -463,9 +463,9 @@ function make_pie_trace(data, values, labels, text) {
         textinfo: "text",
         text: text,
         hoverinfo: "label+text",
-        pull: 0.1,
+        pull: 0.05,
         marker: {
-            colors: ['#137061', '#0e836f', '#13a188', '#2bbba2', '#51d5be', '#7ce4d3'],
+            colors: ['#008000', '#57a200', '#95c473', '#acd5b0', '#bde6ee', '#caf8ff'],
         },
     }];
     return trace;
