@@ -2,7 +2,7 @@
 
 Bots and integrations are features that are accessible to all members of an organization.
 
-## To Add a Bot
+## Add a bot
 
 {!go-to-the.md!} [Your bots](/#settings/your-bots)
 {!settings.md!}
@@ -22,7 +22,7 @@ configuration file (`.zuliprc`) which you will need for integrations that you wo
 to use with this bot. You can click on the download icon
 (![Download icon](/static/images/help/download_button.png)) to download your `.zuliprc` file.
 
-## To Add an Integration
+## Add an integration
 
 There is a full list of integrations and the directions to add them on the Integrations page.
 You can access this page by following the given instructions.
