@@ -252,5 +252,11 @@ def dump_emojis(cache_path):
     })
     emoji_codes_file.close()
 
+    NAME_TO_CODEPOINT_PATH = os.path.join(cache_path, 'name_to_codepoint.json')
+    name_to_codepoint_file = open(NAME_TO_CODEPOINT_PATH, 'w')
+
+    name_to_codepoint_file.write(json.dumps(emoji_map))
+    name_to_codepoint_file.close()
+
 if __name__ == "__main__":
     main()
