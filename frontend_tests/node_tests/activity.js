@@ -28,6 +28,12 @@ set_global('resize', {
     resize_page_components: function () {},
 });
 
+var me = {
+    email: 'me@zulip.com',
+    user_id: 999,
+    full_name: 'Me Myself',
+};
+
 var alice = {
     email: 'alice@zulip.com',
     user_id: 1,
@@ -59,6 +65,7 @@ global.people.add(fred);
 global.people.add(jill);
 global.people.add(mark);
 global.people.add(norbert);
+global.people.initialize_current_user(me.user_id);
 
 var people = global.people;
 
@@ -106,9 +113,10 @@ global.compile_template('user_presence_rows');
 
     var old_timestamp = 1382479000;
 
-    var messages = [{
+    var messages = [
+        {
             type: 'private',
-            reply_to: huddle1,
+            display_recipient: [{id: jill.user_id}, {id: norbert.user_id}],
             timestamp: timestamp1,
         },
         {
@@ -116,16 +124,16 @@ global.compile_template('user_presence_rows');
         },
         {
             type: 'private',
-            reply_to: 'ignore@zulip.com',
+            display_recipient: [{id: me.user_id}], // PM to myself
         },
         {
             type: 'private',
-            reply_to: huddle2,
+            display_recipient: [{id: alice.user_id}, {id: fred.user_id}],
             timestamp: timestamp2,
         },
         {
             type: 'private',
-            reply_to: huddle2,
+            display_recipient: [{id: fred.user_id}, {id: alice.user_id}],
             timestamp: old_timestamp,
         },
     ];

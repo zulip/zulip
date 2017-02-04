@@ -64,6 +64,31 @@ exports.get_user_id = function (email) {
     return user_id;
 };
 
+exports.huddle_string = function (message) {
+    if (message.type !== 'private') {
+        return;
+    }
+
+    var user_ids = _.map(message.display_recipient, function (recip) {
+        return recip.id;
+    });
+
+    function is_huddle_recip(user_id) {
+        return user_id &&
+            people_by_user_id_dict.has(user_id) &&
+            (!exports.is_my_user_id(user_id));
+    }
+
+    user_ids = _.filter(user_ids, is_huddle_recip);
+
+    if (user_ids.length <= 1) {
+        return;
+    }
+    user_ids.sort();
+
+    return user_ids.join(',');
+};
+
 exports.user_ids_string_to_emails_string = function (user_ids_string) {
     var user_ids = user_ids_string.split(',');
     var emails = _.map(user_ids, function (user_id) {
