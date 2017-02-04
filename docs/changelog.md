@@ -15,8 +15,8 @@ Highlights:
 - Upgraded how the main application runs from FastCGI on Django 1.8 to
   uwsgi and Django 1.10.
 - Added preliminary support for open graph previews of links (the
-  setting, `settings.INLINE_URL_PREVIEWS`, is disabled by default in
-  this release).
+  setting, `INLINE_URL_EMBED_PREVIEW`, is disabled by default in this
+  release).
 
 Full feature Changelog:
 
