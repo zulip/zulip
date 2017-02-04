@@ -15,6 +15,13 @@ class Command(compilemessages.Command):
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
+        if settings.PRODUCTION:
+            # HACK: When using upgrade-zulip-from-git, we're in a
+            # production environment where STATIC_ROOT will include
+            # past versions; this ensures we only process the current
+            # version
+            settings.STATIC_ROOT = os.path.join(settings.DEPLOY_ROOT, "static")
+            settings.LOCALE_PATHS = (os.path.join(settings.DEPLOY_ROOT, 'static/locale'),)
         super(Command, self).handle(*args, **options)
         self.extract_language_options()
 

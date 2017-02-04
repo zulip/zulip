@@ -641,6 +641,8 @@ else:
     else:
         STATIC_ROOT = os.path.abspath('prod-static/serve')
 
+# If changing this, you need to also the hack modifications to this in
+# our compilemessages management command.
 LOCALE_PATHS = (os.path.join(STATIC_ROOT, 'locale'),)
 
 # We want all temporary uploaded files to be stored on disk.
