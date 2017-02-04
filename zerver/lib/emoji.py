@@ -5,7 +5,7 @@ import re
 from django.utils.translation import ugettext as _
 from typing import Text
 
-from zerver.lib.bugdown import emoji_list
+from zerver.lib.bugdown import name_to_codepoint
 from zerver.lib.request import JsonableError
 from zerver.models import Realm, UserProfile
 
@@ -13,7 +13,7 @@ def check_valid_emoji(realm, emoji_name):
     # type: (Realm, Text) -> None
     if emoji_name in set(realm.get_emoji().keys()):
         return
-    if emoji_name in emoji_list:
+    if emoji_name in name_to_codepoint:
         return
     raise JsonableError(_("Emoji '%s' does not exist" % (emoji_name,)))
 
