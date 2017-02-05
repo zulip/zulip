@@ -5,6 +5,11 @@ JSON data for the /authors page.
 """
 
 from __future__ import absolute_import, print_function
+
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+
 from typing import Any, Dict, List, Optional, Union, Text
 
 import os
