@@ -215,6 +215,114 @@ global.stream_data.populate_stream_topics_for_tests({});
     assert.deepEqual(suggestions.strings, expected);
 }());
 
+(function test_group_suggestions() {
+    global.stream_data.subscribed_streams = function () {
+        return [];
+    };
+
+    global.narrow.stream = function () {
+        return undefined;
+    };
+
+    var ted =
+    {
+        email: 'ted@zulip.com',
+        user_id: 101,
+        full_name: 'Ted Smith',
+    };
+
+    var alice =
+    {
+        email: 'alice@zulip.com',
+        user_id: 102,
+        full_name: 'Alice Ignore',
+    };
+
+    people.add(ted);
+    people.add(alice);
+
+    // Entering a comma in a pm-with query should immediately generate
+    // suggestions for the next person.
+    var query = 'pm-with:bob@zulip.com,';
+    var suggestions = search.get_suggestions(query);
+    var expected = [
+        "pm-with:bob@zulip.com,",
+        "pm-with:bob@zulip.com,alice@zulip.com",
+        "pm-with:bob@zulip.com,ted@zulip.com",
+        "is:private",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    // Only the last part of a comma-separated pm-with query should be used to
+    // generate suggestions.
+    query = 'pm-with:bob@zulip.com,t';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "pm-with:bob@zulip.com,t",
+        "pm-with:bob@zulip.com,ted@zulip.com",
+        "is:private",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    // Smit should also generate ted@zulip.com (Ted Smith) as a suggestion.
+    query = 'pm-with:bob@zulip.com,Smit';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "pm-with:bob@zulip.com,Smit",
+        "pm-with:bob@zulip.com,ted@zulip.com",
+        "is:private",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    // No superfluous suggestions should be generated.
+    query = 'pm-with:bob@zulip.com,red';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "pm-with:bob@zulip.com,red",
+        "is:private",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    // is:private should be properly prepended to each suggestion if the pm-with
+    // operator is negated.
+
+    query = '-pm-with:bob@zulip.com,';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "-pm-with:bob@zulip.com,",
+        "is:private -pm-with:bob@zulip.com,alice@zulip.com",
+        "is:private -pm-with:bob@zulip.com,ted@zulip.com",
+        "is:private",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = '-pm-with:bob@zulip.com,t';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "-pm-with:bob@zulip.com,t",
+        "is:private -pm-with:bob@zulip.com,ted@zulip.com",
+        "is:private",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = '-pm-with:bob@zulip.com,Smit';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "-pm-with:bob@zulip.com,Smit",
+        "is:private -pm-with:bob@zulip.com,ted@zulip.com",
+        "is:private",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = '-pm-with:bob@zulip.com,red';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "-pm-with:bob@zulip.com,red",
+        "is:private",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+}());
+
 init();
 
 (function test_empty_query_suggestions() {
