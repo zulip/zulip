@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from __future__ import print_function
+from __future__ import absolute_import
 
 import optparse
 import os
@@ -11,6 +12,10 @@ import time
 import traceback
 
 from six.moves.urllib.parse import urlunparse
+
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
 
 from tornado import httpclient
 from tornado import httputil
