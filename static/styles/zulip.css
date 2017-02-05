@@ -1206,6 +1206,8 @@ div.focused_table {
     /* to match .message_content */
     margin-left: 5px;
     margin-right: 35px;
+    /* to make message-uncollapse easier */
+    margin-top: 10px;
 }
 
 .message_length_controller:hover {
