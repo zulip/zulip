@@ -90,18 +90,32 @@ svg {
     margin-left: 40px;
 }
 
+#id_messages_sent_over_time {
+    user-select: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+#id_messages_sent_over_time[last_value_is_partial='true'] .points path:last-of-type {
+    opacity: 0.5;
+}
+
 #hover_date {
     font-weight: 400;
 }
 
-#hover_humans {
+#hover_human {
     font-weight: 400;
     margin-left: 18px;
+    display: none;
 }
 
-#hover_bots {
+#hover_bot {
     font-weight: 400;
     margin-left: 8px;
+    display: none;
 }
 
 .button {
