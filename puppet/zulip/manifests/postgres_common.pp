@@ -7,6 +7,8 @@ class zulip::postgres_common {
                         "python-gevent",
                         "python-tz", # TODO: use a virtualenv instead
                         "python-dateutil", # TODO: use a virtualenv instead
+                        # Needed just to support adding postgres user to 'zulip' group
+                        "ssl-cert",
                         # our dictionary
                         "hunspell-en-us",
                         ]
@@ -53,7 +55,8 @@ class zulip::postgres_common {
   @user { 'postgres':
     groups     => ['ssl-cert'],
     membership => minimum,
-    require    => Package["postgresql-${zulip::base::postgres_version}"],
+    require    => [Package["postgresql-${zulip::base::postgres_version}"],
+                   Package["ssl-cert"]],
   }
   User <| title == postgres |> { groups +> "zulip" }
 }
