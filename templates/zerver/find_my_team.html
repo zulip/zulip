@@ -16,7 +16,6 @@
       {% if development_environment %}
         <div class="alert alert-info" style="display:inline-block;">{{ _("In the Zulip development environment, outgoing emails are printed to the run-dev.py console") }}</div>
       {% endif %}
-        
       <ul>
         {% for email in emails %}
         <li>{{ email }}</li>
