@@ -77,6 +77,7 @@ Contents:
    :caption: Developer tutorials
 
    integration-guide
+   webhook-walkthrough
    new-feature-tutorial
    writing-views
    life-of-a-request

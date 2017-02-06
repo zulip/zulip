@@ -543,7 +543,7 @@ def build_custom_checkers(by_lang):
             "contrib_bots/bots/converter/docs.md",
             "docs/bots-guide.md",
             "docs/dev-env-first-time-contributors.md",
-            "docs/integration-guide.md",
+            "docs/webhook-walkthrough.md",
             "docs/life-of-a-request.md",
             "docs/logging.md",
             "docs/migration-renumbering.md",
