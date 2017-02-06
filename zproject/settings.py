@@ -879,7 +879,7 @@ JS_SPECS = {
     'stats': {
         'source_filenames': [
             'node_modules/jquery/dist/jquery.js',
-            'js/portico/stats.js',
+            'js/stats/stats.js',
         ],
         'minifed_source_filenames': [
             'node_modules/plotly.js/dist/plotly-basic.min.js',
