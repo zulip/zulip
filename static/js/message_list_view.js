@@ -208,7 +208,7 @@ MessageListView.prototype = {
                                                      message_container.msg.subject);
                 } else {
                     message_container.pm_with_url =
-                        narrow.pm_with_uri(message_container.msg.reply_to);
+                        message_container.msg.pm_with_url;
                 }
             }
 

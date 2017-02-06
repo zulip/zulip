@@ -225,6 +225,50 @@ people.init();
     assert.equal(slug, '401,402-group');
 }());
 
+initialize();
+
+(function test_pm_with_url() {
+    var charles = {
+        email: 'charles@example.com',
+        user_id: 451,
+        full_name: 'Charles Dickens',
+    };
+    var maria = {
+        email: 'athens@example.com',
+        user_id: 452,
+        full_name: 'Maria Athens',
+    };
+    people.add(charles);
+    people.add(maria);
+
+    var message = {
+        type: 'private',
+        display_recipient: [
+            {id: maria.user_id},
+            {id: me.user_id},
+            {user_id: charles.user_id},
+        ],
+    };
+    assert.equal(people.pm_with_url(message), '#narrow/pm-with/451,452-group');
+
+    message = {
+        type: 'private',
+        display_recipient: [
+            {id: maria.user_id},
+            {user_id: me.user_id},
+        ],
+    };
+    assert.equal(people.pm_with_url(message), '#narrow/pm-with/452-athens');
+
+    message = {
+        type: 'private',
+        display_recipient: [
+            {user_id: me.user_id},
+        ],
+    };
+    assert.equal(people.pm_with_url(message), '#narrow/pm-with/30-me');
+}());
+
 (function test_slugs() {
     var person = {
         email: 'deBBie71@example.com',
