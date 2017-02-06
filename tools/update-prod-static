@@ -46,6 +46,10 @@ subprocess.check_call(['./tools/minify-js'] +
 subprocess.check_call(['./manage.py', 'collectstatic', '--no-default-ignore',
                        '--noinput', '-i', 'assets'],
                       stdout=fp, stderr=fp)
+if not settings.PRODUCTION:
+    # When building a release tarball, we need to move staticfiles.json
+    subprocess.check_call(['mv', 'prod-static/serve/staticfiles.json', 'staticfiles.json'],
+                          stdout=fp, stderr=fp)
 
 # Compile translation strings to generate `.mo` files.
 subprocess.check_call(['./manage.py', 'compilemessages'],
