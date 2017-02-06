@@ -387,6 +387,7 @@ exports.restore_message = function () {
     clear_message_snapshot();
     compose_fade.clear_compose();
     compose.start(snapshot_copy.type, snapshot_copy);
+    exports.autosize_textarea();
 
     if (snapshot_copy.content !== undefined &&
         util.is_all_or_everyone_mentioned(snapshot_copy.content)) {
