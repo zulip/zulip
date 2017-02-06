@@ -24,18 +24,6 @@ function floor_to_local_week(date) {
     return date_copy;
 }
 
-function messages_sent_over_time_traces(dates, values, type,
-                                        date_formatter, human_colors, bot_colors) {
-    var text = dates.map(function (date) {
-        return date_formatter(date);
-    });
-    var common = { x: dates, type: type, hoverinfo: 'none', text: text};
-    return {
-        human: $.extend({ name: "Humans", y: values.human, marker: {color: human_colors}, visible: true},  common),
-        bot: $.extend({ name: "Bots", y: values.bot,  marker: {color: bot_colors}, visible: 'legendonly'},  common),
-    };
-}
-
 function format_date(date, include_hour) {
     var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -59,141 +47,89 @@ function format_date(date, include_hour) {
     return month_str + ' ' + day + ', ' + year;
 }
 
-function messages_sent_over_time_rangeselector(
-    rangeselector_x, rangeselector_y, button_1_count, button_1_label,
-    button_1_step, button_2_count, button_2_label, button_2_step) {
-    return {
-        x: rangeselector_x,
-        y: rangeselector_y,
-        buttons: [
-            {
-                count: button_1_count,
-                label: button_1_label,
-                step: button_1_step,
-                stepmode: 'backward',
-            },
-            {
-                count: button_2_count,
-                label: button_2_label,
-                step: button_2_step,
-                stepmode: 'backward',
-            },
-            {
-                step: 'all',
-                label: 'All time',
-            },
-        ],
-    };
-}
-
-function messages_sent_over_time_layout() {
-    return {
-        barmode: 'group',
-        width: 750,
-        height: 400,
-        margin: {
-            l: 40, r: 0, b: 40, t: 0,
-        },
-        xaxis: {
-            fixedrange: true,
-            rangeslider: {
-                bordercolor: '#D8D8D8',
-                borderwidth: 1,
-            },
-            type: 'date',
-        },
-        yaxis: {
-            fixedrange: true,
-            rangemode: 'tozero',
-        },
-        legend: {
-            x: 0.75,
-            y: 1.12,
-            orientation: 'h',
-            font: {
-                family: 'Humbug',
-                size: 14,
-                color: '#000000',
-            },
-        },
-        font: {
-            family: 'Humbug',
-            size: 14,
-            color: '#000000',
-        },
-    };
-}
-
-function hover(id) {
-    var myPlot = document.getElementById(id);
-    myPlot.on('plotly_hover', function (data) {
-        var date_text = data.points[0].data.text[data.points[0].pointNumber];
-        $('#hover_date').text(date_text);
-        var humans_visible = false;
-        var humans_trace_index = null;
-        var bots_visible = false;
-        var bots_trace_index = null;
-        for (var i = 0; i < data.points.length; i += 1) {
-            if (data.points[i].fullData.name === "Bots" && data.points[i].fullData.visible === true) {
-                bots_visible = true;
-                bots_trace_index = i;
-            } else if (data.points[i].fullData.name === "Humans" && data.points[i].fullData.visible === true) {
-                humans_visible = true;
-                humans_trace_index = i;
-            }
-        }
-        if (humans_visible) {
-            $('#hover_humans').show();
-            $('#hover_humans_value').show();
-            $('#hover_humans').text("Humans:");
-            $('#hover_humans_value').text(data.points[humans_trace_index].y);
-        } else {
-            $('#hover_humans').hide();
-            $('#hover_humans_value').hide();
-        }
-        if (bots_visible) {
-            $('#hover_bots').show();
-            $('#hover_bots_value').show();
-            $('#hover_bots').text("Bots:");
-            $('#hover_bots_value').text(data.points[bots_trace_index].y);
-        } else {
-            $('#hover_bots').hide();
-            $('#hover_bots_value').hide();
-        }
-        // var human_colors = data.points[0].data.x.map(function () {
-        //     return '#5f6ea0';
-        // });
-        // var bot_colors = data.points[0].data.x.map(function () {
-        //     return '#b7b867';
-        // });
-        // human_colors[data.points[0].pointNumber] = '#185a88';
-        // bot_colors[data.points[0].pointNumber] = '#cc6600';
-        // var update_human = {marker:{color: human_colors}};
-        // var update_bot = {marker:{color: bot_colors}};
-        // Plotly.restyle(id, update_human, 0);
-        // Plotly.restyle(id, update_bot, 1);
-        // var legendBoxes = document.getElementById(id).getElementsByClassName("legendbar");
-        // Plotly.d3.select(legendBoxes[0]).style("fill", "#5f6ea0");
-        // Plotly.d3.select(legendBoxes[1]).style("fill", "#b7b867");
-    });
-    // myPlot.on('plotly_unhover', function () {
-    //     var update_human = {marker:{color: '#5f6ea0'}};
-    //     var update_bot = {marker:{color: '#b7b867'}};
-    //     Plotly.restyle(id, update_human, 0);
-    //     Plotly.restyle(id, update_bot, 1);
-    // });
-}
-
-function fix_legend_colors() {
-    var legendBoxes = document.getElementById('id_messages_sent_over_time').getElementsByClassName("legendbar");
-    Plotly.d3.select(legendBoxes[0]).style("fill", "#5f6ea0");
-    Plotly.d3.select(legendBoxes[1]).style("fill", "#b7b867");
-}
-
 function populate_messages_sent_over_time(data) {
     if (data.end_times.length === 0) {
         // TODO: do something nicer here
         return;
+    }
+
+    // Helper functions
+    function make_traces(dates, values, type, date_formatter) {
+        var text = dates.map(function (date) {
+            return date_formatter(date);
+        });
+        var common = { x: dates, type: type, hoverinfo: 'none', text: text };
+        return {
+            human: $.extend({ // 5062a0
+                name: "Humans", y: values.human, marker: {color: '#5f6ea0'}, visible: true}, common),
+            bot: $.extend({ // a09b5f bbb56e
+                name: "Bots", y: values.bot, marker: {color: '#b7b867'}, visible: 'legendonly'}, common),
+        };
+    }
+
+    var layout = {
+        barmode: 'group',
+        width: 750,
+        height: 400,
+        margin: { l: 40, r: 0, b: 40, t: 0 },
+        xaxis: {
+            fixedrange: true,
+            rangeslider: { bordercolor: '#D8D8D8', borderwidth: 1 },
+            type: 'date',
+        },
+        yaxis: { fixedrange: true, rangemode: 'tozero' },
+        legend: {
+            x: 0.75, y: 1.12, orientation: 'h',
+            font: { family: 'Humbug', size: 14, color: '#000000' },
+        },
+        font: { family: 'Humbug', size: 14, color: '#000000' },
+    };
+
+    function make_rangeselector(x, y, button1, button2) {
+        return { x: x, y: y,
+                 buttons: [$.extend({stepmode: 'backward'}, button1),
+                           $.extend({stepmode: 'backward'}, button2),
+                           {step: 'all', label: 'All time'}] };
+    }
+    var hourly_rangeselector = make_rangeselector(
+        0.66, -0.62,
+        {count: 24, label: 'Last 24 Hours', step: 'hour'},
+        {count: 72, label: 'Last 72 Hours', step: 'hour'});
+    // This is also the cumulative rangeselector
+    var daily_rangeselector = make_rangeselector(
+        0.68, -0.62,
+        {count: 10, label: 'Last 10 Days', step: 'day'},
+        {count: 30, label: 'Last 30 Days', step: 'day'});
+    var weekly_rangeselector = make_rangeselector(
+        0.656, -0.62,
+        {count: 2, label: 'Last 2 Months', step: 'month'},
+        {count: 6, label: 'Last 6 Months', step: 'month'});
+
+    function add_hover_handler() {
+        document.getElementById('id_messages_sent_over_time').on('plotly_hover', function (data) {
+            document.getElementById('hover_date').innerText =
+                data.points[0].data.text[data.points[0].pointNumber];
+            var values = [null, null];
+            data.points.forEach(function (trace) {
+                values[trace.curveNumber] = trace.y;
+            });
+            if (values[0] !== null) {
+                document.getElementById('hover_human').style.display = 'inline';
+                document.getElementById('hover_human_value').style.display = 'inline';
+                document.getElementById('hover_human_value').innerText = values[0];
+            } else {
+                document.getElementById('hover_human').style.display = 'none';
+                document.getElementById('hover_human_value').style.display = 'none';
+            }
+            if (values[1] !== null) {
+                document.getElementById('hover_bot').style.display = 'inline';
+                document.getElementById('hover_bot_value').style.display = 'inline';
+                document.getElementById('hover_bot_value').innerText = values[1];
+            } else {
+                document.getElementById('hover_bot').style.display = 'none';
+                document.getElementById('hover_bot_value').style.display = 'none';
+            }
+        });
     }
 
     var start_dates = data.end_times.map(function (timestamp) {
@@ -235,37 +171,33 @@ function populate_messages_sent_over_time(data) {
         }
         values.human.push(current.human);
         values.bot.push(current.bot);
-        return {dates: dates, values: values};
+        return {
+            dates: dates, values: values,
+            last_value_is_partial: !is_boundary(new Date(
+                start_dates[start_dates.length-1].getTime() + 60*60*1000))};
     }
 
     // Generate traces
     var date_formatter = function (date) {
         return format_date(date, true);
     };
-    var hourly_traces = messages_sent_over_time_traces(start_dates, data.realm, 'bar', date_formatter, '#5f6ea0', '#b7b867');
+    var hourly_traces = make_traces(start_dates, data.realm, 'bar', date_formatter);
 
     var info = aggregate_data('day');
     date_formatter = function (date) {
         return format_date(date, false);
     };
-    var daily_traces = messages_sent_over_time_traces(info.dates, info.values, 'bar', date_formatter, '#5f6ea0', '#b7b867');
+    var last_day_is_partial = info.last_value_is_partial;
+    var daily_traces = make_traces(info.dates, info.values, 'bar', date_formatter);
 
     info = aggregate_data('week');
     date_formatter = function (date) {
         // return i18n.t("Week of __date__", {date: format_date(date, false)});
         return "Week of " + format_date(date, false);
     };
-    var human_colors = info.dates.map(function () {
-        return '#5f6ea0';
-    });
-    var bot_colors = info.dates.map(function () {
-        return '#b7b867';
-    });
+    var last_week_is_partial = info.last_value_is_partial;
+    var weekly_traces = make_traces(info.dates, info.values, 'bar', date_formatter);
 
-    human_colors[info.dates.length-1] = '#afb7d0';
-    bot_colors[info.dates.length-1] = '#dbdcb3';
-
-    var weekly_traces = messages_sent_over_time_traces(info.dates, info.values, 'bar', date_formatter, human_colors, bot_colors);
     var dates = data.end_times.map(function (timestamp) {
         return new Date(timestamp*1000);
     });
@@ -273,95 +205,66 @@ function populate_messages_sent_over_time(data) {
     date_formatter = function (date) {
         return format_date(date, true);
     };
-    var cumulative_traces = messages_sent_over_time_traces(dates, values, 'scatter', date_formatter, '#5f6ea0', '#b7b867');
+    var cumulative_traces = make_traces(dates, values, 'scatter', date_formatter);
 
-    // Generate plot
-    var layout = messages_sent_over_time_layout();
-    var hourly_rangeselector = messages_sent_over_time_rangeselector(
-        0.66, -0.62, 24, 'Last 24 Hours', 'hour', 72, 'Last 72 Hours', 'hour');
-    // also the cumulative rangeselector
-    var daily_rangeselector = messages_sent_over_time_rangeselector(
-        0.68, -0.62, 10, 'Last 10 Days', 'day', 30, 'Last 30 Days', 'day');
-    var weekly_rangeselector = messages_sent_over_time_rangeselector(
-        0.656, -0.62, 2, 'Last 2 Months', 'month', 6, 'Last 6 Months', 'month');
+    // Functions to draw and interact with the plot
 
-    if (info.dates.length < 12) {
-        layout.xaxis.rangeselector = daily_rangeselector;
-        Plotly.newPlot('id_messages_sent_over_time',
-                   [daily_traces.human, daily_traces.bot], layout, {displayModeBar: false});
-        $('#daily_button').css('background', '#D8D8D8');
-    } else {
-        layout.xaxis.rangeselector = weekly_rangeselector;
-        Plotly.newPlot('id_messages_sent_over_time',
-                   [weekly_traces.human, weekly_traces.bot], layout, {displayModeBar: false});
-        $('#weekly_button').css('background', '#D8D8D8');
-    }
-
-    hover('id_messages_sent_over_time');
-    fix_legend_colors();
-
-    // Click handlers for aggregation buttons
+    // We need to redraw plot entirely if switching from (the cumulative) line
+    // graph to any bar graph, since otherwise the rangeselector shows both (plotly bug)
     var clicked_cumulative = false;
 
-    function update_plot_on_aggregation_click(rangeselector, traces) {
+    function draw_or_update_plot(rangeselector, traces, last_value_is_partial, initial_draw) {
         $('#daily_button').css('background', '#F0F0F0');
         $('#weekly_button').css('background', '#F0F0F0');
         $('#hourly_button').css('background', '#F0F0F0');
         $('#cumulative_button').css('background', '#F0F0F0');
         layout.xaxis.rangeselector = rangeselector;
-        if (clicked_cumulative) {
-            // Redraw plot entirely if switching from line graph to bar
-            // graph, since otherwise rangeselector shows both
+        if (clicked_cumulative || initial_draw) {
             Plotly.newPlot('id_messages_sent_over_time',
                            [traces.human, traces.bot], layout, {displayModeBar: false});
-            hover('id_messages_sent_over_time');
+            add_hover_handler();
         } else {
             Plotly.deleteTraces('id_messages_sent_over_time', [0,1]);
             Plotly.addTraces('id_messages_sent_over_time', [traces.human, traces.bot]);
             Plotly.relayout('id_messages_sent_over_time', layout);
         }
+        $('#id_messages_sent_over_time').attr('last_value_is_partial', last_value_is_partial);
     }
 
+    // Click handlers for aggregation buttons
     $('#hourly_button').click(function () {
-        update_plot_on_aggregation_click(hourly_rangeselector, hourly_traces);
+        draw_or_update_plot(hourly_rangeselector, hourly_traces, false, false);
         $(this).css('background', '#D8D8D8');
         clicked_cumulative = false;
-
     });
 
     $('#daily_button').click(function () {
-        update_plot_on_aggregation_click(daily_rangeselector, daily_traces);
+        draw_or_update_plot(daily_rangeselector, daily_traces, last_day_is_partial, false);
         $(this).css('background', '#D8D8D8');
         clicked_cumulative = false;
     });
 
     $('#weekly_button').click(function () {
-        update_plot_on_aggregation_click(weekly_rangeselector, weekly_traces);
+        draw_or_update_plot(weekly_rangeselector, weekly_traces, last_week_is_partial, false);
         $(this).css('background', '#D8D8D8');
         clicked_cumulative = false;
-        fix_legend_colors();
-        $('.legend').click(function () {
-            fix_legend_colors();
-        });
-        $('.rangeselector').click(function () {
-            fix_legend_colors();
-        });
     });
 
     $('#cumulative_button').click(function () {
         clicked_cumulative = false;
-        update_plot_on_aggregation_click(daily_rangeselector, cumulative_traces);
+        draw_or_update_plot(daily_rangeselector, cumulative_traces, false, false);
         $(this).css('background', '#D8D8D8');
         clicked_cumulative = true;
     });
 
-    $('.legend').click(function () {
-        fix_legend_colors();
-    });
-
-    $('.rangeselector').click(function () {
-        fix_legend_colors();
-    });
+    // Initial drawing of plot
+    if (weekly_traces.human.x.length < 12) {
+        draw_or_update_plot(daily_rangeselector, daily_traces, last_day_is_partial, true);
+        $('#daily_button').css('background', '#D8D8D8');
+    } else {
+        draw_or_update_plot(weekly_rangeselector, weekly_traces, last_week_is_partial, true);
+        $('#weekly_button').css('background', '#D8D8D8');
+    }
 }
 
 function throw_error(msg) {
