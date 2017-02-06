@@ -175,6 +175,61 @@ exports.get_recipients = function (user_ids_string) {
     return names.join(', ');
 };
 
+exports.pm_with_user_ids = function (message) {
+    if (message.type !== 'private') {
+        return;
+    }
+
+    if (message.display_recipient.length === 0) {
+        blueslip.error('Empty recipient list in message');
+        return;
+    }
+
+    var user_ids = _.map(message.display_recipient, function (elem) {
+        return elem.user_id || elem.id;
+    });
+
+    var other_user_ids = _.filter(user_ids, function (user_id) {
+        return !people.is_my_user_id(user_id);
+    });
+
+    if (other_user_ids.length >= 1) {
+        user_ids = other_user_ids;
+    } else {
+        user_ids = [my_user_id];
+    }
+
+    user_ids.sort();
+
+    return user_ids;
+};
+
+exports.pm_with_url = function (message) {
+    var user_ids = exports.pm_with_user_ids(message);
+
+    if (!user_ids) {
+        return;
+    }
+
+    var suffix;
+
+    if (user_ids.length > 1) {
+        suffix = 'group';
+    } else {
+        var person = exports.get_person_from_user_id(user_ids[0]);
+        if (person && person.email) {
+            suffix = person.email.split('@')[0].toLowerCase();
+        } else {
+            blueslip.error('Unknown people in message');
+            suffix = 'unk';
+        }
+    }
+
+    var slug = user_ids.join(',') + '-' + suffix;
+    var uri = "#narrow/pm-with/" + slug;
+    return uri;
+};
+
 exports.emails_to_slug = function (emails_string) {
     var slug = exports.emails_strings_to_user_ids_string(emails_string);
 
