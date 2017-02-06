@@ -19,8 +19,8 @@ from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
     generic_bulk_cached_fetch, cache_set, flush_stream, \
     display_recipient_cache_key, cache_delete, \
     get_stream_cache_key, active_user_dicts_in_realm_cache_key, \
-    active_bot_dicts_in_realm_cache_key, active_user_dict_fields, \
-    active_bot_dict_fields, flush_message
+    bot_dicts_in_realm_cache_key, active_user_dict_fields, \
+    bot_dict_fields, flush_message
 from zerver.lib.utils import make_safe_digest, generate_random_token
 from zerver.lib.str_utils import ModelReprMixin
 from django.db import transaction
@@ -1230,25 +1230,25 @@ def get_active_user_dicts_in_realm(realm):
     return UserProfile.objects.filter(realm=realm, is_active=True) \
                               .values(*active_user_dict_fields)
 
-@cache_with_key(active_bot_dicts_in_realm_cache_key, timeout=3600*24*7)
-def get_active_bot_dicts_in_realm(realm):
+@cache_with_key(bot_dicts_in_realm_cache_key, timeout=3600*24*7)
+def get_bot_dicts_in_realm(realm):
     # type: (Realm) -> List[Dict[str, Any]]
-    return UserProfile.objects.filter(realm=realm, is_active=True, is_bot=True) \
-                              .values(*active_bot_dict_fields)
+    return UserProfile.objects.filter(realm=realm, is_bot=True).values(*bot_dict_fields)
 
 def get_owned_bot_dicts(user_profile, include_all_realm_bots_if_admin=True):
     # type: (UserProfile, bool) -> List[Dict[str, Any]]
     if user_profile.is_realm_admin and include_all_realm_bots_if_admin:
-        result = get_active_bot_dicts_in_realm(user_profile.realm)
+        result = get_bot_dicts_in_realm(user_profile.realm)
     else:
-        result = UserProfile.objects.filter(realm=user_profile.realm, is_active=True, is_bot=True,
-                                            bot_owner=user_profile).values(*active_bot_dict_fields)
+        result = UserProfile.objects.filter(realm=user_profile.realm, is_bot=True,
+                                            bot_owner=user_profile).values(*bot_dict_fields)
     # TODO: Remove this import cycle
     from zerver.lib.avatar import get_avatar_url
 
     return [{'email': botdict['email'],
              'user_id': botdict['id'],
              'full_name': botdict['full_name'],
+             'is_active': botdict['is_active'],
              'api_key': botdict['api_key'],
              'default_sending_stream': botdict['default_sending_stream__name'],
              'default_events_register_stream': botdict['default_events_register_stream__name'],

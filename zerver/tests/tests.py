@@ -856,6 +856,7 @@ class BotTest(ZulipTestCase):
                 bot=dict(email='hambot-bot@zulip.com',
                          user_id=bot.id,
                          full_name='The Bot of Hamlet',
+                         is_active=True,
                          api_key=result['api_key'],
                          avatar_url=result['avatar_url'],
                          default_sending_stream=None,
@@ -1014,6 +1015,7 @@ class BotTest(ZulipTestCase):
                 bot=dict(email='hambot-bot@zulip.com',
                          user_id=profile.id,
                          full_name='The Bot of Hamlet',
+                         is_active=True,
                          api_key=result['api_key'],
                          avatar_url=result['avatar_url'],
                          default_sending_stream='Denmark',
@@ -1077,6 +1079,7 @@ class BotTest(ZulipTestCase):
                 bot=dict(email='hambot-bot@zulip.com',
                          full_name='The Bot of Hamlet',
                          user_id=bot_profile.id,
+                         is_active=True,
                          api_key=result['api_key'],
                          avatar_url=result['avatar_url'],
                          default_sending_stream=None,
@@ -2030,8 +2033,16 @@ class HomeTest(ZulipTestCase):
         result = self.client_get('/')
         self.assertEqual(result.status_code, 302)
 
-        # Verify succeeds once logged-in
         self.login(email)
+
+        # Create bot for bot_list testing. Must be done before fetching home_page.
+        bot_info = {
+            'full_name': 'The Bot of Hamlet',
+            'short_name': 'hambot',
+        }
+        self.client_post("/json/bots", bot_info)
+
+        # Verify succeeds once logged-in
         result = self._get_home_page(stream='Denmark')
         html = result.content.decode('utf-8')
 
@@ -2047,6 +2058,21 @@ class HomeTest(ZulipTestCase):
 
         # TODO: Inspect the page_params data further.
         # print(ujson.dumps(page_params, indent=2))
+        bot_list_expected_keys = [
+            'api_key',
+            'avatar_url',
+            'default_all_public_streams',
+            'default_events_register_stream',
+            'default_sending_stream',
+            'email',
+            'full_name',
+            'is_active',
+            'owner',
+            'user_id',
+        ]
+
+        bot_list_actual_keys = sorted([str(key) for key in page_params['bot_list'][0].keys()])
+        self.assertEqual(bot_list_actual_keys, bot_list_expected_keys)
 
     def _get_home_page(self, **kwargs):
         # type: (**Any) -> HttpResponse

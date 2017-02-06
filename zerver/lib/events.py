@@ -208,7 +208,9 @@ def apply_event(state, event, user_profile, include_subscribers):
 
         if event['op'] == 'remove':
             email = event['bot']['email']
-            state['realm_bots'] = [b for b in state['realm_bots'] if b['email'] != email]
+            for bot in state['realm_bots']:
+                if bot['email'] == email:
+                    bot['is_active'] = False
 
         if event['op'] == 'update':
             for bot in state['realm_bots']:

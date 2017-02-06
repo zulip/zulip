@@ -924,6 +924,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ('email', check_string),
                 ('user_id', check_int),
                 ('full_name', check_string),
+                ('is_active', check_bool),
                 ('api_key', check_string),
                 ('default_sending_stream', check_none_or(check_string)),
                 ('default_events_register_stream', check_none_or(check_string)),
