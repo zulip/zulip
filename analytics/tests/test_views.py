@@ -3,6 +3,7 @@ from zerver.lib.test_classes import ZulipTestCase
 
 from analytics.lib.counts import CountStat
 from analytics.lib.time_utils import time_range
+from analytics.views import rewrite_client_arrays
 
 from datetime import datetime, timedelta
 
@@ -34,3 +35,28 @@ class TestTimeRange(ZulipTestCase):
                          [floor_hour-2*HOUR, floor_hour-HOUR, floor_hour, floor_hour+HOUR])
         self.assertEqual(time_range(floor_day, floor_day+DAY, CountStat.DAY, 4),
                          [floor_day-2*DAY, floor_day-DAY, floor_day, floor_day+DAY])
+
+class TestMapArrays(ZulipTestCase):
+    def test_map_arrays(self):
+        # type: () -> None
+        a = {'desktop app 1.0': [1, 2, 3],
+             'desktop app 2.0': [10, 12, 13],
+             'desktop app 3.0': [21, 22, 23],
+             'website': [1, 2, 3],
+             'ZulipiOS': [1, 2, 3],
+             'ZulipMobile': [1, 5, 7],
+             'ZulipPython': [1, 2, 3],
+             'API: Python': [1, 2, 3],
+             'SomethingRandom': [4, 5, 6],
+             'ZulipGitHubWebhook': [7, 7, 9],
+             'ZulipAndroid': [64, 63, 65]}
+        result = rewrite_client_arrays(a)
+        self.assertEqual(result,
+                         {'Old desktop app': [32, 36, 39],
+                          'Old iOS app': [1, 2, 3],
+                          'New iOS app': [1, 5, 7],
+                          'Website': [1, 2, 3],
+                          'Python API': [2, 4, 6],
+                          'SomethingRandom': [4, 5, 6],
+                          'GitHub webhook': [7, 7, 9],
+                          'Android app': [64, 63, 65]})
