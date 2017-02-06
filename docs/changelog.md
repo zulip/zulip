@@ -4,6 +4,8 @@ All notable changes to the Zulip server are documented in this file.
 
 ### Unreleased
 
+### 1.5.0 -- 2017-02-06
+
 Highlights:
 
 - Completely redesigned the Manage streams interface.
@@ -22,7 +24,7 @@ Full feature Changelog:
 
 - Added an emoji picker/browser to the compose box.
 - Added markdown preview support to the compose box.
-- Added a new analytics system to track useful statistics.
+- Added a new analytics system to track interesting usage statistics.
 - Added a /stats page with graphs of the analytics data.
 - Added display of subscriber counts in Manage streams.
 - Added support for filtering streams in Manage streams.
