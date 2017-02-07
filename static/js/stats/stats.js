@@ -279,78 +279,6 @@ $.get({
     },
 });
 
-function users_hover(id) {
-    var myPlot = document.getElementById(id);
-    myPlot.on('plotly_hover', function (data) {
-        var date_text = data.points[0].data.text[data.points[0].pointNumber];
-        $('#users_hover_date').text(date_text);
-        $('#users_hover_humans').text("Users:");
-        $('#users_hover_humans_value').text(data.points[0].y);
-    });
-}
-
-function populate_number_of_users(data) {
-    var end_dates = data.end_times.map(function (timestamp) {
-            return new Date(timestamp*1000);
-    });
-    var users_text = end_dates.map(function (date) {
-        return format_date(date, false);
-    });
-    var trace_humans = {x: end_dates, y: data.realm.human, type: 'scatter',  name: "Active users",
-                        hoverinfo: 'none', text: users_text, visible: true};
-    var layout = {
-        width: 750,
-        height: 370,
-        margin: {
-            l: 40, r: 0, b: 100, t: 20,
-        },
-        xaxis: {
-            fixedrange: true,
-            rangeselector: {
-                x: 0.808,
-                y: -0.2,
-                buttons: [
-                    {count:30,
-                        label:'Last 30 Days',
-                        step: 'day',
-                        stepmode:'backward'},
-                    {
-                        step: 'all',
-                        label: 'All time',
-                    },
-                ],
-            },
-        },
-        yaxis: {
-            fixedrange: true,
-            rangemode: 'tozero',
-        },
-        font: {
-            family: 'Humbug',
-            size: 14,
-            color: '#000000',
-        },
-    };
-    Plotly.newPlot('id_number_of_users',
-                   [trace_humans], layout, {displayModeBar: false});
-    users_hover('id_number_of_users');
-    var total_users = data.realm.human[data.realm.human.length - 1];
-    var total = document.getElementById('number_of_users_total');
-    total.innerHTML = total_users.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-}
-
-$.get({
-    url: '/json/analytics/chart_data',
-    data: {chart_name: 'number_of_humans', min_length: '10'},
-    idempotent: true,
-    success: function (data) {
-        populate_number_of_users(data);
-    },
-    error: function (xhr) {
-        $('#id_stats_errors').show().text($.parseJSON(xhr.responseText).msg);
-    },
-});
-
 function make_pie_trace(data, values, labels, text) {
     var trace = [{
         values: values,
@@ -833,6 +761,79 @@ $.get({
     idempotent: true,
     success: function (data) {
         populate_messages_sent_by_message_type(data);
+    },
+    error: function (xhr) {
+        $('#id_stats_errors').show().text($.parseJSON(xhr.responseText).msg);
+    },
+});
+
+
+function users_hover(id) {
+    var myPlot = document.getElementById(id);
+    myPlot.on('plotly_hover', function (data) {
+        var date_text = data.points[0].data.text[data.points[0].pointNumber];
+        $('#users_hover_date').text(date_text);
+        $('#users_hover_humans').text("Users:");
+        $('#users_hover_humans_value').text(data.points[0].y);
+    });
+}
+
+function populate_number_of_users(data) {
+    var end_dates = data.end_times.map(function (timestamp) {
+            return new Date(timestamp*1000);
+    });
+    var users_text = end_dates.map(function (date) {
+        return format_date(date, false);
+    });
+    var trace_humans = {x: end_dates, y: data.realm.human, type: 'scatter',  name: "Active users",
+                        hoverinfo: 'none', text: users_text, visible: true};
+    var layout = {
+        width: 750,
+        height: 370,
+        margin: {
+            l: 40, r: 0, b: 100, t: 20,
+        },
+        xaxis: {
+            fixedrange: true,
+            rangeselector: {
+                x: 0.808,
+                y: -0.2,
+                buttons: [
+                    {count:30,
+                        label:'Last 30 Days',
+                        step: 'day',
+                        stepmode:'backward'},
+                    {
+                        step: 'all',
+                        label: 'All time',
+                    },
+                ],
+            },
+        },
+        yaxis: {
+            fixedrange: true,
+            rangemode: 'tozero',
+        },
+        font: {
+            family: 'Humbug',
+            size: 14,
+            color: '#000000',
+        },
+    };
+    Plotly.newPlot('id_number_of_users',
+                   [trace_humans], layout, {displayModeBar: false});
+    users_hover('id_number_of_users');
+    var total_users = data.realm.human[data.realm.human.length - 1];
+    var total = document.getElementById('number_of_users_total');
+    total.innerHTML = total_users.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+$.get({
+    url: '/json/analytics/chart_data',
+    data: {chart_name: 'number_of_humans', min_length: '10'},
+    idempotent: true,
+    success: function (data) {
+        populate_number_of_users(data);
     },
     error: function (xhr) {
         $('#id_stats_errors').show().text($.parseJSON(xhr.responseText).msg);
