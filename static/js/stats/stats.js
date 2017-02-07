@@ -303,13 +303,8 @@ function round_percentages(values) {
     var total = values.reduce(function (a, b) { return a + b; }, 0);
     var percents = values.map(function (x) {
         var unrounded = x/total*100;
-        var rounded;
-        if (unrounded > 99.4) {
-            rounded = unrounded.toPrecision(3);
-        } else {
-            rounded = unrounded.toPrecision(2);
-        }
-        return rounded + '%';
+        var precision = Math.max(2, Math.floor(-Math.log(100-unrounded)/Math.log(10)) + 3);
+        return unrounded.toPrecision(precision) + '%';
     });
     return [total, percents];
 }
