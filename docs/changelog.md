@@ -4,6 +4,11 @@ All notable changes to the Zulip server are documented in this file.
 
 ### Unreleased
 
+### 1.5.1 -- 2017-02-07
+
+- Fix exception trying to copy node_modules during upgrade process.
+- Improved styling of /stats page to remove useless login/register links.
+
 ### 1.5.0 -- 2017-02-06
 
 Highlights:
