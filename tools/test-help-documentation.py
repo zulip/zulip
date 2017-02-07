@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from __future__ import print_function
+from __future__ import absolute_import
 import optparse
 import os
 import sys
@@ -7,16 +8,12 @@ import subprocess
 
 import time
 
-try:
-    # We don't actually need typing, but it's a good guard for being
-    # outside a Zulip virtualenv.
-    from typing import Iterable
-    import requests
-except ImportError as e:
-    print("ImportError: {}".format(e))
-    print("You need to run the Zulip tests inside a Zulip dev environment.")
-    print("If you are using Vagrant, you can `vagrant ssh` to enter the Vagrant guest.")
-    sys.exit(1)
+
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+
+import requests
 
 parser = optparse.OptionParser()
 parser.add_option('--force', default=False,
