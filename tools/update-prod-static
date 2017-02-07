@@ -44,7 +44,7 @@ subprocess.check_call(['./tools/minify-js'] +
 
 # Collect the files that we're going to serve; this creates prod-static/serve.
 subprocess.check_call(['./manage.py', 'collectstatic', '--no-default-ignore',
-                       '--noinput', '-i', 'assets'],
+                       '--noinput', '-i', 'assets', '-i' 'node_modules'],
                       stdout=fp, stderr=fp)
 if not settings.PRODUCTION:
     # When building a release tarball, we need to move staticfiles.json
