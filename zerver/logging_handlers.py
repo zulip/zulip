@@ -46,8 +46,13 @@ class AdminZulipHandler(logging.Handler):
                 user_full_name = None
                 user_email = None
 
-            data = request.GET if request.method == 'GET' else \
-                exception_filter.get_post_parameters(request)
+            try:
+                data = request.GET if request.method == 'GET' else \
+                       exception_filter.get_post_parameters(request)
+            except Exception:
+                # exception_filter.get_post_parameters will throw
+                # RequestDataTooBig if there's a really big file uploaded
+                data = {}
 
             try:
                 host = request.get_host().split(':')[0]
