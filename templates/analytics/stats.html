@@ -1,11 +1,15 @@
-{% extends "zerver/portico.html" %}
-{% block portico_content %}
+{% extends "zerver/base.html" %}
+
+{% block customhead %}
+{% stylesheet 'portico' %}
+{% endblock %}
+
+{% block content %}
+<div class="app portico-page">
 
 {{ minified_js('stats')|safe }}
 {% stylesheet 'stats' %}
 
-<html>
-<body>
 <div class="sidebar">
     <nav class="nav">
         <p class="nav-subtitle">Messages Sent</p>
@@ -79,7 +83,6 @@
     </div>
   </div>
 </div>
-</body>
-</html>
 
+</div>
 {% endblock %}
