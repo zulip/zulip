@@ -39,7 +39,8 @@ from typing import Any, Dict, List, Tuple, Optional, Sequence, Callable, Type, \
 @zulip_login_required
 def stats(request):
     # type: (HttpRequest) -> HttpResponse
-    return render_to_response('analytics/stats.html')
+    return render_to_response('analytics/stats.html',
+                              context=dict(realm_name = request.user.realm.name))
 
 @has_request_variables
 def get_chart_data(request, user_profile, chart_name=REQ(),
