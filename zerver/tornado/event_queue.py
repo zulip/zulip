@@ -907,6 +907,7 @@ def process_notification(notice):
     # type: (Mapping[str, Any]) -> None
     event = notice['event']  # type: Mapping[str, Any]
     users = notice['users']  # type: Union[Iterable[int], Iterable[Mapping[str, Any]]]
+    start_time = time.time()
     if event['type'] == "message":
         process_message_event(event, cast(Iterable[Mapping[str, Any]], users))
     elif event['type'] == "update_message":
@@ -915,6 +916,8 @@ def process_notification(notice):
         process_userdata_event(event, cast(Iterable[Mapping[str, Any]], users))
     else:
         process_event(event, cast(Iterable[int], users))
+    logging.debug("Tornado: Event %s for %s users took %sms" % (
+        event['type'], len(users), int(1000 * (time.time() - start_time))))
 
 # Runs in the Django process to send a notification to Tornado.
 #
