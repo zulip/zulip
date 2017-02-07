@@ -161,10 +161,10 @@ function hover(id) {
             $('#hover_bots_value').hide();
         }
         // var human_colors = data.points[0].data.x.map(function () {
-        //     return '#1f77b4';
+        //     return '#5f6ea0';
         // });
         // var bot_colors = data.points[0].data.x.map(function () {
-        //     return '#ff7f00';
+        //     return '#b7b867';
         // });
         // human_colors[data.points[0].pointNumber] = '#185a88';
         // bot_colors[data.points[0].pointNumber] = '#cc6600';
@@ -173,12 +173,12 @@ function hover(id) {
         // Plotly.restyle(id, update_human, 0);
         // Plotly.restyle(id, update_bot, 1);
         // var legendBoxes = document.getElementById(id).getElementsByClassName("legendbar");
-        // Plotly.d3.select(legendBoxes[0]).style("fill", "#1f77b4");
-        // Plotly.d3.select(legendBoxes[1]).style("fill", "#ff7f00");
+        // Plotly.d3.select(legendBoxes[0]).style("fill", "#5f6ea0");
+        // Plotly.d3.select(legendBoxes[1]).style("fill", "#b7b867");
     });
     // myPlot.on('plotly_unhover', function () {
-    //     var update_human = {marker:{color: '#1f77b4'}};
-    //     var update_bot = {marker:{color: '#ff7f00'}};
+    //     var update_human = {marker:{color: '#5f6ea0'}};
+    //     var update_bot = {marker:{color: '#b7b867'}};
     //     Plotly.restyle(id, update_human, 0);
     //     Plotly.restyle(id, update_bot, 1);
     // });
@@ -186,8 +186,8 @@ function hover(id) {
 
 function fix_legend_colors() {
     var legendBoxes = document.getElementById('id_messages_sent_over_time').getElementsByClassName("legendbar");
-    Plotly.d3.select(legendBoxes[0]).style("fill", "#1f77b4");
-    Plotly.d3.select(legendBoxes[1]).style("fill", "#ff7f00");
+    Plotly.d3.select(legendBoxes[0]).style("fill", "#5f6ea0");
+    Plotly.d3.select(legendBoxes[1]).style("fill", "#b7b867");
 }
 
 function populate_messages_sent_over_time(data) {
@@ -242,13 +242,13 @@ function populate_messages_sent_over_time(data) {
     var date_formatter = function (date) {
         return format_date(date, true);
     };
-    var hourly_traces = messages_sent_over_time_traces(start_dates, data.realm, 'bar', date_formatter, '#1f77b4', '#ff7f00');
+    var hourly_traces = messages_sent_over_time_traces(start_dates, data.realm, 'bar', date_formatter, '#5f6ea0', '#b7b867');
 
     var info = aggregate_data('day');
     date_formatter = function (date) {
         return format_date(date, false);
     };
-    var daily_traces = messages_sent_over_time_traces(info.dates, info.values, 'bar', date_formatter, '#1f77b4', '#ff7f00');
+    var daily_traces = messages_sent_over_time_traces(info.dates, info.values, 'bar', date_formatter, '#5f6ea0', '#b7b867');
 
     info = aggregate_data('week');
     date_formatter = function (date) {
@@ -256,14 +256,14 @@ function populate_messages_sent_over_time(data) {
         return "Week of " + format_date(date, false);
     };
     var human_colors = info.dates.map(function () {
-        return '#1f77b4';
+        return '#5f6ea0';
     });
     var bot_colors = info.dates.map(function () {
-        return '#ff7f00';
+        return '#b7b867';
     });
 
-    human_colors[info.dates.length-1] = '#66b0e5';
-    bot_colors[info.dates.length-1] = '#ffa64d';
+    human_colors[info.dates.length-1] = '#afb7d0';
+    bot_colors[info.dates.length-1] = '#dbdcb3';
 
     var weekly_traces = messages_sent_over_time_traces(info.dates, info.values, 'bar', date_formatter, human_colors, bot_colors);
     var dates = data.end_times.map(function (timestamp) {
@@ -273,7 +273,7 @@ function populate_messages_sent_over_time(data) {
     date_formatter = function (date) {
         return format_date(date, true);
     };
-    var cumulative_traces = messages_sent_over_time_traces(dates, values, 'scatter', date_formatter, '#1f77b4', '#ff7f00');
+    var cumulative_traces = messages_sent_over_time_traces(dates, values, 'scatter', date_formatter, '#5f6ea0', '#b7b867');
 
     // Generate plot
     var layout = messages_sent_over_time_layout();
