@@ -541,7 +541,7 @@ run(function (override, capture, args) {
     assert_same(args.bot, event.bot);
 
     event = event_fixtures.realm_bot__remove;
-    override('bot_data', 'remove', capture(['email']));
+    override('bot_data', 'deactivate', capture(['email']));
     dispatch(event);
     assert_same(args.email, event.bot.email);
 
