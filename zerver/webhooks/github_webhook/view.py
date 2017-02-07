@@ -20,7 +20,7 @@ def get_opened_or_update_pull_request_body(payload):
     # type: (Dict[str, Any]) -> Text
     pull_request = payload['pull_request']
     action = payload['action']
-    if action == 'synchronized':
+    if action == 'synchronize':
         action = 'updated'
     assignee = None
     if pull_request.get('assignee'):
@@ -362,16 +362,17 @@ EVENT_FUNCTION_MAPPER = {
     'watch': get_watch_body,
 }
 
-@api_key_only_webhook_view('Github')
+@api_key_only_webhook_view('GitHub')
 @has_request_variables
 def api_github_webhook(
         request, user_profile, client,
         payload=REQ(argument_type='body'), stream=REQ(default='github')):
     # type: (HttpRequest, UserProfile, Client, Dict[str, Any], Text) -> HttpResponse
     event = get_event(request, payload)
-    subject = get_subject_based_on_type(payload, event)
-    body = get_body_function_based_on_type(event)(payload)
-    check_send_message(user_profile, client, 'stream', [stream], subject, body)
+    if event != 'ping':
+        subject = get_subject_based_on_type(payload, event)
+        body = get_body_function_based_on_type(event)(payload)
+        check_send_message(user_profile, client, 'stream', [stream], subject, body)
     return json_success()
 
 def get_event(request, payload):
@@ -379,7 +380,7 @@ def get_event(request, payload):
     event = request.META['HTTP_X_GITHUB_EVENT']
     if event == 'pull_request':
         action = payload['action']
-        if action == 'opened' or action == 'synchronized':
+        if action == 'opened' or action == 'synchronize' or action == 'reopened':
             return 'opened_or_update_pull_request'
         if action == 'closed':
             return 'closed_pull_request'
@@ -389,7 +390,7 @@ def get_event(request, payload):
             return "push_commits"
         else:
             return "push_tags"
-    elif event in list(EVENT_FUNCTION_MAPPER.keys()):
+    elif event in list(EVENT_FUNCTION_MAPPER.keys()) or event == 'ping':
         return event
     raise UnknownEventType(u'Event {} is unknown and cannot be handled'.format(event))
 

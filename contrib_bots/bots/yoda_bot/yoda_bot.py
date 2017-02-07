@@ -1,29 +1,15 @@
 # See readme-yoda-bot.md for instructions on running this code.
 
-"""
-This bot uses the python library `unirest` which is not a
-dependency of Zulip. To use this module, you will have to
-install it in your local machine. In your terminal, enter
-the following command:
-    $ sudo pip install unirest --upgrade
-Note:
-    * You might have to use `pip3` if you are using python 3.
-    * The install command would also download any dependency
-      required by `unirest`.
-"""
-
 from __future__ import print_function
 import os
 import logging
 import ssl
 import sys
-
 try:
-    import unirest
-except ImportError:
-    logging.error("Dependency missing!!\n%s" % (__doc__))
+    import requests
+except ImportError as e:
+    logging.error("Dependency missing!!\n{}".format(e))
     sys.exit(0)
-
 
 HELP_MESSAGE = '''
             This bot allows users to translate a sentence into
@@ -83,21 +69,21 @@ handler_class = YodaSpeakHandler
 def send_to_yoda_api(sentence, api_key):
     # function for sending sentence to api
 
-    response = unirest.get("https://yoda.p.mashape.com/yoda?sentence=" + sentence,
-                           headers={
-                               "X-Mashape-Key": api_key,
-                               "Accept": "text/plain"
-                           }
-                           )
+    response = requests.get("https://yoda.p.mashape.com/yoda?sentence=" + sentence,
+                            headers={
+                                "X-Mashape-Key": api_key,
+                                "Accept": "text/plain"
+                            }
+                            )
 
-    if response.code == 200:
-        return response.body
-    if response.code == 403:
+    if response.status_code == 200:
+        return response.text
+    if response.status_code == 403:
         raise ApiKeyError
     else:
-        error_message = response.body['message']
+        error_message = response.text['message']
         logging.error(error_message)
-        error_code = response.code
+        error_code = response.status_code
         error_message = error_message + 'Error code: ' + error_code +\
             ' Did you follow the instructions in the `readme-yoda-bot.md` file?'
         return error_message

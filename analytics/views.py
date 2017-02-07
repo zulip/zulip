@@ -63,7 +63,7 @@ def get_chart_data(request, user_profile, chart_name=REQ(),
         subgroups = ['false', 'true']
         labels = ['human', 'bot']
         include_empty_subgroups = True
-    elif chart_name == 'messages_sent_by_humans_and_bots':
+    elif chart_name == 'messages_sent_over_time':
         stat = COUNT_STATS['messages_sent:is_bot:hour']
         tables = [RealmCount]
         subgroups = ['false', 'true']
@@ -108,6 +108,36 @@ def table_filtered_to_id(table, key_id):
     else:
         raise ValueError("Unknown table: %s" % (table,))
 
+def client_label_map(name):
+    # type: (str) -> str
+    if name == "website":
+        return "Website"
+    if name.startswith("desktop app"):
+        return "Old desktop app"
+    if name == "ZulipAndroid":
+        return "Android app"
+    if name == "ZulipiOS":
+        return "Old iOS app"
+    if name == "ZulipMobile":
+        return "New iOS app"
+    if name in ["ZulipPython", "API: Python"]:
+        return "Python API"
+    if name.startswith("Zulip") and name.endswith("Webhook"):
+        return name[len("Zulip"):-len("Webhook")] + " webhook"
+    return name
+
+def rewrite_client_arrays(value_arrays):
+    # type: (Dict[str, List[int]]) -> Dict[str, List[int]]
+    mapped_arrays = {} # type: Dict[str, List[int]]
+    for label, array in value_arrays.items():
+        mapped_label = client_label_map(label)
+        if mapped_label in mapped_arrays:
+            for i in range(0, len(array)):
+                mapped_arrays[mapped_label][i] += value_arrays[label][i]
+        else:
+            mapped_arrays[mapped_label] = [value_arrays[label][i] for i in range(0, len(array))]
+    return mapped_arrays
+
 def get_time_series_by_subgroup(stat, table, key_id, end_times, subgroups, labels, include_empty_subgroups):
     # type: (CountStat, Type[BaseCount], Optional[int], List[datetime], List[str], Optional[List[str]], bool) -> Dict[str, List[int]]
     if labels is None:
@@ -124,6 +154,12 @@ def get_time_series_by_subgroup(stat, table, key_id, end_times, subgroups, label
     for subgroup, label in zip(subgroups, labels):
         if (subgroup in value_dicts) or include_empty_subgroups:
             value_arrays[label] = [value_dicts[subgroup][end_time] for end_time in end_times]
+
+    if stat == COUNT_STATS['messages_sent:client:day']:
+        # HACK: We rewrite these arrays to collapse the Client objects
+        # with similar names into a single sum, and generally give
+        # them better names
+        return rewrite_client_arrays(value_arrays)
     return value_arrays
 
 

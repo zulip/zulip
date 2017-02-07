@@ -9,6 +9,10 @@ import subprocess
 import argparse
 import sys
 
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+
 # We need settings so we can figure out where the prod-static directory is.
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 import scripts.lib.setup_path_on_import
@@ -44,8 +48,12 @@ subprocess.check_call(['./tools/minify-js'] +
 
 # Collect the files that we're going to serve; this creates prod-static/serve.
 subprocess.check_call(['./manage.py', 'collectstatic', '--no-default-ignore',
-                       '--noinput', '-i', 'assets'],
+                       '--noinput', '-i', 'assets', '-i' 'node_modules'],
                       stdout=fp, stderr=fp)
+if not settings.PRODUCTION:
+    # When building a release tarball, we need to move staticfiles.json
+    subprocess.check_call(['mv', 'prod-static/serve/staticfiles.json', 'staticfiles.json'],
+                          stdout=fp, stderr=fp)
 
 # Compile translation strings to generate `.mo` files.
 subprocess.check_call(['./manage.py', 'compilemessages'],

@@ -463,6 +463,8 @@ li.actual-dropdown-menu i {
     /* In gear menu, make icons the same width so labels line up. */
     display: inline-block;
     width: 14px;
+    text-align: center;
+    margin-right: 3px;
 }
 
 .message_area_padder {
@@ -1206,6 +1208,8 @@ div.focused_table {
     /* to match .message_content */
     margin-left: 5px;
     margin-right: 35px;
+    /* to make message-uncollapse easier */
+    margin-top: 10px;
 }
 
 .message_length_controller:hover {
@@ -2250,6 +2254,10 @@ button.topic_edit_cancel {
     margin-right: -50%;
 }
 
+.include-sender .message_edit {
+    margin-top: -14px;
+}
+
 .message_edit {
     display: none;
     margin-top: 5px;
@@ -2257,18 +2265,18 @@ button.topic_edit_cancel {
 }
 
 /* Reduce some of the heavy padding from Bootstrap. */
+#message_edit_form {
+    margin-bottom: 10px;
+}
 #message_edit_form .edit-control-label {
-    width: auto;
-    float: left;
-    font-size: 80%;
     vertical-align: top;
     padding-top: 0px;
     margin-right: 10px;
+    font-size: 80%;
 }
 #message_edit_form .edit-controls {
-    margin-left: 35px; /* Match .message_content padding less 7px textarea padding and border */
-    margin-right: -7px;
-    margin-top: 10px;
+    margin-left: 0px;
+    margin-top: 0px;
 }
 #message_edit_form textarea {
     width: 100%;
@@ -2292,6 +2300,10 @@ button.topic_edit_cancel {
     float: right;
     padding-left: 5px;
     padding-top: 3px;
+}
+
+#message_edit_form .action-buttons {
+    margin: 10px 0px;
 }
 
 #topic_edit_form {

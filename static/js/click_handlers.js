@@ -256,8 +256,6 @@ $(function () {
 
         if ($(e.target).is(".exit, .exit-sign, #subscription_overlay, #subscription_overlay > .flex")) {
             subs.close();
-
-            hashchange.exit_settings();
         }
     });
     // HOME
@@ -353,7 +351,9 @@ $(function () {
         compose.cancel();
     });
 
-    $("#join_unsub_stream").click(function () {
+    $("#join_unsub_stream").click(function (e) {
+        e.preventDefault();
+        e.stopPropagation();
         subs.launch();
         components.toggle.lookup("stream-filter-toggle").goto("All streams");
     });

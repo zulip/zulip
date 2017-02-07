@@ -177,7 +177,10 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'DBX_APNS_CERT_FILE': None,
                     'DBX_APNS_KEY_FILE': None,
                     'PERSONAL_ZMIRROR_SERVER': None,
-                    'EXTRA_INSTALLED_APPS': [],
+                    # Structurally, we will probably eventually merge
+                    # analytics into part of the main server, rather
+                    # than a separate app.
+                    'EXTRA_INSTALLED_APPS': ['analytics'],
                     'DEFAULT_NEW_REALM_STREAMS': {
                         "social": {"description": "For socializing", "invite_only": False},
                         "general": {"description": "For general stuff", "invite_only": False},
@@ -192,6 +195,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'POST_MIGRATION_CACHE_FLUSHING': False,
                     'ENABLE_FILE_LINKS': False,
                     'USE_WEBSOCKETS': True,
+                    'ANALYTICS_LOCK_DIR': "/home/zulip/deployments/analytics-lock-dir",
                     'PASSWORD_MIN_LENGTH': 6,
                     'PASSWORD_MIN_ZXCVBN_QUALITY': 0.5,
                     }
@@ -637,6 +641,8 @@ else:
     else:
         STATIC_ROOT = os.path.abspath('prod-static/serve')
 
+# If changing this, you need to also the hack modifications to this in
+# our compilemessages management command.
 LOCALE_PATHS = (os.path.join(STATIC_ROOT, 'locale'),)
 
 # We want all temporary uploaded files to be stored on disk.
@@ -661,6 +667,10 @@ PIPELINE = {
         'activity': {
             'source_filenames': ('styles/activity.css',),
             'output_filename': 'min/activity.css'
+        },
+        'stats': {
+            'source_filenames': ('styles/stats.css',),
+            'output_filename': 'min/stats.css'
         },
         'portico': {
             'source_filenames': (
@@ -743,6 +753,13 @@ JS_SPECS = {
             'node_modules/jquery-validation/dist/jquery.validate.js',
         ],
         'output_filename': 'min/signup.js'
+    },
+    'zxcvbn': {
+        'source_filenames': [],
+        'minifed_source_filenames': [
+            'node_modules/zxcvbn/dist/zxcvbn.js',
+        ],
+        'output_filename': 'min/zxcvbn.js'
     },
     'api': {
         'source_filenames': ['js/portico/api.js'],
@@ -862,10 +879,10 @@ JS_SPECS = {
     'stats': {
         'source_filenames': [
             'node_modules/jquery/dist/jquery.js',
-            'js/portico/stats.js'
+            'js/portico/stats.js',
         ],
         'minifed_source_filenames': [
-            'node_modules/plotly.js/dist/plotly.min.js',
+            'node_modules/plotly.js/dist/plotly-basic.min.js',
         ],
         'output_filename': 'min/stats.js'
     },

@@ -5,6 +5,7 @@ add_dependencies({
 global.stub_out_jquery();
 
 var people = require("js/people.js");
+set_global('blueslip', {});
 
 var _ = global._;
 
@@ -135,11 +136,11 @@ initialize();
 initialize();
 
 (function test_recipient_counts() {
-    var email = 'anybody@example.com';
-    assert.equal(people.get_recipient_count({email: email}), 0);
-    people.incr_recipient_count(email);
-    people.incr_recipient_count(email);
-    assert.equal(people.get_recipient_count({email: email}), 2);
+    var user_id = 99;
+    assert.equal(people.get_recipient_count({id: user_id}), 0);
+    people.incr_recipient_count(user_id);
+    people.incr_recipient_count(user_id);
+    assert.equal(people.get_recipient_count({user_id: user_id}), 2);
 
     assert.equal(people.get_recipient_count({pm_recipient_count: 5}), 5);
 }());
@@ -237,4 +238,53 @@ people.init();
 
     var email = people.slug_to_emails(slug);
     assert.equal(email, 'debbie71@example.com');
+}());
+
+initialize();
+
+(function test_updates() {
+    var old_email = 'FOO@example.com';
+    var new_email = 'bar@example.com';
+    var user_id = 502;
+
+    var person = {
+        email: old_email,
+        user_id: user_id,
+        full_name: 'Foo Barson',
+    };
+    people.add_in_realm(person);
+
+    // Do sanity checks on our data.
+    assert.equal(people.get_by_email(old_email).user_id, user_id);
+    assert.equal(people.realm_get(old_email).user_id, user_id);
+    assert (!people.is_cross_realm_email(old_email));
+
+    assert.equal(people.get_by_email(new_email), undefined);
+
+    // DO THE EMAIL UPDATE HERE.
+    people.update_email(user_id, new_email);
+
+    // Now look up using the new email.
+    assert.equal(people.get_by_email(new_email).user_id, user_id);
+    assert.equal(people.realm_get(new_email).user_id, user_id);
+    assert (!people.is_cross_realm_email(new_email));
+
+    var all_people = people.get_all_persons();
+    assert.equal(all_people.length, 2);
+
+    person = _.filter(all_people, function (p) {
+        return (p.email === new_email);
+    })[0];
+    assert.equal(person.full_name, 'Foo Barson');
+
+    // Test shim where we can still retrieve user info using the
+    // old email.
+    var warning;
+    global.blueslip.warn = function (w) {
+        warning = w;
+    };
+
+    person = people.get_by_email(old_email);
+    assert(/Obsolete email.*FOO.*bar/.test(warning));
+    assert.equal(person.user_id, user_id);
 }());

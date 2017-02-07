@@ -17,6 +17,12 @@ class GithubWebhookTest(WebhookTestCase):
     EXPECTED_SUBJECT_BRANCH_EVENTS = u"public-repo / changes"
     EXPECTED_SUBJECT_WIKI_EVENTS = u"public-repo / Wiki Pages"
 
+    def test_ping_event(self):
+        # type: () -> None
+        payload = self.get_body('ping')
+        result = self.client_post(self.url, payload, HTTP_X_GITHUB_EVENT='ping', content_type="application/json")
+        self.assert_json_success(result)
+
     def test_push_1_commit(self):
         # type: () -> None
         expected_message = u"baxterthehacker [pushed](https://github.com/baxterthehacker/public-repo/compare/9049f1265b7d...0d1a26e67d8f) to branch changes\n\n* [0d1a26e](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c): Update README.md"
@@ -84,6 +90,11 @@ class GithubWebhookTest(WebhookTestCase):
         # type: () -> None
         expected_message = u"baxterthehacker opened [PR](https://github.com/baxterthehacker/public-repo/pull/1)\nfrom `changes` to `master`\n\n~~~ quote\nThis is a pretty simple change that we need to pull into master.\n~~~"
         self.send_and_test_stream_message('opened_pull_request', self.EXPECTED_SUBJECT_PR_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='pull_request')
+
+    def test_pull_request_synchronized_msg(self):
+        # type: () -> None
+        expected_message = u"baxterthehacker updated [PR](https://github.com/baxterthehacker/public-repo/pull/1)\nfrom `changes` to `master`"
+        self.send_and_test_stream_message('synchronized_pull_request', self.EXPECTED_SUBJECT_PR_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='pull_request')
 
     def test_pull_request_closed_msg(self):
         # type: () -> None

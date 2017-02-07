@@ -154,8 +154,8 @@ class GenericParserTestCase(ZulipTestCase):
 
 
 class PreviewTestCase(ZulipTestCase):
-    def test_get_link_embed_data(self):
-        # type: () -> None
+    def _send_message_with_test_org_url(self, sender_email):
+        # type: (str) -> Message
         html = """
           <html>
             <head>
@@ -173,7 +173,7 @@ class PreviewTestCase(ZulipTestCase):
         """
         url = 'http://test.org/'
         msg_id = self.send_message(
-            "hamlet@zulip.com", "cordelia@zulip.com",
+            sender_email, "cordelia@zulip.com",
             Recipient.PERSONAL, subject="url", content=url)
         response = MockPythonResponse(html, 200)
         mocked_response = mock.Mock(
@@ -192,9 +192,25 @@ class PreviewTestCase(ZulipTestCase):
             with mock.patch('requests.get', mocked_response):
                 FetchLinksEmbedData().consume(event)
         msg = Message.objects.select_related("sender").get(id=msg_id)
-        self.assertIn(
-            '<a href="{0}" target="_blank" title="The Rock">The Rock</a>'.format(url),
-            msg.rendered_content)
+        return msg
+
+    def test_get_link_embed_data(self):
+        # type: () -> None
+        url = 'http://test.org/'
+        embedded_link = '<a href="{0}" target="_blank" title="The Rock">The Rock</a>'.format(url)
+
+        # When humans send, we should get embedded content.
+        msg = self._send_message_with_test_org_url(sender_email='hamlet@zulip.com')
+        self.assertIn(embedded_link, msg.rendered_content)
+
+        # We don't want embedded content for bots.
+        msg = self._send_message_with_test_org_url(sender_email='webhook-bot@zulip.com')
+        self.assertNotIn(embedded_link, msg.rendered_content)
+
+        # Try another human to make sure bot failure was due to the
+        # bot sending the message and not some other reason.
+        msg = self._send_message_with_test_org_url(sender_email='prospero@zulip.com')
+        self.assertIn(embedded_link, msg.rendered_content)
 
     def test_http_error_get_data(self):
         # type: () -> None

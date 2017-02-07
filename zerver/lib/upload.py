@@ -141,14 +141,14 @@ def upload_image_to_s3(
     # type: (NonBinaryStr, Text, Optional[Text], UserProfile, binary_type) -> None
 
     conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-    bucket = get_bucket(conn, force_str(bucket_name))
+    bucket = get_bucket(conn, bucket_name)
     key = Key(bucket)
     key.key = force_str(file_name)
     key.set_metadata("user_profile_id", str(user_profile.id))
     key.set_metadata("realm_id", str(user_profile.realm_id))
 
     if content_type is not None:
-        headers = {'Content-Type': force_str(content_type)}
+        headers = {u'Content-Type': content_type}
     else:
         headers = None
 
@@ -274,7 +274,7 @@ class S3UploadBackend(ZulipUploadBackend):
 
         bucket_name = settings.S3_AVATAR_BUCKET
         conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        bucket = get_bucket(conn, force_str(bucket_name))
+        bucket = get_bucket(conn, bucket_name)
         key = bucket.get_key(email_hash)
         image_data = key.get_contents_as_string()
 

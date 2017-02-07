@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import mock
 
-from typing import Any, Iterable, Optional, Text
+from typing import Any, Iterable, List, Optional, Text, Tuple
 from django.test import TestCase
 from django.utils.translation import ugettext as _
 from django.http import HttpResponse, HttpRequest
@@ -31,7 +31,7 @@ from zerver.decorator import (
     return_success_on_head_request
 )
 from zerver.lib.validator import (
-    check_string, check_dict, check_bool, check_int, check_list
+    check_string, check_dict, check_bool, check_int, check_list, Validator
 )
 from zerver.models import \
     get_realm, get_user_profile_by_email, UserProfile, Client
@@ -427,7 +427,7 @@ class ValidatorTestCase(TestCase):
         keys = [
             ('names', check_list(check_string)),
             ('city', check_string),
-        ]
+        ] # type: List[Tuple[str, Validator]]
 
         x = {
             'names': ['alice', 'bob'],
@@ -551,7 +551,7 @@ class DeactivatedRealmTest(ZulipTestCase):
         email = "hamlet@zulip.com"
         api_key = self.get_api_key(email)
         url = "/api/v1/external/jira?api_key=%s&stream=jira_custom" % (api_key,)
-        data = self.fixture_data('jira', "created")
+        data = self.fixture_data('jira', "created_v2")
         result = self.client_post(url, data,
                                   content_type="application/json")
         self.assert_json_error_contains(result, "has been deactivated", status_code=400)
@@ -689,7 +689,7 @@ class InactiveUserTest(ZulipTestCase):
 
         api_key = self.get_api_key(email)
         url = "/api/v1/external/jira?api_key=%s&stream=jira_custom" % (api_key,)
-        data = self.fixture_data('jira', "created")
+        data = self.fixture_data('jira', "created_v2")
         result = self.client_post(url, data,
                                   content_type="application/json")
         self.assert_json_error_contains(result, "Account not active", status_code=400)

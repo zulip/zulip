@@ -510,7 +510,9 @@ function stream_matches_query(query, sub) {
         var sub_name = sub.name.toLowerCase();
 
         return _.any(search_terms, function (o) {
-            return new RegExp(o).test(sub_name);
+            if (sub_name.indexOf(o) !== -1) {
+                return true;
+            }
         });
     }());
     flag = flag && ((sub.subscribed || !query.subscribed_only) ||
@@ -659,6 +661,7 @@ Object.defineProperty(exports, "is_open", {
 });
 
 exports.close = function () {
+    hashchange.exit_settings();
     meta.is_open = false;
     $("#subscription_overlay").fadeOut(500);
     subs.remove_miscategorized_streams();

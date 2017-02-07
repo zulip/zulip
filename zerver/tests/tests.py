@@ -252,15 +252,6 @@ class RealmTest(ZulipTestCase):
         realm = get_realm('zulip')
         self.assertEqual(realm.default_language, new_lang)
 
-        # Test setting zh_CN, we set zh_HANS instead of zh_CN in db
-        chinese = "zh_CN"
-        simplified_chinese = "zh_HANS"
-        req = dict(default_language=ujson.dumps(chinese))
-        result = self.client_patch('/json/realm', req)
-        self.assert_json_success(result)
-        realm = get_realm('zulip')
-        self.assertEqual(realm.default_language, simplified_chinese)
-
         # Test to make sure that when invalid languages are passed
         # as the default realm language, correct validation error is
         # raised and the invalid language is not saved in db

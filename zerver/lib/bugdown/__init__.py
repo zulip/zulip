@@ -613,6 +613,11 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 add_a(root, youtube, url, None, None, None, "youtube-video message_inline_image", yt_id)
                 continue
 
+            global db_data
+
+            if db_data and db_data['sent_by_bot']:
+                continue
+
             if current_message is None or not settings.INLINE_URL_EMBED_PREVIEW:
                 continue
             try:
@@ -940,9 +945,11 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
 
             if wildcard:
                 current_message.mentions_wildcard = True
+                email = '*'
                 user_id = "*"
             elif user:
                 current_message.mentions_user_ids.add(user['id'])
+                email = user['email']
                 name = user['full_name']
                 user_id = str(user['id'])
             else:
@@ -951,6 +958,7 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
 
             el = markdown.util.etree.Element("span")
             el.set('class', 'user-mention')
+            el.set('data-user-email', email)
             el.set('data-user-id', user_id)
             el.text = "@%s" % (name,)
             return el
@@ -1290,8 +1298,8 @@ def log_bugdown_error(msg):
     could cause an infinite exception loop."""
     logging.getLogger('').error(msg)
 
-def do_convert(content, message=None, message_realm=None, possible_words=None):
-    # type: (Text, Optional[Message], Optional[Realm], Optional[Set[Text]]) -> Optional[Text]
+def do_convert(content, message=None, message_realm=None, possible_words=None, sent_by_bot=False):
+    # type: (Text, Optional[Message], Optional[Realm], Optional[Set[Text]], Optional[bool]) -> Optional[Text]
     """Convert Markdown to HTML, with Zulip-specific settings and hacks."""
     from zerver.models import get_active_user_dicts_in_realm, get_active_streams, UserProfile
 
@@ -1341,6 +1349,7 @@ def do_convert(content, message=None, message_realm=None, possible_words=None):
                    'full_names': dict((user['full_name'].lower(), user) for user in realm_users),
                    'short_names': dict((user['short_name'].lower(), user) for user in realm_users),
                    'emoji': message_realm.get_emoji(),
+                   'sent_by_bot': sent_by_bot,
                    'stream_names': dict((stream['name'], stream) for stream in realm_streams)}
 
     try:
@@ -1395,9 +1404,9 @@ def bugdown_stats_finish():
     bugdown_total_requests += 1
     bugdown_total_time += (time.time() - bugdown_time_start)
 
-def convert(content, message=None, message_realm=None, possible_words=None):
-    # type: (Text, Optional[Message], Optional[Realm], Optional[Set[Text]]) -> Optional[Text]
+def convert(content, message=None, message_realm=None, possible_words=None, sent_by_bot=False):
+    # type: (Text, Optional[Message], Optional[Realm], Optional[Set[Text]], Optional[bool]) -> Optional[Text]
     bugdown_stats_start()
-    ret = do_convert(content, message, message_realm, possible_words)
+    ret = do_convert(content, message, message_realm, possible_words, sent_by_bot)
     bugdown_stats_finish()
     return ret

@@ -18,6 +18,7 @@ from django.contrib.auth.views import (login, password_reset,
 import zerver.tornado.views
 import zerver.views
 import zerver.views.auth
+import zerver.views.compatibility
 import zerver.views.home
 import zerver.views.registration
 import zerver.views.zephyr
@@ -350,6 +351,9 @@ urls += [
     # This json format view used by the mobile apps lists which authentication
     # backends the server allows, to display the proper UI and check for server existence
     url(r'^api/v1/get_auth_backends', zerver.views.auth.api_get_auth_backends, name='zerver.views.auth.api_get_auth_backends'),
+
+    # used by mobile apps to check if they are compatible with the server
+    url(r'^compatibility$', zerver.views.compatibility.check_compatibility),
 
     # This json format view used by the mobile apps accepts a username
     # password/pair and returns an API key.

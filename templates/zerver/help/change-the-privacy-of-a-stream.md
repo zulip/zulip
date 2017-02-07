@@ -1,12 +1,12 @@
-# Change the accessibility of a stream
+# Change the privacy of a stream
 
 {!admin-only.md!}
 
 {!follow-steps.md!} change who can join your stream by changing the stream's
-accessibility.
+privacy.
 
 Please note that any users that were previously subscribed to the stream will
-remain subscribed to the stream after you change the stream's accessibility.
+remain subscribed to the stream after you change the stream's privacy.
 
 ## Make a public stream private
 

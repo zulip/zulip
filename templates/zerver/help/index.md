@@ -1,8 +1,8 @@
-# Zulip User Documentation (draft)
+# Zulip User Documentation
 
-Zulip is a chat app. Its most distinctive characteristic is that
-conversation among a group of people can be divided according to
-subject “**streams**” and further subdivided into “**topics**”, so
+Zulip is a group chat app. Its most distinctive characteristic is that
+conversation within an organization can be divided into “**streams**”
+and further subdivided into “**topics**”, so that
 much finer-grained conversations are possible than with IRC or other
 chat tools.
 
@@ -16,14 +16,9 @@ as an **organization**.
 
 ---
 
-# Using Zulip
-## Basics
-* [The Zulip browser window](/help/the-zulip-browser-window)
-- [Zulip glossary](/help/zulip-glossary)
 ## Account Basics
 * [Change your name](/help/change-your-name)
 * [Change your password](/help/change-your-password)
-* Change your email address (not implemented)
 * [Change your settings](/help/change-your-settings)
 * [Change your avatar](/help/change-your-avatar)
 * [Change your language](/help/change-your-language)
@@ -32,8 +27,7 @@ as an **organization**.
 * [Join a Zulip organization](/help/join-a-zulip-organization)
 * [Signing in](/help/signing-in)
 * [Signing out](/help/signing-out)
-* Find your Zulip organization
-* Set up two-factor authentication (not implemented)
+<!-- Find your Zulip organization -->
 * [Deactivate your account](/help/deactivate-your-account)
 
 ## Messages
@@ -45,11 +39,11 @@ as an **organization**.
 * [Add emoji](/help/add-emoji)
 * [Upload and share files](/help/upload-and-share-files)
 * [Restore the last unsent message](/help/restore-the-last-unsent-message)
-* Automatically link to an external issue tracker (improve wording)
-* Add a link preview
+<!-- Automatically link to an external issue tracker (improve wording) -->
+<!-- Add a link preview -->
 * [Enable or disable Press Enter to send](/help/enable-or-disable-pressing-enter-to-send)
 * [Verify that your message has been successfully sent](/help/verify-that-your-message-has-been-successfully-sent)
-* What to do if the server returns an error
+<!-- What to do if the server returns an error -->
 * [Send a status message](/help/send-a-status-message)
 * [@-mention a team member](/help/at-mention-a-team-member)
 * [Make an announcement](/help/make-an-announcement)
@@ -63,11 +57,10 @@ as an **organization**.
 * [Collapse a message](/help/collapse-a-message)
 * [Star a message](/help/star-a-message)
 * [Share a message or conversation](/help/share-a-message-or-conversation)
+* [Search for messages](/help/search-for-messages)
 ### Editing
 * [Edit or delete a message](/help/edit-or-delete-a-message)
 * [Change the topic of a message](/help/change-the-topic-of-a-message)
-### Searching
-* [Searching for messages](/help/searching-for-messages)
 
 ## People
 * [Check whether someone is here or away](/help/check-whether-someone-is-here-or-away)
@@ -87,9 +80,8 @@ as an **organization**.
 * [Add or invite someone to a stream](/help/add-or-invite-someone-to-a-stream)
 * [Change the stream description](/help/change-the-stream-description)
 * [Rename a stream](/help/rename-a-stream)
-* Preview a stream (not implemented)
 * [Unsubscribe from a stream](/help/unsubscribe-from-a-stream)
-* [Change the accessibility of a stream](/help/change-the-accessibility-of-a-stream)
+* [Change the privacy of a stream](/help/change-the-privacy-of-a-stream)
 * [Organize the Streams sidebar](/help/organize-the-streams-sidebar)
 * [Pin a stream](/help/pin-a-stream)
 * [Change the color of a stream](/help/change-the-color-of-a-stream)
@@ -110,14 +102,16 @@ as an **organization**.
 * [Keyboard shortcuts](/help/keyboard-shortcuts)
 * [Add a bot or integration](/help/add-a-bot-or-integration)
 
-## Apps
-* Zulip on Mac OS
-* Zulip on Linux
-* [Zulip on Windows](/help/zulip-on-windows)
-* [Zulip on Android](/help/zulip-on-android)
-* Zulip on iOS
-* Zulip in a terminal
-* Connect to Zulip over IRC/etc (not implemented?)
+## Misc
+* [Tips for Zulip on Windows](/help/zulip-on-windows)
+* [Tips for Zulip on Android](/help/zulip-on-android)
+<!-- Zulip on Mac OS -->
+<!-- Zulip on Linux -->
+<!-- Zulip on iOS -->
+<!-- Zulip in a terminal -->
+<!-- Connect to Zulip over IRC/etc (not implemented?) -->
+* [The Zulip browser window](/help/the-zulip-browser-window)
+* [Zulip glossary](/help/zulip-glossary)
 
 # Administering a Zulip organization
 
@@ -131,9 +125,8 @@ as an **organization**.
 * [Restrict editing of old messages and topics](/help/restrict-editing-of-old-messages-and-topics)
 * [Change the default language for your organization](/help/change-the-default-language-for-your-organization)
 * [Add custom emoji](/help/add-custom-emoji)
-* Configure authentication methods
+<!-- Configure authentication methods -->
 * [Add a custom linkification filter](/help/add-a-custom-linkification-filter)
-* Delete your organization (not implemented)
 
 ## Users & Bots
 * [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)
@@ -147,7 +140,7 @@ as an **organization**.
 * [Set default streams for new users](/help/set-default-streams-for-new-users)
 * [Rename a stream](/help/rename-a-stream)
 * [Change a stream's description](/help/change-the-stream-description)
-* [Make a public stream private](/help/change-the-accessibility-of-a-stream#make-a-public-stream-private)
+* [Make a public stream private](/help/change-the-privacy-of-a-stream#make-a-public-stream-private)
 * [Add someone to a stream](/help/add-or-invite-someone-to-a-stream)
 * [Remove someone from a stream](/help/remove-someone-from-a-stream)
 

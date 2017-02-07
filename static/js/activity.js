@@ -100,21 +100,14 @@ exports.process_loaded_messages = function (messages) {
     var need_resize = false;
 
     _.each(messages, function (message) {
-        if (message.type === 'private') {
-            if (message.reply_to.indexOf(',') > 0) {
-                var user_ids_string = people.emails_strings_to_user_ids_string(
-                    message.reply_to);
+        var huddle_string = people.huddle_string(message);
 
-                if (!user_ids_string) {
-                    blueslip.warn('Bad reply_to for huddle: ' + message.reply_to);
-                }
+        if (huddle_string) {
+            var old_timestamp = huddle_timestamps.get(huddle_string);
 
-                var old_timestamp = huddle_timestamps.get(user_ids_string);
-
-                if (!old_timestamp || (old_timestamp < message.timestamp)) {
-                    huddle_timestamps.set(user_ids_string, message.timestamp);
-                    need_resize = true;
-                }
+            if (!old_timestamp || (old_timestamp < message.timestamp)) {
+                huddle_timestamps.set(huddle_string, message.timestamp);
+                need_resize = true;
             }
         }
     });

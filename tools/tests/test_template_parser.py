@@ -59,6 +59,14 @@ class ParserTest(unittest.TestCase):
             '''
         validate(text=my_html)
 
+    def test_validate_comment(self):
+        # type: () -> None
+        my_html = '''
+            <!---
+                <h1>foo</h1>
+            -->'''
+        validate(text=my_html)
+
     def test_validate_django(self):
         # type: () -> None
         my_html = '''

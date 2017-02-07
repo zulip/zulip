@@ -40,6 +40,10 @@ def tokenize(text):
         # type: (str) -> bool
         return text[state.i:state.i+len(s)] == s
 
+    def looking_at_comment():
+        # type: () -> bool
+        return looking_at("<!--")
+
     def looking_at_html_start():
         # type: () -> bool
         return looking_at("<") and not looking_at("</")
@@ -68,7 +72,11 @@ def tokenize(text):
     tokens = []
 
     while state.i < len(text):
-        if looking_at_html_start():
+        if looking_at_comment():
+            s = get_html_comment(text, state.i)
+            tag = s[4:-3]
+            kind = 'html_comment'
+        elif looking_at_html_start():
             s = get_html_tag(text, state.i)
             tag_parts = s[1:-1].split()
 
@@ -218,8 +226,7 @@ def validate(fn=None, text=None, check_indent=True):
 
 def is_special_html_tag(s, tag):
     # type: (str, str) -> bool
-    return (s.startswith('<!--') or
-            tag in ['link', 'meta', '!DOCTYPE'])
+    return tag in ['link', 'meta', '!DOCTYPE']
 
 def is_django_block_tag(tag):
     # type: (str) -> bool
@@ -268,3 +275,12 @@ def get_html_tag(text, i):
         raise TemplateParserException('Tag missing >')
     s = text[i:end+1]
     return s
+
+def get_html_comment(text, i):
+    # type: (str, int) -> str
+    end = i + 7
+    while end <= len(text):
+        if text[end-3:end] == '-->':
+            return text[i:end]
+        end += 1
+    raise TemplateParserException('Unclosed comment')
