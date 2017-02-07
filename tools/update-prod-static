@@ -9,16 +9,16 @@ import subprocess
 import argparse
 import sys
 
-# check for the venv
-from lib import sanity_check
-sanity_check.check_venv(__file__)
-
 # We need settings so we can figure out where the prod-static directory is.
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 import scripts.lib.setup_path_on_import
 os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
 from django.conf import settings
 from scripts.lib.node_cache import setup_node_modules
+
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--prev-deploy', metavar='DIR',
