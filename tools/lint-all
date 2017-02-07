@@ -136,6 +136,8 @@ def check_pep8(files):
         # Fixing these would probably reduce readability in most cases.
         'E731',
     ]
+    if len(files) == 0:
+        return False
     pep8 = subprocess.Popen(
         ['pycodestyle'] + files + ['--ignore={rules}'.format(rules=','.join(ignored_rules))],
         stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
