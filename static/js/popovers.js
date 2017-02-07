@@ -544,7 +544,8 @@ exports.register_click_handlers = function () {
     });
 
     $('body').on('click', '.sender_info_popover .narrow_to_private_messages', function (e) {
-        var email = $(e.target).parents('ul').attr('data-email');
+        var user_id = $(e.target).parents('ul').attr('data-user-id');
+        var email = people.get_person_from_user_id(user_id).email;
         narrow.by('pm-with', email, {select_first_unread: true, trigger: 'user sidebar popover'});
         popovers.hide_message_info_popover();
         e.stopPropagation();
@@ -552,7 +553,8 @@ exports.register_click_handlers = function () {
     });
 
     $('body').on('click', '.sender_info_popover .narrow_to_messages_sent', function (e) {
-        var email = $(e.target).parents('ul').attr('data-email');
+        var user_id = $(e.target).parents('ul').attr('data-user-id');
+        var email = people.get_person_from_user_id(user_id).email;
         narrow.by('sender', email, {select_first_unread: true, trigger: 'user sidebar popover'});
         popovers.hide_message_info_popover();
         e.stopPropagation();
