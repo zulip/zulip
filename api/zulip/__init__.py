@@ -188,6 +188,21 @@ class Client(object):
 
         if config_file is None:
             config_file = get_default_config_filename()
+
+        # Fill values from Environment Variables if not available in Constructor
+        if api_key is None:
+            api_key = os.environ.get("ZULIP_API_KEY")
+        if email is None:
+            email = os.environ.get("ZULIP_EMAIL")
+        if site is None:
+            site = os.environ.get("ZULIP_SITE")
+        if client_cert is None:
+            client_cert = os.environ.get("ZULIP_CERT")
+        if client_cert_key is None:
+            client_cert_key = os.environ.get("ZULIP_KEY")
+        if cert_bundle is None:
+            cert_bundle = os.environ.get("ZULIP_BUNDLE")
+
         if os.path.exists(config_file):
             config = SafeConfigParser()
             with open(config_file, 'r') as f:
