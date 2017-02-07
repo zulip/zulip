@@ -754,6 +754,13 @@ JS_SPECS = {
         ],
         'output_filename': 'min/signup.js'
     },
+    'zxcvbn': {
+        'source_filenames': [],
+        'minifed_source_filenames': [
+            'node_modules/zxcvbn/dist/zxcvbn.js',
+        ],
+        'output_filename': 'min/zxcvbn.js'
+    },
     'api': {
         'source_filenames': ['js/portico/api.js'],
         'output_filename': 'min/api.js'

@@ -211,7 +211,13 @@ function _setup_page() {
         if (page_params.password_auth_enabled !== false) {
             // zxcvbn.js is pretty big, and is only needed on password
             // change, so load it asynchronously.
-            $.getScript('/static/node_modules/zxcvbn/dist/zxcvbn.js', function () {
+            var zxcvbn_path = '/static/min/zxcvbn.js';
+            if (page_params.development_environment) {
+                // Usually the Django templates handle this path stuff
+                // for us, but in this case we need to hardcode it.
+                zxcvbn_path = '/static/node_modules/zxcvbn/dist/zxcvbn.js';
+            }
+            $.getScript(zxcvbn_path, function () {
                 $('#pw_strength .bar').removeClass("fade");
             });
         }
