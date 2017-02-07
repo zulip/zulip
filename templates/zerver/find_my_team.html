@@ -36,7 +36,7 @@
       <form class="form-inline" id="find_my_team" name="email_form"
             action="{{ current_url() }}" method="post">
         {{ csrf_input }}
-        <input type="text" class="form-control required"
+        <input type="text" class="form-control required" autofocus
                placeholder="{{ _("Enter email addresses") }}"
                id="emails" name="emails"/>
         <button type="submit" class="btn btn-primary">{{ _('Find team') }}</button>
