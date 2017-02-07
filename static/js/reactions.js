@@ -203,6 +203,15 @@ exports.get_message_reactions = function (message) {
     return reactions;
 };
 
+$(function () {
+    $(document).on('message_id_changed', function (event) {
+        // When a message ID is changed via editing, update any
+        // data-message-id references to it.
+        var elts = $(".message_reactions[data-message-id='" + event.old_id + "']");
+        elts.attr("data-message-id", event.new_id);
+    });
+});
+
 return exports;
 }());
 
