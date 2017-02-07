@@ -19,6 +19,13 @@
         <li>{{ email }}</li>
         {% endfor %}
       </ul>
+
+      {% if development_environment %}
+      <div class="alert alert-info" style="display:inline-block;">
+        {{ _("In the Zulip development environment, outgoing emails are printed to the run-dev.py console") }}
+      </div>
+      {% endif %}
+
     </div>
     {% else %}
     <div class="find-team-form">
