@@ -279,36 +279,6 @@ $.get({
     },
 });
 
-function make_pie_trace(data, values, labels, text) {
-    var trace = [{
-        values: values,
-        labels: labels,
-        type: 'pie',
-        direction: 'clockwise',
-        rotation: -90,
-        sort: false,
-        // textposition: textposition,
-        textinfo: "text",
-        text: text,
-        hoverinfo: "label+text",
-        pull: 0.05,
-        marker: {
-            colors: ['#008000', '#57a200', '#95c473', '#acd5b0', '#bde6ee', '#caf8ff'],
-        },
-    }];
-    return trace;
-}
-
-function round_percentages(values) {
-    var total = values.reduce(function (a, b) { return a + b; }, 0);
-    var percents = values.map(function (x) {
-        var unrounded = x/total*100;
-        var precision = Math.max(2, Math.floor(-Math.log(100-unrounded)/Math.log(10)) + 3);
-        return unrounded.toPrecision(precision) + '%';
-    });
-    return [total, percents];
-}
-
 function word_wrap(text, width) {
     var broken_words = [];
     text.split(' ').forEach(function (word) {
@@ -334,20 +304,47 @@ function word_wrap(text, width) {
     return lines.join("<br>");
 }
 
-function get_labels_and_data(names, data_subgroup, time_frame_integer) {
+function round_to_percentages(values, total) {
+    return values.map(function (x) {
+        var unrounded = x/total*100;
+        var precision = Math.max(2, Math.floor(-Math.log(100-unrounded)/Math.log(10)) + 3);
+        return unrounded.toPrecision(precision) + '%';
+    });
+}
+
+function make_pie_trace(values, labels, text) {
+    var trace = [{
+        values: values,
+        labels: labels,
+        type: 'pie',
+        direction: 'clockwise',
+        rotation: -90,
+        sort: false,
+        textinfo: "text",
+        text: text,
+        hoverinfo: "label+text",
+        pull: 0.05,
+        marker: {
+            colors: ['#008000', '#57a200', '#95c473', '#acd5b0', '#bde6ee', '#caf8ff'],
+        },
+    }];
+    return trace;
+}
+
+function compute_pie_chart_data(name_map, time_series_data, num_steps) {
     var data = [];
-    for (var key in data_subgroup) {
-        if (data_subgroup[key].length < time_frame_integer) {
-            time_frame_integer = data_subgroup[key].length;
+    for (var key in time_series_data) {
+        if (time_series_data[key].length < num_steps) {
+            num_steps = time_series_data[key].length;
         }
         var sum = 0;
-        for (var i=1; i<=time_frame_integer; i+=1) {
-            sum += data_subgroup[key][data_subgroup[key].length-i];
+        for (var i=1; i<=num_steps; i+=1) {
+            sum += time_series_data[key][time_series_data[key].length-i];
         }
         if (sum > 0) {
             data.push({
                 value: sum,
-                label: word_wrap(names.hasOwnProperty(key) ? names[key] : key, 18),
+                label: word_wrap(name_map.hasOwnProperty(key) ? name_map[key] : key, 18),
             });
         }
     }
@@ -374,11 +371,16 @@ function get_labels_and_data(names, data_subgroup, time_frame_integer) {
         labels.push("Other");
         values.push(sum_remaining);
     }
-    return [labels, values];
+    var total = values.reduce(function (a, b) { return a + b; }, 0);
+    return {
+        trace: make_pie_trace(values, labels, round_to_percentages(values, total)),
+        total_str: "Total messages: " + total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+    };
 }
 
 function populate_messages_sent_by_client(data) {
-    var names = {
+    // Hardcoded names in the development environment
+    var name_map = {
         electron_: "Electron",
         barnowl_: "BarnOwl",
         website_: "Website",
@@ -387,169 +389,85 @@ function populate_messages_sent_by_client(data) {
         iOS_: "iOS",
         react_native_: "React Native",
     };
-    var realm_cumulative = get_labels_and_data(names, data.realm, data.end_times.length);
-    var realm_labels_cumulative = realm_cumulative[0];
-    var realm_values_cumulative = realm_cumulative[1];
-    var realm_percentages_cumulative = round_percentages(realm_values_cumulative);
-    var realm_total_cumulative = realm_percentages_cumulative[0];
-    var realm_text_cumulative = realm_percentages_cumulative[1];
 
-    var realm_values_ten_days = get_labels_and_data(names, data.realm, 10)[1];
-    var realm_percentages_ten_days = round_percentages(realm_values_ten_days);
-    var realm_total_ten_days = realm_percentages_ten_days[0];
-    var realm_text_ten_days = realm_percentages_ten_days[1];
-
-    var realm_values_thirty_days = get_labels_and_data(names, data.realm, 30)[1];
-    var realm_percentages_thirty_days = round_percentages(realm_values_thirty_days);
-    var realm_total_thirty_days = realm_percentages_thirty_days[0];
-    var realm_text_thirty_days = realm_percentages_thirty_days[1];
-
-    var user_values_cumulative = get_labels_and_data(names, data.user, data.end_times.length)[1];
-    var user_percentages_cumulative = round_percentages(user_values_cumulative);
-    var user_total_cumulative = user_percentages_cumulative[0];
-    var user_text_cumulative = user_percentages_cumulative[1];
-
-    var user_values_ten_days = get_labels_and_data(names, data.user, 10)[1];
-    var user_percentages_ten_days = round_percentages(user_values_ten_days);
-    var user_total_ten_days = user_percentages_ten_days[0];
-    var user_text_ten_days = user_percentages_ten_days[1];
-
-    var user_values_thirty_days = get_labels_and_data(names, data.user, 30)[1];
-    var user_percentages_thirty_days = round_percentages(user_values_thirty_days);
-    var user_total_thirty_days = user_percentages_thirty_days[0];
-    var user_text_thirty_days = user_percentages_thirty_days[1];
-
-    var trace = make_pie_trace(data, realm_values_cumulative,
-                               realm_labels_cumulative, realm_text_cumulative);
     var layout = {
-        margin: {
-            l: 90, r: 0, b: 0, t: 0,
-        },
+        margin: { l: 90, r: 0, b: 0, t: 0 },
         width: 450,
         height: 300,
-        font: {
-            family: 'Humbug',
-            size: 14,
-            color: '#000000',
+        font: { family: 'Humbug', size: 14, color: '#000000' },
+    };
+
+    var chart_data = {
+        realm: {
+            cumulative: compute_pie_chart_data(name_map, data.realm, data.end_times.length),
+            thirty: compute_pie_chart_data(name_map, data.realm, 30),
+            ten: compute_pie_chart_data(name_map, data.realm, 10),
+        },
+        user: {
+            cumulative: compute_pie_chart_data(name_map, data.user, data.end_times.length),
+            thirty: compute_pie_chart_data(name_map, data.user, 30),
+            ten: compute_pie_chart_data(name_map, data.user, 10),
         },
     };
-    Plotly.newPlot('id_messages_sent_by_client', trace, layout, {displayModeBar: false});
 
-    var total = document.getElementById('pie_messages_sent_by_client_total');
-    total.innerHTML = "Total messages: " +
-        realm_total_cumulative.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    var user_button = 'realm';
+    var time_button = 'cumulative';
+    var totaldiv = document.getElementById('pie_messages_sent_by_client_total');
 
-    var time_range = 'cumulative';
-    var type_data = 'realm';
+    function draw_plot() {
+        Plotly.newPlot('id_messages_sent_by_client',
+                       chart_data[user_button][time_button].trace,
+                       layout,
+                       {displayModeBar: false});
+        totaldiv.innerHTML = chart_data[user_button][time_button].total_str;
+    }
+
+    draw_plot();
+
+    // Click handlers
+    function set_user_button(button) {
+        $('#messages_by_client_realm_button').css('background', '#F0F0F0');
+        $('#messages_by_client_user_button').css('background', '#F0F0F0');
+        button.css('background', '#D8D8D8');
+    }
+
+    function set_time_button(button) {
+        $('#messages_by_client_cumulative_button').css('background', '#F0F0F0');
+        $('#messages_by_client_thirty_days_button').css('background', '#F0F0F0');
+        $('#messages_by_client_ten_days_button').css('background', '#F0F0F0');
+        button.css('background', '#D8D8D8');
+    }
 
     $('#messages_by_client_realm_button').click(function () {
-        $(this).css('background', '#D8D8D8');
-        $('#messages_by_client_user_button').css('background', '#F0F0F0');
-        var plotDiv = document.getElementById('id_messages_sent_by_client');
-        type_data = 'realm';
-        if (time_range === 'cumulative') {
-            plotDiv.data[0].values = realm_values_cumulative;
-            plotDiv.data[0].text = realm_text_cumulative;
-            total.innerHTML = "Total messages: " +
-                realm_total_cumulative.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        } else if (time_range === 'ten') {
-            plotDiv.data[0].values = realm_values_ten_days;
-            plotDiv.data[0].text = realm_text_ten_days;
-            total.innerHTML = "Total messages: " +
-                realm_total_ten_days.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        } else {
-            plotDiv.data[0].values = realm_values_thirty_days;
-            plotDiv.data[0].text = realm_text_thirty_days;
-            total.innerHTML = "Total messages: " +
-                realm_total_thirty_days.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        }
-        Plotly.redraw('id_messages_sent_by_client');
-
+        set_user_button($(this));
+        user_button = 'realm';
+        draw_plot();
     });
+
     $('#messages_by_client_user_button').click(function () {
-        $(this).css('background', '#D8D8D8');
-        $('#messages_by_client_realm_button').css('background', '#F0F0F0');
-        var plotDiv = document.getElementById('id_messages_sent_by_client');
-        type_data = 'user';
-        if (time_range === 'cumulative') {
-            plotDiv.data[0].values = user_values_cumulative;
-            plotDiv.data[0].text = user_text_cumulative;
-            total.innerHTML = "Total messages: " +
-                user_total_cumulative.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        } else if (time_range === 'ten') {
-            plotDiv.data[0].values = user_values_ten_days;
-            plotDiv.data[0].text = user_text_ten_days;
-            total.innerHTML = "Total messages: " +
-                user_total_ten_days.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        } else {
-            plotDiv.data[0].values = user_values_thirty_days;
-            plotDiv.data[0].text = user_text_thirty_days;
-            total.innerHTML = "Total messages: " +
-                user_total_thirty_days.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        }
-        Plotly.redraw('id_messages_sent_by_client');
-
-    });
-
-    $('#messages_by_client_ten_days_button').click(function () {
-        $(this).css('background', '#D8D8D8');
-        $('#messages_by_client_thirty_days_button').css('background', '#F0F0F0');
-        $('#messages_by_client_cumulative_button').css('background', '#F0F0F0');
-        var plotDiv = document.getElementById('id_messages_sent_by_client');
-        time_range = 'ten';
-        if (type_data === 'realm') {
-            plotDiv.data[0].values = realm_values_ten_days;
-            plotDiv.data[0].text = realm_text_ten_days;
-            total.innerHTML = "Total messages: " +
-                realm_total_ten_days.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        } else {
-            plotDiv.data[0].values = user_values_ten_days;
-            plotDiv.data[0].text = user_text_ten_days;
-            total.innerHTML = "Total messages: " +
-                user_total_ten_days.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        }
-        Plotly.redraw('id_messages_sent_by_client');
-    });
-
-    $('#messages_by_client_thirty_days_button').click(function () {
-        $(this).css('background', '#D8D8D8');
-        $('#messages_by_client_ten_days_button').css('background', '#F0F0F0');
-        $('#messages_by_client_cumulative_button').css('background', '#F0F0F0');
-        var plotDiv = document.getElementById('id_messages_sent_by_client');
-        time_range = 'thirty';
-        if (type_data === 'realm') {
-            plotDiv.data[0].values = realm_values_thirty_days;
-            plotDiv.data[0].text = realm_text_thirty_days;
-            total.innerHTML = "Total messages: " +
-                realm_total_thirty_days.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        } else {
-            plotDiv.data[0].values = user_values_thirty_days;
-            plotDiv.data[0].text = user_text_thirty_days;
-            total.innerHTML = "Total messages: " +
-                user_total_thirty_days.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        }
-        Plotly.redraw('id_messages_sent_by_client');
+        set_user_button($(this));
+        user_button = 'user';
+        draw_plot();
     });
 
     $('#messages_by_client_cumulative_button').click(function () {
-        $(this).css('background', '#D8D8D8');
-        $('#messages_by_client_thirty_days_button').css('background', '#F0F0F0');
-        $('#messages_by_client_ten_days_button').css('background', '#F0F0F0');
-        var plotDiv = document.getElementById('id_messages_sent_by_client');
-        time_range = 'cumulative';
-        if (type_data === 'realm') {
-            plotDiv.data[0].values = realm_values_cumulative;
-            plotDiv.data[0].text = realm_text_cumulative;
-            total.innerHTML = "Total messages: " +
-                realm_total_cumulative.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        } else {
-            plotDiv.data[0].values = user_values_cumulative;
-            plotDiv.data[0].text = user_text_cumulative;
-            total.innerHTML = "Total messages: " +
-                user_total_cumulative.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        }
-        Plotly.redraw('id_messages_sent_by_client');
+        set_time_button($(this));
+        time_button = 'cumulative';
+        draw_plot();
     });
+
+    $('#messages_by_client_thirty_days_button').click(function () {
+        set_time_button($(this));
+        time_button = 'thirty';
+        draw_plot();
+    });
+
+    $('#messages_by_client_ten_days_button').click(function () {
+        set_time_button($(this));
+        time_button = 'ten';
+        draw_plot();
+    });
+
     // handle links with @href started with '#' only
     $(document).on('click', 'a[href^="#"]', function (e) {
         // target element id
@@ -579,174 +497,88 @@ $.get({
 });
 
 function populate_messages_sent_by_message_type(data) {
-    var names = {
+    var name_map = {
         public_stream: "Public Stream",
         private_stream: "Private Stream",
         private_message: "Private Message",
     };
-    var realm_cumulative = get_labels_and_data(names, data.realm, data.end_times.length);
-    var realm_labels_cumulative = realm_cumulative[0];
-    var realm_values_cumulative = realm_cumulative[1];
-    var realm_percentages_cumulative = round_percentages(realm_values_cumulative);
-    var realm_total_cumulative = realm_percentages_cumulative[0];
-    var realm_text_cumulative = realm_percentages_cumulative[1];
-
-    var realm_values_ten_days = get_labels_and_data(names, data.realm, 10)[1];
-    var realm_percentages_ten_days = round_percentages(realm_values_ten_days);
-    var realm_total_ten_days = realm_percentages_ten_days[0];
-    var realm_text_ten_days = realm_percentages_ten_days[1];
-
-    var realm_values_thirty_days = get_labels_and_data(names, data.realm, 30)[1];
-    var realm_percentages_thirty_days = round_percentages(realm_values_thirty_days);
-    var realm_total_thirty_days = realm_percentages_thirty_days[0];
-    var realm_text_thirty_days = realm_percentages_thirty_days[1];
-
-    var user_values_cumulative = get_labels_and_data(names, data.user, data.end_times.length)[1];
-    var user_percentages_cumulative = round_percentages(user_values_cumulative);
-    var user_total_cumulative = user_percentages_cumulative[0];
-    var user_text_cumulative = user_percentages_cumulative[1];
-
-    var user_values_ten_days = get_labels_and_data(names, data.user, 10)[1];
-    var user_percentages_ten_days = round_percentages(user_values_ten_days);
-    var user_total_ten_days = user_percentages_ten_days[0];
-    var user_text_ten_days = user_percentages_ten_days[1];
-
-    var user_values_thirty_days = get_labels_and_data(names, data.user, 30)[1];
-    var user_percentages_thirty_days = round_percentages(user_values_thirty_days);
-    var user_total_thirty_days = user_percentages_thirty_days[0];
-    var user_text_thirty_days = user_percentages_thirty_days[1];
-
-    var trace = make_pie_trace(data, realm_values_cumulative,
-                               realm_labels_cumulative, realm_text_cumulative);
-
-    var total = document.getElementById('pie_messages_sent_by_type_total');
-    total.innerHTML = "Total messages: " +
-        realm_total_cumulative.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
     var layout = {
-        margin: {
-            l: 90, r: 0, b: 0, t: 0,
-        },
+        margin: { l: 90, r: 0, b: 0, t: 0 },
         width: 465,
         height: 300,
-        font: {
-            family: 'Humbug',
-            size: 14,
-            color: '#000000',
+        font: { family: 'Humbug', size: 14, color: '#000000' },
+    };
+
+    var chart_data = {
+        realm: {
+            cumulative: compute_pie_chart_data(name_map, data.realm, data.end_times.length),
+            thirty: compute_pie_chart_data(name_map, data.realm, 30),
+            ten: compute_pie_chart_data(name_map, data.realm, 10),
+        },
+        user: {
+            cumulative: compute_pie_chart_data(name_map, data.user, data.end_times.length),
+            thirty: compute_pie_chart_data(name_map, data.user, 30),
+            ten: compute_pie_chart_data(name_map, data.user, 10),
         },
     };
-    Plotly.newPlot('id_messages_sent_by_message_type', trace, layout, {displayModeBar: false});
 
-    var time_range = 'cumulative';
-    var type_data = 'realm';
+    var user_button = 'realm';
+    var time_button = 'cumulative';
+    var totaldiv = document.getElementById('pie_messages_sent_by_type_total');
+
+    function draw_plot() {
+        Plotly.newPlot('id_messages_sent_by_message_type',
+                       chart_data[user_button][time_button].trace,
+                       layout,
+                       {displayModeBar: false});
+        totaldiv.innerHTML = chart_data[user_button][time_button].total_str;
+    }
+
+    draw_plot();
+
+    // Click handlers
+    function set_user_button(button) {
+        $('#messages_by_type_realm_button').css('background', '#F0F0F0');
+        $('#messages_by_type_user_button').css('background', '#F0F0F0');
+        button.css('background', '#D8D8D8');
+    }
+
+    function set_time_button(button) {
+        $('#messages_by_type_cumulative_button').css('background', '#F0F0F0');
+        $('#messages_by_type_thirty_days_button').css('background', '#F0F0F0');
+        $('#messages_by_type_ten_days_button').css('background', '#F0F0F0');
+        button.css('background', '#D8D8D8');
+    }
 
     $('#messages_by_type_realm_button').click(function () {
-        $(this).css('background', '#D8D8D8');
-        $('#messages_by_type_user_button').css('background', '#F0F0F0');
-        var plotDiv = document.getElementById('id_messages_sent_by_message_type');
-        type_data = 'realm';
-        if (time_range === 'cumulative') {
-            plotDiv.data[0].values = realm_values_cumulative;
-            plotDiv.data[0].text = realm_text_cumulative;
-            total.innerHTML = "Total messages: " +
-                realm_total_cumulative.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        } else if (time_range === 'ten') {
-            plotDiv.data[0].values = realm_values_ten_days;
-            plotDiv.data[0].text = realm_text_ten_days;
-            total.innerHTML = "Total messages: " +
-                realm_total_ten_days.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        } else {
-            plotDiv.data[0].values = realm_values_thirty_days;
-            plotDiv.data[0].text = realm_text_thirty_days;
-            total.innerHTML = "Total messages: " +
-                realm_total_thirty_days.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        }
-        Plotly.redraw('id_messages_sent_by_message_type');
-
+        set_user_button($(this));
+        user_button = 'realm';
+        draw_plot();
     });
+
     $('#messages_by_type_user_button').click(function () {
-        $(this).css('background', '#D8D8D8');
-        $('#messages_by_type_realm_button').css('background', '#F0F0F0');
-        var plotDiv = document.getElementById('id_messages_sent_by_message_type');
-        type_data = 'user';
-        if (time_range === 'cumulative') {
-            plotDiv.data[0].values = user_values_cumulative;
-            plotDiv.data[0].text = user_text_cumulative;
-            total.innerHTML = "Total messages: " +
-                user_total_cumulative.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        } else if (time_range === 'ten') {
-            plotDiv.data[0].values = user_values_ten_days;
-            plotDiv.data[0].text = user_text_ten_days;
-            total.innerHTML = "Total messages: " +
-                user_total_ten_days.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        } else {
-            plotDiv.data[0].values = user_values_thirty_days;
-            plotDiv.data[0].text = user_text_thirty_days;
-            total.innerHTML = "Total messages: " +
-                user_total_thirty_days.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        }
-        Plotly.redraw('id_messages_sent_by_message_type');
-
-    });
-
-    $('#messages_by_type_ten_days_button').click(function () {
-        $(this).css('background', '#D8D8D8');
-        $('#messages_by_type_thirty_days_button').css('background', '#F0F0F0');
-        $('#messages_by_type_cumulative_button').css('background', '#F0F0F0');
-        var plotDiv = document.getElementById('id_messages_sent_by_message_type');
-        time_range = 'ten';
-        if (type_data === 'realm') {
-            plotDiv.data[0].values = realm_values_ten_days;
-            plotDiv.data[0].text = realm_text_ten_days;
-            total.innerHTML = "Total messages: " +
-                realm_total_ten_days.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        } else {
-            plotDiv.data[0].values = user_values_ten_days;
-            plotDiv.data[0].text = user_text_ten_days;
-            total.innerHTML = "Total messages: " +
-                user_total_ten_days.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        }
-        Plotly.redraw('id_messages_sent_by_message_type');
-    });
-
-    $('#messages_by_type_thirty_days_button').click(function () {
-        $(this).css('background', '#D8D8D8');
-        $('#messages_by_type_ten_days_button').css('background', '#F0F0F0');
-        $('#messages_by_type_cumulative_button').css('background', '#F0F0F0');
-        var plotDiv = document.getElementById('id_messages_sent_by_message_type');
-        time_range = 'thirty';
-        if (type_data === 'realm') {
-            plotDiv.data[0].values = realm_values_thirty_days;
-            plotDiv.data[0].text = realm_text_thirty_days;
-            total.innerHTML = "Total messages: " +
-                realm_total_thirty_days.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        } else {
-            plotDiv.data[0].values = user_values_thirty_days;
-            plotDiv.data[0].text = user_text_thirty_days;
-            total.innerHTML = "Total messages: " +
-                user_total_thirty_days.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        }
-        Plotly.redraw('id_messages_sent_by_message_type');
+        set_user_button($(this));
+        user_button = 'user';
+        draw_plot();
     });
 
     $('#messages_by_type_cumulative_button').click(function () {
-        $(this).css('background', '#D8D8D8');
-        $('#messages_by_type_thirty_days_button').css('background', '#F0F0F0');
-        $('#messages_by_type_ten_days_button').css('background', '#F0F0F0');
-        var plotDiv = document.getElementById('id_messages_sent_by_message_type');
-        time_range = 'cumulative';
-        if (type_data === 'realm') {
-            plotDiv.data[0].values = realm_values_cumulative;
-            plotDiv.data[0].text = realm_text_cumulative;
-            total.innerHTML = "Total messages: " +
-                realm_total_cumulative.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        } else {
-            plotDiv.data[0].values = user_values_cumulative;
-            plotDiv.data[0].text = user_text_cumulative;
-            total.innerHTML = "Total messages: " +
-                user_total_cumulative.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        }
-        Plotly.redraw('id_messages_sent_by_message_type');
+        set_time_button($(this));
+        time_button = 'cumulative';
+        draw_plot();
+    });
+
+    $('#messages_by_type_thirty_days_button').click(function () {
+        set_time_button($(this));
+        time_button = 'thirty';
+        draw_plot();
+    });
+
+    $('#messages_by_type_ten_days_button').click(function () {
+        set_time_button($(this));
+        time_button = 'ten';
+        draw_plot();
     });
 }
 
@@ -761,7 +593,6 @@ $.get({
         $('#id_stats_errors').show().text($.parseJSON(xhr.responseText).msg);
     },
 });
-
 
 function users_hover(id) {
     var myPlot = document.getElementById(id);
