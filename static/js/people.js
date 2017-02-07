@@ -54,6 +54,19 @@ exports.get_by_email = function (email) {
     return person;
 };
 
+exports.id_matches_email_operand = function (user_id, email) {
+    var person = exports.get_by_email(email);
+
+    if (!person) {
+        // The user may type bad data into the search bar, so
+        // we don't complain too loud here.
+        blueslip.debug('User email operand unknown: ' + email);
+        return false;
+    }
+
+    return (person.user_id === user_id);
+};
+
 exports.update_email = function (user_id, new_email) {
     var person = people_by_user_id_dict.get(user_id);
     person.email = new_email;

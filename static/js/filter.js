@@ -97,7 +97,7 @@ function message_matches_search_term(message, operator, operand) {
 
 
     case 'sender':
-        return (message.sender_email.toLowerCase() === operand.toLowerCase());
+        return people.id_matches_email_operand(message.sender_id, operand);
 
     case 'pm-with':
         // TODO: use user_ids, not emails here

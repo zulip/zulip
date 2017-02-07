@@ -21,7 +21,21 @@ var me = {
     full_name: 'Me Myself',
 };
 
+var joe = {
+    email: 'joe@example.com',
+    user_id: 31,
+    full_name: 'joe',
+};
+
+var steve = {
+    email: 'STEVE@foo.com',
+    user_id: 32,
+    full_name: 'steve',
+};
+
 people.add(me);
+people.add(joe);
+people.add(steve);
 people.initialize_current_user(me.user_id);
 
 function assert_same_operators(result, terms) {
@@ -259,8 +273,8 @@ function get_predicate(operators) {
     assert(!predicate({type: 'stream', id: 5, subject: 'dinner'}));
 
     predicate = get_predicate([['sender', 'Joe@example.com']]);
-    assert(predicate({sender_email: 'JOE@example.com'}));
-    assert(!predicate({sender_email: 'steve@foo.com'}));
+    assert(predicate({sender_id: joe.user_id}));
+    assert(!predicate({sender_email: steve.user_id}));
 
     predicate = get_predicate([['pm-with', 'Joe@example.com']]);
     assert(predicate({type: 'private', reply_to: 'JOE@example.com'}));
