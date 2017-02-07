@@ -882,7 +882,7 @@ JS_SPECS = {
             'js/portico/stats.js',
         ],
         'minifed_source_filenames': [
-            'node_modules/plotly.js/dist/plotly.min.js',
+            'node_modules/plotly.js/dist/plotly-basic.min.js',
         ],
         'output_filename': 'min/stats.js'
     },
