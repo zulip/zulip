@@ -52,10 +52,20 @@ function show_message_info_popover(element, id) {
                                      elt.closest(".message_row").find(".message_time"));
 
         var message = current_msg_list.get(id);
+        var sender = people.get_person_from_user_id(message.sender_id);
+        var sender_email;
+
+        if (sender) {
+            sender_email = sender.email;
+        } else {
+            blueslip.debug('Bad sender in message' + message.sender_id);
+            sender_email = message.sender_email;
+        }
+
         var args = {
             message:  message,
-            pm_with_uri: narrow.pm_with_uri(message.sender_email),
-            sent_by_uri: narrow.by_sender_uri(message.sender_email),
+            pm_with_uri: narrow.pm_with_uri(sender_email),
+            sent_by_uri: narrow.by_sender_uri(sender_email),
             narrowed: narrow.active(),
         };
 
