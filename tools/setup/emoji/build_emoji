@@ -219,12 +219,19 @@ def dump_emojis(cache_path):
                     shell=True)
 
     cache_emoji = os.path.join(cache_path, 'images', 'emoji')
+    cache_emoji_unicode = os.path.join(cache_path, 'images', 'emoji', 'unicode')
     run(['rm', '-rf', cache_path])
     run(['mkdir', '-p', cache_emoji])
     run(['mv', 'out/*', cache_emoji], shell=True)
     run(['mv', 'sprite*', cache_path], shell=True)
     assets = "{}/static/assets/zulip-emoji/*".format(ZULIP_PATH)
-    run(['cp', '-RPp', assets, cache_emoji], shell=True)
+    run(['cp', '-RPp', assets, cache_emoji_unicode], shell=True)
+
+    for fn in [os.path.basename(file_name) for file_name in glob.glob(assets)]:
+        os.symlink(
+            os.path.join(cache_emoji_unicode, fn),
+            os.path.join(cache_emoji, fn)
+        )
 
     EMOJI_CODES_PATH = os.path.join(cache_path, 'emoji_codes.js')
     emoji_codes_file = open(EMOJI_CODES_PATH, 'w')
