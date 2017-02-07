@@ -277,15 +277,21 @@ function populate_messages_sent_over_time(data) {
 
     // Generate plot
     var layout = messages_sent_over_time_layout();
-    var default_rangeselector = messages_sent_over_time_rangeselector(
+    var hourly_rangeselector = messages_sent_over_time_rangeselector(
+        0.66, -0.62, 24, 'Last 24 Hours', 'hour', 72, 'Last 72 Hours', 'hour');
+    // also the cumulative rangeselector
+    var daily_rangeselector = messages_sent_over_time_rangeselector(
         0.68, -0.62, 10, 'Last 10 Days', 'day', 30, 'Last 30 Days', 'day');
-    layout.xaxis.rangeselector = default_rangeselector;
+    var weekly_rangeselector = messages_sent_over_time_rangeselector(
+        0.656, -0.62, 2, 'Last 2 Months', 'month', 6, 'Last 6 Months', 'month');
 
     if (info.dates.length < 12) {
+        layout.xaxis.rangeselector = daily_rangeselector;
         Plotly.newPlot('id_messages_sent_over_time',
                    [daily_traces.human, daily_traces.bot], layout, {displayModeBar: false});
         $('#daily_button').css('background', '#D8D8D8');
     } else {
+        layout.xaxis.rangeselector = weekly_rangeselector;
         Plotly.newPlot('id_messages_sent_over_time',
                    [weekly_traces.human, weekly_traces.bot], layout, {displayModeBar: false});
         $('#weekly_button').css('background', '#D8D8D8');
@@ -317,24 +323,20 @@ function populate_messages_sent_over_time(data) {
     }
 
     $('#hourly_button').click(function () {
-        var rangeselector = messages_sent_over_time_rangeselector(
-            0.66, -0.62, 24, 'Last 24 Hours', 'hour', 72, 'Last 72 Hours', 'hour');
-        update_plot_on_aggregation_click(rangeselector, hourly_traces);
+        update_plot_on_aggregation_click(hourly_rangeselector, hourly_traces);
         $(this).css('background', '#D8D8D8');
         clicked_cumulative = false;
 
     });
 
     $('#daily_button').click(function () {
-        update_plot_on_aggregation_click(default_rangeselector, daily_traces);
+        update_plot_on_aggregation_click(daily_rangeselector, daily_traces);
         $(this).css('background', '#D8D8D8');
         clicked_cumulative = false;
     });
 
     $('#weekly_button').click(function () {
-        var rangeselector = messages_sent_over_time_rangeselector(
-            0.656, -0.62, 2, 'Last 2 Months', 'month', 6, 'Last 6 Months', 'month');
-        update_plot_on_aggregation_click(rangeselector, weekly_traces);
+        update_plot_on_aggregation_click(weekly_rangeselector, weekly_traces);
         $(this).css('background', '#D8D8D8');
         clicked_cumulative = false;
         fix_legend_colors();
@@ -348,7 +350,7 @@ function populate_messages_sent_over_time(data) {
 
     $('#cumulative_button').click(function () {
         clicked_cumulative = false;
-        update_plot_on_aggregation_click(default_rangeselector, cumulative_traces);
+        update_plot_on_aggregation_click(daily_rangeselector, cumulative_traces);
         $(this).css('background', '#D8D8D8');
         clicked_cumulative = true;
     });
