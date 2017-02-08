@@ -280,6 +280,7 @@ svg {
 #users_hover_humans {
     font-weight: 400;
     margin-left: 18px;
+    display: none;
 }
 
 #users_total {
@@ -297,7 +298,7 @@ svg {
     margin-left: 20px;
 }
 
-#number_of_users_total {
+#number_of_users_today {
     top: -65px;
     font-size: 13px;
     text-align: left;
