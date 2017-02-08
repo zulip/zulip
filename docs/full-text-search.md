@@ -52,7 +52,7 @@ The following processes should be executed as the root user. Run:
 This section describes how to enable using PGroonga to back the
 full-text search feature.
 
-* To install PGroonga, add `pgroonga = enabled` in the `[machine]`
+To install PGroonga, add `pgroonga = enabled` in the `[machine]`
 section in `/etc/zulip/zulip.conf`:
 
     [machine]
