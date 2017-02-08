@@ -162,6 +162,7 @@ WEBHOOK_INTEGRATIONS = [
         logo='static/images/integrations/logos/yo-app.png',
         display_name='Yo App'
     ),
+    WebhookIntegration('wordpress', display_name='WordPress'),
     WebhookIntegration('zapier'),
     WebhookIntegration('zendesk')
 ]  # type: List[WebhookIntegration]
