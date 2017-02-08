@@ -1,4 +1,5 @@
 import ujson
+from mock import patch, MagicMock
 from typing import Dict, Optional, Text
 
 from zerver.models import Message
@@ -178,3 +179,35 @@ class GithubWebhookTest(WebhookTestCase):
         expected_message = u"baxterthehacker unassigned [PR](https://github.com/baxterthehacker/public-repo/pull/1)"
         self.send_and_test_stream_message('unassigned_pull_request', self.EXPECTED_SUBJECT_PR_EVENTS, expected_message,
                                           HTTP_X_GITHUB_EVENT='pull_request')
+
+    @patch('zerver.webhooks.github_webhook.view.check_send_message')
+    def test_pull_request_labeled_ignore(self, check_send_message_mock):
+        # type: (MagicMock) -> None
+        payload = self.get_body('labeled_pull_request')
+        result = self.client_post(self.url, payload, HTTP_X_GITHUB_EVENT='pull_request', content_type="application/json")
+        self.assertFalse(check_send_message_mock.called)
+        self.assert_json_success(result)
+
+    @patch('zerver.webhooks.github_webhook.view.check_send_message')
+    def test_pull_request_unlabeled_ignore(self, check_send_message_mock):
+        # type: (MagicMock) -> None
+        payload = self.get_body('unlabeled_pull_request')
+        result = self.client_post(self.url, payload, HTTP_X_GITHUB_EVENT='pull_request', content_type="application/json")
+        self.assertFalse(check_send_message_mock.called)
+        self.assert_json_success(result)
+
+    @patch('zerver.webhooks.github_webhook.view.check_send_message')
+    def test_pull_request_request_review_ignore(self, check_send_message_mock):
+        # type: (MagicMock) -> None
+        payload = self.get_body('request_review_pull_request')
+        result = self.client_post(self.url, payload, HTTP_X_GITHUB_EVENT='pull_request', content_type="application/json")
+        self.assertFalse(check_send_message_mock.called)
+        self.assert_json_success(result)
+
+    @patch('zerver.webhooks.github_webhook.view.check_send_message')
+    def test_pull_request_request_review_remove_ignore(self, check_send_message_mock):
+        # type: (MagicMock) -> None
+        payload = self.get_body('request_review_removed_pull_request')
+        result = self.client_post(self.url, payload, HTTP_X_GITHUB_EVENT='pull_request', content_type="application/json")
+        self.assertFalse(check_send_message_mock.called)
+        self.assert_json_success(result)
