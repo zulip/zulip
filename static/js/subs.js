@@ -946,8 +946,8 @@ $(function () {
             $("#add_new_stream_title, .settings, #stream-creation").hide();
         },
         stream_creation: function () {
+            $("#stream_settings_title, .subscriptions-container .settings, .nothing-selected").hide();
             $("#stream-creation, #add_new_stream_title").show();
-            $("#stream_settings_title, .settings, .nothing-selected").hide();
         },
         settings: function () {
             $(".settings, #stream_settings_title").show();
@@ -974,7 +974,17 @@ $(function () {
         var stream = $.trim($("#search_stream_name").val());
         $('#create_stream_name').val(stream);
         show_new_stream_modal();
-        $('#create_stream_name').focus();
+
+        // at less than 700px we have a @media query that when you tap the
+        // #create_stream_button, the stream prompt slides in. However, when you
+        // focus  the button on that page, the entire app view jumps over to
+        // the other tab, and the animation breaks.
+        // it is unclear whether this is a browser bug or "feature", however what
+        // is clear is that this shoudn't be touched unless you're also changing
+        // the mobile @media query at 700px.
+        if (window.innerWidth > 700) {
+            $('#create_stream_name').focus();
+        }
     });
 
     $('body').on('change', '#user-checkboxes input, #make-invite-only input', update_announce_stream_state);
@@ -1189,6 +1199,16 @@ $(function () {
         }
         $('.empty_feed_notice').hide();
         $('#empty_narrow_message').show();
+    });
+
+    $("#subscriptions_table").on("click", ".stream-row, #create_stream_button", function () {
+        $(".right").addClass("show");
+        $(".subscriptions-header").addClass("slide-left");
+    });
+
+    $("#subscriptions_table").on("click", ".icon-vector-chevron-left", function () {
+        $(".right").removeClass("show");
+        $(".subscriptions-header").removeClass("slide-left");
     });
 
     $("#subscriptions_table").on("click", ".sub_setting_checkbox", function (e) {
