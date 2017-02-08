@@ -48,16 +48,6 @@ def get_chart_data(request, user_profile, chart_name=REQ(),
                    start=REQ(converter=to_utc_datetime, default=None),
                    end=REQ(converter=to_utc_datetime, default=None)):
     # type: (HttpRequest, UserProfile, Text, Optional[int], Optional[datetime], Optional[datetime]) -> HttpResponse
-    realm = user_profile.realm
-    # These are implicitly relying on realm.date_created and timezone.now being in UTC.
-    if start is None:
-        start = realm.date_created
-    if end is None:
-        end = timezone.now()
-    if start > end:
-        raise JsonableError(_("Start time is later than end time. Start: %(start)s, End: %(end)s") %
-                            {'start': start, 'end': end})
-
     if chart_name == 'number_of_humans':
         stat = COUNT_STATS['active_users:is_bot:day']
         tables = [RealmCount]
@@ -84,6 +74,16 @@ def get_chart_data(request, user_profile, chart_name=REQ(),
         include_empty_subgroups = False
     else:
         raise JsonableError(_("Unknown chart name: %s") % (chart_name,))
+
+    realm = user_profile.realm
+    # These are implicitly relying on realm.date_created and timezone.now being in UTC.
+    if start is None:
+        start = realm.date_created
+    if end is None:
+        end = timezone.now()
+    if start > end:
+        raise JsonableError(_("Start time is later than end time. Start: %(start)s, End: %(end)s") %
+                            {'start': start, 'end': end})
 
     end_times = time_range(start, end, stat.frequency, min_length)
     data = {'end_times': end_times, 'frequency': stat.frequency, 'interval': stat.interval}
