@@ -1,8 +1,9 @@
-from django.utils.timezone import get_fixed_timezone
+from django.utils.timezone import get_fixed_timezone, utc
 from zerver.lib.test_classes import ZulipTestCase
 
 from analytics.lib.counts import CountStat
 from analytics.lib.time_utils import time_range
+from analytics.models import FillState, last_successful_fill
 from analytics.views import rewrite_client_arrays
 
 from datetime import datetime, timedelta
@@ -60,3 +61,16 @@ class TestMapArrays(ZulipTestCase):
                           'SomethingRandom': [4, 5, 6],
                           'GitHub webhook': [7, 7, 9],
                           'Android app': [64, 63, 65]})
+
+class TestGetChartData(ZulipTestCase):
+    def test_last_successful_fill(self):
+        # type: () -> None
+        self.assertIsNone(last_successful_fill('non-existant'))
+        a_time = datetime(2016, 3, 14, 19).replace(tzinfo=utc)
+        one_hour_before = datetime(2016, 3, 14, 18).replace(tzinfo=utc)
+        fillstate = FillState.objects.create(property='property', end_time=a_time,
+                                             state=FillState.DONE)
+        self.assertEqual(last_successful_fill('property'), a_time)
+        fillstate.state = FillState.STARTED
+        fillstate.save()
+        self.assertEqual(last_successful_fill('property'), one_hour_before)

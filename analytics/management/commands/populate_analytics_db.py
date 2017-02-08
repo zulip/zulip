@@ -5,11 +5,11 @@ from argparse import ArgumentParser
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from analytics.models import BaseCount, InstallationCount, RealmCount, \
-    UserCount, StreamCount
 from analytics.lib.counts import COUNT_STATS, CountStat, do_drop_all_analytics_tables
 from analytics.lib.fixtures import generate_time_series_data
 from analytics.lib.time_utils import time_range
+from analytics.models import BaseCount, InstallationCount, RealmCount, \
+    UserCount, StreamCount, FillState
 from zerver.lib.timestamp import floor_to_day
 from zerver.models import Realm, UserProfile, Stream, Message, Client
 
@@ -76,6 +76,8 @@ class Command(BaseCommand):
             'true': self.generate_fixture_data(stat, .01, 0, 1, 0, 1)
         } # type: Dict[Optional[str], List[int]]
         insert_fixture_data(stat, realm_data, RealmCount)
+        FillState.objects.create(property=stat.property, end_time=last_end_time,
+                                 state=FillState.DONE)
 
         stat = COUNT_STATS['messages_sent:is_bot:hour']
         user_data = {'false': self.generate_fixture_data(stat, 2, 1, 1.5, .6, 8, holiday_rate=.1)}
@@ -83,6 +85,8 @@ class Command(BaseCommand):
         realm_data = {'false': self.generate_fixture_data(stat, 35, 15, 6, .6, 4),
                       'true': self.generate_fixture_data(stat, 15, 15, 3, .4, 2)}
         insert_fixture_data(stat, realm_data, RealmCount)
+        FillState.objects.create(property=stat.property, end_time=last_end_time,
+                                 state=FillState.DONE)
 
         stat = COUNT_STATS['messages_sent:message_type:day']
         user_data = {
@@ -94,6 +98,8 @@ class Command(BaseCommand):
             'private_stream': self.generate_fixture_data(stat, 7, 7, 5, .6, 4),
             'private_message': self.generate_fixture_data(stat, 13, 5, 5, .6, 4)}
         insert_fixture_data(stat, realm_data, RealmCount)
+        FillState.objects.create(property=stat.property, end_time=last_end_time,
+                                 state=FillState.DONE)
 
         website_ = Client.objects.create(name='website_')
         API_ = Client.objects.create(name='API_')
@@ -119,5 +125,7 @@ class Command(BaseCommand):
             barnowl_.id: self.generate_fixture_data(stat, 1, 1, 3, .6, 3),
             plan9_.id: self.generate_fixture_data(stat, 0, 0, 0, 0, 0, 0)}
         insert_fixture_data(stat, realm_data, RealmCount)
+        FillState.objects.create(property=stat.property, end_time=last_end_time,
+                                 state=FillState.DONE)
 
         # TODO: messages_sent_to_stream:is_bot
