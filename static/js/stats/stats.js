@@ -314,8 +314,12 @@ function word_wrap(text, width) {
 
 function round_to_percentages(values, total) {
     return values.map(function (x) {
+        if (x === total) {
+            return '100%';
+        }
         var unrounded = x/total*100;
-        var precision = Math.max(2, Math.floor(-Math.log(100-unrounded)/Math.log(10)) + 3);
+        var precision = Math.min(6, Math.max(2, Math.floor(
+                -Math.log(100-unrounded)/Math.log(10)) + 3));
         return unrounded.toPrecision(precision) + '%';
     });
 }
