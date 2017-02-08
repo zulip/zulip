@@ -101,9 +101,19 @@ function message_matches_search_term(message, operator, operand) {
 
     case 'pm-with':
         // TODO: use user_ids, not emails here
-        return (message.type === 'private') &&
-            (util.normalize_recipients(message.reply_to) ===
-            util.normalize_recipients(operand));
+        if (message.type !== 'private') {
+            return false;
+        }
+        var operand_ids = people.pm_with_operand_ids(operand);
+        if (!operand_ids) {
+            return false;
+        }
+        var message_ids = people.pm_with_user_ids(message);
+        if (!message_ids) {
+            return false;
+        }
+
+        return _.isEqual(operand_ids, message_ids);
     }
 
     return true; // unknown operators return true (effectively ignored)
