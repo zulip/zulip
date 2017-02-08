@@ -542,7 +542,7 @@ def build_custom_checkers(by_lang):
                 failed = True
 
         markdown_docs_length_exclude = {
-            "contrib_bots/bots/converter/docs.md",
+            "contrib_bots/bots/converter/readme.md",
             "docs/bots-guide.md",
             "docs/dev-env-first-time-contributors.md",
             "docs/webhook-walkthrough.md",

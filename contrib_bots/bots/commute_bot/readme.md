@@ -11,24 +11,24 @@ units and information in various languages.
 The bot will respond to the same stream input was in. And if called as
 private message, the bot will reply with a private message.
 
-To setup the bot, you will first need to move google-commute.ini into
+To setup the bot, you will first need to move commute_bot.config into
 the user home directory and add an API key.
 
 Move
 
 ```
-~/zulip/contrib_bots/bots/commute_bot/CommuteBot/google-commute.ini
+~/zulip/contrib_bots/bots/commute_bot/commute_bot.config
 ```
 
 into
 
 ```
-~/google-commute.ini
+~/commute_bot.config
 ```
 
 To add an API key, please visit:
 https://developers.google.com/maps/documentation/distance-matrix/start
-to retrieve a key and copy your api key into google-commute.ini
+to retrieve a key and copy your api key into commute_bot.config
 
 Sample input and output:
 
