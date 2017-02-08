@@ -69,9 +69,9 @@ function populate_messages_sent_over_time(data) {
         var common = { x: dates, type: type, hoverinfo: 'none', text: text };
         return {
             human: $.extend({ // 5062a0
-                name: "Humans", y: values.human, marker: {color: '#5f6ea0'}, visible: true}, common),
+                name: "Humans", y: values.human, marker: {color: '#5f6ea0'}}, common),
             bot: $.extend({ // a09b5f bbb56e
-                name: "Bots", y: values.bot, marker: {color: '#b7b867'}, visible: 'legendonly'}, common),
+                name: "Bots", y: values.bot, marker: {color: '#b7b867'}}, common),
         };
     }
 
@@ -226,6 +226,14 @@ function populate_messages_sent_over_time(data) {
         $('#weekly_button').css('background', button_unselected);
         $('#hourly_button').css('background', button_unselected);
         $('#cumulative_button').css('background', button_unselected);
+        if (initial_draw) {
+            traces.human.visible = true;
+            traces.bot.visible = 'legendonly';
+        } else {
+            var plotDiv = document.getElementById('id_messages_sent_over_time');
+            traces.human.visible = plotDiv.data[0].visible;
+            traces.bot.visible = plotDiv.data[1].visible;
+        }
         layout.xaxis.rangeselector = rangeselector;
         if (clicked_cumulative || initial_draw) {
             Plotly.newPlot('id_messages_sent_over_time',
