@@ -23,24 +23,24 @@ answer will be formatted differently depending the chosen command.
 
 Question -> `@howdowe use supervisor in elixir`
 
-  ![howdowe question](question_howdowe.png)
+  ![howdowe question](assets/question_howdowe.png)
 
 Answer ->  Howdoi would try to **only** respond with the coding section
 of the answer.
 
-  ![howdowe answer](answer_howdowe.png)
+  ![howdowe answer](assets/answer_howdowe.png)
 
 #### Example 2
 
 Question -> `@howdoi! stack vs heap`
 
-  ![howdoi! question](question_howdoi_all.png)
+  ![howdoi! question](assets/question_howdoi_all.png)
 
 Answer -> Howdoi would return the **full** stackoverflow answer via
 **private message** to the original sender. The URL of the answer can be
 seen at the bottom of the message.
 
-  ![howdoi! answer](answer_howdoi_all.png)
+  ![howdoi! answer](assets/answer_howdoi_all.png)
 
 **Note:**
 

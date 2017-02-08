@@ -10,7 +10,7 @@ interactive bot that uses machine learning heuristics to simulate a
 conversation with the user. He has a great sense of humor and
 is also powered by Open Source code!
 
-![Joke John](joke.png)
+![Joke John](assets/joke.png)
 
 How it works?
 John is initially trained with Corpus files, or large text files.
@@ -20,11 +20,11 @@ try to find the response that best matches the input according to the Levenshtei
 which is a string metric for measuring the difference between two sequences. If several
 responses have the same acurracy, he will choose one at random.
 
-![Meet John](greetings.png)
+![Meet John](assets/greetings.png)
 
 Can he learn by himself?
 John's engine allows him to learn from his conversations with people. However,
 without strict supervision bots that learn from people can do harm, so learning
 is currently restricted to his initial corpus.
 
-![Assist](assist.png)
+![Assist](assets/assist.png)

@@ -17,7 +17,7 @@ Go to this link:
 This is the API that powers the `yoda_bot`. You can read more about it
 on this page.
 
-![yoda api overview](yoda-speak-api.png)
+![yoda api overview](assets/yoda-speak-api.png)
 
 Click on the **Sign Up Free** button at the top and create
 an account. Then click on the **Documentation** tab. Scroll down to the
@@ -29,9 +29,9 @@ the Yoda Speak API to. Click on the blue **GET THE KEYS** button.
 
 On the pop-up that comes up, click on the **COPY** button.
 This is your Mashape API Key. It is used
-to authenticate. Store it in the `yoda_api_key.txt` file.
+to authenticate. Store it in the `yoda_bot.config` file.
 
-The `yoda_api_key.txt` file should be located at `~/yoda_api_key.txt`.
+The `yoda_bot.config` file should be located at `~/yoda_bot.config`.
 
 Example input:
 

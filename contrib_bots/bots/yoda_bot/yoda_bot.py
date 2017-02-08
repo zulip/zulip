@@ -1,4 +1,4 @@
-# See readme-yoda-bot.md for instructions on running this code.
+# See readme.md for instructions on running this code.
 
 from __future__ import print_function
 import os
@@ -17,9 +17,9 @@ HELP_MESSAGE = '''
             Users should preface messages with '@yoda'.
 
             Before running this, make sure to get a Mashape Api token.
-            Instructions are in the 'readme-yoda-bot.md' file.
-            Store it in the 'yoda_api_key.txt' file.
-            The 'yoda_api_key.txt' file should be located at '~/yoda_api_key.txt'.
+            Instructions are in the 'readme.md' file.
+            Store it in the 'yoda_bot.config' file.
+            The 'yoda_bot.config' file should be located at '~/yoda_bot.config'.
             Example input:
             @yoda You will learn how to speak like me someday.
             '''
@@ -42,9 +42,9 @@ class YodaSpeakHandler(object):
             Users should preface messages with '@yoda'.
 
             Before running this, make sure to get a Mashape Api token.
-            Instructions are in the 'readme-yoda-bot.md' file.
-            Store it in the 'yoda_api_key.txt' file.
-            The 'yoda_api_key.txt' file should be located at '~/yoda_api_key.txt'.
+            Instructions are in the 'readme.md' file.
+            Store it in the 'yoda_bot.config' file.
+            The 'yoda_bot.config' file should be located at '~/yoda_bot.config'.
             Example input:
             @yoda You will learn how to speak like me someday.
             '''
@@ -85,7 +85,7 @@ def send_to_yoda_api(sentence, api_key):
         logging.error(error_message)
         error_code = response.status_code
         error_message = error_message + 'Error code: ' + error_code +\
-            ' Did you follow the instructions in the `readme-yoda-bot.md` file?'
+            ' Did you follow the instructions in the `readme.md` file?'
         return error_message
 
 
@@ -115,7 +115,7 @@ def handle_input(client, original_content, stream, subject):
 
         except ApiKeyError:
             reply_message = 'Invalid Api Key. Did you follow the instructions in the ' \
-                            '`readme-yoda-bot.md` file?'
+                            '`readme.md` file?'
             logging.error(reply_message)
 
         send_message(client, reply_message, stream, subject)
@@ -124,7 +124,7 @@ def handle_input(client, original_content, stream, subject):
 def get_api_key():
     # function for getting Mashape api key
     home = os.path.expanduser('~')
-    with open(home + '/yoda_api_key.txt') as api_key_file:
+    with open(home + '/yoda_bot.config') as api_key_file:
         api_key = api_key_file.read().strip()
     return api_key
 
