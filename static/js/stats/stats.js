@@ -1,3 +1,11 @@
+var font_14pt = {
+    family: 'Humbug',
+    size: 14,
+    color: '#000000',
+};
+var button_selected = '#D8D8D8';
+var button_unselected = '#F0F0F0';
+
 // TODO: should take a dict of arrays and do it for all keys
 function partial_sums(array) {
     var count = 0;
@@ -80,9 +88,9 @@ function populate_messages_sent_over_time(data) {
         yaxis: { fixedrange: true, rangemode: 'tozero' },
         legend: {
             x: 0.75, y: 1.12, orientation: 'h',
-            font: { family: 'Humbug', size: 14, color: '#000000' },
+            font: font_14pt,
         },
-        font: { family: 'Humbug', size: 14, color: '#000000' },
+        font: font_14pt,
     };
 
     function make_rangeselector(x, y, button1, button2) {
@@ -214,10 +222,10 @@ function populate_messages_sent_over_time(data) {
     var clicked_cumulative = false;
 
     function draw_or_update_plot(rangeselector, traces, last_value_is_partial, initial_draw) {
-        $('#daily_button').css('background', '#F0F0F0');
-        $('#weekly_button').css('background', '#F0F0F0');
-        $('#hourly_button').css('background', '#F0F0F0');
-        $('#cumulative_button').css('background', '#F0F0F0');
+        $('#daily_button').css('background', button_unselected);
+        $('#weekly_button').css('background', button_unselected);
+        $('#hourly_button').css('background', button_unselected);
+        $('#cumulative_button').css('background', button_unselected);
         layout.xaxis.rangeselector = rangeselector;
         if (clicked_cumulative || initial_draw) {
             Plotly.newPlot('id_messages_sent_over_time',
@@ -234,36 +242,36 @@ function populate_messages_sent_over_time(data) {
     // Click handlers for aggregation buttons
     $('#hourly_button').click(function () {
         draw_or_update_plot(hourly_rangeselector, hourly_traces, false, false);
-        $(this).css('background', '#D8D8D8');
+        $(this).css('background', button_selected);
         clicked_cumulative = false;
     });
 
     $('#daily_button').click(function () {
         draw_or_update_plot(daily_rangeselector, daily_traces, last_day_is_partial, false);
-        $(this).css('background', '#D8D8D8');
+        $(this).css('background', button_selected);
         clicked_cumulative = false;
     });
 
     $('#weekly_button').click(function () {
         draw_or_update_plot(weekly_rangeselector, weekly_traces, last_week_is_partial, false);
-        $(this).css('background', '#D8D8D8');
+        $(this).css('background', button_selected);
         clicked_cumulative = false;
     });
 
     $('#cumulative_button').click(function () {
         clicked_cumulative = false;
         draw_or_update_plot(daily_rangeselector, cumulative_traces, false, false);
-        $(this).css('background', '#D8D8D8');
+        $(this).css('background', button_selected);
         clicked_cumulative = true;
     });
 
     // Initial drawing of plot
     if (weekly_traces.human.x.length < 12) {
         draw_or_update_plot(daily_rangeselector, daily_traces, last_day_is_partial, true);
-        $('#daily_button').css('background', '#D8D8D8');
+        $('#daily_button').css('background', button_selected);
     } else {
         draw_or_update_plot(weekly_rangeselector, weekly_traces, last_week_is_partial, true);
-        $('#weekly_button').css('background', '#D8D8D8');
+        $('#weekly_button').css('background', button_selected);
     }
 }
 
@@ -394,7 +402,7 @@ function populate_messages_sent_by_client(data) {
         margin: { l: 90, r: 0, b: 0, t: 0 },
         width: 450,
         height: 300,
-        font: { family: 'Humbug', size: 14, color: '#000000' },
+        font: font_14pt,
     };
 
     var chart_data = {
@@ -426,16 +434,16 @@ function populate_messages_sent_by_client(data) {
 
     // Click handlers
     function set_user_button(button) {
-        $('#messages_by_client_realm_button').css('background', '#F0F0F0');
-        $('#messages_by_client_user_button').css('background', '#F0F0F0');
-        button.css('background', '#D8D8D8');
+        $('#messages_by_client_realm_button').css('background', button_unselected);
+        $('#messages_by_client_user_button').css('background', button_unselected);
+        button.css('background', button_selected);
     }
 
     function set_time_button(button) {
-        $('#messages_by_client_cumulative_button').css('background', '#F0F0F0');
-        $('#messages_by_client_thirty_days_button').css('background', '#F0F0F0');
-        $('#messages_by_client_ten_days_button').css('background', '#F0F0F0');
-        button.css('background', '#D8D8D8');
+        $('#messages_by_client_cumulative_button').css('background', button_unselected);
+        $('#messages_by_client_thirty_days_button').css('background', button_unselected);
+        $('#messages_by_client_ten_days_button').css('background', button_unselected);
+        button.css('background', button_selected);
     }
 
     $('#messages_by_client_realm_button').click(function () {
@@ -507,7 +515,7 @@ function populate_messages_sent_by_message_type(data) {
         margin: { l: 90, r: 0, b: 0, t: 0 },
         width: 465,
         height: 300,
-        font: { family: 'Humbug', size: 14, color: '#000000' },
+        font: font_14pt,
     };
 
     var chart_data = {
@@ -539,16 +547,16 @@ function populate_messages_sent_by_message_type(data) {
 
     // Click handlers
     function set_user_button(button) {
-        $('#messages_by_type_realm_button').css('background', '#F0F0F0');
-        $('#messages_by_type_user_button').css('background', '#F0F0F0');
-        button.css('background', '#D8D8D8');
+        $('#messages_by_type_realm_button').css('background', button_unselected);
+        $('#messages_by_type_user_button').css('background', button_unselected);
+        button.css('background', button_selected);
     }
 
     function set_time_button(button) {
-        $('#messages_by_type_cumulative_button').css('background', '#F0F0F0');
-        $('#messages_by_type_thirty_days_button').css('background', '#F0F0F0');
-        $('#messages_by_type_ten_days_button').css('background', '#F0F0F0');
-        button.css('background', '#D8D8D8');
+        $('#messages_by_type_cumulative_button').css('background', button_unselected);
+        $('#messages_by_type_thirty_days_button').css('background', button_unselected);
+        $('#messages_by_type_ten_days_button').css('background', button_unselected);
+        button.css('background', button_selected);
     }
 
     $('#messages_by_type_realm_button').click(function () {
@@ -640,11 +648,7 @@ function populate_number_of_users(data) {
             fixedrange: true,
             rangemode: 'tozero',
         },
-        font: {
-            family: 'Humbug',
-            size: 14,
-            color: '#000000',
-        },
+        font: font_14pt,
     };
     Plotly.newPlot('id_number_of_users',
                    [trace_humans], layout, {displayModeBar: false});
