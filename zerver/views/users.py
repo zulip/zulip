@@ -14,7 +14,7 @@ from six.moves import map
 from zerver.decorator import has_request_variables, REQ, JsonableError, \
     require_realm_admin
 from zerver.forms import CreateUserForm
-from zerver.lib.actions import do_change_full_name, do_change_is_admin, \
+from zerver.lib.actions import do_change_is_admin, \
     do_create_user, do_deactivate_user, do_reactivate_user, \
     do_change_default_events_register_stream, do_change_default_sending_stream, \
     do_change_default_all_public_streams, do_regenerate_api_key, do_change_avatar_source
@@ -23,6 +23,7 @@ from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.validator import check_bool, check_string
+from zerver.lib.users import check_change_full_name
 from zerver.lib.utils import generate_random_token
 from zerver.models import UserProfile, Stream, Realm, Message, get_user_profile_by_email, \
     email_allowed_for_realm
@@ -107,12 +108,7 @@ def update_user_backend(request, user_profile, email,
             full_name.strip() != ""):
         # We don't respect `name_changes_disabled` here because the request
         # is on behalf of the administrator.
-        new_full_name = full_name.strip()
-        if len(new_full_name) > UserProfile.MAX_NAME_LENGTH:
-            return json_error(_("Name too long!"))
-        elif list(set(new_full_name).intersection(UserProfile.NAME_INVALID_CHARS)):
-            return json_error(_("Invalid characters in name!"))
-        do_change_full_name(target, new_full_name)
+        check_change_full_name(target, full_name)
 
     return json_success()
 
@@ -157,7 +153,7 @@ def patch_bot_backend(request, user_profile, email,
         return json_error(_('Insufficient permission'))
 
     if full_name is not None:
-        do_change_full_name(bot, full_name)
+        check_change_full_name(bot, full_name)
     if default_sending_stream is not None:
         if default_sending_stream == "":
             stream = None

@@ -9,7 +9,7 @@ from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import authenticated_json_post_view, has_request_variables, REQ
 from zerver.lib.actions import do_change_password, \
-    do_change_full_name, do_change_enable_desktop_notifications, \
+    do_change_enable_desktop_notifications, \
     do_change_enter_sends, do_change_enable_sounds, \
     do_change_enable_offline_email_notifications, do_change_enable_digest_emails, \
     do_change_enable_offline_push_notifications, do_change_enable_online_push_notifications, \
@@ -24,6 +24,7 @@ from zerver.lib.response import json_success, json_error
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.validator import check_bool, check_string
 from zerver.lib.request import JsonableError
+from zerver.lib.users import check_change_full_name
 from zerver.models import UserProfile, Realm, name_changes_disabled
 
 @has_request_variables
@@ -87,13 +88,8 @@ def json_change_settings(request, user_profile,
             # they'd have to be trying to break the rules.
             pass
         else:
-            new_full_name = full_name.strip()
-            if len(new_full_name) > UserProfile.MAX_NAME_LENGTH:
-                return json_error(_("Name too long!"))
-            elif list(set(new_full_name).intersection(UserProfile.NAME_INVALID_CHARS)):
-                return json_error(_("Invalid characters in name!"))
-            do_change_full_name(user_profile, new_full_name)
-            result['full_name'] = new_full_name
+            # Note that check_change_full_name strips the passed name automatically
+            result['full_name'] = check_change_full_name(user_profile, full_name)
 
     return json_success(result)
 
