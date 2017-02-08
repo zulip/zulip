@@ -1339,6 +1339,20 @@ class TestLDAP(ZulipTestCase):
             self.assertEqual(user_profile.full_name, 'Full Name')
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
+    def test_get_or_create_user_when_user_has_invalid_name(self):
+        # type: () -> None
+        class _LDAPUser(object):
+            attrs = {'fn': ['<invalid name>'], 'sn': ['Short Name']}
+
+        ldap_user_attr_map = {'full_name': 'fn', 'short_name': 'sn'}
+
+        with self.settings(AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map):
+            backend = self.backend
+            email = 'nonexisting@zulip.com'
+            with self.assertRaisesRegex(Exception, "Invalid characters in name!"):
+                backend.get_or_create_user(email, _LDAPUser())
+
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_get_or_create_user_when_realm_is_deactivated(self):
         # type: () -> None
         class _LDAPUser(object):

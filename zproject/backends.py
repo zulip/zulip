@@ -21,6 +21,8 @@ from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, 
     GithubTeamOAuth2
 from social_core.exceptions import AuthFailed
 from django.contrib.auth import authenticate
+from zerver.lib.users import check_full_name
+from zerver.lib.request import JsonableError
 from zerver.lib.utils import check_subdomain, get_subdomain
 
 def pad_method_dict(method_dict):
@@ -364,6 +366,10 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
 
             full_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["full_name"]
             short_name = full_name = ldap_user.attrs[full_name_attr][0]
+            try:
+                full_name = check_full_name(full_name)
+            except JsonableError as e:
+                raise ZulipLDAPException(e.error)
             if "short_name" in settings.AUTH_LDAP_USER_ATTR_MAP:
                 short_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["short_name"]
                 short_name = ldap_user.attrs[short_name_attr][0]
