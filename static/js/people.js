@@ -243,6 +243,27 @@ exports.pm_with_url = function (message) {
     return uri;
 };
 
+
+exports.pm_with_operand_ids = function (operand) {
+    var emails = operand.split(',');
+    emails = _.map(emails, function (email) { return email.trim(); });
+    var persons = _.map(emails, function (email) {
+        return people_dict.get(email);
+    });
+
+    if (!_.all(persons)) {
+        return;
+    }
+
+    var user_ids = _.map(persons, function (person) {
+        return person.user_id;
+    });
+
+    user_ids.sort();
+
+    return user_ids;
+};
+
 exports.emails_to_slug = function (emails_string) {
     var slug = exports.emails_strings_to_user_ids_string(emails_string);
 

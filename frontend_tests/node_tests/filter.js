@@ -277,8 +277,14 @@ function get_predicate(operators) {
     assert(!predicate({sender_email: steve.user_id}));
 
     predicate = get_predicate([['pm-with', 'Joe@example.com']]);
-    assert(predicate({type: 'private', reply_to: 'JOE@example.com'}));
-    assert(!predicate({type: 'private', reply_to: 'steve@foo.com'}));
+    assert(predicate({
+        type: 'private',
+        display_recipient: [{id: joe.user_id}],
+    }));
+    assert(!predicate({
+        type: 'private',
+        display_recipient: [{user_id: steve.user_id}],
+    }));
 }());
 
 (function test_negated_predicates() {
