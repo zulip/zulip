@@ -602,25 +602,7 @@ $.get({
     },
 });
 
-function users_hover(id) {
-    var myPlot = document.getElementById(id);
-    myPlot.on('plotly_hover', function (data) {
-        var date_text = data.points[0].data.text[data.points[0].pointNumber];
-        $('#users_hover_date').text(date_text);
-        $('#users_hover_humans').text("Users:");
-        $('#users_hover_humans_value').text(data.points[0].y);
-    });
-}
-
 function populate_number_of_users(data) {
-    var end_dates = data.end_times.map(function (timestamp) {
-            return new Date(timestamp*1000);
-    });
-    var users_text = end_dates.map(function (date) {
-        return format_date(date, false);
-    });
-    var trace_humans = {x: end_dates, y: data.realm.human, type: 'scatter',  name: "Active users",
-                        hoverinfo: 'none', text: users_text, visible: true};
     var layout = {
         width: 750,
         height: 370,
@@ -633,10 +615,12 @@ function populate_number_of_users(data) {
                 x: 0.808,
                 y: -0.2,
                 buttons: [
-                    {count:30,
-                        label:'Last 30 Days',
+                    {
+                        count: 30,
+                        label: 'Last 30 Days',
                         step: 'day',
-                        stepmode:'backward'},
+                        stepmode: 'backward',
+                    },
                     {
                         step: 'all',
                         label: 'All time',
@@ -650,12 +634,37 @@ function populate_number_of_users(data) {
         },
         font: font_14pt,
     };
-    Plotly.newPlot('id_number_of_users',
-                   [trace_humans], layout, {displayModeBar: false});
-    users_hover('id_number_of_users');
-    var total_users = data.realm.human[data.realm.human.length - 1];
-    var total = document.getElementById('number_of_users_total');
-    total.innerHTML = total_users.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+    var end_dates = data.end_times.map(function (timestamp) {
+        return new Date(timestamp*1000);
+    });
+
+    var text = end_dates.map(function (date) {
+        return format_date(date, false);
+    });
+
+    var trace = {
+        x: end_dates,
+        y: data.realm.human,
+        type: 'scatter',
+        name: "Active users",
+        hoverinfo: 'none',
+        text: text,
+        visible: true,
+    };
+
+    Plotly.newPlot('id_number_of_users', [trace], layout, {displayModeBar: false});
+
+    document.getElementById('id_number_of_users').on('plotly_hover', function (data) {
+        document.getElementById('users_hover_date').innerText =
+            data.points[0].data.text[data.points[0].pointNumber];
+        document.getElementById('users_hover_humans').style.display = 'inline';
+        document.getElementById('users_hover_humans_value').innerText = data.points[0].y;
+    });
+
+    var value_today = data.realm.human[data.realm.human.length - 1];
+    document.getElementById('number_of_users_today').innerText =
+        value_today.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
 $.get({
