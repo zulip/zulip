@@ -160,3 +160,21 @@ class GithubWebhookTest(WebhookTestCase):
         # type: () -> None
         expected_message = u"baxterthehacker pushed tag abc"
         self.send_and_test_stream_message('push_tag', self.EXPECTED_SUBJECT_REPO_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='push')
+
+    def test_pull_request_edited_msg(self):
+        # type: () -> None
+        expected_message = u"baxterthehacker edited [PR](https://github.com/baxterthehacker/public-repo/pull/1)\nfrom `changes` to `master`"
+        self.send_and_test_stream_message('edited_pull_request', self.EXPECTED_SUBJECT_PR_EVENTS, expected_message,
+                                          HTTP_X_GITHUB_EVENT='pull_request')
+
+    def test_pull_request_assigned_msg(self):
+        # type: () -> None
+        expected_message = u"baxterthehacker assigned [PR](https://github.com/baxterthehacker/public-repo/pull/1) to baxterthehacker"
+        self.send_and_test_stream_message('assigned_pull_request', self.EXPECTED_SUBJECT_PR_EVENTS, expected_message,
+                                          HTTP_X_GITHUB_EVENT='pull_request')
+
+    def test_pull_request_unassigned_msg(self):
+        # type: () -> None
+        expected_message = u"baxterthehacker unassigned [PR](https://github.com/baxterthehacker/public-repo/pull/1)"
+        self.send_and_test_stream_message('unassigned_pull_request', self.EXPECTED_SUBJECT_PR_EVENTS, expected_message,
+                                          HTTP_X_GITHUB_EVENT='pull_request')
