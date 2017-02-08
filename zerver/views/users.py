@@ -23,7 +23,7 @@ from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.validator import check_bool, check_string
-from zerver.lib.users import check_change_full_name
+from zerver.lib.users import check_change_full_name, check_full_name
 from zerver.lib.utils import generate_random_token
 from zerver.models import UserProfile, Stream, Realm, Message, get_user_profile_by_email, \
     email_allowed_for_realm
@@ -208,12 +208,13 @@ def regenerate_bot_api_key(request, user_profile, email):
     return json_success(json_result)
 
 @has_request_variables
-def add_bot_backend(request, user_profile, full_name=REQ(), short_name=REQ(),
+def add_bot_backend(request, user_profile, full_name_raw=REQ("full_name"), short_name=REQ(),
                     default_sending_stream_name=REQ('default_sending_stream', default=None),
                     default_events_register_stream_name=REQ('default_events_register_stream', default=None),
                     default_all_public_streams=REQ(validator=check_bool, default=None)):
     # type: (HttpRequest, UserProfile, Text, Text, Optional[Text], Optional[Text], Optional[bool]) -> HttpResponse
     short_name += "-bot"
+    full_name = check_full_name(full_name_raw)
     email = short_name + "@" + user_profile.realm.domain
     form = CreateUserForm({'full_name': full_name, 'email': email})
     if not form.is_valid():
@@ -311,8 +312,9 @@ def get_members_backend(request, user_profile):
 @require_realm_admin
 @has_request_variables
 def create_user_backend(request, user_profile, email=REQ(), password=REQ(),
-                        full_name=REQ(), short_name=REQ()):
+                        full_name_raw=REQ("full_name"), short_name=REQ()):
     # type: (HttpRequest, UserProfile, Text, Text, Text, Text) -> HttpResponse
+    full_name = check_full_name(full_name_raw)
     form = CreateUserForm({'full_name': full_name, 'email': email})
     if not form.is_valid():
         return json_error(_('Bad name or username'))
