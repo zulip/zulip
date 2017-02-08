@@ -136,6 +136,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('hellosign', display_name='HelloSign'),
     WebhookIntegration('helloworld', display_name='Hello World'),
     WebhookIntegration('heroku', display_name='Heroku'),
+    WebhookIntegration('homeassistant', display_name='Home Assistant'),
     WebhookIntegration('ifttt', function='zerver.webhooks.ifttt.view.api_iftt_app_webhook', display_name='IFTTT'),
     WebhookIntegration('jira', secondary_line_text='(hosted or v5.2+)', display_name='JIRA'),
     WebhookIntegration('librato'),
