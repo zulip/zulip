@@ -13,7 +13,7 @@ from jinja2 import Markup as mark_safe
 from analytics.lib.counts import CountStat, process_count_stat, COUNT_STATS
 from analytics.lib.time_utils import time_range
 from analytics.models import BaseCount, InstallationCount, RealmCount, \
-    UserCount, StreamCount
+    UserCount, StreamCount, last_successful_fill
 
 from zerver.decorator import has_request_variables, REQ, zulip_internal, \
     zulip_login_required, to_non_negative_int, to_utc_datetime
@@ -28,6 +28,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 import itertools
 import json
+import logging
 import pytz
 import re
 import time
@@ -75,15 +76,23 @@ def get_chart_data(request, user_profile, chart_name=REQ(),
     else:
         raise JsonableError(_("Unknown chart name: %s") % (chart_name,))
 
+    # Most likely someone using our API endpoint. The /stats page does not
+    # pass a start or end in its requests.
+    if start is not None and end is not None and start > end:
+        raise JsonableError(_("Start time is later than end time. Start: %(start)s, End: %(end)s") %
+                            {'start': start, 'end': end})
+
     realm = user_profile.realm
-    # These are implicitly relying on realm.date_created and timezone.now being in UTC.
     if start is None:
         start = realm.date_created
     if end is None:
-        end = timezone.now()
-    if start > end:
-        raise JsonableError(_("Start time is later than end time. Start: %(start)s, End: %(end)s") %
-                            {'start': start, 'end': end})
+        end = last_successful_fill(stat.property)
+    if end is None or start > end:
+        logging.warning("User from realm %s attempted to access /stats, but the computed "
+                        "start time, %s (creation date of realm) is later than the computed "
+                        "end time, %s (last successful analytics update). Is the "
+                        "update_analytics_counts cron job running?" % (realm.string_id, start, end))
+        raise JsonableError(_("No analytics data available. Please contact your server administrator."))
 
     end_times = time_range(start, end, stat.frequency, min_length)
     data = {'end_times': end_times, 'frequency': stat.frequency, 'interval': stat.interval}
