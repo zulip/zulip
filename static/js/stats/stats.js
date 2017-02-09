@@ -331,25 +331,7 @@ function round_to_percentages(values, total) {
     });
 }
 
-function make_pie_trace(values, labels, text) {
-    return {
-        values: values,
-        labels: labels,
-        type: 'pie',
-        direction: 'clockwise',
-        rotation: -90,
-        sort: false,
-        textinfo: "text",
-        text: text,
-        hoverinfo: "label+text",
-        pull: 0.05,
-        marker: {
-            colors: ['#008000', '#57a200', '#95c473', '#acd5b0', '#bde6ee', '#caf8ff'],
-        },
-    };
-}
-
-function compute_pie_chart_data(time_series_data, num_steps) {
+function compute_summary_chart_data(time_series_data, num_steps) {
     var data = [];
     for (var key in time_series_data) {
         if (time_series_data[key].length < num_steps) {
@@ -386,13 +368,16 @@ function compute_pie_chart_data(time_series_data, num_steps) {
         for (j=5; j<data.length; j+=1) {
             sum_remaining += data[j].value;
         }
+
         labels.push("Other");
         values.push(sum_remaining);
     }
     var total = values.reduce(function (a, b) { return a + b; }, 0);
     return {
-        trace: make_pie_trace(values, labels, round_to_percentages(values, total)),
-        total_str: "Total messages: " + total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+        values: values,
+        labels: labels,
+        text: round_to_percentages(values, total),
+        total: total,
     };
 }
 
@@ -404,16 +389,39 @@ function populate_messages_sent_by_client(data) {
         font: font_14pt,
     };
 
-    var chart_data = {
+    function make_plot_data(time_series_data, num_steps) {
+        var summary_data = compute_summary_chart_data(time_series_data, num_steps);
+        return {
+            trace: {
+                values: summary_data.values,
+                labels: summary_data.labels,
+                type: 'pie',
+                direction: 'clockwise',
+                rotation: -90,
+                sort: false,
+                textinfo: "text",
+                text: summary_data.text,
+                hoverinfo: "label+text",
+                pull: 0.05,
+                marker: {
+                    colors: ['#008000', '#57a200', '#95c473', '#acd5b0', '#bde6ee', '#caf8ff'],
+                },
+            },
+            total_str: "Total messages: " + summary_data.total.toString().
+                replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+        };
+    }
+
+    var plot_data = {
         realm: {
-            cumulative: compute_pie_chart_data(data.realm, data.end_times.length),
-            thirty: compute_pie_chart_data(data.realm, 30),
-            ten: compute_pie_chart_data(data.realm, 10),
+            cumulative: make_plot_data(data.realm, data.end_times.length),
+            thirty: make_plot_data(data.realm, 30),
+            ten: make_plot_data(data.realm, 10),
         },
         user: {
-            cumulative: compute_pie_chart_data(data.user, data.end_times.length),
-            thirty: compute_pie_chart_data(data.user, 30),
-            ten: compute_pie_chart_data(data.user, 10),
+            cumulative: make_plot_data(data.user, data.end_times.length),
+            thirty: make_plot_data(data.user, 30),
+            ten: make_plot_data(data.user, 10),
         },
     };
 
@@ -423,10 +431,10 @@ function populate_messages_sent_by_client(data) {
 
     function draw_plot() {
         Plotly.newPlot('id_messages_sent_by_client',
-                       [chart_data[user_button][time_button].trace],
+                       [plot_data[user_button][time_button].trace],
                        layout,
                        {displayModeBar: false});
-        totaldiv.innerHTML = chart_data[user_button][time_button].total_str;
+        totaldiv.innerHTML = plot_data[user_button][time_button].total_str;
     }
 
     draw_plot();
@@ -511,16 +519,39 @@ function populate_messages_sent_by_message_type(data) {
         font: font_14pt,
     };
 
-    var chart_data = {
+    function make_plot_data(time_series_data, num_steps) {
+        var summary_data = compute_summary_chart_data(time_series_data, num_steps);
+        return {
+            trace: {
+                values: summary_data.values,
+                labels: summary_data.labels,
+                type: 'pie',
+                direction: 'clockwise',
+                rotation: -90,
+                sort: false,
+                textinfo: "text",
+                text: summary_data.text,
+                hoverinfo: "label+text",
+                pull: 0.05,
+                marker: {
+                    colors: ['#008000', '#57a200', '#95c473', '#acd5b0', '#bde6ee', '#caf8ff'],
+                },
+            },
+            total_str: "Total messages: " + summary_data.total.toString().
+                replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+        };
+    }
+
+    var plot_data = {
         realm: {
-            cumulative: compute_pie_chart_data(data.realm, data.end_times.length),
-            thirty: compute_pie_chart_data(data.realm, 30),
-            ten: compute_pie_chart_data(data.realm, 10),
+            cumulative: make_plot_data(data.realm, data.end_times.length),
+            thirty: make_plot_data(data.realm, 30),
+            ten: make_plot_data(data.realm, 10),
         },
         user: {
-            cumulative: compute_pie_chart_data(data.user, data.end_times.length),
-            thirty: compute_pie_chart_data(data.user, 30),
-            ten: compute_pie_chart_data(data.user, 10),
+            cumulative: make_plot_data(data.user, data.end_times.length),
+            thirty: make_plot_data(data.user, 30),
+            ten: make_plot_data(data.user, 10),
         },
     };
 
@@ -530,10 +561,10 @@ function populate_messages_sent_by_message_type(data) {
 
     function draw_plot() {
         Plotly.newPlot('id_messages_sent_by_message_type',
-                       [chart_data[user_button][time_button].trace],
+                       [plot_data[user_button][time_button].trace],
                        layout,
                        {displayModeBar: false});
-        totaldiv.innerHTML = chart_data[user_button][time_button].total_str;
+        totaldiv.innerHTML = plot_data[user_button][time_button].total_str;
     }
 
     draw_plot();
