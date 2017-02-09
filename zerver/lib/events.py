@@ -314,6 +314,10 @@ def apply_events(state, events, user_profile):
         elif event['type'] == "realm_domains":
             if event['op'] == 'add':
                 state['realm_domains'].append(event['alias'])
+            elif event['op'] == 'change':
+                for realm_domain in state['realm_domains']:
+                    if realm_domain['domain'] == event['alias']['domain']:
+                        realm_domain['allow_subdomains'] = event['alias']['allow_subdomains']
             elif event['op'] == 'remove':
                 state['realm_domains'] = [alias for alias in state['realm_domains'] if alias['domain'] != event['domain']]
         elif event['type'] == "realm_emoji":
