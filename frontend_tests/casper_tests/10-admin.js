@@ -1,5 +1,4 @@
 var common = require('../casper_lib/common.js').common;
-var stream_name = "Scotland";
 
 common.start_and_log_in();
 
@@ -211,6 +210,7 @@ casper.waitUntilVisible('div#admin-filter-pattern-status', function () {
     casper.test.assertSelectorHasText('div#admin-filter-pattern-status', 'Failed: Invalid filter pattern, you must use the following format OPTIONAL_PREFIX(?P<id>.+)');
 });
 
+var stream_name = "Scotland";
 function get_suggestions(str) {
     casper.then(function () {
         casper.evaluate(function (str) {
@@ -240,12 +240,17 @@ casper.then(function () {
     casper.click('a[href^="#subscriptions"]');
     casper.click('#settings-dropdown');
     casper.click('a[href^="#administration"]');
-    // It matches with all the stream names which has 'O' as a substring (Rome, Scotland, Verona
-    // etc). 'O' is used to make sure that it works even if there are multiple suggestions.
-    // Uppercase 'O' is used instead of the lowercase version to make sure that the suggestions
-    // are case insensitive.
-    get_suggestions("O");
-    select_from_suggestions(stream_name);
+    casper.waitUntilVisible(".create_default_stream", function () {
+        // It matches with all the stream names which has 'O' as a substring (Rome, Scotland, Verona
+        // etc). 'O' is used to make sure that it works even if there are multiple suggestions.
+        // Uppercase 'O' is used instead of the lowercase version to make sure that the suggestions
+        // are case insensitive.
+        get_suggestions("O");
+        select_from_suggestions(stream_name);
+    });
+});
+
+casper.then(function () {
     casper.waitForSelector('.default_stream_row[id='+stream_name+']', function () {
         casper.test.assertSelectorHasText('.default_stream_row[id='+stream_name+'] .default_stream_name', stream_name);
     });
