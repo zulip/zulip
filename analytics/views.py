@@ -55,18 +55,21 @@ def get_chart_data(request, user_profile, chart_name=REQ(),
         tables = [RealmCount]
         subgroups = ['false', 'true']
         labels = ['human', 'bot']
+        labels_sort_function = None
         include_empty_subgroups = True
     elif chart_name == 'messages_sent_over_time':
         stat = COUNT_STATS['messages_sent:is_bot:hour']
         tables = [RealmCount]
         subgroups = ['false', 'true']
         labels = ['human', 'bot']
+        labels_sort_function = None
         include_empty_subgroups = True
     elif chart_name == 'messages_sent_by_message_type':
         stat = COUNT_STATS['messages_sent:message_type:day']
         tables = [RealmCount, UserCount]
         subgroups = ['public_stream', 'private_stream', 'private_message']
         labels = ['Public Streams', 'Private Streams', 'PMs & Group PMs']
+        labels_sort_function = lambda data: sort_by_totals(data['realm'])
         include_empty_subgroups = True
     elif chart_name == 'messages_sent_by_client':
         stat = COUNT_STATS['messages_sent:client:day']
@@ -74,6 +77,7 @@ def get_chart_data(request, user_profile, chart_name=REQ(),
         subgroups = [str(x) for x in Client.objects.values_list('id', flat=True).order_by('id')]
         # these are further re-written by client_label_map
         labels = list(Client.objects.values_list('name', flat=True).order_by('id'))
+        labels_sort_function = sort_client_labels
         include_empty_subgroups = False
     else:
         raise JsonableError(_("Unknown chart name: %s") % (chart_name,))
@@ -105,6 +109,10 @@ def get_chart_data(request, user_profile, chart_name=REQ(),
         if table == UserCount:
             data['user'] = get_time_series_by_subgroup(
                 stat, UserCount, user_profile.id, end_times, subgroups, labels, include_empty_subgroups)
+    if labels_sort_function is not None:
+        data['display_order'] = labels_sort_function(data)
+    else:
+        data['display_order'] = None
     return json_success(data=data)
 
 def table_filtered_to_id(table, key_id):
@@ -119,6 +127,26 @@ def table_filtered_to_id(table, key_id):
         return InstallationCount.objects.all()
     else:
         raise ValueError("Unknown table: %s" % (table,))
+
+def sort_by_totals(value_arrays):
+    # type: (Dict[str, List[int]]) -> List[str]
+    totals = []
+    for label, values in value_arrays.items():
+        totals.append((label, sum(values)))
+    totals.sort(key=lambda label_total: label_total[1], reverse=True)
+    return [label for label, total in totals]
+
+def sort_client_labels(data):
+    # type: (Dict[str, Dict[str, List[int]]]) -> List[str]
+    realm_order = sort_by_totals(data['realm'])
+    user_order = sort_by_totals(data['user'])
+    label_sort_values = {}
+    for i, label in enumerate(realm_order):
+        label_sort_values[label] = i
+    for i, label in enumerate(user_order):
+        label_sort_values[label] = min(i, label_sort_values.get(label, i))
+    return [label for label, sort_value in sorted(label_sort_values.items(),
+                                                  key=lambda x: x[1])]
 
 def client_label_map(name):
     # type: (str) -> str
