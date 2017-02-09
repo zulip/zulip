@@ -677,7 +677,7 @@ exports.onlaunchtrigger = function () {
 exports.launch = function () {
     meta.is_open = true;
     exports.setup_page(function () {
-        $("#subscription_overlay").fadeIn(300);
+        $("#subscription_overlay").addClass("show");
     });
 };
 
@@ -691,7 +691,7 @@ Object.defineProperty(exports, "is_open", {
 exports.close = function () {
     hashchange.exit_settings();
     meta.is_open = false;
-    $("#subscription_overlay").fadeOut(500);
+    $("#subscription_overlay").removeClass("show");
     subs.remove_miscategorized_streams();
 };
 
