@@ -64,6 +64,7 @@ function show_message_info_popover(element, id) {
 
         var args = {
             message:  message,
+            sender_email: sender_email,
             pm_with_uri: narrow.pm_with_uri(sender_email),
             sent_by_uri: narrow.by_sender_uri(sender_email),
             narrowed: narrow.active(),
