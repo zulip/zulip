@@ -59,6 +59,7 @@ from zerver.lib.actions import (
     do_change_pm_content_in_desktop_notifications,
     do_change_enable_digest_emails,
     do_add_realm_alias,
+    do_change_realm_alias,
     do_remove_realm_alias,
 )
 from zerver.lib.events import (
@@ -832,10 +833,22 @@ class EventsRegisterTest(ZulipTestCase):
 
         schema_checker = check_dict([
             ('type', equals('realm_domains')),
-            ('op', equals('remove')),
-            ('domain', check_string),
+            ('op', equals('change')),
+            ('alias', check_dict([
+                ('domain', equals('zulip.org')),
+                ('allow_subdomains', equals(True)),
+            ])),
         ])
         alias = RealmAlias.objects.get(realm=realm, domain='zulip.org')
+        events = self.do_test(lambda: do_change_realm_alias(alias, True))
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        schema_checker = check_dict([
+            ('type', equals('realm_domains')),
+            ('op', equals('remove')),
+            ('domain', equals('zulip.org')),
+        ])
         events = self.do_test(lambda: do_remove_realm_alias(alias))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
