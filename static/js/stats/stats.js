@@ -309,9 +309,11 @@ function round_to_percentages(values, total) {
     });
 }
 
-function compute_summary_chart_data(time_series_data, num_steps, num_labels) {
-    var data = [];
-    for (var key in time_series_data) {
+// Last label will turn into "Other" if time_series data has a label not in labels
+function compute_summary_chart_data(time_series_data, num_steps, labels_) {
+    var data = {};
+    var key;
+    for (key in time_series_data) {
         if (time_series_data[key].length < num_steps) {
             num_steps = time_series_data[key].length;
         }
@@ -319,31 +321,25 @@ function compute_summary_chart_data(time_series_data, num_steps, num_labels) {
         for (var i=1; i<=num_steps; i+=1) {
             sum += time_series_data[key][time_series_data[key].length-i];
         }
-        data.push({value: sum, label: key});
+        data[key] = sum;
     }
-    data.sort(function (a, b) {
-        return b.value - a.value;
-    });
-    var labels = [];
+    var labels = labels_.slice();
     var values = [];
-    var j;
-    if (data.length <= num_labels) {
-        for (j=0; j<data.length; j+=1) {
-            labels.push(data[j].label);
-            values.push(data[j].value);
+    labels.forEach(function (label) {
+        if (data.hasOwnProperty(label)) {
+            values.push(data[label]);
+            delete data[label];
+        } else {
+            values.push(0);
         }
-    } else {
-        for (j=0; j<num_labels-1; j+=1) {
-            labels.push(data[j].label);
-            values.push(data[j].value);
+    });
+    if (!$.isEmptyObject(data)) {
+        labels[labels.length-1] = "Other";
+        for (key in data) {
+            if (data.hasOwnProperty(key)) {
+                values[labels.length-1] += data[key];
+            }
         }
-        var sum_remaining = 0;
-        for (j=num_labels-1; j<data.length; j+=1) {
-            sum_remaining += data[j].value;
-        }
-
-        labels.push("Other");
-        values.push(sum_remaining);
     }
     var total = values.reduce(function (a, b) { return a + b; }, 0);
     return {
@@ -365,14 +361,32 @@ function populate_messages_sent_by_client(data) {
         showlegend: false,
     };
 
+    // sort labels so that values are descending in the default view
+    var realm_cumulative = compute_summary_chart_data(data.realm, data.end_times.length,
+                                                      data.display_order.slice(0, 12));
+    var label_values = [];
+    for (var i=0; i<realm_cumulative.values.length; i+=1) {
+        label_values.push({
+            label: realm_cumulative.labels[i],
+            value: realm_cumulative.labels[i] === "Other" ? -1 : realm_cumulative.values[i],
+        });
+    }
+    label_values.sort(function (a, b) { return b.value - a.value; });
+    var labels = [];
+    label_values.forEach(function (item) { labels.push(item.label); });
+
     function make_plot_data(time_series_data, num_steps) {
-        var plot_data = compute_summary_chart_data(time_series_data, num_steps, 10);
+        var plot_data = compute_summary_chart_data(time_series_data, num_steps, labels);
         plot_data.values.reverse();
         plot_data.labels.reverse();
         plot_data.percentages.reverse();
-        var text = [];
-        for (var i=0; i<plot_data.labels.length; i+=1) {
-            text.push('   ' + plot_data.labels[i] + ' (' + plot_data.percentages[i] + ')');
+        var annotations = { values : [],  labels : [],  text : []};
+        for (var i=0; i<plot_data.values.length; i+=1) {
+            if (plot_data.values[i] > 0) {
+                annotations.values.push(plot_data.values[i]);
+                annotations.labels.push(plot_data.labels[i]);
+                annotations.text.push('   ' + plot_data.labels[i] + ' (' + plot_data.percentages[i] + ')');
+            }
         }
         return {
             trace: {
@@ -387,12 +401,12 @@ function populate_messages_sent_by_client(data) {
                 font: { family: 'Humbug', size: 18, color: '#000000' },
             },
             trace_annotations: {
-                x: plot_data.values,
-                y: plot_data.labels,
+                x: annotations.values,
+                y: annotations.labels,
                 mode: 'text',
                 type: 'scatter',
                 textposition: 'middle right',
-                text: text,
+                text: annotations.text,
             },
         };
     }
@@ -416,7 +430,7 @@ function populate_messages_sent_by_client(data) {
     function draw_plot() {
         var data_ = plot_data[user_button][time_button];
         layout.height = layout.margin.b + data_.trace.x.length * 30;
-        layout.xaxis.range = [0, data_.trace.x[data_.trace.x.length-1] * 1.3];
+        layout.xaxis.range = [0, Math.max.apply(null, data_.trace.x) * 1.3];
         Plotly.newPlot('id_messages_sent_by_client',
                        [data_.trace, data_.trace_annotations],
                        layout,
@@ -506,7 +520,7 @@ function populate_messages_sent_by_message_type(data) {
     };
 
     function make_plot_data(time_series_data, num_steps) {
-        var plot_data = compute_summary_chart_data(time_series_data, num_steps, 3);
+        var plot_data = compute_summary_chart_data(time_series_data, num_steps, data.display_order);
         var labels = [];
         for (var i=0; i<plot_data.labels.length; i+=1) {
             labels.push(plot_data.labels[i] + ' (' + plot_data.percentages[i] + ')');
