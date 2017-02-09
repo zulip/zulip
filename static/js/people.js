@@ -188,6 +188,46 @@ exports.get_recipients = function (user_ids_string) {
     return names.join(', ');
 };
 
+exports.pm_reply_to = function (message) {
+    if (message.type !== 'private') {
+        return;
+    }
+
+    if (message.display_recipient.length === 0) {
+        blueslip.error('Empty recipient list in message');
+        return;
+    }
+
+    var user_ids = _.map(message.display_recipient, function (elem) {
+        return elem.user_id || elem.id;
+    });
+
+    var other_user_ids = _.filter(user_ids, function (user_id) {
+        return !people.is_my_user_id(user_id);
+    });
+
+    if (other_user_ids.length >= 1) {
+        user_ids = other_user_ids;
+    } else {
+        user_ids = [my_user_id];
+    }
+
+    var emails = _.map(user_ids, function (user_id) {
+        var person = people_by_user_id_dict.get(user_id);
+        if (!person) {
+            blueslip.error('Unknown user id in message: ' + user_id);
+            return '?';
+        }
+        return person.email;
+    });
+
+    emails.sort();
+
+    var reply_to = emails.join(',');
+
+    return reply_to;
+};
+
 exports.pm_with_user_ids = function (message) {
     if (message.type !== 'private') {
         return;
