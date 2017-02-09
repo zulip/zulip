@@ -349,7 +349,7 @@ function make_pie_trace(values, labels, text) {
     };
 }
 
-function compute_pie_chart_data(name_map, time_series_data, num_steps) {
+function compute_pie_chart_data(time_series_data, num_steps) {
     var data = [];
     for (var key in time_series_data) {
         if (time_series_data[key].length < num_steps) {
@@ -362,7 +362,7 @@ function compute_pie_chart_data(name_map, time_series_data, num_steps) {
         if (sum > 0) {
             data.push({
                 value: sum,
-                label: word_wrap(name_map.hasOwnProperty(key) ? name_map[key] : key, 18),
+                label: word_wrap(key, 18),
             });
         }
     }
@@ -397,17 +397,6 @@ function compute_pie_chart_data(name_map, time_series_data, num_steps) {
 }
 
 function populate_messages_sent_by_client(data) {
-    // Hardcoded names in the development environment
-    var name_map = {
-        electron_: "Electron",
-        barnowl_: "BarnOwl",
-        website_: "Website",
-        API_: "API",
-        android_: "Android",
-        iOS_: "iOS",
-        react_native_: "React Native",
-    };
-
     var layout = {
         margin: { l: 90, r: 0, b: 0, t: 0 },
         width: 450,
@@ -417,14 +406,14 @@ function populate_messages_sent_by_client(data) {
 
     var chart_data = {
         realm: {
-            cumulative: compute_pie_chart_data(name_map, data.realm, data.end_times.length),
-            thirty: compute_pie_chart_data(name_map, data.realm, 30),
-            ten: compute_pie_chart_data(name_map, data.realm, 10),
+            cumulative: compute_pie_chart_data(data.realm, data.end_times.length),
+            thirty: compute_pie_chart_data(data.realm, 30),
+            ten: compute_pie_chart_data(data.realm, 10),
         },
         user: {
-            cumulative: compute_pie_chart_data(name_map, data.user, data.end_times.length),
-            thirty: compute_pie_chart_data(name_map, data.user, 30),
-            ten: compute_pie_chart_data(name_map, data.user, 10),
+            cumulative: compute_pie_chart_data(data.user, data.end_times.length),
+            thirty: compute_pie_chart_data(data.user, 30),
+            ten: compute_pie_chart_data(data.user, 10),
         },
     };
 
@@ -515,12 +504,6 @@ $.get({
 });
 
 function populate_messages_sent_by_message_type(data) {
-    var name_map = {
-        public_stream: "Public Stream",
-        private_stream: "Private Stream",
-        private_message: "Private Message",
-    };
-
     var layout = {
         margin: { l: 90, r: 0, b: 0, t: 0 },
         width: 465,
@@ -530,14 +513,14 @@ function populate_messages_sent_by_message_type(data) {
 
     var chart_data = {
         realm: {
-            cumulative: compute_pie_chart_data(name_map, data.realm, data.end_times.length),
-            thirty: compute_pie_chart_data(name_map, data.realm, 30),
-            ten: compute_pie_chart_data(name_map, data.realm, 10),
+            cumulative: compute_pie_chart_data(data.realm, data.end_times.length),
+            thirty: compute_pie_chart_data(data.realm, 30),
+            ten: compute_pie_chart_data(data.realm, 10),
         },
         user: {
-            cumulative: compute_pie_chart_data(name_map, data.user, data.end_times.length),
-            thirty: compute_pie_chart_data(name_map, data.user, 30),
-            ten: compute_pie_chart_data(name_map, data.user, 10),
+            cumulative: compute_pie_chart_data(data.user, data.end_times.length),
+            thirty: compute_pie_chart_data(data.user, 30),
+            ten: compute_pie_chart_data(data.user, 10),
         },
     };
 

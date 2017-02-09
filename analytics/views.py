@@ -65,12 +65,13 @@ def get_chart_data(request, user_profile, chart_name=REQ(),
         stat = COUNT_STATS['messages_sent:message_type:day']
         tables = [RealmCount, UserCount]
         subgroups = ['public_stream', 'private_stream', 'private_message']
-        labels = None
+        labels = ['Public Streams', 'Private Streams', 'Private Messages']
         include_empty_subgroups = True
     elif chart_name == 'messages_sent_by_client':
         stat = COUNT_STATS['messages_sent:client:day']
         tables = [RealmCount, UserCount]
         subgroups = [str(x) for x in Client.objects.values_list('id', flat=True).order_by('id')]
+        # these are further re-written by client_label_map
         labels = list(Client.objects.values_list('name', flat=True).order_by('id'))
         include_empty_subgroups = False
     else:
@@ -134,6 +135,9 @@ def client_label_map(name):
         return "Python API"
     if name.startswith("Zulip") and name.endswith("Webhook"):
         return name[len("Zulip"):-len("Webhook")] + " webhook"
+    # Clients in dev environment start with _.
+    if name.startswith("_"):
+        return name[1:]
     return name
 
 def rewrite_client_arrays(value_arrays):
