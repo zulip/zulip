@@ -87,8 +87,7 @@ function populate_messages_sent_over_time(data) {
         },
         yaxis: { fixedrange: true, rangemode: 'tozero' },
         legend: {
-            x: 0.75, y: 1.12, orientation: 'h',
-            font: font_14pt,
+            x: 0.75, y: 1.12, orientation: 'h', font: font_14pt,
         },
         font: font_14pt,
     };
@@ -333,7 +332,7 @@ function round_to_percentages(values, total) {
 }
 
 function make_pie_trace(values, labels, text) {
-    var trace = [{
+    return {
         values: values,
         labels: labels,
         type: 'pie',
@@ -347,8 +346,7 @@ function make_pie_trace(values, labels, text) {
         marker: {
             colors: ['#008000', '#57a200', '#95c473', '#acd5b0', '#bde6ee', '#caf8ff'],
         },
-    }];
-    return trace;
+    };
 }
 
 function compute_pie_chart_data(name_map, time_series_data, num_steps) {
@@ -436,7 +434,7 @@ function populate_messages_sent_by_client(data) {
 
     function draw_plot() {
         Plotly.newPlot('id_messages_sent_by_client',
-                       chart_data[user_button][time_button].trace,
+                       [chart_data[user_button][time_button].trace],
                        layout,
                        {displayModeBar: false});
         totaldiv.innerHTML = chart_data[user_button][time_button].total_str;
@@ -549,7 +547,7 @@ function populate_messages_sent_by_message_type(data) {
 
     function draw_plot() {
         Plotly.newPlot('id_messages_sent_by_message_type',
-                       chart_data[user_button][time_button].trace,
+                       [chart_data[user_button][time_button].trace],
                        layout,
                        {displayModeBar: false});
         totaldiv.innerHTML = chart_data[user_button][time_button].total_str;
