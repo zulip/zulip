@@ -66,7 +66,7 @@ def get_chart_data(request, user_profile, chart_name=REQ(),
         stat = COUNT_STATS['messages_sent:message_type:day']
         tables = [RealmCount, UserCount]
         subgroups = ['public_stream', 'private_stream', 'private_message']
-        labels = ['Public Streams', 'Private Streams', 'Private Messages']
+        labels = ['Public Streams', 'Private Streams', 'PMs & Group PMs']
         include_empty_subgroups = True
     elif chart_name == 'messages_sent_by_client':
         stat = COUNT_STATS['messages_sent:client:day']
