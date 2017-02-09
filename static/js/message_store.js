@@ -61,11 +61,15 @@ exports.get_pm_full_names = function (message) {
     return names.join(', ');
 };
 
-exports.process_message_for_recent_private_messages =
-    function process_message_for_recent_private_messages(message) {
+exports.process_message_for_recent_private_messages = function (message) {
     var current_timestamp = 0;
 
-    var user_ids_string = people.emails_strings_to_user_ids_string(message.reply_to);
+    var user_ids = people.pm_with_user_ids(message);
+    if (!user_ids) {
+        return;
+    }
+
+    var user_ids_string = user_ids.join(',');
 
     if (!user_ids_string) {
         blueslip.warn('Unknown reply_to in message: ' + user_ids_string);
