@@ -292,7 +292,7 @@ class ZulipTestCase(TestCase):
         # type: (str, bytes) -> None
         response = self.client_get(url)
         data = b"".join(response.streaming_content)
-        self.assertEquals(result, data)
+        self.assertEqual(result, data)
 
     def assert_json_success(self, result):
         # type: (HttpResponse) -> Dict[str, Any]

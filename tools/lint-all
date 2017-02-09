@@ -326,6 +326,8 @@ def build_custom_checkers(by_lang):
         {'pattern': "^\s+[#]\w",
          'strip': '\n',
          'description': 'Missing whitespace after "#"'},
+        {'pattern': "assertEquals[(]",
+         'description': 'Use assertEqual, not assertEquals (which is deprecated).'},
         {'pattern': "== None",
          'exclude': 'tools/lint-all',
          'description': 'Use `is None` to check whether something is None'},
