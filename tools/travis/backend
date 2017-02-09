@@ -7,7 +7,6 @@ set -x
 
 ./tools/lint-all --pep8 # Include the slow and thus non-default pep8 linter check
 ./tools/test-backend --coverage --no-verbose-coverage
-./tools/test-management
 ./tools/test-migrations
 ./tools/test-run-dev
 ./tools/test-documentation
@@ -15,4 +14,3 @@ set -x
 ./tools/test-api
 # Some test suites disabled in CI for being flaky
 #./tools/test-queue-worker-reload
-
