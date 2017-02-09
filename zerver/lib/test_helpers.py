@@ -163,6 +163,16 @@ def queries_captured(include_savepoints=False):
     TimeTrackingCursor.execute = old_execute # type: ignore # https://github.com/JukkaL/mypy/issues/1167
     TimeTrackingCursor.executemany = old_executemany # type: ignore # https://github.com/JukkaL/mypy/issues/1167
 
+@contextmanager
+def stdout_suppressed():
+    # type: () -> Iterator[IO[str]]
+    """Redirect stdout to /dev/null."""
+
+    with open(os.devnull, 'a') as devnull:
+        stdout, sys.stdout = sys.stdout, devnull  # type: ignore
+        yield stdout
+        sys.stdout = stdout
+
 def get_test_image_file(filename):
     # type: (str) -> IO[Any]
     test_avatar_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../tests/images'))
