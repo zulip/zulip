@@ -196,7 +196,8 @@ dozens of queries to the database, caches, etc. over the course of
 things together atomically.  So instead, we use a more complicated
 algorithm that can produce the atomic result from non-atomic
 subroutines.  Here's how it works when you make a `register` API
-request.  The request is directly handled by Django:
+request; the logic is in `zerver/views/events_register.py` and
+`zerver/lib/events.py`.  The request is directly handled by Django:
 
 * Django makes an HTTP request to Tornado, requesting that a new event
   queue be created, and records its queue ID.

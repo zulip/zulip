@@ -12,7 +12,6 @@ from zerver.models import (
 )
 
 from zerver.lib.actions import (
-    apply_events,
     bulk_remove_subscriptions,
     do_add_alert_words,
     check_add_realm_emoji,
@@ -59,9 +58,11 @@ from zerver.lib.actions import (
     do_change_enable_digest_emails,
     do_add_realm_alias,
     do_remove_realm_alias,
+)
+from zerver.lib.events import (
+    apply_events,
     fetch_initial_state_data,
 )
-
 from zerver.lib.message import render_markdown
 from zerver.lib.test_helpers import POSTRequestMock, get_subscription
 from zerver.lib.test_classes import (

@@ -1969,8 +1969,8 @@ class HomeTest(ZulipTestCase):
     def _get_home_page(self, **kwargs):
         # type: (**Any) -> HttpResponse
         with \
-                patch('zerver.lib.actions.request_event_queue', return_value=42), \
-                patch('zerver.lib.actions.get_user_events', return_value=[]):
+                patch('zerver.lib.events.request_event_queue', return_value=42), \
+                patch('zerver.lib.events.get_user_events', return_value=[]):
             result = self.client_get('/', dict(**kwargs))
         return result
 

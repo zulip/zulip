@@ -18,8 +18,9 @@ from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
     PreregistrationUser, get_client, UserActivity, \
     UserPresence, get_recipient, name_changes_disabled, email_to_username, \
     list_of_domains_for_realm
+from zerver.lib.events import do_events_register
 from zerver.lib.actions import update_user_presence, do_change_tos_version, \
-    do_events_register, do_update_pointer, get_cross_realm_dicts, realm_user_count
+    do_update_pointer, get_cross_realm_dicts, realm_user_count
 from zerver.lib.avatar import avatar_url
 from zerver.lib.i18n import get_language_list, get_language_name, \
     get_language_list_for_templates

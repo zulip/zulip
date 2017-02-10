@@ -181,7 +181,7 @@ realm. :
 ### Update application state
 
 You then need to add code that will handle the event and update the
-application state. In `zerver/lib/actions.py` update the
+application state. In `zerver/lib/events.py` update the
 `fetch_initial_state` and `apply_events` functions. :
 
     def fetch_initial_state_data(user_profile, event_types, queue_id):
