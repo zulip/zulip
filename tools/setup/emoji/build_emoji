@@ -42,6 +42,8 @@ exports.names = %(names)s;
 
 exports.codepoints = %(codepoints)s;
 
+exports.name_to_codepoint = %(name_to_codepoint)s;
+
 return exports;
 }());
 if (typeof module !== 'undefined') {
@@ -248,7 +250,8 @@ def dump_emojis(cache_path):
 
     emoji_codes_file.write(EMOJI_CODES_FILE_TEMPLATE % {
         'names': names,
-        'codepoints': sorted([str(code_point) for code_point in set(emoji_map.values())])
+        'codepoints': sorted([str(code_point) for code_point in set(emoji_map.values())]),
+        'name_to_codepoint': {str(key): str(emoji_map[key]) for key in emoji_map}
     })
     emoji_codes_file.close()
 
