@@ -68,3 +68,8 @@
 .informational-overlays td.operator {
     font-size: 0.9em;
 }
+
+/* Hack to fix scrollbars on Linux */
+.informational-overlays #keyboard-shortcuts .modal-body {
+    overflow-y: hidden;
+}
