@@ -21,7 +21,7 @@ casper.then(function () {
     });
 });
 
-casper.waitForSelector('.sub_unsub_button.checked', function () {
+casper.waitUntilVisible('.sub_unsub_button.checked', function () {
     casper.test.assertExists('.sub_unsub_button.checked', 'Initial subscriptions loaded');
     casper.click('#create_stream_button');
 });
@@ -31,7 +31,7 @@ casper.then(function () {
     casper.test.assertExists('#user-checkboxes [data-email="othello@zulip.com"]', 'Original user list contains Othello');
 });
 
-casper.waitForSelector("#copy-from-stream-expand-collapse", function () {
+casper.waitUntilVisible("#copy-from-stream-expand-collapse", function () {
     casper.click('#copy-from-stream-expand-collapse');
 });
 
@@ -40,11 +40,11 @@ casper.waitUntilVisible("#stream-checkboxes", function () {
     casper.test.assertExists('#stream-checkboxes [data-stream-name="Rome"]', 'Original stream list contains Rome');
 });
 
-casper.waitForSelector("form#stream_creation_form", function () {
+casper.waitUntilVisible("form#stream_creation_form", function () {
     casper.test.info("Filtering with keyword 'ot'");
     casper.fill('form#stream_creation_form', {user_list_filter: 'ot'});
 });
-casper.waitForSelector(".subscriber-list", function () {
+casper.waitUntilVisible("#user-checkboxes", function () {
     casper.test.assertEquals(casper.visible('#user-checkboxes [data-email="cordelia@zulip.com"]'),
                              false,
                              "Cordelia is not visible");
@@ -99,7 +99,7 @@ casper.then(function () {
                              true,
                              "Rome is visible again");
 });
-casper.waitForSelector('#stream_creation_form', function () {
+casper.waitUntilVisible('#stream_creation_form', function () {
     casper.test.assertTextExists('Create stream', 'New stream creation panel');
     casper.fill('form#stream_creation_form', {stream_name: 'Waseemio', stream_description: 'Oimeesaw'});
     casper.click('input[value="Scotland"] ~ span');
