@@ -332,3 +332,31 @@ initialize();
     assert(/Obsolete email.*FOO.*bar/.test(warning));
     assert.equal(person.user_id, user_id);
 }());
+
+initialize();
+
+(function test_update_email_in_reply_to() {
+    var charles = {
+        email: 'charles@example.com',
+        user_id: 601,
+        full_name: 'Charles Dickens',
+    };
+    var maria = {
+        email: 'athens@example.com',
+        user_id: 602,
+        full_name: 'Maria Athens',
+    };
+    people.add(charles);
+    people.add(maria);
+
+    var reply_to = '    charles@example.com,   athens@example.com';
+    assert.equal(
+        people.update_email_in_reply_to(reply_to, 9999, 'whatever'),
+        reply_to
+    );
+    assert.equal(
+        people.update_email_in_reply_to(reply_to, maria.user_id, 'maria@example.com'),
+        'charles@example.com,maria@example.com'
+    );
+}());
+
