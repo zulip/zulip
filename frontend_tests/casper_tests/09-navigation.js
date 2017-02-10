@@ -30,7 +30,7 @@ function then_navigate_to_settings() {
             casper.click(menu_selector);
             casper.waitUntilVisible('a[href^="#settings"]', function () {
                 casper.click('a[href^="#settings"]');
-                casper.waitForSelector('#settings_page', function () {
+                casper.waitUntilVisible('#settings_page', function () {
                     casper.test.assertExists('#settings_page', "Settings page is active");
                     casper.click("#settings_page .exit");
                 });
@@ -47,7 +47,7 @@ function then_navigate_to_subscriptions() {
         casper.waitUntilVisible(menu_selector, function () {
             casper.click(menu_selector);
             casper.click('a[href^="#subscriptions"]');
-            casper.waitForSelector(".subscriptions", function () {
+            casper.waitUntilVisible("#subscription_overlay", function () {
                 casper.test.assertExists('#subscriptions_table', "#subscriptions page is active");
             });
         });
