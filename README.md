@@ -73,12 +73,16 @@ documentation](https://zulip.readthedocs.io/en/latest/prod-install.html).
 
 ## Ways to contribute
 
-Zulip welcomes all forms of contributions!  The page documents the
+Zulip welcomes all forms of contributions!  This page documents the
 Zulip development process.
 
 * **Pull requests**. Before a pull request can be merged, you need to
 sign the [Dropbox Contributor License Agreement][cla].  Also,
 please skim our [commit message style guidelines][doc-commit-style].
+We encourage early pull requests for work in progress. Prefix the title
+of your pull request with `[WIP]` and reference it when asking for
+community feedback. When you are ready for final review, remove
+the `[WIP]`.
 
 * **Testing**. The Zulip automated tests all run automatically when
 you submit a pull request, but you can also run them all in your
