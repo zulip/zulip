@@ -280,6 +280,43 @@ exports.lightbox = function (data) {
     popovers.hide_all();
 };
 
+$(document).ready(function () {
+    var info_overlay_toggle = components.toggle({
+        name: "info-overlay-toggle",
+        selected: 0,
+        values: [
+            { label: "Keyboard Shortcuts", key: "keyboard-shortcuts" },
+            { label: "Message Formatting", key: "search-operators" },
+            { label: "Search Help", key: "markdown-help" },
+        ],
+        callback: function (name, key) {
+            $(".overlay-modal").hide();
+            $("#" + key).show();
+        },
+    }).get();
+
+    $(".informational-overlays .overlay-tabs")
+        .append($(info_overlay_toggle).addClass("large"));
+});
+
+exports.show_info_overlay = function (target) {
+    var el = {
+        overlay: $(".informational-overlays"),
+    };
+
+    if (!el.overlay.hasClass("show")) {
+        $(el.overlay).addClass("show");
+    }
+
+    if (target) {
+        components.toggle.lookup("info-overlay-toggle").goto(target);
+    }
+};
+
+exports.hide_info_overlay = function () {
+    $(".informational-overlays").removeClass("show");
+};
+
 exports.lightbox_photo = function (image, user) {
     // image should be an Image Object in JavaScript.
     var url = $(image).attr("src");
