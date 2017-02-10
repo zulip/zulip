@@ -55,21 +55,21 @@ def get_chart_data(request, user_profile, chart_name=REQ(),
         subgroups = ['false', 'true']
         labels = ['human', 'bot']
         labels_sort_function = None
-        include_empty_subgroups = True
+        include_empty_subgroups = [True]
     elif chart_name == 'messages_sent_over_time':
         stat = COUNT_STATS['messages_sent:is_bot:hour']
-        tables = [RealmCount]
+        tables = [RealmCount, UserCount]
         subgroups = ['false', 'true']
         labels = ['human', 'bot']
         labels_sort_function = None
-        include_empty_subgroups = True
+        include_empty_subgroups = [True, False]
     elif chart_name == 'messages_sent_by_message_type':
         stat = COUNT_STATS['messages_sent:message_type:day']
         tables = [RealmCount, UserCount]
         subgroups = ['public_stream', 'private_stream', 'private_message']
         labels = ['Public Streams', 'Private Streams', 'PMs & Group PMs']
         labels_sort_function = lambda data: sort_by_totals(data['realm'])
-        include_empty_subgroups = True
+        include_empty_subgroups = [True, True]
     elif chart_name == 'messages_sent_by_client':
         stat = COUNT_STATS['messages_sent:client:day']
         tables = [RealmCount, UserCount]
@@ -77,7 +77,7 @@ def get_chart_data(request, user_profile, chart_name=REQ(),
         # these are further re-written by client_label_map
         labels = list(Client.objects.values_list('name', flat=True).order_by('id'))
         labels_sort_function = sort_client_labels
-        include_empty_subgroups = False
+        include_empty_subgroups = [False, False]
     else:
         raise JsonableError(_("Unknown chart name: %s") % (chart_name,))
 
@@ -101,13 +101,13 @@ def get_chart_data(request, user_profile, chart_name=REQ(),
 
     end_times = time_range(start, end, stat.frequency, min_length)
     data = {'end_times': end_times, 'frequency': stat.frequency, 'interval': stat.interval}
-    for table in tables:
+    for table, include_empty_subgroups_ in zip(tables, include_empty_subgroups):
         if table == RealmCount:
             data['realm'] = get_time_series_by_subgroup(
-                stat, RealmCount, realm.id, end_times, subgroups, labels, include_empty_subgroups)
+                stat, RealmCount, realm.id, end_times, subgroups, labels, include_empty_subgroups_)
         if table == UserCount:
             data['user'] = get_time_series_by_subgroup(
-                stat, UserCount, user_profile.id, end_times, subgroups, labels, include_empty_subgroups)
+                stat, UserCount, user_profile.id, end_times, subgroups, labels, include_empty_subgroups_)
     if labels_sort_function is not None:
         data['display_order'] = labels_sort_function(data)
     else:
