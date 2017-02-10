@@ -277,6 +277,10 @@ def process_instrumented_calls(func):
     for call in INSTRUMENTED_CALLS:
         func(call)
 
+def append_instrumentation_data(data):
+    # type: (Dict[str, Any]) -> None
+    INSTRUMENTED_CALLS.append(data)
+
 def instrument_url(f):
     # type: (UrlFuncT) -> UrlFuncT
     if not INSTRUMENTING:
@@ -293,7 +297,7 @@ def instrument_url(f):
             else:
                 extra_info = ''
 
-            INSTRUMENTED_CALLS.append(dict(
+            append_instrumentation_data(dict(
                 url=url,
                 status_code=result.status_code,
                 method=f.__name__,
