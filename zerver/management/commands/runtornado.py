@@ -65,7 +65,7 @@ class Command(BaseCommand):
             addr, port = '', addrport
 
         if not addr:
-            addr = '127.0.0.1'
+            addr = 'localhost'
 
         if not port.isdigit():
             raise CommandError("%r is not a valid port number." % (port,))
@@ -105,6 +105,8 @@ class Command(BaseCommand):
                                                     xheaders=xheaders,
                                                     no_keep_alive=no_keep_alive)
                 http_server.listen(int(port), address=addr)
+                # http_server.bind(int(port), address='localhost')
+                # http_server.start(1)
 
                 setup_event_queue()
                 add_client_gc_hook(missedmessage_hook)

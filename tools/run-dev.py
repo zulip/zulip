@@ -92,7 +92,7 @@ if options.interface is None:
         options.interface = None
     else:
         # Otherwise, only listen to requests on localhost for security.
-        options.interface = "127.0.0.1"
+        options.interface = "localhost"
 elif options.interface == "":
     options.interface = None
 
@@ -150,11 +150,11 @@ pid_file.close()
 # zulip/urls.py.
 cmds = [['./tools/compile-handlebars-templates', 'forever'],
         ['./manage.py', 'rundjango'] +
-        manage_args + ['127.0.0.1:%d' % (django_port,)],
+        manage_args + ['localhost:%d' % (django_port,)],
         ['env', 'PYTHONUNBUFFERED=1', './manage.py', 'runtornado'] +
-        manage_args + ['127.0.0.1:%d' % (tornado_port,)],
+        manage_args + ['localhost:%d' % (tornado_port,)],
         ['./tools/run-dev-queue-processors'] + manage_args,
-        ['env', 'PGHOST=127.0.0.1',  # Force password authentication using .pgpass
+        ['env', 'PGHOST=localhost',  # Force password authentication using .pgpass
          './puppet/zulip/files/postgresql/process_fts_updates']]
 if options.test:
     # Webpack doesn't support 2 copies running on the same system, so
@@ -189,7 +189,7 @@ def fetch_request(url, callback, **kwargs):
 
 class BaseWebsocketHandler(WebSocketHandler):
     # target server ip
-    target_host = '127.0.0.1'  # type: str
+    target_host = 'localhost'  # type: str
     # target server port
     target_port = None  # type: int
 

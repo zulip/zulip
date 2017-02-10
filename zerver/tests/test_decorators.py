@@ -287,7 +287,7 @@ class RateLimitTestCase(TestCase):
 
         class Request(object):
             client = Client()
-            META = {'REMOTE_ADDR': '127.0.0.1'}
+            META = {'REMOTE_ADDR': 'localhost'}
 
         req = Request()
 
