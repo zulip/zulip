@@ -2370,11 +2370,6 @@ def get_default_subs(user_profile):
     # to some day further customize how we set up default streams for new users.
     return get_default_streams_for_realm(user_profile.realm)
 
-# returns default streams in json serializeable format
-def streams_to_dicts_sorted(streams):
-    # type: (List[Stream]) -> List[Dict[str, Any]]
-    return sorted([stream.to_dict() for stream in streams], key=lambda elt: elt["name"])
-
 def do_update_user_activity_interval(user_profile, log_time):
     # type: (UserProfile, datetime.datetime) -> None
     effective_end = log_time + datetime.timedelta(minutes=15)
@@ -2970,16 +2965,6 @@ def get_status_dict(requesting_user_profile):
         return defaultdict(dict)
 
     return UserPresence.get_status_dict_by_realm(requesting_user_profile.realm_id)
-
-
-def get_realm_user_dicts(user_profile):
-    # type: (UserProfile) -> List[Dict[str, Text]]
-    return [{'email': userdict['email'],
-             'user_id': userdict['id'],
-             'is_admin': userdict['is_realm_admin'],
-             'is_bot': userdict['is_bot'],
-             'full_name': userdict['full_name']}
-            for userdict in get_active_user_dicts_in_realm(user_profile.realm)]
 
 def get_cross_realm_dicts():
     # type: () -> List[Dict[str, Any]]

@@ -31,10 +31,24 @@ from zerver.lib.alert_words import user_alert_words
 from zerver.lib.narrow import check_supported_events_narrow_filter
 from zerver.lib.request import JsonableError
 from zerver.lib.actions import validate_user_access_to_subscribers_helper, encode_email_address_helper, do_get_streams, \
-    streams_to_dicts_sorted, get_default_streams_for_realm, bulk_get_subscriber_user_ids, gather_subscriptions_helper, get_realm_aliases, \
-    get_realm_user_dicts, get_status_dict
+    get_default_streams_for_realm, bulk_get_subscriber_user_ids, gather_subscriptions_helper, get_realm_aliases, \
+    get_status_dict
 from zerver.tornado.event_queue import request_event_queue, get_user_events
 import ujson
+
+# returns default streams in json serializeable format
+def streams_to_dicts_sorted(streams):
+    # type: (List[Stream]) -> List[Dict[str, Any]]
+    return sorted([stream.to_dict() for stream in streams], key=lambda elt: elt["name"])
+
+def get_realm_user_dicts(user_profile):
+    # type: (UserProfile) -> List[Dict[str, Text]]
+    return [{'email': userdict['email'],
+             'user_id': userdict['id'],
+             'is_admin': userdict['is_realm_admin'],
+             'is_bot': userdict['is_bot'],
+             'full_name': userdict['full_name']}
+            for userdict in get_active_user_dicts_in_realm(user_profile.realm)]
 
 # Fetch initial data.  When event_types is not specified, clients want
 # all event types.  Whenever you add new code to this function, you
