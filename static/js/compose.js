@@ -734,6 +734,17 @@ exports.has_message_content = function () {
     return exports.message_content() !== "";
 };
 
+exports.update_email = function (user_id, new_email) {
+    var reply_to = exports.recipient();
+
+    if (!reply_to) {
+        return;
+    }
+
+    reply_to = people.update_email_in_reply_to(reply_to, user_id, new_email);
+
+    exports.recipient(reply_to);
+};
 
 // *Synchronously* check if a stream exists.
 exports.check_stream_existence = function (stream_name, autosubscribe) {
