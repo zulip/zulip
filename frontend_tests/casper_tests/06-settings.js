@@ -169,7 +169,7 @@ casper.then(function () {
    https://github.com/zulip/zulip/issues/1269. Consequently, we can't wait
    on any condition to avoid the race condition.
 
-casper.waitForSelector('#create_alert_word_form', function () {
+casper.waitUntilVisible('#create_alert_word_form', function () {
     casper.test.info('Attempting to submit an empty alert word');
     casper.click('#create_alert_word_button');
     casper.test.info('Checking that an error is displayed');
@@ -198,7 +198,7 @@ casper.waitForSelector('#create_alert_word_form', function () {
 casper.then(function change_default_language() {
     casper.test.info('Changing the default language');
     casper.click('[data-section="display-settings"]');
-    casper.waitForSelector('#default_language');
+    casper.waitUntilVisible('#default_language');
 });
 
 casper.thenClick('#default_language');
@@ -214,7 +214,7 @@ casper.waitUntilVisible('#display-settings-status', function () {
 });
 
 casper.then(function () {
-    casper.waitForSelector("#default_language", function () {
+    casper.waitUntilVisible("#default_language", function () {
         casper.test.info("Checking if we are on Chinese page.");
         casper.test.assertEvalEquals(function () {
             return $('#default_language_name').text();
@@ -232,7 +232,7 @@ if (REALMS_HAVE_SUBDOMAINS) {
 
 casper.thenOpen(settings_url);
 
-casper.waitForSelector("#settings-change-box", function check_url_preference() {
+casper.waitUntilVisible("#settings-change-box", function check_url_preference() {
     casper.test.info("Checking the i18n url language precedence.");
     casper.test.assertEvalEquals(function () {
         return document.documentElement.lang;
