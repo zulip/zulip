@@ -243,7 +243,17 @@ if __name__ == "__main__":
         subprocess.call(generate_fixtures_command)
 
     TestRunner = get_runner(settings)
-    test_runner = TestRunner(failfast=options.fatal_errors, verbosity=2)
+    """
+    - To run tests in serial, set parallel=1. This is the default
+      currently because parallel mode is not stable at the moment.
+    - To change the number of parallel processes, you can either:
+        * Use 'DJANGO_TEST_PROCESSES' environment variable.
+        * Set parallel>1.
+    - For automatic determination of the number of processes,
+      set parallel=django.test.runner.default_test_processes().
+    """
+    test_runner = TestRunner(failfast=options.fatal_errors, verbosity=2,
+                             parallel=1, keepdb=True)
     failures = test_runner.run_tests(suites, full_suite=full_suite)
 
     templates_not_rendered = test_runner.get_shallow_tested_templates()

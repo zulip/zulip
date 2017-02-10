@@ -188,3 +188,6 @@ pycodestyle==2.3.1
 # Needed for link preview
 beautifulsoup4==4.5.3
 git+https://github.com/rafaelmartins/pyoembed.git@eb9901917c2a44b49e2887c077ead84a722c50dc#egg=pyoembed
+
+# Needed to run tests in parallel
+tblib==1.3.0
