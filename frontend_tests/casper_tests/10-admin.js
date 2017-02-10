@@ -284,21 +284,28 @@ casper.then(function () {
 // TODO: Test stream deletion
 
 casper.then(function () {
-    casper.test.info("Changing realm default language");
-    casper.evaluate(function () {
-        $('#id_realm_default_language').val('de').change();
+    casper.waitUntilVisible('#id_realm_default_language', function () {
+        casper.test.info("Changing realm default language");
+        casper.evaluate(function () {
+            $('#id_realm_default_language').val('de').change();
+        });
+        casper.click('form.admin-realm-form input.button');
     });
-    casper.click('form.admin-realm-form input.button');
 });
 
-casper.waitUntilVisible('#admin-realm-default-language-status', function () {
-    casper.test.assertSelectorHasText('#admin-realm-default-language-status', 'Default language changed!');
+casper.then(function () {
+    casper.waitUntilVisible('#admin-realm-default-language-status', function () {
+        casper.test.assertSelectorHasText('#admin-realm-default-language-status',
+                                          'Default language changed!');
+    });
 });
 
 // Test authentication methods setting
-casper.waitForSelector('input[type="checkbox"]', function () {
-    casper.click(".method_row[data-method='Email'] input[type='checkbox']");
-    casper.click('form.admin-realm-form input.button');
+casper.then(function () {
+    casper.waitForSelector(".method_row[data-method='Email'] input[type='checkbox']", function () {
+        casper.click(".method_row[data-method='Email'] input[type='checkbox']");
+        casper.click('form.admin-realm-form input.button');
+    });
 });
 
 // Test setting was activated--default is checked
