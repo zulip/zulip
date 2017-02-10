@@ -283,6 +283,37 @@ exports.pm_with_url = function (message) {
     return uri;
 };
 
+exports.update_email_in_reply_to = function (reply_to, user_id, new_email) {
+    // We try to replace an old email with a new email in a reply_to,
+    // but we try to avoid changing the reply_to if we don't have to,
+    // and we don't warn on any errors.
+    var emails = reply_to.split(',');
+
+    var persons = _.map(emails, function (email) {
+        return people_dict.get(email.trim());
+    });
+
+    if (!_.all(persons)) {
+        return reply_to;
+    }
+
+    var needs_patch = _.any(persons, function (person) {
+        return person.user_id === user_id;
+    });
+
+    if (!needs_patch) {
+        return reply_to;
+    }
+
+    emails = _.map(persons, function (person) {
+        if (person.user_id === user_id) {
+            return new_email;
+        }
+        return person.email;
+    });
+
+    return emails.join(',');
+};
 
 exports.pm_with_operand_ids = function (operand) {
     var emails = operand.split(',');
