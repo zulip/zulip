@@ -115,6 +115,7 @@ Contents:
    :caption: Subsystem documentation
 
    settings
+   events-system
    queuing
    bots-guide
    custom-apps

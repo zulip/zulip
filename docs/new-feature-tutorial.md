@@ -6,6 +6,11 @@ as an example of the specific steps needed to add a new feature: adding
 a new option to the application that is dynamically synced through the
 data system in real-time to all browsers the user may have open.
 
+As you read this, you may find you need to learn about Zulip's
+real-time push system; the
+[real-time push and events](events-system.html) documentation has a
+detailed explanation of how everything works.
+
 ## General Process in brief
 
 ### Adding a field to the database
