@@ -1,4 +1,4 @@
-# Change your [settings](/#settings)
+# Change your settings
 
 1. Click the cog (<i class="icon-vector-cog"></i>) icon in the top right corner.
 2. From the dropdown menu, choose the **Settings** option.
