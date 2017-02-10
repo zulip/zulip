@@ -10,7 +10,9 @@ function then_edit_last_message() {
             $('.popover_edit_message').click();
         });
     });
-    casper.waitForSelector(".message_edit_content");
+    casper.then(function () {
+        casper.waitUntilVisible(".message_edit_content");
+    });
 }
 
 // Send and edit a stream message
