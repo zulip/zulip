@@ -42,7 +42,7 @@ casper.then(function () {
 
 var edited_value = 'admin tests: test edit';
 
-casper.waitForSelector(".message_edit_content", function () {
+casper.waitUntilVisible(".message_edit_content", function () {
     casper.evaluate(function (edited_value) {
         var msg = $('#zhome .message_row:last');
         msg.find('.message_edit_content').val(edited_value);
@@ -66,7 +66,7 @@ casper.then(function () {
 //         $('.popover_edit_message').click();
 //     });
 // });
-// casper.waitForSelector(".message_edit_content", function () {
+// casper.waitUntilVisible(".message_edit_content", function () {
 //     casper.evaluate(function () {
 //         var msg = $('#zhome .message_row:last');
 //         msg.find('.message_edit_content').val("test RE-edited");
@@ -80,7 +80,7 @@ casper.then(function () {
 });
 
 // deactivate "allow message editing"
-casper.waitForSelector('input[type="checkbox"][id="id_realm_allow_message_editing"]', function () {
+casper.waitUntilVisible('input[type="checkbox"][id="id_realm_allow_message_editing"]', function () {
     casper.click('input[type="checkbox"][id="id_realm_allow_message_editing"]');
     casper.click('form.admin-realm-form input.button');
 });
@@ -101,7 +101,7 @@ casper.then(function () {
 
 // Commented out due to Issue #1243
 // // try to save the half-finished edit
-// casper.waitForSelector('.message_table', function () {
+// casper.waitUntilVisible('.message_table', function () {
 //     casper.then(function () {
 //         casper.evaluate(function () {
 //             var msg = $('#zhome .message_row:last');
@@ -111,7 +111,7 @@ casper.then(function () {
 // });
 
 // // make sure we get the right error message, and that the message hasn't actually changed
-// casper.waitForSelector("div.edit_error", function () {
+// casper.waitUntilVisible("div.edit_error", function () {
 //     casper.test.assertSelectorHasText(
 //         'div.edit_error',
 //         'Error saving edit: Your organization has turned off message editing.');
@@ -121,7 +121,7 @@ casper.then(function () {
 // Check that edit link has changed to "View Source" in the popover menu
 // TODO: also check that the edit icon no longer appears next to the message
 casper.then(function () {
-    casper.waitForSelector('.message_row');
+    casper.waitUntilVisible('.message_row');
     // Note that this could have a false positive, e.g. if all the messages aren't
     // loaded yet. See Issue #1243
     casper.evaluate(function () {
@@ -142,7 +142,7 @@ casper.then(function () {
     casper.click('#settings-dropdown');
     casper.click('a[href^="#administration"]');
 });
-casper.waitForSelector('input[type="checkbox"][id="id_realm_allow_message_editing"]', function () {
+casper.waitUntilVisible('input[type="checkbox"][id="id_realm_allow_message_editing"]', function () {
     casper.click('input[type="checkbox"][id="id_realm_allow_message_editing"]');
     casper.click('form.admin-realm-form input.button');
     casper.waitUntilVisible('#admin-realm-message-editing-status', function () {
@@ -160,7 +160,7 @@ casper.waitForSelector('input[type="checkbox"][id="id_realm_allow_message_editin
 // });
 
 // // save our edit
-// casper.waitForSelector('.message_table', function () {
+// casper.waitUntilVisible('.message_table', function () {
 //     casper.then(function () {
 //         casper.evaluate(function () {
 //             var msg = $('#zhome .message_row:last');
@@ -196,10 +196,10 @@ casper.then(function () {
     casper.test.assertExists('#settings_overlay_container.show', 'Administration page is active');
 });
 
-casper.waitForSelector('form.admin-realm-form input.button');
+casper.waitUntilVisible('form.admin-realm-form input.button');
 
 // deactivate message editing
-casper.waitForSelector('input[type="checkbox"][id="id_realm_allow_message_editing"]', function () {
+casper.waitUntilVisible('input[type="checkbox"][id="id_realm_allow_message_editing"]', function () {
     casper.evaluate(function () {
         $('input[type="text"][id="id_realm_message_content_edit_limit_minutes"]').val('4');
     });
@@ -221,7 +221,7 @@ casper.then(function () {
 
 casper.then(function () {
     // allow message editing again, and check that the old edit limit is still there
-    casper.waitForSelector('input[type="checkbox"][id="id_realm_allow_message_editing"]', function () {
+    casper.waitUntilVisible('input[type="checkbox"][id="id_realm_allow_message_editing"]', function () {
         casper.click('input[type="checkbox"][id="id_realm_allow_message_editing"]');
         casper.click('form.admin-realm-form input.button');
     });
@@ -241,7 +241,7 @@ casper.then(function () {
 
 casper.then(function () {
     // allow arbitrary message editing
-    casper.waitForSelector('input[type="checkbox"][id="id_realm_allow_message_editing"]', function () {
+    casper.waitUntilVisible('input[type="checkbox"][id="id_realm_allow_message_editing"]', function () {
         casper.evaluate(function () {
             $('input[type="text"][id="id_realm_message_content_edit_limit_minutes"]').val('0');
         });
@@ -263,7 +263,7 @@ casper.then(function () {
 
 casper.then(function () {
     // disallow message editing, with illegal edit limit value. should be fixed by admin.js
-    casper.waitForSelector('input[type="checkbox"][id="id_realm_allow_message_editing"]', function () {
+    casper.waitUntilVisible('input[type="checkbox"][id="id_realm_allow_message_editing"]', function () {
         casper.evaluate(function () {
             $('input[type="text"][id="id_realm_message_content_edit_limit_minutes"]').val('moo');
         });
