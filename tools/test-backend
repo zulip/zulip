@@ -262,7 +262,7 @@ if __name__ == "__main__":
         subprocess.call(generate_fixtures_command)
 
     TestRunner = get_runner(settings)
-    test_runner = TestRunner(failfast=options.fatal_errors)
+    test_runner = TestRunner(failfast=options.fatal_errors, verbosity=2)
     failures = test_runner.run_tests(suites, full_suite=full_suite)
 
     templates_not_rendered = test_runner.get_shallow_tested_templates()
@@ -309,8 +309,5 @@ if __name__ == "__main__":
         # an important clue as to why tests fail.
         report_slow_tests()
 
-    if failures:
-        print('FAILED!')
-    else:
-        print('DONE!')
+    # We'll have printed whether tests passed or failed above
     sys.exit(bool(failures))
