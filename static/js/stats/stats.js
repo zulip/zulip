@@ -87,8 +87,7 @@ function populate_messages_sent_over_time(data) {
         },
         yaxis: { fixedrange: true, rangemode: 'tozero' },
         legend: {
-            x: 0.75, y: 1.12, orientation: 'h',
-            font: font_14pt,
+            x: 0.75, y: 1.12, orientation: 'h', font: font_14pt,
         },
         font: font_14pt,
     };
@@ -295,35 +294,13 @@ $.get({
     },
 });
 
-function word_wrap(text, width) {
-    var broken_words = [];
-    text.split(' ').forEach(function (word) {
-        var i;
-        for (i=0; i+width<word.length; i+=width-1) {
-            broken_words.push(word.slice(i, i+width-1).concat('-'));
-        }
-        broken_words.push(word.slice(i, word.length));
-    });
-    var lines = [];
-    var line = '';
-    broken_words.forEach(function (word) {
-        if (line === '') {
-            line = word;
-        } else if (line.length + word.length > width) {
-            lines.push(line);
-            line = word;
-        } else {
-            line = line.concat(' ', word);
-        }
-    });
-    lines.push(line);
-    return lines.join("<br>");
-}
-
 function round_to_percentages(values, total) {
     return values.map(function (x) {
         if (x === total) {
             return '100%';
+        }
+        if (x === 0) {
+            return '0%';
         }
         var unrounded = x/total*100;
         var precision = Math.min(6, Math.max(2, Math.floor(
@@ -332,28 +309,11 @@ function round_to_percentages(values, total) {
     });
 }
 
-function make_pie_trace(values, labels, text) {
-    var trace = [{
-        values: values,
-        labels: labels,
-        type: 'pie',
-        direction: 'clockwise',
-        rotation: -90,
-        sort: false,
-        textinfo: "text",
-        text: text,
-        hoverinfo: "label+text",
-        pull: 0.05,
-        marker: {
-            colors: ['#008000', '#57a200', '#95c473', '#acd5b0', '#bde6ee', '#caf8ff'],
-        },
-    }];
-    return trace;
-}
-
-function compute_pie_chart_data(name_map, time_series_data, num_steps) {
-    var data = [];
-    for (var key in time_series_data) {
+// Last label will turn into "Other" if time_series data has a label not in labels
+function compute_summary_chart_data(time_series_data, num_steps, labels_) {
+    var data = {};
+    var key;
+    for (key in time_series_data) {
         if (time_series_data[key].length < num_steps) {
             num_steps = time_series_data[key].length;
         }
@@ -361,85 +321,120 @@ function compute_pie_chart_data(name_map, time_series_data, num_steps) {
         for (var i=1; i<=num_steps; i+=1) {
             sum += time_series_data[key][time_series_data[key].length-i];
         }
-        if (sum > 0) {
-            data.push({
-                value: sum,
-                label: word_wrap(name_map.hasOwnProperty(key) ? name_map[key] : key, 18),
-            });
-        }
+        data[key] = sum;
     }
-    data.sort(function (a, b) {
-        return b.value - a.value;
-    });
-    var labels = [];
+    var labels = labels_.slice();
     var values = [];
-    var j;
-    if (data.length <= 6) {
-        for (j=0; j<data.length; j+=1) {
-            labels.push(data[j].label);
-            values.push(data[j].value);
+    labels.forEach(function (label) {
+        if (data.hasOwnProperty(label)) {
+            values.push(data[label]);
+            delete data[label];
+        } else {
+            values.push(0);
         }
-    } else {
-        for (j=0; j<5; j+=1) {
-            labels.push(data[j].label);
-            values.push(data[j].value);
+    });
+    if (!$.isEmptyObject(data)) {
+        labels[labels.length-1] = "Other";
+        for (key in data) {
+            if (data.hasOwnProperty(key)) {
+                values[labels.length-1] += data[key];
+            }
         }
-        var sum_remaining = 0;
-        for (j=5; j<data.length; j+=1) {
-            sum_remaining += data[j].value;
-        }
-        labels.push("Other");
-        values.push(sum_remaining);
     }
     var total = values.reduce(function (a, b) { return a + b; }, 0);
     return {
-        trace: make_pie_trace(values, labels, round_to_percentages(values, total)),
-        total_str: "Total messages: " + total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+        values: values,
+        labels: labels,
+        percentages: round_to_percentages(values, total),
+        total: total,
     };
 }
 
 function populate_messages_sent_by_client(data) {
-    // Hardcoded names in the development environment
-    var name_map = {
-        electron_: "Electron",
-        barnowl_: "BarnOwl",
-        website_: "Website",
-        API_: "API",
-        android_: "Android",
-        iOS_: "iOS",
-        react_native_: "React Native",
-    };
-
     var layout = {
-        margin: { l: 90, r: 0, b: 0, t: 0 },
-        width: 450,
-        height: 300,
+        width: 750,
+        height: null, // set in draw_plot()
+        margin: { l: 3, r: 40, b: 40, t: 0 },
         font: font_14pt,
+        xaxis: { range: null }, // set in draw_plot()
+        yaxis: { showticklabels: false },
+        showlegend: false,
     };
 
-    var chart_data = {
+    // sort labels so that values are descending in the default view
+    var realm_cumulative = compute_summary_chart_data(data.realm, data.end_times.length,
+                                                      data.display_order.slice(0, 12));
+    var label_values = [];
+    for (var i=0; i<realm_cumulative.values.length; i+=1) {
+        label_values.push({
+            label: realm_cumulative.labels[i],
+            value: realm_cumulative.labels[i] === "Other" ? -1 : realm_cumulative.values[i],
+        });
+    }
+    label_values.sort(function (a, b) { return b.value - a.value; });
+    var labels = [];
+    label_values.forEach(function (item) { labels.push(item.label); });
+
+    function make_plot_data(time_series_data, num_steps) {
+        var plot_data = compute_summary_chart_data(time_series_data, num_steps, labels);
+        plot_data.values.reverse();
+        plot_data.labels.reverse();
+        plot_data.percentages.reverse();
+        var annotations = { values : [],  labels : [],  text : []};
+        for (var i=0; i<plot_data.values.length; i+=1) {
+            if (plot_data.values[i] > 0) {
+                annotations.values.push(plot_data.values[i]);
+                annotations.labels.push(plot_data.labels[i]);
+                annotations.text.push('   ' + plot_data.labels[i] + ' (' + plot_data.percentages[i] + ')');
+            }
+        }
+        return {
+            trace: {
+                x: plot_data.values,
+                y: plot_data.labels,
+                type: 'bar',
+                orientation: 'h',
+                sort: false,
+                textinfo: "text",
+                hoverinfo: "none",
+                marker: { color: '#537c5e' },
+                font: { family: 'Humbug', size: 18, color: '#000000' },
+            },
+            trace_annotations: {
+                x: annotations.values,
+                y: annotations.labels,
+                mode: 'text',
+                type: 'scatter',
+                textposition: 'middle right',
+                text: annotations.text,
+            },
+        };
+    }
+
+    var plot_data = {
         realm: {
-            cumulative: compute_pie_chart_data(name_map, data.realm, data.end_times.length),
-            thirty: compute_pie_chart_data(name_map, data.realm, 30),
-            ten: compute_pie_chart_data(name_map, data.realm, 10),
+            cumulative: make_plot_data(data.realm, data.end_times.length),
+            thirty: make_plot_data(data.realm, 30),
+            ten: make_plot_data(data.realm, 10),
         },
         user: {
-            cumulative: compute_pie_chart_data(name_map, data.user, data.end_times.length),
-            thirty: compute_pie_chart_data(name_map, data.user, 30),
-            ten: compute_pie_chart_data(name_map, data.user, 10),
+            cumulative: make_plot_data(data.user, data.end_times.length),
+            thirty: make_plot_data(data.user, 30),
+            ten: make_plot_data(data.user, 10),
         },
     };
 
     var user_button = 'realm';
     var time_button = 'cumulative';
-    var totaldiv = document.getElementById('pie_messages_sent_by_client_total');
 
     function draw_plot() {
+        var data_ = plot_data[user_button][time_button];
+        layout.height = layout.margin.b + data_.trace.x.length * 30;
+        layout.xaxis.range = [0, Math.max.apply(null, data_.trace.x) * 1.3];
         Plotly.newPlot('id_messages_sent_by_client',
-                       chart_data[user_button][time_button].trace,
+                       [data_.trace, data_.trace_annotations],
                        layout,
-                       {displayModeBar: false});
-        totaldiv.innerHTML = chart_data[user_button][time_button].total_str;
+                       {displayModeBar: false, staticPlot: true});
     }
 
     draw_plot();
@@ -517,29 +512,50 @@ $.get({
 });
 
 function populate_messages_sent_by_message_type(data) {
-    var name_map = {
-        public_stream: "Public Stream",
-        private_stream: "Private Stream",
-        private_message: "Private Message",
-    };
-
     var layout = {
         margin: { l: 90, r: 0, b: 0, t: 0 },
-        width: 465,
+        width: 550,
         height: 300,
         font: font_14pt,
     };
 
-    var chart_data = {
+    function make_plot_data(time_series_data, num_steps) {
+        var plot_data = compute_summary_chart_data(time_series_data, num_steps, data.display_order);
+        var labels = [];
+        for (var i=0; i<plot_data.labels.length; i+=1) {
+            labels.push(plot_data.labels[i] + ' (' + plot_data.percentages[i] + ')');
+        }
+        return {
+            trace: {
+                values: plot_data.values,
+                labels: labels,
+                type: 'pie',
+                direction: 'clockwise',
+                rotation: -90,
+                sort: false,
+                textinfo: "text",
+                text: plot_data.labels.map(function () { return ''; }),
+                hoverinfo: "label+value",
+                pull: 0.05,
+                marker: {
+                    colors: ['#68537c', '#be6d68', '#b3b348'],
+                },
+            },
+            total_str: "Total messages: " + plot_data.total.toString().
+                replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+        };
+    }
+
+    var plot_data = {
         realm: {
-            cumulative: compute_pie_chart_data(name_map, data.realm, data.end_times.length),
-            thirty: compute_pie_chart_data(name_map, data.realm, 30),
-            ten: compute_pie_chart_data(name_map, data.realm, 10),
+            cumulative: make_plot_data(data.realm, data.end_times.length),
+            thirty: make_plot_data(data.realm, 30),
+            ten: make_plot_data(data.realm, 10),
         },
         user: {
-            cumulative: compute_pie_chart_data(name_map, data.user, data.end_times.length),
-            thirty: compute_pie_chart_data(name_map, data.user, 30),
-            ten: compute_pie_chart_data(name_map, data.user, 10),
+            cumulative: make_plot_data(data.user, data.end_times.length),
+            thirty: make_plot_data(data.user, 30),
+            ten: make_plot_data(data.user, 10),
         },
     };
 
@@ -549,10 +565,10 @@ function populate_messages_sent_by_message_type(data) {
 
     function draw_plot() {
         Plotly.newPlot('id_messages_sent_by_message_type',
-                       chart_data[user_button][time_button].trace,
+                       [plot_data[user_button][time_button].trace],
                        layout,
                        {displayModeBar: false});
-        totaldiv.innerHTML = chart_data[user_button][time_button].total_str;
+        totaldiv.innerHTML = plot_data[user_button][time_button].total_str;
     }
 
     draw_plot();

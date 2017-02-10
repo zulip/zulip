@@ -55,6 +55,7 @@ svg {
 
 .page-content {
     width: calc(100% - 300px - 8px);
+    height: calc(100vh - 94px);
     overflow: auto;
     display: inline-block;
     vertical-align: top;

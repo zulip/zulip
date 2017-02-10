@@ -31,6 +31,15 @@ def installation_epoch():
     earliest_realm_creation = Realm.objects.aggregate(models.Min('date_created'))['date_created__min']
     return floor_to_day(datetime_to_UTC(earliest_realm_creation))
 
+def last_successful_fill(property):
+    # type: (str) -> Optional[datetime.datetime]
+    fillstate = FillState.objects.filter(property=property).first()
+    if fillstate is None:
+        return None
+    if fillstate.state == FillState.DONE:
+        return fillstate.end_time
+    return fillstate.end_time - datetime.timedelta(hours=1)
+
 # would only ever make entries here by hand
 class Anomaly(ModelReprMixin, models.Model):
     info = models.CharField(max_length=1000) # type: Text

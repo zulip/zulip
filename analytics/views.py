@@ -13,7 +13,7 @@ from jinja2 import Markup as mark_safe
 from analytics.lib.counts import CountStat, process_count_stat, COUNT_STATS
 from analytics.lib.time_utils import time_range
 from analytics.models import BaseCount, InstallationCount, RealmCount, \
-    UserCount, StreamCount
+    UserCount, StreamCount, last_successful_fill
 
 from zerver.decorator import has_request_variables, REQ, zulip_internal, \
     zulip_login_required, to_non_negative_int, to_utc_datetime
@@ -28,6 +28,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 import itertools
 import json
+import logging
 import pytz
 import re
 import time
@@ -48,52 +49,69 @@ def get_chart_data(request, user_profile, chart_name=REQ(),
                    start=REQ(converter=to_utc_datetime, default=None),
                    end=REQ(converter=to_utc_datetime, default=None)):
     # type: (HttpRequest, UserProfile, Text, Optional[int], Optional[datetime], Optional[datetime]) -> HttpResponse
-    realm = user_profile.realm
-    # These are implicitly relying on realm.date_created and timezone.now being in UTC.
-    if start is None:
-        start = realm.date_created
-    if end is None:
-        end = timezone.now()
-    if start > end:
-        raise JsonableError(_("Start time is later than end time. Start: %(start)s, End: %(end)s") %
-                            {'start': start, 'end': end})
-
     if chart_name == 'number_of_humans':
         stat = COUNT_STATS['active_users:is_bot:day']
         tables = [RealmCount]
         subgroups = ['false', 'true']
         labels = ['human', 'bot']
-        include_empty_subgroups = True
+        labels_sort_function = None
+        include_empty_subgroups = [True]
     elif chart_name == 'messages_sent_over_time':
         stat = COUNT_STATS['messages_sent:is_bot:hour']
-        tables = [RealmCount]
+        tables = [RealmCount, UserCount]
         subgroups = ['false', 'true']
         labels = ['human', 'bot']
-        include_empty_subgroups = True
+        labels_sort_function = None
+        include_empty_subgroups = [True, False]
     elif chart_name == 'messages_sent_by_message_type':
         stat = COUNT_STATS['messages_sent:message_type:day']
         tables = [RealmCount, UserCount]
         subgroups = ['public_stream', 'private_stream', 'private_message']
-        labels = None
-        include_empty_subgroups = True
+        labels = ['Public Streams', 'Private Streams', 'PMs & Group PMs']
+        labels_sort_function = lambda data: sort_by_totals(data['realm'])
+        include_empty_subgroups = [True, True]
     elif chart_name == 'messages_sent_by_client':
         stat = COUNT_STATS['messages_sent:client:day']
         tables = [RealmCount, UserCount]
         subgroups = [str(x) for x in Client.objects.values_list('id', flat=True).order_by('id')]
+        # these are further re-written by client_label_map
         labels = list(Client.objects.values_list('name', flat=True).order_by('id'))
-        include_empty_subgroups = False
+        labels_sort_function = sort_client_labels
+        include_empty_subgroups = [False, False]
     else:
         raise JsonableError(_("Unknown chart name: %s") % (chart_name,))
 
+    # Most likely someone using our API endpoint. The /stats page does not
+    # pass a start or end in its requests.
+    if start is not None and end is not None and start > end:
+        raise JsonableError(_("Start time is later than end time. Start: %(start)s, End: %(end)s") %
+                            {'start': start, 'end': end})
+
+    realm = user_profile.realm
+    if start is None:
+        start = realm.date_created
+    if end is None:
+        end = last_successful_fill(stat.property)
+    if end is None or start > end:
+        logging.warning("User from realm %s attempted to access /stats, but the computed "
+                        "start time, %s (creation date of realm) is later than the computed "
+                        "end time, %s (last successful analytics update). Is the "
+                        "update_analytics_counts cron job running?" % (realm.string_id, start, end))
+        raise JsonableError(_("No analytics data available. Please contact your server administrator."))
+
     end_times = time_range(start, end, stat.frequency, min_length)
     data = {'end_times': end_times, 'frequency': stat.frequency, 'interval': stat.interval}
-    for table in tables:
+    for table, include_empty_subgroups_ in zip(tables, include_empty_subgroups):
         if table == RealmCount:
             data['realm'] = get_time_series_by_subgroup(
-                stat, RealmCount, realm.id, end_times, subgroups, labels, include_empty_subgroups)
+                stat, RealmCount, realm.id, end_times, subgroups, labels, include_empty_subgroups_)
         if table == UserCount:
             data['user'] = get_time_series_by_subgroup(
-                stat, UserCount, user_profile.id, end_times, subgroups, labels, include_empty_subgroups)
+                stat, UserCount, user_profile.id, end_times, subgroups, labels, include_empty_subgroups_)
+    if labels_sort_function is not None:
+        data['display_order'] = labels_sort_function(data)
+    else:
+        data['display_order'] = None
     return json_success(data=data)
 
 def table_filtered_to_id(table, key_id):
@@ -108,6 +126,26 @@ def table_filtered_to_id(table, key_id):
         return InstallationCount.objects.all()
     else:
         raise ValueError("Unknown table: %s" % (table,))
+
+def sort_by_totals(value_arrays):
+    # type: (Dict[str, List[int]]) -> List[str]
+    totals = []
+    for label, values in value_arrays.items():
+        totals.append((label, sum(values)))
+    totals.sort(key=lambda label_total: label_total[1], reverse=True)
+    return [label for label, total in totals]
+
+def sort_client_labels(data):
+    # type: (Dict[str, Dict[str, List[int]]]) -> List[str]
+    realm_order = sort_by_totals(data['realm'])
+    user_order = sort_by_totals(data['user'])
+    label_sort_values = {}
+    for i, label in enumerate(realm_order):
+        label_sort_values[label] = i
+    for i, label in enumerate(user_order):
+        label_sort_values[label] = min(i, label_sort_values.get(label, i))
+    return [label for label, sort_value in sorted(label_sort_values.items(),
+                                                  key=lambda x: x[1])]
 
 def client_label_map(name):
     # type: (str) -> str
@@ -125,6 +163,9 @@ def client_label_map(name):
         return "Python API"
     if name.startswith("Zulip") and name.endswith("Webhook"):
         return name[len("Zulip"):-len("Webhook")] + " webhook"
+    # Clients in dev environment start with _.
+    if name.startswith("_"):
+        return name[1:]
     return name
 
 def rewrite_client_arrays(value_arrays):
