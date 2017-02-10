@@ -211,7 +211,7 @@ function process_hotkey(e) {
             return true;
         } else if ($(".informational-overlays").hasClass("show")) {
             ui.hide_info_overlay();
-            return false;
+            return true;
         }
     }
 
