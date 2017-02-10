@@ -38,7 +38,7 @@ def create_chat_bot(no_learn):
                            "response_selection_method": "chatterbot.response_selection.get_random_response",
                            "statement_comparison_function": "chatterbot.comparisons.levenshtein_distance"
                        }],
-                   output_adapter="chatterbot.output.OutputFormatAdapter",
+                   output_adapter="chatterbot.output.OutputAdapter",
                    output_format='text',
                    database=DATABASE_PATH,
                    silence_performance_warning="True",
@@ -124,7 +124,7 @@ class JohnHandler(object):
             type='stream',
             to='VirtualHelp',
             subject="John",
-            content=bota.get_response(original_content)
+            content=str(bota.get_response(original_content))
         ))
 
 handler_class = JohnHandler
