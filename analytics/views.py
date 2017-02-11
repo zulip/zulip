@@ -136,15 +136,21 @@ def sort_by_totals(value_arrays):
     totals.sort(key=lambda label_total: label_total[1], reverse=True)
     return [label for label, total in totals]
 
+# For any given user, we want to show a fixed set of clients in the chart,
+# regardless of the time aggregation or whether we're looking at realm or
+# user data. This fixed set ideally includes the clients most important in
+# understanding the realm's traffic and the user's traffic. This function
+# tries to rank the clients so that taking the first N elements of the
+# sorted list has a reasonable chance of doing so.
 def sort_client_labels(data):
     # type: (Dict[str, Dict[str, List[int]]]) -> List[str]
     realm_order = sort_by_totals(data['realm'])
     user_order = sort_by_totals(data['user'])
-    label_sort_values = {}
+    label_sort_values = {} # type: Dict[str, float]
     for i, label in enumerate(realm_order):
         label_sort_values[label] = i
     for i, label in enumerate(user_order):
-        label_sort_values[label] = min(i, label_sort_values.get(label, i))
+        label_sort_values[label] = min(i-.1, label_sort_values.get(label, i))
     return [label for label, sort_value in sorted(label_sort_values.items(),
                                                   key=lambda x: x[1])]
 
