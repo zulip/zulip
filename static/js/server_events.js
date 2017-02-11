@@ -231,7 +231,7 @@ function dispatch_normal_event(event) {
             var msgs_to_update = _.map(event.messages, function (message_id) {
                 return message_store.get(message_id);
             });
-            unread.mark_messages_as_read(msgs_to_update, {from: "server"});
+            unread_ui.mark_messages_as_read(msgs_to_update, {from: "server"});
             break;
         }
         break;

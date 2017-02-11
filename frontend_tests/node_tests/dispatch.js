@@ -717,7 +717,7 @@ run(function (override, capture, args) {
     // update_message_flags__read
     var event = event_fixtures.update_message_flags__read;
     override('message_store', 'get', capture(['message_id']));
-    override('unread', 'mark_messages_as_read', noop);
+    override('unread_ui', 'mark_messages_as_read', noop);
     dispatch(event);
     assert_same(args.message_id, 999);
 });
