@@ -1311,7 +1311,7 @@ class UserPresence(models.Model):
 
     @staticmethod
     def get_status_dict_by_user(user_profile):
-        # type: (int) -> defaultdict[Any, Dict[Any, Any]]
+        # type: (UserProfile) -> defaultdict[Any, Dict[Any, Any]]
         query = UserPresence.objects.filter(user_profile=user_profile).values(
             'client__name',
             'status',
@@ -1323,7 +1323,7 @@ class UserPresence(models.Model):
         )
 
         if PushDeviceToken.objects.filter(user=user_profile).exists():
-            mobile_user_ids = [user_profile.id]
+            mobile_user_ids = [user_profile.id]  # type: List[int]
         else:
             mobile_user_ids = []
 
@@ -1356,7 +1356,7 @@ class UserPresence(models.Model):
 
     @staticmethod
     def get_status_dicts_for_query(query, mobile_user_ids):
-        # type: (QuerySet, Set[int]) -> defaultdict[Any, Dict[Any, Any]]
+        # type: (QuerySet, List[int]) -> defaultdict[Any, Dict[Any, Any]]
         user_statuses = defaultdict(dict) # type: defaultdict[Any, Dict[Any, Any]]
 
         for row in query:
