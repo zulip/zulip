@@ -111,7 +111,7 @@ def check_variable_type(allowed_type_funcs):
     types for this variable.
     """
     def enumerated_type_check(var_name, val):
-        # type: (str, Any) -> str
+        # type: (str, Any) -> Optional[str]
         for func in allowed_type_funcs:
             if not func(var_name, val):
                 return None

@@ -1937,7 +1937,7 @@ def do_change_default_sending_stream(user_profile, stream, log=True):
                    'stream': str(stream)})
     if user_profile.is_bot:
         if stream:
-            stream_name = stream.name
+            stream_name = stream.name  # type: Optional[Text]
         else:
             stream_name = None
         send_event(dict(type='realm_bot',
@@ -1960,7 +1960,7 @@ def do_change_default_events_register_stream(user_profile, stream, log=True):
                    'stream': str(stream)})
     if user_profile.is_bot:
         if stream:
-            stream_name = stream.name
+            stream_name = stream.name  # type: Optional[Text]
         else:
             stream_name = None
         send_event(dict(type='realm_bot',

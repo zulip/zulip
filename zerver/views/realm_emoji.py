@@ -18,7 +18,7 @@ def list_emoji(request, user_profile):
     return json_success({'emoji': user_profile.realm.get_emoji()})
 
 @has_request_variables
-def upload_emoji(request, user_profile, emoji_name=None, url=REQ()):
+def upload_emoji(request, user_profile, emoji_name, url=REQ()):
     # type: (HttpRequest, UserProfile, Text, Text) -> HttpResponse
     check_valid_emoji_name(emoji_name)
     check_emoji_admin(user_profile)

@@ -104,14 +104,14 @@ def simulated_empty_cache():
     cache_queries = [] # type: List[Tuple[str, Union[Text, List[Text]], Text]]
 
     def my_cache_get(key, cache_name=None):
-        # type: (Text, Optional[str]) -> Any
+        # type: (Text, Optional[str]) -> Optional[Dict[Text, Any]]
         cache_queries.append(('get', key, cache_name))
         return None
 
     def my_cache_get_many(keys, cache_name=None):
         # type: (List[Text], Optional[str]) -> Dict[Text, Any]
         cache_queries.append(('getmany', keys, cache_name))
-        return None
+        return {}
 
     old_get = cache.cache_get
     old_get_many = cache.cache_get_many

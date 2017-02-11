@@ -26,7 +26,7 @@ def random_api_key():
 # Recipient objects
 def create_user_profile(realm, email, password, active, bot_type, full_name,
                         short_name, bot_owner, is_mirror_dummy, tos_version):
-    # type: (Realm, Text, Text, bool, Optional[int], Text, Text, Optional[UserProfile], bool, Optional[Text]) -> UserProfile
+    # type: (Realm, Text, Optional[Text], bool, Optional[int], Text, Text, Optional[UserProfile], bool, Optional[Text]) -> UserProfile
     now = timezone.now()
     email = UserManager.normalize_email(email)
 

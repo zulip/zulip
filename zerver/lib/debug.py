@@ -14,7 +14,7 @@ from typing import Optional
 # setup, which we might want if we move Tornado to run in a daemon
 # rather than via screen).
 def interactive_debug(sig, frame):
-    # type: (int, Optional[FrameType]) -> None
+    # type: (int, FrameType) -> None
     """Interrupt running process, and provide a python prompt for
     interactive debugging."""
     d = {'_frame': frame}      # Allow access to frame object.
