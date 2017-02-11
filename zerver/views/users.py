@@ -154,7 +154,7 @@ def patch_bot_backend(request, user_profile, email,
         check_change_full_name(bot, full_name)
     if default_sending_stream is not None:
         if default_sending_stream == "":
-            stream = None
+            stream = None  # type: Optional[Stream]
         else:
             (stream, recipient, sub) = access_stream_by_name(
                 user_profile, default_sending_stream)

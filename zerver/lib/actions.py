@@ -1171,7 +1171,7 @@ def check_send_message(sender, client, message_type_name, message_to,
                        subject_name, message_content, realm=None, forged=False,
                        forged_timestamp=None, forwarder_user_profile=None, local_id=None,
                        sender_queue_id=None):
-    # type: (UserProfile, Client, Text, Sequence[Text], Text, Text, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[Text], Optional[Text]) -> int
+    # type: (UserProfile, Client, Text, Sequence[Text], Optional[Text], Text, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[Text], Optional[Text]) -> int
     message = check_message(sender, client, message_type_name, message_to,
                             subject_name, message_content, realm, forged, forged_timestamp,
                             forwarder_user_profile, local_id, sender_queue_id)
@@ -1926,7 +1926,7 @@ def _default_stream_permision_check(user_profile, stream):
             raise JsonableError(_('Insufficient permission'))
 
 def do_change_default_sending_stream(user_profile, stream, log=True):
-    # type: (UserProfile, Stream, bool) -> None
+    # type: (UserProfile, Optional[Stream], bool) -> None
     _default_stream_permision_check(user_profile, stream)
 
     user_profile.default_sending_stream = stream
@@ -1949,7 +1949,7 @@ def do_change_default_sending_stream(user_profile, stream, log=True):
                    bot_owner_userids(user_profile))
 
 def do_change_default_events_register_stream(user_profile, stream, log=True):
-    # type: (UserProfile, Stream, bool) -> None
+    # type: (UserProfile, Optional[Stream], bool) -> None
     _default_stream_permision_check(user_profile, stream)
 
     user_profile.default_events_register_stream = stream

@@ -276,7 +276,7 @@ def add_subscriptions_backend(request, user_profile,
                 "private", email, "", msg))
 
     if announce and len(created_streams) > 0:
-        notifications_stream = user_profile.realm.notifications_stream
+        notifications_stream = user_profile.realm.notifications_stream  # type: Optional[Stream]
         if notifications_stream is not None:
             if len(created_streams) > 1:
                 stream_msg = "the following streams: %s" % (", ".join('#**%s**' % s.name for s in created_streams))

@@ -13,7 +13,7 @@ from zerver.lib.utils import statsd, statsd_key
 from zerver.lib.validator import check_bool, check_dict
 from zerver.models import UserProfile
 
-from typing import Text
+from typing import Optional, Text
 
 import subprocess
 import os
@@ -89,7 +89,8 @@ def json_report_error(request, user_profile, message=REQ(), stacktrace=REQ(),
         stacktrace = js_source_map.annotate_stacktrace(stacktrace)
 
     try:
-        version = subprocess.check_output(["git", "log", "HEAD^..HEAD", "--oneline"], universal_newlines=True)
+        version = subprocess.check_output(["git", "log", "HEAD^..HEAD", "--oneline"],
+                                          universal_newlines=True)  # type: Optional[Text]
     except Exception:
         version = None
 

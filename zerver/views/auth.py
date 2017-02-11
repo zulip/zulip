@@ -326,7 +326,7 @@ def log_into_subdomain(request):
                                          full_name, invalid_subdomain)
 
 def get_dev_users(extra_users_count=10):
-    # type: (Optional[int]) -> List[UserProfile]
+    # type: (int) -> List[UserProfile]
     # Development environments usually have only a few users, but
     # it still makes sense to limit how many extra users we render to
     # support performance testing with DevAuthBackend.

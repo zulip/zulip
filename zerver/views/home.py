@@ -76,7 +76,7 @@ def approximate_unread_count(user_profile):
         flags=UserMessage.flags.read).count()
 
 def sent_time_in_epoch_seconds(user_message):
-    # type: (UserMessage) -> float
+    # type: (UserMessage) -> Optional[float]
     # user_message is a UserMessage object.
     if not user_message:
         return None
