@@ -188,6 +188,46 @@ exports.get_recipients = function (user_ids_string) {
     return names.join(', ');
 };
 
+exports.pm_reply_to = function (message) {
+    if (message.type !== 'private') {
+        return;
+    }
+
+    if (message.display_recipient.length === 0) {
+        blueslip.error('Empty recipient list in message');
+        return;
+    }
+
+    var user_ids = _.map(message.display_recipient, function (elem) {
+        return elem.user_id || elem.id;
+    });
+
+    var other_user_ids = _.filter(user_ids, function (user_id) {
+        return !people.is_my_user_id(user_id);
+    });
+
+    if (other_user_ids.length >= 1) {
+        user_ids = other_user_ids;
+    } else {
+        user_ids = [my_user_id];
+    }
+
+    var emails = _.map(user_ids, function (user_id) {
+        var person = people_by_user_id_dict.get(user_id);
+        if (!person) {
+            blueslip.error('Unknown user id in message: ' + user_id);
+            return '?';
+        }
+        return person.email;
+    });
+
+    emails.sort();
+
+    var reply_to = emails.join(',');
+
+    return reply_to;
+};
+
 exports.pm_with_user_ids = function (message) {
     if (message.type !== 'private') {
         return;
@@ -241,6 +281,58 @@ exports.pm_with_url = function (message) {
     var slug = user_ids.join(',') + '-' + suffix;
     var uri = "#narrow/pm-with/" + slug;
     return uri;
+};
+
+exports.update_email_in_reply_to = function (reply_to, user_id, new_email) {
+    // We try to replace an old email with a new email in a reply_to,
+    // but we try to avoid changing the reply_to if we don't have to,
+    // and we don't warn on any errors.
+    var emails = reply_to.split(',');
+
+    var persons = _.map(emails, function (email) {
+        return people_dict.get(email.trim());
+    });
+
+    if (!_.all(persons)) {
+        return reply_to;
+    }
+
+    var needs_patch = _.any(persons, function (person) {
+        return person.user_id === user_id;
+    });
+
+    if (!needs_patch) {
+        return reply_to;
+    }
+
+    emails = _.map(persons, function (person) {
+        if (person.user_id === user_id) {
+            return new_email;
+        }
+        return person.email;
+    });
+
+    return emails.join(',');
+};
+
+exports.pm_with_operand_ids = function (operand) {
+    var emails = operand.split(',');
+    emails = _.map(emails, function (email) { return email.trim(); });
+    var persons = _.map(emails, function (email) {
+        return people_dict.get(email);
+    });
+
+    if (!_.all(persons)) {
+        return;
+    }
+
+    var user_ids = _.map(persons, function (person) {
+        return person.user_id;
+    });
+
+    user_ids.sort();
+
+    return user_ids;
 };
 
 exports.emails_to_slug = function (emails_string) {

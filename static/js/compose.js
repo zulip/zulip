@@ -636,11 +636,15 @@ exports.respond_to_message = function (opts) {
     }
 
     var pm_recipient = message.reply_to;
-    if (opts.reply_type === "personal" && message.type === "private") {
-        // reply_to for private messages is everyone involved, so for
-        // personals replies we need to set the private message
-        // recipient to just the sender
-        pm_recipient = message.sender_email;
+    if (message.type === "private") {
+        if (opts.reply_type === "personal") {
+            // reply_to for private messages is everyone involved, so for
+            // personals replies we need to set the private message
+            // recipient to just the sender
+            pm_recipient = people.get_person_from_user_id(message.sender_id).email;
+        } else {
+            pm_recipient = people.pm_reply_to(message);
+        }
     }
     if (opts.reply_type === 'personal' || message.type === 'private') {
         msg_type = 'private';
@@ -730,6 +734,17 @@ exports.has_message_content = function () {
     return exports.message_content() !== "";
 };
 
+exports.update_email = function (user_id, new_email) {
+    var reply_to = exports.recipient();
+
+    if (!reply_to) {
+        return;
+    }
+
+    reply_to = people.update_email_in_reply_to(reply_to, user_id, new_email);
+
+    exports.recipient(reply_to);
+};
 
 // *Synchronously* check if a stream exists.
 exports.check_stream_existence = function (stream_name, autosubscribe) {
