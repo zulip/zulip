@@ -164,7 +164,7 @@ var zero_counts = {
     assert.equal(counts.home_unread_messages, 1);
     assert.equal(unread.num_unread_for_stream('social'), 1);
 
-    muting.mute_topic('social', 'test_muting');
+    muting.add_muted_topic('social', 'test_muting');
     counts = unread.get_counts();
     assert.equal(counts.stream_count.get('social'), 0);
     assert.equal(counts.home_unread_messages, 0);
