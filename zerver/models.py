@@ -166,7 +166,7 @@ class Realm(ModelReprMixin, models.Model):
 
     @cache_with_key(get_realm_emoji_cache_key, timeout=3600*24*7)
     def get_emoji(self):
-        # type: () -> Dict[Text, Dict[str, Text]]
+        # type: () -> Dict[Text, Optional[Dict[str, Text]]]
         return get_realm_emoji_uncached(self)
 
     @property
@@ -199,7 +199,7 @@ class Realm(ModelReprMixin, models.Model):
 
     @property
     def subdomain(self):
-        # type: () -> Text
+        # type: () -> Optional[Text]
         if settings.REALMS_HAVE_SUBDOMAINS:
             return self.string_id
         return None
@@ -243,7 +243,7 @@ class Realm(ModelReprMixin, models.Model):
 post_save.connect(flush_realm, sender=Realm)
 
 def get_realm(string_id):
-    # type: (Text) -> Optional[Realm]
+    # type: (Text) -> Realm
     return Realm.objects.filter(string_id=string_id).first()
 
 def completely_open(realm):
@@ -376,7 +376,7 @@ class RealmEmoji(ModelReprMixin, models.Model):
         return u"<RealmEmoji(%s): %s %s>" % (self.realm.domain, self.name, self.img_url)
 
 def get_realm_emoji_uncached(realm):
-    # type: (Realm) -> Dict[Text, Dict[str, Text]]
+    # type: (Realm) -> Dict[Text, Optional[Dict[str, Text]]]
     d = {}
     for row in RealmEmoji.objects.filter(realm=realm).select_related('author'):
         if row.author:

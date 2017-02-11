@@ -299,7 +299,7 @@ class EventsRegisterTest(ZulipTestCase):
         return events
 
     def assert_on_error(self, error):
-        # type: (str) -> None
+        # type: (Optional[str]) -> None
         if error:
             raise AssertionError(error)
 
