@@ -280,7 +280,7 @@ def name_changes_disabled(realm):
     return settings.NAME_CHANGES_DISABLED or realm.name_changes_disabled
 
 class RealmAlias(models.Model):
-    realm = models.ForeignKey(Realm, null=True) # type: Optional[Realm]
+    realm = models.ForeignKey(Realm) # type: Realm
     # should always be stored lowercase
     domain = models.CharField(max_length=80, db_index=True) # type: Text
     allow_subdomains = models.BooleanField(default=False)
