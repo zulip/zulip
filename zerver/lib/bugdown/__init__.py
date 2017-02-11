@@ -101,9 +101,9 @@ def walk_tree(root, processor, stop_after_first=False):
     return results
 
 # height is not actually used
-def add_a(root, url, link, height="", title=None, desc=None,
+def add_a(root, url, link, title=None, desc=None,
           class_attr="message_inline_image", data_id=None):
-    # type: (Element, Text, Text, Text, Optional[Text], Optional[Text], Text, Optional[Text]) -> None
+    # type: (Element, Text, Text, Optional[Text], Optional[Text], Text, Optional[Text]) -> None
     title = title if title is not None else url_filename(link)
     title = title if title else ""
     desc = desc if desc is not None else ""
@@ -610,7 +610,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             youtube = self.youtube_image(url)
             if youtube is not None:
                 yt_id = self.youtube_id(url)
-                add_a(root, youtube, url, None, None, None, "youtube-video message_inline_image", yt_id)
+                add_a(root, youtube, url, None, None, "youtube-video message_inline_image", yt_id)
                 continue
 
             global db_data
