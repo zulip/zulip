@@ -72,7 +72,7 @@ $(function () {
         // lists.
         var message = ui.find_message(message_id);
 
-        unread.mark_message_as_read(message);
+        unread_ui.mark_message_as_read(message);
         ui.update_starred(message.id, message.starred !== true);
         message_flags.send_starred([message], message.starred);
     }
@@ -429,7 +429,7 @@ $(function () {
     // BANKRUPTCY
 
     $(".bankruptcy_button").click(function () {
-        unread.enable();
+        unread_ui.enable();
     });
 
     (function () {

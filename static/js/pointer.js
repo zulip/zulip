@@ -183,7 +183,7 @@ exports.initialize = function initialize() {
             } else {
                 messages = event.msg_list.message_range(event.previously_selected, event.id);
             }
-            unread.mark_messages_as_read(messages, {from: 'pointer'});
+            unread_ui.mark_messages_as_read(messages, {from: 'pointer'});
         }
     });
 };

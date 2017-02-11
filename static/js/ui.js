@@ -215,7 +215,7 @@ exports.update_starred = function (message_id, starred) {
         return;
     }
 
-    unread.mark_message_as_read(message);
+    unread_ui.mark_message_as_read(message);
 
     message.starred = starred;
 
@@ -614,9 +614,9 @@ function scroll_finished() {
         }
         // When the window scrolls, it may cause some messages to
         // enter the screen and become read.  Calling
-        // unread.process_visible will update necessary
+        // unread_ui.process_visible will update necessary
         // data structures and DOM elements.
-        setTimeout(unread.process_visible, 0);
+        setTimeout(unread_ui.process_visible, 0);
     }
 }
 
@@ -633,7 +633,7 @@ var saved_compose_cursor = 0;
 
 $(function () {
     viewport.message_pane.scroll($.throttle(50, function () {
-        unread.process_visible();
+        unread_ui.process_visible();
         scroll_finish();
     }));
 

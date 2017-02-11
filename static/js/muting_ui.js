@@ -116,17 +116,17 @@ exports.handle_updates = function (muted_topics) {
 
 exports.mute_topic = function (stream, topic) {
     muting.add_muted_topic(stream, topic);
-    unread.update_unread_counts();
+    unread_ui.update_unread_counts();
 };
 
 exports.unmute_topic = function (stream, topic) {
     muting.remove_muted_topic(stream, topic);
-    unread.update_unread_counts();
+    unread_ui.update_unread_counts();
 };
 
 exports.update_muted_topics = function (muted_topics) {
     muting.set_muted_topics(muted_topics);
-    unread.update_unread_counts();
+    unread_ui.update_unread_counts();
 };
 
 $(function () {

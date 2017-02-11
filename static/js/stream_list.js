@@ -439,7 +439,7 @@ $(function () {
                 stream_li.addClass('active-filter');
             }
             rebuild_recent_topics(op_stream[0]);
-            unread.process_visible();
+            unread_ui.process_visible();
         }
     });
 

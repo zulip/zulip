@@ -224,7 +224,7 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new, local
 
             new_messages = _.map(new_messages, add_message_metadata);
             exports.add_messages(new_messages, msg_list, {messages_are_new: messages_are_new});
-            unread.process_visible();
+            unread_ui.process_visible();
             notifications.possibly_notify_new_messages_outside_viewport(new_messages, local_id);
             notifications.notify_messages_outside_current_search(elsewhere_messages);
         },
@@ -352,7 +352,7 @@ exports.update_messages = function update_messages(events) {
             message_list.narrowed.view.rerender_messages(msgs_to_rerender);
         }
     }
-    unread.update_unread_counts();
+    unread_ui.update_unread_counts();
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
 };
@@ -361,7 +361,7 @@ exports.update_messages = function update_messages(events) {
 // This function could probably benefit from some refactoring
 exports.do_unread_count_updates = function do_unread_count_updates(messages) {
     unread.process_loaded_messages(messages);
-    unread.update_unread_counts();
+    unread_ui.update_unread_counts();
     resize.resize_page_components();
 };
 
@@ -411,7 +411,7 @@ exports.insert_new_messages = function insert_new_messages(messages, local_id) {
         }
     }
 
-    unread.process_visible();
+    unread_ui.process_visible();
     notifications.received_messages(messages);
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
