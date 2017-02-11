@@ -552,7 +552,7 @@ $(function () {
     hashchange.initialize();
     invite.initialize();
     pointer.initialize();
-    unread.initialize();
+    unread_ui.initialize();
     activity.initialize();
     emoji.initialize();
 });
