@@ -640,7 +640,7 @@ def profiled(func):
         # type: (*Any, **Any) -> Any
         fn = func.__name__ + ".profile"
         prof = cProfile.Profile()
-        retval = prof.runcall(func, *args, **kwargs)
+        retval = prof.runcall(func, *args, **kwargs) # type: Any
         prof.dump_stats(fn)
         return retval
     return wrapped_func # type: ignore # https://github.com/python/mypy/issues/1927

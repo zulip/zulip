@@ -18,6 +18,7 @@ from boto.s3.key import Key
 from boto.s3.connection import S3Connection
 from mimetypes import guess_type, guess_extension
 
+from zerver.lib.str_utils import force_bytes, force_str
 from zerver.models import get_user_profile_by_email, get_user_profile_by_id
 from zerver.models import Attachment
 from zerver.models import Realm, UserProfile, Message
@@ -152,7 +153,7 @@ def upload_image_to_s3(
     else:
         headers = None
 
-    key.set_contents_from_string(contents, headers=headers)
+    key.set_contents_from_string(force_str(contents), headers=headers)
 
 def get_file_info(request, user_file):
     # type: (HttpRequest, File) -> Tuple[Text, Optional[Text]]
@@ -276,7 +277,7 @@ class S3UploadBackend(ZulipUploadBackend):
         conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
         bucket = get_bucket(conn, bucket_name)
         key = bucket.get_key(email_hash)
-        image_data = key.get_contents_as_string()
+        image_data = force_bytes(key.get_contents_as_string())
 
         resized_medium = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
         upload_image_to_s3(
