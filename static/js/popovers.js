@@ -684,7 +684,7 @@ exports.register_click_handlers = function () {
         var topic = $(e.currentTarget).attr('data-topic-name');
         var stream = $(e.currentTarget).attr('data-stream-name');
         popovers.hide_topic_sidebar_popover();
-        unread.mark_topic_as_read(stream,topic);
+        unread_ui.mark_topic_as_read(stream, topic);
         e.stopPropagation();
     });
 
@@ -852,7 +852,7 @@ exports.register_click_handlers = function () {
     $('body').on('click', '.mark_stream_as_read', function (e) {
         var stream = $(e.currentTarget).parents('ul').attr('data-name');
         popovers.hide_stream_sidebar_popover();
-        unread.mark_stream_as_read(stream);
+        unread_ui.mark_stream_as_read(stream);
         e.stopPropagation();
     });
 

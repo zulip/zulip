@@ -46,6 +46,51 @@ exports.set_count_toggle_button = function (elem, count) {
     return elem.text("1k+");
 };
 
+exports.mark_all_as_read = function mark_all_as_read(cont) {
+    _.each(message_list.all.all_messages(), function (msg) {
+        msg.flags = msg.flags || [];
+        msg.flags.push('read');
+    });
+    unread.declare_bankruptcy();
+    unread.update_unread_counts();
+
+    channel.post({
+        url:      '/json/messages/flags',
+        idempotent: true,
+        data:     {messages: JSON.stringify([]),
+                   all:      true,
+                   op:       'add',
+                   flag:     'read'},
+        success:  cont});
+};
+
+exports.mark_stream_as_read = function mark_stream_as_read(stream, cont) {
+    channel.post({
+        url:      '/json/messages/flags',
+        idempotent: true,
+        data:     {messages: JSON.stringify([]),
+                   all:      false,
+                   op:       'add',
+                   flag:     'read',
+                   stream_name: stream,
+                  },
+        success:  cont});
+};
+
+exports.mark_topic_as_read = function mark_topic_as_read(stream, topic, cont) {
+    channel.post({
+    url:      '/json/messages/flags',
+    idempotent: true,
+    data:     {messages: JSON.stringify([]),
+               all:      false,
+               op:       'add',
+               flag:     'read',
+               topic_name: topic,
+               stream_name: stream,
+               },
+    success:  cont});
+};
+
 function consider_bankruptcy() {
     // Until we've handled possibly declaring bankruptcy, don't show
     // unread counts since they only consider messages that are loaded
