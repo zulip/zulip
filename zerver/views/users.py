@@ -130,12 +130,10 @@ def avatar(request, email):
     return redirect(url)
 
 def get_stream_name(stream):
-    # type: (Stream) -> Optional[Text]
+    # type: (Optional[Stream]) -> Optional[Text]
     if stream:
-        name = stream.name
-    else:
-        name = None
-    return name
+        return stream.name
+    return None
 
 @has_request_variables
 def patch_bot_backend(request, user_profile, email,
