@@ -35,7 +35,7 @@ import re
 import time
 
 from six.moves import filter, map, range, zip
-from typing import Any, Dict, List, Tuple, Optional, Sequence, Callable, Type, \
+from typing import Any, Dict, List, Tuple, Optional, Callable, Type, \
     Union, Text
 
 @zulip_login_required
@@ -1018,7 +1018,7 @@ def realm_user_summary_table(all_records, admin_emails):
         rows.append(row)
 
     def by_used_time(row):
-        # type: (Dict[str, Sequence[str]]) -> str
+        # type: (Dict[str, Any]) -> str
         return row['cells'][3]
 
     rows = sorted(rows, key=by_used_time, reverse=True)
