@@ -553,3 +553,17 @@ function get_predicate(operators) {
     assert.equal(Filter.describe(narrow), string);
 
 }());
+
+(function test_update_email() {
+    var terms = [
+        {operator: 'pm-with', operand: 'steve@foo.com'},
+        {operator: 'sender', operand: 'steve@foo.com'},
+        {operator: 'stream', operand: 'steve@foo.com'}, // try to be tricky
+    ];
+    var filter = new Filter(terms);
+    filter.update_email(steve.user_id, 'showell@foo.com');
+    assert.deepEqual(filter.operands('pm-with'), ['showell@foo.com']);
+    assert.deepEqual(filter.operands('sender'), ['showell@foo.com']);
+    assert.deepEqual(filter.operands('stream'), ['steve@foo.com']);
+}());
+
