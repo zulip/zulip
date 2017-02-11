@@ -1310,8 +1310,6 @@ class UserPresence(models.Model):
     @staticmethod
     def get_status_dict_by_realm(realm_id):
         # type: (int) -> defaultdict[Any, Dict[Any, Any]]
-        user_statuses = defaultdict(dict) # type: defaultdict[Any, Dict[Any, Any]]
-
         query = UserPresence.objects.filter(
             user_profile__realm_id=realm_id,
             user_profile__is_active=True,
@@ -1331,6 +1329,13 @@ class UserPresence(models.Model):
             user__is_active=True,
             user__is_bot=False,
         ).distinct("user").values("user")]
+
+        return UserPresence.get_status_dicts_for_query(query, mobile_user_ids)
+
+    @staticmethod
+    def get_status_dicts_for_query(query, mobile_user_ids):
+        # type: (QuerySet, Set[int]) -> defaultdict[Any, Dict[Any, Any]]
+        user_statuses = defaultdict(dict) # type: defaultdict[Any, Dict[Any, Any]]
 
         for row in query:
             info = UserPresence.to_presence_dict(
