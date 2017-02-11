@@ -94,7 +94,8 @@ else:
     mypy_command = "mypy"
 
 extra_args = ["--fast-parser",
-              "--silent-imports",
+              "--ignore-missing-imports",
+              "--follow-imports=silent",
               "--check-untyped-defs",
               "--scripts-are-modules",
               "-i", "--cache-dir=var/mypy-cache"]
