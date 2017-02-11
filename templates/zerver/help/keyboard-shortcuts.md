@@ -1,6 +1,6 @@
 # Keyboard shortcuts
 
-tKeyboard shortcuts allow a user to use Zulip easily and efficiently
+Keyboard shortcuts allow a user to use Zulip easily and efficiently
 for a better user experience.
 
 Zulip keyboard shortcuts are divided into four categories:
@@ -40,14 +40,14 @@ Note: Keyboard shortcuts for MacOSX have been enclosed in paranthesis
 * **Reply to author** `R` - This shortcut allows the user to begin
   writing a private message to the author of the selected message
   (outlined in blue).
-* **Reply to message mentioning the author** `Enter` `@` (`Ret` `@`) - This
+* **Reply to message mentioning the author** `Enter` `@` (`Return` `@`) - This
   shortcut allows the user to begin replying to the selected message
   (outlined in blue), @-mentioning the author of the selected message.
 * **New stream message** `c` - This shortcut allows the user to begin
   composing a new stream message.
 * **New private message** `C` - This shortcut allows the user to begin
   composing a new private message.
-* **Send message** `Tab key` then `Enter` - This shortcut allows the
+* **Send message** `Tab key` then `Enter` (`Tab key` then `Return`) - This shortcut allows the
   user to send the message that they've written.
 * **Cancel compose** `Esc` - This shortcut allows the user to cancel
   and discard their unsent message.
@@ -74,7 +74,7 @@ Note: Keyboard shortcuts for MacOSX have been enclosed in paranthesis
 * **Open message actions menu** `i` - This shortcut shows the
   available message actions of the selected message (outlined in
   blue).
-* **Edit a message you sent** `i` then `Enter` - This shortcut allows
+* **Edit a message you sent** `i` then `Enter` (`i` then `Return`) - This shortcut allows
   the user to edit the selected message (outlined in blue) if the user
   authored the selected message. If the selected message was written
   by another user, this shortcut will enable the user to view the
