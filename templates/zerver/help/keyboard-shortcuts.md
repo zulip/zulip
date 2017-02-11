@@ -1,6 +1,6 @@
 # Keyboard shortcuts
 
-Keyboard shortcuts allow a user to use Zulip easily and efficiently
+tKeyboard shortcuts allow a user to use Zulip easily and efficiently
 for a better user experience.
 
 Zulip keyboard shortcuts are divided into four categories:
@@ -8,6 +8,8 @@ Zulip keyboard shortcuts are divided into four categories:
 * [Composing messages](#composing-messages)
 * [Narrowing](#narrowing)
 * [Menus](#menus)
+
+Note: Keyboard shortcuts for MacOSX have been enclosed in paranthesis
 
 ## Navigation
 
@@ -25,20 +27,20 @@ Zulip keyboard shortcuts are divided into four categories:
   to scroll up to the previous message in their view.
 * **Next message** `j` `Down arrow` - This shortcut allows the user to
   scroll down to the next message in their view.
-* **Scroll up** `K` `PgUp` - This shortcut allows the user to scroll
+* **Scroll up** `K` `PgUp` (`K` `Fn` `Up arrow`) - This shortcut allows the user to scroll
   up through the messages in their view.
-* **Scroll down** `J` `PgDn` `Spacebar` - This shortcut allows the
+* **Scroll down** `J` `PgDn` `Spacebar` (`J` `Fn` `Down arrow` `Spacebar`) - This shortcut allows the
   user to scroll down through the messages in their view.
-* **Last message** `End` - This shortcut allows the user to scroll to
+* **Last message** `End` (`Fn` `Right arrow`) - This shortcut allows the user to scroll to
   the most recent message in their view.
 
 ## Composing messages
-* **Reply to message** `Enter` `r` - This shortcut allows the user to
+* **Reply to message** `Enter` `r` (`Return` `r`) - This shortcut allows the user to
   begin replying to the selected message (outlined in blue).
 * **Reply to author** `R` - This shortcut allows the user to begin
   writing a private message to the author of the selected message
   (outlined in blue).
-* **Reply to message mentioning the author** `Enter` `@` - This
+* **Reply to message mentioning the author** `Enter` `@` (`Ret` `@`) - This
   shortcut allows the user to begin replying to the selected message
   (outlined in blue), @-mentioning the author of the selected message.
 * **New stream message** `c` - This shortcut allows the user to begin
