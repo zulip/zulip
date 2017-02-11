@@ -362,6 +362,21 @@ Filter.prototype = {
         return this.has_operand('stream', stream_name) && this.has_operand('topic', topic);
     },
 
+    update_email: function (user_id, new_email) {
+        _.each(this._operators, function (term) {
+            switch (term.operator) {
+                case 'pm-with':
+                case 'sender':
+                case 'from':
+                    term.operand = people.update_email_in_reply_to(
+                        term.operand,
+                        user_id,
+                        new_email
+                    );
+            }
+        });
+    },
+
     // Build a filter function from a list of operators.
     _build_predicate: function Filter__build_predicate() {
         var operators = this._operators;
