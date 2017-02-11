@@ -1359,9 +1359,9 @@ class UserPresence(models.Model):
 
         for row in query:
             info = UserPresence.to_presence_dict(
-                client_name=row['client__name'],
-                status=row['status'],
-                dt=row['timestamp'],
+                row['client__name'],
+                row['status'],
+                row['timestamp'],
                 push_enabled=row['user_profile__enable_offline_push_notifications'],
                 has_push_devices=row['user_profile__id'] in mobile_user_ids,
                 is_mirror_dummy=row['user_profile__is_mirror_dummy'],
@@ -1371,9 +1371,9 @@ class UserPresence(models.Model):
         return user_statuses
 
     @staticmethod
-    def to_presence_dict(client_name=None, status=None, dt=None, push_enabled=None,
+    def to_presence_dict(client_name, status, dt, push_enabled=None,
                          has_push_devices=None, is_mirror_dummy=None):
-        # type: (Optional[Text], Optional[int], Optional[datetime.datetime], Optional[bool], Optional[bool], Optional[bool]) -> Dict[str, Any]
+        # type: (Text, int, datetime.datetime, Optional[bool], Optional[bool], Optional[bool]) -> Dict[str, Any]
         presence_val = UserPresence.status_to_string(status)
 
         timestamp = datetime_to_timestamp(dt)
@@ -1387,9 +1387,9 @@ class UserPresence(models.Model):
     def to_dict(self):
         # type: () -> Dict[str, Any]
         return UserPresence.to_presence_dict(
-            client_name=self.client.name,
-            status=self.status,
-            dt=self.timestamp
+            self.client.name,
+            self.status,
+            self.timestamp
         )
 
     @staticmethod
