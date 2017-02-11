@@ -38,7 +38,6 @@ exclude_py2 = [] # type: List[str]
 
 exclude_py3 = """
 bots/process_ccache
-zerver/lib/ccache.py
 """.split()
 
 parser = argparse.ArgumentParser(description="Run mypy on files tracked by git.")
