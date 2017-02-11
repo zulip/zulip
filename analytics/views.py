@@ -95,9 +95,9 @@ def get_chart_data(request, user_profile, chart_name=REQ(),
         end = last_successful_fill(stat.property)
     if end is None or start > end:
         logging.warning("User from realm %s attempted to access /stats, but the computed "
-                        "start time, %s (creation date of realm) is later than the computed "
-                        "end time, %s (last successful analytics update). Is the "
-                        "update_analytics_counts cron job running?" % (realm.string_id, start, end))
+                        "start time: %s (creation time of realm) is later than the computed "
+                        "end time: %s (last successful analytics update). Is the "
+                        "analytics cron job running?" % (realm.string_id, start, end))
         raise JsonableError(_("No analytics data available. Please contact your server administrator."))
 
     end_times = time_range(start, end, stat.frequency, min_length)
@@ -114,19 +114,6 @@ def get_chart_data(request, user_profile, chart_name=REQ(),
     else:
         data['display_order'] = None
     return json_success(data=data)
-
-def table_filtered_to_id(table, key_id):
-    # type: (Type[BaseCount], int) -> QuerySet
-    if table == RealmCount:
-        return RealmCount.objects.filter(realm_id=key_id)
-    elif table == UserCount:
-        return UserCount.objects.filter(user_id=key_id)
-    elif table == StreamCount:
-        return StreamCount.objects.filter(stream_id=key_id)
-    elif table == InstallationCount:
-        return InstallationCount.objects.all()
-    else:
-        raise ValueError("Unknown table: %s" % (table,))
 
 def sort_by_totals(value_arrays):
     # type: (Dict[str, List[int]]) -> List[str]
@@ -153,6 +140,19 @@ def sort_client_labels(data):
         label_sort_values[label] = min(i-.1, label_sort_values.get(label, i))
     return [label for label, sort_value in sorted(label_sort_values.items(),
                                                   key=lambda x: x[1])]
+
+def table_filtered_to_id(table, key_id):
+    # type: (Type[BaseCount], int) -> QuerySet
+    if table == RealmCount:
+        return RealmCount.objects.filter(realm_id=key_id)
+    elif table == UserCount:
+        return UserCount.objects.filter(user_id=key_id)
+    elif table == StreamCount:
+        return StreamCount.objects.filter(stream_id=key_id)
+    elif table == InstallationCount:
+        return InstallationCount.objects.all()
+    else:
+        raise ValueError("Unknown table: %s" % (table,))
 
 def client_label_map(name):
     # type: (str) -> str
@@ -189,9 +189,7 @@ def rewrite_client_arrays(value_arrays):
     return mapped_arrays
 
 def get_time_series_by_subgroup(stat, table, key_id, end_times, subgroups, labels, include_empty_subgroups):
-    # type: (CountStat, Type[BaseCount], Optional[int], List[datetime], List[str], Optional[List[str]], bool) -> Dict[str, List[int]]
-    if labels is None:
-        labels = subgroups
+    # type: (CountStat, Type[BaseCount], Optional[int], List[datetime], List[str], List[str], bool) -> Dict[str, List[int]]
     if len(subgroups) != len(labels):
         raise ValueError("subgroups and labels have lengths %s and %s, which are different." %
                          (len(subgroups), len(labels)))
