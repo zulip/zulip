@@ -265,7 +265,7 @@ exports.hide_actions_popover = function () {
 exports.topic_ops = {
     mute: function (stream, topic) {
         popovers.hide_topic_sidebar_popover();
-        muting.mute_topic(stream, topic);
+        muting_ui.mute_topic(stream, topic);
         muting_ui.persist_and_rerender();
         muting_ui.notify_with_undo_option(stream, topic);
     },
@@ -274,7 +274,7 @@ exports.topic_ops = {
     // and miss out on info.
     unmute: function (stream, topic) {
         popovers.hide_topic_sidebar_popover();
-        muting.unmute_topic(stream, topic);
+        muting_ui.unmute_topic(stream, topic);
         muting_ui.persist_and_rerender();
     },
 };
@@ -821,7 +821,7 @@ exports.register_click_handlers = function () {
         var stream = $(e.currentTarget).data('msg-stream');
         var topic = $(e.currentTarget).data('msg-topic');
         popovers.hide_actions_popover();
-        muting.unmute_topic(stream, topic);
+        muting_ui.unmute_topic(stream, topic);
         muting_ui.persist_and_rerender();
         e.stopPropagation();
         e.preventDefault();
