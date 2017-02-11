@@ -341,10 +341,10 @@ def authenticated_api_view(is_webhook=False):
                                     api_key_legacy=REQ('api-key', default=None),
                                     *args, **kwargs):
             # type: (HttpRequest, Text, Optional[Text], Optional[Text], *Any, **Any) -> HttpResponse
-            if not api_key and not api_key_legacy:
-                raise RequestVariableMissingError("api_key")
-            elif not api_key:
+            if api_key is None:
                 api_key = api_key_legacy
+            if api_key is None:
+                raise RequestVariableMissingError("api_key")
             user_profile = validate_api_key(request, email, api_key, is_webhook)
             request.user = user_profile
             request._email = user_profile.email
