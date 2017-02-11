@@ -46,6 +46,7 @@ package_info = dict(
                  ["examples/zuliprc",
                   "examples/create-user",
                   "examples/edit-message",
+                  "examples/get-presence",
                   "examples/get-public-streams",
                   "examples/list-members",
                   "examples/list-subscriptions",

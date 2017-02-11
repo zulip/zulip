@@ -599,6 +599,19 @@ class Client(object):
             request=request,
         )
 
+    def get_presence(self, email):
+        # type: (Dict[str, Any]) -> Dict[str, Any]
+        '''
+            Example usage:
+
+            >>> client.get_presence()
+            {'presence': {'website': {'timestamp': 1486799122, 'status': 'active'}}, 'result': 'success', 'msg': ''}
+        '''
+        return self.call_endpoint(
+            url='users/%s/presence' % (email,),
+            method='GET',
+        )
+
     def get_streams(self, **request):
         # type: (**Any) -> Dict[str, Any]
         '''
