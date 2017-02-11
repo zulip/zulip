@@ -186,11 +186,11 @@ class Command(BaseCommand):
         if not options["test_suite"]:
             # Populate users with some bar data
             for user in user_profiles:
-                status = 1 # type: int
+                status = UserPresence.ACTIVE # type: int
                 date = now()
                 client = get_client("website")
-                for i in range(3):
-                    client = get_client("API")
+                if user.full_name[0] <= 'H':
+                    client = get_client("ZulipAndroid")
                 UserPresence.objects.get_or_create(user_profile=user, client=client, timestamp=date, status=status)
 
         user_profiles_ids = [user_profile.id for user_profile in user_profiles]
