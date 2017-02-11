@@ -126,10 +126,13 @@ def get_client_name(request, is_json_view):
     # User-Agent.
     if 'client' in request.GET:
         return request.GET['client']
-    elif 'client' in request.POST:
+    if 'client' in request.POST:
         return request.POST['client']
-    elif "HTTP_USER_AGENT" in request.META:
+    if "HTTP_USER_AGENT" in request.META:
         user_agent = parse_user_agent(request.META["HTTP_USER_AGENT"])
+    else:
+        user_agent = None
+    if user_agent is not None:
         # We could check for a browser's name being "Mozilla", but
         # e.g. Opera and MobileSafari don't set that, and it seems
         # more robust to just key off whether it was a json view
