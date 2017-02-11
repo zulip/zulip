@@ -52,6 +52,12 @@ class Command(BaseCommand):
                             default=0,
                             help='The number of extra users to create')
 
+        parser.add_argument('--extra-bots',
+                            dest='extra_bots',
+                            type=int,
+                            default=0,
+                            help='The number of extra bots to create')
+
         parser.add_argument('--huddles',
                             dest='num_huddles',
                             type=int,
@@ -234,6 +240,8 @@ class Command(BaseCommand):
                 ("Zulip Error Bot", "error-bot@zulip.com"),
                 ("Zulip Default Bot", "default-bot@zulip.com"),
             ]
+            for i in range(options["extra_bots"]):
+                zulip_realm_bots.append(('Extra Bot %d' % (i,), 'extrabot%d@zulip.com' % (i,)))
             zulip_realm_bots.extend(all_realm_bots)
             create_users(zulip_realm, zulip_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
 
