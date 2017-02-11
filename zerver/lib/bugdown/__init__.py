@@ -744,7 +744,7 @@ def fixup_link(link, target_blank=True):
 
 
 def sanitize_url(url):
-    # type: (Text) -> Text
+    # type: (Text) -> Optional[Text]
     """
     Sanitize a url against xss attacks.
     See the docstring on markdown.inlinepatterns.LinkPattern.sanitize_url.
@@ -923,7 +923,7 @@ class RealmFilterPattern(markdown.inlinepatterns.Pattern):
 
 class UserMentionPattern(markdown.inlinepatterns.Pattern):
     def find_user_for_mention(self, name):
-        # type: (Text) -> Tuple[bool, Dict[str, Any]]
+        # type: (Text) -> Tuple[bool, Optional[Dict[str, Any]]]
         if db_data is None:
             return (False, None)
 
@@ -966,7 +966,7 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
 
 class StreamPattern(VerbosePattern):
     def find_stream_by_name(self, name):
-        # type: (Match[Text]) -> Dict[str, Any]
+        # type: (Match[Text]) -> Optional[Dict[str, Any]]
         if db_data is None:
             return None
         stream = db_data['stream_names'].get(name)
@@ -1288,7 +1288,7 @@ current_message = None # type: Optional[Message]
 # We avoid doing DB queries in our markdown thread to avoid the overhead of
 # opening a new DB connection. These connections tend to live longer than the
 # threads themselves, as well.
-db_data = None # type: Dict[Text, Any]
+db_data = None # type: Optional[Dict[Text, Any]]
 
 def log_bugdown_error(msg):
     # type: (str) -> None
@@ -1315,7 +1315,7 @@ def do_convert(content, message=None, message_realm=None, possible_words=None, s
     else:
         realm_filters_key = message_realm.id
 
-    if (message and message.sender.realm.is_zephyr_mirror_realm and
+    if (message is not None and message.sender.realm.is_zephyr_mirror_realm and
             message.sending_client.name == "zephyr_mirror"):
         # Use slightly customized Markdown processor for content
         # delivered via zephyr_mirror
