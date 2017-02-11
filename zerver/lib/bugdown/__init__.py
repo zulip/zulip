@@ -1299,7 +1299,7 @@ def log_bugdown_error(msg):
     logging.getLogger('').error(msg)
 
 def do_convert(content, message=None, message_realm=None, possible_words=None, sent_by_bot=False):
-    # type: (Text, Optional[Message], Optional[Realm], Optional[Set[Text]], Optional[bool]) -> Optional[Text]
+    # type: (Text, Optional[Message], Optional[Realm], Optional[Set[Text]], Optional[bool]) -> Text
     """Convert Markdown to HTML, with Zulip-specific settings and hacks."""
     from zerver.models import get_active_user_dicts_in_realm, get_active_streams, UserProfile
 
@@ -1405,7 +1405,7 @@ def bugdown_stats_finish():
     bugdown_total_time += (time.time() - bugdown_time_start)
 
 def convert(content, message=None, message_realm=None, possible_words=None, sent_by_bot=False):
-    # type: (Text, Optional[Message], Optional[Realm], Optional[Set[Text]], Optional[bool]) -> Optional[Text]
+    # type: (Text, Optional[Message], Optional[Realm], Optional[Set[Text]], Optional[bool]) -> Text
     bugdown_stats_start()
     ret = do_convert(content, message, message_realm, possible_words, sent_by_bot)
     bugdown_stats_finish()

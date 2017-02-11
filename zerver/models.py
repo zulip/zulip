@@ -937,8 +937,10 @@ class Message(ModelReprMixin, models.Model):
 
     @staticmethod
     def need_to_render_content(rendered_content, rendered_content_version, bugdown_version):
-        # type: (Optional[Text], int, int) -> bool
-        return rendered_content is None or rendered_content_version < bugdown_version
+        # type: (Optional[Text], Optional[int], int) -> bool
+        return (rendered_content is None or
+                rendered_content_version is None or
+                rendered_content_version < bugdown_version)
 
     def to_log_dict(self):
         # type: () -> Dict[str, Any]

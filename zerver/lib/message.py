@@ -146,7 +146,7 @@ class MessageDict(object):
             recipient_type_id,
             reactions
     ):
-        # type: (bool, Message, int, datetime.datetime, Text, Text, Text, datetime.datetime, Text, Optional[int], int, Text, int, Text, Text, Text, Text, bool, Text, int, int, int, List[Dict[str, Any]]) -> Dict[str, Any]
+        # type: (bool, Optional[Message], int, Optional[datetime.datetime], Optional[Text], Text, Text, datetime.datetime, Optional[Text], Optional[int], int, Text, int, Text, Text, Text, Text, bool, Text, int, int, int, List[Dict[str, Any]]) -> Dict[str, Any]
 
         avatar_url = get_avatar_url(sender_avatar_source, sender_email)
 
