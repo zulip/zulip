@@ -149,7 +149,7 @@ def upload_image_to_s3(
     key.set_metadata("realm_id", str(user_profile.realm_id))
 
     if content_type is not None:
-        headers = {u'Content-Type': content_type}
+        headers = {u'Content-Type': content_type}  # type: Optional[Dict[Text, Text]]
     else:
         headers = None
 
@@ -191,8 +191,10 @@ class S3UploadBackend(ZulipUploadBackend):
     def upload_message_image(self, uploaded_file_name, content_type, file_data, user_profile, target_realm=None):
         # type: (Text, Optional[Text], binary_type, UserProfile, Optional[Realm]) -> Text
         bucket_name = settings.S3_AUTH_UPLOADS_BUCKET
+        if target_realm is None:
+            target_realm = user_profile.realm
         s3_file_name = "/".join([
-            str(target_realm.id if target_realm is not None else user_profile.realm_id),
+            str(target_realm.id),
             random_name(18),
             sanitize_name(uploaded_file_name)
         ])
