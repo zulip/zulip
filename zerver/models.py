@@ -1308,6 +1308,26 @@ class UserPresence(models.Model):
             return 'idle'
 
     @staticmethod
+    def get_status_dict_by_user(user_profile):
+        # type: (int) -> defaultdict[Any, Dict[Any, Any]]
+        query = UserPresence.objects.filter(user_profile=user_profile).values(
+            'client__name',
+            'status',
+            'timestamp',
+            'user_profile__email',
+            'user_profile__id',
+            'user_profile__enable_offline_push_notifications',
+            'user_profile__is_mirror_dummy',
+        )
+
+        if PushDeviceToken.objects.filter(user=user_profile).exists():
+            mobile_user_ids = [user_profile.id]
+        else:
+            mobile_user_ids = []
+
+        return UserPresence.get_status_dicts_for_query(query, mobile_user_ids)
+
+    @staticmethod
     def get_status_dict_by_realm(realm_id):
         # type: (int) -> defaultdict[Any, Dict[Any, Any]]
         query = UserPresence.objects.filter(
