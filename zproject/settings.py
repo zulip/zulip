@@ -860,6 +860,7 @@ JS_SPECS = {
             'js/colorspace.js',
             'js/timerender.js',
             'js/tutorial.js',
+            'js/tutorial_hotspots.js',
             'js/templates.js',
             'js/avatar.js',
             'js/settings.js',

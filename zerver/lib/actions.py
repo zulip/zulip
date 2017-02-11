@@ -26,7 +26,7 @@ from zerver.lib.message import (
     render_markdown,
 )
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, RealmAlias, \
-    Subscription, Recipient, Message, Attachment, UserMessage, \
+    Subscription, Recipient, Message, Attachment, UserMessage, UserTutorial, \
     Client, DefaultStream, UserPresence, Referral, PushDeviceToken, MAX_SUBJECT_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle, \
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
@@ -3027,6 +3027,9 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
         state['realm_default_language'] = user_profile.realm.default_language
         state['realm_waiting_period_threshold'] = user_profile.realm.waiting_period_threshold
 
+    if want('next_tutorial_pieces'):
+        state['next_tutorial_pieces'] = get_next_tutorial_pieces(user_profile)
+
     if want('realm_domain'):
         state['realm_domain'] = user_profile.realm.domain
 
@@ -3243,6 +3246,8 @@ def apply_events(state, events, user_profile):
         elif event['type'] == "reaction":
             # The client will get the message with the reactions directly
             pass
+        elif event['type'] == "next_tutorial_pieces":
+            state['next_tutorial_pieces'] = event['next_tutorial_pieces']
         elif event['type'] == "referral":
             state['referrals'] = event['referrals']
         elif event['type'] == "update_message_flags":
@@ -3576,6 +3581,54 @@ def do_set_muted_topics(user_profile, muted_topics):
     user_profile.save(update_fields=['muted_topics'])
     event = dict(type="muted_topics", muted_topics=muted_topics)
     send_event(event, [user_profile.id])
+
+# Basic version that gets the next piece that is not set
+# def get_next_tutorial_pieces(user_profile):
+#     ALL_FLAGS = ['welcome', 'streams', 'topics', 'narrowing', 'replying', 'get_started']
+#     (user_tutorial, created) = UserTutorial.objects.get_or_create(user_profile=user_profile)
+#     print("HEY", user_tutorial.tutorial_pieces)
+#     for flag in ALL_FLAGS:
+#         if getattr(user_tutorial.tutorial_pieces, flag).is_set is False:
+#             return flag
+#     return None
+
+def get_next_tutorial_pieces(user_profile):
+    # type: (UserProfile) -> List[Text]
+    (user_tutorial, created) = UserTutorial.objects.get_or_create(user_profile=user_profile)
+    next_pieces = [] # type: List[Text]
+    tutorial_value = int(user_tutorial.tutorial_pieces)
+    if tutorial_value == 0:
+        next_pieces = ['welcome']
+    elif tutorial_value == 1:
+        next_pieces = ['streams', 'topics']
+    elif tutorial_value == 3:
+        next_pieces = ['topics', 'narrowing']
+    elif tutorial_value == 5:
+        next_pieces = ['streams', 'narrowing']
+    elif tutorial_value == 7:
+        next_pieces = ['narrowing']
+    elif tutorial_value == 11:
+        next_pieces = ['topics']
+    elif tutorial_value == 13:
+        next_pieces = ['streams']
+    elif tutorial_value == 15:
+        next_pieces = ['replying', 'get_started']
+    elif tutorial_value == 31:
+        next_pieces = ['get_started']
+    elif tutorial_value == 47:
+        next_pieces = ['replying']
+    return next_pieces
+
+def do_update_tutorial_state(user_profile, update_dict):
+    # type: (UserProfile, Dict[str, bool]) -> List[Text]
+    (user_tutorial, created) = UserTutorial.objects.get_or_create(user_profile=user_profile)
+    for tutorial_piece, value in update_dict.items():
+        setattr(user_tutorial.tutorial_pieces, tutorial_piece, value)
+    user_tutorial.save()
+    next_tutorial_pieces = get_next_tutorial_pieces(user_profile)
+    event = dict(type="next_tutorial_pieces", next_tutorial_pieces=next_tutorial_pieces)
+    send_event(event, [user_profile.id])
+    return next_tutorial_pieces
 
 def notify_realm_filters(realm):
     # type: (Realm) -> None

@@ -92,7 +92,8 @@
         "unread_ui": false,
         "user_events": false,
         "Plotly": false,
-        "emoji_codes": false
+        "emoji_codes": false,
+        "tutorial_hotspots": false
     },
     "rules": {
         "no-restricted-syntax": 0,

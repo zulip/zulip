@@ -177,6 +177,16 @@ exports.report_success = function (response, status_box, type) {
     ui.report_message(response, status_box, 'alert-success', type);
 };
 
+exports.clear_tutorial_hotspots = function () {
+    $( ".tutorial-buttons" ).hide();
+};
+
+exports.show_tutorial_hotspots = function (hotspots_to_display) {
+    for (var i = 0; i < hotspots_to_display.length; i += 1) {
+        $("#tutorial_hotspot_".concat(hotspots_to_display[i])).show();
+    }
+};
+
 function update_message_in_all_views(message_id, callback) {
     _.each([message_list.all, home_msg_list, message_list.narrowed], function (list) {
         if (list === undefined) {
@@ -584,6 +594,7 @@ $(function () {
     composebox_typeahead.initialize();
     search.initialize();
     tutorial.initialize();
+    tutorial_hotspots.initialize();
     notifications.initialize();
     gear_menu.initialize();
     hashchange.initialize();

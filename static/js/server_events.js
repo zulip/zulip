@@ -139,6 +139,12 @@ function dispatch_normal_event(event) {
         }
         break;
 
+    case 'next_tutorial_pieces':
+        ui.clear_tutorial_hotspots();
+        ui.show_tutorial_hotspots(event.next_tutorial_pieces);
+        page_params.next_tutorial_pieces = event.next_tutorial_pieces;
+        break;
+
     case 'referral':
         referral.update_state(event.referrals.granted, event.referrals.used);
         break;

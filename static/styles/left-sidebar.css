@@ -452,3 +452,23 @@ li.show-more-private-messages a {
 .zoom-in .zoom-in-hide {
     display: none;
 }
+
+#tutorial_hotspot_streams {
+    display: none;
+}
+
+#tutorial_hotspot_topics {
+    display: none;
+}
+
+#tutorial_hotspot_narrowing {
+    display: none;
+}
+
+#tutorial_hotspot_replying {
+    display: none;
+}
+
+#tutorial_hotspot_get_started {
+    display: none;
+}
