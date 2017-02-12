@@ -1,3 +1,5 @@
+# See http://zulip.readthedocs.io/en/latest/events-system.html for
+# high-level documentation on how this system works.
 from __future__ import absolute_import
 from __future__ import print_function
 
