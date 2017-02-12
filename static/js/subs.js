@@ -248,6 +248,29 @@ function stream_audible_notifications_clicked(e) {
     set_stream_property(sub, 'audible_notifications', sub.audible_notifications);
 }
 
+// *Asynchronously* check if a stream exists.
+exports.check_stream_existence_server = function (stream_name, callback) {
+    channel.post({
+        url: "/json/subscriptions/exists",
+        data: {stream: stream_name},
+        async: true,
+        success: function (data) {
+            if (data.subscribed) {
+                callback("subscribed");
+            } else {
+                callback("not-subscribed");
+            }
+        },
+        error: function (xhr) {
+            if (xhr.status === 404) {
+                callback("does-not-exist");
+            } else {
+                callback("error");
+            }
+        },
+    });
+};
+
 function stream_pin_clicked(e) {
     var sub = get_sub_for_target(e.target);
     if (!sub) {
@@ -1239,14 +1262,14 @@ $(function () {
     $(".subscriptions").on("focusout", "#create_stream_name", function () {
         var stream = $.trim($("#create_stream_name").val());
         if (stream.length !== 0) {
-            var stream_status = exports.check_stream_existence(stream);
-
-            if (stream_status !== "does-not-exist") {
-                $("#stream_name_error").text(i18n.t("A stream with this name already exists"));
-                $("#stream_name_error").show();
-            } else {
-                $("#stream_name_error").hide();
-            }
+            exports.check_stream_existence_server(stream, function (stream_status) {
+                if (stream_status !== "does-not-exist") {
+                    $("#stream_name_error").text(i18n.t("A stream with this name already exists"));
+                    $("#stream_name_error").show();
+                } else {
+                    $("#stream_name_error").hide();
+                }
+            });
         } else {
             $("#stream_name_error").text(i18n.t("A stream needs to have a name"));
             $("#stream_name_error").show();
@@ -1540,36 +1563,6 @@ function focus_on_narrowed_stream() {
 exports.show_and_focus_on_narrow = function () {
     $(document).one('subs_page_loaded.zulip', focus_on_narrowed_stream);
     ui.change_tab_to("#streams");
-};
-
-// *Synchronously* check if a stream exists.
-// This is deprecated nad we hope to remove it.
-exports.check_stream_existence = function (stream_name, autosubscribe) {
-    var result = "error";
-    var request = {stream: stream_name};
-    if (autosubscribe) {
-        request.autosubscribe = true;
-    }
-    channel.post({
-        url: "/json/subscriptions/exists",
-        data: request,
-        async: false,
-        success: function (data) {
-            if (data.subscribed) {
-                result = "subscribed";
-            } else {
-                result = "not-subscribed";
-            }
-        },
-        error: function (xhr) {
-            if (xhr.status === 404) {
-                result = "does-not-exist";
-            } else {
-                result = "error";
-            }
-        },
-    });
-    return result;
 };
 
 return exports;

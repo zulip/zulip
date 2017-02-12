@@ -736,10 +736,33 @@ exports.update_email = function (user_id, new_email) {
     exports.recipient(reply_to);
 };
 
+exports.check_stream_existence_browser = function (stream_name, autosubscribe) {
+    var stream_obj = stream_data.get_sub(stream_name);
+    var result = "does-not-exist";
+
+    if (stream_obj) {
+        if (stream_obj.subscribed) {
+            result = "subscribed";
+        } else if (autosubscribe) {
+            channel.post({
+                url: "/json/subscriptions/exists",
+                data: {stream: stream_name, autosubscribe: true},
+                async: false,
+                success: function (data) {
+                    result = data.subscribed;
+                },
+            });
+        } else {
+            result = "not-subscribed";
+        }
+    }
+    return result;
+};
+
 // Checks if a stream exists. If not, displays an error and returns
 // false.
 function check_stream_for_send(stream_name, autosubscribe) {
-    var result = subs.check_stream_existence(stream_name, autosubscribe);
+    var result = exports.check_stream_existence_browser(stream_name, autosubscribe);
 
     if (result === "error") {
         compose_error(i18n.t("Error checking subscription"), $("#stream"));
