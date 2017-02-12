@@ -10,7 +10,8 @@ Zulip keyboard shortcuts are divided into four categories:
 * [Menus](#menus)
 
 !!! warn ""
-    Note: Keyboard shortcuts for Mac OS X have been enclosed in parenthesis.
+    Note: We note how to enter keyboard shortcuts using keys not
+    present on MacOS keyboard in parentheticals below.
 
 ## Navigation
 
@@ -24,32 +25,36 @@ Zulip keyboard shortcuts are divided into four categories:
 * **Search streams** `w` - This shortcut moves the user's cursor to
   the stream search bar in the left sidebar to to allow them to begin
   searching for a particular stream in the organization.
-* **Previous message** `k` `Up arrow` - This shortcut allows the user
+* **Previous message** `k` or `↑` - This shortcut allows the user
   to scroll up to the previous message in their view.
-* **Next message** `j` `Down arrow` - This shortcut allows the user to
+* **Next message** `j` or `↓` - This shortcut allows the user to
   scroll down to the next message in their view.
-* **Scroll up** `K` `PgUp` (`K`,`Fn`+`Up arrow`) - This shortcut allows the user to scroll
-  up through the messages in their view.
-* **Scroll down** `J` `PgDn` `Spacebar` (`J`,`Fn`+`Down arrow`,`Spacebar`) - This shortcut allows the
-  user to scroll down through the messages in their view.
-* **Last message** `End` (`Fn`+`Right arrow`) - This shortcut allows the user to scroll to
-  the most recent message in their view.
+* **Scroll up** `K` or `PgUp` (`Fn` + `↑` on Mac) - This shortcut
+  allows the user to scroll up through the messages in their view.
+* **Scroll down** `J`, `Spacebar`, or `PgDn` (`Fn` + `↓` on Mac) -
+  This shortcut allows the user to scroll down through the messages in
+  their view.
+* **Last message** `End` (`Fn`+`⇾` on Mac) - This shortcut
+  allows the user to scroll to the most recent message in their view.
+* **First message in view** `Home` (`Fn`+`⇽` on Mac) - This shortcut
+  allows the user to scroll to the most recent message in their view.
 
 ## Composing messages
-* **Reply to message** `Enter` `r` (`Return` `r`) - This shortcut allows the user to
-  begin replying to the selected message (outlined in blue).
+* **Reply to message** `r` or `Enter` (`Return` on Mac) - This
+  shortcut allows the user to begin replying to the selected message
+  (outlined in blue).
 * **Reply to author** `R` - This shortcut allows the user to begin
   writing a private message to the author of the selected message
   (outlined in blue).
-* **Reply to message mentioning the author** `Enter` `@` (`Return` `@`) - This
+* **Reply to message mentioning the author** `@` - This
   shortcut allows the user to begin replying to the selected message
   (outlined in blue), @-mentioning the author of the selected message.
 * **New stream message** `c` - This shortcut allows the user to begin
   composing a new stream message.
 * **New private message** `C` - This shortcut allows the user to begin
   composing a new private message.
-* **Send message** `Tab key` then `Enter` (`Tab key` then `Return`) - This shortcut allows the
-  user to send the message that they've written.
+* **Send message** `Tab key` then `Enter` (`Return` on Mac) - This
+  shortcut allows the user to send the message that they've written.
 * **Cancel compose** `Esc` - This shortcut allows the user to cancel
   and discard their unsent message.
 
@@ -62,7 +67,7 @@ Zulip keyboard shortcuts are divided into four categories:
   messages with the topic of the selected message (outlined in blue).
 * **Narrow to all private messages** `v` - This shortcut narrows the
   view to show all of the user's private messages.
-* **Cycle between stream narrows** `A` `D` - This shortcut allows the
+* **Cycle between stream narrows** `A` and `D` - This shortcut allows the
   user to cycle through the narrows showing the messages of a stream
   according to Stream order in the left sidebar. `A` allows the user
   to navigate to the previous stream narrow, and `D` allows the user
@@ -75,10 +80,10 @@ Zulip keyboard shortcuts are divided into four categories:
 * **Open message actions menu** `i` - This shortcut shows the
   available message actions of the selected message (outlined in
   blue).
-* **Edit a message you sent** `i` then `Enter` (`i` then `Return`) - This shortcut allows
-  the user to edit the selected message (outlined in blue) if the user
-  authored the selected message. If the selected message was written
-  by another user, this shortcut will enable the user to view the
-  source code of the message.
-* **Show these keyboard shortcuts** `?` - This shortcut makes a modal
+* **Edit a message you sent** `i` then `Enter` (`Return` on Mac) -
+  This shortcut allows the user to edit the selected message (outlined
+  in blue) if the user authored the selected message. If the selected
+  message was written by another user, this shortcut will enable the
+  user to view the source code of the message.
+* **Show the keyboard shortcuts** `?` - This shortcut makes a modal
   window with a guide to all possible keyboard shortcuts appear.
