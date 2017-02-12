@@ -19,8 +19,8 @@ import re
 
 @authenticated_json_post_view
 @has_request_variables
-def json_invite_users(request, user_profile, invitee_emails_raw=REQ("invitee_emails")):
-    # type: (HttpRequest, UserProfile, str) -> HttpResponse
+def json_invite_users(request, user_profile, invitee_emails_raw=REQ("invitee_emails"), body=REQ("custom_body")):
+    # type: (HttpRequest, UserProfile, str, Optional[str]) -> HttpResponse
     if not invitee_emails_raw:
         return json_error(_("You must specify at least one email address."))
 
@@ -44,7 +44,7 @@ def json_invite_users(request, user_profile, invitee_emails_raw=REQ("invitee_ema
             return json_error(_("Stream does not exist: %s. No invites were sent.") % (stream_name,))
         streams.append(stream)
 
-    ret_error, error_data = do_invite_users(user_profile, invitee_emails, streams)
+    ret_error, error_data = do_invite_users(user_profile, invitee_emails, streams, body)
 
     if ret_error is not None:
         return json_error(data=error_data, msg=ret_error)
@@ -66,12 +66,12 @@ def get_invitee_emails_set(invitee_emails_raw):
 @has_request_variables
 def json_bulk_invite_users(request, user_profile,
                            invitee_emails_list=REQ('invitee_emails',
-                                                   validator=check_list(check_string))):
-    # type: (HttpRequest, UserProfile, List[str]) -> HttpResponse
+                                                   validator=check_list(check_string)), body=REQ('custom_body')):
+    # type: (HttpRequest, UserProfile, List[str], Optional[str]) -> HttpResponse
     invitee_emails = set(invitee_emails_list)
     streams = get_default_subs(user_profile)
 
-    ret_error, error_data = do_invite_users(user_profile, invitee_emails, streams)
+    ret_error, error_data = do_invite_users(user_profile, invitee_emails, streams, body)
 
     if ret_error is not None:
         return json_error(data=error_data, msg=ret_error)

@@ -198,6 +198,14 @@ def find_key_by_email(address):
         if address in message.to:
             return key_regex.search(message.body).groups()[0]
 
+def find_pattern_in_email(address, pattern):
+    # type: (Text, Text) -> Text
+    from django.core.mail import outbox
+    key_regex = re.compile(pattern)
+    for message in reversed(outbox):
+        if address in message.to:
+            return key_regex.search(message.body).group(0)
+
 def message_ids(result):
     # type: (Dict[str, Any]) -> Set[int]
     return set(message['id'] for message in result['messages'])
