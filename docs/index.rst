@@ -94,6 +94,7 @@ Contents:
    code-style
    mypy
    code-reviewing
+   chat-zulip-org
 
 .. _code-testing:
 

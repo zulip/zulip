@@ -25,18 +25,14 @@ at https://www.zulip.org.
 
 There are several places online where folks discuss Zulip.
 
-One of those places is our [public Zulip instance](https://chat.zulip.org/).
-You can go through the simple signup process at that link, and then you
-will soon be talking to core Zulip developers and other users.  To get
-help in real time, you will have the best luck finding core developers
-roughly between 16:00 UTC and 23:59 UTC.  Most questions get a reply
-within minutes to a few hours, depending on time of day.
+* The primary place is our [public Zulip instance](chat-zulip-org.html).
 
-For Google Summer of Code students and applicants, we have [a mailing
-list](https://groups.google.com/forum/#!forum/zulip-gsoc) for help,
-questions, and announcements.
+* For Google Summer of Code students and applicants, we have
+[a mailing list](https://groups.google.com/forum/#!forum/zulip-gsoc)
+for help, questions, and announcements.  But it's often simpler to
+visit chat.zulip.org instead.
 
-We have
+* We have
 [a public mailing list](https://groups.google.com/forum/#!forum/zulip-devel)
 that is currently pretty low traffic because most discussions happen
 in our public Zulip instance.  We use it to announce Zulip developer
@@ -47,13 +43,14 @@ ask for generic help getting started as a contributor (e.g. because
 you want to do Google Summer of Code).  The rest of this page covers
 how to get involved in the Zulip project in detail.
 
-Zulip also has a [blog](https://blog.zulip.org/).
+* Zulip also has a [blog](https://blog.zulip.org/) and
+  [twitter account](https://twitter.com/zuliposs).
 
-Last but not least, we use [GitHub](https://github.com/zulip/zulip) to
-track Zulip-related issues (and store our code, of course).
+* Last but not least, we use [GitHub](https://github.com/zulip/zulip)
+to track Zulip-related issues (and store our code, of course).
 Anybody with a GitHub account should be able to create Issues there
-pertaining to bugs or enhancement requests.  We also use Pull
-Requests as our primary mechanism to receive code contributions.
+pertaining to bugs or enhancement requests.  We also use Pull Requests
+as our primary mechanism to receive code contributions.
 
 The Zulip community has a [Code of Conduct][code-of-conduct].
 
