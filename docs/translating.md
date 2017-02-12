@@ -71,8 +71,9 @@ translating, you should check out the
 
 4. Translators translate the strings in Transifex.
 
-5. The translations are downloaded back into the codebase by a maintainer,
-   using `tx pull`.
+5. The translations are downloaded back into the codebase by a
+   maintainer, using `tx pull -a -f --mode=developer` (since we don't
+   use the Transifex review flow).
 
 ## Translators' workflow
 
@@ -120,7 +121,7 @@ This section assumes you have a
 setup.
 
 First of all, download the updated resource files from Transifex using the
-`tx pull -a` command (it will require some
+`tx pull -a --mode=developer` command (it will require some
 [initial setup](#transifex-cli-setup)). This command will download the
 resource files from Transifex and replace your local resource files with
 them.
@@ -303,7 +304,7 @@ the `count` in the context.
 The config file that maps the resources from Zulip to Transifex is
 located at `.tx/config`.
 
-# Transifex CLI setup
+## Transifex CLI setup
 
 In order to be able to run `tx pull` (and `tx push` as well, if you're a
 maintainer), you have to specify your Transifex credentials in a config
