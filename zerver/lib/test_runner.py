@@ -158,10 +158,11 @@ class TestSuite(unittest.TestSuite):
             # The attributes __unittest_skip__ and __unittest_skip_why__ are undocumented
             if hasattr(test, '__unittest_skip__') and test.__unittest_skip__:  # type: ignore
                 print('Skipping', full_test_name(test), "(%s)" % (test.__unittest_skip_why__,))  # type: ignore
-            elif run_test(test):
-                if result.failfast:
-                    break
-            result.stopTest(test)
+            failed = run_test(test)
+            # Hack: This should be sent back another way
+            result.failed = failed
+            if failed and result.failfast:
+                break
 
         return result
 
@@ -221,7 +222,7 @@ class Runner(DiscoverRunner):
         get_sqlalchemy_connection()
         result = self.run_suite(suite)
         self.teardown_test_environment()
-        failed = self.suite_result(suite, result)
+        failed = result.failed
         if not failed:
             write_instrumentation_reports(full_suite=full_suite)
         return failed
