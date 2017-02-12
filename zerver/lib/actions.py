@@ -2987,8 +2987,8 @@ def get_cross_realm_dicts():
              'full_name': user.full_name}
             for user in users]
 
-def do_send_confirmation_email(invitee, referrer):
-    # type: (PreregistrationUser, UserProfile) -> None
+def do_send_confirmation_email(invitee, referrer, body):
+    # type: (PreregistrationUser, UserProfile, Optional[str]) -> None
     """
     Send the confirmation/welcome e-mail to an invited user.
 
@@ -3013,7 +3013,7 @@ def do_send_confirmation_email(invitee, referrer):
         subject_template_path=subject_template_path,
         body_template_path=body_template_path,
         html_body_template_path=html_body_template_path,
-        host=referrer.realm.host)
+        host=referrer.realm.host, custom_body=body)
 
 @statsd_increment("push_notifications")
 def handle_push_notification(user_profile_id, missed_message):
@@ -3123,8 +3123,8 @@ def validate_email(user_profile, email):
 
     return None, None
 
-def do_invite_users(user_profile, invitee_emails, streams):
-    # type: (UserProfile, SizedTextIterable, Iterable[Stream]) -> Tuple[Optional[str], Dict[str, Union[List[Tuple[Text, str]], bool]]]
+def do_invite_users(user_profile, invitee_emails, streams, body=None):
+    # type: (UserProfile, SizedTextIterable, Iterable[Stream], Optional[str]) -> Tuple[Optional[str], Dict[str, Union[List[Tuple[Text, str]], bool]]]
     validated_emails = [] # type: List[Text]
     errors = [] # type: List[Tuple[Text, str]]
     skipped = [] # type: List[Tuple[Text, str]]
@@ -3168,9 +3168,9 @@ def do_invite_users(user_profile, invitee_emails, streams):
         prereg_user.streams = streams
         prereg_user.save()
 
-        event = {"email": prereg_user.email, "referrer_email": user_profile.email}
+        event = {"email": prereg_user.email, "referrer_email": user_profile.email, "email_body": body}
         queue_json_publish("invites", event,
-                           lambda event: do_send_confirmation_email(prereg_user, user_profile))
+                           lambda event: do_send_confirmation_email(prereg_user, user_profile, body))
 
     if skipped:
         ret_error = _("Some of those addresses are already using Zulip, "

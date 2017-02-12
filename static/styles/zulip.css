@@ -2124,6 +2124,10 @@ button.topic_edit_cancel {
     max-height: 300px;
 }
 
+#invite-user .custom_invite_body {
+    margin-top: 10px;
+}
+
 #invite_status {
     display: none;
 }
