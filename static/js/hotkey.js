@@ -208,7 +208,7 @@ function process_hotkey(e) {
         if ($("#overlay").hasClass("show")) {
             ui.exit_lightbox_photo();
             return true;
-        } else if ($("#subscription_overlay").is(":visible")) {
+        } else if ($("#subscription_overlay").hasClass("show")) {
             subs.close();
             return true;
         } else if ($(".informational-overlays").hasClass("show")) {
