@@ -27,11 +27,11 @@ Note: Keyboard shortcuts for MacOSX have been enclosed in paranthesis
   to scroll up to the previous message in their view.
 * **Next message** `j` `Down arrow` - This shortcut allows the user to
   scroll down to the next message in their view.
-* **Scroll up** `K` `PgUp` (`K` `Fn` `Up arrow`) - This shortcut allows the user to scroll
+* **Scroll up** `K` `PgUp` (`K`,`Fn`+`Up arrow`) - This shortcut allows the user to scroll
   up through the messages in their view.
-* **Scroll down** `J` `PgDn` `Spacebar` (`J` `Fn` `Down arrow` `Spacebar`) - This shortcut allows the
+* **Scroll down** `J` `PgDn` `Spacebar` (`J`,`Fn`+`Down arrow`,`Spacebar`) - This shortcut allows the
   user to scroll down through the messages in their view.
-* **Last message** `End` (`Fn` `Right arrow`) - This shortcut allows the user to scroll to
+* **Last message** `End` (`Fn`+`Right arrow`) - This shortcut allows the user to scroll to
   the most recent message in their view.
 
 ## Composing messages
