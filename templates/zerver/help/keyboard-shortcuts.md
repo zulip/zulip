@@ -9,7 +9,8 @@ Zulip keyboard shortcuts are divided into four categories:
 * [Narrowing](#narrowing)
 * [Menus](#menus)
 
-Note: Keyboard shortcuts for MacOSX have been enclosed in paranthesis
+!!! warn ""
+    Note: Keyboard shortcuts for Mac OS X have been enclosed in parenthesis.
 
 ## Navigation
 
