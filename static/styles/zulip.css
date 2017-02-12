@@ -921,11 +921,12 @@ just a temporary hack.
     vertical-align: top;
     line-height: 12px;
     font-size: 14px;
+    margin-left: -3px;
 }
 
 .sender-status {
     display: block;
-    left: 45px;
+    left: 46px;
     top: -26px;
     padding-bottom: 6px;
     padding-right: 35px;
