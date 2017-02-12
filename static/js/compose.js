@@ -711,7 +711,7 @@ exports.composing = function () {
     return is_composing_message;
 };
 
-function get_or_set(fieldname, keep_outside_whitespace) {
+function get_or_set(fieldname, keep_leading_whitespace) {
     // We can't hoist the assignment of 'elem' out of this lambda,
     // because the DOM element might not exist yet when get_or_set
     // is called.
@@ -721,12 +721,14 @@ function get_or_set(fieldname, keep_outside_whitespace) {
         if (newval !== undefined) {
             elem.val(newval);
         }
-        return keep_outside_whitespace ? oldval : $.trim(oldval);
+        return keep_leading_whitespace ? util.rtrim(oldval) : $.trim(oldval);
     };
 }
 
 exports.stream_name     = get_or_set('stream');
 exports.subject         = get_or_set('subject');
+// We can't trim leading whitespace in `new_message_content` because
+// of the indented syntax for multi-line code blocks.
 exports.message_content = get_or_set('new_message_content', true);
 exports.recipient       = get_or_set('private_message_recipient');
 

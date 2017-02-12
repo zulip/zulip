@@ -30,6 +30,12 @@ var _ = global._;
     assert.equal(util.extract_pm_recipients('bob@foo.com, ').length, 1);
 }());
 
+(function test_rtrim() {
+    assert.equal(util.rtrim('foo'), 'foo');
+    assert.equal(util.rtrim('  foo'), '  foo');
+    assert.equal(util.rtrim('foo  '), 'foo');
+}());
+
 (function test_lower_bound() {
     var arr = [10, 20, 30, 40, 50];
     assert.equal(util.lower_bound(arr, 5), 0);
