@@ -464,16 +464,25 @@ exports.get_invalid_recipient_emails = function () {
 };
 
 function check_stream_for_send(stream_name, autosubscribe) {
-    var result = "error";
-    var request = {stream: stream_name};
-    if (autosubscribe) {
-        request.autosubscribe = true;
+    var stream_obj = stream_data.get_sub(stream_name);
+    var result;
+    if (!stream_obj) {
+        return "does-not-exist";
     }
-    // *Synchronously* check if a stream exists.
-    // This is deprecated and we hope to remove it.
+    if (stream_obj.subscribed) {
+        return "subscribed";
+    }
+    if (!autosubscribe) {
+        return "not-subscribed";
+    }
+
+    // In the rare circumstance of the autosubscribe option, we
+    // *Synchronously* try to subscribe to the stream before sending
+    // the message.  This is deprecated and we hope to remove it; see
+    // #4650.
     channel.post({
         url: "/json/subscriptions/exists",
-        data: request,
+        data: {stream: stream_name, autosubscribe: true},
         async: false,
         success: function (data) {
             if (data.subscribed) {
