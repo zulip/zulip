@@ -1235,7 +1235,7 @@ def send_pm_if_empty_stream(sender, stream, stream_name, realm):
 # check_message:
 # Returns message ready for sending with do_send_message on success or the error message (string) on error.
 def check_message(sender, client, message_type_name, message_to,
-                  subject_name, message_content, realm=None, forged=False,
+                  subject_name, message_content_raw, realm=None, forged=False,
                   forged_timestamp=None, forwarder_user_profile=None, local_id=None,
                   sender_queue_id=None):
     # type: (UserProfile, Client, Text, Sequence[Text], Text, Text, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[Text], Optional[Text]) -> Dict[str, Any]
@@ -1243,9 +1243,10 @@ def check_message(sender, client, message_type_name, message_to,
     if not message_to and message_type_name == 'stream' and sender.default_sending_stream:
         # Use the users default stream
         message_to = [sender.default_sending_stream.name]
-    elif len(message_to) == 0:
+    if len(message_to) == 0:
         raise JsonableError(_("Message must have recipients"))
-    if len(message_content.strip()) == 0:
+    message_content = message_content_raw.strip()
+    if len(message_content) == 0:
         raise JsonableError(_("Message must not be empty"))
     message_content = truncate_body(message_content)
 

@@ -853,6 +853,20 @@ class MessagePOSTTest(ZulipTestCase):
         self.assertEqual(ujson.loads(result1.content)['id'],
                          ujson.loads(result2.content)['id'])
 
+    def test_strip_message(self):
+        # type: () -> None
+        """
+        Sending a message longer than the maximum message length succeeds but is
+        truncated.
+        """
+        self.login("hamlet@zulip.com")
+        post_data = {"type": "stream", "to": "Verona", "client": "test suite",
+                     "content": "I like whitespace at the end! \n\n \n", "subject": "Test subject"}
+        result = self.client_post("/json/messages", post_data)
+        self.assert_json_success(result)
+        sent_message = self.get_last_message()
+        self.assertEqual(sent_message.content, "I like whitespace at the end!")
+
     def test_long_message(self):
         # type: () -> None
         """

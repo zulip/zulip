@@ -14,7 +14,7 @@ class GreenhouseHookTests(WebhookTestCase):
         expected_message = ("Hire Candidate\n>Johnny Smith\nID: 19"
                             "\nApplying for role:\nDeveloper\n**Emails:**"
                             "\nPersonal\npersonal@example.com\nWork\nwork@example.com\n\n\n>"
-                            "**Attachments:**\n[Resume](https://prod-heroku.s3.amazonaws.com/...)\n")
+                            "**Attachments:**\n[Resume](https://prod-heroku.s3.amazonaws.com/...)")
 
         self.send_and_test_stream_message('candidate_hired',
                                           expected_subject,
@@ -28,7 +28,7 @@ class GreenhouseHookTests(WebhookTestCase):
                             "265788\nApplying for role:\nDesigner"
                             "\n**Emails:**\nPersonal\n"
                             "hector.porter.265788@example.com\n\n\n>"
-                            "**Attachments:**\n[Resume](https://prod-heroku.s3.amazonaws.com/...)\n")
+                            "**Attachments:**\n[Resume](https://prod-heroku.s3.amazonaws.com/...)")
 
         self.send_and_test_stream_message('candidate_rejected',
                                           expected_subject,
@@ -44,7 +44,7 @@ class GreenhouseHookTests(WebhookTestCase):
                             "\ngiuseppe.hurley@example.com\n\n\n>"
                             "**Attachments:**\n[Resume](https://prod-heroku.s3.amazonaws.com/...)"
                             "\n[Cover_Letter](https://prod-heroku.s3.amazonaws.com/...)"
-                            "\n[Attachment](https://prod-heroku.s3.amazonaws.com/...)\n")
+                            "\n[Attachment](https://prod-heroku.s3.amazonaws.com/...)")
 
         self.send_and_test_stream_message('candidate_stage_change',
                                           expected_subject,
@@ -58,7 +58,7 @@ class GreenhouseHookTests(WebhookTestCase):
                             "\nID: 968190\nApplying for role:\n"
                             "Designer\n**Emails:**\nPersonal"
                             "\nt.troy@example.com\n\n\n>**Attachments:**"
-                            "\n[Resume](https://prod-heroku.s3.amazonaws.com/...)\n")
+                            "\n[Resume](https://prod-heroku.s3.amazonaws.com/...)")
 
         self.send_and_test_stream_message('prospect_created',
                                           expected_subject,
