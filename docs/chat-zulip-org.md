@@ -54,7 +54,7 @@ everyone, even non-developers:
 * [#documentation](https://chat.zulip.org/#narrow/stream/documentation)
   is where we discuss improving Zulip's user, sysadmin, and developer
   documentation.
-* [#installation help](https://chat.zulip.org/#narrow/stream/installation.20help)
+* [#production help](https://chat.zulip.org/#narrow/stream/production.20help)
   is for production environment related discussions.
 * [#design](https://chat.zulip.org/#narrow/stream/design) is where we
   discuss Zulip's UI design and collect feedback on potential design
