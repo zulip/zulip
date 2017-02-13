@@ -125,6 +125,14 @@ function render_bots() {
     });
 }
 
+exports.update_email = function (new_email) {
+    var email_input = $('#email_value');
+
+    if (email_input) {
+        email_input.text(new_email);
+    }
+};
+
 exports.generate_zuliprc_uri = function (email, api_key) {
     var data = settings.generate_zuliprc_content(email, api_key);
 
