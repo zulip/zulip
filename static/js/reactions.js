@@ -127,6 +127,11 @@ exports.add_reaction = function (event) {
         }
         event.count = 1;
         event.title = new_title;
+        if (event.user.id === page_params.user_id) {
+            event.class = "message_reaction reacted";
+        } else {
+            event.class = "message_reaction";
+        }
         var reaction_button_element = message_reactions_element.find('.reaction_button');
         $(templates.render('message_reaction', event)).insertBefore(reaction_button_element);
     } else {
@@ -134,6 +139,9 @@ exports.add_reaction = function (event) {
         var count_element = reaction.find('.message_reaction_count');
         count_element.html(user_list.length);
         reaction.prop('title', new_title);
+        if (event.user.id === page_params.user_id) {
+            reaction.addClass("reacted");
+        }
     }
 };
 
@@ -164,6 +172,9 @@ exports.remove_reaction = function (event) {
     var matching_reactions = message_reactions_element.find('[data-emoji-name="' + emoji_name + '"]');
     var count_element = matching_reactions.find('.message_reaction_count');
     matching_reactions.prop('title', new_title);
+    if (user_id === page_params.user_id) {
+        matching_reactions.removeClass("reacted");
+    }
     count_element.html(user_list.length);
     if (user_list.length === 0) {
         matching_reactions.remove();
@@ -197,6 +208,12 @@ exports.get_message_reactions = function (message) {
         if (emoji.realm_emojis[reaction.emoji_name]) {
             reaction.is_realm_emoji = true;
             reaction.url = emoji.realm_emojis[reaction.emoji_name].emoji_url;
+        }
+        if (get_user_list_for_message_reaction(message.id,
+            reaction.emoji_name).indexOf(page_params.user_id) !== -1) {
+            reaction.class = "message_reaction reacted";
+        } else {
+            reaction.class = "message_reaction";
         }
         return reaction;
     });
