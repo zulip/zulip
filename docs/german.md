@@ -356,7 +356,7 @@ the same in plural.
 
 Why not "Sie"? In brief, Zulip and other web applications tend to use a rather
 informal language. If you would like to read more about the reasoning behind
-this, refer to the [general notes](general-notes.md#formal-or-informal) for
+this, refer to the [general notes](#formal-or-informal) for
 translating German.
 
 *"Du" (Google, Facebook), "Sie" (Transifex)*
