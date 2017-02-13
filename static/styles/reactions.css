@@ -9,9 +9,13 @@
     padding: 0 2px 0 0;
     height: 19px;
     cursor: pointer;
-    background-color: #eef7fa;
+    background-color: #ffffff;
     border: 1px solid #c7dfe6;
     border-radius: 4px;
+}
+
+.message_reactions .reacted {
+    background-color: #eef7fa;
 }
 
 .message_reactions .message_reaction .emoji {
