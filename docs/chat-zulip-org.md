@@ -10,7 +10,7 @@ developers roughly between 16:00 UTC and 23:59 UTC, but the sun never
 sleeps on the Zulip development community.  Most questions get a reply
 within minutes to a few hours, depending on time of day.
 
-## Not a production installation
+## This is a bleeding edge development server
 
 The chat.zulip.org server is frequently deployed off of `master` from
 the Zulip Git repository, so please point out anything you notice that
