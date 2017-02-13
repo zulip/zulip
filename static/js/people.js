@@ -189,27 +189,10 @@ exports.get_recipients = function (user_ids_string) {
 };
 
 exports.pm_reply_to = function (message) {
-    if (message.type !== 'private') {
+    var user_ids = people.pm_with_user_ids(message);
+
+    if (!user_ids) {
         return;
-    }
-
-    if (message.display_recipient.length === 0) {
-        blueslip.error('Empty recipient list in message');
-        return;
-    }
-
-    var user_ids = _.map(message.display_recipient, function (elem) {
-        return elem.user_id || elem.id;
-    });
-
-    var other_user_ids = _.filter(user_ids, function (user_id) {
-        return !people.is_my_user_id(user_id);
-    });
-
-    if (other_user_ids.length >= 1) {
-        user_ids = other_user_ids;
-    } else {
-        user_ids = [my_user_id];
     }
 
     var emails = _.map(user_ids, function (user_id) {
