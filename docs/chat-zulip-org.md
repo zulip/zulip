@@ -39,6 +39,12 @@ secret/embarrassing, etc.
   someone who is not online sees your message.
 * Converse informally; there's no need to use titles like "Sir".
 * Follow the [community code of conduct](code-of-conduct.html).
+* Participate!  Zulip is a friendly and welcoming community, and we
+  love meeting new people and hearing about what brought them to Zulip
+  and getting their feedback.  If you're not sure where to start,
+  introduce yourself and your interests in
+  [#new members](https://chat.zulip.org/#narrow/stream/new.20members),
+  using your name as the topic.
 
 ## Streams
 
