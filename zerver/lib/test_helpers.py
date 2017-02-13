@@ -16,6 +16,7 @@ from django.db.utils import IntegrityError
 from django.utils.translation import ugettext as _
 
 from zerver.lib.avatar import avatar_url
+from zerver.lib.cache import get_cache_backend
 from zerver.lib.initial_password import initial_password
 from zerver.lib.db import TimeTrackingCursor
 from zerver.lib.str_utils import force_text
@@ -133,6 +134,8 @@ def queries_captured(include_savepoints=False):
 
     def wrapper_execute(self, action, sql, params=()):
         # type: (TimeTrackingCursor, Callable, NonBinaryStr, Iterable[Any]) -> None
+        cache = get_cache_backend(None)
+        cache.clear()
         start = time.time()
         try:
             return action(sql, params)
