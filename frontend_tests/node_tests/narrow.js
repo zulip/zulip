@@ -200,3 +200,24 @@ function set_filter(operators) {
     assert.equal(hide_id,'.empty_feed_notice');
     assert.equal(show_id, '#empty_search_narrow_message');
 }());
+
+(function test_update_email() {
+    var steve = {
+        email: 'steve@foo.com',
+        user_id: 43,
+        full_name: 'Steve',
+    };
+
+    people.add(steve);
+    set_filter([
+        ['pm-with', 'steve@foo.com'],
+        ['sender', 'steve@foo.com'],
+        ['stream', 'steve@foo.com'], // try to be tricky
+    ]);
+    narrow.update_email(steve.user_id, 'showell@foo.com');
+    var filter = narrow.filter();
+    assert.deepEqual(filter.operands('pm-with'), ['showell@foo.com']);
+    assert.deepEqual(filter.operands('sender'), ['showell@foo.com']);
+    assert.deepEqual(filter.operands('stream'), ['steve@foo.com']);
+}());
+

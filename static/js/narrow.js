@@ -32,6 +32,13 @@ exports.operators = function () {
     return current_filter.operators();
 };
 
+exports.update_email = function (user_id, new_email) {
+    if (current_filter !== undefined) {
+        current_filter.update_email(user_id, new_email);
+    }
+};
+
+
 /* Operators we should send to the server. */
 exports.public_operators = function () {
     if (current_filter === undefined) {
