@@ -1,0 +1,111 @@
+[33m642b668[m HEAD@{0}: rebase -i (finish): returning to refs/heads/issue#3489
+[33m642b668[m HEAD@{1}: rebase -i (start): checkout HEAD~2
+[33m642b668[m HEAD@{2}: rebase -i (finish): returning to refs/heads/issue#3489
+[33m642b668[m HEAD@{3}: rebase -i (start): checkout HEAD~1
+[33m642b668[m HEAD@{4}: rebase -i (finish): returning to refs/heads/issue#3489
+[33m642b668[m HEAD@{5}: rebase -i (start): checkout HEAD~7
+[33m642b668[m HEAD@{6}: rebase -i (finish): returning to refs/heads/issue#3489
+[33m642b668[m HEAD@{7}: rebase -i (squash): Note in linters doc that untracked files aren't linted.
+[33m9161a8f[m HEAD@{8}: rebase -i (squash): # This is a combination of 6 commits.
+[33m0d2bc87[m HEAD@{9}: rebase -i (squash): # This is a combination of 5 commits.
+[33m755aecf[m HEAD@{10}: rebase -i (squash): # This is a combination of 4 commits.
+[33mbc744ae[m HEAD@{11}: rebase -i (squash): # This is a combination of 3 commits.
+[33m002dbd2[m HEAD@{12}: rebase -i (squash): # This is a combination of 2 commits.
+[33meea6eb2[m HEAD@{13}: rebase -i (start): checkout HEAD~7
+[33md75fd96[m HEAD@{14}: rebase -i (finish): returning to refs/heads/issue#3489
+[33md75fd96[m HEAD@{15}: rebase -i (start): checkout HEAD~7
+[33md75fd96[m HEAD@{16}: rebase -i (finish): returning to refs/heads/issue#3489
+[33md75fd96[m HEAD@{17}: rebase -i (start): checkout HEAD~7
+[33md75fd96[m HEAD@{18}: checkout: moving from master to issue#3489
+[33m96f044c[m HEAD@{19}: checkout: moving from master to master
+[33m96f044c[m HEAD@{20}: checkout: moving from issue3489 to master
+[33m96f044c[m HEAD@{21}: checkout: moving from issue#3489 to issue3489
+[33md75fd96[m HEAD@{22}: checkout: moving from issue3489 to issue#3489
+[33m96f044c[m HEAD@{23}: checkout: moving from master to issue3489
+[33m96f044c[m HEAD@{24}: pull mainorigin master: Fast-forward
+[33meea6eb2[m HEAD@{25}: checkout: moving from issue#3489 to master
+[33md75fd96[m HEAD@{26}: commit: Fix enter key behavior to send message in preview mode.
+[33mbc3fa91[m HEAD@{27}: commit: Fix enter key behavior to send message in preview mode.
+[33mbbb9b1c[m HEAD@{28}: commit: Fix enter key behavior to send message in preview mode.
+[33meb47175[m HEAD@{29}: commit: Fix enter key behavior to send message in preview mode.
+[33md22900c[m HEAD@{30}: commit: Fix enter key behavior to send message in preview mode.
+[33m41cac33[m HEAD@{31}: checkout: moving from master to issue#3489
+[33meea6eb2[m HEAD@{32}: checkout: moving from issue#2412 to master
+[33m9789225[m HEAD@{33}: commit (amend): Fix enter key behavior for stream/settings/admin.
+[33m7e067a4[m HEAD@{34}: commit (amend): Fix enter key behavior for stream/settings/admin.
+[33m4e16045[m HEAD@{35}: checkout: moving from issue#3489 to issue#2412
+[33m41cac33[m HEAD@{36}: checkout: moving from issue#3313 to issue#3489
+[33m90cf9da[m HEAD@{37}: commit: message-view: Uncollapsing using [More...] made easier.
+[33meea6eb2[m HEAD@{38}: checkout: moving from master to issue#3313
+[33meea6eb2[m HEAD@{39}: checkout: moving from issue#3559 to master
+[33m7a2c21e[m HEAD@{40}: checkout: moving from issue#3575 to issue#3559
+[33meea6eb2[m HEAD@{41}: checkout: moving from master to issue#3575
+[33meea6eb2[m HEAD@{42}: checkout: moving from issue#3559 to master
+[33m7a2c21e[m HEAD@{43}: commit: Fix filter breaking in stream filtering.
+[33meea6eb2[m HEAD@{44}: checkout: moving from master to issue#3559
+[33meea6eb2[m HEAD@{45}: checkout: moving from issue#3489 to master
+[33m41cac33[m HEAD@{46}: commit: Fix enter key behavior to send message in preview mode.
+[33meea6eb2[m HEAD@{47}: checkout: moving from issue#3491 to issue#3489
+[33m6079119[m HEAD@{48}: checkout: moving from issue#3489 to issue#3491
+[33meea6eb2[m HEAD@{49}: checkout: moving from issue#2412 to issue#3489
+[33m4e16045[m HEAD@{50}: commit (amend): Fix enter key behavior for stream/settings/admin.
+[33maddc6d2[m HEAD@{51}: rebase -i (finish): returning to refs/heads/issue#2412
+[33maddc6d2[m HEAD@{52}: rebase -i (start): checkout HEAD~1
+[33maddc6d2[m HEAD@{53}: rebase -i (finish): returning to refs/heads/issue#2412
+[33maddc6d2[m HEAD@{54}: rebase -i (start): checkout HEAD~1
+[33maddc6d2[m HEAD@{55}: rebase -i (finish): returning to refs/heads/issue#2412
+[33maddc6d2[m HEAD@{56}: rebase -i (start): checkout HEAD~1
+[33maddc6d2[m HEAD@{57}: rebase -i (finish): returning to refs/heads/issue#2412
+[33maddc6d2[m HEAD@{58}: rebase -i (reword): Fix pressing enter while on settings takes the user back to home
+[33mf2d0022[m HEAD@{59}: cherry-pick: fast-forward
+[33meea6eb2[m HEAD@{60}: rebase -i (start): checkout HEAD~1
+[33mf2d0022[m HEAD@{61}: rebase -i (finish): returning to refs/heads/issue#2412
+[33mf2d0022[m HEAD@{62}: rebase -i (reword): Fix pressing enter while on settings takes the user back to home
+[33mdc4c563[m HEAD@{63}: cherry-pick: fast-forward
+[33meea6eb2[m HEAD@{64}: rebase -i (start): checkout HEAD~1
+[33mdc4c563[m HEAD@{65}: rebase -i (finish): returning to refs/heads/issue#2412
+[33mdc4c563[m HEAD@{66}: rebase -i (start): checkout HEAD~2
+[33mdc4c563[m HEAD@{67}: rebase -i (finish): returning to refs/heads/issue#2412
+[33mdc4c563[m HEAD@{68}: rebase -i (squash): Fix pressing enter while on settings takes the user back to home
+[33mef0639c[m HEAD@{69}: rebase -i (squash): # This is a combination of 2 commits.
+[33m2c05b96[m HEAD@{70}: rebase -i (start): checkout HEAD~3
+[33mf511471[m HEAD@{71}: commit: Fix enter key behavior for stream/settings/admin.
+[33m5c7e97e[m HEAD@{72}: checkout: moving from master to issue#2412
+[33meea6eb2[m HEAD@{73}: checkout: moving from fa-update to master
+[33m1b51470[m HEAD@{74}: checkout: moving from issue#3491 to fa-update
+[33m6079119[m HEAD@{75}: commit: Compose-Box: Show restore-draft option in write mode only.
+[33meea6eb2[m HEAD@{76}: checkout: moving from master to issue#3491
+[33meea6eb2[m HEAD@{77}: checkout: moving from issue#3491 to master
+[33meea6eb2[m HEAD@{78}: checkout: moving from issue#3489 to issue#3491
+[33meea6eb2[m HEAD@{79}: checkout: moving from issue#3517 to issue#3489
+[33m2690cab[m HEAD@{80}: rebase -i (finish): returning to refs/heads/issue#3517
+[33m2690cab[m HEAD@{81}: rebase -i (start): checkout HEAD~2
+[33m2690cab[m HEAD@{82}: rebase: aborting
+[33m0da82b6[m HEAD@{83}: rebase -i (start): checkout HEAD~2
+[33m2690cab[m HEAD@{84}: commit: left-sidebar: Fix +(plus) icon click and appearance of stream-search box.
+[33m9c919ea[m HEAD@{85}: commit: left-sidebar: Fix +(plus) icon click and appearance of stream-search box.
+[33m0da82b6[m HEAD@{86}: checkout: moving from issue#3489 to issue#3517
+[33meea6eb2[m HEAD@{87}: checkout: moving from issue#3517 to issue#3489
+[33m0da82b6[m HEAD@{88}: commit: Fix icon click in left-sidebar
+[33meea6eb2[m HEAD@{89}: checkout: moving from master to issue#3517
+[33meea6eb2[m HEAD@{90}: checkout: moving from issue3496 to master
+[33meea6eb2[m HEAD@{91}: checkout: moving from master to issue3496
+[33meea6eb2[m HEAD@{92}: checkout: moving from issue#3496 to master
+[33m4a505b5[m HEAD@{93}: checkout: moving from issue#3472 to issue#3496
+[33m4a505b5[m HEAD@{94}: commit: Fix pressing escape should close the markdown help dialog but not the compose message box
+[33m6173ef0[m HEAD@{95}: checkout: moving from issue#3489 to issue#3472
+[33meea6eb2[m HEAD@{96}: checkout: moving from master to issue#3489
+[33meea6eb2[m HEAD@{97}: checkout: moving from issue#3472 to master
+[33m6173ef0[m HEAD@{98}: commit: Fix pressing escape should close the markdown help dialog but not the compose message box.
+[33meca62cc[m HEAD@{99}: commit: Fix pressing escape should close the markdown help dialog but not the compose message box
+[33meea6eb2[m HEAD@{100}: checkout: moving from master to issue#3472
+[33meea6eb2[m HEAD@{101}: checkout: moving from issue#2412 to master
+[33m5c7e97e[m HEAD@{102}: checkout: moving from fa-update to issue#2412
+[33m1b51470[m HEAD@{103}: commit: Update Font Awesome to version 4.7.0
+[33meea6eb2[m HEAD@{104}: checkout: moving from master to fa-update
+[33meea6eb2[m HEAD@{105}: checkout: moving from update-fa to master
+[33m5c7e97e[m HEAD@{106}: checkout: moving from issue#2412 to update-fa
+[33m5c7e97e[m HEAD@{107}: commit: Fix pressing enter while on settings takes the user back to home
+[33m2c05b96[m HEAD@{108}: commit: Fix pressing enter while on settings takes the user back to home
+[33meea6eb2[m HEAD@{109}: checkout: moving from master to issue#2412
+[33meea6eb2[m HEAD@{110}: clone: from https://github.com/khantaalaman/zulip.git
