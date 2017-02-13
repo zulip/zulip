@@ -7,16 +7,16 @@ progress. If you speak a language other than English, your help with
 translating Zulip would be greatly appreciated!
 
 If you're interested in contributing translations to Zulip, please
-[join the "translation" stream in our developers' Zulip
-chat](https://chat.zulip.org/#narrow/stream/translation), and say
-hello. And please join the [Zulip project on
-Transifex](https://www.transifex.com/zulip/zulip/) and ask to join any
-languages you'd like to contribute to (or add new ones). Transifex's
-notification system sometimes fails to notify the maintainers when you
-ask to join a project, so please send a quick email to
-zulip-core@googlegroups.com when you request to join the project or
-add a language so that we can be sure to accept your request to
-contribute.
+join [#translation](https://chat.zulip.org/#narrow/stream/translation)
+in the [Zulip development community server](chat-zulip-org.html), and
+say hello. And please join the
+[Zulip project on Transifex](https://www.transifex.com/zulip/zulip/)
+and ask to join any languages you'd like to contribute to (or add new
+ones). Transifex's notification system sometimes fails to notify the
+maintainers when you ask to join a project, so please send a quick
+email to zulip-core@googlegroups.com when you request to join the
+project or add a language so that we can be sure to accept your
+request to contribute.
 
 Zulip has full support for Unicode, so you can already use your
 preferred language everywhere in Zulip.
@@ -99,8 +99,9 @@ Some useful tips for your translating journey:
 - Don't translate variables or code (usually preceded by a `%`, or inside
   HTML tags `<...>`).
 
-- When in doubt, ask for context in our [developers' Zulip
-  chat](https://chat.zulip.org/#narrow/stream/translation).
+- When in doubt, ask for context in
+  [#translation](https://chat.zulip.org/#narrow/stream/translation) in
+  the [Zulip development community server](chat-zulip-org.html).
 
 - If there are multiple possible translations for a term, search for it in
   the *Concordance* tool (the button with a magnet in the top right corner).

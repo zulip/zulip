@@ -25,8 +25,10 @@ On this page you'll find:
 
 Contributions to this guide are very welcome, so if you run into any
 issues following these instructions or come up with any tips or tools
-that help with writing bots, please visit the [Zulip chat](https://chat.zulip.org), open an issue, or submit a pull request
-to share your ideas!
+that help with writing bots, please visit
+[#bots](https://chat.zulip.org/#narrow/stream/bots) on the
+[Zulip development community server](https://chat.zulip.org), open an
+issue, or submit a pull request to share your ideas!
 
 ## How to deploy a bot
 This guide will show you how to deploy a bot on your running Zulip server.

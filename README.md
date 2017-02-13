@@ -25,7 +25,8 @@ at https://www.zulip.org.
 
 There are several places online where folks discuss Zulip.
 
-* The primary place is our [public Zulip instance](chat-zulip-org.html).
+* The primary place is the
+  [Zulip development community Zulip server](chat-zulip-org.html).
 
 * For Google Summer of Code students and applicants, we have
 [a mailing list](https://groups.google.com/forum/#!forum/zulip-gsoc)
