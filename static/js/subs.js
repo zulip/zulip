@@ -915,6 +915,16 @@ exports.change_stream_name = function (e) {
 
     $("#subscriptions-status").hide();
 
+    var stream_status = compose.check_stream_existence(new_name);
+
+    if (stream_status !== "does-not-exist") {
+        $("#name_change_error_" + stream_id).text(i18n.t("A stream with this name already exists!"));
+        $("#name_change_error_" + stream_id).show();
+        return;
+    } else {
+        $("#name_change_error_" + stream_id).hide();
+    }
+
     channel.patch({
         // Stream names might contain unsafe characters so we must encode it first.
         url: "/json/streams/" + stream_id,
