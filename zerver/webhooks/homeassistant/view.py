@@ -14,19 +14,19 @@ from typing import Dict, Any, Iterable, Optional, Text
 @has_request_variables
 def api_homeassistant_webhook(request, user_profile, client,
                            payload=REQ(argument_type='body'), stream=REQ(default="homeassistant")):
-    # type: (HttpRequest, UserProfile, Client, Dict[str, Iterable[Dict[str, Any]]]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Client, Dict[str, str], Text) -> HttpResponse
 
     # construct the body of the message
     try:
         body = payload["message"]
     except KeyError as e:
         return json_error(_("Missing key {} in JSON").format(str(e)))
-    
+
     # set the topic to the topic parameter, if given
     if "topic" in payload:
         topic = payload["topic"]
     else:
-        topic = "Home Assistant"
+        topic = "homeassistant"
 
     # send the message
     check_send_message(user_profile, client, 'stream', [stream], topic, body)

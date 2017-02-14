@@ -1,4 +1,5 @@
 from zerver.lib.test_classes import WebhookTestCase
+from typing import Text
 
 class HomeAssistantHookTests(WebhookTestCase):
     STREAM_NAME = 'homeassistant'
@@ -8,7 +9,7 @@ class HomeAssistantHookTests(WebhookTestCase):
     # Note: Include a test function per each distinct message condition your integration supports
     def test_simplereq(self):
         # type: () -> None
-        expected_subject = "Home Assistant";
+        expected_subject = "homeassistant";
         expected_message = "The sun will be shining today!";
 
         # use fixture named helloworld_hello
