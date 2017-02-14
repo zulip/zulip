@@ -200,6 +200,7 @@ var event_fixtures = {
         op: 'update',
         bot: {
             email: 'the-bot@example.com',
+            user_id: 4321,
             full_name: 'The Bot Has A New Name',
         },
     },
@@ -546,11 +547,11 @@ run(function (override, capture, args) {
 
     event = event_fixtures.realm_bot__update;
     override('bot_data', 'update', capture(['email', 'bot']));
-    override('admin', 'update_user_full_name', capture(['update_email', 'name']));
+    override('admin', 'update_user_full_name', capture(['update_user_id', 'name']));
     dispatch(event);
     assert_same(args.email, event.bot.email);
     assert_same(args.bot, event.bot);
-    assert_same(args.update_email, event.bot.email);
+    assert_same(args.update_user_id, event.bot.user_id);
     assert_same(args.name, event.bot.full_name);
 
 });

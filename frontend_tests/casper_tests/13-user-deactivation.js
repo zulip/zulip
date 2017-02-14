@@ -18,9 +18,9 @@ casper.then(function () {
 
 // Test user deactivation and reactivation
 casper.then(function () {
-    casper.waitUntilVisible('.user_row[id="user_cordelia@zulip.com"]', function () {
-        casper.test.assertSelectorHasText('.user_row[id="user_cordelia@zulip.com"]', 'Deactivate');
-        casper.click('.user_row[id="user_cordelia@zulip.com"] .deactivate');
+    casper.waitUntilVisible('.user_row[data-email="cordelia@zulip.com"]', function () {
+        casper.test.assertSelectorHasText('.user_row[data-email="cordelia@zulip.com"]', 'Deactivate');
+        casper.click('.user_row[data-email="cordelia@zulip.com"] .deactivate');
         casper.test.assertTextExists('Deactivate cordelia@zulip.com', 'Deactivate modal has right user');
         casper.test.assertTextExists('Deactivate now', 'Deactivate now button available');
         casper.click('#do_deactivate_user_button');
@@ -28,23 +28,23 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('.user_row[id="user_cordelia@zulip.com"].deactivated_user', function () {
-        casper.test.assertSelectorHasText('.user_row[id="user_cordelia@zulip.com"]', 'Reactivate');
-        casper.click('.user_row[id="user_cordelia@zulip.com"] .reactivate');
+    casper.waitUntilVisible('.user_row[data-email="cordelia@zulip.com"].deactivated_user', function () {
+        casper.test.assertSelectorHasText('.user_row[data-email="cordelia@zulip.com"]', 'Reactivate');
+        casper.click('.user_row[data-email="cordelia@zulip.com"] .reactivate');
     });
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('.user_row[id="user_cordelia@zulip.com"]:not(.deactivated_user)', function () {
-        casper.test.assertSelectorHasText('.user_row[id="user_cordelia@zulip.com"]', 'Deactivate');
+    casper.waitUntilVisible('.user_row[data-email="cordelia@zulip.com"]:not(.deactivated_user)', function () {
+        casper.test.assertSelectorHasText('.user_row[data-email="cordelia@zulip.com"]', 'Deactivate');
     });
 });
 
 casper.then(function () {
     // Test Deactivated users section of admin page
-    casper.waitUntilVisible('.user_row[id="user_cordelia@zulip.com"]', function () {
-        casper.test.assertSelectorHasText('.user_row[id="user_cordelia@zulip.com"]', 'Deactivate');
-        casper.click('.user_row[id="user_cordelia@zulip.com"] .deactivate');
+    casper.waitUntilVisible('.user_row[data-email="cordelia@zulip.com"]', function () {
+        casper.test.assertSelectorHasText('.user_row[data-email="cordelia@zulip.com"]', 'Deactivate');
+        casper.click('.user_row[data-email="cordelia@zulip.com"] .deactivate');
         casper.test.assertTextExists('Deactivate cordelia@zulip.com', 'Deactivate modal has right user');
         casper.test.assertTextExists('Deactivate now', 'Deactivate now button available');
         casper.click('#do_deactivate_user_button');
@@ -62,15 +62,15 @@ casper.then(function () {
     casper.click("li[data-section='deactivated-users-admin']");
 
 
-    casper.waitUntilVisible('#admin_deactivated_users_table .user_row[id="user_cordelia@zulip.com"] .reactivate', function () {
-        casper.test.assertSelectorHasText('#admin_deactivated_users_table .user_row[id="user_cordelia@zulip.com"]', 'Reactivate');
-        casper.click('#admin_deactivated_users_table .user_row[id="user_cordelia@zulip.com"] .reactivate');
+    casper.waitUntilVisible('#admin_deactivated_users_table .user_row[data-email="cordelia@zulip.com"] .reactivate', function () {
+        casper.test.assertSelectorHasText('#admin_deactivated_users_table .user_row[data-email="cordelia@zulip.com"]', 'Reactivate');
+        casper.click('#admin_deactivated_users_table .user_row[data-email="cordelia@zulip.com"] .reactivate');
     });
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('#admin_deactivated_users_table .user_row[id="user_cordelia@zulip.com"] button:not(.reactivate)', function () {
-        casper.test.assertSelectorHasText('#admin_deactivated_users_table .user_row[id="user_cordelia@zulip.com"]', 'Deactivate');
+    casper.waitUntilVisible('#admin_deactivated_users_table .user_row[data-email="cordelia@zulip.com"] button:not(.reactivate)', function () {
+        casper.test.assertSelectorHasText('#admin_deactivated_users_table .user_row[data-email="cordelia@zulip.com"]', 'Deactivate');
     });
 });
 
@@ -81,22 +81,22 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('.user_row[id="user_new-user-bot@zulip.com"]', function () {
-        casper.test.assertSelectorHasText('.user_row[id="user_new-user-bot@zulip.com"]', 'Deactivate');
-        casper.click('.user_row[id="user_new-user-bot@zulip.com"] .deactivate');
+    casper.waitUntilVisible('.user_row[data-email="new-user-bot@zulip.com"]', function () {
+        casper.test.assertSelectorHasText('.user_row[data-email="new-user-bot@zulip.com"]', 'Deactivate');
+        casper.click('.user_row[data-email="new-user-bot@zulip.com"] .deactivate');
     });
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('.user_row[id="user_new-user-bot@zulip.com"].deactivated_user', function () {
-        casper.test.assertSelectorHasText('.user_row[id="user_new-user-bot@zulip.com"]', 'Reactivate');
-        casper.click('.user_row[id="user_new-user-bot@zulip.com"] .reactivate');
+    casper.waitUntilVisible('.user_row[data-email="new-user-bot@zulip.com"].deactivated_user', function () {
+        casper.test.assertSelectorHasText('.user_row[data-email="new-user-bot@zulip.com"]', 'Reactivate');
+        casper.click('.user_row[data-email="new-user-bot@zulip.com"] .reactivate');
     });
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('.user_row[id="user_new-user-bot@zulip.com"]:not(.deactivated_user)', function () {
-        casper.test.assertSelectorHasText('.user_row[id="user_new-user-bot@zulip.com"]', 'Deactivate');
+    casper.waitUntilVisible('.user_row[data-email="new-user-bot@zulip.com"]:not(.deactivated_user)', function () {
+        casper.test.assertSelectorHasText('.user_row[data-email="new-user-bot@zulip.com"]', 'Deactivate');
     });
 });
 

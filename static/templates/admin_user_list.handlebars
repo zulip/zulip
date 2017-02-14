@@ -1,5 +1,5 @@
 {{#with user}}
-<tr class="user_row" id="user_{{email}}">
+<tr class="user_row" data-user-id="{{user_id}}" data-email="{{email}}">
   <td>
     <span class="user_name">{{full_name}}</span>
   </td>
@@ -35,7 +35,7 @@
       {{/if}}
     </span>
     {{#if is_active}}
-      <button class="button btn-primary open-user-form" title="{{t 'Edit User' }}" data-email="{{email}}">
+      <button class="button btn-primary open-user-form" title="{{t 'Edit User' }}" data-user-id="{{user_id}}">
           <i class="icon-vector-pencil"></i>
       </button>
     {{/if}}
@@ -44,7 +44,7 @@
   </td>
 </tr>
 {{#if is_active}}
-<tr class="user-name-form display-none" id="user_form_{{email}}">
+<tr class="user-name-form display-none" data-user-id="{{user_id}}">
   <td colspan="{{#if is_bot}}4{{else}}3{{/if}}">
     <form class="form-horizontal name-setting">
       <input type="hidden" name="is_full_name" value="true" />

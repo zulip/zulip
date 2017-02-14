@@ -17,10 +17,10 @@ exports.show_or_hide_menu_item = function () {
     }
 };
 
-function get_user_info(email) {
+function get_user_info(user_id) {
     var self = {};
-    self.user_row = $("tr[id='user_" + email + "']");
-    self.form_row = $("tr[id='user_form_" + email + "']");
+    self.user_row = $("tr.user_row[data-user-id='" + user_id + "']");
+    self.form_row = $("tr.user-name-form[data-user-id='" + user_id + "']");
 
     return self;
 }
@@ -30,12 +30,12 @@ function get_email_for_user_row(row) {
     return email;
 }
 
-exports.update_user_full_name = function (email, new_full_name) {
+exports.update_user_full_name = function (user_id, new_full_name) {
     if (!meta.loaded) {
         return;
     }
 
-    var user_info = get_user_info(email);
+    var user_info = get_user_info(user_id);
 
     var user_row = user_info.user_row;
     var form_row = user_info.form_row;
@@ -772,14 +772,20 @@ function _setup_page() {
     });
 
     $(".admin_user_table, .admin_bot_table").on("click", ".open-user-form", function (e) {
-        var email = $(e.currentTarget).data("email");
-        var user_info = get_user_info(email);
+        var user_id = $(e.currentTarget).attr("data-user-id");
+        var user_info = get_user_info(user_id);
         var user_row = user_info.user_row;
         var form_row = user_info.form_row;
         var reset_button = form_row.find(".reset_edit_user");
         var submit_button = form_row.find(".submit_name_changes");
         var full_name = form_row.find("input[name='full_name']");
         var admin_status = $('#administration-status').expectOne();
+
+        var person = people.get_person_from_user_id(user_id);
+
+        if (!person) {
+            return;
+        }
 
         // Show user form.
         user_row.hide();
@@ -794,7 +800,7 @@ function _setup_page() {
             e.preventDefault();
             e.stopPropagation();
 
-            var url = "/json/users/" + encodeURIComponent(email);
+            var url = "/json/users/" + encodeURIComponent(person.email);
             var data = {
                 full_name: JSON.stringify(full_name.val()),
             };
