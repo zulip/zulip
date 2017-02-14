@@ -151,7 +151,7 @@ exports.process_loaded_messages = function (messages) {
         }
 
         if (message.type === 'private') {
-            var user_ids_string = people.emails_strings_to_user_ids_string(message.reply_to);
+            var user_ids_string = people.pm_reply_user_string(message);
             if (user_ids_string) {
                 unread_privates.setdefault(user_ids_string, new Dict());
                 unread_privates.get(user_ids_string).set(message.id, true);
@@ -175,7 +175,7 @@ exports.process_loaded_messages = function (messages) {
 exports.process_read_message = function (message) {
 
     if (message.type === 'private') {
-        var user_ids_string = people.emails_strings_to_user_ids_string(message.reply_to);
+        var user_ids_string = people.pm_reply_user_string(message);
         if (user_ids_string) {
             var dict = unread_privates.get(user_ids_string);
             if (dict) {
