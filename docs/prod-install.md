@@ -50,7 +50,8 @@ Then, run the Zulip install script:
 ```
 
 This may take a while to run, since it will install a large number of
-dependencies.
+dependencies. It also creates `zulip` user, which will be used to run
+the various Zulip servers.
 
 The Zulip install script is designed to be idempotent, so if it fails,
 you can just rerun it after correcting the issue that caused it to
@@ -92,8 +93,9 @@ These settings include:
 
 ## Step 4: Initialize Zulip database
 
-At this point, you are done doing things as root.  To initialize the
-Zulip database for your production install, run:
+At this point, you are done doing things as root. The remaining
+commands are run as the `zulip` user using `su zulip`. To initialize
+the Zulip database for your production install, run:
 
 ```
 su zulip -c /home/zulip/deployments/current/scripts/setup/initialize-database
