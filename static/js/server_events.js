@@ -92,7 +92,7 @@ function dispatch_normal_event(event) {
             bot_data.remove(event.bot.email);
         } else if (event.op === 'update') {
             bot_data.update(event.bot.email, event.bot);
-            admin.update_user_full_name(event.bot.email, event.bot.full_name);
+            admin.update_user_full_name(event.bot.user_id, event.bot.full_name);
         }
         break;
 

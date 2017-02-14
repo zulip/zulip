@@ -823,6 +823,7 @@ class BotTest(ZulipTestCase):
         self.assertEqual(len(bots), 1)
         bot = bots[0]
         self.assertEqual(bot['bot_owner'], 'hamlet@zulip.com')
+        self.assertEqual(bot['user_id'], get_user_profile_by_email('hambot-bot@zulip.com').id)
 
     def test_add_bot_with_username_in_use(self):
         # type: () -> None

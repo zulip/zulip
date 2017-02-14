@@ -301,6 +301,7 @@ def get_members_backend(request, user_profile):
                   "is_active": profile.is_active,
                   "is_admin": (profile in admins),
                   "email": profile.email,
+                  "user_id": profile.id,
                   "avatar_url": avatar_url}
         if profile.is_bot and profile.bot_owner is not None:
             member["bot_owner"] = profile.bot_owner.email
