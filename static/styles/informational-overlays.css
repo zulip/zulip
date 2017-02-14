@@ -22,7 +22,7 @@
 .informational-overlays .overlay-content {
     /* because zoom breaks at 525px perhaps due to rounding errors, so add a
        trivial amount of width so it doesn't break. */
-    width: 525.03px;
+    width: 550px;
     margin: 0 auto;
     position: relative;
     top: calc((30vh - 50px) / 2);
@@ -55,6 +55,7 @@
 
 .informational-overlays .overlay-modal .modal-body {
     height: 70vh;
+    text-align: center;
 }
 
 .informational-overlays .overlay-modal .modal-header h3 {
@@ -67,9 +68,4 @@
 
 .informational-overlays td.operator {
     font-size: 0.9em;
-}
-
-/* Hack to fix scrollbars on Linux */
-.informational-overlays #keyboard-shortcuts .modal-body {
-    overflow-y: hidden;
 }
