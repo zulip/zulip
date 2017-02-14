@@ -915,7 +915,7 @@ exports.change_stream_name = function (e) {
 
     $("#subscriptions-status").hide();
 
-    //While renaming, we need to check if the name is free or has already been taken up.
+    //While renaming we need to check if the name is free or has already been taken up.
     var stream_status = compose.check_stream_existence(new_name);
 
     if (stream_status !== "does-not-exist") {
