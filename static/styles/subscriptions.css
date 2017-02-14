@@ -265,6 +265,13 @@ form#add_new_subscription {
     color: #FF0000;
 }
 
+.name_change_error {
+    display: none;
+    margin-left: 2px;
+    color: #FF0000;
+    font-size: 12px;
+}
+
 .sub_settings_title {
     line-height: 30px;
     margin: 10px 0;
