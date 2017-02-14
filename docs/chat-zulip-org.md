@@ -10,7 +10,7 @@ developers roughly between 16:00 UTC and 23:59 UTC, but the sun never
 sleeps on the Zulip development community.  Most questions get a reply
 within minutes to a few hours, depending on time of day.
 
-## Not a production installation
+## This is a bleeding edge development server
 
 The chat.zulip.org server is frequently deployed off of `master` from
 the Zulip Git repository, so please point out anything you notice that
@@ -39,6 +39,12 @@ secret/embarrassing, etc.
   someone who is not online sees your message.
 * Converse informally; there's no need to use titles like "Sir".
 * Follow the [community code of conduct](code-of-conduct.html).
+* Participate!  Zulip is a friendly and welcoming community, and we
+  love meeting new people and hearing about what brought them to Zulip
+  and getting their feedback.  If you're not sure where to start,
+  introduce yourself and your interests in
+  [#new members](https://chat.zulip.org/#narrow/stream/new.20members),
+  using your name as the topic.
 
 ## Streams
 
