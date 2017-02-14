@@ -188,6 +188,16 @@ exports.get_recipients = function (user_ids_string) {
     return names.join(', ');
 };
 
+exports.pm_reply_user_string = function (message) {
+    var user_ids = people.pm_with_user_ids(message);
+
+    if (!user_ids) {
+        return;
+    }
+
+    return user_ids.join(',');
+};
+
 exports.pm_reply_to = function (message) {
     var user_ids = people.pm_with_user_ids(message);
 
