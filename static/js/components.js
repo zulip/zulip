@@ -42,22 +42,21 @@ exports.toggle = (function () {
         // store once a copy of the tabs inside the parent in a jQuery object/array.
         var meta = {
             $ind_tab: component.find(".ind-tab"),
+            last_value: null,
         };
 
         (function () {
-            var last_value = null;
-            meta.$ind_tab.each(function () {
-                $(this).click(function () {
-                    meta.$ind_tab.removeClass("selected");
-                    $(this).addClass("selected");
-                    if (opts.callback) {
-                        var id = +$(this).data("tab-id");
-                        if (last_value !== opts.values[id].label) {
-                            last_value = opts.values[id].label;
-                            opts.callback(last_value, opts.values[id].key);
-                        }
+            meta.$ind_tab.click(function () {
+                meta.$ind_tab.removeClass("selected");
+                $(this).addClass("selected");
+                if (opts.callback) {
+                    var id = +$(this).data("tab-id");
+
+                    if (meta.last_value !== opts.values[id].label) {
+                        meta.last_value = opts.values[id].label;
+                        opts.callback(meta.last_value, opts.values[id].key);
                     }
-                });
+                }
             });
             if (typeof opts.selected === "number") {
                 $(component).find(".ind-tab[data-tab-id='" + opts.selected + "']").click();
@@ -86,11 +85,13 @@ exports.toggle = (function () {
 
                 var idx = opts.values.indexOf(value);
 
-                if (idx !== -1) {
+                if (idx !== -1 && idx !== meta.last_value) {
                     meta.$ind_tab.removeClass("selected");
                     meta.$ind_tab.filter("[data-tab-id='" + idx + "']").addClass("selected");
 
                     opts.callback(value.label, value.key);
+
+                    meta.last_value = idx;
                 }
             },
         };
