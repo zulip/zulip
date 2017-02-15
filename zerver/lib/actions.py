@@ -648,16 +648,14 @@ def do_deactivate_user(user_profile, log=True, _cascade=True):
 
 def do_deactivate_stream(stream, log=True):
     # type: (Stream, bool) -> None
-    subscriptions = Subscription.objects.select_related('user_profile').filter(
+
+    # Get the affected user ids *before* we deactivate everybody.
+    affected_user_ids = can_access_stream_user_ids(stream)
+
+    Subscription.objects.select_related('user_profile').filter(
         recipient__type=Recipient.STREAM,
         recipient__type_id=stream.id,
-        active=True)
-
-    user_profiles = [
-        sub.user_profile
-        for sub in subscriptions]
-
-    bulk_remove_subscriptions(user_profiles, [stream])
+        active=True).update(active=False)
 
     was_invite_only = stream.invite_only
     stream.deactivated = True
@@ -686,12 +684,11 @@ def do_deactivate_stream(stream, log=True):
     old_cache_key = get_stream_cache_key(old_name, stream.realm)
     cache_delete(old_cache_key)
 
-    if not was_invite_only:
-        stream_dict = stream.to_dict()
-        stream_dict.update(dict(name=old_name, invite_only=was_invite_only))
-        event = dict(type="stream", op="delete",
-                     streams=[stream_dict])
-        send_event(event, active_user_ids(stream.realm))
+    stream_dict = stream.to_dict()
+    stream_dict.update(dict(name=old_name, invite_only=was_invite_only))
+    event = dict(type="stream", op="delete",
+                 streams=[stream_dict])
+    send_event(event, affected_user_ids)
 
 def do_change_user_email(user_profile, new_email):
     # type: (UserProfile, Text) -> None

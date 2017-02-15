@@ -150,6 +150,14 @@ function dispatch_normal_event(event) {
             admin.update_default_streams_table();
         } else if (event.op === 'create') {
             stream_data.create_streams(event.streams);
+        } else if (event.op === 'delete') {
+            _.each(event.streams, function (stream) {
+                if (stream_data.is_subscribed(stream.name)) {
+                    stream_list.remove_sidebar_row(stream.stream_id);
+                }
+                subs.remove_stream(stream.stream_id);
+                stream_data.delete_sub(stream.stream_id);
+            });
         }
         break;
 
