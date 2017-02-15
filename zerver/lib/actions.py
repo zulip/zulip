@@ -27,7 +27,7 @@ from zerver.lib.message import (
 )
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, RealmAlias, \
-    Subscription, Recipient, Message, Attachment, UserMessage, \
+    Subscription, Recipient, Message, Attachment, UserMessage, RealmAuditLog, \
     Client, DefaultStream, UserPresence, Referral, PushDeviceToken, MAX_SUBJECT_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle, \
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
@@ -399,8 +399,19 @@ def do_create_user(email, password, realm, full_name, short_name,
                    default_all_public_streams=None, prereg_user=None,
                    newsletter_data=None):
     # type: (Text, Text, Realm, Text, Text, bool, Optional[int], Optional[UserProfile], Optional[Text], Text, Optional[Stream], Optional[Stream], bool, Optional[PreregistrationUser], Optional[Dict[str, str]]) -> UserProfile
+    user_profile = create_user(email=email, password=password, realm=realm,
+                               full_name=full_name, short_name=short_name,
+                               active=active, bot_type=bot_type, bot_owner=bot_owner,
+                               tos_version=tos_version, avatar_source=avatar_source,
+                               default_sending_stream=default_sending_stream,
+                               default_events_register_stream=default_events_register_stream,
+                               default_all_public_streams=default_all_public_streams)
+
+    RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
+                                 event_type='user_created', event_time=user_profile.date_joined)
+
     event = {'type': 'user_created',
-             'timestamp': time.time(),
+             'timestamp': datetime_to_timestamp(user_profile.date_joined),
              'full_name': full_name,
              'short_name': short_name,
              'user': email,
@@ -409,14 +420,6 @@ def do_create_user(email, password, realm, full_name, short_name,
     if bot_type:
         event['bot_owner'] = bot_owner.email
     log_event(event)
-
-    user_profile = create_user(email=email, password=password, realm=realm,
-                               full_name=full_name, short_name=short_name,
-                               active=active, bot_type=bot_type, bot_owner=bot_owner,
-                               tos_version=tos_version, avatar_source=avatar_source,
-                               default_sending_stream=default_sending_stream,
-                               default_events_register_stream=default_events_register_stream,
-                               default_all_public_streams=default_all_public_streams)
 
     notify_created_user(user_profile)
     if bot_type:
@@ -629,9 +632,13 @@ def do_deactivate_user(user_profile, log=True, _cascade=True):
 
     delete_user_sessions(user_profile)
 
+    event_time = timezone.now()
+    RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
+                                 event_type='user_deactivated', event_time=event_time)
+
     if log:
         log_event({'type': 'user_deactivated',
-                   'timestamp': time.time(),
+                   'timestamp': datetime_to_timestamp(event_time),
                    'user': user_profile.email,
                    'domain': user_profile.realm.domain})
 
@@ -1846,9 +1853,14 @@ def do_activate_user(user_profile, log=True, join_date=timezone.now()):
     user_profile.save(update_fields=["is_active", "date_joined", "password",
                                      "is_mirror_dummy", "tos_version"])
 
+    event_time = timezone.now()
+    RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
+                                 event_type='user_activated', event_time=event_time)
+
     if log:
         domain = user_profile.realm.domain
         log_event({'type': 'user_activated',
+                   'timestamp': datetime_to_timestamp(event_time),
                    'user': user_profile.email,
                    'domain': domain})
 
@@ -1861,8 +1873,13 @@ def do_reactivate_user(user_profile):
     user_profile.is_active = True
     user_profile.save(update_fields=["is_active"])
 
+    event_time = timezone.now()
+    RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
+                                 event_type='user_reactivated', event_time=event_time)
+
     domain = user_profile.realm.domain
     log_event({'type': 'user_reactivated',
+               'timestamp': datetime_to_timestamp(event_time),
                'user': user_profile.email,
                'domain': domain})
 

@@ -3,7 +3,7 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional, Set, Tuple, Tex
 
 from zerver.lib.initial_password import initial_password
 from zerver.models import Realm, Stream, UserProfile, Huddle, \
-    Subscription, Recipient, Client, get_huddle_hash
+    Subscription, Recipient, Client, RealmAuditLog, get_huddle_hash
 from zerver.lib.create_user import create_user_profile
 
 def bulk_create_realms(realm_list):
@@ -34,6 +34,11 @@ def bulk_create_users(realm, users_raw, bot_type=None, tos_version=None):
                                       full_name, short_name, None, False, tos_version)
         profiles_to_create.append(profile)
     UserProfile.objects.bulk_create(profiles_to_create)
+
+    RealmAuditLog.objects.bulk_create(
+        [RealmAuditLog(realm=profile_.realm, modified_user=profile_,
+                       event_type='user_created', event_time=profile_.date_joined)
+         for profile_ in profiles_to_create])
 
     profiles_by_email = {} # type: Dict[Text, UserProfile]
     profiles_by_id = {} # type: Dict[int, UserProfile]
