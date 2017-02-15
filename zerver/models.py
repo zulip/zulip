@@ -1485,3 +1485,12 @@ class ScheduledJob(models.Model):
     # Kind if like a ForeignKey, but table is determined by type.
     filter_id = models.IntegerField(null=True) # type: Optional[int]
     filter_string = models.CharField(max_length=100) # type: Text
+
+class RealmAuditLog(models.Model):
+    realm = models.ForeignKey(Realm) # type: Realm
+    acting_user = models.ForeignKey(UserProfile, null=True, related_name='+') # type: Optional[UserProfile]
+    modified_user = models.ForeignKey(UserProfile, null=True, related_name='+') # type: Optional[UserProfile]
+    modified_stream = models.ForeignKey(Stream, null=True) # type: Optional[Stream]
+    event_type = models.CharField(max_length=40) # type: Text
+    event_time = models.DateTimeField() # type: datetime.datetime
+    backfilled = models.BooleanField(default=False) # type: bool

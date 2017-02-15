@@ -11,7 +11,8 @@ from analytics.lib.time_utils import time_range
 from analytics.models import BaseCount, InstallationCount, RealmCount, \
     UserCount, StreamCount, FillState
 from zerver.lib.timestamp import floor_to_day
-from zerver.models import Realm, UserProfile, Stream, Message, Client
+from zerver.models import Realm, UserProfile, Stream, Message, Client, \
+    RealmAuditLog
 
 from datetime import datetime, timedelta
 
@@ -26,10 +27,14 @@ class Command(BaseCommand):
 
     def create_user(self, email, full_name, is_staff, date_joined, realm):
         # type: (Text, Text, Text, bool, datetime, Realm) -> UserProfile
-        return UserProfile.objects.create(
+        user = UserProfile.objects.create(
             email=email, full_name=full_name, is_staff=is_staff,
             realm=realm, short_name=full_name, pointer=-1, last_pointer_updater='none',
             api_key='42', date_joined=date_joined)
+        RealmAuditLog.objects.create(
+            realm=realm, modified_user=user, event_type='user_created',
+            event_time=user.date_joined)
+        return user
 
     def generate_fixture_data(self, stat, business_hours_base, non_business_hours_base,
                               growth, autocorrelation, spikiness, holiday_rate=0):
