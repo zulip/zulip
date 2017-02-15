@@ -106,6 +106,8 @@ def move_expired_attachments_message_rows_to_archive(realm):
 
 def delete_expired_messages(realm):
     # type: (Realm) -> None
+    # Delete messages after retention period
+    # if they already have been moved to archive.
     removing_messages = Message.objects.filter(
         usermessage__isnull=True, id__in=ArchivedMessage.objects.all(),
         sender__realm_id=realm.id
@@ -115,6 +117,8 @@ def delete_expired_messages(realm):
 
 def delete_expired_user_messages(realm):
     # type: (Realm) -> None
+    # Delete user_messages after retention period
+    # if they are already moved to archive.
     removing_user_messages = UserMessage.objects.filter(
         id__in=ArchivedUserMessage.objects.all(),
         user_profile__realm_id=realm.id
@@ -124,6 +128,8 @@ def delete_expired_user_messages(realm):
 
 def delete_expired_attachments(realm):
     # type: (Realm) -> None
+    # Delete attachments after retention period
+    # if they already have been moved to archive.
     attachments_to_remove = Attachment.objects.filter(
         messages__isnull=True, id__in=ArchivedAttachment.objects.all(),
         realm_id=realm.id
@@ -133,6 +139,7 @@ def delete_expired_attachments(realm):
 
 def clean_unused_messages():
     # type: () -> None
+    # Remove unused messages without user_messages.
     unused_messages = Message.objects.filter(
         usermessage__isnull=True, id__in=ArchivedMessage.objects.all()
     )
@@ -141,6 +148,7 @@ def clean_unused_messages():
 
 def archive_messages():
     # type: () -> None
+    # The main function for archiving messages' data.
     for realm in Realm.objects.filter(message_retention_days__isnull=False):
         move_expired_messages_to_archive(realm)
         move_expired_user_messages_to_archive(realm)
@@ -154,6 +162,8 @@ def archive_messages():
 
 def delete_expired_archived_attachments_by_realm(realm_id):
     # type: (int) -> None
+    # Delete old archived attachments from archive table
+    # after retention period for archived data.
     expired_date = timezone_now() - timedelta(days=settings.ARCHIVED_DATA_RETENTION_DAYS)
     arc_attachments = ArchivedAttachment.objects \
         .filter(archive_timestamp__lt=expired_date, realm_id=realm_id, messages__isnull=True) \
@@ -165,6 +175,8 @@ def delete_expired_archived_attachments_by_realm(realm_id):
 
 def delete_expired_archived_data_by_realm(realm_id):
     # type: (int) -> None
+    # Delete old archived messages and user_messages from archive tables
+    # after retention period for archived data.
     arc_expired_date = timezone_now() - timedelta(days=settings.ARCHIVED_DATA_RETENTION_DAYS)
     ArchivedUserMessage.objects.filter(archive_timestamp__lt=arc_expired_date,
                                        user_profile__realm_id=realm_id).delete()
@@ -234,6 +246,7 @@ def move_message_to_archive(message_id):
 
 def restore_archived_messages_by_realm(realm_id):
     # type: (int) -> None
+    # Function for restoring archived messages by realm for emergency cases.
     query = """
         INSERT INTO zerver_message ({dst_fields})
         SELECT {src_fields}
@@ -248,6 +261,7 @@ def restore_archived_messages_by_realm(realm_id):
 
 def restore_archived_usermessages_by_realm(realm_id):
     # type: (int) -> None
+    # Function for restoring archived user_messages by realm for emergency cases.
     query = """
         INSERT INTO zerver_usermessage ({dst_fields})
         SELECT {src_fields}
@@ -263,6 +277,7 @@ def restore_archived_usermessages_by_realm(realm_id):
 
 def restore_archived_attachments_by_realm(realm_id):
     # type: (int) -> None
+    # Function for restoring archived attachments by realm for emergency cases.
     query = """
        INSERT INTO zerver_attachment ({dst_fields})
        SELECT {src_fields}
@@ -282,6 +297,8 @@ def restore_archived_attachments_by_realm(realm_id):
 
 def restore_archived_attachments_message_rows_by_realm(realm_id):
     # type: (int) -> None
+    # Function for restoring archived data in many-to-many attachment_messages
+    # table by realm for emergency cases.
     query = """
         INSERT INTO zerver_attachment_messages (id, attachment_id, message_id)
         SELECT zerver_archivedattachment_messages.id, zerver_archivedattachment_messages.archivedattachment_id,
@@ -301,6 +318,7 @@ def restore_archived_attachments_message_rows_by_realm(realm_id):
 
 def restore_realm_archived_data(realm_id):
     # type: (int) -> None
+    # The main function for restoring archived messages' data by realm.
     restore_archived_messages_by_realm(realm_id)
     restore_archived_usermessages_by_realm(realm_id)
     restore_archived_attachments_by_realm(realm_id)

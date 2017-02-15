@@ -1,6 +1,7 @@
 MAILTO=root
-# Removing old archived data should follow after archiving messages,
-# cause it checks related archived messages and original attachments rows before deleting .
+# The retention policy data deletion process should remove old archived
+# data *after* archiving messages, to check related archived messages
+# and the original attachments' rows before deleting.
 
 # Archive messages once a day. Time is in UTC.
 0 1 * * *   zulip cd /home/zulip/deployments/current && ./manage.py archive_messages

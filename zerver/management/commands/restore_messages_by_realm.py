@@ -13,7 +13,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         # type: (ArgumentParser) -> None
         parser.add_argument('domain', metavar='<domain>', type=str,
-                            help='domain of realm to restore messages data')
+                            help='The domain of the realm to restore messages data to.')
 
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None

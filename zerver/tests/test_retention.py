@@ -59,19 +59,19 @@ class TestRetentionLib(ZulipTestCase):
         msgs.update(pub_date=pub_date)
         return msgs
 
-    def _make_mit_msgs(self, msg_qauntity, pub_date):
+    def _make_mit_msgs(self, msg_quantity, pub_date):
         # type: (int, datetime) -> Any
         # Send messages from mit.edu realm and change messages pub_date.
         sender = self.mit_user('espuser')
         recipient = self.mit_user('starnine')
         msgs_ids = [self.send_message(sender.email, recipient.email, Recipient.PERSONAL) for i in
-                    range(msg_qauntity)]
+                    range(msg_quantity)]
         mit_msgs = self._change_msgs_pub_date(msgs_ids, pub_date)
         return mit_msgs
 
-    def _send_cross_realm_message(self):
+    def _send_cross_realms_message(self):
         # type: () -> int
-        # Send message from bot to users from different realm.
+        # Send a message from bot to users in different realms.
         bot_email = 'notification-bot@zulip.com'
         get_user_profile_by_email(bot_email)
         mit_user = UserProfile.objects.filter(realm=self.mit_realm).first()
@@ -140,7 +140,7 @@ class TestRetentionLib(ZulipTestCase):
 
     def _check_cross_realm_messages_archiving(self, arc_user_msg_qty, period, realm=None):
         # type: (int, int, Realm) -> int
-        sended_message_id = self._send_cross_realm_message()
+        sended_message_id = self._send_cross_realms_message()
         all_user_messages_qty = UserMessage.objects.count()
         self._change_msgs_pub_date([sended_message_id], timezone_now() - timedelta(days=period))
         realms = Realm.objects.filter(message_retention_days__isnull=False)
@@ -236,9 +236,9 @@ class TestRetentionLib(ZulipTestCase):
         archived_user_messages = ArchivedUserMessage.objects.all()
         self.assertEqual(ArchivedMessage.objects.count(), 5)
         self.assertEqual(archived_user_messages.count(), 10)
-        # Compare expected messages ids with archived messages in mit realm
+        # Compare expected messages' IDs with IDs of archived messages in MIT realm
         self._check_archive_data_by_realm(exp_mit_msgs, self.mit_realm)
-        # Check no archive messages for zulip realm.
+        # Check that the zulip realm does not contain any archived messages.
         self.assertEqual(
             ArchivedMessage.objects.filter(
                 archivedusermessage__user_profile__realm=self.zulip_realm).count(),
@@ -251,30 +251,30 @@ class TestRetentionLib(ZulipTestCase):
 
     def test_cross_realm_messages_archiving_one_realm_expired(self):
         # type: () -> None
-        # Check archiving messages which is sent to different realms
+        # Check archived message that is sent to different realms
         # and expired just on on one of them.
         arc_msg_id = self._check_cross_realm_messages_archiving(1, 31, realm=self.zulip_realm)
         self.assertTrue(Message.objects.filter(id=arc_msg_id).exists())
 
     def test_cross_realm_messages_archiving_two_realm_expired(self):
         # type: () -> None
-        # Check archiving cross realm message wich is expired on both realms.
+        # Check archived cross-realm message which is expired on both realms.
         arc_msg_id = self._check_cross_realm_messages_archiving(2, 101)
         self.assertFalse(Message.objects.filter(id=arc_msg_id).exists())
 
     def test_archive_message_tool(self):
         # type: () -> None
         # Check archiving tool.
-        exp_msgs_ids_dict = self._make_expired_messages()  # List of expired messages ids.
-        sended_cross_realm_message_id = self._send_cross_realm_message()
+        exp_msgs_ids_dict = self._make_expired_messages()  # List of expired messages' IDs.
+        sended_cross_realm_message_id = self._send_cross_realms_message()
         exp_msgs_ids_dict['mit_msgs_ids'].append(sended_cross_realm_message_id)
-        # Add cross realm message id.
+        # Add cross-realm message id.
         self._change_msgs_pub_date(
             [sended_cross_realm_message_id],
             timezone_now() - timedelta(days=101)
         )
         exp_msgs_ids = exp_msgs_ids_dict['mit_msgs_ids'] + exp_msgs_ids_dict['zulip_msgs_ids']
-        # Get expired user messages by message ids
+        # Get expired user messages by message IDs
         exp_user_msgs_ids = list(UserMessage.objects.filter(
             message_id__in=exp_msgs_ids).order_by('id').values_list('id', flat=True))
         msgs_qty = Message.objects.count()
