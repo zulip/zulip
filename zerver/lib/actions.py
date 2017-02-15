@@ -10,6 +10,7 @@ from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.core import validators
 from django.contrib.sessions.models import Session
+from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
 from zerver.lib.bugdown import (
     BugdownRenderingException,
     version as bugdown_version
@@ -407,11 +408,14 @@ def do_create_user(email, password, realm, full_name, short_name,
                                default_events_register_stream=default_events_register_stream,
                                default_all_public_streams=default_all_public_streams)
 
+    event_time = user_profile.date_joined
     RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
-                                 event_type='user_created', event_time=user_profile.date_joined)
+                                 event_type='user_created', event_time=event_time)
+    do_increment_logging_stat(user_profile.realm, COUNT_STATS['active_users_log:is_bot:day'],
+                              user_profile.is_bot, event_time)
 
     event = {'type': 'user_created',
-             'timestamp': datetime_to_timestamp(user_profile.date_joined),
+             'timestamp': datetime_to_timestamp(event_time),
              'full_name': full_name,
              'short_name': short_name,
              'user': email,
@@ -635,6 +639,8 @@ def do_deactivate_user(user_profile, log=True, _cascade=True):
     event_time = timezone.now()
     RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
                                  event_type='user_deactivated', event_time=event_time)
+    do_increment_logging_stat(user_profile.realm, COUNT_STATS['active_users_log:is_bot:day'],
+                              user_profile.is_bot, event_time, increment=-1)
 
     if log:
         log_event({'type': 'user_deactivated',
@@ -1856,6 +1862,8 @@ def do_activate_user(user_profile, log=True, join_date=timezone.now()):
     event_time = timezone.now()
     RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
                                  event_type='user_activated', event_time=event_time)
+    do_increment_logging_stat(user_profile.realm, COUNT_STATS['active_users_log:is_bot:day'],
+                              user_profile.is_bot, event_time)
 
     if log:
         domain = user_profile.realm.domain
@@ -1876,6 +1884,8 @@ def do_reactivate_user(user_profile):
     event_time = timezone.now()
     RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
                                  event_type='user_reactivated', event_time=event_time)
+    do_increment_logging_stat(user_profile.realm, COUNT_STATS['active_users_log:is_bot:day'],
+                              user_profile.is_bot, event_time)
 
     domain = user_profile.realm.domain
     log_event({'type': 'user_reactivated',

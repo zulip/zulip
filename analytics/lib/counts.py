@@ -1,13 +1,15 @@
 from django.conf import settings
 from django.db import connection, models
+from django.db.models import F
 from django.utils import timezone
 
 from analytics.models import InstallationCount, RealmCount, \
     UserCount, StreamCount, BaseCount, FillState, installation_epoch
 from zerver.models import Realm, UserProfile, Message, Stream, models
-from zerver.lib.timestamp import floor_to_day
+from zerver.lib.timestamp import floor_to_day, floor_to_hour, ceiling_to_day, \
+    ceiling_to_hour
 
-from typing import Any, Dict, Optional, Type, Tuple, Text
+from typing import Any, Dict, Optional, Text, Tuple, Type, Union
 
 from datetime import timedelta, datetime
 import logging
@@ -46,10 +48,18 @@ class CountStat(object):
             raise ValueError("Unknown frequency: %s" % (frequency,))
         self.frequency = frequency
         self.interval = self.GAUGE if is_gauge else frequency
+        self.is_logging = False
 
     def __unicode__(self):
         # type: () -> Text
         return u"<CountStat: %s>" % (self.property,)
+
+class LoggingCountStat(CountStat):
+    def __init__(self, property, analytics_table, frequency):
+        # type: (str, Type[BaseCount], str) -> None
+        CountStat.__init__(self, property, ZerverCountQuery(None, analytics_table, None), {}, None,
+                           frequency, False)
+        self.is_logging = True
 
 class ZerverCountQuery(object):
     def __init__(self, zerver_table, analytics_table, query):
@@ -109,15 +119,21 @@ def do_fill_count_stat_at_hour(stat, end_time):
     else: # stat.interval == CountStat.GAUGE
         start_time = MIN_TIME
 
-    do_pull_from_zerver(stat, start_time, end_time)
+    if not stat.is_logging:
+        do_pull_from_zerver(stat, start_time, end_time)
     do_aggregate_to_summary_table(stat, end_time)
 
 def do_delete_counts_at_hour(stat, end_time):
     # type: (CountStat, datetime) -> None
-    UserCount.objects.filter(property = stat.property, end_time = end_time).delete()
-    StreamCount.objects.filter(property = stat.property, end_time = end_time).delete()
-    RealmCount.objects.filter(property = stat.property, end_time = end_time).delete()
-    InstallationCount.objects.filter(property = stat.property, end_time = end_time).delete()
+    if stat.is_logging:
+        InstallationCount.objects.filter(property=stat.property, end_time=end_time).delete()
+        if stat.zerver_count_query.analytics_table in [UserCount, StreamCount]:
+            RealmCount.objects.filter(property=stat.property, end_time=end_time).delete()
+    else:
+        UserCount.objects.filter(property=stat.property, end_time=end_time).delete()
+        StreamCount.objects.filter(property=stat.property, end_time=end_time).delete()
+        RealmCount.objects.filter(property=stat.property, end_time=end_time).delete()
+        InstallationCount.objects.filter(property=stat.property, end_time=end_time).delete()
 
 def do_delete_count_stat(property):
     # type: (str) -> None
@@ -210,6 +226,29 @@ def do_pull_from_zerver(stat, start_time, end_time):
     end = time.time()
     logger.info("%s do_pull_from_zerver (%dms/%sr)" % (stat.property, (end-start)*1000, cursor.rowcount))
     cursor.close()
+
+# called from zerver/lib/actions.py; should not throw any errors
+def do_increment_logging_stat(zerver_object, stat, subgroup, event_time, increment=1):
+    # type: (Union[Realm, UserProfile, Stream], CountStat, Optional[Union[str, int, bool]], datetime, int) -> None
+    table = stat.zerver_count_query.analytics_table
+    if table == RealmCount:
+        id_args = {'realm': zerver_object}
+    elif table == UserCount:
+        id_args = {'realm': zerver_object.realm, 'user': zerver_object}
+    else: # StreamCount
+        id_args = {'realm': zerver_object.realm, 'stream': zerver_object}
+
+    if stat.frequency == CountStat.DAY:
+        end_time = ceiling_to_day(event_time)
+    else: # CountStat.HOUR:
+        end_time = ceiling_to_hour(event_time)
+
+    row, created = table.objects.get_or_create(
+        property=stat.property, subgroup=subgroup, end_time=end_time,
+        defaults={'value': increment}, **id_args)
+    if not created:
+        row.value = F('value') + increment
+        row.save(update_fields=['value'])
 
 count_user_by_realm_query = """
     INSERT INTO analytics_realmcount
@@ -352,7 +391,8 @@ count_stats_ = [
     CountStat('messages_sent:client:day', zerver_count_message_by_user, {},
               (Message, 'sending_client_id'), CountStat.DAY, False),
     CountStat('messages_in_stream:is_bot:day', zerver_count_message_by_stream, {},
-              (UserProfile, 'is_bot'), CountStat.DAY, False)
+              (UserProfile, 'is_bot'), CountStat.DAY, False),
+    LoggingCountStat('active_users_log:is_bot:day', RealmCount, CountStat.DAY),
 ]
 
 COUNT_STATS = {stat.property: stat for stat in count_stats_}
