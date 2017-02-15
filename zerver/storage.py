@@ -8,6 +8,8 @@ from django.conf import settings
 from django.contrib.staticfiles.storage import ManifestStaticFilesStorage
 from pipeline.storage import PipelineMixin
 
+from zerver.lib.str_utils import force_str
+
 class AddHeaderMixin(object):
     def post_process(self, paths, dry_run=False, **kwargs):
         # type: (Dict[str, Tuple[ZulipStorage, str]], bool, **Any) -> List[Tuple[str, str, bool]]
@@ -36,7 +38,7 @@ class AddHeaderMixin(object):
             storage.delete(path)
 
             with storage.open(path, 'w') as new_file:
-                new_file.write(header + orig_contents)
+                new_file.write(force_str(header + orig_contents, encoding=settings.FILE_CHARSET))
 
             ret_dict[path] = (path, path, True)
 
