@@ -17,6 +17,10 @@ function button_for_sub(sub) {
     return $(".stream-row[data-stream-id='" + id + "'] .check");
 }
 
+function row_for_stream_id(stream_id) {
+    return $(".stream-row[data-stream-id='" + stream_id + "']");
+}
+
 function settings_button_for_sub(sub) {
     var id = parseInt(sub.stream_id, 10);
     return $(".subscription_settings[data-stream-id='" + id + "'] .subscribe-button");
@@ -306,6 +310,13 @@ function prepend_subscriber(sub_row, email) {
     var list = get_subscriber_list(sub_row);
     list.prepend(format_member_list_elem(email));
 }
+
+exports.remove_stream = function (stream_id) {
+    // It is possible that row is empty when we deactivate a
+    // stream, but we let jQuery silently handle that.
+    var row = row_for_stream_id(stream_id);
+    row.remove();
+};
 
 function show_subscription_settings(sub_row) {
     var stream_id = sub_row.data("stream-id");
