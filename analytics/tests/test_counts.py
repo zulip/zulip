@@ -392,7 +392,7 @@ class TestCountStats(AnalyticsTestCase):
 
     def test_messages_sent_to_stream_by_is_bot(self):
         # type: () -> None
-        stat = COUNT_STATS['messages_sent_to_stream:is_bot:hour']
+        stat = COUNT_STATS['messages_in_stream:is_bot:day']
         self.current_property = stat.property
 
         bot = self.create_user(is_bot=True)
@@ -420,9 +420,10 @@ class TestCountStats(AnalyticsTestCase):
 
         self.assertTableState(StreamCount, ['value', 'subgroup', 'stream'],
                               [[2, 'false', stream1], [1, 'false', stream2], [2, 'true', stream2],
-                               # "hourly" stream, from TestCountStats.setUp
-                               [1, 'false', Stream.objects.get(name='stream 1')]])
+                               # "hourly" and "daily" stream, from TestCountStats.setUp
+                               [1, 'false', Stream.objects.get(name='stream 1')],
+                               [1, 'false', Stream.objects.get(name='stream 61')]])
         self.assertTableState(RealmCount, ['value', 'subgroup', 'realm'],
-                              [[3, 'false'], [2, 'true'], [1, 'false', self.second_realm]])
-        self.assertTableState(InstallationCount, ['value', 'subgroup'], [[4, 'false'], [2, 'true']])
+                              [[3, 'false'], [2, 'true'], [2, 'false', self.second_realm]])
+        self.assertTableState(InstallationCount, ['value', 'subgroup'], [[5, 'false'], [2, 'true']])
         self.assertTableState(UserCount, [], [])

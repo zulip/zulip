@@ -75,7 +75,7 @@ def process_count_stat(stat, fill_to_time):
         logger.info("INITIALIZED %s %s" % (stat.property, currently_filled))
     elif fill_state.state == FillState.STARTED:
         logger.info("UNDO START %s %s" % (stat.property, fill_state.end_time))
-        do_delete_count_stat_at_hour(stat, fill_state.end_time)
+        do_delete_counts_at_hour(stat, fill_state.end_time)
         currently_filled = fill_state.end_time - timedelta(hours = 1)
         do_update_fill_state(fill_state, currently_filled, FillState.DONE)
         logger.info("UNDO DONE %s" % (stat.property,))
@@ -112,12 +112,20 @@ def do_fill_count_stat_at_hour(stat, end_time):
     do_pull_from_zerver(stat, start_time, end_time)
     do_aggregate_to_summary_table(stat, end_time)
 
-def do_delete_count_stat_at_hour(stat, end_time):
+def do_delete_counts_at_hour(stat, end_time):
     # type: (CountStat, datetime) -> None
     UserCount.objects.filter(property = stat.property, end_time = end_time).delete()
     StreamCount.objects.filter(property = stat.property, end_time = end_time).delete()
     RealmCount.objects.filter(property = stat.property, end_time = end_time).delete()
     InstallationCount.objects.filter(property = stat.property, end_time = end_time).delete()
+
+def do_delete_count_stat(property):
+    # type: (str) -> None
+    UserCount.objects.filter(property=property).delete()
+    StreamCount.objects.filter(property=property).delete()
+    RealmCount.objects.filter(property=property).delete()
+    InstallationCount.objects.filter(property=property).delete()
+    FillState.objects.filter(property=property).delete()
 
 def do_drop_all_analytics_tables():
     # type: () -> None
@@ -347,7 +355,7 @@ COUNT_STATS = {
     'messages_sent:client:day': CountStat(
         'messages_sent:client:day', zerver_count_message_by_user, {},
         (Message, 'sending_client_id'), CountStat.DAY, False),
-    'messages_sent_to_stream:is_bot:hour': CountStat(
-        'messages_sent_to_stream:is_bot', zerver_count_message_by_stream, {},
-        (UserProfile, 'is_bot'), CountStat.HOUR, False)
+    'messages_in_stream:is_bot:day': CountStat(
+        'messages_in_stream:is_bot:day', zerver_count_message_by_stream, {},
+        (UserProfile, 'is_bot'), CountStat.DAY, False)
 }
