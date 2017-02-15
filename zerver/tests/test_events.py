@@ -31,6 +31,7 @@ from zerver.lib.actions import (
     do_create_user,
     do_deactivate_stream,
     do_deactivate_user,
+    do_reactivate_user,
     do_regenerate_api_key,
     do_remove_alert_words,
     do_remove_realm_emoji,
@@ -1036,6 +1037,31 @@ class EventsRegisterTest(ZulipTestCase):
         action = lambda: do_deactivate_user(bot)
         events = self.do_test(action)
         error = bot_deactivate_checker('events[1]', events[1])
+        self.assert_on_error(error)
+
+    def test_do_reactivate_user(self):
+        # type: () -> None
+        bot_reactivate_checker = check_dict([
+            ('type', equals('realm_bot')),
+            ('op', equals('add')),
+            ('bot', check_dict([
+                ('email', check_string),
+                ('user_id', check_int),
+                ('full_name', check_string),
+                ('is_active', check_bool),
+                ('api_key', check_string),
+                ('default_sending_stream', check_none_or(check_string)),
+                ('default_events_register_stream', check_none_or(check_string)),
+                ('default_all_public_streams', check_bool),
+                ('avatar_url', check_string),
+                ('owner', check_none_or(check_string)),
+            ])),
+        ])
+        bot = self.create_bot('foo-bot@zulip.com')
+        do_deactivate_user(bot)
+        action = lambda: do_reactivate_user(bot)
+        events = self.do_test(action)
+        error = bot_reactivate_checker('events[1]', events[1])
         self.assert_on_error(error)
 
     def test_rename_stream(self):
