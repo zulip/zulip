@@ -1,15 +1,19 @@
 from __future__ import absolute_import
 
 from django.db import models
+from django.db.models import Sum
 from django.test import TestCase
 from django.utils import timezone
 
 from analytics.lib.counts import CountStat, COUNT_STATS, process_count_stat, \
     zerver_count_user_by_realm, zerver_count_message_by_user, \
     zerver_count_message_by_stream, zerver_count_stream_by_realm, \
-    do_fill_count_stat_at_hour, ZerverCountQuery
+    do_fill_count_stat_at_hour, do_increment_logging_stat, ZerverCountQuery, \
+    LoggingCountStat
 from analytics.models import BaseCount, InstallationCount, RealmCount, \
     UserCount, StreamCount, FillState, installation_epoch
+from zerver.lib.actions import do_create_user, do_deactivate_user, \
+    do_activate_user, do_reactivate_user
 from zerver.models import Realm, UserProfile, Message, Stream, Recipient, \
     Huddle, Client, get_user_profile_by_email, get_client
 
@@ -103,7 +107,7 @@ class AnalyticsTestCase(TestCase):
         self.assertEqual(queryset.values_list('value', flat=True)[0], value)
 
     def assertTableState(self, table, arg_keys, arg_values):
-        # type: (Type[BaseCount], List[str], List[List[Union[int, str, Realm, UserProfile, Stream]]]) -> None
+        # type: (Type[BaseCount], List[str], List[List[Union[int, str, bool, datetime, Realm, UserProfile, Stream]]]) -> None
         """Assert that the state of a *Count table is what it should be.
 
         Example usage:
@@ -191,6 +195,52 @@ class TestProcessCountStat(AnalyticsTestCase):
         process_count_stat(stat, current_time)
         self.assertFillStateEquals(current_time)
         self.assertEqual(InstallationCount.objects.filter(property=property).count(), 2)
+
+    # This tests the is_logging branch of the code in do_delete_counts_at_hour.
+    # It is important that do_delete_counts_at_hour not delete any of the collected
+    # logging data!
+    def test_process_logging_stat(self):
+        # type: () -> None
+        end_time = self.TIME_ZERO
+
+        user_stat = LoggingCountStat('user stat', UserCount, CountStat.DAY)
+        stream_stat = LoggingCountStat('stream stat', StreamCount, CountStat.DAY)
+        realm_stat = LoggingCountStat('realm stat', RealmCount, CountStat.DAY)
+        user = self.create_user()
+        stream = self.create_stream_with_recipient()[0]
+        realm = self.default_realm
+        UserCount.objects.create(
+            user=user, realm=realm, property=user_stat.property, end_time=end_time, value=5)
+        StreamCount.objects.create(
+            stream=stream, realm=realm, property=stream_stat.property, end_time=end_time, value=5)
+        RealmCount.objects.create(
+            realm=realm, property=realm_stat.property, end_time=end_time, value=5)
+
+        # Normal run of process_count_stat
+        for stat in [user_stat, stream_stat, realm_stat]:
+            process_count_stat(stat, end_time)
+        self.assertTableState(UserCount, ['property', 'value'], [[user_stat.property, 5]])
+        self.assertTableState(StreamCount, ['property', 'value'], [[stream_stat.property, 5]])
+        self.assertTableState(RealmCount, ['property', 'value'],
+                              [[user_stat.property, 5], [stream_stat.property, 5], [realm_stat.property, 5]])
+        self.assertTableState(InstallationCount, ['property', 'value'],
+                              [[user_stat.property, 5], [stream_stat.property, 5], [realm_stat.property, 5]])
+
+        # Change the logged data and mark FillState as dirty
+        UserCount.objects.update(value=6)
+        StreamCount.objects.update(value=6)
+        RealmCount.objects.filter(property=realm_stat.property).update(value=6)
+        FillState.objects.update(state=FillState.STARTED)
+
+        # Check that the change propagated (and the collected data wasn't deleted)
+        for stat in [user_stat, stream_stat, realm_stat]:
+            process_count_stat(stat, end_time)
+        self.assertTableState(UserCount, ['property', 'value'], [[user_stat.property, 6]])
+        self.assertTableState(StreamCount, ['property', 'value'], [[stream_stat.property, 6]])
+        self.assertTableState(RealmCount, ['property', 'value'],
+                              [[user_stat.property, 6], [stream_stat.property, 6], [realm_stat.property, 6]])
+        self.assertTableState(InstallationCount, ['property', 'value'],
+                              [[user_stat.property, 6], [stream_stat.property, 6], [realm_stat.property, 6]])
 
 class TestCountStats(AnalyticsTestCase):
     def setUp(self):
@@ -427,3 +477,121 @@ class TestCountStats(AnalyticsTestCase):
                               [[3, 'false'], [2, 'true'], [2, 'false', self.second_realm]])
         self.assertTableState(InstallationCount, ['value', 'subgroup'], [[5, 'false'], [2, 'true']])
         self.assertTableState(UserCount, [], [])
+
+class TestDoIncrementLoggingStat(AnalyticsTestCase):
+    def test_table_and_id_args(self):
+        # type: () -> None
+        # For realms, streams, and users, tests that the new rows are going to
+        # the appropriate *Count table, and that using a different zerver_object
+        # results in a new row being created
+        self.current_property = 'test'
+        second_realm = Realm.objects.create(string_id='moo', name='moo', domain='moo')
+        stat = LoggingCountStat('test', RealmCount, CountStat.DAY)
+        do_increment_logging_stat(self.default_realm, stat, None, self.TIME_ZERO)
+        do_increment_logging_stat(second_realm, stat, None, self.TIME_ZERO)
+        self.assertTableState(RealmCount, ['realm'], [[self.default_realm], [second_realm]])
+
+        user1 = self.create_user()
+        user2 = self.create_user()
+        stat = LoggingCountStat('test', UserCount, CountStat.DAY)
+        do_increment_logging_stat(user1, stat, None, self.TIME_ZERO)
+        do_increment_logging_stat(user2, stat, None, self.TIME_ZERO)
+        self.assertTableState(UserCount, ['user'], [[user1], [user2]])
+
+        stream1 = self.create_stream_with_recipient()[0]
+        stream2 = self.create_stream_with_recipient()[0]
+        stat = LoggingCountStat('test', StreamCount, CountStat.DAY)
+        do_increment_logging_stat(stream1, stat, None, self.TIME_ZERO)
+        do_increment_logging_stat(stream2, stat, None, self.TIME_ZERO)
+        self.assertTableState(StreamCount, ['stream'], [[stream1], [stream2]])
+
+    def test_frequency(self):
+        # type: () -> None
+        times = [self.TIME_ZERO - self.MINUTE*i for i in [0, 1, 61, 24*60+1]]
+
+        stat = LoggingCountStat('day test', RealmCount, CountStat.DAY)
+        for time_ in times:
+            do_increment_logging_stat(self.default_realm, stat, None, time_)
+        stat = LoggingCountStat('hour test', RealmCount, CountStat.HOUR)
+        for time_ in times:
+            do_increment_logging_stat(self.default_realm, stat, None, time_)
+
+        self.assertTableState(RealmCount, ['value', 'property', 'end_time'],
+                              [[3, 'day test', self.TIME_ZERO],
+                               [1, 'day test', self.TIME_ZERO - self.DAY],
+                               [2, 'hour test', self.TIME_ZERO],
+                               [1, 'hour test', self.TIME_LAST_HOUR],
+                               [1, 'hour test', self.TIME_ZERO - self.DAY]])
+
+    def test_get_or_create(self):
+        # type: () -> None
+        stat = LoggingCountStat('test', RealmCount, CountStat.HOUR)
+        # All these should trigger the create part of get_or_create.
+        # property is tested in test_frequency, and id_args are tested in test_id_args,
+        # so this only tests a new subgroup and end_time
+        do_increment_logging_stat(self.default_realm, stat, 'subgroup1', self.TIME_ZERO)
+        do_increment_logging_stat(self.default_realm, stat, 'subgroup2', self.TIME_ZERO)
+        do_increment_logging_stat(self.default_realm, stat, 'subgroup1', self.TIME_LAST_HOUR)
+        self.current_property = 'test'
+        self.assertTableState(RealmCount, ['value', 'subgroup', 'end_time'],
+                              [[1, 'subgroup1', self.TIME_ZERO], [1, 'subgroup2', self.TIME_ZERO],
+                              [1, 'subgroup1', self.TIME_LAST_HOUR]])
+        # This should trigger the get part of get_or_create
+        do_increment_logging_stat(self.default_realm, stat, 'subgroup1', self.TIME_ZERO)
+        self.assertTableState(RealmCount, ['value', 'subgroup', 'end_time'],
+                              [[2, 'subgroup1', self.TIME_ZERO], [1, 'subgroup2', self.TIME_ZERO],
+                              [1, 'subgroup1', self.TIME_LAST_HOUR]])
+
+    def test_increment(self):
+        # type: () -> None
+        stat = LoggingCountStat('test', RealmCount, CountStat.DAY)
+        self.current_property = 'test'
+        do_increment_logging_stat(self.default_realm, stat, None, self.TIME_ZERO, increment=-1)
+        self.assertTableState(RealmCount, ['value'], [[-1]])
+        do_increment_logging_stat(self.default_realm, stat, None, self.TIME_ZERO, increment=3)
+        self.assertTableState(RealmCount, ['value'], [[2]])
+        do_increment_logging_stat(self.default_realm, stat, None, self.TIME_ZERO)
+        self.assertTableState(RealmCount, ['value'], [[3]])
+
+class TestLoggingCountStats(AnalyticsTestCase):
+    def test_aggregation(self):
+        # type: () -> None
+        stat = LoggingCountStat('realm test', RealmCount, CountStat.DAY)
+        do_increment_logging_stat(self.default_realm, stat, None, self.TIME_ZERO)
+        process_count_stat(stat, self.TIME_ZERO)
+
+        user = self.create_user()
+        stat = LoggingCountStat('user test', UserCount, CountStat.DAY)
+        do_increment_logging_stat(user, stat, None, self.TIME_ZERO)
+        process_count_stat(stat, self.TIME_ZERO)
+
+        stream = self.create_stream_with_recipient()[0]
+        stat = LoggingCountStat('stream test', StreamCount, CountStat.DAY)
+        do_increment_logging_stat(stream, stat, None, self.TIME_ZERO)
+        process_count_stat(stat, self.TIME_ZERO)
+
+        self.assertTableState(InstallationCount, ['property', 'value'],
+                              [['realm test', 1], ['user test', 1], ['stream test', 1]])
+        self.assertTableState(RealmCount, ['property', 'value'],
+                              [['realm test', 1], ['user test', 1], ['stream test', 1]])
+        self.assertTableState(UserCount, ['property', 'value'], [['user test', 1]])
+        self.assertTableState(StreamCount, ['property', 'value'], [['stream test', 1]])
+
+    def test_active_users_log_by_is_bot(self):
+        # type: () -> None
+        property = 'active_users_log:is_bot:day'
+        user = do_create_user('email', 'password', self.default_realm, 'full_name', 'short_name')
+        self.assertEqual(1, RealmCount.objects.filter(property=property, subgroup=False)
+                         .aggregate(Sum('value'))['value__sum'])
+        do_deactivate_user(user)
+        self.assertEqual(0, RealmCount.objects.filter(property=property, subgroup=False)
+                         .aggregate(Sum('value'))['value__sum'])
+        do_activate_user(user)
+        self.assertEqual(1, RealmCount.objects.filter(property=property, subgroup=False)
+                         .aggregate(Sum('value'))['value__sum'])
+        do_deactivate_user(user)
+        self.assertEqual(0, RealmCount.objects.filter(property=property, subgroup=False)
+                         .aggregate(Sum('value'))['value__sum'])
+        do_reactivate_user(user)
+        self.assertEqual(1, RealmCount.objects.filter(property=property, subgroup=False)
+                         .aggregate(Sum('value'))['value__sum'])
