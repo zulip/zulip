@@ -60,8 +60,14 @@ exports.get_sub_by_id = function (stream_id) {
     return subs_by_stream_id.get(stream_id);
 };
 
-exports.delete_sub = function (stream_name) {
-    stream_info.del(stream_name);
+exports.delete_sub = function (stream_id) {
+    var sub = subs_by_stream_id.get(stream_id);
+    if (!sub) {
+        blueslip.warn('Failed to delete stream ' + stream_id);
+        return;
+    }
+    subs_by_stream_id.del(stream_id);
+    stream_info.del(sub.name);
 };
 
 exports.subscribed_subs = function () {
