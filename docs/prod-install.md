@@ -69,9 +69,9 @@ These settings include:
 
 - `EXTERNAL_HOST`: the user-accessible Zulip domain name for your
   Zulip installation (aka what users will type in their web
-  browser). This will be the domain for which you have DNS A records
-  pointing to this server and for which you configured SSL
-  certificates.  If you plan to use multiple domains, also set
+  browser). This should of course match the DNS name you configured to
+  point to your server and for which you configured SSL certificates.
+  If you plan to use multiple domains, add the others to
   `ALLOWED_HOSTS`.
 
 - `ZULIP_ADMINISTRATOR`: the email address of the person or team

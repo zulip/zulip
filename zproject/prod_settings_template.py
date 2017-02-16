@@ -9,8 +9,24 @@
 # sensible default values will be used.
 
 # The user-accessible Zulip hostname for this installation, e.g.
-# zulip.example.com
+# zulip.example.com.  This should match what users will put in their
+# web browser.  If you want to allow multiple hostnames, add the rest
+# to ALLOWED_HOSTS.
 EXTERNAL_HOST = 'zulip.example.com'
+
+# A comma-separated list of strings representing the host/domain names
+# that your users will enter in their browsers to access your Zulip
+# server. This is a security measure to prevent an attacker from
+# poisoning caches and triggering password reset emails with links to
+# malicious hosts by submitting requests with a fake HTTP Host
+# header. See Django's documentation here:
+# <https://docs.djangoproject.com/en/1.9/ref/settings/#allowed-hosts>.
+# Zulip adds 'localhost' and '127.0.0.1' to the list automatically.
+#
+# The default should work unless you are using multiple hostnames or
+# connecting directly to your server's IP address.  If this is set
+# wrong, all requests will get a "Bad Request" error.
+ALLOWED_HOSTS = [EXTERNAL_HOST]
 
 # The email address for the person or team who maintain the Zulip
 # Voyager installation. Will also get support emails. (e.g. zulip-admin@example.com)
@@ -105,16 +121,6 @@ DEFAULT_FROM_EMAIL = "Zulip <zulip@example.com>"
 # The noreply address to be used as Reply-To for certain generated emails.
 # Messages sent to this address should not be delivered anywhere.
 NOREPLY_EMAIL_ADDRESS = "noreply@example.com"
-
-# A comma-separated list of strings representing the host/domain names
-# that your users will enter in their browsers to access your Zulip
-# server. This is a security measure to prevent an attacker from
-# poisoning caches and triggering password reset emails with links to
-# malicious hosts by submitting requests with a fake HTTP Host
-# header. See Django's documentation here:
-# <https://docs.djangoproject.com/en/1.9/ref/settings/#allowed-hosts>.
-# Zulip adds 'localhost' to the list automatically.
-ALLOWED_HOSTS = [EXTERNAL_HOST]
 
 ### OPTIONAL SETTINGS
 
