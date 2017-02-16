@@ -21,6 +21,18 @@
             </span>
             {{else}}
             <span class="sender_name">{{msg/sender_full_name}}</span>
+            {{#unless status_message}}
+              {{#if sender_is_bot}}
+                <img class="bot-icon" src="/static/images/bot.svg" />
+              {{/if}}
+            {{else}}
+              <span class="sender_name{{#status_message}}-in-status{{/status_message}} sender_info_hover">
+                {{#if sender_is_bot}}
+                  <img class="bot-icon" src="/static/images/bot.svg" />
+                {{/if}}
+              </span>
+                  {{{ status_message }}}
+            {{/unless}}
             {{/if}}
           </span>
           {{/include_sender}}
