@@ -195,11 +195,40 @@ class TextTestResult(runner.TextTestResult):
 class TestSuite(unittest.TestSuite):
     def run(self, result, debug=False):
         # type: (TestResult, Optional[bool]) -> TestResult
-        for test in self:  # type: ignore  # Mypy cannot recognize this but this is correct. Taken from unittest.
-            failed = run_test(test, result)
-            if failed or result.shouldStop:
+        """
+        This function mostly contains the code from
+        unittest.TestSuite.run. The need to override this function
+        occurred because we use run_test to run the testcase.
+        """
+        topLevel = False
+        if getattr(result, '_testRunEntered', False) is False:
+            result._testRunEntered = topLevel = True
+
+        for test in self:  # type: ignore  # Mypy cannot recognize this
+            # but this is correct. Taken from unittest.
+            if result.shouldStop:
                 break
 
+            if isinstance(test, TestSuite):
+                test.run(result, debug=debug)
+            else:
+                self._tearDownPreviousClass(test, result)  # type: ignore
+                self._handleModuleFixture(test, result)  # type: ignore
+                self._handleClassSetUp(test, result)  # type: ignore
+                result._previousTestClass = test.__class__
+                if (getattr(test.__class__, '_classSetupFailed', False) or
+                        getattr(result, '_moduleSetUpFailed', False)):
+                    continue
+
+                failed = run_test(test, result)
+                if failed or result.shouldStop:
+                    result.shouldStop = True
+                    break
+
+        if topLevel:
+            self._tearDownPreviousClass(None, result)  # type: ignore
+            self._handleModuleTearDown(result)  # type: ignore
+            result._testRunEntered = False
         return result
 
 class TestLoader(loader.TestLoader):
