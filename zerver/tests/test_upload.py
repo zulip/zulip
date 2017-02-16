@@ -6,7 +6,7 @@ from unittest import skip
 
 from zerver.lib.avatar import avatar_url
 from zerver.lib.bugdown import url_filename
-from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_classes import ZulipTestCase, UploadSerializeMixin
 from zerver.lib.test_helpers import avatar_disk_path, get_test_image_file
 from zerver.lib.test_runner import slow
 from zerver.lib.upload import sanitize_name, S3UploadBackend, \
@@ -46,7 +46,7 @@ def destroy_uploads():
 class StringIO(_StringIO):
     name = '' # https://github.com/python/typeshed/issues/598
 
-class FileUploadTest(ZulipTestCase):
+class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_rest_endpoint(self):
         # type: () -> None
@@ -321,7 +321,7 @@ class FileUploadTest(ZulipTestCase):
         # type: () -> None
         destroy_uploads()
 
-class AvatarTest(ZulipTestCase):
+class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_multiple_upload_failure(self):
         # type: () -> None
@@ -465,7 +465,7 @@ class AvatarTest(ZulipTestCase):
         # type: () -> None
         destroy_uploads()
 
-class LocalStorageTest(ZulipTestCase):
+class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_file_upload_local(self):
         # type: () -> None
