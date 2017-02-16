@@ -999,6 +999,7 @@ class Message(ModelReprMixin, models.Model):
         sending_client = self.sending_client.name.lower()
 
         return (sending_client in ('zulipandroid', 'zulipios', 'zulipdesktop',
+                                   'zulipmobile', 'zulipelectron', 'snipe',
                                    'website', 'ios', 'android')) or (
                                        'desktop app' in sending_client)
 
