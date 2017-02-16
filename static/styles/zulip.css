@@ -1273,8 +1273,12 @@ blockquote p {
 }
 
 .messagebox-content .bot-icon {
-    height: 14px;
-    width: 14px;
+    position: relative;
+    vertical-align: top;
+    top: -4px;
+
+    height: 20px;
+    width: 20px;
 }
 
 .last_message .messagebox-content {
