@@ -829,6 +829,11 @@ exports.register_click_handlers = function () {
         var topic = $(e.currentTarget).data('msg-topic');
         popovers.hide_actions_popover();
         exports.topic_ops.mute(stream, topic);
+
+        // hide the popover becuase it shouldn't be visible after a click action
+        // has taken place.
+        popovers.hide_actions_popover();
+
         e.stopPropagation();
         e.preventDefault();
     });
