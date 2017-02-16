@@ -7,7 +7,7 @@ import html2text
 class DefineHandler(object):
     '''
     This plugin define a word that the user inputs. It
-    looks for messages starting with '@define'.
+    looks for messages starting with '@mention-bot'.
     '''
 
     DEFINITION_API_URL = 'https://owlbot.info/api/v1/dictionary/{}?format=json'
@@ -18,17 +18,8 @@ class DefineHandler(object):
     def usage(DefineHandler):
         return '''
             This plugin will allow users to define a word. Users should preface
-            messages with "@define".
+            messages with @mention-bot.
             '''
-
-    def triage_message(DefineHandler, message, client):
-        original_content = message['content']
-        # This next line of code is defensive, as we
-        # never want to get into an infinite loop of posting follow
-        # ups for own follow ups!
-        is_define = original_content.startswith('@define')
-
-        return is_define
 
     def _handle_definition(DefineHandler, original_content):
         # Remove '@define' from the message and extract the rest of the message, the
@@ -36,10 +27,10 @@ class DefineHandler(object):
         split_content = original_content.split(' ')
 
         # If there are more than one word (a phrase)
-        if len(split_content) > 2:
+        if len(split_content) > 1:
             return DefineHandler.PHRASE_ERROR_MESSAGE
 
-        to_define = split_content[1].strip()
+        to_define = split_content[0].strip()
         to_define_lower = to_define.lower()
 
         # No word was entered.

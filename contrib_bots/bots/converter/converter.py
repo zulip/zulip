@@ -31,8 +31,8 @@ class ConverterHandler(object):
     This plugin allows users to make conversions between various units,
     e.g. Celsius to Fahrenheit, or kilobytes to gigabytes.
     It looks for messages of the format
-    '@convert <number> <unit_from> <unit_to>'
-    The message '@convert help' posts a short description of how to use
+    '@mention-bot <number> <unit_from> <unit_to>'
+    The message '@mention-bot help' posts a short description of how to use
     the plugin, along with a list of all supported units.
     '''
 
@@ -41,20 +41,18 @@ class ConverterHandler(object):
                This plugin allows users to make conversions between
                various units, e.g. Celsius to Fahrenheit,
                or kilobytes to gigabytes. It looks for messages of
-               the format '@convert <number> <unit_from> <unit_to>'
-               The message '@convert help' posts a short description of
+               the format '@mention-bot <number> <unit_from> <unit_to>'
+               The message '@mention-bot help' posts a short description of
                how to use the plugin, along with a list of
                all supported units.
                '''
-
-    def triage_message(self, message, client):
-        return '@convert' in message['content']
 
     def handle_message(self, message, client, state_handler):
         content = message['content']
 
         words = content.lower().split()
         convert_indexes = [i for i, word in enumerate(words) if word == "@convert"]
+        convert_indexes = [-1] + convert_indexes
         results = []
 
         for convert_index in convert_indexes:

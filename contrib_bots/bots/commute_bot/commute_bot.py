@@ -77,16 +77,6 @@ class CommuteHandler(object):
         you can use the timezone bot.
                 '''
 
-    def triage_message(self, message, client):
-        original_content = message['content']
-        # This next line of code is defensive, as we
-        # never want to get into an infinite loop of posting follow
-        # ups for own follow ups!
-        if message['display_recipient'] == 'commute':
-            return False
-        is_commute = original_content.startswith('@commute')
-        return is_commute
-
     # adds API Authentication Key to url request
     def get_api_key(self):
         # commute_bot.config must have been moved from

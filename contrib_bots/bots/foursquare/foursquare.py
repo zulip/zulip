@@ -30,13 +30,13 @@ class FoursquareHandler(object):
             This plugin allows users to search for restaurants nearby an inputted
             location to a limit of 3 venues for every location. The name, address
             and description of the restaurant will be outputted.
-            It looks for messages starting with '@foursquare'.
+            It looks for messages starting with '@mention-bot'.
             If you need help, simply type:
-            @foursquare /help into the Compose Message box
+            @mention-bot /help into the Compose Message box
 
             Sample input:
-            @foursquare Chicago, IL
-            @foursquare help
+            @mention-bot Chicago, IL
+            @mention-bot help
             '''
 
     help_info = '''
@@ -45,17 +45,9 @@ cusine of a restaurant in that exact order.
 Please note the required use of quotes in the search location.
 
 Example Inputs:
-@foursquare 'Millenium Park' 8000 donuts
-@foursquare 'Melbourne, Australia' 40000 seafood
+@mention-bot 'Millenium Park' 8000 donuts
+@mention-bot 'Melbourne, Australia' 40000 seafood
                 '''
-
-    def triage_message(self, message, client):
-        callers = ['@FourSquare', '@Foursquare', '@foursquare', '@4square', '@4sq']
-        for call in callers:
-            if call in message['content']:
-                return True
-                break
-        return False
 
     def format_json(self, venues):
         def format_venue(venue):
@@ -98,7 +90,7 @@ Example Inputs:
             pass
 
         # Optional params for HTTP request.
-        if len(words) >= 2:
+        if len(words) >= 1:
             try:
                 params['radius'] = re.search('([0-9]){3,}', message['content']).group(0)
             except AttributeError:
@@ -115,7 +107,7 @@ Example Inputs:
             received_json = response.json()
         else:
             self.send_info(message,
-                           "Invalid Request\nIf stuck, try '@foursquare help'.",
+                           "Invalid Request\nIf stuck, try '@mention-bot help'.",
                            client)
             return
 
@@ -127,7 +119,7 @@ Example Inputs:
             return
 
         self.send_info(message,
-                       "Invalid Request\nIf stuck, try '@foursquare help'.",
+                       "Invalid Request\nIf stuck, try '@mention-bot help'.",
                        client)
         return
 
