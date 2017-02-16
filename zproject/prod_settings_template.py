@@ -32,11 +32,51 @@ ALLOWED_HOSTS = [EXTERNAL_HOST]
 # Voyager installation. Will also get support emails. (e.g. zulip-admin@example.com)
 ZULIP_ADMINISTRATOR = 'zulip-admin@example.com'
 
+# Configure the outgoing SMTP server below. You will need working
+# SMTP to complete the installation process, in addition to sending
+# email address confirmations, missed message notifications, onboarding
+# follow-ups, and other user needs. If you do not have an SMTP server
+# already, we recommend services intended for developers such as Mailgun.
+#
+# To configure SMTP, you will need to complete the following steps:
+#
+# (1) Fill out the outgoing email sending configuration below.
+#
+# (2) Put the SMTP password for EMAIL_HOST_USER in
+# /etc/zulip/zulip-secrets.conf as email_password.
+#
+# If you are using a gmail account to send outgoing email, you
+# will likely need to read this Google support answer and configure
+# that account as "less secure":
+# https://support.google.com/accounts/answer/6010255
+#
+# You can quickly test your sending email configuration using:
+#   su zulip
+#   /home/zulip/deployments/current/manage.py send_test_email username@example.com
+#
+# A common problem is hosting providers that block outgoing SMTP traffic.
+#
+# With the exception of reading EMAIL_HOST_PASSWORD from
+# email_password in the Zulip secrets file, Zulip uses Django's
+# standard EmailBackend, so if you're having issues, you may want to
+# search for documentation on using your email provider with Django.
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = ''
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+# The email From address to be used for automatically generated emails
+DEFAULT_FROM_EMAIL = "Zulip <zulip@example.com>"
+# The noreply address to be used as Reply-To for certain generated emails.
+# Messages sent to this address should not be delivered anywhere.
+NOREPLY_EMAIL_ADDRESS = "noreply@example.com"
+
+### AUTHENTICATION SETTINGS
+
 # Enable at least one of the following authentication backends.
 # See http://zulip.readthedocs.io/en/latest/prod-authentication-methods.html
 # for documentation on our authentication backends.
 AUTHENTICATION_BACKENDS = (
-    # 'zproject.backends.EmailAuthBackend', # Email and password; see SMTP setup below
+    # 'zproject.backends.EmailAuthBackend', # Email and password; just requires SMTP setup
     # 'zproject.backends.GoogleMobileOauth2Backend', # Google Apps, setup below
     # 'zproject.backends.GitHubAuthBackend', # GitHub auth, setup below
     # 'zproject.backends.ZulipLDAPAuthBackend', # LDAP, setup below
@@ -84,43 +124,6 @@ AUTHENTICATION_BACKENDS = (
 # SSO_APPEND_DOMAIN = "example.com")
 SSO_APPEND_DOMAIN = None # type: str
 
-# Configure the outgoing SMTP server below. You will need working
-# SMTP to complete the installation process, in addition to sending
-# email address confirmations, missed message notifications, onboarding
-# follow-ups, and other user needs. If you do not have an SMTP server
-# already, we recommend services intended for developers such as Mailgun.
-#
-# To configure SMTP, you will need to complete the following steps:
-#
-# (1) Fill out the outgoing email sending configuration below.
-#
-# (2) Put the SMTP password for EMAIL_HOST_USER in
-# /etc/zulip/zulip-secrets.conf as email_password.
-#
-# If you are using a gmail account to send outgoing email, you
-# will likely need to read this Google support answer and configure
-# that account as "less secure":
-# https://support.google.com/accounts/answer/6010255
-#
-# You can quickly test your sending email configuration using:
-#   su zulip
-#   /home/zulip/deployments/current/manage.py send_test_email username@example.com
-#
-# A common problem is hosting providers that block outgoing SMTP traffic.
-#
-# With the exception of reading EMAIL_HOST_PASSWORD from
-# email_password in the Zulip secrets file, Zulip uses Django's
-# standard EmailBackend, so if you're having issues, you may want to
-# search for documentation on using your email provider with Django.
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = ''
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-# The email From address to be used for automatically generated emails
-DEFAULT_FROM_EMAIL = "Zulip <zulip@example.com>"
-# The noreply address to be used as Reply-To for certain generated emails.
-# Messages sent to this address should not be delivered anywhere.
-NOREPLY_EMAIL_ADDRESS = "noreply@example.com"
 
 ### OPTIONAL SETTINGS
 

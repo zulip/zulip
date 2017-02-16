@@ -78,22 +78,23 @@ These settings include:
   maintaining this installation and who will get support and error
   emails.
 
+- `EMAIL_*`, `DEFAULT_FROM_EMAIL`, and `NOREPLY_EMAIL_ADDRESS`:
+  credentials for an outgoing SMTP server so Zulip can send emails
+  when needed (don't forget to set `email_password` in the
+  `zulip-secrets.conf` file!).  We highly recommend testing your
+  configuration using `su zulip` and then
+  `/home/zulip/deployments/current/manage.py send_test_email` to
+  confirm your outgoing email configuration is working correctly.
+
 - `AUTHENTICATION_BACKENDS`: a list of enabled authentication
   mechanisms.  You'll need to enable at least one authentication
   mechanism by uncommenting its corresponding line, and then also do
   any additional configuration required for that backend as documented
-  in the `settings.py` file.  See the [section on
-  Authentication](prod-authentication-methods.html) for more detail on the
-  available authentication backends and how to configure them.
-
-- `EMAIL_*`, `DEFAULT_FROM_EMAIL`, and `NOREPLY_EMAIL_ADDRESS`:
-  Regardless of which authentication backends you enable, you must
-  provide settings for an outgoing SMTP server so Zulip can send
-  emails when needed (and don't forget to set `email_password` in the
-  `zulip-secrets.conf` file).  We highly recommend testing your
-  configuration using `su zulip` and then
-  `/home/zulip/deployments/current/manage.py send_test_email` to
-  confirm your outgoing email configuration is working correctly.
+  in the `settings.py` file (the email backend requires no extra
+  configuration).  See the
+  [section on Authentication](prod-authentication-methods.html) for
+  more detail on the available authentication backends and how to
+  configure them.
 
 ## Step 4: Initialize Zulip database
 
