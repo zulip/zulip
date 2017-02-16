@@ -13,7 +13,7 @@ import urllib.request
 class IssueHandler(object):
     '''
     This plugin facilitates sending issues to github, when
-    an item is prefixed with '@issue' or '@bug'
+    an item is prefixed with '@mention-bot'.
 
     It will also write items to the issues stream, as well
     as reporting it to github
@@ -30,7 +30,7 @@ class IssueHandler(object):
     def usage(self):
         return '''
             This plugin will allow users to flag messages
-            as being issues with Zulip by using te prefix '@issue'
+            as being issues with Zulip by using te prefix '@mention-bot'.
 
             Before running this, make sure to create a stream
             called "issues" that your API user can send to.
@@ -47,30 +47,20 @@ class IssueHandler(object):
             github_token = <oauth_token>   (The personal access token for the GitHub bot)
             '''
 
-    def triage_message(self, message, client):
-        original_content = message['content']
-        # This next line of code is defensive, as we
-        # never want to get into an infinite loop of posting follow
-        # ups for own follow ups!
-        if message['display_recipient'] == 'issue':
-            return False
-        is_issue = original_content.startswith('@issue')
-        return is_issue
-
     def handle_message(self, message, client, state_handler):
 
         original_content = message['content']
         original_sender = message['sender_email']
 
-        new_content = original_content.replace('@issue', 'by {}:'.format(original_sender,))
+        temp_content = 'by {}:'.format(original_sender,)
+        new_content = temp_content + original_content
         # gets the repo url
         url_new = self.URL.format(self.REPO_OWNER, self.REPO_NAME)
 
         # signs into github using the provided username and password
         session = github.auth()
 
-        # Gets rid of the @issue in the issue title
-        issue_title = message['content'].replace('@issue', '').strip()
+        issue_title = message['content'].strip()
         issue_content = ''
         new_issue_title = ''
         for part_of_title in issue_title.split():

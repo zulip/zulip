@@ -5,6 +5,7 @@ import os
 import signal
 import sys
 import time
+import re
 
 our_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -77,10 +78,49 @@ def run_message_handler_for_bot(lib_module, quiet, config_file):
     if not quiet:
         print(message_handler.usage())
 
+    def extract_message_if_mentioned(message, client):
+        bot_mention = r'^@(\*\*{0}\*\*\s|{0}\s)(?=.*)'.format(client.full_name)
+        start_with_mention = re.compile(bot_mention).match(message['content'])
+        if start_with_mention:
+            query = message['content'][len(start_with_mention.group()):]
+            return query
+        else:
+            bot_response = 'Please mention me first, then type the query.'
+            if message['type'] == 'private':
+                client.send_message(dict(
+                    type='private',
+                    to=message['sender_email'],
+                    content=bot_response,
+                ))
+            else:
+                client.send_message(dict(
+                    type='stream',
+                    to=message['display_recipient'],
+                    subject=message['subject'],
+                    content=bot_response,
+                ))
+            return None
+
+    def is_private(message, client):
+        # bot will not reply if the sender name is the same as the bot name
+        # to prevent infinite loop
+        if message['type'] == 'private':
+            return client.full_name != message['sender_full_name']
+        return False
+
     def handle_message(message):
         logging.info('waiting for next message')
-        if message_handler.triage_message(message=message,
-                                          client=restricted_client):
+
+        is_mentioned = message['is_mentioned']
+        is_private_message = is_private(message, restricted_client)
+
+        # Strip at-mention botname from the message
+        if is_mentioned:
+            message['content'] = extract_message_if_mentioned(message=message, client=restricted_client)
+            if message['content'] is None:
+                return
+
+        if is_private_message or is_mentioned:
             message_handler.handle_message(
                 message=message,
                 client=restricted_client,

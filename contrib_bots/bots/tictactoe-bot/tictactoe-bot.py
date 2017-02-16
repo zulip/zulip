@@ -34,16 +34,16 @@ class TicTacToeGame(object):
     positions = "Coordinates are entered in a (row, column) format. Numbering is from top to bottom and left to right.\n" \
                 "Here are the coordinates of each position. (Parentheses and spaces are optional.) \n" \
                 "(1, 1)  (1, 2)  (1, 3) \n(2, 1)  (2, 2)  (2, 3) \n(3, 1) (3, 2) (3, 3) \n " \
-                "Your move would be one of these. To make a move, type @tictactoe or @ttt " \
+                "Your move would be one of these. To make a move, type @mention-bot " \
                 "followed by a space and the coordinate."
 
     detailed_help_message = "*Help for Tic-Tac-Toe bot* \n" \
-                            "The bot responds to messages starting with @tictactoe or @ttt.\n" \
-                            "**@tictactoe new** (or **@ttt new**) will start a new game (but not if you're " \
+                            "The bot responds to messages starting with @mention-bot.\n" \
+                            "**@mention-bot new** will start a new game (but not if you're " \
                             "already in the middle of a game). You must type this first to start playing!\n" \
-                            "**@tictactoe help** (or **@ttt help**) will return this help function.\n" \
-                            "**@tictactoe quit** (or **@ttt quit**) will quit from the current game.\n" \
-                            "**@tictactoe <coordinate>** (or **@ttt <coordinate>**) will make a move at the given coordinate.\n" \
+                            "**@mention-bot help** will return this help function.\n" \
+                            "**@mention-bot quit** will quit from the current game.\n" \
+                            "**@mention-bot <coordinate>** will make a move at the given coordinate.\n" \
                             "Coordinates are entered in a (row, column) format. Numbering is from " \
                             "top to bottom and left to right. \n" \
                             "Here are the coordinates of each position. (Parentheses and spaces are optional). \n" \
@@ -265,24 +265,17 @@ class ticTacToeHandler(object):
     '''
     You can play tic-tac-toe in a private message with
     tic-tac-toe bot! Make sure your message starts with
-    "@tictactoe or @ttt".
+    "@mention-bot".
     '''
 
     def usage(self):
         return '''
             You can play tic-tac-toe with the computer now! Make sure your
-            message starts with @tictactoe or @ttt.
+            message starts with @mention-bot.
             '''
 
-    def triage_message(self, message, client):
-        original_content = message['content']
-        is_tictactoe = (original_content.startswith('@tictactoe') or
-                        original_content.startswith('@ttt'))
-        return is_tictactoe
-
     def handle_message(self, message, client, state_handler):
-        original_content = message['content']
-        command_list = original_content.split()[1:]
+        command_list = message['content']
         command = ""
         for val in command_list:
             command += val

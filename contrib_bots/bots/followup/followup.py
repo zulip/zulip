@@ -4,7 +4,7 @@ class FollowupHandler(object):
     '''
     This plugin facilitates creating follow-up tasks when
     you are using Zulip to conduct a virtual meeting.  It
-    looks for messages starting with '@followup'.
+    looks for messages starting with '@mention-bot'.
 
     In this example, we write follow up items to a special
     Zulip stream called "followup," but this code could
@@ -16,30 +16,17 @@ class FollowupHandler(object):
         return '''
             This plugin will allow users to flag messages
             as being follow-up items.  Users should preface
-            messages with "@followup".
+            messages with "@mention-bot".
 
             Before running this, make sure to create a stream
             called "followup" that your API user can send to.
             '''
 
-    def triage_message(self, message, client):
-        original_content = message['content']
-
-        # This next line of code is defensive, as we
-        # never want to get into an infinite loop of posting follow
-        # ups for own follow ups!
-        if message['display_recipient'] == 'followup':
-            return False
-        is_follow_up = (original_content.startswith('@followup') or
-                        original_content.startswith('@follow-up'))
-
-        return is_follow_up
-
     def handle_message(self, message, client, state_handler):
         original_content = message['content']
         original_sender = message['sender_email']
-        new_content = original_content.replace('@followup',
-                                               'from %s:' % (original_sender,))
+        temp_content = 'from %s:' % (original_sender,)
+        new_content = temp_content + original_content
 
         client.send_message(dict(
             type='stream',
