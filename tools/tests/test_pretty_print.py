@@ -188,6 +188,48 @@ GOOD_HTML6 = """
     <p> <strong> <span class = "whatever">foobar </span> </strong></p>
 </div>
 """
+
+BAD_HTML7 = """
+<div class="foobar">
+<input type="foobar" name="temp" value="{{dyn_name}}"
+       {{#unless invite_only}}checked="checked"{{/unless}} /> {{dyn_name}}
+{{#if invite_only}}<i class="icon-vector-lock"></i>{{/if}}
+</div>
+"""
+
+GOOD_HTML7 = """
+<div class="foobar">
+    <input type="foobar" name="temp" value="{{dyn_name}}"
+           {{#unless invite_only}}checked="checked"{{/unless}} /> {{dyn_name}}
+    {{#if invite_only}}<i class="icon-vector-lock"></i>{{/if}}
+</div>
+"""
+
+BAD_HTML8 = """
+{{#each test}}
+  {{#with this}}
+  {{#if foobar}}
+    <div class="anything">{{{test}}}</div>
+  {{/if}}
+  {{#if foobar2}}
+  {{partial "teststuff"}}
+  {{/if}}
+  {{/with}}
+{{/each}}
+"""
+
+GOOD_HTML8 = """
+{{#each test}}
+    {{#with this}}
+        {{#if foobar}}
+        <div class="anything">{{{test}}}</div>
+        {{/if}}
+        {{#if foobar2}}
+        {{partial "teststuff"}}
+        {{/if}}
+    {{/with}}
+{{/each}}
+"""
 class TestPrettyPrinter(unittest.TestCase):
     def compare(self, a, b):
         # type: (str, str) -> None
@@ -203,3 +245,5 @@ class TestPrettyPrinter(unittest.TestCase):
         self.compare(pretty_print_html(BAD_HTML4), GOOD_HTML4)
         self.compare(pretty_print_html(BAD_HTML5), GOOD_HTML5)
         self.compare(pretty_print_html(BAD_HTML6), GOOD_HTML6)
+        self.compare(pretty_print_html(BAD_HTML7), GOOD_HTML7)
+        self.compare(pretty_print_html(BAD_HTML8), GOOD_HTML8)

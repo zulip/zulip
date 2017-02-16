@@ -27,13 +27,14 @@ class TokenizerState(object):
         self.col = 1
 
 class Token(object):
-    def __init__(self, kind, s, tag, line, col):
-        # type: (str, str, str, int, int) -> None
+    def __init__(self, kind, s, tag, line, col, line_span):
+        # type: (str, str, str, int, int, int) -> None
         self.kind = kind
         self.s = s
         self.tag = tag
         self.line = line
         self.col = col
+        self.line_span = line_span
 
 def tokenize(text):
     # type: (str) -> List[Token]
@@ -131,15 +132,30 @@ def tokenize(text):
                                           (e.message, state.line, state.col,
                                            e.line_content))
 
+        line_span = len(s.split('\n'))
         token = Token(
             kind=kind,
             s=s,
             tag=tag,
             line=state.line,
             col=state.col,
+            line_span=line_span
         )
         tokens.append(token)
         advance(len(s))
+        if kind == 'html_singleton':
+            # Here we insert a Pseudo html_singleton_end tag so as to have
+            # ease of detection of end of singleton html tags which might be
+            # needed in some cases as with our html pretty printer.
+            token = Token(
+                kind='html_singleton_end',
+                s='</' + tag + '>',
+                tag=tag,
+                line=state.line,
+                col=state.col,
+                line_span=1
+            )
+            tokens.append(token)
 
     return tokens
 
