@@ -983,6 +983,7 @@ class Message(ModelReprMixin, models.Model):
             'sender__realm__id',
             'sender__realm__domain',
             'sender__avatar_source',
+            'sender__avatar_version',
             'sender__is_mirror_dummy',
         ]
         messages = Message.objects.filter(id__in=needed_ids).values(*fields)
