@@ -49,7 +49,7 @@ exports.update_person = function update(person) {
     }
 
     if (_.has(person, 'avatar_url')) {
-        var url = person.avatar_url + "&y=" + new Date().getTime();
+        var url = person.avatar_url;
         person_obj.avatar_url = url;
 
         if (people.is_my_user_id(person.user_id)) {
