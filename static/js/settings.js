@@ -148,9 +148,6 @@ exports.generate_zuliprc_content = function (email, api_key) {
            "\n";
 };
 
-// Choose avatar stamp fairly randomly, to help get old avatars out of cache.
-exports.avatar_stamp = Math.floor(Math.random()*100);
-
 function _setup_page() {
     // To build the edit bot streams dropdown we need both the bot and stream
     // API results. To prevent a race streams will be initialized to a promise
@@ -585,10 +582,8 @@ function _setup_page() {
             contentType: false,
             success: function (data) {
                 loading.destroy_indicator($("#upload_avatar_spinner"));
-                var url = data.avatar_url + '&stamp=' + exports.avatar_stamp;
-                $("#user-settings-avatar").expectOne().attr("src", url);
+                $("#user-settings-avatar").expectOne().attr("src", data.avatar_url);
                 $("#user_avatar_delete_button").show();
-                exports.avatar_stamp += 1;
             },
         });
 

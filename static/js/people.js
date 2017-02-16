@@ -356,11 +356,8 @@ exports.slug_to_emails = function (slug) {
     }
 };
 
-exports.format_small_avatar_url = function (raw_url, sent_by_me) {
+exports.format_small_avatar_url = function (raw_url) {
     var url = raw_url + "&s=50";
-    if (sent_by_me) {
-        url += "&stamp=" + settings.avatar_stamp;
-    }
     return url;
 };
 
@@ -405,7 +402,7 @@ exports.small_avatar_url = function (message) {
     }
 
     if (url) {
-        url = exports.format_small_avatar_url(url, message.sent_by_me);
+        url = exports.format_small_avatar_url(url);
     }
 
     return url;
