@@ -113,11 +113,6 @@ class JohnHandler(object):
             called "VirtualHelp" that your API user can send to.
             '''
 
-    def triage_message(self, message, client):
-        original_content = message['content'].lower()
-        return (original_content.startswith("@john") or
-                original_content.startswith("@**john**"))
-
     def handle_message(self, message, client, state_handler):
         original_content = message['content']
         client.send_message(dict(

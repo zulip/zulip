@@ -14,14 +14,14 @@ except ImportError as e:
 HELP_MESSAGE = '''
             This bot allows users to translate a sentence into
             'Yoda speak'.
-            Users should preface messages with '@yoda'.
+            Users should preface messages with '@mention-bot'.
 
             Before running this, make sure to get a Mashape Api token.
             Instructions are in the 'readme.md' file.
             Store it in the 'yoda_bot.config' file.
             The 'yoda_bot.config' file should be located at '~/yoda_bot.config'.
             Example input:
-            @yoda You will learn how to speak like me someday.
+            @mention-bot You will learn how to speak like me someday.
             '''
 
 
@@ -32,36 +32,29 @@ class ApiKeyError(Exception):
 class YodaSpeakHandler(object):
     '''
     This bot will allow users to translate a sentence into 'Yoda speak'.
-    It looks for messages starting with '@yoda'.
+    It looks for messages starting with '@mention-bot'.
     '''
 
     def usage(self):
         return '''
             This bot will allow users to translate a sentence into
             'Yoda speak'.
-            Users should preface messages with '@yoda'.
+            Users should preface messages with '@mention-bot'.
 
             Before running this, make sure to get a Mashape Api token.
             Instructions are in the 'readme.md' file.
             Store it in the 'yoda_bot.config' file.
             The 'yoda_bot.config' file should be located at '~/yoda_bot.config'.
             Example input:
-            @yoda You will learn how to speak like me someday.
+            @mention-bot You will learn how to speak like me someday.
             '''
-
-    def triage_message(self, message):
-        original_content = message['content']
-
-        return original_content.startswith('@yoda')
 
     def handle_message(self, message, client, state_handler):
         original_content = message['content']
         stream = message['display_recipient']
         subject = message['subject']
 
-        # this handles the message if its starts with @yoda
-        if original_content.startswith('@yoda'):
-            handle_input(client, original_content, stream, subject)
+        handle_input(client, original_content, stream, subject)
 
 handler_class = YodaSpeakHandler
 
@@ -90,10 +83,8 @@ def send_to_yoda_api(sentence, api_key):
 
 
 def format_input(original_content):
-    # replaces the '@yoda' with nothing, so that '@yoda' doesn't get sent to the api
-    message_content = original_content.replace('@yoda', '')
     # gets rid of whitespace around the edges, so that they aren't a problem in the future
-    message_content = message_content.strip()
+    message_content = original_content.strip()
     # replaces all spaces with '+' to be in the format the api requires
     sentence = message_content.replace(' ', '+')
     return sentence
@@ -140,10 +131,8 @@ def send_message(client, message, stream, subject):
 
 
 def is_help(original_content):
-    # replaces the '@yoda' with nothing, so that '@yoda' doesn't get sent to the api
-    message_content = original_content.replace('@yoda', '')
     # gets rid of whitespace around the edges, so that they aren't a problem in the future
-    message_content = message_content.strip()
+    message_content = original_content.strip()
     if message_content == 'help':
         return True
     else:

@@ -26,16 +26,16 @@ def get_thesaurus_result(original_content):
     search_keyword = original_content.strip().split(' ', 1)[1]
     if search_keyword == 'help':
         help_message = "To use this bot, start messages with either \
-                        @synonym (to get the synonyms of a given word) \
-                        or @antonym (to get the antonyms of a given word). \
+                        @mention-bot synonym (to get the synonyms of a given word) \
+                        or @mention-bot antonym (to get the antonyms of a given word). \
                         Phrases are not accepted so only use single words \
-                        to search. For example you could search '@synonym hello' \
-                        or '@antonym goodbye'."
+                        to search. For example you could search '@mention-bot synonym hello' \
+                        or '@mention-bot antonym goodbye'."
         return help_message
-    elif original_content.startswith('@synonym'):
+    elif original_content.startswith('synonym'):
         result = get_clean_response(search_keyword, method = Dictionary.synonym)
         return result
-    elif original_content.startswith('@antonym'):
+    elif original_content.startswith('antonym'):
         result = get_clean_response(search_keyword, method = Dictionary.antonym)
         return result
 
@@ -45,7 +45,7 @@ class ThesaurusHandler(object):
     and get synonyms, and antonyms, for that word sent
     back to the context (stream or private) in which
     it was sent. It looks for messages starting with
-    @synonym or @antonym.
+    '@mention-bot synonym' or '@mention-bot @antonym'.
     '''
 
     def usage(self):
@@ -53,21 +53,13 @@ class ThesaurusHandler(object):
             This plugin will allow users to get both synonyms
             and antonyms for a given word from zulip. To use this
             plugin, users need to install the PyDictionary module
-            using 'pip install PyDictionary'.Use '@synonym help' or
-            '@antonym help' for more usage information. Users should
-            preface messages with @synonym or @antonym.
+            using 'pip install PyDictionary'.Use '@mention-bot synonym help' or
+            '@mention-bot antonym help' for more usage information. Users should
+            preface messages with @mention-bot synonym or @mention-bot antonym.
             '''
 
-    def triage_message(self, message, client):
-        original_content = message['content']
-
-        is_thesaurus = (original_content.startswith('@synonym') or
-                        original_content.startswith('@antonym'))
-
-        return is_thesaurus
-
     def handle_message(self, message, client, state_handler):
-        original_content = message['content']
+        original_content = message['content'].strip()
         original_sender = message['sender_email']
         new_content = get_thesaurus_result(original_content)
 

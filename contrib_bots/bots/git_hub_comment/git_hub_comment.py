@@ -15,13 +15,13 @@ class InputError(IndexError):
 class GitHubHandler(object):
     '''
     This plugin allows you to comment on a GitHub issue, under a certain repository.
-    It looks for messages starting with '@comment' or '@gcomment'.
+    It looks for messages starting with '@mention-bot'.
     '''
 
     def usage(self):
         return '''
             This bot will allow users to comment on a GitHub issue.
-            Users should preface messages with '@comment' or '@gcomment'.
+            Users should preface messages with '@mention-bot'.
             You will need to have a GitHub account.
 
             Before running this, make sure to get a GitHub OAuth token.
@@ -39,25 +39,11 @@ class GitHubHandler(object):
             '<repository_owner>/<repository>/<issue_number>/<your_comment>'.
             '''
 
-    def triage_message(self, message, client):
-        original_content = message['content']
-
-        is_comment = (original_content.startswith('@comment') or
-                      original_content.startswith('@gcomment'))
-
-        return is_comment
-
     def handle_message(self, message, client, state_handler):
         original_content = message['content']
         original_sender = message['sender_email']
 
-        # this handles the message if its starts with @comment
-        if original_content.startswith('@comment'):
-            handle_input(client, original_content, original_sender)
-
-        # handle if message starts with @gcomment
-        elif original_content.startswith('@gcomment'):
-            handle_input(client, original_content, original_sender)
+        handle_input(client, original_content, original_sender)
 
 handler_class = GitHubHandler
 
