@@ -389,7 +389,7 @@ class AvatarTest(ZulipTestCase):
 
         response = self.client_get("/avatar/nonexistent_user@zulip.com?foo=bar")
         redirect_url = response['Location']
-        actual_url = 'https://secure.gravatar.com/avatar/444258b521f152129eb0c162996e572d?d=identicon&foo=bar'
+        actual_url = 'https://secure.gravatar.com/avatar/444258b521f152129eb0c162996e572d?d=identicon&version=1&foo=bar'
         self.assertEqual(redirect_url, actual_url)
 
     def test_valid_avatars(self):

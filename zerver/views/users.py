@@ -116,10 +116,11 @@ def avatar(request, email):
     # type: (HttpRequest, str) -> HttpResponse
     try:
         user_profile = get_user_profile_by_email(email)
-        avatar_source = user_profile.avatar_source
+        url = avatar_url(user_profile)
     except UserProfile.DoesNotExist:
         avatar_source = 'G'
-    url = get_avatar_url(avatar_source, email)
+        avatar_version = 1
+        url = get_avatar_url(avatar_source, email, avatar_version)
 
     # We can rely on the url already having query parameters. Because
     # our templates depend on being able to use the ampersand to
@@ -292,17 +293,13 @@ def get_members_backend(request, user_profile):
     admins = set(user_profile.realm.get_admin_users())
     members = []
     for profile in UserProfile.objects.select_related().filter(realm=realm):
-        avatar_url = get_avatar_url(
-            profile.avatar_source,
-            profile.email
-        )
         member = {"full_name": profile.full_name,
                   "is_bot": profile.is_bot,
                   "is_active": profile.is_active,
                   "is_admin": (profile in admins),
                   "email": profile.email,
                   "user_id": profile.id,
-                  "avatar_url": avatar_url}
+                  "avatar_url": avatar_url(profile)}
         if profile.is_bot and profile.bot_owner is not None:
             member["bot_owner"] = profile.bot_owner.email
         members.append(member)
