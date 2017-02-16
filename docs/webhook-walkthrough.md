@@ -293,10 +293,8 @@ As well as a new fixture `helloworld_goodbye.json` in
 ```
 
 Also consider if your integration should have negative tests, a test where the
-data from the test fixture should result in an error. You may need to explicitly
-set up a negative test's actions and success condition rather than using a
-helper function like `send_and_test_stream_message`. You can find an example
-of this in the tests for the WordPress webhook integration.
+data from the test fixture should result in an error. For details see
+[Negative tests](#negative-tests), below.
 
 Once you have written some tests, you can run just these new tests from within
 the Zulip development environment with this command:
@@ -400,3 +398,124 @@ You can also create a [`[WIP]` pull request](readme-symlink.html#ways-to-contrib
 while you are still working on your integration. See the
 [Git guide](git-guide.html#create-a-pull-request) for more on Zulip's pull
 request process.
+
+## Advanced topics
+
+More complex implementation or testing needs may require additional code, beyond
+what the standard helper functions provide. This section discusses some of
+these situations.
+
+### Negative tests
+
+A negative test is one that should result in an error, such as incorrect data.
+The helper functions may interpret this as a test failure, when it should instead
+be a successful test of an error condition. To correctly test these cases, you
+must explicitly code your test's execution (using other helpers, as needed)
+rather than call the usual helper function.
+
+Here is an example from the WordPress webhook:
+
+```
+def test_unknown_action_no_data(self):
+    # type: () -> None
+
+    # Mimic send_and_test_stream_message() to manually execute a negative test.
+    # Otherwise its call to send_json_payload() would assert on the non-success
+    # we are testing. The value of result is the error message the webhook should
+    # return if no params are sent. The fixture for this test is an empty file.
+
+    # subscribe to the target stream
+    self.subscribe_to_stream(self.TEST_USER_EMAIL, self.STREAM_NAME)
+
+    # post to the webhook url
+    post_params = {'stream_name': self.STREAM_NAME,
+                   'content_type': 'application/x-www-form-urlencoded'}
+    result = self.client_post(self.url, 'unknown_action', **post_params)
+
+    # check that we got the expected error message
+    self.assert_json_error(result, "Unknown WordPress webhook action: WordPress Action")
+```
+
+In a normal test, `send_and_test_stream_message` would handle all the setup
+and then check that the webhook's response matches the expected result. If
+the webhook returns an error, the test fails. Instead, explicitly do the
+setup it would have done, and check the result yourself.
+
+Here, `subscribe_to_stream` is a test helper that uses `TEST_USER_EMAIL` and
+`STREAM_NAME` (attributes from the base class) to register the user to receive
+messages in the given stream. If the stream doesn't exist, it creates it.
+
+`client_post`, another helper, performs the HTTP POST that calls the webhook.
+As long as `self.url` is correct, you don't need to construct the webhook
+URL yourself. (In most cases, it is.)
+
+`assert_json_error` then checks if the result matches the expected error.
+If you had used `send_and_test_stream_message`, it would have called
+`send_json_payload`, which checks the result with `assert_json_success`.
+
+### Custom query parameters
+
+Custom arguments passed in URL query parameters work as expected in the webhook
+code, but require special handling in tests.
+
+For example, here is the definition of a webhook function that gets both `stream`
+and `topic` from the query parameters:
+
+```
+def api_querytest_webhook(request, user_profile, client,
+                          payload=REQ(argument_type='body'), stream=REQ(default='test'),
+                          topic=REQ(default='Default Alert')):
+```
+
+In actual use, you might configure the 3rd party service to call your Zulip
+integration with a URL like this:
+
+```
+http://myhost/api/v1/external/querytest?api_key=abcdefgh&stream=alerts&topic=queries
+```
+
+It provides values for `stream` and `topic`, and the webhook can get those
+using `REQ` without any special handling. How does this work in a test?
+
+The new attribute `TOPIC` exists only in our class, so the default version of
+`build_webhook_url` from `WebhookTestCase` doesn't know how to use it to
+construct the URL. Instead, we provide a custom `build_webhook_url` to
+override the default one:
+
+```
+class QuerytestHookTests(WebhookTestCase):
+
+    STREAM_NAME = 'querytest'
+    TOPIC = "Default Topic"
+    URL_TEMPLATE = "/api/v1/external/querytest?api_key={api_key}&stream={stream}&topic={topic}"
+    FIXTURE_DIR_NAME = 'querytest'
+
+    # override the base class behavior so we can include TOPIC
+    def build_webhook_url(self):
+        # type: () -> Text
+
+        api_key = self.get_api_key(self.TEST_USER_EMAIL)
+        return self.URL_TEMPLATE.format(stream=self.STREAM_NAME, api_key=api_key, topic=self.TOPIC)
+
+    def test_querytest_test_one(self):
+        # type: () -> None
+
+        # construct the URL used for this test
+        self.TOPIC = u"Query Test"
+        self.url = self.build_webhook_url()
+
+        # define the expected message contents
+        expected_subject = u"Query Test"
+        expected_message = u"This is a test of custom query parameters."
+
+        self.send_and_test_stream_message('test_one', expected_subject, expected_message,
+                                          content_type="application/x-www-form-urlencoded")
+
+    def get_body(self, fixture_name):
+        # type: (Text) -> Text
+        return self.fixture_data("querytest", fixture_name, file_type="json")
+```
+
+You can also override `get_body` if your test data needs to be constructed in
+an unusual way. For more, see the definition for the base class, `WebhookTestCase`
+in `zerver/lib/test_classes.py.`
