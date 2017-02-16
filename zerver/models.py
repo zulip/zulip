@@ -1212,7 +1212,8 @@ def get_owned_bot_dicts(user_profile, include_all_realm_bots_if_admin=True):
              'default_events_register_stream': botdict['default_events_register_stream__name'],
              'default_all_public_streams': botdict['default_all_public_streams'],
              'owner': botdict['bot_owner__email'],
-             'avatar_url': get_avatar_url(botdict['avatar_source'], botdict['email']),
+             'avatar_url': get_avatar_url(botdict['avatar_source'], botdict['email'],
+                                          botdict['avatar_version']),
              }
             for botdict in result]
 

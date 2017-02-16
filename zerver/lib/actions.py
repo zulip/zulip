@@ -40,7 +40,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     Reaction
 
 from zerver.lib.alert_words import alert_words_in_realm
-from zerver.lib.avatar import get_avatar_url, avatar_url
+from zerver.lib.avatar import avatar_url
 
 from django.db import transaction, IntegrityError, connection
 from django.db.models import F, Q
@@ -3048,7 +3048,7 @@ def handle_push_notification(user_profile_id, missed_message):
                     'content_truncated': content_truncated,
                     'sender_email': message.sender.email,
                     'sender_full_name': message.sender.full_name,
-                    'sender_avatar_url': get_avatar_url(message.sender.avatar_source, message.sender.email),
+                    'sender_avatar_url': avatar_url(message.sender),
                 }
 
                 if message.recipient.type == Recipient.STREAM:

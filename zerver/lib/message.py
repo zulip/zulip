@@ -151,7 +151,11 @@ class MessageDict(object):
     ):
         # type: (bool, Optional[Message], int, Optional[datetime.datetime], Optional[Text], Text, Text, datetime.datetime, Optional[Text], Optional[int], int, Text, int, Text, Text, Text, Text, int, bool, Text, int, int, int, List[Dict[str, Any]]) -> Dict[str, Any]
 
-        avatar_url = get_avatar_url(sender_avatar_source, sender_email)
+        avatar_url = get_avatar_url(
+            sender_avatar_source,
+            sender_email,
+            sender_avatar_version
+        )
 
         display_recipient = get_display_recipient_by_id(
             recipient_id,

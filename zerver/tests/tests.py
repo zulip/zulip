@@ -25,7 +25,7 @@ from zerver.models import UserProfile, Recipient, \
     get_user_profile_by_email, get_realm, get_client, get_stream, \
     Message, get_unique_open_realm, completely_open
 
-from zerver.lib.avatar import get_avatar_url
+from zerver.lib.avatar import avatar_url
 from zerver.lib.initial_password import initial_password
 from zerver.lib.email_mirror import create_missed_message_address
 from zerver.lib.actions import \
@@ -36,7 +36,6 @@ from zerver.lib.actions import \
 from zerver.lib.notifications import handle_missedmessage_emails
 from zerver.lib.session_user import get_session_dict_user
 from zerver.middleware import is_slow_query
-from zerver.lib.avatar import avatar_url
 from zerver.lib.utils import split_by
 
 from zerver.worker import queue_processors
@@ -1832,7 +1831,7 @@ class GetProfileTest(ZulipTestCase):
             if user['email'] == 'hamlet@zulip.com':
                 self.assertEqual(
                     user['avatar_url'],
-                    get_avatar_url(user_profile.avatar_source, user_profile.email),
+                    avatar_url(user_profile),
                 )
 
 class HomeTest(ZulipTestCase):
