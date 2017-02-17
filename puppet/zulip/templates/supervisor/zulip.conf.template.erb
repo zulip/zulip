@@ -53,7 +53,7 @@ stdout_logfile_backups=10     ; # of stdout logfile backups (default 10)
 directory=/home/zulip/deployments/current/
 <% end -%>
 
-[program:zulip-deliver-enqueued-emails]
+[program:zulip_deliver_enqueued_emails]
 command=/home/zulip/deployments/current/manage.py deliver_email
 priority=350                   ; the relative start priority (default 999)
 autostart=true                 ; start at supervisord start (default: true)
@@ -62,12 +62,12 @@ stopsignal=TERM                ; signal used to kill process (default TERM)
 topwaitsecs=30                ; max num secs to wait b4 SIGKILL (default 10)
 user=zulip                    ; setuid to this UNIX account to run the program
 redirect_stderr=true           ; redirect proc stderr to stdout (default false)
--stdout_logfile=/var/log/zulip/events-deliver_enqueued_emails.log         ; stdout log path, NONE for none; default AUTO
+-stdout_logfile=/var/log/zulip/events_deliver_enqueued_emails.log         ; stdout log path, NONE for none; default AUTO
 stdout_logfile_maxbytes=1GB   ; max # logfile bytes b4 rotation (default 50MB)
 stdout_logfile_backups=10     ; # of stdout logfile backups (default 10)
 directory=/home/zulip/deployments/current/
 
-[program:zulip-events-message_sender]
+[program:zulip_events_message_sender]
 command=/home/zulip/deployments/current/manage.py process_queue --queue_name=message_sender --worker_num=%(process_num)s
 process_name=%(program_name)s-%(process_num)s
 priority=350                   ; the relative start priority (default 999)
@@ -77,7 +77,7 @@ stopsignal=TERM                ; signal used to kill process (default TERM)
 stopwaitsecs=30                ; max num secs to wait b4 SIGKILL (default 10)
 user=zulip                    ; setuid to this UNIX account to run the program
 redirect_stderr=true           ; redirect proc stderr to stdout (default false)
-stdout_logfile=/var/log/zulip/events-message_sender.log         ; stdout log path, NONE for none; default AUTO
+stdout_logfile=/var/log/zulip/events_message_sender.log         ; stdout log path, NONE for none; default AUTO
 stdout_logfile_maxbytes=1GB   ; max # logfile bytes b4 rotation (default 50MB)
 stdout_logfile_backups=10     ; # of stdout logfile backups (default 10)
 directory=/home/zulip/deployments/current/
@@ -89,10 +89,10 @@ numprocs=5
 
 [group:zulip-workers]
 ; each refers to 'x' in [program:x] definitions
-programs=zulip-deliver-enqueued-emails, <% @queues.each_with_index do |queue, i| -%>zulip_events_<%= queue %><%= ',' if i < (@queues.size - 1) %> <% end -%>
+programs=zulip_deliver_enqueued_emails, <% @queues.each_with_index do |queue, i| -%>zulip_events_<%= queue %><%= ',' if i < (@queues.size - 1) %> <% end -%>
 
 [group:zulip-senders]
-programs=zulip-events-message_sender
+programs=zulip_events_message_sender
 
 ; The [include] section can just contain the "files" setting.  This
 ; setting can list multiple files (separated by whitespace or
