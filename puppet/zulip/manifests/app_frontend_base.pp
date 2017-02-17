@@ -64,7 +64,7 @@ class zulip::app_frontend_base {
     owner => "root",
     group => "root",
     mode => 644,
-    source => "puppet:///modules/zulip/supervisor/conf.d/zulip.conf",
+    content => template("zulip/supervisor/zulip.conf.template.erb"),
     notify => Service["supervisor"],
   }
 
