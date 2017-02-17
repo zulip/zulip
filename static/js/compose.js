@@ -34,14 +34,6 @@ function make_uploads_relative(content) {
     return content.replace(uploads_re, "]($1)");
 }
 
-function client() {
-    if ((window.bridge !== undefined) &&
-        (window.bridge.desktopAppVersion !== undefined)) {
-        return "desktop app " + window.bridge.desktopAppVersion();
-    }
-    return "website";
-}
-
 // This function resets an input type="file".  Pass in the
 // jquery object.
 function clear_out_file_list(jq_file_list) {
@@ -335,14 +327,15 @@ function create_message_object() {
     var content = make_uploads_relative(compose.message_content());
 
     // Changes here must also be kept in sync with echo.try_deliver_locally
-    var message = {client: client(),
-                   type: compose.composing(),
-                   subject: subject,
-                   stream: compose.stream_name(),
-                   private_message_recipient: compose.recipient(),
-                   content: content,
-                   sender_id: page_params.user_id,
-                   queue_id: page_params.event_queue_id};
+    var message = {
+        type: compose.composing(),
+        subject: subject,
+        stream: compose.stream_name(),
+        private_message_recipient: compose.recipient(),
+        content: content,
+        sender_id: page_params.user_id,
+        queue_id: page_params.event_queue_id,
+    };
 
     if (message.type === "private") {
         // TODO: this should be collapsed with the code in composebox_typeahead.js
@@ -673,7 +666,6 @@ exports.test_send_many_messages = function (stream, subject, count) {
         message.to = stream;
         message.subject = subject;
         message.content = num_sent.toString();
-        message.client = client();
 
         send_message(message);
 
