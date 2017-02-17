@@ -1043,6 +1043,7 @@ LOGGING = {
             'propagate': False,
         },
         'django.server': {
+            'handlers': ['console', 'file'],
             'propagate': False,
             'filters': ['skip_200_and_304'],
         },
