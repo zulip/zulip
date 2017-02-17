@@ -13,9 +13,9 @@ render tweets nicely).  The frontend implementation is in JavaScript,
 based on [marked.js](https://github.com/chjj/marked)
 (`static/js/echo.js`), and is used to preview and locally echo
 messages the moment the sender hits enter, without waiting for round
-trip from the server. Those frontend previews are only shown to the
-sender, and they are almost identical to the ones that the server
-provides.
+trip from the server.  Those frontend renderings are only shown to the
+sender of a message, and they are (ideally) identical to the backend
+rendering.
 
 The JavaScript markdown implementation has a function,
 `echo.contains_bugdown`, that is used to check whether a message
@@ -40,13 +40,17 @@ The Python-Markdown implementation is tested by
 and is automatically used by both test suites; as a result, it the
 preferred place to add new tests for Zulip's markdown system.
 
-If you're going to manually test some changes in the Markdown
-implementation, keep in mind that you will probably want to disconnect
-the server at some point, in order to prevent any server-side rendering.
-Otherwise, the server may render the Markdown you're testing too fast
-for you to appreciate the frontend's rendering.
-In that case, you should load the page, stop your Zulip server, and then
-send the messages you want to test.
+If you're going to manually test some changes in the frontend Markdown
+implementation, the easiest way to do this is as follows:
+
+1. Login to your development server.
+2. Stop your Zulip server with ctrl-C, leaving the browser open.
+3. Compose and send the messages you'd like to test.  They will be
+   locally echoed using the frontend rendering.
+
+This procedure prevents any server-side rendering.  If you don't do
+this, backend will likely render the Markdown you're testing and swap
+it in before you can see the frontend's rendering.
 
 ## Changing Zulip's markdown processor
 
