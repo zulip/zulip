@@ -376,7 +376,7 @@ RUNNING_INSIDE_TORNADO = False
 ########################################################################
 
 DATABASES = {"default": {
-    'ENGINE': 'django.db.backends.postgresql_psycopg2',
+    'ENGINE': 'django.db.backends.postgresql',
     'NAME': 'zulip',
     'USER': 'zulip',
     'PASSWORD': '', # Authentication done via certificates
