@@ -1,0 +1,71 @@
+.informational-overlays {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 102;
+
+    opacity: 0;
+    pointer-events: none;
+
+    background-color: rgba(0,0,0,0.8);
+    transition: all 0.3s ease;
+}
+
+.informational-overlays.show {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.informational-overlays .overlay-content {
+    /* because zoom breaks at 525px perhaps due to rounding errors, so add a
+       trivial amount of width so it doesn't break. */
+    width: 550px;
+    margin: 0 auto;
+    position: relative;
+    top: calc((30vh - 50px) / 2);
+    border-radius: 4px;
+    overflow: hidden;
+
+    background-color: #fff;
+}
+
+.informational-overlays .overlay-tabs {
+    padding: 10px 0px;
+    border-bottom: 1px solid #eee;
+}
+
+.informational-overlays .overlay-tabs .tab-switcher {
+    margin-left: 15px ;
+}
+
+.informational-overlays .overlay-tabs .exit {
+    float: right;
+    font-size: 1.8em;
+    color: #aaa;
+    font-weight: 600;
+    margin: 1px 15px;
+}
+
+.informational-overlays .overlay-modal {
+    padding-bottom: 10px;
+}
+
+.informational-overlays .overlay-modal .modal-body {
+    height: 70vh;
+    text-align: center;
+}
+
+.informational-overlays .overlay-modal .modal-header h3 {
+    font-weight: 300;
+}
+
+.informational-overlays .overlay-modal .modal-body th {
+    font-weight: 400;
+}
+
+.informational-overlays td.operator {
+    font-size: 0.9em;
+}

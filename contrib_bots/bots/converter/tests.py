@@ -20,6 +20,7 @@ def test():
                 expected: %s
                 but got : %s
                 ''' % (cmd, expected_response, client_dummy.output))
+
 def sample_conversation():
     return [
         ('@convert 2 m cm', '2.0 m = 200.0 cm\n'),

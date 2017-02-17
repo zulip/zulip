@@ -4,6 +4,13 @@ All notable changes to the Zulip server are documented in this file.
 
 ### Unreleased
 
+### 1.5.1 -- 2017-02-07
+
+- Fix exception trying to copy node_modules during upgrade process.
+- Improved styling of /stats page to remove useless login/register links.
+
+### 1.5.0 -- 2017-02-06
+
 Highlights:
 
 - Completely redesigned the Manage streams interface.
@@ -15,14 +22,14 @@ Highlights:
 - Upgraded how the main application runs from FastCGI on Django 1.8 to
   uwsgi and Django 1.10.
 - Added preliminary support for open graph previews of links (the
-  setting, `settings.INLINE_URL_PREVIEWS`, is disabled by default in
-  this release).
+  setting, `INLINE_URL_EMBED_PREVIEW`, is disabled by default in this
+  release).
 
 Full feature Changelog:
 
 - Added an emoji picker/browser to the compose box.
 - Added markdown preview support to the compose box.
-- Added a new analytics system to track useful statistics.
+- Added a new analytics system to track interesting usage statistics.
 - Added a /stats page with graphs of the analytics data.
 - Added display of subscriber counts in Manage streams.
 - Added support for filtering streams in Manage streams.

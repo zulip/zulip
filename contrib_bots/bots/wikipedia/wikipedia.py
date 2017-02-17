@@ -60,12 +60,12 @@ class WikipediaHandler(object):
             logging.error('unsuccessful data')
             return
 
-        search_string = data.json()['query']['search'][0]['title'].replace(' ', '_')
-        url = 'https://wikipedia.org/wiki/' + search_string
         new_content = 'For search term "' + query
         if len(data.json()['query']['search']) == 0:
             new_content = 'I am sorry. The search term you provided is not found :slightly_frowning_face:'
         else:
+            search_string = data.json()['query']['search'][0]['title'].replace(' ', '_')
+            url = 'https://en.wikipedia.org/wiki/' + search_string
             new_content = new_content + '", ' + url
 
         client.send_message(dict(

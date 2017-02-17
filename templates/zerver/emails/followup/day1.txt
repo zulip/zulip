@@ -13,7 +13,7 @@ Welcome to Zulip.
 
 4. Bulleted lists, bold, code blocks, and more are all at your fingertips - just check out "Message formatting" in the gear menu.
 
-5. Are you a keyboard power user? Learn about keyboard shortcuts in the Keyboard Shortcuts tab under the gear icon. (Or press '?')
+5. Are you a keyboard power user? Learn about keyboard shortcuts in the "Keyboard shortcuts" tab under the gear icon. (Or press '?')
 
 6. Emoji. Because :ramen:
 {% if verbose_support_offers %}

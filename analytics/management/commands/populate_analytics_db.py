@@ -5,11 +5,11 @@ from argparse import ArgumentParser
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from analytics.models import BaseCount, InstallationCount, RealmCount, \
-    UserCount, StreamCount
 from analytics.lib.counts import COUNT_STATS, CountStat, do_drop_all_analytics_tables
 from analytics.lib.fixtures import generate_time_series_data
 from analytics.lib.time_utils import time_range
+from analytics.models import BaseCount, InstallationCount, RealmCount, \
+    UserCount, StreamCount, FillState
 from zerver.lib.timestamp import floor_to_day
 from zerver.models import Realm, UserProfile, Stream, Message, Client
 
@@ -47,7 +47,7 @@ class Command(BaseCommand):
         do_drop_all_analytics_tables()
         # I believe this also deletes any objects with this realm as a foreign key
         Realm.objects.filter(string_id='analytics').delete()
-        Client.objects.filter(name__endswith='_').delete()
+        Client.objects.filter(name__startswith='_').delete()
 
         installation_time = timezone.now() - timedelta(days=self.DAYS_OF_DATA)
         last_end_time = floor_to_day(timezone.now())
@@ -76,6 +76,8 @@ class Command(BaseCommand):
             'true': self.generate_fixture_data(stat, .01, 0, 1, 0, 1)
         } # type: Dict[Optional[str], List[int]]
         insert_fixture_data(stat, realm_data, RealmCount)
+        FillState.objects.create(property=stat.property, end_time=last_end_time,
+                                 state=FillState.DONE)
 
         stat = COUNT_STATS['messages_sent:is_bot:hour']
         user_data = {'false': self.generate_fixture_data(stat, 2, 1, 1.5, .6, 8, holiday_rate=.1)}
@@ -83,6 +85,8 @@ class Command(BaseCommand):
         realm_data = {'false': self.generate_fixture_data(stat, 35, 15, 6, .6, 4),
                       'true': self.generate_fixture_data(stat, 15, 15, 3, .4, 2)}
         insert_fixture_data(stat, realm_data, RealmCount)
+        FillState.objects.create(property=stat.property, end_time=last_end_time,
+                                 state=FillState.DONE)
 
         stat = COUNT_STATS['messages_sent:message_type:day']
         user_data = {
@@ -94,30 +98,38 @@ class Command(BaseCommand):
             'private_stream': self.generate_fixture_data(stat, 7, 7, 5, .6, 4),
             'private_message': self.generate_fixture_data(stat, 13, 5, 5, .6, 4)}
         insert_fixture_data(stat, realm_data, RealmCount)
+        FillState.objects.create(property=stat.property, end_time=last_end_time,
+                                 state=FillState.DONE)
 
-        website_ = Client.objects.create(name='website_')
-        API_ = Client.objects.create(name='API_')
-        android_ = Client.objects.create(name='android_')
-        iOS_ = Client.objects.create(name='iOS_')
-        react_native_ = Client.objects.create(name='react_native_')
-        electron_ = Client.objects.create(name='electron_')
-        barnowl_ = Client.objects.create(name='barnowl_')
-        plan9_ = Client.objects.create(name='plan9_')
+        # We use client names that start with _ to make it easy to
+        # drop just these data manually without affecting other data.
+        website = Client.objects.create(name='_Website')
+        old_desktop = Client.objects.create(name='_Old desktop app')
+        android = Client.objects.create(name='_Android app')
+        iOS = Client.objects.create(name='_Old iOS app')
+        react_native = Client.objects.create(name='_New iOS app')
+        API = Client.objects.create(name='_Python API')
+        barnowl = Client.objects.create(name='_Barnowl')
+        unused = Client.objects.create(name='_Unused webhook')
+        long_webhook = Client.objects.create(name='_Webhook with loooooooong name')
 
         stat = COUNT_STATS['messages_sent:client:day']
         user_data = {
-            website_.id: self.generate_fixture_data(stat, 2, 1, 1.5, .6, 8),
-            barnowl_.id: self.generate_fixture_data(stat, 0, .3, 1.5, .6, 8)}
+            website.id: self.generate_fixture_data(stat, 2, 1, 1.5, .6, 8),
+            barnowl.id: self.generate_fixture_data(stat, 0, .3, 1.5, .6, 8)}
         insert_fixture_data(stat, user_data, UserCount)
         realm_data = {
-            website_.id: self.generate_fixture_data(stat, 30, 20, 5, .6, 3),
-            API_.id: self.generate_fixture_data(stat, 5, 5, 5, .6, 3),
-            android_.id: self.generate_fixture_data(stat, 5, 5, 2, .6, 3),
-            iOS_.id: self.generate_fixture_data(stat, 5, 5, 2, .6, 3),
-            react_native_.id: self.generate_fixture_data(stat, 5, 5, 10, .6, 3),
-            electron_.id: self.generate_fixture_data(stat, 5, 3, 8, .6, 3),
-            barnowl_.id: self.generate_fixture_data(stat, 1, 1, 3, .6, 3),
-            plan9_.id: self.generate_fixture_data(stat, 0, 0, 0, 0, 0, 0)}
+            website.id: self.generate_fixture_data(stat, 30, 20, 5, .6, 3),
+            old_desktop.id: self.generate_fixture_data(stat, 5, 3, 8, .6, 3),
+            android.id: self.generate_fixture_data(stat, 5, 5, 2, .6, 3),
+            iOS.id: self.generate_fixture_data(stat, 5, 5, 2, .6, 3),
+            react_native.id: self.generate_fixture_data(stat, 5, 5, 10, .6, 3),
+            API.id: self.generate_fixture_data(stat, 5, 5, 5, .6, 3),
+            barnowl.id: self.generate_fixture_data(stat, 1, 1, 3, .6, 3),
+            unused.id: self.generate_fixture_data(stat, 0, 0, 0, 0, 0),
+            long_webhook.id: self.generate_fixture_data(stat, 5, 5, 2, .6, 3)}
         insert_fixture_data(stat, realm_data, RealmCount)
+        FillState.objects.create(property=stat.property, end_time=last_end_time,
+                                 state=FillState.DONE)
 
         # TODO: messages_sent_to_stream:is_bot

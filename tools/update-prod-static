@@ -16,6 +16,10 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
 from django.conf import settings
 from scripts.lib.node_cache import setup_node_modules
 
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--prev-deploy', metavar='DIR',
                     help='a previous deploy from which to reuse files if possible')
@@ -44,8 +48,12 @@ subprocess.check_call(['./tools/minify-js'] +
 
 # Collect the files that we're going to serve; this creates prod-static/serve.
 subprocess.check_call(['./manage.py', 'collectstatic', '--no-default-ignore',
-                       '--noinput', '-i', 'assets'],
+                       '--noinput', '-i', 'assets', '-i' 'node_modules'],
                       stdout=fp, stderr=fp)
+if not settings.PRODUCTION:
+    # When building a release tarball, we need to move staticfiles.json
+    subprocess.check_call(['mv', 'prod-static/serve/staticfiles.json', 'staticfiles.json'],
+                          stdout=fp, stderr=fp)
 
 # Compile translation strings to generate `.mo` files.
 subprocess.check_call(['./manage.py', 'compilemessages'],

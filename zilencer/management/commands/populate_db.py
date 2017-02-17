@@ -52,6 +52,12 @@ class Command(BaseCommand):
                             default=0,
                             help='The number of extra users to create')
 
+        parser.add_argument('--extra-bots',
+                            dest='extra_bots',
+                            type=int,
+                            default=0,
+                            help='The number of extra bots to create')
+
         parser.add_argument('--huddles',
                             dest='num_huddles',
                             type=int,
@@ -180,11 +186,11 @@ class Command(BaseCommand):
         if not options["test_suite"]:
             # Populate users with some bar data
             for user in user_profiles:
-                status = 1 # type: int
+                status = UserPresence.ACTIVE # type: int
                 date = now()
                 client = get_client("website")
-                for i in range(3):
-                    client = get_client("API")
+                if user.full_name[0] <= 'H':
+                    client = get_client("ZulipAndroid")
                 UserPresence.objects.get_or_create(user_profile=user, client=client, timestamp=date, status=status)
 
         user_profiles_ids = [user_profile.id for user_profile in user_profiles]
@@ -234,6 +240,8 @@ class Command(BaseCommand):
                 ("Zulip Error Bot", "error-bot@zulip.com"),
                 ("Zulip Default Bot", "default-bot@zulip.com"),
             ]
+            for i in range(options["extra_bots"]):
+                zulip_realm_bots.append(('Extra Bot %d' % (i,), 'extrabot%d@zulip.com' % (i,)))
             zulip_realm_bots.extend(all_realm_bots)
             create_users(zulip_realm, zulip_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
 

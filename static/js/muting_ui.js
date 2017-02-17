@@ -110,12 +110,27 @@ exports.handle_updates = function (muted_topics) {
         return;
     }
 
-    muting.set_muted_topics(muted_topics);
+    exports.update_muted_topics(muted_topics);
     exports.rerender();
 };
 
+exports.mute_topic = function (stream, topic) {
+    muting.add_muted_topic(stream, topic);
+    unread_ui.update_unread_counts();
+};
+
+exports.unmute_topic = function (stream, topic) {
+    muting.remove_muted_topic(stream, topic);
+    unread_ui.update_unread_counts();
+};
+
+exports.update_muted_topics = function (muted_topics) {
+    muting.set_muted_topics(muted_topics);
+    unread_ui.update_unread_counts();
+};
+
 $(function () {
-    muting.set_muted_topics(page_params.muted_topics);
+    exports.update_muted_topics(page_params.muted_topics);
 });
 
 return exports;

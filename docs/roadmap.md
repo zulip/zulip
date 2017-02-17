@@ -62,8 +62,8 @@ the end of 2016.
   message](https://github.com/zulip/zulip/issues/1147)
 * [Better drafts
   management](https://github.com/zulip/zulip/issues/1717)
-* [Make clicking on desktop notifications renarrow
-  properly](https://github.com/zulip/zulip/issues/1996)
+* <strike>[Make clicking on desktop notifications renarrow
+  properly](https://github.com/zulip/zulip/issues/1996)</strike>
 * [Add pretty bubbles for recipients in the compose box](https://github.com/zulip/zulip/issues/595)
 * [Make right sidebar buddy list UI scale well to large teams](https://github.com/zulip/zulip/issues/236)
 * [Display stream descriptions more prominently](https://github.com/zulip/zulip/issues/164)
@@ -73,20 +73,20 @@ the end of 2016.
 
 * [Add support for showing "user is typing" notifications, at least
   for private messages](https://github.com/zulip/zulip/issues/150)
-* [Support lightweight emoji
-  "reactions"](https://github.com/zulip/zulip/issues/541)
+* <strike>[Support lightweight emoji
+  "reactions"](https://github.com/zulip/zulip/issues/541)</strike>
 * [Open graph previews of generic
   websites](https://github.com/zulip/zulip/issues/406)
-* [Add a "join Zulip chat" badge for projects that use Zulip to
-  document that nicely](https://github.com/zulip/zulip/issues/2270)
+* <strike>[Add a "join Zulip chat" badge for projects that use Zulip to
+  document that nicely](https://github.com/zulip/zulip/issues/2270)</strike>
 
 ## Real-time sync
 
 The overall goal is to eliminate the few known issues where Zulip does
 not provide a seamless real-time sync experience.
 
-* [Notification bot advertisements for new streams don’t handle stream
-  renames](https://github.com/zulip/zulip/issues/426)
+* <strike>[Notification bot advertisements for new streams don’t handle stream
+  renames](https://github.com/zulip/zulip/issues/426)</strike>
 * [Avatar/name changes don’t propagate to already-sent
   messages](https://github.com/zulip/zulip/issues/1932)
 * [Advance the pointer / where we load the user to based on unread
@@ -107,20 +107,20 @@ Zulip server, setting up a new Zulip realm, or starting to use Zulip.
 
 ## Production installation issues
 
-* [Document or better script solution to rabbitmq startup
-  issues](https://github.com/zulip/zulip/issues/465)
+* <strike>[Document or better script solution to rabbitmq startup
+  issues](https://github.com/zulip/zulip/issues/465)</strike>
 * [Merge a supported way to use Zulip in Docker in production
   implementation](https://github.com/zulip/zulip/pull/450).
 
 ## Administration and management
 
-* [Make list of allowed domains web-configurable](https://github.com/zulip/zulip/issues/651)
-* [Statistics display for realm and server
-  administrators](https://github.com/zulip/zulip/issues/2052)
-* [Keep track of which users added which realm
-  emoji](https://github.com/zulip/zulip/issues/984)
-* [Add setting to enable any user to add new realm
-  emoji](https://github.com/zulip/zulip/issues/978)
+* <strike>[Make list of allowed domains web-configurable](https://github.com/zulip/zulip/issues/651)</strike>
+* <strike>[Statistics display for realm and server
+  administrators](https://github.com/zulip/zulip/issues/2052)</strike>
+* <strike>[Keep track of which users added which realm
+  emoji](https://github.com/zulip/zulip/issues/984)</strike>
+* <strike>[Add setting to enable any user to add new realm
+  emoji](https://github.com/zulip/zulip/issues/978)</strike>
 * <strike>[Make realm filters web-configurable](https://github.com/zulip/zulip/pull/544)</strike>
 * [Improve administrative controls for managing streams](https://github.com/zulip/zulip/issues/425)
 * [Enhance the LDAP integration and make it web-configurable](https://github.com/zulip/zulip/issues/715)
@@ -150,15 +150,15 @@ major focus area for the project.
   3](https://github.com/zulip/zulip/issues/256)
 * [Automatic thumbnailing of uploaded images' previews to save
   bandwidth](https://github.com/zulip/zulip/issues/432)
-* [Upgrade Zulip to use Django 1.10.  The patches
+* <strike>[Upgrade Zulip to use Django 1.10.  The patches
   needed to run Zulip were merged into mainline Django in Django 1.10,
   so this will mean we don't need to use a fork of Django
-  anymore.](https://github.com/zulip/zulip/issues/3)
+  anymore.](https://github.com/zulip/zulip/issues/3)</strike>
 * [Upgrade and remove from codebase all unnecessarily vendored JS
   libraries](https://github.com/zulip/zulip/issues/1709)
 * [Add support for changing users' email
   addresses](https://github.com/zulip/zulip/issues/734)
-* [Migrate from jslint to eslint](https://github.com/zulip/zulip/issues/535)
+* <strike>[Migrate from jslint to eslint](https://github.com/zulip/zulip/issues/535)</strike>
 * [Replace the slow closure-compiler based static asset toolchain](https://github.com/zulip/zulip/issues/693)
 * [Use a modern JavaScript bundler like webpack](https://github.com/zulip/zulip/issues/695)
 * [Add support for building frontend features in something like React](https://github.com/zulip/zulip/issues/694)
@@ -169,7 +169,7 @@ While the Zulip server has a great codebase compared to most projects
 of its size, it takes work to keep it that way.
 
 * [Migrate most web routes to REST API](https://github.com/zulip/zulip/issues/611)
-* [Split Tornado subsystem into a separate Django app](https://github.com/zulip/zulip/issues/729)
+* <strike>[Split Tornado subsystem into a separate Django app](https://github.com/zulip/zulip/issues/729)</strike>
 * [Refactor zulip.css to be broken into components](https://github.com/zulip/zulip/issues/731)
 
 ## Security
@@ -188,8 +188,9 @@ of its size, it takes work to keep it that way.
 
 ## Testing
 
-* [Extend Zulip's automated test coverage to include all API endpoints](https://github.com/zulip/zulip/issues/1441)
-* [Build automated tests for the client API bindings](https://github.com/zulip/zulip/issues/713)
+* <strike>[Extend Zulip's automated test coverage to include all API
+  endpoints](https://github.com/zulip/zulip/issues/1441)</strike>
+* <strike>[Build automated tests for the client API bindings](https://github.com/zulip/zulip/issues/713)</strike>
 * [Add automated tests for the production upgrade process](https://github.com/zulip/zulip/issues/306)
 
 ## Documentation
@@ -205,9 +206,9 @@ of its size, it takes work to keep it that way.
 
 ### Nice to have
 
-* [Expand library of documentation on Zulip's feature set.  Currently
+* <strike>[Expand library of documentation on Zulip's feature set.  Currently
   most documentation is for either developers or system
-  administrators.](https://github.com/zulip/zulip/issues/675)
+  administrators.](https://github.com/zulip/zulip/issues/675)</strike>
 
 ## Integrations and bots
 
@@ -271,4 +272,4 @@ but they are important goals for the project.
 
 * Expand the number of core developers able to do code reviews
 * Have a successful season with Zulip's Outreachy participants
-* Have a successful season with Google Code In.
+* <strike>Have a successful season with Google Code In.</strike>

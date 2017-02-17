@@ -5,6 +5,11 @@ JSON data for the /authors page.
 """
 
 from __future__ import absolute_import, print_function
+
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+
 from typing import Any, Dict, List, Optional, Union, Text
 
 import os
@@ -71,12 +76,15 @@ def run_production():
         contribs = []
         for user in json_data:
             author = user.get('author')
-            result_user = dict(
-                avatar=author.get('avatar_url'),
-                name=author.get('login'),
-                commits=user.get('total')
-            )
-            contribs.append(result_user)
+            try:
+                result_user = dict(
+                    avatar=author.get('avatar_url'),
+                    name=author.get('login'),
+                    commits=user.get('total')
+                )
+                contribs.append(result_user)
+            except AttributeError:
+                print("Unable to access fields for %s" % (user,))
 
         out_contrib_data = split_by(
             sorted(contribs, key=lambda k: k.get('commits'), reverse=True),

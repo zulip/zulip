@@ -20,7 +20,7 @@
             </div>
             <form id="searchbox_form" class="form-search navbar-search">
               <div id="search_arrows" class="input-append">
-                <a class="search_icon" href="#search-operators" data-toggle="modal"><i class="icon-vector-search"></i></a>
+                <a class="search_icon" href="#search-operators" data-overlay-trigger="search-operators"><i class="icon-vector-search"></i></a>
                 <input class="search-query input-block-level" id="search_query" type="text" placeholder="{{ _('Search') }}"
                        autocomplete="off" />
                 {# Start the button off disabled since there is no active search #}
@@ -55,12 +55,12 @@
                     </a>
                   </li>
                   <li title="{{ _('Settings') }}">
-                    <a href="#settings" data-toggle="tab">
+                    <a href="#settings">
                       <i class="icon-vector-wrench"></i> {{ _('Settings') }}
                     </a>
                   </li>
                   <li title="{{ _('Administration') }}" class="admin-menu-item">
-                    <a href="#administration" role="button" data-toggle="tab">
+                    <a href="#administration" role="button">
                       <i class="icon-vector-bolt"></i> {{ _('Administration') }}
                     </a>
                   </li>
@@ -71,17 +71,17 @@
                     </a>
                   </li>
                   <li title="{{ _('Keyboard shortcuts') }}">
-                    <a href="#keyboard-shortcuts" role="button" data-toggle="modal">
+                    <a role="button" data-overlay-trigger="keyboard-shortcuts">
                       <i class="icon-vector-keyboard"></i> {{ _('Keyboard shortcuts') }}
                     </a>
                   </li>
                   <li title="{{ _('Message formatting') }}">
-                    <a href="#markdown-help" role="button" data-toggle="modal">
+                    <a role="button" data-overlay-trigger="markdown-help">
                       <i class="icon-vector-pencil"></i> {{ _('Message formatting') }}
                     </a>
                   </li>
                   <li title="{{ _('Search operators') }}">
-                    <a href="#search-operators" role="button" data-toggle="modal">
+                    <a role="button" data-overlay-trigger="search-operators">
                       <i class="icon-vector-search"></i> {{ _('Search operators') }}
                     </a>
                   </li>

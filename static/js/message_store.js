@@ -61,11 +61,15 @@ exports.get_pm_full_names = function (message) {
     return names.join(', ');
 };
 
-exports.process_message_for_recent_private_messages =
-    function process_message_for_recent_private_messages(message) {
+exports.process_message_for_recent_private_messages = function (message) {
     var current_timestamp = 0;
 
-    var user_ids_string = people.emails_strings_to_user_ids_string(message.reply_to);
+    var user_ids = people.pm_with_user_ids(message);
+    if (!user_ids) {
+        return;
+    }
+
+    var user_ids_string = user_ids.join(',');
 
     if (!user_ids_string) {
         blueslip.warn('Unknown reply_to in message: ' + user_ids_string);
@@ -134,6 +138,7 @@ function add_message_metadata(message) {
     var sender = people.get_person_from_user_id(message.sender_id);
     if (sender) {
         message.sender_full_name = sender.full_name;
+        message.sender_email = sender.email;
     }
 
     switch (message.type) {
@@ -152,6 +157,7 @@ function add_message_metadata(message) {
         message.reply_to = util.normalize_recipients(
                 exports.get_pm_emails(message));
         message.display_reply_to = exports.get_pm_full_names(message);
+        message.pm_with_url = people.pm_with_url(message);
 
         exports.process_message_for_recent_private_messages(message);
         break;
@@ -218,7 +224,7 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new, local
 
             new_messages = _.map(new_messages, add_message_metadata);
             exports.add_messages(new_messages, msg_list, {messages_are_new: messages_are_new});
-            unread.process_visible();
+            unread_ui.process_visible();
             notifications.possibly_notify_new_messages_outside_viewport(new_messages, local_id);
             notifications.notify_messages_outside_current_search(elsewhere_messages);
         },
@@ -346,7 +352,7 @@ exports.update_messages = function update_messages(events) {
             message_list.narrowed.view.rerender_messages(msgs_to_rerender);
         }
     }
-    unread.update_unread_counts();
+    unread_ui.update_unread_counts();
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
 };
@@ -355,7 +361,7 @@ exports.update_messages = function update_messages(events) {
 // This function could probably benefit from some refactoring
 exports.do_unread_count_updates = function do_unread_count_updates(messages) {
     unread.process_loaded_messages(messages);
-    unread.update_unread_counts();
+    unread_ui.update_unread_counts();
     resize.resize_page_components();
 };
 
@@ -405,7 +411,7 @@ exports.insert_new_messages = function insert_new_messages(messages, local_id) {
         }
     }
 
-    unread.process_visible();
+    unread_ui.process_visible();
     notifications.received_messages(messages);
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();

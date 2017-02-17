@@ -52,10 +52,21 @@ function show_message_info_popover(element, id) {
                                      elt.closest(".message_row").find(".message_time"));
 
         var message = current_msg_list.get(id);
+        var sender = people.get_person_from_user_id(message.sender_id);
+        var sender_email;
+
+        if (sender) {
+            sender_email = sender.email;
+        } else {
+            blueslip.debug('Bad sender in message' + message.sender_id);
+            sender_email = message.sender_email;
+        }
+
         var args = {
             message:  message,
-            pm_with_uri: narrow.pm_with_uri(message.sender_email),
-            sent_by_uri: narrow.by_sender_uri(message.sender_email),
+            sender_email: sender_email,
+            pm_with_uri: narrow.pm_with_uri(sender_email),
+            sent_by_uri: narrow.by_sender_uri(sender_email),
             narrowed: narrow.active(),
         };
 
@@ -255,7 +266,7 @@ exports.hide_actions_popover = function () {
 exports.topic_ops = {
     mute: function (stream, topic) {
         popovers.hide_topic_sidebar_popover();
-        muting.mute_topic(stream, topic);
+        muting_ui.mute_topic(stream, topic);
         muting_ui.persist_and_rerender();
         muting_ui.notify_with_undo_option(stream, topic);
     },
@@ -264,7 +275,7 @@ exports.topic_ops = {
     // and miss out on info.
     unmute: function (stream, topic) {
         popovers.hide_topic_sidebar_popover();
-        muting.unmute_topic(stream, topic);
+        muting_ui.unmute_topic(stream, topic);
         muting_ui.persist_and_rerender();
     },
 };
@@ -416,7 +427,7 @@ exports.register_click_handlers = function () {
 
 
     $("body").on("click", ".actions_popover .reaction_button", function (e) {
-        var msgid = $(e.currentTarget).data('msgid');
+        var msgid = $(e.currentTarget).data('message-id');
         e.preventDefault();
         e.stopPropagation();
         // HACK: Because we need the popover to be based off an
@@ -534,7 +545,8 @@ exports.register_click_handlers = function () {
     });
 
     $('body').on('click', '.sender_info_popover .narrow_to_private_messages', function (e) {
-        var email = $(e.target).parents('ul').attr('data-email');
+        var user_id = $(e.target).parents('ul').attr('data-user-id');
+        var email = people.get_person_from_user_id(user_id).email;
         narrow.by('pm-with', email, {select_first_unread: true, trigger: 'user sidebar popover'});
         popovers.hide_message_info_popover();
         e.stopPropagation();
@@ -542,7 +554,8 @@ exports.register_click_handlers = function () {
     });
 
     $('body').on('click', '.sender_info_popover .narrow_to_messages_sent', function (e) {
-        var email = $(e.target).parents('ul').attr('data-email');
+        var user_id = $(e.target).parents('ul').attr('data-user-id');
+        var email = people.get_person_from_user_id(user_id).email;
         narrow.by('sender', email, {select_first_unread: true, trigger: 'user sidebar popover'});
         popovers.hide_message_info_popover();
         e.stopPropagation();
@@ -671,7 +684,7 @@ exports.register_click_handlers = function () {
         var topic = $(e.currentTarget).attr('data-topic-name');
         var stream = $(e.currentTarget).attr('data-stream-name');
         popovers.hide_topic_sidebar_popover();
-        unread.mark_topic_as_read(stream,topic);
+        unread_ui.mark_topic_as_read(stream, topic);
         e.stopPropagation();
     });
 
@@ -744,7 +757,22 @@ exports.register_click_handlers = function () {
     });
 
     $('body').on('click', '.respond_button', function (e) {
+        var textarea = $("#new_message_content");
+        var msgid = $(e.currentTarget).data("message-id");
+
         compose.respond_to_message({trigger: 'popover respond'});
+        channel.get({
+            url: '/json/messages/' + msgid,
+            idempotent: true,
+            success: function (data) {
+                if (textarea.val() === "") {
+                    textarea.val("```quote\n" + data.raw_content +"\n```\n");
+                } else {
+                    textarea.val(textarea.val() + "\n```quote\n" + data.raw_content +"\n```\n");
+                }
+                $("#new_message_content").trigger("autosize.resize");
+            },
+        });
         popovers.hide_actions_popover();
         e.stopPropagation();
         e.preventDefault();
@@ -763,14 +791,14 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
     $('body').on('click', '.popover_narrow_by_conversation_and_time', function (e) {
-        var msgid = $(e.currentTarget).data('msgid');
+        var msgid = $(e.currentTarget).data('message-id');
         popovers.hide_actions_popover();
         narrow.by_conversation_and_time(msgid, {trigger: 'popover'});
         e.stopPropagation();
         e.preventDefault();
     });
     $('body').on('click', '.popover_toggle_collapse', function (e) {
-        var msgid = $(e.currentTarget).data('msgid');
+        var msgid = $(e.currentTarget).data('message-id');
         var row = current_msg_list.get_row(msgid);
         var message = current_msg_list.get(rows.id(row));
 
@@ -788,7 +816,7 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
     $('body').on('click', '.popover_edit_message', function (e) {
-        var msgid = $(e.currentTarget).data('msgid');
+        var msgid = $(e.currentTarget).data('message-id');
         var row = current_msg_list.get_row(msgid);
         popovers.hide_actions_popover();
         message_edit.start(row);
@@ -809,7 +837,7 @@ exports.register_click_handlers = function () {
         var stream = $(e.currentTarget).data('msg-stream');
         var topic = $(e.currentTarget).data('msg-topic');
         popovers.hide_actions_popover();
-        muting.unmute_topic(stream, topic);
+        muting_ui.unmute_topic(stream, topic);
         muting_ui.persist_and_rerender();
         e.stopPropagation();
         e.preventDefault();
@@ -839,7 +867,7 @@ exports.register_click_handlers = function () {
     $('body').on('click', '.mark_stream_as_read', function (e) {
         var stream = $(e.currentTarget).parents('ul').attr('data-name');
         popovers.hide_stream_sidebar_popover();
-        unread.mark_stream_as_read(stream);
+        unread_ui.mark_stream_as_read(stream);
         e.stopPropagation();
     });
 

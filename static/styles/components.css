@@ -96,6 +96,7 @@
 }
 
 .new-style .button.white {
+    padding: 7px 14px;
     background-color: #fff;
     color: inherit;
     border: 1px solid #CCC;
@@ -145,11 +146,15 @@
 .new-style .tab-switcher .ind-tab {
     display: inline-block;
     width: 90px;
-    margin: 0px -2px;
+    margin: 0px -0.5px;
     text-align: center;
     padding: 3px 10px;
     background-color: #fff;
     cursor: pointer;
+}
+
+.new-style .tab-switcher.large .ind-tab {
+    width: 130px;
 }
 
 .new-style .tab-switcher .ind-tab:not(.selected) {
@@ -158,12 +163,15 @@
 
 .new-style .tab-switcher .ind-tab.first {
     border-radius: 5px 0px 0px 5px;
-    border-right: none;
+    border-right: 1px solid transparent;
 }
 
-.new-style .tab-switcher .ind-tab.second {
+.new-style .tab-switcher .ind-tab.middle {
+    border-right: 1px solid transparent;
+}
+
+.new-style .tab-switcher .ind-tab.last {
     border-radius: 0px 5px 5px 0px;
-    border-left: none;
 }
 
 .new-style .tab-switcher .ind-tab.selected {

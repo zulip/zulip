@@ -96,6 +96,12 @@ CACHES['database'] = {
     }
 }
 
+# Use local memory cache for backend tests.
+if not CASPER_TESTS:
+    CACHES['default'] = {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'
+    }
+
 # Enable file:/// hyperlink support by default in tests
 ENABLE_FILE_LINKS = True
 

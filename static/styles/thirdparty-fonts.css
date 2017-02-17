@@ -1,5 +1,5 @@
 /*!
- Software from "Font Awesome 3.0.2" CSS is Copyright (c) 2012-2013 Dave Gandy
+ Software from "Font Awesome 4.7.0" CSS is Copyright (c) 2015-2016 Dave Gandy
  and is provided under the following license:
  --
  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,7 +25,7 @@
 /*
  *  Portions of this file are under the following license:
  *
- *  Font Awesome 3.2.1
+ *  Font Awesome 4.7.0
  *  the iconic font designed for Bootstrap
  *
  *  License
@@ -47,11 +47,12 @@
 
 @font-face {
   font-family: 'FontAwesome';
-  src: url('../third/fontawesome/fontawesome-webfont.eot?v=3.2.1');
-  src: url('../third/fontawesome/fontawesome-webfont.eot?#iefix&v=3.2.1') format('embedded-opentype'),
-       url('../third/fontawesome/fontawesome-webfont.woff?v=3.2.1') format('woff'),
-       url('../third/fontawesome/fontawesome-webfont.ttf?v=3.2.1') format('truetype'),
-       url('../third/fontawesome/fontawesome-webfont.svg#fontawesomeregular?v=3.2.1') format('svg');
+  src: url('../third/fontawesome/fontawesome-webfont.eot?v=4.7.0');
+  src: url('../third/fontawesome/fontawesome-webfont.eot?#iefix&v=4.7.0') format('embedded-opentype'),
+       url('../third/fontawesome/fontawesome-webfont.woff?v=4.7.0') format('woff'),
+       url('../third/fontawesome/fontawesome-webfont.woff2?v=4.7.0') format('woff2'),
+       url('../third/fontawesome/fontawesome-webfont.ttf?v=4.7.0') format('truetype'),
+       url('../third/fontawesome/fontawesome-webfont.svg#fontawesomeregular?v=4.7.0') format('svg');
   font-weight: normal;
   font-style: normal;
 }

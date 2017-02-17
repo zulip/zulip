@@ -93,6 +93,16 @@ function populate_group_from_message_container(group, message_container) {
         group.match_subject = message_container.msg.match_subject;
         group.stream_url = message_container.stream_url;
         group.topic_url = message_container.topic_url;
+        var sub = stream_data.get_sub(message_container.msg.stream);
+        if (sub === undefined) {
+            // Hack to handle unusual cases like the tutorial where
+            // the streams used don't actually exist in the subs
+            // module.  Ideally, we'd clean this up by making the
+            // tutorial populate subs.js "properly".
+            group.stream_id = -1;
+        } else {
+            group.stream_id = sub.stream_id;
+        }
     } else if (group.is_private) {
         group.pm_with_url = message_container.pm_with_url;
         group.display_reply_to = message_store.get_pm_full_names(message_container.msg);
@@ -208,7 +218,7 @@ MessageListView.prototype = {
                                                      message_container.msg.subject);
                 } else {
                     message_container.pm_with_url =
-                        narrow.pm_with_uri(message_container.msg.reply_to);
+                        message_container.msg.pm_with_url;
                 }
             }
 
@@ -220,6 +230,8 @@ MessageListView.prototype = {
                 same_sender(prev, message_container)) {
                 message_container.include_sender = false;
             }
+
+            message_container.sender_is_bot = people.sender_is_bot(message_container.msg);
 
             self._add_msg_timestring(message_container);
 
@@ -400,6 +412,15 @@ MessageListView.prototype = {
         });
     },
 
+    _get_message_template: function MessageListView___get_message_template(message_container) {
+        var msg_reactions = reactions.get_message_reactions(message_container.msg);
+        message_container.msg.message_reactions = msg_reactions;
+        var msg_to_render = _.extend(message_container, {
+            table_name: this.table_name,
+        });
+        return templates.render('single_message', msg_to_render);
+    },
+
     render: function MessageListView__render(messages, where, messages_are_new) {
         // This function processes messages into chunks with separators between them,
         // and templates them to be inserted as table rows into the DOM.
@@ -506,12 +527,7 @@ MessageListView.prototype = {
         if (message_actions.rerender_messages.length > 0) {
             _.each(message_actions.rerender_messages, function (message_container) {
                 var old_row = self.get_row(message_container.msg.id);
-                var msg_reactions = reactions.get_message_reactions(message_container.msg);
-                message_container.msg.message_reactions = msg_reactions;
-                var msg_to_render = _.extend(message_container, {
-                    table_name: this.table_name,
-                });
-                var row = $(templates.render('single_message', msg_to_render));
+                var row = $(self._get_message_template(message_container));
                 self._post_process_dom_messages(row.get());
                 old_row.replaceWith(row);
                 condense.condense_and_collapse(row);
@@ -524,12 +540,7 @@ MessageListView.prototype = {
             last_message_row = table.find('.message_row:last').expectOne();
             last_group_row = rows.get_message_recipient_row(last_message_row);
             dom_messages = $(_.map(message_actions.append_messages, function (message_container) {
-                var msg_reactions = reactions.get_message_reactions(message_container.msg);
-                message_container.msg.message_reactions = msg_reactions;
-                var msg_to_render = _.extend(message_container, {
-                    table_name: this.table_name,
-                });
-                return templates.render('single_message', msg_to_render);
+                return self._get_message_template(message_container);
             }).join('')).filter('.message_row');
 
             self._post_process_dom_messages(dom_messages.get());
@@ -807,12 +818,7 @@ MessageListView.prototype = {
         this._add_msg_timestring(message_container);
         this._maybe_format_me_message(message_container);
 
-        var msg_reactions = reactions.get_message_reactions(message_container.msg);
-        message_container.msg.message_reactions = msg_reactions;
-        var msg_to_render = _.extend(message_container, {
-            table_name: this.table_name,
-        });
-        var rendered_msg = $(templates.render('single_message', msg_to_render));
+        var rendered_msg = $(this._get_message_template(message_container));
         this._post_process_dom_messages(rendered_msg.get());
         row.replaceWith(rendered_msg);
 

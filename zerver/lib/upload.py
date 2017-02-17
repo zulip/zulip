@@ -17,6 +17,7 @@ import boto3
 import botocore
 from mimetypes import guess_type, guess_extension
 
+from zerver.lib.str_utils import force_bytes, force_str
 from zerver.models import get_user_profile_by_email, get_user_profile_by_id
 from zerver.models import Attachment
 from zerver.models import Realm, UserProfile, Message
@@ -182,8 +183,10 @@ class S3UploadBackend(ZulipUploadBackend):
     def upload_message_image(self, uploaded_file_name, content_type, file_data, user_profile, target_realm=None):
         # type: (Text, Optional[Text], binary_type, UserProfile, Optional[Realm]) -> Text
         bucket_name = settings.S3_AUTH_UPLOADS_BUCKET
+        if target_realm is None:
+            target_realm = user_profile.realm
         s3_file_name = "/".join([
-            str(target_realm.id if target_realm is not None else user_profile.realm_id),
+            str(target_realm.id),
             random_name(18),
             sanitize_name(uploaded_file_name)
         ])
@@ -274,6 +277,7 @@ class S3UploadBackend(ZulipUploadBackend):
         s3_file_name = email_hash
 
         bucket_name = settings.S3_AVATAR_BUCKET
+
         client = boto3.client('s3',
                               aws_access_key_id=settings.S3_KEY,
                               aws_secret_access_key=settings.S3_SECRET_KEY)

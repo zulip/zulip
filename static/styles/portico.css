@@ -28,6 +28,28 @@
     -moz-border-radius: 0px;
 }
 
+.header {
+    padding: 6px 0px;
+}
+
+.header .stripes,
+.header .darker {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    top: 0px;
+
+    background: repeating-linear-gradient(
+      75deg,
+      rgba(255,255,255,0) 0px,
+      rgba(255,255,255,0.06) 200px
+    );
+}
+
+.header .darker {
+    background: -webkit-linear-gradient(top left, transparent , rgba(0,0,0,0.3));
+}
+
 .navbar.footer .nav > li {
     line-height: 56px;
 }
@@ -55,6 +77,9 @@ body {
     height: 100%;
     font-weight: 300;
     font-size: 17px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-shadow: 0 0 0;
 }
 
 .markdown h1[id]:before,
@@ -337,21 +362,41 @@ input.text-error {
 }
 
 .header, .footer {
-    position: fixed;
+    position: absolute;
     z-index: 100;
     width: 100%;
-    background-color: #7e98ad;
+    background-color: #52c2af;
 }
 
 .footer {
-    position: static;
+    margin: 30px 0px 10px 0px;
     height: 54px;
+    background-color: transparent;
 }
 
 .header-main .logo {
     display: block;
     text-decoration: none;
     position: relative;
+    line-height: 0.8;
+ }
+
+ .header-main .logo .brand-logo {
+     width: 25px;
+     margin-top: 3px;
+ }
+
+ .header-main .logo span {
+     display: inline-block;
+     vertical-align: top;
+     margin-top: 8px;
+     margin-left: 10px;
+
+     color: #fff;
+     font-size: 1.2rem;
+     font-weight: 600;
+     letter-spacing: 0.1em;
+     text-transform: uppercase;
  }
 
  .header-main .portico-logo {
@@ -525,7 +570,7 @@ a.bottom-signup-button {
 .register-page-container,
 .portico-page-container,
 .api-page-container {
-    padding-top: 40px !important;
+    padding-top: 50px !important;
 }
 
 .portico-page-container,
@@ -705,7 +750,7 @@ a.bottom-signup-button {
 .authors-page-header,
 .feature-page-header,
 .integrations-page-header {
-    padding-top: 40px;
+    padding-top: 56px;
 }
 
 .apps-page-header,
@@ -895,7 +940,7 @@ a.bottom-signup-button {
 }
 
 .portico-os-announcement {
-    padding-top: 40px;
+    padding-top: 56px;
 }
 
 .main-headline-logo {
@@ -951,6 +996,10 @@ a.bottom-signup-button {
     position: relative;
 }
 
+.footer-main {
+    text-align: center;
+}
+
 .hello-main {
     max-width: none;
     min-width: 0;
@@ -961,10 +1010,6 @@ a.bottom-signup-button {
     height: 54px;
 }
 
-.footer-main {
-    font-weight: 300;
-}
-
 .footer-navigation {
     list-style: none;
     padding-top: 16px;
@@ -973,11 +1018,15 @@ a.bottom-signup-button {
 .footer-navigation li, .footer-navigation li a {
     display: inline-block;
     vertical-align: middle;
-    color: black;
+    color: #888;
+    font-size: 0.9em;
+    font-weight: 400;
+    cursor: pointer;
 }
 
-.footer-navigation li a:hover {
-    color: black;
+.footer-navigation li:hover a {
+    color: #444;
+    text-decoration: none;
 }
 
 .little-bullet {
@@ -1000,20 +1049,21 @@ a.bottom-signup-button {
 
 .top-links a {
     display: inline-block;
-    padding-top: 10px;
-    padding-right: 10px;
-    color: black;
-    font-weight: 300;
+    color: #fff;
+    padding: 2px 7px 1px 8px;
+    font-weight: 600;
     font-size: 16px;
-    margin-left: 10px;
    -moz-transition: all 0.2s ease-in;
    -webkit-transition: all 0.2s ease-in;
    -o-transition: all 0.2s ease-in;
     transition: all 0.2s ease-in;
+    border-radius: 4px;
 }
 
 .top-links a:hover {
-    color: black;
+    text-decoration: none;
+    background-color: rgba(255,255,255,1);
+    color: #339a89;
 }
 
 .centered-button {
@@ -1140,7 +1190,7 @@ a.bottom-signup-button {
 /* -- markdown styling -- */
 
 .markdown {
-    width: 800px;
+    max-width: 800px;
     margin: 20px auto;
     padding: 20px;
 
@@ -1157,6 +1207,21 @@ a.bottom-signup-button {
 .markdown a {
     color: #399993;
     font-weight: 600;
+}
+
+.markdown .back-to-home {
+    float: right;
+    margin-top: 13px;
+}
+
+.markdown .back-to-home .icon-vector-chevron-left {
+    position: relative;
+    top: 1px;
+    margin-right: 5px;
+}
+
+.markdown .back-to-home a:hover {
+    text-decoration: none;
 }
 
 .markdown strong {
@@ -1383,7 +1448,7 @@ a.bottom-signup-button {
   }
 
   .header {
-      padding: 0;
+      padding: 4px 0px 6px 0px;
   }
 
   .header-main {
@@ -1396,11 +1461,6 @@ a.bottom-signup-button {
 
   .app-main {
       padding: 0px;
-  }
-
-  .footer {
-      position: fixed;
-      bottom: 0px;
   }
 
   .main-headline-text .tagline {

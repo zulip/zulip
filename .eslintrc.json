@@ -135,7 +135,6 @@
         "no-new-func": "error",
         "space-before-function-paren": ["error", { "anonymous": "always", "named": "never", "asyncArrow": "always" }],
         "no-param-reassign": 0,
-        "prefer-spread": "error",
         "arrow-spacing": ["error", { "before": true, "after": true }],
         "no-alert": 2,
         "no-array-constructor": 2,

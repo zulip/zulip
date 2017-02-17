@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from __future__ import print_function
+from __future__ import absolute_import
 
 import optparse
 import os
@@ -11,6 +12,10 @@ import time
 import traceback
 
 from six.moves.urllib.parse import urlunparse
+
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
 
 from tornado import httpclient
 from tornado import httputil
@@ -129,10 +134,22 @@ if options.clear_memcached:
 # and all of the processes they spawn.
 os.setpgrp()
 
+# Save pid of parent process to the pid file. It can be used later by
+# tools/stop-run-dev to kill the server without having to find the
+# terminal in question.
+pid_file_path = os.path.join(os.path.join(os.getcwd(), 'var/run/run_dev.pid'))
+
+# Required for compatibility python versions.
+if not os.path.exists(os.path.dirname(pid_file_path)):
+    os.makedirs(os.path.dirname(pid_file_path))
+pid_file = open(pid_file_path, 'w+')
+pid_file.write(str(os.getpgrp()) + "\n")
+pid_file.close()
+
 # Pass --nostatic because we configure static serving ourselves in
 # zulip/urls.py.
 cmds = [['./tools/compile-handlebars-templates', 'forever'],
-        ['./manage.py', 'rundjango'] +
+        ['./manage.py', 'runserver'] +
         manage_args + ['127.0.0.1:%d' % (django_port,)],
         ['env', 'PYTHONUNBUFFERED=1', './manage.py', 'runtornado'] +
         manage_args + ['127.0.0.1:%d' % (tornado_port,)],
@@ -388,3 +405,5 @@ except:
 finally:
     # Kill everything in our process group.
     os.killpg(0, signal.SIGTERM)
+    # Remove pid file when development server closed correctly.
+    os.remove(pid_file_path)

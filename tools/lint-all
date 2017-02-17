@@ -10,14 +10,12 @@ import optparse
 import subprocess
 import traceback
 
-try:
-    import lister
-    from typing import cast, Any, Callable, Dict, Iterator, List, Optional, Tuple
-except ImportError as e:
-    print("ImportError: {}".format(e))
-    print("You need to run the Zulip linters inside a Zulip dev environment.")
-    print("If you are using Vagrant, you can `vagrant ssh` to enter the Vagrant guest.")
-    sys.exit(1)
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+
+import lister
+from typing import cast, Any, Callable, Dict, Iterator, List, Optional, Tuple
 
 # Exclude some directories and files from lint checking
 EXCLUDED_FILES = [
@@ -138,6 +136,8 @@ def check_pep8(files):
         # Fixing these would probably reduce readability in most cases.
         'E731',
     ]
+    if len(files) == 0:
+        return False
     pep8 = subprocess.Popen(
         ['pycodestyle'] + files + ['--ignore={rules}'.format(rules=','.join(ignored_rules))],
         stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
@@ -326,6 +326,8 @@ def build_custom_checkers(by_lang):
         {'pattern': "^\s+[#]\w",
          'strip': '\n',
          'description': 'Missing whitespace after "#"'},
+        {'pattern': "assertEquals[(]",
+         'description': 'Use assertEqual, not assertEquals (which is deprecated).'},
         {'pattern': "== None",
          'exclude': 'tools/lint-all',
          'description': 'Use `is None` to check whether something is None'},
@@ -368,6 +370,7 @@ def build_custom_checkers(by_lang):
              ('zerver/middleware.py',
               'return json_error(exception.to_json_error_msg(), status=status_code)'),
              ('zerver/tornado/views.py', 'return json_error(result["message"])'),
+             ('zerver/views/compatibility.py', 'return json_error("Client is too old")'),
              ('zerver/views/invite.py',
               'return json_error(data=error_data, msg=ret_error)'),
              ('zerver/views/streams.py', 'return json_error(property_conversion)'),
@@ -539,10 +542,10 @@ def build_custom_checkers(by_lang):
                 failed = True
 
         markdown_docs_length_exclude = {
-            "contrib_bots/bots/converter/docs.md",
+            "contrib_bots/bots/converter/readme.md",
             "docs/bots-guide.md",
             "docs/dev-env-first-time-contributors.md",
-            "docs/integration-guide.md",
+            "docs/webhook-walkthrough.md",
             "docs/life-of-a-request.md",
             "docs/logging.md",
             "docs/migration-renumbering.md",

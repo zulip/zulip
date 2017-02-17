@@ -1,4 +1,4 @@
-# Editing past messages
+# Edit or delete a message
 
 !!! warn ""
     **Note:** Editing topic titles is discussed in a
@@ -19,7 +19,7 @@ the **Save** button to save the changes you made to your message.
     **Note:** After you have edited a message, the message is publicly marked as
     `(EDITED)`.
 
-## Time Limit
+## Message editing time limit
 
 Depending on your organization settings, Zulip may be configured with a time
 limit within which you may edit a message (e.g. 10 minutes). As soon as that
@@ -31,7 +31,7 @@ changes to a file (<i class="icon-vector-file-text-alt"></i>) icon.
     view the [Markdown source](/help/view-the-markdown-source-of-a-message) or
     [change the topic](/help/change-the-topic-of-a-message) of your message.
 
-## Deleting Messages
+## Deleting messages
 
 You cannot entirely delete a message. When you remove the contents of a message,
 your message contents will be replaced with `(deleted)`; the original sender and

@@ -79,8 +79,6 @@ else:
     logging.info("Installing static assets...")
     subprocess.check_call(["cp", "-rT", os.path.join(deploy_path, 'prod-static/serve'),
                            '/home/zulip/prod-static'], preexec_fn=su_to_zulip)
-    # Sets up npm cache
-    setup_node_modules(npm_args=['--production'], copy_modules=True)
 
 # Our next optimization is to check whether any migrations are needed
 # before we start the critical section of the restart.  This saves

@@ -87,10 +87,12 @@ Components
 
   ![architecture-simple](images/architecture_simple.png)
 
-### Tornado and Django
+### Django and Tornado
 
-We use both the [Tornado](http://www.tornadoweb.org) and
-[Django](https://www.djangoproject.com/) Python web frameworks.
+Zulip is primarily implemented in the
+[Django](https://www.djangoproject.com/) Python web framework.  We
+also make use of [Tornado](http://www.tornadoweb.org) for the
+real-time push system.
 
 Django is the main web application server; Tornado runs the
 server-to-client real-time push system. The app servers are configured
@@ -113,6 +115,10 @@ The parts that are activated relatively rarely (e.g. when people type or
 click on something) are processed by the Django application server. One
 exception to this is that Zulip uses websockets through Tornado to
 minimize latency on the code path for **sending** messages.
+
+There is detailed documentation on the
+[real-time push and event queue system](events-system.html); most of
+the code is in `zerver/tornado`.
 
 ### nginx
 
@@ -198,12 +204,10 @@ and the Tornado push system.
 
 Two simple wrappers around `pika` (the Python RabbitMQ client) are in
 `zulip/zerver/lib/queue.py`. There's an asynchronous client for use in
-Tornado and a more general client for use elsewhere.
-
-`zerver/tornado/event_queue.py` has helper functions for putting
-events into one queue or another. Most of the processes started by
-Supervisor are queue processors that continually pull things out of a
-RabbitMQ queue and handle them.
+Tornado and a more general client for use elsewhere.  Most of the
+processes started by Supervisor are queue processors that continually
+pull things out of a RabbitMQ queue and handle them; they are defined
+in `zerver/worker/queue_processors.py`.
 
 Also see [the queuing guide](queuing.html).
 

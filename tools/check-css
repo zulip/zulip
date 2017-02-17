@@ -6,14 +6,9 @@ import os
 import sys
 import glob
 
-try:
-    import lister
-    from typing import cast, Callable, Dict, Iterable, List
-except ImportError as e:
-    print("ImportError: {}".format(e))
-    print("You need to run the Zulip linters inside a Zulip dev environment.")
-    print("If you are using Vagrant, you can `vagrant ssh` to enter the Vagrant guest.")
-    sys.exit(1)
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
 
 def validate(fn):
     # type: (str) -> None

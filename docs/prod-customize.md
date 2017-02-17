@@ -58,24 +58,17 @@ using topics:
 * You can edit topics to fix a thread that's already been started,
   which can be helpful when onboarding new batches of users to the platform.
 
-Third, setting default streams for new users is a great way to get
-new users involved in conversations before they've accustomed
-themselves with joining streams on their own. You can use the
-[`set_default_streams`](https://github.com/zulip/zulip/blob/master/zerver/management/commands/set_default_streams.py)
-command to set default streams for users within a realm:
-
-```
-./manage.py set_default_streams --domain=example.com --streams=foo,bar,...
-```
+Third, setting default streams for new users is a great way to get new
+users involved in conversations before they've accustomed themselves
+with joining streams on their own.  You can do so on the
+`/administration` page (get there from the gear menu).
 
 ## Notification settings
 
 Zulip gives you a great deal of control
 over which messages trigger desktop notifications; you can configure
 these extensively in the `/#settings` page (get there from the gear
-menu).  If you find the desktop notifications annoying, consider
-changing the settings to only trigger desktop notifications when you
-receive a PM or are @-mentioned.
+menu).
 
 ## Mobile and desktop apps
 
@@ -101,14 +94,13 @@ Hotkeys, emoji, search filters, @-mentions, etc.  Zulip has lots of
 great features; make sure your team knows they exist and how to use
 them effectively.
 
-## Enjoy your Zulip installation!  
+## Enjoy your Zulip installation!
 
-If you discover things that you
-wish had been documented, please contribute documentation suggestions
-either via a GitHub issue or pull request; we love even small
-contributions, and we'd love to make the Zulip documentation cover
-everything anyone might want to know about running Zulip in
-production.
+If you discover things that you wish had been documented, please
+contribute documentation suggestions either via a GitHub issue or pull
+request; we love even small contributions, and we'd love to make the
+Zulip documentation cover everything anyone might want to know about
+running Zulip in production.
 
 Next: [Maintaining and upgrading Zulip in
 production](prod-maintain-secure-upgrade.html).

@@ -1361,10 +1361,10 @@ def import_uploads_s3(bucket_name, import_dir, processing_avatars=False):
             logging.info("Uploaded by ID mapped user: %s!" % (user_profile_id,))
             user_profile_id = id_maps["user_profile"][user_profile_id]
         user_profile = get_user_profile_by_id(user_profile_id)
+        
         key.put(Metadata={"user_profile_id": str(user_profile.id), "realm_id": str(user_profile.realm_id),
                 "orig_last_modified": record['last_modified']})
         key.put(Body=open(os.path.join(import_dir, record['path']), 'rb'), ContentType=record['content_type'])
-
 
 def import_uploads(import_dir, processing_avatars=False):
     # type: (Path, bool) -> None

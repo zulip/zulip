@@ -125,6 +125,14 @@ function render_bots() {
     });
 }
 
+exports.update_email = function (new_email) {
+    var email_input = $('#email_value');
+
+    if (email_input) {
+        email_input.text(new_email);
+    }
+};
+
 exports.generate_zuliprc_uri = function (email, api_key) {
     var data = settings.generate_zuliprc_content(email, api_key);
 
@@ -149,6 +157,17 @@ function _setup_page() {
     // at page load. This promise will be resolved with a list of streams after
     // the first settings page load. build_stream_list then adds a callback to
     // the promise, which in most cases will already be resolved.
+
+    var tab = (function () {
+        var tab = false;
+        var hash_sequence = window.location.hash.split(/\//);
+        if (/#*(settings)/.test(hash_sequence[0])) {
+            tab = hash_sequence[1];
+            return tab || "your-account";
+        }
+        return tab;
+    }());
+
     if (_streams_deferred.state() !== "resolved") {
         channel.get({
             url: '/json/streams',
@@ -173,7 +192,7 @@ function _setup_page() {
         zuliprc: 'zuliprc',
     });
 
-    $("#settings").html(settings_tab);
+    $(".settings-box").html(settings_tab);
     $("#settings-status").hide();
     $("#notify-settings-status").hide();
     $("#display-settings-status").hide();
@@ -185,6 +204,10 @@ function _setup_page() {
     $("#get_api_key_box").hide();
     $("#show_api_key_box").hide();
     $("#api_key_button_box").show();
+
+    if (tab) {
+        exports.launch_page(tab);
+    }
 
     function clear_password_change() {
         // Clear the password boxes so that passwords don't linger in the DOM
@@ -211,7 +234,13 @@ function _setup_page() {
         if (page_params.password_auth_enabled !== false) {
             // zxcvbn.js is pretty big, and is only needed on password
             // change, so load it asynchronously.
-            $.getScript('/static/node_modules/zxcvbn/dist/zxcvbn.js', function () {
+            var zxcvbn_path = '/static/min/zxcvbn.js';
+            if (page_params.development_environment) {
+                // Usually the Django templates handle this path stuff
+                // for us, but in this case we need to hardcode it.
+                zxcvbn_path = '/static/node_modules/zxcvbn/dist/zxcvbn.js';
+            }
+            $.getScript(zxcvbn_path, function () {
                 $('#pw_strength .bar').removeClass("fade");
             });
         }
@@ -457,10 +486,14 @@ function _setup_page() {
         });
     });
 
+    $("#default_language_modal [data-dismiss]").click(function () {
+      $("#default_language_modal").fadeOut(300);
+    });
+
     $("#default_language_modal .language").click(function (e) {
         e.preventDefault();
         e.stopPropagation();
-        $('#default_language_modal').modal('hide');
+        $('#default_language_modal').fadeOut(300);
 
         var data = {};
         var $link = $(e.target).closest("a[data-code]");
@@ -489,7 +522,7 @@ function _setup_page() {
     $('#default_language').on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        $('#default_language_modal').modal('show');
+        $('#default_language_modal').show().attr('aria-hidden', false);
     });
 
     $("#user_deactivate_account_button").on('click', function (e) {
@@ -827,6 +860,17 @@ exports.setup_page = function () {
 
 exports.update_page = function () {
     i18n.ensure_i18n(_update_page);
+};
+
+exports.launch_page = function (tab) {
+    var $active_tab = $("#settings_overlay_container li[data-section='" + tab + "']");
+
+    if (!$active_tab.hasClass("admin")) {
+        $(".sidebar .ind-tab[data-name='settings']").click();
+    }
+
+    $("#settings_overlay_container").addClass("show");
+    $active_tab.click();
 };
 
 return exports;

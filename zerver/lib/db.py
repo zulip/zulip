@@ -13,7 +13,7 @@ ParamsT = Union[Iterable[Any], Mapping[Text, Any]]
 # Similar to the tracking done in Django's CursorDebugWrapper, but done at the
 # psycopg2 cursor level so it works with SQLAlchemy.
 def wrapper_execute(self, action, sql, params=()):
-    # type: (CursorObj, Callable[[NonBinaryStr, Optional[ParamsT]], CursorObj], NonBinaryStr, ParamsT) -> CursorObj
+    # type: (CursorObj, Callable[[NonBinaryStr, Optional[ParamsT]], CursorObj], NonBinaryStr, Optional[ParamsT]) -> CursorObj
     start = time.time()
     try:
         return action(sql, params)

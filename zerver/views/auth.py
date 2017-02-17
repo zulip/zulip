@@ -325,6 +325,19 @@ def log_into_subdomain(request):
     return login_or_register_remote_user(request, email_address, user_profile,
                                          full_name, invalid_subdomain)
 
+def get_dev_users(extra_users_count=10):
+    # type: (int) -> List[UserProfile]
+    # Development environments usually have only a few users, but
+    # it still makes sense to limit how many extra users we render to
+    # support performance testing with DevAuthBackend.
+    users_query = UserProfile.objects.select_related().filter(is_bot=False, is_active=True)
+    shakespearian_users = users_query.exclude(email__startswith='extrauser').order_by('email')
+    extra_users = users_query.filter(email__startswith='extrauser').order_by('email')
+    # Limit the number of extra users we offer by default
+    extra_users = extra_users[0:extra_users_count]
+    users = list(shakespearian_users) + list(extra_users)
+    return users
+
 def login_page(request, **kwargs):
     # type: (HttpRequest, **Any) -> HttpResponse
     if request.user.is_authenticated():
@@ -335,12 +348,7 @@ def login_page(request, **kwargs):
 
     extra_context = kwargs.pop('extra_context', {})
     if dev_auth_enabled():
-        # Development environments usually have only a few users, but
-        # it still makes sense to limit how many users we render to
-        # support performance testing with DevAuthBackend.
-        MAX_DEV_BACKEND_USERS = 100
-        users_query = UserProfile.objects.select_related().filter(is_bot=False, is_active=True)
-        users = users_query.order_by('email')[0:MAX_DEV_BACKEND_USERS]
+        users = get_dev_users()
         extra_context['direct_admins'] = [u.email for u in users if u.is_realm_admin]
         extra_context['direct_users'] = [
             u.email for u in users
@@ -410,9 +418,7 @@ def api_dev_get_emails(request):
     # type: (HttpRequest) -> HttpResponse
     if not dev_auth_enabled() or settings.PRODUCTION:
         return json_error(_("Dev environment not enabled."))
-    MAX_DEV_BACKEND_USERS = 100 # type: int
-    users_query = UserProfile.objects.select_related().filter(is_bot=False, is_active=True)
-    users = users_query.order_by('email')[0:MAX_DEV_BACKEND_USERS]
+    users = get_dev_users()
     return json_success(dict(direct_admins=[u.email for u in users if u.is_realm_admin],
                              direct_users=[u.email for u in users if not u.is_realm_admin]))
 

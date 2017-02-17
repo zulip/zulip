@@ -6,7 +6,10 @@ from typing import Any
 from argparse import ArgumentParser
 from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand
-from zerver.models import Realm, RealmAlias, get_realm, can_add_alias
+from django.db.utils import IntegrityError
+from django.utils.translation import ugettext as _
+from zerver.models import get_realm, can_add_alias, \
+    Realm, RealmAlias
 from zerver.lib.actions import get_realm_aliases
 from zerver.lib.domains import validate_domain
 import sys
@@ -26,6 +29,11 @@ class Command(BaseCommand):
                             type=str,
                             default="show",
                             help='What operation to do (add, show, remove).')
+        parser.add_argument('--allow-subdomains',
+                            dest='allow_subdomains',
+                            action="store_true",
+                            default=False,
+                            help='Whether subdomains are allowed or not.')
         parser.add_argument('alias', metavar='<alias>', type=str, nargs='?',
                             help="alias to add or remove")
 
@@ -35,7 +43,10 @@ class Command(BaseCommand):
         if options["op"] == "show":
             print("Aliases for %s:" % (realm.domain,))
             for alias in get_realm_aliases(realm):
-                print(alias["domain"])
+                if alias["allow_subdomains"]:
+                    print(alias["domain"] + " (subdomains allowed)")
+                else:
+                    print(alias["domain"] + " (subdomains not allowed)")
             sys.exit(0)
 
         domain = options['alias'].strip().lower()
@@ -45,14 +56,23 @@ class Command(BaseCommand):
             print(e.messages[0])
             sys.exit(1)
         if options["op"] == "add":
-            if not can_add_alias(domain):
-                print("A Realm already exists for this domain, cannot add it as an alias for another realm!")
+            try:
+                if not can_add_alias(domain):
+                    print(_("The domain %(domain)s belongs to another organization.") % {'domain': domain})
+                    sys.exit(1)
+                RealmAlias.objects.create(realm=realm, domain=domain,
+                                          allow_subdomains=options["allow_subdomains"])
+                sys.exit(0)
+            except IntegrityError:
+                print(_("The domain %(domain)s is already a part of your organization.") % {'domain': domain})
                 sys.exit(1)
-            RealmAlias.objects.create(realm=realm, domain=domain)
-            sys.exit(0)
         elif options["op"] == "remove":
-            RealmAlias.objects.get(realm=realm, domain=domain).delete()
-            sys.exit(0)
+            try:
+                RealmAlias.objects.get(realm=realm, domain=domain).delete()
+                sys.exit(0)
+            except RealmAlias.DoesNotExist:
+                print("No such entry found!")
+                sys.exit(1)
         else:
             self.print_help("./manage.py", "realm_alias")
             sys.exit(1)

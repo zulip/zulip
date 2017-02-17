@@ -18,13 +18,15 @@ Contents:
 * [Troubleshooting & Common Errors](#troubleshooting-common-errors)
 * [Specifying a proxy](#specifying-a-proxy)
 
-**If you encounter errors installing the Zulip development environment,** check
-[Troubleshooting & Common Errors](#troubleshooting-common-errors). If that
-doesn't help, please visit [the `provision` stream in the Zulip developers'
-chat](https://chat.zulip.org/#narrow/stream/provision) for real-time help, or
-send a note to the [Zulip-devel Google
-group](https://groups.google.com/forum/#!forum/zulip-devel) or [file an
-issue](https://github.com/zulip/zulip/issues).
+**If you encounter errors installing the Zulip development
+environment,** check
+[Troubleshooting & Common Errors](#troubleshooting-common-errors). If
+that doesn't help, please visit
+[#provision help](https://chat.zulip.org/#narrow/stream/provision.20help)
+in the [Zulip development community server](chat-zulip-org.html) for
+real-time help, send a note to the
+[Zulip-devel Google group](https://groups.google.com/forum/#!forum/zulip-devel)
+or [file an issue](https://github.com/zulip/zulip/issues).
 
 When reporting your issue, please include the following information:
 
@@ -282,8 +284,9 @@ without provisioning after the first time).  Other common issues are
 documented in the
 [Troubleshooting & Common Errors](#troubleshooting-common-errors)
 section.  If that doesn't help, please visit
-[the `provision` stream in the Zulip developers' chat](https://chat.zulip.org/#narrow/stream/provision)
-for real-time help.
+[#provision help](https://chat.zulip.org/#narrow/stream/provision.20help)
+in the [Zulip development community server](chat-zulip-org.html) for
+real-time help.
 
 On Windows, you will see `The system cannot find the path specified.` message
 several times. This is expected behavior and is not an error.
@@ -449,7 +452,8 @@ After provisioning, you'll want to
 [(re)start the Zulip development server](#step-3-start-the-development-environment).
 
 If you run into any trouble, the
-[provision stream on chat.zulip.org](https://chat.zulip.org/#narrow/stream/provision)
+[#provision help](https://chat.zulip.org/#narrow/stream/provision.20help)
+in the [Zulip development community server](chat-zulip-org.html) for
 is a great place to ask for help.
 
 #### Rebuilding the development environment
@@ -461,6 +465,14 @@ using `vagrant destroy` and then `vagrant up`.  This will usually be
 much faster than the original `vagrant up` since the base image is
 already cached on your machine (it takes about 5 minutes to run with a
 fast Internet connection).
+
+Any additional programs (e.g. Zsh, emacs, etc.) or configuration that
+you may have installed in the development environment will be lost
+when you recreate it.  To address this, you can create a script called
+`tools/custom_provision` in your Zulip Git checkout; and place any
+extra setup commands there.  Vagrant will run `tools/custom_provision`
+every time you run `vagrant provision` (or create a Vagrant guest via
+`vagrant up`).
 
 #### Shutting down the development environment for use later
 
@@ -535,11 +547,11 @@ Below you'll find a list of common errors and their solutions.
 If these solutions aren't working for you or you encounter an issue not
 documented below, there are a few ways to get further help:
 
-* visit [the `provision` stream in the Zulip developers'
-  chat](https://chat.zulip.org/#narrow/stream/provision) for real-time help,
+* Ask in [#provision help](https://chat.zulip.org/#narrow/stream/provision.20help)
+  in the [Zulip development community server](chat-zulip-org.html),
 * send a note to the [Zulip-devel Google
   group](https://groups.google.com/forum/#!forum/zulip-devel), or
-* [file an issue](https://github.com/zulip/zulip/issues).
+* [File an issue](https://github.com/zulip/zulip/issues).
 
 When reporting your issue, please include the following information:
 

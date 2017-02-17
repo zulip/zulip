@@ -103,10 +103,13 @@ def report(state, timestamp, msg=None):
     now = int(time.time())
     if msg is None:
         msg = "send time was %s" % (timestamp,)
-    with open("/var/lib/nagios_state/check_send_receive_state.tmp", 'w') as f:
+    if options.websocket:
+        state_file_path = "/var/lib/nagios_state/check_send_receive_websockets_state"
+    else:
+        state_file_path = "/var/lib/nagios_state/check_send_receive_state"
+    with open(state_file_path + ".tmp", 'w') as f:
         f.write("%s|%s|%s|%s\n" % (now, states[state], state, msg))
-    subprocess.check_call(["mv", "/var/lib/nagios_state/check_send_receive_state.tmp",
-                           "/var/lib/nagios_state/check_send_receive_state"])
+    subprocess.check_call(["mv", state_file_path + ".tmp", state_file_path])
     print("%s: %s" % (state, msg))
     exit(states[state])
 

@@ -1,6 +1,8 @@
 # Default configuration for a Zulip app frontend
 class zulip::app_frontend {
   include zulip::app_frontend_base
+  # For a single-server setup, run analytics on that server
+  include zulip::analytics
 
   file { "/etc/nginx/sites-available/zulip-enterprise":
     require => Package["nginx-full"],
@@ -41,13 +43,5 @@ class zulip::app_frontend {
     group  => "root",
     mode => 644,
     source => "puppet:///modules/zulip/cron.d/restart-zulip",
-  }
-  # This should only be enabled on exactly 1 Zulip server in a cluster.
-  file { "/etc/cron.d/update-analytics-counts":
-    ensure => file,
-    owner  => "root",
-    group  => "root",
-    mode => 644,
-    source => "puppet:///modules/zulip/cron.d/update-analytics-counts",
   }
 }

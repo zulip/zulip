@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# See http://zulip.readthedocs.io/en/latest/events-system.html for
+# high-level documentation on how this system works.
 from __future__ import absolute_import
 from typing import Any, Callable, Optional
 
@@ -12,7 +14,6 @@ from zerver.models import (
 )
 
 from zerver.lib.actions import (
-    apply_events,
     bulk_remove_subscriptions,
     do_add_alert_words,
     check_add_realm_emoji,
@@ -59,9 +60,11 @@ from zerver.lib.actions import (
     do_change_enable_digest_emails,
     do_add_realm_alias,
     do_remove_realm_alias,
+)
+from zerver.lib.events import (
+    apply_events,
     fetch_initial_state_data,
 )
-
 from zerver.lib.message import render_markdown
 from zerver.lib.test_helpers import POSTRequestMock, get_subscription
 from zerver.lib.test_classes import (
@@ -298,7 +301,7 @@ class EventsRegisterTest(ZulipTestCase):
         return events
 
     def assert_on_error(self, error):
-        # type: (str) -> None
+        # type: (Optional[str]) -> None
         if error:
             raise AssertionError(error)
 
@@ -819,10 +822,11 @@ class EventsRegisterTest(ZulipTestCase):
             ('op', equals('add')),
             ('alias', check_dict([
                 ('domain', check_string),
+                ('allow_subdomains', check_bool),
             ])),
         ])
         realm = get_realm('zulip')
-        events = self.do_test(lambda: do_add_realm_alias(realm, 'zulip.org'))
+        events = self.do_test(lambda: do_add_realm_alias(realm, 'zulip.org', False))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
@@ -832,7 +836,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('domain', check_string),
         ])
         alias = RealmAlias.objects.get(realm=realm, domain='zulip.org')
-        events = self.do_test(lambda: do_remove_realm_alias(realm, alias.domain))
+        events = self.do_test(lambda: do_remove_realm_alias(alias))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 

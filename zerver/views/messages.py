@@ -358,7 +358,7 @@ def get_search_fields(rendered_content, subject, content_matches, subject_matche
                 match_subject=highlight_string(escape_html(subject), subject_matches))
 
 def narrow_parameter(json):
-    # type: (str) -> List[Dict[str, Any]]
+    # type: (str) -> Optional[List[Dict[str, Any]]]
 
     # FIXME: A hack to support old mobile clients
     if json == '{}':
@@ -419,7 +419,7 @@ def is_public_stream(stream_name, realm):
 
 
 def ok_to_include_history(narrow, realm):
-    # type: (Iterable[Dict[str, Any]], Realm) -> bool
+    # type: (Optional[Iterable[Dict[str, Any]]], Realm) -> bool
 
     # There are occasions where we need to find Message rows that
     # have no corresponding UserMessage row, because the user is
@@ -454,7 +454,7 @@ def get_stream_name_from_narrow(narrow):
     return None
 
 def exclude_muting_conditions(user_profile, narrow):
-    # type: (UserProfile, Iterable[Dict[str, Any]]) -> List[Selectable]
+    # type: (UserProfile, Optional[Iterable[Dict[str, Any]]]) -> List[Selectable]
     conditions = []
     stream_name = get_stream_name_from_narrow(narrow)
 
@@ -716,7 +716,7 @@ def update_message_flags(request, user_profile,
                          'msg': ''})
 
 def create_mirrored_message_users(request, user_profile, recipients):
-    # type: (HttpResponse, UserProfile, Iterable[Text]) -> Tuple[bool, UserProfile]
+    # type: (HttpResponse, UserProfile, Iterable[Text]) -> Tuple[bool, Optional[UserProfile]]
     if "sender" not in request.POST:
         return (False, None)
 
@@ -766,6 +766,8 @@ def same_realm_zephyr_user(user_profile, email):
 
     domain = email_to_domain(email)
 
+    # Assumes allow_subdomains=False for all RealmAlias's corresponding to
+    # these realms.
     return user_profile.realm.is_zephyr_mirror_realm and \
         RealmAlias.objects.filter(realm=user_profile.realm, domain=domain).exists()
 
@@ -781,6 +783,8 @@ def same_realm_irc_user(user_profile, email):
 
     domain = email_to_domain(email).replace("irc.", "")
 
+    # Assumes allow_subdomains=False for all RealmAlias's corresponding to
+    # these realms.
     return RealmAlias.objects.filter(realm=user_profile.realm, domain=domain).exists()
 
 def same_realm_jabber_user(user_profile, email):
@@ -794,6 +798,8 @@ def same_realm_jabber_user(user_profile, email):
     # Zulip users, this is where you would do any translation.
     domain = email_to_domain(email)
 
+    # Assumes allow_subdomains=False for all RealmAlias's corresponding to
+    # these realms.
     return RealmAlias.objects.filter(realm=user_profile.realm, domain=domain).exists()
 
 # We do not @require_login for send_message_backend, since it is used

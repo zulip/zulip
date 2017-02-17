@@ -166,7 +166,7 @@ class Realm(ModelReprMixin, models.Model):
 
     @cache_with_key(get_realm_emoji_cache_key, timeout=3600*24*7)
     def get_emoji(self):
-        # type: () -> Dict[Text, Dict[str, Text]]
+        # type: () -> Dict[Text, Optional[Dict[str, Text]]]
         return get_realm_emoji_uncached(self)
 
     @property
@@ -199,7 +199,7 @@ class Realm(ModelReprMixin, models.Model):
 
     @property
     def subdomain(self):
-        # type: () -> Text
+        # type: () -> Optional[Text]
         if settings.REALMS_HAVE_SUBDOMAINS:
             return self.string_id
         return None
@@ -243,7 +243,7 @@ class Realm(ModelReprMixin, models.Model):
 post_save.connect(flush_realm, sender=Realm)
 
 def get_realm(string_id):
-    # type: (Text) -> Optional[Realm]
+    # type: (Text) -> Realm
     return Realm.objects.filter(string_id=string_id).first()
 
 def completely_open(realm):
@@ -280,9 +280,13 @@ def name_changes_disabled(realm):
     return settings.NAME_CHANGES_DISABLED or realm.name_changes_disabled
 
 class RealmAlias(models.Model):
-    realm = models.ForeignKey(Realm, null=True) # type: Optional[Realm]
+    realm = models.ForeignKey(Realm) # type: Realm
     # should always be stored lowercase
     domain = models.CharField(max_length=80, db_index=True) # type: Text
+    allow_subdomains = models.BooleanField(default=False)
+
+    class Meta(object):
+        unique_together = ("realm", "domain")
 
 def can_add_alias(domain):
     # type: (Text) -> bool
@@ -315,11 +319,19 @@ def get_realm_by_email_domain(email):
     if settings.REALMS_HAVE_SUBDOMAINS:
         raise GetRealmByDomainException(
             "Cannot get realm from email domain when settings.REALMS_HAVE_SUBDOMAINS = True")
-    try:
-        alias = RealmAlias.objects.select_related('realm').get(domain = email_to_domain(email))
+    domain = email_to_domain(email)
+    query = RealmAlias.objects.select_related('realm')
+    alias = query.filter(domain=domain).first()
+    if alias is not None:
         return alias.realm
-    except RealmAlias.DoesNotExist:
-        return None
+    else:
+        query = query.filter(allow_subdomains=True)
+        while len(domain) > 0:
+            subdomain, sep, domain = domain.partition('.')
+            alias = query.filter(domain=domain).first()
+            if alias is not None:
+                return alias.realm
+    return None
 
 # Is a user with the given email address allowed to be in the given realm?
 # (This function does not check whether the user has been invited to the realm.
@@ -330,11 +342,20 @@ def email_allowed_for_realm(email, realm):
     if not realm.restricted_to_domain:
         return True
     domain = email_to_domain(email)
-    return RealmAlias.objects.filter(realm = realm, domain = domain).exists()
+    query = RealmAlias.objects.filter(realm=realm)
+    if query.filter(domain=domain).exists():
+        return True
+    else:
+        query = query.filter(allow_subdomains=True)
+        while len(domain) > 0:
+            subdomain, sep, domain = domain.partition('.')
+            if query.filter(domain=domain).exists():
+                return True
+    return False
 
 def list_of_domains_for_realm(realm):
-    # type: (Realm) -> List[Text]
-    return list(RealmAlias.objects.filter(realm=realm).values('domain'))
+    # type: (Realm) -> List[Dict[str, Union[str, bool]]]
+    return list(RealmAlias.objects.filter(realm=realm).values('domain', 'allow_subdomains'))
 
 class RealmEmoji(ModelReprMixin, models.Model):
     author = models.ForeignKey('UserProfile', blank=True, null=True)
@@ -355,7 +376,7 @@ class RealmEmoji(ModelReprMixin, models.Model):
         return u"<RealmEmoji(%s): %s %s>" % (self.realm.domain, self.name, self.img_url)
 
 def get_realm_emoji_uncached(realm):
-    # type: (Realm) -> Dict[Text, Dict[str, Text]]
+    # type: (Realm) -> Dict[Text, Optional[Dict[str, Text]]]
     d = {}
     for row in RealmEmoji.objects.filter(realm=realm).select_related('author'):
         if row.author:
@@ -483,6 +504,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = 'email'
     MAX_NAME_LENGTH = 100
+    NAME_INVALID_CHARS = ['*', '`', '>', '"', '@']
 
     # Our custom site-specific fields
     full_name = models.CharField(max_length=MAX_NAME_LENGTH) # type: Text
@@ -915,8 +937,10 @@ class Message(ModelReprMixin, models.Model):
 
     @staticmethod
     def need_to_render_content(rendered_content, rendered_content_version, bugdown_version):
-        # type: (Optional[Text], int, int) -> bool
-        return rendered_content is None or rendered_content_version < bugdown_version
+        # type: (Optional[Text], Optional[int], int) -> bool
+        return (rendered_content is None or
+                rendered_content_version is None or
+                rendered_content_version < bugdown_version)
 
     def to_log_dict(self):
         # type: () -> Dict[str, Any]
@@ -975,6 +999,7 @@ class Message(ModelReprMixin, models.Model):
         sending_client = self.sending_client.name.lower()
 
         return (sending_client in ('zulipandroid', 'zulipios', 'zulipdesktop',
+                                   'zulipmobile', 'zulipelectron', 'snipe',
                                    'website', 'ios', 'android')) or (
                                        'desktop app' in sending_client)
 
@@ -1286,10 +1311,28 @@ class UserPresence(models.Model):
             return 'idle'
 
     @staticmethod
+    def get_status_dict_by_user(user_profile):
+        # type: (UserProfile) -> defaultdict[Any, Dict[Any, Any]]
+        query = UserPresence.objects.filter(user_profile=user_profile).values(
+            'client__name',
+            'status',
+            'timestamp',
+            'user_profile__email',
+            'user_profile__id',
+            'user_profile__enable_offline_push_notifications',
+            'user_profile__is_mirror_dummy',
+        )
+
+        if PushDeviceToken.objects.filter(user=user_profile).exists():
+            mobile_user_ids = [user_profile.id]  # type: List[int]
+        else:
+            mobile_user_ids = []
+
+        return UserPresence.get_status_dicts_for_query(query, mobile_user_ids)
+
+    @staticmethod
     def get_status_dict_by_realm(realm_id):
         # type: (int) -> defaultdict[Any, Dict[Any, Any]]
-        user_statuses = defaultdict(dict) # type: defaultdict[Any, Dict[Any, Any]]
-
         query = UserPresence.objects.filter(
             user_profile__realm_id=realm_id,
             user_profile__is_active=True,
@@ -1310,11 +1353,18 @@ class UserPresence(models.Model):
             user__is_bot=False,
         ).distinct("user").values("user")]
 
+        return UserPresence.get_status_dicts_for_query(query, mobile_user_ids)
+
+    @staticmethod
+    def get_status_dicts_for_query(query, mobile_user_ids):
+        # type: (QuerySet, List[int]) -> defaultdict[Any, Dict[Any, Any]]
+        user_statuses = defaultdict(dict) # type: defaultdict[Any, Dict[Any, Any]]
+
         for row in query:
             info = UserPresence.to_presence_dict(
-                client_name=row['client__name'],
-                status=row['status'],
-                dt=row['timestamp'],
+                row['client__name'],
+                row['status'],
+                row['timestamp'],
                 push_enabled=row['user_profile__enable_offline_push_notifications'],
                 has_push_devices=row['user_profile__id'] in mobile_user_ids,
                 is_mirror_dummy=row['user_profile__is_mirror_dummy'],
@@ -1324,9 +1374,9 @@ class UserPresence(models.Model):
         return user_statuses
 
     @staticmethod
-    def to_presence_dict(client_name=None, status=None, dt=None, push_enabled=None,
+    def to_presence_dict(client_name, status, dt, push_enabled=None,
                          has_push_devices=None, is_mirror_dummy=None):
-        # type: (Optional[Text], Optional[int], Optional[datetime.datetime], Optional[bool], Optional[bool], Optional[bool]) -> Dict[str, Any]
+        # type: (Text, int, datetime.datetime, Optional[bool], Optional[bool], Optional[bool]) -> Dict[str, Any]
         presence_val = UserPresence.status_to_string(status)
 
         timestamp = datetime_to_timestamp(dt)
@@ -1340,9 +1390,9 @@ class UserPresence(models.Model):
     def to_dict(self):
         # type: () -> Dict[str, Any]
         return UserPresence.to_presence_dict(
-            client_name=self.client.name,
-            status=self.status,
-            dt=self.timestamp
+            self.client.name,
+            self.status,
+            self.timestamp
         )
 
     @staticmethod

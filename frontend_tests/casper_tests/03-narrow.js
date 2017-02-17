@@ -325,10 +325,10 @@ casper.then(function () {
 
 // There will be no race condition between these two waits because we
 // expect them to happen in parallel.
-casper.waitWhileSelector('#stream_filters [data-name="Denmark"]', function () {
+casper.waitWhileVisible('#stream_filters [data-name="Denmark"]', function () {
     casper.test.assertDoesntExist('#stream_filters [data-name="Denmark"]', 'Filtered stream list does not contain Denmark');
 });
-casper.waitWhileSelector('#stream_filters [data-name="Scotland"]', function () {
+casper.waitWhileVisible('#stream_filters [data-name="Scotland"]', function () {
     casper.test.assertDoesntExist('#stream_filters [data-name="Scotland"]', 'Filtered stream list does not contain Scotland');
 });
 
@@ -348,13 +348,13 @@ casper.then(function () {
 
 // There will be no race condition between these waits because we
 // expect them to happen in parallel.
-casper.waitForSelector('#stream_filters [data-name="Denmark"]', function () {
+casper.waitUntilVisible('#stream_filters [data-name="Denmark"]', function () {
     casper.test.assertExists('#stream_filters [data-name="Denmark"]', 'Restored stream list contains Denmark');
 });
-casper.waitForSelector('#stream_filters [data-name="Scotland"]', function () {
+casper.waitUntilVisible('#stream_filters [data-name="Scotland"]', function () {
     casper.test.assertExists('#stream_filters [data-name="Denmark"]', 'Restored stream list contains Scotland');
 });
-casper.waitForSelector('#stream_filters [data-name="Verona"]', function () {
+casper.waitUntilVisible('#stream_filters [data-name="Verona"]', function () {
     casper.test.assertExists('#stream_filters [data-name="Denmark"]', 'Restored stream list contains Verona');
 });
 

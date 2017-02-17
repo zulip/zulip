@@ -6,58 +6,76 @@
   <div class="account-settings-form">
     <form action="/json/settings/change" method="post"
           class="form-horizontal your-account-settings">
-      <div class="input-group name_change_container">
-        <label for="full_name">{{t "Full name" }}</label>
-        <input type="text" name="full_name" value="{{ full_name }}" />
-      </div>
 
-      <!-- password start -->
-      {{#if page_params.password_auth_enabled}}
-      <div class="input-group" id="pw_change_link">
-        <label for="change_password_button">{{t "Password" }}</label>
-        <button class="change_password_button button" data-dismiss="modal" aria-hidden="true">{{t "Change password" }}</button>
-      </div>
+      <div class="m-10 inline-block grid user-name-parent">
+        <div class="user-name-section inline-block">
+          <div class="input-group" id="name_change_container">
+            <label for="full_name" class="inline-block title">{{t "Full name" }}</label>
+            <input type="text" name="full_name" id="full_name" class="w-200 inline-block" value="{{ page_params.fullname }}" />
+            <div class="warning"></div>
+          </div>
 
-      <div id="pw_change_controls">
-        <div class="input-group">
-          <label for="old_password">{{t "Old password" }}</label>
-          <input type="password" autocomplete="off" name="old_password" id="old_password" value="" />
-          (<a href="/accounts/password/reset/" target="_blank">{{t "Forgotten it?" }}</a>)
-        </div>
+          <!-- password start -->
+          {{#if page_params.password_auth_enabled}}
+          <div class="input-group" id="pw_change_link">
+            <label for="change_password_button" class="inline-block title">{{t "Password" }}</label>
+            <button class="change_password_button grey button inline-block input-size" data-dismiss="modal" aria-hidden="true">{{t "Change Password" }}</button>
+          </div>
 
-        <div class="input-group">
-          <label for="new_password">{{t "New password" }}</label>
-          <input type="password" autocomplete="off" name="new_password" id="new_password" value="" />
-        </div>
+          <div id="pw_change_controls">
+            <div class="input-group">
+              <label for="old_password" class="inline-block title">{{t "Old password" }}</label>
+              <input type="password" autocomplete="off" name="old_password" id="old_password" class="w-200 inline-block" value="" />
+              <div class="warning">
+                <a href="/accounts/password/reset/" class="sea-green" target="_blank">{{t "Forgotten it?" }}</a>
+              </div>
+            </div>
 
-        <div class="input-group">
-          <label>{{t "Password strength" }}</label>
-          <div class="progress" id="pw_strength">
-            <div class="bar bar-danger fade" style="width: 10%;"></div>
+            <div class="input-group">
+              <label for="new_password" class="inline-block title">{{t "New password" }}</label>
+              <input type="password" autocomplete="off" name="new_password" id="new_password" class="w-200 inline-block" value="" />
+              <div class="warning">
+                <div class="progress inline-block" id="pw_strength">
+                  <div class="bar bar-danger fade" style="width: 10%;"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="input-group">
+              <label class="inline-block title" for="confirm_password title">{{t "Confirm password" }}</label>
+              <input type="password" autocomplete="off" name="confirm_password" id="confirm_password" class="w-200 inline-block" value="" />
+            </div>
+          </div>
+          {{/if}}
+
+          <div class="input-group no-border">
+            <label for="" class="inline-block"></label>
+            <input type="submit" class="button w-200 sea-green input-size" name="change_settings" value="Save Changes" />
+          </div>
+          <div class="input-group">
+            <label for="" class="inline-block"></label>
+            <button type="submit" class="button w-200 btn-danger input-size" id="user_deactivate_account_button">{{t 'Deactivate Account' }}</button>
           </div>
         </div>
+      </div>
 
-        <div class="input-group">
-          <label for="confirm_password">{{t "Confirm password" }}</label>
-          <input type="password" autocomplete="off" name="confirm_password" id="confirm_password" value="" />
+      <div class="user-avatar-section box-shadow border-radius">
+        <div class="inline-block">
+          {{#if page_params.avatar_url_medium }}
+            <img id="user-settings-avatar" src="{{ page_params.avatar_url_medium }}" />
+          {{else}}
+            <img id="user-settings-avatar" src="{{ page_params.avatar_url }}" />
+          {{/if}}
+          <div id="user_avatar_file_input_error" class="text-error"></div>
+          <input type="file" name="user_avatar_file_input" class="notvisible" id="user_avatar_file_input" value="{{t 'Upload avatar' }}" />
+          <div id="upload_avatar_spinner"></div>
         </div>
-
-      </div>
-      {{/if}}
-
-      <div class="input-group">
-        <input type="submit" class="button green" name="change_settings" value="Save changes" />
-      </div>
-
-      <div class="input-group">
-        <img id="user-settings-avatar" src="{{ page_params.avatar_url }}" />
-        <div id="user_avatar_file_input_error" class="text-error"></div>
-        <div id="user_avatar_file"></div>
-        <input type="file" name="user_avatar_file_input" class="notvisible" id="user_avatar_file_input" value="{{t 'Upload avatar' }}" />
-        <div id="upload_avatar_spinner"></div>
-        <button class="button standalone" id="user_avatar_upload_button">{{t 'Customize avatar' }}</button>
-        <button class="button standalone btn-danger" id="user_avatar_delete_button">{{t 'Delete avatar' }}</button>
-        <button class="button standalone btn-danger" id="user_deactivate_account_button">{{t 'Deactivate account' }}</button>
+        <div class="inline-block">
+            <button class="button sea-green w-200 m-t-20 block input-size" id="user_avatar_upload_button">{{t 'Upload New Avatar' }}</button>
+            <div class="w-200 dark-grey center m-t-20">
+              Upload a small (1024x1024) avatar of yourself here.
+            </div>
+        </div>
       </div>
 
     </form>
@@ -72,7 +90,7 @@
           <p>{{t "Note that any bots that you maintain will be disabled." }}</p>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">{{t "Cancel" }}</button>
+          <button class="button white" data-dismiss="modal" aria-hidden="true">{{t "Cancel" }}</button>
           <button class="button btn-danger" id="do_deactivate_self_button">{{t "Deactivate now" }}</button>
 
         </div>

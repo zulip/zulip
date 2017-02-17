@@ -7,6 +7,10 @@ function do_narrow_action(action) {
     return true;
 }
 
+function is_settings_page() {
+  return (/^#*(settings|administration)/g).test(window.location.hash);
+}
+
 var actions_dropdown_hotkeys = [
     'down_arrow',
     'up_arrow',
@@ -32,6 +36,7 @@ var hotkeys_no_modifiers = {
     34: {name: 'page_down', message_view_only: true}, // page down
     35: {name: 'end', message_view_only: true}, // end
     36: {name: 'home', message_view_only: true}, // home
+    37: {name: 'left_arrow', message_view_only: true}, // left arrow
     38: {name: 'up_arrow', message_view_only: true}, // up arrow
     40: {name: 'down_arrow', message_view_only: true}, // down arrow
 };
@@ -110,6 +115,7 @@ function process_hotkey(e) {
     var focused_message_edit_content;
     var focused_message_edit_save;
     var message_edit_form;
+    var focus_in_empty_compose;
     var hotkey = get_hotkey_from_event(e);
     var event_name = hotkey.name;
     activity.new_user_input = true;
@@ -202,19 +208,44 @@ function process_hotkey(e) {
         if ($("#overlay").hasClass("show")) {
             ui.exit_lightbox_photo();
             return true;
-        } else if ($("#subscription_overlay").is(":visible")) {
+        } else if ($("#subscription_overlay").hasClass("show")) {
             subs.close();
             return true;
-        } else if ($('#markdown-help').hasClass('in') ||
-            $('#keyboard-shortcuts').hasClass('in') ||
-            $('#search-operators').hasClass('in') ||
-            $('#invite-user').hasClass('in')) {
-            return false;
+        } else if ($(".informational-overlays").hasClass("show")) {
+            ui.hide_info_overlay();
+            return true;
         }
+    }
+
+    if (is_settings_page()) {
+        if (event_name === 'up_arrow') {
+            var prev = e.target.previousElementSibling;
+
+            if ($(prev).css("display") !== "none") {
+                $(prev).focus().click();
+            }
+            return true;
+        } else if (event_name === 'down_arrow') {
+            var next = e.target.nextElementSibling;
+
+            if ($(next).css("display") !== "none") {
+                $(next).focus().click();
+            }
+            return true;
+        } else if (event_name === 'escape') {
+            $("#settings_overlay_container .exit").click();
+            return true;
+        }
+        return false;
     }
 
     // Process hotkeys specially when in an input, select, textarea, or send button
     if ($('input:focus,select:focus,textarea:focus,#compose-send-button:focus').length > 0) {
+        focus_in_empty_compose = (
+            compose.composing() &&
+            compose.message_content() === "" &&
+            $('#new_message_content').is(':focus'));
+
         if (event_name === 'escape') {
             // emoji window should trap escape before it is able to close the compose box
             if ($('.emoji_popover').css('display') === 'inline-block') {
@@ -256,7 +287,10 @@ function process_hotkey(e) {
         }
 
         if (event_name === 'enter') {
-            if (activity.searching()) {
+            if (is_settings_page()) {
+                $(e.target).click();
+                return true;
+            } else if (activity.searching()) {
                 activity.blur_search();
                 return true;
             } else if (stream_list.searching()) {
@@ -265,16 +299,24 @@ function process_hotkey(e) {
             }
         }
 
-        if ((event_name === 'up_arrow' || event_name === 'down_arrow')
-            && compose.composing()
-            && compose.message_content() === ""
-            && $('#new_message_content').is(':focus')) {
-                compose.cancel();
-                // don't return, as we still want it to be picked up by the code below
+        if (event_name === 'left_arrow' && focus_in_empty_compose) {
+            compose.cancel();
+            message_edit.edit_last_sent_message();
+            return true;
+        }
+
+        if ((event_name === 'up_arrow' || event_name === 'down_arrow') && focus_in_empty_compose) {
+            compose.cancel();
+            // don't return, as we still want it to be picked up by the code below
         } else {
             // Let the browser handle the key normally.
             return false;
         }
+    }
+
+    if (event_name === 'left_arrow') {
+        message_edit.edit_last_sent_message();
+        return true;
     }
 
     // If we're on a button or a link and have pressed enter, let the
@@ -322,7 +364,7 @@ function process_hotkey(e) {
             search.initiate_search();
             return true;
         case 'show_shortcuts': // Show keyboard shortcuts page
-            $('#keyboard-shortcuts').modal('show');
+            ui.show_info_overlay("keyboard-shortcuts");
             return true;
         case 'stream_cycle_backward':
             navigate.cycle_stream('backward');
@@ -353,11 +395,17 @@ function process_hotkey(e) {
             navigate.to_end();
             return true;
         case 'page_up':
-            navigate.page_up();
-            return true;
+            if (!is_settings_page()) {
+                navigate.page_up();
+                return true;
+            }
+            break;
         case 'page_down':
-            navigate.page_down();
-            return true;
+            if (!is_settings_page()) {
+                navigate.page_down();
+                return true;
+            }
+            break;
     }
 
     // Shortcuts that operate on a message

@@ -39,8 +39,6 @@ run ./tools/test-js-with-node
 run ./tools/run-mypy
 run ./tools/test-backend $FORCEARG
 run ./tools/test-js-with-casper $FORCEARG
-# Not running management test since it takes 40s and thus is too slow to be worth it.
-# run ./tools/test-management
 # Not running queue worker reload tests since it's low-churn code
 # run ./tools/test-queue-worker-reload
 # Not running documentation tests since it takes 20s and only tests documentation

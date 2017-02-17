@@ -215,7 +215,7 @@ exports.update_starred = function (message_id, starred) {
         return;
     }
 
-    unread.mark_message_as_read(message);
+    unread_ui.mark_message_as_read(message);
 
     message.starred = starred;
 
@@ -278,6 +278,43 @@ exports.lightbox = function (data) {
 
     $("#overlay").addClass("show");
     popovers.hide_all();
+};
+
+$(document).ready(function () {
+    var info_overlay_toggle = components.toggle({
+        name: "info-overlay-toggle",
+        selected: 0,
+        values: [
+            { label: "Keyboard shortcuts", key: "keyboard-shortcuts" },
+            { label: "Message formatting", key: "markdown-help" },
+            { label: "Search operators", key: "search-operators" },
+        ],
+        callback: function (name, key) {
+            $(".overlay-modal").hide();
+            $("#" + key).show();
+        },
+    }).get();
+
+    $(".informational-overlays .overlay-tabs")
+        .append($(info_overlay_toggle).addClass("large"));
+});
+
+exports.show_info_overlay = function (target) {
+    var el = {
+        overlay: $(".informational-overlays"),
+    };
+
+    if (!el.overlay.hasClass("show")) {
+        $(el.overlay).addClass("show");
+    }
+
+    if (target) {
+        components.toggle.lookup("info-overlay-toggle").goto(target);
+    }
+};
+
+exports.hide_info_overlay = function () {
+    $(".informational-overlays").removeClass("show");
 };
 
 exports.lightbox_photo = function (image, user) {
@@ -552,7 +589,7 @@ $(function () {
     hashchange.initialize();
     invite.initialize();
     pointer.initialize();
-    unread.initialize();
+    unread_ui.initialize();
     activity.initialize();
     emoji.initialize();
 });
@@ -577,9 +614,9 @@ function scroll_finished() {
         }
         // When the window scrolls, it may cause some messages to
         // enter the screen and become read.  Calling
-        // unread.process_visible will update necessary
+        // unread_ui.process_visible will update necessary
         // data structures and DOM elements.
-        setTimeout(unread.process_visible, 0);
+        setTimeout(unread_ui.process_visible, 0);
     }
 }
 
@@ -596,7 +633,7 @@ var saved_compose_cursor = 0;
 
 $(function () {
     viewport.message_pane.scroll($.throttle(50, function () {
-        unread.process_visible();
+        unread_ui.process_visible();
         scroll_finish();
     }));
 

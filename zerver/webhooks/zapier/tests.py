@@ -9,5 +9,5 @@ class ZapierHookTests(WebhookTestCase):
     def test_zapier_when_subject_and_body_are_correct(self):
         # type: () -> None
         expected_subject = u"New email from zulip@zulip.com"
-        expected_message = u"Your email content is: \nMy Email content.\n"
+        expected_message = u"Your email content is: \nMy Email content."
         self.send_and_test_stream_message('correct_subject_and_body', expected_subject, expected_message)

@@ -5,11 +5,11 @@ from __future__ import print_function
 
 import os
 import sys
-import lister
 import argparse
 import subprocess
 import six
 
+import lister
 from typing import cast, Dict, List
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -38,7 +38,6 @@ exclude_py2 = [] # type: List[str]
 
 exclude_py3 = """
 bots/process_ccache
-zerver/lib/ccache.py
 """.split()
 
 parser = argparse.ArgumentParser(description="Run mypy on files tracked by git.")
@@ -94,7 +93,12 @@ if six.PY2 and os.path.exists(MYPY_VENV_PATH):
 else:
     mypy_command = "mypy"
 
-extra_args = ["--fast-parser", "--silent-imports", "--check-untyped-defs", "--scripts-are-modules", "-i", "--cache-dir=var/mypy-cache"]
+extra_args = ["--fast-parser",
+              "--ignore-missing-imports",
+              "--follow-imports=silent",
+              "--check-untyped-defs",
+              "--scripts-are-modules",
+              "-i", "--cache-dir=var/mypy-cache"]
 if py_version == 2:
     extra_args.append("--py2")
 if args.linecoverage_report:

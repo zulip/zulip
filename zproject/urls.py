@@ -18,6 +18,7 @@ from django.contrib.auth.views import (login, password_reset,
 import zerver.tornado.views
 import zerver.views
 import zerver.views.auth
+import zerver.views.compatibility
 import zerver.views.home
 import zerver.views.registration
 import zerver.views.zephyr
@@ -164,12 +165,13 @@ v1_api_and_json_patterns = [
     # Returns a 204, used by desktop app to verify connectivity status
     url(r'generate_204$', zerver.views.registration.generate_204, name='zerver.views.registration.generate_204'),
 
-    # realm/aliases -> zerver.views.realm_aliases
+    # realm/domains -> zerver.views.realm_aliases
     url(r'^realm/domains$', rest_dispatch,
         {'GET': 'zerver.views.realm_aliases.list_aliases',
          'POST': 'zerver.views.realm_aliases.create_alias'}),
     url(r'^realm/domains/(?P<domain>\S+)$', rest_dispatch,
-        {'DELETE': 'zerver.views.realm_aliases.delete_alias'}),
+        {'PATCH': 'zerver.views.realm_aliases.patch_alias',
+         'DELETE': 'zerver.views.realm_aliases.delete_alias'}),
 
     # realm/emoji -> zerver.views.realm_emoji
     url(r'^realm/emoji$', rest_dispatch,
@@ -191,6 +193,8 @@ v1_api_and_json_patterns = [
          'POST': 'zerver.views.users.create_user_backend'}),
     url(r'^users/(?P<email>(?!me)[^/]*)/reactivate$', rest_dispatch,
         {'POST': 'zerver.views.users.reactivate_user_backend'}),
+    url(r'^users/(?P<email>(?!me)[^/]*)/presence$', rest_dispatch,
+        {'GET': 'zerver.views.presence.get_presence_backend'}),
     url(r'^users/(?P<email>(?!me)[^/]*)$', rest_dispatch,
         {'PATCH': 'zerver.views.users.update_user_backend',
          'DELETE': 'zerver.views.users.deactivate_user_backend'}),
@@ -350,6 +354,9 @@ urls += [
     # This json format view used by the mobile apps lists which authentication
     # backends the server allows, to display the proper UI and check for server existence
     url(r'^api/v1/get_auth_backends', zerver.views.auth.api_get_auth_backends, name='zerver.views.auth.api_get_auth_backends'),
+
+    # used by mobile apps to check if they are compatible with the server
+    url(r'^compatibility$', zerver.views.compatibility.check_compatibility),
 
     # This json format view used by the mobile apps accepts a username
     # password/pair and returns an API key.
