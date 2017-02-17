@@ -287,12 +287,21 @@ function add_email_hint(row, email_address_hint_content) {
     });
 }
 
+// The `meta.stream_created` flag tells us whether the stream was just
+// created in this browser window; it's a hack to work around the
+// server_events code flow not having a good way to associate with
+// this request.  These should be appended to the top of the list so
+// they are more visible.
 function add_sub_to_table(sub) {
     sub = stream_data.add_admin_options(sub);
     stream_data.update_subscribers_count(sub);
     var html = templates.render('subscription', sub);
     var settings_html = templates.render('subscription_settings', sub);
-    $(".streams-list").append(html);
+    if (meta.stream_created) {
+        $(".streams-list").prepend(html).scrollTop(0);
+    } else {
+        $(".streams-list").append(html);
+    }
     $(".subscriptions .settings").append($(settings_html));
 
     var email_address_hint_content = templates.render('email_address_hint', { page_params: page_params });
