@@ -9,7 +9,7 @@ from analytics.lib.counts import CountStat, COUNT_STATS, process_count_stat, \
     zerver_count_user_by_realm, zerver_count_message_by_user, \
     zerver_count_message_by_stream, zerver_count_stream_by_realm, \
     do_fill_count_stat_at_hour, do_increment_logging_stat, ZerverCountQuery, \
-    LoggingCountStat
+    LoggingCountStat, do_aggregate_to_summary_table
 from analytics.models import BaseCount, InstallationCount, RealmCount, \
     UserCount, StreamCount, FillState, installation_epoch
 from zerver.lib.actions import do_create_user, do_deactivate_user, \
@@ -477,6 +477,19 @@ class TestCountStats(AnalyticsTestCase):
                               [[3, 'false'], [2, 'true'], [2, 'false', self.second_realm]])
         self.assertTableState(InstallationCount, ['value', 'subgroup'], [[5, 'false'], [2, 'true']])
         self.assertTableState(UserCount, [], [])
+
+class TestDoAggregateToSummaryTable(AnalyticsTestCase):
+    # do_aggregate_to_summary_table is mostly tested by the end to end
+    # nature of the tests in TestCountStats. But want to highlight one
+    # feature important for keeping the size of the analytics tables small,
+    # which is that if there is no relevant data in the table being
+    # aggregated, the aggregation table doesn't get a row with value 0.
+    def test_no_aggregated_zeros(self):
+        # type: () -> None
+        stat = LoggingCountStat('test stat', UserCount, CountStat.HOUR)
+        do_aggregate_to_summary_table(stat, self.TIME_ZERO)
+        self.assertFalse(RealmCount.objects.exists())
+        self.assertFalse(InstallationCount.objects.exists())
 
 class TestDoIncrementLoggingStat(AnalyticsTestCase):
     def test_table_and_id_args(self):
