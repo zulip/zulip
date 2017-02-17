@@ -1182,6 +1182,7 @@ class BotTest(ZulipTestCase):
         bot = self.get_bot()
         self.assertEqual('Fred', bot['full_name'])
 
+    @override_settings(LOCAL_UPLOADS_DIR='var/bot_avatar')
     def test_patch_bot_avatar(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
