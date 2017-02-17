@@ -353,6 +353,9 @@ class LocalUploadBackend(ZulipUploadBackend):
         resized_medium = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
         write_local_file('avatars', email_hash+'-medium.png', resized_medium)
 
+        user_profile.avatar_version += 1
+        user_profile.save()
+
     def get_avatar_url(self, hash_key, medium=False):
         # type: (Text, bool) -> Text
         # ?x=x allows templates to append additional parameters with &s

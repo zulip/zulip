@@ -397,6 +397,7 @@ class AvatarTest(ZulipTestCase):
         """
         A PUT request to /json/users/me/avatar with a valid file should return a url and actually create an avatar.
         """
+        version = 2
         for fname, rfname in self.correct_files:
             # TODO: use self.subTest once we're exclusively on python 3 by uncommenting the line below.
             # with self.subTest(fname=fname):
@@ -428,6 +429,10 @@ class AvatarTest(ZulipTestCase):
             zerver.lib.upload.upload_backend.ensure_medium_avatar_image(user_profile.email)
             self.assertTrue(os.path.exists(medium_avatar_disk_path))
 
+            # Verify whether the avatar_version gets incremented with every new upload
+            self.assertEqual(user_profile.avatar_version, version)
+            version += 1
+
     def test_invalid_avatars(self):
         # type: () -> None
         """
@@ -440,6 +445,8 @@ class AvatarTest(ZulipTestCase):
                 result = self.client_put_multipart("/json/users/me/avatar", {'file': fp})
 
             self.assert_json_error(result, "Could not decode avatar image; did you upload an image file?")
+            user_profile = get_user_profile_by_email("hamlet@zulip.com")
+            self.assertEqual(user_profile.avatar_version, 1)
 
     def test_delete_avatar(self):
         # type: () -> None
