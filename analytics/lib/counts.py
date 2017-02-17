@@ -167,11 +167,10 @@ def do_aggregate_to_summary_table(stat, end_time):
             FROM zerver_realm
             JOIN %(analytics_table)s
             ON
-            (
-                %(analytics_table)s.realm_id = zerver_realm.id AND
+                zerver_realm.id = %(analytics_table)s.realm_id
+            WHERE
                 %(analytics_table)s.property = '%(property)s' AND
                 %(analytics_table)s.end_time = %%(end_time)s
-            )
             GROUP BY zerver_realm.id, %(analytics_table)s.subgroup
         """ % {'analytics_table': analytics_table._meta.db_table,
                'property': stat.property}
@@ -188,10 +187,9 @@ def do_aggregate_to_summary_table(stat, end_time):
             sum(value), '%(property)s', analytics_realmcount.subgroup, %%(end_time)s
         FROM analytics_realmcount
         WHERE
-        (
             property = '%(property)s' AND
             end_time = %%(end_time)s
-        ) GROUP BY analytics_realmcount.subgroup
+        GROUP BY analytics_realmcount.subgroup
     """ % {'property': stat.property}
     start = time.time()
     cursor.execute(installationcount_query, {'end_time': end_time})
@@ -258,14 +256,12 @@ count_user_by_realm_query = """
     FROM zerver_realm
     JOIN zerver_userprofile
     ON
-    (
-        zerver_userprofile.realm_id = zerver_realm.id AND
+        zerver_realm.id = zerver_userprofile.realm_id
+    WHERE
+        zerver_realm.date_created < %%(time_end)s AND
         zerver_userprofile.date_joined >= %%(time_start)s AND
         zerver_userprofile.date_joined < %%(time_end)s
         %(join_args)s
-    )
-    WHERE
-        zerver_realm.date_created < %%(time_end)s
     GROUP BY zerver_realm.id %(group_by_clause)s
 """
 zerver_count_user_by_realm = ZerverCountQuery(UserProfile, RealmCount, count_user_by_realm_query)
@@ -279,14 +275,12 @@ count_message_by_user_query = """
     FROM zerver_userprofile
     JOIN zerver_message
     ON
-    (
-        zerver_message.sender_id = zerver_userprofile.id AND
+        zerver_userprofile.id = zerver_message.sender_id
+    WHERE
+        zerver_userprofile.date_joined < %%(time_end)s AND
         zerver_message.pub_date >= %%(time_start)s AND
         zerver_message.pub_date < %%(time_end)s
         %(join_args)s
-    )
-    WHERE
-            zerver_userprofile.date_joined < %%(time_end)s
     GROUP BY zerver_userprofile.id %(group_by_clause)s
 """
 zerver_count_message_by_user = ZerverCountQuery(Message, UserCount, count_message_by_user_query)
@@ -300,14 +294,12 @@ count_stream_by_realm_query = """
     FROM zerver_realm
     JOIN zerver_stream
     ON
-    (
-        zerver_stream.realm_id = zerver_realm.id AND
+        zerver_realm.id = zerver_stream.realm_id AND
+    WHERE
+        zerver_realm.date_created < %%(time_end)s AND
         zerver_stream.date_created >= %%(time_start)s AND
         zerver_stream.date_created < %%(time_end)s
         %(join_args)s
-    )
-    WHERE
-        zerver_realm.date_created < %%(time_end)s
     GROUP BY zerver_realm.id %(group_by_clause)s
 """
 zerver_count_stream_by_realm = ZerverCountQuery(Stream, RealmCount, count_stream_by_realm_query)
@@ -334,16 +326,16 @@ count_message_type_by_user_query = """
         FROM zerver_userprofile
         JOIN zerver_message
         ON
-            zerver_message.sender_id = zerver_userprofile.id AND
+            zerver_userprofile.id = zerver_message.sender_id AND
             zerver_message.pub_date >= %%(time_start)s AND
             zerver_message.pub_date < %%(time_end)s
             %(join_args)s
         JOIN zerver_recipient
         ON
-            zerver_recipient.id = zerver_message.recipient_id
+            zerver_message.recipient_id = zerver_recipient.id
         LEFT JOIN zerver_stream
         ON
-            zerver_stream.id = zerver_recipient.type_id
+            zerver_recipient.type_id = zerver_stream.id
         GROUP BY zerver_userprofile.realm_id, zerver_userprofile.id, zerver_recipient.type, zerver_stream.invite_only
     ) AS subquery
     GROUP BY realm_id, id, message_type
@@ -362,21 +354,19 @@ count_message_by_stream_query = """
     FROM zerver_stream
     JOIN zerver_recipient
     ON
-    (
-        zerver_recipient.type = 2 AND
         zerver_stream.id = zerver_recipient.type_id
-    )
     JOIN zerver_message
     ON
-    (
-        zerver_message.recipient_id = zerver_recipient.id AND
-        zerver_message.pub_date >= %%(time_start)s AND
-        zerver_message.pub_date < %%(time_end)s AND
-        zerver_stream.date_created < %%(time_end)s
-        %(join_args)s
-    )
+        zerver_recipient.id = zerver_message.recipient_id
     JOIN zerver_userprofile
-    ON zerver_userprofile.id = zerver_message.sender_id
+    ON
+        zerver_message.sender_id = zerver_userprofile.id
+    WHERE
+        zerver_stream.date_created < %%(time_end)s AND
+        zerver_recipient.type = 2 AND
+        zerver_message.pub_date >= %%(time_start)s AND
+        zerver_message.pub_date < %%(time_end)s
+        %(join_args)s
     GROUP BY zerver_stream.id %(group_by_clause)s
 """
 zerver_count_message_by_stream = ZerverCountQuery(Message, StreamCount, count_message_by_stream_query)
