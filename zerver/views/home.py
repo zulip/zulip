@@ -14,8 +14,7 @@ from zerver.decorator import zulip_login_required, process_client
 from zerver.forms import ToSForm
 from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
     Recipient, Realm, UserMessage, DefaultStream, RealmEmoji, RealmAlias, \
-    RealmFilter, \
-    PreregistrationUser, get_client, UserActivity, \
+    RealmFilter, PreregistrationUser, UserActivity, \
     UserPresence, get_recipient, name_changes_disabled, email_to_username, \
     list_of_domains_for_realm
 from zerver.lib.events import do_events_register
