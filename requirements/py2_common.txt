@@ -3,6 +3,9 @@
 # Used for Hesiod lookups, etc.
 pydns==2.3.6
 
+# Needed for boto3 S3 file upload
+futures==3.0.5
+
 # Needed for LDAP integration
 python-ldap==2.4.28
 
