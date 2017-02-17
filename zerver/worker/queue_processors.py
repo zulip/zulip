@@ -336,6 +336,11 @@ class MessageSenderWorker(QueueProcessingWorker):
             'wsgi.run_once': False,
             'zulip.emulated_method': 'POST'
         }
+
+        if 'socket_user_agent' in event['request']:
+            environ['HTTP_USER_AGENT'] = event['request']['socket_user_agent']
+            del event['request']['socket_user_agent']
+
         # We're mostly using a WSGIRequest for convenience
         environ.update(server_meta['request_environ'])
         request = WSGIRequest(environ)

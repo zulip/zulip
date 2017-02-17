@@ -454,6 +454,7 @@ if (page_params.use_websockets) {
 exports._socket = socket;
 
 function send_message_socket(request, success, error) {
+    request.socket_user_agent = navigator.userAgent;
     socket.send(request, success, function (type, resp) {
         var err_msg = "Error sending message";
         if (type === 'response') {
