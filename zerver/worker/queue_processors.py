@@ -321,19 +321,21 @@ class MessageSenderWorker(QueueProcessingWorker):
         # type: (Mapping[str, Any]) -> None
         server_meta = event['server_meta']
 
-        environ = {'REQUEST_METHOD': 'SOCKET',
-                   'SCRIPT_NAME': '',
-                   'PATH_INFO': '/json/messages',
-                   'SERVER_NAME': '127.0.0.1',
-                   'SERVER_PORT': 9993,
-                   'SERVER_PROTOCOL': 'ZULIP_SOCKET/1.0',
-                   'wsgi.version': (1, 0),
-                   'wsgi.input': StringIO(),
-                   'wsgi.errors': sys.stderr,
-                   'wsgi.multithread': False,
-                   'wsgi.multiprocess': True,
-                   'wsgi.run_once': False,
-                   'zulip.emulated_method': 'POST'}
+        environ = {
+            'REQUEST_METHOD': 'SOCKET',
+            'SCRIPT_NAME': '',
+            'PATH_INFO': '/json/messages',
+            'SERVER_NAME': '127.0.0.1',
+            'SERVER_PORT': 9993,
+            'SERVER_PROTOCOL': 'ZULIP_SOCKET/1.0',
+            'wsgi.version': (1, 0),
+            'wsgi.input': StringIO(),
+            'wsgi.errors': sys.stderr,
+            'wsgi.multithread': False,
+            'wsgi.multiprocess': True,
+            'wsgi.run_once': False,
+            'zulip.emulated_method': 'POST'
+        }
         # We're mostly using a WSGIRequest for convenience
         environ.update(server_meta['request_environ'])
         request = WSGIRequest(environ)
