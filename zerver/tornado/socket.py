@@ -249,13 +249,15 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
 
 def fake_message_sender(event):
     # type: (Dict[str, Any]) -> None
+    """This function is used only for Casper and backend tests, where
+    rabbitmq is disabled"""
     log_data = dict() # type: Dict[str, Any]
     record_request_start_data(log_data)
 
     req = event['request']
     try:
         sender = get_user_profile_by_id(event['server_meta']['user_id'])
-        client = get_client(req['client'])
+        client = get_client("website")
 
         msg_id = check_send_message(sender, client, req['type'],
                                     extract_recipients(req['to']),
