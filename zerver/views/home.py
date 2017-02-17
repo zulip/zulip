@@ -10,7 +10,7 @@ from django.utils.cache import patch_cache_control
 from six.moves import zip_longest, zip, range
 
 from version import ZULIP_VERSION
-from zerver.decorator import zulip_login_required
+from zerver.decorator import zulip_login_required, process_client
 from zerver.forms import ToSForm
 from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
     Recipient, Realm, UserMessage, DefaultStream, RealmEmoji, RealmAlias, \
@@ -109,7 +109,8 @@ def home_real(request):
 
     user_profile = request.user
     request._email = request.user.email
-    request.client = get_client("website")
+    # Process the client as an auth decorator would
+    process_client(request, user_profile, is_json_view=True)
 
     # If a user hasn't signed the current Terms of Service, send them there
     if settings.TERMS_OF_SERVICE is not None and settings.TOS_VERSION is not None and \
