@@ -1,6 +1,6 @@
 # Documented in http://zulip.readthedocs.io/en/latest/queuing.html
 from __future__ import absolute_import
-from typing import Any, Callable, Mapping
+from typing import Any, Callable, Mapping, Optional
 
 from django.conf import settings
 from django.core.handlers.wsgi import WSGIRequest
@@ -44,28 +44,35 @@ from six.moves import cStringIO as StringIO
 class WorkerDeclarationException(Exception):
     pass
 
-def assign_queue(queue_name, enabled=True):
-    # type: (str, bool) -> Callable[[QueueProcessingWorker], QueueProcessingWorker]
+def assign_queue(queue_name, enabled=True, queue_type="consumer"):
+    # type: (str, bool, Optional[str]) -> Callable[[QueueProcessingWorker], QueueProcessingWorker]
     def decorate(clazz):
         # type: (QueueProcessingWorker) -> QueueProcessingWorker
         clazz.queue_name = queue_name
         if enabled:
-            register_worker(queue_name, clazz)
+            register_worker(queue_name, clazz, queue_type)
         return clazz
     return decorate
 
 worker_classes = {} # type: Dict[str, Any] # Any here should be QueueProcessingWorker type
-def register_worker(queue_name, clazz):
-    # type: (str, QueueProcessingWorker) -> None
+queues = {}  # type: Dict[str, Dict[str, QueueProcessingWorker]]
+def register_worker(queue_name, clazz, queue_type):
+    # type: (str, QueueProcessingWorker, str) -> None
+    if queue_type not in queues:
+        queues[queue_type] = {}
+    queues[queue_type][queue_name] = clazz
     worker_classes[queue_name] = clazz
 
 def get_worker(queue_name):
     # type: (str) -> QueueProcessingWorker
     return worker_classes[queue_name]()
 
-def get_active_worker_queues():
-    # type: () -> List[str]
-    return list(worker_classes.keys())
+def get_active_worker_queues(queue_type=None):
+    # type: (Optional[str]) -> List[str]
+    """Returns all the non-test worker queues."""
+    if queue_type is None:
+        return list(worker_classes.keys())
+    return list(queues[queue_type].keys())
 
 class QueueProcessingWorker(object):
     queue_name = None # type: str
@@ -189,7 +196,7 @@ class UserPresenceWorker(QueueProcessingWorker):
         status = event["status"]
         do_update_user_presence(user_profile, client, log_time, status)
 
-@assign_queue('missedmessage_emails')
+@assign_queue('missedmessage_emails', queue_type="loop")
 class MissedMessageWorker(QueueProcessingWorker):
     def start(self):
         # type: () -> None
@@ -280,7 +287,7 @@ class ErrorReporter(QueueProcessingWorker):
         elif settings.ERROR_REPORTING:
             do_report_error(event['report']['host'], event['type'], event['report'])
 
-@assign_queue('slow_queries')
+@assign_queue('slow_queries', queue_type="loop")
 class SlowQueryWorker(QueueProcessingWorker):
     def start(self):
         # type: () -> None
@@ -384,7 +391,7 @@ class MirrorWorker(QueueProcessingWorker):
         mirror_email(email.message_from_string(event["message"]),
                      rcpt_to=event["rcpt_to"], pre_checked=True)
 
-@assign_queue('test')
+@assign_queue('test', queue_type="test")
 class TestWorker(QueueProcessingWorker):
     # This worker allows you to test the queue worker infrastructure without
     # creating significant side effects.  It can be useful in development or

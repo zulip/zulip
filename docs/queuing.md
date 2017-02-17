@@ -53,11 +53,11 @@ To add a new queue processor:
   `/etc/supervisor/conf.d/zulip.conf` via a puppet template in
   `app_frontend.pp`.
 
-* For monitoring, you need to add your queue to the list in
-  `scripts/nagios/check-rabbitmq-consumers`, so that Nagios can check
-  whether a queue processor is running. if it's a one-at-a-time
-  consumer like `user_activity_internal` or a custom nagios check if
-  it is a bulk processor like `slow_queries`.
+The queue will automatically be added to the list of queues tracked by
+`scripts/nagios/check-rabbitmq-consumers`, so Nagios can properly
+check whether a queue processor is running for your queue.  You still
+need to update the sample Nagios configuration in `puppet/zulip_ops`
+manually.
 
 ### Publishing events into a queue
 
