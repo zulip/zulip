@@ -136,7 +136,7 @@ def get_client_name(request, is_json_view):
         # We could check for a browser's name being "Mozilla", but
         # e.g. Opera and MobileSafari don't set that, and it seems
         # more robust to just key off whether it was a json view
-        if user_agent["name"] != "ZulipDesktop" and is_json_view:
+        if is_json_view and user_agent["name"] not in {"ZulipDesktop", "ZulipElectron"}:
             # Avoid changing the client string for browsers Once this
             # is out to prod, we can name the field to something like
             # Browser for consistency.
