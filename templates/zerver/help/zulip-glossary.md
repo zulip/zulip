@@ -49,6 +49,13 @@ phrase (a complete list of emojis can be found
 the **smiley face** (<i class="icon-vector-smile"></i>) icon below the
 [compose box](#compose-box).
 
+### emoji reaction
+
+**Emoji reactions** are small [emoji](#emoji) icons that appear below messages.
+Although they are generally used to show reactions to a message, they can be
+used for various other purposes, such as [voting](/static/images/help/emoji-react-vote.png)
+or [checking off items in a to-do list](/static/images/help/emoji-react-checklist.png).
+
 ### filter
 
 Also known as a [view](#view), a **filter** is one of the options for viewing
