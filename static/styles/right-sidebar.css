@@ -201,3 +201,35 @@
 .add-user-list-filter {
     width: 80%;
 }
+
+#user-list .input-append {
+    margin-bottom: 5px;
+    font-size: 90%;
+    letter-spacing: -.3em;
+}
+
+#user-list #clear_search_people_button:hover {
+    color: #000;
+}
+
+#user-list #clear_search_people_button[disabled] {
+    visibility: hidden;
+}
+
+#user-list #clear_search_people_button,
+#user-list #clear_search_people_button[disabled]:hover {
+    position: relative;
+    right: 20px;
+    background: none;
+    border: none;
+    height: 30px;
+    text-align: center;
+    padding: 4px;
+    color: #ccc;
+    font-size: 12px;
+    text-shadow: none;
+    box-shadow: none;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    z-index: 5;
+}
