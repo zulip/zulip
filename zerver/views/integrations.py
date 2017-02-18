@@ -58,9 +58,9 @@ class HelpView(ApiURLView):
         return self.path_template % (article,)
 
     def get_context_data(self, **kwargs):
-        # type: (**Any) -> Dict[str, str]
+        # type: (**Any) -> Dict[str, Any]
         article = kwargs["article"]
-        context = super(HelpView, self).get_context_data()
+        context = super(HelpView, self).get_context_data()  # type: Dict[str, Any]
         path = self.get_path(article)
         if os.path.exists(path):
             context["article"] = path
