@@ -394,6 +394,14 @@ exports.get_newbie_stream = function () {
     return undefined;
 };
 
+exports.remove_default_stream = function (stream_id) {
+    page_params.realm_default_streams = _.reject(page_params.realm_default_streams,
+        function (stream) {
+            return stream.stream_id === stream_id;
+        }
+    );
+};
+
 return exports;
 
 }());
