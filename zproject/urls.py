@@ -188,22 +188,28 @@ v1_api_and_json_patterns = [
         {'DELETE': 'zerver.views.realm_filters.delete_filter'}),
 
     # users -> zerver.views.users
+    #
+    # Since some of these endpoints do something different if used on
+    # yourself with `/me` as the email, we need to make sure that we
+    # don't accidentally trigger these.  The cleanest way to do that
+    # is to add a regular expression assertion that it isn't `/me/`
+    # (or ends with `/me`, in the case of hitting the root URL).
     url(r'^users$', rest_dispatch,
         {'GET': 'zerver.views.users.get_members_backend',
          'POST': 'zerver.views.users.create_user_backend'}),
-    url(r'^users/(?P<email>(?!me)[^/]*)/reactivate$', rest_dispatch,
+    url(r'^users/(?!me/)(?P<email>[^/]*)/reactivate$', rest_dispatch,
         {'POST': 'zerver.views.users.reactivate_user_backend'}),
-    url(r'^users/(?P<email>(?!me)[^/]*)/presence$', rest_dispatch,
+    url(r'^users/(?!me/)(?P<email>[^/]*)/presence$', rest_dispatch,
         {'GET': 'zerver.views.presence.get_presence_backend'}),
-    url(r'^users/(?P<email>(?!me)[^/]*)$', rest_dispatch,
+    url(r'^users/(?!me$)(?P<email>[^/]*)$', rest_dispatch,
         {'PATCH': 'zerver.views.users.update_user_backend',
          'DELETE': 'zerver.views.users.deactivate_user_backend'}),
     url(r'^bots$', rest_dispatch,
         {'GET': 'zerver.views.users.get_bots_backend',
          'POST': 'zerver.views.users.add_bot_backend'}),
-    url(r'^bots/(?P<email>(?!me)[^/]*)/api_key/regenerate$', rest_dispatch,
+    url(r'^bots/(?!me/)(?P<email>[^/]*)/api_key/regenerate$', rest_dispatch,
         {'POST': 'zerver.views.users.regenerate_bot_api_key'}),
-    url(r'^bots/(?P<email>(?!me)[^/]*)$', rest_dispatch,
+    url(r'^bots/(?!me/)(?P<email>[^/]*)$', rest_dispatch,
         {'PATCH': 'zerver.views.users.patch_bot_backend',
          'DELETE': 'zerver.views.users.deactivate_bot_backend'}),
 
