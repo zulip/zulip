@@ -713,6 +713,23 @@ class ActivateTest(ZulipTestCase):
         user = get_user_profile_by_email('hamlet@zulip.com')
         self.assertTrue(user.is_active)
 
+    def test_api_me_user(self):
+        # type: () -> None
+        """This test helps ensure that our URL patterns for /users/me URLs
+        handle email addresses starting with "me" correctly."""
+        self.register("me@zulip.com", "testpassword")
+        self.login('iago@zulip.com')
+
+        result = self.client_delete('/json/users/me@zulip.com')
+        self.assert_json_success(result)
+        user = get_user_profile_by_email('me@zulip.com')
+        self.assertFalse(user.is_active)
+
+        result = self.client_post('/json/users/me@zulip.com/reactivate')
+        self.assert_json_success(result)
+        user = get_user_profile_by_email('me@zulip.com')
+        self.assertTrue(user.is_active)
+
     def test_api_with_nonexistent_user(self):
         # type: () -> None
         admin = get_user_profile_by_email('othello@zulip.com')
