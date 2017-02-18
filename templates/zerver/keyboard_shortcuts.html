@@ -2,6 +2,7 @@
      aria-labelledby="keyboard-shortcuts-label" aria-hidden="true">
   <div class="modal-body">
     <div>
+        <p>Hover over highlighted keys to view their Mac keyboard shortcut equivalents.</p>
       <table class="hotkeys_table table table-striped table-bordered table-condensed">
         <thead>
           <tr>
@@ -29,15 +30,15 @@
           <td class="definition">{% trans %}Next message{% endtrans %}</td>
         </tr>
         <tr>
-          <td class="hotkey">PgUp, K</td>
+          <td class="hotkey"><a href="#" class="tooltips">PgUp<span>Fn + ↑</span></a>, K</td>
           <td class="definition">{% trans %}Scroll up{% endtrans %}</td>
         </tr>
         <tr>
-          <td class="hotkey">PgDn, J, Spacebar</td>
+          <td class="hotkey"><a href="#" class="tooltips">PgDn<span>Fn + ↓</span></a>, J, Spacebar</td>
           <td class="definition">{% trans %}Scroll down{% endtrans %}</td>
         </tr>
         <tr>
-          <td class="hotkey">End</td>
+          <td class="hotkey"><a href="#" class="tooltips">End<span>Fn + ⇾</span></a></td>
           <td class="definition">{% trans %}Last message{% endtrans %}</td>
         </tr>
       </table>
@@ -49,7 +50,7 @@
           </tr>
         </thead>
         <tr>
-          <td class="hotkey">Enter or r</td>
+          <td class="hotkey"><a href="#" class="tooltips">Enter<span>Return</span></a> or r</td>
           <td class="definition">{% trans %}Reply to message{% endtrans %}</td>
         </tr>
         <tr>
@@ -65,7 +66,7 @@
           <td class="definition">{% trans %}New private message{% endtrans %}</td>
         </tr>
         <tr>
-          <td class="hotkey">Tab then Enter</td>
+          <td class="hotkey">Tab then <a href="#" class="tooltips">Enter<span>Return</span></a></td>
           <td class="definition">{% trans %}Send message{% endtrans %}</td>
         </tr>
         <tr>
@@ -115,7 +116,7 @@
           </tr>
         </thead>
         <tr>
-          <td class="hotkey">Left</td>
+          <td class="hotkey">⇽</td>
           <td class="definition">{% trans %}Edit your last message{% endtrans %}</td>
         </tr>
         <tr>
@@ -123,7 +124,7 @@
           <td class="definition">{% trans %}Open message menu{% endtrans %}</td>
         </tr>
         <tr id="edit-message-hotkey-help">
-          <td class="hotkey">i then Enter</td>
+          <td class="hotkey">i then <a href="#" class="tooltips">Enter<span>Return</span></a></td>
           <td class="definition">{% trans %}Edit selected message{% endtrans %}</td>
         </tr>
         <tr>
