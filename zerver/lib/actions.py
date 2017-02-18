@@ -1249,7 +1249,7 @@ def check_message(sender, client, message_type_name, message_to,
         message_to = [sender.default_sending_stream.name]
     if len(message_to) == 0:
         raise JsonableError(_("Message must have recipients"))
-    message_content = message_content_raw.strip()
+    message_content = message_content_raw.rstrip()
     if len(message_content) == 0:
         raise JsonableError(_("Message must not be empty"))
     message_content = truncate_body(message_content)
