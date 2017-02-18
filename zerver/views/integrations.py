@@ -66,6 +66,8 @@ class HelpView(ApiURLView):
             context["article"] = path
         else:
             context["article"] = self.get_path("missing")
+        # For disabling the "Back to home" on the homepage
+        context["not_index_page"] = not path.endswith("/index.md")
         return context
 
     def get(self, request, article=""):
