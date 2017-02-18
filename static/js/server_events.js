@@ -157,6 +157,8 @@ function dispatch_normal_event(event) {
                 }
                 subs.remove_stream(stream.stream_id);
                 stream_data.delete_sub(stream.stream_id);
+                admin.remove_default_stream(stream.stream_id);
+                stream_data.remove_default_stream(stream.stream_id);
             });
         }
         break;
