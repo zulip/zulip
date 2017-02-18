@@ -153,7 +153,21 @@ exports.build_default_stream_table = function (streams_data) {
         loading.destroy_indicator($('#admin_page_default_streams_loading_indicator'));
     }());
 
+    self.remove = function (stream_id) {
+        if (self.row_dict.has(stream_id)) {
+            var row = self.row_dict.get(stream_id);
+            row.remove();
+        }
+    };
+
     return self;
+};
+var default_stream_table;
+
+exports.remove_default_stream = function (stream_id) {
+    if (default_stream_table) {
+        default_stream_table.remove(stream_id);
+    }
 };
 
 function get_non_default_streams_names(streams_data) {
@@ -176,7 +190,7 @@ exports.update_default_streams_table = function () {
     if (/#*administration/.test(window.location.hash) ||
         /#*settings/.test(window.location.hash)) {
         $("#admin_default_streams_table").expectOne().find("tr.default_stream_row").remove();
-        exports.build_default_stream_table(
+        default_stream_table = exports.build_default_stream_table(
             page_params.realm_default_streams);
     }
 };
