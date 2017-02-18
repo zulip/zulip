@@ -99,7 +99,7 @@ exports.initialize = function () {
     // Some of these functions don't actually need to be exported,
     // but the code was moved here from elsewhere, and it would be
     // more work to re-order everything and make them private.
-    $('#search_exit' ).on('click', exports.clear_search);
+    $('#search_exit').on('click', exports.clear_search);
 
     var query = $('#search_query');
     query.on('focus', exports.focus_search)

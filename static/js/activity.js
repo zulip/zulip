@@ -520,6 +520,17 @@ exports.searching = function () {
     return $('.user-list-filter').expectOne().is(':focus');
 };
 
+function update_clear_search_button() {
+    var focused = $('.user-list-filter').is(':focus');
+
+    // Show button iff the search input is focused, or has non-empty contents
+    if (focused || $('.user-list-filter').val()) {
+        $('#clear_search_people_button').removeAttr('disabled');
+    } else {
+        $('#clear_search_people_button').attr('disabled', 'disabled');
+    }
+}
+
 exports.escape_search = function () {
     var filter = $('.user-list-filter').expectOne();
     if (filter.val() === '') {
@@ -527,6 +538,7 @@ exports.escape_search = function () {
         return;
     }
     filter.val('');
+    update_clear_search_button();
     update_users_for_search();
 };
 
@@ -537,6 +549,14 @@ exports.initiate_search = function () {
 
 exports.blur_search = function () {
     $('.user-list-filter').blur();
+    update_clear_search_button();
+};
+
+exports.clear_search = function () {
+    $('.user-list-filter').val('');
+    $('.user-list-filter').blur();
+    update_clear_search_button();
+    update_users_for_search();
 };
 
 function maybe_select_person(e) {
@@ -562,13 +582,16 @@ function maybe_select_person(e) {
 
 function focus_user_filter(e) {
     e.stopPropagation();
+    update_clear_search_button();
 }
 
 $(function () {
     $(".user-list-filter").expectOne()
         .on('click', focus_user_filter)
         .on('input', update_users_for_search)
-        .on('keydown', maybe_select_person);
+        .on('keydown', maybe_select_person)
+        .on('blur', update_clear_search_button);
+    $('#clear_search_people_button').on('click', exports.clear_search);
 });
 
 
