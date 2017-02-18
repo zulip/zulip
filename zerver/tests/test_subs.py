@@ -35,7 +35,7 @@ from zerver.lib.test_runner import (
 
 from zerver.models import (
     get_display_recipient, Message, Realm, Recipient, Stream, Subscription,
-    UserProfile, get_user_profile_by_id
+    DefaultStream, UserProfile, get_user_profile_by_id
 )
 
 from zerver.lib.actions import (
@@ -44,7 +44,8 @@ from zerver.lib.actions import (
     gather_subscriptions_helper, bulk_add_subscriptions, bulk_remove_subscriptions,
     gather_subscriptions, get_default_streams_for_realm, get_realm, get_stream,
     get_user_profile_by_email, set_default_streams, check_stream_name,
-    create_stream_if_needed, create_streams_if_needed, active_user_ids
+    create_stream_if_needed, create_streams_if_needed, active_user_ids,
+    do_deactivate_stream,
 )
 
 from zerver.views.streams import (
@@ -179,6 +180,14 @@ class StreamAdminTest(ZulipTestCase):
             active=True,
         ).exists()
         self.assertFalse(subscription_exists)
+
+    def test_deactivate_stream_removes_default_stream(self):
+        # type: () -> None
+        stream = self.make_stream('new_stream')
+        do_add_default_stream(stream)
+        self.assertEqual(1, DefaultStream.objects.filter(stream=stream).count())
+        do_deactivate_stream(stream)
+        self.assertEqual(0, DefaultStream.objects.filter(stream=stream).count())
 
     def test_deactivate_stream_backend_requires_existing_stream(self):
         # type: () -> None

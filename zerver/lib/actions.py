@@ -680,6 +680,8 @@ def do_deactivate_stream(stream, log=True):
     stream.name = new_name[:Stream.MAX_NAME_LENGTH]
     stream.save()
 
+    DefaultStream.objects.filter(realm=stream.realm, stream=stream).delete()
+
     # Remove the old stream information from remote cache.
     old_cache_key = get_stream_cache_key(old_name, stream.realm)
     cache_delete(old_cache_key)
