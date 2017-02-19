@@ -1,7 +1,6 @@
+from django.conf import settings
 from django.db import connection, models
 from django.utils import timezone
-from django.conf import settings
-from datetime import timedelta, datetime
 
 from analytics.models import InstallationCount, RealmCount, \
     UserCount, StreamCount, BaseCount, FillState, installation_epoch
@@ -10,6 +9,7 @@ from zerver.lib.timestamp import floor_to_day
 
 from typing import Any, Optional, Type, Tuple, Text
 
+from datetime import timedelta, datetime
 import logging
 import time
 

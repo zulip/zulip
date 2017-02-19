@@ -151,15 +151,15 @@ class TestProcessCountStat(AnalyticsTestCase):
         # type: (datetime) -> CountStat
         dummy_query = """INSERT INTO analytics_realmcount (realm_id, property, end_time, value)
                                 VALUES (1, 'test stat', '%(end_time)s', 22)""" % {'end_time': current_time}
-        count_stat = CountStat('test stat', ZerverCountQuery(Recipient, UserCount, dummy_query),
-                               {}, None, CountStat.HOUR, False)
-        return count_stat
+        stat = CountStat('test stat', ZerverCountQuery(Recipient, UserCount, dummy_query),
+                         {}, None, CountStat.HOUR, False)
+        return stat
 
-    def assertFillStateEquals(self, end_time, state = FillState.DONE, property = None):
+    def assertFillStateEquals(self, end_time, state=FillState.DONE, property=None):
         # type: (datetime, int, Optional[Text]) -> None
-        count_stat = self.make_dummy_count_stat(end_time)
+        stat = self.make_dummy_count_stat(end_time)
         if property is None:
-            property = count_stat.property
+            property = stat.property
         fill_state = FillState.objects.filter(property=property).first()
         self.assertEqual(fill_state.end_time, end_time)
         self.assertEqual(fill_state.state, state)
@@ -168,27 +168,27 @@ class TestProcessCountStat(AnalyticsTestCase):
         # type: () -> None
         # process new stat
         current_time = installation_epoch() + self.HOUR
-        count_stat = self.make_dummy_count_stat(current_time)
-        property = count_stat.property
-        process_count_stat(count_stat, current_time)
+        stat = self.make_dummy_count_stat(current_time)
+        property = stat.property
+        process_count_stat(stat, current_time)
         self.assertFillStateEquals(current_time)
         self.assertEqual(InstallationCount.objects.filter(property=property).count(), 1)
 
         # dirty stat
         FillState.objects.filter(property=property).update(state=FillState.STARTED)
-        process_count_stat(count_stat, current_time)
+        process_count_stat(stat, current_time)
         self.assertFillStateEquals(current_time)
         self.assertEqual(InstallationCount.objects.filter(property=property).count(), 1)
 
         # clean stat, no update
-        process_count_stat(count_stat, current_time)
+        process_count_stat(stat, current_time)
         self.assertFillStateEquals(current_time)
         self.assertEqual(InstallationCount.objects.filter(property=property).count(), 1)
 
         # clean stat, with update
         current_time = current_time + self.HOUR
-        count_stat = self.make_dummy_count_stat(current_time)
-        process_count_stat(count_stat, current_time)
+        stat = self.make_dummy_count_stat(current_time)
+        process_count_stat(stat, current_time)
         self.assertFillStateEquals(current_time)
         self.assertEqual(InstallationCount.objects.filter(property=property).count(), 2)
 
