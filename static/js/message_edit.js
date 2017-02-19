@@ -259,7 +259,9 @@ function edit_message(row, raw_content) {
                 message_edit_countdown_timer.text(i18n.t("Time's up!"));
             } else {
                 message_edit_countdown_timer.text(timer_text(seconds_left));
+                //seconds_left--;
             }
+            seconds_left--;
         }, 1000);
     }
 
