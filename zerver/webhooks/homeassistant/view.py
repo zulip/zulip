@@ -13,7 +13,8 @@ from typing import Dict, Any, Iterable, Optional, Text
 @api_key_only_webhook_view('HomeAssistant')
 @has_request_variables
 def api_homeassistant_webhook(request, user_profile, client,
-                           payload=REQ(argument_type='body'), stream=REQ(default="homeassistant")):
+                              payload=REQ(argument_type='body'),
+                              stream=REQ(default="homeassistant")):
     # type: (HttpRequest, UserProfile, Client, Dict[str, str], Text) -> HttpResponse
 
     # construct the body of the message
