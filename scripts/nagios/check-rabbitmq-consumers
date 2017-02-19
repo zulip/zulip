@@ -38,6 +38,7 @@ consumers = defaultdict(int) # type: Dict[str, int]
 worker_queues = {
     'digest_emails',
     'email_mirror',
+    'embed_links',
     'error_reports',
     'feedback_messages',
     'invites',
