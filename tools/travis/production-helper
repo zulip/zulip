@@ -86,7 +86,10 @@ fi
 echo; echo "Now running RabbitMQ consumer Nagios tests"; echo
 # First run the check that usually runs in cron and populates the state files
 /home/zulip/deployments/current/scripts/nagios/check-rabbitmq-consumers
-for consumer in notify_tornado user_activity user_activity_interval user_presence invites signups message_sender feedback_messages error_reports digest_emails email_mirror missedmessage_mobile_notifications; do
+
+# Then, compute the list of all Django queue workers to run Nagios checks against
+consumer_list=$(/home/zulip/deployments/current/scripts/lib/queue_workers.py --queue_type=consumer)
+for consumer in $consumer_list; do
     if ! /usr/lib/nagios/plugins/zulip_app_frontend/check_rabbitmq_consumers "$consumer"; then
         set +x
         echo
