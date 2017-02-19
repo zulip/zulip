@@ -37,7 +37,7 @@ class MockRedis(object):
             del self.data[key]
 
     def expire(self, *args, **kwargs):
-        # type: (Any, Any) -> None
+        # type: (*Any, **Any) -> None
         pass
 
 class PushNotificationTest(TestCase):
@@ -75,7 +75,7 @@ class APNsMessageTest(PushNotificationTest):
 
 class ResponseListenerTest(PushNotificationTest):
     def get_error_response(self, **kwargs):
-        # type: (Any) -> Dict[str, SupportsInt]
+        # type: (**Any) -> Dict[str, SupportsInt]
         er = {'identifier': 0, 'status': 0}  # type: Dict[str, SupportsInt]
         er.update({k: v for k, v in kwargs.items() if k in er})
         return er
