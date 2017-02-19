@@ -1431,13 +1431,23 @@ class UserPresence(models.Model):
         return UserPresence.get_status_dicts_for_query(query, mobile_user_ids)
 
     @staticmethod
+    def exclude_old_users(query):
+        # type: (QuerySet) -> QuerySet
+        two_weeks_ago = timezone.now() - datetime.timedelta(weeks=2)
+        return query.filter(timestamp__gte=two_weeks_ago)
+
+    @staticmethod
     def get_status_dict_by_realm(realm_id):
         # type: (int) -> DefaultDict[Any, Dict[Any, Any]]
         query = UserPresence.objects.filter(
             user_profile__realm_id=realm_id,
             user_profile__is_active=True,
             user_profile__is_bot=False
-        ).values(
+        )
+
+        query = UserPresence.exclude_old_users(query)
+
+        query = query.values(
             'client__name',
             'status',
             'timestamp',
