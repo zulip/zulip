@@ -321,7 +321,7 @@ DONE!
 Next, we add end-user documentation for our webhook integration.  You
 can see the existing examples at
 [https://zulipchat.com/integrations](https://zulipchat.com/integrations)
-or by accessing `/integrations` in your Zulip development environemtn.
+or by accessing `/integrations` in your Zulip development environment.
 
 There are two parts to the end-user documentation on this page.
 
