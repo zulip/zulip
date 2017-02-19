@@ -2689,9 +2689,14 @@ def do_update_embedded_data(user_profile, message, content, rendered_content):
 def do_update_message(user_profile, message, subject, propagate_mode, content, rendered_content):
     # type: (UserProfile, Message, Optional[Text], str, Optional[Text], Optional[Text]) -> int
     event = {'type': 'update_message',
+             # TODO: We probably want to remove the 'sender' field
+             # after confirming it isn't used by any consumers.
              'sender': user_profile.email,
+             'user_id': user_profile.id,
              'message_id': message.id} # type: Dict[str, Any]
-    edit_history_event = {} # type: Dict[str, Any]
+    edit_history_event = {
+        'user_id': user_profile.id,
+    } # type: Dict[str, Any]
     changed_messages = [message]
 
     # Set first_rendered_content to be the oldest version of the

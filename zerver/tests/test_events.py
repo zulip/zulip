@@ -367,6 +367,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('stream_id', check_int),
             ('subject', check_string),
             ('subject_links', check_list(None)),
+            ('user_id', check_int),
             # There is also a timestamp field in the event, but we ignore it, as
             # it's kind of an unwanted but harmless side effect of calling log_event.
         ])
