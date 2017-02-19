@@ -13,7 +13,9 @@
       with Zulip organizations. The addresses entered on the previous page
       are listed below:
       </p>
-
+      {% if development_environment %}
+        <div class="alert alert-info" style="display:inline-block;">{{ _("In the Zulip development environment, outgoing emails are printed to the run-dev.py console") }}</div>
+      {% endif %}
       <ul>
         {% for email in emails %}
         <li>{{ email }}</li>
@@ -38,7 +40,7 @@
         {{ csrf_input }}
         <input type="text" class="form-control required" autofocus
                placeholder="{{ _("Enter email addresses") }}"
-               id="emails" name="emails"/>
+               autofocus="autofocus" id="emails" name="emails"/>
         <button type="submit" class="btn btn-primary">{{ _('Find team') }}</button>
         <div><i>{{ form.emails.help_text }}</i></div>
       </form>
