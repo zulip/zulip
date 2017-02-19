@@ -445,9 +445,9 @@ class Client(object):
             # type: () -> Tuple[str, int]
             while True:
                 if event_types is None:
-                    res = self.register() # type: ignore
+                    res = self.register()
                 else:
-                    res = self.register(event_types=event_types, narrow=narrow) # type: ignore
+                    res = self.register(event_types=event_types, narrow=narrow)
 
                 if 'error' in res.get('result'):
                     if self.verbose:
@@ -461,7 +461,7 @@ class Client(object):
             if queue_id is None:
                 (queue_id, last_event_id) = do_register()
 
-            res = self.get_events(queue_id=queue_id, last_event_id=last_event_id) # type: ignore
+            res = self.get_events(queue_id=queue_id, last_event_id=last_event_id)
             if 'error' in res.get('result'):
                 if res["result"] == "http-error":
                     if self.verbose:
@@ -745,7 +745,7 @@ class ZulipStream(object):
                    "to": self.to,
                    "subject": self.subject,
                    "content": content}
-        self.client.send_message(message) # type: ignore
+        self.client.send_message(message)
 
     def flush(self):
         # type: () -> None
