@@ -17,6 +17,7 @@ sanity_check.check_venv(__file__)
 
 from typing import IO, Text
 
+# TODO: Convert this to use scripts/lib/queue_workers.py
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 successful_worker_launches = [
     'launching queue worker thread error_reports',
