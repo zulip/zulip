@@ -265,7 +265,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         self.assert_json_success(result)
 
         user_profile = get_user_profile_by_email("othello@zulip.com")
-        cutoff = time.mktime(datetime.datetime(year=2016, month=1, day=1).timetuple()) # type: ignore # https://github.com/python/typeshed/pull/597
+        cutoff = time.mktime(datetime.datetime(year=2016, month=1, day=1).timetuple())
 
         handle_digest_email(user_profile.id, cutoff)
         self.assertEqual(mock_send_future_email.call_count, 1)

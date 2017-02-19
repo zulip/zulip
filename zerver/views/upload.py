@@ -44,7 +44,7 @@ def serve_local(request, path_id):
         return HttpResponseNotFound('<p>File not found</p>')
     filename = os.path.basename(local_path)
     response = FileResponse(open(local_path, 'rb'),
-                            content_type = mimetypes.guess_type(filename))  # type: ignore # https://github.com/python/typeshed/issues/559
+                            content_type = mimetypes.guess_type(filename))
     return response
 
 @has_request_variables

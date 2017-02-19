@@ -76,7 +76,7 @@ class ParserTestHappyPath(unittest.TestCase):
             div {
             }'''
         error = 'Empty declaration'
-        with self.assertRaisesRegex(CssParserException, error): # type: ignore # See https://github.com/python/typeshed/issues/372
+        with self.assertRaisesRegex(CssParserException, error):
             parse(my_css)
 
     def test_multi_line_selector(self):
@@ -144,7 +144,7 @@ class ParserTestSadPath(unittest.TestCase):
 
     def _assert_error(self, my_css, error):
         # type: (str, str) -> None
-        with self.assertRaisesRegex(CssParserException, error): # type: ignore # See https://github.com/python/typeshed/issues/372
+        with self.assertRaisesRegex(CssParserException, error):
             parse(my_css)
 
     def test_unexpected_end_brace(self):
