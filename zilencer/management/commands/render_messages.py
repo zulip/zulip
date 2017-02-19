@@ -56,7 +56,10 @@ class Command(BaseCommand):
                 if message.edit_history:
                     history = ujson.loads(message.edit_history)
                     history = sorted(history, key=lambda i: i['timestamp'])
-                    content = history[0]['prev_content']
+                    for entry in history:
+                        if 'prev_content' in entry:
+                            content = entry['prev_content']
+                            break
                 result.write(ujson.dumps({
                     'id': message.id,
                     'content': render_markdown(message, content)
