@@ -48,14 +48,16 @@ To add a new queue processor:
   process_queue --queue=user_activity`.
 
 * So that supervisord will known to run the queue processor in
-  production, you will need to define a program entry for it in
-  `servers/puppet/modules/zulip/files/supervisor/conf.d/zulip.conf`
-  and add it to the `zulip-workers` group further down in the file.
+  production, you will need to add to to `normal_queues` in
+  `puppet/zulip/manifests/base.pp`; the list there is used to generate
+  `/etc/supervisor/conf.d/zulip.conf` via a puppet template in
+  `app_frontend.pp`.
 
-* For monitoring, you need to add a check that your worker is running
-  to puppet/zulip/files/cron.d/rabbitmq-numconsumers if it's a
-  one-at-a-time consumer like `user_activity_internal` or a custom
-  nagios check if it is a bulk processor like `slow_queries`.
+* For monitoring, you need to add your queue to the list in
+  `scripts/nagios/check-rabbitmq-consumers`, so that Nagios can check
+  whether a queue processor is running. if it's a one-at-a-time
+  consumer like `user_activity_internal` or a custom nagios check if
+  it is a bulk processor like `slow_queries`.
 
 ### Publishing events into a queue
 
