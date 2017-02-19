@@ -331,6 +331,12 @@ function process_hotkey(e) {
         return false;
     }
 
+    // There's special handling for when you're previewing a composition
+    if ($("#preview_message_area").is(":visible")) {
+        compose.enter_with_preview_open();
+        return true;
+    }
+
     // Shortcuts that don't require a message
     switch (event_name) {
         case 'narrow_private':

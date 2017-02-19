@@ -607,6 +607,17 @@ function send_message(request) {
     }
 }
 
+exports.enter_with_preview_open = function () {
+    clear_preview_area();
+    if (page_params.enter_sends) {
+        // If enter_sends is enabled, we just send the message
+        send_message();
+    } else {
+        // Otherwise, we return to the compose box and focus it
+        $("#new_message_content").focus();
+    }
+};
+
 exports.respond_to_message = function (opts) {
     var message;
     var msg_type;
