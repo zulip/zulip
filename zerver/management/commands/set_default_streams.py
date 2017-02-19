@@ -48,7 +48,7 @@ For example:
                             help='A comma-separated list of stream names.')
 
     def handle(self, **options):
-        # type: (*Any, **str) -> None
+        # type: (**str) -> None
         if options["string_id"] is None or options["streams"] is None:
             print("Please provide both a subdomain name or string_id and a default \
 set of streams (which can be empty, with `--streams=`).", file=sys.stderr)

@@ -241,7 +241,7 @@ class LogRequests(object):
             connection.connection.queries = []
 
     def process_view(self, request, view_func, args, kwargs):
-        # type: (HttpRequest, Callable[..., HttpResponse], *str, **Any) -> None
+        # type: (HttpRequest, Callable[..., HttpResponse], List[str], Dict[str, Any]) -> None
         # process_request was already run; we save the initialization
         # time (i.e. the time between receiving the request and
         # figuring out which view function to call, which is primarily
@@ -299,7 +299,7 @@ class JsonErrorHandler(object):
 
 class TagRequests(object):
     def process_view(self, request, view_func, args, kwargs):
-        # type: (HttpRequest, Callable[..., HttpResponse], *str, **Any) -> None
+        # type: (HttpRequest, Callable[..., HttpResponse], List[str], Dict[str, Any]) -> None
         self.process_request(request)
 
     def process_request(self, request):

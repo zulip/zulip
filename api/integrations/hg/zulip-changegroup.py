@@ -114,7 +114,7 @@ def get_config(ui, item):
         return None
 
 def hook(ui, repo, **kwargs):
-    # type: (ui, repo, Optional[Text]) -> None
+    # type: (ui, repo, **Text) -> None
     """
     Invoked by configuring a [hook] entry in .hg/hgrc.
     """

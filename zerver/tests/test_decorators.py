@@ -292,7 +292,7 @@ class RateLimitTestCase(TestCase):
         req = Request()
 
         def f(req):
-            # type: () -> str
+            # type: (Any) -> str
             return 'some value'
 
         f = rate_limit()(f)
@@ -316,7 +316,7 @@ class RateLimitTestCase(TestCase):
         req = Request()
 
         def f(req):
-            # type: () -> str
+            # type: (Any) -> str
             return 'some value'
 
         f = rate_limit()(f)
@@ -342,7 +342,7 @@ class RateLimitTestCase(TestCase):
         req = Request()
 
         def f(req):
-            # type: () -> str
+            # type: (Any) -> str
             return 'some value'
 
         f = rate_limit()(f)
@@ -367,7 +367,7 @@ class RateLimitTestCase(TestCase):
         req = Request()
 
         def f(req):
-            # type: () -> str
+            # type: (Any) -> str
             return 'some value'
 
         f = rate_limit()(f)
