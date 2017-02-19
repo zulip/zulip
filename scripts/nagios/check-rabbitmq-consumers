@@ -35,26 +35,10 @@ output = subprocess.check_output(['/usr/sbin/rabbitmqctl', 'list_consumers'],
 
 consumers = defaultdict(int) # type: Dict[str, int]
 
-worker_queues = {
-    'digest_emails',
-    'email_mirror',
-    'embed_links',
-    'error_reports',
-    'feedback_messages',
-    'invites',
-    'message_sender',
-    'missedmessage_emails',
-    'missedmessage_mobile_notifications',
-    'notify_tornado',
-    'signups',
-    'slow_queries',
-    'tornado_return',
-    'user_activity'
-    'user_activity_interval',
-    'user_presence',
-}
+sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
+from scripts.lib.queue_workers import get_active_worker_queues
 
-for queue_name in worker_queues:
+for queue_name in get_active_worker_queues("consumer"):
     consumers[queue_name] = 0
 
 for line in output.split('\n'):
