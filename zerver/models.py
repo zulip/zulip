@@ -1155,8 +1155,7 @@ class Attachment(ModelReprMixin, models.Model):
             'path_id': self.path_id,
             'messages': [{
                 'id': m.id,
-                'name': '{m.pub_date:%Y-%m-%d %H:%M} {recipient}/{m.subject}'.format(
-                    recipient=get_display_recipient(m.recipient), m=m)
+                'name': '{m.pub_date:%Y-%m-%d %H:%M}'.format(m=m)
             } for m in self.messages.all()]
         }
 
