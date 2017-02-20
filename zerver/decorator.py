@@ -299,6 +299,16 @@ def logged_in_and_active(request):
         return False
     return check_subdomain(get_subdomain(request), request.user.realm.subdomain)
 
+def add_logging_data(view_func):
+    # type: (ViewFuncT) -> ViewFuncT
+    @wraps(view_func)
+    def _wrapped_view_func(request, *args, **kwargs):
+        # type: (HttpRequest, *Any, **Any) -> HttpResponse
+        request._email = request.user.email
+        process_client(request, request.user, is_json_view=True)
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
+
 # Based on Django 1.8's @login_required
 def zulip_login_required(function=None,
                          redirect_field_name=REDIRECT_FIELD_NAME,
@@ -310,7 +320,8 @@ def zulip_login_required(function=None,
         redirect_field_name=redirect_field_name
     )
     if function:
-        return actual_decorator(function)
+        # Add necessary logging data via add_logging_data
+        return actual_decorator(add_logging_data(function))
     return actual_decorator
 
 def zulip_internal(view_func):
@@ -323,9 +334,7 @@ def zulip_internal(view_func):
         if not request.user.is_staff:
             return HttpResponseRedirect(settings.HOME_NOT_LOGGED_IN)
 
-        request._email = request.user.email
-        process_client(request, request.user)
-        return view_func(request, *args, **kwargs)
+        return add_logging_data(view_func)(request, *args, **kwargs)
     return _wrapped_view_func # type: ignore # https://github.com/python/mypy/issues/1927
 
 # authenticated_api_view will add the authenticated user's

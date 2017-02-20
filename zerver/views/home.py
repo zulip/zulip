@@ -107,9 +107,6 @@ def home_real(request):
     request.session.modified = True
 
     user_profile = request.user
-    request._email = request.user.email
-    # Process the client as an auth decorator would
-    process_client(request, user_profile, is_json_view=True)
 
     # If a user hasn't signed the current Terms of Service, send them there
     if settings.TERMS_OF_SERVICE is not None and settings.TOS_VERSION is not None and \
