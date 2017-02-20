@@ -1126,12 +1126,14 @@ class EditMessageTest(ZulipTestCase):
 
         # Check content of message after edit.
         self.assertEqual(message_history[0]['rendered_content'],
+                         '<p>content before edit</p>')
+        self.assertEqual(message_history[1]['rendered_content'],
                          '<p>content after edit</p>')
-        self.assertEqual(message_history[0]['content_html_diff'],
+        self.assertEqual(message_history[1]['content_html_diff'],
                          '<p>content <span class="highlight_text_replaced">after</span> edit</p>')
 
         # Check content of message before edit.
-        self.assertEqual(message_history[0]['prev_rendered_content'],
+        self.assertEqual(message_history[1]['prev_rendered_content'],
                          '<p>content before edit</p>')
 
     def test_edit_cases(self):
@@ -1210,7 +1212,9 @@ class EditMessageTest(ZulipTestCase):
         message_edit_history = self.client_get("/json/messages/" + str(msg_id) + "/history")
 
         json_response = ujson.loads(message_edit_history.content.decode('utf-8'))
-        message_history = json_response['message_history']
+
+        # We reverse the message history view output so that the IDs line up with the above.
+        message_history = list(reversed(json_response['message_history']))
         i = 0
         for entry in message_history:
             expected_entries = {u'content', u'rendered_content', u'topic', u'timestamp', u'user_id'}
