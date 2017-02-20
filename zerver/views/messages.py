@@ -892,7 +892,8 @@ def fill_edit_history_entries(message_history, message):
     prev_content = message.content
     prev_rendered_content = message.rendered_content
     prev_topic = message.subject
-    prev_timestamp = datetime_to_timestamp(message.last_edit_time)
+    assert(datetime_to_timestamp(message.last_edit_time) == message_history[0]['timestamp'])
+
     for entry in message_history:
         entry['topic'] = prev_topic
         if 'prev_subject' in entry:
@@ -911,9 +912,13 @@ def fill_edit_history_entries(message_history, message):
                 prev_rendered_content,
                 entry['rendered_content'])
 
-        timestamp = entry['timestamp']
-        entry['timestamp'] = prev_timestamp
-        prev_timestamp = timestamp
+    message_history.append(dict(
+        topic = prev_topic,
+        content = prev_content,
+        rendered_content = prev_rendered_content,
+        timestamp = datetime_to_timestamp(message.pub_date),
+        user_id = message.sender_id,
+    ))
 
 @has_request_variables
 def get_message_edit_history(request, user_profile,
