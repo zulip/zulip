@@ -377,6 +377,49 @@ exports.edit_last_sent_message = function () {
     }
 };
 
+exports.show_history = function (message) {
+    $('#message-history').html('');
+    $('#message-edit-history').modal("show");
+    channel.get({
+        url: "/json/messages/" + message.id + "/history",
+        data: {message_id: JSON.stringify(message.id)},
+        success: function (data) {
+            // For now, we ignore topic edits
+            var content_edit_history = [];
+            _.each(data.message_history, function (msg, index) {
+                if (index !== 0 && !msg.prev_content) {
+                    // Skip topic edits
+                    return;
+                }
+
+                // Format timestamp nicely for display
+                var item = {timestamp: timerender.get_full_time(msg.timestamp)};
+                if (index === 0) {
+                    item.posted_or_edited = "Posted by";
+                    item.body_to_render = msg.rendered_content;
+                } else {
+                    item.posted_or_edited = "Edited by";
+                    item.body_to_render = msg.content_html_diff;
+                }
+                if (msg.user_id) {
+                    var person = people.get_person_from_user_id(msg.user_id);
+                    item.edited_by = person.full_name;
+                }
+
+                content_edit_history.push(item);
+            });
+
+            $('#message-history').html(templates.render('message_edit_history', {
+                edited_messages: content_edit_history,
+            }));
+        },
+        error: function (xhr) {
+            ui.report_error(i18n.t("Error fetching message edit history"), xhr,
+                            $("#message-history-error"));
+        },
+    });
+};
+
 $(document).on('narrow_deactivated.zulip', function () {
     _.each(currently_editing_messages, function (elem, idx) {
         if (current_msg_list.get(idx) !== undefined) {
