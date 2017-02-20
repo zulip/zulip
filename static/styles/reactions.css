@@ -130,7 +130,7 @@
     margin: 0;
     padding: 0.5em 0;
     overflow: hidden;
-    overflow-y: scroll;
+    overflow-y: auto;
     display: inline-block;
     height: 16.5em;
 }
