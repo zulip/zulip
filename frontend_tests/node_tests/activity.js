@@ -296,7 +296,7 @@ activity.presence_info[mark.user_id] = { status: activity.IDLE };
 activity.presence_info[norbert.user_id] = { status: activity.ACTIVE };
 
 (function test_presence_list_full_update() {
-    var users = activity.update_users();
+    var users = activity.build_user_sidebar();
     assert.deepEqual(users, [{
             name: 'Fred Flintstone',
             href: '#narrow/pm-with/2-fred',
