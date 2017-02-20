@@ -1222,7 +1222,7 @@ class EditMessageTest(ZulipTestCase):
                 expected_entries.add('content_html_diff')
             i += 1
             self.assertEqual(expected_entries, set(entry.keys()))
-        self.assertEqual(len(message_history), 5)
+        self.assertEqual(len(message_history), 6)
         self.assertEqual(message_history[0]['prev_topic'], 'subject 3')
         self.assertEqual(message_history[0]['topic'], 'subject 4')
         self.assertEqual(message_history[1]['topic'], 'subject 3')
@@ -1240,6 +1240,9 @@ class EditMessageTest(ZulipTestCase):
         self.assertEqual(message_history[3]['content'], 'content 2')
         self.assertEqual(message_history[4]['content'], 'content 2')
         self.assertEqual(message_history[4]['prev_content'], 'content 1')
+
+        self.assertEqual(message_history[5]['content'], 'content 1')
+        self.assertEqual(message_history[5]['topic'], 'subject 1')
 
     def test_edit_message_content_limit(self):
         # type: () -> None
