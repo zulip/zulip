@@ -22,5 +22,5 @@ if __name__ == "__main__":
                         help="Specify which types of queues to list")
     args = parser.parse_args()
 
-    workers = get_active_worker_queues(args.queue_type)
-    print(" ".join(workers))
+    for worker in sorted(get_active_worker_queues(args.queue_type)):
+        print(worker)
