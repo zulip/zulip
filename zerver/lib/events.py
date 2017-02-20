@@ -43,8 +43,9 @@ def get_realm_user_dicts(user_profile):
 # all event types.  Whenever you add new code to this function, you
 # should also add corresponding events for changes in the data
 # structures and new code to apply_events (and add a test in EventsRegisterTest).
-def fetch_initial_state_data(user_profile, event_types, queue_id):
-    # type: (UserProfile, Optional[Iterable[str]], str) -> Dict[str, Any]
+def fetch_initial_state_data(user_profile, event_types, queue_id,
+                             include_subscribers=True):
+    # type: (UserProfile, Optional[Iterable[str]], str, bool) -> Dict[str, Any]
     state = {'queue_id': queue_id} # type: Dict[str, Any]
 
     if event_types is None:
@@ -113,7 +114,8 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
                               'used': user_profile.invites_used}
 
     if want('subscription'):
-        subscriptions, unsubscribed, never_subscribed = gather_subscriptions_helper(user_profile)
+        subscriptions, unsubscribed, never_subscribed = gather_subscriptions_helper(
+            user_profile, include_subscribers=include_subscribers)
         state['subscriptions'] = subscriptions
         state['unsubscribed'] = unsubscribed
         state['never_subscribed'] = never_subscribed
@@ -355,8 +357,8 @@ def apply_events(state, events, user_profile):
 
 def do_events_register(user_profile, user_client, apply_markdown=True,
                        event_types=None, queue_lifespan_secs=0, all_public_streams=False,
-                       narrow=[]):
-    # type: (UserProfile, Client, bool, Optional[Iterable[str]], int, bool, Iterable[Sequence[Text]]) -> Dict[str, Any]
+                       include_subscribers=True, narrow=[]):
+    # type: (UserProfile, Client, bool, Optional[Iterable[str]], int, bool, bool, Iterable[Sequence[Text]]) -> Dict[str, Any]
     # Technically we don't need to check this here because
     # build_narrow_filter will check it, but it's nicer from an error
     # handling perspective to do it before contacting Tornado
@@ -372,7 +374,8 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
     else:
         event_types_set = None
 
-    ret = fetch_initial_state_data(user_profile, event_types_set, queue_id)
+    ret = fetch_initial_state_data(user_profile, event_types_set, queue_id,
+                                   include_subscribers=include_subscribers)
 
     # Apply events that came in while we were fetching initial data
     events = get_user_events(user_profile, queue_id, -1)
