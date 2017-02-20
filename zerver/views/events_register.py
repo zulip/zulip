@@ -24,19 +24,10 @@ def _default_narrow(user_profile, narrow):
         narrow = [['stream', default_stream.name]]
     return narrow
 
-# Does not need to be authenticated because it's called from rest_dispatch
 @has_request_variables
-def api_events_register(request, user_profile,
-                        apply_markdown=REQ(default=False, validator=check_bool),
-                        all_public_streams=REQ(default=None, validator=check_bool)):
-    # type: (HttpRequest, UserProfile, bool, Optional[bool]) -> HttpResponse
-    return events_register_backend(request, user_profile,
-                                   apply_markdown=apply_markdown,
-                                   all_public_streams=all_public_streams)
-
-@has_request_variables
-def events_register_backend(request, user_profile, apply_markdown=True,
-                            all_public_streams=None,
+def events_register_backend(request, user_profile,
+                            apply_markdown=REQ(default=False, validator=check_bool),
+                            all_public_streams=REQ(default=None, validator=check_bool),
                             event_types=REQ(validator=check_list(check_string), default=None),
                             narrow=REQ(validator=check_list(check_list(check_string, length=2)), default=[]),
                             queue_lifespan_secs=REQ(converter=int, default=0)):
