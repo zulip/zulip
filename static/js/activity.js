@@ -404,7 +404,6 @@ function focus_ping() {
                new_user_input: exports.new_user_input},
         idempotent: true,
         success: function (data) {
-            exports.presence_info = {};
 
             // Update Zephyr mirror activity warning
             if (data.zephyr_mirror_active === false) {
@@ -415,17 +414,7 @@ function focus_ping() {
 
             exports.new_user_input = false;
 
-            // Ping returns the active peer list
-            _.each(data.presences, function (presence, this_email) {
-                if (!people.is_current_user(this_email)) {
-                    var user_id = people.get_user_id(this_email);
-                    if (user_id) {
-                        var status = status_from_timestamp(data.server_timestamp,
-                                                           presence);
-                        exports.presence_info[user_id] = status;
-                    }
-                }
-            });
+            exports.set_presence_info(data.presences, data.server_timestamp);
             exports.update_users();
             exports.update_huddles();
         },
@@ -482,6 +471,20 @@ exports.set_user_statuses = function (users, server_time) {
 
     exports.update_users(updated_users);
     exports.update_huddles();
+};
+
+exports.set_presence_info = function (presences, server_timestamp) {
+    exports.presence_info = {};
+    _.each(presences, function (presence, this_email) {
+        if (!people.is_current_user(this_email)) {
+            var user_id = people.get_user_id(this_email);
+            if (user_id) {
+                var status = status_from_timestamp(server_timestamp,
+                                                   presence);
+                exports.presence_info[user_id] = status;
+            }
+        }
+    });
 };
 
 exports.redraw = function () {
