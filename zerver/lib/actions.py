@@ -2856,8 +2856,8 @@ def decode_email_address(email):
 # the code pretty ugly, but in this case, it has significant
 # performance impact for loading / for users with large numbers of
 # subscriptions, so it's worth optimizing.
-def gather_subscriptions_helper(user_profile):
-    # type: (UserProfile) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]
+def gather_subscriptions_helper(user_profile, include_subscribers=True):
+    # type: (UserProfile, bool) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]
     sub_dicts = Subscription.objects.select_related("recipient").filter(
         user_profile    = user_profile,
         recipient__type = Recipient.STREAM).values(
@@ -2888,7 +2888,12 @@ def gather_subscriptions_helper(user_profile):
     # Add never subscribed streams to streams_subscribed_map
     streams_subscribed_map.update({stream['id']: False for stream in all_streams if stream not in streams})
 
-    subscriber_map = bulk_get_subscriber_user_ids(all_streams, user_profile, streams_subscribed_map)
+    if include_subscribers:
+        subscriber_map = bulk_get_subscriber_user_ids(all_streams, user_profile, streams_subscribed_map)
+    else:
+        # If we're not including subscribers, always return None,
+        # which the below code needs to check for anyway.
+        subscriber_map = defaultdict(lambda: None)
 
     sub_unsub_stream_ids = set()
     for sub in sub_dicts:

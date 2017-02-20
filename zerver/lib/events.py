@@ -43,8 +43,9 @@ def get_realm_user_dicts(user_profile):
 # all event types.  Whenever you add new code to this function, you
 # should also add corresponding events for changes in the data
 # structures and new code to apply_events (and add a test in EventsRegisterTest).
-def fetch_initial_state_data(user_profile, event_types, queue_id):
-    # type: (UserProfile, Optional[Iterable[str]], str) -> Dict[str, Any]
+def fetch_initial_state_data(user_profile, event_types, queue_id,
+                             include_subscribers=True):
+    # type: (UserProfile, Optional[Iterable[str]], str, bool) -> Dict[str, Any]
     state = {'queue_id': queue_id} # type: Dict[str, Any]
 
     if event_types is None:
@@ -113,7 +114,8 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
                               'used': user_profile.invites_used}
 
     if want('subscription'):
-        subscriptions, unsubscribed, never_subscribed = gather_subscriptions_helper(user_profile)
+        subscriptions, unsubscribed, never_subscribed = gather_subscriptions_helper(
+            user_profile, include_subscribers=include_subscribers)
         state['subscriptions'] = subscriptions
         state['unsubscribed'] = unsubscribed
         state['never_subscribed'] = never_subscribed
@@ -147,8 +149,8 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
 
     return state
 
-def apply_events(state, events, user_profile):
-    # type: (Dict[str, Any], Iterable[Dict[str, Any]], UserProfile) -> None
+def apply_events(state, events, user_profile, include_subscribers=True):
+    # type: (Dict[str, Any], Iterable[Dict[str, Any]], UserProfile, bool) -> None
     for event in events:
         if event['type'] == "message":
             state['max_message_id'] = max(state['max_message_id'], event['message']['id'])
@@ -200,7 +202,8 @@ def apply_events(state, events, user_profile):
                 for stream in event['streams']:
                     if not stream['invite_only']:
                         stream_data = copy.deepcopy(stream)
-                        stream_data['subscribers'] = []
+                        if include_subscribers:
+                            stream_data['subscribers'] = []
                         # Add stream to never_subscribed (if not invite_only)
                         state['never_subscribed'].append(stream_data)
 
@@ -237,11 +240,20 @@ def apply_events(state, events, user_profile):
                 for key, value in event['data'].items():
                     state['realm_' + key] = value
         elif event['type'] == "subscription":
+            if not include_subscribers and event['op'] in ['peer_add', 'peer_remove']:
+                continue
+
             if event['op'] in ["add"]:
-                # Convert the user_profile IDs to emails since that's what register() returns
-                # TODO: Clean up this situation
-                for item in event["subscriptions"]:
-                    item["subscribers"] = [get_user_profile_by_email(email).id for email in item["subscribers"]]
+                if include_subscribers:
+                    # Convert the emails to user_profile IDs since that's what register() returns
+                    # TODO: Clean up this situation by making the event also have IDs
+                    for item in event["subscriptions"]:
+                        item["subscribers"] = [get_user_profile_by_email(email).id for email in item["subscribers"]]
+                else:
+                    # Avoid letting 'subscribers' entries end up in the list
+                    for i, sub in enumerate(event['subscriptions']):
+                        event['subscriptions'][i] = copy.deepcopy(event['subscriptions'][i])
+                        del event['subscriptions'][i]['subscribers']
 
             def name(sub):
                 # type: (Dict[str, Any]) -> Text
@@ -268,8 +280,9 @@ def apply_events(state, events, user_profile):
                 removed_subs = list(filter(was_removed, state['subscriptions']))
 
                 # Remove our user from the subscribers of the removed subscriptions.
-                for sub in removed_subs:
-                    sub['subscribers'] = [id for id in sub['subscribers'] if id != user_profile.id]
+                if include_subscribers:
+                    for sub in removed_subs:
+                        sub['subscribers'] = [id for id in sub['subscribers'] if id != user_profile.id]
 
                 # We must effectively copy the removed subscriptions from subscriptions to
                 # unsubscribe, since we only have the name in our data structure.
@@ -355,8 +368,8 @@ def apply_events(state, events, user_profile):
 
 def do_events_register(user_profile, user_client, apply_markdown=True,
                        event_types=None, queue_lifespan_secs=0, all_public_streams=False,
-                       narrow=[]):
-    # type: (UserProfile, Client, bool, Optional[Iterable[str]], int, bool, Iterable[Sequence[Text]]) -> Dict[str, Any]
+                       include_subscribers=True, narrow=[]):
+    # type: (UserProfile, Client, bool, Optional[Iterable[str]], int, bool, bool, Iterable[Sequence[Text]]) -> Dict[str, Any]
     # Technically we don't need to check this here because
     # build_narrow_filter will check it, but it's nicer from an error
     # handling perspective to do it before contacting Tornado
@@ -372,11 +385,12 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
     else:
         event_types_set = None
 
-    ret = fetch_initial_state_data(user_profile, event_types_set, queue_id)
+    ret = fetch_initial_state_data(user_profile, event_types_set, queue_id,
+                                   include_subscribers=include_subscribers)
 
     # Apply events that came in while we were fetching initial data
     events = get_user_events(user_profile, queue_id, -1)
-    apply_events(ret, events, user_profile)
+    apply_events(ret, events, user_profile, include_subscribers=include_subscribers)
     if events:
         ret['last_event_id'] = events[-1]['id']
     else:
