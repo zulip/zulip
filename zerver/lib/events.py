@@ -245,8 +245,8 @@ def apply_events(state, events, user_profile, include_subscribers=True):
 
             if event['op'] in ["add"]:
                 if include_subscribers:
-                    # Convert the user_profile IDs to emails since that's what register() returns
-                    # TODO: Clean up this situation
+                    # Convert the emails to user_profile IDs since that's what register() returns
+                    # TODO: Clean up this situation by making the event also have IDs
                     for item in event["subscriptions"]:
                         item["subscribers"] = [get_user_profile_by_email(email).id for email in item["subscribers"]]
                 else:
