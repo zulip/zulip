@@ -277,40 +277,58 @@ function info_for(user_id) {
     };
 }
 
-exports.update_users = function (user_list) {
+exports.update_users = function (updated_users) {
+    if (page_params.presence_disabled) {
+        return;
+    }
+
+    if (!updated_users) {
+        blueslip.error('update_users called incorrectly');
+        return;
+    }
+
+    var all_users = filter_and_sort(exports.presence_info);
+    var users = filter_and_sort(updated_users);
+
+    var user_info = _.map(users, info_for);
+
+    _.each(user_info, function (user) {
+        // This is really brittle code.  Our indexes into all_users
+        // are based on the assumption that since the sidebar was
+        // last drawn, we haven't changed the population of
+        // exports.presence_info or the sorting methodology.
+        var user_index = all_users.indexOf(user.user_id);
+        $('#user_presences').find('[data-user-id="' + user.user_id + '"]').remove();
+        var html = templates.render('user_presence_row', user);
+        $('#user_presences li').eq(user_index).before(html);
+    });
+
+    // TODO: tell compose_fade exactly which users we need to fix.
+    compose_fade.update_faded_users();
+
+    return user_info; // for testing
+};
+
+exports.build_user_sidebar = function () {
     if (page_params.presence_disabled) {
         return;
     }
 
     var users = exports.presence_info;
-    var all_users;
-    if (user_list !== undefined) {
-        all_users = filter_and_sort(users);
-        users = user_list;
-    }
     users = filter_and_sort(users);
 
     var user_info = _.map(users, info_for);
-    if (user_list !== undefined) {
-        // Render right panel partially
-        _.each(user_info, function (user) {
-            var user_index = all_users.indexOf(user.user_id);
-            $('#user_presences').find('[data-user-id="' + user.user_id + '"]').remove();
-            $('#user_presences li').eq(user_index).before(templates.render('user_presence_row', user));
-        });
-    } else {
-        $('#user_presences').html(templates.render('user_presence_rows', {users: user_info}));
-    }
+    var html = templates.render('user_presence_rows', {users: user_info});
+    $('#user_presences').html(html);
 
     // Update user fading, if necessary.
     compose_fade.update_faded_users();
 
-    // Return updated users: useful for testing user performance fix
-    return user_info;
+    return user_info; // for testing
 };
 
 function actually_update_users_for_search() {
-    exports.update_users();
+    exports.build_user_sidebar();
     resize.resize_page_components();
 }
 
@@ -415,7 +433,7 @@ function focus_ping() {
             exports.new_user_input = false;
 
             exports.set_presence_info(data.presences, data.server_timestamp);
-            exports.update_users();
+            exports.build_user_sidebar();
             exports.update_huddles();
         },
     });
@@ -488,7 +506,7 @@ exports.set_presence_info = function (presences, server_timestamp) {
 };
 
 exports.redraw = function () {
-    exports.update_users();
+    exports.build_user_sidebar();
     exports.update_huddles();
 };
 
