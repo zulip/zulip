@@ -45,7 +45,7 @@ EOF
 su zulip -c /home/zulip/deployments/current/scripts/setup/initialize-database
 
 echo; echo "Now testing that the supervisord jobs are running properly"; echo
-sleep 10 # Guaranteed to have a working supervisord process get an extra digit
+sleep 15 # Guaranteed to have a working supervisord process get an extra digit
 if supervisorctl status | grep -vq RUNNING || supervisorctl status | sed 's/^.*uptime //' | grep -q 0:00:0; then
     set +x
     echo
