@@ -556,6 +556,27 @@ function render(template_name, args) {
     global.write_handlebars_output("message_group", html);
 }());
 
+(function message_edit_history() {
+    var message = {
+        content: "Let's go to lunch!",
+        edit_history: [
+            {
+                body_to_render: "<p>Let's go to <span class='highlight_text_replaced'>dinner</span>!</p>",
+                timestamp: 1468132659,
+                edited_by: 'Alice',
+                posted_or_edited: "Edited by",
+            },
+        ],
+    };
+    var html = render('message_edit_history', {
+            edited_messages: message.edit_history,
+        });
+    global.write_test_output("message_edit_history.handlebars", html);
+    var edited_message = $(html).find("div.messagebox-content");
+    assert.equal(edited_message.text().trim(),
+                "1468132659\n        Let's go to dinner!\n        Edited by Alice");
+}());
+
 (function message_info_popover_content() {
     var args = {
         message: {

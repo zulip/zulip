@@ -192,6 +192,10 @@ exports.toggle_actions_popover = function (element, id) {
                 message.subject &&
                 muting.is_topic_muted(message.stream, message.subject);
 
+        var should_display_edit_history_option = _.any(message.edit_history, function (entry) {
+            return entry.prev_content !== undefined;
+        });
+
         var args = {
             message: message,
             use_edit_icon: use_edit_icon,
@@ -199,6 +203,7 @@ exports.toggle_actions_popover = function (element, id) {
             can_mute_topic: can_mute_topic,
             can_unmute_topic: can_unmute_topic,
             should_display_add_reaction_option: message.sent_by_me,
+            should_display_edit_history_option: should_display_edit_history_option,
             conversation_time_uri: narrow.by_conversation_and_time_uri(message),
             narrowed: narrow.active(),
         };
@@ -822,6 +827,16 @@ exports.register_click_handlers = function () {
         var row = current_msg_list.get_row(msgid);
         popovers.hide_actions_popover();
         message_edit.start(row);
+        e.stopPropagation();
+        e.preventDefault();
+    });
+    $('body').on('click', '.view_edit_history', function (e) {
+        var msgid = $(e.currentTarget).data('msgid');
+        var row = current_msg_list.get_row(msgid);
+        var message = current_msg_list.get(rows.id(row));
+
+        popovers.hide_actions_popover();
+        message_edit.show_history(message);
         e.stopPropagation();
         e.preventDefault();
     });
