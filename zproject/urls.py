@@ -327,7 +327,7 @@ v1_api_and_json_patterns = [
 
     # used to register for an event queue in tornado
     url(r'^register$', rest_dispatch,
-        {'POST': 'zerver.views.events_register.api_events_register'}),
+        {'POST': 'zerver.views.events_register.events_register_backend'}),
 
     # events -> zerver.tornado.views
     url(r'^events$', rest_dispatch,
