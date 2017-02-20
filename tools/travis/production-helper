@@ -110,6 +110,7 @@ for consumer in $consumer_list; do
         echo
         echo "FAILURE: Missing Nagios consumer for $consumer; displaying full consumer output:"
         rabbitmqctl list_consumers
+        supervisorctl status
         echo
         exit 1
     fi
