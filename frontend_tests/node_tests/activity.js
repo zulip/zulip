@@ -65,6 +65,7 @@ global.people.add(fred);
 global.people.add(jill);
 global.people.add(mark);
 global.people.add(norbert);
+global.people.add(me);
 global.people.initialize_current_user(me.user_id);
 
 var people = global.people;
@@ -256,6 +257,35 @@ global.compile_template('user_presence_rows');
     assert.equal(status.mobile, true);
     assert.equal(status.status, "offline");
 
+}());
+
+(function test_set_presence_info() {
+    var presences = {};
+    var base_time = 500;
+
+    presences[alice.email] = {
+        website: {
+            status: 'active',
+            timestamp: base_time,
+        },
+    };
+
+    presences[fred.email] = {
+        website: {
+            status: 'idle',
+            timestamp: base_time,
+        },
+    };
+
+    activity.set_presence_info(presences, base_time);
+
+    assert.deepEqual(activity.presence_info[alice.user_id],
+        { status: 'active', mobile: false}
+    );
+
+    assert.deepEqual(activity.presence_info[fred.user_id],
+        { status: 'idle', mobile: false}
+    );
 }());
 
 activity.presence_info = {};
