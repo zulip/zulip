@@ -275,8 +275,8 @@ class EventsRegisterTest(ZulipTestCase):
             ])),
         ])
 
-    def do_test(self, action, event_types=None):
-        # type: (Callable[[], Any], Optional[List[str]]) -> List[Dict[str, Any]]
+    def do_test(self, action, event_types=None, include_subscribers=True):
+        # type: (Callable[[], Any], Optional[List[str]], bool) -> List[Dict[str, Any]]
         client = allocate_client_descriptor(
             dict(user_profile_id = self.user_profile.id,
                  user_profile_email = self.user_profile.email,
@@ -291,13 +291,13 @@ class EventsRegisterTest(ZulipTestCase):
         )
         # hybrid_state = initial fetch state + re-applying events triggered by our action
         # normal_state = do action then fetch at the end (the "normal" code path)
-        hybrid_state = fetch_initial_state_data(self.user_profile, event_types, "")
+        hybrid_state = fetch_initial_state_data(self.user_profile, event_types, "", include_subscribers=include_subscribers)
         action()
         events = client.event_queue.contents()
         self.assertTrue(len(events) > 0)
-        apply_events(hybrid_state, events, self.user_profile)
+        apply_events(hybrid_state, events, self.user_profile, include_subscribers=include_subscribers)
 
-        normal_state = fetch_initial_state_data(self.user_profile, event_types, "")
+        normal_state = fetch_initial_state_data(self.user_profile, event_types, "", include_subscribers=include_subscribers)
         self.match_states(hybrid_state, normal_state)
         return events
 
@@ -312,7 +312,8 @@ class EventsRegisterTest(ZulipTestCase):
             # type: (Dict[str, Any]) -> None
             state['realm_users'] = {u['email']: u for u in state['realm_users']}
             for u in state['subscriptions']:
-                u['subscribers'].sort()
+                if 'subscribers' in u:
+                    u['subscribers'].sort()
             state['subscriptions'] = {u['name']: u for u in state['subscriptions']}
             state['unsubscribed'] = {u['name']: u for u in state['unsubscribed']}
             if 'realm_bots' in state:
@@ -994,19 +995,29 @@ class EventsRegisterTest(ZulipTestCase):
 
     def test_subscribe_events(self):
         # type: () -> None
+        self.do_test_subscribe_events(True)
+
+    def test_subscribe_events_no_include_subscribers(self):
+        # type: () -> None
+        self.do_test_subscribe_events(False)
+
+    def do_test_subscribe_events(self, include_subscribers):
+        # type: (bool) -> None
+        subscription_fields = [
+            ('color', check_string),
+            ('description', check_string),
+            ('email_address', check_string),
+            ('invite_only', check_bool),
+            ('in_home_view', check_bool),
+            ('name', check_string),
+            ('desktop_notifications', check_bool),
+            ('audible_notifications', check_bool),
+            ('stream_id', check_int),
+        ]
+        if include_subscribers:
+            subscription_fields.append(('subscribers', check_list(check_int)))  # type: ignore
         subscription_schema_checker = check_list(
-            check_dict([
-                ('color', check_string),
-                ('description', check_string),
-                ('email_address', check_string),
-                ('invite_only', check_bool),
-                ('in_home_view', check_bool),
-                ('name', check_string),
-                ('desktop_notifications', check_bool),
-                ('audible_notifications', check_bool),
-                ('stream_id', check_int),
-                ('subscribers', check_list(check_int)),
-            ])
+            check_dict(subscription_fields),
         )
         add_schema_checker = check_dict([
             ('type', equals('subscription')),
@@ -1044,12 +1055,14 @@ class EventsRegisterTest(ZulipTestCase):
         ])
 
         action = lambda: self.subscribe_to_stream("hamlet@zulip.com", "test_stream") # type: Callable
-        events = self.do_test(action, event_types=["subscription", "realm_user"])
+        events = self.do_test(action, event_types=["subscription", "realm_user"],
+                              include_subscribers=include_subscribers)
         error = add_schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
         action = lambda: self.subscribe_to_stream("othello@zulip.com", "test_stream")
-        events = self.do_test(action)
+        events = self.do_test(action,
+                              include_subscribers=include_subscribers)
         error = peer_add_schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
@@ -1058,24 +1071,28 @@ class EventsRegisterTest(ZulipTestCase):
         action = lambda: bulk_remove_subscriptions(
             [get_user_profile_by_email("othello@zulip.com")],
             [stream])
-        events = self.do_test(action)
+        events = self.do_test(action,
+                              include_subscribers=include_subscribers)
         error = peer_remove_schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
         action = lambda: bulk_remove_subscriptions(
             [get_user_profile_by_email("hamlet@zulip.com")],
             [stream])
-        events = self.do_test(action)
+        events = self.do_test(action,
+                              include_subscribers=include_subscribers)
         error = remove_schema_checker('events[1]', events[1])
         self.assert_on_error(error)
 
         action = lambda: self.subscribe_to_stream("hamlet@zulip.com", "test_stream")
-        events = self.do_test(action)
+        events = self.do_test(action,
+                              include_subscribers=include_subscribers)
         error = add_schema_checker('events[1]', events[1])
         self.assert_on_error(error)
 
         action = lambda: do_change_stream_description(stream, u'new description')
-        events = self.do_test(action)
+        events = self.do_test(action,
+                              include_subscribers=include_subscribers)
         error = stream_update_schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 

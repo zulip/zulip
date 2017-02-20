@@ -149,8 +149,8 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
 
     return state
 
-def apply_events(state, events, user_profile):
-    # type: (Dict[str, Any], Iterable[Dict[str, Any]], UserProfile) -> None
+def apply_events(state, events, user_profile, include_subscribers=True):
+    # type: (Dict[str, Any], Iterable[Dict[str, Any]], UserProfile, bool) -> None
     for event in events:
         if event['type'] == "message":
             state['max_message_id'] = max(state['max_message_id'], event['message']['id'])
@@ -202,7 +202,8 @@ def apply_events(state, events, user_profile):
                 for stream in event['streams']:
                     if not stream['invite_only']:
                         stream_data = copy.deepcopy(stream)
-                        stream_data['subscribers'] = []
+                        if include_subscribers:
+                            stream_data['subscribers'] = []
                         # Add stream to never_subscribed (if not invite_only)
                         state['never_subscribed'].append(stream_data)
 
@@ -239,11 +240,20 @@ def apply_events(state, events, user_profile):
                 for key, value in event['data'].items():
                     state['realm_' + key] = value
         elif event['type'] == "subscription":
+            if not include_subscribers and event['op'] in ['peer_add', 'peer_remove']:
+                continue
+
             if event['op'] in ["add"]:
-                # Convert the user_profile IDs to emails since that's what register() returns
-                # TODO: Clean up this situation
-                for item in event["subscriptions"]:
-                    item["subscribers"] = [get_user_profile_by_email(email).id for email in item["subscribers"]]
+                if include_subscribers:
+                    # Convert the user_profile IDs to emails since that's what register() returns
+                    # TODO: Clean up this situation
+                    for item in event["subscriptions"]:
+                        item["subscribers"] = [get_user_profile_by_email(email).id for email in item["subscribers"]]
+                else:
+                    # Avoid letting 'subscribers' entries end up in the list
+                    for i, sub in enumerate(event['subscriptions']):
+                        event['subscriptions'][i] = copy.deepcopy(event['subscriptions'][i])
+                        del event['subscriptions'][i]['subscribers']
 
             def name(sub):
                 # type: (Dict[str, Any]) -> Text
@@ -270,8 +280,9 @@ def apply_events(state, events, user_profile):
                 removed_subs = list(filter(was_removed, state['subscriptions']))
 
                 # Remove our user from the subscribers of the removed subscriptions.
-                for sub in removed_subs:
-                    sub['subscribers'] = [id for id in sub['subscribers'] if id != user_profile.id]
+                if include_subscribers:
+                    for sub in removed_subs:
+                        sub['subscribers'] = [id for id in sub['subscribers'] if id != user_profile.id]
 
                 # We must effectively copy the removed subscriptions from subscriptions to
                 # unsubscribe, since we only have the name in our data structure.
@@ -379,7 +390,7 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
 
     # Apply events that came in while we were fetching initial data
     events = get_user_events(user_profile, queue_id, -1)
-    apply_events(ret, events, user_profile)
+    apply_events(ret, events, user_profile, include_subscribers=include_subscribers)
     if events:
         ret['last_event_id'] = events[-1]['id']
     else:
