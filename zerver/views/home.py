@@ -335,8 +335,6 @@ def home_real(request):
     if user_profile.realm.invite_by_admins_only and not user_profile.is_realm_admin:
         show_invites = False
 
-    product_name = "Zulip"
-    page_params['product_name'] = product_name
     request._log_data['extra'] = "[%s]" % (register_ret["queue_id"],)
     response = render_to_response('zerver/index.html',
                                   {'user_profile': user_profile,
@@ -351,7 +349,6 @@ def home_real(request):
                                    'show_webathena': user_profile.realm.webathena_enabled,
                                    'enable_feedback': settings.ENABLE_FEEDBACK,
                                    'embedded': narrow_stream is not None,
-                                   'product_name': product_name
                                    },
                                   request=request)
     patch_cache_control(response, no_cache=True, no_store=True, must_revalidate=True)

@@ -158,7 +158,6 @@ class TemplateTestCase(ZulipTestCase):
             shallow_tested=True,
             user_profile=user_profile,
             user=user_profile,
-            product_name='testing',
             form=DummyForm(
                 full_name=get_form_value('John Doe'),
                 terms=get_form_value(True),
