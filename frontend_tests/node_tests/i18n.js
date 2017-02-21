@@ -17,7 +17,7 @@ i18n.init({
         fr: {
             translation: {
                 "Quote and reply": "French",
-                "You'll receive notifications when a message arrives and __page_params.product_name__ isn't in focus or the message is offscreen.": "Some French text with __page_params.product_name__",
+                "You'll receive notifications when a message arrives and Zulip isn't in focus or the message is offscreen.": "Some French text with Zulip",
             },
         },
     },
@@ -53,7 +53,6 @@ global.$ = require('jquery')(window);
     var args = {
         page_params: {
             fullname: "John Doe",
-            product_name: "Zulip",
             password_auth_enabled: false,
             avatar_url: "http://example.com",
             left_side_userlist: false,
