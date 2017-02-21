@@ -254,7 +254,6 @@ class GetEventsTest(ZulipTestCase):
 
 class EventsRegisterTest(ZulipTestCase):
     user_profile = get_user_profile_by_email("hamlet@zulip.com")
-    bot = get_user_profile_by_email("welcome-bot@zulip.com")
     maxDiff = None # type: Optional[int]
 
     def create_bot(self, email):
@@ -275,8 +274,8 @@ class EventsRegisterTest(ZulipTestCase):
             ])),
         ])
 
-    def do_test(self, action, event_types=None, include_subscribers=True):
-        # type: (Callable[[], Any], Optional[List[str]], bool) -> List[Dict[str, Any]]
+    def do_test(self, action, event_types=None, include_subscribers=True, state_change_expected=True):
+        # type: (Callable[[], Any], Optional[List[str]], bool, bool) -> List[Dict[str, Any]]
         client = allocate_client_descriptor(
             dict(user_profile_id = self.user_profile.id,
                  user_profile_email = self.user_profile.email,
@@ -295,7 +294,18 @@ class EventsRegisterTest(ZulipTestCase):
         action()
         events = client.event_queue.contents()
         self.assertTrue(len(events) > 0)
+
+        before = ujson.dumps(hybrid_state)
         apply_events(hybrid_state, events, self.user_profile, include_subscribers=include_subscribers)
+        after = ujson.dumps(hybrid_state)
+
+        if state_change_expected:
+            if before == after:
+                print(events)
+                raise Exception('Test does not exercise enough code -- events do not change state.')
+        else:
+            if before != after:
+                raise Exception('Test is invalid--state actually does change here.')
 
         normal_state = fetch_initial_state_data(self.user_profile, event_types, "", include_subscribers=include_subscribers)
         self.match_states(hybrid_state, normal_state)
@@ -347,7 +357,9 @@ class EventsRegisterTest(ZulipTestCase):
                 ('type', check_string),
             ])),
         ])
-        events = self.do_test(lambda: self.send_message("hamlet@zulip.com", "Verona", Recipient.STREAM, "hello"))
+        events = self.do_test(
+            lambda: self.send_message("hamlet@zulip.com", "Verona", Recipient.STREAM, "hello"),
+        )
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
@@ -378,7 +390,11 @@ class EventsRegisterTest(ZulipTestCase):
         propagate_mode = 'change_all'
         content = 'new content'
         rendered_content = render_markdown(message, content)
-        events = self.do_test(lambda: do_update_message(self.user_profile, message, topic, propagate_mode, content, rendered_content))
+        events = self.do_test(
+            lambda: do_update_message(self.user_profile, message, topic,
+                                      propagate_mode, content, rendered_content),
+            state_change_expected=False,
+        )
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
@@ -499,8 +515,8 @@ class EventsRegisterTest(ZulipTestCase):
             ('property', equals('restricted_to_domain')),
             ('value', check_bool),
         ])
-        # The first True is probably a noop, then we get transitions in both directions.
-        for restricted_to_domain in (True, False, True):
+        do_set_realm_restricted_to_domain(self.user_profile.realm, True)
+        for restricted_to_domain in (False, True):
             events = self.do_test(lambda: do_set_realm_restricted_to_domain(self.user_profile.realm, restricted_to_domain))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
@@ -513,8 +529,8 @@ class EventsRegisterTest(ZulipTestCase):
             ('property', equals('invite_required')),
             ('value', check_bool),
         ])
-        # The first False is probably a noop, then we get transitions in both directions.
-        for invite_required in (False, True, False):
+        do_set_realm_invite_required(self.user_profile.realm, invite_required=False)
+        for invite_required in (True, False):
             events = self.do_test(lambda: do_set_realm_invite_required(self.user_profile.realm, invite_required))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
@@ -527,6 +543,18 @@ class EventsRegisterTest(ZulipTestCase):
             ('property', equals('default')),
             ('data', check_dict([])),
         ])
+
+        def fake_backends():
+            # type: () -> Any
+            backends = (
+                'zproject.backends.DevAuthBackend',
+                'zproject.backends.EmailAuthBackend',
+                'zproject.backends.GitHubAuthBackend',
+                'zproject.backends.GoogleMobileOauth2Backend',
+                'zproject.backends.ZulipLDAPAuthBackend',
+            )
+            return self.settings(AUTHENTICATION_BACKENDS=backends)
+
         # Test transitions; any new backends should be tested with T/T/T/F/T
         for (auth_method_dict) in \
                 ({'Google': True, 'Email': True, 'GitHub': True, 'LDAP': False, 'Dev': False},
@@ -536,8 +564,12 @@ class EventsRegisterTest(ZulipTestCase):
                  {'Google': False, 'Email': False, 'GitHub': False, 'LDAP': False, 'Dev': True},
                  {'Google': False, 'Email': False, 'GitHub': True, 'LDAP': False, 'Dev': True},
                  {'Google': False, 'Email': True, 'GitHub': True, 'LDAP': True, 'Dev': False}):
-            events = self.do_test(lambda: do_set_realm_authentication_methods(self.user_profile.realm,
-                                                                              auth_method_dict))
+            with fake_backends():
+                events = self.do_test(
+                    lambda: do_set_realm_authentication_methods(
+                        self.user_profile.realm,
+                        auth_method_dict))
+
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
@@ -549,8 +581,8 @@ class EventsRegisterTest(ZulipTestCase):
             ('property', equals('invite_by_admins_only')),
             ('value', check_bool),
         ])
-        # The first False is probably a noop, then we get transitions in both directions.
-        for invite_by_admins_only in (False, True, False):
+        do_set_realm_invite_by_admins_only(self.user_profile.realm, invite_by_admins_only=False)
+        for invite_by_admins_only in (True, False):
             events = self.do_test(lambda: do_set_realm_invite_by_admins_only(self.user_profile.realm, invite_by_admins_only))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
@@ -575,10 +607,14 @@ class EventsRegisterTest(ZulipTestCase):
             ('property', equals('create_stream_by_admins_only')),
             ('value', check_bool),
         ])
-        # The first False is probably a noop, then we get transitions in both directions.
-        for create_stream_by_admins_only in (False, True, False):
-            events = self.do_test(lambda: do_set_realm_create_stream_by_admins_only(self.user_profile.realm,
-                                                                                    create_stream_by_admins_only))
+        do_set_realm_create_stream_by_admins_only(self.user_profile.realm, False)
+
+        for create_stream_by_admins_only in (True, False):
+            events = self.do_test(
+                lambda: do_set_realm_create_stream_by_admins_only(
+                    self.user_profile.realm,
+                    create_stream_by_admins_only))
+
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
@@ -592,8 +628,8 @@ class EventsRegisterTest(ZulipTestCase):
         ])
         stream = "Denmark"
         sub = get_subscription(stream, self.user_profile)
-        # The first False is probably a noop, then we get transitions in both directions.
-        for pinned in (False, True, False):
+        do_change_subscription_property(self.user_profile, sub, stream, "pin_to_top", False)
+        for pinned in (True, False):
             events = self.do_test(lambda: do_change_subscription_property(self.user_profile, sub, stream, "pin_to_top", pinned))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
@@ -627,8 +663,8 @@ class EventsRegisterTest(ZulipTestCase):
                 ('is_admin', check_bool),
             ])),
         ])
-        # The first False is probably a noop, then we get transitions in both directions.
-        for is_admin in [False, True, False]:
+        do_change_is_admin(self.user_profile, False)
+        for is_admin in [True, False]:
             events = self.do_test(lambda: do_change_is_admin(self.user_profile, is_admin))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
@@ -641,8 +677,8 @@ class EventsRegisterTest(ZulipTestCase):
             ('user', check_string),
             ('setting', check_bool),
         ])
-        # The first False is probably a noop, then we get transitions in both directions.
-        for setting_value in [False, True, False]:
+        do_change_twenty_four_hour_time(self.user_profile, False)
+        for setting_value in [True, False]:
             events = self.do_test(lambda: do_change_twenty_four_hour_time(self.user_profile, setting_value))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
@@ -655,8 +691,8 @@ class EventsRegisterTest(ZulipTestCase):
             ('user', check_string),
             ('setting', check_bool),
         ])
-        # The first False is probably a noop, then we get transitions in both directions.
-        for setting_value in [False, True, False]:
+        do_change_left_side_userlist(self.user_profile, False)
+        for setting_value in [True, False]:
             events = self.do_test(lambda: do_change_left_side_userlist(self.user_profile, setting_value))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
@@ -669,8 +705,8 @@ class EventsRegisterTest(ZulipTestCase):
             ('user', check_string),
             ('setting', check_bool),
         ])
-        # The first False is probably a noop, then we get transitions in both directions.
-        for setting_value in [False, True, False]:
+        do_change_enable_stream_desktop_notifications(self.user_profile, False)
+        for setting_value in [True, False]:
             events = self.do_test(lambda: do_change_enable_stream_desktop_notifications(self.user_profile, setting_value))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
@@ -683,8 +719,8 @@ class EventsRegisterTest(ZulipTestCase):
             ('user', check_string),
             ('setting', check_bool),
         ])
-        # The first False is probably a noop, then we get transitions in both directions.
-        for setting_value in [False, True, False]:
+        do_change_enable_stream_sounds(self.user_profile, False)
+        for setting_value in [True, False]:
             events = self.do_test(lambda: do_change_enable_stream_sounds(self.user_profile, setting_value))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
@@ -697,8 +733,8 @@ class EventsRegisterTest(ZulipTestCase):
             ('user', check_string),
             ('setting', check_bool),
         ])
-        # The first False is probably a noop, then we get transitions in both directions.
-        for setting_value in [False, True, False]:
+        do_change_enable_desktop_notifications(self.user_profile, False)
+        for setting_value in [True, False]:
             events = self.do_test(lambda: do_change_enable_desktop_notifications(self.user_profile, setting_value))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
@@ -711,8 +747,8 @@ class EventsRegisterTest(ZulipTestCase):
             ('user', check_string),
             ('setting', check_bool),
         ])
-        # The first False is probably a noop, then we get transitions in both directions.
-        for setting_value in [False, True, False]:
+        do_change_enable_sounds(self.user_profile, False)
+        for setting_value in [True, False]:
             events = self.do_test(lambda: do_change_enable_sounds(self.user_profile, setting_value))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
@@ -725,8 +761,8 @@ class EventsRegisterTest(ZulipTestCase):
             ('user', check_string),
             ('setting', check_bool),
         ])
-        # The first False is probably a noop, then we get transitions in both directions.
-        for setting_value in [False, True, False]:
+        do_change_enable_offline_email_notifications(self.user_profile, False)
+        for setting_value in [True, False]:
             events = self.do_test(lambda: do_change_enable_offline_email_notifications(self.user_profile, setting_value))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
@@ -739,8 +775,8 @@ class EventsRegisterTest(ZulipTestCase):
             ('user', check_string),
             ('setting', check_bool),
         ])
-        # The first False is probably a noop, then we get transitions in both directions.
-        for setting_value in [False, True, False]:
+        do_change_enable_offline_push_notifications(self.user_profile, False)
+        for setting_value in [True, False]:
             events = self.do_test(lambda: do_change_enable_offline_push_notifications(self.user_profile, setting_value))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
@@ -753,8 +789,9 @@ class EventsRegisterTest(ZulipTestCase):
             ('user', check_string),
             ('setting', check_bool),
         ])
-        # The first False is probably a noop, then we get transitions in both directions.
-        for setting_value in [False, True, False]:
+
+        do_change_enable_online_push_notifications(self.user_profile, False)
+        for setting_value in [True, False]:
             events = self.do_test(lambda: do_change_enable_online_push_notifications(self.user_profile, setting_value))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
@@ -767,9 +804,13 @@ class EventsRegisterTest(ZulipTestCase):
             ('user', check_string),
             ('setting', check_bool),
         ])
-        # The first False is probably a noop, then we get transitions in both directions.
-        for setting_value in [False, True, False]:
-            events = self.do_test(lambda: do_change_pm_content_in_desktop_notifications(self.user_profile, setting_value))
+        do_change_pm_content_in_desktop_notifications(self.user_profile, False)
+        for setting_value in [True, False]:
+            events = self.do_test(
+                lambda: do_change_pm_content_in_desktop_notifications(self.user_profile,
+                                                                      setting_value),
+                state_change_expected=False,
+            )
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
@@ -781,8 +822,8 @@ class EventsRegisterTest(ZulipTestCase):
             ('user', check_string),
             ('setting', check_bool),
         ])
-        # The first False is probably a noop, then we get transitions in both directions.
-        for setting_value in [False, True, False]:
+        do_change_enable_digest_emails(self.user_profile, False)
+        for setting_value in [True, False]:
             events = self.do_test(lambda: do_change_enable_digest_emails(self.user_profile, setting_value))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
@@ -878,44 +919,50 @@ class EventsRegisterTest(ZulipTestCase):
 
     def test_change_bot_full_name(self):
         # type: () -> None
-        action = lambda: do_change_full_name(self.bot, 'New Bot Name')
+        bot = self.create_bot('test-bot@zulip.com')
+        action = lambda: do_change_full_name(bot, 'New Bot Name')
         events = self.do_test(action)
         error = self.realm_bot_schema('full_name', check_string)('events[1]', events[1])
         self.assert_on_error(error)
 
     def test_regenerate_bot_api_key(self):
         # type: () -> None
-        action = lambda: do_regenerate_api_key(self.bot)
+        bot = self.create_bot('test-bot@zulip.com')
+        action = lambda: do_regenerate_api_key(bot)
         events = self.do_test(action)
         error = self.realm_bot_schema('api_key', check_string)('events[0]', events[0])
         self.assert_on_error(error)
 
     def test_change_bot_avatar_source(self):
         # type: () -> None
-        action = lambda: do_change_avatar_fields(self.bot, self.bot.AVATAR_FROM_USER)
+        bot = self.create_bot('test-bot@zulip.com')
+        action = lambda: do_change_avatar_fields(bot, bot.AVATAR_FROM_USER)
         events = self.do_test(action)
         error = self.realm_bot_schema('avatar_url', check_string)('events[0]', events[0])
         self.assert_on_error(error)
 
     def test_change_bot_default_all_public_streams(self):
         # type: () -> None
-        action = lambda: do_change_default_all_public_streams(self.bot, True)
+        bot = self.create_bot('test-bot@zulip.com')
+        action = lambda: do_change_default_all_public_streams(bot, True)
         events = self.do_test(action)
         error = self.realm_bot_schema('default_all_public_streams', check_bool)('events[0]', events[0])
         self.assert_on_error(error)
 
     def test_change_bot_default_sending_stream(self):
         # type: () -> None
-        stream = get_stream("Rome", self.bot.realm)
-        action = lambda: do_change_default_sending_stream(self.bot, stream)
+        bot = self.create_bot('test-bot@zulip.com')
+        stream = get_stream("Rome", bot.realm)
+        action = lambda: do_change_default_sending_stream(bot, stream)
         events = self.do_test(action)
         error = self.realm_bot_schema('default_sending_stream', check_string)('events[0]', events[0])
         self.assert_on_error(error)
 
     def test_change_bot_default_events_register_stream(self):
         # type: () -> None
-        stream = get_stream("Rome", self.bot.realm)
-        action = lambda: do_change_default_events_register_stream(self.bot, stream)
+        bot = self.create_bot('test-bot@zulip.com')
+        stream = get_stream("Rome", bot.realm)
+        action = lambda: do_change_default_events_register_stream(bot, stream)
         events = self.do_test(action)
         error = self.realm_bot_schema('default_events_register_stream', check_string)('events[0]', events[0])
         self.assert_on_error(error)
@@ -995,11 +1042,11 @@ class EventsRegisterTest(ZulipTestCase):
 
     def test_subscribe_events(self):
         # type: () -> None
-        self.do_test_subscribe_events(True)
+        self.do_test_subscribe_events(include_subscribers=True)
 
     def test_subscribe_events_no_include_subscribers(self):
         # type: () -> None
-        self.do_test_subscribe_events(False)
+        self.do_test_subscribe_events(include_subscribers=False)
 
     def do_test_subscribe_events(self, include_subscribers):
         # type: (bool) -> None
@@ -1062,7 +1109,9 @@ class EventsRegisterTest(ZulipTestCase):
 
         action = lambda: self.subscribe_to_stream("othello@zulip.com", "test_stream")
         events = self.do_test(action,
-                              include_subscribers=include_subscribers)
+                              include_subscribers=include_subscribers,
+                              state_change_expected=include_subscribers,
+                              )
         error = peer_add_schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
@@ -1072,7 +1121,9 @@ class EventsRegisterTest(ZulipTestCase):
             [get_user_profile_by_email("othello@zulip.com")],
             [stream])
         events = self.do_test(action,
-                              include_subscribers=include_subscribers)
+                              include_subscribers=include_subscribers,
+                              state_change_expected=include_subscribers,
+                              )
         error = peer_remove_schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
