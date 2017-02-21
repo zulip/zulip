@@ -24,6 +24,12 @@ server {
         alias /home/zulip/uploads/avatars;
     }
 
+    location /realms {
+        add_header X-Content-Type-Options nosniff;
+        include /etc/nginx/zulip-include/uploads.types;
+        alias /home/zulip/uploads/realms;
+    }
+
     location /local-static {
         alias /home/zulip/local-static;
     }

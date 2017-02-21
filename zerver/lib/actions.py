@@ -25,6 +25,7 @@ from zerver.lib.message import (
     message_to_dict,
     render_markdown,
 )
+from zerver.lib.realm_icon import realm_icon_url
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, RealmAlias, \
     Subscription, Recipient, Message, Attachment, UserMessage, \
     Client, DefaultStream, UserPresence, Referral, PushDeviceToken, MAX_SUBJECT_LENGTH, \
@@ -1951,6 +1952,23 @@ def do_change_avatar_fields(user_profile, avatar_source, log=True):
                     op='update',
                     person=payload),
                active_user_ids(user_profile.realm))
+
+
+def do_change_icon_source(realm, icon_source, log=True):
+    # type: (Realm, Text, bool) -> None
+    realm.icon_source = icon_source
+    realm.icon_version += 1
+    realm.save(update_fields=["icon_source", "icon_version"])
+
+    if log:
+        log_event({'type': 'realm_change_icon',
+                   'realm': realm.domain,
+                   'icon_source': icon_source})
+
+    send_event(dict(type='realm_change_icon',
+                    source=realm.icon_source,
+                    url=realm_icon_url(realm)),
+               active_user_ids(realm))
 
 def _default_stream_permision_check(user_profile, stream):
     # type: (UserProfile, Optional[Stream]) -> None

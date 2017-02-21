@@ -1940,6 +1940,8 @@ class HomeTest(ZulipTestCase):
             "realm_default_streams",
             "realm_emoji",
             "realm_filters",
+            "realm_icon",
+            "realm_icon_source",
             "realm_invite_by_admins_only",
             "realm_invite_required",
             "realm_message_content_edit_limit_seconds",
@@ -1984,6 +1986,7 @@ class HomeTest(ZulipTestCase):
         page_params = self._get_page_params(result)
 
         actual_keys = sorted([str(k) for k in page_params.keys()])
+
         self.assertEqual(actual_keys, expected_keys)
 
         # TODO: Inspect the page_params data further.

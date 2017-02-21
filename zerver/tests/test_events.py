@@ -62,7 +62,7 @@ from zerver.lib.actions import (
     do_add_realm_alias,
     do_change_realm_alias,
     do_remove_realm_alias,
-)
+    do_change_icon_source)
 from zerver.lib.events import (
     apply_events,
     fetch_initial_state_data,
@@ -957,6 +957,19 @@ class EventsRegisterTest(ZulipTestCase):
         action = lambda: do_change_avatar_fields(bot, bot.AVATAR_FROM_USER)
         events = self.do_test(action)
         error = self.realm_bot_schema('avatar_url', check_string)('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_change_realm_icon_source(self):
+        # type: () -> None
+        realm = get_realm('zulip')
+        action = lambda: do_change_icon_source(realm, realm.ICON_FROM_GRAVATAR)
+        events = self.do_test(action, state_change_expected=False)
+        schema_checker = check_dict([
+            ('type', equals('realm_change_icon')),
+            ('source', check_string),
+            ('url', check_string)
+        ])
+        error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
     def test_change_bot_default_all_public_streams(self):

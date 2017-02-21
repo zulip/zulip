@@ -21,6 +21,7 @@ from zerver.lib.alert_words import user_alert_words
 from zerver.lib.attachments import user_attachments
 from zerver.lib.avatar import get_avatar_url
 from zerver.lib.narrow import check_supported_events_narrow_filter
+from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.request import JsonableError
 from zerver.lib.actions import validate_user_access_to_subscribers_helper, \
     do_get_streams, get_default_streams_for_realm, \
@@ -155,6 +156,10 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         state['enable_offline_push_notifications'] = user_profile.enable_offline_push_notifications
         state['enable_online_push_notifications'] = user_profile.enable_online_push_notifications
         state['enable_digest_emails'] = user_profile.enable_digest_emails
+
+    if want('realm_change_icon'):
+        state['realm_icon'] = realm_icon_url(user_profile.realm)
+        state['realm_icon_source'] = user_profile.realm.icon_source
 
     return state
 
@@ -377,6 +382,9 @@ def apply_event(state, event, user_profile, include_subscribers):
             state['enable_online_push_notifications'] = event['setting']
         elif event['notification_name'] == "enable_digest_emails":
             state['enable_digest_emails'] = event['setting']
+    elif event['type'] == "realm_change_icon":
+        state['realm_icon'] = event['url']
+        state['realm_icon_source'] = event['source']
     else:
         raise ValueError("Unexpected event type %s" % (event['type'],))
 

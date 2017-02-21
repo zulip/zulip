@@ -90,7 +90,7 @@ def resize_avatar(image_data, size=DEFAULT_AVATAR_SIZE):
         im = Image.open(io.BytesIO(image_data))
         im = ImageOps.fit(im, (size, size), Image.ANTIALIAS)
     except IOError:
-        raise BadImageError("Could not decode avatar image; did you upload an image file?")
+        raise BadImageError("Could not decode image; did you upload an image file?")
     out = io.BytesIO()
     im.save(out, format='png')
     return out.getvalue()
@@ -117,6 +117,15 @@ class ZulipUploadBackend(object):
     def ensure_medium_avatar_image(self, email):
         # type: (Text) -> None
         raise NotImplementedError()
+
+    def upload_realm_icon_image(self, icon_file, user_profile):
+        # type: (File, UserProfile) -> None
+        raise NotImplementedError()
+
+    def get_realm_icon_url(self, realm_id, version):
+        # type: (int, int) -> Text
+        raise NotImplementedError()
+
 
 ### S3
 
@@ -269,6 +278,38 @@ class S3UploadBackend(ZulipUploadBackend):
         # ?x=x allows templates to append additional parameters with &s
         return u"https://%s.s3.amazonaws.com/%s%s?x=x" % (bucket, medium_suffix, hash_key)
 
+    def upload_realm_icon_image(self, icon_file, user_profile):
+        # type: (File, UserProfile) -> None
+        content_type = guess_type(icon_file.name)[0]
+        bucket_name = settings.S3_AVATAR_BUCKET
+        s3_file_name = os.path.join(str(user_profile.realm.id), 'realm', 'icon')
+
+        image_data = icon_file.read()
+        upload_image_to_s3(
+            bucket_name,
+            s3_file_name + ".original",
+            content_type,
+            user_profile,
+            image_data,
+        )
+
+        resized_data = resize_avatar(image_data)
+        upload_image_to_s3(
+            bucket_name,
+            s3_file_name,
+            'image/png',
+            user_profile,
+            resized_data,
+        )
+        # See avatar_url in avatar.py for URL.  (That code also handles the case
+        # that users use gravatar.)
+
+    def get_realm_icon_url(self, realm_id, version):
+        # type: (int, int) -> Text
+        bucket = settings.S3_AVATAR_BUCKET
+        # ?x=x allows templates to append additional parameters with &s
+        return u"https://%s.s3.amazonaws.com/%s/realm/icon.png?version=%s" % (bucket, realm_id, version)
+
     def ensure_medium_avatar_image(self, email):
         # type: (Text) -> None
         user_profile = get_user_profile_by_email(email)
@@ -359,6 +400,24 @@ class LocalUploadBackend(ZulipUploadBackend):
         medium_suffix = "-medium" if medium else ""
         return u"/user_avatars/%s%s.png?x=x" % (hash_key, medium_suffix)
 
+    def upload_realm_icon_image(self, icon_file, user_profile):
+        # type: (File, UserProfile) -> None
+        upload_path = os.path.join('realms', str(user_profile.realm.id), 'realm')
+
+        image_data = icon_file.read()
+        write_local_file(
+            upload_path,
+            'icon.original',
+            image_data)
+
+        resized_data = resize_avatar(image_data)
+        write_local_file(upload_path, 'icon.png', resized_data)
+
+    def get_realm_icon_url(self, realm_id, version):
+        # type: (int, int) -> Text
+        # ?x=x allows templates to append additional parameters with &s
+        return u"/realms/%s/realm/icon.png?version=%s" % (realm_id, version)
+
     def ensure_medium_avatar_image(self, email):
         # type: (Text) -> None
         email_hash = user_avatar_hash(email)
@@ -385,6 +444,10 @@ def delete_message_image(path_id):
 def upload_avatar_image(user_file, user_profile, email):
     # type: (File, UserProfile, Text) -> None
     upload_backend.upload_avatar_image(user_file, user_profile, email)
+
+def upload_icon_image(user_file, user_profile):
+    # type: (File, UserProfile) -> None
+    upload_backend.upload_realm_icon_image(user_file, user_profile)
 
 def upload_message_image(uploaded_file_name, content_type, file_data, user_profile, target_realm=None):
     # type: (Text, Optional[Text], binary_type, UserProfile, Optional[Realm]) -> Text

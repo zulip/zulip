@@ -18,4 +18,6 @@ if settings.LOCAL_UPLOADS_DIR is not None:
     urls += [
         url(r'^user_avatars/(?P<path>.*)$', serve,
             {'document_root': os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars")}),
+        url(r'^realms/(?P<path>.*)$', serve,
+            {'document_root': os.path.join(settings.LOCAL_UPLOADS_DIR, "realms")}),
     ]

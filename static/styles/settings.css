@@ -31,6 +31,10 @@ label {
     margin-top: 20px;
 }
 
+.new-style .m-t-10 {
+    margin-top: 10px;
+}
+
 .new-style .grid label {
     width: 200px;
 }
@@ -58,14 +62,14 @@ label {
     width: 214px;
 }
 
-.user-avatar-section {
+.user-avatar-section, .realm-icon-section {
     float: right;
     background-color: #fff;
     margin: 20px 0px;
     padding: 20px;
 }
 
-.user-avatar-section .inline-block {
+.user-avatar-section .inline-block, .realm-icon-section .inline-block {
     display: block;
 }
 
@@ -213,7 +217,7 @@ input[type=checkbox] + .inline-block {
     margin-left: 10px;
 }
 
-#user-settings-avatar {
+#user-settings-avatar, #realm-icon-section {
     border-radius: 5px;
     box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
 }
@@ -441,7 +445,7 @@ input[type=checkbox].inline-block {
     margin-right: 20px;
 }
 
-#upload_avatar_spinner {
+#upload_avatar_spinner, #upload_icon_spinner {
     font-size: 14px;
     margin: auto;
 }
@@ -500,6 +504,13 @@ input[type=checkbox].inline-block {
     height: 200px;
 }
 
+#realm-settings-icon {
+    border-radius: 5px;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+    width: 100px;
+    height: 100px;
+    margin-left: 25%;
+}
 /* -- new settings overlay -- */
 #settings_overlay_container {
     pointer-events: none;
@@ -742,20 +753,27 @@ input[type=text]#settings_search {
 /* -- end new settings overlay -- */
 
 @media (max-width: 1215px) {
-    .user-avatar-section {
+    .user-avatar-section, .realm-icon-section {
         float: none;
         display: inline-block;
     }
 
-    .user-avatar-section .inline-block {
+    .user-avatar-section .inline-block, .realm-icon-section .inline-block {
         display: inline-block;
         vertical-align: top;
+    }
+
+    .user-avatar-section .inline-block {
         margin: 0px 10px;
+    }
+
+    .realm-icon-section .inline-block {
+        margin: 0px 25px;
     }
 }
 
 @media (max-width: 856px) {
-    .user-avatar-section .inline-block {
+    .user-avatar-section .inline-block, .realm-icon-section .inline-block {
         display: block;
         margin: 0;
     }

@@ -58,6 +58,7 @@
         "viewport": false,
         "widgets": false,
         "avatar": false,
+        "realm_icon": false,
         "feature_flags": false,
         "search_suggestion": false,
         "referral": false,

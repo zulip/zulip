@@ -12,6 +12,7 @@ from six.moves import zip_longest, zip, range
 from version import ZULIP_VERSION
 from zerver.decorator import zulip_login_required, process_client
 from zerver.forms import ToSForm
+from zerver.lib.realm_icon import realm_icon_url
 from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
     Recipient, Realm, UserMessage, DefaultStream, RealmEmoji, RealmAlias, \
     RealmFilter, PreregistrationUser, UserActivity, \
@@ -225,6 +226,8 @@ def home_real(request):
         realm_restricted_to_domain = register_ret['realm_restricted_to_domain'],
         realm_default_language = register_ret['realm_default_language'],
         realm_waiting_period_threshold = register_ret['realm_waiting_period_threshold'],
+        realm_icon            = realm_icon_url(user_profile.realm),
+        realm_icon_source     = user_profile.realm.icon_source,
         enter_sends           = user_profile.enter_sends,
         user_id               = user_profile.id,
         left_side_userlist    = register_ret['left_side_userlist'],
