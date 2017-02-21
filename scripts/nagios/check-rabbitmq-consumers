@@ -36,9 +36,13 @@ output = subprocess.check_output(['/usr/sbin/rabbitmqctl', 'list_consumers'],
 consumers = defaultdict(int) # type: Dict[str, int]
 
 sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
-from scripts.lib.queue_workers import get_active_worker_queues
+from scripts.lib.zulip_tools import su_to_zulip
+queues = subprocess.check_output(['./scripts/lib/queue_workers.py', '--queue_type=consumer'],
+                                 universal_newlines=True,
+                                 preexec_fn=su_to_zulip)
 
-for queue_name in get_active_worker_queues("consumer"):
+for queue_name in queues.split("\n"):
+    queue_name = queue_name.strip()
     consumers[queue_name] = 0
 
 for line in output.split('\n'):
