@@ -387,8 +387,8 @@ $(function () {
     $("#join_unsub_stream").click(function (e) {
         e.preventDefault();
         e.stopPropagation();
-        subs.launch();
-        components.toggle.lookup("stream-filter-toggle").goto("All streams");
+
+        window.location.hash = "subscriptions/new";
     });
 
     // FEEDBACK

@@ -555,6 +555,7 @@ form#add_new_subscription {
 }
 
 .streams-list {
+    position: relative;
     overflow: auto;
     height: calc(100% - 45px);
     width: 100%;

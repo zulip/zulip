@@ -724,10 +724,44 @@ exports.onlaunchtrigger = function () {
     }
 };
 
-exports.launch = function () {
+exports.change_state = (function () {
+    var prevent_next = false;
+
+    var func = function (hash) {
+        if (prevent_next) {
+            prevent_next = false;
+            return;
+        }
+
+        // if there are any arguments the state should be modified.
+        if (hash.arguments.length > 0) {
+            // if in #subscriptions/new form.
+            if (hash.arguments[0] === "new") {
+                $("#create_stream_button").click();
+                components.toggle.lookup("stream-filter-toggle").goto("All streams");
+            // if the first argument is a valid number.
+            } else if (/\d+/.test(hash.arguments[0])) {
+                var $stream_row = $(".stream-row[data-stream-id='" + hash.arguments[0] + "']");
+                var top = $stream_row.click()[0].offsetTop;
+
+                $(".streams-list").animate({ scrollTop: top }, 200);
+            }
+        }
+    };
+
+    func.prevent_once = function () {
+        prevent_next = true;
+    };
+
+    return func;
+}());
+
+exports.launch = function (hash) {
     meta.is_open = true;
     exports.setup_page(function () {
         $("#subscription_overlay").addClass("show");
+
+        exports.change_state(hash);
     });
 };
 
@@ -1035,6 +1069,11 @@ $(function () {
         if (window.innerWidth > 700) {
             $('#create_stream_name').focus();
         }
+
+        // change the hash to #subscriptions/new to allow for linking and
+        // easy discovery.
+
+        window.location.hash = "#subscriptions/new";
     });
 
     $('body').on('change', '#user-checkboxes input, #make-invite-only input', update_announce_stream_state);
@@ -1328,6 +1367,11 @@ $(function () {
     $("#subscriptions_table").on("click", ".stream-row", function (e) {
         if ($(e.target).closest(".check, .subscription_settings").length === 0) {
             show_stream_row(this, e);
+            exports.change_state.prevent_once();
+
+            window.location.hash = "#subscriptions" + "/" +
+                $(this).attr("data-stream-id") + "/" +
+                hashchange.encodeHashComponent($(this).attr("data-stream-name"));
         }
     });
 
