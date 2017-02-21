@@ -1352,6 +1352,10 @@ blockquote p {
     font-weight: bold;
 }
 
+.alert {
+    display: none;
+}
+
 .home-error-bar .alert {
     margin-bottom: auto;
 }

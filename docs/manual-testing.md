@@ -473,6 +473,9 @@ Here are the tasks:
 
 ### To be continued... ###
 
-This document does not cover admin options yet.  The main thing to do
-when testing the admin system is to verify that changes are synced to
-other users.
+This document does not cover settings/admin options yet.  The main
+things to do when testing the settings system are:
+- Verify that changes are synced to other users.
+- Verify error messages appear if you do something wrong and look right.
+- For organization settings, verify that they look right in read-only
+  mode (i.e. when not logged into an administrator account).

@@ -12,8 +12,8 @@ exports.show_or_hide_menu_item = function () {
         item.show();
     } else {
         item.hide();
-        $(".ind-tab[data-tab-key='administration']").addClass("disabled");
-        $(".settings-list li.admin").hide();
+        $(".administration-box [data-name='organization-settings']")
+            .find("input, button, select").attr("disabled", true);
     }
 };
 
@@ -227,6 +227,7 @@ exports.populate_emoji = function (emoji_data) {
                 name: name, source_url: data.source_url,
                 display_url: data.display_url,
                 author: data.author,
+                is_admin: page_params.is_admin,
             },
         }));
     });
@@ -321,6 +322,7 @@ function _setup_page() {
         language_list: page_params.language_list,
         realm_default_language: page_params.realm_default_language,
         realm_waiting_period_threshold: page_params.realm_waiting_period_threshold,
+        is_admin: page_params.is_admin,
     };
 
     var admin_tab = templates.render('admin_tab', options);
