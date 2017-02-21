@@ -1755,6 +1755,9 @@ def bulk_remove_subscriptions(users, streams):
         if stream.realm.is_zephyr_mirror_realm and not stream.invite_only:
             continue
 
+        if stream.invite_only and stream.num_subscribers() == 0:
+            do_deactivate_stream(stream)
+
         altered_users = altered_user_dict[stream.id]
 
         peer_user_ids = get_peer_user_ids_for_stream_change(

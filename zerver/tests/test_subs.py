@@ -211,6 +211,24 @@ class StreamAdminTest(ZulipTestCase):
         result = self.client_delete('/json/streams/%d' % (stream_id,))
         self.assert_json_error(result, 'Must be a realm administrator')
 
+    def test_private_stream_unsubscribe_last_member_deactivated(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        self.login(email)
+        user_profile = get_user_profile_by_email(email)
+        do_change_is_admin(user_profile, True)
+
+        stream = self.make_stream('private_stream', invite_only=True)
+        self.subscribe_to_stream(email, 'private_stream')
+        result = bulk_remove_subscriptions(users=[user_profile], streams=[stream])
+        self.assertTrue(result)
+
+        stream_active = Stream.objects.filter(
+            name=stream.name,
+            deactivated=False
+        ).exists()
+        self.assertFalse(stream_active)
+
     def test_private_stream_live_updates(self):
         # type: () -> None
         email = 'hamlet@zulip.com'
