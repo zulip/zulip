@@ -1,7 +1,7 @@
 Use this document to refer to correct language codes:
 
 |Language Name | Code |
-|——————————————| —————|
+|______________|______|
 |Afrikaans | af |
 |Arabic | ar |
 |Bosnian (Latin) | bs-Latn |
