@@ -629,21 +629,27 @@ $(function () {
     });
 
     (function () {
-        var $parent = $("#settings_overlay_container .sidebar .tab-switcher");
-        var $tabs = $parent.find(".ind-tab");
-        $tabs.click(function () {
-            $tabs.removeClass("selected");
-            $(this).addClass("selected");
+        var settings_toggle = components.toggle({
+            name: "settings-toggle",
+            values: [
+                { label: "Settings", key: "settings" },
+                { label: "Administration", key: "administration" },
+            ],
+            callback: function (name, key) {
+                $(".sidebar li").hide();
 
-            $(".sidebar li").hide();
-            if ($(this).data("name") === "admin") {
-                $("li.admin").show();
-                $("li[data-section='organization-settings']").click();
-            } else {
-                $("li:not(.admin)").show();
-                $("li[data-section='your-account']").click();
-            }
-        });
+                if (key === "administration") {
+                    $("li.admin").show();
+                    $("li[data-section='organization-settings']").click();
+                } else {
+                    $("li:not(.admin)").show();
+                    $("li[data-section='your-account']").click();
+                }
+            },
+        }).get();
+
+        $("#settings_overlay_container .tab-container")
+            .append(settings_toggle);
     }());
 });
 
