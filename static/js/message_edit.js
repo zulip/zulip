@@ -397,9 +397,11 @@ exports.show_history = function (message) {
                 var item = {timestamp: timerender.get_full_time(msg.timestamp)};
                 if (index === 0) {
                     item.posted_or_edited = "Posted by";
+                    item.posted_not_edited = true;
                     item.body_to_render = msg.rendered_content;
                 } else {
                     item.posted_or_edited = "Edited by";
+                    item.posted_not_edited = false;
                     item.body_to_render = msg.content_html_diff;
                 }
                 if (msg.user_id) {
