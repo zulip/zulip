@@ -458,8 +458,10 @@ exports.initialize = function () {
 
     focus_ping();
 
-    activity.set_user_statuses(page_params.initial_presences,
+    activity.set_presence_info(page_params.initial_presences,
                                page_params.initial_servertime);
+    exports.build_user_sidebar();
+    exports.update_huddles();
 };
 
 // Set user statuses. `users` should be an object with user emails as keys
