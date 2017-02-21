@@ -858,6 +858,7 @@ JS_SPECS = {
             'js/timerender.js',
             'js/tutorial.js',
             'js/templates.js',
+            'js/widgets.js',
             'js/avatar.js',
             'js/settings.js',
             'js/tab_bar.js',
