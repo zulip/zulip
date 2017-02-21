@@ -876,7 +876,7 @@ exports.launch_page = function (tab) {
     var $active_tab = $("#settings_overlay_container li[data-section='" + tab + "']");
 
     if (!$active_tab.hasClass("admin")) {
-        $(".sidebar .ind-tab[data-name='settings']").click();
+        $(".sidebar .ind-tab[data-tab-key='settings']").click();
     }
 
     $("#settings_overlay_container").addClass("show");
