@@ -186,6 +186,13 @@ def apply_event(state, event, user_profile, include_subscribers):
                             state['realm_bots'] = []
                         if not p['is_admin'] and person['is_admin']:
                             state['realm_bots'] = get_owned_bot_dicts(user_profile)
+
+                    # This is temporary code to support tests, but it does avoid polluting
+                    # our data with misleading avatar_url data (although we will soon support
+                    # that field in realm_users).
+                    if 'avatar_url' in person:
+                        return
+
                     # Now update the person
                     p.update(person)
     elif event['type'] == 'realm_bot':

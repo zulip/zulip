@@ -482,6 +482,24 @@ class EventsRegisterTest(ZulipTestCase):
         error = muted_topics_checker('events[0]', events[0])
         self.assert_on_error(error)
 
+    def test_change_avatar_fields(self):
+        # type: () -> None
+        schema_checker = check_dict([
+            ('type', equals('realm_user')),
+            ('op', equals('update')),
+            ('person', check_dict([
+                ('email', check_string),
+                ('user_id', check_int),
+                ('avatar_url', check_string),
+            ])),
+        ])
+        events = self.do_test(
+            lambda: do_change_avatar_fields(self.user_profile, UserProfile.AVATAR_FROM_USER),
+            state_change_expected=False,
+        )
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
     def test_change_full_name(self):
         # type: () -> None
         schema_checker = check_dict([
