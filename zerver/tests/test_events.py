@@ -495,7 +495,6 @@ class EventsRegisterTest(ZulipTestCase):
         ])
         events = self.do_test(
             lambda: do_change_avatar_fields(self.user_profile, UserProfile.AVATAR_FROM_USER),
-            state_change_expected=False,
         )
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)

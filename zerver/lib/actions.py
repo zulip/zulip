@@ -356,6 +356,7 @@ def notify_created_user(user_profile):
                              user_id=user_profile.id,
                              is_admin=user_profile.is_realm_admin,
                              full_name=user_profile.full_name,
+                             avatar_url=avatar_url(user_profile),
                              is_bot=user_profile.is_bot))
     send_event(event, active_user_ids(user_profile.realm))
 
@@ -1915,17 +1916,17 @@ def do_change_avatar_fields(user_profile, avatar_source, log=True):
                                  avatar_url=avatar_url(user_profile),
                                  )),
                    bot_owner_userids(user_profile))
-    else:
-        payload = dict(
-            email=user_profile.email,
-            avatar_url=avatar_url(user_profile),
-            user_id=user_profile.id
-        )
 
-        send_event(dict(type='realm_user',
-                        op='update',
-                        person=payload),
-                   active_user_ids(user_profile.realm))
+    payload = dict(
+        email=user_profile.email,
+        avatar_url=avatar_url(user_profile),
+        user_id=user_profile.id
+    )
+
+    send_event(dict(type='realm_user',
+                    op='update',
+                    person=payload),
+               active_user_ids(user_profile.realm))
 
 def _default_stream_permision_check(user_profile, stream):
     # type: (UserProfile, Optional[Stream]) -> None

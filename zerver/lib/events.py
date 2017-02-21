@@ -19,6 +19,7 @@ session_engine = import_module(settings.SESSION_ENGINE)
 
 from zerver.lib.alert_words import user_alert_words
 from zerver.lib.attachments import user_attachments
+from zerver.lib.avatar import get_avatar_url
 from zerver.lib.narrow import check_supported_events_narrow_filter
 from zerver.lib.request import JsonableError
 from zerver.lib.actions import validate_user_access_to_subscribers_helper, \
@@ -32,8 +33,16 @@ from zerver.models import Client, Message, UserProfile, \
 
 def get_realm_user_dicts(user_profile):
     # type: (UserProfile) -> List[Dict[str, Text]]
+    def avatar_url(userdict):
+        # type: (Dict[str, Any]) -> Text
+        return get_avatar_url(userdict['avatar_source'],
+                              userdict['email'],
+                              userdict['avatar_version'],
+                              )
+
     return [{'email': userdict['email'],
              'user_id': userdict['id'],
+             'avatar_url': avatar_url(userdict),
              'is_admin': userdict['is_realm_admin'],
              'is_bot': userdict['is_bot'],
              'full_name': userdict['full_name']}
@@ -186,12 +195,6 @@ def apply_event(state, event, user_profile, include_subscribers):
                             state['realm_bots'] = []
                         if not p['is_admin'] and person['is_admin']:
                             state['realm_bots'] = get_owned_bot_dicts(user_profile)
-
-                    # This is temporary code to support tests, but it does avoid polluting
-                    # our data with misleading avatar_url data (although we will soon support
-                    # that field in realm_users).
-                    if 'avatar_url' in person:
-                        return
 
                     # Now update the person
                     p.update(person)
