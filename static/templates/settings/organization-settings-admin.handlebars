@@ -12,6 +12,7 @@
     <div class="alert" id="admin-realm-default-language-status"></div>
     <div class="alert" id="admin-realm-waiting_period_threshold_status"></div>
 
+    <div class="m-10 inline-block grid organization-settings-parent">
     <div class="input-group admin-realm">
       <label for="realm_name">{{t "Your organization's name" }}</label>
       <input type="text" id="id_realm_name" name="realm_name" class="admin-realm-name"
@@ -107,6 +108,22 @@
     </div>
     <div class="input-group organization-submission">
       <input type="submit" class="button" value="{{t 'Save changes' }}" />
+    </div>
+    </div>
+    <div class="realm-icon-section box-shadow border-radius">
+      <div class="inline-block">
+        <img id="realm-settings-icon" src="{{ realm_icon }}"/>
+        <div id="realm_icon_file_input_error" class="text-error"></div>
+        <input type="file" name="realm_icon_file_input" class="notvisible"
+               id="realm_icon_file_input" value="{{t 'Upload icon' }}"/>
+        <div id="upload_icon_spinner"></div>
+      </div>
+      <div class="inline-block">
+        <button class="button sea-green w-200 m-t-10 block input-size"
+                id="realm_icon_upload_button">{{t 'Upload new ccon' }}</button>
+        <button class="button btn-danger w-200 m-t-10 block input-size"
+                id="realm_icon_delete_button">{{t 'Delete icon' }}</button>
+      </div>
     </div>
   </form>
 </div>

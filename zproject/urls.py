@@ -185,6 +185,12 @@ v1_api_and_json_patterns = [
         {'PUT': 'zerver.views.realm_emoji.upload_emoji',
          'DELETE': 'zerver.views.realm_emoji.delete_emoji'}),
 
+    # realm/icon -> zerver.views.realm_icon
+    url(r'^realm/icon$', rest_dispatch,
+        {'PUT': 'zerver.views.realm_icon.upload_icon',
+         'DELETE': 'zerver.views.realm_icon.delete_icon_backend',
+         'GET': 'zerver.views.realm_icon.get_icon_backend'}),
+
     # realm/filters -> zerver.views.realm_filters
     url(r'^realm/filters$', rest_dispatch,
         {'GET': 'zerver.views.realm_filters.list_filters',

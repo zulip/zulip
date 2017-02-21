@@ -140,6 +140,16 @@ class Realm(ModelReprMixin, models.Model):
                                       default=2**31 - 1) # type: BitHandler
     waiting_period_threshold = models.PositiveIntegerField(default=0) # type: int
 
+    ICON_FROM_GRAVATAR = u'G'
+    ICON_UPLOADED = u'U'
+    ICON_SOURCES = (
+        (ICON_FROM_GRAVATAR, 'Hosted by Gravatar'),
+        (ICON_UPLOADED, 'Uploaded by administrator'),
+    )
+    icon_source = models.CharField(default=ICON_FROM_GRAVATAR, choices=ICON_SOURCES,
+                                   max_length=1)  # type: Text
+    icon_version = models.PositiveSmallIntegerField(default=1)  # type: int
+
     DEFAULT_NOTIFICATION_STREAM_NAME = u'announce'
 
     def authentication_methods_dict(self):

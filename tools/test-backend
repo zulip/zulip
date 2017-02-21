@@ -30,6 +30,7 @@ target_fully_covered = {path for target in [
     'zerver/lib/mention.py',
     'zerver/lib/message.py',
     'zerver/lib/name_restrictions.py',
+    'zerver/lib/realm_icon.py',
     'zerver/lib/retention.py',
     'zerver/lib/streams.py',
     'zerver/lib/users.py',

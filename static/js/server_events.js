@@ -245,6 +245,19 @@ function dispatch_normal_event(event) {
             break;
         }
         break;
+    case 'realm_change_icon':
+        $("#realm-settings-icon").attr("src", event.url);
+        if (event.source === 'U') {
+            $("#realm_icon_delete_button").show();
+        } else {
+            $("#realm_icon_delete_button").hide();
+            // Need to clear input because of a small edge case
+            // where you try to upload the same image you just deleted.
+            var file_input = $("#realm_icon_file_input");
+            file_input.val('');
+        }
+        page_params.realm_icon = event.url;
+        page_params.icon_source = event.source;
     }
 }
 

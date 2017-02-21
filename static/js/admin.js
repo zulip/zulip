@@ -323,6 +323,8 @@ function _setup_page() {
         realm_default_language: page_params.realm_default_language,
         realm_waiting_period_threshold: page_params.realm_waiting_period_threshold,
         is_admin: page_params.is_admin,
+        realm_icon_source: page_params.realm_icon_source,
+        realm_icon: page_params.realm_icon,
     };
 
     var admin_tab = templates.render('admin_tab', options);
@@ -1049,6 +1051,31 @@ function _setup_page() {
             },
         });
     });
+
+    function upload_realm_icon(file_input) {
+        var form_data = new FormData();
+
+        form_data.append('csrfmiddlewaretoken', csrf_token);
+        jQuery.each(file_input[0].files, function (i, file) {
+            form_data.append('file-'+i, file);
+        });
+
+        var spinner = $("#upload_icon_spinner").expectOne();
+        loading.make_indicator(spinner, {text: i18n.t("Uploading icon.")});
+
+        channel.put({
+            url: '/json/realm/icon',
+            data: form_data,
+            cache: false,
+            processData: false,
+            contentType: false,
+            success: function () {
+                loading.destroy_indicator($("#upload_icon_spinner"));
+            },
+        });
+
+    }
+    realm_icon.build_realm_icon_widget(upload_realm_icon);
 
 }
 
