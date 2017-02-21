@@ -44,6 +44,7 @@
           <i class="icon icon-vector-smile"></i>
           <div class="text">{{ _('Custom emoji') }}</div>
         </li>
+        {% if is_admin %}
         <li class="admin" tabindex="1" data-section="auth-methods">
           <i class="icon icon-vector-lock"></i>
           <div class="text">{{ _('Authentication methods') }}</div>
@@ -72,6 +73,7 @@
           <i class="icon icon-vector-font"></i>
           <div class="text">{{ _('Filter settings') }}</div>
         </li>
+        {% endif %}
       </ul>
     </div>
 

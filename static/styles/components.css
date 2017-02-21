@@ -72,6 +72,13 @@
     filter: brightness(0.9);
 }
 
+.new-style .button[disabled="disabled"] {
+    cursor: not-allowed;
+    -webkit-filter: saturate(0);
+    -moz-filter: saturate(0);
+    filter: saturate(0);
+}
+
 /* -- button style variations -- */
 .new-style .button.no-style {
     padding: 0px;
