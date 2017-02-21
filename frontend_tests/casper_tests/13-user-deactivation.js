@@ -53,10 +53,7 @@ casper.then(function () {
 
 casper.then(function () {
     // Leave the page and return
-    casper.click('#settings-dropdown');
-    casper.click('a[href^="#"]');
-    casper.click('#settings-dropdown');
-    casper.click('a[href^="#administration"]');
+    casper.reload();
 
     casper.test.assertSelectorHasText("li[data-section='deactivated-users-admin']", "Deactivated users");
     casper.click("li[data-section='deactivated-users-admin']");
