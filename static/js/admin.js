@@ -12,7 +12,7 @@ exports.show_or_hide_menu_item = function () {
         item.show();
     } else {
         item.hide();
-        $(".ind-tab[data-name='admin']").addClass("disabled");
+        $(".ind-tab[data-tab-key='administration']").addClass("disabled");
         $(".settings-list li.admin").hide();
     }
 };
@@ -354,6 +354,8 @@ function _setup_page() {
     if (tab) {
         exports.launch_page(tab);
     }
+
+    exports.show_or_hide_menu_item();
 
     $("#id_realm_default_language").val(page_params.realm_default_language);
 
