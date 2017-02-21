@@ -28,7 +28,8 @@ exports.toggle = (function () {
 
                 // add proper classes for styling in CSS.
                 if (i === 0) {
-                    tab.addClass("first");
+                    // this should be default selected unless otherwise specified.
+                    tab.addClass("first selected");
                 } else if (i === opts.values.length - 1) {
                     tab.addClass("last");
                 } else {
