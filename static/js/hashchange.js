@@ -221,6 +221,15 @@ function get_main_hash(hash) {
     return hash ? hash.replace(/^#/, "").split(/\//)[0] : "";
 }
 
+function get_hash_components() {
+    var hash = window.location.hash.split(/\//);
+
+    return {
+        base: hash.shift(),
+        arguments: hash,
+    };
+}
+
 // different groups require different reloads. The grouped elements don't
 // require a reload or overlay change to run.
 var get_hash_group = (function () {
@@ -277,7 +286,7 @@ function hashchanged(from_reload, e) {
             }
 
             if (base === "subscriptions") {
-                subs.launch();
+                subs.launch(get_hash_components());
             } else if (base === "drafts") {
                 drafts.launch();
             } else if (/settings|administration/.test(base)) {
@@ -286,6 +295,8 @@ function hashchanged(from_reload, e) {
             }
 
             ignore.group = get_hash_group(base);
+        } else {
+            subs.change_state(get_hash_components());
         }
     } else if (!should_ignore(window.location.hash) && !ignore.flag) {
         exports.close_modals();
