@@ -7,7 +7,7 @@ from six.moves import configparser as cp
 try:
     from mstranslator import Translator
 except ImportError:
-    logging.error("Dependency Missing!")
+    logging.error('Dependency Missing!')
     sys.exit(1)
 
 # Uses mstranslator module
@@ -32,18 +32,18 @@ translator = Translator(get_api_key())
 
 def get_translate_result(original_content):
     main_content = original_content.strip().split(' ')[1]
-    if main_content == "help" and len(original_content.split()) < 3:
-        help_message = "To use this plugin start messages with @translate \
+    if main_content == 'help' and len(original_content.split()) < 3:
+        help_message = 'To use this plugin start messages with @translate \
                         followed by the word you want to translate and the \
                         language code (all language codes can be found in \
                         the Translate_Codes.md file found in the translate \
                         folder). Example usage of this bot is \
-                        '@translate hello fr' or '@translate hello zh-CHT'."
+                        "@translate hello fr" or "@translate hello zh-CHT".'
         return help_message
     elif len(original_content.split()) < 3:
-        return "Need language code"
+        return 'Need language code'
     elif len(original_content.split()) > 3:
-        return "Too many tokens"
+        return 'Too many tokens'
     else:
         search_keyword = main_content.split(' ')[0]
         country_code = original_content.split(' ')[2]
@@ -51,7 +51,7 @@ def get_translate_result(original_content):
             message = translator.translate(search_keyword, lang_to=country_code)
         except Exception as e:
             logging.exception(e)
-            return "Error in translation bot"
+            return 'Error in translation bot'
         return message
 
 class TranslateHandler(object):
@@ -103,9 +103,9 @@ class TranslateHandler(object):
 handler_class = TranslateHandler
 
 def test():
-    assert get_translate_result("@translate hello") == "Need language code"
-    assert get_translate_result("@translate foo bar baz") == "Too many tokens"
-    assert get_translate_result("@translate hello fr") == "Salut"
-    assert get_translate_result("@translate table es") == "tabla"
-if __name__ == "__main__":
+    assert get_translate_result('@translate hello') == 'Need language code'
+    assert get_translate_result('@translate foo bar baz') == 'Too many tokens'
+    assert get_translate_result('@translate hello fr') == 'Salut'
+    assert get_translate_result('@translate table es') == 'tabla'
+if __name__ == '__main__':
     test()
