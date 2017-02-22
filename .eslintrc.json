@@ -94,7 +94,8 @@
         "unread_ui": false,
         "user_events": false,
         "Plotly": false,
-        "emoji_codes": false
+        "emoji_codes": false,
+        "drafts": false
     },
     "rules": {
         "no-restricted-syntax": 0,

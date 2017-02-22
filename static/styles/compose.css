@@ -11,6 +11,12 @@
     width: 10px;
 }
 
+#compose_controls .drafts-link {
+    position: absolute;
+    left: 10px;
+    bottom: 5px;
+}
+
 .new_message_button {
     padding-top: 1.1em;
 }
@@ -355,14 +361,7 @@ input.recipient_box {
     display: none;
 }
 
-#sending-indicator {
-    float: left;
-    font-weight: bold;
-    display: none;
-}
-
-#restore-draft {
-    display: none;
+.compose_table .drafts-link {
     position: relative;
     margin-right: 1em;
     margin-left: 5px;
@@ -370,11 +369,13 @@ input.recipient_box {
 }
 
 #sending-indicator {
-    padding-top: 2px;
+    float: left;
+    font-weight: bold;
+    display: none;
 }
 
-#restore-draft:hover {
-    cursor:  pointer;
+#sending-indicator {
+    padding-top: 2px;
 }
 
 #compose a.message-control-button {

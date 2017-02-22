@@ -393,6 +393,51 @@ function render(template_name, args) {
     assert.equal(a.text(), "Narrow to here");
 }());
 
+(function draft_table_body() {
+    var args = {
+        drafts: [
+            {
+                draft_id: '1',
+                is_stream: true,
+                stream: 'all',
+                stream_color: '#FF0000',  // rgb(255, 0, 0)
+                topic: 'tests',
+                content: 'Public draft',
+            },
+            {
+                draft_id: '2',
+                is_stream: false,
+                recipients: 'Jordan, Michael',
+                content: 'Private draft',
+            },
+        ],
+    };
+
+    var html = '';
+    html += '<div id="drafts_table">';
+    html += render('draft_table_body', args);
+    html += '</div>';
+
+    global.write_handlebars_output("draft_table_body", html);
+
+    var row_1 = $(html).find(".draft-row[data-draft-id='1']");
+    assert.equal(row_1.find(".stream_label").text().trim(), "all");
+    assert.equal(row_1.find(".stream_label").css("background"), "rgb(255, 0, 0)");
+    assert.equal(row_1.find(".stream_topic").text().trim(), "tests");
+    assert(!row_1.find(".message_row").hasClass("private-message"));
+    assert.equal(row_1.find(".messagebox").css("box-shadow"),
+                 "inset 2px 0px 0px 0px #FF0000, -1px 0px 0px 0px #FF0000");
+    assert.equal(row_1.find(".message_content").text().trim(), "Public draft");
+
+    var row_2 = $(html).find(".draft-row[data-draft-id='2']");
+    assert.equal(row_2.find(".stream_label").text().trim(), "You and Jordan, Michael");
+    assert(row_2.find(".message_row").hasClass("private-message"));
+    assert.equal(row_2.find(".messagebox").css("box-shadow"),
+                 "inset 2px 0px 0px 0px #444444, -1px 0px 0px 0px #444444");
+    assert.equal(row_2.find(".message_content").text().trim(), "Private draft");
+}());
+
+
 (function email_address_hint() {
     var html = render('email_address_hint');
     global.write_handlebars_output("email_address_hint", html);
