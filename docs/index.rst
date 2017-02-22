@@ -128,6 +128,7 @@ Contents:
    html_css
    emoji
    full-text-search
+   analytics
    translating
    logging
    release-checklist
