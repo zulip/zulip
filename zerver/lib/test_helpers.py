@@ -124,11 +124,14 @@ def simulated_empty_cache():
     cache.cache_get_many = old_get_many
 
 @contextmanager
-def queries_captured(include_savepoints=False):
-    # type: (Optional[bool]) -> Generator[List[Dict[str, Union[str, binary_type]]], None, None]
+def queries_captured(include_savepoints=False, using=None):
+    # type: (Optional[bool], Optional[str]) -> Generator[List[Dict[str, Union[str, binary_type]]], None, None]
     '''
     Allow a user to capture just the queries executed during
     the with statement.
+
+    Note: `using` parameter is added only to make the interface similar
+    to what we will have once we remove the TimeTrackingConnection.
     '''
 
     queries = []  # type: List[Dict[str, Union[str, binary_type]]]
