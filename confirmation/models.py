@@ -94,8 +94,8 @@ class ConfirmationManager(models.Manager):
 
     def send_confirmation(self, obj, email_address, additional_context=None,
                           subject_template_path=None, body_template_path=None, html_body_template_path=None,
-                          host=None):
-        # type: (ContentType, Text, Optional[Dict[str, Any]], Optional[str], Optional[str], Optional[str], Optional[str]) -> Confirmation
+                          host=None, custom_body=None):
+        # type: (ContentType, Text, Optional[Dict[str, Any]], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str]) -> Confirmation
         confirmation_key = generate_key()
         current_site = Site.objects.get_current()
         activate_url = self.get_activation_url(confirmation_key, host=host)
@@ -105,6 +105,7 @@ class ConfirmationManager(models.Manager):
             'confirmation_key': confirmation_key,
             'target': obj,
             'days': getattr(settings, 'EMAIL_CONFIRMATION_DAYS', 10),
+            'custom_body': custom_body
         })
         if additional_context is not None:
             context.update(additional_context)

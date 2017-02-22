@@ -15,6 +15,12 @@
                     name="invitee_emails"
                     placeholder="{{ _('One or more email addresses...') }}"></textarea>
         </div>
+        <label class="control-label" for="custom_body">{{ _('Custom invitation message (if you want to add one)') }}</label>
+        <div class="controls">
+          <textarea rows="2" id="custom_body"
+                    name="custom_body"
+                    placeholder="{{ _('Custom Message') }}"></textarea>
+        </div>
       </div>
         <div class="alert" id="invite_status"></div>
         {% if development_environment %}

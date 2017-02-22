@@ -34,7 +34,7 @@ from zerver.lib.actions import do_deactivate_realm, do_set_realm_default_languag
 from zerver.lib.digest import send_digest_email
 from zerver.lib.notifications import (
     enqueue_welcome_emails, one_click_unsubscribe_link, send_local_email_template_with_delay)
-from zerver.lib.test_helpers import find_key_by_email, queries_captured, \
+from zerver.lib.test_helpers import find_pattern_in_email, find_key_by_email, queries_captured, \
     HostRequestMock
 from zerver.lib.test_classes import (
     ZulipTestCase,
@@ -45,6 +45,8 @@ from zerver.context_processors import common_context
 
 import re
 import ujson
+
+from typing import Set, Optional
 
 from six.moves import urllib
 from six.moves import range
@@ -333,8 +335,8 @@ class LoginTest(ZulipTestCase):
 
 class InviteUserTest(ZulipTestCase):
 
-    def invite(self, users, streams):
-        # type: (str, List[Text]) -> HttpResponse
+    def invite(self, users, streams, body=None):
+        # type: (str, List[Text], Optional[str]) -> HttpResponse
         """
         Invites the specified users to Zulip with the specified streams.
 
@@ -346,7 +348,8 @@ class InviteUserTest(ZulipTestCase):
 
         return self.client_post("/json/invite_users",
                                 {"invitee_emails": users,
-                                    "stream": streams})
+                                    "stream": streams,
+                                    "custom_body": body})
 
     def check_sent_emails(self, correct_recipients):
         # type: (List[str]) -> None
@@ -361,7 +364,8 @@ class InviteUserTest(ZulipTestCase):
         self.login('hamlet@zulip.com')
         invitees = ['alice@zulip.com', 'bob@zulip.com']
         params = {
-            'invitee_emails': ujson.dumps(invitees)
+            'invitee_emails': ujson.dumps(invitees),
+            'custom_body': "This is custom mail."
         }
         result = self.client_post('/json/bulk_invite_users', params)
         self.assert_json_success(result)
@@ -377,6 +381,19 @@ class InviteUserTest(ZulipTestCase):
         invitee = "alice-test@zulip.com"
         self.assert_json_success(self.invite(invitee, ["Denmark"]))
         self.assertTrue(find_key_by_email(invitee))
+        self.check_sent_emails([invitee])
+
+    def test_successful_invite_user_with_custom_body(self):
+        # type: () -> None
+        """
+        A call to /json/invite_users with valid parameters causes an invitation
+        email to be sent.
+        """
+        self.login("hamlet@zulip.com")
+        invitee = "alice-test@zulip.com"
+        body = "Custom Text."
+        self.assert_json_success(self.invite(invitee, ["Denmark"], body))
+        self.assertTrue(find_pattern_in_email(invitee, body))
         self.check_sent_emails([invitee])
 
     def test_successful_invite_user_with_name(self):
@@ -458,7 +475,7 @@ earl-test@zulip.com""", ["Denmark"]))
         """
         self.login("hamlet@zulip.com")
         self.assert_json_error(
-            self.client_post("/json/invite_users", {"invitee_emails": "foo@zulip.com"}),
+            self.client_post("/json/invite_users", {"invitee_emails": "foo@zulip.com", "custom_body": None}),
             "You must specify at least one stream for invitees to join.")
 
         for address in ("noatsign.com", "outsideyourdomain@example.net"):
@@ -486,7 +503,8 @@ earl-test@zulip.com""", ["Denmark"]))
         self.assert_json_error(
             self.client_post("/json/invite_users",
                              {"invitee_emails": "hamlet@zulip.com",
-                              "stream": ["Denmark"]}),
+                              "stream": ["Denmark"],
+                              "custom_body": None}),
             "We weren't able to invite anyone.")
         self.assertRaises(PreregistrationUser.DoesNotExist,
                           lambda: PreregistrationUser.objects.get(
@@ -505,7 +523,8 @@ earl-test@zulip.com""", ["Denmark"]))
 
         result = self.client_post("/json/invite_users",
                                   {"invitee_emails": "\n".join(existing + new),
-                                   "stream": ["Denmark"]})
+                                   "stream": ["Denmark"],
+                                   "custom_body": None})
         self.assert_json_error(result,
                                "Some of those addresses are already using Zulip, \
 so we didn't send them an invitation. We did send invitations to everyone else!")
