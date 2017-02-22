@@ -1247,8 +1247,8 @@ def send_pm_if_empty_stream(sender, stream, stream_name, realm):
 def check_message(sender, client, message_type_name, message_to,
                   subject_name, message_content_raw, realm=None, forged=False,
                   forged_timestamp=None, forwarder_user_profile=None, local_id=None,
-                  sender_queue_id=None):
-    # type: (UserProfile, Client, Text, Sequence[Text], Optional[Text], Text, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[Text], Optional[Text]) -> Dict[str, Any]
+                  sender_queue_id=None, send_internal_notice=False):
+    # type: (UserProfile, Client, Text, Sequence[Text], Optional[Text], Text, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[Text], Optional[Text], bool) -> Dict[str, Any]
     stream = None
     if not message_to and message_type_name == 'stream' and sender.default_sending_stream:
         # Use the users default stream
@@ -1289,6 +1289,9 @@ def check_message(sender, client, message_type_name, message_to,
 
         if not stream.invite_only:
             # This is a public stream
+            pass
+        elif send_internal_notice:
+            # send internal notice
             pass
         elif subscribed_to_stream(sender, stream):
             # Or it is private, but your are subscribed
@@ -1345,8 +1348,8 @@ def check_message(sender, client, message_type_name, message_to,
             'sender_queue_id': sender_queue_id, 'realm': realm}
 
 def _internal_prep_message(realm, sender, recipient_type_name, parsed_recipients,
-                           subject, content):
-    # type: (Realm, UserProfile, str, List[Text], Text, Text) -> Optional[Dict[str, Any]]
+                           subject, content, send_internal_notice=False):
+    # type: (Realm, UserProfile, str, List[Text], Text, Text, bool) -> Optional[Dict[str, Any]]
     """
     Create a message object and checks it, but doesn't send it or save it to the database.
     The internal function that calls this can therefore batch send a bunch of created
@@ -1364,15 +1367,16 @@ def _internal_prep_message(realm, sender, recipient_type_name, parsed_recipients
 
     try:
         return check_message(sender, get_client("Internal"), recipient_type_name,
-                             parsed_recipients, subject, content, realm=realm)
+                             parsed_recipients, subject, content, realm=realm,
+                             send_internal_notice=send_internal_notice)
     except JsonableError as e:
         logging.error("Error queueing internal message by %s: %s" % (sender.email, str(e)))
 
     return None
 
 def internal_prep_message(realm, sender_email, recipient_type_name, recipients,
-                          subject, content):
-    # type: (Realm, Text, str, Text, Text, Text) -> Optional[Dict[str, Any]]
+                          subject, content, send_internal_notice=False):
+    # type: (Realm, Text, str, Text, Text, Text, bool) -> Optional[Dict[str, Any]]
     """
     See _internal_prep_message for details of how this works.
     """
@@ -1386,6 +1390,7 @@ def internal_prep_message(realm, sender_email, recipient_type_name, recipients,
         parsed_recipients=parsed_recipients,
         subject=subject,
         content=content,
+        send_internal_notice=send_internal_notice,
     )
 
 def internal_prep_stream_message(realm, sender, stream_name, topic, content):
@@ -1421,10 +1426,10 @@ def internal_prep_private_message(realm, sender, recipient_email, content):
     )
 
 def internal_send_message(realm, sender_email, recipient_type_name, recipients,
-                          subject, content):
-    # type: (Realm, Text, str, Text, Text, Text) -> None
+                          subject, content, send_internal_notice=False):
+    # type: (Realm, Text, str, Text, Text, Text, Optional[bool]) -> None
     msg = internal_prep_message(realm, sender_email, recipient_type_name, recipients,
-                                subject, content)
+                                subject, content, send_internal_notice)
 
     # internal_prep_message encountered an error
     if msg is None:
