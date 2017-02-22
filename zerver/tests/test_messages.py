@@ -1074,6 +1074,17 @@ class EditMessageTest(ZulipTestCase):
         result = self.client_get('/json/messages/' + str(msg_id))
         self.assert_json_error(result, 'Invalid message(s)')
 
+    def test_edit_message_no_permission(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        msg_id = self.send_message("iago@zulip.com", "Scotland", Recipient.STREAM,
+                                   subject="editing", content="before edit")
+        result = self.client_patch("/json/messages/" + str(msg_id), {
+            'message_id': msg_id,
+            'content': 'content after edit',
+        })
+        self.assert_json_error(result, "You don't have permission to edit this message")
+
     def test_edit_message_no_changes(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
