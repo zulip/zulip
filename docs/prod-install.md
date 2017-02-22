@@ -67,12 +67,16 @@ heading `### MANDATORY SETTINGS`.
 
 These settings include:
 
-- `EXTERNAL_HOST`: the user-accessible Zulip domain name for your Zulip
-  installation. This will be the domain for which you have DNS A records
-  pointing to this server and for which you configured SSL certificates.
+- `EXTERNAL_HOST`: the user-accessible Zulip domain name for your
+  Zulip installation (aka what users will type in their web
+  browser). This will be the domain for which you have DNS A records
+  pointing to this server and for which you configured SSL
+  certificates.  If you plan to use multiple domains, also set
+  `ALLOWED_HOSTS`.
 
-- `ZULIP_ADMINISTRATOR`: the email address of the person or team maintaining
-  this installation and who will get support emails.
+- `ZULIP_ADMINISTRATOR`: the email address of the person or team
+  maintaining this installation and who will get support and error
+  emails.
 
 - `AUTHENTICATION_BACKENDS`: a list of enabled authentication
   mechanisms.  You'll need to enable at least one authentication
