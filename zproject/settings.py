@@ -304,21 +304,6 @@ TEMPLATES = [
             ],
         },
     },
-    {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [
-            os.path.join(DEPLOY_ROOT, 'django_templates'),
-        ],
-        'APP_DIRS': False,
-        'OPTIONS': {
-            'debug': DEBUG,
-            'loaders': LOADERS,
-            'context_processors': [
-                'zerver.context_processors.add_settings',
-                'zerver.context_processors.add_metrics',
-            ],
-        },
-    },
 ]
 
 MIDDLEWARE_CLASSES = (
