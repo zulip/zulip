@@ -16,6 +16,14 @@ var editability_types = {
 };
 exports.editability_types = editability_types;
 
+// To convert the time into a string of desired format
+function stringify_time(time) {
+    if (page_params.twenty_four_hour_time) {
+        return time.toString('HH:mm');
+    }
+    return time.toString('h:mm TT');
+}
+
 function get_editability(message, edit_limit_seconds_buffer) {
     edit_limit_seconds_buffer = edit_limit_seconds_buffer || 0;
     if (!(message && message.sent_by_me)) {
@@ -393,8 +401,12 @@ exports.show_history = function (message) {
                     return;
                 }
 
+                var time = new XDate(msg.timestamp * 1000);
                 // Format timestamp nicely for display
                 var item = {timestamp: timerender.get_full_time(msg.timestamp)};
+                // item.show_date = stringify_time(time);
+                item.show_day = (timerender.render_date(time))[0].outerHTML;
+                item.show_time = stringify_time(time);
                 if (index === 0) {
                     item.posted_or_edited = "Posted by";
                     item.posted_not_edited = true;
