@@ -1063,9 +1063,9 @@ class GetOldMessagesTest(ZulipTestCase):
         # the `message_id = 10000000000000000` hack.
         queries = [q for q in all_queries if '/* get_old_messages */' in q['sql']]
         self.assertEqual(len(queries), 1)
-        self.assertIn('AND message_id >= 10000000000000000', queries[0]['sql'])
-        self.assertEqual(len(queries), 1)
         self.assertIn('AND message_id <= 9999999999999999', queries[0]['sql'])
+        # There should not be an after_query in this case, since it'd be useless
+        self.assertNotIn('AND message_id >= 10000000000000000', queries[0]['sql'])
 
     def test_use_first_unread_anchor_with_muted_topics(self):
         # type: () -> None
