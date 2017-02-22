@@ -622,17 +622,21 @@ def get_old_messages_backend(request, user_profile,
         after_query = query.where(inner_msg_id_col >= anchor) \
                            .order_by(inner_msg_id_col.asc()).limit(num_after)
 
-    if num_before == 0 and num_after == 0:
-        # This can happen when a narrow is specified.
-        after_query = query.where(inner_msg_id_col == anchor)
+    if anchor == 10000000000000000:
+        # There's no need for an after_query if we're targeting just the target message.
+        after_query = None
 
     if before_query is not None:
         if after_query is not None:
             query = union_all(before_query.self_group(), after_query.self_group())
         else:
             query = before_query
-    else:
+    elif after_query is not None:
         query = after_query
+    else:
+        # This can happen when a narrow is specified.
+        query = query.where(inner_msg_id_col == anchor)
+
     main_query = alias(query)
     query = select(main_query.c, None, main_query).order_by(column("message_id").asc())
     # This is a hack to tag the query we use for testing
