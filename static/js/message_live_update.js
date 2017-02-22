@@ -14,12 +14,12 @@ exports.update_user_full_name = function (user_id, full_name) {
     });
 };
 
-exports.update_avatar = function (person) {
-    var url = person.avatar_url;
+exports.update_avatar = function (user_id, avatar_url) {
+    var url = avatar_url;
     url = people.format_small_avatar_url(url);
 
-    $(".inline_profile_picture.u-" + person.user_id).css({
-      "background-image": "url(" + url + ")",
+    _.each([home_msg_list, current_msg_list, message_list.all], function (list) {
+        list.update_user_avatar(user_id, url);
     });
 };
 

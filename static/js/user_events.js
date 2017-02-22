@@ -57,7 +57,7 @@ exports.update_person = function update(person) {
           $("#user-settings-avatar").attr("src", url);
         }
 
-        message_live_update.update_avatar(person_obj);
+        message_live_update.update_avatar(person_obj.user_id, person.avatar_url);
     }
 };
 
