@@ -109,6 +109,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'EMAIL_GATEWAY_IMAP_FOLDER': None,
                     'EMAIL_GATEWAY_EXTRA_PATTERN_HACK': None,
                     'EMAIL_HOST': None,
+                    'EMAIL_BACKEND': None,
                     'S3_KEY': '',
                     'S3_SECRET_KEY': '',
                     'S3_AVATAR_BUCKET': '',
@@ -1102,8 +1103,11 @@ SOCIAL_AUTH_GITHUB_TEAM_SECRET = SOCIAL_AUTH_GITHUB_SECRET
 # EMAIL SETTINGS
 ########################################################################
 
-# If an email host is not specified, fail silently and gracefully
-if not EMAIL_HOST and PRODUCTION:
+if EMAIL_BACKEND is not None:
+    # If the server admin specified a custom email backend, use that.
+    pass
+elif not EMAIL_HOST and PRODUCTION:
+    # If an email host is not specified, fail silently and gracefully
     EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
 elif DEVELOPMENT:
     # In the dev environment, emails are printed to the run-dev.py console.
