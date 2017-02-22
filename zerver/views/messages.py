@@ -49,7 +49,7 @@ from zerver.models import Message, UserProfile, Stream, Subscription, \
 
 from sqlalchemy import func
 from sqlalchemy.sql import select, join, column, literal_column, literal, and_, \
-    or_, not_, union_all, alias, Selectable, Select, ColumnElement
+    or_, not_, union_all, alias, Selectable, Select, ColumnElement, table
 
 import re
 import ujson
@@ -122,7 +122,7 @@ class NarrowBuilder(object):
     def by_is(self, query, operand, maybe_negate):
         # type: (Query, str, ConditionTransform) -> Query
         if operand == 'private':
-            query = query.select_from(join(query.froms[0], "zerver_recipient",
+            query = query.select_from(join(query.froms[0], table("zerver_recipient"),
                                            column("recipient_id") ==
                                            literal_column("zerver_recipient.id")))
             cond = or_(column("type") == Recipient.PERSONAL,
@@ -535,18 +535,18 @@ def get_old_messages_backend(request, user_profile,
     include_history = ok_to_include_history(narrow, user_profile.realm)
 
     if include_history and not use_first_unread_anchor:
-        query = select([column("id").label("message_id")], None, "zerver_message")
+        query = select([column("id").label("message_id")], None, table("zerver_message"))
         inner_msg_id_col = literal_column("zerver_message.id")
     elif narrow is None:
         query = select([column("message_id"), column("flags")],
                        column("user_profile_id") == literal(user_profile.id),
-                       "zerver_usermessage")
+                       table("zerver_usermessage"))
         inner_msg_id_col = column("message_id")
     else:
         # TODO: Don't do this join if we're not doing a search
         query = select([column("message_id"), column("flags")],
                        column("user_profile_id") == literal(user_profile.id),
-                       join("zerver_usermessage", "zerver_message",
+                       join(table("zerver_usermessage"), table("zerver_message"),
                             literal_column("zerver_usermessage.message_id") ==
                             literal_column("zerver_message.id")))
         inner_msg_id_col = column("message_id")
@@ -572,7 +572,7 @@ def get_old_messages_backend(request, user_profile,
             if term['operator'] == 'search':
                 if not is_search:
                     search_term = term
-                    query = query.column("subject").column("rendered_content")
+                    query = query.column(column("subject")).column(column("rendered_content"))
                     is_search = True
                 else:
                     # Join the search operators if there are multiple of them
@@ -1081,7 +1081,7 @@ def messages_in_narrow_backend(request, user_profile,
     query = select([column("message_id"), column("subject"), column("rendered_content")],
                    and_(column("user_profile_id") == literal(user_profile.id),
                         column("message_id").in_(msg_ids)),
-                   join("zerver_usermessage", "zerver_message",
+                   join(table("zerver_usermessage"), table("zerver_message"),
                         literal_column("zerver_usermessage.message_id") ==
                         literal_column("zerver_message.id")))
 

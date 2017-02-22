@@ -6,7 +6,7 @@ from __future__ import print_function
 from django.db import connection
 from django.test import override_settings
 from sqlalchemy.sql import (
-    and_, select, column,
+    and_, select, column, table,
 )
 from sqlalchemy.sql import compiler # type: ignore
 
@@ -47,7 +47,6 @@ def get_sqlalchemy_query_params(query):
     # type: (Text) -> Dict[Text, Text]
     dialect = get_sqlalchemy_connection().dialect # type: ignore
     comp = compiler.SQLCompiler(dialect, query)
-    comp.compile()
     return comp.params
 
 def fix_ws(s):
@@ -73,7 +72,7 @@ class NarrowBuilderTest(ZulipTestCase):
         self.realm = get_realm('zulip')
         self.user_profile = get_user_profile_by_email("hamlet@zulip.com")
         self.builder = NarrowBuilder(self.user_profile, column('id'))
-        self.raw_query = select([column("id")], None, "zerver_message")
+        self.raw_query = select([column("id")], None, table("zerver_message"))
 
     def test_add_term_using_not_defined_operator(self):
         # type: () -> None
@@ -1140,7 +1139,7 @@ class GetOldMessagesTest(ZulipTestCase):
         ]
 
         muting_conditions = exclude_muting_conditions(user_profile, narrow)
-        query = select([column("id").label("message_id")], None, "zerver_message")
+        query = select([column("id").label("message_id")], None, table("zerver_message"))
         query = query.where(*muting_conditions)
         expected_query = '''
             SELECT id AS message_id
@@ -1156,7 +1155,7 @@ class GetOldMessagesTest(ZulipTestCase):
         mute_stream(realm, user_profile, 'Verona')
         narrow = []
         muting_conditions = exclude_muting_conditions(user_profile, narrow)
-        query = select([column("id")], None, "zerver_message")
+        query = select([column("id")], None, table("zerver_message"))
         query = query.where(and_(*muting_conditions))
 
         expected_query = '''
