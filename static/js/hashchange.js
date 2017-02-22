@@ -184,6 +184,9 @@ function do_hashchange(from_reload) {
     case "#subscriptions":
         ui.change_tab_to("#subscriptions");
         break;
+    case "#drafts":
+        ui.change_tab_to("#drafts");
+        break;
     case "#administration":
         ui.change_tab_to("#administration");
         break;
@@ -243,7 +246,7 @@ var get_hash_group = (function () {
 
 function should_ignore(hash) {
     // an array of hashes to ignore (eg. ["subscriptions", "settings", "administration"]).
-    var ignore_list = ["subscriptions", "settings", "administration"];
+    var ignore_list = ["subscriptions", "drafts", "settings", "administration"];
     var main_hash = get_main_hash(hash);
 
     return (ignore_list.indexOf(main_hash) > -1);
@@ -275,6 +278,8 @@ function hashchanged(from_reload, e) {
 
             if (base === "subscriptions") {
                 subs.launch();
+            } else if (base === "drafts") {
+                drafts.launch();
             } else if (/settings|administration/.test(base)) {
                 settings.setup_page();
                 admin.setup_page();

@@ -87,13 +87,15 @@
         "fenced_code": false,
         "echo": false,
         "localstorage": false,
+        "localStorage": false,
         "current_msg_list": true,
         "home_msg_list": false,
         "pm_list": false,
         "unread_ui": false,
         "user_events": false,
         "Plotly": false,
-        "emoji_codes": false
+        "emoji_codes": false,
+        "drafts": false
     },
     "rules": {
         "no-restricted-syntax": 0,

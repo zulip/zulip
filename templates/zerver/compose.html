@@ -3,6 +3,7 @@
   </div>
   <div id="compose-container">
     <div id="compose_controls" class="compose-content">
+          <a class="drafts-link" href="#drafts">{{ _('Drafts') }}</a>
           <div id="compose_buttons">
             <span class="new_message_button">
               <button type="button" class="btn btn-default btn-large compose_stream_button"
@@ -87,7 +88,7 @@
                   <a class="message-control-button icon-vector-font" title="{{ _('Formatting') }}" data-overlay-trigger="markdown-help"></a>
                   <a id="undo_markdown_preview" class="icon-vector-edit" style="display:none;" title="{{ _('Write') }}"></a>
                   <a id="markdown_preview" class="icon-vector-eye-open" title="{{ _('Preview') }}"></a>
-                  <a id="restore-draft" onclick="compose.restore_message();">{{ _('Restore draft') }}</a>
+                  <a class="drafts-link" href="#drafts">{{ _('Drafts') }}</a>
                   <span id="sending-indicator">{{ _('Sending...') }}</span>
                   <div id="send_controls">
                     <label id="enter-sends-label" class="compose_checkbox_label" for="enter_sends">{{ _('Press Enter to send') }}&nbsp;</label>

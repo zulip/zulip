@@ -211,6 +211,9 @@ function process_hotkey(e) {
         } else if ($("#subscription_overlay").hasClass("show")) {
             subs.close();
             return true;
+        } else if ($("#draft_overlay").hasClass("show")) {
+            drafts.close();
+            return true;
         } else if ($(".informational-overlays").hasClass("show")) {
             ui.hide_info_overlay();
             return true;

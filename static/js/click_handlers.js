@@ -268,6 +268,18 @@ $(function () {
             subs.close();
         }
     });
+
+    $("#drafts_table").on("click", ".exit, #draft_overlay", function (e) {
+        if (meta.focusing) {
+            meta.focusing = false;
+            return;
+        }
+
+        if ($(e.target).is(".exit, .exit-sign, #draft_overlay, #draft_overlay > .flex")) {
+            drafts.close();
+        }
+    });
+
     // HOME
 
     // Capture both the left-sidebar Home click and the tab breadcrumb Home

@@ -15,8 +15,6 @@ var user_acknowledged_all_everyone;
 
 exports.all_everyone_warn_threshold = 15;
 
-var message_snapshot;
-
 var uploads_domain = document.location.protocol + '//' + document.location.host;
 var uploads_path = '/user_uploads';
 var uploads_re = new RegExp("\\]\\(" + uploads_domain + "(" + uploads_path + "[^\\)]+)\\)", 'g');
@@ -116,11 +114,11 @@ function clear_invites() {
 }
 
 function clear_box() {
-    exports.snapshot_message();
     clear_invites();
     clear_all_everyone_warnings();
     user_acknowledged_all_everyone = undefined;
     $("#compose").find('input[type=text], textarea').val('');
+    $("#new_message_content").removeData("draft-id");
     exports.autosize_textarea();
     $("#send-status").hide(0);
 }
@@ -131,9 +129,6 @@ function clear_preview_area() {
     $("#preview_message_area").hide();
     $("#preview_content").empty();
     $("#markdown_preview").show();
-    if (message_snapshot !== undefined) {
-        $('#restore-draft').show();
-    }
 }
 
 function hide_box() {
@@ -307,9 +302,6 @@ exports.cancel = function () {
     notifications.clear_compose_notifications();
     abort_xhr();
     is_composing_message = false;
-    if (message_snapshot !== undefined) {
-        $('#restore-draft').show();
-    }
     $(document).trigger($.Event('compose_canceled.zulip'));
 };
 
@@ -355,40 +347,10 @@ exports.snapshot_message = function (message) {
     }
 
     if (message !== undefined) {
-        message_snapshot = _.extend({}, message);
-    } else {
-        // Save what we can.
-        message_snapshot = create_message_object();
+        return _.extend({}, message);
     }
-};
-
-function clear_message_snapshot() {
-    $("#restore-draft").hide();
-    message_snapshot = undefined;
-}
-
-exports.restore_message = function () {
-    if (!message_snapshot) {
-        return;
-    }
-    var snapshot_copy = _.extend({}, message_snapshot);
-    if ((snapshot_copy.type === "stream" &&
-         snapshot_copy.stream.length > 0 &&
-         snapshot_copy.subject.length > 0) ||
-        (snapshot_copy.type === "private" &&
-         snapshot_copy.reply_to.length > 0)) {
-        snapshot_copy = _.extend({replying_to_message: snapshot_copy},
-                                 snapshot_copy);
-    }
-    clear_message_snapshot();
-    compose_fade.clear_compose();
-    compose.start(snapshot_copy.type, snapshot_copy);
-    exports.autosize_textarea();
-
-    if (snapshot_copy.content !== undefined &&
-        util.is_all_or_everyone_mentioned(snapshot_copy.content)) {
-        show_all_everyone_warnings();
-    }
+    // Save what we can.
+    return create_message_object();
 };
 
 function compose_error(error_text, bad_input) {
@@ -525,9 +487,9 @@ function process_send_time(message_id, start_time, locally_echoed) {
 
 function clear_compose_box() {
     $("#new_message_content").val('').focus();
+    drafts.delete_draft_after_send();
     exports.autosize_textarea();
     $("#send-status").hide(0);
-    clear_message_snapshot();
     $("#compose-send-button").removeAttr('disabled');
     $("#sending-indicator").hide();
     resize.resize_bottom_whitespace();
@@ -622,7 +584,7 @@ exports.respond_to_message = function (opts) {
     var msg_type;
     // Before initiating a reply to a message, if there's an
     // in-progress composition, snapshot it.
-    compose.snapshot_message();
+    drafts.update_draft();
 
     message = current_msg_list.selected_message();
 
@@ -1043,7 +1005,6 @@ $(function () {
         var message = $("#new_message_content").val();
         $("#new_message_content").hide();
         $("#markdown_preview").hide();
-        $("#restore-draft").hide();
         $("#undo_markdown_preview").show();
         $("#preview_message_area").show();
 
