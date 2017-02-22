@@ -16,7 +16,6 @@ from django.http import HttpResponse
 from django.db.utils import IntegrityError
 
 from zerver.lib.initial_password import initial_password
-from zerver.lib.db import TimeTrackingCursor
 from zerver.lib.str_utils import force_text
 from zerver.lib.utils import is_remote_server
 from zerver.lib import cache

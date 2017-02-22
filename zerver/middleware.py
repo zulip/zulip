@@ -5,6 +5,7 @@ from typing import Any, AnyStr, Callable, Dict, Iterable, List, MutableMapping, 
 
 from django.conf import settings
 from django.core.exceptions import DisallowedHost
+from django.db import reset_queries
 from django.utils.translation import ugettext as _
 from django.utils.deprecation import MiddlewareMixin
 
@@ -178,7 +179,7 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
 
     # Get the amount of time spent doing database queries
     db_time_output = ""
-    queries = connection.connection.queries if connection.connection is not None else []
+    queries = connection.queries_log if connection.connection is not None else []
     if len(queries) > 0:
         query_time = sum(float(query.get('time', 0)) for query in queries)
         db_time_output = " (db: %s/%sq)" % (format_timedelta(query_time),
@@ -237,8 +238,7 @@ class LogRequests(MiddlewareMixin):
         # type: (HttpRequest) -> None
         request._log_data = dict()
         record_request_start_data(request._log_data)
-        if connection.connection is not None:
-            connection.connection.queries = []
+        reset_queries()
 
     def process_view(self, request, view_func, args, kwargs):
         # type: (HttpRequest, Callable[..., HttpResponse], List[str], Dict[str, Any]) -> None
@@ -250,8 +250,7 @@ class LogRequests(MiddlewareMixin):
         # And then completely reset our tracking to only cover work
         # done as part of this request
         record_request_start_data(request._log_data)
-        if connection.connection is not None:
-            connection.connection.queries = []
+        reset_queries()
 
     def process_response(self, request, response):
         # type: (HttpRequest, StreamingHttpResponse) -> StreamingHttpResponse

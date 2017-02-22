@@ -11,14 +11,15 @@ from django.test import TestCase
 from django.test.client import (
     BOUNDARY, MULTIPART_CONTENT, encode_multipart,
 )
+from django.test.utils import CaptureQueriesContext
 from django.template import loader
 from django.http import HttpResponse
+from django.db import DEFAULT_DB_ALIAS, connections
 from django.db.utils import IntegrityError
 
 from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import get_cache_backend
 from zerver.lib.initial_password import initial_password
-from zerver.lib.db import TimeTrackingCursor
 from zerver.lib.str_utils import force_text
 from zerver.lib import cache
 from zerver.tornado import event_queue
@@ -123,52 +124,14 @@ def simulated_empty_cache():
     cache.cache_get = old_get
     cache.cache_get_many = old_get_many
 
-@contextmanager
-def queries_captured(include_savepoints=False, using=None):
-    # type: (Optional[bool], Optional[str]) -> Generator[List[Dict[str, Union[str, binary_type]]], None, None]
-    '''
-    Allow a user to capture just the queries executed during
-    the with statement.
-
-    Note: `using` parameter is added only to make the interface similar
-    to what we will have once we remove the TimeTrackingConnection.
-    '''
-
-    queries = []  # type: List[Dict[str, Union[str, binary_type]]]
-
-    def wrapper_execute(self, action, sql, params=()):
-        # type: (TimeTrackingCursor, Callable, NonBinaryStr, Iterable[Any]) -> None
+class queries_captured(CaptureQueriesContext):
+    def __init__(self, *args, **kwargs):
+        # type: (*Any, **Any) -> None
         cache = get_cache_backend(None)
         cache.clear()
-        start = time.time()
-        try:
-            return action(sql, params)
-        finally:
-            stop = time.time()
-            duration = stop - start
-            if include_savepoints or ('SAVEPOINT' not in sql):
-                queries.append({
-                    'sql': self.mogrify(sql, params).decode('utf-8'),
-                    'time': "%.3f" % duration,
-                })
-
-    old_execute = TimeTrackingCursor.execute
-    old_executemany = TimeTrackingCursor.executemany
-
-    def cursor_execute(self, sql, params=()):
-        # type: (TimeTrackingCursor, NonBinaryStr, Iterable[Any]) -> None
-        return wrapper_execute(self, super(TimeTrackingCursor, self).execute, sql, params)  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
-    TimeTrackingCursor.execute = cursor_execute  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
-
-    def cursor_executemany(self, sql, params=()):
-        # type: (TimeTrackingCursor, NonBinaryStr, Iterable[Any]) -> None
-        return wrapper_execute(self, super(TimeTrackingCursor, self).executemany, sql, params)  # type: ignore # https://github.com/JukkaL/mypy/issues/1167 # nocoverage -- doesn't actually get used in tests
-    TimeTrackingCursor.executemany = cursor_executemany  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
-
-    yield queries
-
-    TimeTrackingCursor.execute = old_execute  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
-    TimeTrackingCursor.executemany = old_executemany  # type: ignore # https://github.com/JukkaL/mypy/issues/1167
+        using = kwargs.pop("using", DEFAULT_DB_ALIAS)
+        conn = connections[using]
+        super(queries_captured, self).__init__(conn)
 
 @contextmanager
 def stdout_suppressed():

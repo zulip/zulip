@@ -2520,7 +2520,7 @@ class GetSubscribersTest(ZulipTestCase):
                 self.assertTrue(len(sub["subscribers"]) == len(users_to_subscribe))
             else:
                 self.assertTrue(len(sub["subscribers"]) == 0)
-        self.assert_length(queries, 4)
+        self.assert_max_length(queries, 5)
 
     def test_nonsubscriber(self):
         # type: () -> None

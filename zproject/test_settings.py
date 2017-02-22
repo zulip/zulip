@@ -30,7 +30,7 @@ DATABASES["default"] = {
     "SCHEMA": "zulip",
     "ENGINE": "django.db.backends.postgresql_psycopg2",
     "TEST_NAME": "django_zulip_tests",
-    "OPTIONS": {"connection_factory": TimeTrackingConnection},
+    "OPTIONS": {},
 }
 if USING_PGROONGA:
     # We need to have "pgroonga" schema before "pg_catalog" schema in

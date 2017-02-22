@@ -32,7 +32,7 @@ from zerver.lib.email_mirror import process_message as mirror_email
 from zerver.decorator import JsonableError
 from zerver.tornado.socket import req_redis_key
 from confirmation.models import Confirmation
-from zerver.lib.db import reset_queries
+from django.db import reset_queries
 from zerver.lib.redis_utils import get_redis_client
 from zerver.lib.str_utils import force_str
 from zerver.context_processors import common_context

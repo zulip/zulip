@@ -18,7 +18,6 @@ import time
 import sys
 import six.moves.configparser
 
-from zerver.lib.db import TimeTrackingConnection
 import zerver.lib.logging_util
 import six
 
@@ -403,7 +402,7 @@ AUTORELOAD = DEBUG
 ########################################################################
 
 DATABASES = {"default": {
-    'ENGINE': 'django.db.backends.postgresql',
+    'ENGINE': 'zproject.db.backends.postgresql',
     'NAME': 'zulip',
     'USER': 'zulip',
     'PASSWORD': '', # Authentication done via certificates
@@ -411,7 +410,6 @@ DATABASES = {"default": {
     'SCHEMA': 'zulip',
     'CONN_MAX_AGE': 600,
     'OPTIONS': {
-        'connection_factory': TimeTrackingConnection
     },
 }}
 
