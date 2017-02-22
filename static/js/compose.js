@@ -565,7 +565,6 @@ function send_message(request) {
     if (request === undefined) {
         request = create_message_object();
     }
-    exports.snapshot_message(request);
 
     if (request.type === "private") {
         request.to = JSON.stringify(request.to);
