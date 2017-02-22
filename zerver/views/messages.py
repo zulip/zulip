@@ -970,10 +970,7 @@ def update_message_backend(request, user_profile,
     if not user_profile.realm.allow_message_editing:
         return json_error(_("Your organization has turned off message editing."))
 
-    try:
-        message = Message.objects.select_related().get(id=message_id)
-    except Message.DoesNotExist:
-        raise JsonableError(_("Unknown message id"))
+    message, ignored_user_message = access_message(user_profile, message_id)
 
     # You only have permission to edit a message if:
     # 1. You sent it, OR:
