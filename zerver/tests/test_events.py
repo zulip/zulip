@@ -1102,12 +1102,14 @@ class EventsRegisterTest(ZulipTestCase):
             ('name', check_string),
         ])
 
+        # Subscribe to a totally new stream, so it's just Hamlet on it
         action = lambda: self.subscribe_to_stream("hamlet@zulip.com", "test_stream") # type: Callable
         events = self.do_test(action, event_types=["subscription", "realm_user"],
                               include_subscribers=include_subscribers)
         error = add_schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
+        # Add another user to that totally new stream
         action = lambda: self.subscribe_to_stream("othello@zulip.com", "test_stream")
         events = self.do_test(action,
                               include_subscribers=include_subscribers,
@@ -1118,6 +1120,7 @@ class EventsRegisterTest(ZulipTestCase):
 
         stream = get_stream("test_stream", self.user_profile.realm)
 
+        # Now remove the first user, to test the normal unsubscribe flow
         action = lambda: bulk_remove_subscriptions(
             [get_user_profile_by_email("othello@zulip.com")],
             [stream])
@@ -1128,6 +1131,7 @@ class EventsRegisterTest(ZulipTestCase):
         error = peer_remove_schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
+        # Now remove the second user, to test the 'vacate' event flow
         action = lambda: bulk_remove_subscriptions(
             [get_user_profile_by_email("hamlet@zulip.com")],
             [stream])
@@ -1136,6 +1140,7 @@ class EventsRegisterTest(ZulipTestCase):
         error = remove_schema_checker('events[1]', events[1])
         self.assert_on_error(error)
 
+        # Now resubscribe a user, to make sure that works on a vacated stream
         action = lambda: self.subscribe_to_stream("hamlet@zulip.com", "test_stream")
         events = self.do_test(action,
                               include_subscribers=include_subscribers)
