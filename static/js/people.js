@@ -396,9 +396,6 @@ exports.small_avatar_url = function (message) {
         // Here we fall back to using the avatar_url from the message
         // itself.
         url = message.avatar_url;
-        if (person) {
-            person.avatar_url = url;
-        }
     }
 
     if (url) {
