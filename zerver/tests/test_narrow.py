@@ -544,7 +544,7 @@ class GetOldMessagesTest(ZulipTestCase):
     def test_get_old_messages_with_narrow_topic_mit_unicode_regex(self):
         # type: () -> None
         """
-        A request for old messages for a user in the mit.edu relam with unicode
+        A request for old messages for a user in the mit.edu realm with unicode
         topic name should be correctly escaped in the database query.
         """
         self.login("starnine@mit.edu")
@@ -557,15 +557,61 @@ class GetOldMessagesTest(ZulipTestCase):
                           subject=u"\u03bb-topic")
         self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
                           subject=u"\u03bb-topic.d")
+        self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
+                          subject=u"\u03bb-topic.d.d")
+        self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
+                          subject=u"\u03bb-topic.d.d.d")
+        self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
+                          subject=u"\u03bb-topic.d.d.d.d")
 
         narrow = [dict(operator='topic', operand=u'\u03bb-topic')]
         result = self.get_and_check_messages(dict(
-            num_after=2,
+            num_after=100,
             narrow=ujson.dumps(narrow)))
 
         messages = get_user_messages(get_user_profile_by_email("starnine@mit.edu"))
         stream_messages = [msg for msg in messages if msg.recipient.type == Recipient.STREAM]
-        self.assertEqual(len(result["messages"]), 2)
+        self.assertEqual(len(result["messages"]), 5)
+        for i, message in enumerate(result["messages"]):
+            self.assertEqual(message["type"], "stream")
+            stream_id = stream_messages[i].recipient.id
+            self.assertEqual(message["recipient_id"], stream_id)
+
+    def test_get_old_messages_with_narrow_topic_mit_personal(self):
+        # type: () -> None
+        """
+        We handle .d grouping for MIT realm personal messages correctly.
+        """
+        self.login("starnine@mit.edu")
+        # We need to susbcribe to a stream and then send a message to
+        # it to ensure that we actually have a stream message in this
+        # narrow view.
+        self.subscribe_to_stream("starnine@mit.edu", "Scotland")
+
+        self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
+                          subject=u".d.d")
+        self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
+                          subject=u"PERSONAL")
+        self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
+                          subject=u'(instance "").d')
+        self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
+                          subject=u".d.d.d")
+        self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
+                          subject=u"personal.d")
+        self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
+                          subject=u'(instance "")')
+        self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
+                          subject=u".d.d.d.d")
+
+        narrow = [dict(operator='topic', operand=u'personal.d.d')]
+        result = self.get_and_check_messages(dict(
+            num_before=50,
+            num_after=50,
+            narrow=ujson.dumps(narrow)))
+
+        messages = get_user_messages(get_user_profile_by_email("starnine@mit.edu"))
+        stream_messages = [msg for msg in messages if msg.recipient.type == Recipient.STREAM]
+        self.assertEqual(len(result["messages"]), 7)
         for i, message in enumerate(result["messages"]):
             self.assertEqual(message["type"], "stream")
             stream_id = stream_messages[i].recipient.id

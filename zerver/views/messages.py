@@ -201,11 +201,34 @@ class NarrowBuilder(object):
             # Additionally, MIT users expect the empty instance and
             # instance "personal" to be the same.
             if base_topic in ('', 'personal', '(instance "")'):
-                regex = r'^(|personal|\(instance ""\))(\.d)*$'
+                cond = or_(
+                    func.upper(column("subject")) == func.upper(literal("")),
+                    func.upper(column("subject")) == func.upper(literal(".d")),
+                    func.upper(column("subject")) == func.upper(literal(".d.d")),
+                    func.upper(column("subject")) == func.upper(literal(".d.d.d")),
+                    func.upper(column("subject")) == func.upper(literal(".d.d.d.d")),
+                    func.upper(column("subject")) == func.upper(literal("personal")),
+                    func.upper(column("subject")) == func.upper(literal("personal.d")),
+                    func.upper(column("subject")) == func.upper(literal("personal.d.d")),
+                    func.upper(column("subject")) == func.upper(literal("personal.d.d.d")),
+                    func.upper(column("subject")) == func.upper(literal("personal.d.d.d.d")),
+                    func.upper(column("subject")) == func.upper(literal('(instance "")')),
+                    func.upper(column("subject")) == func.upper(literal('(instance "").d')),
+                    func.upper(column("subject")) == func.upper(literal('(instance "").d.d')),
+                    func.upper(column("subject")) == func.upper(literal('(instance "").d.d.d')),
+                    func.upper(column("subject")) == func.upper(literal('(instance "").d.d.d.d')),
+                )
             else:
-                regex = r'^%s(\.d)*$' % (self._pg_re_escape(base_topic),)
-
-            cond = column("subject").op("~*")(regex)
+                # We limit `.d` counts, since postgres has much better
+                # query planning for this than they do for a regular
+                # expression (which would sometimes table scan).
+                cond = or_(
+                    func.upper(column("subject")) == func.upper(literal(base_topic)),
+                    func.upper(column("subject")) == func.upper(literal(base_topic + ".d")),
+                    func.upper(column("subject")) == func.upper(literal(base_topic + ".d.d")),
+                    func.upper(column("subject")) == func.upper(literal(base_topic + ".d.d.d")),
+                    func.upper(column("subject")) == func.upper(literal(base_topic + ".d.d.d.d")),
+                )
             return query.where(maybe_negate(cond))
 
         cond = func.upper(column("subject")) == func.upper(literal(operand))
