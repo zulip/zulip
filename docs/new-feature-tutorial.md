@@ -36,7 +36,7 @@ interacting with the database in `zerver/lib/actions.py`. It should
 update the database and send an event announcing the change.
 
 **Application state:** Modify the `fetch_initial_state_data` and
-`apply_event` functions in `zerver/lib/actions.py` to update the state
+`apply_event` functions in `zerver/lib/events.py` to update the state
 based on the event you just created.
 
 **Backend implementation:** Make any other modifications to the backend
