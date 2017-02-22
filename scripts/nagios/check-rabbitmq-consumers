@@ -37,7 +37,7 @@ consumers = defaultdict(int) # type: Dict[str, int]
 
 sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
 from scripts.lib.zulip_tools import su_to_zulip
-queues = subprocess.check_output(['./scripts/lib/queue_workers.py', '--queue_type=consumer'],
+queues = subprocess.check_output(['./scripts/lib/queue_workers.py', '--queue-type=consumer'],
                                  universal_newlines=True,
                                  preexec_fn=su_to_zulip)
 

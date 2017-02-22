@@ -103,7 +103,7 @@ echo; echo "Now running RabbitMQ consumer Nagios tests"; echo
 /home/zulip/deployments/current/scripts/nagios/check-rabbitmq-consumers
 
 # Then, compute the list of all Django queue workers to run Nagios checks against
-consumer_list=$(/home/zulip/deployments/current/scripts/lib/queue_workers.py --queue_type=consumer)
+consumer_list=$(/home/zulip/deployments/current/scripts/lib/queue_workers.py --queue-type=consumer)
 for consumer in $consumer_list; do
     if ! /usr/lib/nagios/plugins/zulip_app_frontend/check_rabbitmq_consumers "$consumer"; then
         set +x
