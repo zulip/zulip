@@ -70,8 +70,9 @@ DEFAULT_FROM_EMAIL = "Zulip <zulip@example.com>"
 # Messages sent to this address should not be delivered anywhere.
 NOREPLY_EMAIL_ADDRESS = "noreply@example.com"
 
-### AUTHENTICATION SETTINGS
 
+### AUTHENTICATION SETTINGS
+#
 # Enable at least one of the following authentication backends.
 # See http://zulip.readthedocs.io/en/latest/prod-authentication-methods.html
 # for documentation on our authentication backends.
