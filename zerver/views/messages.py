@@ -493,8 +493,10 @@ def exclude_muting_conditions(user_profile, narrow):
             recipient__type=Recipient.STREAM
         ).values('recipient_id')
         muted_recipient_ids = [row['recipient_id'] for row in rows]
-        condition = not_(column("recipient_id").in_(muted_recipient_ids))
-        conditions.append(condition)
+        if len(muted_recipient_ids) > 0:
+            # Only add the condition if we have muted streams to simplify/avoid warnings.
+            condition = not_(column("recipient_id").in_(muted_recipient_ids))
+            conditions.append(condition)
 
     muted_topics = ujson.loads(user_profile.muted_topics)
     if muted_topics:
