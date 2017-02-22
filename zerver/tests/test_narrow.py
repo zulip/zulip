@@ -752,6 +752,36 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(len(multi_search_result['messages']), 1)
         self.assertEqual(multi_search_result['messages'][0]['match_content'], '<p><span class="highlight">discuss</span> lunch <span class="highlight">after</span> lunch</p>')
 
+    @override_settings(USING_PGROONGA=False)
+    def test_get_old_messages_with_search_not_subscribed(self):
+        # type: () -> None
+        """Verify support for searching a stream you're not subscribed to"""
+        self.subscribe_to_stream("hamlet@zulip.com", "newstream")
+        self.send_message(
+            sender_name="hamlet@zulip.com",
+            raw_recipients="newstream",
+            message_type=Recipient.STREAM,
+            content="Public special content!",
+            subject="new",
+        )
+        self._update_tsvector_index()
+
+        self.login("cordelia@zulip.com")
+
+        stream_search_narrow = [
+            dict(operator='search', operand='special'),
+            dict(operator='stream', operand='newstream'),
+        ]
+        stream_search_result = self.get_and_check_messages(dict(
+            narrow=ujson.dumps(stream_search_narrow),
+            anchor=0,
+            num_after=10,
+            num_before=10,
+        )) # type: Dict[str, Dict]
+        self.assertEqual(len(stream_search_result['messages']), 1)
+        self.assertEqual(stream_search_result['messages'][0]['match_content'],
+                         '<p>Public <span class="highlight">special</span> content!</p>')
+
     @override_settings(USING_PGROONGA=True)
     def test_get_old_messages_with_search_pgroonga(self):
         # type: () -> None
