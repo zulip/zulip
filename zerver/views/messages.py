@@ -904,10 +904,6 @@ def send_message_backend(request, user_profile,
                              local_id=local_id, sender_queue_id=queue_id)
     return json_success({"id": ret})
 
-def json_update_message(request, user_profile, message_id):
-    # type: (HttpRequest, UserProfile, int) -> HttpResponse
-    return update_message_backend(request, user_profile)
-
 def fill_edit_history_entries(message_history, message):
     # type: (List[Dict[str, Any]], Message) -> None
     """This fills out the message edit history entries from the database,
