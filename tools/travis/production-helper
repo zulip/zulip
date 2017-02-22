@@ -111,6 +111,9 @@ for consumer in $consumer_list; do
         echo "FAILURE: Missing Nagios consumer for $consumer; displaying full consumer output:"
         rabbitmqctl list_consumers
         supervisorctl status
+        echo "EVENTS LOGS"
+        echo
+        cat /var/log/zulip/events*.log
         echo
         exit 1
     fi
