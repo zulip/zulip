@@ -11,6 +11,7 @@ from django.http import HttpRequest, HttpResponse
 from typing import Text
 from typing import Any, AnyStr, Callable, Iterable, Optional, Tuple, Union
 from zerver.lib.str_utils import force_bytes, force_text
+from zerver.lib.html_diff import highlight_html_differences
 
 from zerver.decorator import authenticated_api_view, authenticated_json_post_view, \
     has_request_variables, REQ, JsonableError, \
@@ -35,6 +36,7 @@ from zerver.lib.message import (
 )
 from zerver.lib.response import json_success, json_error
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
+from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.utils import statsd
 from zerver.lib.validator import \
     check_list, check_int, check_dict, check_string, check_bool
@@ -872,6 +874,64 @@ def send_message_backend(request, user_profile,
                              forwarder_user_profile=user_profile, realm=realm,
                              local_id=local_id, sender_queue_id=queue_id)
     return json_success({"id": ret})
+
+def json_update_message(request, user_profile, message_id):
+    # type: (HttpRequest, UserProfile, int) -> HttpResponse
+    return update_message_backend(request, user_profile)
+
+def fill_edit_history_entries(message_history, message):
+    # type: (List[Dict[str, Any]], Message) -> None
+    """This fills out the message edit history entries from the database,
+    which are designed to have the minimum data possible, to instead
+    have the current topic + content as of that time, plus data on
+    whatever changed.  This makes it much simpler to do future
+    processing.
+
+    Note that this mutates what is passed to it, which is sorta a bad pattern.
+    """
+    prev_content = message.content
+    prev_rendered_content = message.rendered_content
+    prev_topic = message.subject
+    assert(datetime_to_timestamp(message.last_edit_time) == message_history[0]['timestamp'])
+
+    for entry in message_history:
+        entry['topic'] = prev_topic
+        if 'prev_subject' in entry:
+            # We replace use of 'subject' with 'topic' for downstream simplicity
+            prev_topic = entry['prev_subject']
+            entry['prev_topic'] = prev_topic
+            del entry['prev_subject']
+
+        entry['content'] = prev_content
+        entry['rendered_content'] = prev_rendered_content
+        if 'prev_content' in entry:
+            del entry['prev_rendered_content_version']
+            prev_content = entry['prev_content']
+            prev_rendered_content = entry['prev_rendered_content']
+            entry['content_html_diff'] = highlight_html_differences(
+                prev_rendered_content,
+                entry['rendered_content'])
+
+    message_history.append(dict(
+        topic = prev_topic,
+        content = prev_content,
+        rendered_content = prev_rendered_content,
+        timestamp = datetime_to_timestamp(message.pub_date),
+        user_id = message.sender_id,
+    ))
+
+@has_request_variables
+def get_message_edit_history(request, user_profile,
+                             message_id=REQ(converter=to_non_negative_int)):
+    # type: (HttpRequest, UserProfile, int) -> HttpResponse
+    message, ignored_user_message = access_message(user_profile, message_id)
+
+    # Extract the message edit history from the message
+    message_edit_history = ujson.loads(message.edit_history)
+
+    # Fill in all the extra data that will make it usable
+    fill_edit_history_entries(message_edit_history, message)
+    return json_success({"message_history": reversed(message_edit_history)})
 
 @has_request_variables
 def update_message_backend(request, user_profile,

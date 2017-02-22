@@ -366,3 +366,23 @@ var people = global.people;
     assert.equal(sub_rows[2].color, 'cinnamon');
 
 }());
+
+(function test_delete_sub() {
+    var canada = {
+        stream_id: 101,
+        name: 'Canada',
+        subscribed: true,
+    };
+
+    stream_data.clear_subscriptions();
+    stream_data.add_sub('Canada', canada);
+
+    assert(stream_data.is_subscribed('Canada'));
+    assert(stream_data.get_sub('Canada').stream_id, canada.stream_id);
+    assert(stream_data.get_sub_by_id(canada.stream_id).name, 'Canada');
+
+    stream_data.delete_sub(canada.stream_id);
+    assert(!stream_data.is_subscribed('Canada'));
+    assert(!stream_data.get_sub('Canada'));
+    assert(!stream_data.get_sub_by_id(canada.stream_id));
+}());

@@ -14,9 +14,19 @@ def avatar_url(user_profile, medium=False):
     return get_avatar_url(
         user_profile.avatar_source,
         user_profile.email,
+        user_profile.avatar_version,
         medium=medium)
 
-def get_avatar_url(avatar_source, email, medium=False):
+def get_avatar_url(avatar_source, email, avatar_version, medium=False):
+    # type: (Text, Text, int, bool) -> Text
+    url = _get_unversioned_avatar_url(
+        avatar_source,
+        email,
+        medium)
+    url += '&version=%d' % (avatar_version,)
+    return url
+
+def _get_unversioned_avatar_url(avatar_source, email, medium=False):
     # type: (Text, Text, bool) -> Text
     if avatar_source == u'U':
         hash_key = user_avatar_hash(email)

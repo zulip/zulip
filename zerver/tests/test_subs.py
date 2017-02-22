@@ -35,7 +35,7 @@ from zerver.lib.test_runner import (
 
 from zerver.models import (
     get_display_recipient, Message, Realm, Recipient, Stream, Subscription,
-    UserProfile, get_user_profile_by_id
+    DefaultStream, UserProfile, get_user_profile_by_id
 )
 
 from zerver.lib.actions import (
@@ -44,7 +44,8 @@ from zerver.lib.actions import (
     gather_subscriptions_helper, bulk_add_subscriptions, bulk_remove_subscriptions,
     gather_subscriptions, get_default_streams_for_realm, get_realm, get_stream,
     get_user_profile_by_email, set_default_streams, check_stream_name,
-    create_stream_if_needed, create_streams_if_needed, active_user_ids
+    create_stream_if_needed, create_streams_if_needed, active_user_ids,
+    do_deactivate_stream,
 )
 
 from zerver.views.streams import (
@@ -179,6 +180,14 @@ class StreamAdminTest(ZulipTestCase):
             active=True,
         ).exists()
         self.assertFalse(subscription_exists)
+
+    def test_deactivate_stream_removes_default_stream(self):
+        # type: () -> None
+        stream = self.make_stream('new_stream')
+        do_add_default_stream(stream)
+        self.assertEqual(1, DefaultStream.objects.filter(stream=stream).count())
+        do_deactivate_stream(stream)
+        self.assertEqual(0, DefaultStream.objects.filter(stream=stream).count())
 
     def test_deactivate_stream_backend_requires_existing_stream(self):
         # type: () -> None
@@ -420,8 +429,8 @@ class StreamAdminTest(ZulipTestCase):
 
         return stream
 
-    def delete_stream(self, stream, subscribed=True):
-        # type: (Stream, bool) -> None
+    def delete_stream(self, stream):
+        # type: (Stream) -> None
         """
         Delete the stream and assess the result.
         """
@@ -434,17 +443,15 @@ class StreamAdminTest(ZulipTestCase):
             result = self.client_delete('/json/streams/' + str(stream_id))
         self.assert_json_success(result)
 
-        deletion_events = [e['event'] for e in events if e['event']['type'] == 'subscription']
-        if subscribed:
-            self.assertEqual(deletion_events[0], dict(
-                op='remove',
-                type='subscription',
-                subscriptions=[{'name': active_name, 'stream_id': stream.id}]
-            ))
-        else:
-            # You could delete the stream, but you weren't on it so you don't
-            # receive an unsubscription event.
-            self.assertEqual(deletion_events, [])
+        # We no longer send subscription events for stream deactivations.
+        sub_events = [e for e in events if e['event']['type'] == 'subscription']
+        self.assertEqual(sub_events, [])
+
+        stream_events = [e for e in events if e['event']['type'] == 'stream']
+        self.assertEqual(len(stream_events), 1)
+        event = stream_events[0]['event']
+        self.assertEqual(event['op'], 'delete')
+        self.assertEqual(event['streams'][0]['stream_id'], stream.id)
 
         with self.assertRaises(Stream.DoesNotExist):
             Stream.objects.get(realm=get_realm("zulip"), name=active_name)
@@ -498,7 +505,7 @@ class StreamAdminTest(ZulipTestCase):
         """
         pub_stream = self.set_up_stream_for_deletion(
             "pubstream", subscribed=False)
-        self.delete_stream(pub_stream, subscribed=False)
+        self.delete_stream(pub_stream)
 
         priv_stream = self.set_up_stream_for_deletion(
             "privstream", subscribed=False, invite_only=True)

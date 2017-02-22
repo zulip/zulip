@@ -148,9 +148,6 @@ exports.generate_zuliprc_content = function (email, api_key) {
            "\n";
 };
 
-// Choose avatar stamp fairly randomly, to help get old avatars out of cache.
-exports.avatar_stamp = Math.floor(Math.random()*100);
-
 function _setup_page() {
     // To build the edit bot streams dropdown we need both the bot and stream
     // API results. To prevent a race streams will be initialized to a promise
@@ -199,6 +196,7 @@ function _setup_page() {
     $("#ui-settings-status").hide();
 
     alert_words_ui.set_up_alert_words();
+    attachments_ui.set_up_attachments();
 
     $("#api_key_value").text("");
     $("#get_api_key_box").hide();
@@ -584,10 +582,8 @@ function _setup_page() {
             contentType: false,
             success: function (data) {
                 loading.destroy_indicator($("#upload_avatar_spinner"));
-                var url = data.avatar_url + '&stamp=' + exports.avatar_stamp;
-                $("#user-settings-avatar").expectOne().attr("src", url);
+                $("#user-settings-avatar").expectOne().attr("src", data.avatar_url);
                 $("#user_avatar_delete_button").show();
-                exports.avatar_stamp += 1;
             },
         });
 
@@ -836,6 +832,20 @@ function _setup_page() {
             },
         });
     });
+
+    $(function () {
+        $('body').on('click', '.settings-unmute-topic', function (e) {
+            var $row = $(this).closest("tr");
+            var stream = $row.data("stream");
+            var topic = $row.data("topic");
+
+            popovers.topic_ops.unmute(stream, topic);
+            $row.remove();
+            e.stopImmediatePropagation();
+        });
+
+        muting_ui.set_up_muted_topics_ui(muting.get_muted_topics());
+    });
 }
 
 function _update_page() {
@@ -866,7 +876,7 @@ exports.launch_page = function (tab) {
     var $active_tab = $("#settings_overlay_container li[data-section='" + tab + "']");
 
     if (!$active_tab.hasClass("admin")) {
-        $(".sidebar .ind-tab[data-name='settings']").click();
+        $(".sidebar .ind-tab[data-tab-key='settings']").click();
     }
 
     $("#settings_overlay_container").addClass("show");

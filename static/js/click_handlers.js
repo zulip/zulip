@@ -448,10 +448,6 @@ $(function () {
             ".stream-name-editable": subs.change_stream_name,
         };
 
-        $(document).on("keydown", ".editable-section", function (e) {
-            e.stopPropagation();
-        });
-
         // http://stackoverflow.com/questions/4233265/contenteditable-set-caret-at-the-end-of-the-text-cross-browser
         function place_caret_at_end(el) {
             el.focus();
@@ -471,6 +467,24 @@ $(function () {
                 textRange.select();
             }
         }
+
+        $(document).on("keydown", ".editable-section", function (e) {
+            e.stopPropagation();
+        });
+
+        $(document).on("drop", ".editable-section", function () {
+            return false;
+        });
+
+        $(document).on("input", ".editable-section", function () {
+            // if there are any child nodes, inclusive of <br> which means you
+            // have lines in your description or title, you're doing something
+            // wrong.
+            if (this.hasChildNodes()) {
+                this.innerText = this.innerText;
+                place_caret_at_end(this);
+            }
+        });
 
         $("body").on("click", "[data-make-editable]", function () {
             var selector = $(this).attr("data-make-editable");
@@ -615,21 +629,27 @@ $(function () {
     });
 
     (function () {
-        var $parent = $("#settings_overlay_container .sidebar .tab-switcher");
-        var $tabs = $parent.find(".ind-tab");
-        $tabs.click(function () {
-            $tabs.removeClass("selected");
-            $(this).addClass("selected");
+        var settings_toggle = components.toggle({
+            name: "settings-toggle",
+            values: [
+                { label: "Settings", key: "settings" },
+                { label: "Administration", key: "administration" },
+            ],
+            callback: function (name, key) {
+                $(".sidebar li").hide();
 
-            $(".sidebar li").hide();
-            if ($(this).data("name") === "admin") {
-                $("li.admin").show();
-                $("li[data-section='organization-settings']").click();
-            } else {
-                $("li:not(.admin)").show();
-                $("li[data-section='your-account']").click();
-            }
-        });
+                if (key === "administration") {
+                    $("li.admin").show();
+                    $("li[data-section='organization-settings']").click();
+                } else {
+                    $("li:not(.admin)").show();
+                    $("li[data-section='your-account']").click();
+                }
+            },
+        }).get();
+
+        $("#settings_overlay_container .tab-container")
+            .append(settings_toggle);
     }());
 });
 

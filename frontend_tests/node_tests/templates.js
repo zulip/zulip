@@ -42,6 +42,8 @@ function render(template_name, args) {
         'notification-settings',
         'bot-settings',
         'alert-word-settings',
+        'attachments-settings',
+        'muted-topics-settings',
         'ui-settings',
     ]);
 }());
@@ -250,6 +252,22 @@ function render(template_name, args) {
 (function announce_stream_docs() {
     var html = render('announce_stream_docs');
     global.write_handlebars_output("announce_stream_docs", html);
+}());
+
+(function attachment_settings_item() {
+    var html = '<ul id="attachments">';
+    var attachments = [
+        {messages: [], id: 42, name: "foo.txt"},
+        {messages: [], id: 43, name: "bar.txt"},
+    ];
+    _.each(attachments, function (attachment) {
+        var args = {attachment: attachment};
+        html += render('attachment-item', args);
+    });
+    html += "</ul>";
+    global.write_handlebars_output("attachment-item", html);
+    var li = $(html).find("li.attachment-item:first");
+    assert.equal(li.attr('data-attachment'), 42);
 }());
 
 (function bankruptcy_modal() {
@@ -536,6 +554,27 @@ function render(template_name, args) {
     assert.equal(highlighted_subject_word, 'two');
 
     global.write_handlebars_output("message_group", html);
+}());
+
+(function message_edit_history() {
+    var message = {
+        content: "Let's go to lunch!",
+        edit_history: [
+            {
+                body_to_render: "<p>Let's go to <span class='highlight_text_replaced'>dinner</span>!</p>",
+                timestamp: 1468132659,
+                edited_by: 'Alice',
+                posted_or_edited: "Edited by",
+            },
+        ],
+    };
+    var html = render('message_edit_history', {
+            edited_messages: message.edit_history,
+        });
+    global.write_test_output("message_edit_history.handlebars", html);
+    var edited_message = $(html).find("div.messagebox-content");
+    assert.equal(edited_message.text().trim(),
+                "1468132659\n        Let's go to dinner!\n        Edited by Alice");
 }());
 
 (function message_info_popover_content() {
@@ -947,6 +986,22 @@ function render(template_name, args) {
 
     var a = $(html).find("a.narrow_to_private_messages");
     assert.equal(a.text().trim(), 'Narrow to private messages with Hamlet');
+}());
+
+(function muted_topic_ui_row() {
+    var args = {
+        stream: 'Verona',
+        topic: 'Verona2',
+    };
+
+    var html = '<table id="muted-topics-table">';
+    html += '<tbody>';
+    html += render('muted_topic_ui_row', args);
+    html += '</tbody>';
+    html += '</table>';
+
+    assert.equal($(html).find("tr").data("stream"), "Verona");
+    assert.equal($(html).find("tr").data("topic"), "Verona2");
 }());
 
 // By the end of this test, we should have compiled all our templates.  Ideally,

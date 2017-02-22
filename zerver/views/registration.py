@@ -27,8 +27,7 @@ from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, \
 from zerver.lib.actions import is_inactive
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from zerver.decorator import require_post, has_request_variables, \
-    JsonableError, get_user_profile_by_email, REQ, \
-    zulip_login_required
+    JsonableError, get_user_profile_by_email, REQ
 from zerver.lib.response import json_success
 from zerver.lib.utils import get_subdomain
 from zproject.backends import password_auth_enabled

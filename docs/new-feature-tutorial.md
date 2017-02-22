@@ -36,7 +36,7 @@ interacting with the database in `zerver/lib/actions.py`. It should
 update the database and send an event announcing the change.
 
 **Application state:** Modify the `fetch_initial_state_data` and
-`apply_events` functions in `zerver/lib/actions.py` to update the state
+`apply_event` functions in `zerver/lib/events.py` to update the state
 based on the event you just created.
 
 **Backend implementation:** Make any other modifications to the backend
@@ -182,16 +182,16 @@ realm. :
 
 You then need to add code that will handle the event and update the
 application state. In `zerver/lib/events.py` update the
-`fetch_initial_state` and `apply_events` functions. :
+`fetch_initial_state` and `apply_event` functions. :
 
-    def fetch_initial_state_data(user_profile, event_types, queue_id):
+    def fetch_initial_state_data(user_profile, event_types, queue_id, include_subscribers=True):
       # ...
       state['realm_invite_by_admins_only'] = user_profile.realm.invite_by_admins_only`
 
-In this case you don't need to change `apply_events` because there is
+In this case you don't need to change `apply_event` because there is
 already code that will correctly handle the realm update event type: :
 
-    def apply_events(state, events, user_profile):
+    def apply_event(state, events, user_profile, include_subscribers):
       for event in events:
         # ...
         elif event['type'] == 'realm':

@@ -18,6 +18,7 @@ from typing import (
 session_engine = import_module(settings.SESSION_ENGINE)
 
 from zerver.lib.alert_words import user_alert_words
+from zerver.lib.attachments import user_attachments
 from zerver.lib.narrow import check_supported_events_narrow_filter
 from zerver.lib.request import JsonableError
 from zerver.lib.actions import validate_user_access_to_subscribers_helper, \
@@ -42,8 +43,9 @@ def get_realm_user_dicts(user_profile):
 # all event types.  Whenever you add new code to this function, you
 # should also add corresponding events for changes in the data
 # structures and new code to apply_events (and add a test in EventsRegisterTest).
-def fetch_initial_state_data(user_profile, event_types, queue_id):
-    # type: (UserProfile, Optional[Iterable[str]], str) -> Dict[str, Any]
+def fetch_initial_state_data(user_profile, event_types, queue_id,
+                             include_subscribers=True):
+    # type: (UserProfile, Optional[Iterable[str]], str, bool) -> Dict[str, Any]
     state = {'queue_id': queue_id} # type: Dict[str, Any]
 
     if event_types is None:
@@ -53,6 +55,9 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
 
     if want('alert_words'):
         state['alert_words'] = user_alert_words(user_profile)
+
+    if want('attachments'):
+        state['attachments'] = user_attachments(user_profile)
 
     if want('message'):
         # The client should use get_old_messages() to fetch messages
@@ -109,7 +114,8 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
                               'used': user_profile.invites_used}
 
     if want('subscription'):
-        subscriptions, unsubscribed, never_subscribed = gather_subscriptions_helper(user_profile)
+        subscriptions, unsubscribed, never_subscribed = gather_subscriptions_helper(
+            user_profile, include_subscribers=include_subscribers)
         state['subscriptions'] = subscriptions
         state['unsubscribed'] = unsubscribed
         state['never_subscribed'] = never_subscribed
@@ -143,212 +149,231 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
 
     return state
 
-def apply_events(state, events, user_profile):
-    # type: (Dict[str, Any], Iterable[Dict[str, Any]], UserProfile) -> None
+def apply_events(state, events, user_profile, include_subscribers=True):
+    # type: (Dict[str, Any], Iterable[Dict[str, Any]], UserProfile, bool) -> None
     for event in events:
-        if event['type'] == "message":
-            state['max_message_id'] = max(state['max_message_id'], event['message']['id'])
-        elif event['type'] == "pointer":
-            state['pointer'] = max(state['pointer'], event['pointer'])
-        elif event['type'] == "realm_user":
-            person = event['person']
+        apply_event(state, event, user_profile, include_subscribers)
 
-            def our_person(p):
-                # type: (Dict[str, Any]) -> bool
-                return p['user_id'] == person['user_id']
+def apply_event(state, event, user_profile, include_subscribers):
+    # type: (Dict[str, Any], Dict[str, Any], UserProfile, bool) -> None
+    if event['type'] == "message":
+        state['max_message_id'] = max(state['max_message_id'], event['message']['id'])
+    elif event['type'] == "pointer":
+        state['pointer'] = max(state['pointer'], event['pointer'])
+    elif event['type'] == "realm_user":
+        person = event['person']
 
-            if event['op'] == "add":
-                state['realm_users'].append(person)
-            elif event['op'] == "remove":
-                state['realm_users'] = [user for user in state['realm_users'] if not our_person(user)]
-            elif event['op'] == 'update':
-                for p in state['realm_users']:
-                    if our_person(p):
-                        # In the unlikely event that the current user
-                        # just changed to/from being an admin, we need
-                        # to add/remove the data on all bots in the
-                        # realm.  This is ugly and probably better
-                        # solved by removing the all-realm-bots data
-                        # given to admin users from this flow.
-                        if ('is_admin' in person and 'realm_bots' in state and
-                                user_profile.email == person['email']):
-                            if p['is_admin'] and not person['is_admin']:
-                                state['realm_bots'] = []
-                            if not p['is_admin'] and person['is_admin']:
-                                state['realm_bots'] = get_owned_bot_dicts(user_profile)
-                        # Now update the person
-                        p.update(person)
-        elif event['type'] == 'realm_bot':
-            if event['op'] == 'add':
-                state['realm_bots'].append(event['bot'])
+        def our_person(p):
+            # type: (Dict[str, Any]) -> bool
+            return p['user_id'] == person['user_id']
 
-            if event['op'] == 'remove':
-                email = event['bot']['email']
-                state['realm_bots'] = [b for b in state['realm_bots'] if b['email'] != email]
+        if event['op'] == "add":
+            state['realm_users'].append(person)
+        elif event['op'] == "remove":
+            state['realm_users'] = [user for user in state['realm_users'] if not our_person(user)]
+        elif event['op'] == 'update':
+            for p in state['realm_users']:
+                if our_person(p):
+                    # In the unlikely event that the current user
+                    # just changed to/from being an admin, we need
+                    # to add/remove the data on all bots in the
+                    # realm.  This is ugly and probably better
+                    # solved by removing the all-realm-bots data
+                    # given to admin users from this flow.
+                    if ('is_admin' in person and 'realm_bots' in state and
+                            user_profile.email == person['email']):
+                        if p['is_admin'] and not person['is_admin']:
+                            state['realm_bots'] = []
+                        if not p['is_admin'] and person['is_admin']:
+                            state['realm_bots'] = get_owned_bot_dicts(user_profile)
+                    # Now update the person
+                    p.update(person)
+    elif event['type'] == 'realm_bot':
+        if event['op'] == 'add':
+            state['realm_bots'].append(event['bot'])
 
-            if event['op'] == 'update':
-                for bot in state['realm_bots']:
-                    if bot['email'] == event['bot']['email']:
-                        bot.update(event['bot'])
+        if event['op'] == 'remove':
+            email = event['bot']['email']
+            state['realm_bots'] = [b for b in state['realm_bots'] if b['email'] != email]
 
-        elif event['type'] == 'stream':
-            if event['op'] == 'create':
-                for stream in event['streams']:
-                    if not stream['invite_only']:
-                        stream_data = copy.deepcopy(stream)
+        if event['op'] == 'update':
+            for bot in state['realm_bots']:
+                if bot['email'] == event['bot']['email']:
+                    bot.update(event['bot'])
+
+    elif event['type'] == 'stream':
+        if event['op'] == 'create':
+            for stream in event['streams']:
+                if not stream['invite_only']:
+                    stream_data = copy.deepcopy(stream)
+                    if include_subscribers:
                         stream_data['subscribers'] = []
-                        # Add stream to never_subscribed (if not invite_only)
-                        state['never_subscribed'].append(stream_data)
+                    # Add stream to never_subscribed (if not invite_only)
+                    state['never_subscribed'].append(stream_data)
 
-            if event['op'] == 'delete':
-                deleted_stream_ids = {stream['stream_id'] for stream in event['streams']}
-                state['streams'] = [s for s in state['streams'] if s['stream_id'] not in deleted_stream_ids]
-                state['never_subscribed'] = [stream for stream in state['never_subscribed'] if
-                                             stream['stream_id'] not in deleted_stream_ids]
+        if event['op'] == 'delete':
+            deleted_stream_ids = {stream['stream_id'] for stream in event['streams']}
+            state['streams'] = [s for s in state['streams'] if s['stream_id'] not in deleted_stream_ids]
+            state['never_subscribed'] = [stream for stream in state['never_subscribed'] if
+                                         stream['stream_id'] not in deleted_stream_ids]
 
-            if event['op'] == 'update':
-                # For legacy reasons, we call stream data 'subscriptions' in
-                # the state var here, for the benefit of the JS code.
-                for obj in state['subscriptions']:
-                    if obj['name'].lower() == event['name'].lower():
-                        obj[event['property']] = event['value']
-                # Also update the pure streams data
-                for stream in state['streams']:
-                    if stream['name'].lower() == event['name'].lower():
-                        prop = event['property']
-                        if prop in stream:
-                            stream[prop] = event['value']
-            elif event['op'] == "occupy":
-                state['streams'] += event['streams']
-            elif event['op'] == "vacate":
-                stream_ids = [s["stream_id"] for s in event['streams']]
-                state['streams'] = [s for s in state['streams'] if s["stream_id"] not in stream_ids]
-        elif event['type'] == 'default_streams':
-            state['realm_default_streams'] = event['default_streams']
-        elif event['type'] == 'realm':
-            if event['op'] == "update":
-                field = 'realm_' + event['property']
-                state[field] = event['value']
-            elif event['op'] == "update_dict":
-                for key, value in event['data'].items():
-                    state['realm_' + key] = value
-        elif event['type'] == "subscription":
-            if event['op'] in ["add"]:
-                # Convert the user_profile IDs to emails since that's what register() returns
-                # TODO: Clean up this situation
+        if event['op'] == 'update':
+            # For legacy reasons, we call stream data 'subscriptions' in
+            # the state var here, for the benefit of the JS code.
+            for obj in state['subscriptions']:
+                if obj['name'].lower() == event['name'].lower():
+                    obj[event['property']] = event['value']
+            # Also update the pure streams data
+            for stream in state['streams']:
+                if stream['name'].lower() == event['name'].lower():
+                    prop = event['property']
+                    if prop in stream:
+                        stream[prop] = event['value']
+        elif event['op'] == "occupy":
+            state['streams'] += event['streams']
+        elif event['op'] == "vacate":
+            stream_ids = [s["stream_id"] for s in event['streams']]
+            state['streams'] = [s for s in state['streams'] if s["stream_id"] not in stream_ids]
+    elif event['type'] == 'default_streams':
+        state['realm_default_streams'] = event['default_streams']
+    elif event['type'] == 'realm':
+        if event['op'] == "update":
+            field = 'realm_' + event['property']
+            state[field] = event['value']
+        elif event['op'] == "update_dict":
+            for key, value in event['data'].items():
+                state['realm_' + key] = value
+    elif event['type'] == "subscription":
+        if not include_subscribers and event['op'] in ['peer_add', 'peer_remove']:
+            return
+
+        if event['op'] in ["add"]:
+            if include_subscribers:
+                # Convert the emails to user_profile IDs since that's what register() returns
+                # TODO: Clean up this situation by making the event also have IDs
                 for item in event["subscriptions"]:
                     item["subscribers"] = [get_user_profile_by_email(email).id for email in item["subscribers"]]
+            else:
+                # Avoid letting 'subscribers' entries end up in the list
+                for i, sub in enumerate(event['subscriptions']):
+                    event['subscriptions'][i] = copy.deepcopy(event['subscriptions'][i])
+                    del event['subscriptions'][i]['subscribers']
 
-            def name(sub):
-                # type: (Dict[str, Any]) -> Text
-                return sub['name'].lower()
+        def name(sub):
+            # type: (Dict[str, Any]) -> Text
+            return sub['name'].lower()
 
-            if event['op'] == "add":
-                added_names = set(map(name, event["subscriptions"]))
-                was_added = lambda s: name(s) in added_names
+        if event['op'] == "add":
+            added_names = set(map(name, event["subscriptions"]))
+            was_added = lambda s: name(s) in added_names
 
-                # add the new subscriptions
-                state['subscriptions'] += event['subscriptions']
+            # add the new subscriptions
+            state['subscriptions'] += event['subscriptions']
 
-                # remove them from unsubscribed if they had been there
-                state['unsubscribed'] = [s for s in state['unsubscribed'] if not was_added(s)]
+            # remove them from unsubscribed if they had been there
+            state['unsubscribed'] = [s for s in state['unsubscribed'] if not was_added(s)]
 
-                # remove them from never_subscribed if they had been there
-                state['never_subscribed'] = [s for s in state['never_subscribed'] if not was_added(s)]
+            # remove them from never_subscribed if they had been there
+            state['never_subscribed'] = [s for s in state['never_subscribed'] if not was_added(s)]
 
-            elif event['op'] == "remove":
-                removed_names = set(map(name, event["subscriptions"]))
-                was_removed = lambda s: name(s) in removed_names
+        elif event['op'] == "remove":
+            removed_names = set(map(name, event["subscriptions"]))
+            was_removed = lambda s: name(s) in removed_names
 
-                # Find the subs we are affecting.
-                removed_subs = list(filter(was_removed, state['subscriptions']))
+            # Find the subs we are affecting.
+            removed_subs = list(filter(was_removed, state['subscriptions']))
 
-                # Remove our user from the subscribers of the removed subscriptions.
+            # Remove our user from the subscribers of the removed subscriptions.
+            if include_subscribers:
                 for sub in removed_subs:
                     sub['subscribers'] = [id for id in sub['subscribers'] if id != user_profile.id]
 
-                # We must effectively copy the removed subscriptions from subscriptions to
-                # unsubscribe, since we only have the name in our data structure.
-                state['unsubscribed'] += removed_subs
+            # We must effectively copy the removed subscriptions from subscriptions to
+            # unsubscribe, since we only have the name in our data structure.
+            state['unsubscribed'] += removed_subs
 
-                # Now filter out the removed subscriptions from subscriptions.
-                state['subscriptions'] = [s for s in state['subscriptions'] if not was_removed(s)]
+            # Now filter out the removed subscriptions from subscriptions.
+            state['subscriptions'] = [s for s in state['subscriptions'] if not was_removed(s)]
 
-            elif event['op'] == 'update':
-                for sub in state['subscriptions']:
-                    if sub['name'].lower() == event['name'].lower():
-                        sub[event['property']] = event['value']
-            elif event['op'] == 'peer_add':
-                user_id = event['user_id']
-                for sub in state['subscriptions']:
-                    if (sub['name'] in event['subscriptions'] and
-                            user_id not in sub['subscribers']):
-                        sub['subscribers'].append(user_id)
-                for sub in state['never_subscribed']:
-                    if (sub['name'] in event['subscriptions'] and
-                            user_id not in sub['subscribers']):
-                        sub['subscribers'].append(user_id)
-            elif event['op'] == 'peer_remove':
-                user_id = event['user_id']
-                for sub in state['subscriptions']:
-                    if (sub['name'] in event['subscriptions'] and
-                            user_id in sub['subscribers']):
-                        sub['subscribers'].remove(user_id)
-        elif event['type'] == "presence":
-            state['presences'][event['email']] = event['presence']
-        elif event['type'] == "update_message":
-            # The client will get the updated message directly
-            pass
-        elif event['type'] == "reaction":
-            # The client will get the message with the reactions directly
-            pass
-        elif event['type'] == "referral":
-            state['referrals'] = event['referrals']
-        elif event['type'] == "update_message_flags":
-            # The client will get the message with the updated flags directly
-            pass
-        elif event['type'] == "realm_domains":
-            if event['op'] == 'add':
-                state['realm_domains'].append(event['alias'])
-            elif event['op'] == 'remove':
-                state['realm_domains'] = [alias for alias in state['realm_domains'] if alias['domain'] != event['domain']]
-        elif event['type'] == "realm_emoji":
-            state['realm_emoji'] = event['realm_emoji']
-        elif event['type'] == "alert_words":
-            state['alert_words'] = event['alert_words']
-        elif event['type'] == "muted_topics":
-            state['muted_topics'] = event["muted_topics"]
-        elif event['type'] == "realm_filters":
-            state['realm_filters'] = event["realm_filters"]
-        elif event['type'] == "update_display_settings":
-            if event['setting_name'] == "twenty_four_hour_time":
-                state['twenty_four_hour_time'] = event["setting"]
-            if event['setting_name'] == 'left_side_userlist':
-                state['left_side_userlist'] = event["setting"]
-        elif event['type'] == "update_global_notifications":
-            if event['notification_name'] == "enable_stream_desktop_notifications":
-                state['enable_stream_desktop_notifications'] = event['setting']
-            elif event['notification_name'] == "enable_stream_sounds":
-                state['enable_stream_sounds'] = event['setting']
-            elif event['notification_name'] == "enable_desktop_notifications":
-                state['enable_desktop_notifications'] = event['setting']
-            elif event['notification_name'] == "enable_sounds":
-                state['enable_sounds'] = event['setting']
-            elif event['notification_name'] == "enable_offline_email_notifications":
-                state['enable_offline_email_notifications'] = event['setting']
-            elif event['notification_name'] == "enable_offline_push_notifications":
-                state['enable_offline_push_notifications'] = event['setting']
-            elif event['notification_name'] == "enable_online_push_notifications":
-                state['enable_online_push_notifications'] = event['setting']
-            elif event['notification_name'] == "enable_digest_emails":
-                state['enable_digest_emails'] = event['setting']
-        else:
-            raise ValueError("Unexpected event type %s" % (event['type'],))
+        elif event['op'] == 'update':
+            for sub in state['subscriptions']:
+                if sub['name'].lower() == event['name'].lower():
+                    sub[event['property']] = event['value']
+        elif event['op'] == 'peer_add':
+            user_id = event['user_id']
+            for sub in state['subscriptions']:
+                if (sub['name'] in event['subscriptions'] and
+                        user_id not in sub['subscribers']):
+                    sub['subscribers'].append(user_id)
+            for sub in state['never_subscribed']:
+                if (sub['name'] in event['subscriptions'] and
+                        user_id not in sub['subscribers']):
+                    sub['subscribers'].append(user_id)
+        elif event['op'] == 'peer_remove':
+            user_id = event['user_id']
+            for sub in state['subscriptions']:
+                if (sub['name'] in event['subscriptions'] and
+                        user_id in sub['subscribers']):
+                    sub['subscribers'].remove(user_id)
+    elif event['type'] == "presence":
+        state['presences'][event['email']] = event['presence']
+    elif event['type'] == "update_message":
+        # The client will get the updated message directly
+        pass
+    elif event['type'] == "reaction":
+        # The client will get the message with the reactions directly
+        pass
+    elif event['type'] == "referral":
+        state['referrals'] = event['referrals']
+    elif event['type'] == "update_message_flags":
+        # The client will get the message with the updated flags directly
+        pass
+    elif event['type'] == "realm_domains":
+        if event['op'] == 'add':
+            state['realm_domains'].append(event['alias'])
+        elif event['op'] == 'change':
+            for realm_domain in state['realm_domains']:
+                if realm_domain['domain'] == event['alias']['domain']:
+                    realm_domain['allow_subdomains'] = event['alias']['allow_subdomains']
+        elif event['op'] == 'remove':
+            state['realm_domains'] = [alias for alias in state['realm_domains'] if alias['domain'] != event['domain']]
+    elif event['type'] == "realm_emoji":
+        state['realm_emoji'] = event['realm_emoji']
+    elif event['type'] == "alert_words":
+        state['alert_words'] = event['alert_words']
+    elif event['type'] == "muted_topics":
+        state['muted_topics'] = event["muted_topics"]
+    elif event['type'] == "realm_filters":
+        state['realm_filters'] = event["realm_filters"]
+    elif event['type'] == "update_display_settings":
+        if event['setting_name'] == "twenty_four_hour_time":
+            state['twenty_four_hour_time'] = event["setting"]
+        if event['setting_name'] == 'left_side_userlist':
+            state['left_side_userlist'] = event["setting"]
+    elif event['type'] == "update_global_notifications":
+        if event['notification_name'] == "enable_stream_desktop_notifications":
+            state['enable_stream_desktop_notifications'] = event['setting']
+        elif event['notification_name'] == "enable_stream_sounds":
+            state['enable_stream_sounds'] = event['setting']
+        elif event['notification_name'] == "enable_desktop_notifications":
+            state['enable_desktop_notifications'] = event['setting']
+        elif event['notification_name'] == "enable_sounds":
+            state['enable_sounds'] = event['setting']
+        elif event['notification_name'] == "enable_offline_email_notifications":
+            state['enable_offline_email_notifications'] = event['setting']
+        elif event['notification_name'] == "enable_offline_push_notifications":
+            state['enable_offline_push_notifications'] = event['setting']
+        elif event['notification_name'] == "enable_online_push_notifications":
+            state['enable_online_push_notifications'] = event['setting']
+        elif event['notification_name'] == "enable_digest_emails":
+            state['enable_digest_emails'] = event['setting']
+    else:
+        raise ValueError("Unexpected event type %s" % (event['type'],))
 
 def do_events_register(user_profile, user_client, apply_markdown=True,
                        event_types=None, queue_lifespan_secs=0, all_public_streams=False,
-                       narrow=[]):
-    # type: (UserProfile, Client, bool, Optional[Iterable[str]], int, bool, Iterable[Sequence[Text]]) -> Dict[str, Any]
+                       include_subscribers=True, narrow=[]):
+    # type: (UserProfile, Client, bool, Optional[Iterable[str]], int, bool, bool, Iterable[Sequence[Text]]) -> Dict[str, Any]
     # Technically we don't need to check this here because
     # build_narrow_filter will check it, but it's nicer from an error
     # handling perspective to do it before contacting Tornado
@@ -364,11 +389,12 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
     else:
         event_types_set = None
 
-    ret = fetch_initial_state_data(user_profile, event_types_set, queue_id)
+    ret = fetch_initial_state_data(user_profile, event_types_set, queue_id,
+                                   include_subscribers=include_subscribers)
 
     # Apply events that came in while we were fetching initial data
     events = get_user_events(user_profile, queue_id, -1)
-    apply_events(ret, events, user_profile)
+    apply_events(ret, events, user_profile, include_subscribers=include_subscribers)
     if events:
         ret['last_event_id'] = events[-1]['id']
     else:

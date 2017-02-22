@@ -30,16 +30,16 @@ class HowdoiHandler(object):
     in your questions.
 
     There are two possible commands:
-    * @howdowe > This would return the answer to the same
+    * @mention-bot howdowe > This would return the answer to the same
                  stream that it was called from.
 
-    * @howdoi > The bot would send a private message to the
+    * @mention-bot howdoi > The bot would send a private message to the
                 user containing the answer.
 
     By default, howdoi only returns the coding section of the
     first search result if possible, to see the full answer
     from Stack Overflow, append a '!' to the commands.
-    (ie '@howdoi!', '@howdowe!')
+    (ie '@mention-bot howdoi!', '@mention-bot howdowe!')
     '''
 
     MAX_LINE_LENGTH = 85
@@ -50,25 +50,11 @@ class HowdoiHandler(object):
             answers from Stackoverflow. Users should preface
             their questions with one of the following:
 
-                * @howdowe > Answer to the same stream
-                * @howdoi > Answer via private message
+                * @mention-bot howdowe > Answer to the same stream
+                * @mention-bot howdoi > Answer via private message
 
-                * @howdowe! OR @howdoi! > Full answer from SO
+                * @mention-bot howdowe! OR @mention-bot howdoi! > Full answer from SO
             '''
-
-    def triage_message(self, message, client):
-        cmd_list = ['@howdowe', '@howdoi', '@howdowe!', '@howdoi!']
-        question = message['content']
-
-        # This next line of code is defensive, as we never want
-        # to get into an infinite loop of searching answers
-        # from Stackoverflow!
-        if message['sender_email'].startswith('howdoi'):
-            return False
-
-        is_howdoi = any([question.startswith(cmd) for cmd in cmd_list])
-
-        return is_howdoi
 
     def line_wrap(self, string, length):
         lines = string.split("\n")
@@ -94,36 +80,36 @@ class HowdoiHandler(object):
         return answer
 
     def handle_message(self, message, client, state_handler):
-        question = message['content']
+        question = message['content'].strip()
 
-        if question.startswith('@howdowe!'):
+        if question.startswith('howdowe!'):
             client.send_message(dict(
                 type='stream',
                 to=message['display_recipient'],
                 subject=message['subject'],
-                content=self.get_answer('@howdowe!', question)
+                content=self.get_answer('howdowe!', question)
             ))
 
-        elif question.startswith('@howdoi!'):
+        elif question.startswith('howdoi!'):
             client.send_message(dict(
                 type='private',
                 to=message['sender_email'],
-                content=self.get_answer('@howdoi!', question)
+                content=self.get_answer('howdoi!', question)
             ))
 
-        elif question.startswith('@howdowe'):
+        elif question.startswith('howdowe'):
             client.send_message(dict(
                 type='stream',
                 to=message['display_recipient'],
                 subject=message['subject'],
-                content=self.get_answer('@howdowe', question)
+                content=self.get_answer('howdowe', question)
             ))
 
-        elif question.startswith('@howdoi'):
+        elif question.startswith('howdoi'):
             client.send_message(dict(
                 type='private',
                 to=message['sender_email'],
-                content=self.get_answer('@howdoi', question)
+                content=self.get_answer('howdoi', question)
             ))
 
 

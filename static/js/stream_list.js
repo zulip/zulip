@@ -83,6 +83,13 @@ exports.stream_sidebar = (function () {
     return self;
 }());
 
+exports.remove_sidebar_row = function (stream_id) {
+    exports.stream_sidebar.remove_row(stream_id);
+    // We need to make sure we resort if the removed sub gets added again
+    previous_sort_order = undefined;
+    previous_unpinned_order = undefined;
+};
+
 exports.create_initial_sidebar_rows = function () {
     // This code is slightly opaque, but it ends up building
     // up list items and attaching them to the "sub" data
@@ -129,6 +136,8 @@ exports.build_stream_list = function () {
             unpinned_streams.push(stream);
         }
     });
+
+    pinned_streams.sort(util.strcmp);
 
     unpinned_streams.sort(function (a, b) {
         if (sort_recent) {
@@ -456,11 +465,9 @@ $(function () {
     });
 
     $(document).on('subscription_remove_done.zulip', function (event) {
-        exports.stream_sidebar.remove_row(event.sub.stream_id);
-        // We need to make sure we resort if the removed sub gets added again
-        previous_sort_order = undefined;
-        previous_unpinned_order = undefined;
+        exports.remove_sidebar_row(event.sub.stream_id);
     });
+
 
     $('#stream_filters').on('click', 'li .subscription_block', function (e) {
         if (e.metaKey || e.ctrlKey) {

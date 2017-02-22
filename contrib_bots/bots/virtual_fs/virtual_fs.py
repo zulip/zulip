@@ -7,19 +7,8 @@ class VirtualFsHandler(object):
     def usage(self):
         return get_help()
 
-    def triage_message(self, message, client):
-        if message['type'] != 'stream':
-            return False
-
-        original_content = message['content']
-        return (original_content.startswith('fs ') or
-                original_content.startswith('@fs '))
-
     def handle_message(self, message, client, state_handler):
-        assert self.triage_message(message, client)
-
-        original_content = message['content']
-        command = original_content[len('fs '):]
+        command = message['content']
         stream = message['display_recipient']
         topic = message['subject']
         sender = message['sender_email']

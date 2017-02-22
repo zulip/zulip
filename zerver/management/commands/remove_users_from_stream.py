@@ -40,7 +40,7 @@ class Command(BaseCommand):
                             help='Remove all users in this realm from this stream.')
 
     def handle(self, **options):
-        # type: (*Any, **Any) -> None
+        # type: (**Any) -> None
         if options["string_id"] is None or options["stream"] is None or \
                 (options["users"] is None and options["all_users"] is None):
             self.print_help("./manage.py", "remove_users_from_stream")

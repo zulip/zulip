@@ -954,6 +954,20 @@ just a temporary hack.
     border-color: #0088CC;
 }
 
+.message_sender .bot-icon {
+    position: relative;
+    vertical-align: top;
+    top: -4px;
+
+    height: 20px;
+    width: 20px;
+}
+
+.message_sender .sender-status .bot-icon {
+    top: -1px;
+    margin-left: -3px;
+}
+
 .actions_hover:hover {
     color: #0088CC;
 }
@@ -1199,6 +1213,22 @@ div.focused_table {
     width: 300px;
     margin-bottom: 5px !important;
     max-width: 100%;
+}
+
+#message-edit-history .message_author {
+    position: relative;
+}
+
+#message-edit-history .author_details {
+    display: block;
+    font-size: 12px;
+    vertical-align: middle;
+    padding: 1px;
+    font-weight: 300;
+    position: absolute;
+    right: -80px;
+    line-height: 20px;
+    text-align: right;
 }
 
 .message_content.condensed {
@@ -2092,6 +2122,10 @@ button.topic_edit_cancel {
 #invitee_emails {
     min-height: 40px;
     max-height: 300px;
+}
+
+#invite-user .custom_invite_body {
+    margin-top: 10px;
 }
 
 #invite_status {

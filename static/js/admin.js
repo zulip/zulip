@@ -12,7 +12,7 @@ exports.show_or_hide_menu_item = function () {
         item.show();
     } else {
         item.hide();
-        $(".ind-tab[data-name='admin']").addClass("disabled");
+        $(".ind-tab[data-tab-key='administration']").addClass("disabled");
         $(".settings-list li.admin").hide();
     }
 };
@@ -113,13 +113,62 @@ function populate_streams(streams_data) {
     loading.destroy_indicator($('#admin_page_streams_loading_indicator'));
 }
 
-function populate_default_streams(streams_data) {
-    var default_streams_table = $("#admin_default_streams_table").expectOne();
-    _.each(streams_data, function (stream) {
-        default_streams_table.append(templates.render("admin_default_streams_list", {stream: stream}));
-    });
-    loading.destroy_indicator($('#admin_page_default_streams_loading_indicator'));
-}
+exports.build_default_stream_table = function (streams_data) {
+    var self = {};
+
+    self.row_dict = new Dict();
+
+    function set_up_remove_click_hander(row, stream_name) {
+        row.on("click", ".remove-default-stream", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            channel.del({
+                url: '/json/default_streams'+ '?' + $.param({stream_name: stream_name}),
+                error: function (xhr) {
+                    var button = row.find("button");
+                    if (xhr.status.toString().charAt(0) === "4") {
+                        button.closest("td").html(
+                            $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
+                        );
+                    } else {
+                        button.text(i18n.t("Failed!"));
+                    }
+                },
+                success: function () {
+                    row.remove();
+                },
+            });
+        });
+    }
+
+    (function () {
+        var table = $("#admin_default_streams_table").expectOne();
+        _.each(streams_data, function (stream) {
+            var row = $(templates.render("admin_default_streams_list", {stream: stream}));
+            set_up_remove_click_hander(row, stream.name);
+            self.row_dict.set(stream.stream_id, row);
+            table.append(row);
+        });
+        loading.destroy_indicator($('#admin_page_default_streams_loading_indicator'));
+    }());
+
+    self.remove = function (stream_id) {
+        if (self.row_dict.has(stream_id)) {
+            var row = self.row_dict.get(stream_id);
+            row.remove();
+        }
+    };
+
+    return self;
+};
+var default_stream_table;
+
+exports.remove_default_stream = function (stream_id) {
+    if (default_stream_table) {
+        default_stream_table.remove(stream_id);
+    }
+};
 
 function get_non_default_streams_names(streams_data) {
     var non_default_streams_names = [];
@@ -141,7 +190,8 @@ exports.update_default_streams_table = function () {
     if (/#*administration/.test(window.location.hash) ||
         /#*settings/.test(window.location.hash)) {
         $("#admin_default_streams_table").expectOne().find("tr.default_stream_row").remove();
-        populate_default_streams(page_params.realm_default_streams);
+        default_stream_table = exports.build_default_stream_table(
+            page_params.realm_default_streams);
     }
 };
 
@@ -215,8 +265,11 @@ exports.populate_realm_aliases = function (aliases) {
         return (alias.allow_subdomains ? "*." + alias.domain : alias.domain);
     });
     var domains = domains_list.join(', ');
+
+    $("#id_realm_restricted_to_domain").prop("checked", page_params.realm_restricted_to_domain);
     if (domains.length === 0) {
         domains = i18n.t("None");
+        $("#id_realm_restricted_to_domain").prop("disabled", true);
     }
     $("#realm_restricted_to_domains_label").text(i18n.t("New users restricted to the following domains: __domains__", {domains: domains}));
 
@@ -302,6 +355,8 @@ function _setup_page() {
         exports.launch_page(tab);
     }
 
+    exports.show_or_hide_menu_item();
+
     $("#id_realm_default_language").val(page_params.realm_default_language);
 
     // create loading indicators
@@ -377,32 +432,6 @@ function _setup_page() {
 
         $("#deactivation_stream_modal .stream_name").text(stream_name);
         $("#deactivation_stream_modal").modal("show");
-    });
-
-    $(".admin_default_stream_table").on("click", ".remove-default-stream", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        $(".active_default_stream_row").removeClass("active_default_stream_row");
-        var row = $(e.target).closest(".default_stream_row");
-        row.addClass("active_default_stream_row");
-        var stream_name = row.find('.default_stream_name').text();
-
-        channel.del({
-            url: '/json/default_streams'+ '?' + $.param({stream_name: stream_name}),
-            error: function (xhr) {
-                if (xhr.status.toString().charAt(0) === "4") {
-                    $(".active_default_stream_row button").closest("td").html(
-                    $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg));
-                } else {
-                    $(".active_default_stream_row button").text("Failed!");
-                }
-            },
-            success: function () {
-                var row = $(".active_default_stream_row");
-                row.remove();
-            },
-        });
     });
 
     $('.create_default_stream').keypress(function (e) {
@@ -988,6 +1017,7 @@ function _setup_page() {
             success: function () {
                 $("#add-alias-widget .new-alias-domain").val("");
                 $("#add-alias-widget .new-alias-allow-subdomains").prop("checked", false);
+                $("#id_realm_restricted_to_domain").prop("disabled", false);
                 aliases_info.removeClass("text-error");
                 aliases_info.addClass("text-success");
                 aliases_info.text("Added successfully!");
@@ -1038,7 +1068,7 @@ exports.launch_page = function (tab) {
     var $active_tab = $("#settings_overlay_container li[data-section='" + tab + "']");
 
     if ($active_tab.hasClass("admin")) {
-        $(".sidebar .ind-tab[data-name='admin']").click();
+        $(".sidebar .ind-tab[data-tab-key='administration']").click();
     }
 
     $("#settings_overlay_container").addClass("show");

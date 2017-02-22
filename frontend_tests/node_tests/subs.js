@@ -24,22 +24,27 @@ i18n.init({
     lng: 'en',
 });
 
+subs.stream_name_match_stream_ids = [];
+subs.stream_description_match_stream_ids = [];
 
 (function test_filter_table() {
     var denmark = {
         subscribed: false,
         name: 'Denmark',
         stream_id: 1,
+        description: 'Copenhagen',
     };
     var poland = {
         subscribed: true,
         name: 'Poland',
         stream_id: 2,
+        description: 'monday',
     };
     var pomona = {
         subscribed: true,
         name: 'Pomona',
         stream_id: 3,
+        description: 'college',
     };
     var cpp = {
         subscribed: true,
@@ -129,5 +134,29 @@ i18n.init({
     assert(!elem_1.hasClass("active"));
     assert.equal($(".right .settings").css("display"), "none");
     assert.notEqual($(".right .nothing-selected").css("display"), "none");
+
+    // Search terms match stream description
+    subs.filter_table({input: "Co", subscribed_only: false});
+    assert(!elem_1.hasClass("notdisplayed"));
+    assert(elem_2.hasClass("notdisplayed"));
+    assert(!elem_3.hasClass("notdisplayed"));
+
+    subs.filter_table({input: "Mon", subscribed_only: false});
+    assert(elem_1.hasClass("notdisplayed"));
+    assert(!elem_2.hasClass("notdisplayed"));
+    assert(!elem_3.hasClass("notdisplayed"));
+
+    subs.filter_table({input: "p", subscribed_only: false});
+    assert.equal(subs.stream_name_match_stream_ids.length, 2);
+    assert.equal(subs.stream_description_match_stream_ids, 1);
+    assert.equal(subs.stream_name_match_stream_ids[0], 2);
+    assert.equal(subs.stream_name_match_stream_ids[1], 3);
+    assert.equal(subs.stream_description_match_stream_ids[0], 1);
+
+    subs.filter_table({input: "d", subscribed_only: false});
+    assert.equal(subs.stream_name_match_stream_ids.length, 2);
+    assert.equal(subs.stream_description_match_stream_ids, 0);
+    assert.equal(subs.stream_name_match_stream_ids[0], 1);
+    assert.equal(subs.stream_name_match_stream_ids[1], 2);
 }());
 

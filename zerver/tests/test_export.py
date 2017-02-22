@@ -261,7 +261,7 @@ class ExportTest(TestCase):
             return values
 
         def find_by_id(table, db_id):
-            # type: (str) -> Dict[str, Any]
+            # type: (str, int) -> Dict[str, Any]
             return [
                 r for r in data[table]
                 if r['id'] == db_id][0]

@@ -321,10 +321,16 @@ def get_realm_by_email_domain(email):
             "Cannot get realm from email domain when settings.REALMS_HAVE_SUBDOMAINS = True")
     domain = email_to_domain(email)
     query = RealmAlias.objects.select_related('realm')
+    # Search for the longest match. If found return immediately. Since in case of
+    # settings.REALMS_HAVE_SUBDOMAINS=True, we have a unique mapping between the
+    # realm and domain so don't worry about `allow_subdomains` being True or False.
     alias = query.filter(domain=domain).first()
     if alias is not None:
         return alias.realm
     else:
+        # Since we have not found any match. We will now try matching the parent domain.
+        # Filter out the realm domains with `allow_subdomains=False` so that we don't end
+        # up matching 'test.zulip.com' wrongly to (realm, 'zulip.com', False).
         query = query.filter(allow_subdomains=True)
         while len(domain) > 0:
             subdomain, sep, domain = domain.partition('.')
@@ -983,6 +989,7 @@ class Message(ModelReprMixin, models.Model):
             'sender__realm__id',
             'sender__realm__domain',
             'sender__avatar_source',
+            'sender__avatar_version',
             'sender__is_mirror_dummy',
         ]
         messages = Message.objects.filter(id__in=needed_ids).values(*fields)
@@ -999,6 +1006,7 @@ class Message(ModelReprMixin, models.Model):
         sending_client = self.sending_client.name.lower()
 
         return (sending_client in ('zulipandroid', 'zulipios', 'zulipdesktop',
+                                   'zulipmobile', 'zulipelectron', 'snipe',
                                    'website', 'ios', 'android')) or (
                                        'desktop app' in sending_client)
 
@@ -1139,6 +1147,18 @@ class Attachment(ModelReprMixin, models.Model):
         # type: () -> bool
         return self.messages.count() > 0
 
+    def to_dict(self):
+        # type: () -> Dict[str, Any]
+        return {
+            'id': self.id,
+            'name': self.file_name,
+            'path_id': self.path_id,
+            'messages': [{
+                'id': m.id,
+                'name': '{m.pub_date:%Y-%m-%d %H:%M}'.format(m=m)
+            } for m in self.messages.all()]
+        }
+
 def get_old_unclaimed_attachments(weeks_ago):
     # type: (int) -> Sequence[Attachment]
     # TODO: Change return type to QuerySet[Attachment]
@@ -1210,7 +1230,8 @@ def get_owned_bot_dicts(user_profile, include_all_realm_bots_if_admin=True):
              'default_events_register_stream': botdict['default_events_register_stream__name'],
              'default_all_public_streams': botdict['default_all_public_streams'],
              'owner': botdict['bot_owner__email'],
-             'avatar_url': get_avatar_url(botdict['avatar_source'], botdict['email']),
+             'avatar_url': get_avatar_url(botdict['avatar_source'], botdict['email'],
+                                          botdict['avatar_version']),
              }
             for botdict in result]
 
