@@ -38,9 +38,6 @@ function _display_messages_normally() {
 }
 
 function _display_users_normally() {
-    if (!feature_flags.fade_users_when_composing) {
-        return;
-    }
     $('.user_sidebar_entry').removeClass('faded').removeClass('unfaded');
 }
 
@@ -127,9 +124,6 @@ exports.would_receive_message = function (email) {
 };
 
 function _fade_users() {
-    if (!feature_flags.fade_users_when_composing) {
-        return;
-    }
     _.forEach($('.user_sidebar_entry'), function (elt) {
         elt = $(elt);
         var user_id = elt.attr('data-user-id');
