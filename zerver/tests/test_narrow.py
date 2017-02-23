@@ -34,7 +34,8 @@ from zerver.lib.test_classes import (
 from zerver.views.messages import (
     exclude_muting_conditions,
     get_old_messages_backend, ok_to_include_history,
-    NarrowBuilder, BadNarrowOperator, Query
+    NarrowBuilder, BadNarrowOperator, Query,
+    LARGER_THAN_MAX_MESSAGE_ID,
 )
 
 from typing import Mapping, Sequence, Tuple, Generic, Union, Any, Text
@@ -1035,7 +1036,7 @@ class GetOldMessagesTest(ZulipTestCase):
         queries = [q for q in all_queries if '/* get_old_messages */' in q['sql']]
         self.assertEqual(len(queries), 1)
         sql = queries[0]['sql']
-        self.assertNotIn('AND message_id = 10000000000000000', sql)
+        self.assertNotIn('AND message_id = %s' % (LARGER_THAN_MAX_MESSAGE_ID,), sql)
         self.assertIn('ORDER BY message_id ASC', sql)
 
         cond = 'WHERE user_profile_id = %d AND message_id >= %d' % (user_profile.id, last_message_id_to_hamlet)
@@ -1060,18 +1061,18 @@ class GetOldMessagesTest(ZulipTestCase):
             get_old_messages_backend(request, user_profile)
 
         # Next, verify the use_first_unread_anchor setting invokes
-        # the `message_id = 10000000000000000` hack.
+        # the `message_id = LARGER_THAN_MAX_MESSAGE_ID` hack.
         queries = [q for q in all_queries if '/* get_old_messages */' in q['sql']]
         self.assertEqual(len(queries), 1)
-        self.assertIn('AND message_id <= 9999999999999999', queries[0]['sql'])
+        self.assertIn('AND message_id <= %d' % (LARGER_THAN_MAX_MESSAGE_ID - 1,), queries[0]['sql'])
         # There should not be an after_query in this case, since it'd be useless
-        self.assertNotIn('AND message_id >= 10000000000000000', queries[0]['sql'])
+        self.assertNotIn('AND message_id >= %d' % (LARGER_THAN_MAX_MESSAGE_ID,), queries[0]['sql'])
 
     def test_use_first_unread_anchor_with_muted_topics(self):
         # type: () -> None
         """
         Test that our logic related to `use_first_unread_anchor`
-        invokes the `message_id = 10000000000000000` hack for
+        invokes the `message_id = LARGER_THAN_MAX_MESSAGE_ID` hack for
         the `/* get_old_messages */` query when relevant muting
         is in effect.
 
@@ -1110,10 +1111,11 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertIn(cond, queries[0]['sql'])
 
         # Next, verify the use_first_unread_anchor setting invokes
-        # the `message_id = 10000000000000000` hack.
+        # the `message_id = LARGER_THAN_MAX_MESSAGE_ID` hack.
         queries = [q for q in all_queries if '/* get_old_messages */' in q['sql']]
         self.assertEqual(len(queries), 1)
-        self.assertIn('AND message_id = 10000000000000000', queries[0]['sql'])
+        self.assertIn('AND message_id = %d' % (LARGER_THAN_MAX_MESSAGE_ID,),
+                      queries[0]['sql'])
 
     def test_exclude_muting_conditions(self):
         # type: () -> None

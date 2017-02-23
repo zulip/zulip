@@ -58,6 +58,8 @@ import datetime
 from six.moves import map
 import six
 
+LARGER_THAN_MAX_MESSAGE_ID = 10000000000000000
+
 class BadNarrowOperator(JsonableError):
     def __init__(self, desc, status_code=400):
         # type: (str, int) -> None
@@ -607,7 +609,7 @@ def get_old_messages_backend(request, user_profile,
         if len(first_unread_result) > 0:
             anchor = first_unread_result[0][0]
         else:
-            anchor = 10000000000000000
+            anchor = LARGER_THAN_MAX_MESSAGE_ID
 
     before_query = None
     after_query = None
@@ -622,7 +624,7 @@ def get_old_messages_backend(request, user_profile,
         after_query = query.where(inner_msg_id_col >= anchor) \
                            .order_by(inner_msg_id_col.asc()).limit(num_after)
 
-    if anchor == 10000000000000000:
+    if anchor == LARGER_THAN_MAX_MESSAGE_ID:
         # There's no need for an after_query if we're targeting just the target message.
         after_query = None
 
