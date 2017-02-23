@@ -173,10 +173,10 @@ class NarrowBuilder(object):
             # MIT users expect narrowing to "social" to also show messages to /^(un)*social(.d)*$/
             # (unsocial, ununsocial, social.d, etc)
             m = re.search(r'^(?:un)*(.+?)(?:\.d)*$', stream.name, re.IGNORECASE)
-            if m:
-                base_stream_name = m.group(1)
-            else:
-                base_stream_name = stream.name
+            # Since the regex has a `.+` in it and "" is invalid as a
+            # stream name, this will always match
+            assert(m is not None)
+            base_stream_name = m.group(1)
 
             matching_streams = get_active_streams(self.user_profile.realm).filter(
                 name__iregex=r'^(un)*%s(\.d)*$' % (self._pg_re_escape(base_stream_name),))
@@ -195,10 +195,9 @@ class NarrowBuilder(object):
             # MIT users expect narrowing to topic "foo" to also show messages to /^foo(.d)*$/
             # (foo, foo.d, foo.d.d, etc)
             m = re.search(r'^(.*?)(?:\.d)*$', operand, re.IGNORECASE)
-            if m:
-                base_topic = m.group(1)
-            else:
-                base_topic = operand
+            # Since the regex has a `.*` in it, this will always match
+            assert(m is not None)
+            base_topic = m.group(1)
 
             # Additionally, MIT users expect the empty instance and
             # instance "personal" to be the same.
