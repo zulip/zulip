@@ -170,26 +170,38 @@ class PreviewTestCase(ZulipTestCase):
           </html>
         """
 
-    def _send_message_with_test_org_url(self, sender_email):
-        # type: (str) -> Message
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def _send_message_with_test_org_url(self, sender_email, queue_should_run=True):
+        # type: (str, bool) -> Message
         url = 'http://test.org/'
-        msg_id = self.send_message(
-            sender_email, "cordelia@zulip.com",
-            Recipient.PERSONAL, subject="url", content=url)
-        response = MockPythonResponse(self.open_graph_html, 200)
-        mocked_response = mock.Mock(
-            side_effect=lambda k: {url: response}.get(k, MockPythonResponse('', 404)))
+        with mock.patch('zerver.lib.actions.queue_json_publish') as patched:
+            msg_id = self.send_message(
+                sender_email, "cordelia@zulip.com",
+                Recipient.PERSONAL, subject="url", content=url)
+            if queue_should_run:
+                patched.assert_called_once()
+                queue = patched.call_args[0][0]
+                self.assertEqual(queue, "embed_links")
+                event = patched.call_args[0][1]
+            else:
+                patched.assert_not_called()
+                # If we nothing was put in the queue, we don't need to
+                # run the queue processor or any of the following code
+                return Message.objects.select_related("sender").get(id=msg_id)
+
+        # Verify the initial message doesn't have the embedded links rendered
         msg = Message.objects.select_related("sender").get(id=msg_id)
         self.assertNotIn(
             '<a href="{0}" target="_blank" title="The Rock">The Rock</a>'.format(url),
             msg.rendered_content)
 
-        event = {
-            'message_id': msg_id,
-            'urls': [url],
-            'message_realm_id': msg.sender.realm_id,
-            'message_content': url}
-        with self.settings(INLINE_URL_EMBED_PREVIEW=True, TEST_SUITE=False, CACHES=TEST_CACHES):
+        # Mock the network request result so the test can be fast without Internet
+        response = MockPythonResponse(self.open_graph_html, 200)
+        mocked_response = mock.Mock(
+            side_effect=lambda k: {url: response}.get(k, MockPythonResponse('', 404)))
+
+        # Run the queue processor to potentially rerender things
+        with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
             with mock.patch('requests.get', mocked_response):
                 FetchLinksEmbedData().consume(event)
         msg = Message.objects.select_related("sender").get(id=msg_id)
@@ -205,7 +217,8 @@ class PreviewTestCase(ZulipTestCase):
         self.assertIn(embedded_link, msg.rendered_content)
 
         # We don't want embedded content for bots.
-        msg = self._send_message_with_test_org_url(sender_email='webhook-bot@zulip.com')
+        msg = self._send_message_with_test_org_url(sender_email='webhook-bot@zulip.com',
+                                                   queue_should_run=False)
         self.assertNotIn(embedded_link, msg.rendered_content)
 
         # Try another human to make sure bot failure was due to the
