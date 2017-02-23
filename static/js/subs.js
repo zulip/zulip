@@ -631,6 +631,35 @@ function redraw_privacy_related_stuff(sub_row, sub) {
     stream_list.redraw_stream_privacy(sub.name);
 }
 
+function change_stream_privacy(e, is_private, success_message, error_message, invite_only) {
+    e.preventDefault();
+
+    var stream_id = $(e.target).closest(".subscription_settings").attr("data-stream-id");
+    var sub = stream_data.get_sub_by_id(stream_id);
+
+    $("#subscriptions-status").hide();
+    var data = {stream_name: sub.name, is_private: is_private};
+
+    channel.patch({
+        url: "/json/streams/" + stream_id,
+        data: data,
+        success: function () {
+            sub = stream_data.get_sub_by_id(stream_id);
+            var stream_settings = settings_for_sub(sub);
+            var sub_row = $(".stream-row[data-stream-id='" + stream_id + "']");
+            sub.invite_only = invite_only;
+            redraw_privacy_related_stuff(sub_row, sub);
+            var feedback_div = stream_settings.find(".change-stream-privacy-feedback").expectOne();
+            ui.report_success(success_message, feedback_div);
+        },
+        error: function (xhr) {
+            var stream_settings = settings_for_sub(sub);
+            var feedback_div = stream_settings.find(".change-stream-privacy-feedback").expectOne();
+            ui.report_error(error_message, xhr, feedback_div);
+        },
+    });
+}
+
 var filter_streams = _.throttle(actually_filter_streams, 50);
 
 exports.setup_page = function (callback) {
@@ -1378,35 +1407,6 @@ $(function () {
         exports.remove_user_from_stream(principal, stream_name, removal_success,
                                         removal_failure);
     });
-
-    function change_stream_privacy(e, is_private, success_message, error_message, invite_only) {
-        e.preventDefault();
-
-        var stream_id = $(e.target).closest(".subscription_settings").attr("data-stream-id");
-        var sub = stream_data.get_sub_by_id(stream_id);
-
-        $("#subscriptions-status").hide();
-        var data = {stream_name: sub.name, is_private: is_private};
-
-        channel.patch({
-            url: "/json/streams/" + stream_id,
-            data: data,
-            success: function () {
-                sub = stream_data.get_sub_by_id(stream_id);
-                var stream_settings = settings_for_sub(sub);
-                var sub_row = $(".stream-row[data-stream-id='" + stream_id + "']");
-                sub.invite_only = invite_only;
-                redraw_privacy_related_stuff(sub_row, sub);
-                var feedback_div = stream_settings.find(".change-stream-privacy-feedback").expectOne();
-                ui.report_success(success_message, feedback_div);
-            },
-            error: function (xhr) {
-                var stream_settings = settings_for_sub(sub);
-                var feedback_div = stream_settings.find(".change-stream-privacy-feedback").expectOne();
-                ui.report_error(error_message, xhr, feedback_div);
-            },
-        });
-    }
 
     $("#subscriptions_table").on("click", ".make-stream-public-button", function (e) {
         change_stream_privacy(
