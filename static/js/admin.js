@@ -325,21 +325,7 @@ function _setup_page() {
 
     var admin_tab = templates.render('admin_tab', options);
     $("#settings_content .administration-box").html(admin_tab);
-    $("#administration-status").expectOne().hide();
-    $("#admin-realm-name-status").expectOne().hide();
-    $("#admin-realm-restricted-to-domain-status").expectOne().hide();
-    $("#admin-realm-invite-required-status").expectOne().hide();
-    $("#admin-realm-invite-by-admins-only-status").expectOne().hide();
-    $("#admin-realm-authentication-methods-status").expectOne().hide();
-    $("#admin-realm-create-stream-by-admins-only-status").expectOne().hide();
-    $("#admin-realm-add-emoji-by-admins-only-status").expectOne().hide();
-    $("#admin-realm-message-editing-status").expectOne().hide();
-    $("#admin-realm-default-language-status").expectOne().hide();
-    $('#admin-realm-waiting_period_threshold_status').expectOne().hide();
-    $("#admin-emoji-status").expectOne().hide();
-    $('#admin-filter-status').expectOne().hide();
-    $('#admin-filter-pattern-status').expectOne().hide();
-    $('#admin-filter-format-status').expectOne().hide();
+    $("#settings_content .alert").hide();
 
     var tab = (function () {
         var tab = false;
