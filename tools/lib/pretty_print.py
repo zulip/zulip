@@ -6,6 +6,7 @@ from typing import Any, Dict, List
 from .template_parser import (
     tokenize,
     Token,
+    is_django_block_tag,
 )
 from six.moves import range
 
@@ -27,6 +28,7 @@ def pretty_print_html(html, num_spaces=4):
         depth=-1,
         line=-1,
         token_kind='html_start',
+        tag='html',
         extra_indent=0)
     stack.append(info)
 
@@ -39,19 +41,24 @@ def pretty_print_html(html, num_spaces=4):
     for token in tokens:
 
         if token.kind in ('html_start', 'handlebars_start',
-                          'html_singleton', 'django_start'):
+                          'html_singleton', 'django_start') and stack[-1]['tag'] != 'pre':
             # An HTML start tag should only cause a new indent if we
             # are on a new line.
-            if token.tag not in ('extends', 'include', 'else', 'elif'):
+            if (token.tag not in ('extends', 'include', 'else', 'elif') and
+                    (is_django_block_tag(token.tag) or
+                        token.kind != 'django_start')):
                 is_block = token.line > stack[-1]['line']
 
                 if is_block:
-                    if (token.kind == 'handlebars_start' and
-                            stack[-1]['token_kind'] == 'handlebars_start' and
+                    if (((token.kind == 'handlebars_start' and
+                            stack[-1]['token_kind'] == 'handlebars_start') or
+                            (token.kind == 'django_start' and
+                             stack[-1]['token_kind'] == 'django_start')) and
                             not stack[-1]['indenting']):
                         info = stack.pop()
                         info['depth'] = info['depth'] + 1
                         info['indenting'] = True
+                        info['adjust_offset_until'] = token.line
                         stack.append(info)
                     new_depth = stack[-1]['depth'] + 1
                     extra_indent = stack[-1]['extra_indent']
@@ -63,12 +70,17 @@ def pretty_print_html(html, num_spaces=4):
                         depth=new_depth,
                         actual_depth=new_depth,
                         line=token.line,
+                        tag=token.tag,
                         token_kind=token.kind,
+                        line_span=token.line_span,
                         offset=offset,
                         extra_indent=token.col - adjustment + extra_indent,
-                        indenting=True
+                        extra_indent_prev=extra_indent,
+                        adjustment=adjustment,
+                        indenting=True,
+                        adjust_offset_until=token.line
                     )
-                    if token.kind == 'handlebars_start':
+                    if token.kind in ('handlebars_start', 'django_start'):
                         info.update(dict(depth=new_depth - 1, indenting=False))
                 else:
                     info = dict(
@@ -76,12 +88,13 @@ def pretty_print_html(html, num_spaces=4):
                         depth=stack[-1]['depth'],
                         actual_depth=stack[-1]['depth'],
                         line=token.line,
+                        tag=token.tag,
                         token_kind=token.kind,
                         extra_indent=stack[-1]['extra_indent']
                     )
                 stack.append(info)
         elif token.kind in ('html_end', 'handlebars_end',
-                            'html_singleton_end', 'django_end'):
+                            'html_singleton_end', 'django_end') and (stack[-1]['tag'] != 'pre' or token.tag == 'pre'):
             info = stack.pop()
             if info['block']:
                 # We are at the end of an indentation block.  We
@@ -90,8 +103,24 @@ def pretty_print_html(html, num_spaces=4):
                 # nudge over all lines in the block by the same offset.
                 start_line = info['line']
                 end_line = token.line
-                offsets[start_line] = info['offset']
-                offsets[end_line] = info['offset']
+                if token.tag == 'pre':
+                    offsets[start_line] = 0
+                    offsets[end_line] = 0
+                else:
+                    offsets[start_line] = info['offset']
+                    line = lines[token.line - 1]
+                    adjustment = len(line)-len(line.lstrip()) + 1
+                    if adjustment == token.col:
+                        offsets[end_line] = (info['offset'] +
+                                             info['adjustment'] -
+                                             adjustment +
+                                             info['extra_indent'] -
+                                             info['extra_indent_prev'])
+                    elif (start_line + info['line_span'] - 1 == end_line and
+                            info['line_span'] > 2 and token.kind != 'html_singleton_end'):
+                        offsets[end_line] = (1 + info['extra_indent'] + (info['depth'] + 1) * num_spaces) - adjustment
+                    elif token.line != info['line']:
+                        offsets[end_line] = info['offset']
                 if token.tag != 'pre' and token.kind != 'html_singleton_end' and token.tag != 'script':
                     for line_num in range(start_line + 1, end_line):
                         # Be careful not to override offsets that happened
@@ -107,10 +136,18 @@ def pretty_print_html(html, num_spaces=4):
                             adjustment = len(line)-len(line.lstrip()) + 1
                             offset = (1 + extra_indent + new_depth * num_spaces) - adjustment
                             offsets[line_num] = offset
-                else:
+                        elif (token.kind in ('handlebars_end', 'django_end') and
+                                info['indenting'] and
+                                line_num < info['adjust_offset_until']):
+                            offsets[line_num] += num_spaces
+                elif token.tag != 'pre':
                     for line_num in range(start_line + 1, end_line):
                         if line_num not in offsets:
                             offsets[line_num] = info['offset']
+                else:
+                    for line_num in range(start_line + 1, end_line):
+                        if line_num not in offsets:
+                            offsets[line_num] = 0
 
     # Now that we have all of our offsets calculated, we can just
     # join all our lines together, fixing up offsets as needed.

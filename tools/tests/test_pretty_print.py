@@ -62,12 +62,12 @@ GOOD_HTML = """
                 <td>5</td>
             </tr>
         </table>
-        <pre>
-                print 'hello world'
-        </pre>
+    <pre>
+            print 'hello world'
+    </pre>
         <div class = "foo"
             id = "bar"
-             role = "whatever">{{ bla }}</div>
+            role = "whatever">{{ bla }}</div>
     </body>
 </html>
 <!-- test -->
@@ -230,6 +230,138 @@ GOOD_HTML8 = """
     {{/with}}
 {{/each}}
 """
+
+BAD_HTML9 = """
+<form id="foobar" class="whatever">
+    {{!        <div class="anothertest"> }}
+    <input value="test" />
+    <button type="button"><i class="test"></i></button>
+    <button type="button"><i class="test"></i></button>
+    {{!        </div> }}
+    <div class="test"></div>
+</form>
+"""
+
+GOOD_HTML9 = """
+<form id="foobar" class="whatever">
+    {{!        <div class="anothertest"> }}
+    <input value="test" />
+    <button type="button"><i class="test"></i></button>
+    <button type="button"><i class="test"></i></button>
+    {{!        </div> }}
+    <div class="test"></div>
+</form>
+"""
+
+BAD_HTML10 = """
+{% block portico_content %}
+<div class="test">
+<i class='test'></i> foobar
+</div>
+<div class="test1">
+{% for row in data %}
+<div class="test2">
+    {% for group in (row[0:2], row[2:4]) %}
+    <div class="test2">
+    </div>
+    {% endfor %}
+</div>
+{% endfor %}
+</div>
+{% endblock %}
+"""
+
+GOOD_HTML10 = """
+{% block portico_content %}
+<div class="test">
+    <i class='test'></i> foobar
+</div>
+<div class="test1">
+    {% for row in data %}
+    <div class="test2">
+        {% for group in (row[0:2], row[2:4]) %}
+        <div class="test2">
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+"""
+
+BAD_HTML11 = """
+<div class="test1">
+  <div class="test2">
+    foobar
+    <div class="test2">
+        </div>
+</div>
+</div>
+"""
+
+GOOD_HTML11 = """
+<div class="test1">
+    <div class="test2">
+        foobar
+        <div class="test2">
+        </div>
+    </div>
+</div>
+"""
+
+BAD_HTML12 = """
+<div class="test1">
+<pre>
+  <div class="test2">
+    foobar
+    <div class="test2">
+        </div>
+</div>
+</pre>
+</div>
+"""
+
+GOOD_HTML12 = """
+<div class="test1">
+<pre>
+  <div class="test2">
+    foobar
+    <div class="test2">
+        </div>
+</div>
+</pre>
+</div>
+"""
+
+BAD_HTML13 = """
+<div>
+  {{#if this.code}}
+    <div>&nbsp:{{this.name}}:</div>
+  {{else}}
+    {{#if this.is_realm_emoji}}
+      <img src="{{this.url}}" class="emoji" />
+    {{else}}
+      <div/>
+    {{/if}}
+  {{/if}}
+  <div>{{this.count}}</div>
+</div>
+"""
+
+GOOD_HTML13 = """
+<div>
+    {{#if this.code}}
+        <div>&nbsp:{{this.name}}:</div>
+    {{else}}
+        {{#if this.is_realm_emoji}}
+        <img src="{{this.url}}" class="emoji" />
+        {{else}}
+        <div/>
+        {{/if}}
+    {{/if}}
+    <div>{{this.count}}</div>
+</div>
+"""
 class TestPrettyPrinter(unittest.TestCase):
     def compare(self, a, b):
         # type: (str, str) -> None
@@ -247,3 +379,8 @@ class TestPrettyPrinter(unittest.TestCase):
         self.compare(pretty_print_html(BAD_HTML6), GOOD_HTML6)
         self.compare(pretty_print_html(BAD_HTML7), GOOD_HTML7)
         self.compare(pretty_print_html(BAD_HTML8), GOOD_HTML8)
+        self.compare(pretty_print_html(BAD_HTML9), GOOD_HTML9)
+        self.compare(pretty_print_html(BAD_HTML10), GOOD_HTML10)
+        self.compare(pretty_print_html(BAD_HTML11), GOOD_HTML11)
+        self.compare(pretty_print_html(BAD_HTML12), GOOD_HTML12)
+        self.compare(pretty_print_html(BAD_HTML13), GOOD_HTML13)
