@@ -49,7 +49,7 @@ from zerver.models import Message, UserProfile, Stream, Subscription, \
 
 from sqlalchemy import func
 from sqlalchemy.sql import select, join, column, literal_column, literal, and_, \
-    or_, not_, union_all, alias, Selectable, Select, ColumnElement
+    or_, not_, union_all, alias, Selectable, Select, ColumnElement, table
 
 import re
 import ujson
@@ -122,7 +122,7 @@ class NarrowBuilder(object):
     def by_is(self, query, operand, maybe_negate):
         # type: (Query, str, ConditionTransform) -> Query
         if operand == 'private':
-            query = query.select_from(join(query.froms[0], "zerver_recipient",
+            query = query.select_from(join(query.froms[0], table("zerver_recipient"),
                                            column("recipient_id") ==
                                            literal_column("zerver_recipient.id")))
             cond = or_(column("type") == Recipient.PERSONAL,
@@ -171,10 +171,10 @@ class NarrowBuilder(object):
             # MIT users expect narrowing to "social" to also show messages to /^(un)*social(.d)*$/
             # (unsocial, ununsocial, social.d, etc)
             m = re.search(r'^(?:un)*(.+?)(?:\.d)*$', stream.name, re.IGNORECASE)
-            if m:
-                base_stream_name = m.group(1)
-            else:
-                base_stream_name = stream.name
+            # Since the regex has a `.+` in it and "" is invalid as a
+            # stream name, this will always match
+            assert(m is not None)
+            base_stream_name = m.group(1)
 
             matching_streams = get_active_streams(self.user_profile.realm).filter(
                 name__iregex=r'^(un)*%s(\.d)*$' % (self._pg_re_escape(base_stream_name),))
@@ -193,19 +193,41 @@ class NarrowBuilder(object):
             # MIT users expect narrowing to topic "foo" to also show messages to /^foo(.d)*$/
             # (foo, foo.d, foo.d.d, etc)
             m = re.search(r'^(.*?)(?:\.d)*$', operand, re.IGNORECASE)
-            if m:
-                base_topic = m.group(1)
-            else:
-                base_topic = operand
+            # Since the regex has a `.*` in it, this will always match
+            assert(m is not None)
+            base_topic = m.group(1)
 
             # Additionally, MIT users expect the empty instance and
             # instance "personal" to be the same.
             if base_topic in ('', 'personal', '(instance "")'):
-                regex = r'^(|personal|\(instance ""\))(\.d)*$'
+                cond = or_(
+                    func.upper(column("subject")) == func.upper(literal("")),
+                    func.upper(column("subject")) == func.upper(literal(".d")),
+                    func.upper(column("subject")) == func.upper(literal(".d.d")),
+                    func.upper(column("subject")) == func.upper(literal(".d.d.d")),
+                    func.upper(column("subject")) == func.upper(literal(".d.d.d.d")),
+                    func.upper(column("subject")) == func.upper(literal("personal")),
+                    func.upper(column("subject")) == func.upper(literal("personal.d")),
+                    func.upper(column("subject")) == func.upper(literal("personal.d.d")),
+                    func.upper(column("subject")) == func.upper(literal("personal.d.d.d")),
+                    func.upper(column("subject")) == func.upper(literal("personal.d.d.d.d")),
+                    func.upper(column("subject")) == func.upper(literal('(instance "")')),
+                    func.upper(column("subject")) == func.upper(literal('(instance "").d')),
+                    func.upper(column("subject")) == func.upper(literal('(instance "").d.d')),
+                    func.upper(column("subject")) == func.upper(literal('(instance "").d.d.d')),
+                    func.upper(column("subject")) == func.upper(literal('(instance "").d.d.d.d')),
+                )
             else:
-                regex = r'^%s(\.d)*$' % (self._pg_re_escape(base_topic),)
-
-            cond = column("subject").op("~*")(regex)
+                # We limit `.d` counts, since postgres has much better
+                # query planning for this than they do for a regular
+                # expression (which would sometimes table scan).
+                cond = or_(
+                    func.upper(column("subject")) == func.upper(literal(base_topic)),
+                    func.upper(column("subject")) == func.upper(literal(base_topic + ".d")),
+                    func.upper(column("subject")) == func.upper(literal(base_topic + ".d.d")),
+                    func.upper(column("subject")) == func.upper(literal(base_topic + ".d.d.d")),
+                    func.upper(column("subject")) == func.upper(literal(base_topic + ".d.d.d.d")),
+                )
             return query.where(maybe_negate(cond))
 
         cond = func.upper(column("subject")) == func.upper(literal(operand))
@@ -468,8 +490,10 @@ def exclude_muting_conditions(user_profile, narrow):
             recipient__type=Recipient.STREAM
         ).values('recipient_id')
         muted_recipient_ids = [row['recipient_id'] for row in rows]
-        condition = not_(column("recipient_id").in_(muted_recipient_ids))
-        conditions.append(condition)
+        if len(muted_recipient_ids) > 0:
+            # No point in adding a condition if there are no muted streams
+            condition = not_(column("recipient_id").in_(muted_recipient_ids))
+            conditions.append(condition)
 
     muted_topics = ujson.loads(user_profile.muted_topics)
     if muted_topics:
@@ -512,18 +536,18 @@ def get_old_messages_backend(request, user_profile,
     include_history = ok_to_include_history(narrow, user_profile.realm)
 
     if include_history and not use_first_unread_anchor:
-        query = select([column("id").label("message_id")], None, "zerver_message")
+        query = select([column("id").label("message_id")], None, table("zerver_message"))
         inner_msg_id_col = literal_column("zerver_message.id")
     elif narrow is None:
         query = select([column("message_id"), column("flags")],
                        column("user_profile_id") == literal(user_profile.id),
-                       "zerver_usermessage")
+                       table("zerver_usermessage"))
         inner_msg_id_col = column("message_id")
     else:
         # TODO: Don't do this join if we're not doing a search
         query = select([column("message_id"), column("flags")],
                        column("user_profile_id") == literal(user_profile.id),
-                       join("zerver_usermessage", "zerver_message",
+                       join(table("zerver_usermessage"), table("zerver_message"),
                             literal_column("zerver_usermessage.message_id") ==
                             literal_column("zerver_message.id")))
         inner_msg_id_col = column("message_id")
@@ -549,7 +573,7 @@ def get_old_messages_backend(request, user_profile,
             if term['operator'] == 'search':
                 if not is_search:
                     search_term = term
-                    query = query.column("subject").column("rendered_content")
+                    query = query.column(column("subject")).column(column("rendered_content"))
                     is_search = True
                 else:
                     # Join the search operators if there are multiple of them
@@ -599,17 +623,21 @@ def get_old_messages_backend(request, user_profile,
         after_query = query.where(inner_msg_id_col >= anchor) \
                            .order_by(inner_msg_id_col.asc()).limit(num_after)
 
-    if num_before == 0 and num_after == 0:
-        # This can happen when a narrow is specified.
-        after_query = query.where(inner_msg_id_col == anchor)
+    if anchor == 10000000000000000:
+        # There's no need for an after_query if we're targeting just the target message.
+        after_query = None
 
     if before_query is not None:
         if after_query is not None:
             query = union_all(before_query.self_group(), after_query.self_group())
         else:
             query = before_query
-    else:
+    elif after_query is not None:
         query = after_query
+    else:
+        # This can happen when a narrow is specified.
+        query = query.where(inner_msg_id_col == anchor)
+
     main_query = alias(query)
     query = select(main_query.c, None, main_query).order_by(column("message_id").asc())
     # This is a hack to tag the query we use for testing
@@ -875,10 +903,6 @@ def send_message_backend(request, user_profile,
                              local_id=local_id, sender_queue_id=queue_id)
     return json_success({"id": ret})
 
-def json_update_message(request, user_profile, message_id):
-    # type: (HttpRequest, UserProfile, int) -> HttpResponse
-    return update_message_backend(request, user_profile)
-
 def fill_edit_history_entries(message_history, message):
     # type: (List[Dict[str, Any]], Message) -> None
     """This fills out the message edit history entries from the database,
@@ -943,10 +967,7 @@ def update_message_backend(request, user_profile,
     if not user_profile.realm.allow_message_editing:
         return json_error(_("Your organization has turned off message editing."))
 
-    try:
-        message = Message.objects.select_related().get(id=message_id)
-    except Message.DoesNotExist:
-        raise JsonableError(_("Unknown message id"))
+    message, ignored_user_message = access_message(user_profile, message_id)
 
     # You only have permission to edit a message if:
     # 1. You sent it, OR:
@@ -1058,7 +1079,7 @@ def messages_in_narrow_backend(request, user_profile,
     query = select([column("message_id"), column("subject"), column("rendered_content")],
                    and_(column("user_profile_id") == literal(user_profile.id),
                         column("message_id").in_(msg_ids)),
-                   join("zerver_usermessage", "zerver_message",
+                   join(table("zerver_usermessage"), table("zerver_message"),
                         literal_column("zerver_usermessage.message_id") ==
                         literal_column("zerver_message.id")))
 
