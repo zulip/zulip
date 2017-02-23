@@ -1038,6 +1038,10 @@ def update_message_backend(request, user_profile,
         event_data = {
             'message_id': message.id,
             'message_content': message.content,
+            # The choice of `user_profile.realm_id` rather than
+            # `sender.realm_id` must match the decision made in the
+            # `render_incoming_message` call earlier in this function.
+            'message_realm_id': user_profile.realm_id,
             'urls': links_for_embed}
         queue_json_publish('embed_links', event_data, lambda x: None)
     return json_success()
