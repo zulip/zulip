@@ -321,12 +321,12 @@ function create_message_object() {
     // Changes here must also be kept in sync with echo.try_deliver_locally
     var message = {
         type: compose.composing(),
-        subject: subject,
-        stream: compose.stream_name(),
         private_message_recipient: compose.recipient(),
         content: content,
         sender_id: page_params.user_id,
         queue_id: page_params.event_queue_id,
+        stream: '',
+        subject: '',
     };
 
     if (message.type === "private") {
@@ -334,7 +334,14 @@ function create_message_object() {
         message.to = util.extract_pm_recipients(compose.recipient());
         message.reply_to = compose.recipient();
     } else {
-        message.to = compose.stream_name();
+        var stream_name = compose.stream_name();
+        message.to = stream_name;
+        message.stream = stream_name;
+        var sub = stream_data.get_sub(stream_name);
+        if (sub) {
+            message.stream_id = sub.stream_id;
+        }
+        message.subject = subject;
     }
     return message;
 }
