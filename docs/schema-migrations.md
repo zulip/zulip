@@ -35,4 +35,38 @@ migrations.
   to use the batch update tools in `zerver/lib/migrate.py` (originally
   written to work with South) for doing larger database migrations.
 
+* **Making large migrations work**.  Major migrations should have a
+few properties:
+
+  * **Unit tests**.  You'll want to carefully test these, so you might
+    as well write some unit tests to verify the migration works
+    correctly, rather than doing everything by hand.  This often saves
+    a lot of time in re-testing the migration process as we make
+    adjustments to the plan.
+  * **Run in batches**.  Updating more than 1K-10K rows (depending on
+    type) in a single transaction can lock up a database.  It's best
+    to do lots of small batches, potentially with a brief sleep in
+    between, so that we don't block other operations from finishing.
+  * **Rerunnability/idempotency**.  Good migrations are ones where if
+    operational concerns (e.g. it taking down the Zulip server for
+    users) interfere with it finishing, it's easy to restart the
+    migration without doing a bunch of hand investigation.  Ideally,
+    the migration can even continue where it left off, without needing
+    to redo work.
+  * **Multi-step migrations**.  For really big migrations, one wants
+  to split the transition into into several commits that are each
+  individually correct, and can each be deployed independently:
+
+    1. First, do a migration to add the new column to the Message table
+      and start writing to that column (but don't use it for anything)
+    2. Second, do a migration to copy values from the old column to
+    the new column, to ensure that the two data stores agree.
+    3. Third, a commit that stops writing to the old field.
+    4. Any cleanup work, e.g. if the old field were a column, we'd do
+       a migration to remove it entirely here.
+
+    This multi-step process is how most migrations on large database
+    tables are done in large-scale systems, since it ensures that the
+    system can continue running happily during the migration.
+
 [migrations-non-atomic]: https://docs.djangoproject.com/en/1.10/howto/writing-migrations/#non-atomic-migrations
