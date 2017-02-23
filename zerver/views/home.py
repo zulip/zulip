@@ -231,6 +231,7 @@ def home_real(request):
         enter_sends           = user_profile.enter_sends,
         user_id               = user_profile.id,
         left_side_userlist    = register_ret['left_side_userlist'],
+        emoji_alt_code    = register_ret['emoji_alt_code'],
         default_language      = register_ret['default_language'],
         default_language_name = get_language_name(register_ret['default_language']),
         language_list_dbl_col = get_language_list_for_templates(register_ret['default_language']),

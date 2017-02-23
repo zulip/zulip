@@ -16,7 +16,7 @@ from zerver.lib.actions import do_change_password, \
     do_change_default_desktop_notifications, do_change_autoscroll_forever, \
     do_change_enable_stream_desktop_notifications, do_change_enable_stream_sounds, \
     do_regenerate_api_key, do_change_avatar_fields, do_change_twenty_four_hour_time, \
-    do_change_left_side_userlist, do_change_default_language, \
+    do_change_left_side_userlist, do_change_emoji_alt_code, do_change_default_language, \
     do_change_pm_content_in_desktop_notifications
 from zerver.lib.avatar import avatar_url
 from zerver.lib.i18n import get_available_language_codes
@@ -97,7 +97,8 @@ def json_change_settings(request, user_profile,
 def update_display_settings_backend(request, user_profile,
                                     twenty_four_hour_time=REQ(validator=check_bool, default=None),
                                     default_language=REQ(validator=check_string, default=None),
-                                    left_side_userlist=REQ(validator=check_bool, default=None)):
+                                    left_side_userlist=REQ(validator=check_bool, default=None),
+                                    emoji_alt_code=REQ(validator=check_bool, default=None)):
     # type: (HttpRequest, UserProfile, Optional[bool], Optional[str], Optional[bool]) -> HttpResponse
     if (default_language is not None and
             default_language not in get_available_language_codes()):
@@ -118,6 +119,11 @@ def update_display_settings_backend(request, user_profile,
             user_profile.left_side_userlist != left_side_userlist):
         do_change_left_side_userlist(user_profile, left_side_userlist)
         result['left_side_userlist'] = left_side_userlist
+
+    elif (emoji_alt_code is not None and
+            user_profile.emoji_alt_code != emoji_alt_code):
+        do_change_emoji_alt_code(user_profile, emoji_alt_code)
+        result['emoji_alt_code'] = emoji_alt_code
 
     return json_success(result)
 
