@@ -388,7 +388,7 @@ $(function () {
         e.preventDefault();
         e.stopPropagation();
 
-        window.location.hash = "subscriptions/new";
+        window.location.hash = "subscriptions/all";
     });
 
     // FEEDBACK

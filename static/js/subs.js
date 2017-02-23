@@ -739,6 +739,10 @@ exports.change_state = (function () {
             if (hash.arguments[0] === "new") {
                 $("#create_stream_button").click();
                 components.toggle.lookup("stream-filter-toggle").goto("All streams");
+            } else if (hash.arguments[0] === "all") {
+                components.toggle.lookup("stream-filter-toggle").goto("All streams");
+            } else if (hash.arguments[0] === "subscribed") {
+                components.toggle.lookup("stream-filter-toggle").goto("Subscribed");
             // if the first argument is a valid number.
             } else if (/\d+/.test(hash.arguments[0])) {
                 var $stream_row = $(".stream-row[data-stream-id='" + hash.arguments[0] + "']");
