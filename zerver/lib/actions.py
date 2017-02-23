@@ -37,7 +37,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     realm_filters_for_realm, RealmFilter, receives_offline_notifications, \
     ScheduledJob, get_owned_bot_dicts, \
     get_old_unclaimed_attachments, get_cross_realm_emails, receives_online_notifications, \
-    Reaction
+    Reaction, EmailChangeStatus
 
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import avatar_url
@@ -50,7 +50,7 @@ from importlib import import_module
 from django.core.mail import EmailMessage
 from django.utils.timezone import now
 
-from confirmation.models import Confirmation
+from confirmation.models import Confirmation, EmailChangeConfirmation
 import six
 from six.moves import filter
 from six.moves import map
@@ -707,6 +707,30 @@ def do_change_user_email(user_profile, new_email):
     log_event({'type': 'user_email_changed',
                'old_email': old_email,
                'new_email': new_email})
+
+def do_start_email_change_process(user_profile, new_email):
+    # type: (UserProfile, Text) -> None
+    old_email = user_profile.email
+    user_profile.email = new_email
+
+    context = {'support_email': settings.ZULIP_ADMINISTRATOR,
+               'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS,
+               'realm': user_profile.realm,
+               'old_email': old_email,
+               'new_email': new_email,
+               }
+
+    with transaction.atomic():
+        obj = EmailChangeStatus.objects.create(new_email=new_email,
+                                               old_email=old_email,
+                                               user_profile=user_profile,
+                                               realm=user_profile.realm)
+
+        EmailChangeConfirmation.objects.send_confirmation(
+            obj, new_email,
+            additional_context=context,
+            host=user_profile.realm.host,
+        )
 
 def compute_irc_user_fullname(email):
     # type: (NonBinaryStr) -> NonBinaryStr
