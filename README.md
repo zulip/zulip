@@ -209,11 +209,15 @@ onboarding, search, etc.  You can see this here:
 Click on any of the "area:" labels and you will see all the tickets
 related to your area of interest.
 
-If you're excited about helping with an open issue, just post on the
-conversation thread that you're working on it.  You're encouraged to
-ask questions on how to best implement or debug your changes -- the
-Zulip maintainers are excited to answer questions to help you stay
-unblocked and working efficiently.
+If you're excited about helping with an open issue, make sure to claim
+the issue by commenting the following in the comment section:
+"**@zulipbot** claim". **@zulipbot** will assign you to the issue and
+label the issue as **in progress**. For more details, check out
+[**@zulipbot**](https://github.com/zulip/zulipbot).
+
+You're encouraged to ask questions on how to best implement or debug
+your changes -- the Zulip maintainers are excited to answer questions
+to help you stay unblocked and working efficiently.
 
 We also welcome suggestions of features that you feel would be
 valuable or changes that you feel would make Zulip a better open
