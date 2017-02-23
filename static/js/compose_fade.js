@@ -21,8 +21,13 @@ exports.set_focused_recipient = function (msg_type) {
     };
 
     if (focused_recipient.type === "stream") {
-        focused_recipient.stream = $('#stream').val();
+        var stream_name = $('#stream').val();
         focused_recipient.subject = $('#subject').val();
+        focused_recipient.stream = stream_name;
+        var sub = stream_data.get_sub(stream_name);
+        if (sub) {
+            focused_recipient.stream_id = sub.stream_id;
+        }
     } else {
         // Normalize the recipient list so it matches the one used when
         // adding the message (see message_store.add_message_metadata()).

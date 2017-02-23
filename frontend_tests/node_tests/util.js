@@ -59,12 +59,12 @@ var _ = global._;
 
 (function test_same_recipient() {
     assert(util.same_recipient(
-        {type: 'stream', stream: 'Foo', subject: 'Bar'},
-        {type: 'stream', stream: 'fOO', subject: 'bar'}));
+        {type: 'stream', stream_id: 101, subject: 'Bar'},
+        {type: 'stream', stream_id: 101, subject: 'bar'}));
 
     assert(!util.same_recipient(
-        {type: 'stream', stream: 'Foo', subject: 'Bar'},
-        {type: 'stream', stream: 'yo', subject: 'whatever'}));
+        {type: 'stream', stream_id: 101, subject: 'Bar'},
+        {type: 'stream', stream_id: 102, subject: 'whatever'}));
 
     assert(util.same_recipient(
         {type: 'private', reply_to: 'fred@zulip.com,melissa@zulip.com'},
@@ -75,7 +75,7 @@ var _ = global._;
         {type: 'private', reply_to: 'Fred@zulip.com'}));
 
     assert(!util.same_recipient(
-        {type: 'stream', stream: 'Foo', subject: 'Bar'},
+        {type: 'stream', stream_id: 101, subject: 'Bar'},
         {type: 'private', reply_to: 'Fred@zulip.com'}));
 
 }());

@@ -68,12 +68,12 @@ people.add(bob);
 
     var good_msg = {
         type: 'stream',
-        stream: 'social',
+        stream_id: 101,
         subject: 'lunch',
     };
     var bad_msg = {
         type: 'stream',
-        stream: 'bad',
+        stream_id: 999,
         subject: 'lunch',
     };
     assert(!compose_fade.should_fade_message(good_msg));
