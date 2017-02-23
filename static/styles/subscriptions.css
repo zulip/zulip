@@ -389,6 +389,8 @@ form#add_new_subscription {
 }
 
 .subscriptions-header .icon-vector-chevron-left {
+    display: none;
+
     position: relative;
     transform: translate(-50px, 0px);
     opacity: 0;
@@ -920,6 +922,10 @@ form#add_new_subscription {
 @media (max-width: 700px) {
     .subscriptions-container {
         position: relative;
+    }
+
+    .subscriptions-header .icon-vector-chevron-left {
+        display: block;
     }
 
     #subscription_overlay .left,
