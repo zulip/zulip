@@ -452,50 +452,97 @@ input[type=checkbox].inline-block {
 #bots_list {
     display: none;
     list-style-type: none;
-    margin-left: 0px;
-}
-
-#bots_list .image,
-#bots_list .bot_info {
-    margin: 10px;
+    margin: 0px 15px;
 }
 
 #bots_list .image {
     vertical-align: top;
 }
 
+#bots_list .bot-information-box .details {
+    display: inline-block;
+    vertical-align: top;
+    width: calc(100% - 85px);
+}
+
 #bots_list .name {
-    font-weight: 300;
-    font-size: 18px;
-    margin-bottom: 20px;
+    font-weight: 600;
+    font-size: 1.3rem;
+    margin: 10px 0px 5px 0px;
+
+    overflow: hidden;
+    max-height: 1em;
+    text-overflow: ellipsis;
+    white-space: pre;
 }
 
 #bots_list .regenerate_bot_api_key {
     position: relative;
-    top: -2px;
     margin-left: 5px;
-    color: #666;
+    color: #aaa;
+    transition: all 0.3s ease;
 }
 
 #bots_list .regenerate_bot_api_key:hover {
-    color: #000;
+    color: #444;
 }
 
 #bots_list .edit-bot-buttons {
-    position: absolute;
-    right: 20px;
-    top: 20px;
+    padding-top: 5px;
+}
+
+#bots_list .edit-bot-buttons button {
+    background-color: transparent;
+}
+
+#bots_list .edit-bot-buttons .btn {
+    padding: 4px;
+}
+
+#bots_list .edit-bot-buttons .sea-green {
+    color: #24cac2;
+}
+
+#bots_list .edit-bot-buttons .blue {
+    color: #3ba4e6;
+}
+
+#bots_list .edit-bot-buttons .danger-red {
+    color: #e29595;
+}
+
+#bots_list .bot-information-box {
+    position: relative;
+    display: inline-block;
+    width: calc(33.3% - 10px);
+    max-height: 180px;
+    margin: 5px;
+
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+
+    overflow: auto;
 }
 
 #bots_list img.avatar {
-    height: 35px;
-    width: 35px;
+    margin: 10px 5px 10px 10px;
+    height: 50px;
+    width: 50px;
+    border-radius: 4px;
+    vertical-align: top;
+    box-shadow: 0px 0px 4px rgba(0,0,0,0.1);
+}
+
+#bots_list .email {
+    margin-bottom: 5px;
 }
 
 #bots_list .email .value,
 #bots_list .api_key .api-key-value-and-button {
     display: block;
-    margin-left: 6em;
+    margin-left: 0px;
     white-space: -moz-pre-wrap !important;
     white-space: -pre-wrap;
     white-space: -o-pre-wrap;
@@ -505,22 +552,50 @@ input[type=checkbox].inline-block {
     white-space: normal;
 }
 
-.bot_info .field {
-    width: 6em;
-    font-weight: 300;
-    position: absolute;
+#bots_list .api_key .api-key-value-and-button {
+    font-family: "Inconsolata", Menlo, monospace;
+    font-size: 0.85em;
 }
 
-.edit_bot_form {
+#bots_list .bot_info {
+    padding: 10px;
+}
+
+.bot_info .field {
+    font-weight: 300;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: #aaa;
+}
+
+.settings-section .edit_bot_form {
     font-size: 100%;
+    margin: 0px 10px;
+    padding: 0px;
+}
+
+.edit_bot_form label {
+    text-transform: uppercase;
+    font-weight: 600;
+    color: #aaa;
+    margin-top: 5px;
+}
+
+.edit_bot_form .buttons {
+    margin: 10px 0px 5px 0px;
 }
 
 .edit_bot_email {
-    font-weight: 300;
+    font-weight: 600;
     font-size: 18px;
-    text-align: center;
+    text-align: left;
     margin-top: 10px;
     margin-bottom: 10px;
+
+    overflow: hidden;
+    max-height: 1em;
+    text-overflow: ellipsis;
+    white-space: pre;
 }
 
 .edit_bot_form .control-label,
@@ -677,7 +752,7 @@ input[type=checkbox].inline-block {
 #settings_page .content-wrapper {
     position: relative;
     float: left;
-    width: calc(100% - 250px - 1px);
+    width: calc(100% - 250px - 2px);
     height: 100%;
 }
 
@@ -841,8 +916,23 @@ input[type=text]#settings_search {
     bottom: 0px;
 }
 /* -- end new settings overlay -- */
+@media (min-width: 1850px) {
+    #bots_list .bot-information-box {
+        width: calc(20% - 10px);
+    }
+}
+
+@media (min-width: 1500px) and (max-width: 1850px) {
+    #bots_list .bot-information-box {
+        width: calc(25% - 10px);
+    }
+}
 
 @media (max-width: 1215px) {
+    #bots_list .bot-information-box {
+        width: calc(50% - 10px);
+    }
+
     .user-avatar-section, .realm-icon-section {
         float: none;
         display: inline-block;
