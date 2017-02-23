@@ -151,7 +151,7 @@ exports.user_ids_string_to_emails_string = function (user_ids_string) {
 };
 
 exports.emails_strings_to_user_ids_string = function (emails_string) {
-    var emails = emails_string.split(',');
+    var emails = util.extract_pm_recipients(emails_string);
     var user_ids = _.map(emails, function (email) {
         var person = people.get_by_email(email);
         if (person) {

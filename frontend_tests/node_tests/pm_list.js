@@ -6,6 +6,7 @@ add_dependencies({
     hashchange: 'js/hashchange',
     narrow: 'js/narrow',
     people: 'js/people',
+    util: 'js/util.js',
 });
 
 set_global('message_store', {

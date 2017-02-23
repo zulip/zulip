@@ -3,6 +3,7 @@ global.stub_out_jquery();
 add_dependencies({
     hashchange: 'js/hashchange.js',
     people: 'js/people.js',
+    util: 'js/util.js',
     stream_data: 'js/stream_data.js',
     Filter: 'js/filter.js',
 });

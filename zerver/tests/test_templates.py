@@ -63,6 +63,7 @@ class TemplateTestCase(ZulipTestCase):
 
         logged_in = [
             'analytics/stats.html',
+            'zerver/drafts.html',
             'zerver/home.html',
             'zerver/invite_user.html',
             'zerver/keyboard_shortcuts.html',
