@@ -858,6 +858,24 @@ function render(template_name, args) {
 }());
 
 
+(function subscription_stream_privacy_modal() {
+    var args = {
+        stream_id: 999,
+        is_private: true,
+    };
+    var html = render('subscription_stream_privacy_modal', args);
+
+    global.write_handlebars_output("subscription_stream_privacy_modal", html);
+
+    var stream_desc = $(html).find(".modal-body b");
+    assert.equal(stream_desc.text(), 'an invite-only stream');
+
+    var button = $(html).find("#change-stream-privacy-button");
+    assert(button.hasClass("btn-primary"));
+    assert.equal(button.text().trim(), "Make Stream Public");
+}());
+
+
 (function subscription_table_body() {
     var args = {
         subscriptions: [
@@ -872,13 +890,13 @@ function render(template_name, args) {
                 can_make_public: true,
                 can_make_private: true, /* not logical, but that's ok */
                 email_address: 'xxxxxxxxxxxxxxx@zulip.com',
-                id: 888,
+                stream_id: 888,
                 in_home_view: true,
             },
             {
                 name: 'social',
                 color: 'green',
-                id: 999,
+                stream_id: 999,
             },
         ],
     };
@@ -893,11 +911,12 @@ function render(template_name, args) {
     var span = $(html).find(".stream-name:first");
     assert.equal(span.text(), 'devel');
 
-    span = $(html).find(".admin-settings .sub_settings_title");
-    assert.equal(span.text(), 'Administrator settings');
-
     var div = $(html).find(".subscription-type");
     assert(div.text().indexOf('invite-only stream') > 0);
+
+    var anchor = $(html).find(".change-stream-privacy:first");
+    assert.equal(anchor.data("is-private"), true);
+    assert.equal(anchor.text(), "[Change]");
 }());
 
 

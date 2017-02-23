@@ -613,7 +613,7 @@ function redraw_privacy_related_stuff(sub_row, sub) {
     sub_row.find('.icon').expectOne().replaceWith($(html));
 
     html = templates.render('subscription_type', sub);
-    stream_settings.find('.subscription-type').expectOne().html(html);
+    stream_settings.find('.subscription-type-text').expectOne().html(html);
 
     if (sub.invite_only) {
         stream_settings.find(".large-icon")
@@ -625,20 +625,22 @@ function redraw_privacy_related_stuff(sub_row, sub) {
             .html("");
     }
 
-    html = templates.render('change_stream_privacy', sub);
-    stream_settings.find('.change-stream-privacy').expectOne().html(html);
-
     stream_list.redraw_stream_privacy(sub.name);
 }
 
-function change_stream_privacy(e, is_private, success_message, error_message, invite_only) {
-    e.preventDefault();
+function change_stream_privacy(e) {
+    e.stopPropagation();
 
-    var stream_id = $(e.target).closest(".subscription_settings").attr("data-stream-id");
+    var stream_id = $(e.target).data("stream-id");
+    var is_private = $(e.target).data("is-private");
     var sub = stream_data.get_sub_by_id(stream_id);
 
     $("#subscriptions-status").hide();
-    var data = {stream_name: sub.name, is_private: is_private};
+    var data = {
+        stream_name: sub.name,
+        // toggle the privacy setting
+        is_private: !is_private,
+    };
 
     channel.patch({
         url: "/json/streams/" + stream_id,
@@ -647,15 +649,16 @@ function change_stream_privacy(e, is_private, success_message, error_message, in
             sub = stream_data.get_sub_by_id(stream_id);
             var stream_settings = settings_for_sub(sub);
             var sub_row = $(".stream-row[data-stream-id='" + stream_id + "']");
-            sub.invite_only = invite_only;
+
+            // save new privacy settings.
+            stream_settings.find(".change-stream-privacy").expectOne().data("is-private", !is_private);
+            sub.invite_only = !is_private;
+
             redraw_privacy_related_stuff(sub_row, sub);
-            var feedback_div = stream_settings.find(".change-stream-privacy-feedback").expectOne();
-            ui.report_success(success_message, feedback_div);
+            $("#stream_privacy_modal").remove();
         },
-        error: function (xhr) {
-            var stream_settings = settings_for_sub(sub);
-            var feedback_div = stream_settings.find(".change-stream-privacy-feedback").expectOne();
-            ui.report_error(error_message, xhr, feedback_div);
+        error: function () {
+            $("#change-stream-privacy-button").text("Try Again");
         },
     });
 }
@@ -1408,24 +1411,24 @@ $(function () {
                                         removal_failure);
     });
 
-    $("#subscriptions_table").on("click", ".make-stream-public-button", function (e) {
-        change_stream_privacy(
-            e,
-            false,
-            "The stream has been made public!",
-            "Error making stream public",
-            false
-        );
+    $("#subscriptions_table").on("click", ".change-stream-privacy", function (e) {
+        var stream_id = get_stream_id(e.target);
+        var stream = stream_data.get_sub_by_id(stream_id);
+        var template_data = {
+            is_private: stream.can_make_public,
+            stream_id: stream_id,
+        };
+        var change_privacy_modal = templates.render("subscription_stream_privacy_modal", template_data);
+
+        $("#subscriptions_table").append(change_privacy_modal);
+
+        $("#change-stream-privacy-button").click(function (e) {
+            change_stream_privacy(e);
+        });
     });
 
-    $("#subscriptions_table").on("click", ".make-stream-private-button", function (e) {
-        change_stream_privacy(
-            e,
-            true,
-            "The stream has been made private!",
-            "Error making stream private",
-            true
-        );
+    $("#subscriptions_table").on("click", ".close-privacy-modal", function () {
+        $("#stream_privacy_modal").remove();
     });
 
     $("#subscriptions_table").on("show", ".regular_subscription_settings", function (e) {
