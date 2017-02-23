@@ -800,6 +800,10 @@ form#add_new_subscription {
     color: #888;
 }
 
+#subscription_overlay .subscription-type .subscription-type-text {
+    display: inline;
+}
+
 #subscription_overlay .subscription-type b {
     font-weight: 600;
     color: #666;
