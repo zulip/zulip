@@ -154,9 +154,7 @@ class GenericParserTestCase(ZulipTestCase):
 
 
 class PreviewTestCase(ZulipTestCase):
-    def _send_message_with_test_org_url(self, sender_email):
-        # type: (str) -> Message
-        html = """
+    open_graph_html = """
           <html>
             <head>
                 <title>Test title</title>
@@ -171,11 +169,14 @@ class PreviewTestCase(ZulipTestCase):
             </body>
           </html>
         """
+
+    def _send_message_with_test_org_url(self, sender_email):
+        # type: (str) -> Message
         url = 'http://test.org/'
         msg_id = self.send_message(
             sender_email, "cordelia@zulip.com",
             Recipient.PERSONAL, subject="url", content=url)
-        response = MockPythonResponse(html, 200)
+        response = MockPythonResponse(self.open_graph_html, 200)
         mocked_response = mock.Mock(
             side_effect=lambda k: {url: response}.get(k, MockPythonResponse('', 404)))
         msg = Message.objects.select_related("sender").get(id=msg_id)
