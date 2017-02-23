@@ -550,7 +550,7 @@ function render(template_name, args) {
     var first_message_text = first_message.find(".message_content").text().trim();
     assert.equal(first_message_text, "This is message one.");
 
-    var starred_title = first_message.find(".star span").attr("title");
+    var starred_title = first_message.find(".star").attr("title");
     assert.equal(starred_title, "Unstar this message");
 }());
 

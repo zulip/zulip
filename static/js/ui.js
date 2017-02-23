@@ -222,7 +222,7 @@ exports.update_starred = function (message_id, starred) {
     // Avoid a full re-render, but update the star in each message
     // table in which it is visible.
     update_message_in_all_views(message_id, function update_row(row) {
-        var elt = row.find(".message_star");
+        var elt = row.find(".star");
         if (starred) {
             elt.addClass("icon-vector-star").removeClass("icon-vector-star-empty").removeClass("empty-star");
         } else {
