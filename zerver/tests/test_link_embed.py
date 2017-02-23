@@ -171,6 +171,36 @@ class PreviewTestCase(ZulipTestCase):
         """
 
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_edit_message_history(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        msg_id = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
+                                   subject="editing", content="original")
+
+        url = 'http://test.org/'
+        response = MockPythonResponse(self.open_graph_html, 200)
+        mocked_response = mock.Mock(
+            side_effect=lambda k: {url: response}.get(k, MockPythonResponse('', 404)))
+
+        with mock.patch('zerver.views.messages.queue_json_publish') as patched:
+            result = self.client_patch("/json/messages/" + str(msg_id), {
+                'message_id': msg_id, 'content': url,
+            })
+            self.assert_json_success(result)
+            patched.assert_called_once()
+            queue = patched.call_args[0][0]
+            self.assertEqual(queue, "embed_links")
+            event = patched.call_args[0][1]
+
+        with self.settings(TEST_SUITE=False, CACHES=TEST_CACHES):
+            with mock.patch('requests.get', mocked_response):
+                FetchLinksEmbedData().consume(event)
+
+        embedded_link = '<a href="{0}" target="_blank" title="The Rock">The Rock</a>'.format(url)
+        msg = Message.objects.select_related("sender").get(id=msg_id)
+        self.assertIn(embedded_link, msg.rendered_content)
+
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def _send_message_with_test_org_url(self, sender_email, queue_should_run=True):
         # type: (str, bool) -> Message
         url = 'http://test.org/'
