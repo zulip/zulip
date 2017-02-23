@@ -732,7 +732,7 @@ function _setup_page() {
         var old_full_name = bot_info.find(".name").text();
         var old_owner = bot_data.get(bot_info.find(".email .value").text()).owner;
         form.find(".edit_bot_name").attr('value', old_full_name);
-        form.find(".edit-bot-owner .controls").append(owner_select);
+        form.find(".edit-bot-owner .select-form").append(owner_select);
         form.find(".edit-bot-owner select").val(old_owner);
 
         image.hide();
@@ -817,7 +817,7 @@ function _setup_page() {
     });
 
     $("#bots_list").on("click", "a.download_bot_zuliprc", function () {
-        var bot_info = $(this).parent().parent();
+        var bot_info = $(this).closest(".bot-information-box");
         var email = bot_info.find(".email .value").text();
         var api_key = bot_info.find(".api_key .api-key-value-and-button .value").text();
 
