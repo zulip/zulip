@@ -5,8 +5,7 @@ var exports = {};
 var focused_recipient;
 var normal_display = false;
 
-var fade_heuristic = feature_flags.fade_at_stream_granularity ?
-                         util.same_major_recipient : util.same_recipient;
+var fade_heuristic = util.same_recipient;
 
 exports.set_focused_recipient = function (msg_type) {
     if (msg_type === undefined) {
