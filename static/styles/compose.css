@@ -475,6 +475,8 @@ input.recipient_box {
 
     border: 1px solid #aaa;
     border-radius: 4px;
+    background-color: #fafafa;
+    cursor: not-allowed;
 }
 
 a#markdown_preview,
