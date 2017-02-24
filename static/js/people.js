@@ -152,6 +152,10 @@ exports.user_ids_string_to_emails_string = function (user_ids_string) {
 
 exports.emails_strings_to_user_ids_string = function (emails_string) {
     var emails = emails_string.split(',');
+    return exports.email_list_to_user_ids_string(emails);
+};
+
+exports.email_list_to_user_ids_string = function (emails) {
     var user_ids = _.map(emails, function (email) {
         var person = people.get_by_email(email);
         if (person) {
@@ -160,7 +164,7 @@ exports.emails_strings_to_user_ids_string = function (emails_string) {
     });
 
     if (!_.all(user_ids)) {
-        blueslip.warn('Unknown emails: ' + emails_string);
+        blueslip.warn('Unknown emails: ' + emails);
         return;
     }
 
