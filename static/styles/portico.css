@@ -219,8 +219,21 @@ a.title:hover {
     font-weight: bold;
 }
 
-input#id_email, input#id_new_password1, input#id_new_password2 {
+input#id_email,
+input#id_new_password1,
+input#id_new_password2,
+input#id_full_name {
     margin-bottom: 10px;
+}
+
+p#id_full_name-error {
+  margin-left: 200px;
+  display: block;
+}
+
+p#terms-error {
+  display: block;
+  padding-left: 0px;
 }
 
 img.screenshot {
@@ -1590,7 +1603,7 @@ label.label-title {
 }
 
 .button-new.sea-green {
-    background-color: #24cac2;
+    background-color: #3276b1;
     color: #fff;
 }
 
