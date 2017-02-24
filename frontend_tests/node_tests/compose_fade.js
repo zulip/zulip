@@ -65,4 +65,17 @@ people.add(bob);
     assert(compose_fade.would_receive_message('me@example.com'));
     assert(compose_fade.would_receive_message('alice@example.com'));
     assert(!compose_fade.would_receive_message('bob@example.com'));
+
+    var good_msg = {
+        type: 'stream',
+        stream: 'social',
+        subject: 'lunch',
+    };
+    var bad_msg = {
+        type: 'stream',
+        stream: 'bad',
+        subject: 'lunch',
+    };
+    assert(!compose_fade.should_fade_message(good_msg));
+    assert(compose_fade.should_fade_message(bad_msg));
 }());

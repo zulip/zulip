@@ -5,7 +5,9 @@ var exports = {};
 var focused_recipient;
 var normal_display = false;
 
-var fade_heuristic = util.same_recipient;
+exports.should_fade_message =  function (message) {
+    return !util.same_recipient(focused_recipient, message);
+};
 
 exports.set_focused_recipient = function (msg_type) {
     if (msg_type === undefined) {
@@ -62,7 +64,7 @@ function _fade_messages() {
     for (i = 0; i < visible_groups.length; i += 1) {
         first_row = rows.first_message_in_group(visible_groups[i]);
         first_message = current_msg_list.get(rows.id(first_row));
-        should_fade_group = !fade_heuristic(focused_recipient, first_message);
+        should_fade_group = exports.should_fade_message(first_message);
 
         change_fade_state($(visible_groups[i]), should_fade_group);
     }
@@ -83,8 +85,7 @@ function _fade_messages() {
         // sorted as it would be displayed in the message view
         for (i = 0; i < all_groups.length; i += 1) {
             var group_elt = $(all_groups[i]);
-            should_fade_group = !fade_heuristic(focused_recipient,
-                                                rows.recipient_from_group(group_elt));
+            should_fade_group = exports.should_fade_message(rows.recipient_from_group(group_elt));
             change_fade_state(group_elt, should_fade_group);
         }
 
@@ -225,7 +226,7 @@ exports.update_rendered_message_groups = function (message_groups, get_element) 
     _.each(message_groups, function (message_group) {
         var elt = get_element(message_group);
         var first_message = message_group.message_containers[0].msg;
-        var should_fade = !fade_heuristic(focused_recipient, first_message);
+        var should_fade = exports.should_fade_message(first_message);
         change_fade_state(elt, should_fade);
     });
 };
