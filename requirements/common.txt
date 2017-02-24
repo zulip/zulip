@@ -31,7 +31,7 @@ certifi==2017.1.23
 chardet==2.3.0
 
 # Needed for integrations
-defusedxml==0.4.1
+defusedxml==0.5.0
 
 # Needed to generate diffs for edits
 diff-match-patch==20121119
