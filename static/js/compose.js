@@ -331,9 +331,11 @@ function create_message_object() {
     if (message.type === "private") {
         // TODO: this should be collapsed with the code in composebox_typeahead.js
         var recipient = compose.recipient();
-        message.to = util.extract_pm_recipients(recipient);
+        var emails = util.extract_pm_recipients(recipient);
+        message.to = emails;
         message.reply_to = recipient;
         message.private_message_recipient = recipient;
+        message.to_user_ids = people.email_list_to_user_ids_string(emails);
     } else {
         var stream_name = compose.stream_name();
         message.to = stream_name;
