@@ -150,6 +150,32 @@ exports.user_ids_string_to_emails_string = function (user_ids_string) {
     return emails.join(',');
 };
 
+exports.reply_to_to_user_ids_string = function (emails_string) {
+    // This is basically emails_strings_to_user_ids_string
+    // without blueslip warnings, since it can be called with
+    // invalid data.
+    var emails = emails_string.split(',');
+
+    var user_ids = _.map(emails, function (email) {
+        var person = people.get_by_email(email);
+        if (person) {
+            return person.user_id;
+        }
+    });
+
+    if (!_.all(user_ids)) {
+        return;
+    }
+
+    user_ids.sort();
+
+    return user_ids.join(',');
+};
+
+exports.get_full_name = function (user_id) {
+    return people_by_user_id_dict.get(user_id).full_name;
+};
+
 exports.emails_strings_to_user_ids_string = function (emails_string) {
     var emails = emails_string.split(',');
     return exports.email_list_to_user_ids_string(emails);
