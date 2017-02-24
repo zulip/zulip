@@ -150,6 +150,41 @@ exports.get_full_time = function (timestamp) {
     return full_date_str + ' ' + full_time_str;
 };
 
+
+// this is for rendering absolute time based off the preferences for twenty-four
+// hour time in the format of "%mmm %d, %h:%m %p".
+exports.absolute_time = (function () {
+    var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+    var fmt_time = function (date, H_24) {
+        var payload = {
+            hours: date.getHours(),
+            minutes: date.getMinutes(),
+        };
+
+        if (payload.hours > 12 && !H_24) {
+            payload.hours -= 12;
+            payload.is_pm = true;
+        }
+
+        var str = ("0" + payload.hours).slice(-2) + ":" + ("0" + payload.minutes).slice(-2);
+
+        if (!H_24) {
+            str += payload.is_pm ? " PM" : " AM";
+        }
+
+        return str;
+    };
+
+    return function (timestamp) {
+        var date = new Date(timestamp);
+        var H_24 = page_params.twenty_four_hour_time;
+
+        return MONTHS[date.getMonth()] + " " + date.getDate() + ", " + fmt_time(date, H_24);
+    };
+}());
+
 // XDate.toLocaleDateString and XDate.toLocaleTimeString are
 // expensive, so we delay running the following code until we need
 // the full date and time strings.
