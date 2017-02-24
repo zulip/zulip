@@ -139,5 +139,6 @@ Contents:
    logging
    release-checklist
    api-release-checklist
+   swagger-api-docs
    README
    user-docs
