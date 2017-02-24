@@ -219,6 +219,10 @@ a.title:hover {
     font-weight: bold;
 }
 
+input#id_email, input#id_new_password1, input#id_new_password2 {
+    margin-bottom: 10px;
+}
+
 img.screenshot {
     /* This makes it so screenshots are still shown if they are larger than their span.*/
     max-width: 100%;
