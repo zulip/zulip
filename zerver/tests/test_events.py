@@ -24,6 +24,7 @@ from zerver.lib.actions import (
     do_change_default_events_register_stream,
     do_change_default_sending_stream,
     do_change_full_name,
+    do_change_bot_owner,
     do_change_is_admin,
     do_change_stream_description,
     do_change_subscription_property,
@@ -999,6 +1000,25 @@ class EventsRegisterTest(ZulipTestCase):
         action = lambda: do_change_default_events_register_stream(bot, stream)
         events = self.do_test(action)
         error = self.realm_bot_schema('default_events_register_stream', check_string)('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_change_bot_owner(self):
+        # type: () -> None
+        change_bot_owner_checker = check_dict([
+            ('type', equals('realm_bot')),
+            ('op', equals('update')),
+            ('bot', check_dict([
+                ('email', check_string),
+                ('user_id', check_int),
+                ('owner_id', check_int),
+            ])),
+        ])
+        self.user_profile = get_user_profile_by_email('iago@zulip.com')
+        owner = get_user_profile_by_email('hamlet@zulip.com')
+        bot = self.create_bot('test-bot@zulip.com')
+        action = lambda: do_change_bot_owner(bot, owner)
+        events = self.do_test(action)
+        error = change_bot_owner_checker('events[0]', events[0])
         self.assert_on_error(error)
 
     def test_do_deactivate_user(self):

@@ -29,8 +29,9 @@ from zerver.lib.actions import validate_user_access_to_subscribers_helper, \
     get_status_dict, streams_to_dicts_sorted
 from zerver.tornado.event_queue import request_event_queue, get_user_events
 from zerver.models import Client, Message, UserProfile, \
-    get_user_profile_by_email, get_active_user_dicts_in_realm, \
-    realm_filters_for_realm, get_owned_bot_dicts
+    get_user_profile_by_email, get_user_profile_by_id, \
+    get_active_user_dicts_in_realm, realm_filters_for_realm, \
+    get_owned_bot_dicts
 
 def get_realm_user_dicts(user_profile):
     # type: (UserProfile) -> List[Dict[str, Text]]
@@ -212,7 +213,10 @@ def apply_event(state, event, user_profile, include_subscribers):
         if event['op'] == 'update':
             for bot in state['realm_bots']:
                 if bot['email'] == event['bot']['email']:
-                    bot.update(event['bot'])
+                    if 'owner_id' in event['bot']:
+                        bot['owner'] = get_user_profile_by_id(event['bot']['owner_id']).email
+                    else:
+                        bot.update(event['bot'])
 
     elif event['type'] == 'stream':
         if event['op'] == 'create':
