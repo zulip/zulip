@@ -1167,7 +1167,9 @@ class Attachment(ModelReprMixin, models.Model):
             'path_id': self.path_id,
             'messages': [{
                 'id': m.id,
-                'name': '{m.pub_date:%Y-%m-%d %H:%M}'.format(m=m)
+                # convert to JavaScript-style UNIX timestamp so we can take
+                # advantage of client timezones.
+                'name': time.mktime(m.pub_date.timetuple()) * 1000
             } for m in self.messages.all()]
         }
 
