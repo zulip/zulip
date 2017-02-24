@@ -1,24 +1,30 @@
 
 <li class="attachment-item" data-attachment='{{attachment.id}}'>
     <div class="attachment-information-box list-container">
-        <div class="attachment_listing">
-            <strong>{{attachment.name}}</strong>
+        <div class="file-icon">
+            <div class="extension {{#if attachment.large_ext_name }}small{{/if}}">{{ attachment.extension }}</div>
         </div>
-        <div class="edit-attachment-buttons">
-            <button type="submit"
-                class="button small btn-small btn-danger remove-attachment"
-                title="{{t 'Delete file' }}" data-attachment="{{attachment.id}}">
-                <i class="icon-vector-trash"></i>
-            </button>
+        <div class="information">
+            <div class="attachment_listing">
+                <strong>{{attachment.name}}</strong>
+            </div>
+            <div class="edit-attachment-buttons">
+                <button type="submit"
+                    class="button small no-style remove-attachment"
+                    title="{{t 'Delete file' }}" data-attachment="{{attachment.id}}">
+                    <i class="icon-vector-trash"></i>
+                </button>
+            </div>
+          {{#if attachment.messages }}
+            <div class="attachment-messages">
+              {{#each attachment.messages}}
+              <a class="ind-message" href="/#narrow/id/{{ this.id }}">
+                  <div class="message-id">#{{ this.id }}</div>
+                  <div class="message-date">{{ this.name }}</div>
+              </a>
+              {{/each}}
+            </div>
+          {{/if}}
         </div>
-      {{#if attachment.messages }}
-        <ul class="attachment-messages">
-          {{#each attachment.messages}}
-          <li>
-            <a href="/#narrow/id/{{ this.id }}">{{ this.name }}</a>
-          </li>
-          {{/each}}
-        </ul>
-      {{/if}}
     </div>
 </li>
