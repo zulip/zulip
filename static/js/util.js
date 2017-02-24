@@ -73,27 +73,6 @@ exports.extract_pm_recipients = function (recipients) {
     });
 };
 
-exports.same_major_recipient = function (a, b) {
-    // Same behavior as same_recipient, except that it returns true for messages
-    // on different topics but the same stream.
-    if ((a === undefined) || (b === undefined)) {
-        return false;
-    }
-    if (a.type !== b.type) {
-        return false;
-    }
-
-    switch (a.type) {
-    case 'private':
-        return a.reply_to.toLowerCase() === b.reply_to.toLowerCase();
-    case 'stream':
-        return a.stream.toLowerCase() === b.stream.toLowerCase();
-    }
-
-    // should never get here
-    return false;
-};
-
 exports.same_recipient = function util_same_recipient(a, b) {
     if ((a === undefined) || (b === undefined)) {
         return false;
