@@ -13,7 +13,7 @@ MarkupSafe==0.23
 Pillow==4.0.0
 
 # Needed for markdown processing
-Pygments==2.1.3
+Pygments==2.2.0
 
 # Needed for building complex DB queries
 SQLAlchemy==1.1.5
