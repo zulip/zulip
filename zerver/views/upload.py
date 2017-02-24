@@ -6,7 +6,7 @@ from django.http import HttpRequest, HttpResponse, HttpResponseForbidden, FileRe
 from django.shortcuts import redirect
 from django.utils.translation import ugettext as _
 
-from zerver.decorator import authenticated_json_post_view, zulip_login_required
+from zerver.decorator import authenticated_json_post_view
 from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_success, json_error
 from zerver.lib.upload import upload_message_image_from_request, get_local_file_path, \
@@ -44,7 +44,7 @@ def serve_local(request, path_id):
         return HttpResponseNotFound('<p>File not found</p>')
     filename = os.path.basename(local_path)
     response = FileResponse(open(local_path, 'rb'),
-                            content_type = mimetypes.guess_type(filename))  # type: ignore # https://github.com/python/typeshed/issues/559
+                            content_type = mimetypes.guess_type(filename))
     return response
 
 @has_request_variables

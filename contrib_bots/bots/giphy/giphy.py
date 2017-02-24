@@ -22,28 +22,16 @@ class GiphyHandler(object):
     '''
     This plugin posts a GIF in response to the keywords provided by the user.
     Images are provided by Giphy, through the public API.
-    The bot looks for messages starting with "@giphy" or @mention of the bot
+    The bot looks for messages starting with @mention of the bot
     and responds with a message with the GIF based on provided keywords.
     It also responds to private messages.
     '''
     def usage(self):
         return '''
             This plugin allows users to post GIFs provided by Giphy.
-            Users should preface keywords with "@giphy" or the Giphy-bot @mention.
+            Users should preface keywords with the Giphy-bot @mention.
             The bot responds also to private messages.
             '''
-
-    def triage_message(self, message, client):
-        # To prevent infinite loop in private message, bot will detect
-        # if the sender name is the bot name it will return false.
-        if message['type'] == 'private':
-            return client.full_name != message['sender_full_name']
-
-        original_content = message['content']
-        is_giphy_called = (original_content.startswith('@giphy ') or
-                           message['is_mentioned'])
-
-        return is_giphy_called
 
     def handle_message(self, message, client, state_handler):
         bot_response = get_bot_giphy_response(message, client)
@@ -99,23 +87,9 @@ def get_url_gif_giphy(keyword, api_key):
 
 
 def get_bot_giphy_response(message, client):
-    # Handle the message that called through mention.
-    if message['is_mentioned']:
-        bot_mention = r'^@(\*\*{0}\*\*\s|{0}\s)(?=.*)'.format(client.full_name)
-        start_with_mention = re.compile(bot_mention).match(message['content'])
-        if start_with_mention:
-            keyword = message['content'][len(start_with_mention.group()):]
-        else:
-            return 'Please mention me first, then type the keyword.'
-    # Handle the message that called through the specified keyword.
-    elif message['content'].startswith('@giphy '):
-        keyword = message['content'][len('@giphy '):]
-    # Handle the private message.
-    elif message['type'] == 'private':
-        keyword = message['content']
-
     # Each exception has a specific reply should "gif_url" return a number.
     # The bot will post the appropriate message for the error.
+    keyword = message['content']
     try:
         gif_url = get_url_gif_giphy(keyword, get_giphy_api_key_from_config())
     except requests.exceptions.ConnectionError:

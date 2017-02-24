@@ -40,7 +40,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     Reaction
 
 from zerver.lib.alert_words import alert_words_in_realm
-from zerver.lib.avatar import get_avatar_url, avatar_url
+from zerver.lib.avatar import avatar_url
 
 from django.db import transaction, IntegrityError, connection
 from django.db.models import F, Q
@@ -648,9 +648,14 @@ def do_deactivate_user(user_profile, log=True, _cascade=True):
 
 def do_deactivate_stream(stream, log=True):
     # type: (Stream, bool) -> None
-    user_profiles = UserProfile.objects.filter(realm=stream.realm)
-    for user_profile in user_profiles:
-        bulk_remove_subscriptions([user_profile], [stream])
+
+    # Get the affected user ids *before* we deactivate everybody.
+    affected_user_ids = can_access_stream_user_ids(stream)
+
+    Subscription.objects.select_related('user_profile').filter(
+        recipient__type=Recipient.STREAM,
+        recipient__type_id=stream.id,
+        active=True).update(active=False)
 
     was_invite_only = stream.invite_only
     stream.deactivated = True
@@ -675,22 +680,28 @@ def do_deactivate_stream(stream, log=True):
     stream.name = new_name[:Stream.MAX_NAME_LENGTH]
     stream.save()
 
+    DefaultStream.objects.filter(realm=stream.realm, stream=stream).delete()
+
     # Remove the old stream information from remote cache.
     old_cache_key = get_stream_cache_key(old_name, stream.realm)
     cache_delete(old_cache_key)
 
-    if not was_invite_only:
-        stream_dict = stream.to_dict()
-        stream_dict.update(dict(name=old_name, invite_only=was_invite_only))
-        event = dict(type="stream", op="delete",
-                     streams=[stream_dict])
-        send_event(event, active_user_ids(stream.realm))
+    stream_dict = stream.to_dict()
+    stream_dict.update(dict(name=old_name, invite_only=was_invite_only))
+    event = dict(type="stream", op="delete",
+                 streams=[stream_dict])
+    send_event(event, affected_user_ids)
 
 def do_change_user_email(user_profile, new_email):
     # type: (UserProfile, Text) -> None
     old_email = user_profile.email
     user_profile.email = new_email
     user_profile.save(update_fields=["email"])
+
+    payload = dict(user_id=user_profile.id,
+                   new_email=new_email)
+    send_event(dict(type='realm_user', op='update', person=payload),
+               active_user_ids(user_profile.realm))
 
     log_event({'type': 'user_email_changed',
                'old_email': old_email,
@@ -1245,7 +1256,7 @@ def check_message(sender, client, message_type_name, message_to,
         message_to = [sender.default_sending_stream.name]
     if len(message_to) == 0:
         raise JsonableError(_("Message must have recipients"))
-    message_content = message_content_raw.strip()
+    message_content = message_content_raw.rstrip()
     if len(message_content) == 0:
         raise JsonableError(_("Message must not be empty"))
     message_content = truncate_body(message_content)
@@ -1885,10 +1896,11 @@ def do_regenerate_api_key(user_profile, log=True):
                                  )),
                    bot_owner_userids(user_profile))
 
-def do_change_avatar_source(user_profile, avatar_source, log=True):
+def do_change_avatar_fields(user_profile, avatar_source, log=True):
     # type: (UserProfile, Text, bool) -> None
     user_profile.avatar_source = avatar_source
-    user_profile.save(update_fields=["avatar_source"])
+    user_profile.avatar_version += 1
+    user_profile.save(update_fields=["avatar_source", "avatar_version"])
 
     if log:
         log_event({'type': 'user_change_avatar_source',
@@ -2684,9 +2696,14 @@ def do_update_embedded_data(user_profile, message, content, rendered_content):
 def do_update_message(user_profile, message, subject, propagate_mode, content, rendered_content):
     # type: (UserProfile, Message, Optional[Text], str, Optional[Text], Optional[Text]) -> int
     event = {'type': 'update_message',
+             # TODO: We probably want to remove the 'sender' field
+             # after confirming it isn't used by any consumers.
              'sender': user_profile.email,
+             'user_id': user_profile.id,
              'message_id': message.id} # type: Dict[str, Any]
-    edit_history_event = {} # type: Dict[str, Any]
+    edit_history_event = {
+        'user_id': user_profile.id,
+    } # type: Dict[str, Any]
     changed_messages = [message]
 
     # Set first_rendered_content to be the oldest version of the
@@ -2721,6 +2738,7 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
         message.rendered_content_version = bugdown_version
         event["content"] = content
         event["rendered_content"] = rendered_content
+        event['prev_rendered_content_version'] = message.rendered_content_version
 
         prev_content = edit_history_event['prev_content']
         if Message.content_has_attachment(prev_content) or Message.content_has_attachment(message.content):
@@ -2843,8 +2861,8 @@ def decode_email_address(email):
 # the code pretty ugly, but in this case, it has significant
 # performance impact for loading / for users with large numbers of
 # subscriptions, so it's worth optimizing.
-def gather_subscriptions_helper(user_profile):
-    # type: (UserProfile) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]
+def gather_subscriptions_helper(user_profile, include_subscribers=True):
+    # type: (UserProfile, bool) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]
     sub_dicts = Subscription.objects.select_related("recipient").filter(
         user_profile    = user_profile,
         recipient__type = Recipient.STREAM).values(
@@ -2875,7 +2893,12 @@ def gather_subscriptions_helper(user_profile):
     # Add never subscribed streams to streams_subscribed_map
     streams_subscribed_map.update({stream['id']: False for stream in all_streams if stream not in streams})
 
-    subscriber_map = bulk_get_subscriber_user_ids(all_streams, user_profile, streams_subscribed_map)
+    if include_subscribers:
+        subscriber_map = bulk_get_subscriber_user_ids(all_streams, user_profile, streams_subscribed_map)
+    else:
+        # If we're not including subscribers, always return None,
+        # which the below code needs to check for anyway.
+        subscriber_map = defaultdict(lambda: None)
 
     sub_unsub_stream_ids = set()
     for sub in sub_dicts:
@@ -2969,8 +2992,8 @@ def get_cross_realm_dicts():
              'full_name': user.full_name}
             for user in users]
 
-def do_send_confirmation_email(invitee, referrer):
-    # type: (PreregistrationUser, UserProfile) -> None
+def do_send_confirmation_email(invitee, referrer, body):
+    # type: (PreregistrationUser, UserProfile, Optional[str]) -> None
     """
     Send the confirmation/welcome e-mail to an invited user.
 
@@ -2995,7 +3018,7 @@ def do_send_confirmation_email(invitee, referrer):
         subject_template_path=subject_template_path,
         body_template_path=body_template_path,
         html_body_template_path=html_body_template_path,
-        host=referrer.realm.host)
+        host=referrer.realm.host, custom_body=body)
 
 @statsd_increment("push_notifications")
 def handle_push_notification(user_profile_id, missed_message):
@@ -3047,7 +3070,7 @@ def handle_push_notification(user_profile_id, missed_message):
                     'content_truncated': content_truncated,
                     'sender_email': message.sender.email,
                     'sender_full_name': message.sender.full_name,
-                    'sender_avatar_url': get_avatar_url(message.sender.avatar_source, message.sender.email),
+                    'sender_avatar_url': avatar_url(message.sender),
                 }
 
                 if message.recipient.type == Recipient.STREAM:
@@ -3105,8 +3128,8 @@ def validate_email(user_profile, email):
 
     return None, None
 
-def do_invite_users(user_profile, invitee_emails, streams):
-    # type: (UserProfile, SizedTextIterable, Iterable[Stream]) -> Tuple[Optional[str], Dict[str, Union[List[Tuple[Text, str]], bool]]]
+def do_invite_users(user_profile, invitee_emails, streams, body=None):
+    # type: (UserProfile, SizedTextIterable, Iterable[Stream], Optional[str]) -> Tuple[Optional[str], Dict[str, Union[List[Tuple[Text, str]], bool]]]
     validated_emails = [] # type: List[Text]
     errors = [] # type: List[Tuple[Text, str]]
     skipped = [] # type: List[Tuple[Text, str]]
@@ -3150,9 +3173,9 @@ def do_invite_users(user_profile, invitee_emails, streams):
         prereg_user.streams = streams
         prereg_user.save()
 
-        event = {"email": prereg_user.email, "referrer_email": user_profile.email}
+        event = {"email": prereg_user.email, "referrer_email": user_profile.email, "email_body": body}
         queue_json_publish("invites", event,
-                           lambda event: do_send_confirmation_email(prereg_user, user_profile))
+                           lambda event: do_send_confirmation_email(prereg_user, user_profile, body))
 
     if skipped:
         ret_error = _("Some of those addresses are already using Zulip, "
@@ -3193,8 +3216,7 @@ def notify_realm_emoji(realm):
     # type: (Realm) -> None
     event = dict(type="realm_emoji", op="update",
                  realm_emoji=realm.get_emoji())
-    user_ids = [userdict['id'] for userdict in get_active_user_dicts_in_realm(realm)]
-    send_event(event, user_ids)
+    send_event(event, active_user_ids(realm))
 
 def check_add_realm_emoji(realm, name, img_url, author=None):
     # type: (Realm, Text, Text, Optional[UserProfile]) -> None
@@ -3238,9 +3260,8 @@ def do_set_muted_topics(user_profile, muted_topics):
 def notify_realm_filters(realm):
     # type: (Realm) -> None
     realm_filters = realm_filters_for_realm(realm.id)
-    user_ids = [userdict['id'] for userdict in get_active_user_dicts_in_realm(realm)]
     event = dict(type="realm_filters", realm_filters=realm_filters)
-    send_event(event, user_ids)
+    send_event(event, active_user_ids(realm))
 
 # NOTE: Regexes must be simple enough that they can be easily translated to JavaScript
 # RegExp syntax. In addition to JS-compatible syntax, the following features are available:

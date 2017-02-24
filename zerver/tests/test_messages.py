@@ -861,11 +861,11 @@ class MessagePOSTTest(ZulipTestCase):
         """
         self.login("hamlet@zulip.com")
         post_data = {"type": "stream", "to": "Verona", "client": "test suite",
-                     "content": "I like whitespace at the end! \n\n \n", "subject": "Test subject"}
+                     "content": "  I like whitespace at the end! \n\n \n", "subject": "Test subject"}
         result = self.client_post("/json/messages", post_data)
         self.assert_json_success(result)
         sent_message = self.get_last_message()
-        self.assertEqual(sent_message.content, "I like whitespace at the end!")
+        self.assertEqual(sent_message.content, "  I like whitespace at the end!")
 
     def test_long_message(self):
         # type: () -> None
@@ -1107,6 +1107,146 @@ class EditMessageTest(ZulipTestCase):
         self.assert_json_success(result)
         content = Message.objects.filter(id=msg_id).values_list('content', flat = True)[0]
         self.assertEqual(content, "(deleted)")
+
+    def test_edit_message_history(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        msg_id = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
+                                   subject="editing", content="content before edit")
+        new_content = 'content after edit'
+
+        result = self.client_patch("/json/messages/" + str(msg_id), {
+            'message_id': msg_id, 'content': new_content
+        })
+        self.assert_json_success(result)
+
+        message_edit_history = self.client_get("/json/messages/" + str(msg_id) + "/history")
+        json_response = ujson.loads(message_edit_history.content.decode('utf-8'))
+        message_history = json_response['message_history']
+
+        # Check content of message after edit.
+        self.assertEqual(message_history[0]['rendered_content'],
+                         '<p>content before edit</p>')
+        self.assertEqual(message_history[1]['rendered_content'],
+                         '<p>content after edit</p>')
+        self.assertEqual(message_history[1]['content_html_diff'],
+                         '<p>content <span class="highlight_text_replaced">after</span> edit</p>')
+
+        # Check content of message before edit.
+        self.assertEqual(message_history[1]['prev_rendered_content'],
+                         '<p>content before edit</p>')
+
+    def test_edit_cases(self):
+        # type: () -> None
+        """This test verifies the accuracy of construction of Zulip's edit
+        history data structures."""
+        self.login("hamlet@zulip.com")
+        hamlet = get_user_profile_by_email("hamlet@zulip.com")
+        msg_id = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
+                                   subject="subject 1", content="content 1")
+        result = self.client_patch("/json/messages/" + str(msg_id), {
+            'message_id': msg_id,
+            'content': 'content 2',
+        })
+        self.assert_json_success(result)
+        history = ujson.loads(Message.objects.get(id=msg_id).edit_history)
+        self.assertEqual(history[0]['prev_content'], 'content 1')
+        self.assertEqual(history[0]['user_id'], hamlet.id)
+        self.assertEqual(set(history[0].keys()),
+                         {u'timestamp', u'prev_content', u'user_id',
+                          u'prev_rendered_content', u'prev_rendered_content_version'})
+
+        result = self.client_patch("/json/messages/" + str(msg_id), {
+            'message_id': msg_id,
+            'subject': 'subject 2',
+        })
+        self.assert_json_success(result)
+        history = ujson.loads(Message.objects.get(id=msg_id).edit_history)
+        self.assertEqual(history[0]['prev_subject'], 'subject 1')
+        self.assertEqual(history[0]['user_id'], hamlet.id)
+        self.assertEqual(set(history[0].keys()), {u'timestamp', u'prev_subject', u'user_id'})
+
+        result = self.client_patch("/json/messages/" + str(msg_id), {
+            'message_id': msg_id,
+            'content': 'content 3',
+            'subject': 'subject 3',
+        })
+        self.assert_json_success(result)
+        history = ujson.loads(Message.objects.get(id=msg_id).edit_history)
+        self.assertEqual(history[0]['prev_content'], 'content 2')
+        self.assertEqual(history[0]['prev_subject'], 'subject 2')
+        self.assertEqual(history[0]['user_id'], hamlet.id)
+        self.assertEqual(set(history[0].keys()),
+                         {u'timestamp', u'prev_subject', u'prev_content', u'user_id',
+                          u'prev_rendered_content', u'prev_rendered_content_version'})
+
+        result = self.client_patch("/json/messages/" + str(msg_id), {
+            'message_id': msg_id,
+            'content': 'content 4',
+        })
+        self.assert_json_success(result)
+        history = ujson.loads(Message.objects.get(id=msg_id).edit_history)
+        self.assertEqual(history[0]['prev_content'], 'content 3')
+        self.assertEqual(history[0]['user_id'], hamlet.id)
+
+        self.login("iago@zulip.com")
+        result = self.client_patch("/json/messages/" + str(msg_id), {
+            'message_id': msg_id,
+            'subject': 'subject 4',
+        })
+        self.assert_json_success(result)
+        history = ujson.loads(Message.objects.get(id=msg_id).edit_history)
+        self.assertEqual(history[0]['prev_subject'], 'subject 3')
+        self.assertEqual(history[0]['user_id'], get_user_profile_by_email("iago@zulip.com").id)
+
+        history = ujson.loads(Message.objects.get(id=msg_id).edit_history)
+        self.assertEqual(history[0]['prev_subject'], 'subject 3')
+        self.assertEqual(history[2]['prev_subject'], 'subject 2')
+        self.assertEqual(history[3]['prev_subject'], 'subject 1')
+        self.assertEqual(history[1]['prev_content'], 'content 3')
+        self.assertEqual(history[2]['prev_content'], 'content 2')
+        self.assertEqual(history[4]['prev_content'], 'content 1')
+
+        # Now, we verify that the edit history data sent back has the
+        # correct filled-out fields
+        message_edit_history = self.client_get("/json/messages/" + str(msg_id) + "/history")
+
+        json_response = ujson.loads(message_edit_history.content.decode('utf-8'))
+
+        # We reverse the message history view output so that the IDs line up with the above.
+        message_history = list(reversed(json_response['message_history']))
+        i = 0
+        for entry in message_history:
+            expected_entries = {u'content', u'rendered_content', u'topic', u'timestamp', u'user_id'}
+            if i in {0, 2, 3}:
+                expected_entries.add('prev_topic')
+            if i in {1, 2, 4}:
+                expected_entries.add('prev_content')
+                expected_entries.add('prev_rendered_content')
+                expected_entries.add('content_html_diff')
+            i += 1
+            self.assertEqual(expected_entries, set(entry.keys()))
+        self.assertEqual(len(message_history), 6)
+        self.assertEqual(message_history[0]['prev_topic'], 'subject 3')
+        self.assertEqual(message_history[0]['topic'], 'subject 4')
+        self.assertEqual(message_history[1]['topic'], 'subject 3')
+        self.assertEqual(message_history[2]['topic'], 'subject 3')
+        self.assertEqual(message_history[2]['prev_topic'], 'subject 2')
+        self.assertEqual(message_history[3]['topic'], 'subject 2')
+        self.assertEqual(message_history[3]['prev_topic'], 'subject 1')
+        self.assertEqual(message_history[4]['topic'], 'subject 1')
+
+        self.assertEqual(message_history[0]['content'], 'content 4')
+        self.assertEqual(message_history[1]['content'], 'content 4')
+        self.assertEqual(message_history[1]['prev_content'], 'content 3')
+        self.assertEqual(message_history[2]['content'], 'content 3')
+        self.assertEqual(message_history[2]['prev_content'], 'content 2')
+        self.assertEqual(message_history[3]['content'], 'content 2')
+        self.assertEqual(message_history[4]['content'], 'content 2')
+        self.assertEqual(message_history[4]['prev_content'], 'content 1')
+
+        self.assertEqual(message_history[5]['content'], 'content 1')
+        self.assertEqual(message_history[5]['topic'], 'subject 1')
 
     def test_edit_message_content_limit(self):
         # type: () -> None

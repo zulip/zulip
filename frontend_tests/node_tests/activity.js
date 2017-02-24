@@ -65,6 +65,7 @@ global.people.add(fred);
 global.people.add(jill);
 global.people.add(mark);
 global.people.add(norbert);
+global.people.add(me);
 global.people.initialize_current_user(me.user_id);
 
 var people = global.people;
@@ -258,6 +259,35 @@ global.compile_template('user_presence_rows');
 
 }());
 
+(function test_set_presence_info() {
+    var presences = {};
+    var base_time = 500;
+
+    presences[alice.email] = {
+        website: {
+            status: 'active',
+            timestamp: base_time,
+        },
+    };
+
+    presences[fred.email] = {
+        website: {
+            status: 'idle',
+            timestamp: base_time,
+        },
+    };
+
+    activity.set_presence_info(presences, base_time);
+
+    assert.deepEqual(activity.presence_info[alice.user_id],
+        { status: 'active', mobile: false}
+    );
+
+    assert.deepEqual(activity.presence_info[fred.user_id],
+        { status: 'idle', mobile: false}
+    );
+}());
+
 activity.presence_info = {};
 activity.presence_info[alice.user_id] = { status: activity.IDLE };
 activity.presence_info[fred.user_id] = { status: activity.ACTIVE };
@@ -266,7 +296,7 @@ activity.presence_info[mark.user_id] = { status: activity.IDLE };
 activity.presence_info[norbert.user_id] = { status: activity.ACTIVE };
 
 (function test_presence_list_full_update() {
-    var users = activity.update_users();
+    var users = activity.build_user_sidebar();
     assert.deepEqual(users, [{
             name: 'Fred Flintstone',
             href: '#narrow/pm-with/2-fred',

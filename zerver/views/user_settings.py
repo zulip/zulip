@@ -15,7 +15,7 @@ from zerver.lib.actions import do_change_password, \
     do_change_enable_offline_push_notifications, do_change_enable_online_push_notifications, \
     do_change_default_desktop_notifications, do_change_autoscroll_forever, \
     do_change_enable_stream_desktop_notifications, do_change_enable_stream_sounds, \
-    do_regenerate_api_key, do_change_avatar_source, do_change_twenty_four_hour_time, \
+    do_regenerate_api_key, do_change_avatar_fields, do_change_twenty_four_hour_time, \
     do_change_left_side_userlist, do_change_default_language, \
     do_change_pm_content_in_desktop_notifications
 from zerver.lib.avatar import avatar_url
@@ -203,7 +203,7 @@ def set_avatar_backend(request, user_profile):
 
     user_file = list(request.FILES.values())[0]
     upload_avatar_image(user_file, user_profile, user_profile.email)
-    do_change_avatar_source(user_profile, UserProfile.AVATAR_FROM_USER)
+    do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_USER)
     user_avatar_url = avatar_url(user_profile)
 
     json_result = dict(
@@ -213,7 +213,7 @@ def set_avatar_backend(request, user_profile):
 
 def delete_avatar_backend(request, user_profile):
     # type: (HttpRequest, UserProfile) -> HttpResponse
-    do_change_avatar_source(user_profile, UserProfile.AVATAR_FROM_GRAVATAR)
+    do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_GRAVATAR)
     gravatar_url = avatar_url(user_profile)
 
     json_result = dict(

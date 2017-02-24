@@ -17,7 +17,7 @@ from zerver.forms import CreateUserForm
 from zerver.lib.actions import do_change_is_admin, \
     do_create_user, do_deactivate_user, do_reactivate_user, \
     do_change_default_events_register_stream, do_change_default_sending_stream, \
-    do_change_default_all_public_streams, do_regenerate_api_key, do_change_avatar_source
+    do_change_default_all_public_streams, do_regenerate_api_key, do_change_avatar_fields
 from zerver.lib.avatar import avatar_url, get_avatar_url
 from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import access_stream_by_name
@@ -116,10 +116,11 @@ def avatar(request, email):
     # type: (HttpRequest, str) -> HttpResponse
     try:
         user_profile = get_user_profile_by_email(email)
-        avatar_source = user_profile.avatar_source
+        url = avatar_url(user_profile)
     except UserProfile.DoesNotExist:
         avatar_source = 'G'
-    url = get_avatar_url(avatar_source, email)
+        avatar_version = 1
+        url = get_avatar_url(avatar_source, email, avatar_version)
 
     # We can rely on the url already having query parameters. Because
     # our templates depend on being able to use the ampersand to
@@ -175,7 +176,7 @@ def patch_bot_backend(request, user_profile, email,
         user_file = list(request.FILES.values())[0]
         upload_avatar_image(user_file, user_profile, bot.email)
         avatar_source = UserProfile.AVATAR_FROM_USER
-        do_change_avatar_source(bot, avatar_source)
+        do_change_avatar_fields(bot, avatar_source)
     else:
         return json_error(_("You may only upload one file at a time"))
 
@@ -292,17 +293,13 @@ def get_members_backend(request, user_profile):
     admins = set(user_profile.realm.get_admin_users())
     members = []
     for profile in UserProfile.objects.select_related().filter(realm=realm):
-        avatar_url = get_avatar_url(
-            profile.avatar_source,
-            profile.email
-        )
         member = {"full_name": profile.full_name,
                   "is_bot": profile.is_bot,
                   "is_active": profile.is_active,
                   "is_admin": (profile in admins),
                   "email": profile.email,
                   "user_id": profile.id,
-                  "avatar_url": avatar_url}
+                  "avatar_url": avatar_url(profile)}
         if profile.is_bot and profile.bot_owner is not None:
             member["bot_owner"] = profile.bot_owner.email
         members.append(member)

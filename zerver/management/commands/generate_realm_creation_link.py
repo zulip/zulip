@@ -17,6 +17,9 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
         url = generate_realm_creation_url()
-        self.stdout.write("\033[1;92mOne time organization creation link generated\033[0m")
-        self.stdout.write("\033[1;92m=> Please visit \033[4m%s\033[0m \033[1;92mto "
-                          "create the organization\033[0m" % (url))
+        self.stdout.write(
+            "\033[1;92mPlease visit the following secure single-use link to register your ")
+        self.stdout.write("new Zulip organization:\033[0m")
+        self.stdout.write("")
+        self.stdout.write("    \033[1;92m%s\033[0m" % (url,))
+        self.stdout.write("")

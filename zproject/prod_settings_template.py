@@ -68,21 +68,23 @@ AUTHENTICATION_BACKENDS = (
 # SSO_APPEND_DOMAIN = "example.com")
 SSO_APPEND_DOMAIN = None # type: str
 
-# Configure the outgoing SMTP server below. For testing, you can skip
-# sending emails entirely by commenting out EMAIL_HOST, but you will
-# want to configure this to support email address confirmation emails,
-# missed message emails, onboarding follow-up emails, etc. To
-# configure SMTP, you will need to complete the following steps:
+# Configure the outgoing SMTP server below. You will need working
+# SMTP to complete the installation process, in addition to sending
+# email address confirmations, missed message notifications, onboarding
+# follow-ups, and other user needs. If you do not have an SMTP server
+# already, we recommend services intended for developers such as Mailgun.
+#
+# To configure SMTP, you will need to complete the following steps:
 #
 # (1) Fill out the outgoing email sending configuration below.
 #
 # (2) Put the SMTP password for EMAIL_HOST_USER in
 # /etc/zulip/zulip-secrets.conf as email_password.
 #
-# (3) If you are using a gmail account to send outgoing email, you
+# If you are using a gmail account to send outgoing email, you
 # will likely need to read this Google support answer and configure
 # that account as "less secure":
-# https://support.google.com/mail/answer/14257.
+# https://support.google.com/accounts/answer/6010255
 #
 # You can quickly test your sending email configuration using:
 #   su zulip

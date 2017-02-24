@@ -37,7 +37,7 @@ Example:
                                  'to post the fixture to')
 
     def handle(self, **options):
-        # type: (*Any, **str) -> None
+        # type: (**str) -> None
         if options['fixture'] is None or options['url'] is None:
             self.print_help('./manage.py', 'send_webhook_fixture_message')
             exit(1)

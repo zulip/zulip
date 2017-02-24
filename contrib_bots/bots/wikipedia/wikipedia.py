@@ -9,8 +9,7 @@ class WikipediaHandler(object):
     '''
     This plugin facilitates searching Wikipedia for a
     specific key term and returns the top article from the
-    search. It looks for messages starting with '@wikipedia'
-     or '@wiki'.
+    search. It looks for messages starting with '@mention-bot'
 
     In this example, we write all Wikipedia searches into
     the same stream that it was called from, but this code
@@ -23,30 +22,11 @@ class WikipediaHandler(object):
             This plugin will allow users to directly search
             Wikipedia for a specific key term and get the top
             article that is returned from the search. Users
-            should preface searches with "@wikipedia" or
-            "@wiki".
+            should preface searches with "@mention-bot".
             '''
-
-    def triage_message(self, message, client):
-        original_content = message['content']
-
-        # This next line of code is defensive, as we
-        # never want to get into an infinite loop of posting Wikipedia
-        # searches for own Wikipedia searches!
-        if message['sender_full_name'] == 'wikipedia-bot':
-            return False
-        is_wikipedia = (original_content.startswith('@wiki') or
-                        original_content.startswith('@wikipedia'))
-
-        return is_wikipedia
 
     def handle_message(self, message, client, state_handler):
         query = message['content']
-
-        for prefix in ['@wikipedia', '@wiki']:
-            if query.startswith(prefix):
-                query = query[len(prefix)+1:]
-                break
 
         query_wiki_link = ('https://en.wikipedia.org/w/api.php?action=query&'
                            'list=search&srsearch=%s&format=json' % (query,))

@@ -6,7 +6,7 @@ from unittest import skip
 
 from zerver.lib.avatar import avatar_url
 from zerver.lib.bugdown import url_filename
-from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_classes import ZulipTestCase, UploadSerializeMixin
 from zerver.lib.test_helpers import avatar_disk_path, get_test_image_file
 from zerver.lib.test_runner import slow
 from zerver.lib.upload import sanitize_name, S3UploadBackend, \
@@ -46,7 +46,7 @@ def destroy_uploads():
 class StringIO(_StringIO):
     name = '' # https://github.com/python/typeshed/issues/598
 
-class FileUploadTest(ZulipTestCase):
+class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_rest_endpoint(self):
         # type: () -> None
@@ -321,7 +321,7 @@ class FileUploadTest(ZulipTestCase):
         # type: () -> None
         destroy_uploads()
 
-class AvatarTest(ZulipTestCase):
+class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_multiple_upload_failure(self):
         # type: () -> None
@@ -389,7 +389,7 @@ class AvatarTest(ZulipTestCase):
 
         response = self.client_get("/avatar/nonexistent_user@zulip.com?foo=bar")
         redirect_url = response['Location']
-        actual_url = 'https://secure.gravatar.com/avatar/444258b521f152129eb0c162996e572d?d=identicon&foo=bar'
+        actual_url = 'https://secure.gravatar.com/avatar/444258b521f152129eb0c162996e572d?d=identicon&version=1&foo=bar'
         self.assertEqual(redirect_url, actual_url)
 
     def test_valid_avatars(self):
@@ -397,6 +397,7 @@ class AvatarTest(ZulipTestCase):
         """
         A PUT request to /json/users/me/avatar with a valid file should return a url and actually create an avatar.
         """
+        version = 2
         for fname, rfname in self.correct_files:
             # TODO: use self.subTest once we're exclusively on python 3 by uncommenting the line below.
             # with self.subTest(fname=fname):
@@ -428,6 +429,10 @@ class AvatarTest(ZulipTestCase):
             zerver.lib.upload.upload_backend.ensure_medium_avatar_image(user_profile.email)
             self.assertTrue(os.path.exists(medium_avatar_disk_path))
 
+            # Verify whether the avatar_version gets incremented with every new upload
+            self.assertEqual(user_profile.avatar_version, version)
+            version += 1
+
     def test_invalid_avatars(self):
         # type: () -> None
         """
@@ -440,6 +445,8 @@ class AvatarTest(ZulipTestCase):
                 result = self.client_put_multipart("/json/users/me/avatar", {'file': fp})
 
             self.assert_json_error(result, "Could not decode avatar image; did you upload an image file?")
+            user_profile = get_user_profile_by_email("hamlet@zulip.com")
+            self.assertEqual(user_profile.avatar_version, 1)
 
     def test_delete_avatar(self):
         # type: () -> None
@@ -460,12 +467,13 @@ class AvatarTest(ZulipTestCase):
         self.assertEqual(json["avatar_url"], avatar_url(user_profile))
 
         self.assertEqual(user_profile.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
+        self.assertEqual(user_profile.avatar_version, 2)
 
     def tearDown(self):
         # type: () -> None
         destroy_uploads()
 
-class LocalStorageTest(ZulipTestCase):
+class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_file_upload_local(self):
         # type: () -> None

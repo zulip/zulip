@@ -10,12 +10,11 @@ from django.utils.cache import patch_cache_control
 from six.moves import zip_longest, zip, range
 
 from version import ZULIP_VERSION
-from zerver.decorator import zulip_login_required
+from zerver.decorator import zulip_login_required, process_client
 from zerver.forms import ToSForm
 from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
     Recipient, Realm, UserMessage, DefaultStream, RealmEmoji, RealmAlias, \
-    RealmFilter, \
-    PreregistrationUser, get_client, UserActivity, \
+    RealmFilter, PreregistrationUser, UserActivity, \
     UserPresence, get_recipient, name_changes_disabled, email_to_username, \
     list_of_domains_for_realm
 from zerver.lib.events import do_events_register
@@ -108,8 +107,6 @@ def home_real(request):
     request.session.modified = True
 
     user_profile = request.user
-    request._email = request.user.email
-    request.client = get_client("website")
 
     # If a user hasn't signed the current Terms of Service, send them there
     if settings.TERMS_OF_SERVICE is not None and settings.TOS_VERSION is not None and \
@@ -264,6 +261,7 @@ def home_real(request):
         furthest_read_time    = sent_time_in_epoch_seconds(latest_read),
         save_stacktraces      = settings.SAVE_FRONTEND_STACKTRACES,
         alert_words           = register_ret['alert_words'],
+        attachments           = register_ret['attachments'],
         muted_topics          = register_ret['muted_topics'],
         realm_filters         = register_ret['realm_filters'],
         realm_default_streams = register_ret['realm_default_streams'],

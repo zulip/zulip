@@ -18,23 +18,28 @@ def list_alert_words(request, user_profile):
     # type: (HttpRequest, UserProfile) -> HttpResponse
     return json_success({'alert_words': user_alert_words(user_profile)})
 
+def clean_alert_words(alert_words):
+    # type: (List[Text]) -> List[Text]
+    alert_words = [w.strip().lstrip() for w in alert_words]
+    return [w for w in alert_words if w != ""]
+
 @has_request_variables
 def set_alert_words(request, user_profile,
                     alert_words=REQ(validator=check_list(check_string), default=[])):
     # type: (HttpRequest, UserProfile, List[Text]) -> HttpResponse
-    do_set_alert_words(user_profile, alert_words)
+    do_set_alert_words(user_profile, clean_alert_words(alert_words))
     return json_success()
 
 @has_request_variables
 def add_alert_words(request, user_profile,
                     alert_words=REQ(validator=check_list(check_string), default=[])):
-    # type: (HttpRequest, UserProfile, List[str]) -> HttpResponse
-    do_add_alert_words(user_profile, alert_words)
+    # type: (HttpRequest, UserProfile, List[Text]) -> HttpResponse
+    do_set_alert_words(user_profile, clean_alert_words(alert_words))
     return json_success()
 
 @has_request_variables
 def remove_alert_words(request, user_profile,
                        alert_words=REQ(validator=check_list(check_string), default=[])):
-    # type: (HttpRequest, UserProfile, List[str]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, List[Text]) -> HttpResponse
     do_remove_alert_words(user_profile, alert_words)
     return json_success()

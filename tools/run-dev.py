@@ -137,7 +137,11 @@ os.setpgrp()
 # Save pid of parent process to the pid file. It can be used later by
 # tools/stop-run-dev to kill the server without having to find the
 # terminal in question.
-pid_file_path = os.path.join(os.path.join(os.getcwd(), 'var/run/run_dev.pid'))
+
+if options.test:
+    pid_file_path = os.path.join(os.path.join(os.getcwd(), 'var/casper/run_dev.pid'))
+else:
+    pid_file_path = os.path.join(os.path.join(os.getcwd(), 'var/run/run_dev.pid'))
 
 # Required for compatibility python versions.
 if not os.path.exists(os.path.dirname(pid_file_path)):

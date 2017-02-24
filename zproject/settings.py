@@ -108,6 +108,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'EMAIL_GATEWAY_IMAP_PORT': None,
                     'EMAIL_GATEWAY_IMAP_FOLDER': None,
                     'EMAIL_GATEWAY_EXTRA_PATTERN_HACK': None,
+                    'EMAIL_HOST': None,
                     'S3_KEY': '',
                     'S3_SECRET_KEY': '',
                     'S3_AVATAR_BUCKET': '',
@@ -303,21 +304,6 @@ TEMPLATES = [
             ],
         },
     },
-    {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [
-            os.path.join(DEPLOY_ROOT, 'django_templates'),
-        ],
-        'APP_DIRS': False,
-        'OPTIONS': {
-            'debug': DEBUG,
-            'loaders': LOADERS,
-            'context_processors': [
-                'zerver.context_processors.add_settings',
-                'zerver.context_processors.add_metrics',
-            ],
-        },
-    },
 ]
 
 MIDDLEWARE_CLASSES = (
@@ -376,7 +362,7 @@ RUNNING_INSIDE_TORNADO = False
 ########################################################################
 
 DATABASES = {"default": {
-    'ENGINE': 'django.db.backends.postgresql_psycopg2',
+    'ENGINE': 'django.db.backends.postgresql',
     'NAME': 'zulip',
     'USER': 'zulip',
     'PASSWORD': '', # Authentication done via certificates
@@ -852,6 +838,7 @@ JS_SPECS = {
             'js/message_flags.js',
             'js/alert_words.js',
             'js/alert_words_ui.js',
+            'js/attachments_ui.js',
             'js/message_store.js',
             'js/server_events.js',
             'js/zulip.js',
@@ -1041,6 +1028,7 @@ LOGGING = {
             'propagate': False,
         },
         'django.server': {
+            'handlers': ['console', 'file'],
             'propagate': False,
             'filters': ['skip_200_and_304'],
         },

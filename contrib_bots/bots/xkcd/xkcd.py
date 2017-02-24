@@ -10,29 +10,22 @@ class XkcdHandler(object):
     '''
     This plugin provides several commands that can be used for fetch a comic
     strip from https://xkcd.com. The bot looks for messages starting with
-    "@xkcd" and responds with a message with the comic based on provided
+    "@mention-bot" and responds with a message with the comic based on provided
     commands.
     '''
 
     def usage(self):
         return '''
             This plugin allows users to fetch a comic strip provided by
-            https://xkcd.com. Users should preface the command with "@xkcd".
+            https://xkcd.com. Users should preface the command with "@mention-bot".
 
             There are several commands to use this bot:
-            - @xkcd help -> To show all commands the bot supports.
-            - @xkcd latest -> To fetch the latest comic strip from xkcd.
-            - @xkcd random -> To fetch a random comic strip from xkcd.
-            - @xkcd <comic_id> -> To fetch a comic strip based on
-            `<comic_id>`, e.g `@xkcd 1234`.
+            - @mention-bot help -> To show all commands the bot supports.
+            - @mention-bot latest -> To fetch the latest comic strip from xkcd.
+            - @mention-bot random -> To fetch a random comic strip from xkcd.
+            - @mention-bot <comic_id> -> To fetch a comic strip based on
+            `<comic_id>`, e.g `@mention-bot 1234`.
             '''
-
-    def triage_message(self, message, client):
-        original_content = message['content']
-        is_xkcd_called = original_content.startswith('@xkcd ')
-        is_xkcd_called_without_command = original_content == '@xkcd'
-
-        return is_xkcd_called or is_xkcd_called_without_command
 
     def handle_message(self, message, client, state_handler):
         xkcd_bot_response = get_xkcd_bot_response(message)
@@ -57,10 +50,7 @@ class XkcdServerError(Exception):
 
 def get_xkcd_bot_response(message):
     original_content = message['content'].strip()
-    cropped = original_content[len('@xkcd '):]
-    command = cropped.strip()
-
-    xkcd_called_without_command = original_content == '@xkcd'
+    command = original_content.strip()
 
     commands_help = ("%s"
                      "\n* `@xkcd help` to show this help message."
@@ -70,14 +60,14 @@ def get_xkcd_bot_response(message):
                      "e.g `@xkcd 1234`.")
 
     try:
-        if command == 'help' or xkcd_called_without_command:
+        if command == 'help':
             return commands_help % ('xkcd bot supports these commands:')
         elif command == 'latest':
             fetched = fetch_xkcd_query(XkcdBotCommand.LATEST)
         elif command == 'random':
             fetched = fetch_xkcd_query(XkcdBotCommand.RANDOM)
         elif command.isdigit():
-            fetched = fetch_xkcd_query(XkcdBotCommand.COMIC_ID, cropped.strip())
+            fetched = fetch_xkcd_query(XkcdBotCommand.COMIC_ID, command)
         else:
             return commands_help % ('xkcd bot only supports these commands:')
     except (requests.exceptions.ConnectionError, XkcdServerError):

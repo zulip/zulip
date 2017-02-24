@@ -79,6 +79,7 @@ class MessageDict(object):
             sender_full_name = message.sender.full_name,
             sender_short_name = message.sender.short_name,
             sender_avatar_source = message.sender.avatar_source,
+            sender_avatar_version = message.sender.avatar_version,
             sender_is_mirror_dummy = message.sender.is_mirror_dummy,
             sending_client_name = message.sending_client.name,
             recipient_id = message.recipient.id,
@@ -112,6 +113,7 @@ class MessageDict(object):
             sender_full_name = row['sender__full_name'],
             sender_short_name = row['sender__short_name'],
             sender_avatar_source = row['sender__avatar_source'],
+            sender_avatar_version = row['sender__avatar_version'],
             sender_is_mirror_dummy = row['sender__is_mirror_dummy'],
             sending_client_name = row['sending_client__name'],
             recipient_id = row['recipient_id'],
@@ -139,6 +141,7 @@ class MessageDict(object):
             sender_full_name,
             sender_short_name,
             sender_avatar_source,
+            sender_avatar_version,
             sender_is_mirror_dummy,
             sending_client_name,
             recipient_id,
@@ -146,9 +149,13 @@ class MessageDict(object):
             recipient_type_id,
             reactions
     ):
-        # type: (bool, Optional[Message], int, Optional[datetime.datetime], Optional[Text], Text, Text, datetime.datetime, Optional[Text], Optional[int], int, Text, int, Text, Text, Text, Text, bool, Text, int, int, int, List[Dict[str, Any]]) -> Dict[str, Any]
+        # type: (bool, Optional[Message], int, Optional[datetime.datetime], Optional[Text], Text, Text, datetime.datetime, Optional[Text], Optional[int], int, Text, int, Text, Text, Text, Text, int, bool, Text, int, int, int, List[Dict[str, Any]]) -> Dict[str, Any]
 
-        avatar_url = get_avatar_url(sender_avatar_source, sender_email)
+        avatar_url = get_avatar_url(
+            sender_avatar_source,
+            sender_email,
+            sender_avatar_version
+        )
 
         display_recipient = get_display_recipient_by_id(
             recipient_id,

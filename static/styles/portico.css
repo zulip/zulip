@@ -35,7 +35,7 @@
 .header .stripes,
 .header .darker {
     position: absolute;
-    height: 100%;
+    height: 40px;
     width: 100%;
     top: 0px;
 
@@ -217,6 +217,23 @@ a.title:hover {
 .fakecontrol {
     padding-top: 5px;
     font-weight: bold;
+}
+
+input#id_email,
+input#id_new_password1,
+input#id_new_password2,
+input#id_full_name {
+    margin-bottom: 10px;
+}
+
+p#id_full_name-error {
+  margin-left: 200px;
+  display: block;
+}
+
+p#terms-error {
+  display: block;
+  padding-left: 0px;
 }
 
 img.screenshot {
@@ -1455,12 +1472,24 @@ a.bottom-signup-button {
       max-width: 100vw;
   }
 
+  .markdown ol {
+      margin-left: 0px;
+  }
+
   .footer-navigation {
       font-size: 12px;
   }
 
-  .app-main {
-      padding: 0px;
+  .app-main .markdown {
+      max-width: 85%;
+  }
+
+  .markdown a {
+      white-space: pre-wrap;
+  }
+
+  .markdown strong {
+      white-space: pre-wrap;
   }
 
   .main-headline-text .tagline {
@@ -1574,7 +1603,7 @@ label.label-title {
 }
 
 .button-new.sea-green {
-    background-color: #24cac2;
+    background-color: #3276b1;
     color: #fff;
 }
 

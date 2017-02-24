@@ -19,6 +19,7 @@
         "page_params": false,
         "status_classes": false,
         "password_quality": false,
+        "attachments_ui": false,
         "csrf_token": false,
         "typeahead_helper": false,
         "popovers": false,

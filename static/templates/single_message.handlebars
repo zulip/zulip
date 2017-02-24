@@ -14,6 +14,9 @@
             {{#if status_message}}
             <span class="sender-status">
               <span class="sender_name-in-status sender_info_hover">{{msg/sender_full_name}}</span>
+              {{#if sender_is_bot}}
+                  <img class="bot-icon" title="{{t 'Bot' }}" src="/static/images/bot.svg" />
+              {{/if}}
               {{{ status_message }}}
               {{#if_and last_edit_timestr include_sender}}
                 <div class="message_edit_notice" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">{{t "EDITED" }}</div>
@@ -21,6 +24,9 @@
             </span>
             {{else}}
             <span class="sender_name">{{msg/sender_full_name}}</span>
+            {{#if sender_is_bot}}
+                 <img class="bot-icon" title="{{t 'Bot' }}" src="/static/images/bot.svg" />
+            {{/if}}
             {{/if}}
           </span>
           {{/include_sender}}

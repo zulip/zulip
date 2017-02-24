@@ -2,6 +2,7 @@ global.stub_out_jquery();
 
 add_dependencies({
     Handlebars: 'handlebars',
+    colorspace: 'js/colorspace',
     hashchange: 'js/hashchange',
     muting: 'js/muting',
     narrow: 'js/narrow',
@@ -88,31 +89,134 @@ function clear_filters() {
 }());
 
 
-(function test_sort_pin_to_top_streams() {
+(function test_sort_streams() {
     clear_filters();
 
+    // pinned streams
     var develSub = {
         name: 'devel',
         stream_id: 1000,
         color: 'blue',
         id: 5,
-        pin_to_top: false,
+        pin_to_top: true,
         subscribed: true,
     };
     stream_list.create_sidebar_row(develSub);
     global.stream_data.add_sub('devel', develSub);
 
-    var socialSub = {
-        name: 'social',
+    var RomeSub = {
+        name: 'Rome',
         stream_id: 2000,
-        color: 'green',
+        color: 'blue',
         id: 6,
         pin_to_top: true,
         subscribed: true,
     };
+    stream_list.create_sidebar_row(RomeSub);
+    global.stream_data.add_sub('Rome', RomeSub);
+
+    var testSub = {
+        name: 'test',
+        stream_id: 3000,
+        color: 'blue',
+        id: 7,
+        pin_to_top: true,
+        subscribed: true,
+    };
+    stream_list.create_sidebar_row(testSub);
+    global.stream_data.add_sub('test', testSub);
+
+    // unpinned streams
+    var announceSub = {
+        name: 'announce',
+        stream_id: 4000,
+        color: 'green',
+        id: 8,
+        pin_to_top: false,
+        subscribed: true,
+    };
+    stream_list.create_sidebar_row(announceSub);
+    global.stream_data.add_sub('announce', announceSub);
+
+    var DenmarkSub = {
+        name: 'Denmark',
+        stream_id: 5000,
+        color: 'green',
+        id: 9,
+        pin_to_top: false,
+        subscribed: true,
+    };
+    stream_list.create_sidebar_row(DenmarkSub);
+    global.stream_data.add_sub('Denmark', DenmarkSub);
+
+    var socialSub = {
+        name: 'social',
+        stream_id: 6000,
+        color: 'green',
+        id: 10,
+        pin_to_top: false,
+        subscribed: true,
+    };
     stream_list.create_sidebar_row(socialSub);
     global.stream_data.add_sub('social', socialSub);
+
     stream_list.build_stream_list();
-    var li = stream_list.stream_sidebar.get_row(socialSub.stream_id).get_li();
-    assert.equal(li.nextAll().find('[ data-name="devel"]').length, 1);
+
+    // verify pinned streams are sorted by lowercase stream name
+    var devel_li = stream_list.stream_sidebar.get_row(develSub.stream_id).get_li();
+    assert.equal(devel_li.next().find('[ data-name="Rome"]').length, 1);
+    var Rome_li = stream_list.stream_sidebar.get_row(RomeSub.stream_id).get_li();
+    assert.equal(Rome_li.next().find('[ data-name="test"]').length, 1);
+
+    // verify unpinned streams are sorted by lowercase stream name
+    var announce_li = stream_list.stream_sidebar.get_row(announceSub.stream_id).get_li();
+    assert.equal(announce_li.next().find('[ data-name="Denmark"]').length, 1);
+    var Denmark_li = stream_list.stream_sidebar.get_row(DenmarkSub.stream_id).get_li();
+    assert.equal(Denmark_li.next().find('[ data-name="social"]').length, 1);
+
+    // verify pinned streams are sorted before unpinned streams
+    // i.e. the last pinned stream (testSub) is before the first unpinned stream (announceSub)
+    var test_li = stream_list.stream_sidebar.get_row(testSub.stream_id).get_li();
+    assert.equal(test_li.nextAll().find('[ data-name="announce"]').length, 1);
+
+    // add another 40 dummy unpinned streams since sort_recent is set to true only when
+    // there are more than 40 subscribed streams
+    for (var i = 1; i <= 40; i += 1) {
+        var dummyName = 'dummy' + i;
+        var dummySub = {
+            name: dummyName,
+            stream_id: 7000 + i,
+            color: 'green',
+            id: 11 + i,
+            pin_to_top: false,
+            subscribed: true,
+        };
+        stream_list.create_sidebar_row(dummySub);
+        global.stream_data.add_sub(dummyName, dummySub);
+    }
+
+    stream_data.populate_stream_topics_for_tests(
+        // testSub is pinned, DenmarkSub and socialSub are unpinned
+        _.object([testSub.name, socialSub.name, DenmarkSub.name], [testSub, socialSub, DenmarkSub])
+    );
+
+    stream_list.build_stream_list();
+
+    // verify pinned streams are still sorted by lowercase name
+    // i.e. not affected by sort_recent set to true
+    assert.equal(devel_li.next().find('[ data-name="Rome"]').length, 1);
+    assert.equal(Rome_li.next().find('[ data-name="test"]').length, 1);
+
+    // verify DenmarkSub and socialSub are sorted at the top of unpinned streams
+    // because they are active
+    assert.equal(Denmark_li.next().find('[ data-name="social"]').length, 1);
+    var social_li = stream_list.stream_sidebar.get_row(socialSub.stream_id).get_li();
+    assert.equal(social_li.next().find('[ data-name="announce"]').length, 1);
+
+    // verify inactive unpinned streams are still sorted by lowercase stream name
+    assert.equal(announce_li.next().find('[ data-name="dummy1"]').length, 1);
+
+    // verify pinned streams are still sorted before unpinned streams
+    // i.e. the last pinned stream (testSub) is before the first unpinned stream (socialSub)
+    assert.equal(test_li.nextAll().find('[ data-name="social"]').length, 1);
 }());

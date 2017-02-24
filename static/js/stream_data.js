@@ -60,8 +60,14 @@ exports.get_sub_by_id = function (stream_id) {
     return subs_by_stream_id.get(stream_id);
 };
 
-exports.delete_sub = function (stream_name) {
-    stream_info.del(stream_name);
+exports.delete_sub = function (stream_id) {
+    var sub = subs_by_stream_id.get(stream_id);
+    if (!sub) {
+        blueslip.warn('Failed to delete stream ' + stream_id);
+        return;
+    }
+    subs_by_stream_id.del(stream_id);
+    stream_info.del(sub.name);
 };
 
 exports.subscribed_subs = function () {
@@ -386,6 +392,14 @@ exports.get_newbie_stream = function () {
         return page_params.notifications_stream;
     }
     return undefined;
+};
+
+exports.remove_default_stream = function (stream_id) {
+    page_params.realm_default_streams = _.reject(page_params.realm_default_streams,
+        function (stream) {
+            return stream.stream_id === stream_id;
+        }
+    );
 };
 
 return exports;

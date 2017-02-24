@@ -11,6 +11,7 @@ from django.test.client import (
     BOUNDARY, MULTIPART_CONTENT, encode_multipart,
 )
 from django.template import loader
+from django.test.testcases import SerializeMixin
 from django.http import HttpResponse
 from django.db.utils import IntegrityError
 from django.utils.translation import ugettext as _
@@ -63,6 +64,25 @@ from contextlib import contextmanager
 import six
 
 API_KEYS = {} # type: Dict[Text, Text]
+
+class UploadSerializeMixin(SerializeMixin):
+    """
+    We cannot use override_settings to change upload directory because
+    because settings.LOCAL_UPLOADS_DIR is used in url pattern and urls
+    are compiled only once. Otherwise using a different upload directory
+    for conflicting test cases would have provided better performance
+    while providing the required isolation.
+    """
+    lockfile = 'var/upload_lock'
+
+    @classmethod
+    def setUpClass(cls, *args, **kwargs):
+        # type: (*Any, **Any) -> None
+        if not os.path.exists(cls.lockfile):
+            with open(cls.lockfile, 'w'):
+                pass
+
+        super(UploadSerializeMixin, cls).setUpClass(*args, **kwargs)
 
 class ZulipTestCase(TestCase):
     '''

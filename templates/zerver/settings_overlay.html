@@ -1,12 +1,7 @@
 <div id="settings_page" class="new-style">
   <div class="sidebar">
     <div class="sidebar-list dark-grey small-text">
-      <div class="center tab-container">
-        <div class="tab-switcher">
-          <div class="ind-tab first selected" data-name="settings">{{ _('Settings') }}</div>
-          <div class="ind-tab second" data-name="admin">{{ _('Administration') }} </div>
-        </div>
-      </div>
+      <div class="center tab-container"></div>
       <ul class="settings-list">
         <li tabindex="1" class="active" data-section="your-account">
           <div class="icon icon-vector-user"></div>
@@ -27,6 +22,14 @@
         <li tabindex="1" data-section="custom-alert-words">
           <div class="icon icon-vector-book"></div>
           <div class="text">{{ _('Custom alert words') }}</div>
+        </li>
+        <li tabindex="1" data-section="uploaded-files">
+          <div class="icon icon-vector-paper-clip"></div>
+          <div class="text">{{ _('Uploaded files') }}</div>
+        </li>
+        <li tabindex="1" data-section="muted-topics">
+          <div class="icon icon-vector-eye-close"></div>
+          <div class="text">{{ _('Muted topics') }}</div>
         </li>
         <li tabindex="1" data-section="zulip-labs">
           <i class="icon icon-vector-beaker"></i>
