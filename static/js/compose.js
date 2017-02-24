@@ -347,16 +347,13 @@ function create_message_object() {
     return message;
 }
 
-exports.snapshot_message = function (message) {
+exports.snapshot_message = function () {
     if (!exports.composing() || (exports.message_content() === "")) {
         // If you aren't in the middle of composing the body of a
         // message, don't try to snapshot.
         return;
     }
 
-    if (message !== undefined) {
-        return _.extend({}, message);
-    }
     // Save what we can.
     return create_message_object();
 };
