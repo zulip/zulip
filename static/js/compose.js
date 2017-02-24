@@ -321,7 +321,6 @@ function create_message_object() {
     // Changes here must also be kept in sync with echo.try_deliver_locally
     var message = {
         type: compose.composing(),
-        private_message_recipient: compose.recipient(),
         content: content,
         sender_id: page_params.user_id,
         queue_id: page_params.event_queue_id,
@@ -331,8 +330,10 @@ function create_message_object() {
 
     if (message.type === "private") {
         // TODO: this should be collapsed with the code in composebox_typeahead.js
-        message.to = util.extract_pm_recipients(compose.recipient());
-        message.reply_to = compose.recipient();
+        var recipient = compose.recipient();
+        message.to = util.extract_pm_recipients(recipient);
+        message.reply_to = recipient;
+        message.private_message_recipient = recipient;
     } else {
         var stream_name = compose.stream_name();
         message.to = stream_name;
