@@ -38,7 +38,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             {% else %}
                 <input id="id_full_name" class="required" type="text" name="full_name" placeholder='{{ "Wile E. Coyote" }}'
                 value="{% if full_name %}{{ full_name }}{% elif form.full_name.value() %}{{ form.full_name.value() }}{% endif %}"
-                    maxlength="100" /><br>
+                    maxlength="100" />
                 {% if form.full_name.errors %}
                     {% for error in form.full_name.errors %}
                         <div class="help-inline text-error">{{ error }}</div>
