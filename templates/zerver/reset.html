@@ -6,7 +6,7 @@
 </div>
 
 <form method="post" class="form-horizontal" action="{{ url('django.contrib.auth.views.password_reset') }}">
-{{ csrf_input }}
+    {{ csrf_input }}
     <div class="control-group">
         <label for="id_email" class="control-label">{{ _('Email') }}</label>
         <div class="controls">
@@ -15,7 +15,7 @@
                    maxlength="100" />
             {% if form.email.errors %}
                 {% for error in form.email.errors %}
-                    <div class="alert alert-error">{{ error }}</div>
+                <div class="alert alert-error">{{ error }}</div>
                 {% endfor %}
             {% endif %}
         </div>
