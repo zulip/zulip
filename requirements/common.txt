@@ -6,7 +6,7 @@ Django==1.10.5
 Jinja2==2.9.5
 
 # Needed for markdown processing
-Markdown==2.6.7
+Markdown==2.6.8
 MarkupSafe==0.23
 
 # Needed for Image Processing
