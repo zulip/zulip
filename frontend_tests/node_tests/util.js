@@ -67,16 +67,16 @@ var _ = global._;
         {type: 'stream', stream_id: 102, subject: 'whatever'}));
 
     assert(util.same_recipient(
-        {type: 'private', reply_to: 'fred@zulip.com,melissa@zulip.com'},
-        {type: 'private', reply_to: 'fred@zulip.com,melissa@zulip.com'}));
+        {type: 'private', to_user_ids: '101,102'},
+        {type: 'private', to_user_ids: '101,102'}));
 
-    assert(util.same_recipient(
-        {type: 'private', reply_to: 'fred@zulip.com'},
-        {type: 'private', reply_to: 'Fred@zulip.com'}));
+    assert(!util.same_recipient(
+        {type: 'private', to_user_ids: '101,102'},
+        {type: 'private', to_user_ids: '103'}));
 
     assert(!util.same_recipient(
         {type: 'stream', stream_id: 101, subject: 'Bar'},
-        {type: 'private', reply_to: 'Fred@zulip.com'}));
+        {type: 'private'}));
 
 }());
 
