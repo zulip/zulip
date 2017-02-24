@@ -270,6 +270,9 @@ function process_hotkey(e) {
             } else if ($(".message_edit_content").filter(":focus").length > 0) {
                 row = $(".message_edit_content").filter(":focus").closest(".message_row");
                 message_edit.end(row);
+            } else if ($(".message_edit_topic").filter(":focus").length > 0) {
+                row = $(".message_edit_topic").filter(":focus").closest(".message_row");
+                message_edit.end(row);
             } else if (activity.searching()) {
                 activity.escape_search();
                 return true;
