@@ -1198,6 +1198,29 @@ class BotTest(ZulipTestCase):
         bot = self.get_bot()
         self.assertEqual('Fred', bot['full_name'])
 
+    def test_patch_bot_owner(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        bot_info = {
+            'full_name': 'The Bot of Hamlet',
+            'short_name': 'hambot',
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+        bot_info = {
+            'bot_owner': 'othello@zulip.com',
+        }
+        result = self.client_patch("/json/bots/hambot-bot@zulip.com", bot_info)
+        self.assert_json_success(result)
+
+        # Test bot's owner has been changed successfully.
+        bot_owner = ujson.loads(result.content)['bot_owner']
+        self.assertEqual(bot_owner, 'othello@zulip.com')
+
+        self.login('othello@zulip.com')
+        bot = self.get_bot()
+        self.assertEqual('The Bot of Hamlet', bot['full_name'])
+
     @override_settings(LOCAL_UPLOADS_DIR='var/bot_avatar')
     def test_patch_bot_avatar(self):
         # type: () -> None

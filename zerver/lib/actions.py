@@ -1894,6 +1894,22 @@ def do_change_full_name(user_profile, full_name, log=True):
         send_event(dict(type='realm_bot', op='update', bot=payload),
                    bot_owner_userids(user_profile))
 
+def do_change_bot_owner(user_profile, bot_owner, log=True):
+    # type: (UserProfile, UserProfile, bool) -> None
+    user_profile.bot_owner = bot_owner
+    user_profile.save()
+    if log:
+        log_event({'type': 'user_change_owner',
+                   'user': user_profile.email,
+                   'owner': user_profile.bot_owner.email})
+    send_event(dict(type='realm_bot',
+                    op='update',
+                    bot=dict(email=user_profile.email,
+                             user_id=user_profile.id,
+                             owner_id=user_profile.bot_owner.id,
+                             )),
+               bot_owner_userids(user_profile))
+
 def do_change_tos_version(user_profile, tos_version, log=True):
     # type: (UserProfile, Text, bool) -> None
     user_profile.tos_version = tos_version
