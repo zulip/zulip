@@ -105,6 +105,10 @@ function add_message_flags(message) {
 }
 
 function add_subject_links(message) {
+    if (message.type !== 'stream') {
+        message.subject_links = [];
+        return;
+    }
     var subject = message.subject;
     var links = [];
     _.each(realm_filter_list, function (realm_filter) {

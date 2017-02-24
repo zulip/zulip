@@ -237,34 +237,34 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
 }());
 
 (function test_subject_links() {
-  var message = {subject: "No links here"};
+  var message = {type: 'stream', subject: "No links here"};
   echo._add_subject_links(message);
   assert.equal(message.subject_links.length, []);
 
-  message = {subject: "One #123 link here"};
+  message = {type: 'stream', subject: "One #123 link here"};
   echo._add_subject_links(message);
   assert.equal(message.subject_links.length, 1);
   assert.equal(message.subject_links[0], "https://trac.zulip.net/ticket/123");
 
-  message = {subject: "Two #123 #456 link here"};
+  message = {type: 'stream', subject: "Two #123 #456 link here"};
   echo._add_subject_links(message);
   assert.equal(message.subject_links.length, 2);
   assert.equal(message.subject_links[0], "https://trac.zulip.net/ticket/123");
   assert.equal(message.subject_links[1], "https://trac.zulip.net/ticket/456");
 
-  message = {subject: "New ZBUG_123 link here"};
+  message = {type: 'stream', subject: "New ZBUG_123 link here"};
   echo._add_subject_links(message);
   assert.equal(message.subject_links.length, 1);
   assert.equal(message.subject_links[0], "https://trac2.zulip.net/ticket/123");
 
 
-  message = {subject: "New ZBUG_123 with #456 link here"};
+  message = {type: 'stream', subject: "New ZBUG_123 with #456 link here"};
   echo._add_subject_links(message);
   assert.equal(message.subject_links.length, 2);
   assert(message.subject_links.indexOf("https://trac2.zulip.net/ticket/123") !== -1);
   assert(message.subject_links.indexOf("https://trac.zulip.net/ticket/456") !== -1);
 
-  message = {subject: "One ZGROUP_123:45 link here"};
+  message = {type: 'stream', subject: "One ZGROUP_123:45 link here"};
   echo._add_subject_links(message);
   assert.equal(message.subject_links.length, 1);
   assert.equal(message.subject_links[0], "https://zone_45.zulip.net/ticket/123");
