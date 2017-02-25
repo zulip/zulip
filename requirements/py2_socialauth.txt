@@ -1,4 +1,4 @@
 social-auth-core==0.2.1
-social-auth-app-django==0.1.0
+social-auth-app-django==1.1.0
 python-openid==2.2.5
 PyJWT==1.4.2
