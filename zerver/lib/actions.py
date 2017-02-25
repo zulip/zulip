@@ -49,7 +49,7 @@ from django.db.models.query import QuerySet
 from django.core.exceptions import ValidationError
 from importlib import import_module
 from django.core.mail import EmailMessage
-from django.utils.timezone import now
+from django.utils import timezone
 
 from confirmation.models import Confirmation, EmailChangeConfirmation
 import six
@@ -63,7 +63,6 @@ session_engine = import_module(settings.SESSION_ENGINE)
 from zerver.lib.create_user import random_api_key
 from zerver.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
 from zerver.lib.queue import queue_json_publish
-from django.utils import timezone
 from zerver.lib.create_user import create_user
 from zerver.lib import bugdown
 from zerver.lib.cache import cache_with_key, cache_set, \
@@ -263,7 +262,7 @@ def add_new_user_history(user_profile, streams):
     """Give you the last 100 messages on your public streams, so you have
     something to look at in your home view once you finish the
     tutorial."""
-    one_week_ago = now() - datetime.timedelta(weeks=1)
+    one_week_ago = timezone.now() - datetime.timedelta(weeks=1)
     recipients = Recipient.objects.filter(type=Recipient.STREAM,
                                           type_id__in=[stream.id for stream in streams
                                                        if not stream.invite_only])
@@ -345,7 +344,7 @@ def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None)
                     'NAME': user_profile.full_name,
                     'REALM_ID': user_profile.realm_id,
                     'OPTIN_IP': newsletter_data["IP"],
-                    'OPTIN_TIME': datetime.datetime.isoformat(now().replace(microsecond=0)),
+                    'OPTIN_TIME': datetime.datetime.isoformat(timezone.now().replace(microsecond=0)),
                 },
             },
             lambda event: None)
@@ -2822,10 +2821,10 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
             # We only change messages up to 2 days in the past, to avoid hammering our
             # DB by changing an unbounded amount of messages
             if propagate_mode == 'change_all':
-                before_bound = now() - datetime.timedelta(days=2)
+                before_bound = timezone.now() - datetime.timedelta(days=2)
 
                 propagate_query = (propagate_query & ~Q(id = message.id) &
-                                   Q(pub_date__range=(before_bound, now())))
+                                   Q(pub_date__range=(before_bound, timezone.now())))
             if propagate_mode == 'change_later':
                 propagate_query = propagate_query & Q(id__gt = message.id)
 

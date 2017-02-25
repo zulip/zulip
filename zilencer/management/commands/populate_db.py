@@ -3,7 +3,7 @@ from __future__ import division
 from __future__ import print_function
 
 from django.core.management.base import BaseCommand, CommandParser
-from django.utils.timezone import now
+from django.utils import timezone
 
 from zerver.models import Message, UserProfile, Stream, Recipient, UserPresence, \
     Subscription, get_huddle, Realm, UserMessage, RealmAlias, \
@@ -193,7 +193,7 @@ class Command(BaseCommand):
             # Populate users with some bar data
             for user in user_profiles:
                 status = UserPresence.ACTIVE # type: int
-                date = now()
+                date = timezone.now()
                 client = get_client("website")
                 if user.full_name[0] <= 'H':
                     client = get_client("ZulipAndroid")
@@ -405,7 +405,7 @@ def send_messages(data):
             message.subject = stream.name + Text(random.randint(1, 3))
             saved_data['subject'] = message.subject
 
-        message.pub_date = now()
+        message.pub_date = timezone.now()
         do_send_messages([{'message': message}])
 
         recipients[num_messages] = (message_type, message.recipient.id, saved_data)
@@ -432,7 +432,7 @@ def create_user_presences(user_profiles):
     # type: (Iterable[UserProfile]) -> None
     for user in user_profiles:
         status = 1 # type: int
-        date = now()
+        date = timezone.now()
         client = get_client("website")
         UserPresence.objects.get_or_create(
             user_profile=user,

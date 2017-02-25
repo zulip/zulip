@@ -4,7 +4,7 @@ from typing import Optional
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
-from django.utils.timezone import now
+from django.utils import timezone
 from django.utils.translation import ugettext as _
 
 from zerver.lib.request import has_request_variables, REQ
@@ -28,7 +28,7 @@ def add_push_device_token(request, user_profile, token_str, kind, ios_app_id=Non
                                                                kind=kind,
                                                                ios_app_id=ios_app_id))
     if not created:
-        token.last_updated = now()
+        token.last_updated = timezone.now()
         token.save(update_fields=['last_updated'])
 
     return json_success()

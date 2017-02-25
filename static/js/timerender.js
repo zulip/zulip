@@ -8,13 +8,11 @@ var set_to_start_of_day = function (time) {
     return time.setMilliseconds(0).setSeconds(0).setMinutes(0).setHours(0);
 };
 
-function now() { return new XDate(); }
-
 // Given an XDate object 'time', return a two-element list containing
 //   - a string for the current human-formatted version
 //   - a boolean for if it will need to be updated when the day changes
 exports.render_now = function (time) {
-    var start_of_today = set_to_start_of_day(now());
+    var start_of_today = set_to_start_of_day(new XDate());
     var start_of_other_day = set_to_start_of_day(time.clone());
 
     // How many days old is 'time'? 0 = today, 1 = yesterday, 7 = a
@@ -51,7 +49,7 @@ var update_list = [];
 // Represented as an XDate with hour, minute, second, millisecond 0.
 var next_update;
 $(function () {
-    next_update = set_to_start_of_day(now()).addDays(1);
+    next_update = set_to_start_of_day(new XDate()).addDays(1);
 });
 
 // time_above is an optional argument, to support dates that look like:
@@ -103,7 +101,7 @@ exports.render_date = function (time, time_above) {
 // This isn't expected to be called externally except manually for
 // testing purposes.
 exports.update_timestamps = function () {
-    var time = now();
+    var time = new XDate();
     if (time >= next_update) {
         var to_process = update_list;
         update_list = [];
