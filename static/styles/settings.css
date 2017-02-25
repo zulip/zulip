@@ -453,22 +453,22 @@ input[type=checkbox].inline-block {
     margin: 20px 0 0 0;
 }
 
-#active_bots_list {
+.bots_list {
     display: none;
     list-style-type: none;
-    margin: 0px 15px;
+    margin-left: 0px;
 }
 
-#active_bots_list .image {
+.bots_list .image {
     vertical-align: top;
     width: calc(100% - 85px);
 }
 
-#active_bots_list .bot-information-box .details {
+.bots_list .bot-information-box .details {
     display: inline-block;
 }
 
-#active_bots_list .name {
+.bots_list .name {
     font-weight: 600;
     font-size: 1.3rem;
     margin: 10px 0px 5px 0px;
@@ -479,42 +479,42 @@ input[type=checkbox].inline-block {
     white-space: pre;
 }
 
-#active_bots_list .regenerate_bot_api_key {
+.bots_list .regenerate_bot_api_key {
     position: relative;
     margin-left: 5px;
     color: #aaa;
     transition: all 0.3s ease;
 }
 
-#active_bots_list .regenerate_bot_api_key:hover {
+.bots_list .regenerate_bot_api_key:hover {
     color: #444;
 }
 
-#active_bots_list .edit-bot-buttons {
+.bots_list .edit-bot-buttons {
     padding-top: 5px;
 }
 
-#active_bots_list .edit-bot-buttons button {
+.bots_list .edit-bot-buttons button {
     background-color: transparent;
 }
 
-#active_bots_list .edit-bot-buttons .btn {
+.bots_list .edit-bot-buttons .btn {
     padding: 4px;
 }
 
-#active_bots_list .edit-bot-buttons .sea-green {
+.bots_list .edit-bot-buttons .sea-green {
     color: #24cac2;
 }
 
-#active_bots_list .edit-bot-buttons .blue {
+.bots_list .edit-bot-buttons .blue {
     color: #3ba4e6;
 }
 
-#active_bots_list .edit-bot-buttons .danger-red {
+.bots_list .edit-bot-buttons .danger-red {
     color: #e29595;
 }
 
-#active_bots_list .bot-information-box {
+.bots_list .bot-information-box {
     position: relative;
     display: inline-block;
     width: calc(33.3% - 10px);
@@ -529,7 +529,7 @@ input[type=checkbox].inline-block {
     overflow: auto;
 }
 
-#active_bots_list img.avatar {
+.bots_list img.avatar {
     margin: 10px 5px 10px 10px;
     height: 50px;
     width: 50px;
@@ -538,12 +538,12 @@ input[type=checkbox].inline-block {
     box-shadow: 0px 0px 4px rgba(0,0,0,0.1);
 }
 
-#active_bots_list .email {
+.bots_list .email {
     margin-bottom: 5px;
 }
 
-#active_bots_list .email .value,
-#active_bots_list .api_key .api-key-value-and-button {
+.bots_list .email .value,
+.bots_list .api_key .api-key-value-and-button {
     display: block;
     margin-left: 0px;
     white-space: -moz-pre-wrap !important;
@@ -555,12 +555,12 @@ input[type=checkbox].inline-block {
     white-space: normal;
 }
 
-#active_bots_list .api_key .api-key-value-and-button {
+.bots_list .api_key .api-key-value-and-button {
     font-family: "Inconsolata", Menlo, monospace;
     font-size: 0.85em;
 }
 
-#active_bots_list .bot_info {
+.bots_list .bot_info {
     padding: 10px;
 }
 
@@ -574,6 +574,10 @@ input[type=checkbox].inline-block {
 .edit_bot h3 {
     margin: 0px;
     font-weight: 400;
+}
+
+#bots_lists_navbar .active a {
+    background-color: #FAFAFA;
 }
 
 .edit_bot_form {
@@ -983,19 +987,19 @@ input[type=text]#settings_search {
 }
 /* -- end new settings overlay -- */
 @media (min-width: 1850px) {
-    #active_bots_list .bot-information-box {
+    .bots_list .bot-information-box {
         width: calc(20% - 10px);
     }
 }
 
 @media (min-width: 1500px) and (max-width: 1850px) {
-    #active_bots_list .bot-information-box {
+    .bots_list .bot-information-box {
         width: calc(25% - 10px);
     }
 }
 
 @media (max-width: 1215px) {
-    #active_bots_list .bot-information-box {
+    .bots_list .bot-information-box {
         width: calc(50% - 10px);
     }
 
