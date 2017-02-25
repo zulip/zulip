@@ -30,19 +30,28 @@ function get_email_for_user_row(row) {
     return email;
 }
 
-exports.update_user_full_name = function (user_id, new_full_name) {
+exports.update_user_data = function (user_id, new_data) {
     if (!meta.loaded) {
         return;
     }
 
     var user_info = get_user_info(user_id);
-
     var user_row = user_info.user_row;
     var form_row = user_info.form_row;
 
-    // Update the full name in the table
-    user_row.find(".user_name").text(new_full_name);
-    form_row.find("input[name='full_name']").val(new_full_name);
+    if (new_data.full_name !== undefined) {
+        // Update the full name in the table
+        user_row.find(".user_name").text(new_data.full_name);
+        form_row.find("input[name='full_name']").val(new_data.full_name);
+    }
+
+    if (new_data.owner !== undefined) {
+        // Update the bot owner in the table
+        user_row.find(".owner").text(new_data.owner);
+    }
+
+    // Remove the bot owner select control.
+    form_row.find(".edit_bot_owner_container select").remove();
 
     // Hide name change form
     form_row.hide();
@@ -56,10 +65,6 @@ function failed_listing_users(xhr) {
 
 function failed_listing_streams(xhr) {
     ui.report_error(i18n.t("Error listing streams"), xhr, $("#administration-status"));
-}
-
-function failed_changing_name(xhr) {
-    ui.report_error(i18n.t("Error changing name"), xhr, $("#administration-status"));
 }
 
 function populate_users(realm_people_data) {
@@ -789,6 +794,9 @@ function _setup_page() {
     });
 
     $(".admin_user_table, .admin_bot_table").on("click", ".open-user-form", function (e) {
+        var users_list = people.get_realm_persons().filter(function (person)  {
+            return !person.is_bot;
+        });
         var user_id = $(e.currentTarget).attr("data-user-id");
         var user_info = get_user_info(user_id);
         var user_row = user_info.user_row;
@@ -796,19 +804,25 @@ function _setup_page() {
         var reset_button = form_row.find(".reset_edit_user");
         var submit_button = form_row.find(".submit_name_changes");
         var full_name = form_row.find("input[name='full_name']");
+        var owner_select = $(templates.render("bot_owner_select", {users_list: users_list}));
         var admin_status = $('#administration-status').expectOne();
-
         var person = people.get_person_from_user_id(user_id);
 
         if (!person) {
             return;
         }
 
+        // Dynamically add the owner select control in order to
+        // avoid performance issues in case of large number of users.
+        owner_select.val(bot_data.get(person.email).owner || "");
+        form_row.find(".edit_bot_owner_container").append(owner_select);
+
         // Show user form.
         user_row.hide();
         form_row.show();
 
         reset_button.on("click", function () {
+            owner_select.remove();
             form_row.hide();
             user_row.show();
         });
@@ -817,18 +831,24 @@ function _setup_page() {
             e.preventDefault();
             e.stopPropagation();
 
-            var url = "/json/users/" + encodeURIComponent(person.email);
+            var url = "/json/bots/" + encodeURIComponent(person.email);
             var data = {
-                full_name: JSON.stringify(full_name.val()),
+                full_name: full_name.val(),
             };
+
+            if (owner_select.val() !== undefined && owner_select.val() !== "") {
+                data.bot_owner = owner_select.val();
+            }
 
             channel.patch({
                 url: url,
                 data: data,
                 success: function () {
-                    ui.report_success(i18n.t('Name successfully updated!'), admin_status);
+                    ui.report_success(i18n.t('Updated successfully!'), admin_status);
                 },
-                error: failed_changing_name,
+                error: function () {
+                    ui.report_error(i18n.t('Update failed!'), admin_status);
+                },
             });
         });
     });

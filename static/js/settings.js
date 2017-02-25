@@ -719,15 +719,21 @@ function _setup_page() {
     var image_version = 0;
 
     $("#bots_list").on("click", "button.open_edit_bot_form", function (e) {
+        var users_list = people.get_realm_persons().filter(function (person)  {
+            return !person.is_bot;
+        });
         var li = $(e.currentTarget).closest('li');
         var edit_div = li.find('div.edit_bot');
         var form = li.find('.edit_bot_form');
         var image = li.find(".image");
         var bot_info = li.find(".bot_info");
         var reset_edit_bot = li.find(".reset_edit_bot");
-
+        var owner_select = $(templates.render("bot_owner_select", {users_list:users_list}));
         var old_full_name = bot_info.find(".name").text();
+        var old_owner = bot_data.get(bot_info.find(".email .value").text()).owner;
         form.find(".edit_bot_name").attr('value', old_full_name);
+        form.find(".edit-bot-owner .controls").append(owner_select);
+        form.find(".edit-bot-owner select").val(old_owner);
 
         image.hide();
         bot_info.hide();
@@ -744,6 +750,7 @@ function _setup_page() {
 
         reset_edit_bot.click(function (event) {
             form.find(".edit_bot_name").val(old_full_name);
+            owner_select.remove();
             show_row_again();
             $(this).off(event);
         });
@@ -758,6 +765,7 @@ function _setup_page() {
             submitHandler: function () {
                 var email = form.data('email');
                 var full_name = form.find('.edit_bot_name').val();
+                var bot_owner = form.find('.edit-bot-owner select').val();
                 var file_input = li.find('.edit_bot_avatar_file_input');
                 var default_sending_stream = form.find('.edit_bot_default_sending_stream').val();
                 var default_events_register_stream = form.find('.edit_bot_default_events_register_stream').val();
@@ -767,6 +775,7 @@ function _setup_page() {
 
                 formData.append('csrfmiddlewaretoken', csrf_token);
                 formData.append('full_name', full_name);
+                formData.append('bot_owner', bot_owner);
                 add_bot_default_streams_to_form(formData, default_sending_stream,
                                                 default_events_register_stream);
                 jQuery.each(file_input[0].files, function (i, file) {
@@ -784,6 +793,7 @@ function _setup_page() {
                         loading.destroy_indicator(spinner);
                         errors.hide();
                         edit_button.show();
+                        owner_select.remove();
                         show_row_again();
                         bot_info.find('.name').text(full_name);
                         if (data.avatar_url) {
