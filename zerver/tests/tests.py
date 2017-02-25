@@ -210,6 +210,13 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.allow_message_editing, False)
         self.assertEqual(realm.message_content_edit_limit_seconds, 200)
 
+        # waiting_period_threshold
+        set_up_db('waiting_period_threshold', 10)
+        realm = update_with_api(waiting_period_threshold=20)
+        self.assertEqual(realm.waiting_period_threshold, 20)
+        realm = update_with_api(waiting_period_threshold=10)
+        self.assertEqual(realm.waiting_period_threshold, 10)
+
     def test_admin_restrictions_for_changing_realm_name(self):
         # type: () -> None
         new_name = 'Mice will play while the cat is away'
