@@ -16,7 +16,7 @@ git+https://github.com/umairwaheed/fakeldap.git@37bc199e9589c31f4bb5bae1445ad1cd
 pyflakes==1.5.0
 
 # Needed to sync translations from transifex
-transifex-client==0.12.2
+transifex-client==0.12.4
 
 # Dependency of transifex-client
 urllib3==1.20
