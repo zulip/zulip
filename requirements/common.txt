@@ -108,7 +108,7 @@ pytz==2016.10
 redis==2.10.5
 
 # Dependencies of our API
-requests==2.12.5
+requests==2.13.0
 
 requests_oauthlib==0.7.0
 rsa==3.4.2
