@@ -63,6 +63,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             {% endif %}
             {% if form.password.errors %}
             {% for error in form.password.errors %}
+            <br />
             <div class="help-inline text-error">{{ error }}</div>
             {% endfor %}
             {% endif %}
@@ -176,6 +177,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 <label for="id_terms" class="inline-block">
                   {% trans %}I agree to the <a href="{{ server_uri }}/terms" target="_blank">Terms of Service</a>.{% endtrans %}
                 </label>
+                <br />
                 {% if form.terms.errors %}
                     {% for error in form.terms.errors %}
                         <div class="help-inline text-error">{{ error }}</div>

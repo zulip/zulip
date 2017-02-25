@@ -1456,24 +1456,12 @@ a.bottom-signup-button {
       max-width: 100vw;
   }
 
-  .markdown ol {
-      margin-left: 0px;
-  }
-
   .footer-navigation {
       font-size: 12px;
   }
 
-  .app-main .markdown {
-      max-width: 85%;
-  }
-
-  .markdown a {
-      white-space: pre-wrap;
-  }
-
-  .markdown strong {
-      white-space: pre-wrap;
+  .app-main {
+      padding: 0px;
   }
 
   .main-headline-text .tagline {
