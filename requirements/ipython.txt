@@ -9,7 +9,7 @@ pickleshare==0.7.4
 prompt_toolkit==1.0.13
 ptyprocess==0.5.1
 simplegeneric==0.8.1
-traitlets==4.3.1
+traitlets==4.3.2
 wcwidth==0.1.7
 
 #Needed for pathlib2==2.2.1
