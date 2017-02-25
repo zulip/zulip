@@ -7,6 +7,8 @@ import pytz
 from typing import Any
 
 from django.core.management.base import BaseCommand
+from django.utils import timezone
+
 from zerver.models import UserProfile, Realm, Stream, Message, get_realm
 from six.moves import range
 
@@ -20,8 +22,8 @@ class Command(BaseCommand):
 
     def messages_sent_by(self, user, week):
         # type: (UserProfile, int) -> int
-        start = datetime.datetime.now(tz=pytz.utc) - datetime.timedelta(days=(week + 1)*7)
-        end = datetime.datetime.now(tz=pytz.utc) - datetime.timedelta(days=week*7)
+        start = timezone.now() - datetime.timedelta(days=(week + 1)*7)
+        end = timezone.now() - datetime.timedelta(days=week*7)
         return Message.objects.filter(sender=user, pub_date__gt=start, pub_date__lte=end).count()
 
     def handle(self, *args, **options):

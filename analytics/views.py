@@ -1000,7 +1000,7 @@ def realm_user_summary_table(all_records, admin_emails):
 
     def is_recent(val):
         # type: (Optional[datetime]) -> bool
-        age = datetime.now(val.tzinfo) - val
+        age = timezone.now() - val
         return age.total_seconds() < 5 * 60
 
     rows = []

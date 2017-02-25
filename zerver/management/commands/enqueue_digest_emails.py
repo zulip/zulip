@@ -1,12 +1,12 @@
 from __future__ import absolute_import
 import datetime
-import pytz
 import logging
 
 from typing import Any
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
+from django.utils import timezone
 
 from zerver.lib.queue import queue_json_publish
 from zerver.models import UserActivity, UserProfile, Realm
@@ -43,7 +43,7 @@ def inactive_since(user_profile, cutoff):
 def last_business_day():
     # type: () -> datetime.datetime
     one_day = datetime.timedelta(hours=23)
-    previous_day = datetime.datetime.now(tz=pytz.utc) - one_day
+    previous_day = timezone.now() - one_day
     while previous_day.weekday() not in VALID_DIGEST_DAYS:
         previous_day -= one_day
     return previous_day
