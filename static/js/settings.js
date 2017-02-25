@@ -50,42 +50,45 @@ function build_stream_list($select, extra_names) {
 function add_bot_row(info) {
     info.id_suffix = _.uniqueId('_bot_');
     var row = $(templates.render('bot_avatar_row', info));
-    var default_sending_stream_select = row.find('select[name=bot_default_sending_stream]');
-    var default_events_register_stream_select = row.find('select[name=bot_default_events_register_stream]');
+    if (info.is_active) {
+        var default_sending_stream_select = row.find('select[name=bot_default_sending_stream]');
+        var default_events_register_stream_select = row.find('select[name=bot_default_events_register_stream]');
 
-    if (!feature_flags.new_bot_ui) {
-        row.find('.new-bot-ui').hide();
-    }
+        if (!feature_flags.new_bot_ui) {
+            row.find('.new-bot-ui').hide();
+        }
 
-    var to_extra_options = [];
-    if (info.default_sending_stream === null) {
-        to_extra_options.push(['', 'No default selected']);
-    }
-    build_stream_list(
-        default_sending_stream_select,
-        to_extra_options
-    );
-    default_sending_stream_select.val(
-        info.default_sending_stream,
-        to_extra_options
-    );
+        var to_extra_options = [];
+        if (info.default_sending_stream === null) {
+            to_extra_options.push(['', 'No default selected']);
+        }
+        build_stream_list(
+            default_sending_stream_select,
+            to_extra_options
+        );
+        default_sending_stream_select.val(
+            info.default_sending_stream,
+            to_extra_options
+        );
 
-    var events_extra_options = [['__all_public__', 'All public streams']];
-    if (info.default_events_register_stream === null && !info.default_all_public_streams) {
-        events_extra_options.unshift(['', 'No default selected']);
-    }
-    build_stream_list(
-        default_events_register_stream_select,
-        events_extra_options
-    );
-    if (info.default_all_public_streams) {
-        default_events_register_stream_select.val('__all_public__');
+        var events_extra_options = [['__all_public__', 'All public streams']];
+        if (info.default_events_register_stream === null && !info.default_all_public_streams) {
+            events_extra_options.unshift(['', 'No default selected']);
+        }
+        build_stream_list(
+            default_events_register_stream_select,
+            events_extra_options
+        );
+        if (info.default_all_public_streams) {
+            default_events_register_stream_select.val('__all_public__');
+        } else {
+            default_events_register_stream_select.val(info.default_events_register_stream);
+        }
+
+        $('#active_bots_list').append(row);
     } else {
-        default_events_register_stream_select.val(info.default_events_register_stream);
+        $('#inactive_bots_list').append(row);
     }
-
-    $('#active_bots_list').append(row);
-    $('#active_bots_list').show();
 }
 
 function add_bot_default_streams_to_form(formData, default_sending_stream,
@@ -111,18 +114,29 @@ function is_local_part(value, element) {
 
 function render_bots() {
     $('#active_bots_list').empty();
-    _.each(bot_data.get_editable(), function (elem) {
+    $('#inactive_bots_list').empty();
+
+    _.each(bot_data.get_all_bots_for_current_user(), function (elem) {
         add_bot_row({
             name: elem.full_name,
             email: elem.email,
             avatar_url: elem.avatar_url,
             api_key: elem.api_key,
+            is_active: elem.is_active,
             zuliprc: 'zuliprc', // Most browsers do not allow filename starting with `.`
             default_sending_stream: elem.default_sending_stream,
             default_events_register_stream: elem.default_events_register_stream,
             default_all_public_streams: elem.default_all_public_streams,
         });
     });
+
+    if ($("#bots_lists_navbar .active-bots-tab").hasClass("active")) {
+        $("#active_bots_list").show();
+        $("#inactive_bots_list").hide();
+    } else {
+        $("#active_bots_list").hide();
+        $("#inactive_bots_list").show();
+    }
 }
 
 exports.update_email = function (new_email) {
@@ -917,6 +931,26 @@ function _setup_page() {
                 $('#user_api_key_error').text(JSON.parse(xhr.responseText).msg).show();
             },
         });
+    });
+
+    $("#bots_lists_navbar .active-bots-tab").click(function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        $("#bots_lists_navbar .active-bots-tab").addClass("active");
+        $("#bots_lists_navbar .inactive-bots-tab").removeClass("active");
+        $("#active_bots_list").show();
+        $("#inactive_bots_list").hide();
+    });
+
+    $("#bots_lists_navbar .inactive-bots-tab").click(function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        $("#bots_lists_navbar .active-bots-tab").removeClass("active");
+        $("#bots_lists_navbar .inactive-bots-tab").addClass("active");
+        $("#active_bots_list").hide();
+        $("#inactive_bots_list").show();
     });
 
     $("#ui-settings").on("click", "input[name='change_settings']", function (e) {
