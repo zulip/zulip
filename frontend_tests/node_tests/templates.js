@@ -335,7 +335,7 @@ function render(template_name, args) {
     html += '<div id="settings">';
     html += '<div id="bot-settings" class="settings-section">';
     html += '<div class="bot-settings-form">';
-    html += '<ol id="bots_list" style="display: block">';
+    html += '<ol id="active_bots_list" style="display: block">';
     var args = {
         email: "hamlet@zulip.com",
         api_key: "123456ABCD",
