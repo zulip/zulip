@@ -354,6 +354,25 @@ function render(template_name, args) {
     assert.equal(img.attr('src'), '/hamlet/avatar/url');
 }());
 
+(function bot_owner_select() {
+    var args = {
+        users_list: [
+            {
+                email: "hamlet@zulip.com",
+                api_key: "123456ABCD",
+                full_name: "Hamlet",
+                avatar_url: "/hamlet/avatar/url",
+            },
+        ],
+    };
+    var html = render('bot_owner_select', args);
+    global.write_handlebars_output("bot_owner_select", html);
+    var option = $(html).find("option:last");
+    assert.equal(option.val(), "hamlet@zulip.com");
+    assert.equal(option.text(), "Hamlet");
+}());
+
+
 (function compose_invite_users() {
     var args = {
         email: 'hamlet@zulip.com',

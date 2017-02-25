@@ -96,8 +96,11 @@ function dispatch_normal_event(event) {
         } else if (event.op === 'remove') {
             bot_data.remove(event.bot.email);
         } else if (event.op === 'update') {
+            if (_.has(event.bot, 'owner_id')) {
+                event.bot.owner = people.get_person_from_user_id(event.bot.owner_id).email;
+            }
             bot_data.update(event.bot.email, event.bot);
-            admin.update_user_full_name(event.bot.user_id, event.bot.full_name);
+            admin.update_user_data(event.bot.user_id, event.bot);
         }
         break;
 

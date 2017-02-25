@@ -547,12 +547,12 @@ run(function (override, capture, args) {
 
     event = event_fixtures.realm_bot__update;
     override('bot_data', 'update', capture(['email', 'bot']));
-    override('admin', 'update_user_full_name', capture(['update_user_id', 'name']));
+    override('admin', 'update_user_data', capture(['update_user_id', 'update_bot_data']));
     dispatch(event);
     assert_same(args.email, event.bot.email);
     assert_same(args.bot, event.bot);
     assert_same(args.update_user_id, event.bot.user_id);
-    assert_same(args.name, event.bot.full_name);
+    assert_same(args.update_bot_data, event.bot);
 
 });
 
