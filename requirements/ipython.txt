@@ -13,4 +13,4 @@ traitlets==4.3.1
 wcwidth==0.1.7
 
 #Needed for pathlib2==2.2.1
-scandir==1.4
+scandir==1.5
