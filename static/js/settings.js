@@ -84,8 +84,8 @@ function add_bot_row(info) {
         default_events_register_stream_select.val(info.default_events_register_stream);
     }
 
-    $('#bots_list').append(row);
-    $('#bots_list').show();
+    $('#active_bots_list').append(row);
+    $('#active_bots_list').show();
 }
 
 function add_bot_default_streams_to_form(formData, default_sending_stream,
@@ -110,7 +110,7 @@ function is_local_part(value, element) {
 }
 
 function render_bots() {
-    $('#bots_list').empty();
+    $('#active_bots_list').empty();
     _.each(bot_data.get_editable(), function (elem) {
         add_bot_row({
             name: elem.full_name,
@@ -755,7 +755,7 @@ function _setup_page() {
         },
     });
 
-    $("#bots_list").on("click", "button.delete_bot", function (e) {
+    $("#active_bots_list").on("click", "button.delete_bot", function (e) {
         var email = $(e.currentTarget).data('email');
         channel.del({
             url: '/json/bots/' + encodeURIComponent(email),
@@ -769,7 +769,7 @@ function _setup_page() {
         });
     });
 
-    $("#bots_list").on("click", "button.regenerate_bot_api_key", function (e) {
+    $("#active_bots_list").on("click", "button.regenerate_bot_api_key", function (e) {
         var email = $(e.currentTarget).data('email');
         channel.post({
             url: '/json/bots/' + encodeURIComponent(email) + '/api_key/regenerate',
@@ -790,7 +790,7 @@ function _setup_page() {
 
     var avatar_widget = avatar.build_bot_edit_widget($("#settings_page"));
 
-    $("#bots_list").on("click", "button.open_edit_bot_form", function (e) {
+    $("#active_bots_list").on("click", "button.open_edit_bot_form", function (e) {
         var users_list = people.get_realm_persons().filter(function (person)  {
             return !person.is_bot;
         });
@@ -889,7 +889,7 @@ function _setup_page() {
 
     });
 
-    $("#bots_list").on("click", "a.download_bot_zuliprc", function () {
+    $("#active_bots_list").on("click", "a.download_bot_zuliprc", function () {
         var bot_info = $(this).closest(".bot-information-box");
         var email = bot_info.find(".email .value").text();
         var api_key = bot_info.find(".api_key .api-key-value-and-button .value").text();
