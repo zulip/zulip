@@ -122,7 +122,7 @@ def log_event(event):
 
     template = os.path.join(settings.EVENT_LOG_DIR,
                             '%s.' + platform.node() +
-                            datetime.datetime.now().strftime('.%Y-%m-%d'))
+                            timezone.now().strftime('.%Y-%m-%d'))
 
     with lockfile(template % ('lock',)):
         with open(template % ('events',), 'a') as log:
