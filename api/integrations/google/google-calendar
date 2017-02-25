@@ -107,8 +107,10 @@ def get_credentials():
         logging.error("Run the get-google-credentials script from this directory first.")
 
 
-def get_events():
-    # type: () -> Iterable[Tuple[int, datetime.datetime, str]]
+def populate_events():
+    # type: () -> Optional[None]
+    global events
+
     credentials = get_credentials()
     creds = credentials.authorize(httplib2.Http())
     service = discovery.build('calendar', 'v3', http=creds)
@@ -117,6 +119,7 @@ def get_events():
     feed = service.events().list(calendarId=options.calendarID, timeMin=now, maxResults=5,
                                  singleEvents=True, orderBy='startTime').execute()
 
+    events = []
     for event in feed["items"]:
         try:
             start = dateutil.parser.parse(event["start"]["dateTime"])
@@ -140,9 +143,9 @@ def get_events():
             start = calendar_timezone.localize(start_naive) # type: ignore
 
         try:
-            yield (event["id"], start, event["summary"])
+            events.append((event["id"], start, event["summary"]))
         except KeyError:
-            yield (event["id"], start, "(No Title)")
+            events.append((event["id"], start, "(No Title)"))
 
 
 def send_reminders():
@@ -190,7 +193,7 @@ for i in itertools.count():
         # We check reminders every minute, but only
         # download the calendar every 10 minutes.
         if not i % 10:
-            events = list(get_events())
+            populate_events()
         send_reminders()
     except:
         logging.exception("Couldn't download Google calendar and/or couldn't post to Zulip.")
