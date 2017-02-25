@@ -25,7 +25,7 @@ backports-abc==0.5
 backports.ssl-match-hostname==3.5.0.1
 
 # Needed for S3 file uploads
-boto==2.45.0
+boto==2.46.1
 
 certifi==2017.1.23
 chardet==2.3.0
