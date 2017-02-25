@@ -178,9 +178,8 @@ exports.huddle_fraction_present = function (huddle, presence_info) {
     return ratio.toFixed(2);
 };
 
-function sort_users(user_ids, presence_info) {
-    // TODO sort by unread count first, once we support that
-    user_ids.sort(function (a, b) {
+function get_compare_function(presence_info) {
+    return function (a, b) {
         if (presence_info[a].status === 'active' && presence_info[b].status !== 'active') {
             return -1;
         } else if (presence_info[b].status === 'active' && presence_info[a].status !== 'active') {
@@ -203,8 +202,12 @@ function sort_users(user_ids, presence_info) {
             full_name_b = people.get_person_from_user_id(b).full_name;
         }
         return util.strcmp(full_name_a, full_name_b);
-    });
+    };
+}
 
+function sort_users(user_ids, presence_info) {
+    // TODO sort by unread count first, once we support that
+    user_ids.sort(get_compare_function(presence_info));
     return user_ids;
 }
 
