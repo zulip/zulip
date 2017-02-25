@@ -205,7 +205,7 @@ newly-added `actions.py` code to update the database. This example
 feature adds a new parameter that should be sent to clients when the
 application loads and be accessible via JavaScript, and there is already
 a view that does this for related flags: `update_realm`. So in this
-case, we can add out code to the existing view instead of creating a
+case, we can add our code to the existing view instead of creating a
 new one. :
 
     # zerver/views/__init__.py
