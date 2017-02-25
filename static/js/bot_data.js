@@ -39,6 +39,12 @@ var bot_data = (function () {
         send_change_event();
     };
 
+    exports.get_all_bots_for_current_user = function bots_data__get_editable() {
+        return _.filter(bots, function (bot) {
+            return people.is_current_user(bot.owner);
+        });
+    };
+
     exports.get_editable = function bots_data__get_editable() {
         return _.filter(bots, function (bot) {
             return bot.is_active && people.is_current_user(bot.owner);
