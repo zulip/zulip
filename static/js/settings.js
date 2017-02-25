@@ -783,6 +783,17 @@ function _setup_page() {
         });
     });
 
+    $("#inactive_bots_list").on("click", "button.reactivate_bot", function (e) {
+        var email = $(e.currentTarget).data('email');
+
+        channel.post({
+            url: '/json/users/' + encodeURIComponent(email) + "/reactivate",
+            error: function (xhr) {
+                $('#bot_delete_error').text(JSON.parse(xhr.responseText).msg).show();
+            },
+        });
+    });
+
     $("#active_bots_list").on("click", "button.regenerate_bot_api_key", function (e) {
         var email = $(e.currentTarget).data('email');
         channel.post({

@@ -580,6 +580,10 @@ input[type=checkbox].inline-block {
     background-color: #FAFAFA;
 }
 
+#inactive_bots_list .bot_info .reactivate_bot {
+    margin-top: 5px;
+}
+
 .edit_bot_form {
     font-size: 100%;
     margin: 0px;
