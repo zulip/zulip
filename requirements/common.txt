@@ -110,7 +110,7 @@ redis==2.10.5
 # Dependencies of our API
 requests==2.13.0
 
-requests_oauthlib==0.7.0
+requests_oauthlib==0.8.0
 rsa==3.4.2
 
 # Dependencies of our API
