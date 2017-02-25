@@ -1029,7 +1029,6 @@ function render(template_name, args) {
     var args = {
         users: [
             {
-                my_fullname: true,
                 type_desc: "Active",
                 type: "active",
                 num_unread: 0,
@@ -1053,7 +1052,7 @@ function render(template_name, args) {
 
     global.write_handlebars_output("user_presence_rows", html);
 
-    var a = $(html).find("a.my_fullname:first");
+    var a = $(html).find("a:first");
     assert.equal(a.text(), 'King Lear');
 }());
 
