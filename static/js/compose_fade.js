@@ -177,6 +177,14 @@ function _want_normal_display() {
     return focused_recipient.type === "private" && focused_recipient.reply_to === "";
 }
 
+exports.update_one_user_row = function (elt) {
+    if (_want_normal_display()) {
+        elt.removeClass('faded').removeClass('unfaded');
+    } else {
+        update_user_row_when_fading(elt);
+    }
+};
+
 function _update_faded_messages() {
     // See also update_faded_messages(), which just wraps this with a debounce.
     // FIXME: This fades users too now, as well as messages, so should have
