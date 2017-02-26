@@ -1160,6 +1160,7 @@ class Attachment(ModelReprMixin, models.Model):
     is_realm_public = models.BooleanField(default=False) # type: bool
     messages = models.ManyToManyField(Message) # type: Manager
     create_time = models.DateTimeField(default=timezone.now, db_index=True) # type: datetime.datetime
+    size = models.IntegerField(null=True) # type: int
 
     def __unicode__(self):
         # type: () -> Text
