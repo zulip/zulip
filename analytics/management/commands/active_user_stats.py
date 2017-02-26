@@ -19,7 +19,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
         # Get list of all active users in the last 1 week
-        cutoff = datetime.now() - timedelta(minutes=30, hours=168)
+        cutoff = timezone.now() - timedelta(minutes=30, hours=168)
 
         users = UserPresence.objects.select_related().filter(timestamp__gt=cutoff)
 

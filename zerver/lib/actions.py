@@ -445,7 +445,7 @@ def delete_realm_user_sessions(realm):
     # type: (Realm) -> None
     realm_user_ids = [user_profile.id for user_profile in
                       UserProfile.objects.filter(realm=realm)]
-    for session in Session.objects.filter(expire_date__gte=datetime.datetime.now()):
+    for session in Session.objects.filter(expire_date__gte=timezone.now()):
         if get_session_user(session) in realm_user_ids:
             delete_session(session)
 

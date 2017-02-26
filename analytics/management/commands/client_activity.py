@@ -6,6 +6,7 @@ from typing import Any
 from argparse import ArgumentParser
 from django.core.management.base import BaseCommand
 from django.db.models import Count, QuerySet
+from django.utils import timezone
 
 from zerver.models import UserActivity, UserProfile, Realm, \
     get_realm, get_user_profile_by_email
@@ -38,7 +39,7 @@ Usage examples:
         #
         # Importantly, this does NOT tell you anything about the relative
         # volumes of requests from clients.
-        threshold = datetime.datetime.now() - datetime.timedelta(days=7)
+        threshold = timezone.now() - datetime.timedelta(days=7)
         client_counts = user_activity_objects.filter(
             last_visit__gt=threshold).values("client__name").annotate(
             count=Count('client__name'))
