@@ -20,8 +20,7 @@ import ujson
 from six.moves import urllib
 from PIL import Image
 
-from boto.s3.connection import S3Connection
-from boto.s3.key import Key
+import boto3
 from six.moves import StringIO as _StringIO
 import mock
 import os
@@ -523,8 +522,10 @@ class S3Test(ZulipTestCase):
     @use_s3_backend
     def test_file_upload_s3(self):
         # type: () -> None
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        bucket = conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
+        client = boto3.client('s3',
+                              aws_access_key_id=settings.S3_KEY,
+                              aws_secret_access_key=settings.S3_SECRET_KEY)
+        client.create_bucket(Bucket=settings.S3_AUTH_UPLOADS_BUCKET)
 
         sender_email = "hamlet@zulip.com"
         user_profile = get_user_profile_by_email(sender_email)
@@ -533,7 +534,8 @@ class S3Test(ZulipTestCase):
         base = '/user_uploads/'
         self.assertEqual(base, uri[:len(base)])
         path_id = re.sub('/user_uploads/', '', uri)
-        self.assertEqual(b"zulip!", bucket.get_key(path_id).get_contents_as_string())
+        obj = client.get_object(Bucket=settings.S3_AUTH_UPLOADS_BUCKET, Key=path_id)
+        self.assertEqual(b"zulip!", obj['Body'].read())
 
         self.subscribe_to_stream("hamlet@zulip.com", "Denmark")
         body = "First message ...[zulip.txt](http://localhost:9991" + uri + ")"
@@ -543,8 +545,10 @@ class S3Test(ZulipTestCase):
     @use_s3_backend
     def test_message_image_delete_s3(self):
         # type: () -> None
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
+        client = boto3.client('s3',
+                              aws_access_key_id=settings.S3_KEY,
+                              aws_secret_access_key=settings.S3_SECRET_KEY)
+        client.create_bucket(Bucket=settings.S3_AUTH_UPLOADS_BUCKET)
 
         sender_email = "hamlet@zulip.com"
         user_profile = get_user_profile_by_email(sender_email)
@@ -559,8 +563,10 @@ class S3Test(ZulipTestCase):
         """
         A call to /json/upload_file should return a uri and actually create an object.
         """
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
+        client = boto3.client('s3',
+                              aws_access_key_id=settings.S3_KEY,
+                              aws_secret_access_key=settings.S3_SECRET_KEY)
+        client.create_bucket(Bucket=settings.S3_AUTH_UPLOADS_BUCKET)
 
         self.login("hamlet@zulip.com")
         fp = StringIO("zulip!")
