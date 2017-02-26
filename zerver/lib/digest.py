@@ -3,6 +3,7 @@ from typing import Any, Callable, Iterable, Tuple, Text
 
 from collections import defaultdict
 import datetime
+import pytz
 import six
 
 from django.db.models import Q, QuerySet
@@ -159,7 +160,7 @@ def handle_digest_email(user_profile_id, cutoff):
     # type: (int, float) -> None
     user_profile = UserProfile.objects.get(id=user_profile_id)
     # Convert from epoch seconds to a datetime object.
-    cutoff_date = datetime.datetime.utcfromtimestamp(int(cutoff))
+    cutoff_date = datetime.datetime.fromtimestamp(int(cutoff), tz=pytz.utc)
 
     all_messages = UserMessage.objects.filter(
         user_profile=user_profile,
