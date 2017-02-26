@@ -13,6 +13,7 @@ from __future__ import absolute_import
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.core.mail import get_connection, send_mail
+from django.utils import timezone
 from django.utils.html import format_html
 
 from zerver.models import ScheduledJob
@@ -85,10 +86,8 @@ Usage: ./manage.py deliver_email
 
         with lockfile("/tmp/zulip_email_deliver.lockfile"):
             while True:
-                # make sure to use utcnow, otherwise it gets confused when you set the time with utcnow(),
-                # and select with now()
                 email_jobs_to_deliver = ScheduledJob.objects.filter(type=ScheduledJob.EMAIL,
-                                                                    scheduled_timestamp__lte=datetime.utcnow())
+                                                                    scheduled_timestamp__lte=timezone.now())
                 if email_jobs_to_deliver:
                     for job in email_jobs_to_deliver:
                         if not send_email_job(job):
