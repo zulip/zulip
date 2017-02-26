@@ -10,6 +10,7 @@ from django.http import HttpRequest, HttpResponse
 from typing import Dict, Any, Optional, Text
 
 from datetime import datetime
+import time
 
 @api_key_only_webhook_view('Stripe')
 @has_request_variables
@@ -77,10 +78,14 @@ def api_stripe_webhook(request, user_profile, client,
                     body_template = "The customer subscription with id **[{id}]({link})** was deleted."
                     body = body_template.format(id=object_id, link=link)
 
-                else:
-                    end_time = datetime.fromtimestamp(data_object["trial_end"]).strftime('%b %d %Y at %I:%M%p')
-                    body_template = "The customer subscription trial with id **[{id}]({link})** will end on {time}"
-                    body = body_template.format(id=object_id, link=link, time=end_time)
+                else: # customer.subscription.trial_will_end
+                    DAY = 60 * 60 * 24 # seconds in a day
+                    # days_left should always be three according to
+                    # https://stripe.com/docs/api/python#event_types, but do the
+                    # computation just to be safe.
+                    days_left = int((data_object["trial_end"] - time.time() + DAY//2) // DAY)
+                    body_template = "The customer subscription trial with id **[{id}]({link})** will end in {days} days."
+                    body = body_template.format(id=object_id, link=link, days=days_left)
 
             else:
                 link = "https://dashboard.stripe.com/customers/{}".format(object_id)

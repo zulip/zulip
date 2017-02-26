@@ -2,6 +2,8 @@
 from typing import Text
 from zerver.lib.test_classes import WebhookTestCase
 
+import mock
+
 class StripeHookTests(WebhookTestCase):
     STREAM_NAME = 'test'
     URL_TEMPLATE = "/api/v1/external/stripe?&api_key={api_key}"
@@ -91,11 +93,14 @@ class StripeHookTests(WebhookTestCase):
     def test_customer_subscription_trial_will_end(self):
         # type: () -> None
         expected_subject = u"Customer sub_00000000000000"
-        expected_message = u"The customer subscription trial with id **[sub_00000000000000](https://dashboard.stripe.com/subscriptions/sub_00000000000000)** will end on Dec 04 2016 at 06:07PM"
+        expected_message = u"The customer subscription trial with id **[sub_00000000000000](https://dashboard.stripe.com/subscriptions/sub_00000000000000)** will end in 3 days."
 
-        # use fixture named stripe_customer_subscription_trial_will_end
-        self.send_and_test_stream_message('customer_subscription_trial_will_end', expected_subject, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
+        # 3 days before the end of the trial, plus a little bit to make sure the rounding is working
+        with mock.patch('time.time', return_value=1480892861 - 3*3600*24 + 100):
+            # use fixture named stripe_customer_subscription_trial_will_end
+            self.send_and_test_stream_message('customer_subscription_trial_will_end',
+                                              expected_subject, expected_message,
+                                              content_type="application/x-www-form-urlencoded")
 
     def test_invoice_payment_failed(self):
         # type: () -> None

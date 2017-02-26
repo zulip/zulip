@@ -62,12 +62,9 @@ def add_time_part_to_string_date_if_needed(value, text_name):
 
 def get_body_for_down_event(event):
     # type: (Dict[str, Any]) -> str
-    event_downtime = event['downtime']
-    started_at = datetime.strptime(event_downtime['started_at'], "%Y-%m-%dT%H:%M:%SZ")
-    return "Service is `down`. It returned \"{}\" error at {}.".format(
-        event_downtime['error'],
-        started_at.strftime("%d-%m-%Y %H:%M")
-    )
+    return "Service is `down`. It returned a {} error at {}.".format(
+        event['downtime']['error'],
+        event['downtime']['started_at'].replace('T', ' ').replace('Z', ' UTC'))
 
 @api_key_only_webhook_view('Updown')
 @has_request_variables

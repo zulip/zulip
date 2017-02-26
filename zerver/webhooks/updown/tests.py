@@ -9,7 +9,7 @@ class UpdownHookTests(WebhookTestCase):
     def test_updown_check_down_event(self):
         # type: () -> None
         expected_subject = u"https://updown.io"
-        expected_message = u"Service is `down`. It returned \"500\" error at 07-02-2016 13:11."
+        expected_message = u"Service is `down`. It returned a 500 error at 2016-02-07 13:11:43 UTC."
         self.send_and_test_stream_message('check_down_one_event', expected_subject, expected_message)
 
     def test_updown_check_up_again_event(self):
@@ -30,7 +30,7 @@ class UpdownHookTests(WebhookTestCase):
         first_message_expected_message = u"Service is `up` again after 1 second."
 
         second_message_expected_subject = u"https://updown.io"
-        second_message_expected_message = u"Service is `down`. It returned \"500\" error at 07-02-2016 13:11."
+        second_message_expected_message = u"Service is `down`. It returned a 500 error at 2016-02-07 13:11:43 UTC."
 
         self.send_and_test_stream_message('check_multiple_events')
         last_message = self.get_last_message()

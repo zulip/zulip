@@ -1,10 +1,11 @@
 from __future__ import absolute_import
 
+from datetime import datetime
 from typing import Any, Optional, Callable, Tuple, Text
 from six.moves import zip
 
+from django.utils import timezone
 from django.utils.translation import ugettext as _
-from django.utils.datetime_safe import datetime
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view, REQ, has_request_variables
@@ -47,7 +48,8 @@ class LibratoWebhookParser(object):
     def parse_violation(self, violation):
         # type: (Dict[str, Any]) -> Tuple[Text, Text]
         metric_name = violation['metric']
-        recorded_at = datetime.fromtimestamp((violation['recorded_at']))
+        recorded_at = datetime.fromtimestamp((violation['recorded_at']),
+                                             tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
         return metric_name, recorded_at
 
     def parse_conditions(self):
@@ -102,8 +104,9 @@ class LibratoWebhookHandler(LibratoWebhookParser):
 
     def handle_alert_clear_message(self):
         # type: () -> Text
-        alert_clear_template = "Alert [alert_name]({alert_url}) has cleared at {trigger_time}!"
-        trigger_time = datetime.fromtimestamp((self.payload['trigger_time']))
+        alert_clear_template = "Alert [alert_name]({alert_url}) has cleared at {trigger_time} UTC!"
+        trigger_time = datetime.fromtimestamp((self.payload['trigger_time']),
+                                              tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
         alert_id, alert_name, alert_url, alert_runbook_url = self.parse_alert()
         content = alert_clear_template.format(alert_name=alert_name, alert_url=alert_url, trigger_time=trigger_time)
         return content
@@ -152,7 +155,7 @@ class LibratoWebhookHandler(LibratoWebhookParser):
             threshold=threshold)
         if duration:
             content += u" by {duration}s".format(duration=duration)
-        content += u", recorded at {recorded_at}".format(recorded_at=recorded_at)
+        content += u", recorded at {recorded_at} UTC".format(recorded_at=recorded_at)
         return content
 
 @api_key_only_webhook_view('Librato')
