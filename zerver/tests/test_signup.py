@@ -690,7 +690,15 @@ class InviteeEmailsParserTests(TestCase):
 class EmailUnsubscribeTests(ZulipTestCase):
     def test_error_unsubscribe(self):
         # type: () -> None
+
+        # An invalid insubscribe token "test123" produces an error.
         result = self.client_get('/accounts/unsubscribe/missed_messages/test123')
+        self.assert_in_response('Unknown email unsubscribe request', result)
+
+        # An unknown message type "fake" produces an error.
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        unsubscribe_link = one_click_unsubscribe_link(user_profile, "fake")
+        result = self.client_get(urllib.parse.urlparse(unsubscribe_link).path)
         self.assert_in_response('Unknown email unsubscribe request', result)
 
     def test_missedmessage_unsubscribe(self):
