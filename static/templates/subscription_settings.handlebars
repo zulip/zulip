@@ -28,7 +28,12 @@
   </div>
   <div class="regular_subscription_settings collapse {{#subscribed}}in{{/subscribed}}">
     <div class="subscription-type">
-      {{partial "subscription_type"}}
+      <div class="subscription-type-text">
+        {{partial "subscription_type"}}
+      </div>
+        {{#if is_admin}}
+          <a class="change-stream-privacy" data-is-private="{{#if can_make_public}}true{{else}}false{{/if}}">{{t "[Change]"}}</a>
+        {{/if}}
     </div>
     <div class="subscription-config">
     <ul>
@@ -77,15 +82,6 @@
   </div>
   </div>
   {{/if_and}}
-
-  {{#if is_admin}}
-    <div class="admin-settings">
-      <div class="sub_settings_title">{{t "Administrator settings" }}</div>
-      <div class="change-stream-privacy">
-        {{partial "change_stream_privacy"}}
-      </div>
-    </div>
-  {{/if}}
 
   {{#render_subscribers}}
   <div class="subscriber_list_settings">
