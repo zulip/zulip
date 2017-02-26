@@ -6,6 +6,7 @@ from unittest import skip
 
 from zerver.lib.avatar import avatar_url
 from zerver.lib.bugdown import url_filename
+from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.test_classes import ZulipTestCase, UploadSerializeMixin
 from zerver.lib.test_helpers import avatar_disk_path, get_test_image_file
 from zerver.lib.test_runner import slow
@@ -13,7 +14,7 @@ from zerver.lib.upload import sanitize_name, S3UploadBackend, \
     upload_message_image, delete_message_image, LocalUploadBackend
 import zerver.lib.upload
 from zerver.models import Attachment, Recipient, get_user_profile_by_email, \
-    get_old_unclaimed_attachments, Message, UserProfile
+    get_old_unclaimed_attachments, Message, UserProfile, Realm, get_realm
 from zerver.lib.actions import do_delete_old_unclaimed_attachments
 
 import ujson
@@ -444,7 +445,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             with get_test_image_file(fname) as fp:
                 result = self.client_put_multipart("/json/users/me/avatar", {'file': fp})
 
-            self.assert_json_error(result, "Could not decode avatar image; did you upload an image file?")
+            self.assert_json_error(result, "Could not decode image; did you upload an image file?")
             user_profile = get_user_profile_by_email("hamlet@zulip.com")
             self.assertEqual(user_profile.avatar_version, 1)
 
@@ -468,6 +469,145 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 
         self.assertEqual(user_profile.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
         self.assertEqual(user_profile.avatar_version, 2)
+
+    def tearDown(self):
+        # type: () -> None
+        destroy_uploads()
+
+class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
+
+    def test_multiple_upload_failure(self):
+        # type: () -> None
+        """
+        Attempting to upload two files should fail.
+        """
+        # Log in as admin
+        self.login("iago@zulip.com")
+        with get_test_image_file('img.png') as fp1, \
+                get_test_image_file('img.png') as fp2:
+            result = self.client_put_multipart("/json/realm/icon", {'f1': fp1, 'f2': fp2})
+        self.assert_json_error(result, "You must upload exactly one icon.")
+
+    def test_no_file_upload_failure(self):
+        # type: () -> None
+        """
+        Calling this endpoint with no files should fail.
+        """
+        self.login("iago@zulip.com")
+
+        result = self.client_put_multipart("/json/realm/icon")
+        self.assert_json_error(result, "You must upload exactly one icon.")
+
+    correct_files = [
+        ('img.png', 'png_resized.png'),
+        ('img.jpg', None), # jpeg resizing is platform-dependent
+        ('img.gif', 'gif_resized.png'),
+        ('img.tif', 'tif_resized.png')
+    ]
+    corrupt_files = ['text.txt', 'corrupt.png', 'corrupt.gif']
+
+    def test_no_admin_user_upload(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        with get_test_image_file(self.correct_files[0][0]) as fp:
+            result = self.client_put_multipart("/json/realm/icon", {'file': fp})
+        self.assert_json_error(result, 'Must be a realm administrator')
+
+    def test_get_gravatar_icon(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        realm = get_realm('zulip')
+        realm.icon_source = Realm.ICON_FROM_GRAVATAR
+        realm.save()
+        with self.settings(ENABLE_GRAVATAR=True):
+            response = self.client_get("/json/realm/icon?foo=bar")
+            redirect_url = response['Location']
+            self.assertEqual(redirect_url, realm_icon_url(realm) + '&foo=bar')
+
+        with self.settings(ENABLE_GRAVATAR=False):
+            response = self.client_get("/json/realm/icon?foo=bar")
+            redirect_url = response['Location']
+            self.assertTrue(redirect_url.endswith(realm_icon_url(realm) + '&foo=bar'))
+
+    def test_get_realm_icon(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+
+        realm = get_realm('zulip')
+        realm.icon_source = Realm.ICON_UPLOADED
+        realm.save()
+        response = self.client_get("/json/realm/icon?foo=bar")
+        redirect_url = response['Location']
+        self.assertTrue(redirect_url.endswith(realm_icon_url(realm) + '&foo=bar'))
+
+    def test_valid_icons(self):
+        # type: () -> None
+        """
+        A PUT request to /json/realm/icon with a valid file should return a url
+        and actually create an realm icon.
+        """
+        for fname, rfname in self.correct_files:
+            # TODO: use self.subTest once we're exclusively on python 3 by uncommenting the line below.
+            # with self.subTest(fname=fname):
+            self.login("iago@zulip.com")
+            with get_test_image_file(fname) as fp:
+                result = self.client_put_multipart("/json/realm/icon", {'file': fp})
+            realm = get_realm('zulip')
+            self.assert_json_success(result)
+            json = ujson.loads(result.content)
+            self.assertIn("icon_url", json)
+            url = json["icon_url"]
+            base = '/realms/%s/realm/icon.png' % (realm.id,)
+            self.assertEqual(base, url[:len(base)])
+
+            if rfname is not None:
+                response = self.client_get(url)
+                data = b"".join(response.streaming_content)
+                self.assertEqual(Image.open(io.BytesIO(data)).size, (100, 100))
+
+    def test_invalid_icons(self):
+        # type: () -> None
+        """
+        A PUT request to /json/realm/icon with an invalid file should fail.
+        """
+        for fname in self.corrupt_files:
+            # with self.subTest(fname=fname):
+            self.login("iago@zulip.com")
+            with get_test_image_file(fname) as fp:
+                result = self.client_put_multipart("/json/realm/icon", {'file': fp})
+
+            self.assert_json_error(result, "Could not decode image; did you upload an image file?")
+
+    def test_delete_icon(self):
+        # type: () -> None
+        """
+        A DELETE request to /json/realm/icon should delete the realm icon and return gravatar URL
+        """
+        self.login("iago@zulip.com")
+        realm = get_realm('zulip')
+        realm.icon_source = Realm.ICON_UPLOADED
+        realm.save()
+
+        result = self.client_delete("/json/realm/icon")
+
+        self.assert_json_success(result)
+        json = ujson.loads(result.content)
+        self.assertIn("icon_url", json)
+        realm = get_realm('zulip')
+        self.assertEqual(json["icon_url"], realm_icon_url(realm))
+        self.assertEqual(realm.icon_source, Realm.ICON_FROM_GRAVATAR)
+
+    def test_realm_icon_version(self):
+        # type: () -> None
+
+        self.login("iago@zulip.com")
+        realm = get_realm('zulip')
+        icon_version = realm.icon_version
+        self.assertEqual(icon_version, 1)
+        with get_test_image_file(self.correct_files[0][0]) as fp:
+            self.client_put_multipart("/json/realm/icon", {'file': fp})
+        realm = get_realm('zulip')
+        self.assertEqual(realm.icon_version, icon_version + 1)
 
     def tearDown(self):
         # type: () -> None
