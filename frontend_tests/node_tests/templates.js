@@ -872,7 +872,7 @@ function render(template_name, args) {
 
     var button = $(html).find("#change-stream-privacy-button");
     assert(button.hasClass("btn-primary"));
-    assert.equal(button.text().trim(), "Make Stream Public");
+    assert.equal(button.text().trim(), "Make stream public");
 }());
 
 
