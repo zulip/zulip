@@ -467,32 +467,21 @@ exports.initialize = function () {
     exports.update_huddles();
 };
 
-// Set user statuses. `users` should be an object with user emails as keys
-// and presence information (see `status_from_timestamp`) as values.
-//
-// The object does not need to include every user, only the ones
-// whose presence you wish to update.
-//
-// This rerenders the user sidebar at the end, which can be slow if done too
-// often, so try to avoid calling this repeatedly.
-exports.set_user_statuses = function (users, server_time) {
-    var updated_users = {};
-    var status;
-    _.each(users, function (presence, email) {
-        if (people.is_current_user(email)) {
-            return;
-        }
-        status = status_from_timestamp(server_time, presence);
-        var user_id = people.get_user_id(email);
-        if (user_id) {
-            exports.presence_info[user_id] = status;
-            updated_users[user_id] = status;
-        } else {
-            blueslip.warn('unknown email: ' + email);
-        }
-    });
+exports.set_user_status = function (email, presence, server_time) {
+    if (people.is_current_user(email)) {
+        return;
+    }
+    var user_id = people.get_user_id(email);
+    if (user_id) {
+        var status = status_from_timestamp(server_time, presence);
+        exports.presence_info[user_id] = status;
+        var updated_users = {};
+        updated_users[user_id] = status;
+        exports.update_users(updated_users);
+    } else {
+        blueslip.warn('unknown email: ' + email);
+    }
 
-    exports.update_users(updated_users);
     exports.update_huddles();
 };
 
