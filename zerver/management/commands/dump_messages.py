@@ -5,6 +5,7 @@ from typing import Any
 
 from optparse import make_option
 from django.core.management.base import BaseCommand, CommandParser
+from django.utils import timezone
 from zerver.models import get_realm, Message, Realm, Stream, Recipient
 
 import datetime
@@ -31,7 +32,7 @@ class Command(BaseCommand):
         streams = Stream.objects.filter(realm=realm, invite_only=False)
         recipients = Recipient.objects.filter(
             type=Recipient.STREAM, type_id__in=[stream.id for stream in streams])
-        cutoff = datetime.datetime.fromtimestamp(options["since"])
+        cutoff = datetime.datetime.fromtimestamp(options["since"], tz=timezone.utc)
         messages = Message.objects.filter(pub_date__gt=cutoff, recipient__in=recipients)
 
         for message in messages:
