@@ -131,19 +131,23 @@ exports.would_receive_message = function (email) {
     return util.is_pm_recipient(email, focused_recipient);
 };
 
+function update_user_row_when_fading(elt) {
+    var user_id = elt.attr('data-user-id');
+    var email = people.get_person_from_user_id(user_id).email;
+    var would_receive = exports.would_receive_message(email);
+    if (would_receive === true) {
+        elt.addClass('unfaded').removeClass('faded');
+    } else if (would_receive === false) {
+        elt.addClass('faded').removeClass('unfaded');
+    } else {
+        elt.removeClass('faded').removeClass('unfaded');
+    }
+}
+
 function _fade_users() {
     _.forEach($('.user_sidebar_entry'), function (elt) {
         elt = $(elt);
-        var user_id = elt.attr('data-user-id');
-        var email = people.get_person_from_user_id(user_id).email;
-        var would_receive = exports.would_receive_message(email);
-        if (would_receive === true) {
-            elt.addClass('unfaded').removeClass('faded');
-        } else if (would_receive === false) {
-            elt.addClass('faded').removeClass('unfaded');
-        } else {
-            elt.removeClass('faded').removeClass('unfaded');
-        }
+        update_user_row_when_fading(elt);
     });
 }
 
