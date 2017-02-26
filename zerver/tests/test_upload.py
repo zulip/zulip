@@ -638,13 +638,16 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         # type: () -> None
         sender_email = "hamlet@zulip.com"
         user_profile = get_user_profile_by_email(sender_email)
-        uri = upload_message_image(u'dummy.txt', u'text/plain', b'zulip!', user_profile)
+        uri = upload_message_image(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
 
         base = '/user_uploads/'
         self.assertEqual(base, uri[:len(base)])
         path_id = re.sub('/user_uploads/', '', uri)
         file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, 'files', path_id)
         self.assertTrue(os.path.isfile(file_path))
+
+        uploaded_file = Attachment.objects.get(owner=user_profile, path_id=path_id)
+        self.assertEqual(len(b'zulip!'), uploaded_file.size)
 
     def test_delete_message_image_local(self):
         # type: () -> None
@@ -687,12 +690,16 @@ class S3Test(ZulipTestCase):
 
         sender_email = "hamlet@zulip.com"
         user_profile = get_user_profile_by_email(sender_email)
-        uri = upload_message_image(u'dummy.txt', u'text/plain', b'zulip!', user_profile)
+        uri = upload_message_image(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
 
         base = '/user_uploads/'
         self.assertEqual(base, uri[:len(base)])
         path_id = re.sub('/user_uploads/', '', uri)
-        self.assertEqual(b"zulip!", bucket.get_key(path_id).get_contents_as_string())
+        content = bucket.get_key(path_id).get_contents_as_string()
+        self.assertEqual(b"zulip!", content)
+
+        uploaded_file = Attachment.objects.get(owner=user_profile, path_id=path_id)
+        self.assertEqual(len(b"zulip!"), uploaded_file.size)
 
         self.subscribe_to_stream("hamlet@zulip.com", "Denmark")
         body = "First message ...[zulip.txt](http://localhost:9991" + uri + ")"
@@ -707,7 +714,7 @@ class S3Test(ZulipTestCase):
 
         sender_email = "hamlet@zulip.com"
         user_profile = get_user_profile_by_email(sender_email)
-        uri = upload_message_image(u'dummy.txt', u'text/plain', b'zulip!', user_profile)
+        uri = upload_message_image(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
 
         path_id = re.sub('/user_uploads/', '', uri)
         self.assertTrue(delete_message_image(path_id))
