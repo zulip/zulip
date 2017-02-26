@@ -43,12 +43,12 @@ class TrelloHookTests(WebhookTestCase):
 
     def test_trello_webhook_when_due_date_was_set(self):
         # type: () -> None
-        expected_message = u"TomaszKolek set due date for [Card name](https://trello.com/c/9BduUcVQ) to 05/11/2016 10:00AM."
+        expected_message = u"TomaszKolek set due date for [Card name](https://trello.com/c/9BduUcVQ) to 2016-05-11 10:00:00 UTC."
         self.send_and_test_stream_message('setting_due_date_to_card', u"Welcome Board.", expected_message)
 
     def test_trello_webhook_when_due_date_was_changed(self):
         # type: () -> None
-        expected_message = u"TomaszKolek changed due date for [Card name](https://trello.com/c/9BduUcVQ) from 05/11/2016 10:00AM to 05/24/2016 10:00AM."
+        expected_message = u"TomaszKolek changed due date for [Card name](https://trello.com/c/9BduUcVQ) from 2016-05-11 10:00:00 UTC to 2016-05-24 10:00:00 UTC."
         self.send_and_test_stream_message('changing_due_date_on_card', u"Welcome Board.", expected_message)
 
     def test_trello_webhook_when_due_date_was_removed(self):
