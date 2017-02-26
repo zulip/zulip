@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 import datetime
 import calendar
-from django.utils.timezone import utc
+from django.utils import timezone
 
 def is_timezone_aware(datetime_object):
     # type: (datetime.datetime) -> bool
@@ -11,8 +11,8 @@ def is_timezone_aware(datetime_object):
 def datetime_to_UTC(datetime_object):
     # type: (datetime.datetime) -> datetime.datetime
     if is_timezone_aware(datetime_object):
-        return datetime_object.astimezone(utc)
-    return datetime_object.replace(tzinfo=utc)
+        return datetime_object.astimezone(timezone.utc)
+    return datetime_object.replace(tzinfo=timezone.utc)
 
 def floor_to_hour(datetime_object):
     # type: (datetime.datetime) -> datetime.datetime
@@ -40,7 +40,7 @@ def ceiling_to_day(datetime_object):
 
 def timestamp_to_datetime(timestamp):
     # type: (float) -> datetime.datetime
-    return datetime.datetime.utcfromtimestamp(float(timestamp)).replace(tzinfo=utc)
+    return datetime.datetime.fromtimestamp(float(timestamp), tz=timezone.utc)
 
 def datetime_to_timestamp(datetime_object):
     # type: (datetime.datetime) -> int

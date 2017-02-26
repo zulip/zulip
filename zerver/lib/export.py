@@ -1231,11 +1231,8 @@ def fix_datetime_fields(data, table):
     # type: (TableData, TableName) -> None
     for item in data[table]:
         for field_name in DATE_FIELDS[table]:
-            if item[field_name] is None:
-                item[field_name] = None
-            else:
-                v = datetime.datetime.utcfromtimestamp(item[field_name])
-                item[field_name] = timezone.make_aware(v, timezone=timezone.utc)
+            if item[field_name] is not None:
+                item[field_name] = datetime.datetime.fromtimestamp(item[field_name], tz=timezone.utc)
 
 def convert_to_id_fields(data, table, field_name):
     # type: (TableData, TableName, Field) -> None
