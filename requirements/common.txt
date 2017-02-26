@@ -94,7 +94,7 @@ pika==0.10.0
 # Needed to access our database
 psycopg2==2.6.2
 
-pyasn1==0.1.9
+pyasn1==0.2.3
 pyasn1-modules==0.0.8
 pycrypto==2.6.1
 
