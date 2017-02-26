@@ -444,7 +444,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             with get_test_image_file(fname) as fp:
                 result = self.client_put_multipart("/json/users/me/avatar", {'file': fp})
 
-            self.assert_json_error(result, "Could not decode avatar image; did you upload an image file?")
+            self.assert_json_error(result, "Could not decode image; did you upload an image file?")
             user_profile = get_user_profile_by_email("hamlet@zulip.com")
             self.assertEqual(user_profile.avatar_version, 1)
 

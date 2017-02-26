@@ -90,7 +90,7 @@ def resize_avatar(image_data, size=DEFAULT_AVATAR_SIZE):
         im = Image.open(io.BytesIO(image_data))
         im = ImageOps.fit(im, (size, size), Image.ANTIALIAS)
     except IOError:
-        raise BadImageError("Could not decode avatar image; did you upload an image file?")
+        raise BadImageError("Could not decode image; did you upload an image file?")
     out = io.BytesIO()
     im.save(out, format='png')
     return out.getvalue()
