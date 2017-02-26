@@ -1759,14 +1759,15 @@ class AttachmentTest(ZulipTestCase):
         # Create dummy DB entry
         sender_email = "hamlet@zulip.com"
         user_profile = get_user_profile_by_email(sender_email)
+        sample_size = 10
         dummy_files = [
-            ('zulip.txt', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt'),
-            ('temp_file.py', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py'),
-            ('abc.py', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py')
+            ('zulip.txt', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt', sample_size),
+            ('temp_file.py', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/temp_file.py', sample_size),
+            ('abc.py', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/abc.py', sample_size)
         ]
 
-        for file_name, path_id in dummy_files:
-            create_attachment(file_name, path_id, user_profile)
+        for file_name, path_id, size in dummy_files:
+            create_attachment(file_name, path_id, user_profile, size)
 
         # Send message referring the attachment
         self.subscribe_to_stream(sender_email, "Denmark")
@@ -1777,7 +1778,7 @@ class AttachmentTest(ZulipTestCase):
 
         self.send_message(sender_email, "Denmark", Recipient.STREAM, body, "test")
 
-        for file_name, path_id in dummy_files:
+        for file_name, path_id, size in dummy_files:
             attachment = Attachment.objects.get(path_id=path_id)
             self.assertTrue(attachment.is_claimed())
 

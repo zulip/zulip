@@ -224,7 +224,7 @@ class ExportTest(TestCase):
         # type: () -> None
         message = Message.objects.all()[0]
         user_profile = message.sender
-        url = upload_message_image(u'dummy.txt', u'text/plain', b'zulip!', user_profile)
+        url = upload_message_image(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
         path_id = url.replace('/user_uploads/', '')
         claim_attachment(
             user_profile=user_profile,

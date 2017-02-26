@@ -259,7 +259,7 @@ def extract_and_upload_attachments(message, realm):
         if filename:
             attachment = part.get_payload(decode=True)
             if isinstance(attachment, binary_type):
-                s3_url = upload_message_image(filename, content_type,
+                s3_url = upload_message_image(filename, len(attachment), content_type,
                                               attachment,
                                               user_profile,
                                               target_realm=realm)
