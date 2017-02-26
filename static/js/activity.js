@@ -250,6 +250,12 @@ function filter_user_ids(user_ids) {
     return user_id_dict.keys();
 }
 
+function matches_filter(user_id) {
+    // This is a roundabout way of checking a user if you look
+    // too hard at it, but it should be fine for now.
+    return (filter_user_ids([user_id]).length === 1);
+}
+
 function filter_and_sort(users) {
     var user_ids = Object.keys(users);
     user_ids = filter_user_ids(user_ids);
@@ -280,36 +286,42 @@ function info_for(user_id) {
     };
 }
 
-exports.update_users = function (updated_users) {
+exports.insert_user_into_list = function (user_id) {
     if (page_params.realm_presence_disabled) {
         return;
     }
 
-    if (!updated_users) {
-        blueslip.error('update_users called incorrectly');
+    if (!matches_filter(user_id)) {
         return;
     }
 
-    var all_users = filter_and_sort(exports.presence_info);
-    var users = filter_and_sort(updated_users);
+    var info = info_for(user_id);
+    $('#user_presences').find('[data-user-id="' + user_id + '"]').remove();
+    var html = templates.render('user_presence_row', info);
 
-    var user_info = _.map(users, info_for);
+    var items = $('#user_presences li').toArray();
 
-    _.each(user_info, function (user) {
-        // This is really brittle code.  Our indexes into all_users
-        // are based on the assumption that since the sidebar was
-        // last drawn, we haven't changed the population of
-        // exports.presence_info or the sorting methodology.
-        var user_index = all_users.indexOf(user.user_id);
-        $('#user_presences').find('[data-user-id="' + user.user_id + '"]').remove();
-        var html = templates.render('user_presence_row', user);
-        $('#user_presences li').eq(user_index).before(html);
-    });
+    var compare = get_compare_function(exports.presence_info);
+
+    function insert() {
+        var i = 0;
+
+        for (i = 0; i < items.length; i += 1) {
+            var li = $(items[i]);
+            var list_user_id = li.attr('data-user-id');
+            if (compare(user_id, list_user_id) < 0) {
+                li.before(html);
+                return;
+            }
+        }
+
+        $('#user_presences').append(html);
+    }
+
+    insert();
 
     // TODO: tell compose_fade exactly which users we need to fix.
     compose_fade.update_faded_users();
-
-    return user_info; // for testing
 };
 
 exports.build_user_sidebar = function () {
@@ -326,6 +338,8 @@ exports.build_user_sidebar = function () {
 
     // Update user fading, if necessary.
     compose_fade.update_faded_users();
+
+    resize.resize_page_components();
 
     return user_info; // for testing
 };
@@ -475,9 +489,7 @@ exports.set_user_status = function (email, presence, server_time) {
     if (user_id) {
         var status = status_from_timestamp(server_time, presence);
         exports.presence_info[user_id] = status;
-        var updated_users = {};
-        updated_users[user_id] = status;
-        exports.update_users(updated_users);
+        exports.insert_user_into_list(user_id);
     } else {
         blueslip.warn('unknown email: ' + email);
     }
