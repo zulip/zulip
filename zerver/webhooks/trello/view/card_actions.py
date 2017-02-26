@@ -51,6 +51,10 @@ ACTIONS_TO_MESSAGE_MAPPER = {
     COMMENT: u'commented on {card_url_template}'
 }
 
+def prettify_date(date_string):
+    # type: (str) -> str
+    return date_string.replace('T', ' ').replace('.000', '').replace('Z', ' UTC')
+
 def process_card_action(payload, action_type):
     # type: (Mapping[str, Any], Text) -> Tuple[Text, Text]
     action_type = get_proper_action(payload, action_type)
@@ -141,23 +145,16 @@ def get_managed_member_body(payload, action_type):
 
 def get_managed_due_date_body(payload, action_type):
     # type: (Mapping[str, Any], Text) -> Text
-    date_format = "%Y-%m-%dT%H:%M:%S.000Z"
-    display_date_format = '%m/%d/%Y %I:%M%p'
-    new_date = datetime.strptime(get_action_data(payload).get('card').get('due'), date_format)
     data = {
-        'due_date': new_date.strftime(display_date_format),
+        'due_date': prettify_date(get_action_data(payload).get('card').get('due'))
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
 def get_changed_due_date_body(payload, action_type):
     # type: (Mapping[str, Any], Text) -> Text
-    date_format = "%Y-%m-%dT%H:%M:%S.000Z"
-    display_date_format = '%m/%d/%Y %I:%M%p'
-    new_date = datetime.strptime(get_action_data(payload).get('card').get('due'), date_format)
-    old_date = datetime.strptime(get_action_data(payload).get('old').get('due'), date_format)
     data = {
-        'due_date': new_date.strftime(display_date_format),
-        'old_due_date': old_date.strftime(display_date_format)
+        'due_date': prettify_date(get_action_data(payload).get('card').get('due')),
+        'old_due_date': prettify_date(get_action_data(payload).get('old').get('due'))
     }
     return fill_appropriate_message_content(payload, action_type, data)
 
