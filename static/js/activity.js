@@ -320,8 +320,8 @@ exports.insert_user_into_list = function (user_id) {
 
     insert();
 
-    // TODO: tell compose_fade exactly which users we need to fix.
-    compose_fade.update_faded_users();
+    var elt = $('#user_presences').find('[data-user-id="' + user_id + '"]');
+    compose_fade.update_one_user_row(elt);
 };
 
 exports.build_user_sidebar = function () {
