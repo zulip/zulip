@@ -25,7 +25,8 @@ from zerver.management.commands.deliver_email import send_email_job
 
 from zerver.lib.actions import (
     set_default_streams,
-    do_change_is_admin
+    do_change_is_admin,
+    get_stream
 )
 
 from zerver.lib.initial_password import initial_password
@@ -378,6 +379,18 @@ class InviteUserTest(ZulipTestCase):
         self.assert_json_success(result)
         self.check_sent_emails(invitees)
 
+    def test_bulk_invite_users_invalid_emails(self):
+        # type: () -> None
+        self.login('hamlet@zulip.com')
+        invitees = ['alice@zulip.com', 'bobnoatzulip.com']
+        params = {
+            'invitee_emails': ujson.dumps(invitees),
+        }
+        self.assert_json_error(
+            self.client_post('/json/bulk_invite_users', params),
+            'Some emails did not validate, so we didn\'t send any invitations.')
+        self.check_sent_emails([])
+
     def test_successful_invite_user(self):
         # type: () -> None
         """
@@ -430,6 +443,28 @@ class InviteUserTest(ZulipTestCase):
         self.assertTrue(find_key_by_email(email))
         self.assertTrue(find_key_by_email(email2))
         self.check_sent_emails([email, email2])
+
+    def test_successful_invite_user_with_notifications_stream(self):
+        # type: () -> None
+        """
+        A call to /json/invite_users with valid parameters unconditionally
+        subscribes the invitee to the notifications stream if it exists and is
+        public.
+        """
+        realm = get_realm('zulip')
+        notifications_stream = get_stream('Verona', realm)
+        realm.notifications_stream = notifications_stream
+        realm.save()
+
+        self.login('hamlet@zulip.com')
+        invitee = 'alice-test@zulip.com'
+        self.assert_json_success(self.invite(invitee, ['Denmark']))
+        self.assertTrue(find_key_by_email(invitee))
+        self.check_sent_emails([invitee])
+
+        prereg_user = get_prereg_user_by_email(invitee)
+        streams = list(prereg_user.streams.all())
+        self.assertTrue(notifications_stream in streams)
 
     def test_invite_user_signup_initial_history(self):
         # type: () -> None
@@ -490,6 +525,11 @@ earl-test@zulip.com""", ["Denmark"]))
             self.assert_json_error(
                 self.invite(address, ["Denmark"]),
                 "Some emails did not validate, so we didn't send any invitations.")
+        self.check_sent_emails([])
+
+        self.assert_json_error(
+            self.invite("", ["Denmark"]),
+            "You must specify at least one email address.")
         self.check_sent_emails([])
 
     def test_invalid_stream(self):
@@ -613,6 +653,37 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
 
         # verify this works
         Referral.objects.get(user_profile=user, email=invitee)
+
+        user = get_user_profile_by_email('hamlet@zulip.com')
+        self.assertEqual(user.invites_used, 1)
+
+    def test_refer_friend_no_email(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        user = get_user_profile_by_email('hamlet@zulip.com')
+        user.invites_granted = 1
+        user.invites_used = 0
+        user.save()
+
+        self.assert_json_error(
+            self.client_post('/json/refer_friend', dict(email='')),
+            "No email address specified")
+
+        user = get_user_profile_by_email('hamlet@zulip.com')
+        self.assertEqual(user.invites_used, 0)
+
+    def test_refer_friend_no_invites(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        user = get_user_profile_by_email('hamlet@zulip.com')
+        user.invites_granted = 1
+        user.invites_used = 1
+        user.save()
+
+        invitee = "alice-test@zulip.com"
+        self.assert_json_error(
+            self.client_post('/json/refer_friend', dict(email=invitee)),
+            "Insufficient invites")
 
         user = get_user_profile_by_email('hamlet@zulip.com')
         self.assertEqual(user.invites_used, 1)

@@ -100,7 +100,6 @@ not_yet_fully_covered = {
     'zerver/views/messages.py',
     'zerver/views/report.py',
     'zerver/views/zephyr.py',
-    'zerver/views/invite.py',
     'zerver/views/home.py',
     'zerver/views/registration.py',
     'zerver/views/events_register.py',
