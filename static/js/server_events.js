@@ -82,7 +82,12 @@ function dispatch_normal_event(event) {
             admin.reset_realm_default_language();
         } else if (event.op === 'update' && event.property === 'waiting_period_threshold') {
             page_params.realm_waiting_period_threshold = event.value;
+        } else if (event.op === 'update_dict' && event.property === 'icon') {
+            page_params.realm_icon_url = event.data.icon_url;
+            page_params.icon_source = event.data.icon_source;
+            realm_icon.rerender();
         }
+
         break;
 
     case 'realm_bot':
@@ -245,19 +250,6 @@ function dispatch_normal_event(event) {
             break;
         }
         break;
-    case 'realm_change_icon':
-        $("#realm-settings-icon").attr("src", event.url);
-        if (event.source === 'U') {
-            $("#realm_icon_delete_button").show();
-        } else {
-            $("#realm_icon_delete_button").hide();
-            // Need to clear input because of a small edge case
-            // where you try to upload the same image you just deleted.
-            var file_input = $("#realm_icon_file_input");
-            file_input.val('');
-        }
-        page_params.realm_icon = event.url;
-        page_params.icon_source = event.source;
     }
 }
 

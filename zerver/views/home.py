@@ -226,7 +226,7 @@ def home_real(request):
         realm_restricted_to_domain = register_ret['realm_restricted_to_domain'],
         realm_default_language = register_ret['realm_default_language'],
         realm_waiting_period_threshold = register_ret['realm_waiting_period_threshold'],
-        realm_icon            = realm_icon_url(user_profile.realm),
+        realm_icon_url        = realm_icon_url(user_profile.realm),
         realm_icon_source     = user_profile.realm.icon_source,
         enter_sends           = user_profile.enter_sends,
         user_id               = user_profile.id,

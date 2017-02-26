@@ -324,7 +324,7 @@ function _setup_page() {
         realm_waiting_period_threshold: page_params.realm_waiting_period_threshold,
         is_admin: page_params.is_admin,
         realm_icon_source: page_params.realm_icon_source,
-        realm_icon: page_params.realm_icon,
+        realm_icon_url: page_params.realm_icon_url,
     };
 
     var admin_tab = templates.render('admin_tab', options);

@@ -100,6 +100,8 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         state['realm_message_content_edit_limit_seconds'] = user_profile.realm.message_content_edit_limit_seconds
         state['realm_default_language'] = user_profile.realm.default_language
         state['realm_waiting_period_threshold'] = user_profile.realm.waiting_period_threshold
+        state['realm_icon_url'] = realm_icon_url(user_profile.realm)
+        state['realm_icon_source'] = user_profile.realm.icon_source
 
     if want('realm_domain'):
         state['realm_domain'] = user_profile.realm.domain
@@ -156,10 +158,6 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         state['enable_offline_push_notifications'] = user_profile.enable_offline_push_notifications
         state['enable_online_push_notifications'] = user_profile.enable_online_push_notifications
         state['enable_digest_emails'] = user_profile.enable_digest_emails
-
-    if want('realm_change_icon'):
-        state['realm_icon'] = realm_icon_url(user_profile.realm)
-        state['realm_icon_source'] = user_profile.realm.icon_source
 
     return state
 
@@ -382,9 +380,6 @@ def apply_event(state, event, user_profile, include_subscribers):
             state['enable_online_push_notifications'] = event['setting']
         elif event['notification_name'] == "enable_digest_emails":
             state['enable_digest_emails'] = event['setting']
-    elif event['type'] == "realm_change_icon":
-        state['realm_icon'] = event['url']
-        state['realm_icon_source'] = event['source']
     else:
         raise ValueError("Unexpected event type %s" % (event['type'],))
 

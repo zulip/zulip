@@ -1965,9 +1965,11 @@ def do_change_icon_source(realm, icon_source, log=True):
                    'realm': realm.domain,
                    'icon_source': icon_source})
 
-    send_event(dict(type='realm_change_icon',
-                    source=realm.icon_source,
-                    url=realm_icon_url(realm)),
+    send_event(dict(type='realm',
+                    op='update_dict',
+                    property="icon",
+                    data=dict(icon_source=realm.icon_source,
+                              icon_url=realm_icon_url(realm))),
                active_user_ids(realm))
 
 def _default_stream_permision_check(user_profile, stream):
