@@ -22,7 +22,7 @@
     <div class="modal-footer">
         <button class="btn btn-default close-privacy-modal" aria-hidden="true">{{t "Cancel" }}</button>
         <button class="btn{{#if is_private}} btn-primary{{else}} btn-danger{{/if}}" id="change-stream-privacy-button"
-          tabindex="-1" data-stream-id="{{stream_id}}" data-is-private="{{is_private}}">
+          tabindex="-1" data-stream-id="{{stream_id}}">
             {{#if is_private}}
                 {{t "Make Stream Public"}}
             {{else}}

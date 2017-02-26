@@ -632,14 +632,13 @@ function change_stream_privacy(e) {
     e.stopPropagation();
 
     var stream_id = $(e.target).data("stream-id");
-    var is_private = $(e.target).data("is-private");
     var sub = stream_data.get_sub_by_id(stream_id);
 
     $("#subscriptions-status").hide();
     var data = {
         stream_name: sub.name,
         // toggle the privacy setting
-        is_private: !is_private,
+        is_private: !sub.invite_only,
     };
 
     channel.patch({
@@ -647,12 +646,10 @@ function change_stream_privacy(e) {
         data: data,
         success: function () {
             sub = stream_data.get_sub_by_id(stream_id);
-            var stream_settings = settings_for_sub(sub);
             var sub_row = $(".stream-row[data-stream-id='" + stream_id + "']");
 
             // save new privacy settings.
-            stream_settings.find(".change-stream-privacy").expectOne().data("is-private", !is_private);
-            sub.invite_only = !is_private;
+            sub.invite_only = !sub.invite_only;
 
             redraw_privacy_related_stuff(sub_row, sub);
             $("#stream_privacy_modal").remove();
