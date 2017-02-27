@@ -100,6 +100,37 @@ change. So please check whether such a function exists before writing
 new code to modify a model object, since your new code has a good chance
 of getting at least one of these things wrong.
 
+### Naive datetime objects
+
+Python allows datetime objects to not have an associated timezone, which can
+cause time-related bugs that are hard to catch with a test suite, or bugs
+that only show up during daylight savings time.
+
+Good ways to make timezone-aware datetimes are below. We import `timezone`
+as `from django.utils import timezone`. When Django is not available,
+`timezone.utc` should be replaced with `pytz.utc` below.
+* `timezone.now()` when Django is available, such as in `zerver/`.
+* `datetime.now(tz=pytz.utc)` when Django is not available, such as for bots
+  and scripts.
+* `datetime.fromtimestamp(timestamp, tz=timezone.utc)` if creating a
+  datetime from a timestamp. This is also available as
+  `zerver.lib.timestamp.timestamp_to_datetime`.
+* `datetime.strptime(date_string, format).replace(tzinfo=timezone.utc)` if
+  creating a datetime from a formatted string that is in UTC.
+
+Idioms that result in timezone-naive datetimes, and should be avoided, are
+`datetime.now()` and `datetime.fromtimestamp(timestamp)` without a `tz`
+parameter, `datetime.utcnow()` and `datetime.utcfromtimestamp()`, and
+`datetime.strptime(date_string, format)` without replacing the `tzinfo` at
+the end.
+
+Additional notes:
+* Especially in scripts and puppet configuration where Django is not
+  available, using `time.time()` to get timestamps can be cleaner than
+  dealing with datetimes.
+* All datetimes on the backend should be in UTC, unless there is a good
+  reason to do otherwise.
+
 ### `x.attr('zid')` vs. `rows.id(x)`
 
 Our message row DOM elements have a custom attribute `zid` which
