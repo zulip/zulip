@@ -20,7 +20,7 @@ def list_alert_words(request, user_profile):
 
 def clean_alert_words(alert_words):
     # type: (List[Text]) -> List[Text]
-    alert_words = [w.strip().lstrip() for w in alert_words]
+    alert_words = [w.strip() for w in alert_words]
     return [w for w in alert_words if w != ""]
 
 @has_request_variables
