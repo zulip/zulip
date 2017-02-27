@@ -11,14 +11,9 @@ exports.emojis_by_unicode = {};
 var default_emojis = [];
 var default_unicode_emojis = [];
 
-emoji_codes.names.push("zulip");
-exports.realm_emojis.zulip = {
-    emoji_name: 'zulip',
-    emoji_url: '/static/generated/emoji/images/emoji/zulip.png',
-};
-
 _.each(emoji_codes.names, function (value) {
-    default_emojis.push({emoji_name: value, emoji_url: "/static/generated/emoji/images/emoji/" + value + ".png"});
+    var base_name = emoji_codes.name_to_codepoint[value];
+    default_emojis.push({emoji_name: value, emoji_url: "/static/generated/emoji/images/emoji/unicode/" + base_name + ".png"});
 });
 
 _.each(emoji_codes.codepoints, function (value) {
