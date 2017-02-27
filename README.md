@@ -120,6 +120,12 @@ and [Trello][]), plus [node.js API bindings][node], an [isomorphic
 [translating documentation][transifex] if you're interested in
 contributing!
 
+* **Peer Reviews**. Zulip is all about community and helping each other
+out. Check the [peer review stream][peer-review] on chat.zulip.org to help
+review PRs and give comments on other people's work. Everyone is welcome
+to participate, even those new to Zulip! Even just checking out the code,
+manually testing it, and posting on whether or not it worked is valuable.
+
 [cla]: https://opensource.dropbox.com/cla/
 [code-of-conduct]: https://zulip.readthedocs.io/en/latest/code-of-conduct.html
 [dev-install]: https://zulip.readthedocs.io/en/latest/dev-overview.html
@@ -147,6 +153,7 @@ contributing!
 [tsearch]: https://github.com/zulip/tsearch_extras
 [transifex]: https://zulip.readthedocs.io/en/latest/translating.html#testing-translations
 [z-org]: https://github.com/zulip/zulip.github.io
+[peer-review]: https://chat.zulip.org/#narrow/stream/peer.20review
 
 ## Google Summer of Code
 
@@ -246,6 +253,13 @@ ReadTheDocs.
 Feedback on how to make this development process more efficient, fun,
 and friendly to new contributors is very welcome!  Just send an email
 to the Zulip Developers list with your thoughts.
+
+When you feel like you have completed your work on an issue, post your
+PR to the [**#peer review**](https://chat.zulip.org/#narrow/stream/peer.20review)
+stream on chat.zulip.org. This gives other people the opportunity to
+give you comments and suggestions on your work. For more details about
+the #peer review stream or other streams on chat.zulip.org, check out
+our [docs](http://zulip.readthedocs.io/en/latest/chat-zulip-org.html).
 
 ## License
 
