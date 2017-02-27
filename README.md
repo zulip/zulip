@@ -26,7 +26,7 @@ at https://www.zulip.org.
 There are several places online where folks discuss Zulip.
 
 * The primary place is the
-  [Zulip development community Zulip server](chat-zulip-org.html).
+  [Zulip development community Zulip server](https://zulip.readthedocs.io/en/latest/chat-zulip-org.html).
 
 * For Google Summer of Code students and applicants, we have
 [a mailing list](https://groups.google.com/forum/#!forum/zulip-gsoc)
@@ -122,10 +122,11 @@ contributing!
 
 * **Peer Reviews**. Zulip is all about community and helping each
 other out. Check the [peer review stream][peer-review] on
-[chat.zulip.org](chat-zulip-org.html) to help review PRs and give
-comments on other people's work. Everyone is welcome to participate,
-even those new to Zulip! Even just checking out the code, manually
-testing it, and posting on whether or not it worked is valuable.
+[chat.zulip.org](https://zulip.readthedocs.io/en/latest/chat-zulip-org.html)
+to help review PRs and give comments on other people's work. Everyone is
+welcome to participate, even those new to Zulip! Even just checking out
+the code, manually testing it, and posting on whether or not it worked
+is valuable.
 
 [cla]: https://opensource.dropbox.com/cla/
 [code-of-conduct]: https://zulip.readthedocs.io/en/latest/code-of-conduct.html
@@ -258,9 +259,9 @@ to the Zulip Developers list with your thoughts.
 When you feel like you have completed your work on an issue, post your
 PR to the
 [**#peer review**](https://chat.zulip.org/#narrow/stream/peer.20review)
-stream on [chat.zulip.org](chat-zulip-org.html).  This is our
-lightweight process that gives other developers the opportunity to
-give you comments and suggestions on your work.
+stream on [chat.zulip.org](https://zulip.readthedocs.io/en/latest/chat-zulip-org.html).
+This is our lightweight process that gives other developers the
+opportunity to give you comments and suggestions on your work.
 
 ## License
 
