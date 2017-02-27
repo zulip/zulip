@@ -349,9 +349,12 @@ function show_subscription_settings(sub_row) {
                 }
                 return format_member_list_elem(elem);
             });
-            _.each(subscribers.sort(), function (elem) {
-                list.append(elem);
-            });
+
+            var list_html = _.reduce(subscribers.sort(), function (accumulator, item) {
+                return accumulator + item;
+            }, "");
+
+            list.append(list_html);
         },
         error: function () {
             loading.destroy_indicator(indicator_elem);
