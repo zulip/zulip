@@ -2,14 +2,18 @@
 // aspects of the MessageList class.  We have to stub out a few functions
 // related to views and events to get the tests working.
 
+var jsdom = require("jsdom");
+var window = jsdom.jsdom().defaultView;
+global.$ = require("jquery")(window);
+
 add_dependencies({
     util: 'js/util.js',
     muting: 'js/muting.js',
     MessageListView: 'js/message_list_view.js',
 });
 
-
 set_global('document', null);
+set_global('window', window);
 
 global.stub_out_jquery();
 
