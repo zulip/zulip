@@ -319,7 +319,7 @@ MIDDLEWARE_CLASSES = (
     'zerver.middleware.SessionHostDomainMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'zerver.middleware.AuthenticationMiddleware',
 )
 
 ANONYMOUS_USER_ID = None
