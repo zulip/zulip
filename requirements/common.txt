@@ -18,6 +18,9 @@ Pygments==2.2.0
 # Needed for building complex DB queries
 SQLAlchemy==1.1.5
 
+# Needed for password hashing
+argon2-cffi==16.3.0
+
 # Needed for Tornado >3.2 compatibility
 backports-abc==0.5
 
@@ -28,6 +31,10 @@ backports.ssl-match-hostname==3.5.0.1
 boto==2.46.1
 
 certifi==2017.1.23
+
+# Used for scrapy as well as argon2
+cffi==1.9.1
+
 chardet==2.3.0
 
 # Needed for integrations
@@ -97,6 +104,9 @@ psycopg2==2.6.2
 pyasn1==0.2.3
 pyasn1-modules==0.0.8
 pycrypto==2.6.1
+
+# Dependency of argon2-cffi
+pycparser==2.17
 
 # Needed for memcached usage
 pylibmc==1.5.1
@@ -178,6 +188,3 @@ pycodestyle==2.2.0
 # Needed for link preview
 beautifulsoup4==4.5.3
 git+https://github.com/rafaelmartins/pyoembed.git@eb9901917c2a44b49e2887c077ead84a722c50dc#egg=pyoembed
-
-# Needed for password hashing
-argon2-cffi==16.3.0
