@@ -211,6 +211,12 @@
       "bugdown_matches_marked": true
     },
     {
+      "name": "zulip_emoji",
+      "input": ":zulip:",
+      "expected_output": "<p><img alt=\":zulip:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/unicode/zulip.png\" title=\":zulip:\"></p>",
+      "bugdown_matches_marked": true
+    },
+    {
       "name": "random_emoji_2",
       "input": ":poop:",
       "expected_output": "<p><img alt=\":poop:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/unicode/1f4a9.png\" title=\":poop:\"></p>",
