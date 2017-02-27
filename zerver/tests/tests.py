@@ -449,6 +449,32 @@ class ZephyrTest(ZulipTestCase):
             get_user_profile_by_email(email).api_key,
             'MTIzNA=='])
 
+        # Accounts whose Kerberos usernames are known not to match their
+        # zephyr accounts are hardcoded, and should be handled properly.
+
+        def kerberos_alter_egos_mock():
+            # type: () -> Any
+            return patch(
+                'zerver.views.zephyr.kerberos_alter_egos',
+                {'kerberos_alter_ego': 'starnine'})
+
+        cred = dict(cname=dict(nameString=['kerberos_alter_ego']))
+        with \
+                ccache_mock(return_value=b'1234'), \
+                mirror_mock(), \
+                ssh_mock() as ssh, \
+                kerberos_alter_egos_mock():
+            result = post(cred=cred)
+
+        self.assert_json_success(result)
+        ssh.assert_called_with([
+            'ssh',
+            'server',
+            '--',
+            '/home/zulip/zulip/bots/process_ccache',
+            'starnine',
+            get_user_profile_by_email(email).api_key,
+            'MTIzNA=='])
 
 class AdminCreateUserTest(ZulipTestCase):
     def test_create_user_backend(self):
