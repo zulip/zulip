@@ -300,7 +300,7 @@ textarea.new_message_textarea,
     border: 1px solid #ddd;
     box-shadow: none;
     -webkit-box-shadow: none;
-    transition: all 0.2s ease;
+    transition: border 0.2s ease;
 }
 
 textarea.new_message_textarea:focus,
