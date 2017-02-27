@@ -74,9 +74,6 @@ google-api-python-client==1.6.2
 html2text==2016.9.19
 httplib2==0.10.3
 
-# Needed for JWT-based auth
-jwt==0.3.2
-
 # Needed for USING_MANDRILL option for outgoing email
 mandrill==1.0.57
 
