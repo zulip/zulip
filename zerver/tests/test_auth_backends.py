@@ -35,6 +35,7 @@ from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     SocialAuthMixin, AUTH_BACKEND_NAME_MAP
 
 from zerver.views.auth import maybe_send_to_registration
+from version import ZULIP_VERSION
 
 from social_core.exceptions import AuthFailed
 from social_django.strategy import DjangoStrategy
@@ -977,8 +978,8 @@ class FetchAuthBackends(ZulipTestCase):
         self.assert_json_success(result)
         data = ujson.loads(result.content)
         self.assertEqual(set(data.keys()),
-                         {'msg', 'password', 'google', 'dev', 'result'})
-        for backend in set(data.keys()) - {'msg', 'result'}:
+                         {'msg', 'password', 'google', 'dev', 'result', 'zulip_version'})
+        for backend in set(data.keys()) - {'msg', 'result', 'zulip_version'}:
             self.assertTrue(isinstance(data[backend], bool))
 
     def test_fetch_auth_backend(self):
@@ -994,6 +995,7 @@ class FetchAuthBackends(ZulipTestCase):
                 'google': True,
                 'dev': True,
                 'result': 'success',
+                'zulip_version': ZULIP_VERSION,
             })
 
 class TestDevAuthBackend(ZulipTestCase):

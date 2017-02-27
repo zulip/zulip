@@ -32,6 +32,8 @@ from zerver.models import Client, Message, UserProfile, \
     get_user_profile_by_email, get_user_profile_by_id, \
     get_active_user_dicts_in_realm, realm_filters_for_realm, \
     get_owned_bot_dicts
+from version import ZULIP_VERSION
+
 
 def get_realm_user_dicts(user_profile):
     # type: (UserProfile) -> List[Dict[str, Text]]
@@ -159,6 +161,9 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         state['enable_offline_push_notifications'] = user_profile.enable_offline_push_notifications
         state['enable_online_push_notifications'] = user_profile.enable_online_push_notifications
         state['enable_digest_emails'] = user_profile.enable_digest_emails
+
+    if want('zulip_version'):
+        state['zulip_version'] = ZULIP_VERSION
 
     return state
 

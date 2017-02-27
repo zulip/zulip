@@ -9,7 +9,6 @@ from django.utils import translation
 from django.utils.cache import patch_cache_control
 from six.moves import zip_longest, zip, range
 
-from version import ZULIP_VERSION
 from zerver.decorator import zulip_login_required, process_client
 from zerver.forms import ToSForm
 from zerver.lib.realm_icon import realm_icon_url
@@ -196,7 +195,7 @@ def home_real(request):
     # Pass parameters to the client-side JavaScript code.
     # These end up in a global JavaScript Object named 'page_params'.
     page_params = dict(
-        zulip_version         = ZULIP_VERSION,
+        zulip_version         = register_ret['zulip_version'],
         share_the_love        = settings.SHARE_THE_LOVE,
         development_environment = settings.DEVELOPMENT,
         debug_mode            = settings.DEBUG,
