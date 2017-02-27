@@ -153,8 +153,8 @@ populated and where the focus is placed.
     - use C to compose a new PM
 
 - Buttons
-    - Narrow to a stream and click on "New stream message"
-    - Narrow "Private Messages" and click on "New stream message"
+    - Narrow to a stream and click on "New topic"
+    - Narrow "Private Messages" and click on "New topic"
     - Narrow to a stream and click on "New private message"
     - Narrow "Private Messages" and click on "New private message"
 
