@@ -25,6 +25,12 @@ from six.moves import range
 from typing import Any, Callable, Dict, List, Iterable, Mapping, Sequence, Set, Tuple, Text
 
 settings.TORNADO_SERVER = None
+# Disable using memcached caches to avoid 'unsupported pickle
+# protocol' errors if `populate_db` is run with a different Python
+# from `run-dev.py`.
+settings.CACHES['default'] = {
+    'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'
+}
 
 def create_users(realm, name_list, bot_type=None):
     # type: (Realm, Iterable[Tuple[Text, Text]], int) -> None
