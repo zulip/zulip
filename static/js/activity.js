@@ -278,7 +278,7 @@ function info_for(user_id) {
 }
 
 exports.update_users = function (updated_users) {
-    if (page_params.presence_disabled) {
+    if (page_params.realm_presence_disabled) {
         return;
     }
 
@@ -310,7 +310,7 @@ exports.update_users = function (updated_users) {
 };
 
 exports.build_user_sidebar = function () {
-    if (page_params.presence_disabled) {
+    if (page_params.realm_presence_disabled) {
         return;
     }
 
@@ -343,7 +343,7 @@ function hide_huddles() {
 }
 
 exports.update_huddles = function () {
-    if (page_params.presence_disabled) {
+    if (page_params.realm_presence_disabled) {
         return;
     }
 

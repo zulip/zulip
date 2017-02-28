@@ -260,7 +260,7 @@ def home_real(request):
         avatar_source         = user_profile.avatar_source,
         mandatory_topics      = user_profile.realm.mandatory_topics,
         show_digest_email     = user_profile.realm.show_digest_email,
-        presence_disabled     = user_profile.realm.presence_disabled,
+        realm_presence_disabled = user_profile.realm.presence_disabled,
         is_zephyr_mirror_realm = user_profile.realm.is_zephyr_mirror_realm,
     )
 
