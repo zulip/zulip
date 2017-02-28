@@ -115,7 +115,7 @@ def populate_events():
     creds = credentials.authorize(httplib2.Http())
     service = discovery.build('calendar', 'v3', http=creds)
 
-    now = datetime.datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
+    now = datetime.datetime.now(pytz.utc).isoformat()
     feed = service.events().list(calendarId=options.calendarID, timeMin=now, maxResults=5,
                                  singleEvents=True, orderBy='startTime').execute()
 
