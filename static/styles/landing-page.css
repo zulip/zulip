@@ -9,7 +9,6 @@ body {
     margin: 0;
     background-color: #eaeaea;
     color: #444;
-    font-size: 1.2em;
     line-height: normal;
 
     max-width: 100vw;
@@ -258,11 +257,6 @@ a.arrow:after {
     margin-left: 5px;
 }
 
-/* because the background of .testimonials is #444. */
-.testimonials a .arrow {
-    color: #444;
-}
-
 h1 {
     font-size: 2em;
 }
@@ -400,6 +394,93 @@ a:not(.no-style):hover:before {
     margin-bottom: 0px;
 }
 
+/* -- integrations page css -- */
+.portico-landing.integrations {
+    color: #444;
+    font-weight: normal;
+}
+
+.portico-landing.integrations .main {
+    width: calc(100% - 200px - 20px);
+    margin: 0 auto;
+
+    background-color: #fff;
+}
+
+.portico-landing.integrations .padded-content {
+    padding: 50px;
+}
+
+.portico-landing.integrations .padded-content .inner-content {
+    opacity: 0;
+    pointer-events: none;
+
+    transition: all 0.3s ease;
+}
+
+.portico-landing.integrations .padded-content .inner-content.show {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.portico-landing.integrations ol li {
+    list-style: none;
+}
+
+.portico-landing.integrations ol > li > p {
+    max-width: calc(100% - 33px);
+    margin-top: 0px;
+}
+
+.portico-landing code {
+    display: inline-block;
+    vertical-align: middle;
+    max-width: 100%;
+    overflow: auto;
+
+    font-family: Monaco, Menlo, Consolas, "Courier New", Courier, monospace;
+    font-size: 0.85em;
+}
+
+.portico-landing.integrations .portico-page-header {
+    padding-top: 0px;
+}
+
+.portico-landing.integrations .portico-page-header a {
+    color: inherit;
+}
+
+.portico-landing.integrations .integration-lozenges {
+    transition: all 0.3s ease;
+}
+
+.portico-landing.integrations .integration-lozenges.hide {
+    opacity: 0;
+    transform: translateY(-200px);
+}
+
+.portico-landing.integrations .integration-lozenge {
+    height: 180px;
+    transition: all 0.3s ease;
+}
+
+.portico-landing.integrations .integration-lozenge:hover {
+    box-shadow: 0px 0px 40px rgba(0,0,0,0.1);
+    background: #fefefe;
+}
+
+.portico-landing.integrations .integration-lozenge img {
+    max-width: 90%;
+    display: block;
+    margin: 10% auto 0 auto;
+    border-radius: 8px;
+}
+
+.portico-landing.integrations .integration-lozenge .integration-label {
+    font-weight: 500;
+    color: #666;
+}
+
 /* -- media queries -- */
 @media (max-width: 1100px) {
     .feature-block .flex {
@@ -435,12 +516,15 @@ a:not(.no-style):hover:before {
         margin: 0px auto 20px;
         width: calc(100% - 40px);
     }
+
+    .portico-landing.integrations .main {
+        width: calc(100% - 100px);
+    }
 }
 
 @media (max-width: 768px) {
     nav,
-    .features,
-    .testimonials .padded-content {
+    .features {
         padding-left: 50px;
         padding-right: 50px;
     }
@@ -457,9 +541,35 @@ a:not(.no-style):hover:before {
         padding: 10px;
     }
 
+    .portico-landing.integrations .portico-page-header {
+        padding-top: 20px;
+    }
+
+    #integration-instruction-block .integration-lozenge {
+        float: none;
+        position: absolute;
+        top: -74px;
+        right: 0px;
+        width: 50px;
+        height: 54px;
+    }
+
+    #integration-instruction-block .integration-lozenge span {
+        display: none;
+    }
+
+    #integration-list-link {
+        top: -100px;
+        left: 0px;
+    }
+
+    .integration-instructions {
+        margin-left: 0px;
+    }
 }
 
 @media (max-width: 666px) {
+    .portico-landing.integrations .main,
     .main {
         width: calc(100% - 50px);
         margin: 0 auto;
@@ -537,11 +647,20 @@ a:not(.no-style):hover:before {
         padding-top: 20px;
     }
 
-    .main .padded-content {
+    .main, .portico-landing.integrations .main {
+        width: 100%;
+        margin: 0;
+    }
+
+    .portico-landing.integrations .main .portico-page-header {
+        padding-top: 10px;
+    }
+
+    .portico-landing.integrations .main .padded-content {
         padding: 20px;
     }
 
-    .testimonials .padded-content {
+    .main .padded-content {
         padding: 20px;
     }
 
