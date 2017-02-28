@@ -208,7 +208,7 @@ a view that does this for related flags: `update_realm`. So in this
 case, we can add our code to the existing view instead of creating a
 new one. :
 
-    # zerver/views/__init__.py
+    # zerver/views/home.py
 
     def home(request):
       # ...
