@@ -118,6 +118,7 @@ function process_hotkey(e) {
     var focus_in_empty_compose;
     var hotkey = get_hotkey_from_event(e);
     var event_name = hotkey.name;
+    var current_view = window.location.hash;
     activity.new_user_input = true;
 
     if (ui.home_tab_obscured() && hotkey.message_view_only) {
@@ -429,6 +430,10 @@ function process_hotkey(e) {
         case 'narrow_by_subject':
             return do_narrow_action(narrow.by_subject);
         case  'enter': // Enter: respond to message (unless we need to do something else)
+            if (current_view === "#settings" || current_view === "#administration" ||
+                current_view === "#subscriptions"){
+                return false;
+            }
             compose.respond_to_message({trigger: 'hotkey enter'});
             return true;
         case 'reply_message': // 'r': respond to message
