@@ -3,7 +3,7 @@ from django.utils import timezone
 
 from zerver.models import Realm, UserProfile, Stream, Recipient
 from zerver.lib.str_utils import ModelReprMixin
-from zerver.lib.timestamp import datetime_to_UTC, floor_to_day
+from zerver.lib.timestamp import floor_to_day
 
 import datetime
 
@@ -29,7 +29,7 @@ class FillState(ModelReprMixin, models.Model):
 def installation_epoch():
     # type: () -> datetime.datetime
     earliest_realm_creation = Realm.objects.aggregate(models.Min('date_created'))['date_created__min']
-    return floor_to_day(datetime_to_UTC(earliest_realm_creation))
+    return floor_to_day(earliest_realm_creation)
 
 def last_successful_fill(property):
     # type: (str) -> Optional[datetime.datetime]
