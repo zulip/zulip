@@ -27,34 +27,8 @@ svg {
     font-size: 36px;
 }
 
-.sidebar {
-    width: 300px;
-    height: calc(100vh - 94px);
-    z-index: 2;
-    display: inline-block;
-    vertical-align: top;
-    border-right: 1px solid #eee;
-}
-
-.nav {
-    margin-left: 20px;
-}
-
-.nav-subtitle {
-    font-size: 20px;
-    font-weight: 300;
-    margin-top: 40px;
-    margin-bottom: 7px;
-}
-
-.nav-link {
-    display: block;
-    font-size: 17px;
-    margin-left: 25px;
-}
-
 .page-content {
-    width: calc(100% - 300px - 8px);
+    width: 100%;
     overflow: auto;
     display: inline-block;
     vertical-align: top;
