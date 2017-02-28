@@ -2,7 +2,13 @@
 <li class="attachment-item" data-attachment='{{attachment.id}}'>
     <div class="attachment-information-box list-container">
         <div class="file-icon">
-            <div class="extension {{#if attachment.large_ext_name }}small{{/if}}">{{ attachment.extension }}</div>
+            <div class="extension {{#if attachment.large_ext_name }}small{{/if}} {{#unless attachment.extension }}no-extension{{/unless}}">
+                {{#if attachment.extension}}
+                    {{ attachment.extension }}
+                {{else}}
+                    <i class="icon icon-vector-file"></i>
+                {{/if}}
+            </div>
         </div>
         <div class="information">
             <div class="attachment_listing">

@@ -15,7 +15,14 @@ exports.set_up_attachments = function () {
             o.name = timerender.absolute_time(o.name);
         });
 
-        attachment.extension = attachment.path_id.split(/\./).pop();
+        var attachment_name_splitted = attachment.path_id.split(/\./);
+
+        if (attachment_name_splitted.length === 1) {
+            attachment.extension = "";
+        } else {
+            attachment.extension = attachment_name_splitted.pop();
+        }
+
         attachment.large_ext_name = attachment.extension.length > 5;
 
         var li = templates.render('attachment-item', {attachment: attachment});
