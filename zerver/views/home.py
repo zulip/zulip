@@ -195,6 +195,7 @@ def home_real(request):
     # Pass parameters to the client-side JavaScript code.
     # These end up in a global JavaScript Object named 'page_params'.
     page_params = dict(
+        # Server settings.
         share_the_love        = settings.SHARE_THE_LOVE,
         development_environment = settings.DEVELOPMENT,
         debug_mode            = settings.DEBUG,
@@ -202,36 +203,38 @@ def home_real(request):
         poll_timeout          = settings.POLL_TIMEOUT,
         login_page            = settings.HOME_NOT_LOGGED_IN,
         server_uri            = settings.SERVER_URI,
-        realm_uri             = user_profile.realm.uri,
         maxfilesize           = settings.MAX_FILE_UPLOAD_SIZE,
         server_generation     = settings.SERVER_GENERATION,
+        use_websockets        = settings.USE_WEBSOCKETS,
+        save_stacktraces      = settings.SAVE_FRONTEND_STACKTRACES,
+
+        # realm data.
+        # TODO: Move all of these data to register_ret and pull from there
+        realm_uri             = user_profile.realm.uri,
         password_auth_enabled = password_auth_enabled(user_profile.realm),
-        have_initial_messages = user_has_messages,
-        subbed_info           = register_ret['subscriptions'],
-        unsubbed_info         = register_ret['unsubscribed'],
-        neversubbed_info      = register_ret['never_subscribed'],
-        people_list           = register_ret['realm_users'],
-        bot_list              = register_ret['realm_bots'],
-        initial_pointer       = register_ret['pointer'],
-        initial_presences     = register_ret['presences'],
-        initial_servertime    = time.time(), # Used for calculating relative presence age
-        fullname              = user_profile.full_name,
-        email                 = user_profile.email,
         domain                = user_profile.realm.domain,
         domains               = list_of_domains_for_realm(user_profile.realm),
         realm_icon_url        = realm_icon_url(user_profile.realm),
         realm_icon_source     = user_profile.realm.icon_source,
+        name_changes_disabled = name_changes_disabled(user_profile.realm),
+        mandatory_topics      = user_profile.realm.mandatory_topics,
+        show_digest_email     = user_profile.realm.show_digest_email,
+        realm_presence_disabled = user_profile.realm.presence_disabled,
+        is_zephyr_mirror_realm = user_profile.realm.is_zephyr_mirror_realm,
+
+        # user_profile data.
+        # TODO: Move all of these data to register_ret and pull from there
+        fullname              = user_profile.full_name,
+        email                 = user_profile.email,
         enter_sends           = user_profile.enter_sends,
         user_id               = user_profile.id,
-        default_language_name = get_language_name(register_ret['default_language']),
-        language_list_dbl_col = get_language_list_for_templates(register_ret['default_language']),
-        language_list         = get_language_list(),
-        needs_tutorial        = needs_tutorial,
-        first_in_realm        = first_in_realm,
-        prompt_for_invites    = prompt_for_invites,
-        notifications_stream  = notifications_stream,
-        cross_realm_bots      = list(get_cross_realm_dicts()),
-        use_websockets        = settings.USE_WEBSOCKETS,
+        is_admin              = user_profile.is_realm_admin,
+        can_create_streams    = user_profile.can_create_streams(),
+        autoscroll_forever = user_profile.autoscroll_forever,
+        default_desktop_notifications = user_profile.default_desktop_notifications,
+        avatar_url            = avatar_url(user_profile),
+        avatar_url_medium     = avatar_url(user_profile, medium=True),
+        avatar_source         = user_profile.avatar_source,
 
         # Stream message notification settings:
         stream_desktop_notifications_enabled = user_profile.enable_stream_desktop_notifications,
@@ -245,23 +248,32 @@ def home_real(request):
         enable_offline_push_notifications = user_profile.enable_offline_push_notifications,
         enable_online_push_notifications = user_profile.enable_online_push_notifications,
         enable_digest_emails  = user_profile.enable_digest_emails,
+
+        # Realm foreign key data from register_ret.
+        # TODO: Rename these to match register_ret values.
+        subbed_info           = register_ret['subscriptions'],
+        unsubbed_info         = register_ret['unsubscribed'],
+        neversubbed_info      = register_ret['never_subscribed'],
+        people_list           = register_ret['realm_users'],
+        bot_list              = register_ret['realm_bots'],
+        initial_pointer       = register_ret['pointer'],
+        initial_presences     = register_ret['presences'],
         event_queue_id        = register_ret['queue_id'],
+
+        # Misc. extra data.
+        have_initial_messages = user_has_messages,
+        initial_servertime    = time.time(), # Used for calculating relative presence age
+        default_language_name = get_language_name(register_ret['default_language']),
+        language_list_dbl_col = get_language_list_for_templates(register_ret['default_language']),
+        language_list         = get_language_list(),
+        needs_tutorial        = needs_tutorial,
+        first_in_realm        = first_in_realm,
+        prompt_for_invites    = prompt_for_invites,
+        notifications_stream  = notifications_stream,
+        cross_realm_bots      = list(get_cross_realm_dicts()),
         unread_count          = approximate_unread_count(user_profile),
         furthest_read_time    = sent_time_in_epoch_seconds(latest_read),
-        save_stacktraces      = settings.SAVE_FRONTEND_STACKTRACES,
-        is_admin              = user_profile.is_realm_admin,
-        can_create_streams    = user_profile.can_create_streams(),
-        name_changes_disabled = name_changes_disabled(user_profile.realm),
         has_mobile_devices    = num_push_devices_for_user(user_profile) > 0,
-        autoscroll_forever = user_profile.autoscroll_forever,
-        default_desktop_notifications = user_profile.default_desktop_notifications,
-        avatar_url            = avatar_url(user_profile),
-        avatar_url_medium     = avatar_url(user_profile, medium=True),
-        avatar_source         = user_profile.avatar_source,
-        mandatory_topics      = user_profile.realm.mandatory_topics,
-        show_digest_email     = user_profile.realm.show_digest_email,
-        realm_presence_disabled = user_profile.realm.presence_disabled,
-        is_zephyr_mirror_realm = user_profile.realm.is_zephyr_mirror_realm,
     )
 
     # These fields will be automatically copied from register_ret into
