@@ -3,7 +3,7 @@ from __future__ import absolute_import
 
 from typing import Any, Dict, Iterable
 import logging
-
+import os
 from django.conf import settings
 from django.test import override_settings
 from django.template import Template, Context
@@ -199,3 +199,14 @@ class TemplateTestCase(ZulipTestCase):
         self.assert_in_success_response([u"Thanks for using our products and services (\"Services\"). ",
                                          u"By using our Services, you are agreeing to these terms"],
                                         response)
+
+    def test_help_guides(self):
+        root = '/home/vagrant/zulip/templates/zerver/help'
+        urls = list()
+        for file in os.listdir(root):
+            if file.endswith('.md'):
+                urls.append('/help/'+file.replace('.md', ''))
+        test_message = 'Expected 200, Received %d for %s'    
+        for url in urls:
+            response = getattr(self.client, 'get')(url) 
+            self.assertEqual(response.status_code, 200, msg = test_message %(response.status_code, url))    
