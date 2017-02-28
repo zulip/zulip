@@ -117,7 +117,7 @@ exports.restore_draft = function (draft_id) {
 
 exports.setup_page = function (callback) {
     function setup_event_handlers() {
-        $(".draft_controls .restore-draft").on("click", function (e) {
+        $(".restore-draft").on("click", function (e) {
             e.stopPropagation();
 
             var draft_row = $(this).closest(".draft-row");
