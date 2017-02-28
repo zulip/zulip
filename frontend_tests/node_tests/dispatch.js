@@ -486,9 +486,10 @@ run(function () {
 run(function (override, capture, args) {
     // presence
     var event = event_fixtures.presence;
-    override('activity', 'set_user_statuses', capture(['users', 'server_time']));
+    override('activity', 'set_user_status', capture(['email', 'presence', 'server_time']));
     dispatch(event);
-    assert_same(args.users, {'alice@example.com': event.presence});
+    assert_same(args.email, 'alice@example.com');
+    assert_same(args.presence, event.presence);
     assert_same(args.server_time, event.server_timestamp);
 
 });

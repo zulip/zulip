@@ -131,19 +131,23 @@ exports.would_receive_message = function (email) {
     return util.is_pm_recipient(email, focused_recipient);
 };
 
+function update_user_row_when_fading(elt) {
+    var user_id = elt.attr('data-user-id');
+    var email = people.get_person_from_user_id(user_id).email;
+    var would_receive = exports.would_receive_message(email);
+    if (would_receive === true) {
+        elt.addClass('unfaded').removeClass('faded');
+    } else if (would_receive === false) {
+        elt.addClass('faded').removeClass('unfaded');
+    } else {
+        elt.removeClass('faded').removeClass('unfaded');
+    }
+}
+
 function _fade_users() {
     _.forEach($('.user_sidebar_entry'), function (elt) {
         elt = $(elt);
-        var user_id = elt.attr('data-user-id');
-        var email = people.get_person_from_user_id(user_id).email;
-        var would_receive = exports.would_receive_message(email);
-        if (would_receive === true) {
-            elt.addClass('unfaded').removeClass('faded');
-        } else if (would_receive === false) {
-            elt.addClass('faded').removeClass('unfaded');
-        } else {
-            elt.removeClass('faded').removeClass('unfaded');
-        }
+        update_user_row_when_fading(elt);
     });
 }
 
@@ -172,6 +176,14 @@ function _want_normal_display() {
 
     return focused_recipient.type === "private" && focused_recipient.reply_to === "";
 }
+
+exports.update_one_user_row = function (elt) {
+    if (_want_normal_display()) {
+        elt.removeClass('faded').removeClass('unfaded');
+    } else {
+        update_user_row_when_fading(elt);
+    }
+};
 
 function _update_faded_messages() {
     // See also update_faded_messages(), which just wraps this with a debounce.

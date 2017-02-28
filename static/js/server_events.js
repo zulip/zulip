@@ -28,9 +28,7 @@ function dispatch_normal_event(event) {
         break;
 
     case 'presence':
-        var users = {};
-        users[event.email] = event.presence;
-        activity.set_user_statuses(users, event.server_timestamp);
+        activity.set_user_status(event.email, event.presence, event.server_timestamp);
         break;
 
     case 'restart':
