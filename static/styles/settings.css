@@ -271,6 +271,10 @@ input[type=checkbox].inline-block {
     font-size: 0.8em;
 }
 
+#attachments_list .attachment-item .list-container .file-icon .extension.no-extension {
+    margin-top: 12px;
+}
+
 #attachments_list .attachment-item .list-container .information {
     display: inline-block;
     vertical-align: top;
