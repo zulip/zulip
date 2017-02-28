@@ -80,27 +80,31 @@ class HelpView(ApiURLView):
         return result
 
 
+def add_integrations_context(context):
+    # type: (Dict[str, Any]) -> None
+    alphabetical_sorted_integration = OrderedDict(sorted(INTEGRATIONS.items()))
+    alphabetical_sorted_hubot_lozenges = OrderedDict(sorted(HUBOT_LOZENGES.items()))
+    context['integrations_dict'] = alphabetical_sorted_integration
+    context['hubot_lozenges_dict'] = alphabetical_sorted_hubot_lozenges
+
+    if context["html_settings_links"]:
+        settings_html = '<a href="../#settings">Zulip settings page</a>'
+        subscriptions_html = '<a target="_blank" href="../#subscriptions">subscriptions page</a>'
+    else:
+        settings_html = 'Zulip settings page'
+        subscriptions_html = 'subscriptions page'
+
+    context['settings_html'] = settings_html
+    context['subscriptions_html'] = subscriptions_html
+
+
 class IntegrationView(ApiURLView):
     template_name = 'zerver/integrations.html'
 
     def get_context_data(self, **kwargs):
         # type: (**Any) -> Dict[str, Any]
         context = super(IntegrationView, self).get_context_data(**kwargs)  # type: Dict[str, Any]
-        alphabetical_sorted_integration = OrderedDict(sorted(INTEGRATIONS.items()))
-        alphabetical_sorted_hubot_lozenges = OrderedDict(sorted(HUBOT_LOZENGES.items()))
-        context['integrations_dict'] = alphabetical_sorted_integration
-        context['hubot_lozenges_dict'] = alphabetical_sorted_hubot_lozenges
-
-        if context["html_settings_links"]:
-            settings_html = '<a href="../#settings">Zulip settings page</a>'
-            subscriptions_html = '<a target="_blank" href="../#subscriptions">subscriptions page</a>'
-        else:
-            settings_html = 'Zulip settings page'
-            subscriptions_html = 'subscriptions page'
-
-        context['settings_html'] = settings_html
-        context['subscriptions_html'] = subscriptions_html
-
+        add_integrations_context(context)
         return context
 
 
