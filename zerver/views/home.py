@@ -33,6 +33,7 @@ from zproject.jinja2 import render_to_response
 import calendar
 import datetime
 import logging
+import os
 import re
 import simplejson
 import time
@@ -86,6 +87,11 @@ def sent_time_in_epoch_seconds(user_message):
 
 def home(request):
     # type: (HttpRequest) -> HttpResponse
+    if settings.DEVELOPMENT and os.path.exists('var/handlebars-templates/compile.error'):
+        response = render_to_response('zerver/handlebars_compilation_failed.html',
+                                      request=request)
+        response.status_code = 500
+        return response
     if not settings.SUBDOMAINS_HOMEPAGE:
         return home_real(request)
 
