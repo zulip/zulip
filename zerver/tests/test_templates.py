@@ -107,6 +107,7 @@ class TemplateTestCase(ZulipTestCase):
             'zerver/debug.html',
             'zerver/base.html',
             'zerver/api_content.json',
+            'zerver/handlebars_compilation_failed.html',
         ]
         skip = covered + defer + logged_out + logged_in + unusual + ['tests/test_markdown.html', 'zerver/terms.html']
         templates = [t for t in get_all_templates() if t not in skip]

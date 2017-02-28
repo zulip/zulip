@@ -1,0 +1,15 @@
+{% extends "zerver/portico.html" %}
+
+{% block customhead %}
+{{ super() }}
+<meta http-equiv="refresh" content="60;URL='/'">
+{% endblock %}
+
+{% block portico_content %}
+
+<br/>
+<p class="lead">500: Internal server error.</p>
+
+<p>{% trans %}Error: Invalid handlebars templates. Please check server log files for details.{% endtrans %}</p>
+
+{% endblock %}
