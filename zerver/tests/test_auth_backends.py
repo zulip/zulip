@@ -508,6 +508,18 @@ class GitHubAuthBackendTest(ZulipTestCase):
         result = self.client_get('/accounts/login/social/github')
         self.assertIn(reverse('social:begin', args=['github']), result.url)
 
+    def test_github_complete(self):
+        # type: () -> None
+        from social_django import utils
+        utils.BACKENDS = ('zproject.backends.GitHubAuthBackend',)
+        with mock.patch('social_core.backends.oauth.BaseOAuth2.process_error',
+                        side_effect=AuthFailed('Not found')):
+            result = self.client_get(reverse('social:complete', args=['github']))
+            self.assertEqual(result.status_code, 302)
+            self.assertIn('login', result.url)
+
+        utils.BACKENDS = settings.AUTHENTICATION_BACKENDS
+
 class ResponseMock(object):
     def __init__(self, status_code, data):
         # type: (int, Any) -> None
