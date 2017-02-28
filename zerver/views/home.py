@@ -195,7 +195,6 @@ def home_real(request):
     # Pass parameters to the client-side JavaScript code.
     # These end up in a global JavaScript Object named 'page_params'.
     page_params = dict(
-        zulip_version         = register_ret['zulip_version'],
         share_the_love        = settings.SHARE_THE_LOVE,
         development_environment = settings.DEVELOPMENT,
         debug_mode            = settings.DEBUG,
@@ -220,28 +219,13 @@ def home_real(request):
         email                 = user_profile.email,
         domain                = user_profile.realm.domain,
         domains               = list_of_domains_for_realm(user_profile.realm),
-        realm_name            = register_ret['realm_name'],
-        realm_invite_required = register_ret['realm_invite_required'],
-        realm_invite_by_admins_only = register_ret['realm_invite_by_admins_only'],
-        realm_authentication_methods = register_ret['realm_authentication_methods'],
-        realm_create_stream_by_admins_only = register_ret['realm_create_stream_by_admins_only'],
-        realm_add_emoji_by_admins_only = register_ret['realm_add_emoji_by_admins_only'],
-        realm_allow_message_editing = register_ret['realm_allow_message_editing'],
-        realm_message_content_edit_limit_seconds = register_ret['realm_message_content_edit_limit_seconds'],
-        realm_restricted_to_domain = register_ret['realm_restricted_to_domain'],
-        realm_default_language = register_ret['realm_default_language'],
-        realm_waiting_period_threshold = register_ret['realm_waiting_period_threshold'],
         realm_icon_url        = realm_icon_url(user_profile.realm),
         realm_icon_source     = user_profile.realm.icon_source,
         enter_sends           = user_profile.enter_sends,
         user_id               = user_profile.id,
-        left_side_userlist    = register_ret['left_side_userlist'],
-        default_language      = register_ret['default_language'],
         default_language_name = get_language_name(register_ret['default_language']),
         language_list_dbl_col = get_language_list_for_templates(register_ret['default_language']),
         language_list         = get_language_list(),
-        referrals             = register_ret['referrals'],
-        realm_emoji           = register_ret['realm_emoji'],
         needs_tutorial        = needs_tutorial,
         first_in_realm        = first_in_realm,
         prompt_for_invites    = prompt_for_invites,
@@ -260,19 +244,11 @@ def home_real(request):
         pm_content_in_desktop_notifications = user_profile.pm_content_in_desktop_notifications,
         enable_offline_push_notifications = user_profile.enable_offline_push_notifications,
         enable_online_push_notifications = user_profile.enable_online_push_notifications,
-        twenty_four_hour_time = register_ret['twenty_four_hour_time'],
         enable_digest_emails  = user_profile.enable_digest_emails,
         event_queue_id        = register_ret['queue_id'],
-        last_event_id         = register_ret['last_event_id'],
-        max_message_id        = register_ret['max_message_id'],
         unread_count          = approximate_unread_count(user_profile),
         furthest_read_time    = sent_time_in_epoch_seconds(latest_read),
         save_stacktraces      = settings.SAVE_FRONTEND_STACKTRACES,
-        alert_words           = register_ret['alert_words'],
-        attachments           = register_ret['attachments'],
-        muted_topics          = register_ret['muted_topics'],
-        realm_filters         = register_ret['realm_filters'],
-        realm_default_streams = register_ret['realm_default_streams'],
         is_admin              = user_profile.is_realm_admin,
         can_create_streams    = user_profile.can_create_streams(),
         name_changes_disabled = name_changes_disabled(user_profile.realm),
@@ -287,6 +263,39 @@ def home_real(request):
         presence_disabled     = user_profile.realm.presence_disabled,
         is_zephyr_mirror_realm = user_profile.realm.is_zephyr_mirror_realm,
     )
+
+    # These fields will be automatically copied from register_ret into
+    # page_params.  It is a goal to move more of the page_params list
+    # into this sort of cleaner structure.
+    page_params_core_fields = [
+        'alert_words',
+        'attachments',
+        'default_language',
+        'last_event_id',
+        'left_side_userlist',
+        'max_message_id',
+        'muted_topics',
+        'realm_add_emoji_by_admins_only',
+        'realm_allow_message_editing',
+        'realm_authentication_methods',
+        'realm_create_stream_by_admins_only',
+        'realm_default_language',
+        'realm_default_streams',
+        'realm_emoji',
+        'realm_message_content_edit_limit_seconds',
+        'realm_name',
+        'realm_invite_by_admins_only',
+        'realm_invite_required',
+        'realm_filters',
+        'realm_restricted_to_domain',
+        'realm_waiting_period_threshold',
+        'referrals',
+        'twenty_four_hour_time',
+        'zulip_version',
+    ]
+
+    for field_name in page_params_core_fields:
+        page_params[field_name] = register_ret[field_name]
 
     if narrow_stream is not None:
         # In narrow_stream context, initial pointer is just latest message
