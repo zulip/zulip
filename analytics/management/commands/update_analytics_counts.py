@@ -15,7 +15,6 @@ from django.conf import settings
 
 from analytics.models import RealmCount, UserCount
 from analytics.lib.counts import COUNT_STATS, logger, process_count_stat
-from zerver.lib.timestamp import datetime_to_string, is_timezone_aware
 from zerver.models import UserProfile, Message
 
 from typing import Any
@@ -30,7 +29,7 @@ class Command(BaseCommand):
         parser.add_argument('--time', '-t',
                             type=str,
                             help='Update stat tables from current state to --time. Defaults to the current time.',
-                            default=datetime_to_string(timezone.now()))
+                            default=timezone.now().isoformat())
         parser.add_argument('--utc',
                             type=bool,
                             help="Interpret --time in UTC.",
@@ -61,7 +60,7 @@ class Command(BaseCommand):
         if options['utc']:
             fill_to_time = fill_to_time.replace(tzinfo=timezone.utc)
 
-        if not (is_timezone_aware(fill_to_time)):
+        if fill_to_time.tzinfo is None:
             raise ValueError("--time must be timezone aware. Maybe you meant to use the --utc option?")
 
         logger.info("Starting updating analytics counts through %s" % (fill_to_time,))
