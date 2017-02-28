@@ -669,7 +669,7 @@ class DocPageTest(ZulipTestCase):
         def test_doc_endpoints(self):
             # type: () -> None
             self._test('/api/', 'We hear you like APIs')
-            self._test('/api/endpoints/', 'pre-built API bindings for Python')
+            self._test('/api/endpoints/', 'pre-built API bindings for')
             self._test('/about/', 'Cambridge, Massachusetts')
             # Test the i18n version of one of these pages.
             self._test('/en/about/', 'Cambridge, Massachusetts')
