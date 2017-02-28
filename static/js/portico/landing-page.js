@@ -16,6 +16,83 @@ var ScrollTo = function () {
     });
 };
 
+// these are events that are only to run on the integrations page.
+// check if the page location is integrations.
+var integration_events = function () {
+    $("a.title")
+        .addClass("show-integral")
+        .prepend($("<span class='integral'>∫</span>"))
+        .hover(function () {
+            $(".integral").css("display", "inline");
+            var width = $(".integral").width();
+            $("a.title").css("left", -1 * width);
+        },
+        function () {
+            $(".integral").css("display", "none");
+                $("a.title").css("left", 0);
+            }
+        );
+
+    var $lozenge_icon;
+    var currentblock;
+    var instructionbox = $("#integration-instruction-block");
+    var hashes = $('.integration-instructions').map(function () {
+        return this.id || null;
+    }).get();
+
+
+    var show_integration = function (hash) {
+        // the version of the hash without the leading "#".
+        var _hash = hash.replace(/^#/, "");
+
+        if (hashes.indexOf(_hash) > -1) {
+            $lozenge_icon = $(".integration-lozenges .integration-lozenge.integration-" + _hash).clone(true);
+            currentblock = $(hash);
+            instructionbox.children(".integration-lozenge").replaceWith($lozenge_icon);
+            instructionbox.append($lozenge_icon, currentblock);
+
+            $(".inner-content").removeClass("show");
+            setTimeout(function () {
+                instructionbox.hide();
+                $(".integration-lozenges").addClass("hide");
+                $(".portico-page-header.extra, .portico-large-text.extra, #integration-main-text").hide();
+
+                instructionbox.append(currentblock);
+                instructionbox.show();
+                $("#integration-list-link").css("display", "block");
+
+                $(".inner-content").addClass("show");
+            }, 300);
+            window.scrollTo(0,0);
+        }
+    };
+
+    function update_hash() {
+        var hash = document.location.hash;
+
+        if (hash && hash !== '#hubot-integrations') {
+            show_integration(window.location.hash);
+        } else if (currentblock && $lozenge_icon) {
+            $(".inner-content").removeClass("show");
+            setTimeout(function () {
+                $("#integration-list-link").css("display", "none");
+                $(".integration-lozenges").removeClass("hide");
+                $(".portico-page-header.extra, .portico-large-text.extra, #integration-main-text").show();
+                instructionbox.hide();
+                $lozenge_icon.remove();
+                currentblock.appendTo("#integration-instructions-group");
+                $(".inner-content").addClass("show");
+                $('html, body').animate({scrollTop: ($(hash).offset() || { top: 0 }).top}, 'slow');
+            }, 300);
+        } else {
+            $(".inner-content").addClass("show");
+        }
+    }
+
+    window.onhashchange = update_hash;
+    update_hash();
+};
+
 var events = function () {
     ScrollTo();
 
@@ -53,6 +130,9 @@ var events = function () {
         $("nav ul").addClass("show");
     });
 
+    if (/\/integrations\/*/.test(window.location.pathname)) {
+        integration_events();
+    }
 };
 
 // run this callback when the page is determined to have loaded.
