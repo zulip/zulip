@@ -80,7 +80,6 @@ body {
     font-size: 17px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    text-shadow: 0 0 0;
 }
 
 .markdown h1[id]:before,

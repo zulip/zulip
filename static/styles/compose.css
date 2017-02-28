@@ -169,7 +169,6 @@ table.compose_table {
     margin: auto;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    text-shadow: 0 0 0;
 }
 
 .compose-content {
