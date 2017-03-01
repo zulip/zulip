@@ -102,7 +102,7 @@ class TemplateTestCase(ZulipTestCase):
             'zerver/closed_realm.html',
             'zerver/topic_is_muted.html',
             'zerver/bankruptcy.html',
-            'zerver/image-overlay.html',
+            'zerver/lightbox_overlay.html',
             'zerver/invalid_realm.html',
             'zerver/compose.html',
             'zerver/debug.html',
