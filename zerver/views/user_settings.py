@@ -151,7 +151,7 @@ def update_display_settings_backend(request, user_profile,
                                     default_language=REQ(validator=check_string, default=None),
                                     left_side_userlist=REQ(validator=check_bool, default=None),
                                     emoji_alt_code=REQ(validator=check_bool, default=None)):
-    # type: (HttpRequest, UserProfile, Optional[bool], Optional[str], Optional[bool]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Optional[bool], Optional[str], Optional[bool], Optional[bool]) -> HttpResponse
     if (default_language is not None and
             default_language not in get_available_language_codes()):
         raise JsonableError(_("Invalid language '%s'" % (default_language,)))
