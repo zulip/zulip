@@ -25,15 +25,15 @@ exports.build_bot_create_widget = function () {
     );
 };
 
-exports.build_bot_edit_widget = function (li) {
+exports.build_bot_edit_widget = function (target) {
     var get_file_input = function () {
-        return li.find('.edit_bot_avatar_file_input');
+        return target.find('.edit_bot_avatar_file_input');
     };
 
-    var file_name_field = li.find('.edit_bot_avatar_file');
-    var input_error = li.find('.edit_bot_avatar_error');
-    var clear_button = li.find('.edit_bot_avatar_clear_button');
-    var upload_button = li.find('.edit_bot_avatar_upload_button');
+    var file_name_field = target.find('.edit_bot_avatar_file');
+    var input_error = target.find('.edit_bot_avatar_error');
+    var clear_button = target.find('.edit_bot_avatar_clear_button');
+    var upload_button = target.find('.edit_bot_avatar_upload_button');
 
     return upload_widget.build_widget(
         get_file_input,

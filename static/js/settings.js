@@ -148,6 +148,48 @@ exports.generate_zuliprc_content = function (email, api_key) {
            "\n";
 };
 
+$("body").ready(function () {
+    var $sidebar = $(".form-sidebar");
+    var $targets = $sidebar.find("[data-target]");
+    var $title = $sidebar.find(".title h1");
+    var is_open = false;
+
+    var close_sidebar = function () {
+        $sidebar.removeClass("show");
+        is_open = false;
+    };
+
+    exports.trigger_sidebar = function (target) {
+        $targets.hide();
+        var $target = $(".form-sidebar").find("[data-target='" + target + "']");
+
+        $title.text($target.attr("data-title"));
+        $target.show();
+
+        $sidebar.addClass("show");
+        is_open = true;
+    };
+
+    $(".form-sidebar .exit").click(function (e) {
+        close_sidebar();
+        e.stopPropagation();
+    });
+
+    $("body").click(function (e) {
+        if (is_open && !$(e.target).within(".form-sidebar")) {
+            close_sidebar();
+        }
+    });
+
+    $("body").on("click", "[data-sidebar-form]", function (e) {
+        exports.trigger_sidebar($(this).attr("data-sidebar-form"));
+        e.stopPropagation();
+    });
+
+    $("body").on("click", "[data-sidebar-form-close]", close_sidebar);
+});
+
+
 function _setup_page() {
     // To build the edit bot streams dropdown we need both the bot and stream
     // API results. To prevent a race streams will be initialized to a promise
@@ -718,34 +760,36 @@ function _setup_page() {
 
     var image_version = 0;
 
+    var avatar_widget = avatar.build_bot_edit_widget($("#settings_page"));
+
     $("#bots_list").on("click", "button.open_edit_bot_form", function (e) {
         var users_list = people.get_realm_persons().filter(function (person)  {
             return !person.is_bot;
         });
         var li = $(e.currentTarget).closest('li');
         var edit_div = li.find('div.edit_bot');
-        var form = li.find('.edit_bot_form');
+        var form = $('#settings_page .edit_bot_form');
         var image = li.find(".image");
-        var bot_info = li.find(".bot_info");
+        var bot_info = li;
         var reset_edit_bot = li.find(".reset_edit_bot");
         var owner_select = $(templates.render("bot_owner_select", {users_list:users_list}));
         var old_full_name = bot_info.find(".name").text();
         var old_owner = bot_data.get(bot_info.find(".email .value").text()).owner;
-        form.find(".edit_bot_name").attr('value', old_full_name);
-        form.find(".edit-bot-owner .select-form").append(owner_select);
-        form.find(".edit-bot-owner select").val(old_owner);
+        var bot_email = bot_info.find(".email .value").text();
 
-        image.hide();
-        bot_info.hide();
-        edit_div.show();
+        $("#settings_page .edit_bot .edit_bot_name").val(old_full_name);
+        $("#settings_page .edit_bot .select-form").text("").append(owner_select);
+        $("#settings_page .edit_bot .edit-bot-owner select").val(old_owner);
+        $("#settings_page .edit_bot_form").attr("data-email", bot_email);
+        $(".edit_bot_email").text(bot_email);
 
-        var avatar_widget = avatar.build_bot_edit_widget(li);
+        avatar_widget.clear();
+
 
         function show_row_again() {
             image.show();
             bot_info.show();
             edit_div.hide();
-            avatar_widget.close();
         }
 
         reset_edit_bot.click(function (event) {
@@ -763,10 +807,10 @@ function _setup_page() {
                 errors.hide();
             },
             submitHandler: function () {
-                var email = form.data('email');
+                var email = form.attr('data-email');
                 var full_name = form.find('.edit_bot_name').val();
                 var bot_owner = form.find('.edit-bot-owner select').val();
-                var file_input = li.find('.edit_bot_avatar_file_input');
+                var file_input = $(".edit_bot").find('.edit_bot_avatar_file_input');
                 var default_sending_stream = form.find('.edit_bot_default_sending_stream').val();
                 var default_events_register_stream = form.find('.edit_bot_default_events_register_stream').val();
                 var spinner = form.find('.edit_bot_spinner');
@@ -793,8 +837,9 @@ function _setup_page() {
                         loading.destroy_indicator(spinner);
                         errors.hide();
                         edit_button.show();
-                        owner_select.remove();
                         show_row_again();
+                        avatar_widget.clear();
+
                         bot_info.find('.name').text(full_name);
                         if (data.avatar_url) {
                             // Note that the avatar_url won't actually change on the back end
