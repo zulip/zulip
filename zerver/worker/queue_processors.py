@@ -148,7 +148,8 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
         # type: (Mapping[str, Any]) -> None
         invitee = get_prereg_user_by_email(data["email"])
         referrer = get_user_profile_by_email(data["referrer_email"])
-        do_send_confirmation_email(invitee, referrer)
+        body = data["email_body"]
+        do_send_confirmation_email(invitee, referrer, body)
 
         # queue invitation reminder for two days from now.
         link = Confirmation.objects.get_link_for_object(invitee, host=referrer.realm.host)

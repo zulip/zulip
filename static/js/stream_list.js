@@ -137,6 +137,8 @@ exports.build_stream_list = function () {
         }
     });
 
+    pinned_streams.sort(util.strcmp);
+
     unpinned_streams.sort(function (a, b) {
         if (sort_recent) {
             if (stream_data.is_active(b) && ! stream_data.is_active(a)) {

@@ -211,6 +211,9 @@ function process_hotkey(e) {
         } else if ($("#subscription_overlay").hasClass("show")) {
             subs.close();
             return true;
+        } else if ($("#draft_overlay").hasClass("show")) {
+            drafts.close();
+            return true;
         } else if ($(".informational-overlays").hasClass("show")) {
             ui.hide_info_overlay();
             return true;
@@ -266,6 +269,9 @@ function process_hotkey(e) {
                 return true;
             } else if ($(".message_edit_content").filter(":focus").length > 0) {
                 row = $(".message_edit_content").filter(":focus").closest(".message_row");
+                message_edit.end(row);
+            } else if ($(".message_edit_topic").filter(":focus").length > 0) {
+                row = $(".message_edit_topic").filter(":focus").closest(".message_row");
                 message_edit.end(row);
             } else if (activity.searching()) {
                 activity.escape_search();

@@ -63,6 +63,7 @@ class TemplateTestCase(ZulipTestCase):
 
         logged_in = [
             'analytics/stats.html',
+            'zerver/drafts.html',
             'zerver/home.html',
             'zerver/invite_user.html',
             'zerver/keyboard_shortcuts.html',
@@ -83,6 +84,10 @@ class TemplateTestCase(ZulipTestCase):
             'confirmation/mituser_confirmation_email_subject.txt',
             'confirmation/mituser_invite_email_body.txt',
             'confirmation/mituser_invite_email_subject.txt',
+            'confirmation/emailchangestatus_confirmation_email.subject',
+            'confirmation/emailchangestatus_confirmation_email.html',
+            'confirmation/emailchangestatus_confirmation_email.txt',
+            'confirmation/notify_change_in_email_subject.txt',
             'corporate/mit.html',
             'corporate/privacy.html',
             'corporate/zephyr.html',
@@ -102,6 +107,7 @@ class TemplateTestCase(ZulipTestCase):
             'zerver/debug.html',
             'zerver/base.html',
             'zerver/api_content.json',
+            'zerver/handlebars_compilation_failed.html',
         ]
         skip = covered + defer + logged_out + logged_in + unusual + ['tests/test_markdown.html', 'zerver/terms.html']
         templates = [t for t in get_all_templates() if t not in skip]

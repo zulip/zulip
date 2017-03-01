@@ -564,6 +564,19 @@ exports.MessageList.prototype = {
         this.view.rerender_the_whole_thing();
     },
 
+    update_user_avatar: function (user_id, avatar_url) {
+        // TODO:
+        // We may want to de-dup some logic with update_user_full_name,
+        // especially if we want to optimize this with some kind of
+        // hash that maps sender_id -> messages.
+        _.each(this._items, function (item) {
+            if (item.sender_id && (item.sender_id === user_id)) {
+                item.small_avatar_url = avatar_url;
+            }
+        });
+        this.view.rerender_the_whole_thing();
+    },
+
     update_stream_name: function MessageList_update_stream_name(stream_id,
                                                                 new_stream_name) {
         _.each(this._items, function (item) {

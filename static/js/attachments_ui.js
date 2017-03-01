@@ -11,6 +11,13 @@ exports.set_up_attachments = function () {
 
     var attachment_list = $('#attachments_list');
     _.each(page_params.attachments, function (attachment) {
+        _.each(attachment.messages, function (o) {
+            o.name = timerender.absolute_time(o.name);
+        });
+
+        attachment.extension = attachment.path_id.split(/\./).pop();
+        attachment.large_ext_name = attachment.extension.length > 5;
+
         var li = templates.render('attachment-item', {attachment: attachment});
         attachment_list.append(li);
     });

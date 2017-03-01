@@ -5,12 +5,12 @@
 {% block portico_content %}
 
 <div class="app terms-page">
-  <div class="app-main terms-page-container">
+    <div class="app-main terms-page-container">
 
-  {% if terms_of_service %}
-  {{ terms_of_service|render_markdown_path }}
-  {% endif %}
-  </div>
+        {% if terms_of_service %}
+        {{ terms_of_service|render_markdown_path }}
+        {% endif %}
+    </div>
 </div>
 
 {% endblock %}

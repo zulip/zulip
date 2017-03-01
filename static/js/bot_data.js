@@ -3,8 +3,8 @@ var bot_data = (function () {
 
     var bots = {};
     var bot_fields = ['api_key', 'avatar_url', 'default_all_public_streams',
-                      'default_events_register_stream',
-                      'default_sending_stream', 'email', 'full_name', 'owner'];
+                      'default_events_register_stream', 'default_sending_stream',
+                      'email', 'full_name', 'is_active', 'owner'];
 
     var send_change_event = _.debounce(function () {
         $(document).trigger('zulip.bot_data_changed');
@@ -27,8 +27,8 @@ var bot_data = (function () {
         send_change_event();
     };
 
-    exports.remove = function bot_data__remove(email) {
-        delete bots[email];
+    exports.deactivate = function bot_data__deactivate(email) {
+        bots[email].is_active = false;
         send_change_event();
     };
 
@@ -39,9 +39,15 @@ var bot_data = (function () {
         send_change_event();
     };
 
-    exports.get_editable = function bots_data__get_editable() {
+    exports.get_all_bots_for_current_user = function bots_data__get_editable() {
         return _.filter(bots, function (bot) {
             return people.is_current_user(bot.owner);
+        });
+    };
+
+    exports.get_editable = function bots_data__get_editable() {
+        return _.filter(bots, function (bot) {
+            return bot.is_active && people.is_current_user(bot.owner);
         });
     };
 

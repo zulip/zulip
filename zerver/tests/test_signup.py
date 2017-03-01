@@ -25,7 +25,8 @@ from zerver.management.commands.deliver_email import send_email_job
 
 from zerver.lib.actions import (
     set_default_streams,
-    do_change_is_admin
+    do_change_is_admin,
+    get_stream
 )
 
 from zerver.lib.initial_password import initial_password
@@ -34,7 +35,7 @@ from zerver.lib.actions import do_deactivate_realm, do_set_realm_default_languag
 from zerver.lib.digest import send_digest_email
 from zerver.lib.notifications import (
     enqueue_welcome_emails, one_click_unsubscribe_link, send_local_email_template_with_delay)
-from zerver.lib.test_helpers import find_key_by_email, queries_captured, \
+from zerver.lib.test_helpers import find_pattern_in_email, find_key_by_email, queries_captured, \
     HostRequestMock
 from zerver.lib.test_classes import (
     ZulipTestCase,
@@ -45,6 +46,8 @@ from zerver.context_processors import common_context
 
 import re
 import ujson
+
+from typing import Set, Optional
 
 from six.moves import urllib
 from six.moves import range
@@ -333,8 +336,8 @@ class LoginTest(ZulipTestCase):
 
 class InviteUserTest(ZulipTestCase):
 
-    def invite(self, users, streams):
-        # type: (str, List[Text]) -> HttpResponse
+    def invite(self, users, streams, body=''):
+        # type: (str, List[Text], str) -> HttpResponse
         """
         Invites the specified users to Zulip with the specified streams.
 
@@ -346,14 +349,23 @@ class InviteUserTest(ZulipTestCase):
 
         return self.client_post("/json/invite_users",
                                 {"invitee_emails": users,
-                                    "stream": streams})
+                                 "stream": streams,
+                                 "custom_body": body})
 
-    def check_sent_emails(self, correct_recipients):
-        # type: (List[str]) -> None
+    def check_sent_emails(self, correct_recipients, custom_body=None):
+        # type: (List[str], Optional[str]) -> None
         from django.core.mail import outbox
         self.assertEqual(len(outbox), len(correct_recipients))
         email_recipients = [email.recipients()[0] for email in outbox]
         self.assertEqual(sorted(email_recipients), sorted(correct_recipients))
+        if len(outbox) == 0:
+            return
+
+        if custom_body is None:
+            self.assertNotIn("Message from", outbox[0].body)
+        else:
+            self.assertIn("Message from ", outbox[0].body)
+            self.assertIn(custom_body, outbox[0].body)
 
     def test_bulk_invite_users(self):
         # type: () -> None
@@ -361,11 +373,23 @@ class InviteUserTest(ZulipTestCase):
         self.login('hamlet@zulip.com')
         invitees = ['alice@zulip.com', 'bob@zulip.com']
         params = {
-            'invitee_emails': ujson.dumps(invitees)
+            'invitee_emails': ujson.dumps(invitees),
         }
         result = self.client_post('/json/bulk_invite_users', params)
         self.assert_json_success(result)
         self.check_sent_emails(invitees)
+
+    def test_bulk_invite_users_invalid_emails(self):
+        # type: () -> None
+        self.login('hamlet@zulip.com')
+        invitees = ['alice@zulip.com', 'bobnoatzulip.com']
+        params = {
+            'invitee_emails': ujson.dumps(invitees),
+        }
+        self.assert_json_error(
+            self.client_post('/json/bulk_invite_users', params),
+            'Some emails did not validate, so we didn\'t send any invitations.')
+        self.check_sent_emails([])
 
     def test_successful_invite_user(self):
         # type: () -> None
@@ -378,6 +402,19 @@ class InviteUserTest(ZulipTestCase):
         self.assert_json_success(self.invite(invitee, ["Denmark"]))
         self.assertTrue(find_key_by_email(invitee))
         self.check_sent_emails([invitee])
+
+    def test_successful_invite_user_with_custom_body(self):
+        # type: () -> None
+        """
+        A call to /json/invite_users with valid parameters causes an invitation
+        email to be sent.
+        """
+        self.login("hamlet@zulip.com")
+        invitee = "alice-test@zulip.com"
+        body = "Custom Text."
+        self.assert_json_success(self.invite(invitee, ["Denmark"], body))
+        self.assertTrue(find_pattern_in_email(invitee, body))
+        self.check_sent_emails([invitee], custom_body=body)
 
     def test_successful_invite_user_with_name(self):
         # type: () -> None
@@ -406,6 +443,28 @@ class InviteUserTest(ZulipTestCase):
         self.assertTrue(find_key_by_email(email))
         self.assertTrue(find_key_by_email(email2))
         self.check_sent_emails([email, email2])
+
+    def test_successful_invite_user_with_notifications_stream(self):
+        # type: () -> None
+        """
+        A call to /json/invite_users with valid parameters unconditionally
+        subscribes the invitee to the notifications stream if it exists and is
+        public.
+        """
+        realm = get_realm('zulip')
+        notifications_stream = get_stream('Verona', realm)
+        realm.notifications_stream = notifications_stream
+        realm.save()
+
+        self.login('hamlet@zulip.com')
+        invitee = 'alice-test@zulip.com'
+        self.assert_json_success(self.invite(invitee, ['Denmark']))
+        self.assertTrue(find_key_by_email(invitee))
+        self.check_sent_emails([invitee])
+
+        prereg_user = get_prereg_user_by_email(invitee)
+        streams = list(prereg_user.streams.all())
+        self.assertTrue(notifications_stream in streams)
 
     def test_invite_user_signup_initial_history(self):
         # type: () -> None
@@ -458,13 +517,19 @@ earl-test@zulip.com""", ["Denmark"]))
         """
         self.login("hamlet@zulip.com")
         self.assert_json_error(
-            self.client_post("/json/invite_users", {"invitee_emails": "foo@zulip.com"}),
+            self.client_post("/json/invite_users", {"invitee_emails": "foo@zulip.com",
+                                                    "custom_body": ''}),
             "You must specify at least one stream for invitees to join.")
 
         for address in ("noatsign.com", "outsideyourdomain@example.net"):
             self.assert_json_error(
                 self.invite(address, ["Denmark"]),
                 "Some emails did not validate, so we didn't send any invitations.")
+        self.check_sent_emails([])
+
+        self.assert_json_error(
+            self.invite("", ["Denmark"]),
+            "You must specify at least one email address.")
         self.check_sent_emails([])
 
     def test_invalid_stream(self):
@@ -486,7 +551,8 @@ earl-test@zulip.com""", ["Denmark"]))
         self.assert_json_error(
             self.client_post("/json/invite_users",
                              {"invitee_emails": "hamlet@zulip.com",
-                              "stream": ["Denmark"]}),
+                              "stream": ["Denmark"],
+                              "custom_body": ''}),
             "We weren't able to invite anyone.")
         self.assertRaises(PreregistrationUser.DoesNotExist,
                           lambda: PreregistrationUser.objects.get(
@@ -505,7 +571,8 @@ earl-test@zulip.com""", ["Denmark"]))
 
         result = self.client_post("/json/invite_users",
                                   {"invitee_emails": "\n".join(existing + new),
-                                   "stream": ["Denmark"]})
+                                   "stream": ["Denmark"],
+                                   "custom_body": ''})
         self.assert_json_error(result,
                                "Some of those addresses are already using Zulip, \
 so we didn't send them an invitation. We did send invitations to everyone else!")
@@ -590,6 +657,37 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         user = get_user_profile_by_email('hamlet@zulip.com')
         self.assertEqual(user.invites_used, 1)
 
+    def test_refer_friend_no_email(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        user = get_user_profile_by_email('hamlet@zulip.com')
+        user.invites_granted = 1
+        user.invites_used = 0
+        user.save()
+
+        self.assert_json_error(
+            self.client_post('/json/refer_friend', dict(email='')),
+            "No email address specified")
+
+        user = get_user_profile_by_email('hamlet@zulip.com')
+        self.assertEqual(user.invites_used, 0)
+
+    def test_refer_friend_no_invites(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        user = get_user_profile_by_email('hamlet@zulip.com')
+        user.invites_granted = 1
+        user.invites_used = 1
+        user.save()
+
+        invitee = "alice-test@zulip.com"
+        self.assert_json_error(
+            self.client_post('/json/refer_friend', dict(email=invitee)),
+            "Insufficient invites")
+
+        user = get_user_profile_by_email('hamlet@zulip.com')
+        self.assertEqual(user.invites_used, 1)
+
     def test_invitation_reminder_email(self):
         # type: () -> None
         from django.core.mail import outbox
@@ -663,7 +761,15 @@ class InviteeEmailsParserTests(TestCase):
 class EmailUnsubscribeTests(ZulipTestCase):
     def test_error_unsubscribe(self):
         # type: () -> None
+
+        # An invalid insubscribe token "test123" produces an error.
         result = self.client_get('/accounts/unsubscribe/missed_messages/test123')
+        self.assert_in_response('Unknown email unsubscribe request', result)
+
+        # An unknown message type "fake" produces an error.
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        unsubscribe_link = one_click_unsubscribe_link(user_profile, "fake")
+        result = self.client_get(urllib.parse.urlparse(unsubscribe_link).path)
         self.assert_in_response('Unknown email unsubscribe request', result)
 
     def test_missedmessage_unsubscribe(self):

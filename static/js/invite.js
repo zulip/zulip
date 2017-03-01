@@ -71,9 +71,11 @@ exports.initialize = function () {
             invitee_emails.val('');
 
             if (page_params.development_environment) {
-                $('#dev_env_msg').text('In the Zulip development environment, outgoing emails are printed to the run-dev.py console.')
-                            .addClass('alert-info')
-                            .show();
+                // line-wrapped to avoid the i18n linter, since we don't want to translate this.
+                $('#dev_env_msg').text(
+                    'In the Zulip development environment, outgoing emails are printed to the run-dev.py console.')
+                    .addClass('alert-info')
+                    .show();
             }
 
         },

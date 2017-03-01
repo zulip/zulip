@@ -45,7 +45,7 @@ EOF
 su zulip -c /home/zulip/deployments/current/scripts/setup/initialize-database
 
 echo; echo "Now testing that the supervisord jobs are running properly"; echo
-sleep 10 # Guaranteed to have a working supervisord process get an extra digit
+sleep 15 # Guaranteed to have a working supervisord process get an extra digit
 if supervisorctl status | grep -vq RUNNING || supervisorctl status | sed 's/^.*uptime //' | grep -q 0:00:0; then
     set +x
     echo
@@ -87,8 +87,9 @@ fi
 echo; echo "Now confirming all the RabbitMQ queue processors are correctly registered!"; echo
 # These hacky shell scripts just extract the sorted list of queue processors, running and expected
 supervisorctl status | cut -f1 -dR | cut -f2- -d: | grep events | cut -f1 -d" " | cut -f3- -d_ | cut -f1 -d- | sort -u > /tmp/running_queue_processors.txt
-for i in `/home/zulip/deployments/current/scripts/lib/queue_workers.py`; do echo $i | grep -v ^test$; done | sort > /tmp/expected_queue_processors.txt
-if diff /tmp/expected_queue_processors.txt /tmp/running_queue_processors.txt >/dev/null; then
+su zulip -c /home/zulip/deployments/current/scripts/lib/queue_workers.py | grep -v ^test$ > /tmp/expected_queue_processors.txt
+if ! diff /tmp/expected_queue_processors.txt /tmp/running_queue_processors.txt >/dev/null; then
+    set +x
     echo "FAILURE: Runnable queue processors declared in zerver/worker/queue_processors.py "
     echo "do not match those in puppet/manifests/zulip/base.pp"
     echo "See http://zulip.readthedocs.io/en/latest/queuing.html for details."
@@ -102,13 +103,17 @@ echo; echo "Now running RabbitMQ consumer Nagios tests"; echo
 /home/zulip/deployments/current/scripts/nagios/check-rabbitmq-consumers
 
 # Then, compute the list of all Django queue workers to run Nagios checks against
-consumer_list=$(/home/zulip/deployments/current/scripts/lib/queue_workers.py --queue_type=consumer)
+consumer_list=$(/home/zulip/deployments/current/scripts/lib/queue_workers.py --queue-type=consumer)
 for consumer in $consumer_list; do
     if ! /usr/lib/nagios/plugins/zulip_app_frontend/check_rabbitmq_consumers "$consumer"; then
         set +x
         echo
         echo "FAILURE: Missing Nagios consumer for $consumer; displaying full consumer output:"
         rabbitmqctl list_consumers
+        supervisorctl status
+        echo "EVENTS LOGS"
+        echo
+        cat /var/log/zulip/events*.log
         echo
         exit 1
     fi

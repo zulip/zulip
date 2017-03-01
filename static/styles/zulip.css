@@ -1352,6 +1352,10 @@ blockquote p {
     font-weight: bold;
 }
 
+.alert {
+    display: none;
+}
+
 .home-error-bar .alert {
     margin-bottom: auto;
 }
@@ -2122,6 +2126,10 @@ button.topic_edit_cancel {
 #invitee_emails {
     min-height: 40px;
     max-height: 300px;
+}
+
+#invite-user .custom_invite_body {
+    margin-top: 10px;
 }
 
 #invite_status {

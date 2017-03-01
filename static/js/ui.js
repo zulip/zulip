@@ -570,7 +570,7 @@ $(function () {
         $("#edit-message-hotkey-help").hide();
     }
 
-    if (page_params.presence_disabled) {
+    if (page_params.realm_presence_disabled) {
         $("#user-list").hide();
         $("#group-pm-list").hide();
     }

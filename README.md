@@ -17,7 +17,7 @@ previews, group private messages, audible notifications,
 missed-message emails, desktop apps, and much more.
 
 Further information on the Zulip project and its features can be found
-at https://www.zulip.org.
+at [https://www.zulip.org](https://www.zulip.org).
 
 [![Build Status](https://travis-ci.org/zulip/zulip.svg?branch=master)](https://travis-ci.org/zulip/zulip) [![Coverage Status](https://coveralls.io/repos/github/zulip/zulip/badge.svg?branch=master)](https://coveralls.io/github/zulip/zulip?branch=master) [![docs](https://readthedocs.org/projects/zulip/badge/?version=latest)](http://zulip.readthedocs.io/en/latest/) [![Zulip chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://chat.zulip.org)
 
@@ -26,7 +26,7 @@ at https://www.zulip.org.
 There are several places online where folks discuss Zulip.
 
 * The primary place is the
-  [Zulip development community Zulip server](chat-zulip-org.html).
+  [Zulip development community Zulip server](https://zulip.readthedocs.io/en/latest/chat-zulip-org.html).
 
 * For Google Summer of Code students and applicants, we have
 [a mailing list](https://groups.google.com/forum/#!forum/zulip-gsoc)
@@ -120,6 +120,14 @@ and [Trello][]), plus [node.js API bindings][node], an [isomorphic
 [translating documentation][transifex] if you're interested in
 contributing!
 
+* **Peer Reviews**. Zulip is all about community and helping each
+other out. Check the [peer review stream][peer-review] on
+[chat.zulip.org](https://zulip.readthedocs.io/en/latest/chat-zulip-org.html)
+to help review PRs and give comments on other people's work. Everyone is
+welcome to participate, even those new to Zulip! Even just checking out
+the code, manually testing it, and posting on whether or not it worked
+is valuable.
+
 [cla]: https://opensource.dropbox.com/cla/
 [code-of-conduct]: https://zulip.readthedocs.io/en/latest/code-of-conduct.html
 [dev-install]: https://zulip.readthedocs.io/en/latest/dev-overview.html
@@ -147,6 +155,7 @@ contributing!
 [tsearch]: https://github.com/zulip/tsearch_extras
 [transifex]: https://zulip.readthedocs.io/en/latest/translating.html#testing-translations
 [z-org]: https://github.com/zulip/zulip.github.io
+[peer-review]: https://chat.zulip.org/#narrow/stream/peer.20review
 
 ## Google Summer of Code
 
@@ -209,11 +218,15 @@ onboarding, search, etc.  You can see this here:
 Click on any of the "area:" labels and you will see all the tickets
 related to your area of interest.
 
-If you're excited about helping with an open issue, just post on the
-conversation thread that you're working on it.  You're encouraged to
-ask questions on how to best implement or debug your changes -- the
-Zulip maintainers are excited to answer questions to help you stay
-unblocked and working efficiently.
+If you're excited about helping with an open issue, make sure to claim
+the issue by commenting the following in the comment section:
+"**@zulipbot** claim". **@zulipbot** will assign you to the issue and
+label the issue as **in progress**. For more details, check out
+[**@zulipbot**](https://github.com/zulip/zulipbot).
+
+You're encouraged to ask questions on how to best implement or debug
+your changes -- the Zulip maintainers are excited to answer questions
+to help you stay unblocked and working efficiently.
 
 We also welcome suggestions of features that you feel would be
 valuable or changes that you feel would make Zulip a better open
@@ -242,6 +255,13 @@ ReadTheDocs.
 Feedback on how to make this development process more efficient, fun,
 and friendly to new contributors is very welcome!  Just send an email
 to the Zulip Developers list with your thoughts.
+
+When you feel like you have completed your work on an issue, post your
+PR to the
+[**#peer review**](https://chat.zulip.org/#narrow/stream/peer.20review)
+stream on [chat.zulip.org](https://zulip.readthedocs.io/en/latest/chat-zulip-org.html).
+This is our lightweight process that gives other developers the
+opportunity to give you comments and suggestions on your work.
 
 ## License
 

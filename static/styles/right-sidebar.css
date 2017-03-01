@@ -73,20 +73,6 @@
     border-color: gray;
 }
 
-.user-device-indicator {
-    display: inline-block;
-    font-size: 20px;
-    line-height: 0px;
-    position: absolute;
-    right: 12px;
-    top: 0px;
-    color: #777777;
-}
-
-.user-with-count .user-device-indicator {
-    right: 35px;
-}
-
 #user_presences a,
 #group-pms a {
     color: #333;

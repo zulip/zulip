@@ -66,10 +66,22 @@
     filter: brightness(1.1);
 }
 
+.new-style .button.white:hover {
+    border-color: #888;
+    background-color: #e4e4e4;
+}
+
 .new-style .button:active {
     -webkit-filter: brightness(0.9);
     -moz-filter: brightness(0.9);
     filter: brightness(0.9);
+}
+
+.new-style .button[disabled="disabled"] {
+    cursor: not-allowed;
+    -webkit-filter: saturate(0);
+    -moz-filter: saturate(0);
+    filter: saturate(0);
 }
 
 /* -- button style variations -- */
@@ -237,6 +249,11 @@
 
 .new-style label.checkbox input[type=checkbox]:disabled ~ span {
     opacity: 0.3;
+}
+
+.new-style input[type=text] {
+    border-radius: 5px;
+    box-shadow: none;
 }
 
 .new-style a.no-style {

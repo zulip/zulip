@@ -67,29 +67,35 @@ heading `### MANDATORY SETTINGS`.
 
 These settings include:
 
-- `EXTERNAL_HOST`: the user-accessible Zulip domain name for your Zulip
-  installation. This will be the domain for which you have DNS A records
-  pointing to this server and for which you configured SSL certificates.
+- `EXTERNAL_HOST`: the user-accessible Zulip domain name for your
+  Zulip installation (aka what users will type in their web
+  browser). This should of course match the DNS name you configured to
+  point to your server and for which you configured SSL certificates.
+  If you plan to use multiple domains, add the others to
+  `ALLOWED_HOSTS`.
 
-- `ZULIP_ADMINISTRATOR`: the email address of the person or team maintaining
-  this installation and who will get support emails.
+- `ZULIP_ADMINISTRATOR`: the email address of the person or team
+  maintaining this installation and who will get support and error
+  emails.
+
+- `EMAIL_*`, `DEFAULT_FROM_EMAIL`, and `NOREPLY_EMAIL_ADDRESS`:
+  credentials for an outgoing SMTP server so Zulip can send emails
+  when needed (don't forget to set `email_password` in the
+  `zulip-secrets.conf` file!).  We highly recommend reading our
+  [production email docs](prod-email.html) and following the test
+  procedure discussed there to make sure you've setup outgoing email
+  correctly, since outgoing email is the most common configuration
+  problem.
 
 - `AUTHENTICATION_BACKENDS`: a list of enabled authentication
   mechanisms.  You'll need to enable at least one authentication
   mechanism by uncommenting its corresponding line, and then also do
   any additional configuration required for that backend as documented
-  in the `settings.py` file.  See the [section on
-  Authentication](prod-authentication-methods.html) for more detail on the
-  available authentication backends and how to configure them.
-
-- `EMAIL_*`, `DEFAULT_FROM_EMAIL`, and `NOREPLY_EMAIL_ADDRESS`:
-  Regardless of which authentication backends you enable, you must
-  provide settings for an outgoing SMTP server so Zulip can send
-  emails when needed (and don't forget to set `email_password` in the
-  `zulip-secrets.conf` file).  We highly recommend testing your
-  configuration using `su zulip` and then
-  `/home/zulip/deployments/current/manage.py send_test_email` to
-  confirm your outgoing email configuration is working correctly.
+  in the `settings.py` file (the email backend requires no extra
+  configuration).  See the
+  [section on Authentication](prod-authentication-methods.html) for
+  more detail on the available authentication backends and how to
+  configure them.
 
 ## Step 4: Initialize Zulip database
 
@@ -111,14 +117,10 @@ in your Zulip installation.
 
 ## Step 5: Create a Zulip organization and login
 
-* If you haven't already, verify that your server can send email using
-
-  ```
-  su zulip
-  /home/zulip/deployments/current/manage.py send_test_email user@example.com
-  ```
-
-  You'll need working outgoing email to complete the setup process.
+* If you haven't already, verify that your
+  [outgoing email configuration works](prod-email.html#testing-and-troubleshooting).
+  The organization creation process will fail if outgoing email is not
+  configured properly.
 
 * Run the organization (realm) creation [management
 command](prod-maintain-secure-upgrade.html#management-commands) :

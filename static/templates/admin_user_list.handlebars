@@ -52,6 +52,11 @@
         <label for="full_name">{{t "Full name" }}</label>
         <input type="text" name="full_name" value="{{ full_name }}" />
       </div>
+      {{#if is_bot}}
+        <div class="input-group edit_bot_owner_container">
+          <label for="bot_owner_select">{{t "Owner" }}</label>
+        </div>
+      {{/if}}
       <div class="input-group">
         <input type="button" class="btn btn-primary submit_name_changes" value="{{t 'Save changes' }}" />
         <button type="button" class="btn btn-default reset_edit_user">{{t 'Cancel' }}</button>

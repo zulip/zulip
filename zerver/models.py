@@ -19,8 +19,8 @@ from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
     generic_bulk_cached_fetch, cache_set, flush_stream, \
     display_recipient_cache_key, cache_delete, \
     get_stream_cache_key, active_user_dicts_in_realm_cache_key, \
-    active_bot_dicts_in_realm_cache_key, active_user_dict_fields, \
-    active_bot_dict_fields, flush_message
+    bot_dicts_in_realm_cache_key, active_user_dict_fields, \
+    bot_dict_fields, flush_message
 from zerver.lib.utils import make_safe_digest, generate_random_token
 from zerver.lib.str_utils import ModelReprMixin
 from django.db import transaction
@@ -139,6 +139,16 @@ class Realm(ModelReprMixin, models.Model):
     authentication_methods = BitField(flags=AUTHENTICATION_FLAGS,
                                       default=2**31 - 1) # type: BitHandler
     waiting_period_threshold = models.PositiveIntegerField(default=0) # type: int
+
+    ICON_FROM_GRAVATAR = u'G'
+    ICON_UPLOADED = u'U'
+    ICON_SOURCES = (
+        (ICON_FROM_GRAVATAR, 'Hosted by Gravatar'),
+        (ICON_UPLOADED, 'Uploaded by administrator'),
+    )
+    icon_source = models.CharField(default=ICON_FROM_GRAVATAR, choices=ICON_SOURCES,
+                                   max_length=1)  # type: Text
+    icon_version = models.PositiveSmallIntegerField(default=1)  # type: int
 
     DEFAULT_NOTIFICATION_STREAM_NAME = u'announce'
 
@@ -679,6 +689,18 @@ class PreregistrationUser(models.Model):
 
     realm = models.ForeignKey(Realm, null=True) # type: Optional[Realm]
 
+class EmailChangeStatus(models.Model):
+    new_email = models.EmailField() # type: Text
+    old_email = models.EmailField() # type: Text
+    updated_at = models.DateTimeField(auto_now=True) # type: datetime.datetime
+    user_profile = models.ForeignKey(UserProfile) # type: UserProfile
+
+    # status: whether an object has been confirmed.
+    #   if confirmed, set to confirmation.settings.STATUS_ACTIVE
+    status = models.IntegerField(default=0) # type: int
+
+    realm = models.ForeignKey(Realm) # type: Realm
+
 class PushDeviceToken(models.Model):
     APNS = 1
     GCM = 2
@@ -1156,8 +1178,9 @@ class Attachment(ModelReprMixin, models.Model):
             'path_id': self.path_id,
             'messages': [{
                 'id': m.id,
-                'name': '{m.pub_date:%Y-%m-%d %H:%M} {recipient}/{m.subject}'.format(
-                    recipient=get_display_recipient(m.recipient), m=m)
+                # convert to JavaScript-style UNIX timestamp so we can take
+                # advantage of client timezones.
+                'name': time.mktime(m.pub_date.timetuple()) * 1000
             } for m in self.messages.all()]
         }
 
@@ -1208,25 +1231,25 @@ def get_active_user_dicts_in_realm(realm):
     return UserProfile.objects.filter(realm=realm, is_active=True) \
                               .values(*active_user_dict_fields)
 
-@cache_with_key(active_bot_dicts_in_realm_cache_key, timeout=3600*24*7)
-def get_active_bot_dicts_in_realm(realm):
+@cache_with_key(bot_dicts_in_realm_cache_key, timeout=3600*24*7)
+def get_bot_dicts_in_realm(realm):
     # type: (Realm) -> List[Dict[str, Any]]
-    return UserProfile.objects.filter(realm=realm, is_active=True, is_bot=True) \
-                              .values(*active_bot_dict_fields)
+    return UserProfile.objects.filter(realm=realm, is_bot=True).values(*bot_dict_fields)
 
 def get_owned_bot_dicts(user_profile, include_all_realm_bots_if_admin=True):
     # type: (UserProfile, bool) -> List[Dict[str, Any]]
     if user_profile.is_realm_admin and include_all_realm_bots_if_admin:
-        result = get_active_bot_dicts_in_realm(user_profile.realm)
+        result = get_bot_dicts_in_realm(user_profile.realm)
     else:
-        result = UserProfile.objects.filter(realm=user_profile.realm, is_active=True, is_bot=True,
-                                            bot_owner=user_profile).values(*active_bot_dict_fields)
+        result = UserProfile.objects.filter(realm=user_profile.realm, is_bot=True,
+                                            bot_owner=user_profile).values(*bot_dict_fields)
     # TODO: Remove this import cycle
     from zerver.lib.avatar import get_avatar_url
 
     return [{'email': botdict['email'],
              'user_id': botdict['id'],
              'full_name': botdict['full_name'],
+             'is_active': botdict['is_active'],
              'api_key': botdict['api_key'],
              'default_sending_stream': botdict['default_sending_stream__name'],
              'default_events_register_stream': botdict['default_events_register_stream__name'],

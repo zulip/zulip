@@ -28,7 +28,12 @@
   </div>
   <div class="regular_subscription_settings collapse {{#subscribed}}in{{/subscribed}}">
     <div class="subscription-type">
-      {{partial "subscription_type"}}
+      <div class="subscription-type-text">
+        {{partial "subscription_type"}}
+      </div>
+        {{#if is_admin}}
+          <a class="change-stream-privacy" data-is-private="{{#if can_make_public}}true{{else}}false{{/if}}">{{t "[Change]"}}</a>
+        {{/if}}
     </div>
     <div class="subscription-config">
     <ul>
@@ -78,32 +83,23 @@
   </div>
   {{/if_and}}
 
-  {{#if is_admin}}
-    <div class="admin-settings">
-      <div class="sub_settings_title">{{t "Administrator settings" }}</div>
-      <div class="change-stream-privacy">
-        {{partial "change_stream_privacy"}}
-      </div>
-    </div>
-  {{/if}}
-
   {{#render_subscribers}}
   <div class="subscriber_list_settings">
-    <div class="sub_settings_title">{{t "Stream membership" }}</div>
-    <div class="subscriber_list_add">
+    <div class="sub_settings_title float-left">{{t "Stream membership" }}</div>
+    <div class="subscriber_list_add float-right">
       <form class="form-inline">
         <input type="text" name="principal" placeholder="{{t 'Email address' }}" value="" class="input-block" autocomplete="off" tabindex="-1" />
         <input type="submit" name="add_subscriber" value="{{t 'Add' }}" class="btn btn-primary add-subscriber-button" tabindex="-1 "/>
       </form>
     </div>
+    <div class="clear-float"></div>
   </div>
   <div class="subscriber-list-box">
     <div class="subscriber_list_container">
       <div class="subscriber_list_loading_indicator"></div>
       <div class="alert alert-error hide"></div>
       <div class="alert alert-warning hide"></div>
-      <table class="subscriber-list">
-      </table>
+      <table class="subscriber-list"></table>
     </div>
   </div>
   {{/render_subscribers}}

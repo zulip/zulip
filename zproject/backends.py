@@ -178,6 +178,14 @@ class SocialAuthMixin(ZulipAuthMixin):
 
         return redirect_and_log_into_subdomain(realm, full_name, email_address)
 
+    def auth_complete(self, *args, **kwargs):
+        # type: (*Any, **Any) -> Optional[HttpResponse]
+        try:
+            # Call the auth_complete method of BaseOAuth2 is Python Social Auth
+            return super(SocialAuthMixin, self).auth_complete(*args, **kwargs)  # type: ignore
+        except AuthFailed:
+            return None
+
 class ZulipDummyBackend(ZulipAuthMixin):
     """
     Used when we want to log you in but we don't know which backend to use.
@@ -425,7 +433,11 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
         org_name = settings.SOCIAL_AUTH_GITHUB_ORG_NAME
 
         if (team_id is None and org_name is None):
-            user_profile = GithubOAuth2.do_auth(self, *args, **kwargs)
+            try:
+                user_profile = GithubOAuth2.do_auth(self, *args, **kwargs)
+            except AuthFailed:
+                logging.info("User authentication failed.")
+                user_profile = None
 
         elif (team_id):
             backend = GithubTeamOAuth2(self.strategy, self.redirect_uri)

@@ -148,6 +148,48 @@ exports.generate_zuliprc_content = function (email, api_key) {
            "\n";
 };
 
+$("body").ready(function () {
+    var $sidebar = $(".form-sidebar");
+    var $targets = $sidebar.find("[data-target]");
+    var $title = $sidebar.find(".title h1");
+    var is_open = false;
+
+    var close_sidebar = function () {
+        $sidebar.removeClass("show");
+        is_open = false;
+    };
+
+    exports.trigger_sidebar = function (target) {
+        $targets.hide();
+        var $target = $(".form-sidebar").find("[data-target='" + target + "']");
+
+        $title.text($target.attr("data-title"));
+        $target.show();
+
+        $sidebar.addClass("show");
+        is_open = true;
+    };
+
+    $(".form-sidebar .exit").click(function (e) {
+        close_sidebar();
+        e.stopPropagation();
+    });
+
+    $("body").click(function (e) {
+        if (is_open && !$(e.target).within(".form-sidebar")) {
+            close_sidebar();
+        }
+    });
+
+    $("body").on("click", "[data-sidebar-form]", function (e) {
+        exports.trigger_sidebar($(this).attr("data-sidebar-form"));
+        e.stopPropagation();
+    });
+
+    $("body").on("click", "[data-sidebar-form-close]", close_sidebar);
+});
+
+
 function _setup_page() {
     // To build the edit bot streams dropdown we need both the bot and stream
     // API results. To prevent a race streams will be initialized to a promise
@@ -541,10 +583,42 @@ function _setup_page() {
         });
     });
 
+    $('#change_email_button').on('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $('#change_email_modal').modal('hide');
+
+        var data = {};
+        data.email = $('.email_change_container').find("input[name='email']").val();
+
+        channel.patch({
+            url: '/json/settings/change',
+            data: data,
+            success: function (data) {
+                if ('account_email' in data) {
+                    settings_change_success(data.account_email);
+                } else {
+                    settings_change_error(i18n.t("Error changing settings: No new data supplied."));
+                }
+            },
+            error: function (xhr) {
+                settings_change_error("Error changing settings", xhr);
+            },
+        });
+    });
+
     $('#default_language').on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
         $('#default_language_modal').show().attr('aria-hidden', false);
+    });
+
+    $('#change_email').on('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $('#change_email_modal').modal('show');
+        var email = $('#email_value').text();
+        $('.email_change_container').find("input[name='email']").val(email);
     });
 
     $("#user_deactivate_account_button").on('click', function (e) {
@@ -710,32 +784,41 @@ function _setup_page() {
 
     var image_version = 0;
 
+    var avatar_widget = avatar.build_bot_edit_widget($("#settings_page"));
+
     $("#bots_list").on("click", "button.open_edit_bot_form", function (e) {
+        var users_list = people.get_realm_persons().filter(function (person)  {
+            return !person.is_bot;
+        });
         var li = $(e.currentTarget).closest('li');
         var edit_div = li.find('div.edit_bot');
-        var form = li.find('.edit_bot_form');
+        var form = $('#settings_page .edit_bot_form');
         var image = li.find(".image");
-        var bot_info = li.find(".bot_info");
+        var bot_info = li;
         var reset_edit_bot = li.find(".reset_edit_bot");
-
+        var owner_select = $(templates.render("bot_owner_select", {users_list:users_list}));
         var old_full_name = bot_info.find(".name").text();
-        form.find(".edit_bot_name").attr('value', old_full_name);
+        var old_owner = bot_data.get(bot_info.find(".email .value").text()).owner;
+        var bot_email = bot_info.find(".email .value").text();
 
-        image.hide();
-        bot_info.hide();
-        edit_div.show();
+        $("#settings_page .edit_bot .edit_bot_name").val(old_full_name);
+        $("#settings_page .edit_bot .select-form").text("").append(owner_select);
+        $("#settings_page .edit_bot .edit-bot-owner select").val(old_owner);
+        $("#settings_page .edit_bot_form").attr("data-email", bot_email);
+        $(".edit_bot_email").text(bot_email);
 
-        var avatar_widget = avatar.build_bot_edit_widget(li);
+        avatar_widget.clear();
+
 
         function show_row_again() {
             image.show();
             bot_info.show();
             edit_div.hide();
-            avatar_widget.close();
         }
 
         reset_edit_bot.click(function (event) {
             form.find(".edit_bot_name").val(old_full_name);
+            owner_select.remove();
             show_row_again();
             $(this).off(event);
         });
@@ -748,9 +831,10 @@ function _setup_page() {
                 errors.hide();
             },
             submitHandler: function () {
-                var email = form.data('email');
+                var email = form.attr('data-email');
                 var full_name = form.find('.edit_bot_name').val();
-                var file_input = li.find('.edit_bot_avatar_file_input');
+                var bot_owner = form.find('.edit-bot-owner select').val();
+                var file_input = $(".edit_bot").find('.edit_bot_avatar_file_input');
                 var default_sending_stream = form.find('.edit_bot_default_sending_stream').val();
                 var default_events_register_stream = form.find('.edit_bot_default_events_register_stream').val();
                 var spinner = form.find('.edit_bot_spinner');
@@ -759,6 +843,7 @@ function _setup_page() {
 
                 formData.append('csrfmiddlewaretoken', csrf_token);
                 formData.append('full_name', full_name);
+                formData.append('bot_owner', bot_owner);
                 add_bot_default_streams_to_form(formData, default_sending_stream,
                                                 default_events_register_stream);
                 jQuery.each(file_input[0].files, function (i, file) {
@@ -777,6 +862,8 @@ function _setup_page() {
                         errors.hide();
                         edit_button.show();
                         show_row_again();
+                        avatar_widget.clear();
+
                         bot_info.find('.name').text(full_name);
                         if (data.avatar_url) {
                             // Note that the avatar_url won't actually change on the back end
@@ -799,7 +886,7 @@ function _setup_page() {
     });
 
     $("#bots_list").on("click", "a.download_bot_zuliprc", function () {
-        var bot_info = $(this).parent().parent();
+        var bot_info = $(this).closest(".bot-information-box");
         var email = bot_info.find(".email .value").text();
         var api_key = bot_info.find(".api_key .api-key-value-and-button .value").text();
 
@@ -901,7 +988,7 @@ exports.launch_page = function (tab) {
     var $active_tab = $("#settings_overlay_container li[data-section='" + tab + "']");
 
     if (!$active_tab.hasClass("admin")) {
-        $(".sidebar .ind-tab[data-name='settings']").click();
+        $(".sidebar .ind-tab[data-tab-key='settings']").click();
     }
 
     $("#settings_overlay_container").addClass("show");

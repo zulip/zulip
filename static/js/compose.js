@@ -15,8 +15,6 @@ var user_acknowledged_all_everyone;
 
 exports.all_everyone_warn_threshold = 15;
 
-var message_snapshot;
-
 var uploads_domain = document.location.protocol + '//' + document.location.host;
 var uploads_path = '/user_uploads';
 var uploads_re = new RegExp("\\]\\(" + uploads_domain + "(" + uploads_path + "[^\\)]+)\\)", 'g');
@@ -116,11 +114,11 @@ function clear_invites() {
 }
 
 function clear_box() {
-    exports.snapshot_message();
     clear_invites();
     clear_all_everyone_warnings();
     user_acknowledged_all_everyone = undefined;
     $("#compose").find('input[type=text], textarea').val('');
+    $("#new_message_content").removeData("draft-id");
     exports.autosize_textarea();
     $("#send-status").hide(0);
 }
@@ -131,9 +129,6 @@ function clear_preview_area() {
     $("#preview_message_area").hide();
     $("#preview_content").empty();
     $("#markdown_preview").show();
-    if (message_snapshot !== undefined) {
-        $('#restore-draft').show();
-    }
 }
 
 function hide_box() {
@@ -307,9 +302,6 @@ exports.cancel = function () {
     notifications.clear_compose_notifications();
     abort_xhr();
     is_composing_message = false;
-    if (message_snapshot !== undefined) {
-        $('#restore-draft').show();
-    }
     $(document).trigger($.Event('compose_canceled.zulip'));
 };
 
@@ -329,66 +321,43 @@ function create_message_object() {
     // Changes here must also be kept in sync with echo.try_deliver_locally
     var message = {
         type: compose.composing(),
-        subject: subject,
-        stream: compose.stream_name(),
-        private_message_recipient: compose.recipient(),
         content: content,
         sender_id: page_params.user_id,
         queue_id: page_params.event_queue_id,
+        stream: '',
+        subject: '',
     };
 
     if (message.type === "private") {
         // TODO: this should be collapsed with the code in composebox_typeahead.js
-        message.to = util.extract_pm_recipients(compose.recipient());
-        message.reply_to = compose.recipient();
+        var recipient = compose.recipient();
+        var emails = util.extract_pm_recipients(recipient);
+        message.to = emails;
+        message.reply_to = recipient;
+        message.private_message_recipient = recipient;
+        message.to_user_ids = people.email_list_to_user_ids_string(emails);
     } else {
-        message.to = compose.stream_name();
+        var stream_name = compose.stream_name();
+        message.to = stream_name;
+        message.stream = stream_name;
+        var sub = stream_data.get_sub(stream_name);
+        if (sub) {
+            message.stream_id = sub.stream_id;
+        }
+        message.subject = subject;
     }
     return message;
 }
 
-exports.snapshot_message = function (message) {
+exports.snapshot_message = function () {
     if (!exports.composing() || (exports.message_content() === "")) {
         // If you aren't in the middle of composing the body of a
         // message, don't try to snapshot.
         return;
     }
 
-    if (message !== undefined) {
-        message_snapshot = _.extend({}, message);
-    } else {
-        // Save what we can.
-        message_snapshot = create_message_object();
-    }
-};
-
-function clear_message_snapshot() {
-    $("#restore-draft").hide();
-    message_snapshot = undefined;
-}
-
-exports.restore_message = function () {
-    if (!message_snapshot) {
-        return;
-    }
-    var snapshot_copy = _.extend({}, message_snapshot);
-    if ((snapshot_copy.type === "stream" &&
-         snapshot_copy.stream.length > 0 &&
-         snapshot_copy.subject.length > 0) ||
-        (snapshot_copy.type === "private" &&
-         snapshot_copy.reply_to.length > 0)) {
-        snapshot_copy = _.extend({replying_to_message: snapshot_copy},
-                                 snapshot_copy);
-    }
-    clear_message_snapshot();
-    compose_fade.clear_compose();
-    compose.start(snapshot_copy.type, snapshot_copy);
-    exports.autosize_textarea();
-
-    if (snapshot_copy.content !== undefined &&
-        util.is_all_or_everyone_mentioned(snapshot_copy.content)) {
-        show_all_everyone_warnings();
-    }
+    // Save what we can.
+    return create_message_object();
 };
 
 function compose_error(error_text, bad_input) {
@@ -525,9 +494,9 @@ function process_send_time(message_id, start_time, locally_echoed) {
 
 function clear_compose_box() {
     $("#new_message_content").val('').focus();
+    drafts.delete_draft_after_send();
     exports.autosize_textarea();
     $("#send-status").hide(0);
-    clear_message_snapshot();
     $("#compose-send-button").removeAttr('disabled');
     $("#sending-indicator").hide();
     resize.resize_bottom_whitespace();
@@ -565,7 +534,6 @@ function send_message(request) {
     if (request === undefined) {
         request = create_message_object();
     }
-    exports.snapshot_message(request);
 
     if (request.type === "private") {
         request.to = JSON.stringify(request.to);
@@ -623,7 +591,7 @@ exports.respond_to_message = function (opts) {
     var msg_type;
     // Before initiating a reply to a message, if there's an
     // in-progress composition, snapshot it.
-    compose.snapshot_message();
+    drafts.update_draft();
 
     message = current_msg_list.selected_message();
 
@@ -1044,7 +1012,6 @@ $(function () {
         var message = $("#new_message_content").val();
         $("#new_message_content").hide();
         $("#markdown_preview").hide();
-        $("#restore-draft").hide();
         $("#undo_markdown_preview").show();
         $("#preview_message_area").show();
 
@@ -1113,7 +1080,7 @@ $(function () {
                          .show();
         $(".send-status-close").one('click', abort_xhr);
         $("#error-msg").html(
-            $("<p>").text("Uploading…")
+            $("<p>").text(i18n.t("Uploading…"))
                     .after('<div class="progress progress-striped active">' +
                            '<div class="bar" id="upload-bar" style="width: 00%;"></div>' +
                            '</div>'));
@@ -1129,22 +1096,22 @@ $(function () {
                         .removeClass("alert-info");
         $("#compose-send-button").removeAttr("disabled");
         switch (err) {
-            case 'BrowserNotSupported':
-                msg = "File upload is not yet available for your browser.";
-                break;
-            case 'TooManyFiles':
-                msg = "Unable to upload that many files at once.";
-                break;
-            case 'FileTooLarge':
-                // sanitizatio not needed as the file name is not potentially parsed as HTML, etc.
-                msg = "\"" + file.name + "\" was too large; the maximum file size is 25MiB.";
-                break;
-            case 'REQUEST ENTITY TOO LARGE':
-                msg = "Sorry, the file was too large.";
-                break;
-            default:
-                msg = "An unknown error occured.";
-                break;
+        case 'BrowserNotSupported':
+            msg = i18n.t("File upload is not yet available for your browser.");
+            break;
+        case 'TooManyFiles':
+            msg = i18n.t("Unable to upload that many files at once.");
+            break;
+        case 'FileTooLarge':
+            // sanitization not needed as the file name is not potentially parsed as HTML, etc.
+            msg = "\"" + file.name + "\"" + i18n.t(" was too large; the maximum file size is 25MiB.");
+            break;
+        case 'REQUEST ENTITY TOO LARGE':
+            msg = i18n.t("Sorry, the file was too large.");
+            break;
+        default:
+            msg = i18n.t("An unknown error occured.");
+            break;
         }
         $("#error-msg").text(msg);
     }

@@ -989,6 +989,43 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "to": "starnine@mit.edu"}, name='gownooo')
         self.assert_json_error(result, "Invalid mirrored realm")
 
+    def test_send_message_irc_mirror(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        bot_info = {
+            'full_name': 'IRC bot',
+            'short_name': 'irc',
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        email = "irc-bot@zulip.com"
+        user = get_user_profile_by_email(email)
+        user.is_api_super_user = True
+        user.save()
+        user = get_user_profile_by_email(email)
+        self.subscribe_to_stream(email, "#IRCland")
+        result = self.client_post("/api/v1/messages",
+                                  {"type": "stream",
+                                   "forged": "true",
+                                   "sender": "irc-user@irc.zulip.com",
+                                   "content": "Test message",
+                                   "client": "irc_mirror",
+                                   "subject": "from irc",
+                                   "to": "IRCLand"},
+                                  **self.api_auth(email))
+        self.assert_json_error(result, "IRC stream names must start with #")
+        result = self.client_post("/api/v1/messages",
+                                  {"type": "stream",
+                                   "forged": "true",
+                                   "sender": "irc-user@irc.zulip.com",
+                                   "content": "Test message",
+                                   "client": "irc_mirror",
+                                   "subject": "from irc",
+                                   "to": "#IRCLand"},
+                                  **self.api_auth(email))
+        self.assert_json_success(result)
+
 class EditMessageTest(ZulipTestCase):
     def check_message(self, msg_id, subject=None, content=None):
         # type: (int, Optional[Text], Optional[Text]) -> Message
@@ -1073,6 +1110,17 @@ class EditMessageTest(ZulipTestCase):
         self.login("othello@zulip.com")
         result = self.client_get('/json/messages/' + str(msg_id))
         self.assert_json_error(result, 'Invalid message(s)')
+
+    def test_edit_message_no_permission(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        msg_id = self.send_message("iago@zulip.com", "Scotland", Recipient.STREAM,
+                                   subject="editing", content="before edit")
+        result = self.client_patch("/json/messages/" + str(msg_id), {
+            'message_id': msg_id,
+            'content': 'content after edit',
+        })
+        self.assert_json_error(result, "You don't have permission to edit this message")
 
     def test_edit_message_no_changes(self):
         # type: () -> None

@@ -14,10 +14,10 @@ from six.moves import map
 from zerver.decorator import has_request_variables, REQ, JsonableError, \
     require_realm_admin
 from zerver.forms import CreateUserForm
-from zerver.lib.actions import do_change_is_admin, \
-    do_create_user, do_deactivate_user, do_reactivate_user, \
+from zerver.lib.actions import do_change_avatar_fields, do_change_bot_owner, \
+    do_change_is_admin, do_change_default_all_public_streams, \
     do_change_default_events_register_stream, do_change_default_sending_stream, \
-    do_change_default_all_public_streams, do_regenerate_api_key, do_change_avatar_fields
+    do_create_user, do_deactivate_user, do_reactivate_user, do_regenerate_api_key
 from zerver.lib.avatar import avatar_url, get_avatar_url
 from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import access_stream_by_name
@@ -26,7 +26,7 @@ from zerver.lib.validator import check_bool, check_string
 from zerver.lib.users import check_change_full_name, check_full_name
 from zerver.lib.utils import generate_random_token
 from zerver.models import UserProfile, Stream, Realm, Message, get_user_profile_by_email, \
-    email_allowed_for_realm
+    email_allowed_for_realm, get_user_profile_by_id
 from zproject.jinja2 import render_to_response
 
 
@@ -112,12 +112,26 @@ def update_user_backend(request, user_profile, email,
 
     return json_success()
 
-def avatar(request, email):
+# TODO: Since eventually we want to support using the same email with
+# different organizations, we'll eventually want this to be a
+# logged-in endpoint so that we can access the realm_id.
+def avatar(request, email_or_id):
     # type: (HttpRequest, str) -> HttpResponse
+    """Accepts an email address or user ID and returns the avatar"""
     try:
-        user_profile = get_user_profile_by_email(email)
+        int(email_or_id)
+    except ValueError:
+        get_user_func = get_user_profile_by_email
+    else:
+        get_user_func = get_user_profile_by_id
+
+    try:
+        # If there is a valid user account passed in, use its avatar
+        user_profile = get_user_func(email_or_id)
         url = avatar_url(user_profile)
     except UserProfile.DoesNotExist:
+        # If there is no such user, treat it as a new gravatar
+        email = email_or_id
         avatar_source = 'G'
         avatar_version = 1
         url = get_avatar_url(avatar_source, email, avatar_version)
@@ -139,10 +153,11 @@ def get_stream_name(stream):
 @has_request_variables
 def patch_bot_backend(request, user_profile, email,
                       full_name=REQ(default=None),
+                      bot_owner=REQ(default=None),
                       default_sending_stream=REQ(default=None),
                       default_events_register_stream=REQ(default=None),
                       default_all_public_streams=REQ(default=None, validator=check_bool)):
-    # type: (HttpRequest, UserProfile, Text, Optional[Text], Optional[Text], Optional[Text], Optional[bool]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Text, Optional[Text], Optional[Text], Optional[Text], Optional[Text], Optional[bool]) -> HttpResponse
     try:
         bot = get_user_profile_by_email(email)
     except:
@@ -153,6 +168,9 @@ def patch_bot_backend(request, user_profile, email,
 
     if full_name is not None:
         check_change_full_name(bot, full_name)
+    if bot_owner is not None:
+        owner = get_user_profile_by_email(bot_owner)
+        do_change_bot_owner(bot, owner)
     if default_sending_stream is not None:
         if default_sending_stream == "":
             stream = None  # type: Optional[Stream]
@@ -187,6 +205,12 @@ def patch_bot_backend(request, user_profile, email,
         default_events_register_stream=get_stream_name(bot.default_events_register_stream),
         default_all_public_streams=bot.default_all_public_streams,
     )
+
+    # Don't include the bot owner in case it is not set.
+    # Default bots have no owner.
+    if bot.bot_owner is not None:
+        json_result['bot_owner'] = bot.bot_owner.email
+
     return json_success(json_result)
 
 @has_request_variables

@@ -1,4 +1,4 @@
-Twisted==16.6.0
+Twisted==17.1.0
 zope.interface==4.3.3
 service-identity==16.0.0
 attrs==16.3.0

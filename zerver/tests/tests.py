@@ -210,6 +210,13 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.allow_message_editing, False)
         self.assertEqual(realm.message_content_edit_limit_seconds, 200)
 
+        # waiting_period_threshold
+        set_up_db('waiting_period_threshold', 10)
+        realm = update_with_api(waiting_period_threshold=20)
+        self.assertEqual(realm.waiting_period_threshold, 20)
+        realm = update_with_api(waiting_period_threshold=10)
+        self.assertEqual(realm.waiting_period_threshold, 10)
+
     def test_admin_restrictions_for_changing_realm_name(self):
         # type: () -> None
         new_name = 'Mice will play while the cat is away'
@@ -442,6 +449,32 @@ class ZephyrTest(ZulipTestCase):
             get_user_profile_by_email(email).api_key,
             'MTIzNA=='])
 
+        # Accounts whose Kerberos usernames are known not to match their
+        # zephyr accounts are hardcoded, and should be handled properly.
+
+        def kerberos_alter_egos_mock():
+            # type: () -> Any
+            return patch(
+                'zerver.views.zephyr.kerberos_alter_egos',
+                {'kerberos_alter_ego': 'starnine'})
+
+        cred = dict(cname=dict(nameString=['kerberos_alter_ego']))
+        with \
+                ccache_mock(return_value=b'1234'), \
+                mirror_mock(), \
+                ssh_mock() as ssh, \
+                kerberos_alter_egos_mock():
+            result = post(cred=cred)
+
+        self.assert_json_success(result)
+        ssh.assert_called_with([
+            'ssh',
+            'server',
+            '--',
+            '/home/zulip/zulip/bots/process_ccache',
+            'starnine',
+            get_user_profile_by_email(email).api_key,
+            'MTIzNA=='])
 
 class AdminCreateUserTest(ZulipTestCase):
     def test_create_user_backend(self):
@@ -636,7 +669,7 @@ class DocPageTest(ZulipTestCase):
         def test_doc_endpoints(self):
             # type: () -> None
             self._test('/api/', 'We hear you like APIs')
-            self._test('/api/endpoints/', 'pre-built API bindings for Python')
+            self._test('/api/endpoints/', 'pre-built API bindings for')
             self._test('/about/', 'Cambridge, Massachusetts')
             # Test the i18n version of one of these pages.
             self._test('/en/about/', 'Cambridge, Massachusetts')
@@ -823,6 +856,7 @@ class BotTest(ZulipTestCase):
                 bot=dict(email='hambot-bot@zulip.com',
                          user_id=bot.id,
                          full_name='The Bot of Hamlet',
+                         is_active=True,
                          api_key=result['api_key'],
                          avatar_url=result['avatar_url'],
                          default_sending_stream=None,
@@ -981,6 +1015,7 @@ class BotTest(ZulipTestCase):
                 bot=dict(email='hambot-bot@zulip.com',
                          user_id=profile.id,
                          full_name='The Bot of Hamlet',
+                         is_active=True,
                          api_key=result['api_key'],
                          avatar_url=result['avatar_url'],
                          default_sending_stream='Denmark',
@@ -1044,6 +1079,7 @@ class BotTest(ZulipTestCase):
                 bot=dict(email='hambot-bot@zulip.com',
                          full_name='The Bot of Hamlet',
                          user_id=bot_profile.id,
+                         is_active=True,
                          api_key=result['api_key'],
                          avatar_url=result['avatar_url'],
                          default_sending_stream=None,
@@ -1197,6 +1233,29 @@ class BotTest(ZulipTestCase):
 
         bot = self.get_bot()
         self.assertEqual('Fred', bot['full_name'])
+
+    def test_patch_bot_owner(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        bot_info = {
+            'full_name': 'The Bot of Hamlet',
+            'short_name': 'hambot',
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+        bot_info = {
+            'bot_owner': 'othello@zulip.com',
+        }
+        result = self.client_patch("/json/bots/hambot-bot@zulip.com", bot_info)
+        self.assert_json_success(result)
+
+        # Test bot's owner has been changed successfully.
+        bot_owner = ujson.loads(result.content)['bot_owner']
+        self.assertEqual(bot_owner, 'othello@zulip.com')
+
+        self.login('othello@zulip.com')
+        bot = self.get_bot()
+        self.assertEqual('The Bot of Hamlet', bot['full_name'])
 
     @override_settings(LOCAL_UPLOADS_DIR='var/bot_avatar')
     def test_patch_bot_avatar(self):
@@ -1934,7 +1993,6 @@ class HomeTest(ZulipTestCase):
             "people_list",
             "pm_content_in_desktop_notifications",
             "poll_timeout",
-            "presence_disabled",
             "product_name",
             "prompt_for_invites",
             "realm_add_emoji_by_admins_only",
@@ -1945,10 +2003,13 @@ class HomeTest(ZulipTestCase):
             "realm_default_streams",
             "realm_emoji",
             "realm_filters",
+            "realm_icon_source",
+            "realm_icon_url",
             "realm_invite_by_admins_only",
             "realm_invite_required",
             "realm_message_content_edit_limit_seconds",
             "realm_name",
+            "realm_presence_disabled",
             "realm_restricted_to_domain",
             "realm_uri",
             "realm_waiting_period_threshold",
@@ -1977,8 +2038,16 @@ class HomeTest(ZulipTestCase):
         result = self.client_get('/')
         self.assertEqual(result.status_code, 302)
 
-        # Verify succeeds once logged-in
         self.login(email)
+
+        # Create bot for bot_list testing. Must be done before fetching home_page.
+        bot_info = {
+            'full_name': 'The Bot of Hamlet',
+            'short_name': 'hambot',
+        }
+        self.client_post("/json/bots", bot_info)
+
+        # Verify succeeds once logged-in
         result = self._get_home_page(stream='Denmark')
         html = result.content.decode('utf-8')
 
@@ -1989,10 +2058,26 @@ class HomeTest(ZulipTestCase):
         page_params = self._get_page_params(result)
 
         actual_keys = sorted([str(k) for k in page_params.keys()])
+
         self.assertEqual(actual_keys, expected_keys)
 
         # TODO: Inspect the page_params data further.
         # print(ujson.dumps(page_params, indent=2))
+        bot_list_expected_keys = [
+            'api_key',
+            'avatar_url',
+            'default_all_public_streams',
+            'default_events_register_stream',
+            'default_sending_stream',
+            'email',
+            'full_name',
+            'is_active',
+            'owner',
+            'user_id',
+        ]
+
+        bot_list_actual_keys = sorted([str(key) for key in page_params['bot_list'][0].keys()])
+        self.assertEqual(bot_list_actual_keys, bot_list_expected_keys)
 
     def _get_home_page(self, **kwargs):
         # type: (**Any) -> HttpResponse

@@ -36,9 +36,9 @@ and an authentication mechanism.  Or, you can check out the
 [email-mirror-code]: https://github.com/zulip/zulip/blob/master/zerver/management/commands/email_mirror.py
 
 * Outgoing HTTP(S) access (ports 80 and 443) to the public Internet so
-  that Zulip can properly manage inline image previews.  If you want
-  to be able to send email from Zulip, you'll also need outgoing SMTP
-  access to your mail server (using port 587).
+  that Zulip can properly manage inline image previews.  You'll also
+  need outgoing SMTP access to your SMTP server (the standard port for
+  this is 587) so that Zulip can send email.
 
 #### Operating System
 
@@ -62,10 +62,12 @@ need to update the domains A record to point to your production server.
 
 #### Outgoing email
 
-* Email credentials Zulip can use to send outgoing emails to users
-  (e.g. email address confirmation emails during the signup process,
-  missed message notifications, password reminders if you're not using
-  SSO, etc.).
+* Outgoing email (SMTP) credentials that Zulip can use to send
+  outgoing emails to users (e.g. email address confirmation emails
+  during the signup process, missed message notifications, password
+  reset, etc.).  If you don't have an existing outgoing SMTP solution,
+  read about
+  [free outgoing SMTP options and options for prototyping](prod-email.html#free-outgoing-smtp).
 
 Once you have met these requirements, see [full instructions for installing
 Zulip in production](prod-install.html).

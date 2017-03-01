@@ -25,6 +25,7 @@ import zerver.views.zephyr
 import zerver.views.users
 import zerver.views.unsubscribe
 import zerver.views.integrations
+import zerver.views.user_settings
 import confirmation.views
 
 from zerver.lib.rest import rest_dispatch
@@ -92,7 +93,7 @@ i18n_urls = [
         {'template_name': 'zerver/reset_done.html'}),
 
     # Avatar
-    url(r'^avatar/(?P<email>[\S]+)?', zerver.views.users.avatar, name='zerver.views.users.avatar'),
+    url(r'^avatar/(?P<email_or_id>[\S]+)?', zerver.views.users.avatar, name='zerver.views.users.avatar'),
 
     # Registration views, require a confirmation ID.
     url(r'^accounts/home/', zerver.views.registration.accounts_home,
@@ -102,6 +103,10 @@ i18n_urls = [
     url(r'^accounts/register/', zerver.views.registration.accounts_register,
         name='zerver.views.registration.accounts_register'),
     url(r'^accounts/do_confirm/(?P<confirmation_key>[\w]+)', confirmation.views.confirm, name='confirmation.views.confirm'),
+
+    url(r'^accounts/confirm_new_email/(?P<confirmation_key>[\w]+)',
+        zerver.views.user_settings.confirm_email_change,
+        name='zerver.views.user_settings.confirm_email_change'),
 
     # Email unsubscription endpoint. Allows for unsubscribing from various types of emails,
     # including the welcome emails (day 1 & 2), missed PMs, etc.
@@ -179,6 +184,12 @@ v1_api_and_json_patterns = [
     url(r'^realm/emoji/(?P<emoji_name>.*)$', rest_dispatch,
         {'PUT': 'zerver.views.realm_emoji.upload_emoji',
          'DELETE': 'zerver.views.realm_emoji.delete_emoji'}),
+
+    # realm/icon -> zerver.views.realm_icon
+    url(r'^realm/icon$', rest_dispatch,
+        {'PUT': 'zerver.views.realm_icon.upload_icon',
+         'DELETE': 'zerver.views.realm_icon.delete_icon_backend',
+         'GET': 'zerver.views.realm_icon.get_icon_backend'}),
 
     # realm/filters -> zerver.views.realm_filters
     url(r'^realm/filters$', rest_dispatch,
@@ -327,7 +338,7 @@ v1_api_and_json_patterns = [
 
     # used to register for an event queue in tornado
     url(r'^register$', rest_dispatch,
-        {'POST': 'zerver.views.events_register.api_events_register'}),
+        {'POST': 'zerver.views.events_register.events_register_backend'}),
 
     # events -> zerver.tornado.views
     url(r'^events$', rest_dispatch,

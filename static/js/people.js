@@ -150,8 +150,12 @@ exports.user_ids_string_to_emails_string = function (user_ids_string) {
     return emails.join(',');
 };
 
-exports.emails_strings_to_user_ids_string = function (emails_string) {
+exports.reply_to_to_user_ids_string = function (emails_string) {
+    // This is basically emails_strings_to_user_ids_string
+    // without blueslip warnings, since it can be called with
+    // invalid data.
     var emails = emails_string.split(',');
+
     var user_ids = _.map(emails, function (email) {
         var person = people.get_by_email(email);
         if (person) {
@@ -160,7 +164,33 @@ exports.emails_strings_to_user_ids_string = function (emails_string) {
     });
 
     if (!_.all(user_ids)) {
-        blueslip.warn('Unknown emails: ' + emails_string);
+        return;
+    }
+
+    user_ids.sort();
+
+    return user_ids.join(',');
+};
+
+exports.get_full_name = function (user_id) {
+    return people_by_user_id_dict.get(user_id).full_name;
+};
+
+exports.emails_strings_to_user_ids_string = function (emails_string) {
+    var emails = emails_string.split(',');
+    return exports.email_list_to_user_ids_string(emails);
+};
+
+exports.email_list_to_user_ids_string = function (emails) {
+    var user_ids = _.map(emails, function (email) {
+        var person = people.get_by_email(email);
+        if (person) {
+            return person.user_id;
+        }
+    });
+
+    if (!_.all(user_ids)) {
+        blueslip.warn('Unknown emails: ' + emails);
         return;
     }
 
@@ -396,9 +426,6 @@ exports.small_avatar_url = function (message) {
         // Here we fall back to using the avatar_url from the message
         // itself.
         url = message.avatar_url;
-        if (person) {
-            person.avatar_url = url;
-        }
     }
 
     if (url) {

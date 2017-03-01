@@ -158,6 +158,8 @@ function add_message_metadata(message) {
                 exports.get_pm_emails(message));
         message.display_reply_to = exports.get_pm_full_names(message);
         message.pm_with_url = people.pm_with_url(message);
+        message.to_user_ids = people.emails_strings_to_user_ids_string(
+                message.reply_to);
 
         exports.process_message_for_recent_private_messages(message);
         break;

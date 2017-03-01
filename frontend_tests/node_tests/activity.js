@@ -65,6 +65,7 @@ global.people.add(fred);
 global.people.add(jill);
 global.people.add(mark);
 global.people.add(norbert);
+global.people.add(me);
 global.people.initialize_current_user(me.user_id);
 
 var people = global.people;
@@ -258,6 +259,35 @@ global.compile_template('user_presence_rows');
 
 }());
 
+(function test_set_presence_info() {
+    var presences = {};
+    var base_time = 500;
+
+    presences[alice.email] = {
+        website: {
+            status: 'active',
+            timestamp: base_time,
+        },
+    };
+
+    presences[fred.email] = {
+        website: {
+            status: 'idle',
+            timestamp: base_time,
+        },
+    };
+
+    activity.set_presence_info(presences, base_time);
+
+    assert.deepEqual(activity.presence_info[alice.user_id],
+        { status: 'active', mobile: false}
+    );
+
+    assert.deepEqual(activity.presence_info[fred.user_id],
+        { status: 'idle', mobile: false}
+    );
+}());
+
 activity.presence_info = {};
 activity.presence_info[alice.user_id] = { status: activity.IDLE };
 activity.presence_info[fred.user_id] = { status: activity.ACTIVE };
@@ -266,7 +296,7 @@ activity.presence_info[mark.user_id] = { status: activity.IDLE };
 activity.presence_info[norbert.user_id] = { status: activity.ACTIVE };
 
 (function test_presence_list_full_update() {
-    var users = activity.update_users();
+    var users = activity.build_user_sidebar();
     assert.deepEqual(users, [{
             name: 'Fred Flintstone',
             href: '#narrow/pm-with/2-fred',
@@ -315,43 +345,3 @@ activity.presence_info[norbert.user_id] = { status: activity.ACTIVE };
     ]);
 }());
 
-(function test_presence_list_partial_update() {
-    activity.presence_info[alice.user_id] = { status: 'active' };
-    activity.presence_info[mark.user_id] = { status: 'active' };
-
-    var users = {};
-
-    users[alice.user_id] = { status: 'active' };
-    users = activity.update_users(users);
-    assert.deepEqual(users, [{
-        name: 'Alice Smith',
-        href: '#narrow/pm-with/1-alice',
-        user_id: alice.user_id,
-        num_unread: 0,
-        type: 'active',
-        type_desc: 'is active',
-        mobile: undefined,
-    } ]);
-
-    // Test if user index in presence_info is the expected one
-    var all_users = activity._filter_and_sort(activity.presence_info);
-    assert.equal(all_users.indexOf(alice.user_id.toString()), 0);
-
-    // Test another user
-    users = {};
-    users[mark.user_id] = { status: 'active' };
-    users = activity.update_users(users);
-    assert.deepEqual(users, [{
-        name: 'Marky Mark',
-        href: '#narrow/pm-with/4-mark',
-        user_id: mark.user_id,
-        num_unread: 0,
-        type: 'active',
-        type_desc: 'is active',
-        mobile: undefined,
-    } ]);
-
-    all_users = activity._filter_and_sort(activity.presence_info);
-    assert.equal(all_users.indexOf(mark.user_id.toString()), 3);
-
-}());

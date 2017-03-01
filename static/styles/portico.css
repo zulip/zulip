@@ -30,12 +30,13 @@
 
 .header {
     padding: 6px 0px;
+    height: 29px;
 }
 
 .header .stripes,
 .header .darker {
     position: absolute;
-    height: 40px;
+    height: 100%;
     width: 100%;
     top: 0px;
 
@@ -79,7 +80,6 @@ body {
     font-size: 17px;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    text-shadow: 0 0 0;
 }
 
 .markdown h1[id]:before,

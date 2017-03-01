@@ -38,39 +38,50 @@ def pretty_print_html(html, num_spaces=4):
     # we proceed, we will push/pop info dictionaries on/off a stack.
     for token in tokens:
 
-        if token.kind in ('html_start', 'handlebars_start'):
+        if token.kind in ('html_start', 'handlebars_start',
+                          'html_singleton', 'django_start'):
             # An HTML start tag should only cause a new indent if we
             # are on a new line.
-            is_block = token.line > stack[-1]['line']
+            if token.tag not in ('extends', 'include', 'else', 'elif'):
+                is_block = token.line > stack[-1]['line']
 
-            if is_block:
-                if token.kind == 'handlebars_start' and stack[-1]['token_kind'] == 'handlebars_start':
-                    info = stack.pop()
-                    info['depth'] = info['depth'] + 1
-                    stack.append(info)
-                new_depth = stack[-1]['depth'] + 1
-                extra_indent = stack[-1]['extra_indent']
-                line = lines[token.line - 1]
-                adjustment = len(line)-len(line.lstrip()) + 1
-                offset = (1 + extra_indent + new_depth * num_spaces) - adjustment
-                info = dict(
-                    block=True,
-                    depth=new_depth,
-                    actual_depth=new_depth,
-                    line=token.line,
-                    token_kind=token.kind,
-                    offset=offset,
-                    extra_indent=token.col - adjustment + extra_indent
-                )
-                if token.kind == 'handlebars_start':
-                    info.update(dict(depth=new_depth - 1))
-            else:
-                info = dict(
-                    block=False,
-                    line=token.line
-                )
-            stack.append(info)
-        elif token.kind in ('html_end', 'handlebars_end'):
+                if is_block:
+                    if (token.kind == 'handlebars_start' and
+                            stack[-1]['token_kind'] == 'handlebars_start' and
+                            not stack[-1]['indenting']):
+                        info = stack.pop()
+                        info['depth'] = info['depth'] + 1
+                        info['indenting'] = True
+                        stack.append(info)
+                    new_depth = stack[-1]['depth'] + 1
+                    extra_indent = stack[-1]['extra_indent']
+                    line = lines[token.line - 1]
+                    adjustment = len(line)-len(line.lstrip()) + 1
+                    offset = (1 + extra_indent + new_depth * num_spaces) - adjustment
+                    info = dict(
+                        block=True,
+                        depth=new_depth,
+                        actual_depth=new_depth,
+                        line=token.line,
+                        token_kind=token.kind,
+                        offset=offset,
+                        extra_indent=token.col - adjustment + extra_indent,
+                        indenting=True
+                    )
+                    if token.kind == 'handlebars_start':
+                        info.update(dict(depth=new_depth - 1, indenting=False))
+                else:
+                    info = dict(
+                        block=False,
+                        depth=stack[-1]['depth'],
+                        actual_depth=stack[-1]['depth'],
+                        line=token.line,
+                        token_kind=token.kind,
+                        extra_indent=stack[-1]['extra_indent']
+                    )
+                stack.append(info)
+        elif token.kind in ('html_end', 'handlebars_end',
+                            'html_singleton_end', 'django_end'):
             info = stack.pop()
             if info['block']:
                 # We are at the end of an indentation block.  We
@@ -81,14 +92,16 @@ def pretty_print_html(html, num_spaces=4):
                 end_line = token.line
                 offsets[start_line] = info['offset']
                 offsets[end_line] = info['offset']
-                if token.tag != 'pre':
+                if token.tag != 'pre' and token.kind != 'html_singleton_end' and token.tag != 'script':
                     for line_num in range(start_line + 1, end_line):
                         # Be careful not to override offsets that happened
                         # deeper in the HTML within our block.
                         if line_num not in offsets:
                             line = lines[line_num - 1]
                             new_depth = info['depth'] + 1
-                            if line.lstrip().startswith('{{else}}'):
+                            if (line.lstrip().startswith('{{else}}') or
+                                    line.lstrip().startswith('{% else %}') or
+                                    line.lstrip().startswith('{% elif')):
                                 new_depth = info['actual_depth']
                             extra_indent = info['extra_indent']
                             adjustment = len(line)-len(line.lstrip()) + 1

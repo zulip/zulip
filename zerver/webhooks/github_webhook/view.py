@@ -1,10 +1,12 @@
 from __future__ import absolute_import
 import re
+import logging
 from functools import partial
-from typing import Any, Callable, Text
+from typing import Any, Callable, Text, Dict, Optional
 from django.http import HttpRequest, HttpResponse
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success
+from zerver.lib.request import JsonableError
 from zerver.models import Client, UserProfile
 from zerver.decorator import api_key_only_webhook_view, REQ, has_request_variables
 
@@ -35,6 +37,20 @@ def get_opened_or_update_pull_request_body(payload):
         message=pull_request['body'],
         assignee=assignee
     )
+
+def get_assigned_or_unassigned_pull_request_body(payload):
+    # type: (Dict[str, Any]) -> Text
+    pull_request = payload['pull_request']
+    assignee = pull_request.get('assignee', {}).get('login')
+
+    base_message = get_pull_request_event_message(
+        get_sender_name(payload),
+        payload['action'],
+        pull_request['html_url'],
+    )
+    if assignee:
+        return "{} to {}".format(base_message, assignee)
+    return base_message
 
 def get_closed_pull_request_body(payload):
     # type: (Dict[str, Any]) -> Text
@@ -350,6 +366,7 @@ EVENT_FUNCTION_MAPPER = {
     'member': get_member_body,
     'membership': get_membership_body,
     'opened_or_update_pull_request': get_opened_or_update_pull_request_body,
+    'assigned_or_unassigned_pull_request': get_assigned_or_unassigned_pull_request_body,
     'page_build': get_page_build_body,
     'public': get_public_body,
     'pull_request_review': get_pull_request_review_body,
@@ -369,21 +386,26 @@ def api_github_webhook(
         payload=REQ(argument_type='body'), stream=REQ(default='github')):
     # type: (HttpRequest, UserProfile, Client, Dict[str, Any], Text) -> HttpResponse
     event = get_event(request, payload)
-    if event != 'ping':
+    if event != 'ping' and event is not None:
         subject = get_subject_based_on_type(payload, event)
         body = get_body_function_based_on_type(event)(payload)
         check_send_message(user_profile, client, 'stream', [stream], subject, body)
     return json_success()
 
 def get_event(request, payload):
-    # type: (HttpRequest, Dict[str, Any]) -> str
+    # type: (HttpRequest, Dict[str, Any]) -> Optional[str]
     event = request.META['HTTP_X_GITHUB_EVENT']
     if event == 'pull_request':
         action = payload['action']
-        if action == 'opened' or action == 'synchronize' or action == 'reopened':
+        if action in ('opened', 'synchronize', 'reopened', 'edited'):
             return 'opened_or_update_pull_request'
+        if action in ('assigned', 'unassigned'):
+            return 'assigned_or_unassigned_pull_request'
         if action == 'closed':
             return 'closed_pull_request'
+        if action in ('labeled', 'unlabeled', 'review_requested', 'review_request_removed'):
+            logging.warn('Event pull_request with {} action is unsupported'.format(action))
+            return None
         raise UnknownEventType(u'Event pull_request with {} action is unsupported'.format(action))
     if event == 'push':
         if is_commit_push_event(payload):

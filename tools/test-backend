@@ -30,6 +30,7 @@ target_fully_covered = {path for target in [
     'zerver/lib/mention.py',
     'zerver/lib/message.py',
     'zerver/lib/name_restrictions.py',
+    'zerver/lib/realm_icon.py',
     'zerver/lib/retention.py',
     'zerver/lib/streams.py',
     'zerver/lib/users.py',
@@ -95,13 +96,7 @@ not_yet_fully_covered = {
     'zerver/tests/tests.py',
     # Getting views file coverage to 100% is a major project goal
     'zerver/views/auth.py',
-    'zerver/views/integrations.py',
     'zerver/views/messages.py',
-    'zerver/views/report.py',
-    'zerver/views/unsubscribe.py',
-    'zerver/views/zephyr.py',
-    'zerver/views/realm.py',
-    'zerver/views/invite.py',
     'zerver/views/home.py',
     'zerver/views/registration.py',
     'zerver/views/events_register.py',
@@ -262,7 +257,7 @@ if __name__ == "__main__":
         subprocess.call(generate_fixtures_command)
 
     TestRunner = get_runner(settings)
-    test_runner = TestRunner(failfast=options.fatal_errors)
+    test_runner = TestRunner(failfast=options.fatal_errors, verbosity=2)
     failures = test_runner.run_tests(suites, full_suite=full_suite)
 
     templates_not_rendered = test_runner.get_shallow_tested_templates()
@@ -309,8 +304,5 @@ if __name__ == "__main__":
         # an important clue as to why tests fail.
         report_slow_tests()
 
-    if failures:
-        print('FAILED!')
-    else:
-        print('DONE!')
+    # We'll have printed whether tests passed or failed above
     sys.exit(bool(failures))

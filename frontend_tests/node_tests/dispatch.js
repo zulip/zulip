@@ -486,9 +486,10 @@ run(function () {
 run(function (override, capture, args) {
     // presence
     var event = event_fixtures.presence;
-    override('activity', 'set_user_statuses', capture(['users', 'server_time']));
+    override('activity', 'set_user_status', capture(['email', 'presence', 'server_time']));
     dispatch(event);
-    assert_same(args.users, {'alice@example.com': event.presence});
+    assert_same(args.email, 'alice@example.com');
+    assert_same(args.presence, event.presence);
     assert_same(args.server_time, event.server_timestamp);
 
 });
@@ -541,18 +542,18 @@ run(function (override, capture, args) {
     assert_same(args.bot, event.bot);
 
     event = event_fixtures.realm_bot__remove;
-    override('bot_data', 'remove', capture(['email']));
+    override('bot_data', 'deactivate', capture(['email']));
     dispatch(event);
     assert_same(args.email, event.bot.email);
 
     event = event_fixtures.realm_bot__update;
     override('bot_data', 'update', capture(['email', 'bot']));
-    override('admin', 'update_user_full_name', capture(['update_user_id', 'name']));
+    override('admin', 'update_user_data', capture(['update_user_id', 'update_bot_data']));
     dispatch(event);
     assert_same(args.email, event.bot.email);
     assert_same(args.bot, event.bot);
     assert_same(args.update_user_id, event.bot.user_id);
-    assert_same(args.name, event.bot.full_name);
+    assert_same(args.update_bot_data, event.bot);
 
 });
 

@@ -36,7 +36,7 @@ interacting with the database in `zerver/lib/actions.py`. It should
 update the database and send an event announcing the change.
 
 **Application state:** Modify the `fetch_initial_state_data` and
-`apply_events` functions in `zerver/lib/actions.py` to update the state
+`apply_event` functions in `zerver/lib/events.py` to update the state
 based on the event you just created.
 
 **Backend implementation:** Make any other modifications to the backend
@@ -64,6 +64,10 @@ file.
 templates located in `templates/zerver`. For JavaScript, Zulip uses
 Handlebars templates located in `static/templates`. Templates are
 precompiled as part of the build/deploy process.
+
+Zulip is fully internationalized, so when writing both HTML templates
+or JavaScript code that generates user-facing strings, be sure to
+[tag those strings for translation](translating.html).
 
 **Testing:** There are two types of frontend tests: node-based unit
 tests and blackbox end-to-end tests. The blackbox tests are run in a
@@ -182,16 +186,16 @@ realm. :
 
 You then need to add code that will handle the event and update the
 application state. In `zerver/lib/events.py` update the
-`fetch_initial_state` and `apply_events` functions. :
+`fetch_initial_state` and `apply_event` functions. :
 
-    def fetch_initial_state_data(user_profile, event_types, queue_id):
+    def fetch_initial_state_data(user_profile, event_types, queue_id, include_subscribers=True):
       # ...
       state['realm_invite_by_admins_only'] = user_profile.realm.invite_by_admins_only`
 
-In this case you don't need to change `apply_events` because there is
+In this case you don't need to change `apply_event` because there is
 already code that will correctly handle the realm update event type: :
 
-    def apply_events(state, events, user_profile):
+    def apply_event(state, events, user_profile, include_subscribers):
       for event in events:
         # ...
         elif event['type'] == 'realm':
@@ -205,10 +209,10 @@ newly-added `actions.py` code to update the database. This example
 feature adds a new parameter that should be sent to clients when the
 application loads and be accessible via JavaScript, and there is already
 a view that does this for related flags: `update_realm`. So in this
-case, we can add out code to the existing view instead of creating a
+case, we can add our code to the existing view instead of creating a
 new one. :
 
-    # zerver/views/__init__.py
+    # zerver/views/home.py
 
     def home(request):
       # ...

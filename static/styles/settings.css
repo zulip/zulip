@@ -31,6 +31,10 @@ label {
     margin-top: 20px;
 }
 
+.new-style .m-t-10 {
+    margin-top: 10px;
+}
+
 .new-style .grid label {
     width: 200px;
 }
@@ -58,14 +62,14 @@ label {
     width: 214px;
 }
 
-.user-avatar-section {
+.user-avatar-section, .realm-icon-section {
     float: right;
     background-color: #fff;
     margin: 20px 0px;
     padding: 20px;
 }
 
-.user-avatar-section .inline-block {
+.user-avatar-section .inline-block, .realm-icon-section .inline-block {
     display: block;
 }
 
@@ -213,7 +217,7 @@ input[type=checkbox] + .inline-block {
     margin-left: 10px;
 }
 
-#user-settings-avatar {
+#user-settings-avatar, #realm-icon-section {
     border-radius: 5px;
     box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
 }
@@ -222,14 +226,103 @@ input[type=checkbox].inline-block {
     margin: -2px 0px 0px 0px;
 }
 
-.list-container {
+#attachments_list .attachment-item {
+    border-bottom: 1px solid #eee;
+}
+
+#attachments_list .attachment-item .list-container {
     position: relative;
-    background-color: #e2e2e2;
     padding: 10px;
-    width: 90%;
-    margin: 10px auto;
-    border: 1px solid #ccc;
-    border-radius: 2px;
+    width: 100%;
+}
+
+#attachments_list .attachment-item .list-container .remove-attachment {
+    margin-top: 10px;
+    margin-right: 5px;
+    font-size: 1.2em;
+    color: #e29595;
+}
+
+#attachments_list .attachment-item .list-container .file-icon {
+    display: inline-block;
+    vertical-align: top;
+    margin-right: 8px;
+    width: 40px;
+    height: 40px;
+
+    font-weight: 600;
+    color: #fff;
+
+    background: -webkit-linear-gradient(-45deg, #43C6AC , #70e6ce);
+    background: linear-gradient(-45deg, #43C6AC , #70e6ce);
+
+    box-sizing: border-box;
+    border-radius: 4px;
+}
+
+#attachments_list .attachment-item .list-container .file-icon .extension {
+    font-size: 1.1em;
+    text-align: center;
+    margin-top: 10px;
+}
+
+#attachments_list .attachment-item .list-container .file-icon .extension.small {
+    margin-top: 11px;
+    font-size: 0.8em;
+}
+
+#attachments_list .attachment-item .list-container .information {
+    display: inline-block;
+    vertical-align: top;
+    margin-top: -4px;
+}
+
+#attachments_list .attachment-messages {
+    height: 25px;
+}
+
+#attachments_list .attachment-messages .ind-message {
+    display: inline-block;
+    border-radius: 4px;
+    overflow: hidden;
+
+    border: 1px solid #aaa;
+
+    transition: all 0.2s ease;
+}
+
+#attachments_list .attachment-messages .ind-message > div {
+    display: inline-block;
+    vertical-align: top;
+}
+
+#attachments_list .attachment-messages .ind-message .message-id {
+    padding: 2px 4px 1px 4px;
+    background-color: #aaa;
+    color: #fff;
+}
+
+#attachments_list .attachment-messages .ind-message:hover {
+    border: 1px solid #888;
+}
+
+#attachments_list .attachment-messages .ind-message:hover .message-id {
+    background-color: #888;
+}
+
+#attachments_list .attachment-messages .ind-message {
+    color: #aaa;
+    text-decoration: none;
+}
+
+#attachments_list .attachment-messages .message-id {
+    display: inline-block;
+    padding: 2px 4px 1px 2px;
+}
+
+#attachments_list .attachment-messages .message-date {
+    display: inline-block;
+    padding: 2px 4px 1px 2px;
 }
 
 .grey-bg {
@@ -359,50 +452,97 @@ input[type=checkbox].inline-block {
 #bots_list {
     display: none;
     list-style-type: none;
-    margin-left: 0px;
-}
-
-#bots_list .image,
-#bots_list .bot_info {
-    margin: 10px;
+    margin: 0px 15px;
 }
 
 #bots_list .image {
     vertical-align: top;
 }
 
+#bots_list .bot-information-box .details {
+    display: inline-block;
+    vertical-align: top;
+    width: calc(100% - 85px);
+}
+
 #bots_list .name {
-    font-weight: 300;
-    font-size: 18px;
-    margin-bottom: 20px;
+    font-weight: 600;
+    font-size: 1.3rem;
+    margin: 10px 0px 5px 0px;
+
+    overflow: hidden;
+    max-height: 1em;
+    text-overflow: ellipsis;
+    white-space: pre;
 }
 
 #bots_list .regenerate_bot_api_key {
     position: relative;
-    top: -2px;
     margin-left: 5px;
-    color: #666;
+    color: #aaa;
+    transition: all 0.3s ease;
 }
 
 #bots_list .regenerate_bot_api_key:hover {
-    color: #000;
+    color: #444;
 }
 
 #bots_list .edit-bot-buttons {
-    position: absolute;
-    right: 20px;
-    top: 20px;
+    padding-top: 5px;
+}
+
+#bots_list .edit-bot-buttons button {
+    background-color: transparent;
+}
+
+#bots_list .edit-bot-buttons .btn {
+    padding: 4px;
+}
+
+#bots_list .edit-bot-buttons .sea-green {
+    color: #24cac2;
+}
+
+#bots_list .edit-bot-buttons .blue {
+    color: #3ba4e6;
+}
+
+#bots_list .edit-bot-buttons .danger-red {
+    color: #e29595;
+}
+
+#bots_list .bot-information-box {
+    position: relative;
+    display: inline-block;
+    width: calc(33.3% - 10px);
+    max-height: 180px;
+    margin: 5px;
+
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+
+    overflow: auto;
 }
 
 #bots_list img.avatar {
-    height: 35px;
-    width: 35px;
+    margin: 10px 5px 10px 10px;
+    height: 50px;
+    width: 50px;
+    border-radius: 4px;
+    vertical-align: top;
+    box-shadow: 0px 0px 4px rgba(0,0,0,0.1);
+}
+
+#bots_list .email {
+    margin-bottom: 5px;
 }
 
 #bots_list .email .value,
 #bots_list .api_key .api-key-value-and-button {
     display: block;
-    margin-left: 6em;
+    margin-left: 0px;
     white-space: -moz-pre-wrap !important;
     white-space: -pre-wrap;
     white-space: -o-pre-wrap;
@@ -412,22 +552,55 @@ input[type=checkbox].inline-block {
     white-space: normal;
 }
 
+#bots_list .api_key .api-key-value-and-button {
+    font-family: "Inconsolata", Menlo, monospace;
+    font-size: 0.85em;
+}
+
+#bots_list .bot_info {
+    padding: 10px;
+}
+
 .bot_info .field {
-    width: 6em;
     font-weight: 300;
-    position: absolute;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: #aaa;
+}
+
+.edit_bot h3 {
+    margin: 0px;
+    font-weight: 400;
 }
 
 .edit_bot_form {
     font-size: 100%;
+    margin: 0px;
+    padding: 0px;
+}
+
+.edit_bot_form label {
+    text-transform: uppercase;
+    font-weight: 600;
+    color: #aaa;
+    margin-top: 5px;
+}
+
+.edit_bot_form .buttons {
+    margin: 10px 0px 5px 0px;
 }
 
 .edit_bot_email {
-    font-weight: 300;
+    font-weight: 400;
     font-size: 18px;
-    text-align: center;
-    margin-top: 10px;
+    text-align: left;
+    margin-top: 0px;
     margin-bottom: 10px;
+
+    overflow: hidden;
+    max-height: 1.1em;
+    text-overflow: ellipsis;
+    white-space: pre;
 }
 
 .edit_bot_form .control-label,
@@ -441,7 +614,7 @@ input[type=checkbox].inline-block {
     margin-right: 20px;
 }
 
-#upload_avatar_spinner {
+#upload_avatar_spinner, #upload_icon_spinner {
     font-size: 14px;
     margin: auto;
 }
@@ -465,6 +638,7 @@ input[type=checkbox].inline-block {
 #alert_words_list, #attachments_list {
     list-style-type: none;
     margin: auto;
+    background-color: #fff;
 }
 
 #alert_words_list li.alert-word-item:last-child {
@@ -500,6 +674,13 @@ input[type=checkbox].inline-block {
     height: 200px;
 }
 
+#realm-settings-icon {
+    border-radius: 5px;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+    width: 100px;
+    height: 100px;
+    margin-left: 25%;
+}
 /* -- new settings overlay -- */
 #settings_overlay_container {
     pointer-events: none;
@@ -576,7 +757,7 @@ input[type=checkbox].inline-block {
 #settings_page .content-wrapper {
     position: relative;
     float: left;
-    width: calc(100% - 250px - 1px);
+    width: calc(100% - 250px - 2px);
     height: 100%;
 }
 
@@ -592,6 +773,63 @@ input[type=checkbox].inline-block {
 
     float: left;
     overflow-y: auto;
+}
+
+#settings_page .form-sidebar {
+    position: absolute;
+    top: 45px;
+    right: 0px;
+    transform: translateX(301px);
+    width: 300px;
+    height: calc(100% - 45px);
+
+    background-color: #fff;
+    border-left: 1px solid #ddd;
+
+    transition: all 0.3s ease;
+}
+
+#settings_page .form-sidebar.show {
+    transform: translateX(0px);
+}
+
+#settings_page .form-sidebar input[type=text] {
+    width: calc(100% - 10px - 4px);
+}
+
+#settings_page .form-sidebar input[type=submit],
+#settings_page .form-sidebar button {
+    border-radius: 4px;
+    outline: none;
+}
+
+#settings_page .form-sidebar select {
+    width: 100%;
+}
+
+#settings_page .form-sidebar .title,
+#settings_page .form-sidebar .content {
+    padding: 20px;
+}
+
+#settings_page .form-sidebar .title {
+    background-color: #fafafa;
+    padding: 10px 20px;
+    border-bottom: 1px solid #ddd;
+}
+
+#settings_page .form-sidebar .title h1 {
+    display: inline-block;
+    font-size: 1.3rem;
+    margin: 0px;
+}
+
+#settings_page .form-sidebar .title .exit {
+    float: right;
+    font-size: 2rem;
+    font-weight: 300;
+    margin-top: 11px;
+    cursor: pointer;
 }
 
 #settings_page .sidebar .header {
@@ -740,22 +978,44 @@ input[type=text]#settings_search {
     bottom: 0px;
 }
 /* -- end new settings overlay -- */
+@media (min-width: 1850px) {
+    #bots_list .bot-information-box {
+        width: calc(20% - 10px);
+    }
+}
+
+@media (min-width: 1500px) and (max-width: 1850px) {
+    #bots_list .bot-information-box {
+        width: calc(25% - 10px);
+    }
+}
 
 @media (max-width: 1215px) {
-    .user-avatar-section {
+    #bots_list .bot-information-box {
+        width: calc(50% - 10px);
+    }
+
+    .user-avatar-section, .realm-icon-section {
         float: none;
         display: inline-block;
     }
 
-    .user-avatar-section .inline-block {
+    .user-avatar-section .inline-block, .realm-icon-section .inline-block {
         display: inline-block;
         vertical-align: top;
+    }
+
+    .user-avatar-section .inline-block {
         margin: 0px 10px;
+    }
+
+    .realm-icon-section .inline-block {
+        margin: 0px 25px;
     }
 }
 
 @media (max-width: 856px) {
-    .user-avatar-section .inline-block {
+    .user-avatar-section .inline-block, .realm-icon-section .inline-block {
         display: block;
         margin: 0;
     }

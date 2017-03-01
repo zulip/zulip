@@ -28,9 +28,7 @@ function dispatch_normal_event(event) {
         break;
 
     case 'presence':
-        var users = {};
-        users[event.email] = event.presence;
-        activity.set_user_statuses(users, event.server_timestamp);
+        activity.set_user_status(event.email, event.presence, event.server_timestamp);
         break;
 
     case 'restart':
@@ -82,17 +80,25 @@ function dispatch_normal_event(event) {
             admin.reset_realm_default_language();
         } else if (event.op === 'update' && event.property === 'waiting_period_threshold') {
             page_params.realm_waiting_period_threshold = event.value;
+        } else if (event.op === 'update_dict' && event.property === 'icon') {
+            page_params.realm_icon_url = event.data.icon_url;
+            page_params.icon_source = event.data.icon_source;
+            realm_icon.rerender();
         }
+
         break;
 
     case 'realm_bot':
         if (event.op === 'add') {
             bot_data.add(event.bot);
         } else if (event.op === 'remove') {
-            bot_data.remove(event.bot.email);
+            bot_data.deactivate(event.bot.email);
         } else if (event.op === 'update') {
+            if (_.has(event.bot, 'owner_id')) {
+                event.bot.owner = people.get_person_from_user_id(event.bot.owner_id).email;
+            }
             bot_data.update(event.bot.email, event.bot);
-            admin.update_user_full_name(event.bot.user_id, event.bot.full_name);
+            admin.update_user_data(event.bot.user_id, event.bot);
         }
         break;
 

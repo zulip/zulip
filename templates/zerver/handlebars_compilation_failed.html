@@ -1,0 +1,21 @@
+{% extends "zerver/portico.html" %}
+
+{% block customhead %}
+{{ super() }}
+<meta http-equiv="refresh" content="60;URL='/'">
+{% endblock %}
+
+{% block portico_content %}
+
+<br/>
+<p class="lead">Error compiling handlebars templates.</p>
+
+<p>
+    Your development environment has some changes to the the
+    handlebars templates (<code>static/templates/</code>) that cause
+    them to not compile.  Error details are printed in
+    the <code>run-dev.py</code> console; this message will go away as
+    soon as the handlebars templates compile again.
+</p>
+
+{% endblock %}

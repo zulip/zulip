@@ -18,9 +18,9 @@ from zerver.worker.queue_processors import get_active_worker_queues
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--queue_type', action='store', dest='queue_type', default=None,
+    parser.add_argument('--queue-type', action='store', dest='queue_type', default=None,
                         help="Specify which types of queues to list")
     args = parser.parse_args()
 
-    workers = get_active_worker_queues(args.queue_type)
-    print(" ".join(workers))
+    for worker in sorted(get_active_worker_queues(args.queue_type)):
+        print(worker)

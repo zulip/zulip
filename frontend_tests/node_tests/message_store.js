@@ -59,6 +59,7 @@ var message_store = require('js/message_store.js');
 
     assert.equal(message.is_private, true);
     assert.equal(message.reply_to, 'bob@example.com,cindy@example.com');
+    assert.equal(message.to_user_ids, '103,104');
     assert.equal(message.display_reply_to, 'Bob, Cindy');
     assert.equal(message.alerted, true);
     assert.equal(message.is_me_message, false);

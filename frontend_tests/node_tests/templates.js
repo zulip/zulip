@@ -354,6 +354,25 @@ function render(template_name, args) {
     assert.equal(img.attr('src'), '/hamlet/avatar/url');
 }());
 
+(function bot_owner_select() {
+    var args = {
+        users_list: [
+            {
+                email: "hamlet@zulip.com",
+                api_key: "123456ABCD",
+                full_name: "Hamlet",
+                avatar_url: "/hamlet/avatar/url",
+            },
+        ],
+    };
+    var html = render('bot_owner_select', args);
+    global.write_handlebars_output("bot_owner_select", html);
+    var option = $(html).find("option:last");
+    assert.equal(option.val(), "hamlet@zulip.com");
+    assert.equal(option.text(), "Hamlet");
+}());
+
+
 (function compose_invite_users() {
     var args = {
         email: 'hamlet@zulip.com',
@@ -392,6 +411,51 @@ function render(template_name, args) {
     var a = $(html).find("a.compose_notification_narrow_by_subject");
     assert.equal(a.text(), "Narrow to here");
 }());
+
+(function draft_table_body() {
+    var args = {
+        drafts: [
+            {
+                draft_id: '1',
+                is_stream: true,
+                stream: 'all',
+                stream_color: '#FF0000',  // rgb(255, 0, 0)
+                topic: 'tests',
+                content: 'Public draft',
+            },
+            {
+                draft_id: '2',
+                is_stream: false,
+                recipients: 'Jordan, Michael',
+                content: 'Private draft',
+            },
+        ],
+    };
+
+    var html = '';
+    html += '<div id="drafts_table">';
+    html += render('draft_table_body', args);
+    html += '</div>';
+
+    global.write_handlebars_output("draft_table_body", html);
+
+    var row_1 = $(html).find(".draft-row[data-draft-id='1']");
+    assert.equal(row_1.find(".stream_label").text().trim(), "all");
+    assert.equal(row_1.find(".stream_label").css("background"), "rgb(255, 0, 0)");
+    assert.equal(row_1.find(".stream_topic").text().trim(), "tests");
+    assert(!row_1.find(".message_row").hasClass("private-message"));
+    assert.equal(row_1.find(".messagebox").css("box-shadow"),
+                 "inset 2px 0px 0px 0px #FF0000, -1px 0px 0px 0px #FF0000");
+    assert.equal(row_1.find(".message_content").text().trim(), "Public draft");
+
+    var row_2 = $(html).find(".draft-row[data-draft-id='2']");
+    assert.equal(row_2.find(".stream_label").text().trim(), "You and Jordan, Michael");
+    assert(row_2.find(".message_row").hasClass("private-message"));
+    assert.equal(row_2.find(".messagebox").css("box-shadow"),
+                 "inset 2px 0px 0px 0px #444444, -1px 0px 0px 0px #444444");
+    assert.equal(row_2.find(".message_content").text().trim(), "Private draft");
+}());
+
 
 (function email_address_hint() {
     var html = render('email_address_hint');
@@ -813,6 +877,24 @@ function render(template_name, args) {
 }());
 
 
+(function subscription_stream_privacy_modal() {
+    var args = {
+        stream_id: 999,
+        is_private: true,
+    };
+    var html = render('subscription_stream_privacy_modal', args);
+
+    global.write_handlebars_output("subscription_stream_privacy_modal", html);
+
+    var stream_desc = $(html).find(".modal-body b");
+    assert.equal(stream_desc.text(), 'an invite-only stream');
+
+    var button = $(html).find("#change-stream-privacy-button");
+    assert(button.hasClass("btn-primary"));
+    assert.equal(button.text().trim(), "Make stream public");
+}());
+
+
 (function subscription_table_body() {
     var args = {
         subscriptions: [
@@ -827,13 +909,13 @@ function render(template_name, args) {
                 can_make_public: true,
                 can_make_private: true, /* not logical, but that's ok */
                 email_address: 'xxxxxxxxxxxxxxx@zulip.com',
-                id: 888,
+                stream_id: 888,
                 in_home_view: true,
             },
             {
                 name: 'social',
                 color: 'green',
-                id: 999,
+                stream_id: 999,
             },
         ],
     };
@@ -848,11 +930,12 @@ function render(template_name, args) {
     var span = $(html).find(".stream-name:first");
     assert.equal(span.text(), 'devel');
 
-    span = $(html).find(".admin-settings .sub_settings_title");
-    assert.equal(span.text(), 'Administrator settings');
-
     var div = $(html).find(".subscription-type");
     assert(div.text().indexOf('invite-only stream') > 0);
+
+    var anchor = $(html).find(".change-stream-privacy:first");
+    assert.equal(anchor.data("is-private"), true);
+    assert.equal(anchor.text(), "[Change]");
 }());
 
 
@@ -946,7 +1029,6 @@ function render(template_name, args) {
     var args = {
         users: [
             {
-                my_fullname: true,
                 type_desc: "Active",
                 type: "active",
                 num_unread: 0,
@@ -970,7 +1052,7 @@ function render(template_name, args) {
 
     global.write_handlebars_output("user_presence_rows", html);
 
-    var a = $(html).find("a.my_fullname:first");
+    var a = $(html).find("a:first");
     assert.equal(a.text(), 'King Lear');
 }());
 

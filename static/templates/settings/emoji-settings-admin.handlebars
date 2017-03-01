@@ -8,10 +8,11 @@
         <th>{{t "Name" }}</th>
         <th class="image">{{t "Image" }}</th>
         <th class="image">{{t "Author" }}</th>
-        <th class="actions">{{t "Actions" }}</th>
+        {{#if is_admin}}<th class="actions">{{t "Actions" }}</th>{{/if}}
       </tbody>
     </table>
   </div>
+
   <form class="form-horizontal admin-emoji-form">
     <div class="add-new-emoji-box grey-bg green-bg">
       <div class="new-emoji-form">

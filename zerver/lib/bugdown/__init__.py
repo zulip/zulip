@@ -16,6 +16,7 @@ import platform
 import time
 import httplib2
 import itertools
+import ujson
 from six.moves import urllib
 import xml.etree.cElementTree as etree
 from xml.etree.cElementTree import Element, SubElement
@@ -36,7 +37,7 @@ from zerver.lib.timeout import timeout, TimeoutExpired
 from zerver.lib.cache import (
     cache_with_key, cache_get_many, cache_set_many, NotFoundInCache)
 from zerver.lib.url_preview import preview as link_preview
-from zerver.models import Message, Realm
+from zerver.models import Message, Realm, UserProfile, get_user_profile_by_email
 import zerver.lib.alert_words as alert_words
 import zerver.lib.mention as mention
 from zerver.lib.str_utils import force_text, force_str
@@ -634,18 +635,27 @@ class Avatar(markdown.inlinepatterns.Pattern):
         # type: (Match[Text]) -> Optional[Element]
         img = markdown.util.etree.Element('img')
         email_address = match.group('email')
+        email = email_address.strip().lower()
+        profile_id = None
+
+        if db_data is not None:
+            user_dict = db_data['by_email'].get(email)
+            if user_dict is not None:
+                profile_id = user_dict['id']
+
         img.set('class', 'message_body_gravatar')
-        img.set('src', '/avatar/%s?s=30' % (email_address,))
-        img.set('title', email_address)
-        img.set('alt', email_address)
+        img.set('src', '/avatar/{0}?s=30'.format(profile_id or email))
+        img.set('title', email)
+        img.set('alt', email)
         return img
 
 emoji_tree = os.path.join(settings.STATIC_ROOT, "generated", "emoji", "images", "emoji")
 path_to_emoji = os.path.join(emoji_tree, '*.png')
 path_to_unicode_emoji = os.path.join(emoji_tree, 'unicode', '*.png')
+path_to_name_to_codepoint = os.path.join(settings.STATIC_ROOT, "generated", "emoji", "name_to_codepoint.json")
 
-emoji_list = [os.path.splitext(os.path.basename(fn))[0] for fn in glob.glob(path_to_emoji)]
 unicode_emoji_list = [os.path.splitext(os.path.basename(fn))[0] for fn in glob.glob(path_to_unicode_emoji)]
+name_to_codepoint = ujson.load(open(path_to_name_to_codepoint))
 
 
 def make_emoji(emoji_name, src, display_string):
@@ -680,8 +690,8 @@ class Emoji(markdown.inlinepatterns.Pattern):
 
         if current_message and name in realm_emoji:
             return make_emoji(name, realm_emoji[name]['display_url'], orig_syntax)
-        elif name in emoji_list:
-            src = '/static/generated/emoji/images/emoji/%s.png' % (name,)
+        elif name in name_to_codepoint:
+            src = '/static/generated/emoji/images/emoji/unicode/%s.png' % (name_to_codepoint[name],)
             return make_emoji(name, src, orig_syntax)
         else:
             return None
@@ -1348,6 +1358,7 @@ def do_convert(content, message=None, message_realm=None, possible_words=None, s
         db_data = {'possible_words': possible_words,
                    'full_names': dict((user['full_name'].lower(), user) for user in realm_users),
                    'short_names': dict((user['short_name'].lower(), user) for user in realm_users),
+                   'by_email': dict((user['email'].lower(), user) for user in realm_users),
                    'emoji': message_realm.get_emoji(),
                    'sent_by_bot': sent_by_bot,
                    'stream_names': dict((stream['name'], stream) for stream in realm_streams)}

@@ -9,9 +9,9 @@ from django.utils import translation
 from django.utils.cache import patch_cache_control
 from six.moves import zip_longest, zip, range
 
-from version import ZULIP_VERSION
 from zerver.decorator import zulip_login_required, process_client
 from zerver.forms import ToSForm
+from zerver.lib.realm_icon import realm_icon_url
 from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
     Recipient, Realm, UserMessage, DefaultStream, RealmEmoji, RealmAlias, \
     RealmFilter, PreregistrationUser, UserActivity, \
@@ -32,6 +32,7 @@ from zproject.jinja2 import render_to_response
 import calendar
 import datetime
 import logging
+import os
 import re
 import simplejson
 import time
@@ -85,6 +86,11 @@ def sent_time_in_epoch_seconds(user_message):
 
 def home(request):
     # type: (HttpRequest) -> HttpResponse
+    if settings.DEVELOPMENT and os.path.exists('var/handlebars-templates/compile.error'):
+        response = render_to_response('zerver/handlebars_compilation_failed.html',
+                                      request=request)
+        response.status_code = 500
+        return response
     if not settings.SUBDOMAINS_HOMEPAGE:
         return home_real(request)
 
@@ -107,9 +113,6 @@ def home_real(request):
     request.session.modified = True
 
     user_profile = request.user
-    request._email = request.user.email
-    # Process the client as an auth decorator would
-    process_client(request, user_profile, is_json_view=True)
 
     # If a user hasn't signed the current Terms of Service, send them there
     if settings.TERMS_OF_SERVICE is not None and settings.TOS_VERSION is not None and \
@@ -192,7 +195,7 @@ def home_real(request):
     # Pass parameters to the client-side JavaScript code.
     # These end up in a global JavaScript Object named 'page_params'.
     page_params = dict(
-        zulip_version         = ZULIP_VERSION,
+        # Server settings.
         share_the_love        = settings.SHARE_THE_LOVE,
         development_environment = settings.DEVELOPMENT,
         debug_mode            = settings.DEBUG,
@@ -200,50 +203,38 @@ def home_real(request):
         poll_timeout          = settings.POLL_TIMEOUT,
         login_page            = settings.HOME_NOT_LOGGED_IN,
         server_uri            = settings.SERVER_URI,
-        realm_uri             = user_profile.realm.uri,
         maxfilesize           = settings.MAX_FILE_UPLOAD_SIZE,
         server_generation     = settings.SERVER_GENERATION,
+        use_websockets        = settings.USE_WEBSOCKETS,
+        save_stacktraces      = settings.SAVE_FRONTEND_STACKTRACES,
+
+        # realm data.
+        # TODO: Move all of these data to register_ret and pull from there
+        realm_uri             = user_profile.realm.uri,
         password_auth_enabled = password_auth_enabled(user_profile.realm),
-        have_initial_messages = user_has_messages,
-        subbed_info           = register_ret['subscriptions'],
-        unsubbed_info         = register_ret['unsubscribed'],
-        neversubbed_info      = register_ret['never_subscribed'],
-        people_list           = register_ret['realm_users'],
-        bot_list              = register_ret['realm_bots'],
-        initial_pointer       = register_ret['pointer'],
-        initial_presences     = register_ret['presences'],
-        initial_servertime    = time.time(), # Used for calculating relative presence age
-        fullname              = user_profile.full_name,
-        email                 = user_profile.email,
         domain                = user_profile.realm.domain,
         domains               = list_of_domains_for_realm(user_profile.realm),
-        realm_name            = register_ret['realm_name'],
-        realm_invite_required = register_ret['realm_invite_required'],
-        realm_invite_by_admins_only = register_ret['realm_invite_by_admins_only'],
-        realm_authentication_methods = register_ret['realm_authentication_methods'],
-        realm_create_stream_by_admins_only = register_ret['realm_create_stream_by_admins_only'],
-        realm_add_emoji_by_admins_only = register_ret['realm_add_emoji_by_admins_only'],
-        realm_allow_message_editing = register_ret['realm_allow_message_editing'],
-        realm_message_content_edit_limit_seconds = register_ret['realm_message_content_edit_limit_seconds'],
-        realm_restricted_to_domain = register_ret['realm_restricted_to_domain'],
-        realm_default_language = register_ret['realm_default_language'],
-        realm_waiting_period_threshold = register_ret['realm_waiting_period_threshold'],
+        realm_icon_url        = realm_icon_url(user_profile.realm),
+        realm_icon_source     = user_profile.realm.icon_source,
+        name_changes_disabled = name_changes_disabled(user_profile.realm),
+        mandatory_topics      = user_profile.realm.mandatory_topics,
+        show_digest_email     = user_profile.realm.show_digest_email,
+        realm_presence_disabled = user_profile.realm.presence_disabled,
+        is_zephyr_mirror_realm = user_profile.realm.is_zephyr_mirror_realm,
+
+        # user_profile data.
+        # TODO: Move all of these data to register_ret and pull from there
+        fullname              = user_profile.full_name,
+        email                 = user_profile.email,
         enter_sends           = user_profile.enter_sends,
         user_id               = user_profile.id,
-        left_side_userlist    = register_ret['left_side_userlist'],
-        emoji_alt_code    = register_ret['emoji_alt_code'],
-        default_language      = register_ret['default_language'],
-        default_language_name = get_language_name(register_ret['default_language']),
-        language_list_dbl_col = get_language_list_for_templates(register_ret['default_language']),
-        language_list         = get_language_list(),
-        referrals             = register_ret['referrals'],
-        realm_emoji           = register_ret['realm_emoji'],
-        needs_tutorial        = needs_tutorial,
-        first_in_realm        = first_in_realm,
-        prompt_for_invites    = prompt_for_invites,
-        notifications_stream  = notifications_stream,
-        cross_realm_bots      = list(get_cross_realm_dicts()),
-        use_websockets        = settings.USE_WEBSOCKETS,
+        is_admin              = user_profile.is_realm_admin,
+        can_create_streams    = user_profile.can_create_streams(),
+        autoscroll_forever = user_profile.autoscroll_forever,
+        default_desktop_notifications = user_profile.default_desktop_notifications,
+        avatar_url            = avatar_url(user_profile),
+        avatar_url_medium     = avatar_url(user_profile, medium=True),
+        avatar_source         = user_profile.avatar_source,
 
         # Stream message notification settings:
         stream_desktop_notifications_enabled = user_profile.enable_stream_desktop_notifications,
@@ -256,33 +247,67 @@ def home_real(request):
         pm_content_in_desktop_notifications = user_profile.pm_content_in_desktop_notifications,
         enable_offline_push_notifications = user_profile.enable_offline_push_notifications,
         enable_online_push_notifications = user_profile.enable_online_push_notifications,
-        twenty_four_hour_time = register_ret['twenty_four_hour_time'],
         enable_digest_emails  = user_profile.enable_digest_emails,
+
+        # Realm foreign key data from register_ret.
+        # TODO: Rename these to match register_ret values.
+        subbed_info           = register_ret['subscriptions'],
+        unsubbed_info         = register_ret['unsubscribed'],
+        neversubbed_info      = register_ret['never_subscribed'],
+        people_list           = register_ret['realm_users'],
+        bot_list              = register_ret['realm_bots'],
+        initial_pointer       = register_ret['pointer'],
+        initial_presences     = register_ret['presences'],
         event_queue_id        = register_ret['queue_id'],
-        last_event_id         = register_ret['last_event_id'],
-        max_message_id        = register_ret['max_message_id'],
+
+        # Misc. extra data.
+        have_initial_messages = user_has_messages,
+        initial_servertime    = time.time(), # Used for calculating relative presence age
+        default_language_name = get_language_name(register_ret['default_language']),
+        language_list_dbl_col = get_language_list_for_templates(register_ret['default_language']),
+        language_list         = get_language_list(),
+        needs_tutorial        = needs_tutorial,
+        first_in_realm        = first_in_realm,
+        prompt_for_invites    = prompt_for_invites,
+        notifications_stream  = notifications_stream,
+        cross_realm_bots      = list(get_cross_realm_dicts()),
         unread_count          = approximate_unread_count(user_profile),
         furthest_read_time    = sent_time_in_epoch_seconds(latest_read),
-        save_stacktraces      = settings.SAVE_FRONTEND_STACKTRACES,
-        alert_words           = register_ret['alert_words'],
-        attachments           = register_ret['attachments'],
-        muted_topics          = register_ret['muted_topics'],
-        realm_filters         = register_ret['realm_filters'],
-        realm_default_streams = register_ret['realm_default_streams'],
-        is_admin              = user_profile.is_realm_admin,
-        can_create_streams    = user_profile.can_create_streams(),
-        name_changes_disabled = name_changes_disabled(user_profile.realm),
         has_mobile_devices    = num_push_devices_for_user(user_profile) > 0,
-        autoscroll_forever = user_profile.autoscroll_forever,
-        default_desktop_notifications = user_profile.default_desktop_notifications,
-        avatar_url            = avatar_url(user_profile),
-        avatar_url_medium     = avatar_url(user_profile, medium=True),
-        avatar_source         = user_profile.avatar_source,
-        mandatory_topics      = user_profile.realm.mandatory_topics,
-        show_digest_email     = user_profile.realm.show_digest_email,
-        presence_disabled     = user_profile.realm.presence_disabled,
-        is_zephyr_mirror_realm = user_profile.realm.is_zephyr_mirror_realm,
     )
+
+    # These fields will be automatically copied from register_ret into
+    # page_params.  It is a goal to move more of the page_params list
+    # into this sort of cleaner structure.
+    page_params_core_fields = [
+        'alert_words',
+        'attachments',
+        'default_language',
+        'last_event_id',
+        'left_side_userlist',
+        'max_message_id',
+        'muted_topics',
+        'realm_add_emoji_by_admins_only',
+        'realm_allow_message_editing',
+        'realm_authentication_methods',
+        'realm_create_stream_by_admins_only',
+        'realm_default_language',
+        'realm_default_streams',
+        'realm_emoji',
+        'realm_message_content_edit_limit_seconds',
+        'realm_name',
+        'realm_invite_by_admins_only',
+        'realm_invite_required',
+        'realm_filters',
+        'realm_restricted_to_domain',
+        'realm_waiting_period_threshold',
+        'referrals',
+        'twenty_four_hour_time',
+        'zulip_version',
+    ]
+
+    for field_name in page_params_core_fields:
+        page_params[field_name] = register_ret[field_name]
 
     if narrow_stream is not None:
         # In narrow_stream context, initial pointer is just latest message

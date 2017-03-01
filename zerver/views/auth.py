@@ -28,6 +28,7 @@ from zerver.views.registration import create_preregistration_user, get_realm_fro
     redirect_and_log_into_subdomain
 from zproject.backends import password_auth_enabled, dev_auth_enabled, google_auth_enabled
 from zproject.jinja2 import render_to_response
+from version import ZULIP_VERSION
 
 import hashlib
 import hmac
@@ -463,6 +464,7 @@ def api_get_auth_backends(request):
     return json_success({"password": password_auth_enabled(None),
                          "dev": dev_auth_enabled(),
                          "google": google_auth_enabled(),
+                         "zulip_version": ZULIP_VERSION,
                          })
 
 @authenticated_json_post_view

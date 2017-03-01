@@ -99,6 +99,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'TWITTER_CONSUMER_SECRET': '',
                     'TWITTER_ACCESS_TOKEN_KEY': '',
                     'TWITTER_ACCESS_TOKEN_SECRET': '',
+                    'EMAIL_CHANGE_CONFIRMATION_DAYS': 1,
                     'EMAIL_GATEWAY_PATTERN': '',
                     'EMAIL_GATEWAY_EXAMPLE': '',
                     'EMAIL_GATEWAY_BOT': None,
@@ -109,6 +110,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'EMAIL_GATEWAY_IMAP_FOLDER': None,
                     'EMAIL_GATEWAY_EXTRA_PATTERN_HACK': None,
                     'EMAIL_HOST': None,
+                    'EMAIL_BACKEND': None,
                     'S3_KEY': '',
                     'S3_SECRET_KEY': '',
                     'S3_AVATAR_BUCKET': '',
@@ -304,21 +306,6 @@ TEMPLATES = [
             ],
         },
     },
-    {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [
-            os.path.join(DEPLOY_ROOT, 'django_templates'),
-        ],
-        'APP_DIRS': False,
-        'OPTIONS': {
-            'debug': DEBUG,
-            'loaders': LOADERS,
-            'context_processors': [
-                'zerver.context_processors.add_settings',
-                'zerver.context_processors.add_metrics',
-            ],
-        },
-    },
 ]
 
 MIDDLEWARE_CLASSES = (
@@ -502,6 +489,11 @@ if DEVELOPMENT:
     # Also we auto-generate passwords for the default users which you
     # can query using ./manage.py print_initial_password
     INITIAL_PASSWORD_SALT = get_secret("initial_password_salt")
+else:
+    # For production, use the best password hashing algorithm: Argon2
+    # Zulip was originally on PBKDF2 so we need it for compatibility
+    PASSWORD_HASHERS = ('django.contrib.auth.hashers.Argon2PasswordHasher',
+                        'django.contrib.auth.hashers.PBKDF2PasswordHasher')
 
 ########################################################################
 # API/BOT SETTINGS
@@ -693,6 +685,7 @@ PIPELINE = {
                 'styles/zulip.css',
                 'styles/settings.css',
                 'styles/subscriptions.css',
+                'styles/drafts.css',
                 'styles/informational-overlays.css',
                 'styles/compose.css',
                 'styles/reactions.css',
@@ -715,6 +708,7 @@ PIPELINE = {
                 'styles/zulip.css',
                 'styles/settings.css',
                 'styles/subscriptions.css',
+                'styles/drafts.css',
                 'styles/informational-overlays.css',
                 'styles/compose.css',
                 'styles/reactions.css',
@@ -802,6 +796,7 @@ JS_SPECS = {
             'js/dict.js',
             'js/components.js',
             'js/localstorage.js',
+            'js/drafts.js',
             'js/channel.js',
             'js/setup.js',
             'js/unread_ui.js',
@@ -826,7 +821,6 @@ JS_SPECS = {
             'js/socket.js',
             'js/compose.js',
             'js/stream_color.js',
-            'js/admin.js',
             'js/stream_data.js',
             'js/subs.js',
             'js/message_edit.js',
@@ -863,8 +857,11 @@ JS_SPECS = {
             'js/timerender.js',
             'js/tutorial.js',
             'js/templates.js',
+            'js/upload_widget.js',
             'js/avatar.js',
+            'js/realm_icon.js',
             'js/settings.js',
+            'js/admin.js',
             'js/tab_bar.js',
             'js/emoji.js',
             'js/referral.js',
@@ -1117,8 +1114,11 @@ SOCIAL_AUTH_GITHUB_TEAM_SECRET = SOCIAL_AUTH_GITHUB_SECRET
 # EMAIL SETTINGS
 ########################################################################
 
-# If an email host is not specified, fail silently and gracefully
-if not EMAIL_HOST and PRODUCTION:
+if EMAIL_BACKEND is not None:
+    # If the server admin specified a custom email backend, use that.
+    pass
+elif not EMAIL_HOST and PRODUCTION:
+    # If an email host is not specified, fail silently and gracefully
     EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
 elif DEVELOPMENT:
     # In the dev environment, emails are printed to the run-dev.py console.
