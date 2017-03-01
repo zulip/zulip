@@ -568,9 +568,14 @@ input[type=checkbox].inline-block {
     color: #aaa;
 }
 
-.settings-section .edit_bot_form {
+.edit_bot h3 {
+    margin: 0px;
+    font-weight: 400;
+}
+
+.edit_bot_form {
     font-size: 100%;
-    margin: 0px 10px;
+    margin: 0px;
     padding: 0px;
 }
 
@@ -586,14 +591,14 @@ input[type=checkbox].inline-block {
 }
 
 .edit_bot_email {
-    font-weight: 600;
+    font-weight: 400;
     font-size: 18px;
     text-align: left;
-    margin-top: 10px;
+    margin-top: 0px;
     margin-bottom: 10px;
 
     overflow: hidden;
-    max-height: 1em;
+    max-height: 1.1em;
     text-overflow: ellipsis;
     white-space: pre;
 }
@@ -768,6 +773,63 @@ input[type=checkbox].inline-block {
 
     float: left;
     overflow-y: auto;
+}
+
+#settings_page .form-sidebar {
+    position: absolute;
+    top: 45px;
+    right: 0px;
+    transform: translateX(301px);
+    width: 300px;
+    height: calc(100% - 45px);
+
+    background-color: #fff;
+    border-left: 1px solid #ddd;
+
+    transition: all 0.3s ease;
+}
+
+#settings_page .form-sidebar.show {
+    transform: translateX(0px);
+}
+
+#settings_page .form-sidebar input[type=text] {
+    width: calc(100% - 10px - 4px);
+}
+
+#settings_page .form-sidebar input[type=submit],
+#settings_page .form-sidebar button {
+    border-radius: 4px;
+    outline: none;
+}
+
+#settings_page .form-sidebar select {
+    width: 100%;
+}
+
+#settings_page .form-sidebar .title,
+#settings_page .form-sidebar .content {
+    padding: 20px;
+}
+
+#settings_page .form-sidebar .title {
+    background-color: #fafafa;
+    padding: 10px 20px;
+    border-bottom: 1px solid #ddd;
+}
+
+#settings_page .form-sidebar .title h1 {
+    display: inline-block;
+    font-size: 1.3rem;
+    margin: 0px;
+}
+
+#settings_page .form-sidebar .title .exit {
+    float: right;
+    font-size: 2rem;
+    font-weight: 300;
+    margin-top: 11px;
+    cursor: pointer;
 }
 
 #settings_page .sidebar .header {
