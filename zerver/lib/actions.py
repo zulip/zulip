@@ -382,7 +382,7 @@ def notify_created_bot(user_profile):
                           default_events_register_stream=default_events_register_stream_name,
                           default_all_public_streams=user_profile.default_all_public_streams,
                           avatar_url=avatar_url(user_profile),
-                          owner=user_profile.bot_owner.email,
+                          owner=user_profile.bot_owner.email if (user_profile.bot_owner is not None) else None,
                           ))
     send_event(event, bot_owner_userids(user_profile))
 
@@ -1861,6 +1861,9 @@ def do_reactivate_user(user_profile):
                'domain': domain})
 
     notify_created_user(user_profile)
+
+    if user_profile.is_bot:
+        notify_created_bot(user_profile)
 
 def do_change_password(user_profile, password, log=True, commit=True,
                        hashed_password=False):
