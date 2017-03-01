@@ -65,6 +65,10 @@ templates located in `templates/zerver`. For JavaScript, Zulip uses
 Handlebars templates located in `static/templates`. Templates are
 precompiled as part of the build/deploy process.
 
+Zulip is fully internationalized, so when writing both HTML templates
+or JavaScript code that generates user-facing strings, be sure to
+[tag those strings for translation](translating.html).
+
 **Testing:** There are two types of frontend tests: node-based unit
 tests and blackbox end-to-end tests. The blackbox tests are run in a
 headless browser using Casper.js and are located in

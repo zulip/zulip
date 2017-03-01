@@ -152,6 +152,13 @@ settings.
 Instead, switch to the more general `$.ajax`\_ function, which can take
 options like `async`.
 
+### Translation tags
+
+Remember to
+[tag all user-facing strings for translation](translating.md), whether
+they are in HTML templates or JavaScript editing the HTML (e.g. error
+messages).
+
 ### State and logs files
 
 Do not write state and logs files inside the current working directory
