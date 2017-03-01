@@ -67,7 +67,7 @@ class TemplateTestCase(ZulipTestCase):
             'zerver/home.html',
             'zerver/invite_user.html',
             'zerver/keyboard_shortcuts.html',
-            'zerver/left-sidebar.html',
+            'zerver/left_sidebar.html',
             'zerver/logout.html',
             'zerver/markdown_help.html',
             'zerver/navbar.html',
