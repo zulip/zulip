@@ -125,9 +125,8 @@ def main():
     # https://github.com/behdad/fonttools/
 
     # NotoColorEmoji.tff is from
-    # https://android.googlesource.com/platform/external/noto-fonts/+/marshmallow-release/other/NotoColorEmoji.ttf
-    # note that you have to run it though base64 -D before being able
-    # to use it, since it downloads from that page base64 encoded
+    # https://android.googlesource.com/platform/external/noto-fonts/+/master/other/NotoColorEmoji.ttf
+    # Commit ID: 1e75a5582b3fb386725aaa944f32fba71f155588
 
     # this is so we don't accidently leave ttx files from previous
     # runs of this script lying around
