@@ -112,12 +112,12 @@ exports.save = function (row, from_topic_edited_only) {
         data: request,
         success: function () {
             if (msg_list === current_msg_list) {
-                row.find(".edit_error").text("Message successfully edited!").removeClass("alert-error").addClass("alert-success").show();
+                row.find(".edit_error").text(i18n.t("Message successfully edited!")).removeClass("alert-error").addClass("alert-success").show();
             }
         },
         error: function (xhr) {
             if (msg_list === current_msg_list) {
-                var message = channel.xhr_error_message("Error saving edit", xhr);
+                var message = channel.xhr_error_message(i18n.t("Error saving edit"), xhr);
                 row.find(".edit_error").text(message).show();
             }
         },

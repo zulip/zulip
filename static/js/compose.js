@@ -1080,7 +1080,7 @@ $(function () {
                          .show();
         $(".send-status-close").one('click', abort_xhr);
         $("#error-msg").html(
-            $("<p>").text("Uploading…")
+            $("<p>").text(i18n.t("Uploading…"))
                     .after('<div class="progress progress-striped active">' +
                            '<div class="bar" id="upload-bar" style="width: 00%;"></div>' +
                            '</div>'));
@@ -1096,22 +1096,22 @@ $(function () {
                         .removeClass("alert-info");
         $("#compose-send-button").removeAttr("disabled");
         switch (err) {
-            case 'BrowserNotSupported':
-                msg = "File upload is not yet available for your browser.";
-                break;
-            case 'TooManyFiles':
-                msg = "Unable to upload that many files at once.";
-                break;
-            case 'FileTooLarge':
-                // sanitizatio not needed as the file name is not potentially parsed as HTML, etc.
-                msg = "\"" + file.name + "\" was too large; the maximum file size is 25MiB.";
-                break;
-            case 'REQUEST ENTITY TOO LARGE':
-                msg = "Sorry, the file was too large.";
-                break;
-            default:
-                msg = "An unknown error occured.";
-                break;
+        case 'BrowserNotSupported':
+            msg = i18n.t("File upload is not yet available for your browser.");
+            break;
+        case 'TooManyFiles':
+            msg = i18n.t("Unable to upload that many files at once.");
+            break;
+        case 'FileTooLarge':
+            // sanitization not needed as the file name is not potentially parsed as HTML, etc.
+            msg = "\"" + file.name + "\"" + i18n.t(" was too large; the maximum file size is 25MiB.");
+            break;
+        case 'REQUEST ENTITY TOO LARGE':
+            msg = i18n.t("Sorry, the file was too large.");
+            break;
+        default:
+            msg = i18n.t("An unknown error occured.");
+            break;
         }
         $("#error-msg").text(msg);
     }

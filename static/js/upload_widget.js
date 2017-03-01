@@ -62,18 +62,18 @@ var upload_widget = (function () {
             } else if (e.target.files.length === 1) {
                 var file = e.target.files[0];
                 if (file.size > 5 * 1024 * 1024) {
-                    input_error.text('File size must be < 5Mb.');
+                    input_error.text(i18n.t('File size must be < 5Mb.'));
                     input_error.show();
                     clear();
                 } else if (!is_image_format(file)) {
-                    input_error.text('File type is not supported.');
+                    input_error.text(i18n.t('File type is not supported.'));
                     input_error.show();
                     clear();
                 } else {
                     accept(file);
                 }
             } else {
-                input_error.text('Please just upload one file.');
+                input_error.text(i18n.t('Please just upload one file.'));
             }
         });
 
@@ -132,18 +132,18 @@ var upload_widget = (function () {
             } else if (e.target.files.length === 1) {
                 var file = e.target.files[0];
                 if (file.size > 5 * 1024 * 1024) {
-                    input_error.text('File size must be < 5Mb.');
+                    input_error.text(i18n.t('File size must be < 5Mb.'));
                     input_error.show();
                     clear();
                 } else if (!is_image_format(file)) {
-                    input_error.text('File type is not supported.');
+                    input_error.text(i18n.t('File type is not supported.'));
                     input_error.show();
                     clear();
                 } else {
                     accept(file);
                 }
             } else {
-                input_error.text('Please just upload one file.');
+                input_error.text(i18n.t('Please just upload one file.'));
             }
         });
 
