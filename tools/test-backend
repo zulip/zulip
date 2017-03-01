@@ -97,7 +97,6 @@ not_yet_fully_covered = {
     # Getting views file coverage to 100% is a major project goal
     'zerver/views/auth.py',
     'zerver/views/messages.py',
-    'zerver/views/report.py',
     'zerver/views/home.py',
     'zerver/views/registration.py',
     'zerver/views/events_register.py',
