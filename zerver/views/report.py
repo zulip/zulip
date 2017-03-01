@@ -18,11 +18,16 @@ from typing import Optional, Text
 import subprocess
 import os
 
-# Read the source map information for decoding JavaScript backtraces
 js_source_map = None
-if not (settings.DEBUG or settings.TEST_SUITE):
-    js_source_map = SourceMap(os.path.join(
-        settings.DEPLOY_ROOT, 'prod-static/source-map'))
+
+# Read the source map information for decoding JavaScript backtraces.
+def get_js_source_map():
+    # type: () -> Optional[SourceMap]
+    global js_source_map
+    if not js_source_map and not (settings.DEBUG or settings.TEST_SUITE):
+        js_source_map = SourceMap(os.path.join(
+            settings.DEPLOY_ROOT, 'prod-static/source-map'))
+    return js_source_map
 
 @authenticated_json_post_view
 @has_request_variables
@@ -85,6 +90,7 @@ def json_report_error(request, user_profile, message=REQ(), stacktrace=REQ(),
     if not settings.BROWSER_ERROR_REPORTING:
         return json_success()
 
+    js_source_map = get_js_source_map()
     if js_source_map:
         stacktrace = js_source_map.annotate_stacktrace(stacktrace)
 
