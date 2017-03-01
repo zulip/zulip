@@ -126,11 +126,9 @@ def check_html_templates(templates, modified_only, all_dups):
             'templates/zerver/home.html',
             'templates/zerver/integrations.html',
             'templates/zerver/invite_user.html',
-            'templates/zerver/left_sidebar.html',
             'templates/zerver/login.html',
             'templates/zerver/markdown_help.html',
             'templates/zerver/register.html',
-            'templates/zerver/right_sidebar.html',
             'templates/zerver/search_operators.html',
 
             'zerver/webhooks/deskdotcom/doc.html',
