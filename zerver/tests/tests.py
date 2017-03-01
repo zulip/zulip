@@ -1957,7 +1957,7 @@ class HomeTest(ZulipTestCase):
             "domain",
             "domains",
             "email",
-            "emoji_alt_code"
+            "emoji_alt_code",
             "enable_digest_emails",
             "enable_offline_email_notifications",
             "enable_offline_push_notifications",

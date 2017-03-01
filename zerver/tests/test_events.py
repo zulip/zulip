@@ -726,8 +726,8 @@ class EventsRegisterTest(ZulipTestCase):
             ('user', check_string),
             ('setting', check_bool),
         ])
-        # The first False is probably a noop, then we get transitions in both directions.
-        for setting_value in [False, True, False]:
+        do_change_emoji_alt_code(self.user_profile, False)
+        for setting_value in [True, False]:
             events = self.do_test(lambda: do_change_emoji_alt_code(self.user_profile, setting_value))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
