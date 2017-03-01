@@ -251,6 +251,11 @@
     opacity: 0.3;
 }
 
+.new-style input[type=text] {
+    border-radius: 5px;
+    box-shadow: none;
+}
+
 .new-style a.no-style {
     color: inherit;
 }
