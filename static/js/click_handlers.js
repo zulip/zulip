@@ -534,7 +534,7 @@ $(function () {
         $("#yes-bankrupt").hide();
         $("#no-bankrupt").hide();
         $(this).after($("<div>").addClass("alert alert-info settings_committed")
-               .text("Bringing you to your latest messages…"));
+                      .text(i18n.t("Bringing you to your latest messages…")));
     });
 
     (function () {

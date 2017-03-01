@@ -213,7 +213,7 @@ function make_stream_default(stream_name) {
                 $(".active_stream_row button").closest("td").html(
                     $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg));
             } else {
-                $(".active_stream_row button").text("Failed!");
+                $(".active_stream_row button").text(i18n.t("Failed!"));
             }
         },
     });
@@ -457,7 +457,7 @@ function _setup_page() {
                $("#home-error"), 'alert-error');
         }
         $("#deactivation_user_modal").modal("hide");
-        meta.current_deactivate_user_modal_row.find("button").eq(0).prop("disabled", true).text("Working…");
+        meta.current_deactivate_user_modal_row.find("button").eq(0).prop("disabled", true).text(i18n.t("Working…"));
         channel.del({
             url: '/json/users/' + encodeURIComponent(email),
             error: function (xhr) {
@@ -466,7 +466,7 @@ function _setup_page() {
                         $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
                     );
                 } else {
-                     meta.current_deactivate_user_modal_row.find("button").text("Failed!");
+                    meta.current_deactivate_user_modal_row.find("button").text(i18n.t("Failed!"));
                 }
             },
             success: function () {
@@ -496,7 +496,7 @@ function _setup_page() {
                         $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
                     );
                 } else {
-                    row.find("button").text("Failed!");
+                    row.find("button").text(i18n.t("Failed!"));
                 }
             },
             success: function () {
@@ -862,7 +862,7 @@ function _setup_page() {
                $("#home-error"), 'alert-error');
         }
         $("#deactivation_stream_modal").modal("hide");
-        $(".active_stream_row button").prop("disabled", true).text("Working…");
+        $(".active_stream_row button").prop("disabled", true).text(i18n.t("Working…"));
         var stream_name = $(".active_stream_row").find('.stream_name').text();
         var stream_id = stream_data.get_sub(stream_name).stream_id;
         channel.del({
@@ -873,7 +873,7 @@ function _setup_page() {
                         $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
                     );
                 } else {
-                     $(".active_stream_row button").text("Failed!");
+                    $(".active_stream_row button").text(i18n.t("Failed!"));
                 }
             },
             success: function () {
@@ -896,7 +896,7 @@ function _setup_page() {
                         $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
                     );
                 } else {
-                     btn.text("Failed!");
+                    btn.text(i18n.t("Failed!"));
                 }
             },
             success: function () {
@@ -945,7 +945,7 @@ function _setup_page() {
                         $("<p>").addClass("text-error").text($.parseJSON(xhr.responseText).msg)
                     );
                 } else {
-                     btn.text("Failed!");
+                    btn.text(i18n.t("Failed!"));
                 }
             },
             success: function () {
@@ -1004,7 +1004,7 @@ function _setup_page() {
             success: function () {
                 aliases_info.removeClass("text-error");
                 aliases_info.addClass("text-success");
-                aliases_info.text("Deleted successfully!");
+                aliases_info.text(i18n.t("Deleted successfully!"));
             },
             error: function (xhr) {
                 aliases_info.removeClass("text-success");
@@ -1030,7 +1030,7 @@ function _setup_page() {
                 $("#id_realm_restricted_to_domain").prop("disabled", false);
                 aliases_info.removeClass("text-error");
                 aliases_info.addClass("text-success");
-                aliases_info.text("Added successfully!");
+                aliases_info.text(i18n.t("Added successfully!"));
             },
             error: function (xhr) {
                 aliases_info.removeClass("text-success");

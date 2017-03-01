@@ -358,7 +358,7 @@ function show_subscription_settings(sub_row) {
         },
         error: function () {
             loading.destroy_indicator(indicator_elem);
-            error_elem.removeClass("hide").text("Could not fetch subscriber list");
+            error_elem.removeClass("hide").text(i18n.t("Could not fetch subscriber list"));
         },
     });
 
@@ -658,7 +658,7 @@ function change_stream_privacy(e) {
             $("#stream_privacy_modal").remove();
         },
         error: function () {
-            $("#change-stream-privacy-button").text("Try Again");
+            $("#change-stream-privacy-button").text(i18n.t("Try again"));
         },
     });
 }
@@ -1374,13 +1374,13 @@ $(function () {
                 }
             } else {
                 error_elem.addClass("hide");
-                warning_elem.removeClass("hide").text("User already subscribed");
+                warning_elem.removeClass("hide").text(i18n.t("User already subscribed"));
             }
         }
 
         function invite_failure() {
             warning_elem.addClass("hide");
-            error_elem.removeClass("hide").text("Could not add user to this stream");
+            error_elem.removeClass("hide").text(i18n.t("Could not add user to this stream"));
         }
 
         exports.invite_user_to_stream(principal, stream, invite_success, invite_failure);
@@ -1446,13 +1446,13 @@ $(function () {
                 }
             } else {
                 error_elem.addClass("hide");
-                warning_elem.removeClass("hide").text("User already not subscribed");
+                warning_elem.removeClass("hide").text(i18n.t("User is already not subscribed"));
             }
         }
 
         function removal_failure() {
             warning_elem.addClass("hide");
-            error_elem.removeClass("hide").text("Could not remove user from this stream");
+            error_elem.removeClass("hide").text(i18n.t("Error removing user from this stream"));
         }
 
         exports.remove_user_from_stream(principal, stream_name, removal_success,
