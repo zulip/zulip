@@ -360,45 +360,19 @@ def build_custom_checkers(by_lang):
         {'pattern': '\Wjson_error\(_\(?\w+\)',
          'exclude': set(['tools/lint-all']),
          'description': 'Argument to json_error should be a literal string enclosed by _()'},
-        {'pattern': '\Wjson_error\([^_].+[),]$',
+        {'pattern': '\Wjson_error\([\'"].+[),]$',
          'exclude': set(['tools/lint-all']),
          'exclude_line': set([
-             # function definition
-             ('zerver/lib/response.py', 'def json_error(msg, data=None, status=400):'),
-             # No need to worry about the following as the translation strings
-             # are already captured
-             ('zerver/middleware.py',
-              'return json_error(exception.to_json_error_msg(), status=status_code)'),
-             ('zerver/tornado/views.py', 'return json_error(result["message"])'),
+             # We don't want this string tagged for translation.
              ('zerver/views/compatibility.py', 'return json_error("Client is too old")'),
-             ('zerver/views/invite.py',
-              'return json_error(data=error_data, msg=ret_error)'),
-             ('zerver/views/streams.py', 'return json_error(property_conversion)'),
-             ('zerver/views/streams.py', 'return json_error(e.error, data=result, status=404)'),
-             # error and skipped are already internationalized
-             ('zerver/views/user_settings.py', 'return json_error(error or skipped)'),
-             # We can't do anything about this.
-             ('zerver/views/realm_filters.py', 'return json_error(e.messages[0], data={"errors": dict(e)})'),
          ]),
          'description': 'Argument to json_error should a literal string enclosed by _()'},
         # To avoid JsonableError(_variable) and JsonableError(_(variable))
         {'pattern': '\WJsonableError\(_\(?\w.+\)',
          'exclude': set(['tools/lint-all']),
          'description': 'Argument to JsonableError should be a literal string enclosed by _()'},
-        {'pattern': '\WJsonableError\([^_].+\)',
+        {'pattern': '\WJsonableError\(["\'].+\)',
          'exclude': set(['tools/lint-all']),
-         'exclude_line': set([
-             # class definition
-             ('zerver/lib/request.py', 'class JsonableError(Exception):'),
-             # No need to worry about the following as the translation strings
-             # are already captured
-             ('zerver/decorator.py', 'raise JsonableError(reason % (role,))'),
-             ('zerver/lib/actions.py', 'raise JsonableError(e.messages[0])'),
-             ('zerver/views/messages.py', 'raise JsonableError(error)'),
-             ('zerver/lib/streams.py', 'raise JsonableError(error)'),
-             ('zerver/lib/request.py', 'raise JsonableError(error)'),
-             ('zerver/views/streams.py', 'raise JsonableError(response.content)'),
-         ]),
          'description': 'Argument to JsonableError should be a literal string enclosed by _()'},
         {'pattern': '([a-zA-Z0-9_]+)=REQ\([\'"]\\1[\'"]',
          'description': 'REQ\'s first argument already defaults to parameter name'},
