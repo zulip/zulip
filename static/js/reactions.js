@@ -127,7 +127,7 @@ exports.add_reaction = function (event) {
         }
         event.count = 1;
         event.title = new_title;
-        event.emoji_alt_code = page_params.emoji_alt_code
+        event.emoji_alt_code = page_params.emoji_alt_code;
         if (event.user.id === page_params.user_id) {
             event.class = "message_reaction reacted";
         } else {
