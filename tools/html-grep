@@ -19,7 +19,7 @@ USAGE = '''
     Example:
 
         $ ./tools/html-grep '#group-pms' '.filters'
-        templates/zerver/right-sidebar.html 45
+        templates/zerver/right_sidebar.html 45
 
             div.right-sidebar#right-sidebar
                 div#group-pm-list
