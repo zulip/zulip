@@ -160,8 +160,9 @@ is valuable.
 ## Google Summer of Code
 
 We participated in
-[GSoC](https://developers.google.com/open-source/gsoc/) last year and
-hope to do so again in 2017.  For guidance, please read
+[GSoC](https://developers.google.com/open-source/gsoc/) in 2016 (with
+[great results](https://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy/))
+and are participating in 2017 as well.  For guidance, please read
 [our GSoC instructions and ideas page](https://github.com/zulip/zulip.github.io/blob/master/gsoc-ideas.md)
 and feel free to email
 [our GSoC mailing list](https://groups.google.com/forum/#!forum/zulip-gsoc).
