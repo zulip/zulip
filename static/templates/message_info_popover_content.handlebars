@@ -3,10 +3,7 @@
     <div class="popover_info">
         <li>{{#tr this}}Sent by <b>__message.sender_full_name__</b>{{/tr}}</li>
         <li class='my_email'>{{sender_email}}</li>
-        <hr />
 
-        <li>{{message.full_date_str}}</li>
-        <li>{{message.full_time_str}}</li>
         {{#if message.historical}}
         <li class="small">({{t "Message sent when you were not subscribed" }})</li>
         {{/if}}
