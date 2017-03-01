@@ -145,10 +145,10 @@ class TestReport(ZulipTestCase):
         self.assert_json_success(result)
 
         # If js_source_map is present, then the stack trace should be annotated.
-        # DEBUG=False and TEST_SUITE=False are necessary to ensure that
+        # DEVELOPMENT=False and TEST_SUITE=False are necessary to ensure that
         # js_source_map actually gets instantiated.
         with \
-                self.settings(DEBUG=False, TEST_SUITE=False), \
+                self.settings(DEVELOPMENT=False, TEST_SUITE=False), \
                 mock.patch('zerver.lib.unminify.SourceMap.annotate_stacktrace') as annotate:
             result = self.client_post("/json/report_error", params)
         self.assert_json_success(result)
