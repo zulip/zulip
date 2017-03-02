@@ -216,6 +216,14 @@ function dispatch_normal_event(event) {
                 message_list.narrowed.rerender();
             }
         }
+        if (event.setting_name === 'emoji_alt_code') {
+            page_params.emoji_alt_code = event.setting;
+            // Rerender the whole message list UI
+            home_msg_list.rerender();
+            if (current_msg_list === message_list.narrowed) {
+                message_list.narrowed.rerender();
+            }
+        }
         if (event.setting_name === 'left_side_userlist') {
             // TODO: Make this change the view immediately rather
             // than requiring a reload or page resize.

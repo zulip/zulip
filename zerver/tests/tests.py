@@ -1730,6 +1730,10 @@ class ChangeSettingsTest(ZulipTestCase):
         # type: () -> None
         self.check_for_toggle_param_patch("/json/settings/display", "left_side_userlist")
 
+    def test_toggling_emoji_alt_code(self):
+        # type: () -> None
+        self.check_for_toggle_param_patch("/json/settings/display", "emoji_alt_code")
+
     def test_time_setting(self):
         # type: () -> None
         self.check_for_toggle_param_patch("/json/settings/display", "twenty_four_hour_time")
@@ -1953,6 +1957,7 @@ class HomeTest(ZulipTestCase):
             "domain",
             "domains",
             "email",
+            "emoji_alt_code",
             "enable_digest_emails",
             "enable_offline_email_notifications",
             "enable_offline_push_notifications",

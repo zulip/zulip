@@ -2377,6 +2377,18 @@ def do_change_left_side_userlist(user_profile, setting_value, log=True):
         log_event(event)
     send_event(event, [user_profile.id])
 
+def do_change_emoji_alt_code(user_profile, setting_value, log=True):
+    # type: (UserProfile, bool, bool) -> None
+    user_profile.emoji_alt_code = setting_value
+    user_profile.save(update_fields=["emoji_alt_code"])
+    event = {'type': 'update_display_settings',
+             'user': user_profile.email,
+             'setting_name': 'emoji_alt_code',
+             'setting': setting_value}
+    if log:
+        log_event(event)
+    send_event(event, [user_profile.id])
+
 def do_change_default_language(user_profile, setting_value, log=True):
     # type: (UserProfile, Text, bool) -> None
 

@@ -161,3 +161,14 @@
     background-color: #eef7fa;
     border-color: #add8e6;
 }
+
+.emoji_alt_code {
+    position: relative;
+    top: 4px;
+    font-size: 0.8em;
+    display: inline-block;
+    vertical-align: top;
+    color: #333;
+    margin: 0px 1px 0px 0px;
+    line-height: 1em;
+}

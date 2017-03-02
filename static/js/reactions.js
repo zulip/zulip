@@ -127,6 +127,7 @@ exports.add_reaction = function (event) {
         }
         event.count = 1;
         event.title = new_title;
+        event.emoji_alt_code = page_params.emoji_alt_code;
         if (event.user.id === page_params.user_id) {
             event.class = "message_reaction reacted";
         } else {
@@ -204,6 +205,7 @@ exports.get_message_reactions = function (message) {
             emoji_name_css_class: emoji.emoji_name_to_css_class(item[0]),
             count: item[1].length,
             title: generate_title(item[0], item[1]),
+            emoji_alt_code: page_params.emoji_alt_code,
         };
         if (emoji.realm_emojis[reaction.emoji_name]) {
             reaction.is_realm_emoji = true;

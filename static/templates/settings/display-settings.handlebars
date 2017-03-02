@@ -73,6 +73,17 @@
 
     <div class="input-group">
       <label class="checkbox">
+        <input type="checkbox" name="emoji_alt_code" id="emoji_alt_code"
+        {{#if page_params.emoji_alt_code}}
+          checked="checked"
+        {{/if}} />
+        <span></span>
+      </label>
+        <label for="emoji_alt_code" class="inline-block">{{t 'Display emoji reactions as text (:heart: instead of <img alt=":heart:" class="emoji" src="/static/generated/emoji/images/emoji/unicode/2764.png" title=":heart:"/>).' }}</label>
+    </div>
+
+    <div class="input-group">
+      <label class="checkbox">
         <input type="checkbox" name="twenty_four_hour_time" id="twenty_four_hour_time"
         {{#if page_params.twenty_four_hour_time}}
           checked="checked"
