@@ -508,16 +508,16 @@ function _setup_page() {
         data.emoji_alt_code = JSON.stringify(emoji_alt_code);
         var context = {};
         if (data.emoji_alt_code === "true") {
-            context.side = i18n.t('enabled');
+            context.enabled_or_disabled = i18n.t('enabled');
         } else {
-            context.side = i18n.t('disabled');
+            context.enabled_or_disabled = i18n.t('disabled');
         }
 
         channel.patch({
             url: '/json/settings/display',
             data: data,
             success: function () {
-                ui.report_success(i18n.t("Appearance of emoji as an alt code __side__ ! You will need to reload the window for your changes to take effect.", context),
+                ui.report_success(i18n.t("Appearance of emoji as an alt code __enabled_or_disabled__ !", context),
                                   $('#display-settings-status').expectOne());
             },
             error: function (xhr) {
