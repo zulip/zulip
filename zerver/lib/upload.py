@@ -103,8 +103,8 @@ class ZulipUploadBackend(object):
         # type: (Text, int, Optional[Text], binary_type, UserProfile, Optional[Realm]) -> Text
         raise NotImplementedError()
 
-    def upload_avatar_image(self, user_file, user_profile, email):
-        # type: (File, UserProfile, Text) -> None
+    def upload_avatar_image(self, user_file, acting_user_profile, target_user_profile):
+        # type: (File, UserProfile, UserProfile) -> None
         raise NotImplementedError()
 
     def delete_message_image(self, path_id):
@@ -239,18 +239,18 @@ class S3UploadBackend(ZulipUploadBackend):
         logging.warning("%s does not exist. Its entry in the database will be removed." % (file_name,))
         return False
 
-    def upload_avatar_image(self, user_file, user_profile, email):
-        # type: (File, UserProfile, Text) -> None
+    def upload_avatar_image(self, user_file, acting_user_profile, target_user_profile):
+        # type: (File, UserProfile, UserProfile) -> None
         content_type = guess_type(user_file.name)[0]
         bucket_name = settings.S3_AVATAR_BUCKET
-        s3_file_name = user_avatar_hash(email)
+        s3_file_name = user_avatar_hash(target_user_profile.email)
 
         image_data = user_file.read()
         upload_image_to_s3(
             bucket_name,
             s3_file_name + ".original",
             content_type,
-            user_profile,
+            target_user_profile,
             image_data,
         )
 
@@ -260,7 +260,7 @@ class S3UploadBackend(ZulipUploadBackend):
             bucket_name,
             s3_file_name + "-medium.png",
             "image/png",
-            user_profile,
+            target_user_profile,
             resized_medium
         )
 
@@ -269,7 +269,7 @@ class S3UploadBackend(ZulipUploadBackend):
             bucket_name,
             s3_file_name,
             'image/png',
-            user_profile,
+            target_user_profile,
             resized_data,
         )
         # See avatar_url in avatar.py for URL.  (That code also handles the case
@@ -386,9 +386,9 @@ class LocalUploadBackend(ZulipUploadBackend):
         logging.warning("%s does not exist. Its entry in the database will be removed." % (file_name,))
         return False
 
-    def upload_avatar_image(self, user_file, user_profile, email):
-        # type: (File, UserProfile, Text) -> None
-        email_hash = user_avatar_hash(email)
+    def upload_avatar_image(self, user_file, acting_user_profile, target_user_profile):
+        # type: (File, UserProfile, UserProfile) -> None
+        email_hash = user_avatar_hash(target_user_profile.email)
 
         image_data = user_file.read()
         write_local_file('avatars', email_hash+'.original', image_data)
@@ -446,9 +446,9 @@ def delete_message_image(path_id):
     # type: (Text) -> bool
     return upload_backend.delete_message_image(path_id)
 
-def upload_avatar_image(user_file, user_profile, email):
-    # type: (File, UserProfile, Text) -> None
-    upload_backend.upload_avatar_image(user_file, user_profile, email)
+def upload_avatar_image(user_file, acting_user_profile, target_user_profile):
+    # type: (File, UserProfile, UserProfile) -> None
+    upload_backend.upload_avatar_image(user_file, acting_user_profile, target_user_profile)
 
 def upload_icon_image(user_file, user_profile):
     # type: (File, UserProfile) -> None

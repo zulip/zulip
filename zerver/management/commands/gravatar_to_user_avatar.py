@@ -37,16 +37,18 @@ for both email addresses."""
 
         try:
             user_profile = get_user_profile_by_email(old_email)
+            upload_avatar_image(gravatar_file, user_profile, user_profile)
+            user_profile.avatar_source = UserProfile.AVATAR_FROM_USER
+            user_profile.save(update_fields=['avatar_source'])
         except UserProfile.DoesNotExist:
-            try:
-                user_profile = get_user_profile_by_email(new_email)
-            except UserProfile.DoesNotExist:
-                raise CommandError("Could not find specified user")
+            raise CommandError("Could not find specified user for email %s" % (old_email))
 
-        upload_avatar_image(gravatar_file, user_profile, old_email)
         if old_email != new_email:
             gravatar_file.seek(0)
-            upload_avatar_image(gravatar_file, user_profile, new_email)
-
-        user_profile.avatar_source = UserProfile.AVATAR_FROM_USER
-        user_profile.save(update_fields=['avatar_source'])
+            try:
+                user_profile = get_user_profile_by_email(new_email)
+                upload_avatar_image(gravatar_file, user_profile, user_profile)
+                user_profile.avatar_source = UserProfile.AVATAR_FROM_USER
+                user_profile.save(update_fields=['avatar_source'])
+            except UserProfile.DoesNotExist:
+                raise CommandError("Could not find specified user for email %s" % (new_email))

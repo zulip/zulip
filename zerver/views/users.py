@@ -192,7 +192,7 @@ def patch_bot_backend(request, user_profile, email,
         pass
     elif len(request.FILES) == 1:
         user_file = list(request.FILES.values())[0]
-        upload_avatar_image(user_file, user_profile, bot.email)
+        upload_avatar_image(user_file, user_profile, bot)
         avatar_source = UserProfile.AVATAR_FROM_USER
         do_change_avatar_fields(bot, avatar_source)
     else:
@@ -255,8 +255,6 @@ def add_bot_backend(request, user_profile, full_name_raw=REQ("full_name"), short
     elif len(request.FILES) != 1:
         return json_error(_("You may only upload one file at a time"))
     else:
-        user_file = list(request.FILES.values())[0]
-        upload_avatar_image(user_file, user_profile, email)
         avatar_source = UserProfile.AVATAR_FROM_USER
 
     default_sending_stream = None
@@ -278,6 +276,9 @@ def add_bot_backend(request, user_profile, full_name_raw=REQ("full_name"), short
                                  default_sending_stream=default_sending_stream,
                                  default_events_register_stream=default_events_register_stream,
                                  default_all_public_streams=default_all_public_streams)
+    if len(request.FILES) == 1:
+        user_file = list(request.FILES.values())[0]
+        upload_avatar_image(user_file, user_profile, bot_profile)
     json_result = dict(
         api_key=bot_profile.api_key,
         avatar_url=avatar_url(bot_profile),
