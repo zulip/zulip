@@ -517,7 +517,7 @@ function _setup_page() {
             url: '/json/settings/display',
             data: data,
             success: function () {
-                ui.report_success(i18n.t("Time will be displayed in the __format__-hour format!  You will need to reload the window for your changes to take effect", context),
+                ui.report_success(i18n.t("Time will now be displayed in the __format__-hour format!", context),
                                   $('#display-settings-status').expectOne());
             },
             error: function (xhr) {
