@@ -567,6 +567,8 @@ $(function () {
             if ($(e.target).is(".exit, .image-preview")) {
                 ui.exit_lightbox_photo();
             }
+            e.preventDefault();
+            e.stopPropagation();
         });
 
         $("#overlay .download").click(function () {
