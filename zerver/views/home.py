@@ -283,6 +283,7 @@ def home_real(request):
         'alert_words',
         'attachments',
         'default_language',
+        'emoji_alt_code',
         'last_event_id',
         'left_side_userlist',
         'max_message_id',
