@@ -1109,6 +1109,10 @@ $(function () {
         case 'REQUEST ENTITY TOO LARGE':
             msg = i18n.t("Sorry, the file was too large.");
             break;
+        case 'QuotaExceeded':
+            msg = i18n.t("Upload would exceed your maximum quota."
+                      + " Consider deleting some previously uploaded files.");
+            break;
         default:
             msg = i18n.t("An unknown error occured.");
             break;

@@ -318,6 +318,38 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             content = ujson.loads(result.content)
             assert sanitize_name(expected) in content['uri']
 
+    def test_upload_size_quote(self):
+        # type: () -> None
+        """
+        User quote for uploading should not be exceeded
+        """
+        self.login("hamlet@zulip.com")
+
+        d1 = StringIO("zulip!")
+        d1.name = "dummy_1.txt"
+        result = self.client_post("/json/upload_file", {'file': d1})
+        json = ujson.loads(result.content)
+        uri = json["uri"]
+        d1_path_id = re.sub('/user_uploads/', '', uri)
+        d1_attachment = Attachment.objects.get(path_id = d1_path_id)
+        self.assert_json_success(result)
+
+        """
+        Below we set size quota to the limit without 1 upload(1GB - 11 bytes).
+        """
+        d1_attachment.size = UserProfile.DEFAULT_UPLOADS_QUOTA - 11
+        d1_attachment.save()
+
+        d2 = StringIO("zulip!")
+        d2.name = "dummy_2.txt"
+        result = self.client_post("/json/upload_file", {'file': d2})
+        self.assert_json_success(result)
+
+        d3 = StringIO("zulip!")
+        d3.name = "dummy_3.txt"
+        result = self.client_post("/json/upload_file", {'file': d3})
+        self.assert_json_error(result, "Upload would exceed your maximum quota.")
+
     def tearDown(self):
         # type: () -> None
         destroy_uploads()
