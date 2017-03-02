@@ -85,6 +85,18 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator='stream', operand='Scotland')
         self._do_add_term_test(term, 'WHERE recipient_id = :recipient_id_1')
 
+    def test_add_term_using_stream_operator_zephyr_hack_null(self):
+        # type: () -> None
+        """This tests the _pg_re_escape code path with a null byte"""
+        null_stream_name = u'fun\u0000test'
+        s = Stream.objects.create(realm=get_realm("mit"), name=null_stream_name)
+        Recipient.objects.create(type=Recipient.STREAM, type_id=s.id)
+        user_profile = get_user_profile_by_email("sipbtest@mit.edu")
+        builder = NarrowBuilder(user_profile, column('id'))
+        term = dict(operator='stream', operand=null_stream_name)
+        result = str(builder.add_term(self.raw_query, term))
+        self.assertTrue("WHERE recipient_id IN (:recipient_id_1)" in result)
+
     def test_add_term_using_stream_operator_and_negated(self):  # NEGATED
         # type: () -> None
         term = dict(operator='stream', operand='Scotland', negated=True)
@@ -540,6 +552,22 @@ class GetOldMessagesTest(ZulipTestCase):
             self.assertEqual(message["type"], "stream")
             stream_id = stream_messages[i].recipient.id
             self.assertEqual(message["recipient_id"], stream_id)
+
+    def test_get_old_messages_with_narrow_stream_mit_unicode_null_regex(self):
+        # type: () -> None
+        self.login("starnine@mit.edu")
+        null_stream_name = u"foo\000-stream"
+        self.subscribe_to_stream("starnine@mit.edu", null_stream_name)
+        self.send_message("starnine@mit.edu", null_stream_name, Recipient.STREAM)
+        narrow = [dict(operator='stream', operand=null_stream_name)]
+        result = self.get_and_check_messages(dict(num_before=2, num_after=2,
+                                                  narrow=ujson.dumps(narrow)))
+
+        messages = get_user_messages(get_user_profile_by_email("starnine@mit.edu"))
+        stream_messages = [msg for msg in messages if msg.recipient.type == Recipient.STREAM]
+        self.assertEqual(len(result["messages"]), 1)
+        self.assertEqual(result["messages"][0]["type"], "stream")
+        self.assertEqual(result["messages"][0]["recipient_id"], stream_messages[0].recipient.id)
 
     def test_get_old_messages_with_narrow_topic_mit_unicode_regex(self):
         # type: () -> None

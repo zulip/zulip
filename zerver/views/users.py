@@ -115,8 +115,8 @@ def update_user_backend(request, user_profile, email,
 # TODO: Since eventually we want to support using the same email with
 # different organizations, we'll eventually want this to be a
 # logged-in endpoint so that we can access the realm_id.
-def avatar(request, email_or_id):
-    # type: (HttpRequest, str) -> HttpResponse
+def avatar(request, email_or_id, medium=None):
+    # type: (HttpRequest, str, bool) -> HttpResponse
     """Accepts an email address or user ID and returns the avatar"""
     try:
         int(email_or_id)
@@ -128,13 +128,13 @@ def avatar(request, email_or_id):
     try:
         # If there is a valid user account passed in, use its avatar
         user_profile = get_user_func(email_or_id)
-        url = avatar_url(user_profile)
+        url = avatar_url(user_profile, medium=medium)
     except UserProfile.DoesNotExist:
         # If there is no such user, treat it as a new gravatar
         email = email_or_id
         avatar_source = 'G'
         avatar_version = 1
-        url = get_avatar_url(avatar_source, email, avatar_version)
+        url = get_avatar_url(avatar_source, email, avatar_version, medium=medium)
 
     # We can rely on the url already having query parameters. Because
     # our templates depend on being able to use the ampersand to

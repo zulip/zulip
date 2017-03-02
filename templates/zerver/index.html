@@ -76,7 +76,7 @@ var page_params = {{ page_params }};
 <div class="app">
 <div class="app-main">
     <div class="column-left">
-          {% include "zerver/left-sidebar.html" %}
+          {% include "zerver/left_sidebar.html" %}
     </div>
     <div class="column-middle">
         <div class="column-middle-inner tab-content">
@@ -118,9 +118,9 @@ var page_params = {{ page_params }};
         </div><!--/tab-content-->
     </div>
     <div class="column-right">
-          {% include "zerver/right-sidebar.html" %}
+          {% include "zerver/right_sidebar.html" %}
     </div><!--/right sidebar-->
-    {% include "zerver/image-overlay.html" %}
+    {% include "zerver/lightbox_overlay.html" %}
     {% include "zerver/subscriptions.html" %}
     {% include "zerver/drafts.html" %}
 </div><!--/row-->

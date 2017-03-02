@@ -24,6 +24,7 @@ set_global('tutorial', {
     },
 });
 set_global('home_msg_list', {
+    rerender: noop,
     select_id: noop,
     selected_id: function () {return 1;},
 });
@@ -44,6 +45,9 @@ add_dependencies({alert_words: 'js/alert_words.js'});
 
 // we also directly write to pointer
 set_global('pointer', {});
+
+// We access various msg_list object to rerender them
+set_global('current_msg_list', {rerender: noop});
 
 var server_events = require('js/server_events.js');
 
@@ -338,7 +342,7 @@ var event_fixtures = {
         setting_name: 'left_side_userlist',
         setting: true,
     },
-
+  
     update_display_settings__emoji_alt_code: {
         type: 'update_display_settings',
         setting_name: 'emoji_alt_code',
@@ -689,7 +693,7 @@ run(function (override, capture, args) {
 
 });
 
-run(function () {
+run(function (override) {
     // update_display_settings
     var event = event_fixtures.update_display_settings__default_language;
     page_params.default_language = 'en';
@@ -700,12 +704,13 @@ run(function () {
     page_params.left_side_userlist = false;
     dispatch(event);
     assert_same(page_params.left_side_userlist, true);
-
+  
     event = event_fixtures.update_display_settings__emoji_alt_code;
     page_params.emoji_alt_code = false;
     dispatch(event);
     assert_same(page_params.emoji_alt_code, true);
 
+    override('message_list', 'narrowed', noop);
     event = event_fixtures.update_display_settings__twenty_four_hour_time;
     page_params.twenty_four_hour_time = false;
     dispatch(event);

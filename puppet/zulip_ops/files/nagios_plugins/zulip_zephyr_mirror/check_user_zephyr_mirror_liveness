@@ -18,6 +18,7 @@ sys.path.append('/home/zulip/deployments/current')
 import scripts.lib.setup_path_on_import
 
 import django
+from django.utils import timezone
 
 os.environ['DJANGO_SETTINGS_MODULE'] = "zproject.settings"
 sys.path.append('/home/zulip/deployments/current')
@@ -50,13 +51,13 @@ def report(state, short_msg, too_old=None):
 
     exit(states[state])
 
-now = datetime.datetime.utcnow()
+now = timezone.now()
 
 all_users = UserActivity.objects.filter(query__in=["get_events_backend", "/api/v1/events"],
                                         client__name="zephyr_mirror")
-new_inactive_users = [user for user in all_users if user.last_visit.replace(tzinfo=None) <
+new_inactive_users = [user for user in all_users if user.last_visit <
                       now - datetime.timedelta(minutes=10)]
-old_inactive_users = [user for user in new_inactive_users if user.last_visit.replace(tzinfo=None) <
+old_inactive_users = [user for user in new_inactive_users if user.last_visit <
                       now - datetime.timedelta(minutes=60)]
 recently_inactive_users = set(new_inactive_users) - set(old_inactive_users)
 

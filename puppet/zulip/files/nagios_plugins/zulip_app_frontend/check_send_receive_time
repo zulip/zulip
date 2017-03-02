@@ -11,7 +11,6 @@ Django ORM.
 from __future__ import print_function
 from __future__ import division
 
-import datetime
 import sys
 import optparse
 import random
@@ -26,10 +25,6 @@ import scripts.lib.setup_path_on_import
 import django
 
 from typing import Any, Dict, List, Optional
-
-def total_seconds(timedelta):
-    # type: (datetime.timedelta) -> float
-    return (timedelta.microseconds + (timedelta.seconds + timedelta.days * 24 * 3600) * 10**6) / 10.**6
 
 usage = """Usage: send-receive.py [options] [config]
 
@@ -166,7 +161,7 @@ try:
 except Exception:
     report("CRITICAL", "Error subscribing to Zulips:\n%s" % (traceback.format_exc()))
 msg_to_send = str(random.getrandbits(64))
-time_start = datetime.datetime.now()
+time_start = time.time()
 
 if options.websocket:
     client = WebsocketClient(host_url=options.site, sockjs_url='/sockjs/366/v8nw22qe/websocket',
@@ -186,19 +181,19 @@ msg_content = [] # type: List[str]
 
 while msg_to_send not in msg_content:
     messages = get_zulips()
-    time_diff = datetime.datetime.now() - time_start
+    seconds_diff = time.time() - time_start
 
     msg_content = [m['content'] for m in messages]
 
 zulip_recipient.deregister(queue_id)
 
 if options.nagios:
-    if time_diff.seconds > 12:
-        report('CRITICAL', time_diff)
-    if time_diff.seconds > 3:
-        report('WARNING', time_diff)
+    if seconds_diff > 12:
+        report('CRITICAL', seconds_diff)
+    if seconds_diff > 3:
+        report('WARNING', seconds_diff)
 
 if options.munin:
-    print("sendreceive.value %s" % total_seconds(time_diff))
+    print("sendreceive.value %s" % (seconds_diff,))
 elif options.nagios:
-    report('OK', time_diff)
+    report('OK', seconds_diff)

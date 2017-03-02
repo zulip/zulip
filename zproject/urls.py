@@ -93,6 +93,7 @@ i18n_urls = [
         {'template_name': 'zerver/reset_done.html'}),
 
     # Avatar
+    url(r'^avatar/(?P<email_or_id>[\S]+)?/(?P<medium>[\S]+)?', zerver.views.users.avatar, name='zerver.views.users.avatar'),
     url(r'^avatar/(?P<email_or_id>[\S]+)?', zerver.views.users.avatar, name='zerver.views.users.avatar'),
 
     # Registration views, require a confirmation ID.

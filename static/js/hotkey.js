@@ -91,7 +91,7 @@ function get_hotkey_from_event(e) {
     // We're in the middle of a combo; stop processing because
     // we want the browser to handle it (to avoid breaking
     // things like Ctrl-C or Command-C for copy).
-    if (e.metaKey || e.ctrlKey) {
+    if (e.metaKey || e.ctrlKey || e.altKey) {
         return {name: 'ignore', message_view_only: false};
     }
 

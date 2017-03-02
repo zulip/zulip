@@ -98,8 +98,9 @@ def resize_avatar(image_data, size=DEFAULT_AVATAR_SIZE):
 ### Common
 
 class ZulipUploadBackend(object):
-    def upload_message_image(self, uploaded_file_name, content_type, file_data, user_profile, target_realm=None):
-        # type: (Text, Optional[Text], binary_type, UserProfile, Optional[Realm]) -> Text
+    def upload_message_image(self, uploaded_file_name, uploaded_file_size,
+                             content_type, file_data, user_profile, target_realm=None):
+        # type: (Text, int, Optional[Text], binary_type, UserProfile, Optional[Realm]) -> Text
         raise NotImplementedError()
 
     def upload_avatar_image(self, user_file, user_profile, email):
@@ -165,7 +166,7 @@ def upload_image_to_s3(
     key.set_contents_from_string(force_str(contents), headers=headers)
 
 def get_file_info(request, user_file):
-    # type: (HttpRequest, File) -> Tuple[Text, Optional[Text]]
+    # type: (HttpRequest, File) -> Tuple[Text, int, Optional[Text]]
 
     uploaded_file_name = user_file.name
     assert isinstance(uploaded_file_name, str)
@@ -179,7 +180,9 @@ def get_file_info(request, user_file):
         uploaded_file_name = uploaded_file_name + guess_extension(content_type)
 
     uploaded_file_name = urllib.parse.unquote(uploaded_file_name)
-    return uploaded_file_name, content_type
+    uploaded_file_size = user_file.size
+
+    return uploaded_file_name, uploaded_file_size, content_type
 
 
 def get_signed_upload_url(path):
@@ -197,8 +200,9 @@ def get_realm_for_filename(path):
     return get_user_profile_by_id(key.metadata["user_profile_id"]).realm_id
 
 class S3UploadBackend(ZulipUploadBackend):
-    def upload_message_image(self, uploaded_file_name, content_type, file_data, user_profile, target_realm=None):
-        # type: (Text, Optional[Text], binary_type, UserProfile, Optional[Realm]) -> Text
+    def upload_message_image(self, uploaded_file_name, uploaded_file_size,
+                             content_type, file_data, user_profile, target_realm=None):
+        # type: (Text, int, Optional[Text], binary_type, UserProfile, Optional[Realm]) -> Text
         bucket_name = settings.S3_AUTH_UPLOADS_BUCKET
         if target_realm is None:
             target_realm = user_profile.realm
@@ -217,7 +221,7 @@ class S3UploadBackend(ZulipUploadBackend):
             file_data
         )
 
-        create_attachment(uploaded_file_name, s3_file_name, user_profile)
+        create_attachment(uploaded_file_name, s3_file_name, user_profile, uploaded_file_size)
         return url
 
     def delete_message_image(self, path_id):
@@ -355,8 +359,9 @@ def get_local_file_path(path_id):
         return None
 
 class LocalUploadBackend(ZulipUploadBackend):
-    def upload_message_image(self, uploaded_file_name, content_type, file_data, user_profile, target_realm=None):
-        # type: (Text, Optional[Text], binary_type, UserProfile, Optional[Realm]) -> Text
+    def upload_message_image(self, uploaded_file_name, uploaded_file_size,
+                             content_type, file_data, user_profile, target_realm=None):
+        # type: (Text, int, Optional[Text], binary_type, UserProfile, Optional[Realm]) -> Text
         # Split into 256 subdirectories to prevent directories from getting too big
         path = "/".join([
             str(user_profile.realm_id),
@@ -366,7 +371,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         ])
 
         write_local_file('files', path, file_data)
-        create_attachment(uploaded_file_name, path, user_profile)
+        create_attachment(uploaded_file_name, path, user_profile, uploaded_file_size)
         return '/user_uploads/' + path
 
     def delete_message_image(self, path_id):
@@ -449,10 +454,11 @@ def upload_icon_image(user_file, user_profile):
     # type: (File, UserProfile) -> None
     upload_backend.upload_realm_icon_image(user_file, user_profile)
 
-def upload_message_image(uploaded_file_name, content_type, file_data, user_profile, target_realm=None):
-    # type: (Text, Optional[Text], binary_type, UserProfile, Optional[Realm]) -> Text
-    return upload_backend.upload_message_image(uploaded_file_name, content_type, file_data,
-                                               user_profile, target_realm=target_realm)
+def upload_message_image(uploaded_file_name, uploaded_file_size,
+                         content_type, file_data, user_profile, target_realm=None):
+    # type: (Text, int, Optional[Text], binary_type, UserProfile, Optional[Realm]) -> Text
+    return upload_backend.upload_message_image(uploaded_file_name, uploaded_file_size,
+                                               content_type, file_data, user_profile, target_realm=target_realm)
 
 def claim_attachment(user_profile, path_id, message, is_message_realm_public):
     # type: (UserProfile, Text, Message, bool) -> bool
@@ -470,12 +476,14 @@ def claim_attachment(user_profile, path_id, message, is_message_realm_public):
         raise JsonableError(_("The upload was not successful. Please reupload the file again in a new message."))
     return False
 
-def create_attachment(file_name, path_id, user_profile):
-    # type: (Text, Text, UserProfile) -> bool
-    Attachment.objects.create(file_name=file_name, path_id=path_id, owner=user_profile, realm=user_profile.realm)
+def create_attachment(file_name, path_id, user_profile, file_size):
+    # type: (Text, Text, UserProfile, int) -> bool
+    Attachment.objects.create(file_name=file_name, path_id=path_id, owner=user_profile,
+                              realm=user_profile.realm, size=file_size)
     return True
 
 def upload_message_image_from_request(request, user_file, user_profile):
     # type: (HttpRequest, File, UserProfile) -> Text
-    uploaded_file_name, content_type = get_file_info(request, user_file)
-    return upload_message_image(uploaded_file_name, content_type, user_file.read(), user_profile)
+    uploaded_file_name, uploaded_file_size, content_type = get_file_info(request, user_file)
+    return upload_message_image(uploaded_file_name, uploaded_file_size,
+                                content_type, user_file.read(), user_profile)
