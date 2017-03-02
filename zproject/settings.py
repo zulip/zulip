@@ -1168,6 +1168,3 @@ PROFILE_ALL_REQUESTS = False
 CROSS_REALM_BOT_EMAILS = set(('feedback@zulip.com', 'notification-bot@zulip.com'))
 
 CONTRIBUTORS_DATA = os.path.join(STATIC_ROOT, 'generated/github-contributors.json')
-
-# Geo location
-GEOIP_PATH = '/srv/zulip/geo'
