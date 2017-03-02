@@ -1395,8 +1395,8 @@ class UserPresence(models.Model):
     def get_status_dicts_for_query(query, mobile_user_ids):
         # type: (QuerySet, List[int]) -> defaultdict[Any, Dict[Any, Any]]
         user_statuses = defaultdict(dict) # type: defaultdict[Any, Dict[Any, Any]]
-
-        for row in query:
+        # Order of query is important to get a latest status as aggregated status.
+        for row in query.order_by("user_profile__id", "-timestamp"):
             info = UserPresence.to_presence_dict(
                 row['client__name'],
                 row['status'],
@@ -1405,8 +1405,13 @@ class UserPresence(models.Model):
                 has_push_devices=row['user_profile__id'] in mobile_user_ids,
                 is_mirror_dummy=row['user_profile__is_mirror_dummy'],
             )
+            if not user_statuses.get(row['user_profile__email']):
+                # Applying the latest status as aggregated status for user.
+                user_statuses[row['user_profile__email']]['aggregated'] = {
+                    'status': info['status'],
+                    'timestamp': info['timestamp']
+                }
             user_statuses[row['user_profile__email']][row['client__name']] = info
-
         return user_statuses
 
     @staticmethod

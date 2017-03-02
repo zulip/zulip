@@ -41,8 +41,8 @@ def get_presence_backend(request, user_profile, email):
     # For initial version, we just include the status and timestamp keys
     result = dict(presence=presence_dict[target.email])
     for val in result['presence'].values():
-        del val['client']
-        del val['pushable']
+        val.pop('client', None)
+        val.pop('pushable', None)
     return json_success(result)
 
 @has_request_variables
