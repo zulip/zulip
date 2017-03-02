@@ -21,6 +21,7 @@ exports.find_files_to_run = function () {
     var tests_dir = __dirname.replace(/zjsunit/, 'node_tests');
 
     var tests = fs.readdirSync(tests_dir)
+      .filter(function (filename) {return !(/^\./i).test(filename);})
       .filter(function (filename) {return (/\.js$/i).test(filename);})
       .map(function (filename) {return filename.replace(/\.js$/i, '');});
 
