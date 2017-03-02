@@ -35,6 +35,10 @@
     overflow-wrap: break-word;
 }
 
+.subscriptions div #response {
+    overflow-wrap: break-word;
+}
+
 #subscriptions_table .subscription_block {
     padding-left: 0.5em;
     vertical-align: middle;
