@@ -10,7 +10,7 @@ from django.db.models import Sum
 from jinja2 import Markup as mark_safe
 import unicodedata
 
-from zerver.lib.avatar_hash import user_avatar_hash
+from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.request import JsonableError
 from zerver.lib.str_utils import force_text, force_str, NonBinaryStr
 
@@ -265,7 +265,7 @@ class S3UploadBackend(ZulipUploadBackend):
         # type: (File, UserProfile, UserProfile) -> None
         content_type = guess_type(user_file.name)[0]
         bucket_name = settings.S3_AVATAR_BUCKET
-        s3_file_name = user_avatar_hash(target_user_profile.email)
+        s3_file_name = user_avatar_path(target_user_profile)
 
         image_data = user_file.read()
         upload_image_to_s3(
@@ -339,13 +339,13 @@ class S3UploadBackend(ZulipUploadBackend):
     def ensure_medium_avatar_image(self, email):
         # type: (Text) -> None
         user_profile = get_user_profile_by_email(email)
-        email_hash = user_avatar_hash(email)
-        s3_file_name = email_hash
+        file_path = user_avatar_path(user_profile)
+        s3_file_name = file_path
 
         bucket_name = settings.S3_AVATAR_BUCKET
         conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
         bucket = get_bucket(conn, bucket_name)
-        key = bucket.get_key(email_hash)
+        key = bucket.get_key(file_path)
         image_data = force_bytes(key.get_contents_as_string())
 
         resized_medium = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
@@ -410,16 +410,16 @@ class LocalUploadBackend(ZulipUploadBackend):
 
     def upload_avatar_image(self, user_file, acting_user_profile, target_user_profile):
         # type: (File, UserProfile, UserProfile) -> None
-        email_hash = user_avatar_hash(target_user_profile.email)
+        file_path = user_avatar_path(target_user_profile)
 
         image_data = user_file.read()
-        write_local_file('avatars', email_hash+'.original', image_data)
+        write_local_file('avatars', file_path + '.original', image_data)
 
         resized_data = resize_avatar(image_data)
-        write_local_file('avatars', email_hash+'.png', resized_data)
+        write_local_file('avatars', file_path + '.png', resized_data)
 
         resized_medium = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
-        write_local_file('avatars', email_hash+'-medium.png', resized_medium)
+        write_local_file('avatars', file_path + '-medium.png', resized_medium)
 
     def get_avatar_url(self, hash_key, medium=False):
         # type: (Text, bool) -> Text
@@ -447,16 +447,17 @@ class LocalUploadBackend(ZulipUploadBackend):
 
     def ensure_medium_avatar_image(self, email):
         # type: (Text) -> None
-        email_hash = user_avatar_hash(email)
+        user_profile = get_user_profile_by_email(email)
+        file_path = user_avatar_path(user_profile)
 
-        output_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", email_hash + "-medium.png")
+        output_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", file_path + "-medium.png")
         if os.path.isfile(output_path):
             return
 
-        image_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", email_hash + ".original")
+        image_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", file_path + ".original")
         image_data = open(image_path, "rb").read()
         resized_medium = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
-        write_local_file('avatars', email_hash + '-medium.png', resized_medium)
+        write_local_file('avatars', file_path + '-medium.png', resized_medium)
 
 # Common and wrappers
 if settings.LOCAL_UPLOADS_DIR is not None:

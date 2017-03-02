@@ -25,3 +25,8 @@ def user_avatar_hash(email):
     # replacement.
     user_key = email.lower() + settings.AVATAR_SALT
     return make_safe_digest(user_key, hashlib.sha1)
+
+def user_avatar_path(user_profile):
+    # type: (UserProfile) -> Text
+    user_email_hash = user_avatar_hash(str(user_profile.email))
+    return ('%s' % (user_email_hash))
