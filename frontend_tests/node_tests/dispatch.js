@@ -342,7 +342,7 @@ var event_fixtures = {
         setting_name: 'left_side_userlist',
         setting: true,
     },
-  
+
     update_display_settings__emoji_alt_code: {
         type: 'update_display_settings',
         setting_name: 'emoji_alt_code',
@@ -704,17 +704,17 @@ run(function (override) {
     page_params.left_side_userlist = false;
     dispatch(event);
     assert_same(page_params.left_side_userlist, true);
-  
-    event = event_fixtures.update_display_settings__emoji_alt_code;
-    page_params.emoji_alt_code = false;
-    dispatch(event);
-    assert_same(page_params.emoji_alt_code, true);
 
     override('message_list', 'narrowed', noop);
     event = event_fixtures.update_display_settings__twenty_four_hour_time;
     page_params.twenty_four_hour_time = false;
     dispatch(event);
     assert_same(page_params.twenty_four_hour_time, true);
+
+    event = event_fixtures.update_display_settings__emoji_alt_code;
+    page_params.emoji_alt_code = false;
+    dispatch(event);
+    assert_same(page_params.emoji_alt_code, true);
 
 });
 
