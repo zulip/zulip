@@ -185,6 +185,7 @@ def avatar_disk_path(user_profile, medium=False):
     # type: (UserProfile, bool) -> str
     avatar_url_path = avatar_url(user_profile, medium)
     avatar_disk_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars",
+                                    avatar_url_path.split("/")[-2],
                                     avatar_url_path.split("/")[-1].split("?")[0])
     return avatar_disk_path
 
