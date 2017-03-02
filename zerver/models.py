@@ -613,6 +613,10 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
 
     objects = UserManager() # type: UserManager
 
+    DEFAULT_UPLOADS_QUOTA = 1024*1024*1024
+
+    quota = models.IntegerField(default=DEFAULT_UPLOADS_QUOTA) # type: int
+
     def can_admin_user(self, target_user):
         # type: (UserProfile) -> bool
         """Returns whether this user has permission to modify target_user"""

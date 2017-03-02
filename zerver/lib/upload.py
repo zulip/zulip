@@ -6,6 +6,7 @@ from django.conf import settings
 from django.template.defaultfilters import slugify
 from django.core.files import File
 from django.http import HttpRequest
+from django.db.models import Sum
 from jinja2 import Markup as mark_safe
 import unicodedata
 
@@ -82,6 +83,9 @@ def random_name(bytes=60):
     return base64.urlsafe_b64encode(os.urandom(bytes)).decode('utf-8')
 
 class BadImageError(JsonableError):
+    pass
+
+class ExceededQuotaError(JsonableError):
     pass
 
 def resize_avatar(image_data, size=DEFAULT_AVATAR_SIZE):
@@ -164,6 +168,24 @@ def upload_image_to_s3(
         headers = None
 
     key.set_contents_from_string(force_str(contents), headers=headers)
+
+def get_total_uploads_size_for_user(user):
+    # type: (UserProfile) -> int
+    uploads = Attachment.objects.filter(owner=user)
+    total_quota = uploads.aggregate(Sum('size'))['size__sum']
+
+    # In case user has no uploads
+    if (total_quota is None):
+        total_quota = 0
+    return total_quota
+
+def within_upload_quota(user, uploaded_file_size):
+    # type: (UserProfile, int) -> bool
+    total_quota = get_total_uploads_size_for_user(user)
+    if (total_quota + uploaded_file_size > user.quota):
+        return False
+    else:
+        return True
 
 def get_file_info(request, user_file):
     # type: (HttpRequest, File) -> Tuple[Text, int, Optional[Text]]
