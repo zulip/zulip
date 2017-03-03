@@ -2,7 +2,7 @@
 from __future__ import absolute_import
 import re
 from datetime import datetime
-from typing import Any, Dict
+from typing import Any, Dict, List
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 from zerver.lib.actions import check_send_message

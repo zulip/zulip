@@ -1,7 +1,7 @@
 import mock
 from mock import call
 import time
-from typing import Any, Union, SupportsInt, Text
+from typing import Any, Dict, Union, SupportsInt, Text
 
 import gcm
 

@@ -9,7 +9,7 @@ from django.conf import settings
 from django.db.models import Q
 from django.core.cache.backends.base import BaseCache
 
-from typing import Any, Callable, Iterable, Optional, Union, TypeVar, Text
+from typing import Any, Callable, Dict, Iterable, List, Optional, Union, TypeVar, Text
 
 from zerver.lib.utils import statsd, statsd_key, make_safe_digest
 import subprocess

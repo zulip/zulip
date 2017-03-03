@@ -2,7 +2,7 @@
 from __future__ import absolute_import
 
 from django.http import HttpRequest, HttpResponse
-from typing import Any, Text
+from typing import Any, Dict, Text
 
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error

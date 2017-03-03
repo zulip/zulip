@@ -6,6 +6,7 @@ import optparse
 import sys
 
 from six.moves import filter
+from typing import List
 
 # check for the venv
 from lib import sanity_check

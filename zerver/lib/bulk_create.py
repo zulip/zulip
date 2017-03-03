@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from typing import Any, Iterable, Mapping, Optional, Set, Tuple, Text
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Set, Tuple, Text
 
 from zerver.lib.initial_password import initial_password
 from zerver.models import Realm, Stream, UserProfile, Huddle, \

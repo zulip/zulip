@@ -10,7 +10,7 @@ from zerver.lib.response import json_success, json_error
 from zerver.lib.validator import check_dict, check_list, check_string
 from zerver.models import UserProfile, Client
 
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Dict, Optional
 import ujson
 
 

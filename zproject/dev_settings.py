@@ -3,6 +3,7 @@
 # sample prod_settings.py file, with a few exceptions.
 from .prod_settings_template import *
 import os
+from typing import Set 
 
 LOCAL_UPLOADS_DIR = 'var/uploads'
 # Default to subdomains disabled in development until we can update

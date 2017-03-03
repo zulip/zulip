@@ -8,7 +8,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Message, Realm, Recipient, UserProfile
 from zerver.lib.retention import get_expired_messages
 
-from typing import Any
+from typing import Any, List
 
 from six.moves import range
 

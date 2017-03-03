@@ -1,6 +1,6 @@
 from django.db import models
 from django.db.models import Manager
-from typing import Text
+from typing import Dict, Text
 
 import zerver.models
 

@@ -5,7 +5,7 @@ import os
 
 from django.conf import settings
 from django.test import TestCase, override_settings
-from typing import Any
+from typing import Any, Dict
 
 from zproject.settings import DEPLOY_ROOT
 from zerver.lib.integrations import INTEGRATIONS, HUBOT_LOZENGES

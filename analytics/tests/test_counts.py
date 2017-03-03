@@ -16,7 +16,7 @@ from zerver.models import Realm, UserProfile, Message, Stream, Recipient, \
 from datetime import datetime, timedelta
 
 from six.moves import range
-from typing import Any, Type, Optional, Text, Tuple, List, Union
+from typing import Any, Dict, List, Optional, Text, Tuple, Type, Union
 
 class AnalyticsTestCase(TestCase):
     MINUTE = timedelta(seconds = 60)

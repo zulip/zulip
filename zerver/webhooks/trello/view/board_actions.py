@@ -1,4 +1,4 @@
-from typing import Mapping, Any, Tuple, Optional, MutableMapping, Text
+from typing import Any, Dict, Optional, Mapping, MutableMapping, Text, Tuple
 from .exceptions import UnknownUpdateBoardAction
 from .templates import TRELLO_SUBJECT_TEMPLATE, TRELLO_MESSAGE_TEMPLATE
 

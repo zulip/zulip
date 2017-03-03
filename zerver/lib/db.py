@@ -3,7 +3,7 @@ from __future__ import absolute_import
 import time
 from psycopg2.extensions import cursor, connection
 
-from typing import Callable, Optional, Iterable, Any, Dict, Union, TypeVar, \
+from typing import Callable, Optional, Iterable, Any, Dict, List, Union, TypeVar, \
     Mapping, Text
 from zerver.lib.str_utils import NonBinaryStr
 

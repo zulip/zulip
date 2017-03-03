@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from typing import Any, Optional, Text
+from typing import Any, Dict, List, Optional, Text
 
 import logging
 import re

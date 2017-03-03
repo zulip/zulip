@@ -52,7 +52,7 @@ import mock
 import time
 import ujson
 from six.moves import range
-from typing import Any, Optional, Text
+from typing import Any, List, Optional, Text
 
 class TopicHistoryTest(ZulipTestCase):
     def test_topics_history(self):

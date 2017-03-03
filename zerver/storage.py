@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 import os
 import shutil
-from typing import List, Any, Tuple
+from typing import Dict, List, Any, Tuple
 
 from django.conf import settings
 from django.contrib.staticfiles.storage import ManifestStaticFilesStorage

@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from typing import Any, Iterator, Tuple, Text
+from typing import Any, Iterator, List, Tuple, Text
 
 from django.conf import settings
 from zerver.lib.redis_utils import get_redis_client

@@ -14,7 +14,7 @@ import zulip
 import optparse
 
 if False:
-    from typing import Any
+    from typing import Any, Dict
 
 IRC_DOMAIN = "irc.example.com"
 

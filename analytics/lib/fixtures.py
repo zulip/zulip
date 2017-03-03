@@ -8,6 +8,7 @@ from analytics.lib.time_utils import time_range
 from datetime import datetime
 from math import sqrt
 from random import gauss, random, seed
+from typing import List
 
 from six.moves import range, zip
 

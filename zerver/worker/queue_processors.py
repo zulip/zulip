@@ -1,6 +1,6 @@
 # Documented in http://zulip.readthedocs.io/en/latest/queuing.html
 from __future__ import absolute_import
-from typing import Any, Callable, Mapping, Optional
+from typing import Any, Callable, Dict, List, Mapping, Optional
 
 from django.conf import settings
 from django.core.handlers.wsgi import WSGIRequest

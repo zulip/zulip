@@ -21,7 +21,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 from __future__ import absolute_import
-from typing import IO, Any, Text, Union, Set, Tuple
+from typing import IO, Any, Dict, List, Text, Union, Set, Tuple
 from types import FrameType
 
 import sys

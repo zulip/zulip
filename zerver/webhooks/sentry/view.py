@@ -5,7 +5,7 @@ from zerver.models import UserProfile, Client
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
-from typing import Any
+from typing import Any, Dict
 
 @api_key_only_webhook_view('Sentry')
 @has_request_variables

@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 import sys
-from typing import Any, Optional, Union, Text
+from typing import Any, Dict, List, Optional, Union, Text
 
 import jinja2
 from django.utils import six

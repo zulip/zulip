@@ -3,7 +3,7 @@ from __future__ import absolute_import
 
 from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
-from typing import Any, Optional
+from typing import Any, Dict, List, Optional
 
 from zerver.models import Client, UserProfile, Realm
 from zerver.lib.actions import check_send_message

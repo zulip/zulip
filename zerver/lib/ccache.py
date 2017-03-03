@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from typing import Any, Dict, Optional, Text
+from typing import Any, Dict, List, Optional, Text
 
 # This file is adapted from samples/shellinabox/ssh-krb-wrapper in
 # https://github.com/davidben/webathena, which has the following
