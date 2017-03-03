@@ -400,6 +400,7 @@ function capture_args(res, arg_names) {
         _.each(arg_names, function (name, i) {
             res[name] = my_arguments[i];
         });
+        return true;
     };
 }
 
