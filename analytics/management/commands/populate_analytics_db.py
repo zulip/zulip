@@ -16,7 +16,7 @@ from zerver.models import Realm, UserProfile, Stream, Message, Client
 from datetime import datetime, timedelta
 
 from six.moves import zip
-from typing import Any, List, Optional, Text, Type, Union
+from typing import Any, Dict, List, Optional, Text, Type, Union
 
 class Command(BaseCommand):
     help = """Populates analytics tables with randomly generated data."""

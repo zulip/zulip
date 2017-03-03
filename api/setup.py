@@ -3,7 +3,7 @@
 
 from __future__ import print_function
 if False:
-    from typing import Any, Generator, List, Tuple
+    from typing import Any, Dict, Generator, List, Tuple
 
 import os
 import sys

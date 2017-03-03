@@ -23,7 +23,7 @@ import time
 import logging
 from datetime import datetime
 from ujson import loads
-from typing import Any
+from typing import Any, Dict
 
 ## Setup ##
 log_format = "%(asctime)s: %(message)s"

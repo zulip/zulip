@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-from typing import cast, Any, Iterable, Mapping, Optional, Sequence, Tuple, Text
+from typing import cast, Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Text
 
 import mandrill
 from confirmation.models import Confirmation

@@ -7,7 +7,7 @@ from analytics.models import InstallationCount, RealmCount, \
 from zerver.models import Realm, UserProfile, Message, Stream, models
 from zerver.lib.timestamp import floor_to_day
 
-from typing import Any, Optional, Type, Tuple, Text
+from typing import Any, Dict, Optional, Type, Tuple, Text
 
 from datetime import timedelta, datetime
 import logging

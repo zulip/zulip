@@ -12,7 +12,7 @@ from django.conf import settings
 from importlib import import_module
 from six.moves import filter, map
 from typing import (
-    Any, Dict, Iterable, Optional, Sequence, Set, Text, Tuple
+    Any, Dict, Iterable, List, Optional, Sequence, Set, Text, Tuple
 )
 
 session_engine = import_module(settings.SESSION_ENGINE)

@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 

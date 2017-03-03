@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 # Zulip's main markdown implementation.  See docs/markdown.md for
 # detailed documentation on our markdown syntax.
-from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, TypeVar, Union, Text
+from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Text, Tuple, TypeVar, Union
 from typing.re import Match
 
 import markdown

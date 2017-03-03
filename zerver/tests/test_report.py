@@ -2,7 +2,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-from typing import Any, Callable, Iterable, Tuple
+from typing import Any, Callable, Dict, Iterable, List, Tuple
 
 from django.test import override_settings
 from zerver.lib.test_classes import (

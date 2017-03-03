@@ -20,7 +20,7 @@ from django.utils import timezone
 from confirmation.util import get_status_field
 from zerver.lib.utils import generate_random_token
 from zerver.models import PreregistrationUser, EmailChangeStatus
-from typing import Optional, Union, Any, Text
+from typing import Any, Dict, Optional, Text, Union
 
 B16_RE = re.compile('^[a-f0-9]{40}$')
 

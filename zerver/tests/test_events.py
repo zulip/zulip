@@ -3,7 +3,7 @@
 # high-level documentation on how this system works.
 from __future__ import absolute_import
 from __future__ import print_function
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse

@@ -6,7 +6,7 @@ from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
 from zerver.models import Client, UserProfile
 from django.http import HttpRequest, HttpResponse
-from typing import Any, Text
+from typing import Any, Dict, Text
 
 CRASHLYTICS_SUBJECT_TEMPLATE = '{display_id}: {title}'
 CRASHLYTICS_MESSAGE_TEMPLATE = '[Issue]({url}) impacts at least {impacted_devices_count} device(s).'

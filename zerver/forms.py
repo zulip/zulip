@@ -25,7 +25,7 @@ import logging
 import re
 import DNS
 
-from typing import Any, Callable, Optional, Text
+from typing import Any, Callable, List, Optional, Text
 
 MIT_VALIDATION_ERROR = u'That user does not exist at MIT or is a ' + \
                        u'<a href="https://ist.mit.edu/email-lists">mailing list</a>. ' + \

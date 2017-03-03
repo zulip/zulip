@@ -14,7 +14,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.translation import ugettext as _
 from django.core import signing
 from six.moves import urllib
-from typing import Any, Dict, Optional, Tuple, Text
+from typing import Any, Dict, List, Optional, Tuple, Text
 
 from confirmation.models import Confirmation
 from zerver.forms import HomepageForm, OurAuthenticationForm, \

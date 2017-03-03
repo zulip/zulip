@@ -14,7 +14,7 @@ from defusedxml.ElementTree import fromstring as xml_fromstring
 import logging
 import re
 import ujson
-from typing import List, Optional, Tuple, Text
+from typing import Dict, List, Optional, Tuple, Text
 
 
 def api_pivotal_webhook_v3(request, user_profile, stream):

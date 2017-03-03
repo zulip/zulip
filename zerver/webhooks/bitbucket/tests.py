@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from six import text_type
-from typing import Union
+from typing import Dict, Union
 from zerver.lib.test_classes import WebhookTestCase
 
 class BitbucketHookTests(WebhookTestCase):

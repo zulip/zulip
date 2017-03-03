@@ -3,7 +3,7 @@ from __future__ import print_function
 
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from typing import Any
+from typing import Any, Dict, List
 
 from zerver.models import UserPresence, UserActivity
 from zerver.lib.utils import statsd, statsd_key

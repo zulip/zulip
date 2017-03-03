@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from typing import Any, Union, Mapping, Optional, Text
+from typing import Any, Dict, Mapping, Optional, Text, Union
 
 from django.conf import settings
 from django.utils import timezone

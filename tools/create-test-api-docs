@@ -7,7 +7,7 @@ from lib import sanity_check
 sanity_check.check_venv(__file__)
 
 from collections import defaultdict
-from typing import Any, Dict, Iterable, Set
+from typing import Any, Dict, Iterable, List, Set
 
 import cgi
 import os

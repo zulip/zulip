@@ -46,7 +46,7 @@ from six.moves import cStringIO as StringIO
 from django.conf import settings
 
 from zerver.lib.str_utils import force_str
-from typing import Any, Callable, Mapping, Union, Text
+from typing import Any, Callable, Dict, Mapping, Union, Text
 
 class TestEmailMirrorLibrary(ZulipTestCase):
     def test_get_missed_message_token(self):

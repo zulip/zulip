@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from typing import Text
+from typing import Dict, Text
 from zerver.lib.webhooks.git import COMMITS_LIMIT
 from zerver.lib.test_classes import WebhookTestCase
 

@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from contextlib import contextmanager
 from typing import (cast, Any, Callable, Dict, Generator, Iterable, Iterator, List, Mapping,
-                    Optional, Sized, Tuple, Union, IO)
+                    Optional, Set, Sized, Tuple, Union, IO)
 
 from django.core.urlresolvers import LocaleRegexURLResolver
 from django.conf import settings

@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
 if False:
     import zerver.tornado.event_queue

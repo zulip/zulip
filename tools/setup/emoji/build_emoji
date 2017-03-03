@@ -12,7 +12,7 @@ import sys
 import hashlib
 import xml.etree.ElementTree as ET
 from six import unichr
-from typing import Union, Text
+from typing import Dict, Text, Union
 from os.path import dirname
 from PIL import Image, ImageDraw, ImageFont
 

@@ -14,7 +14,7 @@ import logging
 import re
 import ujson
 
-from typing import Any, Mapping, Optional, Sequence, Tuple, Text
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple, Text
 from zerver.lib.str_utils import force_str
 from django.http import HttpRequest, HttpResponse
 

@@ -8,7 +8,7 @@ from django.core.exceptions import ValidationError
 from django.db import connection
 from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
-from typing import Text
+from typing import Dict, List, Set, Text
 from typing import Any, AnyStr, Callable, Iterable, Optional, Tuple, Union
 from zerver.lib.str_utils import force_bytes, force_text
 from zerver.lib.html_diff import highlight_html_differences

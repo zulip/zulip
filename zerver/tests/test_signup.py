@@ -48,7 +48,7 @@ from zerver.context_processors import common_context
 import re
 import ujson
 
-from typing import Set, Optional
+from typing import Dict, List, Set, Optional
 
 from six.moves import urllib
 from six.moves import range

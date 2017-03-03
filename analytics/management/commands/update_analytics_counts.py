@@ -17,7 +17,7 @@ from analytics.models import RealmCount, UserCount
 from analytics.lib.counts import COUNT_STATS, logger, process_count_stat
 from zerver.models import UserProfile, Message
 
-from typing import Any
+from typing import Any, Dict
 
 class Command(BaseCommand):
     help = """Fills Analytics tables.

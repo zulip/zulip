@@ -9,7 +9,7 @@ from zerver.models import Client, UserProfile
 from django.http import HttpRequest, HttpResponse
 from six import text_type
 from six.moves import range
-from typing import Dict, Any, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 def format_body(signatories, model_payload):
     # type: (List[Dict[str, Any]], Dict[str, Any]) -> str

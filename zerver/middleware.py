@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 from six import binary_type
-from typing import Any, AnyStr, Callable, Iterable, MutableMapping, Optional, Text
+from typing import Any, AnyStr, Callable, Dict, Iterable, List, MutableMapping, Optional, Text
 
 from django.conf import settings
 from django.core.exceptions import DisallowedHost

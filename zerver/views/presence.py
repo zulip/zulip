@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 import datetime
 import time
-from typing import Any, Text
+from typing import Any, Dict, Text
 
 from django.http import HttpRequest, HttpResponse
 from django.utils import timezone

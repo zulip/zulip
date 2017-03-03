@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 from datetime import datetime
-from typing import Any, Optional, Callable, Tuple, Text
+from typing import Any, Dict, List, Optional, Callable, Tuple, Text
 from six.moves import zip
 
 from django.utils import timezone

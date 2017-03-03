@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from typing import Any
+from typing import Any, Dict
 
 from django.views.debug import SafeExceptionReporterFilter
 from django.http import HttpRequest

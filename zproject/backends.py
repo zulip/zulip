@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 import logging
-from typing import Any, Set, Tuple, Optional, Text
+from typing import Any, Dict, List, Set, Tuple, Optional, Text
 
 from django.contrib.auth.backends import RemoteUserBackend
 from django.conf import settings

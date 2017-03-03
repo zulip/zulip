@@ -7,7 +7,7 @@ import zlib
 from django.utils.translation import ugettext as _
 from six import binary_type
 
-from typing import Text
+from typing import Set, Text
 
 from zerver.lib.avatar import get_avatar_url
 from zerver.lib.avatar_hash import gravatar_hash

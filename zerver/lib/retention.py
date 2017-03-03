@@ -5,7 +5,7 @@ from datetime import timedelta
 from django.utils import timezone
 from zerver.models import Realm, Message
 
-from typing import Any, Optional, Generator
+from typing import Any, Dict, Optional, Generator
 
 
 def get_realm_expired_messages(realm):

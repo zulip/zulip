@@ -8,6 +8,7 @@ from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success
 from zerver.lib.validator import check_dict, check_string
 from zerver.models import UserProfile, Client
+from typing import Dict
 
 import ujson
 

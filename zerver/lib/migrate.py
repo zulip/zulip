@@ -1,5 +1,5 @@
 from __future__ import print_function
-from typing import Any, Callable, Tuple
+from typing import Any, Callable, Dict, List, Tuple
 from django.db.models.query import QuerySet
 import re
 import time

@@ -38,7 +38,7 @@ from zerver.views.messages import (
     LARGER_THAN_MAX_MESSAGE_ID,
 )
 
-from typing import Mapping, Sequence, Tuple, Generic, Union, Any, Text
+from typing import Dict, List, Mapping, Sequence, Tuple, Generic, Union, Any, Text
 from six.moves import range
 import os
 import re
