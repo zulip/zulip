@@ -606,7 +606,7 @@ def get_user_events(user_profile, queue_id, last_event_id):
         resp.raise_for_status()
 
         return extract_json_response(resp)['events']
-
+    return []
 
 # Send email notifications to idle users
 # after they are idle for 1 hour

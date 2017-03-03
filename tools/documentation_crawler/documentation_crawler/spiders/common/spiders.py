@@ -18,7 +18,7 @@ class BaseDocumentationSpider(scrapy.Spider):
     # Exclude domain address.
     deny_domains = []  # type: List[str]
     start_urls = []  # type: List[str]
-    deny = ()  # type: Tuple
+    deny = []  # type: List[str]
     file_extensions = ['.' + ext for ext in IGNORED_EXTENSIONS]  # type: List[str]
     tags = ('a', 'area', 'img')
     attrs = ('href', 'src')
