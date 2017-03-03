@@ -354,10 +354,12 @@ function process_hotkey(e) {
 
     // Shortcuts that don't require a message
     switch (event_name) {
-        case 'narrow_private':
-            return do_narrow_action(function (target, opts) {
-                narrow.by('is', 'private', opts);
-            });
+        case 'compose': // 'c': compose
+            compose.start('stream', {trigger: "compose_hotkey"});
+            return true;
+        case 'compose_private_message':
+            compose.start('private', {trigger: "compose_hotkey"});
+            return true;
         case 'escape': // Esc: close actions popup, cancel compose, clear a find, or un-narrow
             if ($('.emoji_popover').css('display') === 'inline-block') {
                 popovers.hide_emoji_map_popover();
@@ -369,17 +371,15 @@ function process_hotkey(e) {
                 search.clear_search();
             }
             return true;
-        case 'compose': // 'c': compose
-            compose.start('stream', {trigger: "compose_hotkey"});
-            return true;
-        case 'compose_private_message':
-            compose.start('private', {trigger: "compose_hotkey"});
+        case 'narrow_private':
+            return do_narrow_action(function (target, opts) {
+                narrow.by('is', 'private', opts);
+            });
+        case 'query_streams':
+            stream_list.initiate_search();
             return true;
         case 'query_users':
             activity.initiate_search();
-            return true;
-        case 'query_streams':
-            stream_list.initiate_search();
             return true;
         case 'search':
             search.initiate_search();
