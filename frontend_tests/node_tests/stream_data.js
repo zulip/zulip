@@ -166,7 +166,8 @@ var people = global.people;
     assert(!stream_data.user_is_subscribed('Rome', email));
 
     // add
-    stream_data.add_subscriber('Rome', brutus.user_id);
+    var ok = stream_data.add_subscriber('Rome', brutus.user_id);
+    assert(ok);
     assert(stream_data.user_is_subscribed('Rome', email));
     sub = stream_data.get_sub('Rome');
     stream_data.update_subscribers_count(sub);
@@ -180,7 +181,8 @@ var people = global.people;
     assert.equal(sub.subscriber_count, 1);
 
     // remove
-    stream_data.remove_subscriber('Rome', brutus.user_id);
+    ok = stream_data.remove_subscriber('Rome', brutus.user_id);
+    assert(ok);
     assert(!stream_data.user_is_subscribed('Rome', email));
     sub = stream_data.get_sub('Rome');
     stream_data.update_subscribers_count(sub);
@@ -191,7 +193,8 @@ var people = global.people;
     global.blueslip.warn = function () {};
 
     // verify that removing an already-removed subscriber is a noop
-    stream_data.remove_subscriber('Rome', brutus.user_id);
+    ok = stream_data.remove_subscriber('Rome', brutus.user_id);
+    assert(!ok);
     assert(!stream_data.user_is_subscribed('Rome', email));
     sub = stream_data.get_sub('Rome');
     stream_data.update_subscribers_count(sub);
@@ -207,11 +210,20 @@ var people = global.people;
 
     // Verify that we noop and don't crash when unsubscribed.
     sub.subscribed = false;
-    stream_data.add_subscriber('Rome', brutus.user_id);
+    ok = stream_data.add_subscriber('Rome', brutus.user_id);
+    assert(ok);
     assert.equal(stream_data.user_is_subscribed('Rome', email), undefined);
     stream_data.remove_subscriber('Rome', brutus.user_id);
     assert.equal(stream_data.user_is_subscribed('Rome', email), undefined);
 
+    // Verify that we don't crash and return false for a bad stream.
+    ok = stream_data.add_subscriber('UNKNOWN', brutus.user_id);
+    assert(!ok);
+
+    // Verify that we don't crash and return false for a bad user id.
+    global.blueslip.error = function () {};
+    ok = stream_data.add_subscriber('Rome', 9999999);
+    assert(!ok);
 }());
 
 (function test_process_message_for_recent_topics() {
