@@ -1354,6 +1354,8 @@ class UserPresence(models.Model):
             return 'active'
         elif status == UserPresence.IDLE:
             return 'idle'
+        else:
+            raise ValueError('Unknown status: %s' % (status,))
 
     @staticmethod
     def get_status_dict_by_user(user_profile):

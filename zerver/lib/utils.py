@@ -41,7 +41,7 @@ class StatsDWrapper(object):
     # as our statsd server supports them but supporting
     # pystatsd is not released yet
     def _our_gauge(self, stat, value, rate=1, delta=False):
-            # type: (str, float, float, bool) -> str
+            # type: (str, float, float, bool) -> None
             """Set a gauge value."""
             from django_statsd.clients import statsd
             if delta:
