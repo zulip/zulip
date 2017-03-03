@@ -1042,6 +1042,14 @@ function render(template_name, args) {
     global.write_handlebars_output('typing_notifications', html);
     var li = $(html).find('li:first');
     assert.equal(li.text(), 'Hamlet is typing...');
+
+}());
+
+(function user_info_popover() {
+    var html = render('user_info_popover', {class: 'message-info-popover'});
+    global.write_handlebars_output("user_info_popover", html);
+
+    $(html).hasClass('popover message-info-popover');
 }());
 
 (function user_presence_rows() {
