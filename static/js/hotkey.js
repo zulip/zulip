@@ -7,6 +7,14 @@ function do_narrow_action(action) {
     return true;
 }
 
+
+function focus_in_empty_compose() {
+    return (
+        compose.composing() &&
+        compose.message_content() === "" &&
+        $('#new_message_content').is(':focus'));
+}
+
 function is_settings_page() {
   return (/^#*(settings|administration)/g).test(window.location.hash);
 }
@@ -115,7 +123,6 @@ function process_hotkey(e) {
     var focused_message_edit_content;
     var focused_message_edit_save;
     var message_edit_form;
-    var focus_in_empty_compose;
     var hotkey = get_hotkey_from_event(e);
     var event_name = hotkey.name;
     activity.new_user_input = true;
@@ -251,11 +258,6 @@ function process_hotkey(e) {
 
     // Process hotkeys specially when in an input, select, textarea, or send button
     if ($('input:focus,select:focus,textarea:focus,#compose-send-button:focus').length > 0) {
-        focus_in_empty_compose = (
-            compose.composing() &&
-            compose.message_content() === "" &&
-            $('#new_message_content').is(':focus'));
-
         if (event_name === 'escape') {
             // emoji window should trap escape before it is able to close the compose box
             if ($('.emoji_popover').css('display') === 'inline-block') {
@@ -312,13 +314,13 @@ function process_hotkey(e) {
             }
         }
 
-        if (event_name === 'left_arrow' && focus_in_empty_compose) {
+        if (event_name === 'left_arrow' && focus_in_empty_compose()) {
             compose.cancel();
             message_edit.edit_last_sent_message();
             return true;
         }
 
-        if ((event_name === 'up_arrow' || event_name === 'down_arrow') && focus_in_empty_compose) {
+        if ((event_name === 'up_arrow' || event_name === 'down_arrow') && focus_in_empty_compose()) {
             compose.cancel();
             // don't return, as we still want it to be picked up by the code below
         } else {
