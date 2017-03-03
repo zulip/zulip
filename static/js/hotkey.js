@@ -135,12 +135,19 @@ function process_hotkey(e) {
         return false;
     }
 
-    var tab_list = tab_up_down(e);
-    if (tab_list.flag) {
-        if (hotkey.name === "up_arrow") {
+    var tab_list;
+
+    if (event_name === "up_arrow") {
+        tab_list = tab_up_down(e);
+        if (tab_list.flag) {
             tab_list.prev().focus();
             return true;
-        } else if (hotkey.name === "down_arrow") {
+        }
+    }
+
+    if (event_name === "down_arrow") {
+        tab_list = tab_up_down(e);
+        if (tab_list.flag) {
             tab_list.next().focus();
             return true;
         }
