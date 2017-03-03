@@ -131,7 +131,7 @@ function process_hotkey(e) {
         return false;
     }
 
-    if (ui.home_tab_obscured() && hotkey.message_view_only) {
+    if (hotkey.message_view_only && ui.home_tab_obscured()) {
         return false;
     }
 
