@@ -755,9 +755,10 @@ input[type=checkbox].inline-block {
 }
 
 #settings_page .content-wrapper {
-    position: relative;
-    float: left;
-    width: calc(100% - 250px - 2px);
+    position: absolute;
+    left: 251px;
+    /* the width of the settings sidbar this is right of is 250px + 1px border. */
+    width: calc(100% - 250px - 1px);
     height: 100%;
 }
 
@@ -779,7 +780,7 @@ input[type=checkbox].inline-block {
     position: absolute;
     top: 45px;
     right: 0px;
-    transform: translateX(301px);
+    transform: translateX(303px);
     width: 300px;
     height: calc(100% - 45px);
 
