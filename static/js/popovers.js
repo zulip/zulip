@@ -75,11 +75,18 @@ function show_message_info_popover(element, id) {
         elt.popover({
             placement: (ypos > (message_viewport.height() - 300)) ? 'top' : 'bottom',
             template:  templates.render('user_info_popover',   {class: "message-info-popover"}),
-            title:     templates.render('message_info_popover_title',   args),
+            title:     templates.render('message_info_popover_title', {sender_avatar: "avatar/" + sender_email}),
             content:   templates.render('message_info_popover_content', args),
             trigger:   "manual",
         });
         elt.popover("show");
+
+        var sender_avatar_medium = new Image();
+        sender_avatar_medium.src= "avatar/" + sender_email + "/medium";
+            $(sender_avatar_medium).load(function () {
+            $(".popover-avatar").css("background-image","url("+$(this).attr("src")+")");
+        });
+
         current_message_info_popover_elem = elt;
     }
 }
