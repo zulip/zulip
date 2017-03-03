@@ -346,12 +346,6 @@ function process_hotkey(e) {
         return false;
     }
 
-    // There's special handling for when you're previewing a composition
-    if ($("#preview_message_area").is(":visible")) {
-        compose.enter_with_preview_open();
-        return true;
-    }
-
     // Shortcuts that don't require a message
     switch (event_name) {
         case 'compose': // 'c': compose
@@ -360,6 +354,13 @@ function process_hotkey(e) {
         case 'compose_private_message':
             compose.start('private', {trigger: "compose_hotkey"});
             return true;
+        case 'enter':
+            // There's special handling for when you're previewing a composition
+            if ($("#preview_message_area").is(":visible")) {
+                compose.enter_with_preview_open();
+                return true;
+            }
+            break;
         case 'escape': // Esc: close actions popup, cancel compose, clear a find, or un-narrow
             if ($('.emoji_popover').css('display') === 'inline-block') {
                 popovers.hide_emoji_map_popover();
