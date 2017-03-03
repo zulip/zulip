@@ -92,10 +92,11 @@ def get_pull_request_or_issue_action(payload):
     return 'synchronized' if payload['action'] == 'synchronize' else payload['action']
 
 def get_pull_request_or_issue_assignee(object_payload):
-    # type: (Mapping[Text, Any]) -> Text
+    # type: (Mapping[Text, Any]) -> Optional[Text]
     assignee_dict = object_payload.get('assignee')
     if assignee_dict:
         return assignee_dict.get('login')
+    return None
 
 def get_pull_request_or_issue_subject(repository, payload_object, type):
     # type: (Mapping[Text, Any], Mapping[Text, Any], Text) -> Text

@@ -115,10 +115,11 @@ def get_merge_request_open_or_updated_body(payload, action):
     )
 
 def get_objects_assignee(payload):
-    # type: (Dict[str, Any]) -> Text
+    # type: (Dict[str, Any]) -> Optional[Text]
     assignee_object = payload.get('assignee')
     if assignee_object:
         return assignee_object.get('name')
+    return None
 
 def get_commented_commit_event_body(payload):
     # type: (Dict[str, Any]) -> Text

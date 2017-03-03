@@ -23,5 +23,5 @@ def get_start_url():
 class DocumentationSpider(BaseDocumentationSpider):
     name = "documentation_crawler"
     deny_domains = ['localhost:9991']
-    deny = '\_sources\/.*\.txt'
+    deny = ['\_sources\/.*\.txt']
     start_urls = get_start_url()
