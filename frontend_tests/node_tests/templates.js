@@ -657,7 +657,7 @@ function render(template_name, args) {
     global.write_handlebars_output("message_info_popover_content", html);
 
     var a = $(html).find("a.respond_personal_button");
-    assert.equal(a.text().trim(), 'Send Alice Smith a private message');
+    assert.equal(a.text().trim(), 'Send private message');
 }());
 
 
