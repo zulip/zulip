@@ -2613,3 +2613,23 @@ ul.actions_popover i {
     text-align: center;
     margin-right: 3px;
 }
+
+.user_popover {
+    top: 100px!important;
+}
+
+.popover-inner {
+    width: 240px;
+}
+
+.popover-avatar {
+    height: 240px;
+    width: 240px;
+    background-size: cover;
+    background-position: center;
+    margin-top: -8px;
+    margin-left: -14px;
+    margin-right: -8px;
+    margin-bottom: -8px;
+    position: relative;
+}

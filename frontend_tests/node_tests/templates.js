@@ -662,17 +662,14 @@ function render(template_name, args) {
 
 (function message_info_popover_title() {
     var args = {
-        message: {
-            is_stream: true,
-            stream: 'devel',
-        },
+        sender_avatar: 'avatar/hamlet@zulip.com',
     };
 
     var html = render('message_info_popover_title', args);
     global.write_handlebars_output("message_info_popover_title", html);
 
     html = '<div>' + html + '</div>';
-    assert($(html).text().trim(), "Message to stream devel");
+    assert($(html).find('.popover-avatar').css('background-image'), "url(avatar/hamlet@zulip.com)");
 }());
 
 (function message_reaction() {
