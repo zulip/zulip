@@ -97,3 +97,4 @@ class BaseDocumentationSpider(scrapy.Spider):
             self._set_error_state()
         else:
             raise Exception(failure.value)
+        return None

@@ -87,7 +87,7 @@ def format_commit_lines(web_url, repo, base, tip):
     return "\n".join(summary for summary in commit_summaries)
 
 def send_zulip(email, api_key, site, stream, subject, content):
-    # type: (str, str, str, str, str, Text) -> str
+    # type: (str, str, str, str, str, Text) -> None
     """
     Send a message to Zulip using the provided credentials, which should be for
     a bot in most cases.

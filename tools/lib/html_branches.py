@@ -144,13 +144,11 @@ def split_for_id_and_class(element):
 
 def html_branches(text, fn=None):
     # type: (str, str) -> List[HtmlTreeBranch]
-
     tree = html_tag_tree(text)
     branches = []  # type: List[HtmlTreeBranch]
 
     def walk(node, tag_info_list=None):
-        # type: (Node, Optional[List[TagInfo]]) -> Node
-
+        # type: (Node, Optional[List[TagInfo]]) -> None
         info = get_tag_info(node.token)
         if tag_info_list is None:
             tag_info_list = [info]
@@ -195,7 +193,6 @@ def html_tag_tree(text):
 
 def build_id_dict(templates):
     # type: (List[str]) -> (Dict[str,List[str]])
-
     template_id_dict = defaultdict(list) # type: (Dict[str,List[str]])
 
     for fn in templates:

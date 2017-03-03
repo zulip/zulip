@@ -402,6 +402,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
         if yt_id is not None:
             return "https://i.ytimg.com/vi/%s/default.jpg" % (yt_id,)
+        return None
 
     def twitter_text(self, text, urls, user_mentions, media):
         # type: (Text, List[Dict[Text, Text]], List[Dict[Text, Any]], List[Dict[Text, Any]]) -> Element
@@ -972,7 +973,7 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
             el.set('data-user-id', user_id)
             el.text = "@%s" % (name,)
             return el
-
+        return None
 
 class StreamPattern(VerbosePattern):
     def find_stream_by_name(self, name):
@@ -1001,7 +1002,7 @@ class StreamPattern(VerbosePattern):
                 stream_name=urllib.parse.quote(force_str(name))))
             el.text = u'#{stream_name}'.format(stream_name=name)
             return el
-
+        return None
 
 class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
     def run(self, lines):

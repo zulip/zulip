@@ -241,6 +241,7 @@ class BaseWebsocketHandler(WebSocketHandler):
             # close websocket proxy connection if no connection with target websocket server
             return self.close()
         self.client.write_message(message, binary)
+        return None
 
     def check_origin(self, origin):
         # type: (str) -> bool
@@ -262,6 +263,7 @@ class CombineHandler(BaseWebsocketHandler):
         # type: (*Any, **Any) -> Optional[Callable]
         if self.request.headers.get("Upgrade", "").lower() == 'websocket':
             return super(CombineHandler, self).get(*args, **kwargs)
+        return None
 
     def head(self):
         # type: () -> None

@@ -7,7 +7,7 @@ import sys
 
 
 def check_urls():
-    # type: () -> bool
+    # type: () -> None
     url_files = ['zproject/urls.py',
                  'zproject/dev_urls.py',
                  'zproject/legacy_urls.py',

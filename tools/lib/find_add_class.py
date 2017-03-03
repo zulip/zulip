@@ -57,6 +57,7 @@ def generic(html_class):
     for kw in GENERIC_KEYWORDS:
         if kw in html_class:
             return True
+    return False
 
 def display(fns):
     # type: (List[str]) -> None

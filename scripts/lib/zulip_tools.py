@@ -86,7 +86,7 @@ def release_deployment_lock():
     shutil.rmtree(LOCK_DIR)
 
 def run(args, **kwargs):
-    # type: (Sequence[str], **Any) -> int
+    # type: (Sequence[str], **Any) -> None
     # Output what we're doing in the `set -x` style
     print("+ %s" % (" ".join(args)))
 

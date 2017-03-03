@@ -470,6 +470,7 @@ class ValidatorTestCase(TestCase):
             ])('_', val)
             if error:
                 return 'This is not a valid person'
+            return None
 
         person = {'name': 'King Lear', 'age': 42}
         self.assertEqual(check_person(person), None)
