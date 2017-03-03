@@ -502,6 +502,30 @@ function _setup_page() {
         });
     });
 
+    $("#emoji_alt_code").change(function () {
+        var emoji_alt_code = this.checked;
+        var data = {};
+        data.emoji_alt_code = JSON.stringify(emoji_alt_code);
+        var context = {};
+        if (data.emoji_alt_code === "true") {
+            context.enabled_or_disabled = i18n.t('enabled');
+        } else {
+            context.enabled_or_disabled = i18n.t('disabled');
+        }
+
+        channel.patch({
+            url: '/json/settings/display',
+            data: data,
+            success: function () {
+                ui.report_success(i18n.t("Appearance of emoji as an alt code __enabled_or_disabled__ !", context),
+                                  $('#display-settings-status').expectOne());
+            },
+            error: function (xhr) {
+                ui.report_error(i18n.t("Error updating emoji appearance setting"), xhr, $('#display-settings-status').expectOne());
+            },
+        });
+    });
+
     $("#twenty_four_hour_time").change(function () {
         var data = {};
         var setting_value = $("#twenty_four_hour_time").is(":checked");
@@ -938,6 +962,7 @@ function _setup_page() {
 function _update_page() {
     $("#twenty_four_hour_time").prop('checked', page_params.twenty_four_hour_time);
     $("#left_side_userlist").prop('checked', page_params.left_side_userlist);
+    $("#emoji_alt_code").prop('checked', page_params.emoji_alt_code);
     $("#default_language_name").text(page_params.default_language_name);
 
     $("#enable_stream_desktop_notifications").prop('checked', page_params.stream_desktop_notifications_enabled);

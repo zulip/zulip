@@ -52,6 +52,7 @@ from zerver.lib.actions import (
     do_update_pointer,
     do_change_twenty_four_hour_time,
     do_change_left_side_userlist,
+    do_change_emoji_alt_code,
     do_change_enable_stream_desktop_notifications,
     do_change_enable_stream_sounds,
     do_change_enable_desktop_notifications,
@@ -714,6 +715,20 @@ class EventsRegisterTest(ZulipTestCase):
         do_change_left_side_userlist(self.user_profile, False)
         for setting_value in [True, False]:
             events = self.do_test(lambda: do_change_left_side_userlist(self.user_profile, setting_value))
+            error = schema_checker('events[0]', events[0])
+            self.assert_on_error(error)
+
+    def test_change_emoji_alt_code(self):
+        # type: () -> None
+        schema_checker = check_dict([
+            ('type', equals('update_display_settings')),
+            ('setting_name', equals('emoji_alt_code')),
+            ('user', check_string),
+            ('setting', check_bool),
+        ])
+        do_change_emoji_alt_code(self.user_profile, False)
+        for setting_value in [True, False]:
+            events = self.do_test(lambda: do_change_emoji_alt_code(self.user_profile, setting_value))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
