@@ -246,4 +246,4 @@ class Command(makemessages.Command):
 
             new_strings = self.get_new_strings(old_strings, translation_strings)
             with open(output_path, 'w') as writer:
-                json.dump(new_strings, writer, indent=2)
+                json.dump(new_strings, writer, indent=2, sort_keys=True)
