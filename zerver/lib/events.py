@@ -419,7 +419,7 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
     # Apply events that came in while we were fetching initial data
     events = get_user_events(user_profile, queue_id, -1)
     apply_events(ret, events, user_profile, include_subscribers=include_subscribers)
-    if events:
+    if len(events) > 0:
         ret['last_event_id'] = events[-1]['id']
     else:
         ret['last_event_id'] = -1

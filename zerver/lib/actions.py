@@ -82,7 +82,7 @@ from zerver.lib.session_user import get_session_user
 from zerver.lib.upload import attachment_url_re, attachment_url_to_path_id, \
     claim_attachment, delete_message_image
 from zerver.lib.str_utils import NonBinaryStr, force_str
-from zerver.tornado.event_queue import request_event_queue, get_user_events, send_event
+from zerver.tornado.event_queue import request_event_queue, send_event
 
 import DNS
 import ujson
