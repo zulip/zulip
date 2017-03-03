@@ -120,6 +120,10 @@ function process_hotkey(e) {
     var event_name = hotkey.name;
     activity.new_user_input = true;
 
+    if (event_name === 'ignore') {
+        return false;
+    }
+
     if (ui.home_tab_obscured() && hotkey.message_view_only) {
         return false;
     }
@@ -140,10 +144,6 @@ function process_hotkey(e) {
             tab_list.next().focus();
             return true;
         }
-    }
-
-    if (event_name === 'ignore') {
-        return false;
     }
 
     if (popovers.actions_popped() && actions_dropdown_hotkeys.indexOf(event_name) !== -1) {
