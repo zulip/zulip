@@ -29,7 +29,7 @@ django.setup()
 from zerver.models import UserActivity
 
 if False:
-    from typing import Any
+    from typing import Any, Dict, Set
 
 states = {
     "OK": 0,

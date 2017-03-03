@@ -9,6 +9,8 @@ mirrors when they receive the messages sent every minute by
 /etc/cron.d/test_zephyr_personal_mirrors
 """
 from __future__ import print_function
+if False:
+    from typing import Dict
 
 import os
 import time

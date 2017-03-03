@@ -32,7 +32,7 @@ It is recommended to use the utility functions for other string conversions.
 
 import six
 from six import binary_type
-from typing import Any, Mapping, Union, TypeVar, Text
+from typing import Any, Dict, Mapping, Union, TypeVar, Text
 
 NonBinaryStr = TypeVar('NonBinaryStr', str, Text)
 # This is used to represent text or native strings

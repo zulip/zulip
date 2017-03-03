@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 import random
-from typing import Any, Dict, Optional, SupportsInt, Text
+from typing import Any, Dict, List, Optional, SupportsInt, Text
 
 from zerver.models import PushDeviceToken, UserProfile
 from zerver.models import get_user_profile_by_id

@@ -13,7 +13,7 @@ from zerver.decorator import REQ, has_request_variables, authenticated_rest_api_
 import logging
 import ujson
 
-from typing import Any, Dict, Optional, Tuple, Union, Text
+from typing import Any, Dict, List, Optional, Tuple, Union, Text
 
 
 class TicketDict(dict):

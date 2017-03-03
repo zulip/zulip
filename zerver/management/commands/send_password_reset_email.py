@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 import logging
-from typing import Any, List, Optional, Text
+from typing import Any, Dict, List, Optional, Text
 
 from argparse import ArgumentParser
 from django.core.management.base import BaseCommand, CommandError

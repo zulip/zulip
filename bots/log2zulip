@@ -22,6 +22,7 @@ import ujson
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../api"))
 import zulip
+from typing import List
 
 lock_path = "/var/tmp/log2zulip.lock"
 control_path = "/etc/log2zulip.conf"

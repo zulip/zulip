@@ -4,7 +4,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
-from typing import Optional, Set, Text
+from typing import List, Optional, Set, Text
 
 from zerver.decorator import authenticated_json_post_view
 from zerver.lib.actions import do_invite_users, do_refer_friend, \

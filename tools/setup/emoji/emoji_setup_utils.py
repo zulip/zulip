@@ -13,7 +13,7 @@ from itertools import permutations, chain
 import ujson
 
 from six.moves import range, zip
-from typing import Text
+from typing import Dict, List, Text
 
 # the corresponding code point will be set to exactly these names as a
 # final pass, overriding any other rules.  This is useful for cases

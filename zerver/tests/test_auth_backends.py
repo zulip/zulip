@@ -4,7 +4,7 @@ from django.http import HttpResponse
 from django.test import TestCase, override_settings
 from django_auth_ldap.backend import _LDAPUser
 from django.test.client import RequestFactory
-from typing import Any, Callable, Dict, Optional, Text
+from typing import Any, Callable, Dict, List, Optional, Text
 from builtins import object
 from oauth2client.crypt import AppIdentityError
 from django.core import signing

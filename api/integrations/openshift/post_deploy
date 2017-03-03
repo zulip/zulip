@@ -25,6 +25,7 @@
 import os
 import subprocess
 import sys
+from typing import Dict
 
 sys.path.insert(0, os.path.dirname(__file__))
 import zulip_openshift_config as config

@@ -19,7 +19,7 @@ subject of US/task should be in bold.
 """
 
 from __future__ import absolute_import
-from typing import Any, Mapping, Optional, Tuple, Text
+from typing import Any, Dict, List, Mapping, Optional, Tuple, Text
 
 from django.utils.translation import ugettext as _
 from django.http import HttpRequest, HttpResponse

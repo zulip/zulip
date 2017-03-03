@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from typing import Any, Optional, Text
+from typing import Any, Dict, Optional, Text
 
 from zerver.lib.test_classes import WebhookTestCase
 

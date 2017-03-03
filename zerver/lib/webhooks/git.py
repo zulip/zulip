@@ -1,4 +1,4 @@
-from typing import Optional, Any, Text
+from typing import Optional, Any, Dict, List, Text
 
 SUBJECT_WITH_BRANCH_TEMPLATE = u'{repo} / {branch}'
 SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE = u'{repo} / {type} #{id} {title}'

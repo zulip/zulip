@@ -13,7 +13,7 @@ import atexit
 from collections import defaultdict
 
 from zerver.lib.utils import statsd
-from typing import Any, Callable, Dict, Mapping, Optional, Set, Union
+from typing import Any, Callable, Dict, List, Mapping, Optional, Set, Union
 
 Consumer = Callable[[BlockingChannel, Basic.Deliver, pika.BasicProperties, str], None]
 

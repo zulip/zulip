@@ -9,6 +9,7 @@
 import platform
 import six.moves.configparser
 from base64 import b64decode
+from typing import Set
 
 config_file = six.moves.configparser.RawConfigParser() # type: ignore # https://github.com/python/typeshed/pull/206
 config_file.read("/etc/zulip/zulip.conf")

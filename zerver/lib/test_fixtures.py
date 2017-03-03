@@ -2,7 +2,7 @@
 import os
 import re
 import hashlib
-from typing import Any, Optional
+from typing import Any, List, Optional
 from importlib import import_module
 from typing import Text
 from six.moves import cStringIO as StringIO

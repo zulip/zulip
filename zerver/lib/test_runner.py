@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-from typing import Any, Callable, Iterable, List, Optional, Set, Tuple, \
+from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, \
     Text, Type
 from unittest import loader, runner  # type: ignore  # Mypy cannot pick these up.
 from unittest.result import TestResult

@@ -37,7 +37,7 @@
 #               | other sender|  x  |    |        |
 # public mode   +-------------+-----+----+--------+----
 #               | self sender |     |    |        |
-from typing import Set
+from typing import Dict, List, Set
 
 import logging
 import threading

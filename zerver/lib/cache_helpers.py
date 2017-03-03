@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 from six import binary_type
-from typing import Any, Dict, Callable, Tuple, Text
+from typing import Any, Callable, Dict, List, Tuple, Text
 
 # This file needs to be different from cache.py because cache.py
 # cannot import anything from zerver.models or we'd have an import

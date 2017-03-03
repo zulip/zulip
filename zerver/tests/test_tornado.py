@@ -33,7 +33,7 @@ from zerver.tornado.views import get_events_backend
 
 from six.moves.http_cookies import SimpleCookie
 
-from typing import Any, Callable, Generator, Optional
+from typing import Any, Callable, Dict, Generator, Optional
 
 
 class WebSocketBaseTestCase(AsyncHTTPTestCase, ZulipTestCase):
