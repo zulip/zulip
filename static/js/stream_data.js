@@ -169,28 +169,32 @@ exports.add_subscriber = function (stream_name, user_id) {
     var sub = exports.get_sub(stream_name);
     if (typeof sub === 'undefined') {
         blueslip.warn("We got an add_subscriber call for a non-existent stream.");
-        return;
+        return false;
     }
     var person = people.get_person_from_user_id(user_id);
     if (person === undefined) {
         blueslip.error("We tried to add invalid subscriber: " + user_id);
-        return;
+        return false;
     }
     sub.subscribers.set(user_id, true);
+
+    return true;
 };
 
 exports.remove_subscriber = function (stream_name, user_id) {
     var sub = exports.get_sub(stream_name);
     if (typeof sub === 'undefined') {
         blueslip.warn("We got a remove_subscriber call for a non-existent stream " + stream_name);
-        return;
+        return false;
     }
     if (!sub.subscribers.has(user_id)) {
         blueslip.warn("We tried to remove invalid subscriber: " + user_id);
-        return;
+        return false;
     }
 
     sub.subscribers.del(user_id);
+
+    return true;
 };
 
 exports.user_is_subscribed = function (stream_name, user_email) {
