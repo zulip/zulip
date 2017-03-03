@@ -2525,3 +2525,10 @@ button.topic_edit_cancel {
         margin-top: 10px;
     }
 }
+
+ul.sender_info_popover i {
+    display: inline-block;
+    width: 14px;
+    text-align: center;
+    margin-right: 3px;
+}
