@@ -278,6 +278,7 @@ class GoogleMobileOauth2Backend(ZulipAuthMixin):
             return user_profile
         else:
             return_data["valid_attestation"] = False
+            return None
 
 class ZulipRemoteUserBackend(RemoteUserBackend):
     create_unknown_user = False

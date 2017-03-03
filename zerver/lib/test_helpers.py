@@ -194,20 +194,22 @@ def make_client(name):
     return client
 
 def find_key_by_email(address):
-    # type: (Text) -> Text
+    # type: (Text) -> Optional[Text]
     from django.core.mail import outbox
     key_regex = re.compile("accounts/do_confirm/([a-f0-9]{40})>")
     for message in reversed(outbox):
         if address in message.to:
             return key_regex.search(message.body).groups()[0]
+    return None
 
 def find_pattern_in_email(address, pattern):
-    # type: (Text, Text) -> Text
+    # type: (Text, Text) -> Optional[Text]
     from django.core.mail import outbox
     key_regex = re.compile(pattern)
     for message in reversed(outbox):
         if address in message.to:
             return key_regex.search(message.body).group(0)
+    return None
 
 def message_ids(result):
     # type: (Dict[str, Any]) -> Set[int]
