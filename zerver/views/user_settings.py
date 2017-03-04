@@ -11,7 +11,8 @@ from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse
 
-from zerver.decorator import authenticated_json_post_view, has_request_variables, REQ
+from zerver.decorator import authenticated_json_post_view, has_request_variables, \
+    zulip_login_required, REQ
 from zerver.lib.actions import do_change_password, \
     do_change_enable_desktop_notifications, \
     do_change_enter_sends, do_change_enable_sounds, \
@@ -34,6 +35,7 @@ from zerver.models import UserProfile, Realm, name_changes_disabled, \
     EmailChangeStatus
 from confirmation.models import EmailChangeConfirmation
 
+@zulip_login_required
 def confirm_email_change(request, confirmation_key):
     # type: (HttpRequest, str) -> HttpResponse
     confirmation_key = confirmation_key.lower()
