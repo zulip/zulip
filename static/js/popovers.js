@@ -890,9 +890,10 @@ exports.register_click_handlers = function () {
     });
 
     $('body').on('click', '.pin_to_top', function (e) {
-        var stream = $(e.currentTarget).parents('ul').attr('data-name');
+        var stream_name = $(e.currentTarget).parents('ul').attr('data-name');
+        var sub = stream_data.get_sub(stream_name);
         popovers.hide_stream_sidebar_popover();
-        subs.toggle_pin_to_top_stream(stream);
+        subs.toggle_pin_to_top_stream(sub);
         e.stopPropagation();
     });
 
