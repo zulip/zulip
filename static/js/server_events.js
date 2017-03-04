@@ -177,8 +177,13 @@ function dispatch_normal_event(event) {
         var email;
 
         if (event.op === 'add') {
-            _.each(event.subscriptions, function (sub) {
-                subs.mark_subscribed(sub.name, sub);
+            _.each(event.subscriptions, function (rec) {
+                var sub = stream_data.get_sub_by_id(rec.stream_id);
+                if (sub) {
+                    subs.mark_subscribed(sub, rec.subscribers);
+                } else {
+                    blueslip.error('Subscribing to unknown stream' + rec.stream_id);
+                }
             });
         } else if (event.op === 'peer_add') {
             // TODO: remove email shim here and fix called functions
