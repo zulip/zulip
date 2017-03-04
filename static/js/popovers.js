@@ -861,9 +861,10 @@ exports.register_click_handlers = function () {
     });
 
     $('body').on('click', '.toggle_home', function (e) {
-        var stream = $(e.currentTarget).parents('ul').attr('data-name');
+        var stream_name = $(e.currentTarget).parents('ul').attr('data-name');
+        var sub = stream_data.get_sub(stream_name);
         popovers.hide_stream_sidebar_popover();
-        subs.toggle_home(stream);
+        subs.toggle_home(sub);
         e.stopPropagation();
     });
 
