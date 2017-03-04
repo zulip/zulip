@@ -85,7 +85,7 @@ var people = global.people;
     sub = stream_data.get_sub_by_id(id);
     assert.equal(sub.color, 'red');
 
-    stream_data.rename_sub(id, 'Sweden');
+    stream_data.rename_sub(sub, 'Sweden');
     sub = stream_data.get_sub_by_id(id);
     assert.equal(sub.color, 'red');
     assert.equal(sub.name, 'Sweden');
