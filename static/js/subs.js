@@ -474,11 +474,6 @@ exports.mark_subscribed = function (stream_name, attrs) {
     $(document).trigger($.Event('subscription_add_done.zulip', {sub: sub}));
 };
 
-exports.mark_unsubscribed = function (stream_name) {
-    var sub = stream_data.get_sub(stream_name);
-    exports.mark_sub_unsubscribed(sub);
-};
-
 exports.mark_sub_unsubscribed = function (sub) {
     if (sub === undefined) {
         // We don't know about this stream
@@ -1008,7 +1003,9 @@ exports.invite_user_to_stream = function (user_email, sub, success, failure) {
     });
 };
 
-exports.remove_user_from_stream = function (user_email, stream_name, success, failure) {
+exports.remove_user_from_stream = function (user_email, sub, success, failure) {
+    // TODO: use stream_id when backend supports it
+    var stream_name = sub.name;
     return channel.del({
         url: "/json/users/me/subscriptions",
         data: {subscriptions: JSON.stringify([stream_name]),
@@ -1447,7 +1444,13 @@ $(function () {
         var list_entry = $(e.target).closest("tr");
         var principal = list_entry.children(".subscriber-email").text();
         var settings_row = $(e.target).closest('.subscription_settings');
-        var stream_name = get_stream_name(settings_row);
+
+        var sub = get_sub_for_target(settings_row);
+        if (!sub) {
+            blueslip.error('.subscriber_list_remove form submit fails');
+            return;
+        }
+
         var error_elem = settings_row.find('.subscriber_list_container .alert-error');
         var warning_elem = settings_row.find('.subscriber_list_container .alert-warning');
 
@@ -1462,7 +1465,7 @@ $(function () {
                 if (people.is_current_user(principal)) {
                     // If you're unsubscribing yourself, mark whole
                     // stream entry as you being unsubscribed.
-                    exports.mark_unsubscribed(stream_name);
+                    exports.mark_sub_unsubscribed(sub);
                 }
             } else {
                 error_elem.addClass("hide");
@@ -1475,7 +1478,7 @@ $(function () {
             error_elem.removeClass("hide").text(i18n.t("Error removing user from this stream"));
         }
 
-        exports.remove_user_from_stream(principal, stream_name, removal_success,
+        exports.remove_user_from_stream(principal, sub, removal_success,
                                         removal_failure);
     });
 
