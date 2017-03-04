@@ -53,7 +53,9 @@ function should_list_all_streams() {
     return !page_params.is_zephyr_mirror_realm;
 }
 
-function set_stream_property(stream_name, property, value) {
+function set_stream_property(sub, property, value) {
+    // TODO: Fix backend so it takes a stream id.
+    var stream_name = sub.name;
     var sub_data = {stream: stream_name, property: property, value: value};
     return channel.post({
         url:      '/json/subscriptions/property',
@@ -65,7 +67,7 @@ function set_stream_property(stream_name, property, value) {
 function set_notification_setting_for_all_streams(notification_type, new_setting) {
     _.each(stream_data.subscribed_subs(), function (sub) {
         if (sub[notification_type] !== new_setting) {
-            set_stream_property(sub.name, notification_type, new_setting);
+            set_stream_property(sub, notification_type, new_setting);
         }
     });
 }
@@ -185,12 +187,12 @@ function update_in_home_view(sub, value) {
 exports.toggle_home = function (stream_name) {
     var sub = stream_data.get_sub(stream_name);
     update_in_home_view(sub, ! sub.in_home_view);
-    set_stream_property(stream_name, 'in_home_view', sub.in_home_view);
+    set_stream_property(sub, 'in_home_view', sub.in_home_view);
 };
 
 exports.toggle_pin_to_top_stream = function (stream_name) {
     var sub = stream_data.get_sub(stream_name);
-    set_stream_property(stream_name, 'pin_to_top', !sub.pin_to_top);
+    set_stream_property(sub, 'pin_to_top', !sub.pin_to_top);
 };
 
 function update_stream_desktop_notifications(sub, value) {
@@ -245,19 +247,15 @@ function update_stream_description(sub, description) {
 }
 
 function stream_desktop_notifications_clicked(e) {
-    var stream = get_stream_name(e.target);
-
-    var sub = stream_data.get_sub(stream);
+    var sub = get_sub_for_target(e.target);
     sub.desktop_notifications = ! sub.desktop_notifications;
-    set_stream_property(stream, 'desktop_notifications', sub.desktop_notifications);
+    set_stream_property(sub, 'desktop_notifications', sub.desktop_notifications);
 }
 
 function stream_audible_notifications_clicked(e) {
-    var stream = get_stream_name(e.target);
-
-    var sub = stream_data.get_sub(stream);
+    var sub = get_sub_for_target(e.target);
     sub.audible_notifications = ! sub.audible_notifications;
-    set_stream_property(stream, 'audible_notifications', sub.audible_notifications);
+    set_stream_property(sub, 'audible_notifications', sub.audible_notifications);
 }
 
 function stream_pin_clicked(e) {
@@ -268,7 +266,7 @@ function stream_pin_clicked(e) {
 
 exports.set_color = function (stream_id, color) {
     var sub = stream_data.get_sub_by_id(stream_id);
-    set_stream_property(sub.name, 'color', color);
+    set_stream_property(sub, 'color', color);
 };
 
 exports.rerender_subscribers_count = function (sub) {
