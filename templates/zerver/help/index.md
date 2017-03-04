@@ -18,6 +18,7 @@ as an **organization**.
 
 ## Account Basics
 * [Change your name](/help/change-your-name)
+* [Change your email address](/help/change-your-email-address)
 * [Change your password](/help/change-your-password)
 * [Change your settings](/help/change-your-settings)
 * [Change your avatar](/help/change-your-avatar)
@@ -123,6 +124,7 @@ as an **organization**.
 * [Allow anyone to join without an invitation](/help/allow-anyone-to-join-without-an-invitation)
 * [Only allow admins to invite new users](/help/only-allow-admins-to-invite-new-users)
 * [Only allow admins to create new streams](/help/only-allow-admins-to-create-new-streams-feature)
+* [Prevent users from changing their email address](/help/disallow-users-to-change-their-email-address)
 * [Restrict editing of old messages and topics](/help/restrict-editing-of-old-messages-and-topics)
 * [Change the default language for your organization](/help/change-the-default-language-for-your-organization)
 * [Add custom emoji](/help/add-custom-emoji)
