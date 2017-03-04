@@ -79,6 +79,7 @@ as an **organization**.
 * [View messages from a stream](/help/view-messages-from-a-stream)
 * [View messages from a topic](/help/view-messages-from-a-topic)
 * [View messages from a user](/help/view-messages-from-a-user)
+* [View messages containing files or links](/help/view-messages-containing-files-or-links)
 * [The #announce stream](/help/the-announce-stream)
 * [Add or invite someone to a stream](/help/add-or-invite-someone-to-a-stream)
 * [Change the stream description](/help/change-the-stream-description)
