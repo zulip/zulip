@@ -189,8 +189,7 @@ exports.toggle_home = function (sub) {
     set_stream_property(sub, 'in_home_view', sub.in_home_view);
 };
 
-exports.toggle_pin_to_top_stream = function (stream_name) {
-    var sub = stream_data.get_sub(stream_name);
+exports.toggle_pin_to_top_stream = function (sub) {
     set_stream_property(sub, 'pin_to_top', !sub.pin_to_top);
 };
 
@@ -258,9 +257,12 @@ function stream_audible_notifications_clicked(e) {
 }
 
 function stream_pin_clicked(e) {
-    var stream = get_stream_name(e.target);
-
-    exports.toggle_pin_to_top_stream(stream);
+    var sub = get_sub_for_target(e.target);
+    if (!sub) {
+        blueslip.error('stream_pin_clicked() fails');
+        return;
+    }
+    exports.toggle_pin_to_top_stream(sub);
 }
 
 exports.set_color = function (stream_id, color) {
