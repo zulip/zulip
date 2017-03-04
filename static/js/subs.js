@@ -1051,13 +1051,11 @@ exports.change_stream_name = function (e) {
     });
 };
 
-exports.sub_or_unsub = function (stream_name) {
-    var sub = stream_data.get_sub(stream_name);
-
+exports.sub_or_unsub = function (sub) {
     if (sub.subscribed) {
-        ajaxUnsubscribe(stream_name);
+        ajaxUnsubscribe(sub.name);
     } else {
-        ajaxSubscribe(stream_name);
+        ajaxSubscribe(sub.name);
     }
 };
 
@@ -1275,7 +1273,8 @@ $(function () {
 
     $("#subscriptions_table").on("click", ".sub_unsub_button", function (e) {
         var stream_name = get_stream_name(e.target);
-        exports.sub_or_unsub(stream_name);
+        var sub = stream_data.get_sub(stream_name);
+        exports.sub_or_unsub(sub);
         e.preventDefault();
         e.stopPropagation();
     });
@@ -1285,8 +1284,8 @@ $(function () {
         $(this).closest(".popover").fadeOut(500).delay(500).remove();
 
         var stream_name = $(e.target).data("name");
-
-        exports.sub_or_unsub(stream_name);
+        var sub = stream_data.get_sub(stream_name);
+        exports.sub_or_unsub(sub);
         e.preventDefault();
         e.stopPropagation();
     });
