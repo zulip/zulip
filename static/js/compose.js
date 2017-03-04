@@ -970,21 +970,23 @@ $(function () {
         var invite_row = $(event.target).parents('.compose_invite_user');
 
         var email = $(invite_row).data('useremail');
-        if (email !== undefined) {
-            subs.invite_user_to_stream(email, compose.stream_name(), function () {
-                var all_invites = $("#compose_invite_users");
-                invite_row.remove();
-
-                if (all_invites.children().length === 0) {
-                    all_invites.hide();
-                }
-            }, function () {
-                var error_msg = invite_row.find('.compose_invite_user_error');
-                error_msg.show();
-
-                $(event.target).attr('disabled', true);
-            });
+        if (email === undefined) {
+            return;
         }
+
+        subs.invite_user_to_stream(email, compose.stream_name(), function () {
+            var all_invites = $("#compose_invite_users");
+            invite_row.remove();
+
+            if (all_invites.children().length === 0) {
+                all_invites.hide();
+            }
+        }, function () {
+            var error_msg = invite_row.find('.compose_invite_user_error');
+            error_msg.show();
+
+            $(event.target).attr('disabled', true);
+        });
     });
 
     $("#compose_invite_users").on('click', '.compose_invite_close', function (event) {
