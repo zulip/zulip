@@ -996,7 +996,9 @@ function show_new_stream_modal() {
     });
 }
 
-exports.invite_user_to_stream = function (user_email, stream_name, success, failure) {
+exports.invite_user_to_stream = function (user_email, sub, success, failure) {
+    // TODO: use stream_id when backend supports it
+    var stream_name = sub.name;
     return channel.post({
         url: "/json/users/me/subscriptions",
         data: {subscriptions: JSON.stringify([{name: stream_name}]),
@@ -1368,7 +1370,12 @@ $(function () {
     $("#subscriptions_table").on("submit", ".subscriber_list_add form", function (e) {
         e.preventDefault();
         var settings_row = $(e.target).closest('.subscription_settings');
-        var stream = get_stream_name(settings_row);
+        var sub = get_sub_for_target(settings_row);
+        if (!sub) {
+            blueslip.error('.subscriber_list_add form submit fails');
+            return;
+        }
+
         var text_box = settings_row.find('input[name="principal"]');
         var principal = $.trim(text_box.val());
         // TODO: clean up this error handling
@@ -1383,7 +1390,7 @@ $(function () {
                 warning_elem.addClass("hide");
                 if (people.is_current_user(principal)) {
                     // mark_subscribed adds the user to the member list
-                    exports.mark_subscribed(stream);
+                    exports.mark_subscribed(sub.name);
                 }
             } else {
                 error_elem.addClass("hide");
@@ -1396,7 +1403,7 @@ $(function () {
             error_elem.removeClass("hide").text(i18n.t("Could not add user to this stream"));
         }
 
-        exports.invite_user_to_stream(principal, stream, invite_success, invite_failure);
+        exports.invite_user_to_stream(principal, sub, invite_success, invite_failure);
     });
 
     function show_stream_row(node, e) {
