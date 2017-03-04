@@ -9,6 +9,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.template import loader
 from django.utils import timezone
 from zerver.decorator import statsd_increment, uses_mandrill
+from zerver.lib.queue import queue_json_publish
 from zerver.models import (
     Recipient,
     ScheduledJob,
@@ -298,9 +299,9 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
     if not receives_offline_notifications(user_profile):
         return
 
-    messages = [um.message for um in UserMessage.objects.filter(user_profile=user_profile,
-                                                                message__id__in=message_ids,
-                                                                flags=~UserMessage.flags.read)]
+    messages = Message.objects.filter(usermessage__user_profile_id=user_profile,
+                                      id__in=message_ids,
+                                      usermessage__flags=~UserMessage.flags.read)
     if not messages:
         return
 
@@ -320,12 +321,21 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
 
     # Send an email per recipient subject pair
     for recipient_subject, msg_list in messages_by_recipient_subject.items():
-        unique_messages = {m.id: m for m in msg_list}
-        do_send_missedmessage_events_reply_in_zulip(
-            user_profile,
-            list(unique_messages.values()),
-            message_count_by_recipient_subject[recipient_subject],
-        )
+        unique_messages_ids = {m.id for m in msg_list}
+        messages_to_send = {
+            'user_profile_id': user_profile_id,
+            'unique_messages_ids': unique_messages_ids,
+            'message_count': message_count_by_recipient_subject[recipient_subject]
+        }
+        queue_json_publish("missedmessage_email_senders", messages_to_send,
+                           lambda messages_to_send: None)
+
+def send_missedmessage_emails(data):
+    # type: (Mapping[str, Any]) -> None
+    user_profile = get_user_profile_by_id(data['user_profile_id'])
+    missed_messages = Message.objects.filter(id__in=data['unique_messages_ids'])
+    message_count = data['message_count']
+    do_send_missedmessage_events_reply_in_zulip(user_profile, list(missed_messages), message_count)
 
 @uses_mandrill
 def clear_followup_emails_queue(email, mail_client=None):

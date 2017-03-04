@@ -2,7 +2,8 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Tuple, TypeVar, Text
+from typing import (Any, Callable, Dict, Iterable, List, Mapping,
+                    Optional, Tuple, TypeVar, Text, Union)
 from mock import patch, MagicMock
 
 from django.http import HttpResponse
@@ -23,7 +24,7 @@ from zerver.forms import WRONG_SUBDOMAIN_ERROR
 from zerver.models import UserProfile, Recipient, \
     Realm, RealmAlias, UserActivity, \
     get_user_profile_by_email, get_realm, get_client, get_stream, \
-    Message, get_unique_open_realm, completely_open
+    Message, get_unique_open_realm, completely_open, get_context_for_message
 
 from zerver.lib.avatar import avatar_url
 from zerver.lib.initial_password import initial_password
@@ -33,7 +34,8 @@ from zerver.lib.actions import \
     do_change_is_admin, extract_recipients, \
     do_set_realm_name, do_deactivate_realm, \
     do_change_stream_invite_only
-from zerver.lib.notifications import handle_missedmessage_emails
+from zerver.lib.notifications import handle_missedmessage_emails, \
+    send_missedmessage_emails
 from zerver.lib.session_user import get_session_dict_user
 from zerver.middleware import is_slow_query
 from zerver.lib.utils import split_by
@@ -2333,12 +2335,34 @@ class TestMissedMessages(ZulipTestCase):
         # type: () -> List[str]
         return [str(random.getrandbits(32)) for _ in range(30)]
 
-    def _test_cases(self, tokens, msg_id, body, send_as_user):
-        # type: (List[str], int, str, bool) -> None
+    def _get_msgs_ids_with_context(self, msg_id):
+        # type: (int) -> List[int]
+        msgs_ids = [msg_id]
+        message = Message.objects.get(id=msg_id)
+        context_msgs_ids = get_context_for_message(message).values_list('id', flat=True)
+        msgs_ids.extend(context_msgs_ids)
+        return msgs_ids
+
+    @patch('zerver.lib.notifications.queue_json_publish')
+    def _test_cases(self, tokens, msg_id, body, send_as_user, mock_queue_json_publish):
+        # type: (List[str], int, str, bool, MagicMock) -> None
         othello = get_user_profile_by_email('othello@zulip.com')
         hamlet = get_user_profile_by_email('hamlet@zulip.com')
-        handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id}])
+        msgs_ids = self._get_msgs_ids_with_context(msg_id)
+        messages_to_send_data = {
+            'message_count': 1,
+            'user_profile_id': hamlet.id,
+            'unique_messages_ids': set(msgs_ids)
+        }
 
+        def check_queue_json_publish(queue_name, data, processor):
+            # type: (str, Union[Mapping[str, Any], str], Callable[[Any], None]) -> None
+            self.assertEqual(queue_name, "missedmessage_email_senders")
+            self.assertEqual(data, messages_to_send_data)
+
+        mock_queue_json_publish.side_effect = check_queue_json_publish
+        handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id}])
+        send_missedmessage_emails(messages_to_send_data)
         msg = mail.outbox[0]
         reply_to_addresses = [settings.EMAIL_GATEWAY_PATTERN % (u'mm' + t) for t in tokens]
         sender = 'Zulip <{}>'.format(settings.NOREPLY_EMAIL_ADDRESS)
