@@ -110,12 +110,16 @@ function get_stream_name(target) {
 }
 
 function stream_home_view_clicked(e) {
-    var stream_name = get_stream_name(e.target);
-    var sub = stream_data.get_sub(stream_name);
+    var sub = get_sub_for_target(e.target);
+    if (!sub) {
+        blueslip.error('stream_home_view_clicked() fails');
+        return;
+    }
+
     var sub_settings = settings_for_sub(sub);
     var notification_checkboxes = sub_settings.find(".sub_notification_setting");
 
-    subs.toggle_home(stream_name);
+    subs.toggle_home(sub.name);
 
     if (sub.in_home_view) {
         sub_settings.find(".mute-note").addClass("hide-mute-note");
@@ -1017,8 +1021,13 @@ exports.change_stream_description = function (e) {
     e.preventDefault();
 
     var sub_settings = $(e.target).closest('.subscription_settings');
-    var stream_name = get_stream_name(sub_settings);
-    var stream_id = stream_data.get_sub(stream_name).stream_id;
+    var sub = get_sub_for_target(sub_settings);
+    if (!sub) {
+        blueslip.error('change_stream_description() fails');
+        return;
+    }
+
+    var stream_id = sub.stream_id;
     var description = sub_settings.find('.stream-description-editable').text().trim();
 
     $('#subscriptions-status').hide();
@@ -1287,8 +1296,7 @@ $(function () {
     });
 
     $("#subscriptions_table").on("click", ".sub_unsub_button", function (e) {
-        var stream_name = get_stream_name(e.target);
-        var sub = stream_data.get_sub(stream_name);
+        var sub = get_sub_for_target(e.target);
         exports.sub_or_unsub(sub);
         e.preventDefault();
         e.stopPropagation();
