@@ -202,9 +202,10 @@ function update_stream_pin(sub, value) {
     sub.pin_to_top = value;
 }
 
-function update_stream_name(stream_id, new_name) {
+function update_stream_name(sub, new_name) {
     // Rename the stream internally.
-    var sub = stream_data.rename_sub(stream_id, new_name);
+    stream_data.rename_sub(sub, new_name);
+    var stream_id = sub.stream_id;
 
     // Update the left sidebar.
     stream_list.rename_stream(sub, new_name);
@@ -215,7 +216,7 @@ function update_stream_name(stream_id, new_name) {
     sub_settings.find(".stream-name-editable").text(new_name);
 
     // Update the subscriptions page
-    var sub_row = $(".stream-row[data-stream-id='" + sub.stream_id + "']");
+    var sub_row = $(".stream-row[data-stream-id='" + stream_id + "']");
     sub_row.find(".stream-name").text(new_name);
 
     // Update the message feed.
@@ -840,7 +841,7 @@ exports.update_subscription_properties = function (stream_name, property, value)
         update_stream_audible_notifications(sub, value);
         break;
     case 'name':
-        update_stream_name(sub.stream_id, value);
+        update_stream_name(sub, value);
         break;
     case 'description':
         update_stream_description(sub, value);
