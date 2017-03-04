@@ -1051,6 +1051,17 @@ exports.change_stream_name = function (e) {
     });
 };
 
+exports.sub_or_unsub = function (stream_name) {
+    var sub = stream_data.get_sub(stream_name);
+
+    if (sub.subscribed) {
+        ajaxUnsubscribe(stream_name);
+    } else {
+        ajaxSubscribe(stream_name);
+    }
+};
+
+
 $(function () {
 
     stream_data.initialize_from_page_params();
@@ -1262,19 +1273,9 @@ $(function () {
         selectText(this);
     });
 
-    function sub_or_unsub(stream_name) {
-        var sub = stream_data.get_sub(stream_name);
-
-        if (sub.subscribed) {
-            ajaxUnsubscribe(stream_name);
-        } else {
-            ajaxSubscribe(stream_name);
-        }
-    }
-
     $("#subscriptions_table").on("click", ".sub_unsub_button", function (e) {
         var stream_name = get_stream_name(e.target);
-        sub_or_unsub(stream_name);
+        exports.sub_or_unsub(stream_name);
         e.preventDefault();
         e.stopPropagation();
     });
@@ -1285,7 +1286,7 @@ $(function () {
 
         var stream_name = $(e.target).data("name");
 
-        sub_or_unsub(stream_name);
+        exports.sub_or_unsub(stream_name);
         e.preventDefault();
         e.stopPropagation();
     });
