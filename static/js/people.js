@@ -80,17 +80,8 @@ exports.update_email = function (user_id, new_email) {
 exports.get_user_id = function (email) {
     var person = people.get_by_email(email);
     if (person === undefined) {
-        // Our blueslip reporting here is a bit complicated, but
-        // there are known race conditions after reload, and we
-        // expect occasional failed lookups, but they should resolve
-        // after five seconds.
         var error_msg = 'Unknown email for get_user_id: ' + email;
-        blueslip.debug(error_msg);
-        setTimeout(function () {
-            if (!people_dict.has(email)) {
-                blueslip.error(error_msg);
-            }
-        }, 5000);
+        blueslip.error(error_msg);
         return undefined;
     }
     var user_id = person.user_id;
