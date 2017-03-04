@@ -974,19 +974,34 @@ $(function () {
             return;
         }
 
-        subs.invite_user_to_stream(email, compose.stream_name(), function () {
+        function success() {
             var all_invites = $("#compose_invite_users");
             invite_row.remove();
 
             if (all_invites.children().length === 0) {
                 all_invites.hide();
             }
-        }, function () {
+        }
+
+        function failure() {
             var error_msg = invite_row.find('.compose_invite_user_error');
             error_msg.show();
 
             $(event.target).attr('disabled', true);
-        });
+        }
+
+        var stream_name = compose.stream_name();
+        var sub = stream_data.get_sub(stream_name);
+        if (!sub) {
+            // This should only happen if a stream rename occurs
+            // before the user clicks.  We could prevent this by
+            // putting a stream id in the link.
+            blueslip.warn('Stream no longer exists: ' + stream_name);
+            failure();
+            return;
+        }
+
+        subs.invite_user_to_stream(email, sub.name, success, failure);
     });
 
     $("#compose_invite_users").on('click', '.compose_invite_close', function (event) {
