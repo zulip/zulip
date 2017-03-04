@@ -85,12 +85,27 @@ function get_stream_id(target) {
     return target.closest(".stream-row, .subscription_settings").attr("data-stream-id");
 }
 
+function get_sub_for_target(target) {
+    var stream_id = get_stream_id(target);
+    if (!stream_id) {
+        blueslip.error('Cannot find stream id for target');
+        return;
+    }
+
+    var sub = stream_data.get_sub_by_id(stream_id);
+    if (!sub) {
+        blueslip.error('get_sub_for_target() failed id lookup: ' + stream_id);
+        return;
+    }
+    return sub;
+}
+
 // Finds the stream name of a jquery object that's inside a
 // .stream-row or .subscription_settings element.
 function get_stream_name(target) {
-    var stream = stream_data.get_sub_by_id(get_stream_id(target));
-    if (stream) {
-        return stream.name;
+    var sub = get_sub_for_target(target);
+    if (sub) {
+        return sub.name;
     }
 }
 
