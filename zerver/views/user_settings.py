@@ -35,6 +35,7 @@ from zerver.models import UserProfile, Realm, name_changes_disabled, \
     EmailChangeStatus
 from confirmation.models import EmailChangeConfirmation
 
+@zulip_login_required
 def confirm_email_change(request, confirmation_key):
     # type: (HttpRequest, str) -> HttpResponse
     user_profile = request.user
