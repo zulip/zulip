@@ -39,6 +39,9 @@ with these details in mind:
   [linters][zulip-rtd-lint-tools], [tests][zulip-rtd-testing], continuous
   integration with [TravisCI][travis-ci], and [mypy][zulip-rtd-mypy].
 
+- We use [zulipbot][zulip-rtd-zulipbot-usage] to manage our issues and
+pull requests to create a better GitHub workflow for contributors.
+
 Finally, take a quick look at [Zulip-specific Git scripts][self-zulip-tools],
 install the [Zulip developer environment][zulip-rtd-dev-overview], and then
 [configure your fork for use with TravisCI][self-travisci].
@@ -1402,6 +1405,7 @@ Current branch review-1913 is up to date.
 [zulip-rtd-travis-ci]: travis-ci.html
 [zulip-rtd-dev-overview]: dev-overview.html
 [zulip-rtd-dev-first-time]: dev-env-first-time-contributors.html
+[zulip-rtd-zulipbot-usage]: zulipbot-usage.html
 [gitgui-tower]: https://www.git-tower.com/
 [gitgui-fork]: https://git-fork.com/
 [gitgui-gitxdev]: https://rowanj.github.io/gitx/

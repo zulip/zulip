@@ -95,6 +95,7 @@ Contents:
    mypy
    code-reviewing
    chat-zulip-org
+   zulipbot-usage
 
 .. _code-testing:
 
