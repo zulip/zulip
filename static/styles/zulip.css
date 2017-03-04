@@ -2637,6 +2637,7 @@ ul.actions_popover i {
 
 .user_popover {
     top: 100px!important;
+    margin: -15px;
 }
 
 .popover-inner {
