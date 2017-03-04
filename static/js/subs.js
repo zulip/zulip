@@ -102,15 +102,6 @@ function get_sub_for_target(target) {
     return sub;
 }
 
-// Finds the stream name of a jquery object that's inside a
-// .stream-row or .subscription_settings element.
-function get_stream_name(target) {
-    var sub = get_sub_for_target(target);
-    if (sub) {
-        return sub.name;
-    }
-}
-
 function stream_home_view_clicked(e) {
     var sub = get_sub_for_target(e.target);
     if (!sub) {
