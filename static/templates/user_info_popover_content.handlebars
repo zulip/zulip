@@ -1,16 +1,16 @@
 {{! Contents of the "message info" popup }}
-<ul class="nav nav-list actions_popover sender_info_popover" data-user-id="{{message.sender_id}}">
+<ul class="nav nav-list actions_popover sender_info_popover" data-user-id="{{user_id}}">
     <div class="popover_info">
-        <li><b>{{message.sender_full_name}}</b></li>
-        <li class='my_email'>{{sender_email}}</li>
+        <li><b>{{user_full_name}}</b></li>
+        <li class='my_email'>{{user_email}}</li>
 
-        {{#if message.historical}}
+        {{#if historical}}
         <li class="small">({{t "Message sent when you were not subscribed" }})</li>
         {{/if}}
     </div>
     <hr />
     <li>
-        <a href="#" class="respond_personal_button">
+        <a href="#" class="{{ private_message_class }}">
             <i class="icon-vector-edit"></i> {{#tr this}}Send private message{{/tr}}
         </a>
     </li>

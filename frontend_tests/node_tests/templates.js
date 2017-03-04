@@ -1027,12 +1027,13 @@ function render(template_name, args) {
         },
         sent_by_uri: '/sent_by/uri',
         pm_with_uri: '/pm_with/uri',
+        private_message_class: 'compose_private_message',
     };
 
     var html = render('user_info_popover_content', args);
     global.write_handlebars_output("user_info_popover_content", html);
 
-    var a = $(html).find("a.respond_personal_button");
+    var a = $(html).find("a.compose_private_message");
     assert.equal(a.text().trim(), 'Send private message');
 }());
 
@@ -1073,20 +1074,6 @@ function render(template_name, args) {
 
     var a = $(html).find("a:first");
     assert.equal(a.text(), 'King Lear');
-}());
-
-(function user_sidebar_actions() {
-    var args = {
-        email: 'hamlet@zulip.com',
-        name: 'Hamlet',
-    };
-
-    var html = render('user_sidebar_actions', args);
-
-    global.write_handlebars_output("user_sidebar_actions", html);
-
-    var a = $(html).find("a.narrow_to_private_messages");
-    assert.equal(a.text().trim(), 'Narrow to private messages with Hamlet');
 }());
 
 (function muted_topic_ui_row() {
