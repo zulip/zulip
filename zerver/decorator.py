@@ -402,7 +402,7 @@ def authenticated_rest_api_view(is_webhook=False):
             if isinstance(profile, UserProfile):
                 request._email = profile.email
             else:
-                assert isinstance(profile, Deployment)
+                assert isinstance(profile, Deployment)  # type: ignore # https://github.com/python/mypy/issues/2957
                 request._email = "deployment:" + role
                 profile.rate_limits = ""
             # Apply rate limiting
