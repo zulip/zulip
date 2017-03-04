@@ -115,7 +115,7 @@ function split_by_subscribers(people) {
     var non_subscribers = [];
     var current_stream = compose.stream_name();
 
-    if (current_stream === "") {
+    if (!stream_data.get_sub(current_stream)) {
         // If there is no stream specified, everyone is considered as a subscriber.
         return {subs: people, non_subs: []};
     }
