@@ -121,7 +121,7 @@ function stream_home_view_clicked(e) {
     var sub_settings = settings_for_sub(sub);
     var notification_checkboxes = sub_settings.find(".sub_notification_setting");
 
-    subs.toggle_home(sub.name);
+    subs.toggle_home(sub);
 
     if (sub.in_home_view) {
         sub_settings.find(".mute-note").addClass("hide-mute-note");
@@ -184,8 +184,7 @@ function update_in_home_view(sub, value) {
     not_in_home_view_checkbox.prop('checked', !value);
 }
 
-exports.toggle_home = function (stream_name) {
-    var sub = stream_data.get_sub(stream_name);
+exports.toggle_home = function (sub) {
     update_in_home_view(sub, ! sub.in_home_view);
     set_stream_property(sub, 'in_home_view', sub.in_home_view);
 };
