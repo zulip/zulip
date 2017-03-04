@@ -44,7 +44,7 @@ class AddHeaderMixin(object):
 
         super_class = super(AddHeaderMixin, self) # type: ignore # https://github.com/JukkaL/mypy/issues/857
         if hasattr(super_class, 'post_process'):
-            super_ret = super_class.post_process(paths, dry_run, **kwargs)
+            super_ret = super_class.post_process(paths, dry_run, **kwargs)  # type: ignore # https://github.com/python/mypy/issues/2956
         else:
             super_ret = []
 
@@ -74,7 +74,7 @@ class RemoveUnminifiedFilesMixin(object):
         paths = {k: v for k, v in paths.items() if is_valid(k)}
         super_class = super(RemoveUnminifiedFilesMixin, self)  # type: ignore # https://github.com/JukkaL/mypy/issues/857
         if hasattr(super_class, 'post_process'):
-            return super_class.post_process(paths, dry_run, **kwargs)
+            return super_class.post_process(paths, dry_run, **kwargs)  # type: ignore # https://github.com/python/mypy/issues/2956
 
         return []
 

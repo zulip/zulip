@@ -470,7 +470,7 @@ def setup_event_queue():
         load_event_queues()
         atexit.register(dump_event_queues)
         # Make sure we dump event queues even if we exit via signal
-        signal.signal(signal.SIGTERM, lambda signum, stack: sys.exit(1))
+        signal.signal(signal.SIGTERM, lambda signum, stack: sys.exit(1))  # type: ignore # https://github.com/python/mypy/issues/2955
         tornado.autoreload.add_reload_hook(dump_event_queues) # type: ignore # TODO: Fix missing tornado.autoreload stub
 
     try:

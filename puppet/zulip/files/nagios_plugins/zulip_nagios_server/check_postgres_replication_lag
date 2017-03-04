@@ -6,6 +6,8 @@ secondary Postgres servers' xlog location.
 """
 from __future__ import print_function
 
+if False: from mypy_extensions import NoReturn
+
 import subprocess
 import re
 
@@ -17,7 +19,7 @@ states = {
 }
 
 def report(state, msg):
-    # type: (str, str) -> None
+    # type: (str, str) -> NoReturn
     print("%s: %s" % (state, msg))
     exit(states[state])
 

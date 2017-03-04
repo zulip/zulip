@@ -205,7 +205,7 @@ def valid_stream(stream_name, token):
         return False
 
 def get_message_part_by_type(message, content_type):
-    # type: (message.Message, Text) -> Text
+    # type: (message.Message, Text) -> Optional[Text]
     charsets = message.get_charsets()
 
     for idx, part in enumerate(message.walk()):
@@ -215,6 +215,7 @@ def get_message_part_by_type(message, content_type):
             if charsets[idx]:
                 text = content.decode(charsets[idx], errors="ignore")
             return text
+    return None
 
 def extract_body(message):
     # type: (message.Message) -> Text
