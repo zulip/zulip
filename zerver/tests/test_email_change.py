@@ -47,10 +47,22 @@ class EmailChangeTestCase(ZulipTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("Whoops", response.content.decode('utf8'))
 
+    def test_email_change_when_not_logging_in(self):
+        # type: () -> None
+        key = generate_key()
+        with self.assertRaises(EmailChangeConfirmation.DoesNotExist):
+            url = EmailChangeConfirmation.objects.get_activation_url(key)
+
+        url = EmailChangeConfirmation.objects.get_activation_url(
+            key, 'testserver')
+        response = self.client_get(url)
+        self.assertEqual(response.status_code, 302)
+
     def test_confirm_email_change_when_time_exceeded(self):
         # type: () -> None
         old_email = 'hamlet@zulip.com'
         new_email = 'hamlet-new@zulip.com'
+        self.login('hamlet@zulip.com')
         user_profile = get_user_profile_by_email(old_email)
         obj = EmailChangeStatus.objects.create(new_email=new_email,
                                                old_email=old_email,
@@ -70,6 +82,7 @@ class EmailChangeTestCase(ZulipTestCase):
         # type: () -> None
         old_email = 'hamlet@zulip.com'
         new_email = 'hamlet-new@zulip.com'
+        self.login('hamlet@zulip.com')
         user_profile = get_user_profile_by_email(old_email)
         obj = EmailChangeStatus.objects.create(new_email=new_email,
                                                old_email=old_email,
