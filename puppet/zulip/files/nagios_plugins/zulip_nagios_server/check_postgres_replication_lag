@@ -6,7 +6,8 @@ secondary Postgres servers' xlog location.
 """
 from __future__ import print_function
 
-if False: from mypy_extensions import NoReturn
+if False:
+    from mypy_extensions import NoReturn
 
 import subprocess
 import re
