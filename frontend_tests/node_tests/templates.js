@@ -640,38 +640,6 @@ function render(template_name, args) {
                 "1468132659\n        Let's go to dinner!\n        Edited by Alice");
 }());
 
-(function message_info_popover_content() {
-    var args = {
-        message: {
-            full_date_str: 'Monday',
-            full_time_str: '12:00',
-            sender_full_name: 'Alice Smith',
-            sender_email: 'alice@zulip.com',
-        },
-        sent_by_uri: '/sent_by/uri',
-        pm_with_uri: '/pm_with/uri',
-    };
-
-    var html = render('message_info_popover_content', args);
-    global.write_handlebars_output("message_info_popover_content", html);
-
-    var a = $(html).find("a.respond_personal_button");
-    assert.equal(a.text().trim(), 'Send private message');
-}());
-
-
-(function message_info_popover_title() {
-    var args = {
-        sender_avatar: 'avatar/hamlet@zulip.com',
-    };
-
-    var html = render('message_info_popover_title', args);
-    global.write_handlebars_output("message_info_popover_title", html);
-
-    html = '<div>' + html + '</div>';
-    assert($(html).find('.popover-avatar').css('background-image'), "url(avatar/hamlet@zulip.com)");
-}());
-
 (function message_reaction() {
     var args = {
         emoji_name: 'smile',
@@ -1047,6 +1015,33 @@ function render(template_name, args) {
     global.write_handlebars_output("user_info_popover", html);
 
     $(html).hasClass('popover message-info-popover');
+}());
+
+(function user_info_popover_content() {
+    var args = {
+        message: {
+            full_date_str: 'Monday',
+            full_time_str: '12:00',
+            user_full_name: 'Alice Smith',
+            user_email: 'alice@zulip.com',
+        },
+        sent_by_uri: '/sent_by/uri',
+        pm_with_uri: '/pm_with/uri',
+    };
+
+    var html = render('user_info_popover_content', args);
+    global.write_handlebars_output("user_info_popover_content", html);
+
+    var a = $(html).find("a.respond_personal_button");
+    assert.equal(a.text().trim(), 'Send private message');
+}());
+
+(function user_info_popover_title() {
+    var html = render('user_info_popover_title', {user_avatar: 'avatar/hamlet@zulip.com'});
+    global.write_handlebars_output("user_info_popover_title", html);
+
+    html = '<div>' + html + '</div>';
+    assert($(html).find('.popover-avatar').css('background-image'), "url(avatar/hamlet@zulip.com)");
 }());
 
 (function user_presence_rows() {
