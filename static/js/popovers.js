@@ -75,8 +75,8 @@ function show_message_info_popover(element, id) {
         elt.popover({
             placement: (ypos > (message_viewport.height() - 300)) ? 'top' : 'bottom',
             template:  templates.render('user_info_popover',   {class: "message-info-popover"}),
-            title:     templates.render('message_info_popover_title', {sender_avatar: "avatar/" + sender_email}),
-            content:   templates.render('message_info_popover_content', args),
+            title:     templates.render('user_info_popover_title', {sender_avatar: "avatar/" + sender_email}),
+            content:   templates.render('user_info_popover_content', args),
             trigger:   "manual",
         });
         elt.popover("show");
