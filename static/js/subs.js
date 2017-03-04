@@ -1299,12 +1299,7 @@ $(function () {
             return;
         }
         var sub = stream_data.get_sub(stream_name);
-
-        if (sub.subscribed) {
-            ajaxUnsubscribe(stream_name);
-        } else {
-            ajaxSubscribe(stream_name);
-        }
+        exports.sub_or_unsub(sub);
     });
 
     $('.empty_feed_sub_unsub').click(function (e) {
@@ -1316,12 +1311,8 @@ $(function () {
             return;
         }
         var sub = stream_data.get_sub(stream_name);
+        exports.sub_or_unsub(sub);
 
-        if (sub.subscribed) {
-            ajaxUnsubscribe(stream_name);
-        } else {
-            ajaxSubscribe(stream_name);
-        }
         $('.empty_feed_notice').hide();
         $('#empty_narrow_message').show();
     });
