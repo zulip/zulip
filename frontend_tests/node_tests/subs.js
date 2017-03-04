@@ -178,7 +178,7 @@ subs.stream_description_match_stream_ids = [];
         post_params = params;
     };
 
-    subs.sub_or_unsub(denmark.name);
+    subs.sub_or_unsub(denmark);
     assert.equal(post_params.url, '/json/users/me/subscriptions');
     assert.deepEqual(post_params.data,
         {subscriptions: '[{"name":"Denmark"}]'});
@@ -190,7 +190,7 @@ subs.stream_description_match_stream_ids = [];
     };
 
     stream_data.get_sub_by_id(denmark.stream_id).subscribed = true;
-    subs.sub_or_unsub(denmark.name);
+    subs.sub_or_unsub(denmark);
     assert.equal(post_params.url, '/json/users/me/subscriptions');
     assert.deepEqual(post_params.data,
         {subscriptions: '["Denmark"]'});
