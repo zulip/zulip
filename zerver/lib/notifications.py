@@ -418,11 +418,14 @@ def send_future_email(recipients, email_html, email_text, subject,
     # ignore any delays smaller than 1-minute because it's cheaper just to sent them immediately
     if not isinstance(delay, datetime.timedelta):
         raise TypeError("specified delay is of the wrong type: %s" % (type(delay),))
+    # Note: In the next section we hackishly use **{"async": False} to
+    # work around https://github.com/python/mypy/issues/2959 "# type: ignore" doesn't work
     if delay < datetime.timedelta(minutes=1):
-        results = mail_client.messages.send(message=message, async=False, ip_pool="Main Pool")
+        results = mail_client.messages.send(message=message, ip_pool="Main Pool", **{"async": False})
     else:
         send_time = (timezone.now() + delay).__format__("%Y-%m-%d %H:%M:%S")
-        results = mail_client.messages.send(message=message, async=False, ip_pool="Main Pool", send_at=send_time)
+        results = mail_client.messages.send(message=message, ip_pool="Main Pool",
+                                            send_at=send_time, **{"async": False})
     problems = [result for result in results if (result['status'] in ('rejected', 'invalid'))]
 
     if problems:
