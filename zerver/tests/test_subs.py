@@ -1730,7 +1730,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
     def test_bulk_subscribe_MIT(self):
         # type: () -> None
-        realm = get_realm("mit")
+        realm = get_realm("zephyr")
         streams = ["stream_%s" % i for i in range(40)]
         for stream_name in streams:
             self.make_stream(stream_name, realm=realm)
@@ -2482,7 +2482,7 @@ class AccessStreamTest(ZulipTestCase):
         access_stream_by_name(hamlet, public_stream.name)
 
         # Nobody can access a public stream in another realm
-        mit_realm = get_realm("mit")
+        mit_realm = get_realm("zephyr")
         mit_stream, _ = create_stream_if_needed(mit_realm, "mit_stream", invite_only=False)
         sipbtest = get_user_profile_by_email("sipbtest@mit.edu")
         with self.assertRaisesRegex(JsonableError, "Invalid stream id"):

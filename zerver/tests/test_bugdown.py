@@ -829,7 +829,7 @@ class BugdownTest(TestCase):
         verifies almost all inline patterns are disabled, but
         inline_interesting_links is still enabled"""
         msg = "**test**"
-        realm = get_realm("mit")
+        realm = get_realm("zephyr")
         client = get_client("zephyr_mirror")
         message = Message(sending_client=client,
                           sender=get_user_profile_by_email("sipbtest@mit.edu"))

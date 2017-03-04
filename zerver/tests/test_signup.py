@@ -954,7 +954,7 @@ class RealmCreationTest(ZulipTestCase):
                       'streams': "unavailable",
                       'about': "unavailable",
                       'abouts': "unavailable",
-                      'mit': "unavailable"}
+                      'zephyr': "unavailable"}
             for string_id, error_msg in errors.items():
                 result = self.submit_reg_form_for_user(email, password,
                                                        realm_subdomain = string_id,
@@ -1038,7 +1038,7 @@ class UserSignUpTest(ZulipTestCase):
         realm.invite_required = False
         realm.save()
 
-        for string_id in ('simple', 'mit'):
+        for string_id in ('simple', 'zephyr'):
             realm = get_realm(string_id)
             do_deactivate_realm(realm)
             realm.save()
