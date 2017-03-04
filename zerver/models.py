@@ -121,6 +121,7 @@ class Realm(ModelReprMixin, models.Model):
     mandatory_topics = models.BooleanField(default=False) # type: bool
     show_digest_email = models.BooleanField(default=True) # type: bool
     name_changes_disabled = models.BooleanField(default=False) # type: bool
+    email_changes_disabled = models.BooleanField(default=False) # type: bool
 
     allow_message_editing = models.BooleanField(default=True) # type: bool
     DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS = 600 # if changed, also change in admin.js

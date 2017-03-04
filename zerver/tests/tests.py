@@ -189,6 +189,13 @@ class RealmTest(ZulipTestCase):
         realm = update_with_api(create_stream_by_admins_only=False)
         self.assertEqual(realm.create_stream_by_admins_only, False)
 
+        # email address change disabled
+        set_up_db('email_changes_disabled', False)
+        realm = update_with_api(email_changes_disabled=True)
+        self.assertEqual(realm.email_changes_disabled, True)
+        realm = update_with_api(email_changes_disabled=False)
+        self.assertEqual(realm.email_changes_disabled, False)
+
         # add_emoji_by_admins_only
         set_up_db('add_emoji_by_admins_only', False)
         realm = update_with_api(add_emoji_by_admins_only=True)

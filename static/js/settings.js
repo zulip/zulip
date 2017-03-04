@@ -583,6 +583,10 @@ function _setup_page() {
         });
     });
 
+    if (page_params.realm_email_changes_disabled) {
+        $('#change_email').hide();
+    }
+
     $('#change_email_button').on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
