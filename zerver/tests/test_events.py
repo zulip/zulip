@@ -45,6 +45,7 @@ from zerver.lib.actions import (
     do_set_realm_restricted_to_domain,
     do_set_realm_invite_required,
     do_set_realm_invite_by_admins_only,
+    do_set_email_changes_disabled,
     do_set_realm_message_editing,
     do_set_realm_default_language,
     do_set_realm_authentication_methods,
@@ -553,6 +554,20 @@ class EventsRegisterTest(ZulipTestCase):
         do_set_realm_invite_required(self.user_profile.realm, invite_required=False)
         for invite_required in (True, False):
             events = self.do_test(lambda: do_set_realm_invite_required(self.user_profile.realm, invite_required))
+            error = schema_checker('events[0]', events[0])
+            self.assert_on_error(error)
+
+    def test_change_realm_email_changes_disabled(self):
+        # type: () -> None
+        schema_checker = check_dict([
+            ('type', equals('realm')),
+            ('op', equals('update')),
+            ('property', equals('email_changes_disabled')),
+            ('value', check_bool),
+        ])
+        do_set_email_changes_disabled(self.user_profile.realm, email_changes_disabled=True)
+        for email_changes_disabled in (False, True):
+            events = self.do_test(lambda: do_set_email_changes_disabled(self.user_profile.realm, email_changes_disabled))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 

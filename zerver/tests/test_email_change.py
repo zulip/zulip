@@ -13,7 +13,7 @@ from django.urls import reverse
 from django.utils.timezone import now
 
 from confirmation.models import EmailChangeConfirmation, generate_key
-from zerver.lib.actions import do_start_email_change_process
+from zerver.lib.actions import do_start_email_change_process, do_set_email_changes_disabled
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
@@ -94,6 +94,7 @@ class EmailChangeTestCase(ZulipTestCase):
                                                confirmation_key=key)
         url = EmailChangeConfirmation.objects.get_activation_url(key)
         response = self.client_get(url)
+
         self.assertEqual(response.status_code, 200)
         self.assertIn("This confirms that the email address for your Zulip",
                       response.content.decode('utf8'))
@@ -132,6 +133,46 @@ class EmailChangeTestCase(ZulipTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("This confirms that the email address",
                       response.content.decode('utf8'))
+
+    def test_unauthorized_email_change(self):
+        # type: () -> None
+        data = {'email': 'hamlet-new@zulip.com'}
+        email = 'hamlet@zulip.com'
+        self.login(email)
+        user_profile = get_user_profile_by_email(email)
+        do_set_email_changes_disabled(user_profile.realm, email_changes_disabled=True)
+        url = '/json/settings/change'
+        result = self.client_post(url, data)
+        self.assertEqual(len(mail.outbox), 0)
+        self.assertEqual(result.status_code, 400)
+        self.assertIn("Email change is disabled!", result.content.decode('utf8'))
+
+    def test_unauthorized_email_change_from_email_confirmation_link(self):
+        # type: () -> None
+        data = {'email': 'hamlet-new@zulip.com'}
+        email = 'hamlet@zulip.com'
+        self.login(email)
+        url = '/json/settings/change'
+        self.assertEqual(len(mail.outbox), 0)
+        result = self.client_post(url, data)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn('We have sent you an email', result.content.decode('utf8'))
+        email_message = mail.outbox[0]
+        self.assertEqual(
+            email_message.subject,
+            '[Zulip] Confirm your new email address for Zulip Dev'
+        )
+        body = email_message.body
+        self.assertIn('We received a request to change the email', body)
+
+        user_profile = get_user_profile_by_email(email)
+        do_set_email_changes_disabled(user_profile.realm, email_changes_disabled=True)
+
+        activation_url = [s for s in body.split('\n') if s][4]
+        response = self.client_get(activation_url)
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("Email change disabled", response.content.decode('utf8'))
 
     def test_post_invalid_email(self):
         # type: () -> None
