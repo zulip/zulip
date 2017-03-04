@@ -22,7 +22,7 @@ class TestRetentionLib(ZulipTestCase):
         # type: () -> None
         super(TestRetentionLib, self).setUp()
         self.zulip_realm = self._set_realm_message_retention_value('zulip', 30)
-        self.mit_realm = self._set_realm_message_retention_value('mit', 100)
+        self.mit_realm = self._set_realm_message_retention_value('zephyr', 100)
 
     @staticmethod
     def _set_realm_message_retention_value(realm_str, retention_period):

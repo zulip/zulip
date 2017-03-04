@@ -130,7 +130,7 @@ class Command(BaseCommand):
             RealmAlias.objects.create(realm=zulip_realm, domain="zulip.com")
             if options["test_suite"]:
                 mit_realm = Realm.objects.create(
-                    string_id="mit", name="MIT", restricted_to_domain=True,
+                    string_id="zephyr", name="MIT", restricted_to_domain=True,
                     invite_required=False, org_type=Realm.CORPORATE, domain="mit.edu")
                 RealmAlias.objects.create(realm=mit_realm, domain="mit.edu")
 

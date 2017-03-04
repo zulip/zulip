@@ -89,7 +89,7 @@ class NarrowBuilderTest(ZulipTestCase):
         # type: () -> None
         """This tests the _pg_re_escape code path with a null byte"""
         null_stream_name = u'fun\u0000test'
-        s = Stream.objects.create(realm=get_realm("mit"), name=null_stream_name)
+        s = Stream.objects.create(realm=get_realm("zephyr"), name=null_stream_name)
         Recipient.objects.create(type=Recipient.STREAM, type_id=s.id)
         user_profile = get_user_profile_by_email("sipbtest@mit.edu")
         builder = NarrowBuilder(user_profile, column('id'))

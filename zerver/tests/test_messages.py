@@ -127,7 +127,7 @@ class TopicHistoryTest(ZulipTestCase):
         # out of realm
         bad_stream = self.make_stream(
             'mit_stream',
-            realm=get_realm('mit')
+            realm=get_realm('zephyr')
         )
         endpoint = '/json/users/me/%s/topics' % (bad_stream.id,)
         result = self.client_get(endpoint, dict())
@@ -974,12 +974,12 @@ class MessagePOSTTest(ZulipTestCase):
         self.assert_json_error(result, "Invalid mirrored message")
 
     @mock.patch("zerver.views.messages.create_mirrored_message_users")
-    def test_send_message_when_client_is_zephyr_mirror_but_domain_is_not_mit_edu(self, create_mirrored_message_users_mock):
+    def test_send_message_when_client_is_zephyr_mirror_but_string_id_is_not_zephyr(self, create_mirrored_message_users_mock):
         # type: (Any) -> None
         create_mirrored_message_users_mock.return_value = (True, True)
         email = "starnine@mit.edu"
         user = get_user_profile_by_email(email)
-        user.realm.domain = 'not_mit.edu'
+        user.realm.string_id = 'not_zephyr'
         user.realm.save()
         self.login("starnine@mit.edu")
         result = self.client_post("/json/messages", {"type": "private",

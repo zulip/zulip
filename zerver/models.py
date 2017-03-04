@@ -232,7 +232,7 @@ class Realm(ModelReprMixin, models.Model):
     @property
     def is_zephyr_mirror_realm(self):
         # type: () -> bool
-        return self.domain == "mit.edu"
+        return self.string_id == "zephyr"
 
     @property
     def webathena_enabled(self):
