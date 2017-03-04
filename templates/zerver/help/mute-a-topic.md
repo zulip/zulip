@@ -72,3 +72,18 @@ unmute the topic that the selected message belongs to.
 the topic will reappear in your filters and the topic will stop being grayed
 out in the **Streams** section, confirming the success of your unmuting of the
 topic.
+
+## Unmute a topic through the Settings page
+
+{!go-to-the.md!} [Muted topics](/#settings/muted-topics)
+{!settings.md!}
+
+2. Locate the topic you want to unmute in the **Muted topics** section; the
+topics are sorted according to when you first muted a topic in the selected
+topic's corresponding stream, oldest to newest.
+
+3. Click on the **Unmute** link to the right of the topic you want to unmute.
+
+4. Upon clicking the **Unmute** link, any messages belonging to the topic will
+reappear in your filters and the topic will stop being grayed out in the
+**Streams** section, confirming the success of your unmuting of the topic.
