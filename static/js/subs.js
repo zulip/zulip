@@ -411,11 +411,9 @@ exports.show_settings_for = function (stream_id) {
     show_subscription_settings(stream);
 };
 
-exports.mark_subscribed = function (stream_name, attrs) {
-    var sub = stream_data.get_sub(stream_name);
-
+exports.mark_subscribed = function (sub, subscribers) {
     if (sub === undefined) {
-        blueslip.error('Unknown stream in mark_subscribed: ' + stream_name);
+        blueslip.error('Undefined sub passed to mark_subscribed');
         return;
     }
 
@@ -427,8 +425,8 @@ exports.mark_subscribed = function (stream_name, attrs) {
     var color = get_color();
     exports.set_color(sub.stream_id, color);
     stream_data.subscribe_myself(sub);
-    if (attrs) {
-        stream_data.set_subscriber_emails(sub, attrs.subscribers);
+    if (subscribers) {
+        stream_data.set_subscriber_emails(sub, subscribers);
     }
     var settings = settings_for_sub(sub);
     var button = button_for_sub(sub);
@@ -1378,7 +1376,7 @@ $(function () {
                 warning_elem.addClass("hide");
                 if (people.is_current_user(principal)) {
                     // mark_subscribed adds the user to the member list
-                    exports.mark_subscribed(sub.name);
+                    exports.mark_subscribed(sub);
                 }
             } else {
                 error_elem.addClass("hide");

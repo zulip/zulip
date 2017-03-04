@@ -283,6 +283,7 @@ var event_fixtures = {
             {
                 name: 'devel',
                 stream_id: 42,
+                subscribers: ['alice@example.com', 'bob@example.com'],
                 // etc.
             },
         ],
@@ -653,10 +654,13 @@ run(function (override, capture, args) {
     });
 
     var event = event_fixtures.subscription__add;
-    override('subs', 'mark_subscribed', capture(['name', 'sub']));
+    override('stream_data', 'get_sub_by_id', function (stream_id) {
+        return {stream_id: stream_id};
+    });
+    override('subs', 'mark_subscribed', capture(['sub', 'subscribers']));
     dispatch(event);
-    assert_same(args.name, 'devel');
-    assert_same(args.sub, event.subscriptions[0]);
+    assert_same(args.sub.stream_id, event.subscriptions[0].stream_id);
+    assert_same(args.subscribers, event.subscriptions[0].subscribers);
 
     event = event_fixtures.subscription__peer_add;
     override('stream_data', 'add_subscriber', capture(['sub', 'user_id']));
