@@ -11,6 +11,7 @@
     <div class="alert" id="admin-realm-message-editing-status"></div>
     <div class="alert" id="admin-realm-default-language-status"></div>
     <div class="alert" id="admin-realm-waiting_period_threshold_status"></div>
+    <div class="alert" id="admin-realm-email-changes-disabled-status"></div>
 
     <div class="m-10 inline-block grid organization-settings-parent">
     <div class="input-group admin-realm">
@@ -54,8 +55,19 @@
 
       <label for="id_realm_create_stream_by_admins_only" class="inline-block"
         id="id_realm_create_stream_by_admins_only_label"
-        title="{{t 'If checked, only administrators may create new streams.'}}">
+        title="{{t 'If checked, only administrators may create new streams.' }}">
         {{t "Only admins may create streams" }}
+      </label>
+    </div>
+    <div class="input-group">
+      <input type="checkbox" class="inline-block" id="id_realm_email_changes_disabled"
+             name="realm_email_changes_disabled"
+        {{#if realm_email_changes_disabled}}checked="checked"{{/if}} />
+
+      <label for="id_realm_email_changes_disabled" class="inline-block"
+        id="id_realm_email_changes_disabled_label" style="width:initial"
+        title="{{t 'If checked, users will be unable to change their email address.' }}">
+        {{t "Prevent users from changing their email address" }}
       </label>
     </div>
     <div class="input-group">
