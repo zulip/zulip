@@ -238,7 +238,7 @@ def add_bot_backend(request, user_profile, full_name_raw=REQ("full_name"), short
     # type: (HttpRequest, UserProfile, Text, Text, Optional[Text], Optional[Text], Optional[bool]) -> HttpResponse
     short_name += "-bot"
     full_name = check_full_name(full_name_raw)
-    email = short_name + "@" + user_profile.realm.domain
+    email = '%s@%s' % (short_name, user_profile.realm.get_bot_domain())
     form = CreateUserForm({'full_name': full_name, 'email': email})
     if not form.is_valid():
         # We validate client-side as well
