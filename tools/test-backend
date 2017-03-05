@@ -77,7 +77,6 @@ not_yet_fully_covered = {
     'zerver/lib/message.py',
     'zerver/lib/notifications.py',
     'zerver/lib/push_notifications.py',
-    'zerver/lib/request.py',
     'zerver/lib/upload.py',
     'zerver/lib/validator.py',
     'zerver/models.py',

@@ -137,6 +137,15 @@ class DecoratorTestCase(TestCase):
         result = get_total(request)
         self.assertEqual(result, 21)
 
+    def test_REQ_converter_and_validator_invalid(self):
+        # type: () -> None
+        with self.assertRaisesRegex(Exception, "converter and validator are mutually exclusive"):
+            @has_request_variables
+            def get_total(request, numbers=REQ(validator=check_list(check_int),
+                                               converter=lambda: None)):
+                # type: (HttpRequest, Iterable[int]) -> int
+                return sum(numbers)  # nocoverage -- isn't intended to be run
+
     def test_REQ_validator(self):
         # type: () -> None
 
