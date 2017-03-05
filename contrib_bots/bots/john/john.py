@@ -109,17 +109,28 @@ class JohnHandler(object):
 
     def usage(self):
         return '''
-            Before running this, make sure to create a stream
-            called "VirtualHelp" that your API user can send to.
+            This bot aims to be Zulip's virtual assistant. It
+            finds the best match from a certain input.
+            Also understands the English language and can
+            mantain a conversation, joke and give useful information.
             '''
 
     def handle_message(self, message, client, state_handler):
         original_content = message['content']
-        client.send_message(dict(
-            type='stream',
-            to='VirtualHelp',
-            subject="John",
-            content=str(bota.get_response(original_content))
-        ))
+        bot_response = str(bota.get_response(original_content))
+
+        if message['type'] == 'private':
+            client.send_message(dict(
+                type='private',
+                to=message['sender_email'],
+                content=bot_response,
+            ))
+        else:
+            client.send_message(dict(
+                type='stream',
+                to=message['display_recipient'],
+                subject=message['subject'],
+                content=bot_response,
+            ))
 
 handler_class = JohnHandler
