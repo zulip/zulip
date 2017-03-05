@@ -52,23 +52,6 @@ import random
 import filecmp
 import subprocess
 
-def bail(msg):
-    # type: (str) -> None
-    print('\nERROR: %s\n' % (msg,))
-    sys.exit(1)
-
-try:
-    settings.TEST_SUITE
-except:
-    bail('Test suite only runs correctly with --settings=zproject.test_settings')
-
-# Even though we don't use pygments directly in this file, we need
-# this import.
-try:
-    import pygments
-except ImportError:
-    bail('The Pygments library is required to run the backend test suite.')
-
 K = TypeVar('K')
 V = TypeVar('V')
 def find_dict(lst, k, v):
@@ -76,7 +59,7 @@ def find_dict(lst, k, v):
     for dct in lst:
         if dct[k] == v:
             return dct
-    raise Exception('Cannot find element in list where key %s == %s' % (k, v))
+    raise AssertionError('Cannot find element in list where key %s == %s' % (k, v))
 
 class SlowQueryTest(TestCase):
     def test_is_slow_query(self):
@@ -628,7 +611,7 @@ class WorkerTest(TestCase):
         fn = os.path.join(settings.QUEUE_ERROR_DIR, 'unreliable_worker.errors')
         try:
             os.remove(fn)
-        except OSError:
+        except OSError:  # nocoverage # error handling for the directory not existing
             pass
 
         with simulated_queue_client(lambda: fake_client):
@@ -650,7 +633,7 @@ class WorkerTest(TestCase):
 
             def consume(self, data):
                 # type: (Mapping[str, Any]) -> None
-                pass
+                pass  # nocoverage # this is intentionally not called
         with self.assertRaises(queue_processors.WorkerDeclarationException):
             TestWorker()
 
@@ -2060,7 +2043,7 @@ class HomeTest(ZulipTestCase):
 
         for html_bit in html_bits:
             if html_bit not in html:
-                self.fail('%s not in result' % (html_bit,))
+                raise AssertionError('%s not in result' % (html_bit,))
 
         page_params = self._get_page_params(result)
 
@@ -2111,7 +2094,7 @@ class HomeTest(ZulipTestCase):
         '''
         html = result.content.decode('utf-8')
         if 'Compose your message' not in html:
-            self.fail('Home page probably did not load.')
+            raise AssertionError('Home page probably did not load.')
 
     def test_terms_of_service(self):
         # type: () -> None
@@ -2268,11 +2251,13 @@ class AuthorsPageTest(ZulipTestCase):
         would not have the `static/generated/github-contributors.json` fixture
         file.
         """
+        # This block has unreliable test coverage due to the implicit
+        # caching here, so we exclude it from coverage.
         if not os.path.exists(settings.CONTRIBUTORS_DATA):
             # Copy the fixture file in `zerver/fixtures` to `static/generated`
             update_script = os.path.join(os.path.dirname(__file__),
-                                         '../../tools/update-authors-json')
-            subprocess.check_call([update_script, '--use-fixture'])
+                                         '../../tools/update-authors-json')  # nocoverage
+            subprocess.check_call([update_script, '--use-fixture'])  # nocoverage
 
     def test_endpoint(self):
         # type: () -> None
