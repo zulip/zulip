@@ -62,6 +62,30 @@ Note that `static/html/{400,5xx}.html` will only render properly if
 minification is enabled, since they, by nature, hardcode the path
 `static/min/portico.css`.
 
+## How it works in production
+
+You can learn a lot from reading about django-pipeline, but a few
+useful notes are:
+* Zulip installs static assets in production in
+`/home/zulip/prod-static`.  When a new version is deployed, before the
+server is restarted, files are copied into that directory.
+* We use the VFL (Versioned File Layout) strategy, where each file in
+  the codebase (e.g. `favicon.ico`) gets a new name
+  (e.g. `favicon.c55d45ae8c58.ico`) that contains a hash in it.  Each
+  deployment, has a manifest file
+  (e.g. `/home/zulip/deployments/current/staticfiles.json`) that maps
+  codebase filenames to serving filenames for that deployment.  The
+  benefit of this VFL approach is that all the static files for past
+  deployments can coexist, which in turn eliminates most classes of
+  race condition bugs where browser windows opened just before a
+  deployment can't find their static assets.  It also is necessary for
+  any incremental rollout strategy where different clients get
+  different versions of the site.
+* Some paths for files (e.g. emoji) are stored in the
+  `rendered_content` of past messages, and thus cannot be removed
+  without breaking the rendering of old messages (or doing a
+  mass-rerender of old messages).
+
 ## Experimental Webpack/CommonJS modules
 
 This section is experimental and largely irrelevant unless you're

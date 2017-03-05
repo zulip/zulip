@@ -1,3 +1,4 @@
+# Useful reading is https://zulip.readthedocs.io/en/latest/front-end-build-process.html
 from __future__ import absolute_import
 
 import os
