@@ -120,7 +120,7 @@ def api_pagerduty_webhook(request, user_profile, client, payload=REQ(argument_ty
 
         try:
             format_dict = build_pagerduty_formatdict(message)
-        except:
+        except Exception:
             send_raw_pagerduty_json(user_profile, client, stream, message, topic)
         else:
             send_formated_pagerduty(user_profile, client, stream, message_type, format_dict, topic)
