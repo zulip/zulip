@@ -27,12 +27,13 @@ def report(state, msg):
 def get_loc_over_ssh(host, func):
     # type: (str, str) -> str
     try:
-        return subprocess.check_output(['ssh', host,
-                                        'psql zulip -t -c "SELECT %s()"' % (func,)],
-                                       stderr=subprocess.STDOUT,
-                                       universal_newlines=True)
+        output = subprocess.check_output(['ssh', host,
+                                          'psql zulip -t -c "SELECT %s()"' % (func,)],
+                                         stderr=subprocess.STDOUT,
+                                         universal_newlines=True)
     except subprocess.CalledProcessError as e:
         report('CRITICAL', 'ssh failed: %s: %s' % (str(e), e.output))
+    return output
 
 def loc_to_abs_offset(loc_str):
     # type: (str) -> int
