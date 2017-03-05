@@ -7,6 +7,8 @@ add_dependencies({
     i18n: 'i18next',
 });
 
+set_global('channel', {});
+
 var subs = require('js/subs.js');
 
 var jsdom = require("jsdom");
@@ -158,5 +160,40 @@ subs.stream_description_match_stream_ids = [];
     assert.equal(subs.stream_description_match_stream_ids, 0);
     assert.equal(subs.stream_name_match_stream_ids[0], 1);
     assert.equal(subs.stream_name_match_stream_ids[1], 2);
+}());
+
+(function test_sub_or_unsub() {
+    var denmark = {
+        subscribed: false,
+        name: 'Denmark',
+        stream_id: 1,
+        description: 'Copenhagen',
+    };
+    stream_data.clear_subscriptions();
+    stream_data.add_sub("Denmark", denmark);
+
+    var post_params;
+
+    global.channel.post = function (params) {
+        post_params = params;
+    };
+
+    subs.sub_or_unsub(denmark);
+    assert.equal(post_params.url, '/json/users/me/subscriptions');
+    assert.deepEqual(post_params.data,
+        {subscriptions: '[{"name":"Denmark"}]'});
+
+    global.channel.post = undefined;
+
+    global.channel.del = function (params) {
+        post_params = params;
+    };
+
+    stream_data.get_sub_by_id(denmark.stream_id).subscribed = true;
+    subs.sub_or_unsub(denmark);
+    assert.equal(post_params.url, '/json/users/me/subscriptions');
+    assert.deepEqual(post_params.data,
+        {subscriptions: '["Denmark"]'});
+
 }());
 

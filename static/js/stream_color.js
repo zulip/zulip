@@ -88,7 +88,7 @@ exports.set_colorpicker_color = function (colorpicker, color) {
                          {color: color, container: "#subscription_overlay .subscription_settings.show"}));
 };
 
-exports.update_stream_color = function (sub, stream_name, color, opts) {
+exports.update_stream_color = function (sub, color, opts) {
     opts = _.defaults({}, opts, {update_historical: false});
     sub.color = color;
     var id = parseInt(sub.stream_id, 10);
@@ -99,7 +99,7 @@ exports.update_stream_color = function (sub, stream_name, color, opts) {
     $("#subscription_overlay .subscription_settings[data-stream-id='" + id + "'] .large-icon").css("color", color);
 
     if (opts.update_historical) {
-        update_historical_message_color(stream_name, color);
+        update_historical_message_color(sub.name, color);
     }
     update_stream_sidebar_swatch_color(id, color);
     tab_bar.colorize_tab_bar();

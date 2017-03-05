@@ -1833,12 +1833,12 @@ def log_subscription_property_change(user_email, stream_name, property, value):
              'value': value}
     log_event(event)
 
-def do_change_subscription_property(user_profile, sub, stream_name,
+def do_change_subscription_property(user_profile, sub, stream,
                                     property_name, value):
-    # type: (UserProfile, Subscription, Text, Text, Any) -> None
+    # type: (UserProfile, Subscription, Stream, Text, Any) -> None
     setattr(sub, property_name, value)
     sub.save(update_fields=[property_name])
-    log_subscription_property_change(user_profile.email, stream_name,
+    log_subscription_property_change(user_profile.email, stream.name,
                                      property_name, value)
 
     event = dict(type="subscription",
@@ -1846,7 +1846,8 @@ def do_change_subscription_property(user_profile, sub, stream_name,
                  email=user_profile.email,
                  property=property_name,
                  value=value,
-                 name=stream_name)
+                 stream_id=stream.id,
+                 name=stream.name)
     send_event(event, [user_profile.id])
 
 def do_activate_user(user_profile, log=True, join_date=timezone.now()):
@@ -2176,6 +2177,7 @@ def do_rename_stream(stream, new_name, log=True):
             type="stream",
             property=property,
             value=value,
+            stream_id=stream.id,
             name=old_name
         )
         send_event(event, can_access_stream_user_ids(stream))
@@ -2189,9 +2191,14 @@ def do_change_stream_description(stream, new_description):
     stream.description = new_description
     stream.save(update_fields=['description'])
 
-    event = dict(type='stream', op='update',
-                 property='description', name=stream.name,
-                 value=new_description)
+    event = dict(
+        type='stream',
+        op='update',
+        property='description',
+        name=stream.name,
+        stream_id=stream.id,
+        value=new_description
+    )
     send_event(event, can_access_stream_user_ids(stream))
 
 def do_create_realm(string_id, name, restricted_to_domain=None,

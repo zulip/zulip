@@ -660,10 +660,11 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('subscription')),
             ('op', equals('update')),
             ('property', equals('pin_to_top')),
+            ('stream_id', check_int),
             ('value', check_bool),
         ])
-        stream = "Denmark"
-        sub = get_subscription(stream, self.user_profile)
+        stream = get_stream("Denmark", self.user_profile.realm)
+        sub = get_subscription(stream.name, self.user_profile)
         do_change_subscription_property(self.user_profile, sub, stream, "pin_to_top", False)
         for pinned in (True, False):
             events = self.do_test(lambda: do_change_subscription_property(self.user_profile, sub, stream, "pin_to_top", pinned))
@@ -1108,6 +1109,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('op', equals('update')),
             ('property', equals('email_address')),
             ('value', check_string),
+            ('stream_id', check_int),
             ('name', equals('old_name')),
         ])
         error = schema_checker('events[0]', events[0])
@@ -1209,6 +1211,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('op', equals('update')),
             ('property', equals('description')),
             ('value', check_string),
+            ('stream_id', check_int),
             ('name', check_string),
         ])
 

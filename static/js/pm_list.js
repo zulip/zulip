@@ -62,7 +62,7 @@ function set_pm_conversation_count(conversation, count) {
 }
 
 function remove_expanded_private_messages() {
-    popovers.hide_topic_sidebar_popover();
+    stream_popover.hide_topic_popover();
     $("ul.expanded_private_messages").remove();
     resize.resize_stream_filters_container();
 }
