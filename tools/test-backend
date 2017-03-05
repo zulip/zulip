@@ -79,7 +79,6 @@ not_yet_fully_covered = {
     'zerver/lib/notifications.py',
     'zerver/lib/push_notifications.py',
     'zerver/lib/upload.py',
-    'zerver/lib/validator.py',
     'zerver/models.py',
     # Test files should have full coverage; it's a bug in the test if
     # they don't!  There are open issues for all of these.
