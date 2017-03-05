@@ -1413,10 +1413,12 @@ $(function () {
         if ($(e.target).closest(".check, .subscription_settings").length === 0) {
             show_stream_row(this, e);
             exports.change_state.prevent_once();
+            var stream_id = $(this).attr("data-stream-id");
+            var sub = stream_data.get_sub_by_id(stream_id);
 
             window.location.hash = "#subscriptions" + "/" +
-                $(this).attr("data-stream-id") + "/" +
-                hashchange.encodeHashComponent($(this).attr("data-stream-name"));
+                stream_id + "/" +
+                hashchange.encodeHashComponent(sub.name);
         }
     });
 
