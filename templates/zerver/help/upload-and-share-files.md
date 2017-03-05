@@ -16,6 +16,10 @@ After submitting your message, you will see a clickable thumbnail if
 your file is a common image type (i.e. PNG, JPEG, etc.); all other
 files will simply have a link displayed.
 
+!!! tip ""
+    You can view and [manage your uploaded files](/help/manage-your-uploaded-files)
+    in the [Uploaded files](#settings/uploaded-files) {!settings.md!}
+
 ## Link Behavior
 
 Clicking all file links will open a new tab that will either:
@@ -33,7 +37,7 @@ downloaded).
     or by clicking the x (<i class="icon-vector-remove"></i>) icon found in
     the upper right-hand corner.
 
-## Sharing Files from External Websites
+## Sharing files from external websites
 
 Images and videos shared from external websites, such as Imgur or
 YouTube, may have previews generated as well. Clicking previews of
