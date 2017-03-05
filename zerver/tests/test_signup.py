@@ -98,7 +98,7 @@ class PublicURLTest(ZulipTestCase):
         # 'index.md') to `get_urls['200']` list.
         for doc in os.listdir('./templates/zerver/help'):
             if doc.startswith(".") or '~' in doc or '#' in doc:
-                continue
+                continue  # nocoverage -- just here for convenience
             if doc not in {'main.html', 'index.md', 'include'}:
                 get_urls[200].append('/help/' + os.path.splitext(doc)[0]) # Strip the extension.
 
@@ -1059,7 +1059,7 @@ class UserSignUpTest(ZulipTestCase):
                     message.body).groups()[0]
                 break
         else:
-            raise ValueError("Couldn't find a confirmation email.")
+            raise AssertionError("Couldn't find a confirmation email.")
 
         result = self.client_get(confirmation_url)
         self.assertEqual(result.status_code, 200)
@@ -1100,7 +1100,7 @@ class UserSignUpTest(ZulipTestCase):
                     message.body).groups()[0]
                 break
         else:
-            raise ValueError("Couldn't find a confirmation email.")
+            raise AssertionError("Couldn't find a confirmation email.")
 
         result = self.client_get(confirmation_url)
         self.assertEqual(result.status_code, 200)
@@ -1179,7 +1179,7 @@ class UserSignUpTest(ZulipTestCase):
                     message.body).groups()[0]
                 break
         else:
-            raise ValueError("Couldn't find a confirmation email.")
+            raise AssertionError("Couldn't find a confirmation email.")
 
         with self.settings(
                 POPULATE_PROFILE_VIA_LDAP=True,
@@ -1253,7 +1253,7 @@ class UserSignUpTest(ZulipTestCase):
                     message.body).groups()[0]
                 break
         else:
-            raise ValueError("Couldn't find a confirmation email.")
+            raise AssertionError("Couldn't find a confirmation email.")
 
         result = self.client_get(confirmation_url)
         self.assertEqual(result.status_code, 200)
