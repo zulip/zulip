@@ -124,7 +124,7 @@ class TemplateTestCase(ZulipTestCase):
             template = get_template(template_name)
             try:
                 template.render(context)
-            except Exception:
+            except Exception:  # nocoverage # nicer error handler
                 logging.error("Exception while rendering '{}'".format(template.template.name))
                 raise
 

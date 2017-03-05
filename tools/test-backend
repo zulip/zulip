@@ -87,7 +87,6 @@ not_yet_fully_covered = {
     'zerver/tests/test_decorators.py',
     'zerver/tests/test_email_mirror.py',
     'zerver/tests/test_narrow.py',
-    'zerver/tests/test_templates.py',
     'zerver/tests/test_tornado.py',
     'zerver/tests/test_urls.py',
     # Getting views file coverage to 100% is a major project goal
