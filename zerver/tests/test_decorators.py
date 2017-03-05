@@ -1023,3 +1023,10 @@ class RestAPITest(ZulipTestCase):
         result = self.client_options('/json/streams/15')
         self.assertEqual(result.status_code, 204)
         self.assertEqual(str(result['Allow']), 'DELETE, PATCH')
+
+    def test_http_accept_redirect(self):
+        # type: () -> None
+        result = self.client_get('/json/users',
+                                 HTTP_ACCEPT='text/html')
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith("/login/?next=/json/users"))
