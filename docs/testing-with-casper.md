@@ -76,6 +76,14 @@ set a breakpoint and it is hit, the inspector will pause and you can do
 your normal JS debugging. You can also put breakpoints in the Zulip
 webpage itself if you wish to inspect the state of the Zulip frontend.
 
+### Reproducing races only seen in Travis CI
+
+We've sometimes found it useful for reproducing Casper race conditions
+in Casper tests that mostly only happen in Travis CI with really cheap
+VPS servers (e.g. Scaleway's 2GB x86).  This works because an ultra
+slow machine is more likely to have things happen in an order similar
+to what happens in Travis CI's very slow containers.
+
 ## Writing Casper tests
 
 Probably the easiest way to learn how to write Casper tests is to study
