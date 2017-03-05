@@ -1109,6 +1109,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('op', equals('update')),
             ('property', equals('email_address')),
             ('value', check_string),
+            ('stream_id', check_int),
             ('name', equals('old_name')),
         ])
         error = schema_checker('events[0]', events[0])
@@ -1210,6 +1211,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('op', equals('update')),
             ('property', equals('description')),
             ('value', check_string),
+            ('stream_id', check_int),
             ('name', check_string),
         ])
 
