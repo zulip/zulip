@@ -280,6 +280,7 @@ if __name__ == "__main__":
             print("It looks like your changes lost 100% test coverage in one or more files")
             print("Usually, the right fix for this is to add some tests.")
             print("But also check out the include/exclude lists in tools/test-backend.")
+            print("If this line intentionally is not tested, you can use a # nocoverage comment.")
             print("To run this check locally, use `test-backend --coverage`.")
     if options.profile:
         prof.disable()
