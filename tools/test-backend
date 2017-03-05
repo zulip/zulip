@@ -36,6 +36,7 @@ target_fully_covered = {path for target in [
     'zerver/lib/users.py',
     'zerver/lib/webhooks/*.py',
     'zerver/views/*.py',
+    'zerver/tests/*.py',
     # Once we have a nice negative tests system, we can add these:
     # 'zerver/webhooks/*/*.py',
     # 'zerver/webhooks/*/*/*.py',
@@ -81,7 +82,7 @@ not_yet_fully_covered = {
     'zerver/lib/validator.py',
     'zerver/models.py',
     # Test files should have full coverage; it's a bug in the test if
-    # they don't!
+    # they don't!  There are open issues for all of these.
     'zerver/tests/test_narrow.py',
     'zerver/tests/test_tornado.py',
     'zerver/tests/test_urls.py',
