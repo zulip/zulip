@@ -1,0 +1,11 @@
+[report]
+# Regexes for lines to exclude from consideration
+exclude_lines =
+    # Re-enable the standard coverage pragma
+    pragma: no cover
+
+[run]
+omit =
+    */zulip-venv-cache/*
+    */migrations/*
+    */management/commands/*
