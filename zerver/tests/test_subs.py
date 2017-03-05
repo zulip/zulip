@@ -1854,7 +1854,7 @@ class SubscriptionAPITest(ZulipTestCase):
         We cannot randomly generate stream names because the remove code
         verifies whether streams exist.
         """
-        self.assertGreaterEqual(self.streams, 2)
+        self.assertGreaterEqual(len(self.streams), 2)
         streams_to_remove = self.streams[1:]
         not_subbed = []
         for stream in Stream.objects.all():
