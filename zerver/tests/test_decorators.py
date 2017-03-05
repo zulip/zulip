@@ -1004,3 +1004,11 @@ class ReturnSuccessOnHeadRequestDecorator(ZulipTestCase):
 
             response = test_function(request)
             self.assertEqual(ujson.loads(response.content).get('msg'), u'from_test_function')
+
+class RestAPITest(ZulipTestCase):
+    def test_method_not_allowed(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        result = self.client_patch('/json/users')
+        self.assertEqual(result.status_code, 405)
+        self.assert_in_response('Method Not Allowed', result)
