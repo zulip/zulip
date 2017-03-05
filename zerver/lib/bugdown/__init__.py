@@ -67,7 +67,7 @@ def unescape(s):
     # type: (Text) -> (Text)
     if six.PY2:
         return html_parser.HTMLParser().unescape(s)
-    elif six.PY3:
+    else:  # nocoverage since coverage.py doesn't understand else statements.
         return html.unescape(s)
 
 def list_of_tlds():
