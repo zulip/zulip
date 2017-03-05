@@ -77,6 +77,13 @@ module are located in `frontend_tests/node_tests/`. For more
 information on writing and running tests see the [testing
 documentation](testing.html).
 
+### Documentation changes
+
+After implementing the new feature, you should
+document it and update any existing documentation that might be
+relevant to the new feature. For more information on the kinds of
+documentation Zulip has, see [Documentation](README.html).
+
 ## Example Feature
 
 This example describes the process of adding a new setting to Zulip: a
@@ -289,3 +296,23 @@ Any code needed to update the UI should be placed in
 function. This ensures the appropriate code will run even if the
 changes are made in another browser window. In this example most of
 the changes are on the backend, so no UI updates are required.
+
+### Update documentation
+
+After you add a new view, you should document your feature. This
+feature adds new functionality that restricts inviting new users to
+admins only. A recommended way to document this feature would be to
+update and/or augment [Zulip's user documentation](https://chat.zulip.org/help/)
+to reflect your changes and additions.
+
+At the very least, this will involve adding (or modifying) a Markdown file
+documenting the feature to `templates/zerver/help/` in the main Zulip
+server repository, where the source for Zulip's user documentation is
+stored. For information on writing user documentation, see
+[Zulip's general user guide documentation](user-docs.html).
+
+For a more concrete example of writing documentation for a new feature, see
+[the original commit in the Zulip repo](https://github.com/zulip/zulip/commit/5b4d9774e02a45e43465b0a28ffb3d9b373c9098)
+that documented this feature, [the current
+source](https://github.com/zulip/zulip/blob/master/templates/zerver/help/only-allow-admins-to-invite-new-users.md),
+and [the final rendered documentation](https://chat.zulip.org/help/only-allow-admins-to-invite-new-users).
