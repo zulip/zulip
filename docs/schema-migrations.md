@@ -35,6 +35,16 @@ migrations.
   to use the batch update tools in `zerver/lib/migrate.py` (originally
   written to work with South) for doing larger database migrations.
 
+* **Accessing models in RunPython migrations**.  When writing a
+  migration that includes custom python code (aka `RunPython`), you
+  cannot just use `from zerver.models import UserProfile` to access
+  models; that would import the model as it is right now.  What you
+  want is to import a version of model "as of just before the
+  currently executing migration".  You can do this inside the relevant
+  migration function with `apps.get_model`.  We have a linter rule to
+  warn about this sort of issue, since it often manifests long after
+  the actual mistake.
+
 * **Making large migrations work**.  Major migrations should have a
 few properties:
 
