@@ -31,8 +31,7 @@ class EmailChangeTestCase(ZulipTestCase):
         url = EmailChangeConfirmation.objects.get_activation_url(
             key, 'testserver')
         response = self.client_get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("Whoops", response.content.decode('utf8'))
+        self.assert_in_success_response("Whoops", response)
 
     def test_confirm_email_change_with_invalid_key(self):
         # type: () -> None
@@ -44,8 +43,7 @@ class EmailChangeTestCase(ZulipTestCase):
         url = EmailChangeConfirmation.objects.get_activation_url(
             key, 'testserver')
         response = self.client_get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("Whoops", response.content.decode('utf8'))
+        self.assert_in_success_response("Whoops", response)
 
     def test_email_change_when_not_logging_in(self):
         # type: () -> None
@@ -75,8 +73,7 @@ class EmailChangeTestCase(ZulipTestCase):
                                                confirmation_key=key)
         url = EmailChangeConfirmation.objects.get_activation_url(key)
         response = self.client_get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("Whoops", response.content.decode('utf8'))
+        self.assert_in_success_response("Whoops", response)
 
     def test_confirm_email_change(self):
         # type: () -> None
@@ -96,8 +93,8 @@ class EmailChangeTestCase(ZulipTestCase):
         response = self.client_get(url)
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn("This confirms that the email address for your Zulip",
-                      response.content.decode('utf8'))
+        self.assert_in_success_response("This confirms that the email address for your Zulip",
+                                        response)
         user_profile = get_user_profile_by_email(new_email)
         self.assertTrue(bool(user_profile))
         obj.refresh_from_db()
@@ -118,7 +115,7 @@ class EmailChangeTestCase(ZulipTestCase):
         self.assertEqual(len(mail.outbox), 0)
         result = self.client_post(url, data)
         self.assertEqual(len(mail.outbox), 1)
-        self.assertIn('We have sent you an email', result.content.decode('utf8'))
+        self.assert_in_success_response('We have sent you an email', result)
         email_message = mail.outbox[0]
         self.assertEqual(
             email_message.subject,
@@ -130,9 +127,8 @@ class EmailChangeTestCase(ZulipTestCase):
         activation_url = [s for s in body.split('\n') if s][4]
         response = self.client_get(activation_url)
 
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("This confirms that the email address",
-                      response.content.decode('utf8'))
+        self.assert_in_success_response("This confirms that the email address",
+                                        response)
 
     def test_unauthorized_email_change(self):
         # type: () -> None
@@ -145,7 +141,8 @@ class EmailChangeTestCase(ZulipTestCase):
         result = self.client_post(url, data)
         self.assertEqual(len(mail.outbox), 0)
         self.assertEqual(result.status_code, 400)
-        self.assertIn("Email change is disabled!", result.content.decode('utf8'))
+        self.assert_in_response("Email address changes are disabled in this organization.",
+                                result)
 
     def test_unauthorized_email_change_from_email_confirmation_link(self):
         # type: () -> None
@@ -156,7 +153,7 @@ class EmailChangeTestCase(ZulipTestCase):
         self.assertEqual(len(mail.outbox), 0)
         result = self.client_post(url, data)
         self.assertEqual(len(mail.outbox), 1)
-        self.assertIn('We have sent you an email', result.content.decode('utf8'))
+        self.assert_in_success_response('We have sent you an email', result)
         email_message = mail.outbox[0]
         self.assertEqual(
             email_message.subject,
@@ -172,7 +169,8 @@ class EmailChangeTestCase(ZulipTestCase):
         response = self.client_get(activation_url)
 
         self.assertEqual(response.status_code, 400)
-        self.assertIn("Email change disabled", response.content.decode('utf8'))
+        self.assert_in_response("Email address changes are disabled in this organization.",
+                                response)
 
     def test_post_invalid_email(self):
         # type: () -> None
@@ -181,7 +179,7 @@ class EmailChangeTestCase(ZulipTestCase):
         self.login(email)
         url = '/json/settings/change'
         result = self.client_post(url, data)
-        self.assertIn('Invalid address', result.content.decode('utf8'))
+        self.assert_in_response('Invalid address', result)
 
     def test_post_same_email(self):
         # type: () -> None
