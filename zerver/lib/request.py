@@ -146,14 +146,14 @@ def has_request_variables(view_func):
                     val = param.converter(val)
                 except JsonableError:
                     raise
-                except:
+                except Exception:
                     raise RequestVariableConversionError(param.post_var_name, val)
 
             # Validators are like converters, but they don't handle JSON parsing; we do.
             if param.validator is not None and not default_assigned:
                 try:
                     val = ujson.loads(val)
-                except:
+                except Exception:
                     raise JsonableError(_('argument "%s" is not valid json.') % (param.post_var_name,))
 
                 error = param.validator(param.post_var_name, val)

@@ -27,7 +27,7 @@ class _RateLimitFilter(object):
             try:
                 cache.set('RLF_TEST_KEY', 1, 1)
                 use_cache = cache.get('RLF_TEST_KEY') == 1
-            except:
+            except Exception:
                 use_cache = False
 
             if use_cache:
