@@ -407,6 +407,10 @@ def build_custom_checkers(by_lang):
          'include_only': set(["zerver/views/"]),
          'description': 'Please use access_stream_by_*() to fetch Stream objects',
          },
+        {'pattern': 'from zerver.models import',
+         'include_only': set(["/migrations/"]),
+         'description': "Don't import models in migrations; see docs/schema-migrations.md for solution",
+         },
         # This rule might give false positives in virtualenv setup files which should be excluded,
         # and comments which should be rewritten to avoid use of "python2", "python3", etc.
         {'pattern': 'python[23]',
