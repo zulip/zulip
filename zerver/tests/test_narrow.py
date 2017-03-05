@@ -1063,7 +1063,7 @@ class GetOldMessagesTest(ZulipTestCase):
                 sql = str(query['sql']).replace(" /* get_old_messages */", '')
                 self.assertEqual(sql, expected)
                 return
-        self.fail("get_old_messages query not found")
+        raise AssertionError("get_old_messages query not found")
 
     def test_use_first_unread_anchor_with_some_unread_messages(self):
         # type: () -> None
