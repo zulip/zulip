@@ -827,11 +827,10 @@ exports.update_subscription_properties = function (stream_id, property, value) {
                                                             value: value});
         return;
     }
-    var stream_name = sub.name;
 
     switch (property) {
     case 'color':
-        stream_color.update_stream_color(sub, stream_name, value, {update_historical: true});
+        stream_color.update_stream_color(sub, value, {update_historical: true});
         break;
     case 'in_home_view':
         update_in_home_view(sub, value);
