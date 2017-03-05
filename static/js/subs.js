@@ -1292,17 +1292,6 @@ $(function () {
         e.stopPropagation();
     });
 
-    $("body").on("click", ".popover_sub_unsub_button", function (e) {
-        $(this).toggleClass("unsub");
-        $(this).closest(".popover").fadeOut(500).delay(500).remove();
-
-        var stream_name = $(e.target).data("name");
-        var sub = stream_data.get_sub(stream_name);
-        exports.sub_or_unsub(sub);
-        e.preventDefault();
-        e.stopPropagation();
-    });
-
     $("#zfilt").on("click", ".stream_sub_unsub_button", function (e) {
         e.preventDefault();
         e.stopPropagation();
