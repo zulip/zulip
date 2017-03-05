@@ -5,6 +5,10 @@ from typing import Text
 
 from zerver.lib.utils import make_safe_digest
 
+if False:
+    # Typing import inside `if False` to avoid import loop.
+    from zerver.models import UserProfile
+
 import hashlib
 
 def gravatar_hash(email):
