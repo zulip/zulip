@@ -18,8 +18,8 @@ HELP_MESSAGE = '''
 
             Before running this, make sure to get a Mashape Api token.
             Instructions are in the 'readme.md' file.
-            Store it in the 'yoda_bot.config' file.
-            The 'yoda_bot.config' file should be located at '~/yoda_bot.config'.
+            Store it in the 'yoda.config' file.
+            The 'yoda.config' file should be located at '~/yoda.config'.
             Example input:
             @mention-bot You will learn how to speak like me someday.
             '''
@@ -43,8 +43,8 @@ class YodaSpeakHandler(object):
 
             Before running this, make sure to get a Mashape Api token.
             Instructions are in the 'readme.md' file.
-            Store it in the 'yoda_bot.config' file.
-            The 'yoda_bot.config' file should be located at '~/yoda_bot.config'.
+            Store it in the 'yoda.config' file.
+            The 'yoda.config' file should be located at '~/yoda.config'.
             Example input:
             @mention-bot You will learn how to speak like me someday.
             '''
@@ -115,7 +115,7 @@ def handle_input(client, original_content, stream, subject):
 def get_api_key():
     # function for getting Mashape api key
     home = os.path.expanduser('~')
-    with open(home + '/yoda_bot.config') as api_key_file:
+    with open(home + '/yoda.config') as api_key_file:
         api_key = api_key_file.read().strip()
     return api_key
 

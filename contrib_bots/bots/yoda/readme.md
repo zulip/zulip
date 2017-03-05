@@ -1,12 +1,12 @@
 # Overview
 
-This is the documentation for how to set up and run the yoda_bot. (`yoda_bot.py`)
+This is the documentation for how to set up and run the yoda bot. (`yoda.py`)
 
 This directory contains library code for running Zulip
 bots that react to messages sent by users.
 
 This bot will allow users to translate a sentence into 'Yoda speak'.
-It looks for messages starting with '@yoda'. You will need to have a
+It looks for messages starting with at-mention of the botname. You will need to have a
 Mashape API key. Please see instructions for getting one below.
 
 ## Setup
@@ -14,7 +14,7 @@ Mashape API key. Please see instructions for getting one below.
 Before running this bot, make sure to get a Mashape API key.
 Go to this link:
 <https://market.mashape.com/ismaelc/yoda-speak/overview>
-This is the API that powers the `yoda_bot`. You can read more about it
+This is the API that powers the `yoda`. You can read more about it
 on this page.
 
 ![yoda api overview](assets/yoda-speak-api.png)
@@ -29,23 +29,23 @@ the Yoda Speak API to. Click on the blue **GET THE KEYS** button.
 
 On the pop-up that comes up, click on the **COPY** button.
 This is your Mashape API key. It is used
-to authenticate. Store it in the `yoda_bot.config` file.
+to authenticate. Store it in the `yoda.config` file.
 
-The `yoda_bot.config` file should be located at `~/yoda_bot.config`.
+The `yoda.config` file should be located at `~/yoda.config`.
 
 Example input:
 
-    @yoda You will learn how to speak like me someday.
+    @mention-bot You will learn how to speak like me someday.
 
-If you need help while the bot is running just input `@yoda help`.
+If you need help while the bot is running just input `@mention-bot help`.
 
 ## Running the bot
 
-Here is an example of running the "yoda_bot" bot from
+Here is an example of running the "yoda" bot from
 inside a Zulip repo:
 
     cd ~/zulip/contrib_bots
-    ./run.py bots/yoda_bot/yoda_bot.py --config-file ~/.zuliprc-prod
+    ./run.py bots/yoda/yoda.py --config-file ~/.zuliprc-prod
 
 Once the bot code starts running, you will see a
 message explaining how to use the bot, as well as
