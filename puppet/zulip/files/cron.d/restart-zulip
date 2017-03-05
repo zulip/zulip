@@ -2,4 +2,6 @@ SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 USER=zulip
 
-0 6 * * 7 zulip supervisorctl restart all
+# Cron job to restart the Zulip server weekly, with the goal of
+# minimizing the impact of any memory leaks that we might grow.
+0 6 * * 7 zulip /home/zulip/deployments/current/scripts/restart-server
