@@ -818,15 +818,17 @@ exports.close = function () {
     subs.remove_miscategorized_streams();
 };
 
-exports.update_subscription_properties = function (stream_name, property, value) {
-    var sub = stream_data.get_sub(stream_name);
+exports.update_subscription_properties = function (stream_id, property, value) {
+    var sub = stream_data.get_sub_by_id(stream_id);
     if (sub === undefined) {
         // This isn't a stream we know about, so ignore it.
-        blueslip.warn("Update for an unknown subscription", {stream_name: stream_name,
+        blueslip.warn("Update for an unknown subscription", {stream_id: stream_id,
                                                             property: property,
                                                             value: value});
         return;
     }
+    var stream_name = sub.name;
+
     switch (property) {
     case 'color':
         stream_color.update_stream_color(sub, stream_name, value, {update_historical: true});
