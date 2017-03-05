@@ -166,6 +166,13 @@ class ZulipTestCase(TestCase):
         return django_client.delete(url, encoded, **kwargs)
 
     @instrument_url
+    def client_options(self, url, info={}, **kwargs):
+        # type: (Text, Dict[str, Any], **Any) -> HttpResponse
+        encoded = urllib.parse.urlencode(info)
+        django_client = self.client # see WRAPPER_COMMENT
+        return django_client.options(url, encoded, **kwargs)
+
+    @instrument_url
     def client_post(self, url, info={}, **kwargs):
         # type: (Text, Dict[str, Any], **Any) -> HttpResponse
         django_client = self.client # see WRAPPER_COMMENT

@@ -1012,3 +1012,14 @@ class RestAPITest(ZulipTestCase):
         result = self.client_patch('/json/users')
         self.assertEqual(result.status_code, 405)
         self.assert_in_response('Method Not Allowed', result)
+
+    def test_options_method(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        result = self.client_options('/json/users')
+        self.assertEqual(result.status_code, 204)
+        self.assertEqual(str(result['Allow']), 'GET, POST')
+
+        result = self.client_options('/json/streams/15')
+        self.assertEqual(result.status_code, 204)
+        self.assertEqual(str(result['Allow']), 'DELETE, PATCH')
