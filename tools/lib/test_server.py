@@ -52,7 +52,8 @@ def server_is_up(server, log_file):
         return False
 
 @contextmanager
-def test_server_running(force=False, external_host='testserver', log_file=None, dots=False, use_db=True):
+def test_server_running(force=False, external_host='testserver',
+                        log_file=None, dots=False, use_db=True):
     # type: (bool, str, str, bool, bool) -> Iterator[None]
     if log_file:
         if os.path.exists(log_file) and os.path.getsize(log_file) < 100000:

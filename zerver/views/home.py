@@ -291,6 +291,7 @@ def home_real(request):
         'realm_add_emoji_by_admins_only',
         'realm_allow_message_editing',
         'realm_authentication_methods',
+        'realm_bot_domain',
         'realm_create_stream_by_admins_only',
         'realm_default_language',
         'realm_default_streams',

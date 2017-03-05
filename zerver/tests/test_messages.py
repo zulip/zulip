@@ -1025,12 +1025,12 @@ class MessagePOSTTest(ZulipTestCase):
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
 
-        email = "irc-bot@zulip.com"
+        email = "irc-bot@zulip.testserver"
         user = get_user_profile_by_email(email)
         user.is_api_super_user = True
         user.save()
         user = get_user_profile_by_email(email)
-        self.subscribe_to_stream(email, "#IRCland")
+        self.subscribe_to_stream(email, "#IRCland", realm=user.realm)
         result = self.client_post("/api/v1/messages",
                                   {"type": "stream",
                                    "forged": "true",

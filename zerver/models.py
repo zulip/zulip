@@ -191,6 +191,16 @@ class Realm(ModelReprMixin, models.Model):
         # TODO: Change return type to QuerySet[UserProfile]
         return UserProfile.objects.filter(realm=self, is_active=True).select_related()
 
+    def get_bot_domain(self):
+        # type: () -> str
+        # Remove the port. Mainly needed for development environment.
+        external_host = settings.EXTERNAL_HOST.split(':')[0]
+        if settings.REALMS_HAVE_SUBDOMAINS or \
+           Realm.objects.filter(deactivated=False) \
+                        .exclude(string_id__in=settings.SYSTEM_ONLY_REALMS).count() > 1:
+            return "%s.%s" % (self.string_id, external_host)
+        return external_host
+
     @property
     def subdomain(self):
         # type: () -> Optional[Text]
