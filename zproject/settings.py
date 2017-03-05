@@ -838,6 +838,7 @@ JS_SPECS = {
             'js/scroll_bar.js',
             'js/gear_menu.js',
             'js/copy_and_paste.js',
+            'js/stream_popover.js',
             'js/popovers.js',
             'js/typeahead_helper.js',
             'js/search_suggestion.js',
