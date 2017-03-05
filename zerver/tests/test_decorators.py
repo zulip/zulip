@@ -31,7 +31,8 @@ from zerver.decorator import (
     return_success_on_head_request
 )
 from zerver.lib.validator import (
-    check_string, check_dict, check_bool, check_int, check_list, Validator
+    check_string, check_dict, check_bool, check_int, check_list, Validator,
+    check_variable_type, equals, check_none_or,
 )
 from zerver.models import \
     get_realm, get_user_profile_by_email, UserProfile, Client
@@ -491,6 +492,32 @@ class ValidatorTestCase(TestCase):
 
         nonperson = 'misconfigured data'
         self.assertEqual(check_person(nonperson), 'This is not a valid person')
+
+    def test_check_variable_type(self):
+        # type: () -> None
+        x = 5 # type: Any
+        self.assertEqual(check_variable_type([check_string, check_int])('x', x), None)
+
+        x = 'x'
+        self.assertEqual(check_variable_type([check_string, check_int])('x', x), None)
+
+        x = [{}]
+        self.assertEqual(check_variable_type([check_string, check_int])('x', x), 'x is not an allowed_type')
+
+    def test_equals(self):
+        # type: () -> None
+        x = 5 # type: Any
+        self.assertEqual(equals(5)('x', x), None)
+        self.assertEqual(equals(6)('x', x), 'x != 6 (5 is wrong)')
+
+    def test_check_none_or(self):
+        # type: () -> None
+        x = 5 # type: Any
+        self.assertEqual(check_none_or(check_int)('x', x), None)
+        x = None
+        self.assertEqual(check_none_or(check_int)('x', x), None)
+        x = 'x'
+        self.assertEqual(check_none_or(check_int)('x', x), 'x is not an integer')
 
 class DeactivatedRealmTest(ZulipTestCase):
     def test_send_deactivated_realm(self):
