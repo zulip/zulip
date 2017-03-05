@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+from argparse import ArgumentParser, RawTextHelpFormatter
 from typing import Any
 from django.conf import settings
 from django.core.management.base import BaseCommand
@@ -10,20 +11,26 @@ from zerver.models import Realm
 import sys
 
 class Command(BaseCommand):
-    help = """Outputs a randomly generated, 1-time-use link for Organization creation.
+    help = """
+    Outputs a randomly generated, 1-time-use link for Organization creation.
     Whoever visits the link can create a new organization on this server, regardless of whether
     settings.OPEN_REALM_CREATION is enabled. The link would expire automatically after
     settings.REALM_CREATION_LINK_VALIDITY_DAYS.
 
     Usage: ./manage.py generate_realm_creation_link """
 
+    # Fix support for multi-line usage
+    def create_parser(self, *args, **kwargs):
+        # type: (*Any, **Any) -> ArgumentParser
+        parser = super(Command, self).create_parser(*args, **kwargs)
+        parser.formatter_class = RawTextHelpFormatter
+        return parser
+
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
-
         try:
             # first check if the db has been initalized
             Realm.objects.first()
-
         except ProgrammingError:
             print("The Zulip database does not appear to exist. Have you run initialize-database?")
             sys.exit(1)
