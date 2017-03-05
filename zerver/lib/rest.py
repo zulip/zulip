@@ -50,7 +50,7 @@ def rest_dispatch(request, **kwargs):
 
     if request.method == 'OPTIONS':
         response = HttpResponse(status=204) # No content
-        response['Allow'] = ', '.join(supported_methods.keys())
+        response['Allow'] = ', '.join(sorted(supported_methods.keys()))
         response['Content-Length'] = "0"
         return response
 
