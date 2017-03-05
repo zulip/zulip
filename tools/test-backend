@@ -82,7 +82,6 @@ not_yet_fully_covered = {
     'zerver/models.py',
     # Test files should have full coverage; it's a bug in the test if
     # they don't!
-    'zerver/tests/test_auth_backends.py',
     'zerver/tests/test_narrow.py',
     'zerver/tests/test_tornado.py',
     'zerver/tests/test_urls.py',
