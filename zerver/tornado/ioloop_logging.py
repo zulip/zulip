@@ -15,7 +15,7 @@ try:
     def instrument_tornado_ioloop():
         # type: () -> None
         ioloop._poll = InstrumentedPoll # type: ignore # cross-version type variation is hard for mypy
-except:
+except Exception:
     # Tornado 3
     from tornado.ioloop import IOLoop, PollIOLoop
     # There isn't a good way to get at what the underlying poll implementation

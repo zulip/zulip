@@ -195,6 +195,6 @@ for i in itertools.count():
         if not i % 10:
             populate_events()
         send_reminders()
-    except:
+    except Exception:
         logging.exception("Couldn't download Google calendar and/or couldn't post to Zulip.")
     time.sleep(60)

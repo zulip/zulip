@@ -404,7 +404,7 @@ try:
     for s in (signal.SIGINT, signal.SIGTERM):
         signal.signal(s, shutdown_handler)
     ioloop.start()
-except:
+except Exception:
     # Print the traceback before we get SIGTERM and die.
     traceback.print_exc()
     raise

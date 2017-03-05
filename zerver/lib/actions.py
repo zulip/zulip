@@ -776,7 +776,7 @@ def compute_mit_user_fullname(email):
             return match_user.group(1).lower() + "@" + match_user.group(2).upper()[1:]
     except DNS.Base.ServerError:
         pass
-    except:
+    except Exception:
         print("Error getting fullname for %s:" % (email,))
         traceback.print_exc()
     return email.lower()

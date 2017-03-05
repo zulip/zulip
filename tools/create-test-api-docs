@@ -45,15 +45,15 @@ def encode_info(info):
         try:
             info = ujson.loads(info)
             result = '(stringified)\n'
-        except:
+        except Exception:
             pass
         result += cgi.escape(pprint.pformat(info, indent=4))
         return '<pre>' + result + '</pre>'
-    except:
+    except Exception:
         pass
     try:
         return cgi.escape(str(info))
-    except:
+    except Exception:
         pass
     return 'NOT ENCODABLE'
 
@@ -80,7 +80,7 @@ def create_single_page(pattern, out_dir, href, calls):
             f.write('<div class="test">')
             try:
                 f.write(call['url'])
-            except:
+            except Exception:
                 f.write(call['url'].encode('utf8'))
             f.write('<br>\n')
             f.write(call['method'] + '<br>\n')
