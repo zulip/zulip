@@ -162,11 +162,6 @@ def bugdown_convert(text):
     return bugdown.convert(text, message_realm=get_realm('zulip'))
 
 class BugdownTest(TestCase):
-    def common_bugdown_test(self, text, expected):
-        # type: (Text, Text) -> None
-        converted = bugdown_convert(text)
-        self.assertEqual(converted, expected)
-
     def load_bugdown_tests(self):
         # type: () -> Tuple[Dict[Text, Any], List[List[Text]]]
         test_fixtures = {}
