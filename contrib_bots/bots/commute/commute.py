@@ -6,13 +6,13 @@ from os.path import expanduser
 from six.moves import configparser as cp
 
 home = expanduser('~')
-CONFIG_PATH = home + '/commute_bot.config'
+CONFIG_PATH = home + '/commute.config'
 
 class CommuteHandler(object):
     '''
     This plugin provides information regarding commuting
     from an origin to a destination, providing a multitude of information.
-    It looks for messages starting with '@commute'.
+    It looks for messages starting with @mention of the bot.
     '''
 
     def __init__(self):
@@ -25,7 +25,7 @@ class CommuteHandler(object):
             It can vary outputs depending on traffic conditions, departure and
             arrival times as well as user preferences
             (toll avoidance, preference for bus travel, etc.).
-            It looks for messages starting with '@commute'.
+            It looks for messages starting with @mention of the bot.
 
             Users should input an origin and a destination
             in any stream or through private messages to the bot to receive a
@@ -33,8 +33,8 @@ class CommuteHandler(object):
             input was originally private.
 
             Sample input:
-            @commute origins=Chicago,IL,USA destinations=New+York,NY,USA
-            @commute help
+            @mention-botname origins=Chicago,IL,USA destinations=New+York,NY,USA
+            @mention-botname help
             '''
 
     help_info = '''
@@ -58,7 +58,7 @@ class CommuteHandler(object):
         e.g. language=fr
 
     Sample request:
-        @commute origins=Chicago,IL,USA destinations=New+York,NY,USA language=fr
+        @mention-botname origins=Chicago,IL,USA destinations=New+York,NY,USA language=fr
 
     Please note:
         Fare information can be derived, though is solely dependent on the
@@ -79,9 +79,9 @@ class CommuteHandler(object):
 
     # adds API Authentication Key to url request
     def get_api_key(self):
-        # commute_bot.config must have been moved from
-        # ~/zulip/contrib_bots/bots/commute_bot/commute_bot.config into
-        # /commute_bot.config for program to work
+        # commute.config must be moved from
+        # ~/zulip/contrib_bots/bots/commute/commute.config into
+        # ~/commute.config for program to work
         # see readme.md for more information
         with open(CONFIG_PATH) as settings:
             config = cp.ConfigParser()
@@ -210,13 +210,13 @@ class CommuteHandler(object):
 
     def handle_message(self, message, client, state_handler):
         original_content = message['content']
-        content_list = original_content.split()
+        query = original_content.split()
 
-        if "help" in content_list:
+        if "help" in query:
             self.send_info(message, self.help_info, client)
             return
 
-        params = self.parse_pair(content_list)
+        params = self.parse_pair(query)
         params['key'] = self.api_key
         self.add_time_to_params(params)
 

@@ -12,10 +12,10 @@ is not in the dictionary, the definition is not displayed.
 * For example, if the user says "@define crash", all the meanings of crash
 appear, each in a separate line.
 
-![Correct Word](correct_word.png)
+![Correct Word](assets/correct_word.png)
 
 * If the user enters a wrong word, like "@define cresh" or "@define crish",
 then an error message saying no definition is available is displayed.
 
-![Wrong Word](wrong_word.png)
+![Wrong Word](assets/wrong_word.png)
 
