@@ -66,6 +66,7 @@
         "message_flags": false,
         "bot_data": false,
         "stream_list": false,
+        "stream_popover": false,
         "narrow": false,
         "admin": false,
         "stream_data": false,

@@ -9,7 +9,7 @@ var active_widget;
 var zoomed = false;
 
 exports.remove_expanded_topics = function () {
-    popovers.hide_topic_sidebar_popover();
+    stream_popover.hide_topic_popover();
 
     if (active_widget) {
         active_widget.remove();
