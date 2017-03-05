@@ -40,7 +40,7 @@ def confirm_email_change(request, confirmation_key):
     # type: (HttpRequest, str) -> HttpResponse
     user_profile = request.user
     if user_profile.realm.email_changes_disabled:
-        raise JsonableError(_("Email change disabled"))
+        raise JsonableError(_("Email address changes are disabled in this organization."))
 
     confirmation_key = confirmation_key.lower()
     obj = EmailChangeConfirmation.objects.confirm(confirmation_key)
@@ -133,7 +133,7 @@ def json_change_settings(request, user_profile,
     new_email = email.strip()
     if user_profile.email != email and new_email != '':
         if user_profile.realm.email_changes_disabled:
-            return json_error(_("Email change is disabled!"))
+            return json_error(_("Email address changes are disabled in this organization."))
         error, skipped = validate_email(user_profile, new_email)
         if error or skipped:
             return json_error(error or skipped)
