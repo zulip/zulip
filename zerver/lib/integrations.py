@@ -174,7 +174,7 @@ INTEGRATIONS = {
     'basecamp': Integration('basecamp', 'basecamp'),
     'capistrano': Integration('capistrano', 'capistrano'),
     'codebase': Integration('codebase', 'codebase'),
-    'email': Integration('email', 'email'),
+    'email': EmailIntegration('email', 'email'),
     'git': Integration('git', 'git'),
     'google-calendar': Integration('google-calendar', 'google-calendar', display_name='Google Calendar'),
     'hubot': Integration('hubot', 'hubot'),
