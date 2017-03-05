@@ -1091,7 +1091,8 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
         with self.settings(REALMS_HAVE_SUBDOMAINS=True,
                            AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',)):
             with mock.patch('zerver.views.auth.get_subdomain', return_value='acme'):
-                result = self.client_post('http://testserver:9080/accounts/login/sso/', REMOTE_USER=email)
+                result = self.client_post('http://testserver:9080/accounts/login/sso/',
+                                          REMOTE_USER=email)
                 self.assertEqual(result.status_code, 200)
                 self.assertIs(get_session_dict_user(self.client.session), None)
                 self.assertIn(b"Let's get started", result.content)
@@ -1102,7 +1103,8 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
         with self.settings(REALMS_HAVE_SUBDOMAINS=True,
                            AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',)):
             with mock.patch('zerver.views.auth.get_subdomain', return_value=''):
-                result = self.client_post('http://testserver:9080/accounts/login/sso/', REMOTE_USER=email)
+                result = self.client_post('http://testserver:9080/accounts/login/sso/',
+                                          REMOTE_USER=email)
                 self.assertEqual(result.status_code, 200)
                 self.assertIs(get_session_dict_user(self.client.session), None)
                 self.assertIn(b"Let's get started", result.content)
