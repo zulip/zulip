@@ -72,7 +72,6 @@ not_yet_fully_covered = {
     'zerver/lib/bugdown/__init__.py',
     'zerver/lib/events.py',
     'zerver/lib/i18n.py',
-    'zerver/lib/integrations.py',
     'zerver/lib/message.py',
     'zerver/lib/narrow.py',
     'zerver/lib/notifications.py',
