@@ -79,7 +79,7 @@ class UploadSerializeMixin(SerializeMixin):
     def setUpClass(cls, *args, **kwargs):
         # type: (*Any, **Any) -> None
         if not os.path.exists(cls.lockfile):
-            with open(cls.lockfile, 'w'):
+            with open(cls.lockfile, 'w'):  # nocoverage - rare locking case
                 pass
 
         super(UploadSerializeMixin, cls).setUpClass(*args, **kwargs)
@@ -246,7 +246,7 @@ class ZulipTestCase(TestCase):
                 return re.search(settings.EXTERNAL_HOST + path_pattern,
                                  message.body).groups()[0]
         else:
-            raise ValueError("Couldn't find a confirmation email.")
+            raise AssertionError("Couldn't find a confirmation email.")
 
     def get_api_key(self, email):
         # type: (Text) -> Text
@@ -359,10 +359,6 @@ class ZulipTestCase(TestCase):
         # type: (HttpResponse, Text, int) -> None
         self.assertIn(msg_substring, self.get_json_error(result, status_code=status_code))
 
-    def assert_equals_response(self, string, response):
-        # type: (Text, HttpResponse) -> None
-        self.assertEqual(string, response.content.decode('utf-8'))
-
     def assert_in_response(self, substring, response):
         # type: (Text, HttpResponse) -> None
         self.assertIn(substring, response.content.decode('utf-8'))
@@ -390,7 +386,7 @@ class ZulipTestCase(TestCase):
                 name=stream_name,
                 invite_only=invite_only,
             )
-        except IntegrityError:
+        except IntegrityError:  # nocoverage -- this is for bugs in the tests
             raise Exception('''
                 %s already exists
 
