@@ -186,7 +186,7 @@ options like `async`.
 ### Translation tags
 
 Remember to
-[tag all user-facing strings for translation](translating.md), whether
+[tag all user-facing strings for translation](translating.html), whether
 they are in HTML templates or JavaScript editing the HTML (e.g. error
 messages).
 
