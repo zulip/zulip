@@ -118,6 +118,11 @@ function populate_streams(streams_data) {
     loading.destroy_indicator($('#admin_page_streams_loading_indicator'));
 }
 
+exports.toggle_email_change_display = function () {
+    $("#change_email").toggle();
+    $(".change_email_tooltip").toggle();
+};
+
 exports.build_default_stream_table = function (streams_data) {
     var self = {};
 
@@ -320,6 +325,7 @@ function _setup_page() {
         realm_invite_by_admins_only: page_params.realm_invite_by_admins_only,
         realm_authentication_methods: page_params.realm_authentication_methods,
         realm_create_stream_by_admins_only: page_params.realm_create_stream_by_admins_only,
+        realm_email_changes_disabled: page_params.realm_email_changes_disabled,
         realm_add_emoji_by_admins_only: page_params.realm_add_emoji_by_admins_only,
         realm_allow_message_editing: page_params.realm_allow_message_editing,
         realm_message_content_edit_limit_minutes:
@@ -571,6 +577,7 @@ function _setup_page() {
         var invite_by_admins_only_status = $("#admin-realm-invite-by-admins-only-status").expectOne();
         var authentication_methods_status = $("#admin-realm-authentication-methods-status").expectOne();
         var create_stream_by_admins_only_status = $("#admin-realm-create-stream-by-admins-only-status").expectOne();
+        var email_changes_disabled_status = $("#admin-realm-email-changes-disabled-status").expectOne();
         var add_emoji_by_admins_only_status = $("#admin-realm-add-emoji-by-admins-only-status").expectOne();
         var message_editing_status = $("#admin-realm-message-editing-status").expectOne();
         var default_language_status = $("#admin-realm-default-language-status").expectOne();
@@ -581,6 +588,7 @@ function _setup_page() {
         invite_by_admins_only_status.hide();
         authentication_methods_status.hide();
         create_stream_by_admins_only_status.hide();
+        email_changes_disabled_status.hide();
         add_emoji_by_admins_only_status.hide();
         message_editing_status.hide();
         default_language_status.hide();
@@ -594,6 +602,7 @@ function _setup_page() {
         var new_invite = $("#id_realm_invite_required").prop("checked");
         var new_invite_by_admins_only = $("#id_realm_invite_by_admins_only").prop("checked");
         var new_create_stream_by_admins_only = $("#id_realm_create_stream_by_admins_only").prop("checked");
+        var new_email_changes_disabled = $("#id_realm_email_changes_disabled").prop("checked");
         var new_add_emoji_by_admins_only = $("#id_realm_add_emoji_by_admins_only").prop("checked");
         var new_allow_message_editing = $("#id_realm_allow_message_editing").prop("checked");
         var new_message_content_edit_limit_minutes = $("#id_realm_message_content_edit_limit_minutes").val();
@@ -624,6 +633,7 @@ function _setup_page() {
             invite_by_admins_only: JSON.stringify(new_invite_by_admins_only),
             authentication_methods: JSON.stringify(new_auth_methods),
             create_stream_by_admins_only: JSON.stringify(new_create_stream_by_admins_only),
+            email_changes_disabled: JSON.stringify(new_email_changes_disabled),
             add_emoji_by_admins_only: JSON.stringify(new_add_emoji_by_admins_only),
             allow_message_editing: JSON.stringify(new_allow_message_editing),
             message_content_edit_limit_seconds:
@@ -665,6 +675,13 @@ function _setup_page() {
                         ui.report_success(i18n.t("Only Admins may now create new streams!"), create_stream_by_admins_only_status);
                     } else {
                         ui.report_success(i18n.t("Any user may now create new streams!"), create_stream_by_admins_only_status);
+                    }
+                }
+                if (response_data.email_changes_disabled !== undefined) {
+                    if (response_data.email_changes_disabled) {
+                        ui.report_success(i18n.t("Users cannot change their email!"), email_changes_disabled_status);
+                    } else {
+                        ui.report_success(i18n.t("Users may now change their email!"), email_changes_disabled_status);
                     }
                 }
                 if (response_data.add_emoji_by_admins_only !== undefined) {

@@ -3538,3 +3538,15 @@ def check_attachment_reference_change(prev_content, message):
     to_add = list(new_attachments - prev_attachments)
     if len(to_add) > 0:
         do_claim_attachments(message)
+
+def do_set_email_changes_disabled(realm, email_changes_disabled):
+    # type: (Realm, bool) -> None
+    realm.email_changes_disabled = email_changes_disabled
+    realm.save(update_fields=['email_changes_disabled'])
+    event = dict(
+        type="realm",
+        op="update",
+        property='email_changes_disabled',
+        value=email_changes_disabled,
+    )
+    send_event(event, active_user_ids(realm))
