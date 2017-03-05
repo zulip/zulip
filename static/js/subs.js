@@ -403,13 +403,13 @@ exports.show_settings_for = function (stream_id) {
     var sub = stream_data.get_sub_by_id(stream_id);
     var sub_settings = settings_for_sub(sub);
 
-    var stream = $(".subscription_settings[data-stream-id='" + stream_id + "']");
+    var sub_row = $(".subscription_settings[data-stream-id='" + stream_id + "']");
     $(".subscription_settings[data-stream].show").removeClass("show");
 
     $("#subscription_overlay .subscription_settings.show").removeClass("show");
     sub_settings.addClass("show");
 
-    show_subscription_settings(stream);
+    show_subscription_settings(sub_row);
 };
 
 exports.mark_subscribed = function (sub, subscribers) {
