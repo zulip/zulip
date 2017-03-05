@@ -155,7 +155,11 @@ function dispatch_normal_event(event) {
     case 'stream':
         if (event.op === 'update') {
             // Legacy: Stream properties are still managed by subs.js on the client side.
-            subs.update_subscription_properties(event.name, event.property, event.value);
+            subs.update_subscription_properties(
+                event.stream_id,
+                event.property,
+                event.value
+            );
             admin.update_default_streams_table();
         } else if (event.op === 'create') {
             stream_data.create_streams(event.streams);
@@ -219,7 +223,11 @@ function dispatch_normal_event(event) {
                 subs.mark_sub_unsubscribed(sub);
             });
         } else if (event.op === 'update') {
-            subs.update_subscription_properties(event.name, event.property, event.value);
+            subs.update_subscription_properties(
+                event.stream_id,
+                event.property,
+                event.value
+            );
         }
         break;
 

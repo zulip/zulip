@@ -272,6 +272,7 @@ var event_fixtures = {
         type: 'stream',
         op: 'update',
         name: 'devel',
+        stream_id: 99,
         property: 'color',
         value: 'blue',
     },
@@ -328,6 +329,7 @@ var event_fixtures = {
         type: 'subscription',
         op: 'update',
         name: 'devel',
+        stream_id: 43,
         property: 'color',
         value: 'black',
     },
@@ -634,10 +636,10 @@ run(function (override, capture, args) {
     override(
         'subs',
         'update_subscription_properties',
-        capture(['name', 'property', 'value']));
+        capture(['stream_id', 'property', 'value']));
     override('admin', 'update_default_streams_table', noop);
     dispatch(event);
-    assert_same(args.name, event.name);
+    assert_same(args.stream_id, event.stream_id);
     assert_same(args.property, event.property);
     assert_same(args.value, event.value);
 
@@ -690,9 +692,9 @@ run(function (override, capture, args) {
     override(
         'subs',
         'update_subscription_properties',
-        capture(['name', 'property', 'value']));
+        capture(['stream_id', 'property', 'value']));
     dispatch(event);
-    assert_same(args.name, event.name);
+    assert_same(args.stream_id, event.stream_id);
     assert_same(args.property, event.property);
     assert_same(args.value, event.value);
 
