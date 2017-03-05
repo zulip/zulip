@@ -31,6 +31,7 @@ from zerver.lib.digest import handle_digest_email
 from zerver.lib.notifications import (
     handle_missedmessage_emails,
 )
+from zerver.management.commands import email_mirror
 
 from email.mime.text import MIMEText
 
@@ -352,7 +353,7 @@ MAILS_DIR = os.path.join(dirname(dirname(abspath(__file__))), "fixtures", "email
 
 class TestCommandMTA(TestCase):
 
-    @mock.patch('zerver.lib.queue.queue_json_publish')
+    @mock.patch('zerver.management.commands.email_mirror.queue_json_publish')
     def test_success(self, mock_queue_json_publish):
         # type: (mock.Mock) -> None
 
@@ -375,8 +376,8 @@ class TestCommandMTA(TestCase):
         try:
             sys.stdin = StringIO(mail)
 
-            from zerver.management.commands import email_mirror
             command = email_mirror.Command()
             command.handle(recipient=force_str(stream_to_address))
         finally:
             sys.stdin = original_stdin
+        mock_queue_json_publish.assert_called_once()
