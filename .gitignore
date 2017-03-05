@@ -28,3 +28,4 @@ var/*
 .vscode/
 tools/conf.ini
 tools/custom_provision
+contrib_bots/bots/john/assets/var/database.db
