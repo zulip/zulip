@@ -86,7 +86,6 @@ not_yet_fully_covered = {
     'zerver/tests/test_bugdown.py',
     'zerver/tests/test_decorators.py',
     'zerver/tests/test_email_mirror.py',
-    'zerver/tests/test_events.py',
     'zerver/tests/test_narrow.py',
     'zerver/tests/test_templates.py',
     'zerver/tests/test_tornado.py',

@@ -306,11 +306,11 @@ class EventsRegisterTest(ZulipTestCase):
 
         if state_change_expected:
             if before == after:
-                print(events)
-                raise Exception('Test does not exercise enough code -- events do not change state.')
+                print(events)  # nocoverage
+                raise AssertionError('Test does not exercise enough code -- events do not change state.')
         else:
             if before != after:
-                raise Exception('Test is invalid--state actually does change here.')
+                raise AssertionError('Test is invalid--state actually does change here.')
 
         normal_state = fetch_initial_state_data(self.user_profile, event_types, "", include_subscribers=include_subscribers)
         self.match_states(hybrid_state, normal_state)
