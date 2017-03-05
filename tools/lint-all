@@ -457,6 +457,8 @@ def build_custom_checkers(by_lang):
                          "static/templates/settings/bot-settings.handlebars"])},
         {'pattern': "placeholder='[^{]",
          'description': "`placeholder` value should be translatable."},
+        {'pattern': 'script src="http',
+         'description': "Don't directly load dependencies from CDNs.  See docs/front-end-build-process.md"},
         {'pattern': "title='[^{]",
          'description': "`title` value should be translatable."},
         {'pattern': 'title="[^{\:]',
