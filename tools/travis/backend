@@ -6,7 +6,7 @@ set -e
 set -x
 
 ./tools/lint-all --pep8 # Include the slow and thus non-default pep8 linter check
-./tools/test-backend --coverage --no-verbose-coverage
+./tools/test-backend --coverage
 ./tools/test-migrations
 ./tools/test-run-dev
 ./tools/test-documentation

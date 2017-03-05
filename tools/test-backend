@@ -138,9 +138,9 @@ if __name__ == "__main__":
     parser.add_option('--coverage', dest='coverage',
                       action="store_true",
                       default=False, help='Compute test coverage.')
-    parser.add_option('--no-verbose-coverage', dest='verbose_coverage',
-                      action="store_false",
-                      default=True, help='Disable verbose print of coverage report.')
+    parser.add_option('--verbose-coverage', dest='verbose_coverage',
+                      action="store_true",
+                      default=False, help='Enable verbose print of coverage report.')
     parser.add_option('--profile', dest='profile',
                       action="store_true",
                       default=False, help='Profile test runtime.')
