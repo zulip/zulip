@@ -5,6 +5,8 @@ exclude_lines =
     pragma: no cover
     # Don't complain if non-runnable code isn't run:
     if False:
+    # Don't require coverage for base class NotImplementedErrors
+    raise NotImplementedError()
 
 [run]
 omit =
