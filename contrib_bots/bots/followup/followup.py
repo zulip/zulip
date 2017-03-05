@@ -23,16 +23,20 @@ class FollowupHandler(object):
             '''
 
     def handle_message(self, message, client, state_handler):
+        bot_response = self.get_bot_followup_response(message)
+        client.send_message(dict(
+            type='stream',
+            to='followup',
+            subject=message['sender_email'],
+            content=bot_response,
+        ))
+
+    def get_bot_followup_response(self, message):
         original_content = message['content']
         original_sender = message['sender_email']
         temp_content = 'from %s:' % (original_sender,)
         new_content = temp_content + original_content
 
-        client.send_message(dict(
-            type='stream',
-            to='followup',
-            subject=message['sender_email'],
-            content=new_content,
-        ))
+        return new_content
 
 handler_class = FollowupHandler
