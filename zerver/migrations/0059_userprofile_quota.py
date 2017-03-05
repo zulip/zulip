@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0056_userprofile_emoji_alt_code'),
+        ('zerver', '0058_realm_email_changes_disabled'),
     ]
 
     operations = [
