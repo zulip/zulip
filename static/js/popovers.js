@@ -36,6 +36,18 @@ var list_of_popovers = [];
     }
 }($.fn.popover));
 
+
+function stream_popover_sub(e) {
+    // TODO: use data-stream-id in stream list
+    var stream_name = $(e.currentTarget).parents('ul').attr('data-name');
+    var sub = stream_data.get_sub(stream_name);
+    if (!sub) {
+        blueslip.error('Unknown stream: ' + stream_name);
+        return;
+    }
+    return sub;
+}
+
 function show_message_info_popover(element, id) {
     var last_popover_elem = current_message_info_popover_elem;
     popovers.hide_all();
@@ -861,52 +873,62 @@ exports.register_click_handlers = function () {
     });
 
     $('body').on('click', '.toggle_home', function (e) {
-        var stream_name = $(e.currentTarget).parents('ul').attr('data-name');
-        var sub = stream_data.get_sub(stream_name);
+        var sub = stream_popover_sub(e);
         popovers.hide_stream_sidebar_popover();
         subs.toggle_home(sub);
         e.stopPropagation();
     });
 
     $('body').on('click', '.narrow_to_stream', function (e) {
-        var stream = $(e.currentTarget).parents('ul').attr('data-name');
+        var sub = stream_popover_sub(e);
         popovers.hide_stream_sidebar_popover();
-        narrow.by('stream', stream, {select_first_unread: true, trigger: 'sidebar popover'});
+        narrow.by('stream', sub.name,
+            {select_first_unread: true, trigger: 'sidebar popover'}
+        );
         e.stopPropagation();
     });
 
     $('body').on('click', '.compose_to_stream', function (e) {
-        var stream = $(e.currentTarget).parents('ul').attr('data-name');
+        var sub = stream_popover_sub(e);
         popovers.hide_stream_sidebar_popover();
-        compose.start('stream', {stream: stream, trigger: 'sidebar stream actions'});
+        compose.start('stream', {stream: sub.name, trigger: 'sidebar stream actions'});
         e.stopPropagation();
     });
 
     $('body').on('click', '.mark_stream_as_read', function (e) {
-        var stream = $(e.currentTarget).parents('ul').attr('data-name');
+        var sub = stream_popover_sub(e);
         popovers.hide_stream_sidebar_popover();
-        unread_ui.mark_stream_as_read(stream);
+        unread_ui.mark_stream_as_read(sub.name);
         e.stopPropagation();
     });
 
     $('body').on('click', '.pin_to_top', function (e) {
-        var stream_name = $(e.currentTarget).parents('ul').attr('data-name');
-        var sub = stream_data.get_sub(stream_name);
+        var sub = stream_popover_sub(e);
         popovers.hide_stream_sidebar_popover();
         subs.toggle_pin_to_top_stream(sub);
         e.stopPropagation();
     });
 
     $('body').on('click', '.open_stream_settings', function (e) {
-        var stream = $(e.currentTarget).parents('ul').attr('data-name');
+        var sub = stream_popover_sub(e);
         popovers.hide_stream_sidebar_popover();
 
         window.location.hash = "#subscriptions";
         // the template for subs needs to render.
 
         subs.onlaunch("narrow_to_row", function () {
-            $(".stream-row[data-stream-name='" + stream + "']").click();
+            $(".stream-row[data-stream-name='" + sub.name + "']").click();
         }, true);
+    });
+
+    $("body").on("click", ".popover_sub_unsub_button", function (e) {
+        $(this).toggleClass("unsub");
+        $(this).closest(".popover").fadeOut(500).delay(500).remove();
+
+        var sub = stream_popover_sub(e);
+        subs.sub_or_unsub(sub);
+        e.preventDefault();
+        e.stopPropagation();
     });
 
     (function () {
