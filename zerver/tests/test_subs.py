@@ -291,6 +291,7 @@ class StreamAdminTest(ZulipTestCase):
             type='stream',
             property='name',
             value='stream_name2',
+            stream_id=stream_id,
             name='sTREAm_name1'
         ))
         notified_user_ids = set(events[1]['users'])
@@ -383,6 +384,7 @@ class StreamAdminTest(ZulipTestCase):
             type='stream',
             property='description',
             value='Test description',
+            stream_id=stream_id,
             name='stream_name1'
         ))
         notified_user_ids = set(events[0]['users'])

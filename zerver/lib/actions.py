@@ -2177,6 +2177,7 @@ def do_rename_stream(stream, new_name, log=True):
             type="stream",
             property=property,
             value=value,
+            stream_id=stream.id,
             name=old_name
         )
         send_event(event, can_access_stream_user_ids(stream))
@@ -2190,9 +2191,14 @@ def do_change_stream_description(stream, new_description):
     stream.description = new_description
     stream.save(update_fields=['description'])
 
-    event = dict(type='stream', op='update',
-                 property='description', name=stream.name,
-                 value=new_description)
+    event = dict(
+        type='stream',
+        op='update',
+        property='description',
+        name=stream.name,
+        stream_id=stream.id,
+        value=new_description
+    )
     send_event(event, can_access_stream_user_ids(stream))
 
 def do_create_realm(string_id, name, restricted_to_domain=None,
