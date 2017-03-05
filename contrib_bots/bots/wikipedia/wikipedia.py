@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 import requests
 import logging
+import re
 
 # See readme.md for instructions on running this code.
 
@@ -26,8 +27,23 @@ class WikipediaHandler(object):
             '''
 
     def handle_message(self, message, client, state_handler):
-        query = message['content']
+        bot_response = self.get_bot_wiki_response(message, client)
+        if message['type'] == 'private':
+            client.send_message(dict(
+                type='private',
+                to=message['sender_email'],
+                content=bot_response,
+            ))
+        else:
+            client.send_message(dict(
+                type='stream',
+                to=message['display_recipient'],
+                subject=message['subject'],
+                content=bot_response,
+            ))
 
+    def get_bot_wiki_response(self, message, client):
+        query = message['content']
         query_wiki_link = ('https://en.wikipedia.org/w/api.php?action=query&'
                            'list=search&srsearch=%s&format=json' % (query,))
         try:
@@ -47,12 +63,7 @@ class WikipediaHandler(object):
             search_string = data.json()['query']['search'][0]['title'].replace(' ', '_')
             url = 'https://en.wikipedia.org/wiki/' + search_string
             new_content = new_content + '", ' + url
+        return new_content
 
-        client.send_message(dict(
-            type=message['type'],
-            to=message['display_recipient'],
-            subject=message['subject'],
-            content=new_content,
-        ))
 
 handler_class = WikipediaHandler

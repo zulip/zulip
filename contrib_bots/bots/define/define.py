@@ -15,17 +15,32 @@ class DefineHandler(object):
     EMPTY_WORD_REQUEST_ERROR_MESSAGE = 'Please enter a word to define.'
     PHRASE_ERROR_MESSAGE = 'Definitions for phrases are not available.'
 
-    def usage(DefineHandler):
+    def usage(self):
         return '''
             This plugin will allow users to define a word. Users should preface
             messages with @mention-bot.
             '''
 
-    def _handle_definition(DefineHandler, original_content):
-        # Remove '@define' from the message and extract the rest of the message, the
-        # word to define.
-        split_content = original_content.split(' ')
+    def handle_message(self, message, client, state_handler):
+        original_content = message['content'].strip()
+        bot_response = self.get_bot_define_response(original_content)
 
+        if message['type'] == 'private':
+            client.send_message(dict(
+                type='private',
+                to=message['sender_email'],
+                content=bot_response,
+            ))
+        else:
+            client.send_message(dict(
+                type='stream',
+                to=message['display_recipient'],
+                subject=message['subject'],
+                content=bot_response,
+            ))
+
+    def get_bot_define_response(self, original_content):
+        split_content = original_content.split(' ')
         # If there are more than one word (a phrase)
         if len(split_content) > 1:
             return DefineHandler.PHRASE_ERROR_MESSAGE
@@ -35,19 +50,19 @@ class DefineHandler(object):
 
         # No word was entered.
         if not to_define_lower:
-            return DefineHandler.EMPTY_WORD_REQUEST_ERROR_MESSAGE
+            return self.EMPTY_WORD_REQUEST_ERROR_MESSAGE
         else:
             response = '**{}**:\n'.format(to_define)
 
             try:
                 # Use OwlBot API to fetch definition.
-                api_result = requests.get(DefineHandler.DEFINITION_API_URL.format(to_define_lower))
+                api_result = requests.get(self.DEFINITION_API_URL.format(to_define_lower))
                 # Convert API result from string to JSON format.
                 definitions = api_result.json()
 
                 # Could not fetch definitions for the given word.
                 if not definitions:
-                    response += DefineHandler.REQUEST_ERROR_MESSAGE
+                    response += self.REQUEST_ERROR_MESSAGE
                 else: # Definitions available.
                     # Show definitions line by line.
                     for d in definitions:
@@ -55,21 +70,9 @@ class DefineHandler(object):
                         response += '\n' + '* (**{}**) {}\n&nbsp;&nbsp;{}'.format(d['type'], d['defenition'], html2text.html2text(example))
 
             except Exception as e:
-                response += DefineHandler.REQUEST_ERROR_MESSAGE
+                response += self.REQUEST_ERROR_MESSAGE
                 logging.exception(e)
 
             return response
-
-    def handle_message(DefineHandler, message, client, state_handler):
-        original_content = message['content']
-
-        response = DefineHandler._handle_definition(original_content)
-
-        client.send_message(dict(
-            type='stream',
-            to=message['display_recipient'],
-            subject=message['sender_email'],
-            content=response
-        ))
 
 handler_class = DefineHandler

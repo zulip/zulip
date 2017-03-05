@@ -29,16 +29,27 @@ class EncryptHandler(object):
             '''
 
     def handle_message(self, message, client, state_handler):
+        bot_response = self.get_bot_encrypt_response(message)
+
+        if message['type'] == 'private':
+            client.send_message(dict(
+                type='private',
+                to=message['sender_email'],
+                content=bot_response,
+            ))
+        else:
+            client.send_message(dict(
+                type='stream',
+                to=message['display_recipient'],
+                subject=message['subject'],
+                content=bot_response,
+            ))
+
+    def get_bot_encrypt_response(self, message):
         original_content = message['content']
         temp_content = encrypt(original_content)
         send_content = "Encrypted/Decrypted text: " + temp_content
-
-        client.send_message(dict(
-            type='stream',
-            to=message['display_recipient'],
-            subject=message['subject'],
-            content = send_content
-        ))
+        return send_content
 
 handler_class = EncryptHandler
 
