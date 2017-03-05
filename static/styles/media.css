@@ -262,16 +262,13 @@
     .message_controls {
         right: -16px;
         top: -2px;
+        width: 51px;
     }
 
     .message_hovered .message_controls {
-        width: 35px;
         height: 20px;
         background: rgba(255,255,255,0.8);
         z-index: 10;
-        border: 1px solid #e2e2e2;
-        right: -16px;
-        top: -2px;
     }
 
     .selected_message .message_controls {
@@ -290,18 +287,26 @@
         right: -5px;
     }
 
-    .include-sender .message_controls {
-        right: 36px;
-    }
-
     .star {
         position: absolute;
-        right: 2px;
+        left: 0px;
+        top: -1px;
     }
 
     .info {
         position: absolute;
-        right: 18px;
+        left: 17px;
+        top: -1px;
+    }
+
+    .edit_content, .reactions_hover {
+        position: absolute;
+        left: 34px;
+    }
+
+    .edit_content i, .reactions_hover i {
+        top: 0px;
+        left: 0px;
     }
 
     .sender_name {
