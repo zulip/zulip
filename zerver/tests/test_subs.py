@@ -1183,10 +1183,7 @@ class SubscriptionAPITest(ZulipTestCase):
             self.assertIsInstance(stream['color'], six.string_types)
             self.assertIsInstance(stream['invite_only'], bool)
             # check that the stream name corresponds to an actual stream
-            try:
-                get_stream(stream['name'], self.realm)
-            except Stream.DoesNotExist:
-                self.fail("stream does not exist")
+            self.assertIsNotNone(get_stream(stream['name'], self.realm))
         list_streams = [stream['name'] for stream in json["subscriptions"]]
         # also check that this matches the list of your subscriptions
         self.assertEqual(sorted(list_streams), sorted(self.streams))
@@ -1857,8 +1854,7 @@ class SubscriptionAPITest(ZulipTestCase):
         We cannot randomly generate stream names because the remove code
         verifies whether streams exist.
         """
-        if len(self.streams) < 2:
-            self.fail()  # necesssary for full test coverage
+        self.assertGreaterEqual(self.streams, 2)
         streams_to_remove = self.streams[1:]
         not_subbed = []
         for stream in Stream.objects.all():
@@ -2351,7 +2347,7 @@ class GetSubscribersTest(ZulipTestCase):
         self.assertTrue(len(subscriptions[0]) >= 2)
         for sub in subscriptions[0]:
             if not sub["name"].startswith("mit_"):
-                continue
+                raise AssertionError("Unexpected stream!")
             if sub["name"] == "mit_invite_only":
                 self.assertTrue(len(sub["subscribers"]) == len(users_to_subscribe))
             else:
