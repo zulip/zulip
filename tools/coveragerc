@@ -7,6 +7,9 @@ exclude_lines =
     if False:
     # Don't require coverage for base class NotImplementedErrors
     raise NotImplementedError()
+    # Don't require coverage for Python 2/3 variations; it's impossible to cover on both
+    if six.PY3:
+    if six.PY2:
 
 [run]
 omit =
