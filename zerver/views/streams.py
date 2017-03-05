@@ -427,7 +427,7 @@ def json_subscription_property(request, user_profile, subscription_data=REQ(
         if property_conversion:
             return json_error(property_conversion)
 
-        do_change_subscription_property(user_profile, sub, stream_name,
+        do_change_subscription_property(user_profile, sub, stream,
                                         property, value)
 
         response_data.append({'stream': stream_name,
