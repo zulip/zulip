@@ -34,10 +34,12 @@ def get_thesaurus_result(original_content):
         return help_message
     elif original_content.startswith('synonym'):
         result = get_clean_response(search_keyword, method = Dictionary.synonym)
-        return result
     elif original_content.startswith('antonym'):
         result = get_clean_response(search_keyword, method = Dictionary.antonym)
-        return result
+
+    if result is None:
+        result = "Sorry, no result found! Please check the word."
+    return result
 
 class ThesaurusHandler(object):
     '''
