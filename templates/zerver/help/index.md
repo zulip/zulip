@@ -39,6 +39,7 @@ as an **organization**.
 * [Preview your message before sending](/help/preview-your-message-before-sending)
 * [Add emoji](/help/add-emoji)
 * [Upload and share files](/help/upload-and-share-files)
+* [Manage your uploaded files](/help/manage-your-uploaded-files)
 * [Restore the last unsent message](/help/restore-the-last-unsent-message)
 <!-- Automatically link to an external issue tracker (improve wording) -->
 <!-- Add a link preview -->
