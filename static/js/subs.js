@@ -890,10 +890,11 @@ function ajaxSubscribe(stream) {
     });
 }
 
-function ajaxUnsubscribe(stream) {
+function ajaxUnsubscribe(sub) {
+    // TODO: use stream_id when backend supports it
     return channel.del({
         url: "/json/users/me/subscriptions",
-        data: {subscriptions: JSON.stringify([stream]) },
+        data: {subscriptions: JSON.stringify([sub.name]) },
         success: function () {
             $("#subscriptions-status").hide();
             // The rest of the work is done via the unsubscribe event we will get
@@ -1066,7 +1067,7 @@ exports.change_stream_name = function (e) {
 
 exports.sub_or_unsub = function (sub) {
     if (sub.subscribed) {
-        ajaxUnsubscribe(sub.name);
+        ajaxUnsubscribe(sub);
     } else {
         ajaxSubscribe(sub.name);
     }
