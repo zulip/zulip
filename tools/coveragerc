@@ -3,6 +3,8 @@
 exclude_lines =
     # Re-enable the standard coverage pragma
     pragma: no cover
+    # Don't complain if non-runnable code isn't run:
+    if False:
 
 [run]
 omit =
