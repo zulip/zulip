@@ -109,7 +109,7 @@ def simulated_empty_cache():
         cache_queries.append(('get', key, cache_name))
         return None
 
-    def my_cache_get_many(keys, cache_name=None):
+    def my_cache_get_many(keys, cache_name=None):  # nocoverage -- simulated code doesn't use this
         # type: (List[Text], Optional[str]) -> Dict[Text, Any]
         cache_queries.append(('getmany', keys, cache_name))
         return {}
@@ -158,7 +158,7 @@ def queries_captured(include_savepoints=False):
 
     def cursor_executemany(self, sql, params=()):
         # type: (TimeTrackingCursor, NonBinaryStr, Iterable[Any]) -> None
-        return wrapper_execute(self, super(TimeTrackingCursor, self).executemany, sql, params) # type: ignore # https://github.com/JukkaL/mypy/issues/1167
+        return wrapper_execute(self, super(TimeTrackingCursor, self).executemany, sql, params) # type: ignore # https://github.com/JukkaL/mypy/issues/1167 # nocoverage -- doesn't actually get used in tests
     TimeTrackingCursor.executemany = cursor_executemany # type: ignore # https://github.com/JukkaL/mypy/issues/1167
 
     yield queries
@@ -200,7 +200,7 @@ def find_key_by_email(address):
     for message in reversed(outbox):
         if address in message.to:
             return key_regex.search(message.body).groups()[0]
-    return None
+    return None  # nocoverage -- in theory a test might want this case, but none do
 
 def find_pattern_in_email(address, pattern):
     # type: (Text, Text) -> Optional[Text]
@@ -209,7 +209,7 @@ def find_pattern_in_email(address, pattern):
     for message in reversed(outbox):
         if address in message.to:
             return key_regex.search(message.body).group(0)
-    return None
+    return None  # nocoverage -- in theory a test might want this case, but none do
 
 def message_ids(result):
     # type: (Dict[str, Any]) -> Set[int]
@@ -295,18 +295,13 @@ INSTRUMENTED_CALLS = [] # type: List[Dict[str, Any]]
 
 UrlFuncT = Callable[..., HttpResponse] # TODO: make more specific
 
-def process_instrumented_calls(func):
-    # type: (Callable) -> None
-    for call in INSTRUMENTED_CALLS:
-        func(call)
-
 def append_instrumentation_data(data):
     # type: (Dict[str, Any]) -> None
     INSTRUMENTED_CALLS.append(data)
 
 def instrument_url(f):
     # type: (UrlFuncT) -> UrlFuncT
-    if not INSTRUMENTING:
+    if not INSTRUMENTING:  # nocoverage -- option is always enabled; should we remove?
         return f
     else:
         def wrapper(self, url, info={}, **kwargs):
@@ -367,7 +362,7 @@ def write_instrumentation_reports(full_suite):
             # type: (Any, List[str]) -> None
 
             if isinstance(pattern, type(LocaleRegexURLResolver)):
-                return
+                return  # nocoverage -- shouldn't actually happen
 
             if hasattr(pattern, 'url_patterns'):
                 return
@@ -410,7 +405,7 @@ def write_instrumentation_reports(full_suite):
                 try:
                     line = ujson.dumps(call)
                     f.write(line + '\n')
-                except OverflowError:
+                except OverflowError:  # nocoverage -- test suite error handling
                     print('''
                         A JSON overflow error was encountered while
                         producing the URL coverage report.  Sometimes
@@ -424,7 +419,7 @@ def write_instrumentation_reports(full_suite):
             print('INFO: URL coverage report is in %s' % (fn,))
             print('INFO: Try running: ./tools/create-test-api-docs')
 
-        if full_suite and len(untested_patterns):
+        if full_suite and len(untested_patterns):  # nocoverage -- test suite error handling
             print("\nERROR: Some URLs are untested!  Here's the list of untested URLs:")
             for untested_pattern in sorted(untested_patterns):
                 print("   %s" % (untested_pattern,))
