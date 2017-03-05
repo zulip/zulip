@@ -73,7 +73,6 @@ not_yet_fully_covered = {
     'zerver/lib/events.py',
     'zerver/lib/i18n.py',
     'zerver/lib/message.py',
-    'zerver/lib/narrow.py',
     'zerver/lib/notifications.py',
     'zerver/lib/push_notifications.py',
     'zerver/lib/request.py',
