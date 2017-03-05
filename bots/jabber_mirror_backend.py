@@ -234,7 +234,7 @@ class ZulipToJabberBot(object):
                     self.stream_message(message)
                 elif message['type'] == 'private':
                     self.private_message(message)
-            except:
+            except Exception:
                 logging.exception("Exception forwarding Zulip => Jabber")
         elif event['type'] == 'subscription':
             self.process_subscription(event)
