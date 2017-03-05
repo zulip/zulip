@@ -157,6 +157,7 @@ class UnreadCountTests(ZulipTestCase):
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
         self.subscribe_to_stream(user_profile.email, "test_stream", user_profile.realm)
+        self.subscribe_to_stream("cordelia@zulip.com", "test_stream", user_profile.realm)
 
         message_id = self.send_message("hamlet@zulip.com", "test_stream", Recipient.STREAM, "hello")
         unrelated_message_id = self.send_message("hamlet@zulip.com", "Denmark", Recipient.STREAM, "hello")
