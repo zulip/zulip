@@ -123,6 +123,11 @@ class DecoratorTestCase(TestCase):
             get_total(request)
         self.assertEqual(str(cm.exception), "Bad value for 'numbers': bad_value")
 
+        request.POST['numbers'] = ujson.dumps('{fun: unfun}')
+        with self.assertRaises(JsonableError) as cm:
+            get_total(request)
+        self.assertEqual(str(cm.exception), 'Bad value for \'numbers\': "{fun: unfun}"')
+
         request.POST['numbers'] = ujson.dumps([2, 3, 5, 8, 13, 21])
         with self.assertRaises(JsonableError) as cm:
             get_total(request)
@@ -188,7 +193,7 @@ class DecoratorTestCase(TestCase):
             @has_request_variables
             def test(request, payload=REQ(argument_type="invalid")):
                 # type: (HttpRequest, Dict[str, Dict]) -> None
-                pass
+                pass  # nocoverage # this function isn't meant to be called
             test(request)
 
     def test_api_key_only_webhook_view(self):
@@ -899,7 +904,7 @@ class TestAuthenticatedJsonViewDecorator(ZulipTestCase):
     def test_authenticated_json_view_if_subdomain_is_invalid(self):
         # type: () -> None
         user_email = 'hamlet@zulip.com'
-        self._login(user_email)
+        self.login(user_email)
         with self.settings(REALMS_HAVE_SUBDOMAINS=True):
             with mock.patch('logging.warning') as mock_warning, \
                     mock.patch('zerver.decorator.get_subdomain', return_value=''):
@@ -923,14 +928,6 @@ class TestAuthenticatedJsonViewDecorator(ZulipTestCase):
         # type: (str) -> HttpResponse
         data = {"status": '"started"'}
         return self.client_post(r'/json/tutorial_status', data)
-
-    def _login(self, user_email, password=None):
-        # type: (str, str) -> None
-        if password:
-            user_profile = get_user_profile_by_email(user_email)
-            user_profile.set_password(password)
-            user_profile.save()
-        self.login(user_email, password)
 
 class TestZulipLoginRequiredDecorator(ZulipTestCase):
     def test_zulip_login_required_if_subdomain_is_invalid(self):
@@ -978,7 +975,7 @@ class ReturnSuccessOnHeadRequestDecorator(ZulipTestCase):
         @return_success_on_head_request
         def test_function(request):
             # type: (HttpRequest) -> HttpResponse
-            return json_response(msg=u'from_test_function')
+            return json_response(msg=u'from_test_function')  # nocoverage. isn't meant to be called
 
         response = test_function(request)
         self.assert_json_success(response)
