@@ -335,7 +335,7 @@ $(function () {
 
 
     $('.compose_stream_button').click(function () {
-        compose.start('stream');
+        compose.start('stream', {trigger: 'new topic button'});
     });
     $('.compose_private_button').click(function () {
         compose.start('private');
