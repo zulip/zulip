@@ -650,6 +650,9 @@ STATIC_HEADER_FILE = 'zerver/static_header.txt'
 #
 # You will need to run update-prod-static after changing
 # static files.
+#
+# Useful reading on how this works is in
+# https://zulip.readthedocs.io/en/latest/front-end-build-process.html
 
 PIPELINE = {
     'PIPELINE_ENABLED': PIPELINE_ENABLED,
@@ -734,6 +737,8 @@ PIPELINE = {
     'JAVASCRIPT': {},
 }
 
+# Useful reading on how this works is in
+# https://zulip.readthedocs.io/en/latest/front-end-build-process.html
 JS_SPECS = {
     'common': {
         'source_filenames': [
