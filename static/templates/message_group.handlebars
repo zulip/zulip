@@ -12,10 +12,10 @@
 {{/if}}
 
 <div class="recipient_row" id="{{message_group_id}}">
-  {{partial "recipient_row" "use_match_properties" ../../use_match_properties}}
+  {{partial "recipient_row" "use_match_properties" ../use_match_properties}}
   {{#each message_containers}}
   {{#with this}}
-    {{partial "single_message" "use_match_properties" ../../../../use_match_properties "table_name" ../../../../table_name}}
+    {{partial "single_message" "use_match_properties" ../../use_match_properties "table_name" ../../table_name}}
   {{/with}}
   {{/each}}
 </div>
