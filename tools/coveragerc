@@ -2,11 +2,13 @@
 # Regexes for lines to exclude from consideration
 exclude_lines =
     # Re-enable the standard coverage pragma
-    pragma: no cover
+    nocoverage
     # Don't complain if non-runnable code isn't run:
     if False:
     # Don't require coverage for base class NotImplementedErrors
     raise NotImplementedError()
+    # Don't require coverage for test suite AssertionError -- they're usually for clarity
+    raise AssertionError
     # Don't require coverage for Python 2/3 variations; it's impossible to cover on both
     if six.PY3:
     if six.PY2:
