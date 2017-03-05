@@ -18,7 +18,7 @@ class HttpResponseUnauthorized(HttpResponse):
         elif www_authenticate == "session":
             self["WWW-Authenticate"] = 'Session realm="%s"' % (realm,)
         else:
-            raise Exception("Invalid www_authenticate value!")
+            raise AssertionError("Invalid www_authenticate value!")
 
 def json_unauthorized(message, www_authenticate=None):
     # type: (Text, Optional[Text]) -> HttpResponse
@@ -50,7 +50,3 @@ def json_success(data=None):
 def json_error(msg, data=None, status=400):
     # type: (str, Optional[Dict[str, Any]], int) -> HttpResponse
     return json_response(res_type="error", msg=msg, data=data, status=status)
-
-def json_unhandled_exception():
-    # type: () -> HttpResponse
-    return json_response(res_type="error", msg="Internal server error", status=500)

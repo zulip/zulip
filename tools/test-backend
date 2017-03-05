@@ -54,6 +54,7 @@ target_fully_covered = {path for target in [
     'zerver/lib/notifications.py',
     'zerver/lib/push_notifications.py',
     'zerver/lib/request.py',
+    'zerver/lib/response.py',
     'zerver/lib/test_helpers.py',
     'zerver/lib/test_classes.py',
     'zerver/lib/upload.py',
