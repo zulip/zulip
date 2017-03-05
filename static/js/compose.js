@@ -264,8 +264,13 @@ exports.start = function (msg_type, opts) {
 
     is_composing_message = msg_type;
 
-    // Show either stream/topic fields or "You and" field.
-    show_box_for_msg_type(msg_type, opts);
+    // Set focus to "Topic" when narrowed to a stream+topic and "New topic" button clicked.
+    if (opts.trigger === "new topic button") {
+        show_box('stream', $("#subject"), opts);
+    } else {
+        // Show either stream/topic fields or "You and" field.
+        show_box_for_msg_type(msg_type, opts);
+    }
 
     compose_fade.start_compose(msg_type);
 
