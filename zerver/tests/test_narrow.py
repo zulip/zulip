@@ -21,6 +21,7 @@ from zerver.lib.message import (
 from zerver.lib.narrow import (
     build_narrow_filter,
 )
+from zerver.lib.request import JsonableError
 from zerver.lib.str_utils import force_bytes
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.test_helpers import (
@@ -341,6 +342,11 @@ class BuildNarrowFilterTest(TestCase):
                 self.assertTrue(narrow_filter(e))
             for e in reject_events:
                 self.assertFalse(narrow_filter(e))
+
+    def test_build_narrow_filter_invalid(self):
+        # type: () -> None
+        with self.assertRaises(JsonableError):
+            build_narrow_filter(["invalid_operator", "operand"])
 
 class IncludeHistoryTest(ZulipTestCase):
     def test_ok_to_include_history(self):
