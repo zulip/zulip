@@ -37,12 +37,12 @@ def add_android_reg_id(request, user_profile, token=REQ()):
 def remove_apns_device_token(request, user_profile, token=REQ()):
     # type: (HttpRequest, UserProfile, str) -> HttpResponse
     validate_token(token)
-    remove_push_device_token(request, user_profile, token, PushDeviceToken.APNS)
+    remove_push_device_token(user_profile, token, PushDeviceToken.APNS)
     return json_success()
 
 @has_request_variables
 def remove_android_reg_id(request, user_profile, token=REQ()):
     # type: (HttpRequest, UserProfile, str) -> HttpResponse
     validate_token(token)
-    remove_push_device_token(request, user_profile, token, PushDeviceToken.GCM)
+    remove_push_device_token(user_profile, token, PushDeviceToken.GCM)
     return json_success()
