@@ -180,23 +180,6 @@ class Realm(ModelReprMixin, models.Model):
         # type: () -> Dict[Text, Optional[Dict[str, Text]]]
         return get_realm_emoji_uncached(self)
 
-    @property
-    def deployment(self):
-        # type: () -> Any # returns a Deployment from zilencer.models
-
-        # see https://github.com/zulip/zulip/issues/1845 before you
-        # attempt to add test coverage for this method, as we may
-        # be revisiting the deployments model soon
-        try:
-            return self._deployments.all()[0]
-        except IndexError:
-            return None
-
-    @deployment.setter # type: ignore # https://github.com/python/mypy/issues/220
-    def set_deployments(self, value):
-        # type: (Any) -> None
-        self._deployments = [value] # type: Any
-
     def get_admin_users(self):
         # type: () -> Sequence[UserProfile]
         # TODO: Change return type to QuerySet[UserProfile]
