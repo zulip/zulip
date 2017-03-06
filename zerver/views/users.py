@@ -160,7 +160,7 @@ def patch_bot_backend(request, user_profile, email,
     # type: (HttpRequest, UserProfile, Text, Optional[Text], Optional[Text], Optional[Text], Optional[Text], Optional[bool]) -> HttpResponse
     try:
         bot = get_user_profile_by_email(email)
-    except:
+    except UserProfile.DoesNotExist:
         return json_error(_('No such user'))
 
     if not user_profile.can_admin_user(bot):
@@ -218,7 +218,7 @@ def regenerate_bot_api_key(request, user_profile, email):
     # type: (HttpRequest, UserProfile, Text) -> HttpResponse
     try:
         bot = get_user_profile_by_email(email)
-    except:
+    except UserProfile.DoesNotExist:
         return json_error(_('No such user'))
 
     if not user_profile.can_admin_user(bot):
