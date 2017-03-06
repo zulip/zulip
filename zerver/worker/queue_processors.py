@@ -10,7 +10,7 @@ from zerver.models import get_user_profile_by_email, \
     UserMessage, Message, Realm
 from zerver.lib.context_managers import lockfile
 from zerver.lib.error_notify import do_report_error
-from zerver.lib.feedback import deliver_feedback_by_zulip
+from zerver.lib.feedback import handle_feedback
 from zerver.lib.queue import SimpleQueueClient, queue_json_publish
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.notifications import handle_missedmessage_emails, enqueue_welcome_emails, \
@@ -27,7 +27,6 @@ from zerver.decorator import JsonableError
 from zerver.tornado.socket import req_redis_key
 from confirmation.models import Confirmation
 from zerver.lib.db import reset_queries
-from django.core.mail import EmailMessage
 from zerver.lib.redis_utils import get_redis_client
 from zerver.context_processors import common_context
 
@@ -242,18 +241,7 @@ class FeedbackBot(QueueProcessingWorker):
     def consume(self, event):
         # type: (Mapping[str, Any]) -> None
         logging.info("Received feedback from %s" % (event["sender_email"],))
-        if not settings.ENABLE_FEEDBACK:
-            return
-        if settings.FEEDBACK_EMAIL is not None:
-            to_email = settings.FEEDBACK_EMAIL
-            subject = "Zulip feedback from %s" % (event["sender_email"],)
-            content = event["content"]
-            from_email = '"%s" <%s>' % (event["sender_full_name"], settings.ZULIP_ADMINISTRATOR)
-            headers = {'Reply-To': '"%s" <%s>' % (event["sender_full_name"], event["sender_email"])}
-            msg = EmailMessage(subject, content, from_email, [to_email], headers=headers)
-            msg.send()
-        if settings.FEEDBACK_STREAM is not None:
-            deliver_feedback_by_zulip(event)
+        handle_feedback(event)
 
 @assign_queue('error_reports')
 class ErrorReporter(QueueProcessingWorker):
