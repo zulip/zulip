@@ -238,12 +238,6 @@ def make_feedback_client():
 # We probably could stop running this queue worker at all if ENABLE_FEEDBACK is False
 @assign_queue('feedback_messages')
 class FeedbackBot(QueueProcessingWorker):
-    def start(self):
-        # type: () -> None
-        if settings.ENABLE_FEEDBACK and settings.FEEDBACK_EMAIL is None:
-            self.staging_client = make_feedback_client()
-        QueueProcessingWorker.start(self)
-
     def consume(self, event):
         # type: (Mapping[str, Any]) -> None
         logging.info("Received feedback from %s" % (event["sender_email"],))
@@ -257,15 +251,6 @@ class FeedbackBot(QueueProcessingWorker):
             headers = {'Reply-To': '"%s" <%s>' % (event["sender_full_name"], event["sender_email"])}
             msg = EmailMessage(subject, content, from_email, [to_email], headers=headers)
             msg.send()
-        else:
-            # This code has been untested with the new API, and
-            # the endpoint it hits also uses a home-grown ticketing
-            # system that was from early days of Zulip, pre-open-source.
-            self.staging_client.call_endpoint(
-                method='POST',
-                url='deployments/feedback',
-                request=dict(message=simplejson.dumps(event))
-            )
 
 @assign_queue('error_reports')
 class ErrorReporter(QueueProcessingWorker):

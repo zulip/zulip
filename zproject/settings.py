@@ -572,11 +572,6 @@ if EMAIL_GATEWAY_PATTERN != "":
 
 DEPLOYMENT_ROLE_KEY = get_secret("deployment_role_key")
 
-if PRODUCTION:
-    FEEDBACK_TARGET = "https://zulip.com/api"
-else:
-    FEEDBACK_TARGET = "http://localhost:9991/api"
-
 ########################################################################
 # STATSD CONFIGURATION
 ########################################################################
