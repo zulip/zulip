@@ -65,7 +65,7 @@ class APNsMessageTest(PushNotificationTest):
     @mock.patch('random.getrandbits', side_effect=[100, 200])
     def test_apns_message(self, mock_getrandbits):
         # type: (mock.MagicMock) -> None
-        apn.APNsMessage(self.user_profile, self.tokens, alert="test")
+        apn.APNsMessage(self.user_profile.id, self.tokens, alert="test")
         data = self.redis_client.hgetall(apn.get_apns_key(100))
         self.assertEqual(data['token'], 'aaaa')
         self.assertEqual(int(data['user_id']), self.user_profile.id)
@@ -185,7 +185,7 @@ class SendNotificationTest(PushNotificationTest):
     @mock.patch('apns.GatewayConnection.send_notification_multiple')
     def test_do_push_to_apns_service(self, mock_push):
         # type: (mock.MagicMock) -> None
-        msg = apn.APNsMessage(self.user_profile, self.tokens, alert="test")
+        msg = apn.APNsMessage(self.user_profile.id, self.tokens, alert="test")
 
         def test_push(message):
             # type: (Message) -> None
