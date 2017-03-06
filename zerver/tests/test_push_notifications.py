@@ -251,7 +251,7 @@ class GCMNotSetTest(GCMTest):
     def test_gcm_is_none(self, mock_error):
         # type: (mock.MagicMock) -> None
         apn.gcm = None
-        apn.send_android_push_notification(self.user_profile, {})
+        apn.send_android_push_notification_to_user(self.user_profile, {})
         mock_error.assert_called_with("Attempting to send a GCM push "
                                       "notification, but no API key was "
                                       "configured")
@@ -267,7 +267,7 @@ class GCMSuccessTest(GCMTest):
         mock_send.return_value = res
 
         data = self.get_gcm_data()
-        apn.send_android_push_notification(self.user_profile, data)
+        apn.send_android_push_notification_to_user(self.user_profile, data)
         self.assertEqual(mock_info.call_count, 2)
         c1 = call("GCM: Sent 1111 as 0")
         c2 = call("GCM: Sent 2222 as 1")
@@ -284,7 +284,7 @@ class GCMCanonicalTest(GCMTest):
         mock_send.return_value = res
 
         data = self.get_gcm_data()
-        apn.send_android_push_notification(self.user_profile, data)
+        apn.send_android_push_notification_to_user(self.user_profile, data)
         mock_warning.assert_called_once_with("GCM: Got canonical ref but it "
                                              "already matches our ID 1!")
 
@@ -308,7 +308,7 @@ class GCMCanonicalTest(GCMTest):
         self.assertEqual(get_count(u'3333'), 0)
 
         data = self.get_gcm_data()
-        apn.send_android_push_notification(self.user_profile, data)
+        apn.send_android_push_notification_to_user(self.user_profile, data)
         msg = ("GCM: Got canonical ref %s "
                "replacing %s but new ID not "
                "registered! Updating.")
@@ -337,7 +337,7 @@ class GCMCanonicalTest(GCMTest):
         self.assertEqual(get_count(u'2222'), 1)
 
         data = self.get_gcm_data()
-        apn.send_android_push_notification(self.user_profile, data)
+        apn.send_android_push_notification_to_user(self.user_profile, data)
         mock_info.assert_called_once_with(
             "GCM: Got canonical ref %s, dropping %s" % (new_token, old_token))
 
@@ -363,7 +363,7 @@ class GCMNotRegisteredTest(GCMTest):
         self.assertEqual(get_count(u'1111'), 1)
 
         data = self.get_gcm_data()
-        apn.send_android_push_notification(self.user_profile, data)
+        apn.send_android_push_notification_to_user(self.user_profile, data)
         mock_info.assert_called_once_with("GCM: Removing %s" % (token,))
         self.assertEqual(get_count(u'1111'), 0)
 
@@ -378,7 +378,7 @@ class GCMFailureTest(GCMTest):
         mock_send.return_value = res
 
         data = self.get_gcm_data()
-        apn.send_android_push_notification(self.user_profile, data)
+        apn.send_android_push_notification_to_user(self.user_profile, data)
         c1 = call("GCM: Delivery to %s failed: Failed" % (token,))
         mock_warn.assert_has_calls([c1], any_order=True)
 

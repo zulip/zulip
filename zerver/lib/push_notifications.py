@@ -199,15 +199,19 @@ if settings.ANDROID_GCM_API_KEY:
 else:
     gcm = None
 
-@statsd_increment("android_push_notification")
-def send_android_push_notification(user, data):
+def send_android_push_notification_to_user(user_profile, data):
     # type: (UserProfile, Dict[str, Any]) -> None
+    devices = list(PushDeviceToken.objects.filter(user=user_profile,
+                                                  kind=PushDeviceToken.GCM))
+    send_android_push_notification(devices, data)
+
+@statsd_increment("android_push_notification")
+def send_android_push_notification(devices, data):
+    # type: (List[PushDeviceToken], Dict[str, Any]) -> None
     if not gcm:
         logging.error("Attempting to send a GCM push notification, but no API key was configured")
         return
-
-    reg_ids = [device.token for device in
-               PushDeviceToken.objects.filter(user=user, kind=PushDeviceToken.GCM)]
+    reg_ids = [device.token for device in devices]
 
     res = gcm.json_request(registration_ids=reg_ids, data=data)
 
@@ -270,9 +274,11 @@ def handle_push_notification(user_profile_id, missed_message):
         sender_str = message.sender.full_name
 
         apple = num_push_devices_for_user(user_profile, kind=PushDeviceToken.APNS)
-        android = num_push_devices_for_user(user_profile, kind=PushDeviceToken.GCM)
+        android_devices = [device for device in
+                           PushDeviceToken.objects.filter(user=user_profile,
+                                                          kind=PushDeviceToken.GCM)]
 
-        if apple or android:
+        if apple or android_devices:
             # TODO: set badge count in a better way
             # Determine what alert string to display based on the missed messages
             if message.recipient.type == Recipient.HUDDLE:
@@ -288,7 +294,7 @@ def handle_push_notification(user_profile_id, missed_message):
                 apple_extra_data = {'message_ids': [message.id]}
                 send_apple_push_notification(user_profile, alert, badge=1, zulip=apple_extra_data)
 
-            if android:
+            if android_devices:
                 content = message.content
                 content_truncated = (len(content) > 200)
                 if content_truncated:
@@ -314,7 +320,7 @@ def handle_push_notification(user_profile_id, missed_message):
                 elif message.recipient.type in (Recipient.HUDDLE, Recipient.PERSONAL):
                     android_data['recipient_type'] = "private"
 
-                send_android_push_notification(user_profile, android_data)
+                send_android_push_notification(android_devices, android_data)
 
     except UserMessage.DoesNotExist:
         logging.error("Could not find UserMessage with message_id %s" % (missed_message['message_id'],))
