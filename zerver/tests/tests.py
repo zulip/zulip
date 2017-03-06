@@ -2,7 +2,8 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Tuple, TypeVar, Text
+from typing import (Any, Callable, Dict, Iterable, List, Mapping,
+                    Optional, Tuple, TypeVar, Text, Union)
 from mock import patch, MagicMock
 
 from django.http import HttpResponse
@@ -23,7 +24,7 @@ from zerver.forms import WRONG_SUBDOMAIN_ERROR
 from zerver.models import UserProfile, Recipient, \
     Realm, RealmAlias, UserActivity, \
     get_user_profile_by_email, get_realm, get_client, get_stream, \
-    Message, get_unique_open_realm, completely_open
+    Message, get_unique_open_realm, completely_open, get_context_for_message
 
 from zerver.lib.avatar import avatar_url
 from zerver.lib.initial_password import initial_password
@@ -33,7 +34,8 @@ from zerver.lib.actions import \
     do_change_is_admin, extract_recipients, \
     do_set_realm_name, do_deactivate_realm, \
     do_change_stream_invite_only
-from zerver.lib.notifications import handle_missedmessage_emails
+from zerver.lib.notifications import handle_missedmessage_emails, \
+    send_missedmessage_email
 from zerver.lib.session_user import get_session_dict_user
 from zerver.middleware import is_slow_query
 from zerver.lib.utils import split_by
@@ -2330,9 +2332,8 @@ class TestMissedMessages(ZulipTestCase):
         othello = get_user_profile_by_email('othello@zulip.com')
         hamlet = get_user_profile_by_email('hamlet@zulip.com')
         handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id}])
-
-        msg = mail.outbox[0]
         reply_to_addresses = [settings.EMAIL_GATEWAY_PATTERN % (u'mm' + t) for t in tokens]
+        msg = mail.outbox[0]
         sender = 'Zulip <{}>'.format(settings.NOREPLY_EMAIL_ADDRESS)
         from_email = sender
         self.assertEqual(len(mail.outbox), 1)
