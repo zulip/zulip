@@ -8,6 +8,7 @@ from zerver.models import PushDeviceToken, Message, Recipient, UserProfile, \
     receives_online_notifications
 from zerver.models import get_user_profile_by_id
 from zerver.lib.avatar import avatar_url
+from zerver.lib.request import JsonableError
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.decorator import statsd_increment
 from zerver.lib.utils import generate_random_token
@@ -355,3 +356,11 @@ def add_push_device_token(user_profile, token_str, kind, ios_app_id=None):
     if not created:
         token.last_updated = timezone.now()
         token.save(update_fields=['last_updated'])
+
+def remove_push_device_token(request, user_profile, token_str, kind):
+    # type: (HttpRequest, UserProfile, str, int) -> None
+    try:
+        token = PushDeviceToken.objects.get(token=token_str, kind=kind)
+        token.delete()
+    except PushDeviceToken.DoesNotExist:
+        raise JsonableError(_("Token does not exist"))
