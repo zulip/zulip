@@ -12,6 +12,14 @@ from typing import Dict
 
 import ujson
 
+GOOD_STATUSES = ['Passed', 'Fixed']
+BAD_STATUSES = ['Failed', 'Broken', 'Still Failing']
+
+MESSAGE_TEMPLATE = (
+    u'Author: {}\n'
+    u'Build status: {} {}\n'
+    u'Details: [changes]({}), [build log]({})'
+)
 
 @api_key_only_webhook_view('Travis')
 @has_request_variables
@@ -24,28 +32,23 @@ def api_travis_webhook(request, user_profile, client,
                            ('compare_url', check_string),
                        ]))):
     # type: (HttpRequest, UserProfile, Client, str, str, Dict[str, str]) -> HttpResponse
-    author = message['author_name']
-    message_type = message['status_message']
-    changes = message['compare_url']
 
-    good_status = ['Passed', 'Fixed']
-    bad_status  = ['Failed', 'Broken', 'Still Failing']
-    emoji = ''
-    if message_type in good_status:
+    message_status = message['status_message']
+
+    if message_status in GOOD_STATUSES:
         emoji = ':thumbsup:'
-    elif message_type in bad_status:
+    elif message_status in BAD_STATUSES:
         emoji = ':thumbsdown:'
     else:
-        emoji = "(No emoji specified for status '%s'.)" % (message_type,)
+        emoji = "(No emoji specified for status '{}'.)".format(message_status)
 
-    build_url = message['build_url']
-
-    template = (
-        u'Author: %s\n'
-        u'Build status: %s %s\n'
-        u'Details: [changes](%s), [build log](%s)')
-
-    body = template % (author, message_type, emoji, changes, build_url)
+    body = MESSAGE_TEMPLATE.format(
+        message['author_name'],
+        message_status,
+        emoji,
+        message['compare_url'],
+        message['build_url']
+    )
 
     check_send_message(user_profile, client, 'stream', [stream], topic, body)
     return json_success()
