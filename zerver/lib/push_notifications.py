@@ -8,7 +8,6 @@ from zerver.models import PushDeviceToken, Message, Recipient, UserProfile, \
     receives_online_notifications
 from zerver.models import get_user_profile_by_id
 from zerver.lib.avatar import avatar_url
-from zerver.lib.request import JsonableError
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.decorator import statsd_increment
 from zerver.lib.utils import generate_random_token
@@ -342,8 +341,6 @@ def handle_push_notification(user_profile_id, missed_message):
 
 def add_push_device_token(user_profile, token_str, kind, ios_app_id=None):
     # type: (UserProfile, str, int, Optional[str]) -> None
-    if token_str == '' or len(token_str) > 4096:
-        raise JsonableError(_('Empty or invalid length token'))
 
     # If another user was previously logged in on the same device and didn't
     # properly log out, the token will still be registered to the wrong account
