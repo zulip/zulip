@@ -7,21 +7,11 @@ from typing import Any, Mapping, Optional, Text
 from zerver.lib.actions import internal_send_message
 from zerver.lib.redis_utils import get_redis_client
 from zerver.models import get_realm, get_user_profile_by_email, \
-    get_realm_by_email_domain, UserProfile, Realm
+    UserProfile, Realm
 
 import time
 
 client = get_redis_client()
-
-def realm_for_email(email):
-    # type: (str) -> Optional[Realm]
-    try:
-        user = get_user_profile_by_email(email)
-        return user.realm
-    except UserProfile.DoesNotExist:
-        pass
-
-    return get_realm_by_email_domain(email)
 
 def has_enough_time_expired_since_last_message(sender_email, min_delay):
     # type: (Text, float) -> bool
@@ -73,7 +63,8 @@ def deliver_feedback_by_zulip(message):
 
     content += message['content']
 
-    internal_send_message(realm_for_email("feedback@zulip.com"), "feedback@zulip.com",
+    user_profile = get_user_profile_by_email(settings.FEEDBACK_BOT)
+    internal_send_message(user_profile.realm, settings.FEEDBACK_BOT,
                           "stream", settings.FEEDBACK_STREAM, subject, content)
 
 def handle_feedback(event):
