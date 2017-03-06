@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 from django.conf import settings
+from django.core.mail import EmailMessage
 from typing import Any, Mapping, Optional, Text
 
 from zerver.lib.actions import internal_send_message
@@ -74,3 +75,18 @@ def deliver_feedback_by_zulip(message):
 
     internal_send_message(realm_for_email("feedback@zulip.com"), "feedback@zulip.com",
                           "stream", settings.FEEDBACK_STREAM, subject, content)
+
+def handle_feedback(event):
+    # type: (Mapping[str, Any]) -> None
+    if not settings.ENABLE_FEEDBACK:
+        return
+    if settings.FEEDBACK_EMAIL is not None:
+        to_email = settings.FEEDBACK_EMAIL
+        subject = "Zulip feedback from %s" % (event["sender_email"],)
+        content = event["content"]
+        from_email = '"%s" <%s>' % (event["sender_full_name"], settings.ZULIP_ADMINISTRATOR)
+        headers = {'Reply-To': '"%s" <%s>' % (event["sender_full_name"], event["sender_email"])}
+        msg = EmailMessage(subject, content, from_email, [to_email], headers=headers)
+        msg.send()
+    if settings.FEEDBACK_STREAM is not None:
+        deliver_feedback_by_zulip(event)
