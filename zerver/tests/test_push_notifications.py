@@ -173,9 +173,9 @@ class SendNotificationTest(PushNotificationTest):
     @mock.patch('zerver.lib.push_notifications._do_push_to_apns_service')
     def test_send_apple_push_notifiction(self, mock_send, mock_info, mock_warn):
         # type: (mock.MagicMock, mock.MagicMock, mock.MagicMock) -> None
-        def test_send(user, message, alert):
-            # type: (UserProfile, Message, str) -> None
-            self.assertEqual(user.id, self.user_profile.id)
+        def test_send(user_id, message, alert):
+            # type: (int, Message, str) -> None
+            self.assertEqual(user_id, self.user_profile.id)
             self.assertEqual(set(message.tokens), set(self.tokens))
 
         mock_send.side_effect = test_send
@@ -192,7 +192,7 @@ class SendNotificationTest(PushNotificationTest):
             self.assertIs(message, msg.get_frame())
 
         mock_push.side_effect = test_push
-        apn._do_push_to_apns_service(self.user_profile, msg, apn.connection)
+        apn._do_push_to_apns_service(self.user_profile.id, msg, apn.connection)
 
     @mock.patch('logging.warn')
     @mock.patch('logging.info')

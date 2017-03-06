@@ -137,10 +137,10 @@ def hex_to_b64(data):
     # type: (Text) -> bytes
     return base64.b64encode(binascii.unhexlify(data.encode('utf-8')))
 
-def _do_push_to_apns_service(user, message, apns_connection):
-    # type: (UserProfile, APNsMessage, APNs) -> None
+def _do_push_to_apns_service(user_id, message, apns_connection):
+    # type: (int, APNsMessage, APNs) -> None
     if not apns_connection:
-        logging.info("Not delivering APNS message %s to user %s due to missing connection" % (message, user))
+        logging.info("Not delivering APNS message %s to user %s due to missing connection" % (message, user_id))
         return
 
     frame = message.get_frame()
@@ -176,7 +176,7 @@ def send_apple_push_notification(user, devices, alert, **extra_data):
             logging.info("APNS: Sending apple push notification "
                          "to devices: %s" % (valid_devices,))
             zulip_message = APNsMessage(user.id, valid_tokens, alert=alert, **extra_data)
-            _do_push_to_apns_service(user, zulip_message, conn)
+            _do_push_to_apns_service(user.id, zulip_message, conn)
         else:
             logging.warn("APNS: Not sending notification because "
                          "tokens didn't match devices: %s" % (app_ids,))
