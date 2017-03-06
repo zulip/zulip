@@ -215,10 +215,8 @@ function sort_users(user_ids, presence_info) {
 exports._sort_users = sort_users;
 
 function focus_lost() {
-    if (!exports.has_focus) {
-        return false;
-    }
-
+    // When we become idle, we don't immediately send anything to
+    // the server; instead, we wait for our next periodic update.
     exports.has_focus = false;
 }
 
