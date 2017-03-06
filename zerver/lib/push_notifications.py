@@ -146,18 +146,22 @@ def _do_push_to_apns_service(user, message, apns_connection):
     frame = message.get_frame()
     apns_connection.gateway_server.send_notification_multiple(frame)
 
+def send_apple_push_notification_to_user(user, alert, **extra_data):
+    # type: (UserProfile, Text, **Any) -> None
+    devices = PushDeviceToken.objects.filter(user=user, kind=PushDeviceToken.APNS)
+    send_apple_push_notification(user, devices, alert, **extra_data)
+
 # Send a push notification to the desired clients
 # extra_data is a dict that will be passed to the
 # mobile app
 @statsd_increment("apple_push_notification")
-def send_apple_push_notification(user, alert, **extra_data):
-    # type: (UserProfile, Text, **Any) -> None
+def send_apple_push_notification(user, devices, alert, **extra_data):
+    # type: (UserProfile, List[PushDeviceToken], Text, **Any) -> None
     if not connection and not dbx_connection:
         logging.error("Attempting to send push notification, but no connection was found. "
                       "This may be because we could not find the APNS Certificate file.")
         return
 
-    devices = PushDeviceToken.objects.filter(user=user, kind=PushDeviceToken.APNS)
     # Plain b64 token kept for debugging purposes
     tokens = [(b64_to_hex(device.token), device.ios_app_id, device.token)
               for device in devices]
@@ -273,12 +277,13 @@ def handle_push_notification(user_profile_id, missed_message):
             return
         sender_str = message.sender.full_name
 
-        apple = num_push_devices_for_user(user_profile, kind=PushDeviceToken.APNS)
         android_devices = [device for device in
                            PushDeviceToken.objects.filter(user=user_profile,
                                                           kind=PushDeviceToken.GCM)]
+        apple_devices = list(PushDeviceToken.objects.filter(user=user_profile,
+                                                            kind=PushDeviceToken.APNS))
 
-        if apple or android_devices:
+        if apple_devices or android_devices:
             # TODO: set badge count in a better way
             # Determine what alert string to display based on the missed messages
             if message.recipient.type == Recipient.HUDDLE:
@@ -290,9 +295,10 @@ def handle_push_notification(user_profile_id, missed_message):
             else:
                 alert = "New Zulip mentions and private messages from %s" % (sender_str,)
 
-            if apple:
+            if apple_devices:
                 apple_extra_data = {'message_ids': [message.id]}
-                send_apple_push_notification(user_profile, alert, badge=1, zulip=apple_extra_data)
+                send_apple_push_notification(user_profile, apple_devices, alert,
+                                             badge=1, zulip=apple_extra_data)
 
             if android_devices:
                 content = message.content
