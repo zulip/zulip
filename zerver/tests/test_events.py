@@ -92,7 +92,18 @@ import time
 import ujson
 from six.moves import range
 
-class TornadoTest(ZulipTestCase):
+class EventsEndpointTest(ZulipTestCase):
+    def test_events_register_endpoint(self):
+        # type: () -> None
+
+        # This test is intended to get minimal coverage on
+        # zerver.views.events_register.events_register_backend, so we can have
+        # 100% views coverage.
+        email = 'hamlet@zulip.com'
+        with mock.patch('zerver.views.events_register.do_events_register', return_value={}):
+            result = self.client_post('/json/register', **self.api_auth(email))
+        self.assert_json_success(result)
+
     def test_tornado_endpoint(self):
         # type: () -> None
 
