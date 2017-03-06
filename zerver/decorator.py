@@ -33,19 +33,8 @@ from six.moves import zip, urllib
 from typing import Union, Any, Callable, Sequence, Dict, Optional, TypeVar, Text
 from zerver.lib.str_utils import force_bytes
 
-if settings.ZILENCER_ENABLED:
-    from zilencer.models import get_deployment_by_domain, Deployment
-else:
-    from mock import Mock
-    get_deployment_by_domain = Mock()
-    Deployment = Mock() # type: ignore # https://github.com/JukkaL/mypy/issues/1188
-
 FuncT = TypeVar('FuncT', bound=Callable[..., Any])
 ViewFuncT = TypeVar('ViewFuncT', bound=Callable[..., HttpResponse])
-
-def get_deployment_or_userprofile(role):
-    # type: (Text) -> Union[UserProfile, Deployment]
-    return get_user_profile_by_email(role) if "@" in role else get_deployment_by_domain(role)
 
 class _RespondAsynchronously(object):
     pass
@@ -166,16 +155,14 @@ def process_client(request, user_profile, is_json_view=False, client_name=None):
     update_user_activity(request, user_profile)
 
 def validate_api_key(request, role, api_key, is_webhook=False):
-    # type: (HttpRequest, Text, Text, bool) -> Union[UserProfile, Deployment]
+    # type: (HttpRequest, Text, Text, bool) -> UserProfile
     # Remove whitespace to protect users from trivial errors.
     role, api_key = role.strip(), api_key.strip()
 
     try:
-        profile = get_deployment_or_userprofile(role)
+        profile = get_user_profile_by_email(role)
     except UserProfile.DoesNotExist:
         raise JsonableError(_("Invalid user: %s") % (role,))
-    except Deployment.DoesNotExist:
-        raise JsonableError(_("Invalid deployment: %s") % (role,))
 
     if api_key != profile.api_key:
         if len(api_key) != 32:
@@ -188,12 +175,10 @@ def validate_api_key(request, role, api_key, is_webhook=False):
         raise JsonableError(_("Account not active"))
     if profile.is_incoming_webhook and not is_webhook:
         raise JsonableError(_("Account is not valid to post webhook messages"))
-    try:
-        if profile.realm.deactivated:
-            raise JsonableError(_("Realm for account has been deactivated"))
-    except AttributeError:
-        # Deployment objects don't have realms
-        pass
+
+    if profile.realm.deactivated:
+        raise JsonableError(_("Realm for account has been deactivated"))
+
     if (not check_subdomain(get_subdomain(request), profile.realm.subdomain) and
         # Allow access to localhost for Tornado
         not (settings.RUNNING_INSIDE_TORNADO and
@@ -404,18 +389,13 @@ def authenticated_rest_api_view(is_webhook=False):
 
             # Now we try to do authentication or die
             try:
-                # Could be a UserProfile or a Deployment
+                # role is a UserProfile
                 profile = validate_api_key(request, role, api_key, is_webhook)
             except JsonableError as e:
                 return json_unauthorized(e.error)
             request.user = profile
             process_client(request, profile)
-            if isinstance(profile, UserProfile):
-                request._email = profile.email
-            else:
-                assert isinstance(profile, Deployment)  # type: ignore # https://github.com/python/mypy/issues/2957
-                request._email = "deployment:" + role
-                profile.rate_limits = ""
+            request._email = profile.email
             # Apply rate limiting
             return rate_limit()(view_func)(request, profile, *args, **kwargs)
         return _wrapped_func_arguments
