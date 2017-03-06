@@ -10,6 +10,7 @@ from zerver.models import get_user_profile_by_email, \
     UserMessage, Message, Realm
 from zerver.lib.context_managers import lockfile
 from zerver.lib.error_notify import do_report_error
+from zerver.lib.feedback import deliver_feedback_by_zulip
 from zerver.lib.queue import SimpleQueueClient, queue_json_publish
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.notifications import handle_missedmessage_emails, enqueue_welcome_emails, \
@@ -251,6 +252,8 @@ class FeedbackBot(QueueProcessingWorker):
             headers = {'Reply-To': '"%s" <%s>' % (event["sender_full_name"], event["sender_email"])}
             msg = EmailMessage(subject, content, from_email, [to_email], headers=headers)
             msg.send()
+        if settings.FEEDBACK_STREAM is not None:
+            deliver_feedback_by_zulip(event)
 
 @assign_queue('error_reports')
 class ErrorReporter(QueueProcessingWorker):

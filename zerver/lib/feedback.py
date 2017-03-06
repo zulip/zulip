@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
-from typing import Any, Dict, Optional, Text
+from django.conf import settings
+from typing import Any, Mapping, Optional, Text
 
 from zerver.lib.actions import internal_send_message
 from zerver.lib.redis_utils import get_redis_client
@@ -44,7 +45,7 @@ def get_ticket_number():
     return ticket_number
 
 def deliver_feedback_by_zulip(message):
-    # type: (Dict[str, Any]) -> None
+    # type: (Mapping[str, Any]) -> None
     subject = "%s" % (message["sender_email"],)
 
     if len(subject) > 60:
@@ -72,4 +73,4 @@ def deliver_feedback_by_zulip(message):
     content += message['content']
 
     internal_send_message(realm_for_email("feedback@zulip.com"), "feedback@zulip.com",
-                          "stream", "support", subject, content)
+                          "stream", settings.FEEDBACK_STREAM, subject, content)
