@@ -1,12 +1,12 @@
 <div class="{{this.class}}" title="{{this.title}}" data-emoji-name="{{this.emoji_name}}">
-  {{#if this.emoji_alt_code}}
-    <div class="emoji_alt_code">&nbsp:{{this.emoji_name}}:</div>
-  {{else}}
-    {{#if this.is_realm_emoji}}
-      <img src="{{this.url}}" class="emoji" />
+    {{#if this.emoji_alt_code}}
+        <div class="emoji_alt_code">&nbsp:{{this.emoji_name}}:</div>
     {{else}}
-      <div class="emoji emoji-{{this.emoji_name_css_class}}" />
+        {{#if this.is_realm_emoji}}
+        <img src="{{this.url}}" class="emoji" />
+        {{else}}
+        <div class="emoji emoji-{{this.emoji_name_css_class}}" />
+        {{/if}}
     {{/if}}
-  {{/if}}
-  <div class="message_reaction_count">{{this.count}}</div>
+    <div class="message_reaction_count">{{this.count}}</div>
 </div>
