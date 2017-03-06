@@ -8,6 +8,7 @@ from zerver.models import PushDeviceToken, Message, Recipient, UserProfile, \
     receives_online_notifications
 from zerver.models import get_user_profile_by_id
 from zerver.lib.avatar import avatar_url
+from zerver.lib.request import JsonableError
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.decorator import statsd_increment
 from zerver.lib.utils import generate_random_token
@@ -17,6 +18,8 @@ from apns import APNs, Frame, Payload, SENT_BUFFER_QTY
 from gcm import GCM
 
 from django.conf import settings
+from django.utils import timezone
+from django.utils.translation import ugettext as _
 
 import base64
 import binascii
@@ -336,3 +339,22 @@ def handle_push_notification(user_profile_id, missed_message):
 
     except UserMessage.DoesNotExist:
         logging.error("Could not find UserMessage with message_id %s" % (missed_message['message_id'],))
+
+def add_push_device_token(user_profile, token_str, kind, ios_app_id=None):
+    # type: (UserProfile, str, int, Optional[str]) -> None
+    if token_str == '' or len(token_str) > 4096:
+        raise JsonableError(_('Empty or invalid length token'))
+
+    # If another user was previously logged in on the same device and didn't
+    # properly log out, the token will still be registered to the wrong account
+    PushDeviceToken.objects.filter(token=token_str).exclude(user=user_profile).delete()
+
+    # Overwrite with the latest value
+    token, created = PushDeviceToken.objects.get_or_create(user=user_profile,
+                                                           token=token_str,
+                                                           defaults=dict(
+                                                               kind=kind,
+                                                               ios_app_id=ios_app_id))
+    if not created:
+        token.last_updated = timezone.now()
+        token.save(update_fields=['last_updated'])
