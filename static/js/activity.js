@@ -160,7 +160,8 @@ exports.short_huddle_name = function (huddle) {
     return names.join(', ');
 };
 
-exports.huddle_fraction_present = function (huddle, presence_info) {
+exports.huddle_fraction_present = function (huddle) {
+    var presence_info = exports.presence_info;
     var user_ids = huddle.split(',');
 
     var num_present = 0;
@@ -178,36 +179,36 @@ exports.huddle_fraction_present = function (huddle, presence_info) {
     return ratio.toFixed(2);
 };
 
-function get_compare_function(presence_info) {
-    return function (a, b) {
-        if (presence_info[a].status === 'active' && presence_info[b].status !== 'active') {
-            return -1;
-        } else if (presence_info[b].status === 'active' && presence_info[a].status !== 'active') {
-            return 1;
-        }
+function compare_function(a, b) {
+    var presence_info = exports.presence_info;
 
-        if (presence_info[a].status === 'idle' && presence_info[b].status !== 'idle') {
-            return -1;
-        } else if (presence_info[b].status === 'idle' && presence_info[a].status !== 'idle') {
-            return 1;
-        }
+    if (presence_info[a].status === 'active' && presence_info[b].status !== 'active') {
+        return -1;
+    } else if (presence_info[b].status === 'active' && presence_info[a].status !== 'active') {
+        return 1;
+    }
 
-        // Sort equivalent PM names alphabetically
-        var full_name_a = a;
-        var full_name_b = b;
-        if (people.get_person_from_user_id(a)) {
-            full_name_a = people.get_person_from_user_id(a).full_name;
-        }
-        if (people.get_person_from_user_id(b)) {
-            full_name_b = people.get_person_from_user_id(b).full_name;
-        }
-        return util.strcmp(full_name_a, full_name_b);
-    };
+    if (presence_info[a].status === 'idle' && presence_info[b].status !== 'idle') {
+        return -1;
+    } else if (presence_info[b].status === 'idle' && presence_info[a].status !== 'idle') {
+        return 1;
+    }
+
+    // Sort equivalent PM names alphabetically
+    var full_name_a = a;
+    var full_name_b = b;
+    if (people.get_person_from_user_id(a)) {
+        full_name_a = people.get_person_from_user_id(a).full_name;
+    }
+    if (people.get_person_from_user_id(b)) {
+        full_name_b = people.get_person_from_user_id(b).full_name;
+    }
+    return util.strcmp(full_name_a, full_name_b);
 }
 
-function sort_users(user_ids, presence_info) {
+function sort_users(user_ids) {
     // TODO sort by unread count first, once we support that
-    user_ids.sort(get_compare_function(presence_info));
+    user_ids.sort(compare_function);
     return user_ids;
 }
 
@@ -258,7 +259,7 @@ function matches_filter(user_id) {
 function filter_and_sort(users) {
     var user_ids = Object.keys(users);
     user_ids = filter_user_ids(user_ids);
-    user_ids = sort_users(user_ids, exports.presence_info);
+    user_ids = sort_users(user_ids);
     return user_ids;
 }
 
@@ -300,15 +301,13 @@ exports.insert_user_into_list = function (user_id) {
 
     var items = $('#user_presences li').toArray();
 
-    var compare = get_compare_function(exports.presence_info);
-
     function insert() {
         var i = 0;
 
         for (i = 0; i < items.length; i += 1) {
             var li = $(items[i]);
             var list_user_id = li.attr('data-user-id');
-            if (compare(user_id, list_user_id) < 0) {
+            if (compare_function(user_id, list_user_id) < 0) {
                 li.before(html);
                 return;
             }
@@ -375,7 +374,7 @@ exports.update_huddles = function () {
             user_ids_string: huddle,
             name: exports.full_huddle_name(huddle),
             href: narrow.huddle_with_uri(huddle),
-            fraction_present: exports.huddle_fraction_present(huddle, exports.presence_info),
+            fraction_present: exports.huddle_fraction_present(huddle),
             short_name: exports.short_huddle_name(huddle),
         };
     });
