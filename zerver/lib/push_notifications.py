@@ -149,14 +149,14 @@ def _do_push_to_apns_service(user_id, message, apns_connection):
 def send_apple_push_notification_to_user(user, alert, **extra_data):
     # type: (UserProfile, Text, **Any) -> None
     devices = PushDeviceToken.objects.filter(user=user, kind=PushDeviceToken.APNS)
-    send_apple_push_notification(user, devices, alert, **extra_data)
+    send_apple_push_notification(user.id, devices, alert, **extra_data)
 
 # Send a push notification to the desired clients
 # extra_data is a dict that will be passed to the
 # mobile app
 @statsd_increment("apple_push_notification")
-def send_apple_push_notification(user, devices, alert, **extra_data):
-    # type: (UserProfile, List[PushDeviceToken], Text, **Any) -> None
+def send_apple_push_notification(user_id, devices, alert, **extra_data):
+    # type: (int, List[PushDeviceToken], Text, **Any) -> None
     if not connection and not dbx_connection:
         logging.error("Attempting to send push notification, but no connection was found. "
                       "This may be because we could not find the APNS Certificate file.")
@@ -175,8 +175,8 @@ def send_apple_push_notification(user, devices, alert, **extra_data):
         if valid_tokens:
             logging.info("APNS: Sending apple push notification "
                          "to devices: %s" % (valid_devices,))
-            zulip_message = APNsMessage(user.id, valid_tokens, alert=alert, **extra_data)
-            _do_push_to_apns_service(user.id, zulip_message, conn)
+            zulip_message = APNsMessage(user_id, valid_tokens, alert=alert, **extra_data)
+            _do_push_to_apns_service(user_id, zulip_message, conn)
         else:
             logging.warn("APNS: Not sending notification because "
                          "tokens didn't match devices: %s" % (app_ids,))
@@ -297,7 +297,7 @@ def handle_push_notification(user_profile_id, missed_message):
 
             if apple_devices:
                 apple_extra_data = {'message_ids': [message.id]}
-                send_apple_push_notification(user_profile, apple_devices, alert,
+                send_apple_push_notification(user_profile.id, apple_devices, alert,
                                              badge=1, zulip=apple_extra_data)
 
             if android_devices:
