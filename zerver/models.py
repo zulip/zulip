@@ -1083,7 +1083,7 @@ def pre_save_message(sender, **kwargs):
         message.update_calculated_fields()
 
 def get_context_for_message(message):
-    # type: (Message) -> Sequence[Message]
+    # type: (Message) -> QuerySet[Message]
     # TODO: Change return type to QuerySet[Message]
     return Message.objects.filter(
         recipient_id=message.recipient_id,
