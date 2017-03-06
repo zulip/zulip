@@ -2,7 +2,6 @@ from __future__ import absolute_import
 
 from django.utils.translation import ugettext as _
 from django.http import HttpResponse, HttpRequest
-from django.views.decorators.csrf import csrf_exempt
 
 from zilencer.models import Deployment
 
@@ -94,13 +93,3 @@ def realm_for_email(email):
         pass
 
     return get_realm_by_email_domain(email)
-
-# Requests made to this endpoint are UNAUTHENTICATED
-@csrf_exempt
-@has_request_variables
-def lookup_endpoints_for_user(request, email=REQ()):
-    # type: (HttpRequest, str) -> HttpResponse
-    try:
-        return json_response(realm_for_email(email).deployment.endpoints)
-    except AttributeError:
-        return json_error(_("Cannot determine endpoint for user."), status=404)

@@ -12,8 +12,6 @@ v1_api_and_json_patterns = [
         {'POST': 'zilencer.views.submit_feedback'}),
     url('^deployment/report_error$', rest_dispatch,
         {'POST': 'zerver.views.report.report_error'}),
-    url('^deployment/endpoints$', zilencer.views.lookup_endpoints_for_user,
-        name='zilencer.views.lookup_endpoints_for_user'),
 ]
 
 urlpatterns = [
