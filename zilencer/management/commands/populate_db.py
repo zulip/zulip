@@ -16,7 +16,6 @@ from zerver.lib.bulk_create import bulk_create_realms, \
     bulk_create_streams, bulk_create_users, bulk_create_huddles, \
     bulk_create_clients
 from zerver.models import DefaultStream, get_stream, get_realm
-from zilencer.models import Deployment
 
 import random
 import os
