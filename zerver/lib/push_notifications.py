@@ -57,9 +57,9 @@ def get_apns_key(identifer):
     return 'apns:' + str(identifer)
 
 class APNsMessage(object):
-    def __init__(self, user, tokens, alert=None, badge=None, sound=None,
+    def __init__(self, user_id, tokens, alert=None, badge=None, sound=None,
                  category=None, **kwargs):
-        # type: (UserProfile, List[Text], Text, int, Text, Text, **Any) -> None
+        # type: (int, List[Text], Text, int, Text, Text, **Any) -> None
         self.frame = Frame()
         self.tokens = tokens
         expiry = int(time.time() + 24 * 3600)
@@ -67,7 +67,7 @@ class APNsMessage(object):
         payload = Payload(alert=alert, badge=badge, sound=sound,
                           category=category, custom=kwargs)
         for token in tokens:
-            data = {'token': token, 'user_id': user.id}
+            data = {'token': token, 'user_id': user_id}
             identifier = random.getrandbits(32)
             key = get_apns_key(identifier)
             redis_client.hmset(key, data)
@@ -175,7 +175,7 @@ def send_apple_push_notification(user, devices, alert, **extra_data):
         if valid_tokens:
             logging.info("APNS: Sending apple push notification "
                          "to devices: %s" % (valid_devices,))
-            zulip_message = APNsMessage(user, valid_tokens, alert=alert, **extra_data)
+            zulip_message = APNsMessage(user.id, valid_tokens, alert=alert, **extra_data)
             _do_push_to_apns_service(user, zulip_message, conn)
         else:
             logging.warn("APNS: Not sending notification because "
