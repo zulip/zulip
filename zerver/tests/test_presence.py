@@ -270,3 +270,18 @@ class UserPresenceAggregationTests(ZulipTestCase):
                 "timestamp": datetime_to_timestamp(validate_time - datetime.timedelta(seconds=2))
             }
         )
+
+    def test_aggregated_presense_offline(self):
+        # type: () -> None
+        email = "othello@zulip.com"
+        self.login(email)
+        validate_time = timezone.now()
+        with self.settings(OFFLINE_THRESHOLD_SECS=1):
+            result_dict = self._send_presence_for_aggregated_tests(email, 'idle', validate_time)
+        self.assertDictEqual(
+            result_dict['presence']['aggregated'],
+            {
+                "status": "offline",
+                "timestamp": datetime_to_timestamp(validate_time - datetime.timedelta(seconds=2))
+            }
+        )
