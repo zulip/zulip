@@ -721,7 +721,7 @@ class PushDeviceToken(models.Model):
     # sent to us from each device:
     #   - APNS token if kind == APNS
     #   - GCM registration id if kind == GCM
-    token = models.CharField(max_length=4096, unique=True) # type: Text
+    token = models.CharField(max_length=4096, unique=True) # type: bytes
     last_updated = models.DateTimeField(auto_now=True) # type: datetime.datetime
 
     # The user who's device this is

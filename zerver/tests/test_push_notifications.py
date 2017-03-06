@@ -179,7 +179,7 @@ class SendNotificationTest(PushNotificationTest):
             self.assertEqual(set(message.tokens), set(self.tokens))
 
         mock_send.side_effect = test_send
-        apn.send_apple_push_notification(self.user_profile, "test alert")
+        apn.send_apple_push_notification_to_user(self.user_profile, "test alert")
         self.assertEqual(mock_send.call_count, 1)
 
     @mock.patch('apns.GatewayConnection.send_notification_multiple')
@@ -200,7 +200,7 @@ class SendNotificationTest(PushNotificationTest):
     def test_connection_single_none(self, mock_push, mock_info, mock_warn):
         # type: (mock.MagicMock, mock.MagicMock, mock.MagicMock) -> None
         apn.connection = None
-        apn.send_apple_push_notification(self.user_profile, "test alert")
+        apn.send_apple_push_notification_to_user(self.user_profile, "test alert")
 
     @mock.patch('logging.error')
     @mock.patch('apns.GatewayConnection.send_notification_multiple')
@@ -208,7 +208,7 @@ class SendNotificationTest(PushNotificationTest):
         # type: (mock.MagicMock, mock.MagicMock) -> None
         apn.connection = None
         apn.dbx_connection = None
-        apn.send_apple_push_notification(self.user_profile, "test alert")
+        apn.send_apple_push_notification_to_user(self.user_profile, "test alert")
 
 class APNsFeedbackTest(PushNotificationTest):
     @mock.patch('logging.info')
