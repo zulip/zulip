@@ -3,9 +3,12 @@ from __future__ import absolute_import
 import random
 from typing import Any, Dict, List, Optional, SupportsInt, Text
 
-from zerver.models import PushDeviceToken, UserProfile
+from zerver.models import PushDeviceToken, Message, Recipient, UserProfile, \
+    UserMessage, get_display_recipient, receives_offline_notifications, \
+    receives_online_notifications
 from zerver.models import get_user_profile_by_id
-from zerver.lib.timestamp import timestamp_to_datetime
+from zerver.lib.avatar import avatar_url
+from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.decorator import statsd_increment
 from zerver.lib.utils import generate_random_token
 from zerver.lib.redis_utils import get_redis_client
@@ -250,3 +253,68 @@ def send_android_push_notification(user, data):
 
     # python-gcm handles retrying of the unsent messages.
     # Ref: https://github.com/geeknam/python-gcm/blob/master/gcm/gcm.py#L497
+
+@statsd_increment("push_notifications")
+def handle_push_notification(user_profile_id, missed_message):
+    # type: (int, Dict[str, Any]) -> None
+    try:
+        user_profile = get_user_profile_by_id(user_profile_id)
+        if not (receives_offline_notifications(user_profile) or receives_online_notifications(user_profile)):
+            return
+
+        umessage = UserMessage.objects.get(user_profile=user_profile,
+                                           message__id=missed_message['message_id'])
+        message = umessage.message
+        if umessage.flags.read:
+            return
+        sender_str = message.sender.full_name
+
+        apple = num_push_devices_for_user(user_profile, kind=PushDeviceToken.APNS)
+        android = num_push_devices_for_user(user_profile, kind=PushDeviceToken.GCM)
+
+        if apple or android:
+            # TODO: set badge count in a better way
+            # Determine what alert string to display based on the missed messages
+            if message.recipient.type == Recipient.HUDDLE:
+                alert = "New private group message from %s" % (sender_str,)
+            elif message.recipient.type == Recipient.PERSONAL:
+                alert = "New private message from %s" % (sender_str,)
+            elif message.recipient.type == Recipient.STREAM:
+                alert = "New mention from %s" % (sender_str,)
+            else:
+                alert = "New Zulip mentions and private messages from %s" % (sender_str,)
+
+            if apple:
+                apple_extra_data = {'message_ids': [message.id]}
+                send_apple_push_notification(user_profile, alert, badge=1, zulip=apple_extra_data)
+
+            if android:
+                content = message.content
+                content_truncated = (len(content) > 200)
+                if content_truncated:
+                    content = content[:200] + "..."
+
+                android_data = {
+                    'user': user_profile.email,
+                    'event': 'message',
+                    'alert': alert,
+                    'zulip_message_id': message.id, # message_id is reserved for CCS
+                    'time': datetime_to_timestamp(message.pub_date),
+                    'content': content,
+                    'content_truncated': content_truncated,
+                    'sender_email': message.sender.email,
+                    'sender_full_name': message.sender.full_name,
+                    'sender_avatar_url': avatar_url(message.sender),
+                }
+
+                if message.recipient.type == Recipient.STREAM:
+                    android_data['recipient_type'] = "stream"
+                    android_data['stream'] = get_display_recipient(message.recipient)
+                    android_data['topic'] = message.subject
+                elif message.recipient.type in (Recipient.HUDDLE, Recipient.PERSONAL):
+                    android_data['recipient_type'] = "private"
+
+                send_android_push_notification(user_profile, android_data)
+
+    except UserMessage.DoesNotExist:
+        logging.error("Could not find UserMessage with message_id %s" % (missed_message['message_id'],))

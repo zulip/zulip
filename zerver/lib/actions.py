@@ -36,9 +36,8 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     email_allowed_for_realm, email_to_username, display_recipient_cache_key, \
     get_user_profile_by_email, get_stream_cache_key, \
     UserActivityInterval, get_active_user_dicts_in_realm, get_active_streams, \
-    realm_filters_for_realm, RealmFilter, receives_offline_notifications, \
-    ScheduledJob, get_owned_bot_dicts, \
-    get_old_unclaimed_attachments, get_cross_realm_emails, receives_online_notifications, \
+    realm_filters_for_realm, RealmFilter, ScheduledJob, get_owned_bot_dicts, \
+    get_old_unclaimed_attachments, get_cross_realm_emails, \
     Reaction, EmailChangeStatus
 
 from zerver.lib.alert_words import alert_words_in_realm
@@ -74,8 +73,6 @@ from zerver.lib.utils import log_statsd_event, statsd
 from zerver.lib.html_diff import highlight_html_differences
 from zerver.lib.alert_words import user_alert_words, add_user_alert_words, \
     remove_user_alert_words, set_user_alert_words
-from zerver.lib.push_notifications import num_push_devices_for_user, \
-    send_apple_push_notification, send_android_push_notification
 from zerver.lib.notifications import clear_followup_emails_queue
 from zerver.lib.narrow import check_supported_events_narrow_filter
 from zerver.lib.request import JsonableError
@@ -3135,71 +3132,6 @@ def do_send_confirmation_email(invitee, referrer, body):
         body_template_path=body_template_path,
         html_body_template_path=html_body_template_path,
         host=referrer.realm.host, custom_body=body)
-
-@statsd_increment("push_notifications")
-def handle_push_notification(user_profile_id, missed_message):
-    # type: (int, Dict[str, Any]) -> None
-    try:
-        user_profile = get_user_profile_by_id(user_profile_id)
-        if not (receives_offline_notifications(user_profile) or receives_online_notifications(user_profile)):
-            return
-
-        umessage = UserMessage.objects.get(user_profile=user_profile,
-                                           message__id=missed_message['message_id'])
-        message = umessage.message
-        if umessage.flags.read:
-            return
-        sender_str = message.sender.full_name
-
-        apple = num_push_devices_for_user(user_profile, kind=PushDeviceToken.APNS)
-        android = num_push_devices_for_user(user_profile, kind=PushDeviceToken.GCM)
-
-        if apple or android:
-            # TODO: set badge count in a better way
-            # Determine what alert string to display based on the missed messages
-            if message.recipient.type == Recipient.HUDDLE:
-                alert = "New private group message from %s" % (sender_str,)
-            elif message.recipient.type == Recipient.PERSONAL:
-                alert = "New private message from %s" % (sender_str,)
-            elif message.recipient.type == Recipient.STREAM:
-                alert = "New mention from %s" % (sender_str,)
-            else:
-                alert = "New Zulip mentions and private messages from %s" % (sender_str,)
-
-            if apple:
-                apple_extra_data = {'message_ids': [message.id]}
-                send_apple_push_notification(user_profile, alert, badge=1, zulip=apple_extra_data)
-
-            if android:
-                content = message.content
-                content_truncated = (len(content) > 200)
-                if content_truncated:
-                    content = content[:200] + "..."
-
-                android_data = {
-                    'user': user_profile.email,
-                    'event': 'message',
-                    'alert': alert,
-                    'zulip_message_id': message.id, # message_id is reserved for CCS
-                    'time': datetime_to_timestamp(message.pub_date),
-                    'content': content,
-                    'content_truncated': content_truncated,
-                    'sender_email': message.sender.email,
-                    'sender_full_name': message.sender.full_name,
-                    'sender_avatar_url': avatar_url(message.sender),
-                }
-
-                if message.recipient.type == Recipient.STREAM:
-                    android_data['recipient_type'] = "stream"
-                    android_data['stream'] = get_display_recipient(message.recipient)
-                    android_data['topic'] = message.subject
-                elif message.recipient.type in (Recipient.HUDDLE, Recipient.PERSONAL):
-                    android_data['recipient_type'] = "private"
-
-                send_android_push_notification(user_profile, android_data)
-
-    except UserMessage.DoesNotExist:
-        logging.error("Could not find UserMessage with message_id %s" % (missed_message['message_id'],))
 
 def is_inactive(email):
     # type: (Text) -> None
