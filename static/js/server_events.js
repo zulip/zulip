@@ -85,7 +85,7 @@ function dispatch_normal_event(event) {
             page_params.realm_waiting_period_threshold = event.value;
         } else if (event.op === 'update_dict' && event.property === 'icon') {
             page_params.realm_icon_url = event.data.icon_url;
-            page_params.icon_source = event.data.icon_source;
+            page_params.realm_icon_source = event.data.icon_source;
             realm_icon.rerender();
         }
 
