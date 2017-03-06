@@ -432,7 +432,7 @@ function status_from_timestamp(baseline_time, presence) {
 // For testing
 exports._status_from_timestamp = status_from_timestamp;
 
-function focus_ping() {
+function focus_ping(want_redraw) {
     channel.post({
         url: '/json/users/me/presence',
         data: {status: (exports.has_focus) ? exports.ACTIVE : exports.IDLE,
@@ -449,9 +449,14 @@ function focus_ping() {
 
             exports.new_user_input = false;
 
-            exports.set_presence_info(data.presences, data.server_timestamp);
-            exports.build_user_sidebar();
-            exports.update_huddles();
+            // TODO: If want_redraw is false, we should have the server
+            // not send us any presences data.  But avoiding the redraw
+            // helps.
+            if (want_redraw) {
+                exports.set_presence_info(data.presences, data.server_timestamp);
+                exports.build_user_sidebar();
+                exports.update_huddles();
+            }
         },
     });
 }
@@ -459,8 +464,7 @@ function focus_ping() {
 function focus_gained() {
     if (!exports.has_focus) {
         exports.has_focus = true;
-
-        focus_ping();
+        focus_ping(false);
     }
 }
 
@@ -471,14 +475,20 @@ exports.initialize = function () {
                 onActive: focus_gained,
                 keepTracking: true});
 
-    setInterval(focus_ping, ACTIVE_PING_INTERVAL_MS);
-
-    focus_ping();
-
     activity.set_presence_info(page_params.initial_presences,
                                page_params.initial_servertime);
     exports.build_user_sidebar();
     exports.update_huddles();
+
+    // Let the server know we're here, but pass "false" for
+    // want_redraw, since we just got all this info in page_params.
+    focus_ping(false);
+
+    function get_full_presence_list_update() {
+        focus_ping(true);
+    }
+
+    setInterval(get_full_presence_list_update, ACTIVE_PING_INTERVAL_MS);
 };
 
 exports.set_user_status = function (email, presence, server_time) {
