@@ -3,8 +3,6 @@ from __future__ import absolute_import
 from django.utils.translation import ugettext as _
 from django.http import HttpResponse, HttpRequest
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.views import login as django_login_page
-from django.http import HttpResponseRedirect
 
 from zilencer.models import Deployment
 
@@ -106,20 +104,3 @@ def lookup_endpoints_for_user(request, email=REQ()):
         return json_response(realm_for_email(email).deployment.endpoints)
     except AttributeError:
         return json_error(_("Cannot determine endpoint for user."), status=404)
-
-def account_deployment_dispatch(request, **kwargs):
-    # type: (HttpRequest, **Any) -> HttpResponse
-    sso_unknown_email = False
-    if request.method == 'POST':
-        email = request.POST['username']
-        realm = realm_for_email(email)
-        try:
-            return HttpResponseRedirect(realm.deployment.base_site_url)
-        except AttributeError:
-            # No deployment found for this user/email
-            sso_unknown_email = True
-
-    template_response = django_login_page(request, **kwargs)
-    template_response.context_data['desktop_sso_dispatch'] = True
-    template_response.context_data['desktop_sso_unknown_email'] = sso_unknown_email
-    return template_response
