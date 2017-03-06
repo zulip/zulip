@@ -357,8 +357,8 @@ def add_push_device_token(user_profile, token_str, kind, ios_app_id=None):
         token.last_updated = timezone.now()
         token.save(update_fields=['last_updated'])
 
-def remove_push_device_token(request, user_profile, token_str, kind):
-    # type: (HttpRequest, UserProfile, str, int) -> None
+def remove_push_device_token(user_profile, token_str, kind):
+    # type: (UserProfile, str, int) -> None
     try:
         token = PushDeviceToken.objects.get(token=token_str, kind=kind)
         token.delete()
