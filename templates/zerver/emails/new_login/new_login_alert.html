@@ -9,17 +9,22 @@
         <tr>
             <td>
                 <a href="{{ realm_uri }}/"><img style="max-height:75px; height:75px;"  height="75px" alt="Zulip" title="{{ _('Zulip') }}" src="{{ realm_uri }}/static/images/landing-page/zulip-header.png" /></a>
-                <h3 style="font-family:Arial; font-size:30px; margin: 5px 0px; color:#555">New Login To Zulip</h3>
+                <h3 style="font-family:Arial; font-size:30px; margin: 5px 0px; color:#555">New login to Zulip</h3>
             </td>
         </tr>
         <tr>
             <td style="font-size:16px; font-family:Helvetica;">
-                <p><b>Hello, {{ user.short_name | title }}.</b></p>
+                <p><b>Hello, {{ user.full_name | title }}.</b></p>
                 <p>This is a notification that a new login to your Zulip account has just occured.</p>
-                <p><b>Details:</b></p>
-                <blockquote>Account: {{ user.email }}<br />Date/Time: {{ device_info.login_time }}<br />Device: {{ device_info.device_browser | title }} on {{ device_info.device_os | title }}<br />IP Address: {{ device_info.device_ip }}</blockquote>
+                <p><b>Login details:</b></p>
+                <blockquote>
+                    <p>Server: {{ realm.uri }}</p>
+                    <p>Account: {{ user.email }}</p>
+                    <p>Device: You logged in '{{ device_info.login_time }}' using '{{ device_info.device_browser if device_info.device_browser else 'an unknown browser' }}' on '{{ device_info.device_os if device_info.device_os else 'an unknown operating system' }}'.</p>
+                    <p>IP Address: {{ device_info.device_ip }}</p>
+                </blockquote>
                 <p><b>If you do not recoginize this login activity or think your account may have been compromised, contact Zulip Support at {{ zulip_support }}.</b></p>
-                <p>If you recognize this login activity, kindly disregard this notice.</p>
+                <p>If you recognize this login activity, you can archive this notice.</p>
                 <p>Thanks,<br />Zulip Account Security</p>
             </td>
         </tr>

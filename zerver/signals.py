@@ -4,46 +4,46 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.template import loader
 from django.utils import timezone
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 from zerver.models import UserProfile
 
 
 def get_device_browser(user_agent):
-    # type: (str) -> str
+    # type: (str) -> Optional[str]
     user_agent = user_agent.lower()
     if "chrome" in user_agent and "chromium" not in user_agent:
-        return 'chrome'
+        return 'Chrome'
     elif "firefox" in user_agent and "seamonkey" not in user_agent and "chrome" not in user_agent:
-        return "firefox"
+        return "Firefox"
     elif "chromium" in user_agent:
-        return "chromium"
+        return "Chromium"
     elif "safari" in user_agent and "chrome" not in user_agent and "chromium" not in user_agent:
-        return "safari"
+        return "Safari"
     elif "opera" in user_agent:
-        return "opera"
+        return "Opera"
     elif "msie" in user_agent or "trident" in user_agent:
-        return "internet explorer"
+        return "Internet Explorer"
     elif "edge" in user_agent:
-        return "edge"
+        return "Edge"
     else:
-        return "browser unknown"
+        return None
 
 
 def get_device_os(user_agent):
-    # type: (str) -> str
+    # type: (str) -> Optional[str]
     user_agent = user_agent.lower()
     if "windows" in user_agent:
-        return "windows"
+        return "Windows"
     elif "macintosh" in user_agent:
-        return "macintosh"
+        return "MacOS"
     elif "linux" in user_agent and "android" not in user_agent:
-        return "linux"
+        return "Linux"
     elif "android" in user_agent:
-        return "android"
+        return "Android"
     elif "like mac os x" in user_agent:
-        return "ios"
+        return "iOS"
     else:
-        return "operating system unknown"
+        return None
 
 
 @receiver(user_logged_in, dispatch_uid="only_on_login")
@@ -54,23 +54,27 @@ def email_on_new_login(sender, user, request, **kwargs):
         return
 
     if request:
-        login_time = timezone.now().strftime('%A, %B %d, %Y at %I:%M%p (UTC) ') + \
+        login_time = timezone.now().strftime('%A, %B %d, %Y at %I:%M%p') + \
             timezone.get_current_timezone_name()
         user_agent = request.META.get('HTTP_USER_AGENT', "").lower()
         device_browser = get_device_browser(user_agent)
         device_os = get_device_os(user_agent)
-        device_ip = request.META.get('REMOTE_ADDR') or "ip address unknown"
+        device_ip = request.META.get('REMOTE_ADDR') or "Uknown IP address"
         device_info = {"device_browser": device_browser,
                        "device_os": device_os,
                        "device_ip": device_ip,
                        "login_time": login_time
                        }
 
+        realm = user.realm
         zulip_support = settings.ZULIP_ADMINISTRATOR
 
         text_template = 'zerver/emails/new_login/new_login_alert.txt'
         html_template = 'zerver/emails/new_login/new_login_alert.html'
-        context = {'user': user, 'device_info': device_info, 'zulip_support': zulip_support}
+        context = {'user': user,
+                   'device_info': device_info,
+                   'zulip_support': zulip_support,
+                   'realm': realm}
         text_content = loader.render_to_string(text_template, context)
         html_content = loader.render_to_string(html_template, context)
 
