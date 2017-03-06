@@ -30,7 +30,7 @@ var realm_icon = (function () {
 
     exports.rerender = function () {
         $("#realm-settings-icon").attr("src", page_params.realm_icon_url);
-        if (page_params.icon_source === 'U') {
+        if (page_params.realm_icon_source === 'U') {
             $("#realm_icon_delete_button").show();
         } else {
             $("#realm_icon_delete_button").hide();
