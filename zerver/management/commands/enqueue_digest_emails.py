@@ -57,31 +57,11 @@ def queue_digest_recipient(user_profile, cutoff):
              "cutoff": cutoff.strftime('%s')}
     queue_json_publish("digest_emails", event, lambda event: None)
 
-def realms_for_this_deployment():
-    # type: () -> List[str]
-    if settings.ZILENCER_ENABLED:
-        # Voyager deployments don't have a Deployment entry.
-        # Only send zulip.com digests on staging.
-        from zilencer.models import Deployment
-        site_url = settings.EXTERNAL_URI_SCHEME + settings.EXTERNAL_HOST.rstrip("/")
-        try:
-            deployment = Deployment.objects.select_related('realms').get(
-                base_site_url__startswith=site_url)
-        except Deployment.DoesNotExist:
-            raise ValueError("digest: Unable to determine deployment.")
-
-        return [r.string_id for r in deployment.realms.all()]
-    # Voyager and development.
-    return []
-
-def should_process_digest(realm_str, deployment_realms):
-    # type: (str, List[str]) -> bool
+def should_process_digest(realm_str):
+    # type: (str) -> bool
     if realm_str in settings.SYSTEM_ONLY_REALMS:
         # Don't try to send emails to system-only realms
         return False
-    if settings.PRODUCTION and not settings.VOYAGER:
-        # zulip.com or staging.zulip.com
-        return realm_str in deployment_realms
     return True
 
 class Command(BaseCommand):
@@ -97,9 +77,8 @@ in a while.
         if timezone.now().weekday() not in VALID_DIGEST_DAYS:
             return
 
-        deployment_realms = realms_for_this_deployment()
         for realm in Realm.objects.filter(deactivated=False, show_digest_email=True):
-            if not should_process_digest(realm.string_id, deployment_realms):
+            if not should_process_digest(realm.string_id):
                 continue
 
             user_profiles = UserProfile.objects.filter(
