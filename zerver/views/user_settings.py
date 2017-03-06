@@ -268,6 +268,9 @@ def set_avatar_backend(request, user_profile):
         return json_error(_("You must upload exactly one avatar."))
 
     user_file = list(request.FILES.values())[0]
+    if ((settings.MAX_AVATAR_FILE_SIZE * 1024 * 1024) < user_file.size):
+        return json_error(_("Uploaded file is larger than the allowed limit of %s MB") % (
+            settings.MAX_AVATAR_FILE_SIZE))
     upload_avatar_image(user_file, user_profile, user_profile)
     do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_USER)
     user_avatar_url = avatar_url(user_profile)

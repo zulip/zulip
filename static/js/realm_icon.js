@@ -24,7 +24,8 @@ var realm_icon = (function () {
             get_file_input,
             $("#realm_icon_file_input_error").expectOne(),
             $("#realm_icon_upload_button").expectOne(),
-            upload_function
+            upload_function,
+            page_params.max_icon_file_size
         );
     };
 
