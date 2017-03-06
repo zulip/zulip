@@ -33,6 +33,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 import requests
 import logging
+import pytz
 import time
 import sys
 import os
@@ -269,7 +270,7 @@ def run_mirror():
     # in check_permissions, but it may still be empty or corrupted
     def default_since():
         # type: () -> datetime
-        return datetime.utcnow() - timedelta(hours=config.CODEBASE_INITIAL_HISTORY_HOURS)
+        return datetime.now(tz=pytz.utc) - timedelta(hours=config.CODEBASE_INITIAL_HISTORY_HOURS)
 
     try:
         with open(config.RESUME_FILE) as f:
@@ -277,7 +278,7 @@ def run_mirror():
         if timestamp == '':
             since = default_since()
         else:
-            since = datetime.fromtimestamp(float(timestamp))
+            since = datetime.fromtimestamp(float(timestamp), tz=pytz.utc)
     except (ValueError, IOError) as e:
         logging.warn("Could not open resume file: %s" % (str(e)))
         since = default_since()
@@ -290,7 +291,7 @@ def run_mirror():
                 sleepInterval = 1
                 for event in events:
                     timestamp = event.get('event', {}).get('timestamp', '')
-                    event_date = dateutil.parser.parse(timestamp).replace(tzinfo=None)
+                    event_date = dateutil.parser.parse(timestamp)
                     if event_date > since:
                         handle_event(event)
                         since = event_date
