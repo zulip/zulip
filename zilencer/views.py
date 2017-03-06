@@ -45,9 +45,6 @@ def get_ticket_number():
 @has_request_variables
 def submit_feedback(request, deployment, message=REQ(validator=check_dict([]))):
     # type: (HttpRequest, Deployment, Dict[str, Text]) -> HttpResponse
-    domainish = message["sender_domain"]
-    if get_realm("zulip") not in deployment.realms.all():
-        domainish += u" via " + deployment.name
     subject = "%s" % (message["sender_email"],)
 
     if len(subject) > 60:
