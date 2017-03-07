@@ -37,7 +37,7 @@ from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
 from zerver.views.auth import maybe_send_to_registration
 from version import ZULIP_VERSION
 
-from social_core.exceptions import AuthFailed
+from social_core.exceptions import AuthFailed, AuthStateForbidden
 from social_django.strategy import DjangoStrategy
 from social_django.storage import BaseDjangoStorage
 from social_core.backends.github import GithubOrganizationOAuth2, GithubTeamOAuth2, \
@@ -515,6 +515,19 @@ class GitHubAuthBackendTest(ZulipTestCase):
         utils.BACKENDS = ('zproject.backends.GitHubAuthBackend',)
         with mock.patch('social_core.backends.oauth.BaseOAuth2.process_error',
                         side_effect=AuthFailed('Not found')):
+            result = self.client_get(reverse('social:complete', args=['github']))
+            self.assertEqual(result.status_code, 302)
+            self.assertIn('login', result.url)
+
+        utils.BACKENDS = settings.AUTHENTICATION_BACKENDS
+
+    def test_github_complete_when_base_exc_is_raised(self):
+        # type: () -> None
+        from social_django import utils
+        utils.BACKENDS = ('zproject.backends.GitHubAuthBackend',)
+        with mock.patch('social_core.backends.oauth.BaseOAuth2.auth_complete',
+                        side_effect=AuthStateForbidden('State forbidden')), \
+                mock.patch('zproject.backends.logging.exception'):
             result = self.client_get(reverse('social:complete', args=['github']))
             self.assertEqual(result.status_code, 302)
             self.assertIn('login', result.url)
