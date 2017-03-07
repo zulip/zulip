@@ -5,6 +5,7 @@ var font_14pt = {
 };
 var button_selected = '#D8D8D8';
 var button_unselected = '#F0F0F0';
+var last_full_update = Math.min();
 
 // TODO: should take a dict of arrays and do it for all keys
 function partial_sums(array) {
@@ -54,6 +55,32 @@ function format_date(date, include_hour) {
     }
     return month_str + ' ' + day + ', ' + year;
 }
+
+function update_last_full_update(end_times) {
+    if (end_times.length === 0) {
+        return;
+    }
+
+    last_full_update = Math.min(last_full_update, end_times[end_times.length - 1]);
+    var update_time = new Date(last_full_update * 1000);
+    var locale_date = update_time.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    var locale_time = update_time.toLocaleTimeString().replace(":00 ", " ");
+
+    $('#id_last_full_update').text(locale_time + " on " + locale_date);
+    $('#id_last_full_update').closest('.last-update').show();
+}
+
+$(document).ready(function () {
+    $('span[data-toggle="tooltip"]').tooltip({
+        animation: false,
+        placement: 'top',
+        html: true,
+        trigger: 'manual',
+    });
+    $('#id_last_update_question_sign').hover(function () {
+        $('span[data-toggle="tooltip"]').tooltip('toggle');
+    });
+});
 
 function populate_messages_sent_over_time(data) {
     if (data.end_times.length === 0) {
@@ -288,6 +315,7 @@ $.get({
     idempotent: true,
     success: function (data) {
         populate_messages_sent_over_time(data);
+        update_last_full_update(data.end_times);
     },
     error: function (xhr) {
         $('#id_stats_errors').show().text($.parseJSON(xhr.responseText).msg);
@@ -505,6 +533,7 @@ $.get({
     idempotent: true,
     success: function (data) {
         populate_messages_sent_by_client(data);
+        update_last_full_update(data.end_times);
     },
     error: function (xhr) {
         $('#id_stats_errors').show().text($.parseJSON(xhr.responseText).msg);
@@ -624,6 +653,7 @@ $.get({
     idempotent: true,
     success: function (data) {
         populate_messages_sent_by_message_type(data);
+        update_last_full_update(data.end_times);
     },
     error: function (xhr) {
         $('#id_stats_errors').show().text($.parseJSON(xhr.responseText).msg);
@@ -701,6 +731,7 @@ $.get({
     idempotent: true,
     success: function (data) {
         populate_number_of_users(data);
+        update_last_full_update(data.end_times);
     },
     error: function (xhr) {
         $('#id_stats_errors').show().text($.parseJSON(xhr.responseText).msg);
