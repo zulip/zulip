@@ -572,6 +572,7 @@ function maybe_select_person(e) {
         if ((topPerson !== undefined) && (search_term !== '')) {
             // undefined if there are no results
             var email = people.get_person_from_user_id(topPerson).email;
+            narrow.by('pm-with', email, {select_first_unread: true, trigger: 'user sidebar'});
             compose.start('private',
                     {trigger: 'sidebar enter key', private_message_recipient: email});
         }
