@@ -1,12 +1,13 @@
 from __future__ import absolute_import
 
+import six
 import sys
+
 from typing import Any, Dict, List, Optional, Union, Text
 if False:
     from mypy_extensions import NoReturn
 
 import jinja2
-from django.utils import six
 from django.test.signals import template_rendered
 from django.template.backends import jinja2 as django_jinja2
 from django.template import TemplateDoesNotExist, TemplateSyntaxError, Context
@@ -33,7 +34,7 @@ class Jinja2(django_jinja2.Jinja2):
         super(Jinja2, self).__init__(params, *args, **kwargs)
 
     def get_template(self, template_name):
-        # type: (str) -> Any # should be Template, see https://github.com/python/mypy/issues/2958
+        # type: (str) -> Template
         try:
             return Template(self.env.get_template(template_name),
                             self.context_processors,
