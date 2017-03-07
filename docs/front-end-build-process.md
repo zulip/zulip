@@ -7,9 +7,10 @@ overview, see the [new feature tutorial](new-feature-tutorial.html).
 
 ## Primary build process
 
-Most of the existing JS in Zulip is written in IIFE-wrapped modules,
-one per file in the `static/js` directory.  When running Zulip in
-development mode, each file is loaded separately, to make reloading
+Most of the existing JS in Zulip is written in
+[IIFE](http://benalman.com/news/2010/11/immediately-invoked-function-expression/)-wrapped
+modules, one per file in the `static/js` directory.  When running Zulip
+in development mode, each file is loaded separately, to make reloading
 nice and efficient.  In production mode (and when creating a release
 tarball using `tools/build-release-tarball`), JavaScript files are
 concatenated and minified.  We use the
@@ -29,7 +30,8 @@ add it to the appropriate place under `static/`.
   You'll want to add these to the `package.json` in the root of the
   repository, and then provision (to have `npm` download them) before
   continuing.  Your commit should also update `PROVISION_VERSION` in
-  `version.py`.
+  `version.py`.  When adding modules to `package.json`, please use
+  specific versions of them (without using carets `^`, tildes `~`, etc).
 - Third-party files that we have patched should all go in
   `static/third/`. Tag the commit with "[third]" when adding or
   modifying a third-party package.  Our goal is to the extent possible
