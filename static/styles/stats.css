@@ -279,6 +279,22 @@ svg {
     margin: 0px 0px 8px 0px;
 }
 
+.last-update {
+    display: none;
+    color: #aaa;
+    padding: 50px 0px;
+    font-weight: bolder;
+    font-size: 16px;
+}
+
+.last-update .icon-vector-question-sign {
+    margin-left: 5px;
+}
+
+.tooltip-inner {
+    max-width: 350px;
+}
+
 @media (max-width: 1127px) {
     #pie_messages_sent_by_client {
         margin-right: 0px;
