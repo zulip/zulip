@@ -285,6 +285,7 @@ exports.hide_message_info_popover = function () {
 };
 
 exports.hide_reactions_popover = function () {
+    $('.has_popover').removeClass('has_popover has_reactions_popover');
     if (reaction_popped()) {
         current_message_reactions_popover_elem.popover("destroy");
         current_message_reactions_popover_elem = undefined;
