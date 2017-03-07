@@ -20,6 +20,7 @@ static/js/bundle.js
 static/generated/emoji
 static/generated/github-contributors.json
 static/locale/language_options.json
+static/third/emoji-data
 /node_modules
 /staticfiles.json
 npm-debug.log
