@@ -179,7 +179,7 @@ exports.toggle_actions_popover = function (element, id) {
             editability_menu_item = i18n.t("Edit");
         } else if (editability === message_edit.editability_types.TOPIC_ONLY) {
             use_edit_icon = false;
-            editability_menu_item = i18n.t("View Source / Edit Topic");
+            editability_menu_item = i18n.t("View source / Edit topic");
         } else {
             use_edit_icon = false;
             editability_menu_item = i18n.t("View source");
