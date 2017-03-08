@@ -1972,6 +1972,8 @@ class HomeTest(ZulipTestCase):
             "left_side_userlist",
             "login_page",
             "mandatory_topics",
+            "max_avatar_file_size",
+            "max_icon_file_size",
             "max_message_id",
             "maxfilesize",
             "muted_topics",
