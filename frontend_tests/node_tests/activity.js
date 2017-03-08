@@ -90,12 +90,13 @@ global.compile_template('user_presence_rows');
 (function test_sort_users() {
     var user_ids = [alice.user_id, fred.user_id, jill.user_id];
 
-    var user_info = {};
-    user_info[alice.user_id] = { status: 'inactive' };
-    user_info[fred.user_id] = { status: 'active' };
-    user_info[jill.user_id] = { status: 'active' };
+    var presence_info = {};
+    presence_info[alice.user_id] = { status: 'inactive' };
+    presence_info[fred.user_id] = { status: 'active' };
+    presence_info[jill.user_id] = { status: 'active' };
 
-    activity._sort_users(user_ids, user_info);
+    activity.presence_info = presence_info;
+    activity._sort_users(user_ids);
 
     assert.deepEqual(user_ids, [
         fred.user_id,
@@ -193,14 +194,15 @@ global.compile_template('user_presence_rows');
     var huddle = 'alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com';
     huddle = people.emails_strings_to_user_ids_string(huddle);
 
-    var presence_list = {};
-    presence_list[alice.user_id] = { status: 'active' };
-    presence_list[fred.user_id] = { status: 'idle' }; // counts as present
+    var presence_info = {};
+    presence_info[alice.user_id] = { status: 'active' };
+    presence_info[fred.user_id] = { status: 'idle' }; // counts as present
     // jill not in list
-    presence_list[mark.user_id] = { status: 'offline' }; // does not count
+    presence_info[mark.user_id] = { status: 'offline' }; // does not count
+    activity.presence_info = presence_info;
 
     assert.equal(
-        activity.huddle_fraction_present(huddle, presence_list),
+        activity.huddle_fraction_present(huddle),
         '0.50');
 }());
 
