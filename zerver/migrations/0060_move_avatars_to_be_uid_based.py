@@ -22,6 +22,9 @@ def mkdirs(path):
     if not os.path.isdir(dirname):
         os.makedirs(dirname)
 
+class MissingAvatarException(Exception):
+    pass
+
 def move_local_file(type, path_src, path_dst):
     # type: (Text, Text, Text) -> None
     src_file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, type, path_src)
@@ -31,7 +34,7 @@ def move_local_file(type, path_src, path_dst):
         return
     if not os.path.exists(src_file_path):
         # This is likely caused by a user having previously changed their email
-        print("Missing avatar file %s; likely due to past email change." % (src_file_path,))
+        raise MissingAvatarException()
         return
     mkdirs(dst_file_path)
     os.rename(src_file_path, dst_file_path)
@@ -43,9 +46,16 @@ def move_avatars_to_be_uid_based(apps, schema_editor):
         for user_profile in user_profile_model.objects.filter(avatar_source=u"U"):
             src_file_name = user_avatar_hash(user_profile.email)
             dst_file_name = user_avatar_path(user_profile)
-            move_local_file('avatars', src_file_name + '.original', dst_file_name + '.original')
-            move_local_file('avatars', src_file_name + '-medium.png', dst_file_name + '-medium.png')
-            move_local_file('avatars', src_file_name + '.png', dst_file_name + '.png')
+            try:
+                move_local_file('avatars', src_file_name + '.original', dst_file_name + '.original')
+                move_local_file('avatars', src_file_name + '-medium.png', dst_file_name + '-medium.png')
+                move_local_file('avatars', src_file_name + '.png', dst_file_name + '.png')
+            except MissingAvatarException:
+                # If the user's avatar is missing, it's probably
+                # because they previously changed their email address.
+                # So set them to have a gravatar instead.
+                user_profile.avatar_source = u"G"
+                user_profile.save(update_fields=["avatar_source"])
     else:
         conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
         bucket_name = settings.S3_AVATAR_BUCKET
