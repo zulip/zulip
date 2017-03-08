@@ -1787,17 +1787,17 @@ def do_change_subscription_property(user_profile, sub, stream,
                  name=stream.name)
     send_event(event, [user_profile.id])
 
-def do_activate_user(user_profile, join_date=timezone.now()):
-    # type: (UserProfile, datetime.datetime) -> None
+def do_activate_user(user_profile):
+    # type: (UserProfile) -> None
     user_profile.is_active = True
     user_profile.is_mirror_dummy = False
     user_profile.set_unusable_password()
-    user_profile.date_joined = join_date
+    user_profile.date_joined = timezone.now()
     user_profile.tos_version = settings.TOS_VERSION
     user_profile.save(update_fields=["is_active", "date_joined", "password",
                                      "is_mirror_dummy", "tos_version"])
 
-    event_time = timezone.now()
+    event_time = user_profile.date_joined
     RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
                                  event_type='user_activated', event_time=event_time)
     do_increment_logging_stat(user_profile.realm, COUNT_STATS['active_users_log:is_bot:day'],
