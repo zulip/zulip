@@ -6,14 +6,14 @@ from django.http import HttpResponse
 from django.test import TestCase
 from django.utils import timezone
 
-from mock import patch
+from mock import patch, MagicMock
 from zerver.lib.test_helpers import MockLDAP
 
 from confirmation.models import Confirmation
 
 from zilencer.models import Deployment
 
-from zerver.forms import HomepageForm
+from zerver.forms import HomepageForm, WRONG_SUBDOMAIN_ERROR
 from zerver.lib.actions import do_change_password
 from zerver.views.invite import get_invitee_emails_set
 from zerver.models import (
@@ -1324,3 +1324,94 @@ class DeactivateUserTest(ZulipTestCase):
         result = self.client_delete('/json/users/me')
         self.assert_json_success(result)
         do_change_is_admin(user, True)
+
+class TestLoginPage(ZulipTestCase):
+    def test_login_page_wrong_subdomain_error(self):
+        # type: () -> None
+        result = self.client_get("/login/?subdomain=1")
+        self.assertIn(WRONG_SUBDOMAIN_ERROR, result.content.decode('utf8'))
+
+    @patch('django.http.HttpRequest.get_host')
+    def test_login_page_redirects_for_root_alias(self, mock_get_host):
+        # type: (MagicMock) -> None
+        mock_get_host.return_value = 'www.testserver'
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True,
+                           ROOT_SUBDOMAIN_ALIASES=['www']):
+            result = self.client_get("/en/login/")
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, '/find_my_team/')
+
+    @patch('django.http.HttpRequest.get_host')
+    def test_login_page_redirects_for_root_domain(self, mock_get_host):
+        # type: (MagicMock) -> None
+        mock_get_host.return_value = 'testserver'
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True,
+                           ROOT_SUBDOMAIN_ALIASES=['www']):
+            result = self.client_get("/en/login/")
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, '/find_my_team/')
+
+        mock_get_host.return_value = 'www.testserver.com'
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True,
+                           EXTERNAL_HOST='www.testserver.com',
+                           ROOT_SUBDOMAIN_ALIASES=['test']):
+            result = self.client_get("/en/login/")
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, '/find_my_team/')
+
+    @patch('django.http.HttpRequest.get_host')
+    def test_login_page_works_without_subdomains(self, mock_get_host):
+        # type: (MagicMock) -> None
+        mock_get_host.return_value = 'www.testserver'
+        with self.settings(ROOT_SUBDOMAIN_ALIASES=['www']):
+            result = self.client_get("/en/login/")
+            self.assertEqual(result.status_code, 200)
+
+        mock_get_host.return_value = 'testserver'
+        with self.settings(ROOT_SUBDOMAIN_ALIASES=['www']):
+            result = self.client_get("/en/login/")
+            self.assertEqual(result.status_code, 200)
+
+class TestFindMyTeam(ZulipTestCase):
+    def test_template(self):
+        # type: () -> None
+        result = self.client_get('/find_my_team/')
+        self.assertIn("Find your team", result.content.decode('utf8'))
+
+    def test_result(self):
+        # type: () -> None
+        url = '/find_my_team/?emails=iago@zulip.com,cordelia@zulip.com'
+        result = self.client_get(url)
+        content = result.content.decode('utf8')
+        self.assertIn("Emails sent! You will only receive emails", content)
+        self.assertIn("iago@zulip.com", content)
+        self.assertIn("cordelia@zulip.com", content)
+
+    def test_find_team_zero_emails(self):
+        # type: () -> None
+        data = {'emails': ''}
+        result = self.client_post('/find_my_team/', data)
+        self.assertIn('This field is required', result.content.decode('utf8'))
+        self.assertEqual(result.status_code, 200)
+
+    def test_find_team_one_email(self):
+        # type: () -> None
+        data = {'emails': 'hamlet@zulip.com'}
+        result = self.client_post('/find_my_team/', data)
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, '/find_my_team/?emails=hamlet%40zulip.com')
+
+    def test_find_team_multiple_emails(self):
+        # type: () -> None
+        data = {'emails': 'hamlet@zulip.com,iago@zulip.com'}
+        result = self.client_post('/find_my_team/', data)
+        self.assertEqual(result.status_code, 302)
+        expected = '/find_my_team/?emails=hamlet%40zulip.com%2Ciago%40zulip.com'
+        self.assertEqual(result.url, expected)
+
+    def test_find_team_more_than_ten_emails(self):
+        # type: () -> None
+        data = {'emails': ','.join(['hamlet-{}@zulip.com'.format(i) for i in range(11)])}
+        result = self.client_post('/find_my_team/', data)
+        self.assertEqual(result.status_code, 200)
+        self.assertIn("Please enter at most 10", result.content.decode('utf8'))
