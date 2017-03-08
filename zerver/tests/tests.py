@@ -46,16 +46,6 @@ def find_dict(lst, k, v):
             return dct
     raise AssertionError('Cannot find element in list where key %s == %s' % (k, v))
 
-class ModelTest(TestCase):
-    def test_miscellaneous_things(self):
-        # type: () -> None
-        '''
-        This is a kitchen sink test that is designed simply to get
-        test coverage up to 100% for models.py.
-        '''
-        client = make_client('some_client')
-        self.assertEqual(str(client), u'<Client: some_client>')
-
 class PermissionTest(ZulipTestCase):
     def test_get_admin_users(self):
         # type: () -> None
