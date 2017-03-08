@@ -41,7 +41,6 @@ import os
 import sys
 import time
 import ujson
-import subprocess
 
 K = TypeVar('K')
 V = TypeVar('V')
@@ -465,30 +464,6 @@ class GetProfileTest(ZulipTestCase):
                     user['avatar_url'],
                     avatar_url(user_profile),
                 )
-
-class AuthorsPageTest(ZulipTestCase):
-    def setUp(self):
-        # type: () -> None
-        """ Manual installation which did not execute `tools/provision`
-        would not have the `static/generated/github-contributors.json` fixture
-        file.
-        """
-        # This block has unreliable test coverage due to the implicit
-        # caching here, so we exclude it from coverage.
-        if not os.path.exists(settings.CONTRIBUTORS_DATA):
-            # Copy the fixture file in `zerver/fixtures` to `static/generated`
-            update_script = os.path.join(os.path.dirname(__file__),
-                                         '../../tools/update-authors-json')  # nocoverage
-            subprocess.check_call([update_script, '--use-fixture'])  # nocoverage
-
-    def test_endpoint(self):
-        # type: () -> None
-        result = self.client_get('/authors/')
-        self.assert_in_success_response(
-            ['Contributors', 'Statistic last Updated:', 'commits',
-             '@timabbott'],
-            result
-        )
 
 class MutedTopicsTests(ZulipTestCase):
     def test_json_set(self):
