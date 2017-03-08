@@ -24,7 +24,7 @@ from zerver.forms import WRONG_SUBDOMAIN_ERROR
 from zerver.models import UserProfile, Recipient, \
     Realm, RealmAlias, UserActivity, \
     get_user_profile_by_email, get_realm, get_client, get_stream, \
-    Message, get_unique_open_realm, completely_open, get_context_for_message
+    Message, get_context_for_message
 
 from zerver.lib.avatar import avatar_url
 from zerver.lib.email_mirror import create_missed_message_address
@@ -571,24 +571,6 @@ class ExtractedRecipientsTest(TestCase):
         # JSON-encoded, comma-delimited string
         s = '"bob@zulip.com,alice@zulip.com"'
         self.assertEqual(sorted(extract_recipients(s)), ['alice@zulip.com', 'bob@zulip.com'])
-
-
-class TestOpenRealms(ZulipTestCase):
-    def test_open_realm_logic(self):
-        # type: () -> None
-        realm = get_realm('simple')
-        do_deactivate_realm(realm)
-
-        mit_realm = get_realm("zephyr")
-        self.assertEqual(get_unique_open_realm(), None)
-        mit_realm.restricted_to_domain = False
-        mit_realm.save()
-        self.assertTrue(completely_open(mit_realm))
-        self.assertEqual(get_unique_open_realm(), None)
-        with self.settings(SYSTEM_ONLY_REALMS={"zulip"}):
-            self.assertEqual(get_unique_open_realm(), mit_realm)
-        mit_realm.restricted_to_domain = True
-        mit_realm.save()
 
 class TestLoginPage(ZulipTestCase):
     def test_login_page_wrong_subdomain_error(self):
