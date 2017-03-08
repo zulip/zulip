@@ -182,16 +182,22 @@ exports.huddle_fraction_present = function (huddle) {
 function compare_function(a, b) {
     var presence_info = exports.presence_info;
 
-    if (presence_info[a].status === 'active' && presence_info[b].status !== 'active') {
-        return -1;
-    } else if (presence_info[b].status === 'active' && presence_info[a].status !== 'active') {
-        return 1;
+    function level(status) {
+        switch (status) {
+            case 'active':
+                return 1;
+            case 'idle':
+                return 2;
+            default:
+                return 3;
+        }
     }
 
-    if (presence_info[a].status === 'idle' && presence_info[b].status !== 'idle') {
-        return -1;
-    } else if (presence_info[b].status === 'idle' && presence_info[a].status !== 'idle') {
-        return 1;
+    var level_a = level(presence_info[a].status);
+    var level_b = level(presence_info[b].status);
+    var diff = level_a - level_b;
+    if (diff !== 0) {
+        return diff;
     }
 
     // Sort equivalent PM names alphabetically
