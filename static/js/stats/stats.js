@@ -442,18 +442,42 @@ function populate_messages_sent_by_client(data) {
     var plot_data = {
         realm: {
             cumulative: make_plot_data(data.realm, data.end_times.length),
-            thirty: make_plot_data(data.realm, 30),
-            ten: make_plot_data(data.realm, 10),
+            year: make_plot_data(data.realm, 365),
+            month: make_plot_data(data.realm, 30),
+            week: make_plot_data(data.realm, 7),
         },
         user: {
             cumulative: make_plot_data(data.user, data.end_times.length),
-            thirty: make_plot_data(data.user, 30),
-            ten: make_plot_data(data.user, 10),
+            year: make_plot_data(data.user, 365),
+            month: make_plot_data(data.user, 30),
+            week: make_plot_data(data.user, 7),
         },
     };
 
     var user_button = 'realm';
-    var time_button = 'cumulative';
+    var time_button;
+    if (data.end_times.length >= 30) {
+        time_button = 'month';
+        $('#messages_by_client_last_month_button').css('background', button_selected);
+    } else {
+        time_button = 'cumulative';
+        $('#messages_by_client_cumulative_button').css('background', button_selected);
+    }
+
+    function remove_button(button_id) {
+        var elem = document.getElementById(button_id);
+        elem.parentNode.removeChild(elem);
+    }
+
+    if (data.end_times.length < 365) {
+        remove_button('messages_by_client_last_year_button');
+        if (data.end_times.length < 30) {
+            remove_button('messages_by_client_last_month_button');
+            if (data.end_times.length < 7) {
+                remove_button('messages_by_client_last_week_button');
+            }
+        }
+    }
 
     function draw_plot() {
         var data_ = plot_data[user_button][time_button];
@@ -476,8 +500,9 @@ function populate_messages_sent_by_client(data) {
 
     function set_time_button(button) {
         $('#messages_by_client_cumulative_button').css('background', button_unselected);
-        $('#messages_by_client_thirty_days_button').css('background', button_unselected);
-        $('#messages_by_client_ten_days_button').css('background', button_unselected);
+        $('#messages_by_client_last_year_button').css('background', button_unselected);
+        $('#messages_by_client_last_month_button').css('background', button_unselected);
+        $('#messages_by_client_last_week_button').css('background', button_unselected);
         button.css('background', button_selected);
     }
 
@@ -499,15 +524,21 @@ function populate_messages_sent_by_client(data) {
         draw_plot();
     });
 
-    $('#messages_by_client_thirty_days_button').click(function () {
+    $('#messages_by_client_last_year_button').click(function () {
         set_time_button($(this));
-        time_button = 'thirty';
+        time_button = 'year';
         draw_plot();
     });
 
-    $('#messages_by_client_ten_days_button').click(function () {
+    $('#messages_by_client_last_month_button').click(function () {
         set_time_button($(this));
-        time_button = 'ten';
+        time_button = 'month';
+        draw_plot();
+    });
+
+    $('#messages_by_client_last_week_button').click(function () {
+        set_time_button($(this));
+        time_button = 'week';
         draw_plot();
     });
 
@@ -578,19 +609,43 @@ function populate_messages_sent_by_message_type(data) {
     var plot_data = {
         realm: {
             cumulative: make_plot_data(data.realm, data.end_times.length),
-            thirty: make_plot_data(data.realm, 30),
-            ten: make_plot_data(data.realm, 10),
+            year: make_plot_data(data.realm, 365),
+            month: make_plot_data(data.realm, 30),
+            week: make_plot_data(data.realm, 7),
         },
         user: {
             cumulative: make_plot_data(data.user, data.end_times.length),
-            thirty: make_plot_data(data.user, 30),
-            ten: make_plot_data(data.user, 10),
+            year: make_plot_data(data.user, 365),
+            month: make_plot_data(data.user, 30),
+            week: make_plot_data(data.user, 7),
         },
     };
 
     var user_button = 'realm';
-    var time_button = 'cumulative';
+    var time_button;
+    if (data.end_times.length >= 30) {
+        time_button = 'month';
+        $('#messages_by_type_last_month_button').css('background', button_selected);
+    } else {
+        time_button = 'cumulative';
+        $('#messages_by_type_cumulative_button').css('background', button_selected);
+    }
     var totaldiv = document.getElementById('pie_messages_sent_by_type_total');
+
+    function remove_button(button_id) {
+        var elem = document.getElementById(button_id);
+        elem.parentNode.removeChild(elem);
+    }
+
+    if (data.end_times.length < 365) {
+        remove_button('messages_by_type_last_year_button');
+        if (data.end_times.length < 30) {
+            remove_button('messages_by_type_last_month_button');
+            if (data.end_times.length < 7) {
+                remove_button('messages_by_type_last_week_button');
+            }
+        }
+    }
 
     function draw_plot() {
         Plotly.newPlot('id_messages_sent_by_message_type',
@@ -611,8 +666,9 @@ function populate_messages_sent_by_message_type(data) {
 
     function set_time_button(button) {
         $('#messages_by_type_cumulative_button').css('background', button_unselected);
-        $('#messages_by_type_thirty_days_button').css('background', button_unselected);
-        $('#messages_by_type_ten_days_button').css('background', button_unselected);
+        $('#messages_by_type_last_year_button').css('background', button_unselected);
+        $('#messages_by_type_last_month_button').css('background', button_unselected);
+        $('#messages_by_type_last_week_button').css('background', button_unselected);
         button.css('background', button_selected);
     }
 
@@ -634,15 +690,21 @@ function populate_messages_sent_by_message_type(data) {
         draw_plot();
     });
 
-    $('#messages_by_type_thirty_days_button').click(function () {
+    $('#messages_by_type_last_year_button').click(function () {
         set_time_button($(this));
-        time_button = 'thirty';
+        time_button = 'year';
         draw_plot();
     });
 
-    $('#messages_by_type_ten_days_button').click(function () {
+    $('#messages_by_type_last_month_button').click(function () {
         set_time_button($(this));
-        time_button = 'ten';
+        time_button = 'month';
+        draw_plot();
+    });
+
+    $('#messages_by_type_last_week_button').click(function () {
+        set_time_button($(this));
+        time_button = 'week';
         draw_plot();
     });
 }
