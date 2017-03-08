@@ -89,8 +89,6 @@ not_yet_fully_covered = {
     'zerver/views/auth.py',
     'zerver/views/home.py',
     'zerver/views/registration.py',
-    # This one has 1 line that isn't covered in Python 3
-    'zerver/views/upload.py',
     # Getting this to 100% is a major project goal.
     'zproject/backends.py',
 }
