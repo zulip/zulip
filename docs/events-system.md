@@ -97,7 +97,7 @@ client.  This approach is reasonably efficient and works everywhere
 (unlike websockets, which have a decreasing but nonzero level of
 client compatibility problems).
 
-For each connected client, the **Event Queue Server** maintain an
+For each connected client, the **Event Queue Server** maintains an
 **event queue**, which contains any events that are to be delivered to
 that client which have not yet been acknowledged by that client.
 Ignoring the subtle details around error handling, the protocol is
@@ -115,7 +115,7 @@ client request.  If there is no waiting client, it simply pushes the
 event onto the queue.
 
 When starting up, each client makes a `POST /json/register` to the
-server, which creates a new event queue for that client and return the
+server, which creates a new event queue for that client and returns the
 `queue_id` as well as an initial `last_event_id` to the client (it can
 also, optionally, fetch the initial data to save an RTT and avoid
 races; see the below section on initial data fetches for details on
