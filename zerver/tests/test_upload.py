@@ -8,7 +8,11 @@ from zerver.lib.avatar import avatar_url
 from zerver.lib.bugdown import url_filename
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.test_classes import ZulipTestCase, UploadSerializeMixin
-from zerver.lib.test_helpers import avatar_disk_path, get_test_image_file
+from zerver.lib.test_helpers import (
+    avatar_disk_path,
+    get_test_image_file,
+    POSTRequestMock,
+)
 from zerver.lib.test_runner import slow
 from zerver.lib.upload import sanitize_name, S3UploadBackend, \
     upload_message_image, delete_message_image, LocalUploadBackend
@@ -16,6 +20,8 @@ import zerver.lib.upload
 from zerver.models import Attachment, Recipient, get_user_profile_by_email, \
     get_old_unclaimed_attachments, Message, UserProfile, Realm, get_realm
 from zerver.lib.actions import do_delete_old_unclaimed_attachments
+
+from zerver.views.upload import upload_file_backend
 
 import ujson
 from six.moves import urllib
@@ -76,6 +82,44 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         # Files uploaded through the API should be accesible via the web client
         self.login("hamlet@zulip.com")
         self.assert_url_serves_contents_of_file(uri, b"zulip!")
+
+    def test_filename_encoding(self):
+        # type: () -> None
+        """
+        In Python 2, we need to encode unicode filenames (which converts them to
+        str) before they can be rendered correctly.  However, in Python 3, the
+        separate unicode type does not exist, and we don't need to perform this
+        encoding.  This test ensures that we handle filename encodings properly,
+        and does so in a way that preserves 100% test coverage for Python 3.
+        """
+
+        user_profile = get_user_profile_by_email('hamlet@zulip.com')
+
+        mock_file = mock.Mock()
+        mock_file._get_size = mock.Mock(return_value=1024)
+
+        mock_files = mock.Mock()
+        mock_files.__len__ = mock.Mock(return_value=1)
+        mock_files.values = mock.Mock(return_value=[mock_file])
+
+        mock_request = mock.Mock()
+        mock_request.FILES = mock_files
+
+        # str filenames should not be encoded.
+        mock_filename = mock.Mock(spec=str)
+        mock_file.name = mock_filename
+        with mock.patch('zerver.views.upload.upload_message_image_from_request'):
+            result = upload_file_backend(mock_request, user_profile)
+        self.assert_json_success(result)
+        mock_filename.encode.assert_not_called()
+
+        # Non-str filenames should be encoded.
+        mock_filename = mock.Mock(spec=None) # None is not str
+        mock_file.name = mock_filename
+        with mock.patch('zerver.views.upload.upload_message_image_from_request'):
+            result = upload_file_backend(mock_request, user_profile)
+        self.assert_json_success(result)
+        mock_filename.encode.assert_called_once_with('ascii')
 
     def test_file_too_big_failure(self):
         # type: () -> None
