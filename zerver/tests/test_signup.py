@@ -42,7 +42,7 @@ from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 from zerver.lib.test_runner import slow
-from zerver.lib.session_user import get_session_dict_user
+from zerver.lib.sessions import get_session_dict_user
 from zerver.context_processors import common_context
 
 import re

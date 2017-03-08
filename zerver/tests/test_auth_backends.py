@@ -18,7 +18,7 @@ from zerver.forms import HomepageForm
 from zerver.lib.actions import do_deactivate_realm, do_deactivate_user, \
     do_reactivate_realm, do_reactivate_user
 from zerver.lib.initial_password import initial_password
-from zerver.lib.session_user import get_session_dict_user
+from zerver.lib.sessions import get_session_dict_user
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
