@@ -447,28 +447,6 @@ class GetProfileTest(ZulipTestCase):
                     avatar_url(user_profile),
                 )
 
-class MutedTopicsTests(ZulipTestCase):
-    def test_json_set(self):
-        # type: () -> None
-        email = 'hamlet@zulip.com'
-        self.login(email)
-
-        url = '/json/set_muted_topics'
-        data = {'muted_topics': '[["stream", "topic"]]'}
-        result = self.client_post(url, data)
-        self.assert_json_success(result)
-
-        user = get_user_profile_by_email(email)
-        self.assertEqual(ujson.loads(user.muted_topics), [["stream", "topic"]])
-
-        url = '/json/set_muted_topics'
-        data = {'muted_topics': '[["stream2", "topic2"]]'}
-        result = self.client_post(url, data)
-        self.assert_json_success(result)
-
-        user = get_user_profile_by_email(email)
-        self.assertEqual(ujson.loads(user.muted_topics), [["stream2", "topic2"]])
-
 class ExtractedRecipientsTest(TestCase):
     def test_extract_recipients(self):
         # type: () -> None
