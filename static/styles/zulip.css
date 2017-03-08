@@ -534,8 +534,8 @@ td.pointer {
 
 .message_time {
     display: block;
-    font-size: 11px;
-    color: #a1a1a1;
+    font-size: 12px;
+    color: #b1b1b1;
     vertical-align: middle;
     padding: 1px;
     font-weight: 400;
@@ -557,7 +557,7 @@ td.pointer {
     display: inline-block;
     position: absolute;
     top: 2px;
-    right: -63px;
+    right: -56px;
     z-index: 1;
 }
 
@@ -685,9 +685,9 @@ td.pointer {
     top: 0;
 
     color: #888;
-    font-size: 0.8em;
+    font-size: 12px;
     font-weight: 600;
-    padding: 3px 10px 2px 10px;
+    padding: 3px 11px 2px 10px;
     height: 17px;
     line-height: 17px;
 }
