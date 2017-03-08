@@ -2,6 +2,7 @@
 socket=/home/zulip/deployments/uwsgi-socket
 module=zproject.wsgi:application
 chdir=/home/zulip/deployments/current/
+master=true
 chmod-socket=700
 chown-socket=zulip:zulip
 processes=<%= @uwsgi_processes %>
