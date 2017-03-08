@@ -407,17 +407,6 @@ def do_create_user(email, password, realm, full_name, short_name,
     do_increment_logging_stat(user_profile.realm, COUNT_STATS['active_users_log:is_bot:day'],
                               user_profile.is_bot, event_time)
 
-    event = {'type': 'user_created',
-             'timestamp': datetime_to_timestamp(event_time),
-             'full_name': full_name,
-             'short_name': short_name,
-             'user': email,
-             'domain': realm.domain,
-             'bot': bool(bot_type)}
-    if bot_type:
-        event['bot_owner'] = bot_owner.email
-    log_event(event)
-
     notify_created_user(user_profile)
     if bot_type:
         notify_created_bot(user_profile)
@@ -580,8 +569,8 @@ def do_reactivate_realm(realm):
     realm.deactivated = False
     realm.save(update_fields=["deactivated"])
 
-def do_deactivate_user(user_profile, log=True, _cascade=True):
-    # type: (UserProfile, bool, bool) -> None
+def do_deactivate_user(user_profile, _cascade=True):
+    # type: (UserProfile, bool) -> None
     if not user_profile.is_active:
         return
 
@@ -595,12 +584,6 @@ def do_deactivate_user(user_profile, log=True, _cascade=True):
                                  event_type='user_deactivated', event_time=event_time)
     do_increment_logging_stat(user_profile.realm, COUNT_STATS['active_users_log:is_bot:day'],
                               user_profile.is_bot, event_time, increment=-1)
-
-    if log:
-        log_event({'type': 'user_deactivated',
-                   'timestamp': datetime_to_timestamp(event_time),
-                   'user': user_profile.email,
-                   'domain': user_profile.realm.domain})
 
     event = dict(type="realm_user", op="remove",
                  person=dict(email=user_profile.email,
@@ -1804,8 +1787,8 @@ def do_change_subscription_property(user_profile, sub, stream,
                  name=stream.name)
     send_event(event, [user_profile.id])
 
-def do_activate_user(user_profile, log=True, join_date=timezone.now()):
-    # type: (UserProfile, bool, datetime.datetime) -> None
+def do_activate_user(user_profile, join_date=timezone.now()):
+    # type: (UserProfile, datetime.datetime) -> None
     user_profile.is_active = True
     user_profile.is_mirror_dummy = False
     user_profile.set_unusable_password()
@@ -1819,13 +1802,6 @@ def do_activate_user(user_profile, log=True, join_date=timezone.now()):
                                  event_type='user_activated', event_time=event_time)
     do_increment_logging_stat(user_profile.realm, COUNT_STATS['active_users_log:is_bot:day'],
                               user_profile.is_bot, event_time)
-
-    if log:
-        domain = user_profile.realm.domain
-        log_event({'type': 'user_activated',
-                   'timestamp': datetime_to_timestamp(event_time),
-                   'user': user_profile.email,
-                   'domain': domain})
 
     notify_created_user(user_profile)
 
@@ -1841,12 +1817,6 @@ def do_reactivate_user(user_profile):
                                  event_type='user_reactivated', event_time=event_time)
     do_increment_logging_stat(user_profile.realm, COUNT_STATS['active_users_log:is_bot:day'],
                               user_profile.is_bot, event_time)
-
-    domain = user_profile.realm.domain
-    log_event({'type': 'user_reactivated',
-               'timestamp': datetime_to_timestamp(event_time),
-               'user': user_profile.email,
-               'domain': domain})
 
     notify_created_user(user_profile)
 
