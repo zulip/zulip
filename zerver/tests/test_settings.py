@@ -215,3 +215,17 @@ class ChangeSettingsTest(ZulipTestCase):
         self.assert_json_error(result, "Invalid language '%s'" % (invalid_lang,))
         user_profile = get_user_profile_by_email(email)
         self.assertNotEqual(user_profile.default_language, invalid_lang)
+
+class UserChangesTest(ZulipTestCase):
+    def test_update_api_key(self):
+        # type: () -> None
+        email = "hamlet@zulip.com"
+        self.login(email)
+        user = get_user_profile_by_email(email)
+        old_api_key = user.api_key
+        result = self.client_post('/json/users/me/api_key/regenerate')
+        self.assert_json_success(result)
+        new_api_key = ujson.loads(result.content)['api_key']
+        self.assertNotEqual(old_api_key, new_api_key)
+        user = get_user_profile_by_email(email)
+        self.assertEqual(new_api_key, user.api_key)

@@ -316,20 +316,6 @@ class UserProfileTest(TestCase):
         self.assertEqual(dct[hamlet.id], 'hamlet@zulip.com')
         self.assertEqual(dct[othello.id], 'othello@zulip.com')
 
-class UserChangesTest(ZulipTestCase):
-    def test_update_api_key(self):
-        # type: () -> None
-        email = "hamlet@zulip.com"
-        self.login(email)
-        user = get_user_profile_by_email(email)
-        old_api_key = user.api_key
-        result = self.client_post('/json/users/me/api_key/regenerate')
-        self.assert_json_success(result)
-        new_api_key = ujson.loads(result.content)['api_key']
-        self.assertNotEqual(old_api_key, new_api_key)
-        user = get_user_profile_by_email(email)
-        self.assertEqual(new_api_key, user.api_key)
-
 class ActivateTest(ZulipTestCase):
     def test_basics(self):
         # type: () -> None
