@@ -37,7 +37,7 @@ corner of the right sidebar and choose **Settings** from the dropdown menu.
 A **down chevron** is a small downward-facing arrow (<i
 class="icon-vector-chevron-down"></i>) icon next to a message’s
 [timestamp](#timestamp) that appears upon hover, offering contextual options
-when clicked on, such as **View Source**, **Reply**, **Collapse**,
+when clicked on, such as **View source**, **Reply**, **Collapse**,
 **Mute [this topic]**, and **Link to this conversation**.
 
 ### emoji

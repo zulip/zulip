@@ -182,7 +182,7 @@ exports.toggle_actions_popover = function (element, id) {
             editability_menu_item = i18n.t("View Source / Edit Topic");
         } else {
             use_edit_icon = false;
-            editability_menu_item = i18n.t("View Source");
+            editability_menu_item = i18n.t("View source");
         }
         var can_mute_topic =
                 message.stream &&
