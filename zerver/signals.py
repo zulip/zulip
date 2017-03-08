@@ -54,7 +54,15 @@ def email_on_new_login(sender, user, request, **kwargs):
         return
 
     if request:
-        login_time = timezone.now().strftime('%A, %B %d, %Y at %I:%M%p') + \
+        # Login emails are for returning users, not new registrations.
+        # Determine if login request was from new registration.
+        path = request.META.get('PATH_INFO', None)
+
+        if path:
+            if path == "/accounts/register/":
+                return
+
+        login_time = timezone.now().strftime('%A, %B %d, %Y at %I:%M%p ') + \
             timezone.get_current_timezone_name()
         user_agent = request.META.get('HTTP_USER_AGENT', "").lower()
         device_browser = get_device_browser(user_agent)

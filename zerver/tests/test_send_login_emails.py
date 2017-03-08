@@ -31,3 +31,11 @@ class SendLoginEmailTest(ZulipTestCase):
         self.login("hamlet@zulip.com")
 
         self.assertEqual(len(mail.outbox), 0)
+
+    def test_dont_send_login_emails_for_new_user_registration_logins(self):
+        # type: () -> None
+        with self.settings(SEND_LOGIN_EMAILS=True):
+            self.register("test@zulip.com", "test")
+
+            for email in mail.outbox:
+                self.assertNotEqual(email.subject, 'A new login to your Zulip account.')
