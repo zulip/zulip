@@ -156,6 +156,7 @@ p.n-margin {
     height: 100%;
     overflow-y: scroll;
     z-index: 99;
+    -webkit-overflow-scrolling: touch;
 }
 
 .app-main,
