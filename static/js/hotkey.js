@@ -34,12 +34,12 @@ var actions_dropdown_hotkeys = [
 var hotkeys_shift = {
     // these can be triggered by shift + key only
     9: {name: 'shift_tab', message_view_only: false}, // tab
-    32: {name: 'page_up', message_view_only: true},  // space bar
+    32: {name: 'shift_spacebar', message_view_only: true},  // space bar
 };
 var hotkeys_no_modifiers = {
     // these can be triggered by key only (without shift)
     9: {name: 'tab', message_view_only: false}, // tab
-    32: {name: 'page_down', message_view_only: true}, // space bar
+    32: {name: 'spacebar', message_view_only: true}, // space bar
     33: {name: 'page_up', message_view_only: true}, // page up
     34: {name: 'page_down', message_view_only: true}, // page down
     35: {name: 'end', message_view_only: true}, // end
@@ -424,12 +424,14 @@ function process_hotkey(e) {
             navigate.to_end();
             return true;
         case 'page_up':
+        case 'shift_spacebar':
             if (!is_settings_page()) {
                 navigate.page_up();
                 return true;
             }
             break;
         case 'page_down':
+        case 'spacebar':
             if (!is_settings_page()) {
                 navigate.page_down();
                 return true;
