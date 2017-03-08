@@ -32,7 +32,6 @@ from zerver.lib.actions import \
     get_emails_from_user_ids, do_deactivate_user, do_reactivate_user, \
     do_change_is_admin, extract_recipients, \
     do_set_realm_name, do_deactivate_realm
-from zerver.middleware import is_slow_query
 from zerver.lib.utils import split_by
 
 from django.conf import settings
@@ -50,20 +49,6 @@ def find_dict(lst, k, v):
         if dct[k] == v:
             return dct
     raise AssertionError('Cannot find element in list where key %s == %s' % (k, v))
-
-class SlowQueryTest(TestCase):
-    def test_is_slow_query(self):
-        # type: () -> None
-        self.assertFalse(is_slow_query(1.1, '/some/random/url'))
-        self.assertTrue(is_slow_query(2, '/some/random/url'))
-        self.assertTrue(is_slow_query(5.1, '/activity'))
-        self.assertFalse(is_slow_query(2, '/activity'))
-        self.assertFalse(is_slow_query(2, '/json/report_error'))
-        self.assertFalse(is_slow_query(2, '/api/v1/deployments/report_error'))
-        self.assertFalse(is_slow_query(2, '/realm_activity/whatever'))
-        self.assertFalse(is_slow_query(2, '/user_activity/whatever'))
-        self.assertFalse(is_slow_query(9, '/accounts/webathena_kerberos_login/'))
-        self.assertTrue(is_slow_query(11, '/accounts/webathena_kerberos_login/'))
 
 class ModelTest(TestCase):
     def test_miscellaneous_things(self):
