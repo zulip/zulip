@@ -228,7 +228,7 @@ function render(template_name, args) {
     assert.equal($(buttons[1]).text().trim(), "Make admin");
     assert($(buttons[1]).hasClass("make-admin"));
 
-    assert.equal($(buttons[2]).attr('title').trim(), "Edit User");
+    assert.equal($(buttons[2]).attr('title').trim(), "Edit user");
     assert($(buttons[2]).hasClass("open-user-form"));
 
     global.write_handlebars_output("admin_user_list", html);
