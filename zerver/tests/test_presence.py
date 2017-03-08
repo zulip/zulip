@@ -48,6 +48,15 @@ class ActivityTest(ZulipTestCase):
 
         self.assert_max_length(queries, 13)
 
+class TestClientModel(ZulipTestCase):
+    def test_client_stringification(self):
+        # type: () -> None
+        '''
+        This test is designed to cover __unicode__ method for Client.
+        '''
+        client = make_client('some_client')
+        self.assertEqual(str(client), u'<Client: some_client>')
+
 class UserPresenceTests(ZulipTestCase):
     def test_invalid_presence(self):
         # type: () -> None
