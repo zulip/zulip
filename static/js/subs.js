@@ -2,7 +2,7 @@ var subs = (function () {
 
 var meta = {
     callbacks: {},
-    stream_created: false,
+    stream_created: undefined,
     is_open: false,
 };
 var exports = {};
@@ -297,7 +297,7 @@ function add_sub_to_table(sub) {
     stream_data.update_subscribers_count(sub);
     var html = templates.render('subscription', sub);
     var settings_html = templates.render('subscription_settings', sub);
-    if (meta.stream_created) {
+    if (meta.stream_created === sub.name) {
         $(".streams-list").prepend(html).scrollTop(0);
     } else {
         $(".streams-list").append(html);
@@ -307,9 +307,9 @@ function add_sub_to_table(sub) {
     var email_address_hint_content = templates.render('email_address_hint', { page_params: page_params });
     add_email_hint(sub, email_address_hint_content);
 
-    if (meta.stream_created) {
+    if (meta.stream_created === sub.name) {
         $(".stream-row[data-stream-id='" + stream_data.get_sub(meta.stream_created).stream_id + "']").click();
-        meta.stream_created = false;
+        meta.stream_created = undefined;
     }
 }
 
