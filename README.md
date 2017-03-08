@@ -104,10 +104,10 @@ relevant list!  Please report any security issues you discover to
 zulip-security@googlegroups.com.
 
 * **App codebases**. This repository is for the Zulip server and web
-app (including most integrations); the [desktop][], [Android][], and
-[iOS][] apps, are separate repositories, as are our [experimental
-React Native iOS app][ios-exp] and [alpha Electron desktop
-app][electron].
+app (including most integrations); the
+[React Native Mobile iOS app][ios-exp], [Android app][Android],
+[new Electron desktop app][electron], and
+[legacy QT-based desktop app][desktop] are all separate repositories.
 
 * **Glue code**. We maintain a [Hubot adapter][hubot-adapter] and several
 integrations ([Phabricator][phab], [Jenkins][], [Puppet][], [Redmine][],
@@ -140,7 +140,6 @@ is valuable.
 [gh-issues]: https://github.com/zulip/zulip/issues
 [desktop]: https://github.com/zulip/zulip-desktop
 [android]: https://github.com/zulip/zulip-android
-[ios]: https://github.com/zulip/zulip-ios
 [ios-exp]: https://github.com/zulip/zulip-mobile
 [email-android]: https://groups.google.com/forum/#!forum/zulip-android
 [email-ios]: https://groups.google.com/forum/#!forum/zulip-ios
