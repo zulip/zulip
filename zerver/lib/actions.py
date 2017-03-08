@@ -76,7 +76,7 @@ from zerver.lib.alert_words import user_alert_words, add_user_alert_words, \
 from zerver.lib.notifications import clear_followup_emails_queue
 from zerver.lib.narrow import check_supported_events_narrow_filter
 from zerver.lib.request import JsonableError
-from zerver.lib.session_user import get_session_user
+from zerver.lib.sessions import get_session_user
 from zerver.lib.upload import attachment_url_re, attachment_url_to_path_id, \
     claim_attachment, delete_message_image
 from zerver.lib.str_utils import NonBinaryStr, force_str

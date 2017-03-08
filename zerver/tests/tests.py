@@ -36,7 +36,7 @@ from zerver.lib.actions import \
     do_change_stream_invite_only
 from zerver.lib.notifications import handle_missedmessage_emails, \
     send_missedmessage_email
-from zerver.lib.session_user import get_session_dict_user
+from zerver.lib.sessions import get_session_dict_user
 from zerver.middleware import is_slow_query
 from zerver.lib.utils import split_by
 
