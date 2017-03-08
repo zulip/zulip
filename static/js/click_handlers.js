@@ -225,7 +225,7 @@ $(function () {
         var sidebarHidden = !$(".app-main .column-left").hasClass("expanded");
         popovers.hide_all();
         if (sidebarHidden) {
-            popovers.show_streamlist_sidebar();
+            stream_popover.show_streamlist_sidebar();
         }
     });
 
