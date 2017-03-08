@@ -1650,6 +1650,9 @@ class StarTests(ZulipTestCase):
         self.login("hamlet@zulip.com")
         message_ids = [self.send_message("hamlet@zulip.com", stream_name,
                                          Recipient.STREAM, "test")]
+        # Send a second message so we can verify it isn't modified
+        self.send_message("hamlet@zulip.com", stream_name,
+                          Recipient.STREAM, "test_unused")
 
         # Now login as another user who wasn't on that stream
         self.login("cordelia@zulip.com")
