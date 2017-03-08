@@ -266,42 +266,6 @@ class AdminCreateUserTest(ZulipTestCase):
         self.assert_json_error(result,
                                "Email 'romeo@zulip.net' already in use")
 
-class DocPageTest(ZulipTestCase):
-        def _test(self, url, expected_content):
-            # type: (str, str) -> None
-            result = self.client_get(url)
-            self.assertEqual(result.status_code, 200)
-            self.assertIn(expected_content, str(result.content))
-
-        def test_doc_endpoints(self):
-            # type: () -> None
-            self._test('/api/', 'We hear you like APIs')
-            self._test('/api/endpoints/', 'pre-built API bindings for')
-            self._test('/about/', 'Cambridge, Massachusetts')
-            # Test the i18n version of one of these pages.
-            self._test('/en/about/', 'Cambridge, Massachusetts')
-            self._test('/apps/', 'Appsolutely')
-            self._test('/features/', 'Talk about multiple topics at once')
-            self._test('/hello/', 'workplace chat that actually improves your productivity')
-            self._test('/integrations/', 'require creating a Zulip bot')
-            self._test('/login/', '(Normal users)')
-            self._test('/register/', 'get started')
-
-            result = self.client_get('/new-user/')
-            self.assertEqual(result.status_code, 301)
-            self.assertIn('hello', result['Location'])
-
-            result = self.client_get('/robots.txt')
-            self.assertEqual(result.status_code, 301)
-            self.assertIn('static/robots.txt', result['Location'])
-
-            result = self.client_get('/static/robots.txt')
-            self.assertEqual(result.status_code, 200)
-            self.assertIn(
-                'Disallow: /',
-                ''.join(str(x) for x in list(result.streaming_content))
-            )
-
 class UserProfileTest(TestCase):
     def test_get_emails_from_user_ids(self):
         # type: () -> None
