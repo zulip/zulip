@@ -32,7 +32,7 @@ exports.hide_topic_popover = function () {
 // These are the only two functions that is really shared by the
 // two popovers, so we could split out topic stuff to
 // another module pretty easily.
-exports.resize_stream_list = function () {
+exports.show_streamlist_sidebar = function () {
     $(".app-main .column-left").addClass("expanded");
     resize.resize_page_components();
 };
@@ -82,7 +82,7 @@ function build_stream_popover(e) {
     }
 
     popovers.hide_all();
-    exports.resize_stream_list();
+    exports.show_streamlist_sidebar();
 
     var stream = $(elt).parents('li').attr('data-name');
 
@@ -130,7 +130,7 @@ function build_topic_popover(e) {
     }
 
     popovers.hide_all();
-    exports.resize_stream_list();
+    exports.show_streamlist_sidebar();
 
     var is_muted = muting.is_topic_muted(stream_name, topic_name);
     var can_mute_topic = !is_muted;
