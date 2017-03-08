@@ -28,7 +28,7 @@ casper.waitForSelector('input[type="checkbox"][id="id_realm_create_stream_by_adm
 casper.then(function () {
     // Test setting was activated
     casper.waitUntilVisible('#admin-realm-create-stream-by-admins-only-status', function () {
-        casper.test.assertSelectorHasText('#admin-realm-create-stream-by-admins-only-status', 'Only Admins may now create new streams!');
+        casper.test.assertSelectorHasText('#admin-realm-create-stream-by-admins-only-status', 'Only admins may now create new streams!');
         casper.test.assertEval(function () {
             return document.querySelector('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]').checked;
         }, 'Only admins may create streams Setting activated');
