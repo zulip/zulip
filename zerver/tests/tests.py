@@ -28,8 +28,7 @@ from zerver.lib.avatar import avatar_url
 from zerver.lib.email_mirror import create_missed_message_address
 from zerver.lib.actions import \
     get_emails_from_user_ids, do_deactivate_user, do_reactivate_user, \
-    do_change_is_admin, extract_recipients, \
-    do_set_realm_name, do_deactivate_realm
+    do_change_is_admin, do_set_realm_name, do_deactivate_realm
 
 from django.conf import settings
 from six.moves import range
@@ -446,27 +445,3 @@ class GetProfileTest(ZulipTestCase):
                     user['avatar_url'],
                     avatar_url(user_profile),
                 )
-
-class ExtractedRecipientsTest(TestCase):
-    def test_extract_recipients(self):
-        # type: () -> None
-
-        # JSON list w/dups, empties, and trailing whitespace
-        s = ujson.dumps([' alice@zulip.com ', ' bob@zulip.com ', '   ', 'bob@zulip.com'])
-        self.assertEqual(sorted(extract_recipients(s)), ['alice@zulip.com', 'bob@zulip.com'])
-
-        # simple string with one name
-        s = 'alice@zulip.com    '
-        self.assertEqual(extract_recipients(s), ['alice@zulip.com'])
-
-        # JSON-encoded string
-        s = '"alice@zulip.com"'
-        self.assertEqual(extract_recipients(s), ['alice@zulip.com'])
-
-        # bare comma-delimited string
-        s = 'bob@zulip.com, alice@zulip.com'
-        self.assertEqual(sorted(extract_recipients(s)), ['alice@zulip.com', 'bob@zulip.com'])
-
-        # JSON-encoded, comma-delimited string
-        s = '"bob@zulip.com,alice@zulip.com"'
-        self.assertEqual(sorted(extract_recipients(s)), ['alice@zulip.com', 'bob@zulip.com'])
