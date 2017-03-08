@@ -31,7 +31,6 @@ from zerver.lib.actions import \
     do_change_is_admin, do_set_realm_name, do_deactivate_realm
 
 from django.conf import settings
-from six.moves import range
 import os
 import sys
 import time

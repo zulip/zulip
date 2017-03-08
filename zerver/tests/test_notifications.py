@@ -10,6 +10,7 @@ from django.core import mail
 from django.http import HttpResponse
 from django.test import override_settings
 from mock import patch, MagicMock
+from six.moves import range
 from typing import Any, Dict, List, Text
 
 from zerver.lib.notifications import handle_missedmessage_emails
