@@ -30,8 +30,12 @@ add it to the appropriate place under `static/`.
   You'll want to add these to the `package.json` in the root of the
   repository, and then provision (to have `npm` download them) before
   continuing.  Your commit should also update `PROVISION_VERSION` in
-  `version.py`.  When adding modules to `package.json`, please use
-  specific versions of them (without using carets `^`, tildes `~`, etc).
+  `version.py`.  When adding modules to `package.json`, please pin
+  specific versions of them (don't using carets `^`, tildes `~`, etc).
+  We prefer fixed versions so that when the upstream providers release
+  new versions with incompatible APIs, it can't break Zulip.  We
+  update those versions periodically to ensure we're running a recent
+  version of third-party libraries.
 - Third-party files that we have patched should all go in
   `static/third/`. Tag the commit with "[third]" when adding or
   modifying a third-party package.  Our goal is to the extent possible
