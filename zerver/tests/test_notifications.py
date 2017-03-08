@@ -32,7 +32,10 @@ class TestMissedMessages(ZulipTestCase):
         othello = get_user_profile_by_email('othello@zulip.com')
         hamlet = get_user_profile_by_email('hamlet@zulip.com')
         handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id}])
-        reply_to_addresses = [settings.EMAIL_GATEWAY_PATTERN % (u'mm' + t) for t in tokens]
+        if settings.EMAIL_GATEWAY_PATTERN != "":
+            reply_to_addresses = [settings.EMAIL_GATEWAY_PATTERN % (u'mm' + t) for t in tokens]
+        else:
+            reply_to_addresses = ["noreply@example.com"]
         msg = mail.outbox[0]
         sender = 'Zulip <{}>'.format(settings.NOREPLY_EMAIL_ADDRESS)
         from_email = sender
@@ -72,6 +75,30 @@ class TestMissedMessages(ZulipTestCase):
         self._test_cases(tokens, msg_id, body, send_as_user)
 
     @patch('zerver.lib.email_mirror.generate_random_token')
+    def _reply_to_email_in_personal_missed_stream_messages(self, send_as_user, mock_random_token):
+        # type: (bool, MagicMock) -> None
+        tokens = self._get_tokens()
+        mock_random_token.side_effect = tokens
+
+        msg_id = self.send_message("othello@zulip.com", "hamlet@zulip.com",
+                                   Recipient.PERSONAL,
+                                   'Extremely personal message!')
+        body = 'Or just reply to this email.'
+        self._test_cases(tokens, msg_id, body, send_as_user)
+
+    @patch('zerver.lib.email_mirror.generate_random_token')
+    def _reply_warning_in_personal_missed_stream_messages(self, send_as_user, mock_random_token):
+        # type: (bool, MagicMock) -> None
+        tokens = self._get_tokens()
+        mock_random_token.side_effect = tokens
+
+        msg_id = self.send_message("othello@zulip.com", "hamlet@zulip.com",
+                                   Recipient.PERSONAL,
+                                   'Extremely personal message!')
+        body = 'Please do not reply to this automated message.'
+        self._test_cases(tokens, msg_id, body, send_as_user)
+
+    @patch('zerver.lib.email_mirror.generate_random_token')
     def _extra_context_in_huddle_missed_stream_messages(self, send_as_user, mock_random_token):
         # type: (bool, MagicMock) -> None
         tokens = self._get_tokens()
@@ -94,6 +121,15 @@ class TestMissedMessages(ZulipTestCase):
     def test_extra_context_in_missed_stream_messages(self):
         # type: () -> None
         self._extra_context_in_missed_stream_messages(False)
+
+    def test_reply_to_email_in_personal_missed_stream_messages(self):
+        # type: () -> None
+        self._reply_to_email_in_personal_missed_stream_messages(False)
+
+    @override_settings(EMAIL_GATEWAY_PATTERN="")
+    def test_reply_warning_in_personal_missed_stream_messages(self):
+        # type: () -> None
+        self._reply_warning_in_personal_missed_stream_messages(False)
 
     @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
     def test_extra_context_in_personal_missed_stream_messages_as_user(self):

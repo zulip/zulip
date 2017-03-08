@@ -253,11 +253,23 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
         'name': user_profile.full_name,
         'messages': build_message_list(user_profile, missed_messages),
         'message_count': message_count,
-        'reply_warning': False,
         'mention': missed_messages[0].recipient.type == Recipient.STREAM,
-        'reply_to_zulip': True,
         'unsubscribe_link': unsubscribe_link,
     })
+
+    # If this setting (email mirroring integration) is enabled, only then
+    # can users reply to email to send message to Zulip. Thus, one must
+    # ensure to display warning in the template.
+    if settings.EMAIL_GATEWAY_PATTERN:
+        template_payload.update({
+            'reply_warning': False,
+            'reply_to_zulip': True,
+        })
+    else:
+        template_payload.update({
+            'reply_warning': True,
+            'reply_to_zulip': False,
+        })
 
     headers = {}
     from zerver.lib.email_mirror import create_missed_message_address
@@ -279,6 +291,10 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
         headers['Sender'] = from_email
         sender = missed_messages[0].sender
         from_email = '"%s" <%s>' % (sender_str, sender.email)
+        template_payload.update({
+            'reply_warning': False,
+            'reply_to_zulip': False,
+        })
 
     text_content = loader.render_to_string('zerver/missed_message_email.txt', template_payload)
     html_content = loader.render_to_string('zerver/missed_message_email.html', template_payload)
