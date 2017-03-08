@@ -9,7 +9,6 @@ from django.utils.html import escape
 from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.core import validators
-from django.contrib.sessions.models import Session
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
 from zerver.lib.bugdown import (
     BugdownRenderingException,
@@ -47,7 +46,6 @@ from django.db import transaction, IntegrityError, connection
 from django.db.models import F, Q
 from django.db.models.query import QuerySet
 from django.core.exceptions import ValidationError
-from importlib import import_module
 from django.core.mail import EmailMessage
 from django.utils import timezone
 
@@ -57,8 +55,6 @@ from six.moves import filter
 from six.moves import map
 from six.moves import range
 from six import unichr
-
-session_engine = import_module(settings.SESSION_ENGINE)
 
 from zerver.lib.create_user import random_api_key
 from zerver.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
@@ -76,7 +72,7 @@ from zerver.lib.alert_words import user_alert_words, add_user_alert_words, \
 from zerver.lib.notifications import clear_followup_emails_queue
 from zerver.lib.narrow import check_supported_events_narrow_filter
 from zerver.lib.request import JsonableError
-from zerver.lib.sessions import get_session_user
+from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.upload import attachment_url_re, attachment_url_to_path_id, \
     claim_attachment, delete_message_image
 from zerver.lib.str_utils import NonBinaryStr, force_str
@@ -429,45 +425,6 @@ def do_create_user(email, password, realm, full_name, short_name,
         process_new_human_user(user_profile, prereg_user=prereg_user,
                                newsletter_data=newsletter_data)
     return user_profile
-
-def user_sessions(user_profile):
-    # type: (UserProfile) -> List[Session]
-    return [s for s in Session.objects.all()
-            if get_session_user(s) == user_profile.id]
-
-def delete_session(session):
-    # type: (Session) -> None
-    session_engine.SessionStore(session.session_key).delete() # type: ignore # import_module
-
-def delete_user_sessions(user_profile):
-    # type: (UserProfile) -> None
-    for session in Session.objects.all():
-        if get_session_user(session) == user_profile.id:
-            delete_session(session)
-
-def delete_realm_user_sessions(realm):
-    # type: (Realm) -> None
-    realm_user_ids = [user_profile.id for user_profile in
-                      UserProfile.objects.filter(realm=realm)]
-    for session in Session.objects.filter(expire_date__gte=timezone.now()):
-        if get_session_user(session) in realm_user_ids:
-            delete_session(session)
-
-def delete_all_user_sessions():
-    # type: () -> None
-    for session in Session.objects.all():
-        delete_session(session)
-
-def delete_all_deactivated_user_sessions():
-    # type: () -> None
-    for session in Session.objects.all():
-        user_profile_id = get_session_user(session)
-        if user_profile_id is None:
-            continue
-        user_profile = get_user_profile_by_id(user_profile_id)
-        if not user_profile.is_active or user_profile.realm.deactivated:
-            logging.info("Deactivating session for deactivated user %s" % (user_profile.email,))
-            delete_session(session)
 
 def active_humans_in_realm(realm):
     # type: (Realm) -> Sequence[UserProfile]
