@@ -33,7 +33,7 @@ casper.then(function () {
                                'URL suggests we are on drafts page');
     waitUntilDraftsVisible(function () {
         casper.test.assertExists('#draft_overlay', 'Drafts page is active');
-        casper.test.assertSelectorHasText('.no-drafts', 'No Drafts.');
+        casper.test.assertSelectorHasText('.no-drafts', 'No drafts.');
     });
 });
 
