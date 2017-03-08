@@ -323,6 +323,13 @@ function process_hotkey(e) {
         if ((event_name === 'up_arrow' || event_name === 'down_arrow') && focus_in_empty_compose()) {
             compose.cancel();
             // don't return, as we still want it to be picked up by the code below
+        } else if (event_name === "page_up") {
+            $("#new_message_content").caret(0);
+            return true;
+        } else if (event_name === "page_down") {
+            // so that it always goes to the end of the compose box.
+            $("#new_message_content").caret(Infinity);
+            return true;
         } else {
             // Let the browser handle the key normally.
             return false;
