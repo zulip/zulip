@@ -195,14 +195,12 @@ function compare_function(a, b) {
     }
 
     // Sort equivalent PM names alphabetically
-    var full_name_a = a;
-    var full_name_b = b;
-    if (people.get_person_from_user_id(a)) {
-        full_name_a = people.get_person_from_user_id(a).full_name;
-    }
-    if (people.get_person_from_user_id(b)) {
-        full_name_b = people.get_person_from_user_id(b).full_name;
-    }
+    var person_a = people.get_person_from_user_id(a);
+    var person_b = people.get_person_from_user_id(b);
+
+    var full_name_a = person_a ? person_a.full_name : '';
+    var full_name_b = person_b ? person_b.full_name : '';
+
     return util.strcmp(full_name_a, full_name_b);
 }
 
