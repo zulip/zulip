@@ -22,6 +22,7 @@ from zerver.models import (
     Client,
     UserActivity,
     UserProfile,
+    UserPresence,
 )
 
 import datetime
@@ -47,6 +48,40 @@ class ActivityTest(ZulipTestCase):
             self.client_get('/activity')
 
         self.assert_max_length(queries, 13)
+
+class UserPresenceModelTests(ZulipTestCase):
+    def test_date_logic(self):
+        # type: () -> None
+        UserPresence.objects.all().delete()
+
+        email = "hamlet@zulip.com"
+        user_profile = get_user_profile_by_email(email)
+        presence_dct = UserPresence.get_status_dict_by_realm(user_profile.realm_id)
+        self.assertEqual(len(presence_dct), 0)
+
+        self.login(email)
+        result = self.client_post("/json/users/me/presence", {'status': 'active'})
+        self.assert_json_success(result)
+
+        presence_dct = UserPresence.get_status_dict_by_realm(user_profile.realm_id)
+        self.assertEqual(len(presence_dct), 1)
+        self.assertEqual(presence_dct[email]['website']['status'], 'active')
+
+        def back_date(num_weeks):
+            # type: (int) -> None
+            user_presence = UserPresence.objects.filter(user_profile=user_profile)[0]
+            user_presence.timestamp = timezone.now() - datetime.timedelta(weeks=num_weeks)
+            user_presence.save()
+
+        # Simulate the presence being a week old first.  Nothing should change.
+        back_date(num_weeks=1)
+        presence_dct = UserPresence.get_status_dict_by_realm(user_profile.realm_id)
+        self.assertEqual(len(presence_dct), 1)
+
+        # If the UserPresence row is three weeks old, we ignore it.
+        back_date(num_weeks=3)
+        presence_dct = UserPresence.get_status_dict_by_realm(user_profile.realm_id)
+        self.assertEqual(len(presence_dct), 0)
 
 class UserPresenceTests(ZulipTestCase):
     def test_invalid_presence(self):
