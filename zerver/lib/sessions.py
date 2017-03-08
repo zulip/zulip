@@ -7,9 +7,9 @@ from django.contrib.auth import SESSION_KEY, get_user_model
 from django.contrib.sessions.models import Session
 from django.utils import timezone
 from importlib import import_module
-from typing import Mapping, Optional, Text
+from typing import List, Mapping, Optional, Text
 
-from zerver.models import UserProfile, get_user_profile_by_id
+from zerver.models import Realm, UserProfile, get_user_profile_by_id
 
 session_engine = import_module(settings.SESSION_ENGINE)
 
