@@ -18,6 +18,7 @@ from zerver.lib.actions import do_change_password
 from zerver.views.invite import get_invitee_emails_set
 from zerver.models import (
     get_realm, get_prereg_user_by_email, get_user_profile_by_email,
+    get_unique_open_realm, completely_open,
     PreregistrationUser, Realm, RealmAlias, Recipient,
     Referral, ScheduledJob, UserProfile, UserMessage,
     Stream, Subscription, ScheduledJob
@@ -1273,6 +1274,23 @@ class UserSignUpTest(ZulipTestCase):
                                                HTTP_HOST=subdomain + ".testserver")
         self.assertEqual(result.status_code, 302)
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+
+class TestOpenRealms(ZulipTestCase):
+    def test_open_realm_logic(self):
+        # type: () -> None
+        realm = get_realm('simple')
+        do_deactivate_realm(realm)
+
+        mit_realm = get_realm("zephyr")
+        self.assertEqual(get_unique_open_realm(), None)
+        mit_realm.restricted_to_domain = False
+        mit_realm.save()
+        self.assertTrue(completely_open(mit_realm))
+        self.assertEqual(get_unique_open_realm(), None)
+        with self.settings(SYSTEM_ONLY_REALMS={"zulip"}):
+            self.assertEqual(get_unique_open_realm(), mit_realm)
+        mit_realm.restricted_to_domain = True
+        mit_realm.save()
 
 class DeactivateUserTest(ZulipTestCase):
 
