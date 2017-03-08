@@ -12,6 +12,7 @@ from zproject.settings import DEPLOY_ROOT
 from zerver.lib.integrations import INTEGRATIONS, HUBOT_LOZENGES
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock
+from zerver.lib.utils import split_by
 from zerver.views.integrations import (
     add_api_uri_context,
     add_integrations_context,
@@ -137,3 +138,10 @@ class AuthorsPageTest(ZulipTestCase):
              '@timabbott'],
             result
         )
+
+    def test_split_by(self):
+        # type: () -> None
+        """Utility function primarily used in authors page"""
+        flat_list = [1, 2, 3, 4, 5, 6, 7]
+        expected_result = [[1, 2], [3, 4], [5, 6], [7, None]]
+        self.assertEqual(split_by(flat_list, 2, None), expected_result)

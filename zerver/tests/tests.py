@@ -30,7 +30,6 @@ from zerver.lib.actions import \
     get_emails_from_user_ids, do_deactivate_user, do_reactivate_user, \
     do_change_is_admin, extract_recipients, \
     do_set_realm_name, do_deactivate_realm
-from zerver.lib.utils import split_by
 
 from django.conf import settings
 from six.moves import range
@@ -493,10 +492,3 @@ class ExtractedRecipientsTest(TestCase):
         # JSON-encoded, comma-delimited string
         s = '"bob@zulip.com,alice@zulip.com"'
         self.assertEqual(sorted(extract_recipients(s)), ['alice@zulip.com', 'bob@zulip.com'])
-
-class UtilsUnitTest(TestCase):
-    def test_split_by(self):
-        # type: () -> None
-        flat_list = [1, 2, 3, 4, 5, 6, 7]
-        expected_result = [[1, 2], [3, 4], [5, 6], [7, None]]
-        self.assertEqual(split_by(flat_list, 2, None), expected_result)
