@@ -60,15 +60,28 @@ def move_avatars_to_be_uid_based(apps, schema_editor):
         bucket_name = settings.S3_AVATAR_BUCKET
         bucket = conn.get_bucket(bucket_name, validate=False)
         for user_profile in user_profile_model.objects.filter(avatar_source=u"U"):
-            bucket.copy_key(user_avatar_path(user_profile) + ".original",
-                            bucket,
-                            user_avatar_hash(user_profile.email) + ".original")
-            bucket.copy_key(user_avatar_path(user_profile) + "-medium.png",
-                            bucket,
-                            user_avatar_hash(user_profile.email) + "-medium.png")
-            bucket.copy_key(user_avatar_path(user_profile),
-                            bucket,
-                            user_avatar_hash(user_profile.email))
+            uid_hash_path = user_avatar_path(user_profile)
+            email_hash_path = user_avatar_hash(user_profile.email)
+            if bucket.get_key(uid_hash_path):
+                continue
+            if not bucket.get_key(email_hash_path):
+                # This is likely caused by a user having previously changed their email
+                # If the user's avatar is missing, it's probably
+                # because they previously changed their email address.
+                # So set them to have a gravatar instead.
+                user_profile.avatar_source = u"G"
+                user_profile.save(update_fields=["avatar_source"])
+                continue
+
+            bucket.copy_key(uid_hash_path + ".original",
+                            bucket_name,
+                            email_hash_path + ".original")
+            bucket.copy_key(uid_hash_path + "-medium.png",
+                            bucket_name,
+                            email_hash_path + "-medium.png")
+            bucket.copy_key(uid_hash_path,
+                            bucket_name,
+                            email_hash_path)
 
         # From an error handling sanity perspective, it's best to
         # start deleting after everything is copied, so that recovery
