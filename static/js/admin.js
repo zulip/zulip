@@ -725,7 +725,7 @@ function _setup_page() {
                 }
                 if (response_data.waiting_period_threshold !== undefined) {
                     if (response_data.waiting_period_threshold > 0) {
-                        ui.report_success(i18n.t("waiting period threshold changed!"), waiting_period_threshold_status);
+                        ui.report_success(i18n.t("Waiting period threshold changed!"), waiting_period_threshold_status);
                     }
                 }
                 // Check if no changes made
