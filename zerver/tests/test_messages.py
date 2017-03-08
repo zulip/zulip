@@ -36,7 +36,9 @@ from zerver.models import (
 )
 
 from zerver.lib.actions import (
-    check_message, check_send_message,
+    check_message,
+    check_send_message,
+    extract_recipients,
     do_create_user,
     get_client,
     get_recipient,
@@ -263,6 +265,30 @@ class TestCrossRealmPMs(ZulipTestCase):
         # Users on three different realms can not PM each other
         with assert_disallowed():
             self.send_message(user1_email, [user2_email, user3_email], Recipient.PERSONAL)
+
+class ExtractedRecipientsTest(TestCase):
+    def test_extract_recipients(self):
+        # type: () -> None
+
+        # JSON list w/dups, empties, and trailing whitespace
+        s = ujson.dumps([' alice@zulip.com ', ' bob@zulip.com ', '   ', 'bob@zulip.com'])
+        self.assertEqual(sorted(extract_recipients(s)), ['alice@zulip.com', 'bob@zulip.com'])
+
+        # simple string with one name
+        s = 'alice@zulip.com    '
+        self.assertEqual(extract_recipients(s), ['alice@zulip.com'])
+
+        # JSON-encoded string
+        s = '"alice@zulip.com"'
+        self.assertEqual(extract_recipients(s), ['alice@zulip.com'])
+
+        # bare comma-delimited string
+        s = 'bob@zulip.com, alice@zulip.com'
+        self.assertEqual(sorted(extract_recipients(s)), ['alice@zulip.com', 'bob@zulip.com'])
+
+        # JSON-encoded, comma-delimited string
+        s = '"bob@zulip.com,alice@zulip.com"'
+        self.assertEqual(sorted(extract_recipients(s)), ['alice@zulip.com', 'bob@zulip.com'])
 
 class PersonalMessagesTest(ZulipTestCase):
 
