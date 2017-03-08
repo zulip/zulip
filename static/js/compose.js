@@ -803,7 +803,7 @@ function validate_stream_message_address_info(stream_name) {
         case "does-not-exist":
             response = "<p>The stream <b>" +
                 Handlebars.Utils.escapeExpression(stream_name) + "</b> does not exist.</p>" +
-                "<p>Manage your subscriptions <a href='#subscriptions'>on your Streams page</a>.</p>";
+                "<p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>";
             compose_error(response, $('#stream'));
             return false;
         case "error":
@@ -811,7 +811,7 @@ function validate_stream_message_address_info(stream_name) {
         case "not-subscribed":
             response = "<p>You're not subscribed to the stream <b>" +
                 Handlebars.Utils.escapeExpression(stream_name) + "</b>.</p>" +
-                "<p>Manage your subscriptions <a href='#subscriptions'>on your Streams page</a>.</p>";
+                "<p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>";
             compose_error(response, $('#stream'));
             return false;
         }

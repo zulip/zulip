@@ -173,7 +173,7 @@ exports.register_stream_handlers = function () {
         var sub = stream_popover_sub(e);
         exports.hide_stream_popover();
 
-        window.location.hash = "#subscriptions";
+        window.location.hash = "#streams";
         // the template for subs needs to render.
 
         subs.onlaunch("narrow_to_row", function () {

@@ -69,9 +69,9 @@ everyone, even non-developers:
   for discussing Zulip's translations.
 
 There are dozens of streams for development discussions in the Zulip
-community (e.g. one for each app, etc.); check out the /#subscriptions
-page to see the descriptions for all of them.  Relevant to almost
-everyone are these:
+community (e.g. one for each app, etc.); check out the
+[Streams page](https://chat.zulip.org/#streams/all) to see the
+descriptions for all of them.  Relevant to almost everyone are these:
 
 * [#checkins](https://chat.zulip.org/#narrow/stream/checkins) is for
   progress updates on what you're working on and its status; usually

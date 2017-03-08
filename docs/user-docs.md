@@ -278,8 +278,8 @@ immediately after the title.
 ### **All streams** `{!all-streams.md!}` macro
 
 * **About:** Explains how to view all streams in the organization on the
-**Subscriptions** page. Usually formatted as a tip and preceded by the
-[**Subscriptions** macro](#subscriptions-subscriptions-md-macro) and the
+**Streams** page. Usually formatted as a tip and preceded by the
+[**Streams** macro](#streams-subscriptions-md-macro) and the
 [**Filter streams** macro](#filter-streams-filter-streams-md-macro).
 
 * **Contents:**
@@ -298,7 +298,7 @@ immediately after the title.
     ```
     ```.md
     1. [Find the relevant stream](/help/browse-and-join-streams#browse-streams) on the
-    [Subscriptions](/#subscriptions) page. You can search for specific streams by entering the
+    [Streams](/#streams) page. You can search for specific streams by entering the
     name of the stream in the **Filter streams** input.
         !!! tip ""
             If you wish to see streams that you aren't subscribed to, click on the
@@ -352,8 +352,8 @@ following content into a step.
 ### **Filter streams** `{!filter-streams.md!}` macro
 
 * **About:** Explains how to search for specific streams in the
-  **Subscriptions** page using the **Filter streams** input. Usually preceded by
-  the [**Subscriptions** macro](#subscriptions-subscriptions-md-macro).
+  **Streams** page using the **Filter streams** input. Usually preceded by
+  the [**Streams** macro](#streams-subscriptions-md-macro).
 
 * **Contents:**
     ```.md
@@ -368,7 +368,7 @@ following content into a step.
     ```
     ```.md
     1. [Find the relevant stream](/help/browse-and-join-streams#browse-streams) on the
-    [Subscriptions](/#subscriptions) page. You can search for specific streams by entering the
+    [Streams](/#streams) page. You can search for specific streams by entering the
     name of the stream in the **Filter streams** input.
     ```
 
@@ -485,12 +485,12 @@ instruction and the [**Down chevron** macro](#down-chevron-down-chevron-md-macro
 ### **Stream settings** `{!stream-settings.md!}` macro
 
 * **About:** Notifies readers about the changes in the
-  **Subscriptions** page when a stream is selected; usually followed
+  **Streams** page when a stream is selected; usually followed
   by an instruction.
 
 * **Contents:**
     ```.md
-    the right side of the [Subscriptions](/#subscriptions) page, labeled
+    the right side of the [Streams](/#streams) page, labeled
     **Stream settings**, will now display the selected stream's settings.
     ```
 
@@ -500,14 +500,14 @@ instruction and the [**Down chevron** macro](#down-chevron-down-chevron-md-macro
     ```
     ```.md
     1. Click on the stream you want to edit; the right side of the
-    [Subscriptions](/#subscriptions) page, labeled **Stream settings**, will
+    [Streams](/#streams) page, labeled **Stream settings**, will
     now display the selected stream's settings.
     ```
 
 ### **Stream settings scroll** `{!stream-settings.md!}` macro
 
 * **About:** Instructs readers to scroll down to a particular section on the
-**Subscriptions** page after making sure their cursors are hovering above the
+**Streams** page after making sure their cursors are hovering above the
 **Streams Settings** section.
 
 * **Contents:**
@@ -529,15 +529,15 @@ instruction and the [**Down chevron** macro](#down-chevron-down-chevron-md-macro
     selected stream.
     ```
 
-### **Subscriptions** `{!subscriptions.md!}` macro
+### **Streams** `{!subscriptions.md!}` macro
 
-* **About:** Used in documentation that direct users to the **Subscriptions** page.
+* **About:** Used in documentation that direct users to the **Streams** page.
 Often followed by the [**Filter streams** macro](#filter-streams-filter-streams-md-macro).
 
 * **Contents:**
     ```.md
     1. [Find the relevant stream](/help/browse-and-join-streams#browse-streams) on
-    the [Subscriptions](/#subscriptions) page.
+    the [Streams](/#streams) page.
     ```
 
 * **Example usage and rendering:**
@@ -547,7 +547,7 @@ Often followed by the [**Filter streams** macro](#filter-streams-filter-streams-
     ```
     ```.md
     1. [Find the relevant stream](/help/browse-and-join-streams#browse-streams) on the
-    [Subscriptions](/#subscriptions) page. You can search for specific streams by entering the
+    [Streams](/#streams) page. You can search for specific streams by entering the
     name of the stream in the **Filter streams** input.
     ```
 

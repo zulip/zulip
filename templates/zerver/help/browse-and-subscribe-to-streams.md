@@ -15,10 +15,10 @@ configure streams** will appear upon hovering above the cog.
     ![Streams cog and tooltip](/static/images/help/streams-1.png)
 
 2. After clicking the cog (<i class="icon-vector-cog"></i>) icon, the
-[Subscriptions](/#subscriptions) page will now appear, showing all streams
+[Streams](/#streams) page will now appear, showing all streams
 that you've subscribed to by default.
 
-    ![Subscriptions page](/static/images/help/streams-overview.png)
+    ![Streams page](/static/images/help/streams-overview.png)
 
     Here, you can explore all the public streams in the organization.
 You can also [create a new stream](create-a-stream) by clicking the plus
@@ -32,7 +32,7 @@ You can also [create a new stream](create-a-stream) by clicking the plus
 
     ![Filter streams box](/static/images/help/filter-stream.png)
 
-* Upon selecting a stream in the [Subscriptions](/#subscriptions) page,
+* Upon selecting a stream in the [Streams](/#streams) page,
 {!stream-settings.md!}
 
     ![Stream settings](/static/images/help/stream-overview.png)
@@ -60,7 +60,7 @@ button.
 
 However, if you were not notified about the stream's creation,
 you can subscribe to a stream by navigating to the
-[Subscriptions](/#subscriptions) page.
+[Streams](/#streams) page.
 
 {!subscriptions.md!}
 

@@ -5,17 +5,17 @@ common.start_and_log_in();
 casper.then(function () {
     var menu_selector = '#settings-dropdown';
 
-    casper.test.info('Subscriptions page');
+    casper.test.info('Streams page');
 
     casper.waitUntilVisible(menu_selector, function () {
         casper.click(menu_selector);
         casper.then(function () {
-            casper.click('a[href^="#subscriptions"]');
+            casper.click('a[href^="#streams"]');
             casper.test.assertUrlMatch(
-                /^http:\/\/[^/]+\/#subscriptions/,
-                'URL suggests we are on subscriptions page');
+                /^http:\/\/[^/]+\/#streams/,
+                'URL suggests we are on streams page');
             casper.waitUntilVisible('#subscription_overlay.new-style', function () {
-                casper.test.assertExists('#subscription_overlay.new-style', 'Subscriptions page is active');
+                casper.test.assertExists('#subscription_overlay.new-style', 'Streams page is active');
             });
         });
     });
