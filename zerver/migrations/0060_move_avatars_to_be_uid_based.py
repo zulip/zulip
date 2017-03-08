@@ -26,6 +26,13 @@ def move_local_file(type, path_src, path_dst):
     # type: (Text, Text, Text) -> None
     src_file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, type, path_src)
     dst_file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, type, path_dst)
+    if os.path.exists(dst_file_path):
+        print("Skipping already migrated %s" % (dst_file_path,))
+        return
+    if not os.path.exists(src_file_path):
+        # This is likely caused by a user having previously changed their email
+        print("Missing avatar file %s; likely due to past email change." % (src_file_path,))
+        return
     mkdirs(dst_file_path)
     os.rename(src_file_path, dst_file_path)
 
