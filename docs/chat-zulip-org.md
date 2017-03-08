@@ -80,7 +80,7 @@ everyone are these:
 * [#development help](https://chat.zulip.org/#narrow/stream/development.20help)
   is for asking for help with any Zulip server/webapp development work
   (use the app streams for help working on one of the apps).
-* [#peer review](https://chat.zulip.org/#narrow/stream/peer.20review)
+* [#code review](https://chat.zulip.org/#narrow/stream/code.20review)
   is for getting feedback on your work.  We encourage all developers
   to comment on work posted here, even if you're new to the Zulip
   project; reviewing other PRs is a great way to develop experience,
