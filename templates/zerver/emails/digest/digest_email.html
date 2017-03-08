@@ -79,7 +79,7 @@ Here are some of the hot conversations that have happened while you've been gone
 
 <p>{{ new_streams.html|display_list(4)|safe }}.</p>
 
-<p>Click on {% if new_stream_count and new_stream_count > 1 %}a{% else %}the{% endif %} name to check out some of the traffic, or visit your <a href="{{ realm_uri }}/#subscriptions">Streams page</a> to subscribe.</p>
+<p>Click on {% if new_stream_count and new_stream_count > 1 %}a{% else %}the{% endif %} name to check out some of the traffic, or visit your <a href="{{ realm_uri }}/#streams">Streams page</a> to subscribe.</p>
 {% endif %}
 
 {% if new_users %}

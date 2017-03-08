@@ -89,10 +89,10 @@ def add_integrations_context(context):
 
     if context["html_settings_links"]:
         settings_html = '<a href="../#settings">Zulip settings page</a>'
-        subscriptions_html = '<a target="_blank" href="../#subscriptions">subscriptions page</a>'
+        subscriptions_html = '<a target="_blank" href="../#streams">streams page</a>'
     else:
         settings_html = 'Zulip settings page'
-        subscriptions_html = 'subscriptions page'
+        subscriptions_html = 'streams page'
 
     context['settings_html'] = settings_html
     context['subscriptions_html'] = subscriptions_html

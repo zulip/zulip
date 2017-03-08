@@ -181,8 +181,8 @@ function do_hashchange(from_reload) {
     case "#":
         activate_home_tab();
         break;
-    case "#subscriptions":
-        ui.change_tab_to("#subscriptions");
+    case "#streams":
+        ui.change_tab_to("#streams");
         break;
     case "#drafts":
         ui.change_tab_to("#drafts");
@@ -234,7 +234,7 @@ function get_hash_components() {
 // require a reload or overlay change to run.
 var get_hash_group = (function () {
     var groups = [
-        ["subscriptions"],
+        ["streams"],
         ["settings", "administration"],
     ];
 
@@ -254,8 +254,8 @@ var get_hash_group = (function () {
 }());
 
 function should_ignore(hash) {
-    // an array of hashes to ignore (eg. ["subscriptions", "settings", "administration"]).
-    var ignore_list = ["subscriptions", "drafts", "settings", "administration"];
+    // Hash changes within this list are overlaws and should not unnarrow (etc.)
+    var ignore_list = ["streams", "drafts", "settings", "administration"];
     var main_hash = get_main_hash(hash);
 
     return (ignore_list.indexOf(main_hash) > -1);
@@ -285,7 +285,7 @@ function hashchanged(from_reload, e) {
                 ignore.prev = old_hash;
             }
 
-            if (base === "subscriptions") {
+            if (base === "streams") {
                 subs.launch(get_hash_components());
             } else if (base === "drafts") {
                 drafts.launch();

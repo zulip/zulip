@@ -42,7 +42,7 @@ Catch up on the rest of these conversations: {{ realm_uri }}.{% endif %}
 
     {{ new_streams.plain|display_list(4) }}.
 
-Visit your Streams page to subscribe: {{ realm_uri }}/#subscriptions.{% endif %}
+Visit your Streams page to subscribe: {{ realm_uri }}/#streams.{% endif %}
 
 {% if new_users %}{% if new_streams.plain or unread_pms or hot_conversations %}And finally, please{% else %}Please{% endif %} welcome {{ new_users|display_list(4) }} to Zulip!{% endif %}
 

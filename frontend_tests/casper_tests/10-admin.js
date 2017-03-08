@@ -38,7 +38,7 @@ casper.then(function () {
 casper.then(function () {
     // Leave the page and return
     casper.click('#settings-dropdown');
-    casper.click('a[href^="#subscriptions"]');
+    casper.click('a[href^="#streams"]');
     casper.click('#settings-dropdown');
     casper.click('a[href^="#administration"]');
 });
@@ -272,7 +272,7 @@ casper.then(function () {
 casper.then(function () {
     // Leave the page and return
     casper.click('#settings-dropdown');
-    casper.click('a[href^="#subscriptions"]');
+    casper.click('a[href^="#streams"]');
     casper.click('#settings-dropdown');
     casper.click('a[href^="#administration"]');
 

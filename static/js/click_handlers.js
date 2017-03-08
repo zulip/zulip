@@ -389,7 +389,7 @@ $(function () {
         e.preventDefault();
         e.stopPropagation();
 
-        window.location.hash = "subscriptions/all";
+        window.location.hash = "streams/all";
     });
 
     // FEEDBACK

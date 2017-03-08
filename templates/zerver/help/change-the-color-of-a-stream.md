@@ -16,17 +16,17 @@ through the left sidebar.
 4. The stream will change colors in the left sidebar, confirming the success of
 the stream's color change.
 
-## Change the color of a stream through the Subscriptions page
+## Change the color of a stream through the Streams page
 
 If you want to change the colors of multiple streams at once or specify a hex
 code for your stream's color, you should change the stream's colors through the
-[Subscriptions](/#subscriptions) page.
+[Streams](/#streams) page.
 
 {!subscriptions.md!}
 {!filter-streams.md!}
 
 2. Select the stream you want to change the color of in the
-[Subscriptions](/#subscriptions) page; {!stream-settings.md!}
+[Streams](/#streams) page; {!stream-settings.md!}
 
 2. Under the **Stream settings** section, select the **Stream color** option.
 
@@ -37,5 +37,5 @@ select a color from the color palette.
         Alternatively, you can use the color picker or enter the hex code of
         your desired color. Click the **choose** button to save your changes.
 
-4. The stream will change colors in the [Subscriptions](/#subscriptions) page,
+4. The stream will change colors in the [Streams](/#streams) page,
 confirming the success of the stream's color change.

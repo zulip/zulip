@@ -779,7 +779,7 @@ exports.change_state = (function () {
 
         // if there are any arguments the state should be modified.
         if (hash.arguments.length > 0) {
-            // if in #subscriptions/new form.
+            // if in #streams/new form.
             if (hash.arguments[0] === "new") {
                 $("#create_stream_button").click();
                 components.toggle.lookup("stream-filter-toggle").goto("All streams");
@@ -1138,10 +1138,10 @@ $(function () {
             $('#create_stream_name').focus();
         }
 
-        // change the hash to #subscriptions/new to allow for linking and
+        // change the hash to #streams/new to allow for linking and
         // easy discovery.
 
-        window.location.hash = "#subscriptions/new";
+        window.location.hash = "#streams/new";
     });
 
     $('body').on('change', '#user-checkboxes input, #make-invite-only input', update_announce_stream_state);
@@ -1414,7 +1414,7 @@ $(function () {
             var stream_id = $(this).attr("data-stream-id");
             var sub = stream_data.get_sub_by_id(stream_id);
 
-            window.location.hash = "#subscriptions" + "/" +
+            window.location.hash = "#streams" + "/" +
                 stream_id + "/" +
                 hashchange.encodeHashComponent(sub.name);
         }
@@ -1540,7 +1540,7 @@ function focus_on_narrowed_stream() {
 
 exports.show_and_focus_on_narrow = function () {
     $(document).one('subs_page_loaded.zulip', focus_on_narrowed_stream);
-    ui.change_tab_to("#subscriptions");
+    ui.change_tab_to("#streams");
 };
 
 return exports;

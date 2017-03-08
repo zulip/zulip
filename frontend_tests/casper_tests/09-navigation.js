@@ -46,7 +46,7 @@ function then_navigate_to_subscriptions() {
         var menu_selector = '#settings-dropdown';
         casper.waitUntilVisible(menu_selector, function () {
             casper.click(menu_selector);
-            casper.click('a[href^="#subscriptions"]');
+            casper.click('a[href^="#streams"]');
             casper.waitUntilVisible("#subscription_overlay", function () {
                 casper.test.assertExists('#subscriptions_table', "#subscriptions page is active");
             });
