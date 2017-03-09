@@ -460,6 +460,10 @@ def build_custom_checkers(by_lang):
     html_rules = whitespace_rules + prose_style_rules + [
         {'pattern': 'placeholder="[^{]',
          'description': "`placeholder` value should be translatable.",
+         'exclude_line': [('templates/zerver/register.html', 'placeholder="acme"'),
+                          ('templates/zerver/register.html', 'placeholder="Acme"'),
+                          ('static/templates/settings/realm-domains-modal.handlebars',
+                           '<td><input type="text" class="new-alias-domain" placeholder="acme.com"></input></td>')],
          'exclude': set(["static/templates/settings/emoji-settings-admin.handlebars",
                          "static/templates/settings/realm-filter-settings-admin.handlebars",
                          "static/templates/settings/bot-settings.handlebars"])},
