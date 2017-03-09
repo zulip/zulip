@@ -1823,9 +1823,9 @@ def do_reactivate_user(user_profile):
     if user_profile.is_bot:
         notify_created_bot(user_profile)
 
-def do_change_password(user_profile, password, log=True, commit=True,
+def do_change_password(user_profile, password, commit=True,
                        hashed_password=False):
-    # type: (UserProfile, Text, bool, bool, bool) -> None
+    # type: (UserProfile, Text, bool, bool) -> None
     if hashed_password:
         # This is a hashed password, not the password itself.
         user_profile.set_password(password)
@@ -1833,10 +1833,10 @@ def do_change_password(user_profile, password, log=True, commit=True,
         user_profile.set_password(password)
     if commit:
         user_profile.save(update_fields=["password"])
-    if log:
-        log_event({'type': 'user_change_password',
-                   'user': user_profile.email,
-                   'pwhash': user_profile.password})
+    event_time = timezone.now()
+    RealmAuditLog.objects.create(realm=user_profile.realm, acting_user=user_profile,
+                                 modified_user=user_profile, event_type='user_change_password',
+                                 event_time=event_time)
 
 def do_change_full_name(user_profile, full_name, log=True):
     # type: (UserProfile, Text, bool) -> None
