@@ -9,7 +9,7 @@ import ujson
 
 import django.core.urlresolvers
 from django.test import TestCase
-from typing import List
+from typing import List, Optional
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Stream
@@ -108,6 +108,12 @@ class PublicURLTest(ZulipTestCase):
             self.assertEqual('ABCD', data['google_client_id'])
 
 class URLResolutionTest(TestCase):
+    def get_callback_string(self, pattern):
+        # type: (django.core.urlresolvers.RegexURLPattern) -> Optional[str]
+        callback_str = hasattr(pattern, 'lookup_str') and 'lookup_str'
+        callback_str = callback_str or '_callback_str'
+        return getattr(pattern, callback_str, None)
+
     def check_function_exists(self, module_name, view):
         # type: (str, str) -> None
         module = importlib.import_module(module_name)
@@ -117,12 +123,11 @@ class URLResolutionTest(TestCase):
     def test_rest_api_url_resolution(self):
         # type: () -> None
         for pattern in urls.v1_api_and_json_patterns:
-            if not (hasattr(pattern, "_callback_str") and hasattr(pattern, "default_args")):
-                continue
-
-            for func_string in pattern.default_args.values():
-                module_name, view = func_string.rsplit('.', 1)
-                self.check_function_exists(module_name, view)
+            callback_str = self.get_callback_string(pattern)
+            if callback_str and hasattr(pattern, "default_args"):
+                for func_string in pattern.default_args.values():
+                    module_name, view = func_string.rsplit('.', 1)
+                    self.check_function_exists(module_name, view)
 
     # Tests function-based views declared in urls.urlpatterns for
     # whether the function exists.  We at present do not test the
@@ -130,7 +135,7 @@ class URLResolutionTest(TestCase):
     def test_non_api_url_resolution(self):
         # type: () -> None
         for pattern in urls.urlpatterns:
-            if not hasattr(pattern, "_callback_str"):
-                continue
-            (module_name, base_view) = pattern._callback_str.rsplit(".", 1)
-            self.check_function_exists(module_name, base_view)
+            callback_str = self.get_callback_string(pattern)
+            if callback_str:
+                (module_name, base_view) = callback_str.rsplit(".", 1)
+                self.check_function_exists(module_name, base_view)
