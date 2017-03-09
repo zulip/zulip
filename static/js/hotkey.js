@@ -60,8 +60,8 @@ var hotkeys_shift_insensitive = {
     65: {name: 'stream_cycle_backward', message_view_only: true}, // 'A'
     67: {name: 'compose_private_message', message_view_only: true}, // 'C'
     68: {name: 'stream_cycle_forward', message_view_only: true}, // 'D'
-    74: {name: 'page_down', message_view_only: true}, // 'J'
-    75: {name: 'page_up', message_view_only: true}, // 'K'
+    74: {name: 'vim_page_down', message_view_only: true}, // 'J'
+    75: {name: 'vim_page_up', message_view_only: true}, // 'K'
     82: {name: 'respond_to_author', message_view_only: true}, // 'R'
     83: {name: 'narrow_by_subject', message_view_only: true}, //'S'
     99: {name: 'compose', message_view_only: true}, // 'c'
@@ -424,6 +424,7 @@ function process_hotkey(e) {
             navigate.to_end();
             return true;
         case 'page_up':
+        case 'vim_page_up':
         case 'shift_spacebar':
             if (!is_settings_page()) {
                 navigate.page_up();
@@ -431,6 +432,7 @@ function process_hotkey(e) {
             }
             break;
         case 'page_down':
+        case 'vim_page_down':
         case 'spacebar':
             if (!is_settings_page()) {
                 navigate.page_down();
