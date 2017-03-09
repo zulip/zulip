@@ -352,14 +352,17 @@ def build_custom_checkers(by_lang):
          'description': 'Used % comprehension without a tuple'},
         {'pattern': '.*%s.* % \([a-zA-Z0-9_.]*\)$',
          'description': 'Used % comprehension without a tuple'},
+        {'pattern': 'django.utils.translation',
+         'include_only': set(['test']),
+         'description': 'Test strings should not be tagged for translationx'},
         {'pattern': 'json_success\({}\)',
          'description': 'Use json_success() to return nothing'},
         # To avoid json_error(_variable) and json_error(_(variable))
         {'pattern': '\Wjson_error\(_\(?\w+\)',
-         'exclude': set(['tools/lint-all']),
+         'exclude': set(['tools/lint-all', 'zerver/tests']),
          'description': 'Argument to json_error should be a literal string enclosed by _()'},
         {'pattern': '\Wjson_error\([\'"].+[),]$',
-         'exclude': set(['tools/lint-all']),
+         'exclude': set(['tools/lint-all', 'zerver/tests']),
          'exclude_line': set([
              # We don't want this string tagged for translation.
              ('zerver/views/compatibility.py', 'return json_error("Client is too old")'),
@@ -367,10 +370,10 @@ def build_custom_checkers(by_lang):
          'description': 'Argument to json_error should a literal string enclosed by _()'},
         # To avoid JsonableError(_variable) and JsonableError(_(variable))
         {'pattern': '\WJsonableError\(_\(?\w.+\)',
-         'exclude': set(['tools/lint-all']),
+         'exclude': set(['tools/lint-all', 'zerver/tests']),
          'description': 'Argument to JsonableError should be a literal string enclosed by _()'},
         {'pattern': '\WJsonableError\(["\'].+\)',
-         'exclude': set(['tools/lint-all']),
+         'exclude': set(['tools/lint-all', 'zerver/tests']),
          'description': 'Argument to JsonableError should be a literal string enclosed by _()'},
         {'pattern': '([a-zA-Z0-9_]+)=REQ\([\'"]\\1[\'"]',
          'description': 'REQ\'s first argument already defaults to parameter name'},

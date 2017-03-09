@@ -3,7 +3,6 @@ import mock
 
 from typing import Any, Dict, Iterable, List, Optional, Text, Tuple
 from django.test import TestCase
-from django.utils.translation import ugettext as _
 from django.http import HttpResponse, HttpRequest
 from django.test.client import RequestFactory
 from django.conf import settings
@@ -102,7 +101,7 @@ class DecoratorTestCase(TestCase):
             if not isinstance(lst, list):
                 raise ValueError('not a list')
             if 13 in lst:
-                raise JsonableError(_('13 is an unlucky number!'))
+                raise JsonableError('13 is an unlucky number!')
             return lst
 
         @has_request_variables

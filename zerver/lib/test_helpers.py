@@ -13,7 +13,6 @@ from django.test.client import (
 from django.template import loader
 from django.http import HttpResponse
 from django.db.utils import IntegrityError
-from django.utils.translation import ugettext as _
 
 from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import get_cache_backend

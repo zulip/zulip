@@ -4,7 +4,6 @@ from __future__ import absolute_import
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Set, Text
 
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
 
 from zerver.lib import cache
 
@@ -1133,7 +1132,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
 
         def method2(req, user_profile):
             # type: (HttpRequest, UserProfile) -> HttpResponse
-            return json_error(_('random failure'))
+            return json_error('random failure')
 
         with self.assertRaises(JsonableError):
             compose_views(None, user_profile, [(method1, {}), (method2, {})])
