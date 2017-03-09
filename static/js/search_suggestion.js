@@ -34,35 +34,47 @@ function highlight_person(query, person) {
     return hilite(query, person.full_name) + " &lt;" + hilite(query, person.email) + "&gt;";
 }
 
-function get_stream_suggestions(operators) {
-    var query;
+function get_stream_suggestions(all_people, operators) {
+    var negated = false;
+    var operator_map = {};
+    var stream_query = '';
+    var sender_query = ''
 
-    switch (operators.length) {
-    case 0:
-        query = '';
-        break;
-    case 1:
+    if (operators.length > 2) {
+        return [];
+    }
+
+    if (operators.length === 1) {
         var operator = operators[0].operator;
         query = operators[0].operand;
-        if (!(operator === 'stream' || operator === 'search')) {
+        if (!(operator === 'stream' /*|| operator === 'search'*/)) {
             return [];
         }
-        break;
-    default:
+    }
+
+    for (var i = 0; i < operators.length; i++) {
+        operator_map[operators[i].operator] = i;
+    }
+
+    if (operator_map.hasOwnProperty('stream')) {
+        var stream_query = operators[operator_map['stream']].operand;
+    }
+
+    if (operator_map.hasOwnProperty('topic')) {
         return [];
     }
 
     var streams = stream_data.subscribed_streams();
 
     streams = _.filter(streams, function (stream) {
-        return stream_matches_query(stream, query);
+        return stream_matches_query(stream, stream_query);
     });
 
-    streams = typeahead_helper.sorter(query, streams);
+    streams = typeahead_helper.sorter(stream_query, streams);
 
     var objs = _.map(streams, function (stream) {
         var prefix = 'Narrow to stream';
-        var highlighted_stream = typeahead_helper.highlight_query_in_phrase(query, stream);
+        var highlighted_stream = typeahead_helper.highlight_query_in_phrase(stream_query, stream);
         var description = prefix + ' ' + highlighted_stream;
         var term = {
             operator: 'stream',
@@ -72,8 +84,45 @@ function get_stream_suggestions(operators) {
         return {description: description, search_string: search_string};
     });
 
+
+    if (!(operator_map.hasOwnProperty('sender'))) {
+        return objs
+    } else {
+        var sender_query = operators[operator_map['sender']].operand;
+    }
+
+    var people = _.filter(all_people, function (person) {
+        return person_matches_query(person, sender_query);
+    });
+
+    people.sort(typeahead_helper.compare_by_pms);
+
+    // Take top 15 people, since they're ordered by pm_recipient_count.
+    people = people.slice(0, 15);
+
+    var prefix = Filter.describe(operators);
+
+    var people_suggestions = _.map(people, function (person) {
+        var term = {
+            operator: 'sender',
+            operand: person.email,
+            negated: negated,
+        };
+        var name = highlight_person(sender_query, person);
+        var description = prefix + ' ' + name;
+        var terms = [term];
+        if (negated) {
+            terms = [{operator: 'stream', operand: stream_query}, term];
+        }
+        var search_string = Filter.unparse(terms);
+        return {description: description, search_string: search_string};
+    });
+  
+    for (var i = 0; i < people_suggestions.length; i++ ) {
+        objs.push(people_suggestions[i]);
+    }
+
     return objs;
-}
 
 function get_private_suggestions(all_people, operators, person_operator_matches) {
     if (operators.length === 0) {
@@ -477,20 +526,40 @@ exports.get_suggestions = function (query) {
     var suggestions;
 
     // Add an entry for narrow by operators.
+    // Parse the query for operators and put them into operators
+    // operators is an array of objects with properties: negated, operator, operand
+    // Operators are identified as the word before ':'
     var operators = Filter.parse(query);
+    // Get text for:
+    // Narrow to stream > topic
+    // Narrow to all private messages
+    // Narrow to starred messages
+    // Narrow to alerted messages
+    // Narrw to (unknown operator)
     suggestion = get_default_suggestion(operators);
+    // result is an array of objects, each with a 'description' property to be
+    // shown in suggestion dropdown
     result = [suggestion];
 
+
+    // Return text for special filters
+    // Only return something if there's only one operator
     suggestions = get_special_filter_suggestions(query, operators);
     result = result.concat(suggestions);
 
+    // Only return non empty when there's 1 operator
     suggestions = get_sent_by_me_suggestions(query, operators);
     result = result.concat(suggestions);
 
-    suggestions = get_stream_suggestions(operators);
+    // Get all the people 
+    // Is this scalable?
+    var persons = people.get_all_persons();
+
+    // Only return non empty when there's 1 operator and it is 'stream'
+    // Return 'Narrow down to stream' + stream name
+    suggestions = get_stream_suggestions(persons, operators);
     result = result.concat(suggestions);
 
-    var persons = people.get_all_persons();
 
     suggestions = get_person_suggestions(persons, query, 'pm-with');
     result = result.concat(suggestions);
