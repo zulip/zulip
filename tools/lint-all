@@ -411,6 +411,11 @@ def build_custom_checkers(by_lang):
          'include_only': set(["/migrations/"]),
          'description': "Don't import models in migrations; see docs/schema-migrations.md for solution",
          },
+        {'pattern': 'datetime[.](now|utcnow)',
+         'include_only': set(["zerver/", "analytics/"]),
+         'description': "Don't use datetime in backend code.\n"
+         "See https://zulip.readthedocs.io/en/latest/code-style.html#naive-datetime-objects",
+         },
         # This rule might give false positives in virtualenv setup files which should be excluded,
         # and comments which should be rewritten to avoid use of "python2", "python3", etc.
         {'pattern': 'python[23]',
