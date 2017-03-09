@@ -375,7 +375,7 @@ exports.register_click_handlers = function () {
         popovers.toggle_actions_popover(this, rows.id(row));
     });
 
-    $("#main_div").on("click", ".reactions_hover", function (e) {
+    $("#main_div").on("click", ".reactions_hover, .reaction_button", function (e) {
         var row = $(this).closest(".message_row");
         e.stopPropagation();
         popovers.toggle_reactions_popover(this, rows.id(row));
