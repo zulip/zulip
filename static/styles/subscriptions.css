@@ -776,6 +776,15 @@ form#add_new_subscription {
     margin-bottom: 5px;
 }
 
+#preview-stream-button {
+    float: right;
+    margin-top: -5px;
+    margin-right: 5px;
+    text-decoration: none;
+    line-height: 16px;
+    vertical-align: middle;
+}
+
 .editable-section {
     position: relative;
     display: inline;
