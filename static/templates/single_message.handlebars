@@ -48,9 +48,9 @@
               <i class="icon-vector-chevron-down"></i>
             </div>
             <div class="message_failed {{#unless msg.failed_request}}notvisible{{/unless}}">
-              <i class="icon-vector-refresh refresh-failed-message" data-toggle="tooltip" title="{{t 'Not Delivered: Resend' }}"></i>
-              <i class="icon-vector-pencil edit-failed-message" data-toggle="tooltip" title="{{t 'Not Delivered: Edit' }}"></i>
-              <i class="icon-vector-remove-sign remove-failed-message" data-toggle="tooltip" title="{{t 'Not Delivered: Delete' }}"></i>
+              <i class="icon-vector-refresh refresh-failed-message" data-toggle="tooltip" title="{{t 'Retry' }}"></i>
+              <i class="icon-vector-pencil edit-failed-message" data-toggle="tooltip" title="{{t 'Edit' }}"></i>
+              <i class="icon-vector-remove-sign remove-failed-message" data-toggle="tooltip" title="{{t 'Cancel' }}"></i>
             </div>
             <div class="star {{#if msg/starred}}icon-vector-star{{else}}icon-vector-star-empty{{/if}} {{#if msg/starred}}{{else}}empty-star{{/if}}" title="{{#tr this}}{{#if msg/starred}}Unstar{{else}}Star{{/if}} this message{{/tr}}">
             </div>
