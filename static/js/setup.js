@@ -2,6 +2,8 @@
 
 var csrf_token;
 $(function () {
+    page_params.use_websockets = !/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
     // Display loading indicator.  This disappears after the first
     // get_events completes.
     if (page_params.have_initial_messages && !page_params.needs_tutorial) {
