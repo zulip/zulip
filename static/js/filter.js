@@ -463,6 +463,11 @@ Filter.describe = function (operators) {
             var part = 'Narrow to ' + stream + ' > ' + topic;
             parts = [part];
             operators = operators.slice(2);
+        } else if (is(operators[0], 'stream') && is(operators[1], 'sender')) {
+            var stream = operators[0].operand;
+            var part = 'Narrow to ' + stream + ' > messages sent by';
+            parts = [part];
+            operators = operators.slice(2);
         }
     }
 
