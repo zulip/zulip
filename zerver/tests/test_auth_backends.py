@@ -358,6 +358,10 @@ class GitHubAuthBackendTest(ZulipTestCase):
         # type: () -> None
         self.assertEqual(self.backend.get_full_name(), '')
 
+    def test_full_name_with_none(self):
+        # type: () -> None
+        self.assertEqual(self.backend.get_full_name(response={'email': None}), '')
+
     def test_github_backend_do_auth_without_subdomains(self):
         # type: () -> None
         with mock.patch('social_core.backends.github.GithubOAuth2.do_auth',

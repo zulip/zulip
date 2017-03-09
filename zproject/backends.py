@@ -419,10 +419,19 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
 
     def get_full_name(self, *args, **kwargs):
         # type: (*Any, **Any) -> Text
+        # In case of any error return an empty string. Name is used by
+        # the registration page to pre-populate the name field. However,
+        # if it is not supplied, our registration process will make sure
+        # that the user enters a valid name.
         try:
-            return kwargs['response']['name']
+            name = kwargs['response']['name']
         except KeyError:
+            name = ''
+
+        if name is None:
             return ''
+
+        return name
 
     def do_auth(self, *args, **kwargs):
         # type: (*Any, **Any) -> Optional[HttpResponse]
