@@ -231,6 +231,9 @@ function process_hotkey(e) {
         } else if ($(".informational-overlays").hasClass("show")) {
             ui.hide_info_overlay();
             return true;
+        } else if ($("#invite-user").css("display") === "block") {
+            $("#invite-user").modal("hide");
+            return true;
         }
     }
 
