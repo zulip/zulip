@@ -33,7 +33,7 @@ $(function () {
 
                     <div class="alert alert-pitch" id="company-email">{% trans %}Please use your
                         company email address to sign up. Otherwise, we won’t be able to
-                    connect you with your coworkers{% endtrans %}.</div>
+                    connect you with your coworkers.{% endtrans %}</div>
                     {% if google_auth_enabled %}
                     <div class="register-google">
                         <a href="{{ url('zerver.views.auth.start_google_oauth2') }}" class="zocial google register-google-button">{{ _("Sign up with Google") }}</a>
