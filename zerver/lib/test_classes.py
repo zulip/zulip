@@ -14,7 +14,6 @@ from django.template import loader
 from django.test.testcases import SerializeMixin
 from django.http import HttpResponse
 from django.db.utils import IntegrityError
-from django.utils.translation import ugettext as _
 
 from zerver.lib.initial_password import initial_password
 from zerver.lib.db import TimeTrackingCursor
