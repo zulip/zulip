@@ -28,5 +28,5 @@ Food nearby 'Chicago, IL' coming right up:
 * If the user enters a wrong word, like "@foursquare 80000 donuts" or "@foursquare",
 then an error message saying invalid input will be displayed.
 
-* To get the required API Key, visit: https://developer.foursquare.com/overview/auth
+* To get the required API key, visit: https://developer.foursquare.com/overview/auth
 for more information.
