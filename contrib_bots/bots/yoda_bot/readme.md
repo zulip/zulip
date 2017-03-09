@@ -11,7 +11,7 @@ Mashape API key. Please see instructions for getting one below.
 
 ## Setup
 
-Before running this bot, make sure to get a Mashape API Key.
+Before running this bot, make sure to get a Mashape API key.
 Go to this link:
 <https://market.mashape.com/ismaelc/yoda-speak/overview>
 This is the API that powers the `yoda_bot`. You can read more about it
@@ -28,7 +28,7 @@ also add it to a different application if you wish. Now click on the
 the Yoda Speak API to. Click on the blue **GET THE KEYS** button.
 
 On the pop-up that comes up, click on the **COPY** button.
-This is your Mashape API Key. It is used
+This is your Mashape API key. It is used
 to authenticate. Store it in the `yoda_bot.config` file.
 
 The `yoda_bot.config` file should be located at `~/yoda_bot.config`.
