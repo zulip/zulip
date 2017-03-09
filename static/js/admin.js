@@ -94,15 +94,26 @@ function populate_users(realm_people_data) {
     deactivated_users = _.sortBy(deactivated_users, 'full_name');
     bots = _.sortBy(bots, 'full_name');
 
+    var bots_table_html = "";
     _.each(bots, function (user) {
-        bots_table.append(templates.render("admin_user_list", {user: user}));
+        var bot_html = templates.render("admin_user_list", {user: user});
+        bots_table_html = bots_table_html.concat(bot_html);
     });
+    bots_table.append(bots_table_html);
+
+    var users_table_html = "";
     _.each(active_users, function (user) {
-        users_table.append(templates.render("admin_user_list", {user: user}));
+        var user_html = templates.render("admin_user_list", {user: user});
+        users_table_html = users_table_html.concat(user_html);
     });
+    users_table.append(users_table_html);
+
+    var deactivated_table_html = "";
     _.each(deactivated_users, function (user) {
-        deactivated_users_table.append(templates.render("admin_user_list", {user: user}));
+        var user_html = templates.render("admin_user_list", {user: user});
+        deactivated_table_html = deactivated_table_html.concat(user_html);
     });
+    deactivated_users_table.append(deactivated_table_html);
     loading.destroy_indicator($('#admin_page_users_loading_indicator'));
     loading.destroy_indicator($('#admin_page_bots_loading_indicator'));
     loading.destroy_indicator($('#admin_page_deactivated_users_loading_indicator'));
