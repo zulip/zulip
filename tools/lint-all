@@ -483,6 +483,18 @@ def build_custom_checkers(by_lang):
     handlebars_rules = html_rules + [
         {'pattern': "[<]script",
          'description': "Do not use inline <script> tags here; put JavaScript in static/js instead."},
+        {'pattern': "{{t '.*' }}[\.\?!]",
+         'description': "Period should be part of the translatable string."},
+        {'pattern': '{{t ".*" }}[\.\?!]',
+         'description': "Period should be part of the translatable string."},
+        {'pattern': "{{/tr}}[\.\?!]",
+         'description': "Period should be part of the translatable string."},
+    ]
+    jinja2_rules = html_rules + [
+        {'pattern': "{% endtrans %}[\.\?!]",
+         'description': "Period should be part of the translatable string."},
+        {'pattern': "{{ _(.+) }}[\.\?!]",
+         'description': "Period should be part of the translatable string."},
     ]
     json_rules = [] # type: RuleList # fix newlines at ends of files
     # It is okay that json_rules is empty, because the empty list
@@ -526,7 +538,7 @@ def build_custom_checkers(by_lang):
                 failed = True
 
         for fn in by_lang['html']:
-            if custom_check_file(fn, html_rules):
+            if custom_check_file(fn, jinja2_rules):
                 failed = True
 
         for fn in by_lang['json']:
