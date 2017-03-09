@@ -18,6 +18,7 @@
     </div>
     <button class="button small white rounded subscribe-button sub_unsub_button {{#unless subscribed }}unsubscribed{{/unless}}" type="button" name="button">
         {{#if subscribed }}Unsubscribe{{else}}Subscribe{{/if}}</button>
+    <a href="{{preview_url}}" class="button small white rounded" id="preview-stream-button" role="button">{{t "View stream"}}</a>
   </div>
   <div class="stream-description" data-no-description="{{t 'No description.' }}">
       <span class="stream-description-editable editable-section">{{description}}</span>
