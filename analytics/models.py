@@ -61,30 +61,10 @@ class BaseCount(ModelReprMixin, models.Model):
     class Meta(object):
         abstract = True
 
-    @staticmethod
-    def extended_id():
-        # type: () -> Tuple[str, ...]
-        raise NotImplementedError
-
-    @staticmethod
-    def key_model():
-        # type: () -> models.Model
-        raise NotImplementedError
-
 class InstallationCount(BaseCount):
 
     class Meta(object):
         unique_together = ("property", "subgroup", "end_time")
-
-    @staticmethod
-    def extended_id():
-        # type: () -> Tuple[str, ...]
-        return ()
-
-    @staticmethod
-    def key_model():
-        # type: () -> models.Model
-        return None
 
     def __unicode__(self):
         # type: () -> Text
@@ -96,16 +76,6 @@ class RealmCount(BaseCount):
     class Meta(object):
         unique_together = ("realm", "property", "subgroup", "end_time")
         index_together = ["property", "end_time"]
-
-    @staticmethod
-    def extended_id():
-        # type: () -> Tuple[str, ...]
-        return ('realm_id',)
-
-    @staticmethod
-    def key_model():
-        # type: () -> models.Model
-        return Realm
 
     def __unicode__(self):
         # type: () -> Text
@@ -121,16 +91,6 @@ class UserCount(BaseCount):
         # aggregating from users to realms
         index_together = ["property", "realm", "end_time"]
 
-    @staticmethod
-    def extended_id():
-        # type: () -> Tuple[str, ...]
-        return ('user_id', 'realm_id')
-
-    @staticmethod
-    def key_model():
-        # type: () -> models.Model
-        return UserProfile
-
     def __unicode__(self):
         # type: () -> Text
         return u"<UserCount: %s %s %s %s>" % (self.user, self.property, self.subgroup, self.value)
@@ -144,16 +104,6 @@ class StreamCount(BaseCount):
         # This index dramatically improves the performance of
         # aggregating from streams to realms
         index_together = ["property", "realm", "end_time"]
-
-    @staticmethod
-    def extended_id():
-        # type: () -> Tuple[str, ...]
-        return ('stream_id', 'realm_id')
-
-    @staticmethod
-    def key_model():
-        # type: () -> models.Model
-        return Stream
 
     def __unicode__(self):
         # type: () -> Text
