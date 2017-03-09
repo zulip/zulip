@@ -290,6 +290,7 @@ form#add_new_subscription {
     max-height: 300px;
     overflow: auto;
     text-align: left;
+    -webkit-overflow-scrolling: touch;
 }
 
 .subscriber-list {
@@ -593,6 +594,7 @@ form#add_new_subscription {
 .streams-list {
     position: relative;
     overflow: auto;
+    -webkit-overflow-scrolling: touch;
     height: calc(100% - 45px);
     width: 100%;
 }
@@ -706,6 +708,7 @@ form#add_new_subscription {
     max-height: calc(100% - 102px);
     overflow: auto;
     outline: none;
+    -webkit-overflow-scrolling: touch;
 }
 
 #subscription_overlay #stream-creation .modal-footer {
@@ -862,6 +865,7 @@ form#add_new_subscription {
     height: 100vh;
     background-color: rgba(0,0,0,0.8);
     overflow: auto;
+    -webkit-overflow-scrolling: touch;
     z-index: 102;
 
     transition: all 0.3s ease;
@@ -888,6 +892,7 @@ form#add_new_subscription {
     position: relative;
     height: calc(100% - 45px);
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 #subscription_overlay .subscription_settings {
@@ -1013,12 +1018,9 @@ form#add_new_subscription {
         height: 95%;
     }
 
-    #subscription_overlay .subscription_settings {
-        overflow: visible;
-    }
-
     #subscription_overlay .settings {
-        height: auto;
-        overflow: visible;
+        overflow: auto;
+        height: calc(100% - 20px);
+        -webkit-overflow-scrolling: touch;
     }
 }
