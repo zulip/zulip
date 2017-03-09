@@ -2168,8 +2168,10 @@ def do_create_realm(string_id, name, restricted_to_domain=None,
             kwargs['invite_required'] = invite_required
         if org_type is not None:
             kwargs['org_type'] = org_type
+        # General a value for domain that we control
+        domain = string_id + "." + settings.EXTERNAL_HOST
         realm = Realm(string_id=string_id, name=name,
-                      domain=string_id + '@acme.com', **kwargs)
+                      domain=domain, **kwargs)
         realm.save()
 
         # Create stream once Realm object has been saved
