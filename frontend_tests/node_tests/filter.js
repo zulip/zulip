@@ -482,17 +482,9 @@ function get_predicate(operators) {
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [
-        {operator: 'stream', operand: 'devel'},
-        {operator: 'sender', operand: 'tim'},
-    ];
-    string = 'Narrow to devel > messages sent by';
-    assert.equal(Filter.describe(narrow), string);
-
-    narrow = [
         {operator: 'is', operand: 'private'},
         {operator: 'search', operand: 'lunch'},
     ];
-
     string = 'Narrow to all private messages, Search for lunch';
     assert.equal(Filter.describe(narrow), string);
 
@@ -559,7 +551,6 @@ function get_predicate(operators) {
     ];
     string = 'Narrow to stream devel, Exclude messages with one or more image';
     assert.equal(Filter.describe(narrow), string);
-
 
 }());
 
