@@ -683,7 +683,7 @@ function _setup_page() {
                 }
                 if (response_data.create_stream_by_admins_only !== undefined) {
                     if (response_data.create_stream_by_admins_only) {
-                        ui.report_success(i18n.t("Only Admins may now create new streams!"), create_stream_by_admins_only_status);
+                        ui.report_success(i18n.t("Only admins may now create new streams!"), create_stream_by_admins_only_status);
                     } else {
                         ui.report_success(i18n.t("Any user may now create new streams!"), create_stream_by_admins_only_status);
                     }
@@ -697,7 +697,7 @@ function _setup_page() {
                 }
                 if (response_data.add_emoji_by_admins_only !== undefined) {
                     if (response_data.add_emoji_by_admins_only) {
-                        ui.report_success(i18n.t("Only Admins may now add new emoji!"), add_emoji_by_admins_only_status);
+                        ui.report_success(i18n.t("Only admins may now add new emoji!"), add_emoji_by_admins_only_status);
                     } else {
                         ui.report_success(i18n.t("Any user may now add new emoji!"), add_emoji_by_admins_only_status);
                     }

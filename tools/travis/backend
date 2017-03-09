@@ -12,5 +12,6 @@ set -x
 ./tools/test-documentation
 ./tools/test-help-documentation.py
 ./tools/test-api
+python -W ignore tools/check-capitalization
 # Some test suites disabled in CI for being flaky
 #./tools/test-queue-worker-reload
