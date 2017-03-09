@@ -228,6 +228,12 @@ exports.move_array_elements_to_front = function util_move_array_elements_to_fron
     return selected_elements.concat(unselected_elements);
 };
 
+// check by the userAgent string if a user's client is likely mobile.
+exports.is_mobile = function () {
+    var regex = "Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini";
+    return new RegExp(regex, "i").test(window.navigator.userAgent);
+};
+
 return exports;
 }());
 if (typeof module !== 'undefined') {
