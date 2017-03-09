@@ -6,46 +6,52 @@ from django.http import HttpRequest, HttpResponse
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success
-from zerver.lib.validator import check_dict, check_string
+from zerver.lib.validator import check_dict, check_string, check_bool
 from zerver.models import UserProfile, Client
 from typing import Dict
 
 import ujson
 
+GOOD_STATUSES = ['Passed', 'Fixed']
+BAD_STATUSES = ['Failed', 'Broken', 'Still Failing']
+
+MESSAGE_TEMPLATE = (
+    u'Author: {}\n'
+    u'Build status: {} {}\n'
+    u'Details: [changes]({}), [build log]({})'
+)
 
 @api_key_only_webhook_view('Travis')
 @has_request_variables
 def api_travis_webhook(request, user_profile, client,
                        stream=REQ(default='travis'),
                        topic=REQ(default=None),
+                       ignore_pull_requests=REQ(validator=check_bool, default=True),
                        message=REQ('payload', validator=check_dict([
                            ('author_name', check_string),
                            ('status_message', check_string),
                            ('compare_url', check_string),
                        ]))):
-    # type: (HttpRequest, UserProfile, Client, str, str, Dict[str, str]) -> HttpResponse
-    author = message['author_name']
-    message_type = message['status_message']
-    changes = message['compare_url']
+    # type: (HttpRequest, UserProfile, Client, str, str, str, Dict[str, str]) -> HttpResponse
 
-    good_status = ['Passed', 'Fixed']
-    bad_status  = ['Failed', 'Broken', 'Still Failing']
-    emoji = ''
-    if message_type in good_status:
+    message_status = message['status_message']
+    if ignore_pull_requests and message['type'] == 'pull_request':
+        return json_success()
+
+    if message_status in GOOD_STATUSES:
         emoji = ':thumbsup:'
-    elif message_type in bad_status:
+    elif message_status in BAD_STATUSES:
         emoji = ':thumbsdown:'
     else:
-        emoji = "(No emoji specified for status '%s'.)" % (message_type,)
+        emoji = "(No emoji specified for status '{}'.)".format(message_status)
 
-    build_url = message['build_url']
-
-    template = (
-        u'Author: %s\n'
-        u'Build status: %s %s\n'
-        u'Details: [changes](%s), [build log](%s)')
-
-    body = template % (author, message_type, emoji, changes, build_url)
+    body = MESSAGE_TEMPLATE.format(
+        message['author_name'],
+        message_status,
+        emoji,
+        message['compare_url'],
+        message['build_url']
+    )
 
     check_send_message(user_profile, client, 'stream', [stream], topic, body)
     return json_success()
