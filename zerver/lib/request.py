@@ -75,7 +75,8 @@ class REQ(object):
         self.argument_type = argument_type
 
         if converter and validator:
-            raise Exception(_('converter and validator are mutually exclusive'))
+            # Not user-facing, so shouldn't be tagged for translation
+            raise AssertionError('converter and validator are mutually exclusive')
 
 # Extracts variables from the request object and passes them as
 # named function arguments.  The request object must be the first
