@@ -2,6 +2,9 @@
 
 var csrf_token;
 $(function () {
+    // if the client is mobile, do not use web sockets.
+    page_params.use_websockets = !util.is_mobile();
+
     // Display loading indicator.  This disappears after the first
     // get_events completes.
     if (page_params.have_initial_messages && !page_params.needs_tutorial) {
