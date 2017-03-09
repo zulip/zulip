@@ -5,7 +5,7 @@ SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE = u'{repo} / {type} #{id} {title}'
 
 EMPTY_SHA = '0000000000000000000000000000000000000000'
 
-COMMITS_LIMIT = 10
+COMMITS_LIMIT = 20
 COMMIT_ROW_TEMPLATE = u'* [{commit_short_sha}]({commit_url}): {commit_msg}\n'
 COMMITS_MORE_THAN_LIMIT_TEMPLATE = u"[and {commits_number} more commit(s)]"
 

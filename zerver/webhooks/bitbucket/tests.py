@@ -23,7 +23,7 @@ class BitbucketHookTests(WebhookTestCase):
         fixture_name = 'push_commits_above_limit'
         self.url = self.build_url(fixture_name)
         commit_info = u'* [25f93d2](https://bitbucket.org/kolaszek/repository-name/commits/25f93d22b719e2d678a7ad5ee0ef0d1fcdf39c12): c\n'
-        expected_message = u"kolaszek pushed to branch master\n\n{}[and 40 more commit(s)]".format(commit_info * 10)
+        expected_message = u"kolaszek pushed to branch master\n\n{}[and 30 more commit(s)]".format(commit_info * 20)
         self.send_and_test_stream_message(fixture_name, self.EXPECTED_SUBJECT_BRANCH_EVENTS, expected_message, **self.api_auth(self.TEST_USER_EMAIL))
 
     def test_bitbucket_on_force_push_event(self):
