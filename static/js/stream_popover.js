@@ -115,7 +115,7 @@ function build_topic_popover(e) {
     if (exports.topic_popped()
         && current_topic_sidebar_elem === elt) {
         // If the popover is already shown, clicking again should toggle it.
-        popovers.hide_topic_popover();
+        exports.hide_topic_popover();
         e.stopPropagation();
         return;
     }
