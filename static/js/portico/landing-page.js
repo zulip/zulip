@@ -129,6 +129,57 @@ var events = function () {
     $("#hamburger").click(function () {
         $("nav ul").addClass("show");
     });
+    (function () {
+        var $last = $(".details-box").eq(0).addClass("show");
+        var $li = $("ul.sidebar li");
+        var version;
+
+        var nav_version = {
+            Win: "windows",
+            MacIntel: "mac",
+            Linux: "linux",
+            iP: "ios",
+        };
+
+        for (var x in nav_version) {
+            if (navigator.platform.indexOf(x) !== -1) {
+                $('li[data-name="' + nav_version[x] + '"]').click();
+                version = nav_version[x];
+                break;
+            }
+        }
+
+        var switch_to_tab = function (elem) {
+            var target = $(elem).data("name");
+            var $el = $(".details-box[data-name='" + target + "']");
+
+            // $li is a semi-global variable from the closure above.
+            $li.removeClass("active");
+            $(elem).addClass("active");
+
+            $last.removeClass("show");
+            $el.addClass("show");
+
+            $last = $el;
+        };
+
+        // this is for the sidebar on the /apps/ page to trigger the correct info box.
+        $li.click(function () {
+            window.location.hash = $(this).data("name");
+        });
+
+        if (window.location.pathname === "/apps/") {
+            var hash = function () {
+                return window.location.hash.replace(/^#/, "");
+            };
+
+            switch_to_tab($("ul.sidebar li[data-name='" + (hash() || version || "windows") + "']"));
+
+            window.onhashchange = function () {
+                switch_to_tab($("ul.sidebar li[data-name='" + hash() + "']"));
+            };
+        }
+    }());
 
     if (/\/integrations\/*/.test(window.location.pathname)) {
         integration_events();
