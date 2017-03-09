@@ -181,11 +181,6 @@
 }
 
 @media (max-width: 500px) {
-    .compose_stream_button_label,
-    .compose_private_button_label {
-        display: none;
-    }
-
     .stream-name {
         max-width: 120px;
         white-space: nowrap;
