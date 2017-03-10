@@ -114,6 +114,10 @@ function get_hotkey_from_event(e) {
     return {name: 'ignore', message_view_only: false};
 }
 
+exports.is_editing_stream_name = function (e) {
+    return $(e.target).is(".editable-section");
+};
+
 // Process a keydown or keypress event.
 //
 // Returns true if we handled it, false if the browser should.
@@ -135,7 +139,7 @@ exports.process_hotkey = function (e) {
         return false;
     }
 
-    if ($(e.target).is(".editable-section")) {
+    if (exports.is_editing_stream_name(e)) {
         if (event_name === "enter") {
             $(e.target).parent().find(".checkmark").click();
         }
