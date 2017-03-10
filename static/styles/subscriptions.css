@@ -600,7 +600,7 @@ form#add_new_subscription {
 }
 
 .stream-row {
-    padding: 15px 10px;
+    padding: 15px 10px 14px 10px;
     border-bottom: 1px solid #eee;
     cursor: pointer;
 }
@@ -694,7 +694,7 @@ form#add_new_subscription {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    line-height: 1;
+    line-height: 1.1;
 }
 
 #subscription_overlay .stream-description:empty:after,
