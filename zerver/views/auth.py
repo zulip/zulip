@@ -459,11 +459,30 @@ def api_fetch_api_key(request, username=REQ(), password=REQ()):
 @csrf_exempt
 def api_get_auth_backends(request):
     # type: (HttpRequest) -> HttpResponse
-    # May return a false positive for password auth if it's been disabled
-    # for a specific realm. Currently only happens for zulip.com on prod
-    return json_success({"password": password_auth_enabled(None),
-                         "dev": dev_auth_enabled(),
-                         "google": google_auth_enabled(),
+    """Returns which authentication methods are enabled on the server"""
+    if settings.REALMS_HAVE_SUBDOMAINS:
+        subdomain = get_subdomain(request)
+        try:
+            realm = Realm.objects.get(string_id=subdomain)
+        except Realm.DoesNotExist:
+            # If not the root subdomain, this is an error
+            if subdomain != "":
+                return json_error(_("Invalid subdomain"))
+            # With the root subdomain, it's an error or not depending
+            # whether SUBDOMAINS_HOMEPAGE (which indicates whether
+            # there are some realms without subdomains on this server)
+            # is set.
+            if settings.SUBDOMAINS_HOMEPAGE:
+                return json_error(_("Subdomain required"))
+            else:
+                realm = None
+    else:
+        # Without subdomains, we just have to report what the server
+        # supports, since we don't know the realm.
+        realm = None
+    return json_success({"password": password_auth_enabled(realm),
+                         "dev": dev_auth_enabled(realm),
+                         "google": google_auth_enabled(realm),
                          "zulip_version": ZULIP_VERSION,
                          })
 
