@@ -132,12 +132,22 @@ class CheckCapitalizationTestCase(TestCase):
                    "Some number 25MiB",
                    "Not Ignored Phrase",
                    "Not ignored phrase",
+                   ('<p class="bot-settings-note padded-container"> Looking for our '
+                    '<a href="/integrations" target="_blank">Integrations</a> or '
+                    '<a href="{{ server_uri }}/api" target="_blank">API</a> '
+                    'documentation? </p>'),
                    ]
         errored, ignored = check_capitalization(strings)
         self.assertEqual(errored, ['Not Ignored Phrase'])
-        self.assertEqual(ignored, sorted(["Zulip Zulip. Zulip some text!",
-                                          "Zulip Zulip? Zulip some text!",
-                                          "Zulip Zulip! Zulip some text!",
-                                          "Zulip Zulip, Zulip some text!",
-                                          "Some number 25MiB",
-                                          ]))
+        self.assertEqual(
+            ignored,
+            sorted(["Zulip Zulip. Zulip some text!",
+                    "Zulip Zulip? Zulip some text!",
+                    "Zulip Zulip! Zulip some text!",
+                    "Zulip Zulip, Zulip some text!",
+                    "Some number 25MiB",
+                    ('<p class="bot-settings-note padded-container"> Looking '
+                     'for our <a href="/integrations" target="_blank">'
+                     'Integrations</a> or <a href="{{ server_uri }}/api" '
+                     'target="_blank">API</a> documentation? </p>'),
+                    ]))

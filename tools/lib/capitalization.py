@@ -5,10 +5,12 @@ import re
 
 from bs4 import BeautifulSoup
 
-# The phrases in this list will be ignored.
-#
-# Keep the sublists lexicographically sorted.
-IGNORED_PHRASES = [re.compile(regex) for regex in [
+# The phrases in this list will be ignored. The longest phrase is
+# tried first; this removes the chance of smaller phrases changing
+# the text before longer phrases are tried.
+# The errors shown by `tools/check-capitalization` can be added to
+# this list without any modification.
+IGNORED_PHRASES = [
     # Proper nouns and acronyms
     r"API",
     r"Cookie Bot",
@@ -52,10 +54,18 @@ IGNORED_PHRASES = [re.compile(regex) for regex in [
     r"images",
 
     # Fragments of larger strings
+    (r'Change notification settings for individual streams on your '
+     '<a href="/#streams">Streams page</a>.'),
+    (r'<p class="bot-settings-note padded-container"> Looking for our '
+     '<a href="/integrations" target="_blank">Integrations</a> or '
+     '<a href="{{ server_uri }}/api" target="_blank">API</a> '
+     'documentation? </p>'),
+    r'Most stream administration is done on the <a href="/#streams">Streams page</a>.',
     r"one or more people...",
     r"confirmation email",
     r"invites remaining",
     r"^left$",
+    r"was too large; the maximum file size is 25MiB.",
     r"^right$",
 
     # SPECIAL CASES
@@ -75,7 +85,19 @@ IGNORED_PHRASES = [re.compile(regex) for regex in [
     r"argument ",
     # I can't find this one
     r"text",
-]]
+]
+
+# Sort regexes in descending order of their lengths. As a result, the
+# longer phrases will be ignored first.
+IGNORED_PHRASES.sort(key=lambda regex: len(regex), reverse=True)
+
+# Compile regexes to improve performance. This also extracts the
+# text using BeautifulSoup and then removes extra whitespaces from
+# it. This step enables us to add HTML in our regexes directly.
+COMPILED_IGNORED_PHRASES = [
+    re.compile(' '.join(BeautifulSoup(regex, 'lxml').text.split()))
+    for regex in IGNORED_PHRASES
+]
 
 SPLIT_BOUNDARY = '?.!'  # Used to split string into sentences.
 SPLIT_BOUNDARY_REGEX = re.compile(r'[{}]'.format(SPLIT_BOUNDARY))
@@ -130,7 +152,7 @@ def get_safe_text(text):
     """
     soup = BeautifulSoup(text, 'lxml')
     text = ' '.join(soup.text.split())  # Remove extra whitespaces.
-    for phrase_regex in IGNORED_PHRASES:
+    for phrase_regex in COMPILED_IGNORED_PHRASES:
         text = phrase_regex.sub(replace_with_safe_phrase, text)
 
     return text
@@ -156,15 +178,7 @@ def check_capitalization(strings):
     errors = []
     ignored = []
     for text in strings:
-        # Hand-skip a few that break the tool
-        if 'Change notification settings for individual streams' in text:
-            continue
-        if 'was too large; the maximum file size is 25MiB.' in text:
-            continue
-        if 'Most stream administration is done on the' in text:
-            continue
-        if 'bot-settings-note padded-container' in text:
-            continue
+        text = ' '.join(text.split())  # Remove extra whitespaces.
         safe_text = get_safe_text(text)
         has_ignored_phrase = text != safe_text
         capitalized = is_capitalized(safe_text)
