@@ -117,7 +117,7 @@ function get_hotkey_from_event(e) {
 // Process a keydown or keypress event.
 //
 // Returns true if we handled it, false if the browser should.
-function process_hotkey(e) {
+exports.process_hotkey = function (e) {
     var row;
     var alert_words_content;
     var focused_message_edit_content;
@@ -469,7 +469,7 @@ function process_hotkey(e) {
     }
 
     return false;
-}
+};
 
 /* We register both a keydown and a keypress function because
    we want to intercept pgup/pgdn, escape, etc, and process them
@@ -485,7 +485,7 @@ $(document).keydown(function (e) {
     // Restrict to non-alphanumeric keys
     // check if 27 (esc) because it doesn't register under .keypress()
     if (e.which < 48 || e.which > 90 || e.which === 27) {
-        if (process_hotkey(e)) {
+        if (exports.process_hotkey(e)) {
             e.preventDefault();
         }
     }
@@ -500,7 +500,7 @@ $(document).keypress(function (e) {
     // keypress event with keycode 0 after processing the original
     // event.
     if (e.which !== 0 && e.charCode !== 0) {
-        if (process_hotkey(e)) {
+        if (exports.process_hotkey(e)) {
             e.preventDefault();
         }
     }
