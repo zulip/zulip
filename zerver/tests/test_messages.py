@@ -1677,8 +1677,8 @@ class StarTests(ZulipTestCase):
         message_ids = [self.send_message("hamlet@zulip.com", stream_name,
                                          Recipient.STREAM, "test")]
         # Send a second message so we can verify it isn't modified
-        self.send_message("hamlet@zulip.com", stream_name,
-                          Recipient.STREAM, "test_unused")
+        other_message_ids = [self.send_message("hamlet@zulip.com", stream_name,
+                                               Recipient.STREAM, "test_unused")]
 
         # Now login as another user who wasn't on that stream
         self.login("cordelia@zulip.com")
@@ -1699,7 +1699,7 @@ class StarTests(ZulipTestCase):
         self.assert_json_success(result)
 
         for msg in self.get_old_messages():
-            if msg['id'] in message_ids:
+            if msg['id'] in message_ids + other_message_ids:
                 self.assertEqual(set(msg['flags']), {'starred', 'historical', 'read'})
             else:
                 self.assertEqual(msg['flags'], ['read'])
