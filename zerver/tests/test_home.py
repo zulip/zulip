@@ -92,7 +92,6 @@ class HomeTest(ZulipTestCase):
             "people_list",
             "pm_content_in_desktop_notifications",
             "poll_timeout",
-            "product_name",
             "prompt_for_invites",
             "realm_add_emoji_by_admins_only",
             "realm_allow_message_editing",
