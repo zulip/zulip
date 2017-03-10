@@ -421,7 +421,7 @@ input[type=checkbox].inline-block {
     text-align: right;
 }
 
-#settings-status {
+#account-settings-status {
     text-align: center;
     width: 50%;
     margin: auto;
