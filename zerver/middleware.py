@@ -416,15 +416,12 @@ class SessionHostDomainMiddleware(SessionMiddleware):
 
 class SetRemoteAddrFromForwardedFor(object):
     """
-    Middleware that sets REMOTE_ADDR based on HTTP_X_FORWARDED_FOR, if the
-    latter is set. This is useful if you're sitting behind a reverse proxy that
-    causes each request's REMOTE_ADDR to be set to 127.0.0.1.
-    Note that this does NOT validate HTTP_X_FORWARDED_FOR. If you're not behind
-    a reverse proxy that sets HTTP_X_FORWARDED_FOR automatically, do not use
-    this middleware. Anybody can spoof the value of HTTP_X_FORWARDED_FOR, and
-    because this sets REMOTE_ADDR based on HTTP_X_FORWARDED_FOR, that means
-    anybody can "fake" their IP address. Only use this when you can absolutely
-    trust the value of HTTP_X_FORWARDED_FOR.
+    Middleware that sets REMOTE_ADDR based on the HTTP_X_FORWARDED_FOR.
+
+    This middleware replicates Django's former SetRemoteAddrFromForwardedFor middleware.
+    Because Zulip sits behind a NGINX reverse proxy, if the HTTP_X_FORWARDED_FOR
+    is set in the request, then it has properly been set by NGINX.
+    Therefore HTTP_X_FORWARDED_FOR's value is trusted.
     """
     def process_request(self, request):
         # type: (HttpRequest) -> None
@@ -434,6 +431,6 @@ class SetRemoteAddrFromForwardedFor(object):
             return None
         else:
             # HTTP_X_FORWARDED_FOR can be a comma-separated list of IPs.
-            # For NGINX proxy servers, the client's IP will be the first one.
+            # For NGINX reverse proxy servers, the client's IP will be the first one.
             real_ip = real_ip.split(",")[0].strip()
             request.META['REMOTE_ADDR'] = real_ip

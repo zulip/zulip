@@ -314,8 +314,10 @@ TEMPLATES = [
 ]
 
 MIDDLEWARE_CLASSES = (
-    # Our logging middleware should be the first middleware item.
+    # With the exception of it's dependencies,
+    # our logging middleware should be the top middleware item.
     'zerver.middleware.TagRequests',
+    'zerver.middleware.SetRemoteAddrFromForwardedFor',
     'zerver.middleware.LogRequests',
     'zerver.middleware.JsonErrorHandler',
     'zerver.middleware.RateLimitMiddleware',
@@ -325,7 +327,6 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'zerver.middleware.SetRemoteAddrFromForwardedFor',
 )
 
 ANONYMOUS_USER_ID = None
