@@ -41,11 +41,11 @@ if __name__ == '__main__':
         backend_errors, backend_ignored = backend
 
     if frontend_errors:
-        print(WARNING + "Strings not capitalized in frontend:" + ENDC)
+        print(WARNING + "Strings not properly capitalized in frontend:" + ENDC)
         print('\n'.join(frontend_errors))
 
     if backend_errors:
-        print(WARNING + "Strings not capitalized in backend:" + ENDC)
+        print(WARNING + "Strings not properly capitalized in backend:" + ENDC)
         print('\n'.join(backend_errors))
 
     if args.show_ignored:
