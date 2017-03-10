@@ -453,7 +453,7 @@ MessageListView.prototype = {
 
         function restore_scroll_position() {
             if (list === current_msg_list && orig_scrolltop_offset !== undefined) {
-                viewport.set_message_offset(orig_scrolltop_offset);
+                message_viewport.set_message_offset(orig_scrolltop_offset);
                 list.reselect_selected_id();
             }
         }
@@ -651,14 +651,14 @@ MessageListView.prototype = {
         }
 
         var selected_row_offset = selected_row.offset().top;
-        var info = viewport.message_viewport_info();
+        var info = message_viewport.message_viewport_info();
         var available_space_for_scroll = selected_row_offset - info.visible_top;
 
         var rows_offset = rows.last_visible().offset().top - this.list.selected_row().offset().top;
 
         // autoscroll_forever: if we've sent a message, move pointer at least that far.
         if (page_params.autoscroll_forever && id_of_last_message_sent_by_us > -1 &&
-            rows_offset < (viewport.height())) {
+            rows_offset < (message_viewport.height())) {
             this.list.select_id(id_of_last_message_sent_by_us, {from_rendering: true});
             navigate.scroll_to_selected();
             return;
@@ -699,7 +699,7 @@ MessageListView.prototype = {
         }
 
         // Ok, we are finally ready to actually scroll.
-        viewport.system_initiated_animate_scroll(scroll_amount);
+        message_viewport.system_initiated_animate_scroll(scroll_amount);
     },
 
 
@@ -780,8 +780,9 @@ MessageListView.prototype = {
                 this.list.select_id(this.list.selected_id(), {use_closest: true});
             }
             // Must get this.list.selected_row() again since it is now a new DOM element
-            viewport.scrollTop(
-                    viewport.scrollTop() + this.selected_row().offset().top - scrolltop_offset);
+            message_viewport.scrollTop(
+                message_viewport.scrollTop() +
+                    this.selected_row().offset().top - scrolltop_offset);
         }
     },
 

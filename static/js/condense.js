@@ -99,7 +99,7 @@ function get_message_height(elem, message_id) {
 }
 
 exports.condense_and_collapse = function (elems) {
-    var height_cutoff = viewport.height() * 0.65;
+    var height_cutoff = message_viewport.height() * 0.65;
 
     _.each(elems, function (elem) {
         var content = $(elem).find(".message_content");

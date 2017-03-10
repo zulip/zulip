@@ -254,7 +254,7 @@ function box(x, y, width, height) {
 }
 
 function message_groups_in_viewport() {
-    var vp = viewport.message_viewport_info();
+    var vp = message_viewport.message_viewport_info();
     var top = vp.visible_top;
     var height = vp.visible_height;
     var last_group = rows.get_message_recipient_row(rows.last_visible());

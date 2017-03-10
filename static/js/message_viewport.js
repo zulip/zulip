@@ -1,4 +1,4 @@
-var viewport = (function () {
+var message_viewport = (function () {
 var exports = {};
 
 var jwindow;
@@ -69,7 +69,7 @@ exports.is_below_visible_bottom = function (offset) {
 exports.set_message_position = function (message_top, message_height, viewport_info, ratio) {
     // message_top = offset of the top of a message that you are positioning
     // message_height = height of the message that you are positioning
-    // viewport_info = result of calling viewport.message_viewport_info
+    // viewport_info = result of calling message_viewport.message_viewport_info
     // ratio = fraction indicating how far down the screen the msg should be
 
     var how_far_down_in_visible_page = viewport_info.visible_height * ratio;
@@ -200,7 +200,7 @@ exports.scrollTop = function viewport_scrollTop(target_scrollTop) {
     }
     var ret = exports.message_pane.scrollTop(target_scrollTop);
     var new_scrollTop = exports.message_pane.scrollTop();
-    var space_to_scroll = $("#bottom_whitespace").offset().top - viewport.height();
+    var space_to_scroll = $("#bottom_whitespace").offset().top - message_viewport.height();
 
     // Check whether our scrollTop didn't move even though one could have scrolled down
     if (space_to_scroll > 0 && target_scrollTop > 0 &&
@@ -344,5 +344,5 @@ return exports;
 }());
 
 if (typeof module !== 'undefined') {
-    module.exports = viewport;
+    module.exports = message_viewport;
 }

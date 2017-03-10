@@ -44,7 +44,7 @@ function amount_to_paginate() {
     // Some day we might have separate versions of this function
     // for Page Up vs. Page Down, but for now it's the same
     // strategy in either direction.
-    var info = viewport.message_viewport_info();
+    var info = message_viewport.message_viewport_info();
     var page_size = info.visible_height;
 
     // We don't want to page up a full page, because Zulip users
@@ -77,13 +77,13 @@ exports.page_up_the_right_amount = function () {
     // related adjustements, try to make those happen in the
     // scroll handlers, not here.
     var delta = amount_to_paginate();
-    viewport.scrollTop(viewport.scrollTop() - delta);
+    message_viewport.scrollTop(message_viewport.scrollTop() - delta);
 };
 
 exports.page_down_the_right_amount = function () {
     // see also: page_up_the_right_amount
     var delta = amount_to_paginate();
-    viewport.scrollTop(viewport.scrollTop() + delta);
+    message_viewport.scrollTop(message_viewport.scrollTop() + delta);
 };
 
 exports.replace_emoji_with_text = function (element) {
@@ -396,19 +396,19 @@ $(function () {
         // page, the pointer may still need to move.
 
         if (delta > 0) {
-            if (viewport.at_top()) {
+            if (message_viewport.at_top()) {
                 navigate.up();
             }
         } else if (delta < 0) {
-            if (viewport.at_bottom()) {
+            if (message_viewport.at_bottom()) {
                 navigate.down();
             }
         }
 
-        viewport.last_movement_direction = delta;
+        message_viewport.last_movement_direction = delta;
     });
 
-    viewport.message_pane.mousewheel(function (e, delta) {
+    message_viewport.message_pane.mousewheel(function (e, delta) {
         // Ignore mousewheel events if a modal is visible.  It's weird if the
         // user can scroll the main view by wheeling over the grayed-out area.
         // Similarly, ignore events on settings page etc.
@@ -540,12 +540,12 @@ $(function () {
                 });
             }
             if (event.target_scroll_offset !== undefined) {
-                viewport.set_message_offset(event.target_scroll_offset);
+                message_viewport.set_message_offset(event.target_scroll_offset);
             } else {
                 // Scroll to place the message within the current view;
                 // but if this is the initial placement of the pointer,
                 // just place it in the very center
-                viewport.recenter_view(row, {from_scroll: event.from_scroll,
+                message_viewport.recenter_view(row, {from_scroll: event.from_scroll,
                                     force_center: event.previously_selected === -1});
             }
         }
@@ -605,7 +605,7 @@ function scroll_finished() {
             pointer.suppress_scroll_pointer_update = false;
         }
         floating_recipient_bar.update();
-        if (viewport.scrollTop() === 0 &&
+        if (message_viewport.scrollTop() === 0 &&
             ui.have_scrolled_away_from_top) {
             ui.have_scrolled_away_from_top = false;
             message_store.load_more_messages(current_msg_list);
@@ -632,7 +632,7 @@ function scroll_finish() {
 var saved_compose_cursor = 0;
 
 $(function () {
-    viewport.message_pane.scroll($.throttle(50, function () {
+    message_viewport.message_pane.scroll($.throttle(50, function () {
         unread_ui.process_visible();
         scroll_finish();
     }));

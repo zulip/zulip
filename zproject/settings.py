@@ -818,7 +818,7 @@ JS_SPECS = {
             'js/unread_ui.js',
             'js/muting.js',
             'js/muting_ui.js',
-            'js/viewport.js',
+            'js/message_viewport.js',
             'js/rows.js',
             'js/people.js',
             'js/unread.js',

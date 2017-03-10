@@ -10,7 +10,7 @@ function go_to_row(row) {
 }
 
 exports.up = function () {
-    viewport.last_movement_direction = -1;
+    message_viewport.last_movement_direction = -1;
     var next_row = rows.prev_visible(current_msg_list.selected_row());
     if (next_row.length !== 0) {
         go_to_row(next_row);
@@ -18,7 +18,7 @@ exports.up = function () {
 };
 
 exports.down = function (with_centering) {
-    viewport.last_movement_direction = 1;
+    message_viewport.last_movement_direction = 1;
     var next_row = rows.next_visible(current_msg_list.selected_row());
     if (next_row.length !== 0) {
         go_to_row(next_row);
@@ -30,13 +30,14 @@ exports.down = function (with_centering) {
         // FIXME: this doesn't work for End because rows.last_visible()
         // always returns a message.
         var current_msg_table = rows.get_table(current_msg_list.table_name);
-        viewport.scrollTop(current_msg_table.outerHeight(true) - viewport.height() * 0.1);
+        message_viewport.scrollTop(current_msg_table.outerHeight(true) -
+                                   message_viewport.height() * 0.1);
         unread_ui.mark_current_list_as_read();
     }
 };
 
 exports.to_home = function () {
-    viewport.last_movement_direction = -1;
+    message_viewport.last_movement_direction = -1;
     var next_row = rows.first_visible(current_msg_list.selected_row());
     if (next_row.length !== 0) {
         go_to_row(next_row);
@@ -45,14 +46,14 @@ exports.to_home = function () {
 
 exports.to_end = function () {
     var next_id = current_msg_list.last().id;
-    viewport.last_movement_direction = 1;
+    message_viewport.last_movement_direction = 1;
     current_msg_list.select_id(next_id, {then_scroll: true,
                                          from_scroll: true});
     unread_ui.mark_current_list_as_read();
 };
 
 exports.page_up = function () {
-    if (viewport.at_top() && !current_msg_list.empty()) {
+    if (message_viewport.at_top() && !current_msg_list.empty()) {
         current_msg_list.select_id(current_msg_list.first().id, {then_scroll: false});
     } else {
         ui.page_up_the_right_amount();
@@ -60,7 +61,7 @@ exports.page_up = function () {
 };
 
 exports.page_down = function () {
-    if (viewport.at_bottom() && !current_msg_list.empty()) {
+    if (message_viewport.at_bottom() && !current_msg_list.empty()) {
         current_msg_list.select_id(current_msg_list.last().id, {then_scroll: false});
         unread_ui.mark_current_list_as_read();
     } else {
@@ -104,7 +105,7 @@ exports.cycle_stream = function (direction) {
 exports.scroll_to_selected = function () {
     var selected_row = current_msg_list.selected_row();
     if (selected_row && (selected_row.length !== 0)) {
-        viewport.recenter_view(selected_row);
+        message_viewport.recenter_view(selected_row);
     }
 };
 

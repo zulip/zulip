@@ -55,7 +55,7 @@
         "Socket": false,
         "channel": false,
         "components": false,
-        "viewport": false,
+        "message_viewport": false,
         "upload_widget": false,
         "avatar": false,
         "realm_icon": false,

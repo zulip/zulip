@@ -71,9 +71,9 @@ function show_message_info_popover(element, id) {
             narrowed: narrow.active(),
         };
 
-        var ypos = elt.offset().top - viewport.scrollTop();
+        var ypos = elt.offset().top - message_viewport.scrollTop();
         elt.popover({
-            placement: (ypos > (viewport.height() - 300)) ? 'top' : 'bottom',
+            placement: (ypos > (message_viewport.height() - 300)) ? 'top' : 'bottom',
             title:     templates.render('message_info_popover_title',   args),
             content:   templates.render('message_info_popover_content', args),
             trigger:   "manual",
@@ -126,8 +126,8 @@ exports.toggle_reactions_popover = function (element, id) {
 
         var approx_popover_height = 400;
         var approx_popover_width = 400;
-        var distance_from_bottom = viewport.height() - elt.offset().top;
-        var distance_from_right = viewport.width() - elt.offset().left;
+        var distance_from_bottom = message_viewport.height() - elt.offset().top;
+        var distance_from_right = message_viewport.width() - elt.offset().left;
         var will_extend_beyond_bottom_of_viewport = distance_from_bottom < approx_popover_height;
         var will_extend_beyond_top_of_viewport = elt.offset().top < approx_popover_height;
         var will_extend_beyond_left_of_viewport = elt.offset().left < (approx_popover_width / 2);
@@ -209,9 +209,9 @@ exports.toggle_actions_popover = function (element, id) {
             narrowed: narrow.active(),
         };
 
-        var ypos = elt.offset().top - viewport.scrollTop();
+        var ypos = elt.offset().top - message_viewport.scrollTop();
         elt.popover({
-            placement: (ypos > (viewport.height() - 300)) ? 'top' : 'bottom',
+            placement: (ypos > (message_viewport.height() - 300)) ? 'top' : 'bottom',
             title:     "",
             content:   templates.render('actions_popover_content', args),
             trigger:   "manual",

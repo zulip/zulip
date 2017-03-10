@@ -48,7 +48,7 @@ function set_user_list_heights(res, usable_height, user_presences, group_pms) {
 
 function get_new_heights() {
     var res = {};
-    var viewport_height = viewport.height();
+    var viewport_height = message_viewport.height();
     var top_navbar_height = $("#top_navbar").outerHeight(true);
     var invite_user_link_height = $("#invite-user-link").outerHeight(true) || 0;
 
@@ -107,8 +107,8 @@ function get_new_heights() {
 function left_userlist_get_new_heights() {
 
     var res = {};
-    var viewport_height = viewport.height();
-    var viewport_width = viewport.width();
+    var viewport_height = message_viewport.height();
+    var viewport_width = message_viewport.width();
     var top_navbar_height = $(".header").outerHeight(true);
 
     var stream_filters = $('#stream_filters').expectOne();
@@ -185,7 +185,7 @@ exports.resize_page_components = function () {
     var sidebar;
 
     if (page_params.left_side_userlist) {
-        var css_narrow_mode = viewport.is_narrow();
+        var css_narrow_mode = message_viewport.is_narrow();
 
         $("#top_navbar").removeClass("rightside-userlist");
 
