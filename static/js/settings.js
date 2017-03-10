@@ -232,7 +232,7 @@ function _setup_page() {
     });
 
     $(".settings-box").html(settings_tab);
-    $("#settings-status").hide();
+    $("#account-settings-status").hide();
     $("#notify-settings-status").hide();
     $("#display-settings-status").hide();
     $("#ui-settings-status").hide();
@@ -302,14 +302,14 @@ function _setup_page() {
         // Scroll to the top so the error message is visible.
         // We would scroll anyway if we end up submitting the form.
         viewport.scrollTop(0);
-        ui.report_error(message, xhr, $('#settings-status').expectOne());
+        ui.report_error(message, xhr, $('#account-settings-status').expectOne());
     }
 
     function settings_change_success(message) {
         // Scroll to the top so the error message is visible.
         // We would scroll anyway if we end up submitting the form.
         viewport.scrollTop(0);
-        ui.report_success(message, $('#settings-status').expectOne());
+        ui.report_success(message, $('#account-settings-status').expectOne());
     }
 
     $("form.your-account-settings").ajaxForm({
@@ -639,7 +639,7 @@ function _setup_page() {
                 window.location.href = "/login";
             },
             error: function (xhr) {
-                ui.report_error(i18n.t("Error deactivating account"), xhr, $('#settings-status').expectOne());
+                ui.report_error(i18n.t("Error deactivating account"), xhr, $('#account-settings-status').expectOne());
             },
         });
     });
@@ -650,7 +650,7 @@ function _setup_page() {
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
         success: function (resp, statusText, xhr) {
             var result = JSON.parse(xhr.responseText);
-            var settings_status = $('#settings-status').expectOne();
+            var settings_status = $('#account-settings-status').expectOne();
 
             $("#get_api_key_password").val("");
             $("#api_key_value").text(result.api_key);
@@ -659,7 +659,7 @@ function _setup_page() {
             settings_status.hide();
         },
         error: function (xhr) {
-            ui.report_error(i18n.t("Error getting API key"), xhr, $('#settings-status').expectOne());
+            ui.report_error(i18n.t("Error getting API key"), xhr, $('#account-settings-status').expectOne());
             $("#show_api_key_box").hide();
             $("#get_api_key_box").show();
         },
