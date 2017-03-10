@@ -315,14 +315,14 @@ function _setup_page() {
     function settings_change_error(message, xhr) {
         // Scroll to the top so the error message is visible.
         // We would scroll anyway if we end up submitting the form.
-        viewport.scrollTop(0);
+        message_viewport.scrollTop(0);
         ui.report_error(message, xhr, $('#account-settings-status').expectOne());
     }
 
     function settings_change_success(message) {
         // Scroll to the top so the error message is visible.
         // We would scroll anyway if we end up submitting the form.
-        viewport.scrollTop(0);
+        message_viewport.scrollTop(0);
         ui.report_success(message, $('#account-settings-status').expectOne());
     }
 

@@ -63,7 +63,7 @@ function _fade_messages() {
     var first_message;
     var first_row;
     var should_fade_group = false;
-    var visible_groups = viewport.visible_groups(false);
+    var visible_groups = message_viewport.visible_groups(false);
 
     normal_display = false;
 

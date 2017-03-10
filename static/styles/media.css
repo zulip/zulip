@@ -3,7 +3,7 @@
     display: none !important;
 }
 
-/* This max-width must be synced with viewport.is_narrow */
+/* This max-width must be synced with message_viewport.is_narrow */
 @media (max-width: 975px) {
 
     .screen-full-show {

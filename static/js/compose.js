@@ -81,7 +81,7 @@ function show_box(tabname, focus_area, opts) {
     var cover = selected_row.offset().top + selected_row.height()
         - $("#compose").offset().top;
     if (cover > 0) {
-        viewport.user_initiated_animate_scroll(cover+5);
+        message_viewport.user_initiated_animate_scroll(cover+5);
     }
 
 }
