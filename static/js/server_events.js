@@ -97,8 +97,11 @@ function dispatch_normal_event(event) {
     case 'realm_bot':
         if (event.op === 'add') {
             bot_data.add(event.bot);
+            admin.update_user_data(event.bot.user_id, event.bot);
         } else if (event.op === 'remove') {
             bot_data.deactivate(event.bot.email);
+            event.bot.is_active = false;
+            admin.update_user_data(event.bot.user_id, event.bot);
         } else if (event.op === 'update') {
             if (_.has(event.bot, 'owner_id')) {
                 event.bot.owner = people.get_person_from_user_id(event.bot.owner_id).email;
