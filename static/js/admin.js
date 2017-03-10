@@ -73,6 +73,16 @@ exports.update_user_data = function (user_id, new_data) {
         user_row.find(".owner").text(new_data.owner);
     }
 
+    if (new_data.is_active !== undefined) {
+        if (new_data.is_active === false) {
+            // Deactivate the bot in the table
+            update_view_on_deactivate(user_row);
+        } else {
+            // Reactivate the bot in the table
+            update_view_on_reactivate(user_row);
+        }
+    }
+
     // Remove the bot owner select control.
     form_row.find(".edit_bot_owner_container select").remove();
 

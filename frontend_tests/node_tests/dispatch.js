@@ -510,19 +510,29 @@ with_overrides(function (override) {
 with_overrides(function (override) {
     // realm_bot
     var event = event_fixtures.realm_bot__add;
-    global.with_stub(function (stub) {
-        override('bot_data.add', stub.f);
-        dispatch(event);
-        var args = stub.get_args('bot');
-        assert_same(args.bot, event.bot);
+    global.with_stub(function (bot_stub) {
+        global.with_stub(function (admin_stub) {
+            override('bot_data.add', bot_stub.f);
+            override('admin.update_user_data', admin_stub.f);
+            dispatch(event);
+            var args = bot_stub.get_args('bot');
+            assert_same(args.bot, event.bot);
+
+            args = admin_stub.get_args('update_user_id', 'update_bot_data');
+        });
     });
 
     event = event_fixtures.realm_bot__remove;
-    global.with_stub(function (stub) {
-        override('bot_data.deactivate', stub.f);
-        dispatch(event);
-        var args = stub.get_args('email');
-        assert_same(args.email, event.bot.email);
+    global.with_stub(function (bot_stub) {
+        global.with_stub(function (admin_stub) {
+            override('bot_data.deactivate', bot_stub.f);
+            override('admin.update_user_data', admin_stub.f);
+            dispatch(event);
+            var args = bot_stub.get_args('email');
+            assert_same(args.email, event.bot.email);
+
+            args = admin_stub.get_args('update_user_id', 'update_bot_data');
+        });
     });
 
     event = event_fixtures.realm_bot__update;
