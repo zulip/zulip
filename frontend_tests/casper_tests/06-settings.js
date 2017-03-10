@@ -99,12 +99,6 @@ casper.then(function () {
     });
 });
 
-casper.then(function () {
-    casper.waitUntilVisible('#settings-status', function () {
-        casper.test.assertSelectorHasText('#settings-status', 'Updated settings!');
-    });
-});
-
 casper.then(function create_bot() {
     casper.test.info('Filling out the create bot form');
 
