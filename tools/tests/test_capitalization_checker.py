@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup
-from django.test import TestCase
+from unittest import TestCase
 
 from tools.lib.capitalization import check_capitalization, is_capitalized, \
     get_safe_text
