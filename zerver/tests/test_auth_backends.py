@@ -16,7 +16,7 @@ import re
 
 from zerver.forms import HomepageForm
 from zerver.lib.actions import do_deactivate_realm, do_deactivate_user, \
-    do_reactivate_realm, do_reactivate_user
+    do_reactivate_realm, do_reactivate_user, do_set_realm_authentication_methods
 from zerver.lib.initial_password import initial_password
 from zerver.lib.sessions import get_session_dict_user
 from zerver.lib.test_classes import (
@@ -1010,6 +1010,65 @@ class FetchAuthBackends(ZulipTestCase):
                 'result': 'success',
                 'zulip_version': ZULIP_VERSION,
             })
+
+            # Test subdomains cases
+            with self.settings(REALMS_HAVE_SUBDOMAINS=True,
+                               SUBDOMAINS_HOMEPAGE=False):
+                result = self.client_get("/api/v1/get_auth_backends")
+                self.assert_json_success(result)
+                data = ujson.loads(result.content)
+                self.assertEqual(data, {
+                    'msg': '',
+                    'password': False,
+                    'google': True,
+                    'dev': True,
+                    'result': 'success',
+                    'zulip_version': ZULIP_VERSION,
+                })
+
+                # Verify invalid subdomain
+                result = self.client_get("/api/v1/get_auth_backends",
+                                         HTTP_HOST="invalid.testserver")
+                self.assert_json_error_contains(result, "Invalid subdomain", 400)
+
+                # Verify correct behavior with a valid subdomain with
+                # some backends disabled for the realm
+                realm = get_realm("zulip")
+                do_set_realm_authentication_methods(realm, dict(Google=False,
+                                                                Email=False,
+                                                                Dev=True))
+                result = self.client_get("/api/v1/get_auth_backends",
+                                         HTTP_HOST="zulip.testserver")
+                self.assert_json_success(result)
+                data = ujson.loads(result.content)
+                self.assertEqual(data, {
+                    'msg': '',
+                    'password': False,
+                    'google': False,
+                    'dev': True,
+                    'result': 'success',
+                    'zulip_version': ZULIP_VERSION,
+                })
+            with self.settings(REALMS_HAVE_SUBDOMAINS=True,
+                               SUBDOMAINS_HOMEPAGE=True):
+                # With SUBDOMAINS_HOMEPAGE, homepage fails
+                result = self.client_get("/api/v1/get_auth_backends",
+                                         HTTP_HOST="testserver")
+                self.assert_json_error_contains(result, "Subdomain required", 400)
+
+                # With SUBDOMAINS_HOMEPAGE, subdomain pages succeed
+                result = self.client_get("/api/v1/get_auth_backends",
+                                         HTTP_HOST="zulip.testserver")
+                self.assert_json_success(result)
+                data = ujson.loads(result.content)
+                self.assertEqual(data, {
+                    'msg': '',
+                    'password': False,
+                    'google': False,
+                    'dev': True,
+                    'result': 'success',
+                    'zulip_version': ZULIP_VERSION,
+                })
 
 class TestDevAuthBackend(ZulipTestCase):
     def test_login_success(self):
