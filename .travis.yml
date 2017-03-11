@@ -53,4 +53,9 @@ addons:
 after_success:
   coveralls
 notifications:
-  webhooks: https://coveralls.io/webhook?repo_token=$COVERALLS_REPO_TOKEN
+  webhooks:
+    urls:
+      - https://coveralls.io/webhook?repo_token=$COVERALLS_REPO_TOKEN
+      - https://zulip.org/zulipbot/travis
+    on_success: always
+    on_failure: always
