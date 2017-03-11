@@ -426,10 +426,13 @@ var run = (function () {
 
         var clobber_callbacks = [];
 
-        var override = function (module, func_name, f) {
-            var impl = {};
-            impl[func_name] = f;
-            set_global(module, impl);
+        var override = function (name, f) {
+            var parts = name.split('.');
+            var module = parts[0];
+            var func_name = parts[1];
+            var module_impl = {};
+            module_impl[func_name] = f;
+            set_global(module, module_impl);
 
             clobber_callbacks.push(function () {
                 // If you get a failure from this, you probably just
@@ -461,7 +464,7 @@ run(function () {
 run(function (override) {
     // default_streams
     var event = event_fixtures.default_streams;
-    override('admin', 'update_default_streams_table', noop);
+    override('admin.update_default_streams_table', noop);
     dispatch(event);
     assert_same(page_params.realm_default_streams, event.default_streams);
 
@@ -470,7 +473,7 @@ run(function (override) {
 run(function (override, capture, args) {
     // message
     var event = event_fixtures.message;
-    override('message_store', 'insert_new_messages', capture(['messages']));
+    override('message_store.insert_new_messages', capture(['messages']));
     server_events._get_events_success([event]);
     dispatch(event);
     assert_same(args.messages[0].content, event.message.content);
@@ -480,7 +483,7 @@ run(function (override, capture, args) {
 run(function (override, capture, args) {
     // muted_topics
     var event = event_fixtures.muted_topics;
-    override('muting_ui', 'handle_updates', capture(['muted_topics']));
+    override('muting_ui.handle_updates', capture(['muted_topics']));
     dispatch(event);
     assert_same(args.muted_topics, event.muted_topics);
 
@@ -500,7 +503,7 @@ run(function () {
 run(function (override, capture, args) {
     // presence
     var event = event_fixtures.presence;
-    override('activity', 'set_user_status', capture(['email', 'presence', 'server_time']));
+    override('activity.set_user_status', capture(['email', 'presence', 'server_time']));
     dispatch(event);
     assert_same(args.email, 'alice@example.com');
     assert_same(args.presence, event.presence);
@@ -532,7 +535,7 @@ run(function (override) {
     test_realm_boolean(event, 'realm_invite_required');
 
     event = event_fixtures.realm__update__name;
-    override('notifications', 'redraw_title', noop);
+    override('notifications.redraw_title', noop);
     dispatch(event);
     assert_same(page_params.realm_name, 'new_realm_name');
 
@@ -551,18 +554,18 @@ run(function (override) {
 run(function (override, capture, args) {
     // realm_bot
     var event = event_fixtures.realm_bot__add;
-    override('bot_data', 'add', capture(['bot']));
+    override('bot_data.add', capture(['bot']));
     dispatch(event);
     assert_same(args.bot, event.bot);
 
     event = event_fixtures.realm_bot__remove;
-    override('bot_data', 'deactivate', capture(['email']));
+    override('bot_data.deactivate', capture(['email']));
     dispatch(event);
     assert_same(args.email, event.bot.email);
 
     event = event_fixtures.realm_bot__update;
-    override('bot_data', 'update', capture(['email', 'bot']));
-    override('admin', 'update_user_data', capture(['update_user_id', 'update_bot_data']));
+    override('bot_data.update', capture(['email', 'bot']));
+    override('admin.update_user_data', capture(['update_user_id', 'update_bot_data']));
     dispatch(event);
     assert_same(args.email, event.bot.email);
     assert_same(args.bot, event.bot);
@@ -574,8 +577,8 @@ run(function (override, capture, args) {
 run(function (override, capture, args) {
     // realm_emoji
     var event = event_fixtures.realm_emoji;
-    override('emoji', 'update_emojis', capture(['realm_emoji']));
-    override('admin', 'populate_emoji', noop);
+    override('emoji.update_emojis', capture(['realm_emoji']));
+    override('admin.populate_emoji', noop);
     dispatch(event);
     assert_same(args.realm_emoji, event.realm_emoji);
 
@@ -585,7 +588,7 @@ run(function (override) {
     // realm_filters
     var event = event_fixtures.realm_filters;
     page_params.realm_filters = [];
-    override('admin', 'populate_filters', noop);
+    override('admin.populate_filters', noop);
     dispatch(event);
     assert_same(page_params.realm_filters, event.realm_filters);
 
@@ -594,17 +597,17 @@ run(function (override) {
 run(function (override, capture, args) {
     // realm_user
     var event = event_fixtures.realm_user__add;
-    override('people', 'add_in_realm', capture(['person']));
+    override('people.add_in_realm', capture(['person']));
     dispatch(event);
     assert_same(args.person, event.person);
 
     event = event_fixtures.realm_user__remove;
-    override('people', 'deactivate', capture(['person']));
+    override('people.deactivate', capture(['person']));
     dispatch(event);
     assert_same(args.person, event.person);
 
     event = event_fixtures.realm_user__update;
-    override('user_events', 'update_person', capture(['person']));
+    override('user_events.update_person', capture(['person']));
     dispatch(event);
     assert_same(args.person, event.person);
 
@@ -613,7 +616,7 @@ run(function (override, capture, args) {
 run(function (override, capture, args) {
     // referral
     var event = event_fixtures.referral;
-    override('referral', 'update_state', capture(['granted', 'used']));
+    override('referral.update_state', capture(['granted', 'used']));
     dispatch(event);
     assert_same(args.granted, event.referrals.granted);
     assert_same(args.used, event.referrals.used);
@@ -623,7 +626,7 @@ run(function (override, capture, args) {
 run(function (override, capture, args) {
     // restart
     var event = event_fixtures.restart;
-    override('reload', 'initiate', capture(['options']));
+    override('reload.initiate', capture(['options']));
     dispatch(event);
     assert.equal(args.options.save_pointer, true);
     assert.equal(args.options.immediate, true);
@@ -634,10 +637,9 @@ run(function (override, capture, args) {
     var event = event_fixtures.stream;
 
     override(
-        'subs',
-        'update_subscription_properties',
+        'subs.update_subscription_properties',
         capture(['stream_id', 'property', 'value']));
-    override('admin', 'update_default_streams_table', noop);
+    override('admin.update_default_streams_table', noop);
     dispatch(event);
     assert_same(args.stream_id, event.stream_id);
     assert_same(args.property, event.property);
@@ -650,28 +652,28 @@ run(function (override, capture, args) {
 
     // This next section can go away when we start handling
     // user_ids more directly in some of subscriptions code.
-    override('people', 'get_person_from_user_id', function (user_id) {
+    override('people.get_person_from_user_id', function (user_id) {
         assert_same(user_id, 555);
         return {email: 'this-is-not-really-used-in-the-test'};
     });
 
     var event = event_fixtures.subscription__add;
-    override('stream_data', 'get_sub_by_id', function (stream_id) {
+    override('stream_data.get_sub_by_id', function (stream_id) {
         return {stream_id: stream_id};
     });
-    override('subs', 'mark_subscribed', capture(['sub', 'subscribers']));
+    override('subs.mark_subscribed', capture(['sub', 'subscribers']));
     dispatch(event);
     assert_same(args.sub.stream_id, event.subscriptions[0].stream_id);
     assert_same(args.subscribers, event.subscriptions[0].subscribers);
 
     event = event_fixtures.subscription__peer_add;
-    override('stream_data', 'add_subscriber', capture(['sub', 'user_id']));
+    override('stream_data.add_subscriber', capture(['sub', 'user_id']));
     dispatch(event);
     assert_same(args.sub, event.subscriptions[0]);
     assert_same(args.user_id, 555);
 
     event = event_fixtures.subscription__peer_remove;
-    override('stream_data', 'remove_subscriber', capture(['sub', 'user_id']));
+    override('stream_data.remove_subscriber', capture(['sub', 'user_id']));
     dispatch(event);
     assert_same(args.sub, event.subscriptions[0]);
     assert_same(args.user_id, 555);
@@ -679,19 +681,18 @@ run(function (override, capture, args) {
     event = event_fixtures.subscription__remove;
     var stream_id_looked_up;
     var sub_stub = 'stub';
-    override('stream_data', 'get_sub_by_id', function (stream_id) {
+    override('stream_data.get_sub_by_id', function (stream_id) {
         stream_id_looked_up = stream_id;
         return sub_stub;
     });
-    override('subs', 'mark_sub_unsubscribed', capture(['sub']));
+    override('subs.mark_sub_unsubscribed', capture(['sub']));
     dispatch(event);
     assert_same(stream_id_looked_up, event.subscriptions[0].stream_id);
     assert_same(args.sub, sub_stub);
 
     event = event_fixtures.subscription__update;
     override(
-        'subs',
-        'update_subscription_properties',
+        'subs.update_subscription_properties',
         capture(['stream_id', 'property', 'value']));
     dispatch(event);
     assert_same(args.stream_id, event.stream_id);
@@ -712,7 +713,7 @@ run(function (override) {
     dispatch(event);
     assert_same(page_params.left_side_userlist, true);
 
-    override('message_list', 'narrowed', noop);
+    override('message_list.narrowed', noop);
     event = event_fixtures.update_display_settings__twenty_four_hour_time;
     page_params.twenty_four_hour_time = false;
     dispatch(event);
@@ -729,8 +730,7 @@ run(function (override, capture, args) {
     // update_global_notifications
     var event = event_fixtures.update_global_notifications;
     override(
-        'notifications',
-        'handle_global_notification_updates',
+        'notifications.handle_global_notification_updates',
         capture(['name', 'setting']));
     dispatch(event);
     assert_same(args.name, event.notification_name);
@@ -741,8 +741,8 @@ run(function (override, capture, args) {
 run(function (override, capture, args) {
     // update_message_flags__read
     var event = event_fixtures.update_message_flags__read;
-    override('message_store', 'get', capture(['message_id']));
-    override('unread_ui', 'mark_messages_as_read', noop);
+    override('message_store.get', capture(['message_id']));
+    override('unread_ui.mark_messages_as_read', noop);
     dispatch(event);
     assert_same(args.message_id, 999);
 });
@@ -750,7 +750,7 @@ run(function (override, capture, args) {
 run(function (override, capture, args) {
     // update_message_flags__starred
     var event = event_fixtures.update_message_flags__starred;
-    override('ui', 'update_starred', capture(['message_id', 'new_value']));
+    override('ui.update_starred', capture(['message_id', 'new_value']));
     dispatch(event);
     assert_same(args.message_id, 99);
     assert_same(args.new_value, true); // for 'add'
