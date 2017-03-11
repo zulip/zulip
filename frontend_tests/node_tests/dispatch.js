@@ -474,7 +474,6 @@ run(function (override, capture, args) {
     // message
     var event = event_fixtures.message;
     override('message_store.insert_new_messages', capture(['messages']));
-    server_events._get_events_success([event]);
     dispatch(event);
     assert_same(args.messages[0].content, event.message.content);
 
