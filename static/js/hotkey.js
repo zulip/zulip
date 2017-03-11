@@ -164,7 +164,7 @@ exports.process_hotkey = function (e) {
         }
     }
 
-    if (popovers.actions_popped() && actions_dropdown_hotkeys.indexOf(event_name) !== -1) {
+    if ((actions_dropdown_hotkeys.indexOf(event_name) !== -1) && popovers.actions_popped()) {
         popovers.actions_menu_handle_keyboard(event_name);
         return true;
     }
