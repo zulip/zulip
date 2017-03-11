@@ -165,12 +165,18 @@ exports.process_hotkey = function (e) {
         return true;
     }
 
-    // Handle a few keys specially when the send button is focused.
-    if ($('#compose-send-button').is(':focus')) {
-        if (event_name === 'backspace') {
+    // The next two sections date back to 00445c84 and are Mac/Chrome-specific,
+    // and they should possibly be eliminated in favor of keeping standard
+    // browser behavior.
+    if (event_name === 'backspace') {
+        if ($('#compose-send-button').is(':focus')) {
             // Ignore backspace; don't navigate back a page.
             return true;
-        } else if (event_name === 'shift_tab') {
+        }
+    }
+
+    if (event_name === 'shift_tab') {
+        if ($('#compose-send-button').is(':focus')) {
             // Shift-Tab: go back to content textarea and restore
             // cursor position.
             ui.restore_compose_cursor();
