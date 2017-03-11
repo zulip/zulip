@@ -51,6 +51,37 @@ exports.stub_out_jquery = function () {
     $.now = function () {};
 };
 
+exports.with_overrides = function (test_function) {
+    // This function calls test_function() and passes in
+    // a way to override the namespace temporarily.
+
+    var clobber_callbacks = [];
+
+    var override = function (name, f) {
+        var parts = name.split('.');
+        var module = parts[0];
+        var func_name = parts[1];
+        var module_impl = {};
+        module_impl[func_name] = f;
+        set_global(module, module_impl);
+
+        clobber_callbacks.push(function () {
+            // If you get a failure from this, you probably just
+            // need to have your test do its own overrides and
+            // not cherry-pick off of the prior test's setup.
+            set_global(module, 'UNCLEAN MODULE FROM PRIOR TEST');
+        });
+    };
+
+    test_function(override);
+
+    _.each(clobber_callbacks, function (f) {
+        f();
+    });
+};
+
+
+
 return exports;
 }());
 module.exports = namespace;
