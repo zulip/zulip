@@ -49,6 +49,19 @@ set_global('pointer', {});
 // We access various msg_list object to rerender them
 set_global('current_msg_list', {rerender: noop});
 
+// We use blueslip to print the traceback
+set_global('blueslip', {
+    error: function (msg, more_info, stack) {
+        console.log("\nFailed to process an event:\n", more_info.event, "\n");
+        var error = new Error();
+        error.stack = stack;
+        throw error;
+    },
+    exception_msg: function (ex) {
+        return ex.message;
+    },
+});
+
 var server_events = require('js/server_events.js');
 
 // This also goes away if we can isolate the dispatcher.  We
