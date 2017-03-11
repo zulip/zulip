@@ -912,8 +912,7 @@ class UserSignUpTest(ZulipTestCase):
     def test_signup_invalid_name(self):
         # type: () -> None
         """
-        Check if the default language of new user is the default language
-        of the realm.
+        Check if an invalid name during signup is handled properly.
         """
         email = "newguy@zulip.com"
         password = "newpassword"
