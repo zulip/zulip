@@ -15,9 +15,9 @@ function focus_in_empty_compose() {
         $('#new_message_content').is(':focus'));
 }
 
-function is_settings_page() {
+exports.is_settings_page = function () {
   return (/^#*(settings|administration)/g).test(window.location.hash);
-}
+};
 
 var actions_dropdown_hotkeys = [
     'down_arrow',
@@ -243,7 +243,7 @@ exports.process_hotkey = function (e) {
         }
     }
 
-    if (is_settings_page()) {
+    if (exports.is_settings_page()) {
         if (event_name === 'up_arrow') {
             var prev = e.target.previousElementSibling;
 
@@ -311,7 +311,7 @@ exports.process_hotkey = function (e) {
         }
 
         if (event_name === 'enter') {
-            if (is_settings_page()) {
+            if (exports.is_settings_page()) {
                 $(e.target).click();
                 return true;
             } else if (activity.searching()) {
@@ -435,7 +435,7 @@ exports.process_hotkey = function (e) {
         case 'page_up':
         case 'vim_page_up':
         case 'shift_spacebar':
-            if (!is_settings_page()) {
+            if (!exports.is_settings_page()) {
                 navigate.page_up();
                 return true;
             }
@@ -443,7 +443,7 @@ exports.process_hotkey = function (e) {
         case 'page_down':
         case 'vim_page_down':
         case 'spacebar':
-            if (!is_settings_page()) {
+            if (!exports.is_settings_page()) {
                 navigate.page_down();
                 return true;
             }
