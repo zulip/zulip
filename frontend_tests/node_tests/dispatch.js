@@ -386,48 +386,9 @@ function assert_same(actual, expected) {
     assert.deepEqual(actual, expected);
 }
 
-// This test suite is different than most, because
-// most modules we test are dependent on a few
-// set of modules, and it's useful for tests to
-// all share the same stubs.  For a dispatcher,
-// we want a higher level of isolation between
-// our tests, so we wrap them with a run() method.
+var with_overrides = global.with_overrides; // make lint happy
 
-var run = (function () {
-    var wrapper = function (f) {
-        // We only ever mock one function at a time,
-        // so we can have a little helper.
-
-        var clobber_callbacks = [];
-
-        var override = function (name, f) {
-            var parts = name.split('.');
-            var module = parts[0];
-            var func_name = parts[1];
-            var module_impl = {};
-            module_impl[func_name] = f;
-            set_global(module, module_impl);
-
-            clobber_callbacks.push(function () {
-                // If you get a failure from this, you probably just
-                // need to have your test do its own overrides and
-                // not cherry-pick off of the prior test's setup.
-                set_global(module, 'UNCLEAN MODULE FROM PRIOR TEST');
-            });
-        };
-
-        f(override);
-
-        _.each(clobber_callbacks, function (f) {
-            f();
-        });
-    };
-
-    return wrapper;
-}());
-
-
-run(function () {
+with_overrides(function () {
     // alert_words
     var event = event_fixtures.alert_words;
     dispatch(event);
@@ -435,7 +396,7 @@ run(function () {
 
 });
 
-run(function (override) {
+with_overrides(function (override) {
     // default_streams
     var event = event_fixtures.default_streams;
     override('admin.update_default_streams_table', noop);
@@ -444,7 +405,7 @@ run(function (override) {
 
 });
 
-run(function (override) {
+with_overrides(function (override) {
     // message
     var event = event_fixtures.message;
 
@@ -456,7 +417,7 @@ run(function (override) {
     });
 });
 
-run(function (override) {
+with_overrides(function (override) {
     // muted_topics
     var event = event_fixtures.muted_topics;
 
@@ -468,7 +429,7 @@ run(function (override) {
     });
 });
 
-run(function () {
+with_overrides(function () {
     // pointer
     var event = event_fixtures.pointer;
     global.pointer.furthest_read = 0;
@@ -479,7 +440,7 @@ run(function () {
 
 });
 
-run(function (override) {
+with_overrides(function (override) {
     // presence
     var event = event_fixtures.presence;
 
@@ -493,7 +454,7 @@ run(function (override) {
     });
 });
 
-run(function (override) {
+with_overrides(function (override) {
     // realm
     function test_realm_boolean(event, parameter_name) {
         page_params[parameter_name] = true;
@@ -533,7 +494,7 @@ run(function (override) {
 
 });
 
-run(function (override) {
+with_overrides(function (override) {
     // realm_bot
     var event = event_fixtures.realm_bot__add;
     global.with_stub(function (stub) {
@@ -570,7 +531,7 @@ run(function (override) {
     });
 });
 
-run(function (override) {
+with_overrides(function (override) {
     // realm_emoji
     var event = event_fixtures.realm_emoji;
 
@@ -583,7 +544,7 @@ run(function (override) {
     });
 });
 
-run(function (override) {
+with_overrides(function (override) {
     // realm_filters
     var event = event_fixtures.realm_filters;
     page_params.realm_filters = [];
@@ -593,7 +554,7 @@ run(function (override) {
 
 });
 
-run(function (override) {
+with_overrides(function (override) {
     // realm_user
     var event = event_fixtures.realm_user__add;
     global.with_stub(function (stub) {
@@ -620,7 +581,7 @@ run(function (override) {
     });
 });
 
-run(function (override) {
+with_overrides(function (override) {
     // referral
     var event = event_fixtures.referral;
     global.with_stub(function (stub) {
@@ -632,7 +593,7 @@ run(function (override) {
     });
 });
 
-run(function (override) {
+with_overrides(function (override) {
     // restart
     var event = event_fixtures.restart;
     global.with_stub(function (stub) {
@@ -644,7 +605,7 @@ run(function (override) {
     });
 });
 
-run(function (override) {
+with_overrides(function (override) {
     // stream
     var event = event_fixtures.stream;
 
@@ -659,7 +620,7 @@ run(function (override) {
     });
 });
 
-run(function (override) {
+with_overrides(function (override) {
     // subscription
 
     // This next section can go away when we start handling
@@ -725,7 +686,7 @@ run(function (override) {
     });
 });
 
-run(function (override) {
+with_overrides(function (override) {
     // update_display_settings
     var event = event_fixtures.update_display_settings__default_language;
     page_params.default_language = 'en';
@@ -750,7 +711,7 @@ run(function (override) {
 
 });
 
-run(function (override) {
+with_overrides(function (override) {
     // update_global_notifications
     var event = event_fixtures.update_global_notifications;
     global.with_stub(function (stub) {
@@ -762,7 +723,7 @@ run(function (override) {
     });
 });
 
-run(function (override) {
+with_overrides(function (override) {
     // update_message_flags__read
     var event = event_fixtures.update_message_flags__read;
     override('unread_ui.mark_messages_as_read', noop);
@@ -775,7 +736,7 @@ run(function (override) {
     });
 });
 
-run(function (override) {
+with_overrides(function (override) {
     // update_message_flags__starred
     var event = event_fixtures.update_message_flags__starred;
     global.with_stub(function (stub) {
