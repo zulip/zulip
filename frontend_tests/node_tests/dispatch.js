@@ -368,14 +368,14 @@ var event_fixtures = {
         type: 'update_message_flags',
         operation: 'add',
         flag: 'read',
-        messages: [5, 999],
+        messages: [999],
     },
 
     update_message_flags__starred: {
         type: 'update_message_flags',
         operation: 'add',
         flag: 'starred',
-        messages: [7, 99],
+        messages: [99],
     },
 };
 
@@ -385,28 +385,6 @@ function assert_same(actual, expected) {
     assert(expected);
     assert.deepEqual(actual, expected);
 }
-
-// TODO: move this into library
-function capture_args(res, arg_names) {
-    // This function returns a function that, when
-    // arg_names are ['foo', 'bar'] sets res.foo
-    // to the first arg passed in and res.bar to
-    // the second args passed in.  (It's basically
-    // a mock.)
-
-    _.each(res, function (value, key) {
-        delete res[key];
-    });
-
-    return function () {
-        var my_arguments = _.clone(arguments);
-        _.each(arg_names, function (name, i) {
-            res[name] = my_arguments[i];
-        });
-        return true;
-    };
-}
-
 
 // This test suite is different than most, because
 // most modules we test are dependent on a few
@@ -419,10 +397,6 @@ var run = (function () {
     var wrapper = function (f) {
         // We only ever mock one function at a time,
         // so we can have a little helper.
-        var args = {}; // for stubs to capture args
-        function capture(names) {
-            return capture_args(args, names);
-        }
 
         var clobber_callbacks = [];
 
@@ -442,7 +416,7 @@ var run = (function () {
             });
         };
 
-        f(override, capture, args);
+        f(override);
 
         _.each(clobber_callbacks, function (f) {
             f();
@@ -470,22 +444,28 @@ run(function (override) {
 
 });
 
-run(function (override, capture, args) {
+run(function (override) {
     // message
     var event = event_fixtures.message;
-    override('message_store.insert_new_messages', capture(['messages']));
-    dispatch(event);
-    assert_same(args.messages[0].content, event.message.content);
 
+    global.with_stub(function (stub) {
+        override('message_store.insert_new_messages', stub.f);
+        dispatch(event);
+        var args = stub.get_args('messages');
+        assert_same(args.messages[0].content, event.message.content);
+    });
 });
 
-run(function (override, capture, args) {
+run(function (override) {
     // muted_topics
     var event = event_fixtures.muted_topics;
-    override('muting_ui.handle_updates', capture(['muted_topics']));
-    dispatch(event);
-    assert_same(args.muted_topics, event.muted_topics);
 
+    global.with_stub(function (stub) {
+        override('muting_ui.handle_updates', stub.f);
+        dispatch(event);
+        var args = stub.get_args('muted_topics');
+        assert_same(args.muted_topics, event.muted_topics);
+    });
 });
 
 run(function () {
@@ -499,15 +479,18 @@ run(function () {
 
 });
 
-run(function (override, capture, args) {
+run(function (override) {
     // presence
     var event = event_fixtures.presence;
-    override('activity.set_user_status', capture(['email', 'presence', 'server_time']));
-    dispatch(event);
-    assert_same(args.email, 'alice@example.com');
-    assert_same(args.presence, event.presence);
-    assert_same(args.server_time, event.server_timestamp);
 
+    global.with_stub(function (stub) {
+        override('activity.set_user_status', stub.f);
+        dispatch(event);
+        var args = stub.get_args('email', 'presence', 'server_time');
+        assert_same(args.email, 'alice@example.com');
+        assert_same(args.presence, event.presence);
+        assert_same(args.server_time, event.server_timestamp);
+    });
 });
 
 run(function (override) {
@@ -550,37 +533,54 @@ run(function (override) {
 
 });
 
-run(function (override, capture, args) {
+run(function (override) {
     // realm_bot
     var event = event_fixtures.realm_bot__add;
-    override('bot_data.add', capture(['bot']));
-    dispatch(event);
-    assert_same(args.bot, event.bot);
+    global.with_stub(function (stub) {
+        override('bot_data.add', stub.f);
+        dispatch(event);
+        var args = stub.get_args('bot');
+        assert_same(args.bot, event.bot);
+    });
 
     event = event_fixtures.realm_bot__remove;
-    override('bot_data.deactivate', capture(['email']));
-    dispatch(event);
-    assert_same(args.email, event.bot.email);
+    global.with_stub(function (stub) {
+        override('bot_data.deactivate', stub.f);
+        dispatch(event);
+        var args = stub.get_args('email');
+        assert_same(args.email, event.bot.email);
+    });
 
     event = event_fixtures.realm_bot__update;
-    override('bot_data.update', capture(['email', 'bot']));
-    override('admin.update_user_data', capture(['update_user_id', 'update_bot_data']));
-    dispatch(event);
-    assert_same(args.email, event.bot.email);
-    assert_same(args.bot, event.bot);
-    assert_same(args.update_user_id, event.bot.user_id);
-    assert_same(args.update_bot_data, event.bot);
+    global.with_stub(function (bot_stub) {
+        global.with_stub(function (admin_stub) {
+            override('bot_data.update', bot_stub.f);
+            override('admin.update_user_data', admin_stub.f);
 
+            dispatch(event);
+
+            var args = bot_stub.get_args('email', 'bot');
+            assert_same(args.email, event.bot.email);
+            assert_same(args.bot, event.bot);
+
+            args = admin_stub.get_args('update_user_id', 'update_bot_data');
+            assert_same(args.update_user_id, event.bot.user_id);
+            assert_same(args.update_bot_data, event.bot);
+        });
+    });
 });
 
-run(function (override, capture, args) {
+run(function (override) {
     // realm_emoji
     var event = event_fixtures.realm_emoji;
-    override('emoji.update_emojis', capture(['realm_emoji']));
-    override('admin.populate_emoji', noop);
-    dispatch(event);
-    assert_same(args.realm_emoji, event.realm_emoji);
 
+    global.with_stub(function (stub) {
+        override('emoji.update_emojis', stub.f);
+        override('admin.populate_emoji', noop);
+        dispatch(event);
+        var args = stub.get_args('realm_emoji');
+        assert_same(args.realm_emoji, event.realm_emoji);
+    });
 });
 
 run(function (override) {
@@ -593,60 +593,73 @@ run(function (override) {
 
 });
 
-run(function (override, capture, args) {
+run(function (override) {
     // realm_user
     var event = event_fixtures.realm_user__add;
-    override('people.add_in_realm', capture(['person']));
-    dispatch(event);
-    assert_same(args.person, event.person);
+    global.with_stub(function (stub) {
+        override('people.add_in_realm', stub.f);
+        dispatch(event);
+        var args = stub.get_args('person');
+        assert_same(args.person, event.person);
+    });
 
     event = event_fixtures.realm_user__remove;
-    override('people.deactivate', capture(['person']));
-    dispatch(event);
-    assert_same(args.person, event.person);
+    global.with_stub(function (stub) {
+        override('people.deactivate', stub.f);
+        dispatch(event);
+        var args = stub.get_args('person');
+        assert_same(args.person, event.person);
+    });
 
     event = event_fixtures.realm_user__update;
-    override('user_events.update_person', capture(['person']));
-    dispatch(event);
-    assert_same(args.person, event.person);
-
+    global.with_stub(function (stub) {
+        override('user_events.update_person', stub.f);
+        dispatch(event);
+        var args = stub.get_args('person');
+        assert_same(args.person, event.person);
+    });
 });
 
-run(function (override, capture, args) {
+run(function (override) {
     // referral
     var event = event_fixtures.referral;
-    override('referral.update_state', capture(['granted', 'used']));
-    dispatch(event);
-    assert_same(args.granted, event.referrals.granted);
-    assert_same(args.used, event.referrals.used);
-
+    global.with_stub(function (stub) {
+        override('referral.update_state', stub.f);
+        dispatch(event);
+        var args = stub.get_args('granted', 'used');
+        assert_same(args.granted, event.referrals.granted);
+        assert_same(args.used, event.referrals.used);
+    });
 });
 
-run(function (override, capture, args) {
+run(function (override) {
     // restart
     var event = event_fixtures.restart;
-    override('reload.initiate', capture(['options']));
-    dispatch(event);
-    assert.equal(args.options.save_pointer, true);
-    assert.equal(args.options.immediate, true);
+    global.with_stub(function (stub) {
+        override('reload.initiate', stub.f);
+        dispatch(event);
+        var args = stub.get_args('options');
+        assert.equal(args.options.save_pointer, true);
+        assert.equal(args.options.immediate, true);
+    });
 });
 
-run(function (override, capture, args) {
+run(function (override) {
     // stream
     var event = event_fixtures.stream;
 
-    override(
-        'subs.update_subscription_properties',
-        capture(['stream_id', 'property', 'value']));
-    override('admin.update_default_streams_table', noop);
-    dispatch(event);
-    assert_same(args.stream_id, event.stream_id);
-    assert_same(args.property, event.property);
-    assert_same(args.value, event.value);
-
+    global.with_stub(function (stub) {
+        override('subs.update_subscription_properties', stub.f);
+        override('admin.update_default_streams_table', noop);
+        dispatch(event);
+        var args = stub.get_args('stream_id', 'property', 'value');
+        assert_same(args.stream_id, event.stream_id);
+        assert_same(args.property, event.property);
+        assert_same(args.value, event.value);
+    });
 });
 
-run(function (override, capture, args) {
+run(function (override) {
     // subscription
 
     // This next section can go away when we start handling
@@ -657,25 +670,34 @@ run(function (override, capture, args) {
     });
 
     var event = event_fixtures.subscription__add;
-    override('stream_data.get_sub_by_id', function (stream_id) {
-        return {stream_id: stream_id};
+    global.with_stub(function (stub) {
+        override('stream_data.get_sub_by_id', function (stream_id) {
+            return {stream_id: stream_id};
+        });
+        override('subs.mark_subscribed', stub.f);
+        dispatch(event);
+        var args = stub.get_args('sub', 'subscribers');
+        assert_same(args.sub.stream_id, event.subscriptions[0].stream_id);
+        assert_same(args.subscribers, event.subscriptions[0].subscribers);
     });
-    override('subs.mark_subscribed', capture(['sub', 'subscribers']));
-    dispatch(event);
-    assert_same(args.sub.stream_id, event.subscriptions[0].stream_id);
-    assert_same(args.subscribers, event.subscriptions[0].subscribers);
 
     event = event_fixtures.subscription__peer_add;
-    override('stream_data.add_subscriber', capture(['sub', 'user_id']));
-    dispatch(event);
-    assert_same(args.sub, event.subscriptions[0]);
-    assert_same(args.user_id, 555);
+    global.with_stub(function (stub) {
+        override('stream_data.add_subscriber', stub.f);
+        dispatch(event);
+        var args = stub.get_args('sub', 'user_id');
+        assert_same(args.sub, event.subscriptions[0]);
+        assert_same(args.user_id, 555);
+    });
 
     event = event_fixtures.subscription__peer_remove;
-    override('stream_data.remove_subscriber', capture(['sub', 'user_id']));
-    dispatch(event);
-    assert_same(args.sub, event.subscriptions[0]);
-    assert_same(args.user_id, 555);
+    global.with_stub(function (stub) {
+        override('stream_data.remove_subscriber', stub.f);
+        dispatch(event);
+        var args = stub.get_args('sub', 'user_id');
+        assert_same(args.sub, event.subscriptions[0]);
+        assert_same(args.user_id, 555);
+    });
 
     event = event_fixtures.subscription__remove;
     var stream_id_looked_up;
@@ -684,20 +706,23 @@ run(function (override, capture, args) {
         stream_id_looked_up = stream_id;
         return sub_stub;
     });
-    override('subs.mark_sub_unsubscribed', capture(['sub']));
-    dispatch(event);
-    assert_same(stream_id_looked_up, event.subscriptions[0].stream_id);
-    assert_same(args.sub, sub_stub);
+    global.with_stub(function (stub) {
+        override('subs.mark_sub_unsubscribed', stub.f);
+        dispatch(event);
+        var args = stub.get_args('sub');
+        assert_same(stream_id_looked_up, event.subscriptions[0].stream_id);
+        assert_same(args.sub, sub_stub);
+    });
 
     event = event_fixtures.subscription__update;
-    override(
-        'subs.update_subscription_properties',
-        capture(['stream_id', 'property', 'value']));
-    dispatch(event);
-    assert_same(args.stream_id, event.stream_id);
-    assert_same(args.property, event.property);
-    assert_same(args.value, event.value);
-
+    global.with_stub(function (stub) {
+        override('subs.update_subscription_properties', stub.f);
+        dispatch(event);
+        var args = stub.get_args('stream_id', 'property', 'value');
+        assert_same(args.stream_id, event.stream_id);
+        assert_same(args.property, event.property);
+        assert_same(args.value, event.value);
+    });
 });
 
 run(function (override) {
@@ -725,32 +750,39 @@ run(function (override) {
 
 });
 
-run(function (override, capture, args) {
+run(function (override) {
     // update_global_notifications
     var event = event_fixtures.update_global_notifications;
-    override(
-        'notifications.handle_global_notification_updates',
-        capture(['name', 'setting']));
-    dispatch(event);
-    assert_same(args.name, event.notification_name);
-    assert_same(args.setting, event.setting);
-
+    global.with_stub(function (stub) {
+        override('notifications.handle_global_notification_updates', stub.f);
+        dispatch(event);
+        var args = stub.get_args('name', 'setting');
+        assert_same(args.name, event.notification_name);
+        assert_same(args.setting, event.setting);
+    });
 });
 
-run(function (override, capture, args) {
+run(function (override) {
     // update_message_flags__read
     var event = event_fixtures.update_message_flags__read;
-    override('message_store.get', capture(['message_id']));
     override('unread_ui.mark_messages_as_read', noop);
-    dispatch(event);
-    assert_same(args.message_id, 999);
+
+    global.with_stub(function (stub) {
+        override('message_store.get', stub.f);
+        dispatch(event);
+        var args = stub.get_args('message_id');
+        assert_same(args.message_id, 999);
+    });
 });
 
-run(function (override, capture, args) {
+run(function (override) {
     // update_message_flags__starred
     var event = event_fixtures.update_message_flags__starred;
-    override('ui.update_starred', capture(['message_id', 'new_value']));
-    dispatch(event);
-    assert_same(args.message_id, 99);
-    assert_same(args.new_value, true); // for 'add'
+    global.with_stub(function (stub) {
+        override('ui.update_starred', stub.f);
+        dispatch(event);
+        var args = stub.get_args('message_id', 'new_value');
+        assert_same(args.message_id, 99);
+        assert_same(args.new_value, true); // for 'add'
+    });
 });
