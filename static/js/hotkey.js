@@ -477,9 +477,7 @@ exports.process_hotkey = function (e) {
             compose.respond_to_message({reply_type: "personal", trigger: 'hotkey pm'});
             return true;
         case 'compose_reply_with_mention': // '@': respond to message with mention to author
-            compose.respond_to_message({trigger: 'hotkey'});
-            var message = current_msg_list.selected_message();
-            $("#new_message_content").val('@**' + message.sender_full_name + '** ');
+            compose.reply_with_mention({trigger: 'hotkey'});
             return true;
     }
 
