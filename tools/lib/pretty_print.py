@@ -9,6 +9,7 @@ from .template_parser import (
     is_django_block_tag,
 )
 from six.moves import range
+import os
 
 def pretty_print_html(html, num_spaces=4):
     # type: (str, int) -> str
@@ -167,3 +168,19 @@ def pretty_print_html(html, num_spaces=4):
         formatted_lines.append(pretty_line)
 
     return '\n'.join(formatted_lines)
+
+
+def validate_indent_html(fn):
+    # type: (str) -> int
+    file = open(fn)
+    html = file.read()
+    phtml = pretty_print_html(html)
+    file.close()
+    if not html.split('\n') == phtml.split('\n'):
+        temp_file = open('/var/tmp/pretty_html.txt', 'w')
+        temp_file.write(phtml)
+        temp_file.close()
+        print('Invalid Indentation detected in file: %s\nDiff for the file against expected indented file:' % (fn))
+        os.system('diff %s %s' % (fn, '/var/tmp/pretty_html.txt'))
+        return 0
+    return 1
