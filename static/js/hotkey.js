@@ -170,12 +170,14 @@ exports.process_escape_key = function (e) {
     if (exports.processing_text()) {
         if ($(".message_edit_content").filter(":focus").length > 0) {
             row = $(".message_edit_content").filter(":focus").closest(".message_row");
+            row.find('.message_edit_content').blur();
             message_edit.end(row);
             return true;
         }
 
         if ($(".message_edit_topic").filter(":focus").length > 0) {
             row = $(".message_edit_topic").filter(":focus").closest(".message_row");
+            row.find('.message_edit_topic').blur();
             message_edit.end(row);
             return true;
         }
