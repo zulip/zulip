@@ -123,11 +123,118 @@ exports.is_editing_stream_name = function (e) {
     return $(e.target).is(".editable-section");
 };
 
+// Returns true if we handled it, false if the browser should.
+exports.process_escape_key = function (e) {
+    var row;
+
+    if (exports.is_editing_stream_name(e)) {
+        return false;
+    }
+
+    if ($("#overlay").hasClass("show")) {
+        ui.exit_lightbox_photo();
+        return true;
+    }
+
+    if ($("#subscription_overlay").hasClass("show")) {
+        subs.close();
+        return true;
+    }
+
+    if ($("#draft_overlay").hasClass("show")) {
+        drafts.close();
+        return true;
+    }
+
+    if ($(".informational-overlays").hasClass("show")) {
+        ui.hide_info_overlay();
+        return true;
+    }
+
+    if ($("#invite-user").css("display") === "block") {
+        $("#invite-user").modal("hide");
+        return true;
+    }
+
+    if (exports.is_settings_page()) {
+        $("#settings_overlay_container .exit").click();
+        return true;
+    }
+
+    // emoji window should trap escape before it is able to close the compose box
+    if ($('.emoji_popover').css('display') === 'inline-block') {
+        popovers.hide_emoji_map_popover();
+        return true;
+    }
+
+    if (exports.processing_text()) {
+        // If one of our typeaheads is open, do nothing so that the Esc
+        // will go to close it
+        if ($("#subject").data().typeahead.shown ||
+            $("#stream").data().typeahead.shown ||
+            $("#private_message_recipient").data().typeahead.shown ||
+            $("#new_message_content").data().typeahead.shown ||
+            $("#search_query").data().typeahead.shown) {
+            // For some reason this code is only needed in Firefox;
+            // in Chrome our typeahead is able to intercept the Esc
+            // event before we even get it.
+            // Regardless, we do nothing in this case.
+            return true;
+        }
+
+        if ($(".message_edit_content").filter(":focus").length > 0) {
+            row = $(".message_edit_content").filter(":focus").closest(".message_row");
+            message_edit.end(row);
+            return true;
+        }
+
+        if ($(".message_edit_topic").filter(":focus").length > 0) {
+            row = $(".message_edit_topic").filter(":focus").closest(".message_row");
+            message_edit.end(row);
+            return true;
+        }
+
+        if (activity.searching()) {
+            activity.escape_search();
+            return true;
+        }
+
+        if (stream_list.searching()) {
+            stream_list.escape_search();
+            return true;
+        }
+
+        if (compose.composing()) {
+            // If the user hit the escape key, cancel the current compose
+            compose.cancel();
+            return true;
+        }
+
+        // We pressed Esc and something was focused, and the composebox
+        // wasn't open. In that case, we should blur the input.
+        // (this is almost certainly the searchbar)
+        $("input:focus,textarea:focus").blur();
+        return true;
+    }
+
+    if (popovers.any_active()) {
+        popovers.hide_all();
+        return true;
+    }
+
+    if (compose.composing()) {
+        compose.cancel();
+        return true;
+    }
+
+    search.clear_search();
+    return true;
+};
+
 // Process a keydown or keypress event.
 //
 // Returns true if we handled it, false if the browser should.
 exports.process_hotkey = function (e) {
-    var row;
     var alert_words_content;
     var focused_message_edit_content;
     var focused_message_edit_save;
@@ -138,6 +245,10 @@ exports.process_hotkey = function (e) {
 
     if (event_name === 'ignore') {
         return false;
+    }
+
+    if (event_name === 'escape') {
+        return exports.process_escape_key(e);
     }
 
     if (hotkey.message_view_only && ui.home_tab_obscured()) {
@@ -233,25 +344,6 @@ exports.process_hotkey = function (e) {
         }
     }
 
-    if (event_name === "escape") {
-        if ($("#overlay").hasClass("show")) {
-            ui.exit_lightbox_photo();
-            return true;
-        } else if ($("#subscription_overlay").hasClass("show")) {
-            subs.close();
-            return true;
-        } else if ($("#draft_overlay").hasClass("show")) {
-            drafts.close();
-            return true;
-        } else if ($(".informational-overlays").hasClass("show")) {
-            ui.hide_info_overlay();
-            return true;
-        } else if ($("#invite-user").css("display") === "block") {
-            $("#invite-user").modal("hide");
-            return true;
-        }
-    }
-
     if (exports.is_settings_page()) {
         if (event_name === 'up_arrow') {
             var prev = e.target.previousElementSibling;
@@ -267,58 +359,12 @@ exports.process_hotkey = function (e) {
                 $(next).focus().click();
             }
             return true;
-        } else if (event_name === 'escape') {
-            $("#settings_overlay_container .exit").click();
-            return true;
         }
         return false;
     }
 
     // Process hotkeys specially when in an input, select, textarea, or send button
     if (exports.processing_text()) {
-        if (event_name === 'escape') {
-            // emoji window should trap escape before it is able to close the compose box
-            if ($('.emoji_popover').css('display') === 'inline-block') {
-                popovers.hide_emoji_map_popover();
-                return;
-            }
-            // If one of our typeaheads is open, do nothing so that the Esc
-            // will go to close it
-            if ($("#subject").data().typeahead.shown ||
-                $("#stream").data().typeahead.shown ||
-                $("#private_message_recipient").data().typeahead.shown ||
-                $("#new_message_content").data().typeahead.shown ||
-                $("#search_query").data().typeahead.shown) {
-                // For some reason this code is only needed in Firefox;
-                // in Chrome our typeahead is able to intercept the Esc
-                // event before we even get it.
-                // Regardless, we do nothing in this case.
-                return true;
-            } else if ($(".message_edit_content").filter(":focus").length > 0) {
-                row = $(".message_edit_content").filter(":focus").closest(".message_row");
-                message_edit.end(row);
-            } else if ($(".message_edit_topic").filter(":focus").length > 0) {
-                row = $(".message_edit_topic").filter(":focus").closest(".message_row");
-                message_edit.end(row);
-            } else if (activity.searching()) {
-                activity.escape_search();
-                return true;
-            } else if (stream_list.searching()) {
-                stream_list.escape_search();
-                return true;
-            } else if (compose.composing()) {
-                // If the user hit the escape key, cancel the current compose
-                compose.cancel();
-                return true;
-            } else {
-                // We pressed Esc and something was focused, and the composebox
-                // wasn't open. In that case, we should blur the input.
-                // (this is almost certainly the searchbar)
-                $("input:focus,textarea:focus").blur();
-                return true;
-            }
-        }
-
         if (event_name === 'enter') {
             if (exports.is_settings_page()) {
                 $(e.target).click();
@@ -386,17 +432,6 @@ exports.process_hotkey = function (e) {
                 return true;
             }
             break;
-        case 'escape': // Esc: close actions popup, cancel compose, clear a find, or un-narrow
-            if ($('.emoji_popover').css('display') === 'inline-block') {
-                popovers.hide_emoji_map_popover();
-            } else if (popovers.any_active()) {
-                popovers.hide_all();
-            } else if (compose.composing()) {
-                compose.cancel();
-            } else {
-                search.clear_search();
-            }
-            return true;
         case 'narrow_private':
             return do_narrow_action(function (target, opts) {
                 narrow.by('is', 'private', opts);
