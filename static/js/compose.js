@@ -636,6 +636,13 @@ exports.respond_to_message = function (opts) {
 
 };
 
+exports.reply_with_mention = function (opts) {
+    exports.respond_to_message(opts);
+    var message = current_msg_list.selected_message();
+    var mention = '@**' + message.sender_full_name + '**';
+    $('#new_message_content').val(mention + ' ');
+};
+
 // This function is for debugging / data collection only.  Arguably it
 // should live in debug.js, but then it wouldn't be able to call
 // send_message() directly below.
