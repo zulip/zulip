@@ -4,7 +4,7 @@ from django.db.models import F
 from django.utils import timezone
 
 from analytics.models import InstallationCount, RealmCount, \
-    UserCount, StreamCount, BaseCount, FillState, installation_epoch
+    UserCount, StreamCount, BaseCount, FillState, Anomaly, installation_epoch
 from zerver.models import Realm, UserProfile, Message, Stream, models
 from zerver.lib.timestamp import floor_to_day, floor_to_hour, ceiling_to_day, \
     ceiling_to_hour
@@ -142,6 +142,7 @@ def do_drop_all_analytics_tables():
     RealmCount.objects.all().delete()
     InstallationCount.objects.all().delete()
     FillState.objects.all().delete()
+    Anomaly.objects.all().delete()
 
 def do_aggregate_to_summary_table(stat, end_time):
     # type: (CountStat, datetime) -> None

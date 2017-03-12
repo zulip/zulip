@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+from django.apps import apps
 from django.db import models
 from django.db.models import Sum
 from django.test import TestCase
@@ -9,9 +10,10 @@ from analytics.lib.counts import CountStat, COUNT_STATS, process_count_stat, \
     zerver_count_user_by_realm, zerver_count_message_by_user, \
     zerver_count_message_by_stream, zerver_count_stream_by_realm, \
     do_fill_count_stat_at_hour, do_increment_logging_stat, ZerverCountQuery, \
-    LoggingCountStat, do_aggregate_to_summary_table
+    LoggingCountStat, do_aggregate_to_summary_table, \
+    do_drop_all_analytics_tables
 from analytics.models import BaseCount, InstallationCount, RealmCount, \
-    UserCount, StreamCount, FillState, installation_epoch
+    UserCount, StreamCount, FillState, Anomaly, installation_epoch
 from zerver.lib.actions import do_create_user, do_deactivate_user, \
     do_activate_user, do_reactivate_user
 from zerver.models import Realm, UserProfile, Message, Stream, Recipient, \
@@ -608,3 +610,26 @@ class TestLoggingCountStats(AnalyticsTestCase):
         do_reactivate_user(user)
         self.assertEqual(1, RealmCount.objects.filter(property=property, subgroup=False)
                          .aggregate(Sum('value'))['value__sum'])
+
+class TestDeleteStats(AnalyticsTestCase):
+    def test_do_drop_all_analytics_tables(self):
+        # type: () -> None
+        # The actual test that would be nice to do would be to
+        user = self.create_user()
+        stream = self.create_stream_with_recipient()[0]
+        count_args = {'property': 'test', 'end_time': self.TIME_ZERO, 'value': 10}
+
+        UserCount.objects.create(user=user, realm=user.realm, **count_args)
+        StreamCount.objects.create(stream=stream, realm=stream.realm, **count_args)
+        RealmCount.objects.create(realm=user.realm, **count_args)
+        InstallationCount.objects.create(**count_args)
+        FillState.objects.create(property='test', end_time=self.TIME_ZERO, state=FillState.DONE)
+        Anomaly.objects.create(info='test anomaly')
+
+        analytics = apps.get_app_config('analytics')
+        for table in list(analytics.models.values()):
+            self.assertTrue(table.objects.exists())
+
+        do_drop_all_analytics_tables()
+        for table in list(analytics.models.values()):
+            self.assertFalse(table.objects.exists())
