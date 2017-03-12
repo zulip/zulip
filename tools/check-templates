@@ -3,6 +3,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from lib.template_parser import validate
 from lib.html_branches import build_id_dict
+from lib.pretty_print import validate_indent_html
 import argparse
 import sys
 import logging
@@ -138,6 +139,63 @@ def check_html_templates(templates, modified_only, all_dups):
         ]
         validate(fn=fn, check_indent=(fn not in bad_files))
 
+    # Ignore these files since these have not been cleaned yet :/
+    IGNORE_FILES = [
+        'puppet/zulip_ops/files/sparkle/mac/sparkle-changelog.html',
+        'puppet/zulip_ops/files/sparkle/sso/mac/sparkle-changelog.html',
+        'puppet/zulip_ops/files/sparkle/sso/win/sparkle-changelog.html',
+        'puppet/zulip_ops/files/sparkle/win/sparkle-changelog.html',
+        'static/html/404.html',
+        'static/html/5xx.html',
+        'templates/500.html',
+        'templates/analytics/activity.html',
+        'templates/analytics/ad_hoc_query.html',
+        'templates/analytics/realm_summary_table.html',
+        'templates/analytics/stats.html',
+        'templates/confirmation/confirm.html',
+        'templates/confirmation/confirm_email_change.html',
+        'templates/confirmation/emailchangestatus_confirmation_email.html',
+        'templates/confirmation/invite_email.html',
+        'templates/confirmation/preregistrationuser_confirmation_email.html',
+        'templates/corporate/privacy.html',
+        'templates/corporate/zephyr-mirror.html',
+        'templates/corporate/zephyr.html',
+        'templates/zerver/api.html',
+        'templates/zerver/apps.html',
+        'templates/zerver/compose.html',
+        'templates/zerver/emails/digest/digest_email.html',
+        'templates/zerver/emails/find_team/find_team_email.html',
+        'templates/zerver/emails/followup/day1.html',
+        'templates/zerver/emails/followup/day2.html',
+        'templates/zerver/emails/invitation/invitation_reminder_email.html',
+        'templates/zerver/hello.html',
+        'templates/zerver/help/main.html',
+        'templates/zerver/home.html',
+        'templates/zerver/index.html',
+        'templates/zerver/integrations.html',
+        'templates/zerver/keyboard_shortcuts.html',
+        'templates/zerver/landing_nav.html',
+        'templates/zerver/left_sidebar.html',
+        'templates/zerver/login.html',
+        'templates/zerver/markdown_help.html',
+        'templates/zerver/navbar.html',
+        'templates/zerver/register.html',
+        'zerver/webhooks/deskdotcom/doc.html',
+        'zerver/webhooks/greenhouse/doc.html',
+        'zerver/webhooks/librato/doc.html',
+        'zerver/webhooks/pivotal/doc.html',
+        'zerver/webhooks/splunk/doc.html',
+        'zerver/webhooks/stripe/doc.html',
+        'zerver/webhooks/trello/doc.html',
+        'zerver/webhooks/wordpress/doc.html',
+        'zerver/webhooks/zapier/doc.html',
+    ]
+    # TODO: Clean these files
+    for fn in templates:
+        if fn not in IGNORE_FILES:
+            if not validate_indent_html(fn):
+                sys.exit(1)
+
 def check_handlebar_templates(templates, modified_only):
     # type: (Iterable[str], bool) -> None
     # Check all our handlebars templates.
@@ -146,6 +204,49 @@ def check_handlebar_templates(templates, modified_only):
         assert len(templates) >= 10 # sanity check that we are actually doing work
     for fn in templates:
         validate(fn=fn, check_indent=True)
+
+    # Ignore these files since these have not been cleaned yet :/
+    IGNORE_FILES = [
+        'static/templates/actions_popover_content.handlebars',
+        'static/templates/admin_user_list.handlebars',
+        'static/templates/bot_avatar_row.handlebars',
+        'static/templates/draft.handlebars',
+        'static/templates/message_edit_form.handlebars',
+        'static/templates/message_edit_history.handlebars',
+        'static/templates/recipient_row.handlebars',
+        'static/templates/single_message.handlebars',
+        'static/templates/stream_privacy.handlebars',
+        'static/templates/stream_sidebar_row.handlebars',
+        'static/templates/subscription_settings.handlebars',
+        'static/templates/user_sidebar_actions.handlebars',
+        'static/templates/settings/account-settings.handlebars',
+        'static/templates/settings/admin-alias-list.handlebars',
+        'static/templates/settings/admin_auth_methods_list.handlebars',
+        'static/templates/settings/alert-word-settings.handlebars',
+        'static/templates/settings/attachment-item.handlebars',
+        'static/templates/settings/auth-methods-settings-admin.handlebars',
+        'static/templates/settings/bot-list-admin.handlebars',
+        'static/templates/settings/bot-settings.handlebars',
+        'static/templates/settings/deactivated-users-admin.handlebars',
+        'static/templates/settings/deactivation-stream-modal.handlebars',
+        'static/templates/settings/deactivation-user-modal.handlebars',
+        'static/templates/settings/default-streams-list-admin.handlebars',
+        'static/templates/settings/display-settings.handlebars',
+        'static/templates/settings/emoji-settings-admin.handlebars',
+        'static/templates/settings/muted-topics-settings.handlebars',
+        'static/templates/settings/notification-settings.handlebars',
+        'static/templates/settings/organization-settings-admin.handlebars',
+        'static/templates/settings/realm-domains-modal.handlebars',
+        'static/templates/settings/realm-filter-settings-admin.handlebars',
+        'static/templates/settings/streams-list-admin.handlebars',
+        'static/templates/settings/ui-settings.handlebars',
+        'static/templates/settings/user-list-admin.handlebars',
+    ]
+    # TODO: Clean these files
+    for fn in templates:
+        if fn not in IGNORE_FILES:
+            if not validate_indent_html(fn):
+                sys.exit(1)
 
 if __name__ == '__main__':
     check_our_files()
