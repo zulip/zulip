@@ -168,20 +168,6 @@ exports.process_escape_key = function (e) {
     }
 
     if (exports.processing_text()) {
-        // If one of our typeaheads is open, do nothing so that the Esc
-        // will go to close it
-        if ($("#subject").data().typeahead.shown ||
-            $("#stream").data().typeahead.shown ||
-            $("#private_message_recipient").data().typeahead.shown ||
-            $("#new_message_content").data().typeahead.shown ||
-            $("#search_query").data().typeahead.shown) {
-            // For some reason this code is only needed in Firefox;
-            // in Chrome our typeahead is able to intercept the Esc
-            // event before we even get it.
-            // Regardless, we do nothing in this case.
-            return true;
-        }
-
         if ($(".message_edit_content").filter(":focus").length > 0) {
             row = $(".message_edit_content").filter(":focus").closest(".message_row");
             message_edit.end(row);
