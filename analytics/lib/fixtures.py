@@ -50,10 +50,10 @@ def generate_time_series_data(days=100, business_hours_base=10, non_business_hou
                       [24*non_business_hours_base] * 2
         holidays = [random() < holiday_rate for i in range(days)]
     else:
-        raise ValueError("Unknown frequency: %s" % (frequency,))
+        raise AssertionError("Unknown frequency: %s" % (frequency,))
     if length < 2:
-        raise ValueError("Must be generating at least 2 data points. "
-                         "Currently generating %s" % (length,))
+        raise AssertionError("Must be generating at least 2 data points. "
+                             "Currently generating %s" % (length,))
     growth_base = growth ** (1. / (length-1))
     values_no_noise = [seasonality[i % len(seasonality)] * (growth_base**i) for i in range(length)]
 

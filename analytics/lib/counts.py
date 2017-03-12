@@ -45,7 +45,7 @@ class CountStat(object):
         self.filter_args = filter_args
         self.group_by = group_by
         if frequency not in self.FREQUENCIES:
-            raise ValueError("Unknown frequency: %s" % (frequency,))
+            raise AssertionError("Unknown frequency: %s" % (frequency,))
         self.frequency = frequency
         self.interval = self.GAUGE if is_gauge else frequency
         self.is_logging = False
@@ -92,7 +92,7 @@ def process_count_stat(stat, fill_to_time):
     elif fill_state.state == FillState.DONE:
         currently_filled = fill_state.end_time
     else:
-        raise ValueError("Unknown value for FillState.state: %s." % (fill_state.state,))
+        raise AssertionError("Unknown value for FillState.state: %s." % (fill_state.state,))
 
     currently_filled = currently_filled + timedelta(hours = 1)
     while currently_filled <= fill_to_time:
