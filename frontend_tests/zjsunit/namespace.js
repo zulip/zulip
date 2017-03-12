@@ -61,15 +61,19 @@ exports.with_overrides = function (test_function) {
         var parts = name.split('.');
         var module = parts[0];
         var func_name = parts[1];
-        var module_impl = {};
-        module_impl[func_name] = f;
-        set_global(module, module_impl);
+
+        if (!_.has(global, module)) {
+            set_global(module, {});
+        }
+
+        global[module][func_name] = f;
 
         clobber_callbacks.push(function () {
             // If you get a failure from this, you probably just
             // need to have your test do its own overrides and
             // not cherry-pick off of the prior test's setup.
-            set_global(module, 'UNCLEAN MODULE FROM PRIOR TEST');
+            global[module][func_name] =
+                'ATTEMPTED TO REUSE OVERRIDDEN VALUE FROM PRIOR TEST';
         });
     };
 
