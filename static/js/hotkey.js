@@ -114,6 +114,11 @@ function get_hotkey_from_event(e) {
     return {name: 'ignore', message_view_only: false};
 }
 
+exports.processing_text = function () {
+    var selector = 'input:focus,select:focus,textarea:focus,#compose-send-button:focus';
+    return $(selector).length > 0;
+};
+
 exports.is_editing_stream_name = function (e) {
     return $(e.target).is(".editable-section");
 };
@@ -270,7 +275,7 @@ exports.process_hotkey = function (e) {
     }
 
     // Process hotkeys specially when in an input, select, textarea, or send button
-    if ($('input:focus,select:focus,textarea:focus,#compose-send-button:focus').length > 0) {
+    if (exports.processing_text()) {
         if (event_name === 'escape') {
             // emoji window should trap escape before it is able to close the compose box
             if ($('.emoji_popover').css('display') === 'inline-block') {
