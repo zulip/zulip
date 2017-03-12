@@ -152,7 +152,7 @@ def table_filtered_to_id(table, key_id):
     elif table == InstallationCount:
         return InstallationCount.objects.all()
     else:
-        raise ValueError("Unknown table: %s" % (table,))
+        raise AssertionError("Unknown table: %s" % (table,))
 
 def client_label_map(name):
     # type: (str) -> str
@@ -191,8 +191,8 @@ def rewrite_client_arrays(value_arrays):
 def get_time_series_by_subgroup(stat, table, key_id, end_times, subgroups, labels, include_empty_subgroups):
     # type: (CountStat, Type[BaseCount], Optional[int], List[datetime], List[str], List[str], bool) -> Dict[str, List[int]]
     if len(subgroups) != len(labels):
-        raise ValueError("subgroups and labels have lengths %s and %s, which are different." %
-                         (len(subgroups), len(labels)))
+        raise AssertionError("subgroups and labels have lengths %s and %s, which are different." %
+                             (len(subgroups), len(labels)))
     queryset = table_filtered_to_id(table, key_id).filter(property=stat.property) \
                                                   .values_list('subgroup', 'end_time', 'value')
     value_dicts = defaultdict(lambda: defaultdict(int)) # type: Dict[Optional[str], Dict[datetime, int]]

@@ -17,7 +17,7 @@ def time_range(start, end, frequency, min_length):
         end = floor_to_day(end)
         step = timedelta(days=1)
     else:
-        raise ValueError("Unknown frequency: %s" % (frequency,))
+        raise AssertionError("Unknown frequency: %s" % (frequency,))
 
     times = []
     if min_length is not None:
