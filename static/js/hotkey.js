@@ -125,6 +125,7 @@ function process_hotkey(e) {
     var message_edit_form;
     var hotkey = get_hotkey_from_event(e);
     var event_name = hotkey.name;
+    var current_view = window.location.hash;
     activity.new_user_input = true;
 
     if (event_name === 'ignore') {
@@ -453,6 +454,10 @@ function process_hotkey(e) {
         case 'narrow_by_subject':
             return do_narrow_action(narrow.by_subject);
         case  'enter': // Enter: respond to message (unless we need to do something else)
+            if (current_view === "#settings" || current_view === "#administration" ||
+                current_view === "#subscriptions") {
+                return false; //Enter: Nothing triggered when user on stream/settings/admin
+            }
             compose.respond_to_message({trigger: 'hotkey enter'});
             return true;
         case 'reply_message': // 'r': respond to message
