@@ -135,14 +135,6 @@ def do_delete_counts_at_hour(stat, end_time):
         RealmCount.objects.filter(property=stat.property, end_time=end_time).delete()
         InstallationCount.objects.filter(property=stat.property, end_time=end_time).delete()
 
-def do_delete_count_stat(property):
-    # type: (str) -> None
-    UserCount.objects.filter(property=property).delete()
-    StreamCount.objects.filter(property=property).delete()
-    RealmCount.objects.filter(property=property).delete()
-    InstallationCount.objects.filter(property=property).delete()
-    FillState.objects.filter(property=property).delete()
-
 def do_drop_all_analytics_tables():
     # type: () -> None
     UserCount.objects.all().delete()
