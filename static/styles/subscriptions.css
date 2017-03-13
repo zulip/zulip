@@ -864,39 +864,6 @@ form#add_new_subscription {
     font-weight: 800;
 }
 
-#subscription_overlay {
-    pointer-events: none;
-    opacity: 0;
-    position: fixed;
-    top: 0px;
-    left: 0px;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0,0,0,0.8);
-    overflow: auto;
-    -webkit-overflow-scrolling: touch;
-    z-index: 102;
-
-    transition: all 0.3s ease;
-}
-
-#subscription_overlay.show {
-    display: block;
-    pointer-events: all;
-    opacity: 1;
-}
-
-#subscription_overlay .subscriptions-container {
-    -webkit-transform: scale(0.5);
-    transform: scale(0.5);
-    transition: all 0.3s ease;
-}
-
-#subscription_overlay.show .subscriptions-container {
-    -webkit-transform: scale(1);
-    transform: scale(1);
-}
-
 #subscription_overlay .settings {
     position: relative;
     height: calc(100% - 45px);
