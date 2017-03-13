@@ -214,9 +214,7 @@ class BugdownTest(TestCase):
         self.assertEqual(converted, '<p>Check out this file <a href="file:///Volumes/myserver/Users/Shared/pi.py" target="_blank" title="file:///Volumes/myserver/Users/Shared/pi.py">file:///Volumes/myserver/Users/Shared/pi.py</a></p>')
 
         with self.settings(ENABLE_FILE_LINKS=False):
-            realm = Realm.objects.create(
-                domain='file_links_test.example.com',
-                string_id='file_links_test')
+            realm = Realm.objects.create(string_id='file_links_test')
             bugdown.make_md_engine(
                 realm.id,
                 {'realm_filters': [[], u'file_links_test.example.com'], 'realm': [u'file_links_test.example.com', 'Realm name']})

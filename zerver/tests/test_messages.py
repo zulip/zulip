@@ -148,7 +148,7 @@ class TopicHistoryTest(ZulipTestCase):
 class TestCrossRealmPMs(ZulipTestCase):
     def make_realm(self, domain):
         # type: (Text) -> Realm
-        realm = Realm.objects.create(string_id=domain, domain=domain, invite_required=False)
+        realm = Realm.objects.create(string_id=domain, invite_required=False)
         RealmAlias.objects.create(realm=realm, domain=domain)
         return realm
 
