@@ -31,14 +31,16 @@ var actions_dropdown_hotkeys = [
 // we'll do in cases where they have the exact same semantics.
 // DON'T FORGET: update keyboard_shortcuts.html
 
-var hotkeys_shift = {
+var keydown_shift_mappings = {
     // these can be triggered by shift + key only
     9: {name: 'shift_tab', message_view_only: false}, // tab
     32: {name: 'shift_spacebar', message_view_only: true},  // space bar
 };
-var hotkeys_no_modifiers = {
+
+var keydown_unshift_mappings = {
     // these can be triggered by key only (without shift)
     9: {name: 'tab', message_view_only: false}, // tab
+    27: {name: 'escape', message_view_only: false}, // escape
     32: {name: 'spacebar', message_view_only: true}, // space bar
     33: {name: 'page_up', message_view_only: true}, // page up
     34: {name: 'page_down', message_view_only: true}, // page down
@@ -48,12 +50,24 @@ var hotkeys_no_modifiers = {
     38: {name: 'up_arrow', message_view_only: true}, // up arrow
     40: {name: 'down_arrow', message_view_only: true}, // down arrow
 };
-var hotkeys_shift_insensitive = {
+
+var keydown_either_mappings = {
     // these can be triggered by key or shift + key
     // Note that codes for letters are still case sensitive!
+    //
+    // We may want to revisit both of these.  For backspace, we don't
+    // have any specific mapping behavior; we are just trying to disable
+    // the normal browser features for certain OSes when we are in the
+    // compose box, and the little bit of backspace-related code here is
+    // dubious, but may apply to shift-backspace.
+    // For enter, there is some possibly that shift-enter is intended to
+    // have special behavior for folks that are used to shift-enter behavior
+    // in other apps, but that's also slightly dubious.
     8: {name: 'backspace', message_view_only: true}, // backspace
     13: {name: 'enter', message_view_only: false}, // enter
-    27: {name: 'escape', message_view_only: false}, // escape
+};
+
+var keypress_mappings = {
     47: {name: 'search', message_view_only: false}, // '/'
     63: {name: 'show_shortcuts', message_view_only: false}, // '?'
     64: {name: 'compose_reply_with_mention', message_view_only: true}, // '@'
@@ -94,25 +108,36 @@ var tab_up_down = (function () {
     };
 }());
 
-function get_hotkey_from_event(e) {
-
-    // We're in the middle of a combo; stop processing because
-    // we want the browser to handle it (to avoid breaking
-    // things like Ctrl-C or Command-C for copy).
+exports.get_keydown_hotkey = function (e) {
     if (e.metaKey || e.ctrlKey || e.altKey) {
-        return {name: 'ignore', message_view_only: false};
+        return;
     }
 
-    if (e.shiftKey && hotkeys_shift[e.which] !== undefined) {
-        return hotkeys_shift[e.which];
-    } else if (!e.shiftKey && hotkeys_no_modifiers[e.which] !== undefined) {
-        return hotkeys_no_modifiers[e.which];
-    } else if (hotkeys_shift_insensitive[e.which] !== undefined) {
-        return hotkeys_shift_insensitive[e.which];
+    var hotkey;
+    if (e.shiftKey) {
+        hotkey = keydown_shift_mappings[e.which];
+        if (hotkey) {
+            return hotkey;
+        }
     }
 
-    return {name: 'ignore', message_view_only: false};
-}
+    if (!e.shiftKey) {
+        hotkey = keydown_unshift_mappings[e.which];
+        if (hotkey) {
+            return hotkey;
+        }
+    }
+
+    return keydown_either_mappings[e.which];
+};
+
+exports.get_keypress_hotkey = function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) {
+        return;
+    }
+
+    return keypress_mappings[e.which];
+};
 
 exports.processing_text = function () {
     var selector = 'input:focus,select:focus,textarea:focus,#compose-send-button:focus';
@@ -286,18 +311,12 @@ exports.process_enter_key = function (e) {
 // Process a keydown or keypress event.
 //
 // Returns true if we handled it, false if the browser should.
-exports.process_hotkey = function (e) {
+exports.process_hotkey = function (e, hotkey) {
     var alert_words_content;
     var focused_message_edit_content;
     var focused_message_edit_save;
     var message_edit_form;
-    var hotkey = get_hotkey_from_event(e);
     var event_name = hotkey.name;
-    activity.new_user_input = true;
-
-    if (event_name === 'ignore') {
-        return false;
-    }
 
     if (event_name === 'escape') {
         return exports.process_escape_key(e);
@@ -554,28 +573,33 @@ exports.process_hotkey = function (e) {
    so we bail in .keydown if the event is a letter or number and
    instead just let keypress go for it. */
 
+exports.process_keydown = function (e) {
+    activity.new_user_input = true;
+    var hotkey = exports.get_keydown_hotkey(e);
+    if (!hotkey) {
+        return false;
+    }
+    return exports.process_hotkey(e, hotkey);
+};
+
 $(document).keydown(function (e) {
-    // Restrict to non-alphanumeric keys
-    // check if 27 (esc) because it doesn't register under .keypress()
-    if (e.which < 48 || e.which > 90 || e.which === 27) {
-        if (exports.process_hotkey(e)) {
-            e.preventDefault();
-        }
+    if (exports.process_keydown(e)) {
+        e.preventDefault();
     }
     resize.resize_bottom_whitespace();
 });
 
+exports.process_keypress = function (e) {
+    var hotkey = exports.get_keypress_hotkey(e);
+    if (!hotkey) {
+        return false;
+    }
+    return exports.process_hotkey(e, hotkey);
+};
+
 $(document).keypress(function (e) {
-    // What exactly triggers .keypress may vary by browser.
-    // Welcome to compatability hell.
-    //
-    // In particular, when you press tab in Firefox, it fires a
-    // keypress event with keycode 0 after processing the original
-    // event.
-    if (e.which !== 0 && e.charCode !== 0) {
-        if (exports.process_hotkey(e)) {
-            e.preventDefault();
-        }
+    if (exports.process_keypress(e)) {
+        e.preventDefault();
     }
 });
 
