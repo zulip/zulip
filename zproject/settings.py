@@ -852,6 +852,7 @@ JS_SPECS = {
             'js/copy_and_paste.js',
             'js/stream_popover.js',
             'js/popovers.js',
+            'js/modals.js',
             'js/typeahead_helper.js',
             'js/search_suggestion.js',
             'js/search.js',

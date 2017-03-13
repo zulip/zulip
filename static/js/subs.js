@@ -823,7 +823,6 @@ Object.defineProperty(exports, "is_open", {
 exports.close = function () {
     hashchange.exit_modal();
     meta.is_open = false;
-    $("#subscription_overlay").removeClass("show");
     subs.remove_miscategorized_streams();
 };
 
