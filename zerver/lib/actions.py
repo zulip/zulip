@@ -3243,6 +3243,18 @@ def do_set_muted_topics(user_profile, muted_topics):
     event = dict(type="muted_topics", muted_topics=muted_topics)
     send_event(event, [user_profile.id])
 
+def do_update_muted_topic(user_profile, stream, topic, op):
+    # type: (UserProfile, str, str, str) -> None
+    muted_topics = ujson.loads(user_profile.muted_topics)
+    if op == 'add':
+        muted_topics.append([stream, topic])
+    elif op == 'remove':
+        muted_topics.remove([stream, topic])
+    user_profile.muted_topics = ujson.dumps(muted_topics)
+    user_profile.save(update_fields=['muted_topics'])
+    event = dict(type="muted_topics", muted_topics=muted_topics)
+    send_event(event, [user_profile.id])
+
 def notify_realm_filters(realm):
     # type: (Realm) -> None
     realm_filters = realm_filters_for_realm(realm.id)

@@ -26,6 +26,7 @@ import zerver.views.users
 import zerver.views.unsubscribe
 import zerver.views.integrations
 import zerver.views.user_settings
+import zerver.views.muting
 import confirmation.views
 
 from zerver.lib.rest import rest_dispatch
@@ -342,7 +343,8 @@ v1_api_and_json_patterns = [
          'DELETE': 'zerver.views.streams.remove_subscriptions_backend'}),
     # muting -> zerver.views.muting
     url(r'^users/me/subscriptions/muted_topics$', rest_dispatch,
-        {'POST': 'zerver.views.muting.set_muted_topics'}),
+        {'POST': 'zerver.views.muting.set_muted_topics',
+         'PATCH': 'zerver.views.muting.update_muted_topic'}),
 
     # used to register for an event queue in tornado
     url(r'^register$', rest_dispatch,
