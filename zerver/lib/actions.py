@@ -236,7 +236,7 @@ def send_signup_message(sender, signups_stream, user_profile,
         sender,
         "stream",
         signups_stream,
-        user_profile.realm.domain,
+        user_profile.realm.string_id,
         "%s <`%s`> just signed up for Zulip!%s(total: **%i**)" % (
             user_profile.full_name,
             user_profile.email,
@@ -310,7 +310,7 @@ def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None)
             settings.NOTIFICATION_BOT,
             "private",
             prereg_user.referred_by.email,
-            user_profile.realm.domain,
+            user_profile.realm.string_id,
             "%s <`%s`> accepted your invitation to join Zulip!" % (
                 user_profile.full_name,
                 user_profile.email,
