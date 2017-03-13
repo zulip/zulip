@@ -693,39 +693,7 @@ input[type=checkbox].inline-block {
     margin-left: 25%;
 }
 /* -- new settings overlay -- */
-#settings_overlay_container {
-    pointer-events: none;
-    opacity: 0;
-
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    overflow: auto;
-
-    background-color: rgba(32,32,32,0.8);
-    z-index: 105;
-
-    transition: all 0.3s ease;
-}
-
-#settings_overlay_container.show {
-    pointer-events: all;
-    opacity: 1;
-}
-
-#settings_overlay_container.show #settings_page {
-    -webkit-transform: scale(1);
-    transform: scale(1);
-}
-
 #settings_page {
-    -webkit-transform: scale(0.5);
-    transform: scale(0.5);
-
-    background-color: rgba(0,0,0,0.8);
-    z-index: 102;
     min-height: 550px;
 }
 
