@@ -383,7 +383,7 @@ class RealmEmoji(ModelReprMixin, models.Model):
 
     def __unicode__(self):
         # type: () -> Text
-        return u"<RealmEmoji(%s): %s %s>" % (self.realm.domain, self.name, self.img_url)
+        return u"<RealmEmoji(%s): %s %s>" % (self.realm.string_id, self.name, self.img_url)
 
 def get_realm_emoji_uncached(realm):
     # type: (Realm) -> Dict[Text, Optional[Dict[str, Text]]]
