@@ -219,6 +219,70 @@ exports.process_escape_key = function (e) {
     return true;
 };
 
+// Returns true if we handled it, false if the browser should.
+exports.process_enter_key = function (e) {
+    if (exports.is_editing_stream_name(e)) {
+        $(e.target).parent().find(".checkmark").click();
+        return false;
+    }
+
+    if (popovers.actions_popped()) {
+        popovers.actions_menu_handle_keyboard('enter');
+        return true;
+    }
+
+    if (exports.is_settings_page()) {
+        // On the settings page just let the browser handle
+        // the enter key for things like submitting forms.
+        return false;
+    }
+
+    if (exports.processing_text()) {
+        if (activity.searching()) {
+            activity.blur_search();
+            return true;
+        }
+
+        if (stream_list.searching()) {
+            // This is sort of funny behavior, but I think
+            // the intention is that we want it super easy
+            // to close stream search.
+            stream_list.clear_and_hide_search();
+            return true;
+        }
+
+        return false;
+    }
+
+    // If we're on a button or a link and have pressed enter, let the
+    // browser handle the keypress
+    //
+    // This is subtle and here's why: Suppose you have the focus on a
+    // stream name in your left sidebar. j and k will still move your
+    // cursor up and down, but Enter won't reply -- it'll just trigger
+    // the link on the sidebar! So you keep pressing enter over and
+    // over again. Until you click somewhere or press r.
+    if ($('a:focus,button:focus').length > 0) {
+        return false;
+    }
+
+    if ($("#preview_message_area").is(":visible")) {
+        compose.enter_with_preview_open();
+        return true;
+    }
+
+    if (current_msg_list.empty()) {
+        return false;
+    }
+
+    // If we got this far, then we're presumably in the message
+    // view and there is a "current" message, so in that case
+    // "enter" is the hotkey to respond to a message.  Note that
+    // "r" has same effect, but that is handled in process_hotkey().
+    compose.respond_to_message({trigger: 'hotkey enter'});
+    return true;
+};
+
 // Process a keydown or keypress event.
 //
 // Returns true if we handled it, false if the browser should.
@@ -239,14 +303,17 @@ exports.process_hotkey = function (e) {
         return exports.process_escape_key(e);
     }
 
+    if (event_name === 'enter') {
+        return exports.process_enter_key(e);
+    }
+
     if (hotkey.message_view_only && ui.home_tab_obscured()) {
         return false;
     }
 
     if (exports.is_editing_stream_name(e)) {
-        if (event_name === "enter") {
-            $(e.target).parent().find(".checkmark").click();
-        }
+        // We handle the enter key in process_enter_key().
+        // We ignore all other keys.
         return false;
     }
 
@@ -353,18 +420,8 @@ exports.process_hotkey = function (e) {
 
     // Process hotkeys specially when in an input, select, textarea, or send button
     if (exports.processing_text()) {
-        if (event_name === 'enter') {
-            if (exports.is_settings_page()) {
-                $(e.target).click();
-                return true;
-            } else if (activity.searching()) {
-                activity.blur_search();
-                return true;
-            } else if (stream_list.searching()) {
-                stream_list.clear_and_hide_search();
-                return true;
-            }
-        }
+        // Note that there is special handling for enter/escape too, but
+        // we handle this in other functions.
 
         if (event_name === 'left_arrow' && focus_in_empty_compose()) {
             compose.cancel();
@@ -393,18 +450,6 @@ exports.process_hotkey = function (e) {
         return true;
     }
 
-    // If we're on a button or a link and have pressed enter, let the
-    // browser handle the keypress
-    //
-    // This is subtle and here's why: Suppose you have the focus on a
-    // stream name in your left sidebar. j and k will still move your
-    // cursor up and down, but Enter won't reply -- it'll just trigger
-    // the link on the sidebar! So you keep pressing enter over and
-    // over again. Until you click somewhere or press r.
-    if ($('a:focus,button:focus').length > 0 && event_name === 'enter') {
-        return false;
-    }
-
     // Shortcuts that don't require a message
     switch (event_name) {
         case 'compose': // 'c': compose
@@ -413,13 +458,6 @@ exports.process_hotkey = function (e) {
         case 'compose_private_message':
             compose.start('private', {trigger: "compose_hotkey"});
             return true;
-        case 'enter':
-            // There's special handling for when you're previewing a composition
-            if ($("#preview_message_area").is(":visible")) {
-                compose.enter_with_preview_open();
-                return true;
-            }
-            break;
         case 'narrow_private':
             return do_narrow_action(function (target, opts) {
                 narrow.by('is', 'private', opts);
@@ -490,10 +528,9 @@ exports.process_hotkey = function (e) {
             return do_narrow_action(narrow.by_recipient);
         case 'narrow_by_subject':
             return do_narrow_action(narrow.by_subject);
-        case  'enter': // Enter: respond to message (unless we need to do something else)
-            compose.respond_to_message({trigger: 'hotkey enter'});
-            return true;
         case 'reply_message': // 'r': respond to message
+            // Note that you can "enter" to respond to messages as well,
+            // but that is handled in process_enter_key().
             compose.respond_to_message({trigger: 'hotkey'});
             return true;
         case 'respond_to_author': // 'R': respond to author
