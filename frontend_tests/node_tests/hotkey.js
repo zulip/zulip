@@ -27,15 +27,51 @@ function stubbing(func_name_to_stub, test_function) {
     });
 }
 
+(function test_mappings() {
+    function map_press(which, shiftKey) {
+        return hotkey.get_keypress_hotkey({
+            which: which,
+            shiftKey: shiftKey,
+        });
+    }
+
+    function map_down(which, shiftKey) {
+        return hotkey.get_keydown_hotkey({
+            which: which,
+            shiftKey: shiftKey,
+        });
+    }
+
+    // The next assertion protects against an iOS bug where we
+    // treat "!" as a hotkey, because iOS sends the wrong code.
+    assert.equal(map_press(33), undefined);
+
+    // Test page-up does work.
+    assert.equal(map_down(33).name, 'page_up');
+
+    // Test other mappings.
+    assert.equal(map_down(9).name, 'tab');
+    assert.equal(map_down(9, true).name, 'shift_tab');
+    assert.equal(map_down(27).name, 'escape');
+    assert.equal(map_down(37).name, 'left_arrow');
+    assert.equal(map_down(13).name, 'enter');
+    assert.equal(map_down(13, true).name, 'enter');
+
+    assert.equal(map_press(47).name, 'search'); // slash
+    assert.equal(map_press(106).name, 'vim_down'); // j
+
+    // More negative tests.
+    assert.equal(map_down(47), undefined);
+    assert.equal(map_press(27), undefined);
+    assert.equal(map_down(27, true), undefined);
+}());
+
 (function test_basic_chars() {
     function process(s) {
-        // Simulating keyboard events is a huge pain.
-        var shifted_keys = '~!@#$%^*()_+{}:"<>?';
         var e = {
             which: s.charCodeAt(0),
-            shiftKey: (shifted_keys.indexOf(s) >= 0),
         };
-        return hotkey.process_hotkey(e);
+        return hotkey.process_keypress(e);
     }
 
     function assert_mapping(c, func_name, shiftKey) {
