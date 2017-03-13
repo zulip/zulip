@@ -209,9 +209,10 @@ exports.toggle_actions_popover = function (element, id) {
             narrowed: narrow.active(),
         };
 
-        var ypos = elt.offset().top - message_viewport.scrollTop();
+        var ypos = elt.offset().top;
         elt.popover({
-            placement: (ypos > (message_viewport.height() - 300)) ? 'top' : 'bottom',
+            // Popover height with 7 items in it is ~190 px
+            placement: ((message_viewport.height() - ypos) < 220) ? 'top' : 'bottom',
             title:     "",
             content:   templates.render('actions_popover_content', args),
             trigger:   "manual",
