@@ -159,9 +159,6 @@ $(function () {
         }
     });
 
-    $(window).on("focus", function () {
-        meta.focusing = true;
-    });
 
     // MUTING
 
@@ -259,22 +256,12 @@ $(function () {
     });
 
     $("#subscriptions_table").on("click", ".exit, #subscription_overlay", function (e) {
-        if (meta.focusing) {
-            meta.focusing = false;
-            return;
-        }
-
         if ($(e.target).is(".exit, .exit-sign, #subscription_overlay, #subscription_overlay > .flex")) {
             subs.close();
         }
     });
 
     $("#drafts_table").on("click", ".exit, #draft_overlay", function (e) {
-        if (meta.focusing) {
-            meta.focusing = false;
-            return;
-        }
-
         if ($(e.target).is(".exit, .exit-sign, #draft_overlay, #draft_overlay > .flex")) {
             drafts.close();
         }
