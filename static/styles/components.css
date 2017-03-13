@@ -259,3 +259,41 @@
 .new-style a.no-style {
     color: inherit;
 }
+
+/* -- unified overlay design component -- */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+
+    background-color: rgba(32,32,32,0.8);
+    z-index: 105;
+
+    pointer-events: none;
+    opacity: 0;
+
+    transition: opacity 0.3s ease;
+}
+
+.overlay.show {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.overlay .overlay-content {
+    -webkit-transform: scale(0.5);
+    transform: scale(0.5);
+
+    z-index: 102;
+
+    transition: transform 0.3s ease;
+}
+
+.overlay.show .overlay-content {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+}
