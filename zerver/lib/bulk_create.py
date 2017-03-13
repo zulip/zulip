@@ -6,17 +6,6 @@ from zerver.models import Realm, Stream, UserProfile, Huddle, \
     Subscription, Recipient, Client, RealmAuditLog, get_huddle_hash
 from zerver.lib.create_user import create_user_profile
 
-def bulk_create_realms(realm_list):
-    # type: (Iterable[Text]) -> None
-    existing_realms = set(r.domain for r in Realm.objects.select_related().all())
-
-    realms_to_create = [] # type: List[Realm]
-    for domain in realm_list:
-        if domain not in existing_realms:
-            realms_to_create.append(Realm(domain=domain, name=domain))
-            existing_realms.add(domain)
-    Realm.objects.bulk_create(realms_to_create)
-
 def bulk_create_users(realm, users_raw, bot_type=None, tos_version=None):
     # type: (Realm, Set[Tuple[Text, Text, Text, bool]], Optional[int], Optional[Text]) -> None
     """
