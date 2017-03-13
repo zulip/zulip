@@ -28,7 +28,7 @@ def serve_s3(request, user_profile, realm_id_str, filename):
         realm_id = int(realm_id_str)
 
     # Internal users can access all uploads so we can receive attachments in cross-realm messages
-    if user_profile.realm_id == realm_id or user_profile.realm.domain == 'zulip.com':
+    if user_profile.realm_id == realm_id or user_profile.realm.string_id == 'zulip':
         uri = get_signed_upload_url(url_path)
         return redirect(uri)
     else:

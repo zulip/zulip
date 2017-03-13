@@ -56,7 +56,7 @@ def log_and_report(email_message, error_message, debug_info):
                                               scrubbed_error)
 
     if "stream" in debug_info:
-        scrubbed_error = u"Realm: %s\n%s" % (debug_info["stream"].realm.domain,
+        scrubbed_error = u"Realm: %s\n%s" % (debug_info["stream"].realm.string_id,
                                              scrubbed_error)
 
     logger.error(scrubbed_error)
@@ -313,7 +313,7 @@ def process_stream_message(to, subject, message, debug_info):
     debug_info["stream"] = stream
     send_zulip(settings.EMAIL_GATEWAY_BOT, stream, subject, body)
     logging.info("Successfully processed email to %s (%s)" % (
-        stream.name, stream.realm.domain))
+        stream.name, stream.realm.string_id))
 
 def process_missed_message(to, message, pre_checked):
     # type: (Text, message.Message, bool) -> None

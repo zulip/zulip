@@ -173,7 +173,7 @@ class Realm(ModelReprMixin, models.Model):
 
     def __unicode__(self):
         # type: () -> Text
-        return u"<Realm: %s %s>" % (self.domain, self.id)
+        return u"<Realm: %s %s>" % (self.string_id, self.id)
 
     @cache_with_key(get_realm_emoji_cache_key, timeout=3600*24*7)
     def get_emoji(self):
@@ -383,7 +383,7 @@ class RealmEmoji(ModelReprMixin, models.Model):
 
     def __unicode__(self):
         # type: () -> Text
-        return u"<RealmEmoji(%s): %s %s>" % (self.realm.domain, self.name, self.img_url)
+        return u"<RealmEmoji(%s): %s %s>" % (self.realm.string_id, self.name, self.img_url)
 
 def get_realm_emoji_uncached(realm):
     # type: (Realm) -> Dict[Text, Optional[Dict[str, Text]]]
@@ -442,7 +442,7 @@ class RealmFilter(models.Model):
 
     def __unicode__(self):
         # type: () -> Text
-        return u"<RealmFilter(%s): %s %s>" % (self.realm.domain, self.pattern, self.url_format_string)
+        return u"<RealmFilter(%s): %s %s>" % (self.realm.string_id, self.pattern, self.url_format_string)
 
 def get_realm_filters_cache_key(realm_id):
     # type: (int) -> Text

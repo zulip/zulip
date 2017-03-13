@@ -211,7 +211,7 @@ class AdminCreateUserTest(ZulipTestCase):
             short_name='Romeo',
         ))
         self.assert_json_error(result,
-                               "Email 'romeo@not-zulip.com' does not belong to domain 'zulip.com'")
+                               "Email 'romeo@not-zulip.com' not allowed for realm 'zulip'")
 
         RealmAlias.objects.create(realm=get_realm('zulip'), domain='zulip.net')
 

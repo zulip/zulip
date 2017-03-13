@@ -393,7 +393,7 @@ def send_future_email(recipients, email_html, email_text, subject,
        settings.EMAIL_BACKEND != 'django.core.mail.backends.console.EmailBackend':
         for recipient in recipients:
             email = recipient.get("email")
-            if get_user_profile_by_email(email).realm.domain != "zulip.com":
+            if get_user_profile_by_email(email).realm.string_id != "zulip":
                 raise ValueError("digest: refusing to send emails to non-zulip.com users.")
 
     # message = {"from_email": "othello@zulip.com",

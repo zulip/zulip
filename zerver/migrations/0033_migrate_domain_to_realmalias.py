@@ -13,7 +13,8 @@ def add_domain_to_realm_alias_if_needed(apps, schema_editor):
     for realm in Realm.objects.all():
         # if realm.domain already exists in RealmAlias, assume it is correct
         if not RealmAlias.objects.filter(domain=realm.domain).exists():
-            RealmAlias.objects.create(realm=realm, domain=realm.domain)
+            if realm.domain[-8:] != 'acme.com':
+                RealmAlias.objects.create(realm=realm, domain=realm.domain)
 
 class Migration(migrations.Migration):
 

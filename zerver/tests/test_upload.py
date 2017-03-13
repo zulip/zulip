@@ -184,7 +184,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         # invalid realm of 999999 (for non-zulip.com)
         user = get_user_profile_by_email('hamlet@zulip.com')
-        user.realm.domain = 'example.com'
+        user.realm.string_id = 'not-zulip'
         user.realm.save()
 
         with use_s3(), getting_realm_id(999999):

@@ -54,7 +54,7 @@ ONLY perform this on customer request from an authorized person.
                     print("Done!")
                 else:
                     print("Would have granted %s %s rights for %s" % (
-                          email, options['permission'], profile.realm.domain))
+                          email, options['permission'], profile.realm.string_id))
         else:
             if profile.has_perm(options['permission'], profile.realm):
                 if options['ack']:
@@ -62,6 +62,6 @@ ONLY perform this on customer request from an authorized person.
                     print("Done!")
                 else:
                     print("Would have removed %s's %s rights on %s" % (email, options['permission'],
-                                                                       profile.realm.domain))
+                                                                       profile.realm.string_id))
             else:
                 raise CommandError("User did not have permission for this realm!")

@@ -236,7 +236,7 @@ def send_signup_message(sender, signups_stream, user_profile,
         sender,
         "stream",
         signups_stream,
-        user_profile.realm.domain,
+        user_profile.realm.string_id,
         "%s <`%s`> just signed up for Zulip!%s(total: **%i**)" % (
             user_profile.full_name,
             user_profile.email,
@@ -249,7 +249,7 @@ def notify_new_user(user_profile, internal=False):
     # type: (UserProfile, bool) -> None
     if settings.NEW_USER_BOT is not None:
         send_signup_message(settings.NEW_USER_BOT, "signups", user_profile, internal)
-    statsd.gauge("users.signups.%s" % (user_profile.realm.domain.replace('.', '_')), 1, delta=True)
+    statsd.gauge("users.signups.%s" % (user_profile.realm.string_id), 1, delta=True)
 
 def add_new_user_history(user_profile, streams):
     # type: (UserProfile, Iterable[Stream]) -> None
@@ -310,7 +310,7 @@ def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None)
             settings.NOTIFICATION_BOT,
             "private",
             prereg_user.referred_by.email,
-            user_profile.realm.domain,
+            user_profile.realm.string_id,
             "%s <`%s`> accepted your invitation to join Zulip!" % (
                 user_profile.full_name,
                 user_profile.email,
@@ -1075,11 +1075,11 @@ def recipient_for_emails(emails, not_forged_mirror_message,
     recipient_profile_ids = set()
 
     # We exempt cross-realm bots from the check that all the recipients
-    # are in the same domain.
-    realm_domains = set()
+    # are in the same realm.
+    realms = set()
     exempt_emails = get_cross_realm_emails()
     if sender.email not in exempt_emails:
-        realm_domains.add(sender.realm.domain)
+        realms.add(sender.realm)
 
     for email in emails:
         try:
@@ -1091,12 +1091,12 @@ def recipient_for_emails(emails, not_forged_mirror_message,
             raise ValidationError(_("'%s' is no longer using Zulip.") % (email,))
         recipient_profile_ids.add(user_profile.id)
         if email not in exempt_emails:
-            realm_domains.add(user_profile.realm.domain)
+            realms.add(user_profile.realm)
 
     if not_forged_mirror_message and user_profile.id not in recipient_profile_ids:
         raise ValidationError(_("User not authorized for this query"))
 
-    if len(realm_domains) > 1:
+    if len(realms) > 1:
         raise ValidationError(_("You can't send private messages outside of your organization."))
 
     # If the private message is just between the sender and
@@ -1388,8 +1388,7 @@ def validate_user_access_to_subscribers(user_profile, stream):
     """
     validate_user_access_to_subscribers_helper(
         user_profile,
-        {"realm__domain": stream.realm.domain,
-         "realm_id": stream.realm_id,
+        {"realm_id": stream.realm_id,
          "invite_only": stream.invite_only},
         # We use a lambda here so that we only compute whether the
         # user is subscribed if we have to
@@ -1486,7 +1485,7 @@ def notify_subscriptions_added(user_profile, sub_pairs, stream_emails, no_log=Fa
         log_event({'type': 'subscription_added',
                    'user': user_profile.email,
                    'names': [stream.name for sub, stream in sub_pairs],
-                   'domain': user_profile.realm.domain})
+                   'realm': user_profile.realm.string_id})
 
     # Send a notification to the user who subscribed.
     payload = [dict(name=stream.name,
@@ -1676,7 +1675,7 @@ def notify_subscriptions_removed(user_profile, streams, no_log=False):
         log_event({'type': 'subscription_removed',
                    'user': user_profile.email,
                    'names': [stream.name for stream in streams],
-                   'domain': user_profile.realm.domain})
+                   'realm': user_profile.realm.string_id})
 
     payload = [dict(name=stream.name, stream_id=stream.id) for stream in streams]
     event = dict(type="subscription", op="remove",
@@ -1939,7 +1938,7 @@ def do_change_icon_source(realm, icon_source, log=True):
 
     if log:
         log_event({'type': 'realm_change_icon',
-                   'realm': realm.domain,
+                   'realm': realm.string_id,
                    'icon_source': icon_source})
 
     send_event(dict(type='realm',
@@ -2059,7 +2058,7 @@ def do_rename_stream(stream, new_name, log=True):
 
     if log:
         log_event({'type': 'stream_name_change',
-                   'domain': stream.realm.domain,
+                   'realm': stream.realm.string_id,
                    'new_name': new_name})
 
     recipient = get_recipient(Recipient.STREAM, stream.id)
@@ -2378,7 +2377,7 @@ def set_default_streams(realm, stream_dict):
         DefaultStream.objects.get_or_create(stream=realm.notifications_stream, realm=realm)
 
     log_event({'type': 'default_streams',
-               'domain': realm.domain,
+               'realm': realm.string_id,
                'streams': stream_names})
 
 def notify_default_streams(realm):
@@ -3173,7 +3172,7 @@ def do_refer_friend(user_profile, email):
     content = ('Referrer: "%s" <%s>\n'
                'Realm: %s\n'
                'Referred: %s') % (user_profile.full_name, user_profile.email,
-                                  user_profile.realm.domain, email)
+                                  user_profile.realm.string_id, email)
     subject = "Zulip referral: %s" % (email,)
     from_email = '"%s" <%s>' % (user_profile.full_name, 'referrals@zulip.com')
     to_email = '"Zulip Referrals" <zulip+referrals@zulip.com>'
