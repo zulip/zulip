@@ -41,7 +41,7 @@ class Command(BaseCommand):
         # type: (*Any, **str) -> None
         realm = get_realm(options["string_id"])
         if options["op"] == "show":
-            print("Aliases for %s:" % (realm.domain,))
+            print("Aliases for %s:" % (realm.string_id,))
             for alias in get_realm_aliases(realm):
                 if alias["allow_subdomains"]:
                     print(alias["domain"] + " (subdomains allowed)")

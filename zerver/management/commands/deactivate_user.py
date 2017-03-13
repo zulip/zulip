@@ -31,7 +31,7 @@ class Command(BaseCommand):
 
         print("Deactivating %s (%s) - %s" % (user_profile.full_name,
                                              user_profile.email,
-                                             user_profile.realm.domain))
+                                             user_profile.realm.string_id))
         print("%s has the following active sessions:" % (user_profile.email,))
         for session in user_sessions(user_profile):
             print(session.expire_date, session.get_decoded())
