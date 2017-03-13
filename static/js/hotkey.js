@@ -114,6 +114,17 @@ function get_hotkey_from_event(e) {
     return {name: 'ignore', message_view_only: false};
 }
 
+// check if this is a page_up or page_down key on iOS.
+// valid page_up and page_down should come from a keydown action, NOT a keypress.
+function block_ios_page_arrows(e, name) {
+    if (e.type === "keypress" && /page_(up|down)/.test(name)) {
+        // return true if it should be blocked;
+        return true;
+    }
+
+    return false;
+}
+
 // Process a keydown or keypress event.
 //
 // Returns true if we handled it, false if the browser should.
@@ -128,6 +139,10 @@ function process_hotkey(e) {
     activity.new_user_input = true;
 
     if (event_name === 'ignore') {
+        return false;
+    }
+
+    if (block_ios_page_arrows(e, event_name)) {
         return false;
     }
 
