@@ -213,7 +213,6 @@ def home_real(request):
         # TODO: Move all of these data to register_ret and pull from there
         realm_uri             = user_profile.realm.uri,
         password_auth_enabled = password_auth_enabled(user_profile.realm),
-        domain                = user_profile.realm.domain,
         domains               = list_of_domains_for_realm(user_profile.realm),
         name_changes_disabled = name_changes_disabled(user_profile.realm),
         mandatory_topics      = user_profile.realm.mandatory_topics,
