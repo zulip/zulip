@@ -1388,8 +1388,7 @@ def validate_user_access_to_subscribers(user_profile, stream):
     """
     validate_user_access_to_subscribers_helper(
         user_profile,
-        {"realm__domain": stream.realm.domain,
-         "realm_id": stream.realm_id,
+        {"realm_id": stream.realm_id,
          "invite_only": stream.invite_only},
         # We use a lambda here so that we only compute whether the
         # user is subscribed if we have to
