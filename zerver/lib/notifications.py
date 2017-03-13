@@ -301,6 +301,11 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
     messages = [um.message for um in UserMessage.objects.filter(user_profile=user_profile,
                                                                 message__id__in=message_ids,
                                                                 flags=~UserMessage.flags.read)]
+    
+    # Missed-message emails should not be sent for deleted messages.
+    # Fixes #3873
+    messages = [um for um in messages if um.content != '(deleted)']
+
     if not messages:
         return
 
@@ -326,6 +331,9 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
             list(unique_messages.values()),
             message_count_by_recipient_subject[recipient_subject],
         )
+        print("LALALALA")
+        print(unique_messages)
+        print("LALALALA")
 
 @uses_mandrill
 def clear_followup_emails_queue(email, mail_client=None):
