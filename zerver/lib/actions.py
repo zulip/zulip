@@ -3417,3 +3417,15 @@ def do_set_email_changes_disabled(realm, email_changes_disabled):
         value=email_changes_disabled,
     )
     send_event(event, active_user_ids(realm))
+
+def do_set_name_changes_disabled(realm, name_changes_disabled):
+    # type: (Realm, bool) -> None
+    realm.name_changes_disabled = name_changes_disabled
+    realm.save(update_fields=['name_changes_disabled'])
+    event = dict(
+        type="realm",
+        op="update",
+        property='name_changes_disabled',
+        value=name_changes_disabled,
+    )
+    send_event(event, active_user_ids(realm))
