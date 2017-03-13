@@ -249,7 +249,7 @@ def notify_new_user(user_profile, internal=False):
     # type: (UserProfile, bool) -> None
     if settings.NEW_USER_BOT is not None:
         send_signup_message(settings.NEW_USER_BOT, "signups", user_profile, internal)
-    statsd.gauge("users.signups.%s" % (user_profile.realm.domain.replace('.', '_')), 1, delta=True)
+    statsd.gauge("users.signups.%s" % (user_profile.realm.string_id), 1, delta=True)
 
 def add_new_user_history(user_profile, streams):
     # type: (UserProfile, Iterable[Stream]) -> None
