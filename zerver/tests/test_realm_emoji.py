@@ -3,6 +3,7 @@ from __future__ import absolute_import
 
 from zerver.lib.actions import get_realm, check_add_realm_emoji
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import get_test_image_file
 from zerver.models import RealmEmoji
 import ujson
 
@@ -12,7 +13,7 @@ class RealmEmojiTest(ZulipTestCase):
         # type: () -> None
         self.login("iago@zulip.com")
         realm = get_realm('zulip')
-        check_add_realm_emoji(realm, "my_emoji", "https://example.com/my_emoji")
+        check_add_realm_emoji(realm, "my_emoji", "my_emoji")
         result = self.client_get("/json/realm/emoji")
         self.assert_json_success(result)
         self.assertEqual(200, result.status_code)
@@ -23,7 +24,7 @@ class RealmEmojiTest(ZulipTestCase):
         # type: () -> None
         self.login("iago@zulip.com")
         realm = get_realm('zulip')
-        RealmEmoji.objects.create(realm=realm, name='my_emojy', img_url='https://example.com/my_emoji')
+        RealmEmoji.objects.create(realm=realm, name='my_emojy', file_name='my_emojy')
         result = self.client_get("/json/realm/emoji")
         self.assert_json_success(result)
         content = ujson.loads(result.content)
@@ -36,19 +37,20 @@ class RealmEmojiTest(ZulipTestCase):
         realm = get_realm('zulip')
         realm.add_emoji_by_admins_only = True
         realm.save()
-        check_add_realm_emoji(realm, "my_emoji", "https://example.com/my_emoji")
+        check_add_realm_emoji(realm, 'my_emojy', 'my_emojy')
         result = self.client_get("/json/realm/emoji")
         self.assert_json_success(result)
         content = ujson.loads(result.content)
         self.assertEqual(len(content["emoji"]), 1)
-        self.assertIsNone(content["emoji"]['my_emoji']['author'])
+        self.assertIsNone(content["emoji"]['my_emojy']['author'])
 
     def test_upload(self):
         # type: () -> None
         email = "iago@zulip.com"
         self.login(email)
-        data = {"url": "https://example.com/my_emoji"}
-        result = self.client_put("/json/realm/emoji/my_emoji", data)
+        with get_test_image_file('img.png') as fp1:
+            emoji_data = {'f1': fp1}
+            result = self.client_put_multipart('/json/realm/emoji/my_emoji', info=emoji_data)
         self.assert_json_success(result)
         self.assertEqual(200, result.status_code)
         emoji = RealmEmoji.objects.get(name="my_emoji")
@@ -65,14 +67,15 @@ class RealmEmojiTest(ZulipTestCase):
         realm_emoji = RealmEmoji.objects.get(realm=get_realm('zulip'))
         self.assertEqual(
             str(realm_emoji),
-            '<RealmEmoji(zulip): my_emoji https://example.com/my_emoji>'
+            '<RealmEmoji(zulip): my_emoji my_emoji.png>'
         )
 
     def test_upload_exception(self):
         # type: () -> None
         self.login("iago@zulip.com")
-        data = {"url": "https://example.com/my_emoji"}
-        result = self.client_put("/json/realm/emoji/my_em*oji", info=data)
+        with get_test_image_file('img.png') as fp1:
+            emoji_data = {'f1': fp1}
+            result = self.client_put_multipart('/json/realm/emoji/my_em*oji', info=emoji_data)
         self.assert_json_error(result, 'Invalid characters in emoji name')
 
     def test_upload_admins_only(self):
@@ -81,15 +84,16 @@ class RealmEmojiTest(ZulipTestCase):
         realm = get_realm('zulip')
         realm.add_emoji_by_admins_only = True
         realm.save()
-        data = {"url": "https://example.com/my_emoji"}
-        result = self.client_put("/json/realm/emoji/my_emoji", info=data)
+        with get_test_image_file('img.png') as fp1:
+            emoji_data = {'f1': fp1}
+            result = self.client_put_multipart('/json/realm/emoji/my_emoji', info=emoji_data)
         self.assert_json_error(result, 'Must be a realm administrator')
 
     def test_delete(self):
         # type: () -> None
         self.login("iago@zulip.com")
         realm = get_realm('zulip')
-        check_add_realm_emoji(realm, "my_emoji", "https://example.com/my_emoji")
+        check_add_realm_emoji(realm, "my_emoji", "my_emoji.png")
         result = self.client_delete("/json/realm/emoji/my_emoji")
         self.assert_json_success(result)
 
@@ -104,7 +108,7 @@ class RealmEmojiTest(ZulipTestCase):
         realm = get_realm('zulip')
         realm.add_emoji_by_admins_only = True
         realm.save()
-        check_add_realm_emoji(realm, "my_emoji", "https://example.com/my_emoji")
+        check_add_realm_emoji(realm, "my_emoji", "my_emoji.png")
         result = self.client_delete("/json/realm/emoji/my_emoji")
         self.assert_json_error(result, 'Must be a realm administrator')
 
@@ -113,3 +117,29 @@ class RealmEmojiTest(ZulipTestCase):
         self.login("iago@zulip.com")
         result = self.client_delete("/json/realm/emoji/invalid_emoji")
         self.assert_json_error(result, "Emoji 'invalid_emoji' does not exist")
+
+    def test_multiple_upload(self):
+        # type: () -> None
+        self.login("iago@zulip.com")
+        with get_test_image_file('img.png') as fp1, get_test_image_file('img.png') as fp2:
+            result = self.client_put_multipart('/json/realm/emoji/my_emoji', {'f1': fp1, 'f2': fp2})
+        self.assert_json_error(result, 'You must upload exactly one file.')
+
+    def test_emoji_upload_file_size_error(self):
+        # type: () -> None
+        self.login("iago@zulip.com")
+        with get_test_image_file('img.png') as fp:
+            with self.settings(MAX_EMOJI_FILE_SIZE=0):
+                result = self.client_put_multipart('/json/realm/emoji/my_emoji', {'file': fp})
+        self.assert_json_error(result, 'Uploaded file is larger than the allowed limit of 0 MB')
+
+    def test_upload_already_existed_emoji(self):
+        # type: () -> None
+        self.login("iago@zulip.com")
+        with get_test_image_file('img.png') as fp1:
+            emoji_data = {'f1': fp1}
+            self.client_put_multipart('/json/realm/emoji/my_emoji', info=emoji_data)
+        with get_test_image_file('img.png') as fp1:
+                emoji_data = {'f1': fp1}
+                result = self.client_put_multipart('/json/realm/emoji/my_emoji', info=emoji_data)
+        self.assert_json_error(result, 'Realm emoji with this Realm and Name already exists.')
