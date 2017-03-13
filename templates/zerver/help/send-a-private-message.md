@@ -19,6 +19,11 @@ appear.
 you can now send your message to the specified user(s) by pressing the Enter
 key or clicking the **Send** button, depending on your settings.
 
+    !!! tip ""
+        Whether or not the **Press Enter to send** option is enabled, pressing
+        `Ctrl` + `Enter` or `Tab` then `Enter` sends a message, while pressing
+        `Shift` + `Enter` inserts a new line in your message.
+
 !!! tip ""
     You can always cancel your message by clicking the x (<i
     class="icon-vector-remove"></i>) icon located at the top-right corner of
