@@ -152,3 +152,7 @@ as an **organization**.
 ## Linking to a Zulip server
 
 * [Join Zulip chat badge](/help/join-zulip-chat-badge)
+
+# Analytics
+
+* [Analytics](/help/analytics)
