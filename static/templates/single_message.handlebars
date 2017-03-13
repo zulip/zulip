@@ -41,11 +41,11 @@
             <div class="edit_content"></div>
             {{else}}
             <div class="reactions_hover">
-            <i class="icon-vector-smile reaction_button" data-msgid="{{msg/id}}" title="Emoji" ></i>
+            <i class="icon-vector-smile reaction_button" data-msgid="{{msg/id}}" data-original-title="" title="Add reaction..." ></i>
             </div>
             {{/if}}
             <div class="info actions_hover">
-              <i class="icon-vector-chevron-down" title="Message Options" ></i>
+              <i class="icon-vector-chevron-down" data-original-title="" title="Message options" ></i>
             </div>
             <div class="message_failed {{#unless msg.failed_request}}notvisible{{/unless}}">
               <i class="icon-vector-refresh refresh-failed-message" data-toggle="tooltip" title="{{t 'Retry' }}"></i>
