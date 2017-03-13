@@ -313,7 +313,7 @@ class PersonalMessagesTest(ZulipTestCase):
         with mock.patch('zerver.models.get_display_recipient', return_value='recip'):
             self.assertEqual(str(message),
                              u'<Message: recip /  / '
-                             '<UserProfile: test@zulip.com <Realm: zulip.com 1>>>')
+                             '<UserProfile: test@zulip.com <Realm: zulip 1>>>')
 
             user_message = most_recent_usermessage(user_profile)
             self.assertEqual(str(user_message),
@@ -489,7 +489,7 @@ class StreamMessagesTest(ZulipTestCase):
         message = most_recent_message(user_profile)
         self.assertEqual(str(message),
                          u'<Message: Denmark / my topic / '
-                         '<UserProfile: hamlet@zulip.com <Realm: zulip.com 1>>>')
+                         '<UserProfile: hamlet@zulip.com <Realm: zulip 1>>>')
 
     def test_message_mentions(self):
         # type: () -> None

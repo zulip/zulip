@@ -173,7 +173,7 @@ class Realm(ModelReprMixin, models.Model):
 
     def __unicode__(self):
         # type: () -> Text
-        return u"<Realm: %s %s>" % (self.domain, self.id)
+        return u"<Realm: %s %s>" % (self.string_id, self.id)
 
     @cache_with_key(get_realm_emoji_cache_key, timeout=3600*24*7)
     def get_emoji(self):
