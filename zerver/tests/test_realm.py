@@ -135,6 +135,20 @@ class RealmTest(ZulipTestCase):
         realm = update_with_api(invite_by_admins_only=False)
         self.assertEqual(realm.invite_by_admins_only, False)
 
+        # inline_image_preview
+        set_up_db('inline_image_preview', True)
+        realm = update_with_api(inline_image_preview=False)
+        self.assertEqual(realm.inline_image_preview, False)
+        realm = update_with_api(inline_image_preview=True)
+        self.assertEqual(realm.inline_image_preview, True)
+
+        # inline_url_embed_preview
+        set_up_db('inline_url_embed_preview', False)
+        realm = update_with_api(inline_url_embed_preview=True)
+        self.assertEqual(realm.inline_url_embed_preview, True)
+        realm = update_with_api(inline_url_embed_preview=False)
+        self.assertEqual(realm.inline_url_embed_preview, False)
+
         # create_stream_by_admins_only
         set_up_db('create_stream_by_admins_only', False)
         realm = update_with_api(create_stream_by_admins_only=True)

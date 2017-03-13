@@ -97,6 +97,8 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         state['realm_restricted_to_domain'] = user_profile.realm.restricted_to_domain
         state['realm_invite_required'] = user_profile.realm.invite_required
         state['realm_invite_by_admins_only'] = user_profile.realm.invite_by_admins_only
+        state['realm_inline_image_preview'] = user_profile.realm.inline_image_preview
+        state['realm_inline_url_embed_preview'] = user_profile.realm.inline_url_embed_preview
         state['realm_authentication_methods'] = user_profile.realm.authentication_methods_dict()
         state['realm_create_stream_by_admins_only'] = user_profile.realm.create_stream_by_admins_only
         state['realm_add_emoji_by_admins_only'] = user_profile.realm.add_emoji_by_admins_only
