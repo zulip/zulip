@@ -11,8 +11,6 @@ $(function () {
     var clicking = false;
     var mouse_moved = false;
 
-    var meta = {};
-
     function mousedown() {
         mouse_moved = false;
         clicking = true;
@@ -261,12 +259,6 @@ $(function () {
         }
     });
 
-    $("#drafts_table").on("click", ".exit, #draft_overlay", function (e) {
-        if ($(e.target).is(".exit, .exit-sign, #draft_overlay, #draft_overlay > .flex")) {
-            drafts.close();
-        }
-    });
-
     // HOME
 
     // Capture both the left-sidebar Home click and the tab breadcrumb Home
@@ -336,12 +328,6 @@ $(function () {
     $('.empty_feed_compose_private').click(function (e) {
         compose.start('private', {trigger: 'empty feed message'});
         e.preventDefault();
-    });
-
-    $(".informational-overlays").click(function (e) {
-        if ($(e.target).is(".informational-overlays, .exit")) {
-            ui.hide_info_overlay();
-        }
     });
 
     $("body").on("click", "[data-overlay-trigger]", function () {
@@ -549,14 +535,6 @@ $(function () {
                     user: user,
                 });
             }
-        });
-
-        $("#overlay .exit, #overlay .image-preview").click(function (e) {
-            if ($(e.target).is(".exit, .image-preview")) {
-                ui.exit_lightbox_photo();
-            }
-            e.preventDefault();
-            e.stopPropagation();
         });
 
         $("#overlay .download").click(function () {

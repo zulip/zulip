@@ -323,7 +323,7 @@ exports.initialize = function () {
 };
 
 exports.close_modals = function () {
-    $("[data-overlay]").removeClass("show");
+    $(".overlay.show").removeClass("show");
 };
 
 exports.exit_modal = function (callback) {
@@ -334,8 +334,6 @@ exports.exit_modal = function (callback) {
         if (typeof callback === "function") {
             callback();
         }
-
-        exports.close_modals();
     }
 };
 
