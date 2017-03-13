@@ -20,6 +20,11 @@ topic for your message in the **Topic** field.
 
 4. Enter your message in the **Compose your message here...** field.
 
+    !!! tip ""
+        Whether or not the **Press Enter to send** option is enabled, pressing
+        `Ctrl` + `Enter` or `Tab` then `Enter` sends a message while pressing
+        `Shift` + `Enter` inserts a new line in your message.
+
 5. Once you have finished completing your message and adding the recipients,
 you can now send your message to the specified stream under the specified
 topic by pressing the Enter key or clicking the **Send** button, depending
