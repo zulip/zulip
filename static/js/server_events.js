@@ -62,6 +62,10 @@ function dispatch_normal_event(event) {
             page_params.realm_invite_required = event.value;
         } else if (event.op === 'update' && event.property === 'invite_by_admins_only') {
             page_params.realm_invite_by_admins_only = event.value;
+        } else if (event.op === 'update' && event.property === 'inline_image_preview') {
+            page_params.realm_inline_image_preview = event.value;
+        } else if (event.op === 'update' && event.property === 'inline_url_embed_preview') {
+            page_params.realm_inline_url_embed_preview = event.value;
         } else if (event.op === 'update' && event.property === 'create_stream_by_admins_only') {
             page_params.realm_create_stream_by_admins_only = event.value;
             if (!page_params.is_admin) {

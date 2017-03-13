@@ -51,6 +51,8 @@ from zerver.lib.actions import (
     do_set_realm_invite_by_admins_only,
     do_set_name_changes_disabled,
     do_set_email_changes_disabled,
+    do_set_realm_inline_image_preview,
+    do_set_realm_inline_url_embed_preview,
     do_set_realm_message_editing,
     do_set_realm_default_language,
     do_set_realm_authentication_methods,
@@ -708,6 +710,34 @@ class EventsRegisterTest(ZulipTestCase):
         do_set_realm_invite_by_admins_only(self.user_profile.realm, invite_by_admins_only=False)
         for invite_by_admins_only in (True, False):
             events = self.do_test(lambda: do_set_realm_invite_by_admins_only(self.user_profile.realm, invite_by_admins_only))
+            error = schema_checker('events[0]', events[0])
+            self.assert_on_error(error)
+
+    def test_change_realm_inline_image_preview(self):
+        # type: () -> None
+        schema_checker = check_dict([
+            ('type', equals('realm')),
+            ('op', equals('update')),
+            ('property', equals('inline_image_preview')),
+            ('value', check_bool),
+        ])
+        do_set_realm_inline_image_preview(self.user_profile.realm, inline_image_preview=False)
+        for inline_image_preview in (True, False):
+            events = self.do_test(lambda: do_set_realm_inline_image_preview(self.user_profile.realm, inline_image_preview))
+            error = schema_checker('events[0]', events[0])
+            self.assert_on_error(error)
+
+    def test_change_realm_inline_url_embed_preview(self):
+        # type: () -> None
+        schema_checker = check_dict([
+            ('type', equals('realm')),
+            ('op', equals('update')),
+            ('property', equals('inline_url_embed_preview')),
+            ('value', check_bool),
+        ])
+        do_set_realm_inline_url_embed_preview(self.user_profile.realm, inline_url_embed_preview=False)
+        for inline_url_embed_preview in (True, False):
+            events = self.do_test(lambda: do_set_realm_inline_url_embed_preview(self.user_profile.realm, inline_url_embed_preview))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 

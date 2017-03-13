@@ -12,7 +12,8 @@ from django.core import validators
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
 from zerver.lib.bugdown import (
     BugdownRenderingException,
-    version as bugdown_version
+    version as bugdown_version,
+    url_embed_preview_enabled_for_realm
 )
 from zerver.lib.cache import (
     to_dict_cache_key,
@@ -479,6 +480,30 @@ def do_set_realm_invite_by_admins_only(realm, invite_by_admins_only):
     )
     send_event(event, active_user_ids(realm))
 
+def do_set_realm_inline_image_preview(realm, inline_image_preview):
+    # type: (Realm, bool) -> None
+    realm.inline_image_preview = inline_image_preview
+    realm.save(update_fields=['inline_image_preview'])
+    event = dict(
+        type="realm",
+        op="update",
+        property='inline_image_preview',
+        value=inline_image_preview,
+    )
+    send_event(event, active_user_ids(realm))
+
+def do_set_realm_inline_url_embed_preview(realm, inline_url_embed_preview):
+    # type: (Realm, bool) -> None
+    realm.inline_url_embed_preview = inline_url_embed_preview
+    realm.save(update_fields=['inline_url_embed_preview'])
+    event = dict(
+        type="realm",
+        op="update",
+        property='inline_url_embed_preview',
+        value=inline_url_embed_preview,
+    )
+    send_event(event, active_user_ids(realm))
+
 def do_set_realm_authentication_methods(realm, authentication_methods):
     # type: (Realm, Dict[str, bool]) -> None
     for key, value in list(authentication_methods.items()):
@@ -924,7 +949,7 @@ def do_send_messages(messages_maybe_none):
             event['sender_queue_id'] = message['sender_queue_id']
         send_event(event, users)
 
-        if settings.INLINE_URL_EMBED_PREVIEW and links_for_embed:
+        if url_embed_preview_enabled_for_realm(message['message']) and links_for_embed:
             event_data = {
                 'message_id': message['message'].id,
                 'message_content': message['message'].content,

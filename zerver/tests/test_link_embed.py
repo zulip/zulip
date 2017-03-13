@@ -256,6 +256,20 @@ class PreviewTestCase(ZulipTestCase):
         msg = self._send_message_with_test_org_url(sender_email='prospero@zulip.com')
         self.assertIn(embedded_link, msg.rendered_content)
 
+    def test_inline_url_embed_preview(self):
+        # type: () -> None
+        with_preview = '<p><a href="http://test.org/" target="_blank" title="http://test.org/">http://test.org/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="http://test.org/" style="background-image: url(http://ia.media-imdb.com/images/rock.jpg)" target="_blank"></a><div class="data-container"><div class="message_embed_title"><a href="http://test.org/" target="_blank" title="The Rock">The Rock</a></div><div class="message_embed_description">Description text</div></div></div>'
+        without_preview = '<p><a href="http://test.org/" target="_blank" title="http://test.org/">http://test.org/</a></p>'
+        msg = self._send_message_with_test_org_url(sender_email='hamlet@zulip.com')
+        self.assertEqual(msg.rendered_content, with_preview)
+
+        realm = msg.get_realm()
+        setattr(realm, 'inline_url_embed_preview', False)
+        realm.save()
+
+        msg = self._send_message_with_test_org_url(sender_email='prospero@zulip.com', queue_should_run=False)
+        self.assertEqual(msg.rendered_content, without_preview)
+
     def test_http_error_get_data(self):
         # type: () -> None
         url = 'http://test.org/'

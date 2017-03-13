@@ -206,6 +206,8 @@ def home_real(request):
         server_generation     = settings.SERVER_GENERATION,
         use_websockets        = settings.USE_WEBSOCKETS,
         save_stacktraces      = settings.SAVE_FRONTEND_STACKTRACES,
+        server_inline_image_preview = settings.INLINE_IMAGE_PREVIEW,
+        server_inline_url_embed_preview = settings.INLINE_URL_EMBED_PREVIEW,
 
         # realm data.
         # TODO: Move all of these data to register_ret and pull from there
@@ -299,6 +301,8 @@ def home_real(request):
         'realm_icon_source',
         'realm_icon_url',
         'realm_invite_by_admins_only',
+        'realm_inline_image_preview',
+        'realm_inline_url_embed_preview',
         'realm_invite_required',
         'realm_message_content_edit_limit_seconds',
         'realm_name',

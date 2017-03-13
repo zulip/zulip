@@ -972,6 +972,7 @@ def update_message_backend(request, user_profile,
     message, ignored_user_message = access_message(user_profile, message_id)
 
     # You only have permission to edit a message if:
+    # you change this value also change those two parameters in message_edit.js.
     # 1. You sent it, OR:
     # 2. This is a topic-only edit for a (no topic) message, OR:
     # 3. This is a topic-only edit and you are an admin.
@@ -1034,7 +1035,7 @@ def update_message_backend(request, user_profile,
                                        propagate_mode, content, rendered_content)
     # Include the number of messages changed in the logs
     request._log_data['extra'] = "[%s]" % (number_changed,)
-    if links_for_embed and getattr(settings, 'INLINE_URL_EMBED_PREVIEW', None):
+    if links_for_embed and bugdown.url_embed_preview_enabled_for_realm(message):
         event_data = {
             'message_id': message.id,
             'message_content': message.content,
