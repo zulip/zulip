@@ -3173,7 +3173,7 @@ def do_refer_friend(user_profile, email):
     content = ('Referrer: "%s" <%s>\n'
                'Realm: %s\n'
                'Referred: %s') % (user_profile.full_name, user_profile.email,
-                                  user_profile.realm.domain, email)
+                                  user_profile.realm.string_id, email)
     subject = "Zulip referral: %s" % (email,)
     from_email = '"%s" <%s>' % (user_profile.full_name, 'referrals@zulip.com')
     to_email = '"Zulip Referrals" <zulip+referrals@zulip.com>'
