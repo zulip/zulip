@@ -439,7 +439,7 @@ class BugdownTest(TestCase):
         realm_filter.save()
         self.assertEqual(
             realm_filter.__unicode__(),
-            '<RealmFilter(zulip.com): #(?P<id>[0-9]{2,8})'
+            '<RealmFilter(zulip): #(?P<id>[0-9]{2,8})'
             ' https://trac.zulip.net/ticket/%(id)s>')
 
         msg = Message(sender=get_user_profile_by_email("othello@zulip.com"),

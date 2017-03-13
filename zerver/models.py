@@ -442,7 +442,7 @@ class RealmFilter(models.Model):
 
     def __unicode__(self):
         # type: () -> Text
-        return u"<RealmFilter(%s): %s %s>" % (self.realm.domain, self.pattern, self.url_format_string)
+        return u"<RealmFilter(%s): %s %s>" % (self.realm.string_id, self.pattern, self.url_format_string)
 
 def get_realm_filters_cache_key(realm_id):
     # type: (int) -> Text
