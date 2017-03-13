@@ -581,7 +581,7 @@ def fetch_user_profile_cross_realm(response, config, context):
     # type: (TableData, Config, Context) -> None
     realm = context['realm']
 
-    if realm.domain == "zulip.com":
+    if realm.string_id == "zulip":
         response['zerver_userprofile_crossrealm'] = []
     else:
         response['zerver_userprofile_crossrealm'] = [dict(email=x.email, id=x.id) for x in [
