@@ -405,7 +405,7 @@ def flush_realm(sender, **kwargs):
 
 def realm_alert_words_cache_key(realm):
     # type: (Realm) -> Text
-    return u"realm_alert_words:%s" % (realm.domain,)
+    return u"realm_alert_words:%s" % (realm.string_id,)
 
 # Called by models.py to flush the stream cache whenever we save a stream
 # object.
