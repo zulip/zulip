@@ -20,7 +20,7 @@ def migrate_existing_data(apps, schema_editor):
             if owner == message.sender:
                 if message.recipient.type == Recipient.STREAM:
                     stream = Stream.objects.get(id=message.recipient.type_id)
-                    is_realm_public = stream.realm.domain != "mit.edu" and not stream.invite_only
+                    is_realm_public = not stream.realm.is_zephyr_mirror_realm and not stream.invite_only
                     entry.is_realm_public = entry.is_realm_public or is_realm_public
 
         entry.save()
