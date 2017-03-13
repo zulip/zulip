@@ -1,6 +1,4 @@
-set_global('page_params', {
-    domain: 'zulip.com',
-});
+set_global('page_params', {});
 add_dependencies({
     unread: 'js/unread.js',
 });

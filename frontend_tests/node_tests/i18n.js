@@ -65,7 +65,6 @@ global.$ = require('jquery')(window);
             enable_offline_push_notifications: false,
             enable_online_push_notifications: false,
             enable_digest_emails: false,
-            domain: "zulip.com",
             autoscroll_forever: false,
             default_desktop_notifications: false,
         },

@@ -762,7 +762,6 @@ function render(template_name, args) {
     var page_params = $.extend(page_param_checkbox_options, {
         fullname: "Alyssa P. Hacker", password_auth_enabled: true,
         avatar_url: "https://google.com",
-        domain: "zulip.com",
     });
 
     var checkbox_ids = ["enable_stream_desktop_notifications",

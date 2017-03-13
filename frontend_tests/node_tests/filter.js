@@ -6,10 +6,7 @@ add_dependencies({
     util: 'js/util.js',
 });
 
-set_global('page_params', {
-    domain: 'zulip.com',
-});
-
+set_global('page_params', {});
 set_global('feature_flags', {});
 
 var Filter = require('js/filter.js');
@@ -566,4 +563,3 @@ function get_predicate(operators) {
     assert.deepEqual(filter.operands('sender'), ['showell@foo.com']);
     assert.deepEqual(filter.operands('stream'), ['steve@foo.com']);
 }());
-
