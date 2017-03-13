@@ -93,7 +93,6 @@ def get_display_recipient_remote_cache(recipient_id, recipient_type, recipient_t
                                             .select_related()
                                             .order_by('email'))
     return [{'email': user_profile.email,
-             'domain': user_profile.realm.domain,
              'full_name': user_profile.full_name,
              'short_name': user_profile.short_name,
              'id': user_profile.id,

@@ -172,7 +172,6 @@ class MessageDict(object):
                 # add the sender in if this isn't a message between
                 # someone and his self, preserving ordering
                 recip = {'email': sender_email,
-                         'domain': sender_realm_domain,
                          'full_name': sender_full_name,
                          'short_name': sender_short_name,
                          'id': sender_id,
