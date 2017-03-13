@@ -1486,7 +1486,7 @@ def notify_subscriptions_added(user_profile, sub_pairs, stream_emails, no_log=Fa
         log_event({'type': 'subscription_added',
                    'user': user_profile.email,
                    'names': [stream.name for sub, stream in sub_pairs],
-                   'domain': user_profile.realm.domain})
+                   'realm': user_profile.realm.string_id})
 
     # Send a notification to the user who subscribed.
     payload = [dict(name=stream.name,
@@ -1676,7 +1676,7 @@ def notify_subscriptions_removed(user_profile, streams, no_log=False):
         log_event({'type': 'subscription_removed',
                    'user': user_profile.email,
                    'names': [stream.name for stream in streams],
-                   'domain': user_profile.realm.domain})
+                   'realm': user_profile.realm.string_id})
 
     payload = [dict(name=stream.name, stream_id=stream.id) for stream in streams]
     event = dict(type="subscription", op="remove",
@@ -1939,7 +1939,7 @@ def do_change_icon_source(realm, icon_source, log=True):
 
     if log:
         log_event({'type': 'realm_change_icon',
-                   'realm': realm.domain,
+                   'realm': realm.string_id,
                    'icon_source': icon_source})
 
     send_event(dict(type='realm',
@@ -2059,7 +2059,7 @@ def do_rename_stream(stream, new_name, log=True):
 
     if log:
         log_event({'type': 'stream_name_change',
-                   'domain': stream.realm.domain,
+                   'realm': stream.realm.string_id,
                    'new_name': new_name})
 
     recipient = get_recipient(Recipient.STREAM, stream.id)
@@ -2378,7 +2378,7 @@ def set_default_streams(realm, stream_dict):
         DefaultStream.objects.get_or_create(stream=realm.notifications_stream, realm=realm)
 
     log_event({'type': 'default_streams',
-               'domain': realm.domain,
+               'realm': realm.string_id,
                'streams': stream_names})
 
 def notify_default_streams(realm):
