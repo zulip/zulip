@@ -9,6 +9,7 @@ from zerver.lib.actions import (
     do_set_realm_create_stream_by_admins_only,
     do_set_realm_name,
     do_set_realm_invite_by_admins_only,
+    do_set_name_changes_disabled,
     do_set_email_changes_disabled,
     do_set_realm_add_emoji_by_admins_only,
     do_set_realm_invite_required,
@@ -30,6 +31,7 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
                  restricted_to_domain=REQ(validator=check_bool, default=None),
                  invite_required=REQ(validator=check_bool, default=None),
                  invite_by_admins_only=REQ(validator=check_bool, default=None),
+                 name_changes_disabled=REQ(validator=check_bool, default=None),
                  email_changes_disabled=REQ(validator=check_bool, default=None),
                  create_stream_by_admins_only=REQ(validator=check_bool, default=None),
                  add_emoji_by_admins_only=REQ(validator=check_bool, default=None),
@@ -38,7 +40,7 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
                  default_language=REQ(validator=check_string, default=None),
                  waiting_period_threshold=REQ(converter=to_non_negative_int, default=None),
                  authentication_methods=REQ(validator=check_dict([]), default=None)):
-    # type: (HttpRequest, UserProfile, Optional[str], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[int], Optional[str], Optional[int], Optional[dict]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Optional[str], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[int], Optional[str], Optional[int], Optional[dict]) -> HttpResponse
     # Validation for default_language
     if default_language is not None and default_language not in get_available_language_codes():
         raise JsonableError(_("Invalid language '%s'" % (default_language,)))
@@ -56,6 +58,9 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
     if invite_by_admins_only is not None and realm.invite_by_admins_only != invite_by_admins_only:
         do_set_realm_invite_by_admins_only(realm, invite_by_admins_only)
         data['invite_by_admins_only'] = invite_by_admins_only
+    if name_changes_disabled is not None and realm.name_changes_disabled != name_changes_disabled:
+        do_set_name_changes_disabled(realm, name_changes_disabled)
+        data['name_changes_disabled'] = name_changes_disabled
     if email_changes_disabled is not None and realm.email_changes_disabled != email_changes_disabled:
         do_set_email_changes_disabled(realm, email_changes_disabled)
         data['email_changes_disabled'] = email_changes_disabled

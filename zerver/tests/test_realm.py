@@ -8,7 +8,7 @@ from mock import patch
 from typing import Any, Dict, List, Text
 
 from zerver.lib.actions import \
-    do_change_is_admin, do_set_realm_name, do_deactivate_realm
+    do_change_is_admin, do_set_realm_name, do_deactivate_realm, do_set_name_changes_disabled
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import tornado_redirected_to_list
@@ -103,6 +103,13 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.create_stream_by_admins_only, False)
 
         # email address change disabled
+        set_up_db('name_changes_disabled', False)
+        realm = update_with_api(name_changes_disabled=True)
+        self.assertEqual(realm.name_changes_disabled, True)
+        realm = update_with_api(name_changes_disabled=False)
+        self.assertEqual(realm.name_changes_disabled, False)
+
+        # email address change disabled
         set_up_db('email_changes_disabled', False)
         realm = update_with_api(email_changes_disabled=True)
         self.assertEqual(realm.email_changes_disabled, True)
@@ -149,6 +156,19 @@ class RealmTest(ZulipTestCase):
         req = dict(name=ujson.dumps(new_name))
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result, 'Must be a realm administrator')
+
+    def test_unauthorized_name_change(self):
+        # type: () -> None
+        data = {'full_name': 'Sir Hamlet'}
+        email = 'hamlet@zulip.com'
+        self.login(email)
+        user_profile = get_user_profile_by_email(email)
+        do_set_name_changes_disabled(user_profile.realm, name_changes_disabled=True)
+        url = '/json/settings/change'
+        result = self.client_post(url, data)
+        self.assertEqual(result.status_code, 200)
+        # Since the setting fails silently, no message is returned
+        self.assert_in_response("", result)
 
     def test_do_deactivate_realm(self):
         # type: () -> None
