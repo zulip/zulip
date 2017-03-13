@@ -703,9 +703,8 @@ def get_recipient_user_profiles(recipient, sender_id):
             'user_profile__email',
             'user_profile__enable_online_push_notifications',
             'user_profile__is_active',
-            'user_profile__realm__domain'
         ]
-        query = Subscription.objects.select_related("user_profile", "user_profile__realm").only(*fields).filter(
+        query = Subscription.objects.select_related("user_profile").only(*fields).filter(
             recipient=recipient, active=True)
         recipients = [s.user_profile for s in query]
     else:
@@ -2846,7 +2845,7 @@ def gather_subscriptions_helper(user_profile, include_subscribers=True):
     stream_ids = set([sub["recipient__type_id"] for sub in sub_dicts])
     all_streams = get_active_streams(user_profile.realm).select_related(
         "realm").values("id", "name", "invite_only", "realm_id",
-                        "realm__domain", "email_token", "description")
+                        "email_token", "description")
 
     stream_dicts = [stream for stream in all_streams if stream['id'] in stream_ids]
     stream_hash = {}
