@@ -57,8 +57,7 @@ class Command(BaseCommand):
         installation_time = timezone.now() - timedelta(days=self.DAYS_OF_DATA)
         last_end_time = floor_to_day(timezone.now())
         realm = Realm.objects.create(
-            string_id='analytics', name='Analytics', domain='analytics.ds',
-            date_created=installation_time)
+            string_id='analytics', name='Analytics', date_created=installation_time)
         shylock = self.create_user('shylock@analytics.ds', 'Shylock', True, installation_time, realm)
 
         def insert_fixture_data(stat, fixture_data, table):

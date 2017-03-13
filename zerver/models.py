@@ -103,11 +103,6 @@ def get_realm_emoji_cache_key(realm):
     return u'realm_emoji:%s' % (realm.id,)
 
 class Realm(ModelReprMixin, models.Model):
-    # domain is a domain in the Internet sense. It must be structured like a
-    # valid email domain. We use is to restrict access, identify bots, etc.
-    domain = models.CharField(max_length=40, db_index=True, unique=True) # type: Text
-    # name is the user-visible identifier for the realm. It has no required
-    # structure.
     AUTHENTICATION_FLAGS = [u'Google', u'Email', u'GitHub', u'LDAP', u'Dev', u'RemoteUser']
 
     name = models.CharField(max_length=40, null=True) # type: Optional[Text]
