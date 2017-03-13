@@ -1075,11 +1075,11 @@ def recipient_for_emails(emails, not_forged_mirror_message,
     recipient_profile_ids = set()
 
     # We exempt cross-realm bots from the check that all the recipients
-    # are in the same domain.
-    realm_domains = set()
+    # are in the same realm.
+    realms = set()
     exempt_emails = get_cross_realm_emails()
     if sender.email not in exempt_emails:
-        realm_domains.add(sender.realm.domain)
+        realms.add(sender.realm)
 
     for email in emails:
         try:
@@ -1091,12 +1091,12 @@ def recipient_for_emails(emails, not_forged_mirror_message,
             raise ValidationError(_("'%s' is no longer using Zulip.") % (email,))
         recipient_profile_ids.add(user_profile.id)
         if email not in exempt_emails:
-            realm_domains.add(user_profile.realm.domain)
+            realms.add(user_profile.realm)
 
     if not_forged_mirror_message and user_profile.id not in recipient_profile_ids:
         raise ValidationError(_("User not authorized for this query"))
 
-    if len(realm_domains) > 1:
+    if len(realms) > 1:
         raise ValidationError(_("You can't send private messages outside of your organization."))
 
     # If the private message is just between the sender and
