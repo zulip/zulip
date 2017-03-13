@@ -345,8 +345,8 @@ def create_user_backend(request, user_profile, email=REQ(), password=REQ(),
     # invited first.)
     realm = user_profile.realm
     if not email_allowed_for_realm(email, user_profile.realm):
-        return json_error(_("Email '%(email)s' does not belong to domain '%(domain)s'") %
-                          {'email': email, 'domain': realm.domain})
+        return json_error(_("Email '%(email)s' not allowed for realm '%(realm)s'") %
+                          {'email': email, 'realm': realm.string_id})
 
     try:
         get_user_profile_by_email(email)

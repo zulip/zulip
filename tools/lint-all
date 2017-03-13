@@ -309,7 +309,7 @@ def build_custom_checkers(by_lang):
                          ]),
          'exclude_line': set([
              ('zerver/views/users.py',
-              "return json_error(_(\"Email '%(email)s' does not belong to domain '%(domain)s'\") %"),
+              "return json_error(_(\"Email '%(email)s' not allowed for realm '%(realm)s'\") %"),
              ('zproject/settings.py',
               "'format': '%(asctime)s %(levelname)-8s %(message)s'"),
          ]),
