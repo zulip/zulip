@@ -51,7 +51,6 @@ class HomeTest(ZulipTestCase):
             "default_language_name",
             "desktop_notifications_enabled",
             "development_environment",
-            "domain",
             "domains",
             "email",
             "emoji_alt_code",
