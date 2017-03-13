@@ -253,6 +253,10 @@ function process_hotkey(e) {
             }
             return true;
         } else if (event_name === 'escape') {
+            // To avoid backdrop leak when a modal is opened and "escape" is clicked
+            if ($(document.activeElement).hasClass('modal hide in')) {
+                return false;
+            }
             $("#settings_overlay_container .exit").click();
             return true;
         }
