@@ -48,7 +48,7 @@
 
 .drafts-list {
     overflow: auto;
-    height: calc(100% - 90px);
+    height: calc(100% - 55px);
     width: 100%;
     margin-top: 10px;
 }
@@ -163,8 +163,16 @@
     }
 }
 
+@media (max-width: 500px) {
+    .draft-row .draft-info-box .draft_controls {
+        right: 0px;
+    }
+}
+
 @media (max-width: 700px) {
     #draft_overlay .drafts-container {
         height: 95%;
+        max-width: none;
+        width: 90%;
     }
 }
