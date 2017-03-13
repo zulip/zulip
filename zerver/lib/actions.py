@@ -3095,9 +3095,9 @@ def notify_realm_emoji(realm):
                  realm_emoji=realm.get_emoji())
     send_event(event, active_user_ids(realm))
 
-def check_add_realm_emoji(realm, name, img_url, author=None):
+def check_add_realm_emoji(realm, name, file_name, author=None):
     # type: (Realm, Text, Text, Optional[UserProfile]) -> None
-    emoji = RealmEmoji(realm=realm, name=name, img_url=img_url, author=author)
+    emoji = RealmEmoji(realm=realm, name=name, file_name=file_name, author=author)
     emoji.full_clean()
     emoji.save()
     notify_realm_emoji(realm)

@@ -71,7 +71,7 @@ casper.then(function () {
     casper.waitUntilVisible('.admin-emoji-form', function () {
         casper.fill('form.admin-emoji-form', {
             name: 'MouseFace',
-            url: 'http://zulipdev.com:9991/static/images/integrations/logos/jenkins.png',
+            emoji_file_input: 'static/images/logo/zulip-icon-128x128.png',
         }, true);
     });
 });
@@ -85,7 +85,7 @@ casper.then(function () {
 casper.then(function () {
     casper.waitUntilVisible('.emoji_row', function () {
         casper.test.assertSelectorHasText('.emoji_row .emoji_name', 'MouseFace');
-        casper.test.assertExists('.emoji_row img[src="http://zulipdev.com:9991/static/images/integrations/logos/jenkins.png"]');
+        casper.test.assertExists('.emoji_row img[src="/user_avatars/1/emoji/MouseFace.png"]');
         casper.click('.emoji_row button.delete');
     });
 });
