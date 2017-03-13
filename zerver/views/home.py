@@ -294,6 +294,7 @@ def home_real(request):
         'realm_create_stream_by_admins_only',
         'realm_default_language',
         'realm_default_streams',
+        'realm_email_changes_disabled',
         'realm_emoji',
         'realm_icon_source',
         'realm_icon_url',
