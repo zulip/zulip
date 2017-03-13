@@ -12,9 +12,8 @@ from zerver.models import Message, UserProfile, Stream, Recipient, UserPresence,
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, do_send_messages, \
     do_change_is_admin
 from django.conf import settings
-from zerver.lib.bulk_create import bulk_create_realms, \
-    bulk_create_streams, bulk_create_users, bulk_create_huddles, \
-    bulk_create_clients
+from zerver.lib.bulk_create import bulk_create_clients, \
+    bulk_create_streams, bulk_create_users, bulk_create_huddles
 from zerver.models import DefaultStream, get_stream, get_realm
 
 import random
