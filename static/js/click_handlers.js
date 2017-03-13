@@ -639,7 +639,7 @@ $(function () {
     $("#settings_overlay_container").on("click", function (e) {
         var $target = $(e.target);
         if ($target.is(".exit-sign, .exit")) {
-            hashchange.exit_settings();
+            hashchange.exit_modal();
         }
     });
 

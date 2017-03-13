@@ -210,7 +210,7 @@ exports.launch = function () {
 };
 
 exports.close = function () {
-    hashchange.exit_settings();
+    hashchange.exit_modal();
     $("#draft_overlay").removeClass("show");
 };
 
