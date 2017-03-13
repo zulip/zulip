@@ -869,7 +869,7 @@ input[type=checkbox].inline-block {
 }
 
 #settings_page .settings-header .exit {
-    font-weight: 400;
+    font-weight: 600;
     position: absolute;
     top: 10px;
     right: 10px;
@@ -882,8 +882,8 @@ input[type=checkbox].inline-block {
     position: relative;
     top: 3px;
     margin-left: 3px;
-    font-size: 1.7em;
-    font-weight: 500;
+    font-size: 1.5rem;
+    font-weight: 600;
     cursor: pointer;
 }
 
