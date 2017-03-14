@@ -577,7 +577,6 @@ $(function () {
     notifications.initialize();
     gear_menu.initialize();
     hashchange.initialize();
-    invite.initialize();
     pointer.initialize();
     unread_ui.initialize();
     activity.initialize();

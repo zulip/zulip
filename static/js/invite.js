@@ -40,16 +40,24 @@ function prepare_form_to_be_shown() {
     reset_error_messages();
 }
 
+$(document).on('click', '.invite_check_all_button', function (e) {
+    $('#streams_to_add :checkbox').prop('checked', true);
+    e.preventDefault();
+});
+
+$(document).on('click', '.invite_uncheck_all_button', function (e) {
+    $('#streams_to_add :checkbox').prop('checked', false);
+    e.preventDefault();
+});
+
 exports.initialize = function () {
     var invite_status = $('#invite_status');
     var invitee_emails = $("#invitee_emails");
     var invitee_emails_group = invitee_emails.closest('.control-group');
 
     $('#submit-invitation').button();
-    $('#invite-user').on('show', prepare_form_to_be_shown);
-    $('#invite-user').on('shown', function () {
-        invitee_emails.focus().autosize();
-    });
+    prepare_form_to_be_shown();
+    invitee_emails.focus().autosize();
 
     $("#invite_user_form").ajaxForm({
         dataType: 'json',
@@ -115,15 +123,7 @@ exports.initialize = function () {
         },
     });
 
-    $(document).on('click', '.invite_check_all_button', function (e) {
-        $('#streams_to_add :checkbox').prop('checked', true);
-        e.preventDefault();
-    });
-
-    $(document).on('click', '.invite_uncheck_all_button', function (e) {
-        $('#streams_to_add :checkbox').prop('checked', false);
-        e.preventDefault();
-    });
+    $("#invite-user").addClass("show");
 };
 
 return exports;

@@ -236,6 +236,7 @@ var get_hash_group = (function () {
     var groups = [
         ["streams"],
         ["settings", "administration"],
+        ["invite"],
     ];
 
     return function (value) {
@@ -255,7 +256,7 @@ var get_hash_group = (function () {
 
 function should_ignore(hash) {
     // Hash changes within this list are overlaws and should not unnarrow (etc.)
-    var ignore_list = ["streams", "drafts", "settings", "administration"];
+    var ignore_list = ["streams", "drafts", "settings", "administration", "invite"];
     var main_hash = get_main_hash(hash);
 
     return (ignore_list.indexOf(main_hash) > -1);
@@ -292,6 +293,8 @@ function hashchanged(from_reload, e) {
             } else if (/settings|administration/.test(base)) {
                 settings.setup_page();
                 admin.setup_page();
+            } else if (base === "invite") {
+                invite.initialize();
             }
 
             ignore.group = get_hash_group(base);
