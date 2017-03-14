@@ -57,6 +57,7 @@ from zerver.lib.actions import (
     do_change_emoji_alt_code,
     do_change_enable_stream_desktop_notifications,
     do_change_enable_stream_sounds,
+    do_change_stream_invite_only,
     do_change_enable_desktop_notifications,
     do_change_enable_sounds,
     do_change_enable_offline_email_notifications,
@@ -801,6 +802,72 @@ class EventsRegisterTest(ZulipTestCase):
             events = self.do_test(lambda: do_change_enable_stream_sounds(self.user_profile, setting_value))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
+
+    def test_change_stream_invite_only(self):
+        # type: () -> None
+        self.user_profile = get_user_profile_by_email('iago@zulip.com')
+        stream = get_stream("Scotland", self.user_profile.realm)
+
+        # public -> private transition with user subscribed.
+        schema_checker = check_dict([
+            ('type', equals('stream')),
+            ('op', equals('update')),
+            ('property', equals('invite_only')),
+            ('value', equals(True)),
+            ('stream_id', check_int),
+        ])
+        events = self.do_test(lambda: do_change_stream_invite_only(stream, True))
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+        self.assert_length(events, 1)
+
+        # private -> public transition with user subscribed.
+        schema_checker = check_dict([
+            ('type', equals('stream')),
+            ('op', equals('update')),
+            ('property', equals('invite_only')),
+            ('value', equals(False)),
+            ('stream_id', check_int),
+        ])
+        events = self.do_test(lambda: do_change_stream_invite_only(stream, False))
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+        self.assert_length(events, 1)
+
+        # A stream to which Iago never subscribed.
+        stream = get_stream("Rome", self.user_profile.realm)
+
+        # public -> private transition (user never subscribed).
+        schema_checker = check_dict([
+            ('type', equals('stream')),
+            ('op', equals('delete')),
+            ('streams', check_list(check_dict([
+                ('description', check_string),
+                ('invite_only', equals(True)),
+                ('name', check_string),
+                ('stream_id', check_int),
+            ]))),
+        ])
+        events = self.do_test(lambda: do_change_stream_invite_only(stream, True))
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+        self.assert_length(events, 1)
+
+        # private -> public transition (user never subscribed).
+        schema_checker = check_dict([
+            ('type', equals('stream')),
+            ('op', equals('create')),
+            ('streams', check_list(check_dict([
+                ('description', check_string),
+                ('invite_only', equals(False)),
+                ('name', check_string),
+                ('stream_id', check_int),
+            ]))),
+        ])
+        events = self.do_test(lambda: do_change_stream_invite_only(stream, False))
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+        self.assert_length(events, 1)
 
     def test_change_enable_desktop_notifications(self):
         # type: () -> None

@@ -261,6 +261,14 @@ function update_stream_description(sub, description) {
     settings.find('.stream-description-editable').text(description);
 }
 
+function update_stream_invite_only(sub, invite_only) {
+    sub.invite_only = invite_only;
+
+    // Update stream row
+    var sub_row = $('.stream-row[data-stream-id=' + sub.stream_id + ']');
+    redraw_privacy_related_stuff(sub_row, sub);
+}
+
 function stream_desktop_notifications_clicked(e) {
     var sub = get_sub_for_target(e.target);
     sub.desktop_notifications = ! sub.desktop_notifications;
@@ -660,13 +668,6 @@ function change_stream_privacy(e) {
         url: "/json/streams/" + stream_id,
         data: data,
         success: function () {
-            sub = stream_data.get_sub_by_id(stream_id);
-            var sub_row = $(".stream-row[data-stream-id='" + stream_id + "']");
-
-            // save new privacy settings.
-            sub.invite_only = !sub.invite_only;
-
-            redraw_privacy_related_stuff(sub_row, sub);
             $("#stream_privacy_modal").remove();
         },
         error: function () {
@@ -861,6 +862,9 @@ exports.update_subscription_properties = function (stream_id, property, value) {
     case 'pin_to_top':
         update_stream_pin(sub, value);
         stream_list.refresh_pinned_or_unpinned_stream(sub);
+        break;
+    case 'invite_only':
+        update_stream_invite_only(sub, value);
         break;
     default:
         blueslip.warn("Unexpected subscription property type", {property: property,
