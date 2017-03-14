@@ -35,13 +35,6 @@ WRONG_SUBDOMAIN_ERROR = "Your Zulip account is not a member of the " + \
                         "organization associated with this subdomain.  " + \
                         "Please contact %s with any questions!" % (settings.ZULIP_ADMINISTRATOR,)
 
-def get_registration_string(domain):
-    # type: (Text) -> Text
-    register_url  = reverse('register') + domain
-    register_account_string = _('The organization with the domain already exists. '
-                                'Please register your account <a href=%(url)s>here</a>.') % {'url': register_url}
-    return register_account_string
-
 def email_is_not_mit_mailing_list(email):
     # type: (Text) -> None
     """Prevent MIT mailing lists from signing up for Zulip"""
