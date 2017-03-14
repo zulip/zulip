@@ -367,8 +367,7 @@ class CssDeclaration(object):
         res += self.css_property
         res += ':'
         res += self.css_value.text()
-        if self.semicolon:
-            res += ';'
+        res += ';'
         res += self.post_fluff
         return res
 

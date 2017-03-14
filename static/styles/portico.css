@@ -278,7 +278,7 @@ img.screenshot {
 }
 
 .def:before {
-    content:" - "
+    content: " - ";
 }
 
 .api-details {
@@ -286,7 +286,7 @@ img.screenshot {
 }
 
 .api-details ul {
-    list-style-type:none
+    list-style-type: none;
 }
 
 .api-details dd {
@@ -337,7 +337,7 @@ img.screenshot {
 }
 
 .platform-icon {
-    width: 33%
+    width: 33%;
 }
 
 .portico-page h1 {
@@ -1302,7 +1302,7 @@ a.bottom-signup-button {
 
 .markdown .indicator.orange {
     border: 1px solid #ec7e18;
-    background: linear-gradient(to bottom,rgba(255,255,255,0) 50%,rgba(236,126,24,1) 50%)
+    background: linear-gradient(to bottom,rgba(255,255,255,0) 50%,rgba(236,126,24,1) 50%);
 }
 
 .markdown .indicator.green {
