@@ -209,9 +209,9 @@ exports.toggle_actions_popover = function (element, id) {
             narrowed: narrow.active(),
         };
 
-        var ypos = elt.offset().top - message_viewport.scrollTop();
+        var ypos = elt.offset().top;
         elt.popover({
-            placement: (ypos > (message_viewport.height() - 300)) ? 'top' : 'bottom',
+            placement: ((message_viewport.height() - ypos) < 200) ? 'top' : 'bottom',
             title:     "",
             content:   templates.render('actions_popover_content', args),
             trigger:   "manual",
