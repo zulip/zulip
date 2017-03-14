@@ -63,7 +63,7 @@ class ParserTestHappyPath(unittest.TestCase):
         '''
 
         reformatted_css = '''
-            p { color: red ;}
+            p { color: red;}
         '''
 
         res = parse(my_css)

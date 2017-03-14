@@ -366,7 +366,13 @@ class CssDeclaration(object):
         res += self.pre_fluff
         res += self.css_property
         res += ':'
-        res += self.css_value.text()
+        value_text = self.css_value.text()
+        if '\n' in value_text:
+            # gradient values can be multi-line
+            res += value_text.rstrip()
+        else:
+            res += ' '
+            res += value_text.strip()
         res += ';'
         res += self.post_fluff
         return res
