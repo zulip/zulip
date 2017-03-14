@@ -254,7 +254,7 @@ function box(x, y, width, height) {
 }
 
 function message_groups_in_viewport() {
-    var vp = viewport.message_viewport_info();
+    var vp = message_viewport.message_viewport_info();
     var top = vp.visible_top;
     var height = vp.visible_height;
     var last_group = rows.get_message_recipient_row(rows.last_visible());
@@ -366,8 +366,8 @@ function finale(skip) {
 
         if (stream_data.in_home_view(page_params.notifications_stream)) {
             send_delayed_stream_message(page_params.notifications_stream, "welcome", "Practice sending sending some messages here, or starting a new topic.", 15);
-            send_delayed_stream_message(page_params.notifications_stream, page_params.product_name + " tips", "Here's a message on a new topic: `" + page_params.product_name + " tips`.\n\nAs you settle into " + page_params.product_name + ", customize your account and notifications on your [Settings page](#settings).", 30);
-            send_delayed_stream_message(page_params.notifications_stream, page_params.product_name + " tips", "You might also enjoy:\n\n* Our lightweight !modal_link(#markdown-help, message formatting) (including emoji! :thumbsup:)\n* !modal_link(#keyboard-shortcuts, Keyboard shortcuts)\n* [Desktop and mobile apps](/apps)", 40);
+            send_delayed_stream_message(page_params.notifications_stream, "Zulip tips", "Here's a message on a new topic: `Zulip tips`.\n\nAs you settle into Zulip, customize your account and notifications on your [Settings page](#settings).", 30);
+            send_delayed_stream_message(page_params.notifications_stream, "Zulip tips", "You might also enjoy:\n\n* Our lightweight !modal_link(#markdown-help, message formatting) (including emoji! :thumbsup:)\n* !modal_link(#keyboard-shortcuts, Keyboard shortcuts)\n* [Desktop and mobile apps](/apps)", 40);
         }
 
         if (work_stream !== undefined) {
@@ -486,7 +486,7 @@ function welcome() {
     var spotlight_message = rows.first_visible();
     var bar = rows.get_message_recipient_header(spotlight_message);
     box_first_message();
-    create_and_show_popover(bar, maybe_tweak_placement("left"), "Welcome to " + page_params.product_name,
+    create_and_show_popover(bar, maybe_tweak_placement("left"), "Welcome to Zulip",
                             "tutorial_message");
 
     var my_popover = $("#tutorial-message").closest(".popover");

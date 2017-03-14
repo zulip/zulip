@@ -263,6 +263,10 @@ v1_api_and_json_patterns = [
     url(r'^user_uploads$', rest_dispatch,
         {'POST': 'zerver.views.upload.upload_file_backend'}),
 
+    # invite -> zerver.views.invite
+    url(r'^invite/bulk$', rest_dispatch,
+        {'POST': 'zerver.views.invite.bulk_invite_users'}),
+
     # users/me -> zerver.views
     url(r'^users/me$', rest_dispatch,
         {'GET': 'zerver.views.users.get_profile_backend',
@@ -336,6 +340,9 @@ v1_api_and_json_patterns = [
          'POST': 'zerver.views.streams.add_subscriptions_backend',
          'PATCH': 'zerver.views.streams.update_subscriptions_backend',
          'DELETE': 'zerver.views.streams.remove_subscriptions_backend'}),
+    # muting -> zerver.views.muting
+    url(r'^users/me/subscriptions/muted_topics$', rest_dispatch,
+        {'POST': 'zerver.views.muting.set_muted_topics'}),
 
     # used to register for an event queue in tornado
     url(r'^register$', rest_dispatch,

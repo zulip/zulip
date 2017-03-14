@@ -7,13 +7,13 @@
         <meta charset="UTF-8">
         {% block title %}
             {% if user_profile and user_profile.realm.name %}
-            <title>{{user_profile.realm.name}} - {{product_name}}</title>
+            <title>{{user_profile.realm.name}} - Zulip</title>
             {% else %}
             <title>Zulip</title>
             {% endif %}
         {% endblock %}
         <link href="/static/favicon.ico?v=2" rel="shortcut icon">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
         {% if dropboxAppKey %}
         <script type="text/javascript">var dropboxAppKey = "{{ dropboxAppKey }}";</script>

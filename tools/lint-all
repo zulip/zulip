@@ -309,7 +309,7 @@ def build_custom_checkers(by_lang):
                          ]),
          'exclude_line': set([
              ('zerver/views/users.py',
-              "return json_error(_(\"Email '%(email)s' does not belong to domain '%(domain)s'\") %"),
+              "return json_error(_(\"Email '%(email)s' not allowed for realm '%(realm)s'\") %"),
              ('zproject/settings.py',
               "'format': '%(asctime)s %(levelname)-8s %(message)s'"),
          ]),
@@ -352,14 +352,17 @@ def build_custom_checkers(by_lang):
          'description': 'Used % comprehension without a tuple'},
         {'pattern': '.*%s.* % \([a-zA-Z0-9_.]*\)$',
          'description': 'Used % comprehension without a tuple'},
+        {'pattern': 'django.utils.translation',
+         'include_only': set(['test']),
+         'description': 'Test strings should not be tagged for translationx'},
         {'pattern': 'json_success\({}\)',
          'description': 'Use json_success() to return nothing'},
         # To avoid json_error(_variable) and json_error(_(variable))
         {'pattern': '\Wjson_error\(_\(?\w+\)',
-         'exclude': set(['tools/lint-all']),
+         'exclude': set(['tools/lint-all', 'zerver/tests']),
          'description': 'Argument to json_error should be a literal string enclosed by _()'},
         {'pattern': '\Wjson_error\([\'"].+[),]$',
-         'exclude': set(['tools/lint-all']),
+         'exclude': set(['tools/lint-all', 'zerver/tests']),
          'exclude_line': set([
              # We don't want this string tagged for translation.
              ('zerver/views/compatibility.py', 'return json_error("Client is too old")'),
@@ -367,10 +370,10 @@ def build_custom_checkers(by_lang):
          'description': 'Argument to json_error should a literal string enclosed by _()'},
         # To avoid JsonableError(_variable) and JsonableError(_(variable))
         {'pattern': '\WJsonableError\(_\(?\w.+\)',
-         'exclude': set(['tools/lint-all']),
+         'exclude': set(['tools/lint-all', 'zerver/tests']),
          'description': 'Argument to JsonableError should be a literal string enclosed by _()'},
         {'pattern': '\WJsonableError\(["\'].+\)',
-         'exclude': set(['tools/lint-all']),
+         'exclude': set(['tools/lint-all', 'zerver/tests']),
          'description': 'Argument to JsonableError should be a literal string enclosed by _()'},
         {'pattern': '([a-zA-Z0-9_]+)=REQ\([\'"]\\1[\'"]',
          'description': 'REQ\'s first argument already defaults to parameter name'},
@@ -410,6 +413,11 @@ def build_custom_checkers(by_lang):
         {'pattern': 'from zerver.models import',
          'include_only': set(["/migrations/"]),
          'description': "Don't import models in migrations; see docs/schema-migrations.md for solution",
+         },
+        {'pattern': 'datetime[.](now|utcnow)',
+         'include_only': set(["zerver/", "analytics/"]),
+         'description': "Don't use datetime in backend code.\n"
+         "See https://zulip.readthedocs.io/en/latest/code-style.html#naive-datetime-objects",
          },
         # This rule might give false positives in virtualenv setup files which should be excluded,
         # and comments which should be rewritten to avoid use of "python2", "python3", etc.
@@ -452,6 +460,10 @@ def build_custom_checkers(by_lang):
     html_rules = whitespace_rules + prose_style_rules + [
         {'pattern': 'placeholder="[^{]',
          'description': "`placeholder` value should be translatable.",
+         'exclude_line': [('templates/zerver/register.html', 'placeholder="acme"'),
+                          ('templates/zerver/register.html', 'placeholder="Acme"'),
+                          ('static/templates/settings/realm-domains-modal.handlebars',
+                           '<td><input type="text" class="new-alias-domain" placeholder="acme.com"></input></td>')],
          'exclude': set(["static/templates/settings/emoji-settings-admin.handlebars",
                          "static/templates/settings/realm-filter-settings-admin.handlebars",
                          "static/templates/settings/bot-settings.handlebars"])},
@@ -471,6 +483,18 @@ def build_custom_checkers(by_lang):
     handlebars_rules = html_rules + [
         {'pattern': "[<]script",
          'description': "Do not use inline <script> tags here; put JavaScript in static/js instead."},
+        {'pattern': "{{t '.*' }}[\.\?!]",
+         'description': "Period should be part of the translatable string."},
+        {'pattern': '{{t ".*" }}[\.\?!]',
+         'description': "Period should be part of the translatable string."},
+        {'pattern': "{{/tr}}[\.\?!]",
+         'description': "Period should be part of the translatable string."},
+    ]
+    jinja2_rules = html_rules + [
+        {'pattern': "{% endtrans %}[\.\?!]",
+         'description': "Period should be part of the translatable string."},
+        {'pattern': "{{ _(.+) }}[\.\?!]",
+         'description': "Period should be part of the translatable string."},
     ]
     json_rules = [] # type: RuleList # fix newlines at ends of files
     # It is okay that json_rules is empty, because the empty list
@@ -514,7 +538,7 @@ def build_custom_checkers(by_lang):
                 failed = True
 
         for fn in by_lang['html']:
-            if custom_check_file(fn, html_rules):
+            if custom_check_file(fn, jinja2_rules):
                 failed = True
 
         for fn in by_lang['json']:

@@ -6,7 +6,7 @@ You can send a message to a stream by email by following the following steps.
 {!filter-streams.md!}
 
 2. Select the stream that you want to message by email in the
-[Subscriptions](/#subscriptions) page; {!stream-settings.md!}
+[Streams](/#streams) page; {!stream-settings.md!}
 
 3. To send a message to a stream by email, simply send an email to the stream's
 email address displayed in the **Email address** section. Your email subject

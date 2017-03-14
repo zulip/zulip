@@ -1,6 +1,17 @@
 {% extends "zerver/portico.html" %}
 
-{# API information page #}
+{% block customhead %}
+{{ super() }}
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% stylesheet 'portico' %}
+{% stylesheet 'landing-page' %}
+{{ minified_js('landing-page')|safe }}
+
+{% endblock %}
+
+{% block hello_page_container %} hello-main{% endblock %}
+{% block hello_page_footer %} hello-footer{% endblock %}
 
 {% block os_announcement %}
   {% if show_oss_announcement %}
@@ -8,10 +19,10 @@
     <img src="/static/images/logo/zballoon.png" class="os-illustration" alt="Zulip balloon" />
     <div class="main-headline-text">
       <span class="tagline os-tagline">
-         Zulip has been released as open source software!
+         {{ _('Zulip has been released as open source software!') }}
       </span>
       <span class="footnote os-footnote">
-         Read the <a href="https://blogs.dropbox.com/tech/2015/09/open-sourcing-zulip-a-dropbox-hack-week-project" target="_blank">announcement</a> or go to <a href="https://www.zulip.org" target="_blank">the Zulip open source project website</a>.
+         {% trans %}Read the <a href="https://blogs.dropbox.com/tech/2015/09/open-sourcing-zulip-a-dropbox-hack-week-project" target="_blank">announcement</a> or go to <a href="https://www.zulip.org" target="_blank">the Zulip open source project website</a>.{% endtrans %}
       </span>
     </div>
   </div>
@@ -20,10 +31,16 @@
 
 {% block portico_content %}
 
-    <div class="portico-page-header"><a href="#"><i class="icon-vector-gears portico-page-header-icon"></i>Integrations</a></div>
+{% include 'zerver/landing_nav.html' %}
+
+<div class="portico-landing integrations">
+    <div class="main">
+        <div class="padded-content">
+            <div class="inner-content">
+    <div class="portico-page-header"><a href="#" class="no-style"><i class="icon-vector-gears portico-page-header-icon"></i>Integrations</a></div>
 
     <div id="integration-main-text">
-      <p class="portico-large-text">With Zulip integrations, your team
+      <p>With Zulip integrations, your team
         can stay up-to-date on code changes, issue tickets, build system
         results, tweets about your project, and much more.</p>
 
@@ -41,7 +58,7 @@
     </div>
 
     <div id="integration-instruction-block" class="integration-instruction-block">
-       <a href="#" id="integration-list-link"><i class="icon-vector-circle-arrow-left"></i>&nbsp;Back to list</a>
+       <a href="#" id="integration-list-link"><i class="icon-vector-circle-arrow-left"></i><span>Back to list</span></a>
     </div>
 
     <div class="integration-lozenges">
@@ -62,9 +79,9 @@
       {% endfor %}
     </div>
 
-    <div class="portico-page-header extra" id="hubot-integrations"><a href="#"><i class="icon-vector-gears portico-page-header-icon"></i>Integrations available via Hubot</a></div>
-    <p class="portico-large-text extra">The official <a class="integration-link integration-hubot" href="#hubot"><span class="integration-label">Hubot</span></a>
-    integration provides an extension point for additional Zulip integrations. </p><p class="portico-large-text extra"> A non-comprehensive list of integrations available through
+    <div class="portico-page-header extra" id="hubot-integrations"><a href="#" class="no-style"><i class="icon-vector-gears portico-page-header-icon"></i>Integrations available via Hubot</a></div>
+    <p class="extra">The official <a class="integration-link integration-hubot" href="#hubot"><span class="integration-label">Hubot</span></a>
+    integration provides an extension point for additional Zulip integrations. </p><p class="extra"> A non-comprehensive list of integrations available through
     <a class="integration-link integration-hubot" href="#hubot"><span class="integration-label">Hubot</span></a> follows below:</p>
 
     <div class="integration-lozenges">
@@ -1210,76 +1227,9 @@ access_token_secret =</pre>
 
     </div>
 </div>
-
-{% endblock %}
-
-{% block customhead %}
-{{ super() }}
-<script type="text/javascript">
-$(function() {
-    $("a.title").addClass("show-integral");
-    $("a.title").prepend($("<span class='integral'>∫</span>"));
-    $("a.title").hover(function (e) {
-                         $(".integral").css("display", "inline");
-                         var width = $(".integral").width();
-                         $("a.title").css("left", -1 * width);
-                       },
-                       function (e) {
-                         $(".integral").css("display", "none");
-                         $("a.title").css("left", 0);
-                       });
-
-    var newlozenge,
-        currentblock,
-        currentlink,
-        currentlozenge,
-        instructionbox = $("#integration-instruction-block"),
-        hashes = $('.integration-instructions').map(function() {
-                    return this.id || null;
-                 }).get();
-
-
-
-    function switchToIntegration(integrationHash) {
-      var cleanHash = integrationHash.substr(1);
-      if (hashes.indexOf(cleanHash) > -1) {
-           currentblock = $(integrationHash);
-           currentlozenge = $(".integration-lozenge.integration-" + cleanHash);
-           $(".integration-lozenges, .portico-page-header.extra, .portico-large-text.extra").hide();
-           newlozenge = currentlozenge.clone();
-           newlozenge.find(".integration-logo").unwrap();
-           newlozenge.addClass("integration-lozenge-static");
-           instructionbox.hide();
-           $("#integration-main-text").hide();
-           instructionbox.children(".integration-lozenge").remove();
-           instructionbox.children(".integration-instructions").appendTo("#integration-instructions-group");
-           instructionbox.append(newlozenge);
-           instructionbox.append(currentblock);
-           instructionbox.show();
-           $("#integration-list-link").css("display", "block");
-           window.scrollTo(0,0);
-      }
-    }
-
-    function updateHash () {
-      var hash = document.location.hash;
-      if (hash && hash != '#hubot-integrations') {
-        switchToIntegration(document.location.hash);
-      }
-      else if (currentblock && newlozenge) {
-         $("#integration-list-link").css("display", "none");
-         $(".integration-lozenges, .portico-page-header.extra, .portico-large-text.extra").show();
-         $("#integration-main-text").show();
-         instructionbox.hide();
-         newlozenge.remove();
-         currentblock.appendTo("#integration-instructions-group");
-         $('html, body').animate({scrollTop: $(hash).offset().top}, 'slow');
-      }
-    }
-
-    window.onhashchange = updateHash;
-    updateHash();
-});
-</script>
+            </div> <!-- .inner-content -->
+        </div> <!-- .padded-content -->
+    </div> <!-- .main -->
+</div> <!-- .portico-landing -->
 
 {% endblock %}

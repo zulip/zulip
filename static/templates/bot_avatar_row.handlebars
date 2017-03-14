@@ -3,17 +3,19 @@
         <img src="{{avatar_url}}" class="avatar" />
         <div class="details">
             <div class="name">{{name}}</div>
-            <div class="edit-bot-buttons">
-               <button type="submit" class="btn open_edit_bot_form" data-sidebar-form="edit-bot" title="{{t 'Edit bot' }}" data-email="{{email}}">
-                   <i class="icon-vector-pencil blue"></i>
-               </button>
-               <a type="submit" download="{{zuliprc}}" class="btn download_bot_zuliprc" title="{{t 'Download .zuliprc' }}" data-email="{{email}}">
-                   <i class="icon-vector-download-alt sea-green"></i>
-               </a>
-               <button type="submit" class="btn delete_bot" title="{{t 'Delete bot' }}" data-email="{{email}}">
-                   <i class="icon-vector-trash danger-red"></i>
-               </button>
-            </div>
+            {{#if is_active}}
+                <div class="edit-bot-buttons">
+                   <button type="submit" class="btn open_edit_bot_form" data-sidebar-form="edit-bot" title="{{t 'Edit bot' }}" data-email="{{email}}">
+                       <i class="icon-vector-pencil blue"></i>
+                   </button>
+                   <a type="submit" download="{{zuliprc}}" class="btn download_bot_zuliprc" title="{{t 'Download .zuliprc' }}" data-email="{{email}}">
+                       <i class="icon-vector-download-alt sea-green"></i>
+                   </a>
+                   <button type="submit" class="btn delete_bot" title="{{t 'Delete bot' }}" data-email="{{email}}">
+                       <i class="icon-vector-trash danger-red"></i>
+                   </button>
+                </div>
+            {{/if}}
         </div>
     </div>
     <div class="bot_info">
@@ -21,16 +23,20 @@
             <div class="field">{{t "Username" }}</div>
             <div class="value">{{email}}</div>
         </div>
-        <div class="api_key">
-            <span class="field">{{t "API Key" }}</span>
-            <span class="api-key-value-and-button">
-                <span class="value">{{api_key}}</span>
-                <button type="submit" class="button no-style btn-secondary regenerate_bot_api_key" title="{{t 'Generate new API key' }}" data-email="{{email}}">
-                    <i class="icon-vector-refresh"></i>
-                </button>
-            </span>
-            <div class="api_key_error text-error"></div>
-        </div>
-        <div id="bot_delete_error{{id_suffix}}" class="alert alert-error hide"></div>
+        {{#if is_active}}
+            <div class="api_key">
+                <span class="field">{{t "API key" }}</span>
+                <span class="api-key-value-and-button">
+                    <span class="value">{{api_key}}</span>
+                    <button type="submit" class="button no-style btn-secondary regenerate_bot_api_key" title="{{t 'Generate new API key' }}" data-email="{{email}}">
+                        <i class="icon-vector-refresh"></i>
+                    </button>
+                </span>
+                <div class="api_key_error text-error"></div>
+            </div>
+            <div id="bot_delete_error{{id_suffix}}" class="alert alert-error hide"></div>
+        {{else}}
+            <button class="button button-primary reactivate_bot" title="{{t 'Reactivate bot' }}" data-email="{{email}}">{{t "Reactivate bot" }}</button>
+        {{/if}}
     </div>
 </li>

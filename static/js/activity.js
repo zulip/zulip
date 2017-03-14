@@ -160,7 +160,8 @@ exports.short_huddle_name = function (huddle) {
     return names.join(', ');
 };
 
-exports.huddle_fraction_present = function (huddle, presence_info) {
+exports.huddle_fraction_present = function (huddle) {
+    var presence_info = exports.presence_info;
     var user_ids = huddle.split(',');
 
     var num_present = 0;
@@ -178,36 +179,40 @@ exports.huddle_fraction_present = function (huddle, presence_info) {
     return ratio.toFixed(2);
 };
 
-function get_compare_function(presence_info) {
-    return function (a, b) {
-        if (presence_info[a].status === 'active' && presence_info[b].status !== 'active') {
-            return -1;
-        } else if (presence_info[b].status === 'active' && presence_info[a].status !== 'active') {
-            return 1;
-        }
+function compare_function(a, b) {
+    var presence_info = exports.presence_info;
 
-        if (presence_info[a].status === 'idle' && presence_info[b].status !== 'idle') {
-            return -1;
-        } else if (presence_info[b].status === 'idle' && presence_info[a].status !== 'idle') {
-            return 1;
+    function level(status) {
+        switch (status) {
+            case 'active':
+                return 1;
+            case 'idle':
+                return 2;
+            default:
+                return 3;
         }
+    }
 
-        // Sort equivalent PM names alphabetically
-        var full_name_a = a;
-        var full_name_b = b;
-        if (people.get_person_from_user_id(a)) {
-            full_name_a = people.get_person_from_user_id(a).full_name;
-        }
-        if (people.get_person_from_user_id(b)) {
-            full_name_b = people.get_person_from_user_id(b).full_name;
-        }
-        return util.strcmp(full_name_a, full_name_b);
-    };
+    var level_a = level(presence_info[a].status);
+    var level_b = level(presence_info[b].status);
+    var diff = level_a - level_b;
+    if (diff !== 0) {
+        return diff;
+    }
+
+    // Sort equivalent PM names alphabetically
+    var person_a = people.get_person_from_user_id(a);
+    var person_b = people.get_person_from_user_id(b);
+
+    var full_name_a = person_a ? person_a.full_name : '';
+    var full_name_b = person_b ? person_b.full_name : '';
+
+    return util.strcmp(full_name_a, full_name_b);
 }
 
-function sort_users(user_ids, presence_info) {
+function sort_users(user_ids) {
     // TODO sort by unread count first, once we support that
-    user_ids.sort(get_compare_function(presence_info));
+    user_ids.sort(compare_function);
     return user_ids;
 }
 
@@ -215,10 +220,9 @@ function sort_users(user_ids, presence_info) {
 exports._sort_users = sort_users;
 
 function focus_lost() {
-    if (!exports.has_focus) {
-        return false;
-    }
-
+    // When we become idle, we don't immediately send anything to the
+    // server; instead, we wait for our next periodic update, since
+    // this data is fundamentally not timely.
     exports.has_focus = false;
 }
 
@@ -259,7 +263,7 @@ function matches_filter(user_id) {
 function filter_and_sort(users) {
     var user_ids = Object.keys(users);
     user_ids = filter_user_ids(user_ids);
-    user_ids = sort_users(user_ids, exports.presence_info);
+    user_ids = sort_users(user_ids);
     return user_ids;
 }
 
@@ -301,15 +305,13 @@ exports.insert_user_into_list = function (user_id) {
 
     var items = $('#user_presences li').toArray();
 
-    var compare = get_compare_function(exports.presence_info);
-
     function insert() {
         var i = 0;
 
         for (i = 0; i < items.length; i += 1) {
             var li = $(items[i]);
             var list_user_id = li.attr('data-user-id');
-            if (compare(user_id, list_user_id) < 0) {
+            if (compare_function(user_id, list_user_id) < 0) {
                 li.before(html);
                 return;
             }
@@ -376,7 +378,7 @@ exports.update_huddles = function () {
             user_ids_string: huddle,
             name: exports.full_huddle_name(huddle),
             href: narrow.huddle_with_uri(huddle),
-            fraction_present: exports.huddle_fraction_present(huddle, exports.presence_info),
+            fraction_present: exports.huddle_fraction_present(huddle),
             short_name: exports.short_huddle_name(huddle),
         };
     });
@@ -432,7 +434,7 @@ function status_from_timestamp(baseline_time, presence) {
 // For testing
 exports._status_from_timestamp = status_from_timestamp;
 
-function focus_ping() {
+function focus_ping(want_redraw) {
     channel.post({
         url: '/json/users/me/presence',
         data: {status: (exports.has_focus) ? exports.ACTIVE : exports.IDLE,
@@ -449,9 +451,14 @@ function focus_ping() {
 
             exports.new_user_input = false;
 
-            exports.set_presence_info(data.presences, data.server_timestamp);
-            exports.build_user_sidebar();
-            exports.update_huddles();
+            // TODO: If want_redraw is false, we should have the server
+            // not send us any presences data.  But avoiding the redraw
+            // helps.
+            if (want_redraw) {
+                exports.set_presence_info(data.presences, data.server_timestamp);
+                exports.build_user_sidebar();
+                exports.update_huddles();
+            }
         },
     });
 }
@@ -459,8 +466,7 @@ function focus_ping() {
 function focus_gained() {
     if (!exports.has_focus) {
         exports.has_focus = true;
-
-        focus_ping();
+        focus_ping(false);
     }
 }
 
@@ -471,14 +477,20 @@ exports.initialize = function () {
                 onActive: focus_gained,
                 keepTracking: true});
 
-    setInterval(focus_ping, ACTIVE_PING_INTERVAL_MS);
-
-    focus_ping();
-
     activity.set_presence_info(page_params.initial_presences,
                                page_params.initial_servertime);
     exports.build_user_sidebar();
     exports.update_huddles();
+
+    // Let the server know we're here, but pass "false" for
+    // want_redraw, since we just got all this info in page_params.
+    focus_ping(false);
+
+    function get_full_presence_list_update() {
+        focus_ping(true);
+    }
+
+    setInterval(get_full_presence_list_update, ACTIVE_PING_INTERVAL_MS);
 };
 
 exports.set_user_status = function (email, presence, server_time) {
@@ -572,6 +584,7 @@ function maybe_select_person(e) {
         if ((topPerson !== undefined) && (search_term !== '')) {
             // undefined if there are no results
             var email = people.get_person_from_user_id(topPerson).email;
+            narrow.by('pm-with', email, {select_first_unread: true, trigger: 'user sidebar'});
             compose.start('private',
                     {trigger: 'sidebar enter key', private_message_recipient: email});
         }

@@ -13,8 +13,17 @@
     </p>
     {{/tr}}
 
-    <ol id="bots_list">
+    <ul class="nav nav-tabs nav-justified" id="bots_lists_navbar">
+      <li class="active active-bots-tab"><a>{{t "Active bots" }}</a></li>
+      <li class="inactive-bots-tab"><a>{{t "Inactive bots" }}</a></li>
+    </ul>
+
+    <ol class="bots_list" id="active_bots_list">
     </ol>
+
+    <ol class="bots_list" id="inactive_bots_list">
+    </ol>
+
     <div id="bot_table_error" class="alert alert-error hide"></div>
 
     <div class="add-new-bot-box grey-bg">
@@ -24,14 +33,14 @@
           <div class="input-group">
             <label for="create_bot_name">{{t "Full name" }}</label>
             <input type="text" name="bot_name" id="create_bot_name" class="required"
-                   maxlength=100 placeholder="{{t 'Full Bot Name' }}" value="" />
+                   maxlength=100 placeholder="{{t 'Cookie Bot' }}" value="" />
             <div><label for="create_bot_name" generated="true" class="text-error"></label></div>
           </div>
           <div class="input-group">
             <label for="bot_short_name">{{t "Username" }}</label>
             <input type="text" name="bot_short_name" id="create_bot_short_name" class="required bot_local_part"
-                   placeholder="bot_user_name" value="" />
-                   -{{t "bot" }}@{{ page_params.domain }}
+                   placeholder="cookie" value="" />
+                   -bot@{{ page_params.realm_bot_domain }}
             <div>
               <label for="create_bot_short_name" generated="true" class="text-error"></label>
             </div>
@@ -93,7 +102,7 @@
       <p>{{t "Your API key:" }}</p>
       <p><b><span id="api_key_value"></span></b></p>
       <button type="submit" class="btn btn-primary regenerate_api_key">
-        {{t "Generate new API Key" }}
+        {{t "Generate new API key" }}
       </button>
       <a id="download_zuliprc" download="{{zuliprc}}" class="btn btn-success">
           {{t "Download .zuliprc" }}

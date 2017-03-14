@@ -56,9 +56,9 @@ class TestReport(ZulipTestCase):
         self.assert_json_success(result)
 
         expected_calls = [
-            ('timing', ('endtoend.send_time.zulip_com', 5)),
-            ('timing', ('endtoend.receive_time.zulip_com', 6)),
-            ('timing', ('endtoend.displayed_time.zulip_com', 7)),
+            ('timing', ('endtoend.send_time.zulip', 5)),
+            ('timing', ('endtoend.receive_time.zulip', 6)),
+            ('timing', ('endtoend.displayed_time.zulip', 7)),
             ('incr', ('locally_echoed',)),
             ('incr', ('render_disparity',)),
         ]
@@ -81,9 +81,9 @@ class TestReport(ZulipTestCase):
         self.assert_json_success(result)
 
         expected_calls = [
-            ('timing', ('narrow.initial_core.zulip_com', 5)),
-            ('timing', ('narrow.initial_free.zulip_com', 6)),
-            ('timing', ('narrow.network.zulip_com', 7)),
+            ('timing', ('narrow.initial_core.zulip', 5)),
+            ('timing', ('narrow.initial_free.zulip', 6)),
+            ('timing', ('narrow.network.zulip', 7)),
         ]
         self.assertEqual(stats_mock.func_calls, expected_calls)
 
@@ -103,8 +103,8 @@ class TestReport(ZulipTestCase):
         self.assert_json_success(result)
 
         expected_calls = [
-            ('timing', ('unnarrow.initial_core.zulip_com', 5)),
-            ('timing', ('unnarrow.initial_free.zulip_com', 6)),
+            ('timing', ('unnarrow.initial_core.zulip', 5)),
+            ('timing', ('unnarrow.initial_free.zulip', 6)),
         ]
         self.assertEqual(stats_mock.func_calls, expected_calls)
 

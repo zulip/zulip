@@ -54,7 +54,7 @@ def review_pr():
     # type: () -> None
     try:
         pull_id = int(sys.argv[1])
-    except:
+    except Exception:
         exit('please provide an integer pull request id')
 
     ensure_on_clean_master()

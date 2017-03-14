@@ -69,7 +69,7 @@ def run_forever():
                 run()
                 remove_error_stamp_file(error_file_path)
                 print('done')
-            except:
+            except Exception:
                 add_error_stamp_file(error_file_path)
                 print('\n\n\n\033[91mPLEASE FIX!!\033[0m\n\n')
 

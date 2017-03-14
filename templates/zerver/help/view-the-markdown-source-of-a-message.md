@@ -7,7 +7,7 @@ reuse the message's Markdown source in a reply.
 {!message-actions.md!}
 {!down-chevron.md!}
 
-3. Click on the **View Source** option from the actions dropdown to view the
+3. Click on the **View source** option from the actions dropdown to view the
 markdown source of a message.
 
 !!! tip ""

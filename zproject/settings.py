@@ -116,6 +116,8 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'S3_AVATAR_BUCKET': '',
                     'LOCAL_UPLOADS_DIR': None,
                     'MAX_FILE_UPLOAD_SIZE': 25,
+                    'MAX_AVATAR_FILE_SIZE': 5,
+                    'MAX_ICON_FILE_SIZE': 5,
                     'ERROR_REPORTING': True,
                     'BROWSER_ERROR_REPORTING': False,
                     'STAGING_ERROR_NOTIFICATIONS': False,
@@ -151,6 +153,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'SEND_MISSED_MESSAGE_EMAILS_AS_USER': False,
                     'SERVER_EMAIL': None,
                     'FEEDBACK_EMAIL': None,
+                    'FEEDBACK_STREAM': None,
                     'WELCOME_EMAIL_SENDER': None,
                     'EMAIL_DELIVERER_DISABLED': False,
                     'ENABLE_GRAVATAR': True,
@@ -202,6 +205,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'ANALYTICS_LOCK_DIR': "/home/zulip/deployments/analytics-lock-dir",
                     'PASSWORD_MIN_LENGTH': 6,
                     'PASSWORD_MIN_ZXCVBN_QUALITY': 0.5,
+                    'OFFLINE_THRESHOLD_SECS': 5 * 60,
                     }
 
 for setting_name, setting_val in six.iteritems(DEFAULT_SETTINGS):
@@ -572,11 +576,6 @@ if EMAIL_GATEWAY_PATTERN != "":
 
 DEPLOYMENT_ROLE_KEY = get_secret("deployment_role_key")
 
-if PRODUCTION:
-    FEEDBACK_TARGET = "https://zulip.com/api"
-else:
-    FEEDBACK_TARGET = "http://localhost:9991/api"
-
 ########################################################################
 # STATSD CONFIGURATION
 ########################################################################
@@ -679,6 +678,12 @@ PIPELINE = {
             ),
             'output_filename': 'min/portico.css'
         },
+        'landing-page': {
+            'source_filenames': (
+                'styles/landing-page.css',
+            ),
+            'output_filename': 'min/landing.css'
+        },
         # Two versions of the app CSS exist because of QTBUG-3467
         'app-fontcompat': {
             'source_filenames': (
@@ -750,6 +755,12 @@ JS_SPECS = {
         ],
         'output_filename': 'min/common.js'
     },
+    'landing-page': {
+        'source_filenames': [
+            'js/portico/landing-page.js',
+        ],
+        'output_filename': 'min/landing.js'
+    },
     'signup': {
         'source_filenames': [
             'js/portico/signup.js',
@@ -807,7 +818,7 @@ JS_SPECS = {
             'js/unread_ui.js',
             'js/muting.js',
             'js/muting_ui.js',
-            'js/viewport.js',
+            'js/message_viewport.js',
             'js/rows.js',
             'js/people.js',
             'js/unread.js',
@@ -838,6 +849,7 @@ JS_SPECS = {
             'js/scroll_bar.js',
             'js/gear_menu.js',
             'js/copy_and_paste.js',
+            'js/stream_popover.js',
             'js/popovers.js',
             'js/typeahead_helper.js',
             'js/search_suggestion.js',
@@ -885,7 +897,6 @@ JS_SPECS = {
     },
     'stats': {
         'source_filenames': [
-            'node_modules/jquery/dist/jquery.js',
             'js/stats/stats.js',
         ],
         'minifed_source_filenames': [

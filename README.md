@@ -104,10 +104,10 @@ relevant list!  Please report any security issues you discover to
 zulip-security@googlegroups.com.
 
 * **App codebases**. This repository is for the Zulip server and web
-app (including most integrations); the [desktop][], [Android][], and
-[iOS][] apps, are separate repositories, as are our [experimental
-React Native iOS app][ios-exp] and [alpha Electron desktop
-app][electron].
+app (including most integrations); the
+[React Native Mobile iOS app][ios-exp], [Android app][Android],
+[new Electron desktop app][electron], and
+[legacy QT-based desktop app][desktop] are all separate repositories.
 
 * **Glue code**. We maintain a [Hubot adapter][hubot-adapter] and several
 integrations ([Phabricator][phab], [Jenkins][], [Puppet][], [Redmine][],
@@ -120,8 +120,8 @@ and [Trello][]), plus [node.js API bindings][node], an [isomorphic
 [translating documentation][transifex] if you're interested in
 contributing!
 
-* **Peer Reviews**. Zulip is all about community and helping each
-other out. Check the [peer review stream][peer-review] on
+* **Code Reviews**. Zulip is all about community and helping each
+other out.  Check out [#code review][code-review] on
 [chat.zulip.org](https://zulip.readthedocs.io/en/latest/chat-zulip-org.html)
 to help review PRs and give comments on other people's work. Everyone is
 welcome to participate, even those new to Zulip! Even just checking out
@@ -140,7 +140,6 @@ is valuable.
 [gh-issues]: https://github.com/zulip/zulip/issues
 [desktop]: https://github.com/zulip/zulip-desktop
 [android]: https://github.com/zulip/zulip-android
-[ios]: https://github.com/zulip/zulip-ios
 [ios-exp]: https://github.com/zulip/zulip-mobile
 [email-android]: https://groups.google.com/forum/#!forum/zulip-android
 [email-ios]: https://groups.google.com/forum/#!forum/zulip-ios
@@ -155,7 +154,7 @@ is valuable.
 [tsearch]: https://github.com/zulip/tsearch_extras
 [transifex]: https://zulip.readthedocs.io/en/latest/translating.html#testing-translations
 [z-org]: https://github.com/zulip/zulip.github.io
-[peer-review]: https://chat.zulip.org/#narrow/stream/peer.20review
+[code-review]: https://chat.zulip.org/#narrow/stream/code.20review
 
 ## Google Summer of Code
 
@@ -259,7 +258,7 @@ to the Zulip Developers list with your thoughts.
 
 When you feel like you have completed your work on an issue, post your
 PR to the
-[**#peer review**](https://chat.zulip.org/#narrow/stream/peer.20review)
+[#code review](https://chat.zulip.org/#narrow/stream/code.20review)
 stream on [chat.zulip.org](https://zulip.readthedocs.io/en/latest/chat-zulip-org.html).
 This is our lightweight process that gives other developers the
 opportunity to give you comments and suggestions on your work.

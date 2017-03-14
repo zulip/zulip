@@ -8,6 +8,8 @@ set_global('page_params', {
 add_dependencies({
     people: 'js/people.js',
     stream_color: 'js/stream_color.js',
+    narrow: 'js/narrow.js',
+    hashchange: 'js/hashchange.js',
     util: 'js/util.js',
 });
 
@@ -85,7 +87,7 @@ var people = global.people;
     sub = stream_data.get_sub_by_id(id);
     assert.equal(sub.color, 'red');
 
-    stream_data.rename_sub(id, 'Sweden');
+    stream_data.rename_sub(sub, 'Sweden');
     sub = stream_data.get_sub_by_id(id);
     assert.equal(sub.color, 'red');
     assert.equal(sub.name, 'Sweden');

@@ -48,11 +48,12 @@ def server_is_up(server, log_file):
     try:
         # We could get a 501 error if the reverse proxy is up but the Django app isn't.
         return requests.get('http://127.0.0.1:9981/accounts/home').status_code == 200
-    except:
+    except Exception:
         return False
 
 @contextmanager
-def test_server_running(force=False, external_host='testserver', log_file=None, dots=False, use_db=True):
+def test_server_running(force=False, external_host='testserver',
+                        log_file=None, dots=False, use_db=True):
     # type: (bool, str, str, bool, bool) -> Iterator[None]
     if log_file:
         if os.path.exists(log_file) and os.path.getsize(log_file) < 100000:

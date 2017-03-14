@@ -131,8 +131,7 @@ function handle_keydown(e) {
             // want to change focus right away in the private_message_recipient box since it
             // takes the typeaheads a little time to open after the user finishes typing, which
             // can lead to the focus moving without the autocomplete having a chance to happen.
-            if ((page_params.domain === "zulip.com" && nextFocus === "compose-send-button") ||
-                (page_params.domain !== "zulip.com" && nextFocus)) {
+            if (nextFocus) {
                 ui.focus_on(nextFocus);
                 nextFocus = false;
             }
@@ -141,19 +140,16 @@ function handle_keydown(e) {
             // send and the Shift/Ctrl/Cmd/Alt keys are not pressed.
             // Otherwise, make sure to insert a newline instead
             if (e.target.id === "new_message_content" && code === 13) {
-                e.preventDefault();
-
                 if ((!page_params.enter_sends && (e.metaKey || e.ctrlKey)) ||
                     (page_params.enter_sends && !(e.shiftKey || e.ctrlKey || e.metaKey || e.altKey))
                 ) {
+                    e.preventDefault();
                     if ($("#compose-send-button").attr('disabled') !== "disabled") {
                         $("#compose-send-button").attr('disabled', 'disabled');
                         compose.finish();
                     }
-                } else {
-                    $("#new_message_content").caret('\n');
-                    compose.autosize_textarea();
                 }
+                // Don't prevent default -- just let the enter key go in as usual.
             }
         }
     }

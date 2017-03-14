@@ -4,7 +4,6 @@ from __future__ import absolute_import
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Set, Text
 
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
 
 from zerver.lib import cache
 
@@ -291,6 +290,7 @@ class StreamAdminTest(ZulipTestCase):
             type='stream',
             property='name',
             value='stream_name2',
+            stream_id=stream_id,
             name='sTREAm_name1'
         ))
         notified_user_ids = set(events[1]['users'])
@@ -383,6 +383,7 @@ class StreamAdminTest(ZulipTestCase):
             type='stream',
             property='description',
             value='Test description',
+            stream_id=stream_id,
             name='stream_name1'
         ))
         notified_user_ids = set(events[0]['users'])
@@ -1131,7 +1132,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
 
         def method2(req, user_profile):
             # type: (HttpRequest, UserProfile) -> HttpResponse
-            return json_error(_('random failure'))
+            return json_error('random failure')
 
         with self.assertRaises(JsonableError):
             compose_views(None, user_profile, [(method1, {}), (method2, {})])
@@ -2030,7 +2031,7 @@ class SubscriptionAPITest(ZulipTestCase):
         with mock.patch('zerver.models.Recipient.__unicode__', return_value='recip'):
             self.assertEqual(str(subscription),
                              u'<Subscription: '
-                             '<UserProfile: iago@zulip.com <Realm: zulip.com 1>> -> recip>')
+                             '<UserProfile: iago@zulip.com <Realm: zulip 1>> -> recip>')
 
         self.assertTrue(subscription.desktop_notifications)
         self.assertTrue(subscription.audible_notifications)

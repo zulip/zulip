@@ -63,7 +63,7 @@ function _fade_messages() {
     var first_message;
     var first_row;
     var should_fade_group = false;
-    var visible_groups = viewport.visible_groups(false);
+    var visible_groups = message_viewport.visible_groups(false);
 
     normal_display = false;
 
@@ -119,7 +119,13 @@ exports.would_receive_message = function (email) {
     if (focused_recipient.type === 'stream') {
         var user = people.realm_get(email);
         var sub = stream_data.get_sub(focused_recipient.stream);
-        if (user && sub && user.is_bot && !sub.invite_only) {
+        if (!sub) {
+            // If the stream isn't valid, there is no risk of a mix
+            // yet, so don't fade.
+            return undefined;
+        }
+
+        if (user && user.is_bot && !sub.invite_only) {
             // Bots may receive messages on public streams even if they are
             // not subscribed.
             return undefined;

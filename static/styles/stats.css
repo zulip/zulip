@@ -163,17 +163,22 @@ svg {
 
 #messages_by_client_cumulative_button {
     font-size: 14px;
-    background: #D8D8D8;
-}
-
-#messages_by_client_ten_days_button {
-    font-size: 14px;
-    margin-left: 50px;
     background: #F0F0F0;
 }
 
-#messages_by_client_thirty_days_button {
+#messages_by_client_last_year_button {
     font-size: 14px;
+    background: #F0F0F0;
+}
+
+#messages_by_client_last_month_button {
+    font-size: 14px;
+    background: #F0F0F0;
+}
+
+#messages_by_client_last_week_button {
+    font-size: 14px;
+    margin-left: 50px;
     background: #F0F0F0;
 }
 
@@ -191,21 +196,27 @@ svg {
 
 #messages_by_type_cumulative_button {
     font-size: 14px;
-    background: #D8D8D8;
+    background: #F0F0F0;
     vertical-align: top;
 }
 
-#messages_by_type_ten_days_button {
+#messages_by_type_last_year_button {
+    font-size: 14px;
+    background: #F0F0F0;
+    vertical-align: top;
+}
+
+#messages_by_type_last_month_button {
+    font-size: 14px;
+    background: #F0F0F0;
+    vertical-align: top;
+}
+
+#messages_by_type_last_week_button {
     font-size: 14px;
     background: #F0F0F0;
     vertical-align: top;
     margin-left: 50px;
-}
-
-#messages_by_type_thirty_days_button {
-    font-size: 14px;
-    background: #F0F0F0;
-    vertical-align: top;
 }
 
 #pie_container {
@@ -277,6 +288,22 @@ svg {
     font-size: 13px;
     text-align: left;
     margin: 0px 0px 8px 0px;
+}
+
+.last-update {
+    display: none;
+    color: #aaa;
+    padding: 50px 0px;
+    font-weight: bolder;
+    font-size: 16px;
+}
+
+.last-update .icon-vector-question-sign {
+    margin-left: 5px;
+}
+
+.tooltip-inner {
+    max-width: 350px;
 }
 
 @media (max-width: 1127px) {

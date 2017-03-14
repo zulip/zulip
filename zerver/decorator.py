@@ -384,7 +384,7 @@ def authenticated_rest_api_view(is_webhook=False):
                 auth_type, credentials = request.META['HTTP_AUTHORIZATION'].split()
                 # case insensitive per RFC 1945
                 if auth_type.lower() != "basic":
-                    return json_error(_("Only Basic authentication is supported."))
+                    return json_error(_("This endpoint requires HTTP basic authentication."))
                 role, api_key = base64.b64decode(force_bytes(credentials)).decode('utf-8').split(":")
             except ValueError:
                 return json_unauthorized(_("Invalid authorization header for basic auth"))

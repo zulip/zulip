@@ -106,9 +106,8 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         state['realm_icon_url'] = realm_icon_url(user_profile.realm)
         state['realm_icon_source'] = user_profile.realm.icon_source
         state['realm_email_changes_disabled'] = user_profile.realm.email_changes_disabled
-
-    if want('realm_domain'):
-        state['realm_domain'] = user_profile.realm.domain
+        state['max_icon_file_size'] = settings.MAX_ICON_FILE_SIZE
+        state['realm_bot_domain'] = user_profile.realm.get_bot_domain()
 
     if want('realm_domains'):
         state['realm_domains'] = get_realm_aliases(user_profile.realm)

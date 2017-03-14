@@ -30,7 +30,7 @@ can run individual tests or individual modules, following the
 dotted.test.name convention below:
 
     cd /srv/zulip
-    ./tools/test-backend zerver.tests.tests.WorkerTest
+    ./tools/test-backend zerver.tests.test_queue_worker.WorkerTest
 
 There are many command line options for running Zulip tests, such
 as a `--verbose` option.  The

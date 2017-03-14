@@ -290,6 +290,7 @@ form#add_new_subscription {
     max-height: 300px;
     overflow: auto;
     text-align: left;
+    -webkit-overflow-scrolling: touch;
 }
 
 .subscriber-list {
@@ -593,12 +594,13 @@ form#add_new_subscription {
 .streams-list {
     position: relative;
     overflow: auto;
+    -webkit-overflow-scrolling: touch;
     height: calc(100% - 45px);
     width: 100%;
 }
 
 .stream-row {
-    padding: 15px 10px;
+    padding: 15px 10px 14px 10px;
     border-bottom: 1px solid #eee;
     cursor: pointer;
 }
@@ -692,7 +694,7 @@ form#add_new_subscription {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    line-height: 1;
+    line-height: 1.1;
 }
 
 #subscription_overlay .stream-description:empty:after,
@@ -706,6 +708,7 @@ form#add_new_subscription {
     max-height: calc(100% - 102px);
     overflow: auto;
     outline: none;
+    -webkit-overflow-scrolling: touch;
 }
 
 #subscription_overlay #stream-creation .modal-footer {
@@ -771,6 +774,15 @@ form#add_new_subscription {
 #subscription_overlay .stream-description {
     font-size: 0.9em;
     margin-bottom: 5px;
+}
+
+#preview-stream-button {
+    float: right;
+    margin-top: -5px;
+    margin-right: 5px;
+    text-decoration: none;
+    line-height: 16px;
+    vertical-align: middle;
 }
 
 .editable-section {
@@ -862,6 +874,7 @@ form#add_new_subscription {
     height: 100vh;
     background-color: rgba(0,0,0,0.8);
     overflow: auto;
+    -webkit-overflow-scrolling: touch;
     z-index: 102;
 
     transition: all 0.3s ease;
@@ -888,6 +901,7 @@ form#add_new_subscription {
     position: relative;
     height: calc(100% - 45px);
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 #subscription_overlay .subscription_settings {
@@ -1013,12 +1027,9 @@ form#add_new_subscription {
         height: 95%;
     }
 
-    #subscription_overlay .subscription_settings {
-        overflow: visible;
-    }
-
     #subscription_overlay .settings {
-        height: auto;
-        overflow: visible;
+        overflow: auto;
+        height: calc(100% - 20px);
+        -webkit-overflow-scrolling: touch;
     }
 }

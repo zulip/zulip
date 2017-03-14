@@ -1,0 +1,670 @@
+html {
+    width: 100vw;
+    overflow-x: hidden;
+}
+
+body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    margin: 0;
+    background-color: #eaeaea;
+    color: #444;
+    line-height: normal;
+
+    max-width: 100vw;
+}
+
+*::-moz-selection {
+    background-color: rgba(69, 191, 168, 0.5);
+}
+
+*::selection {
+    background-color: rgba(69, 191, 168, 0.5);
+}
+
+.center {
+    text-align: center;
+}
+
+/* -- component styling -- */
+button {
+    padding: 5px 12px;
+
+    font-family: inherit;
+    font-size: 0.7em;
+    background-color: #fff;
+    color: #444;
+
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    outline: none;
+}
+
+button:active {
+    background-color: #fafafa;
+    border: 1px solid #bbb;
+}
+
+button.green {
+    color: #fff;
+    background-color: #4fc0ad;
+
+    border: 1px solid #3ca08d;
+}
+
+button.button.grey-transparent {
+    display: block;
+    margin: 0 auto;
+    padding: 8px 20px;
+
+    font-size: 1.1rem;
+    font-weight: 400;
+
+    color: #fff;
+    background-color: transparent;
+    border: 1px solid #fff;
+
+    transition: all 0.2s ease;
+}
+
+button.button.grey-transparent:hover {
+    background-color: rgba(255,255,255,0.2);
+}
+
+button.button.grey-transparent:active {
+    background-color: #fff;
+    color: #666;
+}
+
+/* -- navbar styling -- */
+
+nav {
+    position: relative;
+
+    background-color: #348576;
+    background: -webkit-linear-gradient(to bottom, black , #68d2c0);
+    background: linear-gradient(-145deg, #2e6f63 , #68d2c0);
+    padding: 50px 100px 130px 100px;
+
+    color: #fff;
+}
+
+nav #hamburger {
+    display: none;
+    fill: #fff;
+    cursor: pointer;
+    margin-top: 3px;
+}
+
+nav .content {
+    position: relative;
+    z-index: 2;
+}
+
+nav .stripes,
+nav .faded,
+nav .faded-light {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+}
+
+nav .stripes,
+nav .faded,
+nav .faded-light {
+    pointer-events: none;
+}
+
+nav .stripes {
+    background: repeating-linear-gradient(
+      75deg,
+      rgba(255,255,255,0) 0px,
+      rgba(255,255,255,0.05) 200px
+    );
+}
+
+nav .faded {
+    background: -webkit-linear-gradient(top bottom, transparent , rgba(0,0,0,0.1));
+    background: linear-gradient(0deg, transparent , rgba(0,0,0,0.1));
+}
+
+nav .faded-light {
+    background: -webkit-linear-gradient(top top, transparent , rgba(104, 210, 192, 0.8));
+    background: linear-gradient(180deg, transparent , rgba(104, 210, 192, 0.8));
+}
+
+nav .logo {
+    top: 7px;
+}
+
+nav .logo span {
+    color: #fff;
+    font-weight: 600;
+    vertical-align: top;
+    text-transform: uppercase;
+    font-size: 1.2rem;
+    letter-spacing: 0.1em;
+}
+
+nav .brand-logo {
+    width: 25px;
+}
+
+nav ul {
+    float: right;
+    list-style-type: none;
+    font-weight: 500;
+    margin: 0;
+    padding: 0;
+
+    cursor: pointer;
+}
+
+nav ul li {
+    position: relative;
+    display: inline-block;
+    margin: 10px;
+
+    color: #fff;
+
+    opacity: 0.7;
+    transition: all 0.2s ease;
+}
+
+nav li a,
+nav li a:hover {
+    text-decoration: none;
+    color: #fff !important;
+}
+
+nav ul li.active,
+nav ul li:hover {
+    opacity: 1;
+}
+
+nav ul li.active::after {
+    content: "v";
+
+    position: absolute;
+    bottom: -15px;
+    left: calc(50% - 4px);
+
+    font-weight: 100;
+
+    transform: scaleX(2) scaleY(0.5);
+}
+
+/* -- main panel styling -- */
+.portico-landing {
+    position: relative;
+
+    transition: all 0.5s ease;
+    margin-top: 200px;
+    opacity: 0;
+
+    z-index: 1;
+}
+
+.portico-landing.show {
+    margin-top: -80px;
+    opacity: 1;
+}
+
+.main {
+    width: calc(100% - 200px - 20px);
+    margin: 0 auto;
+}
+
+/* -- generic styles -- */
+
+h1, h2, h3 {
+    margin: 10px 0px;
+
+    font-weight: 300;
+    line-height: 1.2;
+}
+
+p {
+    margin: 10px 0px;
+    font-weight: normal;
+    line-height: 1.5;
+}
+
+a, a:hover, a:visited {
+    color: #4fc0ad;
+}
+
+a.no-style:hover {
+    text-decoration: none;
+    color: inherit;
+}
+
+a.arrow:after {
+    content: " ";
+    display: inline-block;
+    position: relative;
+
+    height: 17px;
+    width: 17px;
+
+    top: 3px;
+
+    background-image: url(/static/images/landing-page/assets/arrow.png);
+    background-size: 100%;
+
+    margin-left: 5px;
+}
+
+h1 {
+    font-size: 2em;
+}
+
+h2 {
+    font-size: 1.8em;
+}
+
+a {
+    position: relative;
+    cursor: pointer;
+}
+
+a:hover {
+    text-decoration: none;
+}
+
+a:not(.no-style):before {
+    content: " ";
+
+    position: absolute;
+    bottom: -1px;
+
+    height: 1px;
+    width: 0%;
+
+    background-color: #4fc0ad;
+    transition: all 0.5s ease;
+}
+
+a:not(.no-style):hover:before {
+    width: 100%;
+}
+
+.flex {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.small {
+    font-size: 0.8em;
+}
+
+.box-shadow {
+    box-shadow: 0px 0px 80px rgba(0,0,0,0.12);
+}
+
+.grey {
+    color: #999;
+}
+
+.dark-grey {
+    color: #666;
+}
+
+.bold {
+    font-weight: 600;
+}
+
+.padded-content {
+    padding: 50px;
+}
+
+.clear-float {
+    clear: both;
+}
+
+/* -- modify portico.css -- */
+.app-main {
+    max-width: none;
+    min-width: 0;
+    padding: 0 !important;
+}
+
+.header, .footer, .portico-os-announcement {
+    display: none;
+}
+
+.footer-padder {
+    display: none;
+}
+
+/* -- features page css -- */
+.features-app .main {
+    background-color: #fff;
+    margin: 0px auto 50px;
+}
+
+.features-app p {
+    line-height: 1.3;
+}
+
+.feature-page-header {
+    padding-top: 0px;
+    text-align: left;
+}
+
+.feature-block .flex {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    height: 110px;
+}
+
+.feature-block .icon-container {
+    width: 70px;
+    min-width: 70px;
+    text-align: center;
+}
+
+.feature-block i {
+    float: none;
+}
+
+.feature-block i:before {
+    background: -webkit-linear-gradient(65deg, #2e6f63, #68d2c0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.feature-block .block h4 {
+    font-size: 1em;
+    font-weight: 400;
+    text-transform: uppercase;
+    color: #aaa;
+    margin-left: 15px;
+}
+
+.feature-block .block p {
+    font-size: 1rem;
+    margin-left: 15px;
+    margin-bottom: 0px;
+}
+
+/* -- integrations page css -- */
+.portico-landing.integrations {
+    color: #444;
+    font-weight: normal;
+}
+
+.portico-landing.integrations .main {
+    width: calc(100% - 200px - 20px);
+    margin: 0 auto;
+
+    background-color: #fff;
+}
+
+.portico-landing.integrations .padded-content {
+    padding: 50px;
+}
+
+.portico-landing.integrations .padded-content .inner-content {
+    opacity: 0;
+    pointer-events: none;
+
+    transition: all 0.3s ease;
+}
+
+.portico-landing.integrations .padded-content .inner-content.show {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.portico-landing.integrations ol li {
+    list-style: none;
+}
+
+.portico-landing.integrations ol > li > p {
+    max-width: calc(100% - 33px);
+    margin-top: 0px;
+}
+
+.portico-landing code {
+    display: inline-block;
+    vertical-align: middle;
+    max-width: 100%;
+    overflow: auto;
+
+    font-family: Monaco, Menlo, Consolas, "Courier New", Courier, monospace;
+    font-size: 0.85em;
+}
+
+.portico-landing.integrations .portico-page-header {
+    padding-top: 0px;
+}
+
+.portico-landing.integrations .portico-page-header a {
+    color: inherit;
+}
+
+.portico-landing.integrations .integration-lozenges {
+    transition: all 0.3s ease;
+}
+
+.portico-landing.integrations .integration-lozenges.hide {
+    opacity: 0;
+    transform: translateY(-200px);
+}
+
+.portico-landing.integrations .integration-lozenge {
+    height: 180px;
+    transition: all 0.3s ease;
+}
+
+.portico-landing.integrations .integration-lozenge:hover {
+    box-shadow: 0px 0px 40px rgba(0,0,0,0.1);
+    background: #fefefe;
+}
+
+.portico-landing.integrations .integration-lozenge img {
+    max-width: 90%;
+    display: block;
+    margin: 10% auto 0 auto;
+    border-radius: 8px;
+}
+
+.portico-landing.integrations .integration-lozenge .integration-label {
+    font-weight: 500;
+    color: #666;
+}
+
+/* -- media queries -- */
+@media (max-width: 1100px) {
+    .feature-block .flex {
+        height: 130px;
+    }
+}
+
+
+@media (max-width: 1024px) {
+    nav {
+        padding-bottom: 110px;
+    }
+
+    nav .logo {
+        float: none;
+        display: block;
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    nav ul {
+        display: block;
+        margin: 20px auto 0 auto;
+        float: none;
+        text-align: center;
+    }
+
+    .feature-block .flex {
+        height: 150px;
+    }
+
+    .features-app .main {
+        margin: 0px auto 20px;
+        width: calc(100% - 40px);
+    }
+
+    .portico-landing.integrations .main {
+        width: calc(100% - 100px);
+    }
+}
+
+@media (max-width: 768px) {
+    nav,
+    .features {
+        padding-left: 50px;
+        padding-right: 50px;
+    }
+
+    .main {
+        width: calc(100% - 100px);
+
+        margin-left: 50px;
+        margin-right: 50px;
+    }
+
+    .feature-block .flex {
+        height: auto;
+        padding: 10px;
+    }
+
+    .portico-landing.integrations .portico-page-header {
+        padding-top: 20px;
+    }
+
+    #integration-instruction-block .integration-lozenge {
+        float: none;
+        position: absolute;
+        top: -74px;
+        right: 0px;
+        width: 50px;
+        height: 54px;
+    }
+
+    #integration-instruction-block .integration-lozenge span {
+        display: none;
+    }
+
+    #integration-list-link {
+        top: -100px;
+        left: 0px;
+    }
+
+    .integration-instructions {
+        margin-left: 0px;
+    }
+}
+
+@media (max-width: 666px) {
+    .portico-landing.integrations .main,
+    .main {
+        width: calc(100% - 50px);
+        margin: 0 auto;
+    }
+
+    nav ul {
+        margin-top: 0px;
+        text-align: left;
+    }
+
+    nav .content {
+        display: inline-block;
+    }
+
+    nav #hamburger {
+        display: inline-block;
+        float: right;
+    }
+
+    nav ul {
+        position: fixed;
+        float: none;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 300px;
+        padding-left: 30px;
+
+        background-color: #fff;
+        transform: translate(-350px, 0px);
+
+
+        box-shadow: 0px 0px 80px rgba(0,0,0,0.12);
+
+        transition: all 0.5s ease;
+    }
+
+    nav ul.show {
+        transform: translate(0px, 0px);
+    }
+
+    nav ul li:first-of-type {
+        margin-top: 30px;
+    }
+
+    nav ul li {
+        display: block;
+
+        font-size: 1.5em;
+        font-weight: 300;
+        line-height: 1.5;
+    }
+
+    nav ul li,
+    nav ul li a {
+        color: #444 !important;
+    }
+
+    nav ul li.active:after {
+        content: ">";
+        transform: scale(1,1);
+        bottom: auto;
+        left: -25px;
+        font-weight: 400;
+    }
+
+    nav ul li.active {
+        font-weight: 400;
+    }
+}
+
+@media (max-device-width: 450px) {
+    nav {
+        padding-bottom: 90px;
+        padding-top: 20px;
+    }
+
+    .main, .portico-landing.integrations .main {
+        width: 100%;
+        margin: 0;
+    }
+
+    .portico-landing.integrations .main .portico-page-header {
+        padding-top: 10px;
+    }
+
+    .portico-landing.integrations .main .padded-content {
+        padding: 20px;
+    }
+
+    .main .padded-content {
+        padding: 20px;
+    }
+
+    .footer {
+        width: 100vw;
+    }
+}

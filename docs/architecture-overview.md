@@ -24,14 +24,12 @@ bindings](https://github.com/zulip/zulip-node); and our [full-text
 search PostgreSQL extension](https://github.com/zulip/tsearch_extras).
 
 Our mobile clients are separate code repositories:
-[Android](https://github.com/zulip/zulip-android), [iOS
-(stable)](https://github.com/zulip/zulip-ios), and [our experimental
-React Native iOS app](https://github.com/zulip/zulip-mobile). Our
-[legacy desktop application (implemented in
-QT/WebKit)](https://github.com/zulip/zulip-desktop) and our new, alpha
-[cross-platform desktop app (implemented in
-Electron)](https://github.com/zulip/zulip-electron) are also separate
-repositories.
+[Android](https://github.com/zulip/zulip-android) and
+[React Native iOS app](https://github.com/zulip/zulip-mobile).  Our
+[legacy desktop application (implemented in QT/WebKit)](https://github.com/zulip/zulip-desktop)
+and our new, alpha
+[cross-platform desktop app (implemented in Electron)](https://github.com/zulip/zulip-electron)
+are also separate repositories.
 
 We use [Transifex](https://www.transifex.com/zulip/zulip/) to do
 translations.

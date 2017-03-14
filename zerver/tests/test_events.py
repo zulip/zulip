@@ -92,7 +92,18 @@ import time
 import ujson
 from six.moves import range
 
-class TornadoTest(ZulipTestCase):
+class EventsEndpointTest(ZulipTestCase):
+    def test_events_register_endpoint(self):
+        # type: () -> None
+
+        # This test is intended to get minimal coverage on
+        # zerver.views.events_register.events_register_backend, so we can have
+        # 100% views coverage.
+        email = 'hamlet@zulip.com'
+        with mock.patch('zerver.views.events_register.do_events_register', return_value={}):
+            result = self.client_post('/json/register', **self.api_auth(email))
+        self.assert_json_success(result)
+
     def test_tornado_endpoint(self):
         # type: () -> None
 
@@ -660,10 +671,11 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('subscription')),
             ('op', equals('update')),
             ('property', equals('pin_to_top')),
+            ('stream_id', check_int),
             ('value', check_bool),
         ])
-        stream = "Denmark"
-        sub = get_subscription(stream, self.user_profile)
+        stream = get_stream("Denmark", self.user_profile.realm)
+        sub = get_subscription(stream.name, self.user_profile)
         do_change_subscription_property(self.user_profile, sub, stream, "pin_to_top", False)
         for pinned in (True, False):
             events = self.do_test(lambda: do_change_subscription_property(self.user_profile, sub, stream, "pin_to_top", pinned))
@@ -1108,6 +1120,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('op', equals('update')),
             ('property', equals('email_address')),
             ('value', check_string),
+            ('stream_id', check_int),
             ('name', equals('old_name')),
         ])
         error = schema_checker('events[0]', events[0])
@@ -1209,6 +1222,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('op', equals('update')),
             ('property', equals('description')),
             ('value', check_string),
+            ('stream_id', check_int),
             ('name', check_string),
         ])
 

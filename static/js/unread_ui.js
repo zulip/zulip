@@ -135,11 +135,11 @@ exports.process_visible = function process_visible() {
     }
 
     if (feature_flags.mark_read_at_bottom) {
-        if (viewport.bottom_message_visible()) {
+        if (message_viewport.bottom_message_visible()) {
             exports.mark_current_list_as_read();
         }
     } else {
-        exports.mark_messages_as_read(viewport.visible_messages(true));
+        exports.mark_messages_as_read(message_viewport.visible_messages(true));
     }
 };
 

@@ -3,9 +3,13 @@ from __future__ import absolute_import
 import random
 from typing import Any, Dict, List, Optional, SupportsInt, Text
 
-from zerver.models import PushDeviceToken, UserProfile
+from zerver.models import PushDeviceToken, Message, Recipient, UserProfile, \
+    UserMessage, get_display_recipient, receives_offline_notifications, \
+    receives_online_notifications
 from zerver.models import get_user_profile_by_id
-from zerver.lib.timestamp import timestamp_to_datetime
+from zerver.lib.avatar import avatar_url
+from zerver.lib.request import JsonableError
+from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.decorator import statsd_increment
 from zerver.lib.utils import generate_random_token
 from zerver.lib.redis_utils import get_redis_client
@@ -14,6 +18,8 @@ from apns import APNs, Frame, Payload, SENT_BUFFER_QTY
 from gcm import GCM
 
 from django.conf import settings
+from django.utils import timezone
+from django.utils.translation import ugettext as _
 
 import base64
 import binascii
@@ -54,9 +60,9 @@ def get_apns_key(identifer):
     return 'apns:' + str(identifer)
 
 class APNsMessage(object):
-    def __init__(self, user, tokens, alert=None, badge=None, sound=None,
+    def __init__(self, user_id, tokens, alert=None, badge=None, sound=None,
                  category=None, **kwargs):
-        # type: (UserProfile, List[Text], Text, int, Text, Text, **Any) -> None
+        # type: (int, List[Text], Text, int, Text, Text, **Any) -> None
         self.frame = Frame()
         self.tokens = tokens
         expiry = int(time.time() + 24 * 3600)
@@ -64,7 +70,7 @@ class APNsMessage(object):
         payload = Payload(alert=alert, badge=badge, sound=sound,
                           category=category, custom=kwargs)
         for token in tokens:
-            data = {'token': token, 'user_id': user.id}
+            data = {'token': token, 'user_id': user_id}
             identifier = random.getrandbits(32)
             key = get_apns_key(identifier)
             redis_client.hmset(key, data)
@@ -134,27 +140,32 @@ def hex_to_b64(data):
     # type: (Text) -> bytes
     return base64.b64encode(binascii.unhexlify(data.encode('utf-8')))
 
-def _do_push_to_apns_service(user, message, apns_connection):
-    # type: (UserProfile, APNsMessage, APNs) -> None
+def _do_push_to_apns_service(user_id, message, apns_connection):
+    # type: (int, APNsMessage, APNs) -> None
     if not apns_connection:
-        logging.info("Not delivering APNS message %s to user %s due to missing connection" % (message, user))
+        logging.info("Not delivering APNS message %s to user %s due to missing connection" % (message, user_id))
         return
 
     frame = message.get_frame()
     apns_connection.gateway_server.send_notification_multiple(frame)
 
+def send_apple_push_notification_to_user(user, alert, **extra_data):
+    # type: (UserProfile, Text, **Any) -> None
+    devices = PushDeviceToken.objects.filter(user=user, kind=PushDeviceToken.APNS)
+    send_apple_push_notification(user.id, devices, zulip=dict(alert=alert),
+                                 **extra_data)
+
 # Send a push notification to the desired clients
 # extra_data is a dict that will be passed to the
 # mobile app
 @statsd_increment("apple_push_notification")
-def send_apple_push_notification(user, alert, **extra_data):
-    # type: (UserProfile, Text, **Any) -> None
+def send_apple_push_notification(user_id, devices, **extra_data):
+    # type: (int, List[PushDeviceToken], **Any) -> None
     if not connection and not dbx_connection:
         logging.error("Attempting to send push notification, but no connection was found. "
                       "This may be because we could not find the APNS Certificate file.")
         return
 
-    devices = PushDeviceToken.objects.filter(user=user, kind=PushDeviceToken.APNS)
     # Plain b64 token kept for debugging purposes
     tokens = [(b64_to_hex(device.token), device.ios_app_id, device.token)
               for device in devices]
@@ -168,8 +179,10 @@ def send_apple_push_notification(user, alert, **extra_data):
         if valid_tokens:
             logging.info("APNS: Sending apple push notification "
                          "to devices: %s" % (valid_devices,))
-            zulip_message = APNsMessage(user, valid_tokens, alert=alert, **extra_data)
-            _do_push_to_apns_service(user, zulip_message, conn)
+            zulip_message = APNsMessage(user_id, valid_tokens,
+                                        alert=extra_data['zulip']['alert'],
+                                        **extra_data)
+            _do_push_to_apns_service(user_id, zulip_message, conn)
         else:
             logging.warn("APNS: Not sending notification because "
                          "tokens didn't match devices: %s" % (app_ids,))
@@ -196,15 +209,19 @@ if settings.ANDROID_GCM_API_KEY:
 else:
     gcm = None
 
-@statsd_increment("android_push_notification")
-def send_android_push_notification(user, data):
+def send_android_push_notification_to_user(user_profile, data):
     # type: (UserProfile, Dict[str, Any]) -> None
+    devices = list(PushDeviceToken.objects.filter(user=user_profile,
+                                                  kind=PushDeviceToken.GCM))
+    send_android_push_notification(devices, data)
+
+@statsd_increment("android_push_notification")
+def send_android_push_notification(devices, data):
+    # type: (List[PushDeviceToken], Dict[str, Any]) -> None
     if not gcm:
         logging.error("Attempting to send a GCM push notification, but no API key was configured")
         return
-
-    reg_ids = [device.token for device in
-               PushDeviceToken.objects.filter(user=user, kind=PushDeviceToken.GCM)]
+    reg_ids = [device.token for device in devices]
 
     res = gcm.json_request(registration_ids=reg_ids, data=data)
 
@@ -250,3 +267,100 @@ def send_android_push_notification(user, data):
 
     # python-gcm handles retrying of the unsent messages.
     # Ref: https://github.com/geeknam/python-gcm/blob/master/gcm/gcm.py#L497
+
+@statsd_increment("push_notifications")
+def handle_push_notification(user_profile_id, missed_message):
+    # type: (int, Dict[str, Any]) -> None
+    try:
+        user_profile = get_user_profile_by_id(user_profile_id)
+        if not (receives_offline_notifications(user_profile) or receives_online_notifications(user_profile)):
+            return
+
+        umessage = UserMessage.objects.get(user_profile=user_profile,
+                                           message__id=missed_message['message_id'])
+        message = umessage.message
+        if umessage.flags.read:
+            return
+        sender_str = message.sender.full_name
+
+        android_devices = [device for device in
+                           PushDeviceToken.objects.filter(user=user_profile,
+                                                          kind=PushDeviceToken.GCM)]
+        apple_devices = list(PushDeviceToken.objects.filter(user=user_profile,
+                                                            kind=PushDeviceToken.APNS))
+
+        if apple_devices or android_devices:
+            # TODO: set badge count in a better way
+            # Determine what alert string to display based on the missed messages
+            if message.recipient.type == Recipient.HUDDLE:
+                alert = "New private group message from %s" % (sender_str,)
+            elif message.recipient.type == Recipient.PERSONAL:
+                alert = "New private message from %s" % (sender_str,)
+            elif message.recipient.type == Recipient.STREAM:
+                alert = "New mention from %s" % (sender_str,)
+            else:
+                alert = "New Zulip mentions and private messages from %s" % (sender_str,)
+
+            if apple_devices:
+                apple_extra_data = {
+                    'alert': alert,
+                    'message_ids': [message.id],
+                }
+                send_apple_push_notification(user_profile.id, apple_devices,
+                                             badge=1, zulip=apple_extra_data)
+
+            if android_devices:
+                content = message.content
+                content_truncated = (len(content) > 200)
+                if content_truncated:
+                    content = content[:200] + "..."
+
+                android_data = {
+                    'user': user_profile.email,
+                    'event': 'message',
+                    'alert': alert,
+                    'zulip_message_id': message.id, # message_id is reserved for CCS
+                    'time': datetime_to_timestamp(message.pub_date),
+                    'content': content,
+                    'content_truncated': content_truncated,
+                    'sender_email': message.sender.email,
+                    'sender_full_name': message.sender.full_name,
+                    'sender_avatar_url': avatar_url(message.sender),
+                }
+
+                if message.recipient.type == Recipient.STREAM:
+                    android_data['recipient_type'] = "stream"
+                    android_data['stream'] = get_display_recipient(message.recipient)
+                    android_data['topic'] = message.subject
+                elif message.recipient.type in (Recipient.HUDDLE, Recipient.PERSONAL):
+                    android_data['recipient_type'] = "private"
+
+                send_android_push_notification(android_devices, android_data)
+
+    except UserMessage.DoesNotExist:
+        logging.error("Could not find UserMessage with message_id %s" % (missed_message['message_id'],))
+
+def add_push_device_token(user_profile, token_str, kind, ios_app_id=None):
+    # type: (UserProfile, str, int, Optional[str]) -> None
+
+    # If another user was previously logged in on the same device and didn't
+    # properly log out, the token will still be registered to the wrong account
+    PushDeviceToken.objects.filter(token=token_str).exclude(user=user_profile).delete()
+
+    # Overwrite with the latest value
+    token, created = PushDeviceToken.objects.get_or_create(user=user_profile,
+                                                           token=token_str,
+                                                           defaults=dict(
+                                                               kind=kind,
+                                                               ios_app_id=ios_app_id))
+    if not created:
+        token.last_updated = timezone.now()
+        token.save(update_fields=['last_updated'])
+
+def remove_push_device_token(user_profile, token_str, kind):
+    # type: (UserProfile, str, int) -> None
+    try:
+        token = PushDeviceToken.objects.get(token=token_str, kind=kind)
+        token.delete()
+    except PushDeviceToken.DoesNotExist:
+        raise JsonableError(_("Token does not exist"))

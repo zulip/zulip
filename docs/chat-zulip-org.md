@@ -69,9 +69,9 @@ everyone, even non-developers:
   for discussing Zulip's translations.
 
 There are dozens of streams for development discussions in the Zulip
-community (e.g. one for each app, etc.); check out the /#subscriptions
-page to see the descriptions for all of them.  Relevant to almost
-everyone are these:
+community (e.g. one for each app, etc.); check out the
+[Streams page](https://chat.zulip.org/#streams/all) to see the
+descriptions for all of them.  Relevant to almost everyone are these:
 
 * [#checkins](https://chat.zulip.org/#narrow/stream/checkins) is for
   progress updates on what you're working on and its status; usually
@@ -80,7 +80,7 @@ everyone are these:
 * [#development help](https://chat.zulip.org/#narrow/stream/development.20help)
   is for asking for help with any Zulip server/webapp development work
   (use the app streams for help working on one of the apps).
-* [#peer review](https://chat.zulip.org/#narrow/stream/peer.20review)
+* [#code review](https://chat.zulip.org/#narrow/stream/code.20review)
   is for getting feedback on your work.  We encourage all developers
   to comment on work posted here, even if you're new to the Zulip
   project; reviewing other PRs is a great way to develop experience,

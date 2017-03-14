@@ -18,6 +18,11 @@ global.set_global = namespace.set_global;
 global.patch_builtin = namespace.patch_builtin;
 global.add_dependencies = namespace.add_dependencies;
 global.stub_out_jquery = namespace.stub_out_jquery;
+global.with_overrides = namespace.with_overrides;
+
+// Set up stub helpers.
+var stub = require('./stub.js');
+global.with_stub = stub.with_stub;
 
 // Set up helpers to render templates.
 var render = require('./render.js');

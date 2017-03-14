@@ -122,7 +122,7 @@ class Command(BaseCommand):
         if os.path.exists(output_dir):
             shutil.rmtree(output_dir)
         os.makedirs(output_dir)
-        print("Exporting realm %s" % (realm.domain,))
+        print("Exporting realm %s" % (realm.string_id,))
         num_threads = int(options['threads'])
         if num_threads < 1:
             raise CommandError('You must have at least one thread.')

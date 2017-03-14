@@ -178,7 +178,7 @@ to pull out the resulting HTML :)
 </div>
     <p>&nbsp;</p>
 
-    <h3>API Keys</h3>
+    <h3>API keys</h3>
     <a name="api_keys"></a>
     <p>You can create bots on your <a href="/#settings" target="_blank">settings page</a>.
     Once you have a bot, you can use its email and API key to send messages.</p>
@@ -192,10 +192,27 @@ to pull out the resulting HTML :)
     <p>If you prefer to send messages as your own user, you can also find your API key on your <a href="/#settings" target="_blank">settings page</a>.</p>
     <p>When using our python bindings, you may either specify the user
     and API key for each Client object that you initialize, or let the binding look for
-    them in your <code>~/.zuliprc</code>, which you can create as follows:</p>
+    them in your <code>~/.zuliprc</code>, the default config file, which you can create as follows:</p>
 <div class="codehilite"><pre><span class="k">[api]</span>
 <span class="na">key</span><span class="o">=</span><span class="s">BOT_API_KEY</span>
 <span class="na">email</span><span class="o">=</span><span class="s">BOT_EMAIL_ADDRESS</span>
 {% if api_site_required %}<span class="na">site</span><span class="o">=</span><span class="s">{{ external_api_uri_subdomain }}</span>{% endif %}</pre></div>
+
+    <p>Additionally, you can also specify the parameters as environment variables as follows:</p>
+<div class="codehilite"><pre><span></span><span class="nb">export</span> <span class="nv">ZULIP_CONFIG</span><span class="o">=</span>/path/to/zulipconfig
+<span class="nb">export</span> <span class="nv">ZULIP_EMAIL</span><span class="o">=</span>BOT_EMAIL_ADDRESS
+<span class="nb">export</span> <span class="nv">ZULIP_API_KEY</span><span class="o">=</span>BOT_API_KEY
+</pre></div>
+    <p>The parameters specified in environment variables would override the parameters provided in the config file. For example, if you specify the variable <code>key</code> in the config file and specify <code>ZULIP_API_KEY</code> as an environment variable, the value of <code>ZULIP_API_KEY</code> would be considered.</p>
+    <p>The following variables can be specified:
+        <br/> 1. <code>ZULIP_CONFIG</code>
+        <br/> 2. <code>ZULIP_API_KEY</code>
+        <br/> 3. <code>ZULIP_EMAIL</code>
+        <br/> 4. <code>ZULIP_SITE</code>
+        <br/> 5. <code>ZULIP_CERT</code>
+        <br/> 6. <code>ZULIP_CERT_KEY</code>
+        <br/> 7. <code>ZULIP_CERT_BUNDLE</code>
+    </p>
+
 </div>
 {% endblock %}

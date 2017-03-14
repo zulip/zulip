@@ -1,0 +1,56 @@
+<p>
+    See your Splunk Search alerts in Zulip!
+</p>
+<p>
+    First, create the stream you'd like to use for Splunk notifications,
+    and subscribe all interested parties to this stream. We recommend the
+    stream name <code>splunk</code>, although you may choose another stream
+    if you prefer.
+</p>
+
+<p>
+    Next, in the Splunk search app, execute the search you'd like to alert on
+    and then save it as an alert:
+</p>
+
+<p>
+   <img src="/static/images/integrations/splunk/splunk_save_as_alert.png"/>
+</p>
+
+<p>
+    Name and configure your search in the "Settings" and "Trigger Conditions"
+    sections of the "Save As Alert" dialog box. In the "Trigger Actions" section,
+    click "Add Actions" and select "Webhook" to add a webhook action. Put the
+    Zulip Splunk webhook URL and your API key in the "URL" field, along with
+    your desired stream and (optional) topic name. If you do not specify a stream,
+    your messages will use the default stream `splunk`. If you do not specify a topic,
+    the name of the search is used (truncated to fit if needed.)
+</p>
+
+<p>
+   Example:
+<code>{{ external_api_uri_subdomain }}/v1/external/splunk?api_key=abcde&stream=splunk&topic=alerts</code>
+</p>
+
+<p>
+   When you are done, it should look like this:
+</p>
+
+<p>
+<img src="/static/images/integrations/splunk/splunk_configure_url.png"/>
+</p>
+
+<p>
+   Click Save to save the alert. You can create as many searches with alert
+   actions as you like, with whatever stream and topic you choose. Update your
+   webhook URL as appropriate for each one, and make sure the stream exists.
+</p>
+
+<p>
+    <b>Congratulations! You're done!</b><br/> When your search triggers an
+    alert, you'll see a notification like this:
+</p>
+
+<p>
+<img class="screenshot" src="/static/images/integrations/splunk/splunk_message.png"/>
+</p>

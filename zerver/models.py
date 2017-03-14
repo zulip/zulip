@@ -173,29 +173,12 @@ class Realm(ModelReprMixin, models.Model):
 
     def __unicode__(self):
         # type: () -> Text
-        return u"<Realm: %s %s>" % (self.domain, self.id)
+        return u"<Realm: %s %s>" % (self.string_id, self.id)
 
     @cache_with_key(get_realm_emoji_cache_key, timeout=3600*24*7)
     def get_emoji(self):
         # type: () -> Dict[Text, Optional[Dict[str, Text]]]
         return get_realm_emoji_uncached(self)
-
-    @property
-    def deployment(self):
-        # type: () -> Any # returns a Deployment from zilencer.models
-
-        # see https://github.com/zulip/zulip/issues/1845 before you
-        # attempt to add test coverage for this method, as we may
-        # be revisiting the deployments model soon
-        try:
-            return self._deployments.all()[0]
-        except IndexError:
-            return None
-
-    @deployment.setter # type: ignore # https://github.com/python/mypy/issues/220
-    def set_deployments(self, value):
-        # type: (Any) -> None
-        self._deployments = [value] # type: Any
 
     def get_admin_users(self):
         # type: () -> Sequence[UserProfile]
@@ -207,6 +190,16 @@ class Realm(ModelReprMixin, models.Model):
         # type: () -> Sequence[UserProfile]
         # TODO: Change return type to QuerySet[UserProfile]
         return UserProfile.objects.filter(realm=self, is_active=True).select_related()
+
+    def get_bot_domain(self):
+        # type: () -> str
+        # Remove the port. Mainly needed for development environment.
+        external_host = settings.EXTERNAL_HOST.split(':')[0]
+        if settings.REALMS_HAVE_SUBDOMAINS or \
+           Realm.objects.filter(deactivated=False) \
+                        .exclude(string_id__in=settings.SYSTEM_ONLY_REALMS).count() > 1:
+            return "%s.%s" % (self.string_id, external_host)
+        return external_host
 
     @property
     def subdomain(self):
@@ -390,7 +383,7 @@ class RealmEmoji(ModelReprMixin, models.Model):
 
     def __unicode__(self):
         # type: () -> Text
-        return u"<RealmEmoji(%s): %s %s>" % (self.realm.domain, self.name, self.img_url)
+        return u"<RealmEmoji(%s): %s %s>" % (self.realm.string_id, self.name, self.img_url)
 
 def get_realm_emoji_uncached(realm):
     # type: (Realm) -> Dict[Text, Optional[Dict[str, Text]]]
@@ -449,7 +442,7 @@ class RealmFilter(models.Model):
 
     def __unicode__(self):
         # type: () -> Text
-        return u"<RealmFilter(%s): %s %s>" % (self.realm.domain, self.pattern, self.url_format_string)
+        return u"<RealmFilter(%s): %s %s>" % (self.realm.string_id, self.pattern, self.url_format_string)
 
 def get_realm_filters_cache_key(realm_id):
     # type: (int) -> Text
@@ -721,7 +714,7 @@ class PushDeviceToken(models.Model):
     # sent to us from each device:
     #   - APNS token if kind == APNS
     #   - GCM registration id if kind == GCM
-    token = models.CharField(max_length=4096, unique=True) # type: Text
+    token = models.CharField(max_length=4096, unique=True) # type: bytes
     last_updated = models.DateTimeField(auto_now=True) # type: datetime.datetime
 
     # The user who's device this is
@@ -1083,7 +1076,7 @@ def pre_save_message(sender, **kwargs):
         message.update_calculated_fields()
 
 def get_context_for_message(message):
-    # type: (Message) -> Sequence[Message]
+    # type: (Message) -> QuerySet[Message]
     # TODO: Change return type to QuerySet[Message]
     return Message.objects.filter(
         recipient_id=message.recipient_id,
@@ -1412,8 +1405,8 @@ class UserPresence(models.Model):
     def get_status_dicts_for_query(query, mobile_user_ids):
         # type: (QuerySet, List[int]) -> defaultdict[Any, Dict[Any, Any]]
         user_statuses = defaultdict(dict) # type: defaultdict[Any, Dict[Any, Any]]
-
-        for row in query:
+        # Order of query is important to get a latest status as aggregated status.
+        for row in query.order_by("user_profile__id", "-timestamp"):
             info = UserPresence.to_presence_dict(
                 row['client__name'],
                 row['status'],
@@ -1422,8 +1415,13 @@ class UserPresence(models.Model):
                 has_push_devices=row['user_profile__id'] in mobile_user_ids,
                 is_mirror_dummy=row['user_profile__is_mirror_dummy'],
             )
+            if not user_statuses.get(row['user_profile__email']):
+                # Applying the latest status as aggregated status for user.
+                user_statuses[row['user_profile__email']]['aggregated'] = {
+                    'status': info['status'],
+                    'timestamp': info['timestamp']
+                }
             user_statuses[row['user_profile__email']][row['client__name']] = info
-
         return user_statuses
 
     @staticmethod

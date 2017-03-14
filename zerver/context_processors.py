@@ -8,7 +8,7 @@ from zerver.models import UserProfile, get_realm
 from zproject.backends import (password_auth_enabled, dev_auth_enabled,
                                google_auth_enabled, github_auth_enabled)
 from zerver.lib.utils import get_subdomain
-
+from version import ZULIP_VERSION
 
 def common_context(user):
     # type: (UserProfile) -> Dict[str, Any]
@@ -63,6 +63,7 @@ def add_settings(request):
         'find_team_link_disabled': settings.FIND_TEAM_LINK_DISABLED,
         'password_min_length': settings.PASSWORD_MIN_LENGTH,
         'password_min_quality': settings.PASSWORD_MIN_ZXCVBN_QUALITY,
+        'zulip_version': ZULIP_VERSION,
     }
 
 

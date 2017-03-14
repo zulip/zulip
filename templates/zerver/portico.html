@@ -41,7 +41,7 @@
 
             {% if register_link_disabled %}
             {% elif only_sso %}
-            <a href="{{ url('login-sso') }}">{{ _('Log In') }}</a>
+            <a href="{{ url('login-sso') }}">{{ _('Log in') }}</a>
             {% else %}
             <a href="{{ url('register') }}">{{ _('Register') }}</a>
             {% endif %}
@@ -75,9 +75,9 @@
                 <li><span class="little-bullet">·</span></li>
                 {% endif %}
 
-            <li><a href="{{ server_uri }}/terms">{{ _('Legal') }}</a></li>
-            <li><span class="little-bullet">·</span></li>
-            <li><a href="{{ server_uri }}/privacy">{{ _('Privacy') }}</a></li>
+                <li><a href="{{ server_uri }}/terms">{{ _('Legal') }}</a></li>
+                <li><span class="little-bullet">·</span></li>
+                <li><a href="{{ server_uri }}/privacy">{{ _('Privacy') }}</a></li>
             {% endif %}
 
             <li><span class="little-bullet">·</span></li>

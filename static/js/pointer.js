@@ -76,7 +76,7 @@ exports.fast_forward_pointer = function () {
 };
 
 exports.keep_pointer_in_view = function () {
-    // See viewport.recenter_view() for related logic to keep the pointer onscreen.
+    // See message_viewport.recenter_view() for related logic to keep the pointer onscreen.
     // This function mostly comes into place for mouse scrollers, and it
     // keeps the pointer in view.  For people who purely scroll with the
     // mouse, the pointer is kind of meaningless to them, but keyboard
@@ -89,12 +89,12 @@ exports.keep_pointer_in_view = function () {
         return;
     }
 
-    var info = viewport.message_viewport_info();
+    var info = message_viewport.message_viewport_info();
     var top_threshold = info.visible_top + (1/10 * info.visible_height);
     var bottom_threshold = info.visible_top + (9/10 * info.visible_height);
 
     function message_is_far_enough_down() {
-        if (viewport.at_top()) {
+        if (message_viewport.at_top()) {
             return true;
         }
 
@@ -120,7 +120,7 @@ exports.keep_pointer_in_view = function () {
     }
 
     function message_is_far_enough_up() {
-        return viewport.at_bottom() ||
+        return message_viewport.at_bottom() ||
             (next_row.offset().top <= bottom_threshold);
     }
 

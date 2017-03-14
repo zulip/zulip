@@ -55,7 +55,7 @@ exports.notify_with_undo_option = (function () {
           meta.$mute.find("#unmute").click(function () {
               // it should reference the meta variable and not get stuck with
               // a pass-by-value of stream, topic.
-              popovers.topic_ops.unmute(meta.stream, meta.topic);
+              stream_popover.topic_ops.unmute(meta.stream, meta.topic);
               animate.fadeOut();
           });
         }
@@ -96,7 +96,7 @@ exports.persist_and_rerender = function () {
     };
     last_topic_update = timestamp_ms();
     channel.post({
-        url: '/json/set_muted_topics',
+        url: '/json/users/me/subscriptions/muted_topics',
         idempotent: true,
         data: data,
     });

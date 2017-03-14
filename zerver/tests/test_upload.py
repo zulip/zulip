@@ -8,7 +8,11 @@ from zerver.lib.avatar import avatar_url
 from zerver.lib.bugdown import url_filename
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.test_classes import ZulipTestCase, UploadSerializeMixin
-from zerver.lib.test_helpers import avatar_disk_path, get_test_image_file
+from zerver.lib.test_helpers import (
+    avatar_disk_path,
+    get_test_image_file,
+    POSTRequestMock,
+)
 from zerver.lib.test_runner import slow
 from zerver.lib.upload import sanitize_name, S3UploadBackend, \
     upload_message_image, delete_message_image, LocalUploadBackend
@@ -16,6 +20,8 @@ import zerver.lib.upload
 from zerver.models import Attachment, Recipient, get_user_profile_by_email, \
     get_old_unclaimed_attachments, Message, UserProfile, Realm, get_realm
 from zerver.lib.actions import do_delete_old_unclaimed_attachments
+
+from zerver.views.upload import upload_file_backend
 
 import ujson
 from six.moves import urllib
@@ -76,6 +82,44 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         # Files uploaded through the API should be accesible via the web client
         self.login("hamlet@zulip.com")
         self.assert_url_serves_contents_of_file(uri, b"zulip!")
+
+    def test_filename_encoding(self):
+        # type: () -> None
+        """
+        In Python 2, we need to encode unicode filenames (which converts them to
+        str) before they can be rendered correctly.  However, in Python 3, the
+        separate unicode type does not exist, and we don't need to perform this
+        encoding.  This test ensures that we handle filename encodings properly,
+        and does so in a way that preserves 100% test coverage for Python 3.
+        """
+
+        user_profile = get_user_profile_by_email('hamlet@zulip.com')
+
+        mock_file = mock.Mock()
+        mock_file._get_size = mock.Mock(return_value=1024)
+
+        mock_files = mock.Mock()
+        mock_files.__len__ = mock.Mock(return_value=1)
+        mock_files.values = mock.Mock(return_value=[mock_file])
+
+        mock_request = mock.Mock()
+        mock_request.FILES = mock_files
+
+        # str filenames should not be encoded.
+        mock_filename = mock.Mock(spec=str)
+        mock_file.name = mock_filename
+        with mock.patch('zerver.views.upload.upload_message_image_from_request'):
+            result = upload_file_backend(mock_request, user_profile)
+        self.assert_json_success(result)
+        mock_filename.encode.assert_not_called()
+
+        # Non-str filenames should be encoded.
+        mock_filename = mock.Mock(spec=None) # None is not str
+        mock_file.name = mock_filename
+        with mock.patch('zerver.views.upload.upload_message_image_from_request'):
+            result = upload_file_backend(mock_request, user_profile)
+        self.assert_json_success(result)
+        mock_filename.encode.assert_called_once_with('ascii')
 
     def test_file_too_big_failure(self):
         # type: () -> None
@@ -140,7 +184,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         # invalid realm of 999999 (for non-zulip.com)
         user = get_user_profile_by_email('hamlet@zulip.com')
-        user.realm.domain = 'example.com'
+        user.realm.string_id = 'not-zulip'
         user.realm.save()
 
         with use_s3(), getting_realm_id(999999):
@@ -521,6 +565,14 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(user_profile.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
         self.assertEqual(user_profile.avatar_version, 2)
 
+    def test_avatar_upload_file_size_error(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        with get_test_image_file(self.correct_files[0][0]) as fp:
+            with self.settings(MAX_AVATAR_FILE_SIZE=0):
+                result = self.client_put_multipart("/json/users/me/avatar", {'file': fp})
+        self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MB")
+
     def tearDown(self):
         # type: () -> None
         destroy_uploads()
@@ -650,7 +702,6 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_realm_icon_version(self):
         # type: () -> None
-
         self.login("iago@zulip.com")
         realm = get_realm('zulip')
         icon_version = realm.icon_version
@@ -659,6 +710,14 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
             self.client_put_multipart("/json/realm/icon", {'file': fp})
         realm = get_realm('zulip')
         self.assertEqual(realm.icon_version, icon_version + 1)
+
+    def test_realm_icon_upload_file_size_error(self):
+        # type: () -> None
+        self.login("iago@zulip.com")
+        with get_test_image_file(self.correct_files[0][0]) as fp:
+            with self.settings(MAX_ICON_FILE_SIZE=0):
+                result = self.client_put_multipart("/json/realm/icon", {'file': fp})
+        self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MB")
 
     def tearDown(self):
         # type: () -> None

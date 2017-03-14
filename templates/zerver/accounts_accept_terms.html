@@ -7,53 +7,53 @@ the registration flow has its own (nearly identical) copy of the fields below in
 
 {% block portico_content %}
 
-{% if special_message_template %}
-{% include special_message_template %}
-{% else %}
-<div class="pitch">
-      <p>{{ _("There are new Terms of Service.") }}</p>
-      <h3>{{ _("Accept the terms of service") }}</h3>
-</div>
-{% endif %}
-
-<form method="post" class="form-horizontal" id="registration" action="{{ url('zerver.views.home.accounts_accept_terms') }}">
-{{ csrf_input }}
-    <div class="control-group">
-        <label for="id_email" class="control-label">{{ _("Email") }}</label>
-        <div class="controls fakecontrol">
-            <p>{{ email }}</p>
-        </div>
+    {% if special_message_template %}
+    {% include special_message_template %}
+    {% else %}
+    <div class="pitch">
+        <p>{{ _("There are new Terms of Service.") }}</p>
+        <h3>{{ _("Accept the terms of service") }}</h3>
     </div>
+    {% endif %}
 
-    <div class="control-group">
-        <div class="controls">
-            <label class="checkbox">
-                {#
-                This is somewhat subtle.
-                Checkboxes have a name and value, and when the checkbox is ticked, the form posts
-                with name=value. If the checkbox is unticked, the field just isn't present at all.
+    <form method="post" class="form-horizontal" id="registration" action="{{ url('zerver.views.home.accounts_accept_terms') }}">
+        {{ csrf_input }}
+        <div class="control-group">
+            <label for="id_email" class="control-label">{{ _("Email") }}</label>
+            <div class="controls fakecontrol">
+                <p>{{ email }}</p>
+            </div>
+        </div>
 
-                This is distinct from 'checked', which determines whether the checkbox appears
-                at all. (So, it's not symmetric to the code above.)
-                #}
-                <input id="id_terms" class="required" type="checkbox" name="terms"
-                       {% if form.terms.value() %}checked="checked"{% endif %} />
-                {% trans %}I agree to the <a href="{{ server_uri }}/terms">Terms of Service</a>{% endtrans %}.
-            </label>
-            {% if form.terms.errors %}
-                {% for error in form.terms.errors %}
+        <div class="control-group">
+            <div class="controls">
+                <label class="checkbox">
+                    {#
+                    This is somewhat subtle.
+                    Checkboxes have a name and value, and when the checkbox is ticked, the form posts
+                    with name=value. If the checkbox is unticked, the field just isn't present at all.
+
+                    This is distinct from 'checked', which determines whether the checkbox appears
+                    at all. (So, it's not symmetric to the code above.)
+                    #}
+                    <input id="id_terms" class="required" type="checkbox" name="terms"
+                           {% if form.terms.value() %}checked="checked"{% endif %} />
+                    {% trans %}I agree to the <a href="{{ server_uri }}/terms">Terms of Service</a>.{% endtrans %}
+                </label>
+                {% if form.terms.errors %}
+                    {% for error in form.terms.errors %}
                     <div class="alert alert-error">{{ error }}</div>
-                {% endfor %}
-            {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </div>
         </div>
-    </div>
-    <br />
-    <div class="control-group">
-        <div class="controls">
-            <input type="submit" class="btn btn-primary" value="{{ _('Enter') }}" /><br />
-            <input type="hidden" name="next" value="{{ next }}" />
+        <br />
+        <div class="control-group">
+            <div class="controls">
+                <input type="submit" class="btn btn-primary" value="{{ _('Enter') }}" /><br />
+                <input type="hidden" name="next" value="{{ next }}" />
+            </div>
         </div>
-    </div>
-</form>
+    </form>
 
 {% endblock %}

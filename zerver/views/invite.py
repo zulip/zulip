@@ -66,11 +66,10 @@ def get_invitee_emails_set(invitee_emails_raw):
         invitee_emails.add(email.strip())
     return invitee_emails
 
-@authenticated_json_post_view
 @has_request_variables
-def json_bulk_invite_users(request, user_profile,
-                           invitee_emails_list=REQ('invitee_emails',
-                                                   validator=check_list(check_string))):
+def bulk_invite_users(request, user_profile,
+                      invitee_emails_list=REQ('invitee_emails',
+                                              validator=check_list(check_string))):
     # type: (HttpRequest, UserProfile, List[str]) -> HttpResponse
     invitee_emails = set(invitee_emails_list)
     streams = get_default_subs(user_profile)
@@ -85,7 +84,7 @@ def json_bulk_invite_users(request, user_profile,
         internal_message = "%s <`%s`> invited %d people to Zulip." % (
             user_profile.full_name, user_profile.email, invited.count())
         internal_send_message(user_profile.realm, settings.NEW_USER_BOT, "stream",
-                              "signups", user_profile.realm.domain, internal_message)
+                              "signups", user_profile.realm.string_id, internal_message)
         return json_success()
 
 @authenticated_json_post_view

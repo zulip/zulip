@@ -16,9 +16,9 @@ import re
 
 from zerver.forms import HomepageForm
 from zerver.lib.actions import do_deactivate_realm, do_deactivate_user, \
-    do_reactivate_realm, do_reactivate_user
+    do_reactivate_realm, do_reactivate_user, do_set_realm_authentication_methods
 from zerver.lib.initial_password import initial_password
-from zerver.lib.session_user import get_session_dict_user
+from zerver.lib.sessions import get_session_dict_user
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
@@ -37,7 +37,7 @@ from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
 from zerver.views.auth import maybe_send_to_registration
 from version import ZULIP_VERSION
 
-from social_core.exceptions import AuthFailed
+from social_core.exceptions import AuthFailed, AuthStateForbidden
 from social_django.strategy import DjangoStrategy
 from social_django.storage import BaseDjangoStorage
 from social_core.backends.github import GithubOrganizationOAuth2, GithubTeamOAuth2, \
@@ -521,6 +521,19 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
         utils.BACKENDS = settings.AUTHENTICATION_BACKENDS
 
+    def test_github_complete_when_base_exc_is_raised(self):
+        # type: () -> None
+        from social_django import utils
+        utils.BACKENDS = ('zproject.backends.GitHubAuthBackend',)
+        with mock.patch('social_core.backends.oauth.BaseOAuth2.auth_complete',
+                        side_effect=AuthStateForbidden('State forbidden')), \
+                mock.patch('zproject.backends.logging.exception'):
+            result = self.client_get(reverse('social:complete', args=['github']))
+            self.assertEqual(result.status_code, 302)
+            self.assertIn('login', result.url)
+
+        utils.BACKENDS = settings.AUTHENTICATION_BACKENDS
+
 class ResponseMock(object):
     def __init__(self, status_code, data):
         # type: (int, Any) -> None
@@ -998,6 +1011,65 @@ class FetchAuthBackends(ZulipTestCase):
                 'zulip_version': ZULIP_VERSION,
             })
 
+            # Test subdomains cases
+            with self.settings(REALMS_HAVE_SUBDOMAINS=True,
+                               SUBDOMAINS_HOMEPAGE=False):
+                result = self.client_get("/api/v1/get_auth_backends")
+                self.assert_json_success(result)
+                data = ujson.loads(result.content)
+                self.assertEqual(data, {
+                    'msg': '',
+                    'password': False,
+                    'google': True,
+                    'dev': True,
+                    'result': 'success',
+                    'zulip_version': ZULIP_VERSION,
+                })
+
+                # Verify invalid subdomain
+                result = self.client_get("/api/v1/get_auth_backends",
+                                         HTTP_HOST="invalid.testserver")
+                self.assert_json_error_contains(result, "Invalid subdomain", 400)
+
+                # Verify correct behavior with a valid subdomain with
+                # some backends disabled for the realm
+                realm = get_realm("zulip")
+                do_set_realm_authentication_methods(realm, dict(Google=False,
+                                                                Email=False,
+                                                                Dev=True))
+                result = self.client_get("/api/v1/get_auth_backends",
+                                         HTTP_HOST="zulip.testserver")
+                self.assert_json_success(result)
+                data = ujson.loads(result.content)
+                self.assertEqual(data, {
+                    'msg': '',
+                    'password': False,
+                    'google': False,
+                    'dev': True,
+                    'result': 'success',
+                    'zulip_version': ZULIP_VERSION,
+                })
+            with self.settings(REALMS_HAVE_SUBDOMAINS=True,
+                               SUBDOMAINS_HOMEPAGE=True):
+                # With SUBDOMAINS_HOMEPAGE, homepage fails
+                result = self.client_get("/api/v1/get_auth_backends",
+                                         HTTP_HOST="testserver")
+                self.assert_json_error_contains(result, "Subdomain required", 400)
+
+                # With SUBDOMAINS_HOMEPAGE, subdomain pages succeed
+                result = self.client_get("/api/v1/get_auth_backends",
+                                         HTTP_HOST="zulip.testserver")
+                self.assert_json_success(result)
+                data = ujson.loads(result.content)
+                self.assertEqual(data, {
+                    'msg': '',
+                    'password': False,
+                    'google': False,
+                    'dev': True,
+                    'result': 'success',
+                    'zulip_version': ZULIP_VERSION,
+                })
+
 class TestDevAuthBackend(ZulipTestCase):
     def test_login_success(self):
         # type: () -> None
@@ -1078,7 +1150,8 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
         with self.settings(REALMS_HAVE_SUBDOMAINS=True,
                            AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',)):
             with mock.patch('zerver.views.auth.get_subdomain', return_value='acme'):
-                result = self.client_post('http://testserver:9080/accounts/login/sso/', REMOTE_USER=email)
+                result = self.client_post('http://testserver:9080/accounts/login/sso/',
+                                          REMOTE_USER=email)
                 self.assertEqual(result.status_code, 200)
                 self.assertIs(get_session_dict_user(self.client.session), None)
                 self.assertIn(b"Let's get started", result.content)
@@ -1089,7 +1162,8 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
         with self.settings(REALMS_HAVE_SUBDOMAINS=True,
                            AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',)):
             with mock.patch('zerver.views.auth.get_subdomain', return_value=''):
-                result = self.client_post('http://testserver:9080/accounts/login/sso/', REMOTE_USER=email)
+                result = self.client_post('http://testserver:9080/accounts/login/sso/',
+                                          REMOTE_USER=email)
                 self.assertEqual(result.status_code, 200)
                 self.assertIs(get_session_dict_user(self.client.session), None)
                 self.assertIn(b"Let's get started", result.content)

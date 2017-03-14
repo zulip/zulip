@@ -670,7 +670,7 @@ exports.all = new exports.MessageList(
 // mousemove, then you will have to contend with the autoscroll
 // itself generating mousemove events.
 $(document).on('message_selected.zulip zuliphashchange.zulip mousewheel', function () {
-    viewport.stop_auto_scrolling();
+    message_viewport.stop_auto_scrolling();
 });
 
 return exports;

@@ -101,8 +101,8 @@ document you are reading now).
 
 Each bot library simply needs to do the following:
 
-- Define a class that supports the methods `usage`,
-`triage_message`, and `handle_message`.
+- Define a class that supports the methods `usage`
+and `handle_message`.
 - Set `handler_class` to be the name of that class.
 
 (We make this a two-step process to reduce code repetition

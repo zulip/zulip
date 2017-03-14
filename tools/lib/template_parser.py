@@ -52,9 +52,17 @@ def tokenize(text):
         # type: (str) -> bool
         return text[state.i:state.i+len(s)] == s
 
-    def looking_at_comment():
+    def looking_at_htmlcomment():
         # type: () -> bool
         return looking_at("<!--")
+
+    def looking_at_handlebarcomment():
+        # type: () -> bool
+        return looking_at("{{!")
+
+    def looking_at_djangocomment():
+        # type: () -> bool
+        return looking_at("{#")
 
     def looking_at_html_start():
         # type: () -> bool
@@ -85,10 +93,18 @@ def tokenize(text):
 
     while state.i < len(text):
         try:
-            if looking_at_comment():
+            if looking_at_htmlcomment():
                 s = get_html_comment(text, state.i)
                 tag = s[4:-3]
                 kind = 'html_comment'
+            elif looking_at_handlebarcomment():
+                s = get_handlebar_comment(text, state.i)
+                tag = s[3:-2]
+                kind = 'handlebar_comment'
+            elif looking_at_djangocomment():
+                s = get_django_comment(text, state.i)
+                tag = s[2:-2]
+                kind = 'django_comment'
             elif looking_at_html_start():
                 s = get_html_tag(text, state.i)
                 tag_parts = s[1:-1].split()
@@ -322,6 +338,30 @@ def get_html_comment(text, i):
     unclosed_end = 0
     while end <= len(text):
         if text[end-3:end] == '-->':
+            return text[i:end]
+        if not unclosed_end and text[end] == '<':
+            unclosed_end = end
+        end += 1
+    raise TokenizationException('Unclosed comment', text[i:unclosed_end])
+
+def get_handlebar_comment(text, i):
+    # type: (str, int) -> str
+    end = i + 5
+    unclosed_end = 0
+    while end <= len(text):
+        if text[end-2:end] == '}}':
+            return text[i:end]
+        if not unclosed_end and text[end] == '<':
+            unclosed_end = end
+        end += 1
+    raise TokenizationException('Unclosed comment', text[i:unclosed_end])
+
+def get_django_comment(text, i):
+    # type: (str, int) -> str
+    end = i + 4
+    unclosed_end = 0
+    while end <= len(text):
+        if text[end-2:end] == '#}':
             return text[i:end]
         if not unclosed_end and text[end] == '<':
             unclosed_end = end

@@ -581,7 +581,7 @@ def fetch_user_profile_cross_realm(response, config, context):
     # type: (TableData, Config, Context) -> None
     realm = context['realm']
 
-    if realm.domain == "zulip.com":
+    if realm.string_id == "zulip":
         response['zerver_userprofile_crossrealm'] = []
     else:
         response['zerver_userprofile_crossrealm'] = [dict(email=x.email, id=x.id) for x in [
@@ -1067,7 +1067,7 @@ def do_export_realm(realm, output_dir, threads, exportable_user_ids=None):
     # Start parallel jobs to export the UserMessage objects.
     launch_user_message_subprocesses(threads=threads, output_dir=output_dir)
 
-    logging.info("Finished exporting %s" % (realm.domain))
+    logging.info("Finished exporting %s" % (realm.string_id))
     create_soft_link(source=output_dir, in_progress=False)
 
 def export_attachment_table(realm, output_dir, message_ids):

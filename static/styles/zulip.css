@@ -156,6 +156,7 @@ p.n-margin {
     height: 100%;
     overflow-y: scroll;
     z-index: 99;
+    -webkit-overflow-scrolling: touch;
 }
 
 .app-main,
@@ -534,13 +535,13 @@ td.pointer {
 
 .message_time {
     display: block;
-    font-size: 11px;
-    color: #a1a1a1;
+    font-size: 12px;
+    color: #b1b1b1;
     vertical-align: middle;
     padding: 1px;
-    font-weight: 300;
+    font-weight: 400;
     position: absolute;
-    right: -80px;
+    right: -105px;
     line-height: 20px;
     text-align: right;
     -webkit-transition: background-color 2.7s ease-in, color 2.7s ease-in;
@@ -557,7 +558,24 @@ td.pointer {
     display: inline-block;
     position: absolute;
     top: 2px;
-    right: -55px;
+    right: -56px;
+    z-index: 1;
+}
+
+.message_controls > div {
+    opacity: 0;
+    pointer-events: none;
+
+    transition: all 0.2s ease;
+}
+
+.messagebox:hover .message_controls > div {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.message_controls > div {
+    padding: 0px 1px;
 }
 
 .include-sender .message_controls {
@@ -590,11 +608,6 @@ td.pointer {
     border-bottom: 1px solid #e2e2e2;
     border-top: 1px solid #e2e2e2;
     margin-bottom: 10px;
-}
-
-.message_list .message_row:hover .message_time,
-.message_list .has_popover .message_time {
-    display: none;
 }
 
 .stream_label {
@@ -673,9 +686,9 @@ td.pointer {
     top: 0;
 
     color: #888;
-    font-size: 0.8em;
+    font-size: 12px;
     font-weight: 600;
-    padding: 3px 10px 2px 10px;
+    padding: 3px 11px 2px 10px;
     height: 17px;
     line-height: 17px;
 }
@@ -982,14 +995,7 @@ just a temporary hack.
 .message_failed {
     font-weight: bold;
     color: red;
-    padding: 0px 1px 0px 1px;
     position: relative;
-    left: 29px;
-}
-
-.message_failed i {
-    margin-left: 2px;
-    margin-right: 2px;
 }
 
 a.message_label_clickable:hover {
@@ -1021,52 +1027,36 @@ a.message_label_clickable:hover {
 }
 
 .edit_content {
+    width: 12px;
     display: inline-block;
     position: relative;
-    left: 22px;
-    width: 0px;
-    height: 0px;
     color: #bbb;
-}
-
-.edit_content i {
-    position: absolute;
-    display: block;
-    top: -0.9em;
-    left: 0.4em;
-    border-radius: 1px;
-    padding: 1px 2px;
 }
 
 .edit_content:hover {
     cursor: pointer;
-    opacity: 1.0;
+    color: #0088CC;
 }
 
 .reactions_hover {
     display: inline-block;
     position: relative;
-    left: 22px;
-    width: 0px;
-    height: 0px;
     color: #bbb;
-    visibility: hidden;
 }
 
-.reactions_hover i {
-    position: absolute;
-    display: block;
-    top: -0.9em;
-    left: 0.4em;
-    border-radius: 1px;
-    padding: 1px 2px;
+.reactions_hover:hover {
+    color: #0088CC;
 }
 
 .message_hovered .reactions_hover,
-.has_reactions_popover .reactions_hover
- {
-    cursor: pointer;
-    visibility: visible;
+.has_reactions_popover .reactions_hover {
+    opacity: 1;
+}
+
+.message_hovered .info,
+.has_actions_popover .info,
+.message_hovered .empty-star {
+    opacity: 1;
 }
 
 /* Brighten text because of the dark background */
@@ -1107,19 +1097,11 @@ a.dark_background:hover,
     cursor: pointer;
 }
 
-.message_hovered .info,
-.has_actions_popover .info,
-.message_hovered .empty-star {
-    visibility: visible;
-}
-
 .info {
     display: inline-block;
     position: relative;
-    left: 3px;
     font-size: 15px;
     color: #bbb;
-    visibility: hidden;
 }
 
 .actions_hovered .actions_link {
@@ -1299,7 +1281,7 @@ blockquote p {
 }
 
 .messagebox-content {
-    padding: 4px 90px 1px 10px;
+    padding: 4px 115px 1px 10px;
 }
 
 .last_message .messagebox-content {
@@ -2209,14 +2191,17 @@ button.topic_edit_cancel {
 
 .star {
     display: inline-block;
-    opacity: 1;
     font-size: 14px;
     color: #2c8211;
 }
 
+.star:not(.empty-star) {
+    opacity: 1 !important;
+    pointer-events: all !important;
+}
+
 .empty-star {
     color: #bbb;
-    visibility: hidden;
 }
 
 .empty-star:hover {
@@ -2499,7 +2484,7 @@ button.topic_edit_cancel {
     padding: 0px 5px;
     display: inline-block;
     vertical-align: top;
-    max-width: calc(100% - 100px);
+    max-width: calc(100% - 115px);
     max-height: 70px;
     overflow: hidden;
 }

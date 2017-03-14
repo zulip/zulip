@@ -9,6 +9,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.template import loader
 from django.utils import timezone
 from zerver.decorator import statsd_increment, uses_mandrill
+from zerver.lib.queue import queue_json_publish
 from zerver.models import (
     Recipient,
     ScheduledJob,
@@ -281,14 +282,31 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
 
     text_content = loader.render_to_string('zerver/missed_message_email.txt', template_payload)
     html_content = loader.render_to_string('zerver/missed_message_email.html', template_payload)
-
-    msg = EmailMultiAlternatives(subject, text_content, from_email, [user_profile.email],
-                                 headers = headers)
-    msg.attach_alternative(html_content, "text/html")
-    msg.send()
+    email_content = {
+        'subject': subject,
+        'text_content': text_content,
+        'html_content': html_content,
+        'from_email': from_email,
+        'to': [user_profile.email],
+        'headers': headers
+    }
+    queue_json_publish("missedmessage_email_senders", email_content, send_missedmessage_email)
 
     user_profile.last_reminder = timezone.now()
     user_profile.save(update_fields=['last_reminder'])
+
+
+def send_missedmessage_email(data):
+    # type: (Mapping[str, Any]) -> None
+    msg = EmailMultiAlternatives(
+        data.get('subject'),
+        data.get('text_content'),
+        data.get('from_email'),
+        data.get('to'),
+        headers=data.get('headers'))
+    msg.attach_alternative(data.get('html_content'), "text/html")
+    msg.send()
+
 
 def handle_missedmessage_emails(user_profile_id, missed_email_events):
     # type: (int, Iterable[Dict[str, Any]]) -> None
@@ -301,9 +319,9 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
     messages = [um.message for um in UserMessage.objects.filter(user_profile=user_profile,
                                                                 message__id__in=message_ids,
                                                                 flags=~UserMessage.flags.read)]
-    
+
     # Missed-message emails should not be sent for deleted messages.
-    # Fixes #3873
+    # Fixes: #3873.
     messages = [um for um in messages if um.content != '(deleted)']
 
     if not messages:
@@ -331,9 +349,6 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
             list(unique_messages.values()),
             message_count_by_recipient_subject[recipient_subject],
         )
-        print("LALALALA")
-        print(unique_messages)
-        print("LALALALA")
 
 @uses_mandrill
 def clear_followup_emails_queue(email, mail_client=None):
@@ -383,7 +398,7 @@ def send_future_email(recipients, email_html, email_text, subject,
        settings.EMAIL_BACKEND != 'django.core.mail.backends.console.EmailBackend':
         for recipient in recipients:
             email = recipient.get("email")
-            if get_user_profile_by_email(email).realm.domain != "zulip.com":
+            if get_user_profile_by_email(email).realm.string_id != "zulip":
                 raise ValueError("digest: refusing to send emails to non-zulip.com users.")
 
     # message = {"from_email": "othello@zulip.com",

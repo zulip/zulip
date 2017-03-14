@@ -232,7 +232,7 @@ def fetch_open_graph_image(url):
     # TODO: What if response content is huge? Should we get headers first?
     try:
         content = requests.get(url, timeout=1).text
-    except:
+    except Exception:
         return None
 
     # Extract the head and meta tags
@@ -553,7 +553,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 img.set('src', media_url)
 
             return tweet
-        except:
+        except Exception:
             # We put this in its own try-except because it requires external
             # connectivity. If Twitter flakes out, we don't want to not-render
             # the entire message; we just want to not show the Twitter preview.
@@ -1369,7 +1369,7 @@ def do_convert(content, message=None, message_realm=None, possible_words=None, s
         # Sometimes Python-Markdown is really slow; see
         # https://trac.zulip.net/ticket/345
         return timeout(5, _md_engine.convert, content)
-    except:
+    except Exception:
         from zerver.lib.actions import internal_send_message
         from zerver.models import get_user_profile_by_email
 

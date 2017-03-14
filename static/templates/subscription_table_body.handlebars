@@ -3,7 +3,7 @@
         <div class="subscriptions-container">
             <div class="subscriptions-header">
                 <div class="icon-vector-chevron-left"></div>
-                <span class="subscriptions-title">{{t 'Subscriptions' }}</span>
+                <span class="subscriptions-title">{{t 'Streams' }}</span>
                 <div class="exit">
                     <span class="exit-sign">&times;</span>
                 </div>
@@ -14,8 +14,8 @@
                         <input type="text" name="stream_name" id="search_stream_name"
                           placeholder="{{t 'Filter streams' }}" value="" autocomplete="off" />
                         {{#if can_create_streams}}
-                            <input type="submit" class=""
-                              id="create_stream_button" value="+" />
+                        <input type="submit" class=""
+                          id="create_stream_button" value="+" />
                         {{/if}}
                         <div class="float-clear"></div>
                     </form>

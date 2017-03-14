@@ -64,6 +64,7 @@ as an **organization**.
 ### Editing
 * [Edit or delete a message](/help/edit-or-delete-a-message)
 * [Change the topic of a message](/help/change-the-topic-of-a-message)
+* [View a message's edit history](/help/view-a-messages-edit-history)
 
 ## People
 * [Check whether someone is here or away](/help/check-whether-someone-is-here-or-away)
@@ -79,6 +80,7 @@ as an **organization**.
 * [View messages from a stream](/help/view-messages-from-a-stream)
 * [View messages from a topic](/help/view-messages-from-a-topic)
 * [View messages from a user](/help/view-messages-from-a-user)
+* [View messages containing files or links](/help/view-messages-containing-files-or-links)
 * [The #announce stream](/help/the-announce-stream)
 * [Add or invite someone to a stream](/help/add-or-invite-someone-to-a-stream)
 * [Change the stream description](/help/change-the-stream-description)

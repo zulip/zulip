@@ -33,9 +33,39 @@ languages (e.g. what word to translate words like "home" to):
 * [Russian](russian.html)
 * [Spanish](spanish.html)
 
+A great first step when getting started translating Zulip into a new
+language is to write a style guide, since it greatly increases the
+ability of future translators to translate in a way that's consistent
+with what your work.
+
+### Capitalization
+
+We expect that all the English translatable strings in Zulip are
+properly capitalized in a way consistent with how Zulip does
+capitalization in general.  This means that:
+
+* The first letter of a sentence or phrase should be capitalized.
+    - Correct: "Manage streams"
+    - Incorrect: "Manage Streams"
+* All proper nouns should be capitalized.
+    - Correct: "This is Zulip"
+    - Incorrect: "This is zulip"
+* All common words like URL, HTTP, etc. should be written in their
+  standard forms.
+    - Correct: "URL"
+    - Incorrect: "Url"
+
+We have a tool to check for the correct capitalization of the
+translatable strings; this tool will not allow the Travis builds to
+pass in case of errors. You can use our capitalization checker to
+validate your code by running `./tool/check-capitalization`. If you
+think that you have a case where our capitalization checker tool
+wrongly categorizes a string as not capitalized, you can add an
+exception in the `tools.lib.capitalization.IGNORED_PHRASES` list to
+make the tool pass.
+
 Please, stick to these while translating, and feel free to point out
-anything that should be improved or fixed. New style guides for other
-languages are welcome, too.
+any strings that should be improved or fixed.
 
 ## Translation process
 

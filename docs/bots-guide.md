@@ -106,9 +106,6 @@ class MyBotHandler(object):
     def usage(self):
         return '''Your description of the bot'''
 
-    def triage_message(self, message, client):
-        #add your code here
-
     def handle_message(self, message, client, state_handler):
         # add your code here
 
@@ -122,7 +119,6 @@ handler_class = MyBotHandler
 
 * Every bot needs to implement the functions
     * `usage(self)`
-    * `triage_message(self, message, client)`
     * `handle_message(self, message, client)`
 
 * These functions are documented in the [next section](#bot-api).
@@ -155,47 +151,10 @@ def usage(self):
         '''
 ```
 
-### triage_message
-*triage_message(self, message, client)*
-
-is called when a message was sent.
-
-#### Arguments
-* self - the instance the method is called on
-
-* message - a dictionary containing information about the message, e.g.
-    * content - the content of the message
-    * content_type - the type of the content, e.g. *'text/x-markdown'* for normal messages
-    * display_recipient - the name of the stream the message is sent to (string)
-    * is_mentioned - is the bot pinged with an '@' in the message? (boolean)
-    * sender_email - email of the sender (string)
-    * sender_full_name - full name of the sender (string)
-    * subject - topic of the message (string)
-    * timestamp - when was the message sent (integer)
-
-* client - contains information about this bot
-    * client.full_name - name of the bot account
-    * client.email - email of the bot account
-
-#### Return values
- * True if the bot should react to this message
- * False otherwise
-
-#### Example implementation
-```
-def triage_message(self, message, client):
-original_content = message['content']
-    if message['display_recipient'] == 'followup':
-        return False
-    is_follow_up = (original_content.startswith('@followup') or
-                        original_content.startswith('@follow-up'))
-    return is_follow_up
-```
-
 ### handle_message
 *handle_message(self, message, client)*
 
-is called when `triage_message` returns true, handles user message.
+handles user message.
 
 #### Arguments
 * self - the instance the method is called on.

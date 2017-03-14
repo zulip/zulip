@@ -31,7 +31,7 @@ class Command(BaseCommand):
         user_id = int(key.split(':')[1])
         try:
             user = get_user_profile_by_id(user_id)
-        except:
+        except Exception:
             user = None
         max_calls = max_api_calls(user=user)
 

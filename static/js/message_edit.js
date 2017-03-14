@@ -283,7 +283,7 @@ function edit_message(row, raw_content) {
     var edit_top = message_edit_content[0].getBoundingClientRect().top;
     var scroll_by = edit_top - content_top + 5 /* border and padding */;
     edit_obj.scrolled_by = scroll_by;
-    viewport.scrollTop(viewport.scrollTop() + scroll_by);
+    message_viewport.scrollTop(message_viewport.scrollTop() + scroll_by);
 
     if (feature_flags.propagate_topic_edits && message.local_id === undefined) {
         var original_topic = message.subject;
@@ -299,7 +299,7 @@ function start_edit_maintaining_scroll(row, content) {
     var row_bottom = row.height() + row.offset().top;
     var composebox_top = $("#compose").offset().top;
     if (row_bottom > composebox_top) {
-        viewport.scrollTop(viewport.scrollTop() + row_bottom - composebox_top);
+        message_viewport.scrollTop(message_viewport.scrollTop() + row_bottom - composebox_top);
     }
 }
 
@@ -347,7 +347,7 @@ exports.end = function (row) {
     if (message !== undefined &&
         currently_editing_messages[message.id] !== undefined) {
         var scroll_by = currently_editing_messages[message.id].scrolled_by;
-        viewport.scrollTop(viewport.scrollTop() - scroll_by);
+        message_viewport.scrollTop(message_viewport.scrollTop() - scroll_by);
         delete currently_editing_messages[message.id];
         current_msg_list.hide_edit_message(row);
     }

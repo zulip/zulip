@@ -2,6 +2,8 @@ from __future__ import absolute_import
 
 import datetime
 import time
+
+from django.conf import settings
 from typing import Any, Dict, Text
 
 from django.http import HttpRequest, HttpResponse
@@ -12,6 +14,7 @@ from zerver.decorator import authenticated_json_post_view
 from zerver.lib.actions import get_status_dict, update_user_presence
 from zerver.lib.request import has_request_variables, REQ, JsonableError
 from zerver.lib.response import json_success, json_error
+from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.validator import check_bool
 from zerver.models import UserActivity, UserPresence, UserProfile, \
     get_user_profile_by_email
@@ -40,9 +43,13 @@ def get_presence_backend(request, user_profile, email):
 
     # For initial version, we just include the status and timestamp keys
     result = dict(presence=presence_dict[target.email])
+    aggregated_info = result['presence']['aggregated']
+    aggr_status_duration = datetime_to_timestamp(timezone.now()) - aggregated_info['timestamp']
+    if aggr_status_duration > settings.OFFLINE_THRESHOLD_SECS:
+        aggregated_info['status'] = 'offline'
     for val in result['presence'].values():
-        del val['client']
-        del val['pushable']
+        val.pop('client', None)
+        val.pop('pushable', None)
     return json_success(result)
 
 @has_request_variables

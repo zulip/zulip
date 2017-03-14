@@ -12,7 +12,7 @@ On Zulip, you can set different notification settings for different streams.
 3. Click on the {!down-chevron.md!} Select the **Stream settings**
  option from the dropdown.
 
-4. You will be taken to the [Subscriptions](/#subscriptions) page;
+4. You will be taken to the [Streams](/#streams) page;
  {!stream-settings.md!}
 
 5. Under the **Stream settings** section you can now toggle

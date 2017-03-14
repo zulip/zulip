@@ -20,14 +20,11 @@ exports.is_active = function (stream_name) {
     return recent_topics.has(stream_name);
 };
 
-exports.rename_sub = function (stream_id, new_name) {
-    var sub = subs_by_stream_id.get(stream_id);
+exports.rename_sub = function (sub, new_name) {
     var old_name = sub.name;
     sub.name = new_name;
     stream_info.del(old_name);
     stream_info.set(new_name, sub);
-
-    return sub;
 };
 
 exports.subscribe_myself = function (sub) {
@@ -351,6 +348,7 @@ exports.get_streams_for_settings_page = function () {
     var sub_rows = [];
     _.each(all_subs, function (sub) {
         sub = exports.add_admin_options(sub);
+        sub.preview_url = narrow.by_stream_uri(sub.name);
         exports.update_subscribers_count(sub);
         sub_rows.push(sub);
     });

@@ -74,7 +74,7 @@ that you are subscribed to.
     reveals an input that allows you to search for streams.
     * Clicking the cog (<i class="icon-vector-cog"></i>) icon allows you to
     [navigate](/help/browse-and-subscribe-to-streams#browse-streams) to the
-    [Subscriptions](/#subscriptions) page.
+    [Streams](/#streams) page.
 * Hovering over a stream in the **Streams** section reveals a
 chevron that allows you to modify the stream's settings when you click on it.
 * Clicking on a stream in the **Streams** section allows you to narrow your view

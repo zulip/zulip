@@ -68,6 +68,7 @@ class TemplateTestCase(ZulipTestCase):
             'zerver/invite_user.html',
             'zerver/keyboard_shortcuts.html',
             'zerver/left_sidebar.html',
+            'zerver/landing_nav.html',
             'zerver/logout.html',
             'zerver/markdown_help.html',
             'zerver/navbar.html',
@@ -157,7 +158,6 @@ class TemplateTestCase(ZulipTestCase):
             shallow_tested=True,
             user_profile=user_profile,
             user=user_profile,
-            product_name='testing',
             form=DummyForm(
                 full_name=get_form_value('John Doe'),
                 terms=get_form_value(True),

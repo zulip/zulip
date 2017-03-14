@@ -228,7 +228,7 @@ function render(template_name, args) {
     assert.equal($(buttons[1]).text().trim(), "Make admin");
     assert($(buttons[1]).hasClass("make-admin"));
 
-    assert.equal($(buttons[2]).attr('title').trim(), "Edit User");
+    assert.equal($(buttons[2]).attr('title').trim(), "Edit user");
     assert($(buttons[2]).hasClass("open-user-form"));
 
     global.write_handlebars_output("admin_user_list", html);
@@ -335,7 +335,7 @@ function render(template_name, args) {
     html += '<div id="settings">';
     html += '<div id="bot-settings" class="settings-section">';
     html += '<div class="bot-settings-form">';
-    html += '<ol id="bots_list" style="display: block">';
+    html += '<ol id="active_bots_list" style="display: block">';
     var args = {
         email: "hamlet@zulip.com",
         api_key: "123456ABCD",
@@ -550,7 +550,7 @@ function render(template_name, args) {
     var first_message_text = first_message.find(".message_content").text().trim();
     assert.equal(first_message_text, "This is message one.");
 
-    var starred_title = first_message.find(".star span").attr("title");
+    var starred_title = first_message.find(".star").attr("title");
     assert.equal(starred_title, "Unstar this message");
 }());
 

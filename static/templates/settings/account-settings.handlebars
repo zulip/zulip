@@ -3,6 +3,7 @@
     <i class="icon-vector-user settings-section-icon"></i>
     {{t "Your account" }}
   </div>
+  <div class="alert" id="account-settings-status"></div>
   <div class="account-settings-form">
     <form class="email-change-form">
       <p for="change_email" class="inline-block title">
@@ -46,7 +47,7 @@
           {{#if page_params.password_auth_enabled}}
           <div class="input-group" id="pw_change_link">
             <label for="change_password_button" class="inline-block title">{{t "Password" }}</label>
-            <button class="change_password_button grey button inline-block input-size" data-dismiss="modal" aria-hidden="true">{{t "Change Password" }}</button>
+            <button class="change_password_button grey button inline-block input-size" data-dismiss="modal" aria-hidden="true">{{t "Change password" }}</button>
           </div>
 
           <div id="pw_change_controls">
@@ -81,7 +82,7 @@
           </div>
           <div class="input-group">
             <label for="" class="inline-block"></label>
-            <button type="submit" class="button w-200 btn-danger input-size" id="user_deactivate_account_button">{{t 'Deactivate Account' }}</button>
+            <button type="submit" class="button w-200 btn-danger input-size" id="user_deactivate_account_button">{{t 'Deactivate account' }}</button>
           </div>
         </div>
       </div>
@@ -98,8 +99,8 @@
           <div id="upload_avatar_spinner"></div>
         </div>
         <div class="inline-block">
-            <button class="button sea-green w-200 m-t-20 block input-size" id="user_avatar_upload_button">{{t 'Upload New Avatar' }}</button>
-            <button class="button btn-danger w-200 m-t-20 block input-size" id="user_avatar_delete_button">{{t 'Delete Avatar' }}</button>
+            <button class="button sea-green w-200 m-t-20 block input-size" id="user_avatar_upload_button">{{t 'Upload new avatar' }}</button>
+            <button class="button btn-danger w-200 m-t-20 block input-size" id="user_avatar_delete_button">{{t 'Delete avatar' }}</button>
         </div>
       </div>
 

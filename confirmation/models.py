@@ -14,7 +14,6 @@ from django.template import loader, Context
 from django.contrib.sites.models import Site
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
-from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 
 from confirmation.util import get_status_field
@@ -159,18 +158,18 @@ class Confirmation(models.Model):
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
-    date_sent = models.DateTimeField(_('sent'))
-    confirmation_key = models.CharField(_('activation key'), max_length=40)
+    date_sent = models.DateTimeField('sent')
+    confirmation_key = models.CharField('activation key', max_length=40)
 
     objects = ConfirmationManager()
 
     class Meta(object):
-        verbose_name = _('confirmation email')
-        verbose_name_plural = _('confirmation emails')
+        verbose_name = 'confirmation email'
+        verbose_name_plural = 'confirmation emails'
 
     def __unicode__(self):
         # type: () -> Text
-        return _('confirmation email for %s') % (self.content_object,)
+        return 'confirmation email for %s' % (self.content_object,)
 
 class EmailChangeConfirmation(Confirmation):
     class Meta(object):
@@ -179,5 +178,5 @@ class EmailChangeConfirmation(Confirmation):
     objects = EmailChangeConfirmationManager()
 
 class RealmCreationKey(models.Model):
-    creation_key = models.CharField(_('activation key'), max_length=40)
-    date_created = models.DateTimeField(_('created'), default=timezone.now)
+    creation_key = models.CharField('activation key', max_length=40)
+    date_created = models.DateTimeField('created', default=timezone.now)

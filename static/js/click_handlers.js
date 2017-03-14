@@ -170,7 +170,7 @@ $(function () {
         var stream_id = $(e.currentTarget).attr('data-stream-id');
         var topic = $(e.currentTarget).attr('data-topic-name');
         var stream = stream_data.get_sub_by_id(stream_id);
-        popovers.topic_ops.mute(stream.name, topic);
+        stream_popover.topic_ops.mute(stream.name, topic);
     });
 
     // RECIPIENT BARS
@@ -225,7 +225,7 @@ $(function () {
         var sidebarHidden = !$(".app-main .column-left").hasClass("expanded");
         popovers.hide_all();
         if (sidebarHidden) {
-            popovers.show_streamlist_sidebar();
+            stream_popover.show_streamlist_sidebar();
         }
     });
 
@@ -314,6 +314,7 @@ $(function () {
     }());
 
     popovers.register_click_handlers();
+    stream_popover.register_click_handlers();
     notifications.register_click_handlers();
 
     $('body').on('click', '.logout_button', function () {
@@ -335,7 +336,7 @@ $(function () {
 
 
     $('.compose_stream_button').click(function () {
-        compose.start('stream');
+        compose.start('stream', {trigger: 'new topic button'});
     });
     $('.compose_private_button').click(function () {
         compose.start('private');
@@ -388,7 +389,7 @@ $(function () {
         e.preventDefault();
         e.stopPropagation();
 
-        window.location.hash = "subscriptions/all";
+        window.location.hash = "streams/all";
     });
 
     // FEEDBACK

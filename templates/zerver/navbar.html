@@ -50,7 +50,7 @@
                   #}
                   <li class="invisible" style="display:none;"><a href="#home" data-toggle="tab"></a></li>
                   <li title="{{ _('Manage streams') }}">
-                    <a href="#subscriptions">
+                    <a href="#streams">
                       <i class="icon-vector-exchange"></i> {{ _('Manage streams') }}
                     </a>
                   </li>
@@ -110,7 +110,7 @@
                   </li>
                   {% endif %}
                   {% if show_invites %}
-                  <li title="{% trans %}Invite more users to {{product_name}}.{% endtrans %}}">
+                  <li title="{% trans %}Invite more users to Zulip.{% endtrans %}}">
                     <a href="#invite-user" role="button" data-toggle="modal">
                       <i class="icon-vector-plus-sign"></i> {{ _('Invite users') }}
                     </a>
@@ -118,7 +118,7 @@
                   <li class="divider"></li>
                   {% endif %}
                   {% if show_webathena %}
-                  <li title="{% trans %}Grant {{product_name}} the Kerberos tickets needed to run your Zephyr mirror via Webathena{% endtrans %}" id="webathena_login_menu">
+                  <li title="{% trans %}Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via Webathena{% endtrans %}" id="webathena_login_menu">
                     <a href="#webathena" class="webathena_login">
                       <i class="icon-vector-bolt"></i>{{ _('Link with Webathena') }}
                     </a>

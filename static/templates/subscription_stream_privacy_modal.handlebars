@@ -22,11 +22,11 @@
     <div class="modal-footer">
         <button class="btn btn-default close-privacy-modal" aria-hidden="true">{{t "Cancel" }}</button>
         <button class="btn{{#if is_private}} btn-primary{{else}} btn-danger{{/if}}" id="change-stream-privacy-button"
-          tabindex="-1" data-stream-id="{{stream_id}}">
+            tabindex="-1" data-stream-id="{{stream_id}}">
             {{#if is_private}}
-                {{t "Make stream public"}}
+            {{t "Make stream public"}}
             {{else}}
-                {{t "Make stream invite-only"}}
+            {{t "Make stream invite-only"}}
             {{/if}}
         </button>
     </div>

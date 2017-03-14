@@ -13,7 +13,6 @@ from django.test.client import (
 from django.template import loader
 from django.http import HttpResponse
 from django.db.utils import IntegrityError
-from django.utils.translation import ugettext as _
 
 from zerver.lib.avatar import avatar_url
 from zerver.lib.cache import get_cache_backend
@@ -185,6 +184,7 @@ def avatar_disk_path(user_profile, medium=False):
     # type: (UserProfile, bool) -> str
     avatar_url_path = avatar_url(user_profile, medium)
     avatar_disk_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars",
+                                    avatar_url_path.split("/")[-2],
                                     avatar_url_path.split("/")[-1].split("?")[0])
     return avatar_disk_path
 

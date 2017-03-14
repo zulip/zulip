@@ -1,150 +1,311 @@
 {% extends "zerver/portico.html" %}
 
+{% block customhead %}
+
+{% stylesheet 'portico' %}
+{% stylesheet 'landing-page' %}
+{{ minified_js('landing-page')|safe }}
+
+{% endblock %}
+
 {% block portico_content %}
-    <div class="feature-page-header">{% trans %}Zulip Features{% endtrans %}</div>
-      <div class="feature-block left">
-        <i class="icon-vector-random icon-vector-3x feature-icon"></i>
-        <h4>{% trans %}Threaded group conversations{% endtrans %}</h4>
-        <p>{% trans %}Talk about multiple topics at once without getting lost or
-        overwhelmed.{% endtrans %}</p>
-      </div>
-      <div class="feature-block">
-        <i class="icon-vector-comments icon-vector-3x feature-icon"></i>
-        <h4>{% trans %}One-on-one and group private conversations{% endtrans %}</h4>
-        <p>{% trans %}Have private conversations with one or as many people as you need.{% endtrans %}</p>
-      </div>
-      <div class="feature-block left">
-        <i class="icon-vector-home icon-vector-3x feature-icon"></i>
-        <h4>{{ _("Persistence") }}</h4>
-        <p>{% trans %}We're always receiving messages for you, even when you're
-        logged out.{% endtrans %}</p>
-      </div>
-      <div class="feature-block">
-        <i class="icon-vector-road icon-vector-3x feature-icon"></i>
-        <h4>{{ _("History") }}</h4>
-        <p>{% trans %}Join a stream and see its history, so even new team
-        members are never out of the loop.{% endtrans %}</p>
-      </div>
-      <div class="feature-block left">
-        <i class="icon-vector-search icon-vector-3x feature-icon"></i>
-        <h4>{% trans %}Full-history search{% endtrans %}</h4>
-        <p>{% trans %}Search is both snappy and smart, helping you look for text,
-        people, and threads of conversation, with advanced search
-        operators for fine-grained control.{% endtrans %}</p>
-      </div>
-      <div class="feature-block">
-        <i class="icon-vector-group icon-vector-3x feature-icon"></i>
-        <h4>{% trans %}Team presence{% endtrans %}</h4>
-        <p>{% trans %}See who is online at a glance.{% endtrans %}</p>
-      </div>
-      <div class="feature-block left">
-        <i class="icon-vector-picture icon-vector-3x feature-icon"></i>
-        <h4>{% trans %}Inline image, video, and tweet previews{% endtrans %}</h4>
-        <p>{% trans %}Send a link and we'll automatically generate an inline
-        preview.{% endtrans %}</p>
-      </div>
-      <div class="feature-block">
-        <i class="icon-vector-paper-clip icon-vector-3x feature-icon"></i>
-        <h4>{% trans %}Drag-and-drop file uploads{% endtrans %}</h4>
-        <p>{% trans %}Drag a file into the compose box and we'll upload and
-        preview it for you. Sharing and discussing work with team
-        mates has never been easier.{% endtrans %}</p>
-      </div>
-      <div class="feature-block left">
-        <i class="icon-vector-user icon-vector-3x feature-icon"></i>
-        <h4>{{ _("@-notifications") }}</h4>
-        <p>{% trans %}Want someone's attention in a conversation? @-notify them
-        and they'll be right over.{% endtrans %}</p>
-      </div>
-      <div class="feature-block">
-        <i class="icon-vector-bullhorn icon-vector-3x feature-icon"></i>
-        <h4>{% trans %}Stream-wide announcements{% endtrans %}</h4>
-        <p>{% trans %}Use <code>@all</code> or <code>@everyone</code> to get the
-        attention of everyone in a stream.{% endtrans %}</p>
-      </div>
-      <div class="feature-block left">
-        <i class="icon-vector-envelope icon-vector-3x feature-icon"></i>
-        <h4>{% trans %}Emails for important missed messages{% endtrans %}</h4>
-        <p>{% trans %}If you're missing important conversations when you're away from
-        Zulip, we'll send you an email summary so you're always in the
-        loop.{% endtrans %}</p>
-      </div>
-      <div class="feature-block">
-        <i class="icon-vector-info-sign icon-vector-3x feature-icon"></i>
-        <h4>{% trans %}Desktop notifications{% endtrans %}</h4>
-        <p>{% trans %}Configurable for private and stream messages.{% endtrans %}</p>
-      </div>
-      <div class="feature-block left">
-        <i class="icon-vector-bell icon-vector-3x feature-icon"></i>
-        <h4>{% trans %}Audible notifications{% endtrans %}</h4>
-        <p>{% trans %}So you don't miss important messages even when your eyes
-        are elsewhere.{% endtrans %}</p>
-      </div>
-      <div class="feature-block">
-        <i class="icon-vector-font icon-vector-3x feature-icon"></i>
-        <h4>{{ _("Hotkeys") }}</h4>
-        <p>{% trans %}Communicate as efficiently as you use your favorite text editor.{% endtrans %}</p>
-      </div>
-      <div class="feature-block left">
-        <i class="icon-vector-thumbs-up icon-vector-3x feature-icon"></i>
-        <h4>{{ _("Emoji") }}</h4>
-        <p>{% trans %}Sometimes it's the simple things in life, like being able
-        to give a <tt>:thumbsup:</tt> while chatting.{% endtrans %}</p>
-      </div>
-      <div class="feature-block">
-        <i class="icon-vector-edit icon-vector-3x feature-icon"></i>
-        <h4>{{ _("Code") }}</h4>
-        <p>{% trans %}Discuss code with ease using Markdown code
-        blocks with syntax highlighting.{% endtrans %}</p>
-      </div>
-      <div class="feature-block left">
-        <i class="icon-vector-quote-left icon-vector-3x feature-icon"></i>
-        <h4>{% trans %}Lightweight markup{% endtrans %}</h4>
-        <p>{% trans %}Get bulleted lists, clickable links, and nicely-formatted
-        e-mail pastes automatically.{% endtrans %}</p>
-      </div>
-      <div class="feature-block">
-        <i class="icon-vector-eraser icon-vector-3x feature-icon"></i>
-        <h4>{% trans %}Message editing{% endtrans %}</h4>
-        <p>{% trans %}Don't worry, you can always fix that typo.{% endtrans %}</p>
-      </div>
-      <div class="feature-block left">
-        <i class="icon-vector-lock icon-vector-3x feature-icon"></i>
-        <h4>{% trans %}Invite-only streams{% endtrans %}</h4>
-        <p>{% trans %}Enjoy the benefits of threaded conversations while
-        controlling your audience and privacy.{% endtrans %}</p>
-      </div>
-      <div class="feature-block">
-        <i class="icon-vector-star-empty icon-vector-3x feature-icon"></i>
-        <h4>{% trans %}Starred messages{% endtrans %}</h4>
-        <p>{% trans %}Keep a todo list or keep track of interesting
-        conversations.{% endtrans %}</p>
-      </div>
-      <div class="feature-block left">
-        <i class="icon-vector-github icon-vector-3x feature-icon"></i>
-        <h4>{{ _("Integrations") }}</h4>
-        <p>{% trans %}Get alerts and updates from your favorite services with
-        off-the-shelf <a href="{{ server_uri }}/integrations">integrations</a> for
-        Trac, Nagios, GitHub, Jenkins, and more.{% endtrans %}</p>
-      </div>
-      <div class="feature-block">
-        <i class="icon-vector-sitemap icon-vector-3x feature-icon"></i>
-        <h4>{{ _("API") }}</h4>
-        <p>{% trans %}Want to roll your own notifications? We've got a
-        dead-simple RESTful <a href="{{ server_uri }}/api">API and Python bindings</a>
-        that will make integrations&mdash;both sending and
-        receiving&mdash;a snap!{% endtrans %}</p>
-      </div>
-      <div class="feature-block left">
-        <i class="icon-vector-mobile-phone icon-vector-3x feature-icon"></i>
-        <h4>{% trans %}Mobile apps{% endtrans %}</h4>
-        <p>{% trans %}Check Zulip on the go with native <a href="/apps">iOS and
-        Android apps</a>{% endtrans %}.</p>
-      </div>
-      <div class="feature-block">
-        <i class="icon-vector-desktop icon-vector-3x feature-icon"></i>
-        <h4>{% trans %}Desktop apps{% endtrans %}</h4>
-        <p>{% trans %}Prefer Zulip in its own window and rich, OS-level notifications?
-          Enjoy <a href="/apps">Zulip on your desktop</a>{% endtrans %}.</p>
-      </div>
+
+{% include 'zerver/landing_nav.html' %}
+
+<div class="portico-landing features-app">
+    <div class="main">
+        <div class="padded-content box-shadow">
+            <div class="feature-page-header">{% trans %}Zulip features{% endtrans %}</div>
+            <div class="feature-block left">
+                <div class="flex">
+                    <div class="icon-container">
+                        <i class="icon-vector-random icon-vector-3x feature-icon"></i>
+                    </div>
+                    <div class="block">
+                        <h4>{% trans %}Threaded group conversations{% endtrans %}</h4>
+                        <p>{% trans %}Talk about multiple topics at once without getting lost or
+                        overwhelmed.{% endtrans %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="feature-block">
+                <div class="flex">
+                    <div class="icon-container">
+                        <i class="icon-vector-comments icon-vector-3x feature-icon"></i>
+                    </div>
+                    <div class="block">
+                        <h4>{% trans %}One-on-one and group private conversations{% endtrans %}</h4>
+                        <p>{% trans %}Have private conversations with one or as many people as you need.{% endtrans %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="feature-block left">
+                <div class="flex">
+                    <div class="icon-container">
+                        <i class="icon-vector-home icon-vector-3x feature-icon"></i>
+                    </div>
+                    <div class="block">
+                        <h4>{{ _("Persistence") }}</h4>
+                        <p>{% trans %}We're always receiving messages for you, even when you're
+                        logged out.{% endtrans %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="feature-block">
+                <div class="flex">
+                    <div class="icon-container">
+                        <i class="icon-vector-road icon-vector-3x feature-icon"></i>
+                    </div>
+                    <div class="block">
+                        <h4>{{ _("History") }}</h4>
+                        <p>{% trans %}Join a stream and see its history, so even new team
+                        members are never out of the loop.{% endtrans %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="feature-block left">
+                <div class="flex">
+                    <div class="icon-container">
+                        <i class="icon-vector-search icon-vector-3x feature-icon"></i>
+                    </div>
+                    <div class="block">
+                        <h4>{% trans %}Full-history search{% endtrans %}</h4>
+                        <p>{% trans %}Search is both snappy and smart, helping you look for text,
+                            people, and threads of conversation, with advanced search
+                        operators for fine-grained control.{% endtrans %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="feature-block">
+                <div class="flex">
+                    <div class="icon-container">
+                        <i class="icon-vector-group icon-vector-3x feature-icon"></i>
+                    </div>
+                    <div class="block">
+                        <h4>{% trans %}Team presence{% endtrans %}</h4>
+                        <p>{% trans %}See who is online at a glance.{% endtrans %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="feature-block left">
+                <div class="flex">
+                    <div class="icon-container">
+                        <i class="icon-vector-picture icon-vector-3x feature-icon"></i>
+                    </div>
+                    <div class="block">
+                        <h4>{% trans %}Inline image, video, and tweet previews{% endtrans %}</h4>
+                        <p>{% trans %}Send a link and we'll automatically generate an inline
+                        preview.{% endtrans %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="feature-block">
+                <div class="flex">
+                    <div class="icon-container">
+                        <i class="icon-vector-paper-clip icon-vector-3x feature-icon"></i>
+                    </div>
+                    <div class="block">
+                        <h4>{% trans %}Drag-and-drop file uploads{% endtrans %}</h4>
+                        <p>{% trans %}Drag a file into the compose box and we'll upload and
+                            preview it for you. Sharing and discussing work with team
+                        mates has never been easier.{% endtrans %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="feature-block left">
+                <div class="flex">
+                    <div class="icon-container">
+                        <i class="icon-vector-user icon-vector-3x feature-icon"></i>
+                    </div>
+                    <div class="block">
+                        <h4>{{ _("@-notifications") }}</h4>
+                        <p>{% trans %}Want someone's attention in a conversation? @-notify them
+                        and they'll be right over.{% endtrans %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="feature-block">
+                <div class="flex">
+                    <div class="icon-container">
+                        <i class="icon-vector-bullhorn icon-vector-3x feature-icon"></i>
+                    </div>
+                    <div class="block">
+                        <h4>{% trans %}Stream-wide announcements{% endtrans %}</h4>
+                        <p>{% trans %}Use <code>@all</code> or <code>@everyone</code> to get the
+                        attention of everyone in a stream.{% endtrans %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="feature-block left">
+                <div class="flex">
+                    <div class="icon-container">
+                        <i class="icon-vector-envelope icon-vector-3x feature-icon"></i>
+                    </div>
+                    <div class="block">
+                        <h4>{% trans %}Emails for important missed messages{% endtrans %}</h4>
+                        <p>{% trans %}If you're missing important conversations when you're away from
+                            Zulip, we'll send you an email summary so you're always in the
+                        loop.{% endtrans %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="feature-block">
+                <div class="flex">
+                    <div class="icon-container">
+                        <i class="icon-vector-info-sign icon-vector-3x feature-icon"></i>
+                    </div>
+                    <div class="block">
+                        <h4>{% trans %}Desktop notifications{% endtrans %}</h4>
+                        <p>{% trans %}Configurable for private and stream messages.{% endtrans %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="feature-block left">
+                <div class="flex">
+                    <div class="icon-container">
+                        <i class="icon-vector-bell icon-vector-3x feature-icon"></i>
+                    </div>
+                    <div class="block">
+                        <h4>{% trans %}Audible notifications{% endtrans %}</h4>
+                        <p>{% trans %}So you don't miss important messages even when your eyes
+                        are elsewhere.{% endtrans %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="feature-block">
+                <div class="flex">
+                    <div class="icon-container">
+                        <i class="icon-vector-font icon-vector-3x feature-icon"></i>
+                    </div>
+                    <div class="block">
+                        <h4>{{ _("Hotkeys") }}</h4>
+                        <p>{% trans %}Communicate as efficiently as you use your favorite text editor.{% endtrans %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="feature-block left">
+                <div class="flex">
+                    <div class="icon-container">
+                        <i class="icon-vector-thumbs-up icon-vector-3x feature-icon"></i>
+                    </div>
+                    <div class="block">
+                        <h4>{{ _("Emoji") }}</h4>
+                        <p>{% trans %}Sometimes it's the simple things in life, like being able
+                        to give a <tt>:thumbsup:</tt> while chatting.{% endtrans %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="feature-block">
+                <div class="flex">
+                    <div class="icon-container">
+                        <i class="icon-vector-edit icon-vector-3x feature-icon"></i>
+                    </div>
+                    <div class="block">
+                        <h4>{{ _("Code") }}</h4>
+                        <p>{% trans %}Discuss code with ease using Markdown code
+                        blocks with syntax highlighting.{% endtrans %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="feature-block left">
+                <div class="flex">
+                    <div class="icon-container">
+                        <i class="icon-vector-quote-left icon-vector-3x feature-icon"></i>
+                    </div>
+                    <div class="block">
+                        <h4>{% trans %}Lightweight markup{% endtrans %}</h4>
+                        <p>{% trans %}Get bulleted lists, clickable links, and nicely-formatted
+                        e-mail pastes automatically.{% endtrans %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="feature-block">
+                <div class="flex">
+                    <div class="icon-container">
+                        <i class="icon-vector-eraser icon-vector-3x feature-icon"></i>
+                    </div>
+                    <div class="block">
+                        <h4>{% trans %}Message editing{% endtrans %}</h4>
+                        <p>{% trans %}Don't worry, you can always fix that typo.{% endtrans %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="feature-block left">
+                <div class="flex">
+                    <div class="icon-container">
+                        <i class="icon-vector-lock icon-vector-3x feature-icon"></i>
+                    </div>
+                    <div class="block">
+                        <h4>{% trans %}Invite-only streams{% endtrans %}</h4>
+                        <p>{% trans %}Enjoy the benefits of threaded conversations while
+                        controlling your audience and privacy.{% endtrans %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="feature-block">
+                <div class="flex">
+                    <div class="icon-container">
+                        <i class="icon-vector-star-empty icon-vector-3x feature-icon"></i>
+                    </div>
+                    <div class="block">
+                        <h4>{% trans %}Starred messages{% endtrans %}</h4>
+                        <p>{% trans %}Keep a todo list or keep track of interesting
+                        conversations.{% endtrans %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="feature-block left">
+                <div class="flex">
+                    <div class="icon-container">
+                        <i class="icon-vector-github icon-vector-3x feature-icon"></i>
+                    </div>
+                    <div class="block">
+                        <h4>{{ _("Integrations") }}</h4>
+                        <p>{% trans %}Get alerts and updates from your favorite services with
+                            off-the-shelf <a href="{{ server_uri }}/integrations">integrations</a> for
+                        Trac, Nagios, GitHub, Jenkins, and more.{% endtrans %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="feature-block">
+                <div class="flex">
+                    <div class="icon-container">
+                        <i class="icon-vector-sitemap icon-vector-3x feature-icon"></i>
+                    </div>
+                    <div class="block">
+                        <h4>{{ _("API") }}</h4>
+                        <p>{% trans %}Want to roll your own notifications? We've got a
+                            dead-simple RESTful <a href="{{ server_uri }}/api">API and Python bindings</a>
+                            that will make integrations&mdash;both sending and
+                        receiving&mdash;a snap!{% endtrans %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="feature-block left">
+                <div class="flex">
+                    <div class="icon-container">
+                        <i class="icon-vector-mobile-phone icon-vector-3x feature-icon"></i>
+                    </div>
+                    <div class="block">
+                        <h4>{% trans %}Mobile apps{% endtrans %}</h4>
+                        <p>{% trans %}Check Zulip on the go with native <a href="/apps">iOS and
+                        Android apps</a>.{% endtrans %}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="feature-block">
+                <div class="flex">
+                    <div class="icon-container">
+                        <i class="icon-vector-desktop icon-vector-3x feature-icon"></i>
+                    </div>
+                    <div class="block">
+                        <h4>{% trans %}Desktop apps{% endtrans %}</h4>
+                        <p>{% trans %}Prefer Zulip in its own window and rich, OS-level notifications?
+                          Enjoy <a href="/apps">Zulip on your desktop</a>.{% endtrans %}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

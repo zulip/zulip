@@ -160,7 +160,7 @@ def patch_bot_backend(request, user_profile, email,
     # type: (HttpRequest, UserProfile, Text, Optional[Text], Optional[Text], Optional[Text], Optional[Text], Optional[bool]) -> HttpResponse
     try:
         bot = get_user_profile_by_email(email)
-    except:
+    except UserProfile.DoesNotExist:
         return json_error(_('No such user'))
 
     if not user_profile.can_admin_user(bot):
@@ -218,7 +218,7 @@ def regenerate_bot_api_key(request, user_profile, email):
     # type: (HttpRequest, UserProfile, Text) -> HttpResponse
     try:
         bot = get_user_profile_by_email(email)
-    except:
+    except UserProfile.DoesNotExist:
         return json_error(_('No such user'))
 
     if not user_profile.can_admin_user(bot):
@@ -238,7 +238,7 @@ def add_bot_backend(request, user_profile, full_name_raw=REQ("full_name"), short
     # type: (HttpRequest, UserProfile, Text, Text, Optional[Text], Optional[Text], Optional[bool]) -> HttpResponse
     short_name += "-bot"
     full_name = check_full_name(full_name_raw)
-    email = short_name + "@" + user_profile.realm.domain
+    email = '%s@%s' % (short_name, user_profile.realm.get_bot_domain())
     form = CreateUserForm({'full_name': full_name, 'email': email})
     if not form.is_valid():
         # We validate client-side as well
@@ -345,8 +345,8 @@ def create_user_backend(request, user_profile, email=REQ(), password=REQ(),
     # invited first.)
     realm = user_profile.realm
     if not email_allowed_for_realm(email, user_profile.realm):
-        return json_error(_("Email '%(email)s' does not belong to domain '%(domain)s'") %
-                          {'email': email, 'domain': realm.domain})
+        return json_error(_("Email '%(email)s' not allowed for realm '%(realm)s'") %
+                          {'email': email, 'realm': realm.string_id})
 
     try:
         get_user_profile_by_email(email)

@@ -2,6 +2,8 @@ var upload_widget = (function () {
 
     var exports = {};
 
+    var default_max_file_size = 5;
+
     function is_image_format(file) {
         var type = file.type;
         if (!type) {
@@ -22,8 +24,11 @@ var upload_widget = (function () {
         file_name_field, // jQuery object to show file name
         input_error, // jQuery object for error text
         clear_button, // jQuery button to clear last upload choice
-        upload_button // jQuery button to open file dialog
+        upload_button, // jQuery button to open file dialog
+        max_file_upload_size
     ) {
+        // default value of max upladed file size
+        max_file_upload_size = max_file_upload_size || default_max_file_size;
 
         function accept(file) {
             file_name_field.text(file.name);
@@ -61,8 +66,10 @@ var upload_widget = (function () {
                 input_error.hide();
             } else if (e.target.files.length === 1) {
                 var file = e.target.files[0];
-                if (file.size > 5 * 1024 * 1024) {
-                    input_error.text(i18n.t('File size must be < 5Mb.'));
+                if (file.size > max_file_upload_size * 1024 * 1024) {
+                     input_error.text(i18n.t('File size must be < __max_file_size__Mb.', {
+                        max_file_size: max_file_upload_size,
+                    }));
                     input_error.show();
                     clear();
                 } else if (!is_image_format(file)) {
@@ -103,7 +110,11 @@ var upload_widget = (function () {
         get_file_input, // function returns a jQuery file input object
         input_error, // jQuery object for error text
         upload_button, // jQuery button to open file dialog
-        upload_function) {
+        upload_function,
+        max_file_upload_size
+    ) {
+        // default value of max upladed file size
+        max_file_upload_size = max_file_upload_size || default_max_file_size;
 
         function accept() {
             input_error.hide();
@@ -131,8 +142,10 @@ var upload_widget = (function () {
                 input_error.hide();
             } else if (e.target.files.length === 1) {
                 var file = e.target.files[0];
-                if (file.size > 5 * 1024 * 1024) {
-                    input_error.text(i18n.t('File size must be < 5Mb.'));
+                if (file.size > max_file_upload_size * 1024 * 1024) {
+                    input_error.text(i18n.t('File size must be < __max_file_size__Mb.', {
+                        max_file_size: max_file_upload_size,
+                    }));
                     input_error.show();
                     clear();
                 } else if (!is_image_format(file)) {

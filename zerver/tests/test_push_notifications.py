@@ -65,7 +65,7 @@ class APNsMessageTest(PushNotificationTest):
     @mock.patch('random.getrandbits', side_effect=[100, 200])
     def test_apns_message(self, mock_getrandbits):
         # type: (mock.MagicMock) -> None
-        apn.APNsMessage(self.user_profile, self.tokens, alert="test")
+        apn.APNsMessage(self.user_profile.id, self.tokens, alert="test")
         data = self.redis_client.hgetall(apn.get_apns_key(100))
         self.assertEqual(data['token'], 'aaaa')
         self.assertEqual(int(data['user_id']), self.user_profile.id)
@@ -173,26 +173,26 @@ class SendNotificationTest(PushNotificationTest):
     @mock.patch('zerver.lib.push_notifications._do_push_to_apns_service')
     def test_send_apple_push_notifiction(self, mock_send, mock_info, mock_warn):
         # type: (mock.MagicMock, mock.MagicMock, mock.MagicMock) -> None
-        def test_send(user, message, alert):
-            # type: (UserProfile, Message, str) -> None
-            self.assertEqual(user.id, self.user_profile.id)
+        def test_send(user_id, message, alert):
+            # type: (int, Message, str) -> None
+            self.assertEqual(user_id, self.user_profile.id)
             self.assertEqual(set(message.tokens), set(self.tokens))
 
         mock_send.side_effect = test_send
-        apn.send_apple_push_notification(self.user_profile, "test alert")
+        apn.send_apple_push_notification_to_user(self.user_profile, "test alert")
         self.assertEqual(mock_send.call_count, 1)
 
     @mock.patch('apns.GatewayConnection.send_notification_multiple')
     def test_do_push_to_apns_service(self, mock_push):
         # type: (mock.MagicMock) -> None
-        msg = apn.APNsMessage(self.user_profile, self.tokens, alert="test")
+        msg = apn.APNsMessage(self.user_profile.id, self.tokens, alert="test")
 
         def test_push(message):
             # type: (Message) -> None
             self.assertIs(message, msg.get_frame())
 
         mock_push.side_effect = test_push
-        apn._do_push_to_apns_service(self.user_profile, msg, apn.connection)
+        apn._do_push_to_apns_service(self.user_profile.id, msg, apn.connection)
 
     @mock.patch('logging.warn')
     @mock.patch('logging.info')
@@ -200,7 +200,7 @@ class SendNotificationTest(PushNotificationTest):
     def test_connection_single_none(self, mock_push, mock_info, mock_warn):
         # type: (mock.MagicMock, mock.MagicMock, mock.MagicMock) -> None
         apn.connection = None
-        apn.send_apple_push_notification(self.user_profile, "test alert")
+        apn.send_apple_push_notification_to_user(self.user_profile, "test alert")
 
     @mock.patch('logging.error')
     @mock.patch('apns.GatewayConnection.send_notification_multiple')
@@ -208,7 +208,7 @@ class SendNotificationTest(PushNotificationTest):
         # type: (mock.MagicMock, mock.MagicMock) -> None
         apn.connection = None
         apn.dbx_connection = None
-        apn.send_apple_push_notification(self.user_profile, "test alert")
+        apn.send_apple_push_notification_to_user(self.user_profile, "test alert")
 
 class APNsFeedbackTest(PushNotificationTest):
     @mock.patch('logging.info')
@@ -251,7 +251,7 @@ class GCMNotSetTest(GCMTest):
     def test_gcm_is_none(self, mock_error):
         # type: (mock.MagicMock) -> None
         apn.gcm = None
-        apn.send_android_push_notification(self.user_profile, {})
+        apn.send_android_push_notification_to_user(self.user_profile, {})
         mock_error.assert_called_with("Attempting to send a GCM push "
                                       "notification, but no API key was "
                                       "configured")
@@ -267,7 +267,7 @@ class GCMSuccessTest(GCMTest):
         mock_send.return_value = res
 
         data = self.get_gcm_data()
-        apn.send_android_push_notification(self.user_profile, data)
+        apn.send_android_push_notification_to_user(self.user_profile, data)
         self.assertEqual(mock_info.call_count, 2)
         c1 = call("GCM: Sent 1111 as 0")
         c2 = call("GCM: Sent 2222 as 1")
@@ -284,7 +284,7 @@ class GCMCanonicalTest(GCMTest):
         mock_send.return_value = res
 
         data = self.get_gcm_data()
-        apn.send_android_push_notification(self.user_profile, data)
+        apn.send_android_push_notification_to_user(self.user_profile, data)
         mock_warning.assert_called_once_with("GCM: Got canonical ref but it "
                                              "already matches our ID 1!")
 
@@ -308,7 +308,7 @@ class GCMCanonicalTest(GCMTest):
         self.assertEqual(get_count(u'3333'), 0)
 
         data = self.get_gcm_data()
-        apn.send_android_push_notification(self.user_profile, data)
+        apn.send_android_push_notification_to_user(self.user_profile, data)
         msg = ("GCM: Got canonical ref %s "
                "replacing %s but new ID not "
                "registered! Updating.")
@@ -337,7 +337,7 @@ class GCMCanonicalTest(GCMTest):
         self.assertEqual(get_count(u'2222'), 1)
 
         data = self.get_gcm_data()
-        apn.send_android_push_notification(self.user_profile, data)
+        apn.send_android_push_notification_to_user(self.user_profile, data)
         mock_info.assert_called_once_with(
             "GCM: Got canonical ref %s, dropping %s" % (new_token, old_token))
 
@@ -363,7 +363,7 @@ class GCMNotRegisteredTest(GCMTest):
         self.assertEqual(get_count(u'1111'), 1)
 
         data = self.get_gcm_data()
-        apn.send_android_push_notification(self.user_profile, data)
+        apn.send_android_push_notification_to_user(self.user_profile, data)
         mock_info.assert_called_once_with("GCM: Removing %s" % (token,))
         self.assertEqual(get_count(u'1111'), 0)
 
@@ -378,7 +378,7 @@ class GCMFailureTest(GCMTest):
         mock_send.return_value = res
 
         data = self.get_gcm_data()
-        apn.send_android_push_notification(self.user_profile, data)
+        apn.send_android_push_notification_to_user(self.user_profile, data)
         c1 = call("GCM: Delivery to %s failed: Failed" % (token,))
         mock_warn.assert_has_calls([c1], any_order=True)
 

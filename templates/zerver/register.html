@@ -78,7 +78,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
         <div class="input-group grid">
             <label for="id_team_name" class="inline-block label-title">{{ _('Organization name') }}</label>
             <input id="id_team_name" class="required" type="text"
-                placeholder="{{ _("Acme") }}"
+                placeholder="Acme"
                 value="{% if form.realm_name.value() %}{{ form.realm_name.value() }}{% endif %}"
                 name="realm_name" maxlength="100" />
                 {% if form.realm_name.errors %}
@@ -96,12 +96,12 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 {% if realms_have_subdomains %}
                     {{ _('Subdomain') }}
                 {% else %}
-                    {{ _('Short Name') }}
+                    {{ _('Short name') }}
                 {% endif %}
             </label>
             <div class="breakpoint">
                 <input id="id_team_subdomain" class="required" type="text"
-                    placeholder="{{ _("acme") }}"
+                    placeholder="acme"
                     value="{% if form.realm_subdomain.value() %}{{ form.realm_subdomain.value() }}{% endif %}"
                     name="realm_subdomain" maxlength="40" />
                 {% if realms_have_subdomains %}
@@ -123,7 +123,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
         </div>
 
         <div class="m-v-20">
-          <label for="id_org_type" class="label-title">{{ _('Organization Type') }}</label>
+          <label for="id_org_type" class="label-title">{{ _('Organization type') }}</label>
 
           {% for org_type_value, org_type_text in form.realm_org_type.field.choices %}
           <div class="input-group radio">

@@ -19,7 +19,7 @@ from apiclient.sample_tools import client as googleapiclient
 from oauth2client.crypt import AppIdentityError
 from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, \
     GithubTeamOAuth2
-from social_core.exceptions import AuthFailed
+from social_core.exceptions import AuthFailed, SocialAuthBaseException
 from django.contrib.auth import authenticate
 from zerver.lib.users import check_full_name
 from zerver.lib.request import JsonableError
@@ -184,6 +184,9 @@ class SocialAuthMixin(ZulipAuthMixin):
             # Call the auth_complete method of BaseOAuth2 is Python Social Auth
             return super(SocialAuthMixin, self).auth_complete(*args, **kwargs)  # type: ignore
         except AuthFailed:
+            return None
+        except SocialAuthBaseException as e:
+            logging.exception(e)
             return None
 
 class ZulipDummyBackend(ZulipAuthMixin):

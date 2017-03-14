@@ -16,4 +16,4 @@ check the **Desktop notifications** option under **Private messages and @-mentio
 
 !!! tip ""
     You can change your notification settings for individual streams on your
-    [Streams](/#subscriptions) page.
+    [Streams](/#streams) page.

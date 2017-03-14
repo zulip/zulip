@@ -53,8 +53,8 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('#settings-status', function () {
-        casper.test.assertSelectorHasText('#settings-status', 'Updated settings!');
+    casper.waitUntilVisible('#account-settings-status', function () {
+        casper.test.assertSelectorHasText('#account-settings-status', 'Updated settings!');
 
         casper.click('[data-section="your-bots"]');
         casper.click('#api_key_button');
@@ -99,12 +99,6 @@ casper.then(function () {
     });
 });
 
-casper.then(function () {
-    casper.waitUntilVisible('#settings-status', function () {
-        casper.test.assertSelectorHasText('#settings-status', 'Updated settings!');
-    });
-});
-
 casper.then(function create_bot() {
     casper.test.info('Filling out the create bot form');
 
@@ -115,12 +109,19 @@ casper.then(function create_bot() {
         bot_default_events_register_stream: 'Rome',
     });
 
-    casper.test.info('Submiting the create bot form');
+    casper.test.info('Submitting the create bot form');
     casper.click('#create_bot_button');
 });
 
+var bot_email;
+if (REALMS_HAVE_SUBDOMAINS) {
+    bot_email = '1-bot@zulip.zulipdev.com';
+} else {
+    bot_email = '1-bot@zulip.localhost';
+}
+
 casper.then(function () {
-    var button_sel = '.download_bot_zuliprc[data-email="1-bot@zulip.com"]';
+    var button_sel = '.download_bot_zuliprc[data-email="' + bot_email + '"]';
 
     casper.waitUntilVisible(button_sel, function () {
         casper.click(button_sel);
@@ -135,15 +136,15 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('.open_edit_bot_form[data-email="1-bot@zulip.com"]', function open_edit_bot_form() {
+    casper.waitUntilVisible('.open_edit_bot_form[data-email="' + bot_email + '"]', function open_edit_bot_form() {
         casper.test.info('Opening edit bot form');
-        casper.click('.open_edit_bot_form[data-email="1-bot@zulip.com"]');
+        casper.click('.open_edit_bot_form[data-email="' + bot_email + '"]');
     });
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('.edit_bot_form[data-email="1-bot@zulip.com"]', function test_edit_bot_form_values() {
-        var form_sel = '.edit_bot_form[data-email="1-bot@zulip.com"]';
+    casper.waitUntilVisible('.edit_bot_form[data-email="' + bot_email + '"]', function test_edit_bot_form_values() {
+        var form_sel = '.edit_bot_form[data-email="' + bot_email + '"]';
         casper.test.info('Testing edit bot form values');
 
     //     casper.test.assertEqual(

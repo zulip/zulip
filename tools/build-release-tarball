@@ -36,8 +36,11 @@ fi
 
 if ! git diff --exit-code >/dev/null; then
     set +x
-    echo; echo "\033[31mWARNING: tarballs builds are based on a commit hash so your changes will not be included\033[0m"; echo
-    set -x
+    echo "ERROR: tarballs builds are based on a commit hash so your changes "
+    echo "will not be included; you should commit or stash them based on "
+    echo "what you want and then try again."
+    echo
+    exit 1
 fi
 
 TMP_CHECKOUT=$TMPDIR/$prefix/

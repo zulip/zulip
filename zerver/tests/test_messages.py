@@ -36,7 +36,9 @@ from zerver.models import (
 )
 
 from zerver.lib.actions import (
-    check_message, check_send_message,
+    check_message,
+    check_send_message,
+    extract_recipients,
     do_create_user,
     get_client,
     get_recipient,
@@ -264,6 +266,30 @@ class TestCrossRealmPMs(ZulipTestCase):
         with assert_disallowed():
             self.send_message(user1_email, [user2_email, user3_email], Recipient.PERSONAL)
 
+class ExtractedRecipientsTest(TestCase):
+    def test_extract_recipients(self):
+        # type: () -> None
+
+        # JSON list w/dups, empties, and trailing whitespace
+        s = ujson.dumps([' alice@zulip.com ', ' bob@zulip.com ', '   ', 'bob@zulip.com'])
+        self.assertEqual(sorted(extract_recipients(s)), ['alice@zulip.com', 'bob@zulip.com'])
+
+        # simple string with one name
+        s = 'alice@zulip.com    '
+        self.assertEqual(extract_recipients(s), ['alice@zulip.com'])
+
+        # JSON-encoded string
+        s = '"alice@zulip.com"'
+        self.assertEqual(extract_recipients(s), ['alice@zulip.com'])
+
+        # bare comma-delimited string
+        s = 'bob@zulip.com, alice@zulip.com'
+        self.assertEqual(sorted(extract_recipients(s)), ['alice@zulip.com', 'bob@zulip.com'])
+
+        # JSON-encoded, comma-delimited string
+        s = '"bob@zulip.com,alice@zulip.com"'
+        self.assertEqual(sorted(extract_recipients(s)), ['alice@zulip.com', 'bob@zulip.com'])
+
 class PersonalMessagesTest(ZulipTestCase):
 
     def test_auto_subbed_to_personals(self):
@@ -287,7 +313,7 @@ class PersonalMessagesTest(ZulipTestCase):
         with mock.patch('zerver.models.get_display_recipient', return_value='recip'):
             self.assertEqual(str(message),
                              u'<Message: recip /  / '
-                             '<UserProfile: test@zulip.com <Realm: zulip.com 1>>>')
+                             '<UserProfile: test@zulip.com <Realm: zulip 1>>>')
 
             user_message = most_recent_usermessage(user_profile)
             self.assertEqual(str(user_message),
@@ -463,7 +489,7 @@ class StreamMessagesTest(ZulipTestCase):
         message = most_recent_message(user_profile)
         self.assertEqual(str(message),
                          u'<Message: Denmark / my topic / '
-                         '<UserProfile: hamlet@zulip.com <Realm: zulip.com 1>>>')
+                         '<UserProfile: hamlet@zulip.com <Realm: zulip 1>>>')
 
     def test_message_mentions(self):
         # type: () -> None
@@ -999,12 +1025,12 @@ class MessagePOSTTest(ZulipTestCase):
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
 
-        email = "irc-bot@zulip.com"
+        email = "irc-bot@zulip.testserver"
         user = get_user_profile_by_email(email)
         user.is_api_super_user = True
         user.save()
         user = get_user_profile_by_email(email)
-        self.subscribe_to_stream(email, "#IRCland")
+        self.subscribe_to_stream(email, "#IRCland", realm=user.realm)
         result = self.client_post("/api/v1/messages",
                                   {"type": "stream",
                                    "forged": "true",
@@ -1650,6 +1676,9 @@ class StarTests(ZulipTestCase):
         self.login("hamlet@zulip.com")
         message_ids = [self.send_message("hamlet@zulip.com", stream_name,
                                          Recipient.STREAM, "test")]
+        # Send a second message so we can verify it isn't modified
+        other_message_ids = [self.send_message("hamlet@zulip.com", stream_name,
+                                               Recipient.STREAM, "test_unused")]
 
         # Now login as another user who wasn't on that stream
         self.login("cordelia@zulip.com")
@@ -1670,7 +1699,7 @@ class StarTests(ZulipTestCase):
         self.assert_json_success(result)
 
         for msg in self.get_old_messages():
-            if msg['id'] in message_ids:
+            if msg['id'] in message_ids + other_message_ids:
                 self.assertEqual(set(msg['flags']), {'starred', 'historical', 'read'})
             else:
                 self.assertEqual(msg['flags'], ['read'])

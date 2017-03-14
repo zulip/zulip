@@ -169,7 +169,7 @@ def api_pivotal_webhook(request, user_profile, client, stream=REQ()):
         subject, content = api_pivotal_webhook_v3(request, user_profile, stream)
     except AttributeError:
         return json_error(_("Failed to extract data from Pivotal XML response"))
-    except:
+    except Exception:
         # Attempt to parse v5 JSON payload
         try:
             subject, content = api_pivotal_webhook_v5(request, user_profile, stream)

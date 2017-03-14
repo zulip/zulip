@@ -15,9 +15,9 @@ function focus_in_empty_compose() {
         $('#new_message_content').is(':focus'));
 }
 
-function is_settings_page() {
+exports.is_settings_page = function () {
   return (/^#*(settings|administration)/g).test(window.location.hash);
-}
+};
 
 var actions_dropdown_hotkeys = [
     'down_arrow',
@@ -34,12 +34,12 @@ var actions_dropdown_hotkeys = [
 var hotkeys_shift = {
     // these can be triggered by shift + key only
     9: {name: 'shift_tab', message_view_only: false}, // tab
-    32: {name: 'page_up', message_view_only: true},  // space bar
+    32: {name: 'shift_spacebar', message_view_only: true},  // space bar
 };
 var hotkeys_no_modifiers = {
     // these can be triggered by key only (without shift)
     9: {name: 'tab', message_view_only: false}, // tab
-    32: {name: 'page_down', message_view_only: true}, // space bar
+    32: {name: 'spacebar', message_view_only: true}, // space bar
     33: {name: 'page_up', message_view_only: true}, // page up
     34: {name: 'page_down', message_view_only: true}, // page down
     35: {name: 'end', message_view_only: true}, // end
@@ -60,8 +60,8 @@ var hotkeys_shift_insensitive = {
     65: {name: 'stream_cycle_backward', message_view_only: true}, // 'A'
     67: {name: 'compose_private_message', message_view_only: true}, // 'C'
     68: {name: 'stream_cycle_forward', message_view_only: true}, // 'D'
-    74: {name: 'page_down', message_view_only: true}, // 'J'
-    75: {name: 'page_up', message_view_only: true}, // 'K'
+    74: {name: 'vim_page_down', message_view_only: true}, // 'J'
+    75: {name: 'vim_page_up', message_view_only: true}, // 'K'
     82: {name: 'respond_to_author', message_view_only: true}, // 'R'
     83: {name: 'narrow_by_subject', message_view_only: true}, //'S'
     99: {name: 'compose', message_view_only: true}, // 'c'
@@ -114,11 +114,179 @@ function get_hotkey_from_event(e) {
     return {name: 'ignore', message_view_only: false};
 }
 
+exports.processing_text = function () {
+    var selector = 'input:focus,select:focus,textarea:focus,#compose-send-button:focus';
+    return $(selector).length > 0;
+};
+
+exports.is_editing_stream_name = function (e) {
+    return $(e.target).is(".editable-section");
+};
+
+// Returns true if we handled it, false if the browser should.
+exports.process_escape_key = function (e) {
+    var row;
+
+    if (exports.is_editing_stream_name(e)) {
+        return false;
+    }
+
+    if ($("#overlay").hasClass("show")) {
+        ui.exit_lightbox_photo();
+        return true;
+    }
+
+    if ($("#subscription_overlay").hasClass("show")) {
+        subs.close();
+        return true;
+    }
+
+    if ($("#draft_overlay").hasClass("show")) {
+        drafts.close();
+        return true;
+    }
+
+    if ($(".informational-overlays").hasClass("show")) {
+        ui.hide_info_overlay();
+        return true;
+    }
+
+    if ($("#invite-user").css("display") === "block") {
+        $("#invite-user").modal("hide");
+        return true;
+    }
+
+    if (exports.is_settings_page()) {
+        $("#settings_overlay_container .exit").click();
+        return true;
+    }
+
+    // emoji window should trap escape before it is able to close the compose box
+    if ($('.emoji_popover').css('display') === 'inline-block') {
+        popovers.hide_emoji_map_popover();
+        return true;
+    }
+
+    if (exports.processing_text()) {
+        if ($(".message_edit_content").filter(":focus").length > 0) {
+            row = $(".message_edit_content").filter(":focus").closest(".message_row");
+            row.find('.message_edit_content').blur();
+            message_edit.end(row);
+            return true;
+        }
+
+        if ($(".message_edit_topic").filter(":focus").length > 0) {
+            row = $(".message_edit_topic").filter(":focus").closest(".message_row");
+            row.find('.message_edit_topic').blur();
+            message_edit.end(row);
+            return true;
+        }
+
+        if (activity.searching()) {
+            activity.escape_search();
+            return true;
+        }
+
+        if (stream_list.searching()) {
+            stream_list.escape_search();
+            return true;
+        }
+
+        if (compose.composing()) {
+            // If the user hit the escape key, cancel the current compose
+            compose.cancel();
+            return true;
+        }
+
+        // We pressed Esc and something was focused, and the composebox
+        // wasn't open. In that case, we should blur the input.
+        // (this is almost certainly the searchbar)
+        $("input:focus,textarea:focus").blur();
+        return true;
+    }
+
+    if (popovers.any_active()) {
+        popovers.hide_all();
+        return true;
+    }
+
+    if (compose.composing()) {
+        compose.cancel();
+        return true;
+    }
+
+    search.clear_search();
+    return true;
+};
+
+// Returns true if we handled it, false if the browser should.
+exports.process_enter_key = function (e) {
+    if (exports.is_editing_stream_name(e)) {
+        $(e.target).parent().find(".checkmark").click();
+        return false;
+    }
+
+    if (popovers.actions_popped()) {
+        popovers.actions_menu_handle_keyboard('enter');
+        return true;
+    }
+
+    if (exports.is_settings_page()) {
+        // On the settings page just let the browser handle
+        // the enter key for things like submitting forms.
+        return false;
+    }
+
+    if (exports.processing_text()) {
+        if (activity.searching()) {
+            activity.blur_search();
+            return true;
+        }
+
+        if (stream_list.searching()) {
+            // This is sort of funny behavior, but I think
+            // the intention is that we want it super easy
+            // to close stream search.
+            stream_list.clear_and_hide_search();
+            return true;
+        }
+
+        return false;
+    }
+
+    // If we're on a button or a link and have pressed enter, let the
+    // browser handle the keypress
+    //
+    // This is subtle and here's why: Suppose you have the focus on a
+    // stream name in your left sidebar. j and k will still move your
+    // cursor up and down, but Enter won't reply -- it'll just trigger
+    // the link on the sidebar! So you keep pressing enter over and
+    // over again. Until you click somewhere or press r.
+    if ($('a:focus,button:focus').length > 0) {
+        return false;
+    }
+
+    if ($("#preview_message_area").is(":visible")) {
+        compose.enter_with_preview_open();
+        return true;
+    }
+
+    if (current_msg_list.empty()) {
+        return false;
+    }
+
+    // If we got this far, then we're presumably in the message
+    // view and there is a "current" message, so in that case
+    // "enter" is the hotkey to respond to a message.  Note that
+    // "r" has same effect, but that is handled in process_hotkey().
+    compose.respond_to_message({trigger: 'hotkey enter'});
+    return true;
+};
+
 // Process a keydown or keypress event.
 //
 // Returns true if we handled it, false if the browser should.
-function process_hotkey(e) {
-    var row;
+exports.process_hotkey = function (e) {
     var alert_words_content;
     var focused_message_edit_content;
     var focused_message_edit_save;
@@ -131,14 +299,21 @@ function process_hotkey(e) {
         return false;
     }
 
+    if (event_name === 'escape') {
+        return exports.process_escape_key(e);
+    }
+
+    if (event_name === 'enter') {
+        return exports.process_enter_key(e);
+    }
+
     if (hotkey.message_view_only && ui.home_tab_obscured()) {
         return false;
     }
 
-    if ($(e.target).is(".editable-section")) {
-        if (event_name === "enter") {
-            $(e.target).parent().find(".checkmark").click();
-        }
+    if (exports.is_editing_stream_name(e)) {
+        // We handle the enter key in process_enter_key().
+        // We ignore all other keys.
         return false;
     }
 
@@ -160,17 +335,23 @@ function process_hotkey(e) {
         }
     }
 
-    if (popovers.actions_popped() && actions_dropdown_hotkeys.indexOf(event_name) !== -1) {
+    if ((actions_dropdown_hotkeys.indexOf(event_name) !== -1) && popovers.actions_popped()) {
         popovers.actions_menu_handle_keyboard(event_name);
         return true;
     }
 
-    // Handle a few keys specially when the send button is focused.
-    if ($('#compose-send-button').is(':focus')) {
-        if (event_name === 'backspace') {
+    // The next two sections date back to 00445c84 and are Mac/Chrome-specific,
+    // and they should possibly be eliminated in favor of keeping standard
+    // browser behavior.
+    if (event_name === 'backspace') {
+        if ($('#compose-send-button').is(':focus')) {
             // Ignore backspace; don't navigate back a page.
             return true;
-        } else if (event_name === 'shift_tab') {
+        }
+    }
+
+    if (event_name === 'shift_tab') {
+        if ($('#compose-send-button').is(':focus')) {
             // Shift-Tab: go back to content textarea and restore
             // cursor position.
             ui.restore_compose_cursor();
@@ -218,23 +399,7 @@ function process_hotkey(e) {
         }
     }
 
-    if (event_name === "escape") {
-        if ($("#overlay").hasClass("show")) {
-            ui.exit_lightbox_photo();
-            return true;
-        } else if ($("#subscription_overlay").hasClass("show")) {
-            subs.close();
-            return true;
-        } else if ($("#draft_overlay").hasClass("show")) {
-            drafts.close();
-            return true;
-        } else if ($(".informational-overlays").hasClass("show")) {
-            ui.hide_info_overlay();
-            return true;
-        }
-    }
-
-    if (is_settings_page()) {
+    if (exports.is_settings_page()) {
         if (event_name === 'up_arrow') {
             var prev = e.target.previousElementSibling;
 
@@ -249,70 +414,14 @@ function process_hotkey(e) {
                 $(next).focus().click();
             }
             return true;
-        } else if (event_name === 'escape') {
-            $("#settings_overlay_container .exit").click();
-            return true;
         }
         return false;
     }
 
     // Process hotkeys specially when in an input, select, textarea, or send button
-    if ($('input:focus,select:focus,textarea:focus,#compose-send-button:focus').length > 0) {
-        if (event_name === 'escape') {
-            // emoji window should trap escape before it is able to close the compose box
-            if ($('.emoji_popover').css('display') === 'inline-block') {
-                popovers.hide_emoji_map_popover();
-                return;
-            }
-            // If one of our typeaheads is open, do nothing so that the Esc
-            // will go to close it
-            if ($("#subject").data().typeahead.shown ||
-                $("#stream").data().typeahead.shown ||
-                $("#private_message_recipient").data().typeahead.shown ||
-                $("#new_message_content").data().typeahead.shown ||
-                $("#search_query").data().typeahead.shown) {
-                // For some reason this code is only needed in Firefox;
-                // in Chrome our typeahead is able to intercept the Esc
-                // event before we even get it.
-                // Regardless, we do nothing in this case.
-                return true;
-            } else if ($(".message_edit_content").filter(":focus").length > 0) {
-                row = $(".message_edit_content").filter(":focus").closest(".message_row");
-                message_edit.end(row);
-            } else if ($(".message_edit_topic").filter(":focus").length > 0) {
-                row = $(".message_edit_topic").filter(":focus").closest(".message_row");
-                message_edit.end(row);
-            } else if (activity.searching()) {
-                activity.escape_search();
-                return true;
-            } else if (stream_list.searching()) {
-                stream_list.escape_search();
-                return true;
-            } else if (compose.composing()) {
-                // If the user hit the escape key, cancel the current compose
-                compose.cancel();
-                return true;
-            } else {
-                // We pressed Esc and something was focused, and the composebox
-                // wasn't open. In that case, we should blur the input.
-                // (this is almost certainly the searchbar)
-                $("input:focus,textarea:focus").blur();
-                return true;
-            }
-        }
-
-        if (event_name === 'enter') {
-            if (is_settings_page()) {
-                $(e.target).click();
-                return true;
-            } else if (activity.searching()) {
-                activity.blur_search();
-                return true;
-            } else if (stream_list.searching()) {
-                stream_list.clear_and_hide_search();
-                return true;
-            }
-        }
+    if (exports.processing_text()) {
+        // Note that there is special handling for enter/escape too, but
+        // we handle this in other functions.
 
         if (event_name === 'left_arrow' && focus_in_empty_compose()) {
             compose.cancel();
@@ -323,6 +432,13 @@ function process_hotkey(e) {
         if ((event_name === 'up_arrow' || event_name === 'down_arrow') && focus_in_empty_compose()) {
             compose.cancel();
             // don't return, as we still want it to be picked up by the code below
+        } else if (event_name === "page_up") {
+            $("#new_message_content").caret(0);
+            return true;
+        } else if (event_name === "page_down") {
+            // so that it always goes to the end of the compose box.
+            $("#new_message_content").caret(Infinity);
+            return true;
         } else {
             // Let the browser handle the key normally.
             return false;
@@ -334,18 +450,6 @@ function process_hotkey(e) {
         return true;
     }
 
-    // If we're on a button or a link and have pressed enter, let the
-    // browser handle the keypress
-    //
-    // This is subtle and here's why: Suppose you have the focus on a
-    // stream name in your left sidebar. j and k will still move your
-    // cursor up and down, but Enter won't reply -- it'll just trigger
-    // the link on the sidebar! So you keep pressing enter over and
-    // over again. Until you click somewhere or press r.
-    if ($('a:focus,button:focus').length > 0 && event_name === 'enter') {
-        return false;
-    }
-
     // Shortcuts that don't require a message
     switch (event_name) {
         case 'compose': // 'c': compose
@@ -353,24 +457,6 @@ function process_hotkey(e) {
             return true;
         case 'compose_private_message':
             compose.start('private', {trigger: "compose_hotkey"});
-            return true;
-        case 'enter':
-            // There's special handling for when you're previewing a composition
-            if ($("#preview_message_area").is(":visible")) {
-                compose.enter_with_preview_open();
-                return true;
-            }
-            break;
-        case 'escape': // Esc: close actions popup, cancel compose, clear a find, or un-narrow
-            if ($('.emoji_popover').css('display') === 'inline-block') {
-                popovers.hide_emoji_map_popover();
-            } else if (popovers.any_active()) {
-                popovers.hide_all();
-            } else if (compose.composing()) {
-                compose.cancel();
-            } else {
-                search.clear_search();
-            }
             return true;
         case 'narrow_private':
             return do_narrow_action(function (target, opts) {
@@ -417,13 +503,17 @@ function process_hotkey(e) {
             navigate.to_end();
             return true;
         case 'page_up':
-            if (!is_settings_page()) {
+        case 'vim_page_up':
+        case 'shift_spacebar':
+            if (!exports.is_settings_page()) {
                 navigate.page_up();
                 return true;
             }
             break;
         case 'page_down':
-            if (!is_settings_page()) {
+        case 'vim_page_down':
+        case 'spacebar':
+            if (!exports.is_settings_page()) {
                 navigate.page_down();
                 return true;
             }
@@ -438,24 +528,21 @@ function process_hotkey(e) {
             return do_narrow_action(narrow.by_recipient);
         case 'narrow_by_subject':
             return do_narrow_action(narrow.by_subject);
-        case  'enter': // Enter: respond to message (unless we need to do something else)
-            compose.respond_to_message({trigger: 'hotkey enter'});
-            return true;
         case 'reply_message': // 'r': respond to message
+            // Note that you can "enter" to respond to messages as well,
+            // but that is handled in process_enter_key().
             compose.respond_to_message({trigger: 'hotkey'});
             return true;
         case 'respond_to_author': // 'R': respond to author
             compose.respond_to_message({reply_type: "personal", trigger: 'hotkey pm'});
             return true;
         case 'compose_reply_with_mention': // '@': respond to message with mention to author
-            compose.respond_to_message({trigger: 'hotkey'});
-            var message = current_msg_list.selected_message();
-            $("#new_message_content").val('@**' + message.sender_full_name + '** ');
+            compose.reply_with_mention({trigger: 'hotkey'});
             return true;
     }
 
     return false;
-}
+};
 
 /* We register both a keydown and a keypress function because
    we want to intercept pgup/pgdn, escape, etc, and process them
@@ -471,7 +558,7 @@ $(document).keydown(function (e) {
     // Restrict to non-alphanumeric keys
     // check if 27 (esc) because it doesn't register under .keypress()
     if (e.which < 48 || e.which > 90 || e.which === 27) {
-        if (process_hotkey(e)) {
+        if (exports.process_hotkey(e)) {
             e.preventDefault();
         }
     }
@@ -486,7 +573,7 @@ $(document).keypress(function (e) {
     // keypress event with keycode 0 after processing the original
     // event.
     if (e.which !== 0 && e.charCode !== 0) {
-        if (process_hotkey(e)) {
+        if (exports.process_hotkey(e)) {
             e.preventDefault();
         }
     }

@@ -10,6 +10,7 @@
     to construct a URL for Travis CI.
 </p>
 
+
 <p>
     Finally, set up a webhook in your <code>.travis.yml</code> file:
 </p>
@@ -19,6 +20,13 @@ notifications:
 webhooks:
 - {{ external_api_uri_subdomain }}/v1/external/travis?stream=travis&amp;topic=build-status&amp;api_key=abcdefgh
 </pre>
+
+<p>
+    By default, pull request events are ignored since most people
+    don't want notifications for new pushes to pull requests.  To
+    enable notifications for pull request builds, just
+    add<code>&ignore_pull_requests=false</code> at the end of the url.
+</p>
 
 <p><b>
     Congratulations! You're done!</b><br/> When a code build occurs,

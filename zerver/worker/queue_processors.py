@@ -10,14 +10,17 @@ from zerver.models import get_user_profile_by_email, \
     UserMessage, Message, Realm
 from zerver.lib.context_managers import lockfile
 from zerver.lib.error_notify import do_report_error
+from zerver.lib.feedback import handle_feedback
 from zerver.lib.queue import SimpleQueueClient, queue_json_publish
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.notifications import handle_missedmessage_emails, enqueue_welcome_emails, \
-    clear_followup_emails_queue, send_local_email_template_with_delay
+    clear_followup_emails_queue, send_local_email_template_with_delay, \
+    send_missedmessage_email
+from zerver.lib.push_notifications import handle_push_notification
 from zerver.lib.actions import do_send_confirmation_email, \
     do_update_user_activity, do_update_user_activity_interval, do_update_user_presence, \
     internal_send_message, check_send_message, extract_recipients, \
-    handle_push_notification, render_incoming_message, do_update_embedded_data
+    render_incoming_message, do_update_embedded_data
 from zerver.lib.url_preview import preview as url_preview
 from zerver.lib.digest import handle_digest_email
 from zerver.lib.email_mirror import process_message as mirror_email
@@ -25,7 +28,6 @@ from zerver.decorator import JsonableError
 from zerver.tornado.socket import req_redis_key
 from confirmation.models import Confirmation
 from zerver.lib.db import reset_queries
-from django.core.mail import EmailMessage
 from zerver.lib.redis_utils import get_redis_client
 from zerver.context_processors import common_context
 
@@ -217,6 +219,12 @@ class MissedMessageWorker(QueueProcessingWorker):
             # of messages
             time.sleep(2 * 60)
 
+@assign_queue('missedmessage_email_senders')
+class MissedMessageSendingWorker(QueueProcessingWorker):
+    def consume(self, data):
+        # type: (Mapping[str, Any]) -> None
+        send_missedmessage_email(data)
+
 @assign_queue('missedmessage_mobile_notifications')
 class PushNotificationsWorker(QueueProcessingWorker):
     def consume(self, data):
@@ -237,34 +245,10 @@ def make_feedback_client():
 # We probably could stop running this queue worker at all if ENABLE_FEEDBACK is False
 @assign_queue('feedback_messages')
 class FeedbackBot(QueueProcessingWorker):
-    def start(self):
-        # type: () -> None
-        if settings.ENABLE_FEEDBACK and settings.FEEDBACK_EMAIL is None:
-            self.staging_client = make_feedback_client()
-        QueueProcessingWorker.start(self)
-
     def consume(self, event):
         # type: (Mapping[str, Any]) -> None
         logging.info("Received feedback from %s" % (event["sender_email"],))
-        if not settings.ENABLE_FEEDBACK:
-            return
-        if settings.FEEDBACK_EMAIL is not None:
-            to_email = settings.FEEDBACK_EMAIL
-            subject = "Zulip feedback from %s" % (event["sender_email"],)
-            content = event["content"]
-            from_email = '"%s" <%s>' % (event["sender_full_name"], settings.ZULIP_ADMINISTRATOR)
-            headers = {'Reply-To': '"%s" <%s>' % (event["sender_full_name"], event["sender_email"])}
-            msg = EmailMessage(subject, content, from_email, [to_email], headers=headers)
-            msg.send()
-        else:
-            # This code has been untested with the new API, and
-            # the endpoint it hits also uses a home-grown ticketing
-            # system that was from early days of Zulip, pre-open-source.
-            self.staging_client.call_endpoint(
-                method='POST',
-                url='deployments/feedback',
-                request=dict(message=simplejson.dumps(event))
-            )
+        handle_feedback(event)
 
 @assign_queue('error_reports')
 class ErrorReporter(QueueProcessingWorker):

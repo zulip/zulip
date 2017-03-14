@@ -81,7 +81,7 @@ function show_box(tabname, focus_area, opts) {
     var cover = selected_row.offset().top + selected_row.height()
         - $("#compose").offset().top;
     if (cover > 0) {
-        viewport.user_initiated_animate_scroll(cover+5);
+        message_viewport.user_initiated_animate_scroll(cover+5);
     }
 
 }
@@ -264,8 +264,13 @@ exports.start = function (msg_type, opts) {
 
     is_composing_message = msg_type;
 
-    // Show either stream/topic fields or "You and" field.
-    show_box_for_msg_type(msg_type, opts);
+    // Set focus to "Topic" when narrowed to a stream+topic and "New topic" button clicked.
+    if (opts.trigger === "new topic button") {
+        show_box('stream', $("#subject"), opts);
+    } else {
+        // Show either stream/topic fields or "You and" field.
+        show_box_for_msg_type(msg_type, opts);
+    }
 
     compose_fade.start_compose(msg_type);
 
@@ -631,6 +636,13 @@ exports.respond_to_message = function (opts) {
 
 };
 
+exports.reply_with_mention = function (opts) {
+    exports.respond_to_message(opts);
+    var message = current_msg_list.selected_message();
+    var mention = '@**' + message.sender_full_name + '**';
+    $('#new_message_content').val(mention + ' ');
+};
+
 // This function is for debugging / data collection only.  Arguably it
 // should live in debug.js, but then it wouldn't be able to call
 // send_message() directly below.
@@ -798,7 +810,7 @@ function validate_stream_message_address_info(stream_name) {
         case "does-not-exist":
             response = "<p>The stream <b>" +
                 Handlebars.Utils.escapeExpression(stream_name) + "</b> does not exist.</p>" +
-                "<p>Manage your subscriptions <a href='#subscriptions'>on your Streams page</a>.</p>";
+                "<p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>";
             compose_error(response, $('#stream'));
             return false;
         case "error":
@@ -806,7 +818,7 @@ function validate_stream_message_address_info(stream_name) {
         case "not-subscribed":
             response = "<p>You're not subscribed to the stream <b>" +
                 Handlebars.Utils.escapeExpression(stream_name) + "</b>.</p>" +
-                "<p>Manage your subscriptions <a href='#subscriptions'>on your Streams page</a>.</p>";
+                "<p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>";
             compose_error(response, $('#stream'));
             return false;
         }
@@ -970,21 +982,38 @@ $(function () {
         var invite_row = $(event.target).parents('.compose_invite_user');
 
         var email = $(invite_row).data('useremail');
-        if (email !== undefined) {
-            subs.invite_user_to_stream(email, compose.stream_name(), function () {
-                var all_invites = $("#compose_invite_users");
-                invite_row.remove();
-
-                if (all_invites.children().length === 0) {
-                    all_invites.hide();
-                }
-            }, function () {
-                var error_msg = invite_row.find('.compose_invite_user_error');
-                error_msg.show();
-
-                $(event.target).attr('disabled', true);
-            });
+        if (email === undefined) {
+            return;
         }
+
+        function success() {
+            var all_invites = $("#compose_invite_users");
+            invite_row.remove();
+
+            if (all_invites.children().length === 0) {
+                all_invites.hide();
+            }
+        }
+
+        function failure() {
+            var error_msg = invite_row.find('.compose_invite_user_error');
+            error_msg.show();
+
+            $(event.target).attr('disabled', true);
+        }
+
+        var stream_name = compose.stream_name();
+        var sub = stream_data.get_sub(stream_name);
+        if (!sub) {
+            // This should only happen if a stream rename occurs
+            // before the user clicks.  We could prevent this by
+            // putting a stream id in the link.
+            blueslip.warn('Stream no longer exists: ' + stream_name);
+            failure();
+            return;
+        }
+
+        subs.invite_user_to_stream(email, sub, success, failure);
     });
 
     $("#compose_invite_users").on('click', '.compose_invite_close', function (event) {

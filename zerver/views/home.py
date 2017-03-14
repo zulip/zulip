@@ -204,6 +204,7 @@ def home_real(request):
         login_page            = settings.HOME_NOT_LOGGED_IN,
         server_uri            = settings.SERVER_URI,
         maxfilesize           = settings.MAX_FILE_UPLOAD_SIZE,
+        max_avatar_file_size  = settings.MAX_AVATAR_FILE_SIZE,
         server_generation     = settings.SERVER_GENERATION,
         use_websockets        = settings.USE_WEBSOCKETS,
         save_stacktraces      = settings.SAVE_FRONTEND_STACKTRACES,
@@ -212,10 +213,7 @@ def home_real(request):
         # TODO: Move all of these data to register_ret and pull from there
         realm_uri             = user_profile.realm.uri,
         password_auth_enabled = password_auth_enabled(user_profile.realm),
-        domain                = user_profile.realm.domain,
         domains               = list_of_domains_for_realm(user_profile.realm),
-        realm_icon_url        = realm_icon_url(user_profile.realm),
-        realm_icon_source     = user_profile.realm.icon_source,
         name_changes_disabled = name_changes_disabled(user_profile.realm),
         mandatory_topics      = user_profile.realm.mandatory_topics,
         show_digest_email     = user_profile.realm.show_digest_email,
@@ -286,15 +284,19 @@ def home_real(request):
         'emoji_alt_code',
         'last_event_id',
         'left_side_userlist',
+        'max_icon_file_size',
         'max_message_id',
         'muted_topics',
         'realm_add_emoji_by_admins_only',
         'realm_allow_message_editing',
         'realm_authentication_methods',
+        'realm_bot_domain',
         'realm_create_stream_by_admins_only',
         'realm_default_language',
         'realm_default_streams',
         'realm_emoji',
+        'realm_icon_source',
+        'realm_icon_url',
         'realm_message_content_edit_limit_seconds',
         'realm_name',
         'realm_invite_by_admins_only',
@@ -332,8 +334,6 @@ def home_real(request):
     if user_profile.realm.invite_by_admins_only and not user_profile.is_realm_admin:
         show_invites = False
 
-    product_name = "Zulip"
-    page_params['product_name'] = product_name
     request._log_data['extra'] = "[%s]" % (register_ret["queue_id"],)
     response = render_to_response('zerver/index.html',
                                   {'user_profile': user_profile,
@@ -348,7 +348,6 @@ def home_real(request):
                                    'show_webathena': user_profile.realm.webathena_enabled,
                                    'enable_feedback': settings.ENABLE_FEEDBACK,
                                    'embedded': narrow_stream is not None,
-                                   'product_name': product_name
                                    },
                                   request=request)
     patch_cache_control(response, no_cache=True, no_store=True, must_revalidate=True)

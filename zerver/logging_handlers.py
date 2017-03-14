@@ -38,12 +38,17 @@ class AdminZulipHandler(logging.Handler):
                 stack_trace = None
 
             try:
+                from django.contrib.auth.models import AnonymousUser
                 user_profile = request.user
-                user_full_name = user_profile.full_name
-                user_email = user_profile.email
+                if isinstance(user_profile, AnonymousUser):
+                    user_full_name = None
+                    user_email = None
+                else:
+                    user_full_name = user_profile.full_name
+                    user_email = user_profile.email
             except Exception:
+                # Unexpected exceptions here should be handled gracefully
                 traceback.print_exc()
-                # Error was triggered by an anonymous user.
                 user_full_name = None
                 user_email = None
 
