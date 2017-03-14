@@ -110,6 +110,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('airbrake'),
     WebhookIntegration('appfollow', display_name='AppFollow'),
     WebhookIntegration('beanstalk'),
+    WebhookIntegration('basecamp'),
     WebhookIntegration('bitbucket2', logo='static/images/integrations/logos/bitbucket.png', display_name='Bitbucket'),
     WebhookIntegration('bitbucket', secondary_line_text='(Enterprise)'),
     WebhookIntegration('circleci', display_name='CircleCI'),
