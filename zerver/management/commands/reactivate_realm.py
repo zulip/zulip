@@ -17,7 +17,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         # type: (ArgumentParser) -> None
         parser.add_argument('string_id', metavar='<string_id>', type=str,
-                            help='domain of realm to reactivate')
+                            help='subdomain or string_id of realm to reactivate')
 
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None

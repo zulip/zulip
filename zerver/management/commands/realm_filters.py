@@ -12,7 +12,7 @@ from zerver.lib.actions import do_add_realm_filter, do_remove_realm_filter
 import sys
 
 class Command(BaseCommand):
-    help = """Create a link filter rule for the specified domain.
+    help = """Create a link filter rule for the specified realm.
 
 NOTE: Regexes must be simple enough that they can be easily translated to JavaScript
       RegExp syntax. In addition to JS-compatible syntax, the following features are available:

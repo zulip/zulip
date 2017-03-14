@@ -16,7 +16,7 @@ class Command(BaseCommand):
     help = """Set default streams for a realm
 
 Users created under this realm will start out with these streams. This
-command is not additive: if you re-run it on a domain with a different
+command is not additive: if you re-run it on a realm with a different
 set of default streams, those will be the new complete set of default
 streams.
 

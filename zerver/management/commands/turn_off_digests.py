@@ -18,7 +18,7 @@ class Command(BaseCommand):
         parser.add_argument('-r', '--realm',
                             dest='string_id',
                             type=str,
-                            help='Turn off digests for all users in this domain.')
+                            help='Turn off digests for all users in this realm.')
 
         parser.add_argument('-u', '--users',
                             dest='users',
