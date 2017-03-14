@@ -339,7 +339,7 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
     # Missed-message emails should not be sent for deleted messages
     # Fixes: #3873
     messages = [um for um in messages if um.message != "(deleted)"]
-    
+
     if not messages:
         return
 
