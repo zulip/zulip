@@ -216,6 +216,29 @@ class ChangeSettingsTest(ZulipTestCase):
         user_profile = get_user_profile_by_email(email)
         self.assertNotEqual(user_profile.default_language, invalid_lang)
 
+    def test_change_timezone(self):
+        # type: () -> None
+        """
+        Test changing the timezone of the user.
+        """
+        email = "hamlet@zulip.com"
+        self.login(email)
+        usa_pacific = 'US/Pacific'
+        data = dict(timezone=ujson.dumps(usa_pacific))
+        result = self.client_patch("/json/settings/display", data)
+        self.assert_json_success(result)
+        user_profile = get_user_profile_by_email(email)
+        self.assertEqual(user_profile.timezone, usa_pacific)
+
+        # Test to make sure invalid timezones are not accepted
+        # and saved in the db.
+        invalid_timezone = "invalid_timezone"
+        data = dict(timezone=ujson.dumps(invalid_timezone))
+        result = self.client_patch("/json/settings/display", data)
+        self.assert_json_error(result, "Invalid timezone '%s'" % (invalid_timezone,))
+        user_profile = get_user_profile_by_email(email)
+        self.assertNotEqual(user_profile.timezone, invalid_timezone)
+
 class UserChangesTest(ZulipTestCase):
     def test_update_api_key(self):
         # type: () -> None
