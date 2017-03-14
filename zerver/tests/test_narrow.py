@@ -487,21 +487,22 @@ class GetOldMessagesTest(ZulipTestCase):
             assert isinstance(dr, list)
             return ','.join(sorted(set([r['email'] for r in dr] + [me])))
 
+        self.send_message(me, 'iago@zulip.com', Recipient.PERSONAL)
+        self.send_message(me,
+                          ['iago@zulip.com', 'cordelia@zulip.com'],
+                          Recipient.HUDDLE)
         personals = [m for m in get_user_messages(get_user_profile_by_email(me))
                      if m.recipient.type == Recipient.PERSONAL or
                      m.recipient.type == Recipient.HUDDLE]
-        if not personals:
-            # FIXME: This is bad.  We should use test data that is guaranteed
-            # to contain some personals for every user.  See #617.
-            return
-        emails = dr_emails(get_display_recipient(personals[0].recipient))
+        for personal in personals:
+            emails = dr_emails(get_display_recipient(personal.recipient))
 
-        self.login(me)
-        narrow = [dict(operator='pm-with', operand=emails)]
-        result = self.get_and_check_messages(dict(narrow=ujson.dumps(narrow)))
+            self.login(me)
+            narrow = [dict(operator='pm-with', operand=emails)]
+            result = self.get_and_check_messages(dict(narrow=ujson.dumps(narrow)))
 
-        for message in result["messages"]:
-            self.assertEqual(dr_emails(message['display_recipient']), emails)
+            for message in result["messages"]:
+                self.assertEqual(dr_emails(message['display_recipient']), emails)
 
     def test_get_old_messages_with_narrow_stream(self):
         # type: () -> None
