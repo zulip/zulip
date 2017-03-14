@@ -283,7 +283,7 @@ class ZulipTestCase(TestCase):
                      content=u"test content", subject=u"test", **kwargs):
         # type: (Text, Union[Text, List[Text]], int, Text, Text, **Any) -> int
         sender = get_user_profile_by_email(sender_name)
-        if message_type == Recipient.PERSONAL:
+        if message_type in [Recipient.PERSONAL, Recipient.HUDDLE]:
             message_type_name = "private"
         else:
             message_type_name = "stream"
