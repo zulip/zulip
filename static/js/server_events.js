@@ -64,6 +64,9 @@ function dispatch_normal_event(event) {
             if (!page_params.is_admin) {
                 page_params.can_create_streams = !page_params.realm_create_stream_by_admins_only;
             }
+        } else if (event.op === 'update' && event.property === 'name_changes_disabled') {
+            page_params.realm_name_changes_disabled = event.value;
+            admin.toggle_name_change_display();
         } else if (event.op === 'update' && event.property === 'email_changes_disabled') {
             page_params.realm_email_changes_disabled = event.value;
             admin.toggle_email_change_display();

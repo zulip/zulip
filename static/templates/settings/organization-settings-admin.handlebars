@@ -11,6 +11,7 @@
     <div class="alert" id="admin-realm-message-editing-status"></div>
     <div class="alert" id="admin-realm-default-language-status"></div>
     <div class="alert" id="admin-realm-waiting_period_threshold_status"></div>
+    <div class="alert" id="admin-realm-name-changes-disabled-status"></div>
     <div class="alert" id="admin-realm-email-changes-disabled-status"></div>
 
     <div class="m-10 inline-block grid organization-settings-parent">
@@ -57,6 +58,17 @@
         id="id_realm_create_stream_by_admins_only_label"
         title="{{t 'If checked, only administrators may create new streams.' }}">
         {{t "Only admins may create streams" }}
+      </label>
+    </div>
+    <div class="input-group">
+      <input type="checkbox" class="inline-block" id="id_realm_name_changes_disabled"
+             name="realm_name_changes_disabled"
+        {{#if realm_name_changes_disabled}}checked="checked"{{/if}} />
+
+      <label for="id_realm_name_changes_disabled" class="inline-block"
+        id="id_realm_name_changes_disabled_label" style="width:initial"
+        title="{{t 'If checked, users will be unable to change their name.' }}">
+        {{t "Prevent users from changing their name" }}
       </label>
     </div>
     <div class="input-group">
