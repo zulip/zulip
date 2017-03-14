@@ -8,7 +8,6 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand, CommandParser
 from zerver.lib.actions import Realm, do_create_realm, set_default_streams
-from zerver.lib.domains import validate_domain
 from zerver.models import RealmAlias, can_add_alias, get_realm
 
 import re
@@ -21,11 +20,6 @@ Usage: ./manage.py create_realm --string_id=acme --name='Acme'"""
 
     def add_arguments(self, parser):
         # type: (CommandParser) -> None
-        parser.add_argument('-d', '--domain',
-                            dest='domain',
-                            type=str,
-                            help='The domain for the realm.')
-
         parser.add_argument('-s', '--string_id',
                             dest='string_id',
                             type=str,
@@ -55,18 +49,11 @@ Usage: ./manage.py create_realm --string_id=acme --name='Acme'"""
         # type: (*Any, **Any) -> None
         string_id = options["string_id"]
         name = options["name"]
-        domain = options["domain"].lower()
 
         if not name or not string_id:
             print("\033[1;31mPlease provide a name and string_id.\033[0m\n", file=sys.stderr)
             self.print_help("./manage.py", "create_realm")
             exit(1)
-
-        try:
-            validate_domain(domain)
-        except ValidationError as e:
-            print(e.messages[0])
-            sys.exit(1)
 
         if get_realm(string_id) is not None:
             raise ValueError("string_id taken. Please choose another one.")
@@ -74,9 +61,6 @@ Usage: ./manage.py create_realm --string_id=acme --name='Acme'"""
         realm, created = do_create_realm(string_id, name, org_type=options["org_type"])
         if created:
             print(string_id, "created.")
-            if domain:
-                RealmAlias.objects.create(realm=realm, domain=domain)
-                print("RealmAlias %s created for realm %s" % (domain, string_id))
             stream_dict = {
                 "social": {"description": "For socializing", "invite_only": False},
                 "engineering": {"description": "For engineering", "invite_only": False}
