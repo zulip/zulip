@@ -21,8 +21,8 @@ def get_realm_expired_messages(realm):
 def get_expired_messages():
     # type: () -> Generator[Any, None, None]
     # Get all expired messages by Realm.
-    realms = Realm.objects.order_by('domain').filter(deactivated=False,
-                                                     message_retention_days__isnull=False)
+    realms = Realm.objects.order_by('string_id').filter(
+        deactivated=False, message_retention_days__isnull=False)
     for realm in realms:
         realm_expired_messages = get_realm_expired_messages(realm)
         if realm_expired_messages:
