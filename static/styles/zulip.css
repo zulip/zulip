@@ -236,7 +236,7 @@ input {
 
 textarea,
 label {
-    font-size:   inherit;
+    font-size: inherit;
     line-height: inherit;
 }
 
@@ -258,7 +258,7 @@ input[type="tel"],
 input[type="color"]
 {
     font-size: inherit;
-    height:    1.4em;
+    height: 1.4em;
 }
 
 li,
@@ -268,8 +268,8 @@ li,
 }
 
 .btn {
-    font-size:  inherit;
-    height:     auto;
+    font-size: inherit;
+    height: auto;
     line-height: 100%;
 }
 
@@ -397,12 +397,12 @@ pre code {
 /* Style inline code inside a link
    to look more like a normal link */
 a code {
-    color:        #08C;
+    color: #08C;
     border-color: #08C;
 }
 
 a:hover code {
-    color:        #005580;
+    color: #005580;
     border-color: #005580;
 }
 
@@ -597,13 +597,13 @@ td.pointer {
 
 .message_header {
     vertical-align: middle;
-    text-align:     left;
+    text-align: left;
     /* We can overflow-y if the font size gets big */
-    overflow:       hidden;
-    text-overflow:  ellipsis;
-    white-space:    nowrap;
-    font-weight:    600;
-    line-height:    14px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 600;
+    line-height: 14px;
     position: relative;
     z-index: 0;
 }
@@ -666,7 +666,7 @@ td.pointer {
    top: 50%;
    content: " ";
    height: 0px;
-   width:  0px;
+   width: 0px;
    position: absolute;
    pointer-events: none;
    margin-top: -14px;
@@ -799,8 +799,8 @@ just a temporary hack.
 }
 
 @keyframes rotate {
-    from { transform:rotate(0deg); }
-    to { transform:rotate(359deg); }
+    from { transform: rotate(0deg); }
+    to { transform: rotate(359deg); }
 }
 
 .messagebox-bottom {
@@ -1275,7 +1275,7 @@ blockquote {
 
 blockquote p {
     line-height: inherit;
-    font-size:   inherit;
+    font-size: inherit;
 }
 
 .messagebox {
@@ -1411,7 +1411,7 @@ blockquote p {
    top: 50%;
    content: " ";
    height: 0px;
-   width:  0px;
+   width: 0px;
    position: absolute;
    pointer-events: none;
    margin-top: -25px;
@@ -1427,7 +1427,7 @@ blockquote p {
    top: 50%;
    content: " ";
    height: 0px;
-   width:  0px;
+   width: 0px;
    position: absolute;
    pointer-events: none;
    margin-top: -28px;
@@ -1827,7 +1827,7 @@ div.floating_recipient {
     /* If you change these, make sure to adjust the constants in
      * loading.make_indicator as well */
     margin-left: 20px;
-    font-size:   1.2em;
+    font-size: 1.2em;
     font-weight: 300;
     line-height: 38px;
 }
@@ -1912,7 +1912,7 @@ div.floating_recipient {
     text-overflow: ellipsis;
     text-align: center;
 
-    font-size:   inherit;
+    font-size: inherit;
     line-height: inherit;
 }
 
@@ -1925,7 +1925,7 @@ div.floating_recipient {
 }
 
 .popover hr {
-    margin-top:    5px;
+    margin-top: 5px;
     margin-bottom: 5px;
 }
 
@@ -2215,7 +2215,7 @@ button.topic_edit_cancel {
 }
 
 .star:hover {
-    cursor:  pointer;
+    cursor: pointer;
     color: #0d7245;
 }
 

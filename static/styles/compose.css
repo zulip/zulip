@@ -229,19 +229,19 @@ table.compose_table {
 
 /* Like .alert .close */
 .send-status-close {
-    font-size:   17px;
+    font-size: 17px;
     font-weight: bold;
-    color:       black;
+    color: black;
     text-shadow: 0 1px 0 white;
-    opacity:     .2;
-    filter:      alpha(opacity=20);
-    float:       right;
+    opacity: .2;
+    filter: alpha(opacity=20);
+    float: right;
 }
 
 .send-status-close:hover {
-    cursor:  pointer;
+    cursor: pointer;
     opacity: .4;
-    filter:  alpha(opacity=40);
+    filter: alpha(opacity=40);
 }
 
 #out-of-view-notification {
@@ -274,12 +274,12 @@ table.compose_table {
     position: absolute;
     right: 5px;
     top: 5px;
-    font-size:   17px;
+    font-size: 17px;
     font-weight: bold;
-    color:       black;
+    color: black;
     text-shadow: 0 1px 0 white;
-    opacity:     .2;
-    filter:      alpha(opacity=20);
+    opacity: .2;
+    filter: alpha(opacity=20);
 }
 
 textarea.new_message_textarea {
