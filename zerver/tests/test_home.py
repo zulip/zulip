@@ -124,6 +124,7 @@ class HomeTest(ZulipTestCase):
             "stream_sounds_enabled",
             "subbed_info",
             "test_suite",
+            "timezone",
             "twenty_four_hour_time",
             "unread_count",
             "unsubbed_info",

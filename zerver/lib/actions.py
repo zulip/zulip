@@ -2359,6 +2359,18 @@ def do_change_default_language(user_profile, setting_value, log=True):
         log_event(event)
     send_event(event, [user_profile.id])
 
+def do_change_timezone(user_profile, setting_value, log=True):
+    # type: (UserProfile, Text, bool) -> None
+    user_profile.timezone = setting_value
+    user_profile.save(update_fields=['timezone'])
+    event = {'type': 'update_display_settings',
+             'user': user_profile.email,
+             'setting_name': 'timezone',
+             'setting': setting_value}
+    if log:
+        log_event(event)
+    send_event(event, [user_profile.id])
+
 def set_default_streams(realm, stream_dict):
     # type: (Realm, Dict[Text, Dict[Text, Any]]) -> None
     DefaultStream.objects.filter(realm=realm).delete()
