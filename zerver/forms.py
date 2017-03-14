@@ -164,7 +164,7 @@ class LoggingSetPasswordForm(SetPasswordForm):
     def save(self, commit=True):
         # type: (bool) -> UserProfile
         do_change_password(self.user, self.cleaned_data['new_password1'],
-                           log=True, commit=commit)
+                           commit=commit)
         return self.user
 
 class ZulipPasswordResetForm(PasswordResetForm):
