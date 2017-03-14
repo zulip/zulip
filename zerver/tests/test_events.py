@@ -397,7 +397,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ('gravatar_hash', check_string),
                 ('id', check_int),
                 ('recipient_id', check_int),
-                ('sender_domain', check_string),
+                ('sender_realm_str', check_string),
                 ('sender_email', check_string),
                 ('sender_full_name', check_string),
                 ('sender_id', check_int),

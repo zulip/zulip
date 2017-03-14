@@ -1859,7 +1859,7 @@ class LogDictTest(ZulipTestCase):
         self.assertEqual(dct['content'], 'find me some good coffee shops')
         self.assertEqual(dct['id'], message.id)
         self.assertEqual(dct['recipient'], 'Denmark')
-        self.assertEqual(dct['sender_domain'], 'zulip.com')
+        self.assertEqual(dct['sender_realm_str'], 'zulip')
         self.assertEqual(dct['sender_email'], 'hamlet@zulip.com')
         self.assertEqual(dct['sender_full_name'], 'King Hamlet')
         self.assertEqual(dct['sender_id'], get_user_profile_by_email(email).id)
