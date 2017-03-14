@@ -7,8 +7,10 @@ set_global('$', function () {
         keypress: function () {},
     };
 });
+
 set_global('document', {
 });
+
 var hotkey = require('js/hotkey.js');
 
 set_global('current_msg_list', {
@@ -152,4 +154,68 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('s', 'narrow.by_recipient');
     assert_mapping('S', 'narrow.by_subject');
     assert_mapping('i', 'popovers.open_message_menu');
+}());
+
+(function test_motion_keys() {
+    var codes = {
+        down_arrow: 40,
+        end: 35,
+        home: 36,
+        left_arrow: 37,
+        page_up: 33,
+        page_down: 34,
+        spacebar: 32,
+        up_arrow: 38,
+    };
+
+    function process(name) {
+        var e = {
+            which: codes[name],
+        };
+        return hotkey.process_keydown(e);
+    }
+
+    function assert_unmapped(name) {
+        assert.equal(process(name), false);
+    }
+
+    function assert_mapping(key_name, func_name) {
+        stubbing(func_name, function () {
+            assert(process(key_name));
+        });
+    }
+
+    hotkey.tab_up_down = function () { return {flag: false}; };
+    global.current_msg_list.empty = return_true;
+    hotkey.is_settings_page = return_false;
+
+    assert_unmapped('down_arrow');
+    assert_unmapped('end');
+    assert_unmapped('home');
+    assert_unmapped('page_up');
+    assert_unmapped('page_down');
+    assert_unmapped('spacebar');
+    assert_unmapped('up_arrow');
+
+    global.current_msg_list.empty = return_false;
+    assert_mapping('down_arrow', 'navigate.down');
+    assert_mapping('end', 'navigate.to_end');
+    assert_mapping('home', 'navigate.to_home');
+    assert_mapping('left_arrow', 'message_edit.edit_last_sent_message');
+    assert_mapping('page_up', 'navigate.page_up');
+    assert_mapping('page_down', 'navigate.page_down');
+    assert_mapping('spacebar', 'navigate.page_down');
+    assert_mapping('up_arrow', 'navigate.up');
+
+    hotkey.is_settings_page = return_true;
+    assert_unmapped('end');
+    assert_unmapped('home');
+    assert_unmapped('left_arrow');
+    assert_unmapped('page_up');
+    assert_unmapped('page_down');
+    assert_unmapped('spacebar');
+
+    hotkey.is_editing_stream_name = return_true;
+    assert_unmapped('down_arrow');
+    assert_unmapped('up_arrow');
 }());
