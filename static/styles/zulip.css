@@ -1934,6 +1934,55 @@ div.floating_recipient {
     max-width: 200px;
 }
 
+a.tooltips {
+    position: relative;
+    display: inline;
+}
+
+a.tooltips span {
+    font-size: 12px;
+    padding: 2px 8px;
+    position: absolute;
+    min-width: 50px;
+    color: #FFFFFF;
+    background: #52C2AF;
+    height: 20px;
+    line-height: 20px;
+    text-align: center;
+    visibility: hidden;
+    border-radius: 6px;
+}
+
+a.tooltips span:after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -6px;
+    width: 0;
+    height: 0;
+    border-top: 6px solid #52C2AF;
+    border-right: 6px solid transparent;
+    border-left: 6px solid transparent;
+}
+
+a:active.tooltips {
+    pointer-events: none;
+}
+
+a:hover.tooltips {
+    text-decoration: none;
+}
+
+a:hover.tooltips span {
+    visibility: visible;
+    opacity: 1;
+    bottom: 22px;
+    left: 50%;
+    margin-left: -33px;
+    z-index: 999;
+}
+
 .hotkeys_table {
     width: 245px;
     margin-right: 10px;

@@ -82,17 +82,6 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
-.markdown h1[id]:before,
-.markdown h2[id]:before,
-.markdown h3[id]:before,
-.markdown h4[id]:before {
-    display: block;
-    content: " ";
-    margin-top: -40px;
-    height: 40px;
-    visibility: hidden;
-}
-
 .markdown ul,
 .markdown ol {
     margin-left: 30px;
@@ -366,6 +355,58 @@ label.text-error {
 input.text-error {
     border-color: red;
     outline-color: red;
+}
+
+a.tooltips span>code {
+    font-weight: normal;
+}
+
+a.tooltips {
+    position: relative;
+    display: inline;
+}
+
+a:active.tooltips {
+    pointer-events: none;
+}
+
+a.tooltips span {
+    padding: 5px 4px;
+    position: absolute;
+    min-width: 120px;
+    color: #FFFFFF;
+    background: #52C2AF;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    visibility: hidden;
+    border-radius: 6px;
+}
+
+a.tooltips span:after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -8px;
+    width: 0;
+    height: 0;
+    border-top: 8px solid #52C2AF;
+    border-right: 8px solid transparent;
+    border-left: 8px solid transparent;
+}
+
+a:hover.tooltips {
+    text-decoration: none;
+}
+
+a:hover.tooltips span {
+    visibility: visible;
+    opacity: 1;
+    bottom: 30px;
+    left: 50%;
+    margin-left: -65px;
+    z-index: 999;
 }
 
 .header, .footer {
