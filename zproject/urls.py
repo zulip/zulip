@@ -125,7 +125,7 @@ i18n_urls = [
     url(r'^register/$', zerver.views.registration.accounts_home, name='register'),
     url(r'^login/$', zerver.views.auth.login_page, {'template_name': 'zerver/login.html'}, name='zerver.views.auth.login_page'),
 
-    # A registration page that passes through the domain, for totally open realms.
+    # A registration page that passes through the Realm.string_id, for totally open realms.
     url(r'^register/(?P<realm_str>\S+)/$', zerver.views.registration.accounts_home_with_realm_str,
         name='zerver.views.registration.accounts_home_with_realm_str'),
 
