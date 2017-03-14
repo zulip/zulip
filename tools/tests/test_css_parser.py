@@ -62,9 +62,13 @@ class ParserTestHappyPath(unittest.TestCase):
             p { color: red }
         '''
 
+        reformatted_css = '''
+            p { color: red ;}
+        '''
+
         res = parse(my_css)
 
-        self.assertEqual(res.text(), my_css)
+        self.assertEqual(res.text(), reformatted_css)
 
         section = cast(CssSection, res.sections[0])
 
