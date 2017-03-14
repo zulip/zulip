@@ -1042,7 +1042,7 @@ a.message_label_clickable {
     color: #444;
 }
 
-a.narrows_by_subject {
+.narrows_by_subject {
     padding-left: 4px;
 }
 

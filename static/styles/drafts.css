@@ -48,7 +48,7 @@
     overflow: auto;
     height: calc(100% - 55px);
     width: 100%;
-    margin-top: 10px;
+    margin-top: 5px;
 }
 
 .drafts-list .no-drafts {
@@ -62,7 +62,7 @@
 }
 
 .draft-row {
-    padding: 5px 10px;
+    padding: 5px 0px;
 }
 
 .draft-row.active {
@@ -76,10 +76,8 @@
 
 .draft-row .draft-info-box {
     width: 100%;
-    background: #f1f1f1;
-    border-bottom: 1px solid #e2e2e2;
-    border-top: 1px solid #e2e2e2;
-    margin-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    padding: 5px 0px;
 }
 
 .draft-info-box .messagebox {
@@ -89,14 +87,14 @@
 .draft-info-box .message_content {
     line-height: 1;
     padding-top: 10px;
-    padding-bottom: 10px;
+    padding-bottom: 5px;
     padding-left: 0px;
 }
 
 .draft-row .draft-info-box .draft_controls {
     display: inline-block;
     position: absolute;
-    top: 9px;
+    top: -33px;
     right: -80px;
     font-size: 0.9em;
 }
