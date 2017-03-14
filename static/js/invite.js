@@ -46,10 +46,8 @@ exports.initialize = function () {
     var invitee_emails_group = invitee_emails.closest('.control-group');
 
     $('#submit-invitation').button();
-    $('#invite-user').on('show', prepare_form_to_be_shown);
-    $('#invite-user').on('shown', function () {
-        invitee_emails.focus().autosize();
-    });
+    prepare_form_to_be_shown();
+    invitee_emails.focus().autosize();
 
     $("#invite_user_form").ajaxForm({
         dataType: 'json',
@@ -115,6 +113,10 @@ exports.initialize = function () {
         },
     });
 
+    $("#invite-user").addClass("show");
+};
+
+$(function () {
     $(document).on('click', '.invite_check_all_button', function (e) {
         $('#streams_to_add :checkbox').prop('checked', true);
         e.preventDefault();
@@ -124,7 +126,7 @@ exports.initialize = function () {
         $('#streams_to_add :checkbox').prop('checked', false);
         e.preventDefault();
     });
-};
+});
 
 return exports;
 

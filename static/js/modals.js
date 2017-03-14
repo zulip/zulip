@@ -23,6 +23,10 @@ var modals = (function () {
                 $(".player-container iframe").remove();
                 document.activeElement.blur();
             },
+
+            invite: function () {
+                hashchange.exit_modal();
+            },
         },
 
         close_modal: function (name) {
