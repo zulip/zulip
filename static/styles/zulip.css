@@ -364,6 +364,11 @@ pre {
     /* Bootstrap's default here is top: 0px, bottom: 10px */
     margin-top: 5px;
     margin-bottom: 5px;
+    /* Bootstrap's default here is 9.5 on all sides */
+    padding-top: 5px;
+    padding-bottom: 3px;
+    padding-left: 7px;
+    padding-right: 7px;
 }
 
 /* Ensure the horizontal scrollbar is visible on Mac */
