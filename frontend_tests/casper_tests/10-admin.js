@@ -224,7 +224,7 @@ casper.then(function () {
     casper.click("li[data-section='organization-settings']");
     casper.click("#realm_icon_delete_button");
     casper.test.assertEqual(casper.visible('#realm_icon_delete_button'), true);
-    casper.waitWhileVisible("#upload_icon_spinner .loading_indicator_spinner", function () {
+    casper.waitWhileVisible('#realm_icon_delete_button', function () {
         casper.test.assertExists('img#realm-settings-icon[src^="https://secure.gravatar.com/avatar/"]');
         casper.test.assertEqual(casper.visible('#realm_icon_delete_button'), false);
     });
