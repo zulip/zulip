@@ -524,19 +524,13 @@ exports.process_hotkey = function (e, hotkey) {
         case 'page_up':
         case 'vim_page_up':
         case 'shift_spacebar':
-            if (!exports.is_settings_page()) {
-                navigate.page_up();
-                return true;
-            }
-            break;
+            navigate.page_up();
+            return true;
         case 'page_down':
         case 'vim_page_down':
         case 'spacebar':
-            if (!exports.is_settings_page()) {
-                navigate.page_down();
-                return true;
-            }
-            break;
+            navigate.page_down();
+            return true;
     }
 
     // Shortcuts that operate on a message
