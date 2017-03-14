@@ -15,6 +15,11 @@ appear.
 
 3. Enter your message in the **Compose your message here...** field.
 
+    !!! tip ""
+        Whether or not the **Press Enter to send** option is enabled, pressing
+        `Ctrl` + `Enter` or `Tab` then `Enter` sends a message while pressing
+        `Shift` + `Enter` inserts a new line in your message.
+
 4. Once you have finished completing your message and adding the recipients,
 you can now send your message to the specified user(s) by pressing the Enter
 key or clicking the **Send** button, depending on your settings.
