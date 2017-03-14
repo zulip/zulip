@@ -89,7 +89,7 @@ var keypress_mappings = {
     119: {name: 'query_streams', message_view_only: false}, // 'w'
 };
 
-var tab_up_down = (function () {
+exports.tab_up_down = (function () {
     var list = ["#group-pm-list", "#stream_filters", "#global_filters", "#user_presences"];
 
     return function (e) {
@@ -339,7 +339,7 @@ exports.process_hotkey = function (e, hotkey) {
     var tab_list;
 
     if (event_name === "up_arrow") {
-        tab_list = tab_up_down(e);
+        tab_list = exports.tab_up_down(e);
         if (tab_list.flag) {
             tab_list.prev().focus();
             return true;
@@ -347,7 +347,7 @@ exports.process_hotkey = function (e, hotkey) {
     }
 
     if (event_name === "down_arrow") {
-        tab_list = tab_up_down(e);
+        tab_list = exports.tab_up_down(e);
         if (tab_list.flag) {
             tab_list.next().focus();
             return true;
