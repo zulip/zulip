@@ -18,7 +18,3 @@ you can spell your name exactly how you'd like it to be displayed.
 {!save-changes.md!} account settings.
 
 Congratulations! You have updated your name.
-
-!!! tip ""
-    Note that your old messages will still have the previous version of your
-    name.
