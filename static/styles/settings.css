@@ -766,10 +766,12 @@ input[type=checkbox].inline-block {
     background-color: #fff;
     border-left: 1px solid #ddd;
 
+    pointer-events: none;
     transition: all 0.3s ease;
 }
 
 #settings_page .form-sidebar.show {
+    pointer-events: auto;
     transform: translateX(0px);
 }
 
