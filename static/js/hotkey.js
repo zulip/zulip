@@ -308,22 +308,75 @@ exports.process_enter_key = function (e) {
     return true;
 };
 
+exports.process_tab_key = function () {
+    // Returns true if we handled it, false if the browser should.
+    // TODO: See if browsers like Safari can now handle tabbing correctly
+    // without our intervention.
+
+    var message_edit_form;
+
+    var focused_message_edit_content = $(".message_edit_content").filter(":focus");
+    if (focused_message_edit_content.length > 0) {
+        message_edit_form = focused_message_edit_content.closest(".message_edit_form");
+        message_edit_form.find(".message_edit_save").focus();
+        return true;
+    }
+
+    var focused_message_edit_save = $(".message_edit_save").filter(":focus");
+    if (focused_message_edit_save.length > 0) {
+        message_edit_form = focused_message_edit_save.closest(".message_edit_form");
+        message_edit_form.find(".message_edit_cancel").focus();
+        return true;
+    }
+
+    return false;
+};
+
+exports.process_shift_tab_key = function () {
+    // Returns true if we handled it, false if the browser should.
+    // TODO: See if browsers like Safari can now handle tabbing correctly
+    // without our intervention.
+
+    if ($('#compose-send-button').is(':focus')) {
+        // Shift-Tab: go back to content textarea and restore
+        // cursor position.
+        ui.restore_compose_cursor();
+        return true;
+    }
+
+    // Shift-tabbing from the edit message cancel button takes you to save.
+    if ($(".message_edit_cancel").filter(":focus").length > 0) {
+        $(".message_edit_save").focus();
+        return true;
+    }
+
+    // Shift-tabbing from the edit message save button takes you to the content.
+    var focused_message_edit_save = $(".message_edit_save").filter(":focus");
+    if (focused_message_edit_save.length > 0) {
+        focused_message_edit_save.closest(".message_edit_form")
+                                 .find(".message_edit_content").focus();
+        return true;
+    }
+
+    return false;
+};
+
 // Process a keydown or keypress event.
 //
 // Returns true if we handled it, false if the browser should.
 exports.process_hotkey = function (e, hotkey) {
-    var alert_words_content;
-    var focused_message_edit_content;
-    var focused_message_edit_save;
-    var message_edit_form;
     var event_name = hotkey.name;
 
-    if (event_name === 'escape') {
-        return exports.process_escape_key(e);
-    }
-
-    if (event_name === 'enter') {
-        return exports.process_enter_key(e);
+    // We handle the most complex keys in their own functions.
+    switch (event_name) {
+        case 'escape':
+            return exports.process_escape_key(e);
+        case 'enter':
+            return exports.process_enter_key(e);
+        case 'tab':
+            return exports.process_tab_key();
+        case 'shift_tab':
+            return exports.process_shift_tab_key();
     }
 
     if (hotkey.message_view_only && ui.home_tab_obscured()) {
@@ -365,55 +418,6 @@ exports.process_hotkey = function (e, hotkey) {
     if (event_name === 'backspace') {
         if ($('#compose-send-button').is(':focus')) {
             // Ignore backspace; don't navigate back a page.
-            return true;
-        }
-    }
-
-    if (event_name === 'shift_tab') {
-        if ($('#compose-send-button').is(':focus')) {
-            // Shift-Tab: go back to content textarea and restore
-            // cursor position.
-            ui.restore_compose_cursor();
-            return true;
-        }
-    }
-
-    // In Safari and the desktop app, we can't tab to buttons. Intercept the
-    // tab from the message edit content box to Save and then Cancel.
-    if (event_name === "tab") {
-        alert_words_content = $(".edit-alert-word").filter(":focus");
-        if (alert_words_content.length > 0) {
-            var add_word_li = alert_words_content.closest(".alert-word-item");
-            add_word_li.find(".add-alert-word").focus();
-            return true;
-        }
-
-        focused_message_edit_content = $(".message_edit_content").filter(":focus");
-        if (focused_message_edit_content.length > 0) {
-            message_edit_form = focused_message_edit_content.closest(".message_edit_form");
-            message_edit_form.find(".message_edit_save").focus();
-            return true;
-        }
-
-        focused_message_edit_save = $(".message_edit_save").filter(":focus");
-        if (focused_message_edit_save.length > 0) {
-            message_edit_form = focused_message_edit_save.closest(".message_edit_form");
-            message_edit_form.find(".message_edit_cancel").focus();
-            return true;
-        }
-    }
-    if (event_name === "shift_tab") {
-        // Shift-tabbing from the edit message cancel button takes you to save.
-        if ($(".message_edit_cancel").filter(":focus").length > 0) {
-            $(".message_edit_save").focus();
-            return true;
-        }
-
-        // Shift-tabbing from the edit message save button takes you to the content.
-        focused_message_edit_save = $(".message_edit_save").filter(":focus");
-        if (focused_message_edit_save.length > 0) {
-            focused_message_edit_save.closest(".message_edit_form")
-                                     .find(".message_edit_content").focus();
             return true;
         }
     }
