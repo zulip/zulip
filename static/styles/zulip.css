@@ -340,6 +340,7 @@ code {
 .message_content p code {
     white-space: pre-wrap;
     padding: 0px 4px;
+    background-color: #fff;
 }
 
 /* This ensures bulleted lists are nicely centered in 1-line messages */
@@ -356,8 +357,8 @@ code {
 pre {
     /* 12/14 em, so bootstrap's default 12 px,
        when body is the default 14 px */
-    font-size: 0.857em;
-    line-height: inherit;
+    font-size: 0.8em;
+    line-height: 1.5;
     white-space: pre;
     overflow-x: auto;
     word-wrap: normal;
