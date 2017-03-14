@@ -2110,6 +2110,27 @@ button.topic_edit_cancel {
     margin-bottom: 0px;
 }
 
+#invite-user {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+#invite-user .modal-header {
+    padding: 7px 15px;
+    border-color: #ddd;
+}
+
+#invite-user .modal-header .exit {
+    font-size: 1.5rem;
+    font-weight: 600;
+    background-color: transparent;
+    border: none;
+    position: absolute;
+    top: 6px;
+    right: 5px;
+    color: #aaa;
+}
+
 #invitee_emails {
     min-height: 40px;
     max-height: 300px;
@@ -2121,6 +2142,13 @@ button.topic_edit_cancel {
 
 #invite_status {
     display: none;
+}
+
+#invite-user #invite-user-label {
+    font-size: 1em;
+    font-weight: 700;
+    text-align: center;
+    text-transform: uppercase;
 }
 
 .settings-dropdown-caret {
