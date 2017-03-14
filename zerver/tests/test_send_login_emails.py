@@ -39,3 +39,12 @@ class SendLoginEmailTest(ZulipTestCase):
 
             for email in mail.outbox:
                 self.assertNotEqual(email.subject, 'A new login to your Zulip account.')
+
+    def test_without_path_info_dont_send_login_emails_for_new_user_registration_logins(self):
+        # type: () -> None
+        with self.settings(SEND_LOGIN_EMAILS=True):
+            self.client_post('/accounts/home/', {'email': "orange@zulip.com"})
+            self.submit_reg_form_for_user("orange@zulip.com", "orange", PATH_INFO='')
+
+            for email in mail.outbox:
+                self.assertNotEqual(email.subject, 'A new login to your Zulip account.')
