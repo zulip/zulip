@@ -652,7 +652,6 @@ def do_deactivate_stream(stream, log=True):
 
 def do_change_user_email(user_profile, new_email):
     # type: (UserProfile, Text) -> None
-    old_email = user_profile.email
     user_profile.email = new_email
     user_profile.save(update_fields=["email"])
 
@@ -660,10 +659,10 @@ def do_change_user_email(user_profile, new_email):
                    new_email=new_email)
     send_event(dict(type='realm_user', op='update', person=payload),
                active_user_ids(user_profile.realm))
-
-    log_event({'type': 'user_email_changed',
-               'old_email': old_email,
-               'new_email': new_email})
+    event_time = timezone.now()
+    RealmAuditLog.objects.create(realm=user_profile.realm, acting_user=user_profile,
+                                 modified_user=user_profile, event_type='user_email_changed',
+                                 event_time=event_time)
 
 def do_start_email_change_process(user_profile, new_email):
     # type: (UserProfile, Text) -> None
