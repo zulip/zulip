@@ -157,6 +157,7 @@ function timer_text(seconds_left) {
 
 function edit_message(row, raw_content) {
     row.find(".message_reactions").hide();
+    condense.hide_message_expander(row);
     var content_top = row.find('.message_content')[0]
         .getBoundingClientRect().top;
 
@@ -355,6 +356,7 @@ exports.end = function (row) {
     if (row !== undefined) {
         current_msg_list.hide_edit_topic(row);
     }
+    condense.show_message_expander(row);
     row.find(".message_reactions").show();
 };
 
