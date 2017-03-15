@@ -633,6 +633,24 @@ exports.respond_to_message = function (opts) {
     } else {
         msg_type = message.type;
     }
+    // for sending message from preview on clicking enter, if the checkbox is checked.
+    // if the checkbox is not checked, option to edit the message will be enabled.
+    if ($("#new_message_content")[0].style.display === "none") {
+        if (! $("#enter_sends").is(":checked")) {
+            $("#new_message_content").show();
+            $("#undo_markdown_preview").hide();
+            $("#preview_message_area").hide();
+            $("#markdown_preview").show();
+            $("#new_message_content").focus();
+        } else {
+            $("#new_message_content").show();
+            $("#undo_markdown_preview").hide();
+            $("#preview_message_area").hide();
+            $("#markdown_preview").show();
+            $("#compose-send-button").click();
+        }
+        return true;
+    }
     compose.start(msg_type, {stream: stream, subject: subject,
                              private_message_recipient: pm_recipient,
                              replying_to_message: message,
