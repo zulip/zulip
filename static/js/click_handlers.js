@@ -271,7 +271,6 @@ $(function () {
         e.preventDefault();
     });
 
-    // This is obsolete, I believe.
     $(".brand").on('click', function (e) {
         if (ui.home_tab_obscured()) {
             ui.change_tab_to('#home');
