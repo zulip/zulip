@@ -35,15 +35,30 @@ migrations.
   to use the batch update tools in `zerver/lib/migrate.py` (originally
   written to work with South) for doing larger database migrations.
 
-* **Accessing models in RunPython migrations**.  When writing a
-  migration that includes custom python code (aka `RunPython`), you
-  cannot just use `from zerver.models import UserProfile` to access
-  models; that would import the model as it is right now.  What you
-  want is to import a version of model "as of just before the
-  currently executing migration".  You can do this inside the relevant
-  migration function with `apps.get_model`.  We have a linter rule to
-  warn about this sort of issue, since it often manifests long after
-  the actual mistake.
+* **Accessing code and models in RunPython migrations**. When writing
+  a migration that includes custom python code (aka `RunPython`), you
+  almost never want to import code from `zerver` or anywhere else in
+  the codebase. If you imagine the process of upgrading a Zulip
+  server, it goes as follows: first a server admin checks out a recent
+  version of the code, and then runs any migrations that were added
+  between the last time they upgraded and the current check out. Note
+  that for each migration, this means the migration is run using the
+  code in the server admin's check out, and not the code that was there at the
+  time the migration was written. This can be a difference of
+  thousands of commits for installations that are only upgraded
+  occasionally. It is hard to reason about the effect of a code change
+  on a migration that imported it so long ago, so we recommend just
+  copying any code you're tempted to import into the migration file
+  directly, and have a linter rule enforcing this.
+
+  There is one special case where this doesn't work: you can't copy
+  the definition of a model (like `Realm`) into a migration, and you
+  can't import it from `zerver.models` for the reasons above. In this
+  situation you should use Django's `apps.get_model` to get access to
+  a model as it is at the time of a migration. Note that this will
+  work for doing something like `Realm.objects.filter(..)`, but
+  shouldn't be used for accessing `Realm.subdomain` or anything not
+  related to the Django ORM.
 
 * **Making large migrations work**.  Major migrations should have a
 few properties:
