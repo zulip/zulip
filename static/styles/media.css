@@ -43,16 +43,15 @@
 
     .header-main .column-right {
         display: inline-block;
-        width: 30px;
+        width: 107px;
     }
-
 
     #top_navbar.rightside-userlist .navbar-search {
         margin-right: 100px;
     }
 
-    #top_navbar.rightside-userlist #navbar-buttons {
-        margin-right: 41px;
+    #top_navbar.rightside-userlist .navbar-buttons {
+        margin-right: 0px;
     }
 
     .navbar-search {
@@ -81,6 +80,16 @@
 
     .nav .dropdown-menu:after {
         right: 10px;
+    }
+
+    .avatar-container .dropdown-menu {
+        right: 0px;
+        left: auto;
+    }
+
+    .avatar-container .dropdown-menu::after {
+        right: 5px;
+        left: auto;
     }
 
     .column-middle {
@@ -177,10 +186,6 @@
         margin-left: 7px;
     }
 
-    #searchbox {
-        margin-left: 42px;
-    }
-
     #top_navbar.rightside-userlist .navbar-search {
         margin-right: 127px;
     }
@@ -196,6 +201,18 @@
 }
 
 @media (max-width: 500px) {
+    .help-question {
+        line-height: 1.4;
+    }
+
+    .navbar-buttons {
+        margin: 1px 2px;
+    }
+
+    .header-main .column-right {
+        width: 95px;
+    }
+
     .stream-name {
         max-width: 120px;
         white-space: nowrap;
@@ -238,7 +255,7 @@
 
     #streamlist-toggle,
     #userlist-toggle,
-    #navbar-buttons,
+    .navbar-buttons,
     .navbar-search,
     #tab_bar,
     #searchbox,
@@ -257,8 +274,8 @@
         padding-bottom: 0px;
     }
 
-    #navbar-buttons ul.nav .dropdown-toggle,
-    #navbar-buttons ul.nav li.active .dropdown-toggle {
+    .navbar-buttons ul.nav .dropdown-toggle,
+    .navbar-buttons ul.nav li.active .dropdown-toggle {
         top: -5px;
     }
 

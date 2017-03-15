@@ -69,4 +69,5 @@ $(function () {
         };
     }
 
+    $("#navbar_avatar").css("background-image", "url(" + page_params.avatar_url + ")");
 });

@@ -100,6 +100,7 @@ var keypress_mappings = {
     99: {name: 'compose', message_view_only: true}, // 'c'
     100: {name: 'open_drafts', message_view_only: false}, // 'd'
     103: {name: 'gear_menu', message_view_only: true}, // 'g'
+    104: {name: 'help_menu', message_view_only: true}, // 'h'
     105: {name: 'message_actions', message_view_only: true}, // 'i'
     106: {name: 'vim_down', message_view_only: true}, // 'j'
     107: {name: 'vim_up', message_view_only: true}, // 'k'
@@ -577,6 +578,9 @@ exports.process_hotkey = function (e, hotkey) {
             return true;
         case 'gear_menu':
             gear_menu.open();
+            return true;
+        case 'help_menu':
+            gear_menu.open_help();
             return true;
         case 'show_shortcuts': // Show keyboard shortcuts page
             ui.maybe_show_keyboard_shortcuts();

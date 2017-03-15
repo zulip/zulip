@@ -11,12 +11,12 @@ var scroll_positions = {};
 exports.initialize = function () {
     i18n.ensure_i18n(admin.show_or_hide_menu_item);
 
-    $('#gear-menu a[data-toggle="tab"]').on('show', function (e) {
+    $('.gear-menu a[data-toggle="tab"]').on('show', function (e) {
         // Save the position of our old tab away, before we switch
         var old_tab = $(e.relatedTarget).attr('href');
         scroll_positions[old_tab] = message_viewport.scrollTop();
     });
-    $('#gear-menu a[data-toggle="tab"]').on('shown', function (e) {
+    $('.gear-menu a[data-toggle="tab"]').on('shown', function (e) {
         var target_tab = $(e.target).attr('href');
         resize.resize_bottom_whitespace();
         // Hide all our error messages when switching tabs
@@ -48,7 +48,12 @@ exports.initialize = function () {
 exports.open = function () {
     $("#settings-dropdown").click();
     // there are invisible li tabs, which should not be clicked.
-    $("#gear-menu").find("li:not(.invisible) a").eq(0).focus();
+    $(".avatar-container").find(".dropdown-menu li:not(.invisible) a").eq(0).focus();
+};
+
+exports.open_help = function () {
+    $("#questions-dropdown").click();
+    $(".questions").find(".dropdown-menu li:not(.invisible) a").eq(0).focus();
 };
 
 exports.is_open = function () {

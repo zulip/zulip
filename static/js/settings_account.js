@@ -219,6 +219,7 @@ exports.set_up = function () {
                 loading.destroy_indicator($("#upload_avatar_spinner"));
                 $("#user-settings-avatar").expectOne().attr("src", data.avatar_url);
                 $("#user_avatar_delete_button").show();
+                $("#navbar_avatar").css("background-image", "url(" + data.avatar_url + "1)");
             },
         });
 

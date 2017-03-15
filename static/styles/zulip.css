@@ -164,6 +164,36 @@ p.n-margin {
     cursor: pointer;
 }
 
+
+nav .avatar-container {
+    float: left;
+}
+
+nav .column-right #navbar_avatar {
+    width: 25px;
+    height: 25px;
+    margin-top: 2px;
+
+    background-color: #444;
+    border-radius: 4px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.1);
+
+    background-size: 100% 100%;
+    background-position: center center;
+    background-repeat: no-repeat;
+}
+
+#navbar_avatar:after {
+    content: "";
+    position: absolute;
+    bottom: -5px;
+    right: -3px;
+    width: 8px;
+    height: 8px;
+    border-radius: 9px;
+    border: 2px solid #fff;
+    background-color: #52c2af;
+}
 .header {
     position: fixed;
     z-index: 102; /* Needs to be higher than .alert-bar-container */
@@ -219,6 +249,10 @@ p.n-margin {
     position: absolute;
     right: 0px;
     top: 0px;
+}
+
+nav .column-right {
+    text-align: right;
 }
 
 .app-main .column-left .left-sidebar,
@@ -509,12 +543,17 @@ a:hover code {
     color: hsl(0, 0%, 20%);
 }
 
+li.actual-dropdown-menu {
+    height: 25px;
+}
+
 li.actual-dropdown-menu i {
     /* In gear menu, make icons the same width so labels line up. */
     display: inline-block;
     width: 14px;
     text-align: center;
     margin-right: 3px;
+    width: 18px;
 }
 
 .message_area_padder {
@@ -1495,7 +1534,7 @@ blockquote p {
     margin-right: 11px;
     vertical-align: top;
     border-radius: 4px;
-    overflow: hidden;
+    box-shadow: 0px 0px 5px rgba(0,0,0,0.15);
 }
 
 .home-error-bar {
@@ -1669,15 +1708,15 @@ blockquote p {
     z-index: 99;
 }
 
-#navbar-buttons {
-    white-space: nowrap;
-    margin-left: 15px;
-    margin-top: 7px;
+.navbar-buttons {
     display: inline-block;
-    float: right;
+    vertical-align: top;
+    cursor: pointer;
+    text-align: left;
+    margin: 6px;
 }
 
-#navbar-buttons ul.nav {
+.navbar-buttons ul.nav {
     margin: 0px;
 }
 
@@ -1724,13 +1763,18 @@ blockquote p {
 }
 
 .nav .dropdown-menu {
-    left: auto;
-    right: 0px;
-    top: 30px;
+    text-align: left;
+    left: 0px;
+    margin-top: 10px;
     min-width: 180px;
     -webkit-box-shadow: 0px 0px 5px hsla(0, 0%, 0%, 0.2);
     -moz-box-shadow: 0px 0px 5px hsla(0, 0%, 0%, 0.2);
     box-shadow: 0px 0px 5px hsla(0, 0%, 0%, 0.2);
+}
+
+.questions .nav .dropdown-menu {
+    right: 0;
+    left: auto;
 }
 
 .nav .dropdown-menu:after {
@@ -1738,7 +1782,8 @@ blockquote p {
     width: 0px;
     height: 0px;
     top: -7px;
-    right: 10px;
+    right: auto;
+    left: 4px;
     display: inline-block;
     border-right: 7px solid transparent;
     border-bottom: 7px solid hsl(0, 0%, 66%);
@@ -1747,8 +1792,17 @@ blockquote p {
     z-index: 10;
 }
 
-#navbar-buttons ul.nav .dropdown-toggle,
-#navbar-buttons ul.nav li.active .dropdown-toggle {
+.questions .nav .dropdown-menu:after {
+    right: 18px;
+    left: auto;
+}
+
+.dropdown-menu a {
+    padding: 3px 20px 3px 15px;
+}
+
+.navbar-buttons ul.nav .dropdown-toggle,
+.navbar-buttons ul.nav li.active .dropdown-toggle {
     font-size: 20px;
     color: hsl(0, 0%, 52%);
     text-shadow: none;
@@ -1760,7 +1814,6 @@ blockquote p {
     display: block;
     position: absolute;
     right: 0px;
-    top: 3px;
 }
 
 #navbar-buttons ul.nav .dropdown-toggle,
@@ -1768,10 +1821,39 @@ blockquote p {
     color: hsl(0, 0%, 7%);
 }
 
-#navbar-buttons ul.nav li.dropdown.open .dropdown-toggle {
+.navbar-buttons ul.nav li.dropdown.open .dropdown-toggle {
     background: none;
-    color: hsl(0, 0%, 7%);
+    color: #52c2af;
     text-shadow: none;
+}
+
+.navbar-buttons ul.nav li.dropdown .help-question {
+    margin-top: 1px;
+    padding: 3px 8px 1px 8px;
+    font-size: 1em;
+    font-weight: 300;
+    text-transform: uppercase;
+    color: #888;
+
+    border: 1px solid #bbb;
+    border-radius: 4px;
+
+    transition: all 0.3s ease;
+}
+
+.help-question span {
+    display: block;
+
+    transform: scale(1.2, 1);
+    -moz-transform: scale(1.2, 1);
+    -webkit-transform: scale(1.2, 1);
+}
+
+.navbar-buttons ul.nav li.dropdown.open .help-question,
+.navbar-buttons ul.nav li.dropdown .help-question:hover {
+    border: 1px solid #888;
+    color: #444;
+    background-color: #fafafa;
 }
 
 #searchbox .input-append {
@@ -2292,10 +2374,15 @@ button.topic_edit_cancel {
     text-transform: uppercase;
 }
 
-.settings-dropdown-caret {
+.settings-dropdown-icon {
+    color: #AAA;
     margin-left: 8px;
     margin-right: 8px;
-    font-size: 14px;
+}
+
+#settings-dropdown {
+    position: relative;
+    left: 0px;
 }
 
 #notifications-area {
