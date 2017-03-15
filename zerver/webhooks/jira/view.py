@@ -24,7 +24,7 @@ IGNORED_EVENTS = [
 ]
 
 def guess_zulip_user_from_jira(jira_username, realm):
-    # type: (str, Realm) -> Optional[UserProfile]
+    # type: (Text, Realm) -> Optional[UserProfile]
     try:
         # Try to find a matching user in Zulip
         # We search a user's full name, short name,
@@ -40,7 +40,7 @@ def guess_zulip_user_from_jira(jira_username, realm):
         return None
 
 def convert_jira_markup(content, realm):
-    # type: (str, Realm) -> str
+    # type: (Text, Realm) -> Text
     # Attempt to do some simplistic conversion of JIRA
     # formatting to Markdown, for consumption in Zulip
 
@@ -83,16 +83,16 @@ def convert_jira_markup(content, realm):
             # Try to look up username
             user_profile = guess_zulip_user_from_jira(username, realm)
             if user_profile:
-                replacement = "**{}**".format(user_profile.full_name)
+                replacement = u"**{}**".format(user_profile.full_name)
             else:
-                replacement = "**{}**".format(username)
+                replacement = u"**{}**".format(username)
 
             content = content.replace("[~{}]".format(username,), replacement)
 
     return content
 
 def get_in(payload, keys, default=''):
-    # type: (Dict[str, Any], List[str], str) -> Any
+    # type: (Dict[str, Any], List[str], Text) -> Any
     try:
         for key in keys:
             payload = payload[key]
@@ -110,7 +110,7 @@ def get_issue_string(payload, issue_id=None):
 
     base_url = re.match("(.*)\/rest\/api/.*", get_in(payload, ['issue', 'self']))
     if base_url and len(base_url.groups()):
-        return "[{}]({}/browse/{})".format(issue_id, base_url.group(1), issue_id)
+        return u"[{}]({}/browse/{})".format(issue_id, base_url.group(1), issue_id)
     else:
         return issue_id
 
@@ -121,7 +121,7 @@ def get_assignee_mention(assignee_email):
             assignee_name = get_user_profile_by_email(assignee_email).full_name
         except UserProfile.DoesNotExist:
             assignee_name = assignee_email
-        return "**{}**".format(assignee_name)
+        return u"**{}**".format(assignee_name)
     return ''
 
 def get_issue_author(payload):
@@ -138,7 +138,7 @@ def get_issue_title(payload):
 
 def get_issue_subject(payload):
     # type: (Dict[str, Any]) -> Text
-    return "{}: {}".format(get_issue_id(payload), get_issue_title(payload))
+    return u"{}: {}".format(get_issue_id(payload), get_issue_title(payload))
 
 def get_sub_event_for_update_issue(payload):
     # type: (Dict[str, Any]) -> Text
@@ -159,11 +159,11 @@ def get_event_type(payload):
 
 def add_change_info(content, field, from_field, to_field):
     # type: (Text, Text, Text, Text) -> Text
-    content += "* Changed {}".format(field)
+    content += u"* Changed {}".format(field)
     if from_field:
-        content += " from **{}**".format(from_field)
+        content += u" from **{}**".format(from_field)
     if to_field:
-        content += " to {}\n".format(to_field)
+        content += u" to {}\n".format(to_field)
     return content
 
 def handle_updated_issue_event(payload, user_profile):
@@ -178,7 +178,7 @@ def handle_updated_issue_event(payload, user_profile):
     assignee_mention = get_assignee_mention(assignee_email)
 
     if assignee_mention != '':
-        assignee_blurb = " (assigned to {})".format(assignee_mention)
+        assignee_blurb = u" (assigned to {})".format(assignee_mention)
     else:
         assignee_blurb = ''
 
@@ -209,7 +209,7 @@ def handle_updated_issue_event(payload, user_profile):
                     target_field_string = assignee_mention
                 else:
                     # Convert a user's target to a @-mention if possible
-                    target_field_string = "**{}**".format(item.get('toString'))
+                    target_field_string = u"**{}**".format(item.get('toString'))
 
                 from_field_string = item.get('fromString')
                 if target_field_string or from_field_string:
@@ -217,7 +217,7 @@ def handle_updated_issue_event(payload, user_profile):
 
         elif sub_event == 'issue_transited':
             from_field_string = get_in(payload, ['transition', 'from_status'])
-            target_field_string = '**{}**'.format(get_in(payload, ['transition', 'to_status']))
+            target_field_string = u'**{}**'.format(get_in(payload, ['transition', 'to_status']))
             if target_field_string or from_field_string:
                 content = add_change_info(content, 'status', from_field_string, target_field_string)
 
@@ -225,7 +225,7 @@ def handle_updated_issue_event(payload, user_profile):
 
 def handle_created_issue_event(payload):
     # type: (Dict[str, Any]) -> Text
-    return "{} **created** {} priority {}, assigned to **{}**:\n\n> {}".format(
+    return u"{} **created** {} priority {}, assigned to **{}**:\n\n> {}".format(
         get_issue_author(payload),
         get_issue_string(payload),
         get_in(payload, ['issue', 'fields', 'priority', 'name']),
@@ -235,7 +235,7 @@ def handle_created_issue_event(payload):
 
 def handle_deleted_issue_event(payload):
     # type: (Dict[str, Any]) -> Text
-    return "{} **deleted** {}!".format(get_issue_author(payload), get_issue_string(payload))
+    return u"{} **deleted** {}!".format(get_issue_author(payload), get_issue_string(payload))
 
 @api_key_only_webhook_view("JIRA")
 @has_request_variables
@@ -259,7 +259,7 @@ def api_jira_webhook(request, user_profile, client,
     else:
         if event is None:
             if not settings.TEST_SUITE:
-                message = "Got JIRA event with None event type: {}".format(payload)
+                message = u"Got JIRA event with None event type: {}".format(payload)
                 logging.warning(message)
             return json_error(_("Event is not given by JIRA"))
         else:

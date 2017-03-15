@@ -47,6 +47,15 @@ class JiraHookTests(WebhookTestCase):
         self.send_and_test_stream_message('created_v1', expected_subject, expected_message)
         self.send_and_test_stream_message('created_v2', expected_subject, expected_message)
 
+    def test_created_with_unicode(self):
+            # type: () -> None
+            expected_subject = u"BUG-15: New bug with à hook"
+            expected_message = u"""Leo Franchià **created** [BUG-15](http://lfranchi.com:8080/browse/BUG-15) priority Major, assigned to **no one**:
+
+> New bug with à hook"""
+            self.send_and_test_stream_message('created_with_unicode_v1', expected_subject, expected_message)
+            self.send_and_test_stream_message('created_with_unicode_v2', expected_subject, expected_message)
+
     def test_created_assignee(self):
         # type: () -> None
         expected_subject = "TEST-4: Test Created Assignee"
