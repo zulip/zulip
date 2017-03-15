@@ -59,6 +59,8 @@ var modals = (function () {
             // execute it.
             if (exports.close[target_name]) {
                 exports.close[target_name]();
+            } else {
+                blueslip.error("Tried to close unknown modal " + target_name);
             }
 
             e.preventDefault();
