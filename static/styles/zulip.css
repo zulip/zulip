@@ -1287,12 +1287,17 @@ div.focused_table {
     margin-top: -16px;
 }
 
-.message_content {
+.message_content,
+.message_undelivered {
     line-height: 17px;
     font-size: 14px;
     margin-left: 46px;
     display: block;
     position: relative;
+}
+
+.message_undelivered {
+    color: red;
 }
 
 .message_content:empty {
