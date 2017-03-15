@@ -98,6 +98,18 @@ function get_message_height(elem, message_id) {
     return height;
 }
 
+exports.hide_message_expander = function (row) {
+    if (row.find(".could-be-condensed").length !== 0) {
+        row.find(".message_expander").hide();
+    }
+};
+
+exports.show_message_expander = function (row) {
+    if (row.find(".could-be-condensed").length !== 0) {
+        row.find(".message_expander").show();
+    }
+};
+
 exports.condense_and_collapse = function (elems) {
     var height_cutoff = message_viewport.height() * 0.65;
 
