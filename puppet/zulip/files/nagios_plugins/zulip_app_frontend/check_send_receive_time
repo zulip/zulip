@@ -122,8 +122,11 @@ def get_zulips():
         report("CRITICAL", "Error receiving Zulips, error was: %s" % (res["msg"]))
     for event in res['events']:
         last_event_id = max(last_event_id, int(event['id']))
+    # If we get a heartbeat event, that means we've been hanging for
+    # 40s, and we should bail.
+    if 'heartbeat' in set(event['type'] for event in res['events']):
+        report("CRITICAL", "Got heartbeat waiting for Zulip, which means get_events is hanging")
     return [event['message'] for event in res['events']]
-
 
 def send_message_via_websocket(websocket_client, recepient_email, content):
     # type: (WebsocketClient, str, str) -> None
