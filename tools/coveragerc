@@ -12,6 +12,8 @@ exclude_lines =
     # Don't require coverage for Python 2/3 variations; it's impossible to cover on both
     if six.PY3:
     if six.PY2:
+    # Don't require coverage for __unicode__ statements just used for printing
+    def __unicode__[(]self[)]:
 
 [run]
 omit =
