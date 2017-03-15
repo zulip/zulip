@@ -101,7 +101,7 @@ as an **organization**.
 * [Configure email notifications](/help/configure-email-notifications)
 * [Configure mobile push notifications](/help/configure-mobile-notifications)
 * [Configure email digest notifications](/help/configure-email-digest-notifications)
-* [Add an alert word](/help/alert-words)
+* [Add an alert word](/help/add-an-alert-word)
 
 ## Tools & Customization
 * [Keyboard shortcuts](/help/keyboard-shortcuts)

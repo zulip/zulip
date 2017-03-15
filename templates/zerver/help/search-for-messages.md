@@ -64,7 +64,7 @@ Listed below are all Zulip search operators.
 * `id:xxxxx` - This operator narrows the view to show only the message with the
 ID `xxxxx`.
 * `is:alerted` - This operator narrows the view to show messages with alert
-words. You can [add custom alert words](/help/alert-words) in the
+words. You can [add alert words](/help/add-an-alert-word) in the
 [Settings](/#settings) page.
 * `is:mentioned` - This operator narrows the view to show messages that mention
 you.
