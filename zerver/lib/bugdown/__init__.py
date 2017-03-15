@@ -1008,7 +1008,7 @@ class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
     def run(self, lines):
         # type: (Iterable[Text]) -> Iterable[Text]
         if current_message and db_data is not None:
-            # We check for custom alert words here, the set of which are
+            # We check for alert words here, the set of which are
             # dependent on which users may see this message.
             #
             # Our caller passes in the list of possible_words.  We
