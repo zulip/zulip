@@ -992,6 +992,10 @@ LOGGING = {
             '()': 'django.utils.log.CallbackFilter',
             'callback': zerver.lib.logging_util.skip_200_and_304,
         },
+        'skip_site_packages_logs': {
+            '()': 'django.utils.log.CallbackFilter',
+            'callback': zerver.lib.logging_util.skip_site_packages_logs,
+        },
     },
     'handlers': {
         'zulip_admins': {
@@ -1062,7 +1066,7 @@ LOGGING = {
         },
         'django.template': {
             'handlers': ['console'],
-            'filters': ['require_debug_true'],
+            'filters': ['require_debug_true', 'skip_site_packages_logs'],
             'level': 'DEBUG',
             'propagate': False,
         },
