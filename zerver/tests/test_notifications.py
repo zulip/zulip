@@ -153,8 +153,8 @@ class TestMissedMessages(ZulipTestCase):
         tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
 
-        msg_id = self.send_message("othello@zulip.com", "hamlet@zulip.com",
-                                   Recipient.PERSONAL,
+        msg_id = self.send_message("othello@zulip.com", "hamlet@zulip.com", 
+                                    Recipient.PERSONAL,
                                    'Extremely personal message! to be deleted!')
 
         othello = get_user_profile_by_email('othello@zulip.com')
