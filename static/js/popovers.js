@@ -635,9 +635,11 @@ exports.register_click_handlers = function () {
         var msgid = $(e.currentTarget).data('msgid');
         var row = current_msg_list.get_row(msgid);
         var message = current_msg_list.get(rows.id(row));
+        var message_history_cancel_btn = $('#message-history-cancel');
 
         popovers.hide_actions_popover();
         message_edit.show_history(message);
+        message_history_cancel_btn.focus();
         e.stopPropagation();
         e.preventDefault();
     });
