@@ -12,12 +12,10 @@ exports.actively_scrolling = function () {
 
 // What, if anything, obscures the home tab?
 exports.home_tab_obscured = function () {
-    if ($('.modal:visible').length > 0) {
+    if ($('.overlay.show').length > 0) {
         return 'modal';
     }
-    if (! $('#home').hasClass('active')) {
-        return 'other_tab';
-    }
+
     return false;
 };
 
