@@ -609,6 +609,9 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     DEFAULT_UPLOADS_QUOTA = 1024*1024*1024
 
     quota = models.IntegerField(default=DEFAULT_UPLOADS_QUOTA) # type: int
+    # The maximum length of a timezone in pytz.all_timezones is 32.
+    # Setting max_length=50 is a safe choice.
+    timezone = models.CharField(max_length=50, default='UTC')  # type: Text
 
     def can_admin_user(self, target_user):
         # type: (UserProfile) -> bool

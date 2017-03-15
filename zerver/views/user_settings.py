@@ -23,7 +23,7 @@ from zerver.lib.actions import do_change_password, \
     do_regenerate_api_key, do_change_avatar_fields, do_change_twenty_four_hour_time, \
     do_change_left_side_userlist, do_change_emoji_alt_code, do_change_default_language, \
     do_change_pm_content_in_desktop_notifications, validate_email, \
-    do_change_user_email, do_start_email_change_process
+    do_change_user_email, do_start_email_change_process, do_change_timezone
 from zerver.lib.avatar import avatar_url
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.response import json_success, json_error
@@ -31,6 +31,7 @@ from zerver.lib.upload import upload_avatar_image
 from zerver.lib.validator import check_bool, check_string
 from zerver.lib.request import JsonableError
 from zerver.lib.users import check_change_full_name
+from zerver.lib.timezone import get_all_timezones
 from zerver.models import UserProfile, Realm, name_changes_disabled, \
     EmailChangeStatus
 from confirmation.models import EmailChangeConfirmation
@@ -158,11 +159,16 @@ def update_display_settings_backend(request, user_profile,
                                     twenty_four_hour_time=REQ(validator=check_bool, default=None),
                                     default_language=REQ(validator=check_string, default=None),
                                     left_side_userlist=REQ(validator=check_bool, default=None),
-                                    emoji_alt_code=REQ(validator=check_bool, default=None)):
-    # type: (HttpRequest, UserProfile, Optional[bool], Optional[str], Optional[bool], Optional[bool]) -> HttpResponse
+                                    emoji_alt_code=REQ(validator=check_bool, default=None),
+                                    timezone=REQ(validator=check_string, default=None)):
+    # type: (HttpRequest, UserProfile, Optional[bool], Optional[str], Optional[bool], Optional[bool], Optional[Text]) -> HttpResponse
     if (default_language is not None and
             default_language not in get_available_language_codes()):
         raise JsonableError(_("Invalid language '%s'" % (default_language,)))
+
+    if (timezone is not None and
+            timezone not in get_all_timezones()):
+        raise JsonableError(_("Invalid timezone '%s'" % (timezone,)))
 
     result = {} # type: Dict[str, Any]
     if (default_language is not None and
@@ -184,6 +190,11 @@ def update_display_settings_backend(request, user_profile,
             user_profile.emoji_alt_code != emoji_alt_code):
         do_change_emoji_alt_code(user_profile, emoji_alt_code)
         result['emoji_alt_code'] = emoji_alt_code
+
+    elif (timezone is not None and
+            user_profile.timezone != timezone):
+        do_change_timezone(user_profile, timezone)
+        result['timezone'] = timezone
 
     return json_success(result)
 
