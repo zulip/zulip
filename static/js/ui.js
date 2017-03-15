@@ -313,10 +313,6 @@ exports.show_info_overlay = function (target) {
     }
 };
 
-exports.hide_info_overlay = function () {
-    $(".informational-overlays").removeClass("show");
-};
-
 exports.lightbox_photo = function (image, user) {
     // image should be an Image Object in JavaScript.
     var url = $(image).attr("src");
@@ -334,12 +330,6 @@ exports.lightbox_photo = function (image, user) {
     $(".image-description .user").text(user);
 
     $(".image-actions .open, .image-actions .download").attr("href", url);
-};
-
-exports.exit_lightbox_photo = function () {
-    $("#overlay").removeClass("show");
-    $(".player-container iframe").remove();
-    document.activeElement.blur();
 };
 
 exports.youtube_video = function (id) {
@@ -587,7 +577,6 @@ $(function () {
     notifications.initialize();
     gear_menu.initialize();
     hashchange.initialize();
-    invite.initialize();
     pointer.initialize();
     unread_ui.initialize();
     activity.initialize();

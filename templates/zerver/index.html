@@ -60,7 +60,7 @@ var page_params = {{ page_params }};
 <div id="right-screen" class="screen"></div>
 <div id="clear-screen" class="screen"></div>
 
-<div id="settings_overlay_container" data-overlay="settings">
+<div id="settings_overlay_container" class="overlay" data-overlay="settings">
   {% include "zerver/settings_overlay.html" %}
 </div>
 {% include "zerver/navbar.html" %}
@@ -124,7 +124,7 @@ var page_params = {{ page_params }};
     {% include "zerver/subscriptions.html" %}
     {% include "zerver/drafts.html" %}
 </div><!--/row-->
-    <div class="informational-overlays new-style">
+    <div class="informational-overlays overlay new-style" data-overlay="informationalOverlays">
         <div class="overlay-content">
             <div class="overlay-tabs">
                 <button class="button no-style exit">&times;</button>

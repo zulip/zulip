@@ -11,8 +11,6 @@ $(function () {
     var clicking = false;
     var mouse_moved = false;
 
-    var meta = {};
-
     function mousedown() {
         mouse_moved = false;
         clicking = true;
@@ -159,9 +157,6 @@ $(function () {
         }
     });
 
-    $(window).on("focus", function () {
-        meta.focusing = true;
-    });
 
     // MUTING
 
@@ -259,24 +254,8 @@ $(function () {
     });
 
     $("#subscriptions_table").on("click", ".exit, #subscription_overlay", function (e) {
-        if (meta.focusing) {
-            meta.focusing = false;
-            return;
-        }
-
         if ($(e.target).is(".exit, .exit-sign, #subscription_overlay, #subscription_overlay > .flex")) {
             subs.close();
-        }
-    });
-
-    $("#drafts_table").on("click", ".exit, #draft_overlay", function (e) {
-        if (meta.focusing) {
-            meta.focusing = false;
-            return;
-        }
-
-        if ($(e.target).is(".exit, .exit-sign, #draft_overlay, #draft_overlay > .flex")) {
-            drafts.close();
         }
     });
 
@@ -349,12 +328,6 @@ $(function () {
     $('.empty_feed_compose_private').click(function (e) {
         compose.start('private', {trigger: 'empty feed message'});
         e.preventDefault();
-    });
-
-    $(".informational-overlays").click(function (e) {
-        if ($(e.target).is(".informational-overlays, .exit")) {
-            ui.hide_info_overlay();
-        }
     });
 
     $("body").on("click", "[data-overlay-trigger]", function () {
@@ -564,14 +537,6 @@ $(function () {
             }
         });
 
-        $("#overlay .exit, #overlay .image-preview").click(function (e) {
-            if ($(e.target).is(".exit, .image-preview")) {
-                ui.exit_lightbox_photo();
-            }
-            e.preventDefault();
-            e.stopPropagation();
-        });
-
         $("#overlay .download").click(function () {
           this.blur();
         });
@@ -639,7 +604,7 @@ $(function () {
     $("#settings_overlay_container").on("click", function (e) {
         var $target = $(e.target);
         if ($target.is(".exit-sign, .exit")) {
-            hashchange.exit_settings();
+            hashchange.exit_modal();
         }
     });
 

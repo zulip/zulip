@@ -1,6 +1,4 @@
 .drafts {
-    margin-top: 55px;
-    padding-left: 15px;
     -webkit-font-smoothing: antialiased;
 }
 
@@ -123,38 +121,6 @@
 
 .draft_controls .delete-draft:hover {
     opacity: 1;
-}
-
-#draft_overlay {
-    pointer-events: none;
-    opacity: 0;
-    position: fixed;
-    top: 0px;
-    left: 0px;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0,0,0,0.8);
-    overflow: auto;
-    z-index: 102;
-
-    transition: all 0.3s ease;
-}
-
-#draft_overlay.show {
-    display: block;
-    pointer-events: all;
-    opacity: 1;
-}
-
-#draft_overlay .drafts-container {
-    -webkit-transform: scale(0.5);
-    transform: scale(0.5);
-    transition: all 0.3s ease;
-}
-
-#draft_overlay.show .drafts-container {
-    -webkit-transform: scale(1);
-    transform: scale(1);
 }
 
 @media (max-width: 1130px) {

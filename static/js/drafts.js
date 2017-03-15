@@ -105,7 +105,7 @@ exports.restore_draft = function (draft_id) {
                               draft_copy);
     }
 
-    exports.close();
+    modals.close_modal("drafts");
     compose_fade.clear_compose();
     if (draft.type === "stream" && draft.stream === "") {
         draft_copy.subject = "";
@@ -207,11 +207,6 @@ exports.launch = function () {
     exports.setup_page(function () {
         $("#draft_overlay").addClass("show");
     });
-};
-
-exports.close = function () {
-    hashchange.exit_settings();
-    $("#draft_overlay").removeClass("show");
 };
 
 $(function () {

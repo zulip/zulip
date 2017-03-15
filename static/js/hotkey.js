@@ -157,27 +157,27 @@ exports.process_escape_key = function (e) {
     }
 
     if ($("#overlay").hasClass("show")) {
-        ui.exit_lightbox_photo();
+        modals.close_modal("lightbox");
         return true;
     }
 
     if ($("#subscription_overlay").hasClass("show")) {
-        subs.close();
+        modals.close_modal("subscriptions");
         return true;
     }
 
     if ($("#draft_overlay").hasClass("show")) {
-        drafts.close();
+        modals.close_modal("drafts");
         return true;
     }
 
     if ($(".informational-overlays").hasClass("show")) {
-        ui.hide_info_overlay();
+        modals.close_modal("informationalOverlays");
         return true;
     }
 
-    if ($("#invite-user").css("display") === "block") {
-        $("#invite-user").modal("hide");
+    if ($("#invite-user.show").length) {
+        modals.close_modal("invite");
         return true;
     }
 

@@ -204,7 +204,7 @@ function do_hashchange(from_reload) {
 // return `true` for the current state -- we want to ignore hash changes from
 // within the settings page. The previous hash however should return `false` as it
 // was outside of the scope of settings.
-// there is then an `exit_settings` function that allows the hash to change exactly
+// there is then an `exit_modal` function that allows the hash to change exactly
 // once without triggering any events. This allows the hash to reset back from
 // a settings page to the previous view available before the settings page
 // (eg. narrow/is/private). This saves the state, scroll position, and makes the
@@ -236,6 +236,7 @@ var get_hash_group = (function () {
     var groups = [
         ["streams"],
         ["settings", "administration"],
+        ["invite"],
     ];
 
     return function (value) {
@@ -255,7 +256,7 @@ var get_hash_group = (function () {
 
 function should_ignore(hash) {
     // Hash changes within this list are overlaws and should not unnarrow (etc.)
-    var ignore_list = ["streams", "drafts", "settings", "administration"];
+    var ignore_list = ["streams", "drafts", "settings", "administration", "invite"];
     var main_hash = get_main_hash(hash);
 
     return (ignore_list.indexOf(main_hash) > -1);
@@ -292,6 +293,8 @@ function hashchanged(from_reload, e) {
             } else if (/settings|administration/.test(base)) {
                 settings.setup_page();
                 admin.setup_page();
+            } else if (base === "invite") {
+                invite.initialize();
             }
 
             ignore.group = get_hash_group(base);
@@ -323,10 +326,10 @@ exports.initialize = function () {
 };
 
 exports.close_modals = function () {
-    $("[data-overlay]").removeClass("show");
+    $(".overlay.show").removeClass("show");
 };
 
-exports.exit_settings = function (callback) {
+exports.exit_modal = function (callback) {
     if (should_ignore(window.location.hash)) {
         ui.blur_active_element();
         ignore.flag = true;
@@ -334,8 +337,6 @@ exports.exit_settings = function (callback) {
         if (typeof callback === "function") {
             callback();
         }
-
-        exports.close_modals();
     }
 };
 

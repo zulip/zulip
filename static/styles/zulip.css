@@ -2140,6 +2140,23 @@ button.topic_edit_cancel {
     margin-top: 10px;
 }
 
+#invite-user .overlay-content {
+    position: relative;
+    width: 500px;
+    background-color: #fff;
+    border-radius: 4px;
+}
+
+#invite-user .modal-body {
+    margin-bottom: 58px;
+}
+
+#invite-user .modal-footer {
+    position: absolute;
+    bottom: 0px;
+    width: calc(100% - 30px);
+}
+
 #invite_status {
     display: none;
 }
