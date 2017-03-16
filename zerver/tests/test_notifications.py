@@ -38,23 +38,18 @@ class TestMissedMessages(ZulipTestCase):
             reply_to_addresses = [settings.EMAIL_GATEWAY_PATTERN % (u'mm' + t) for t in tokens]
         else:
             reply_to_addresses = ["noreply@example.com"]
-        (message, user_message) = access_message(hamlet, msg_id)
-        # No notification email should be sent for deleted messages
-        if message.content == '(deleted)':
-            self.assertEqual(len(mail.outbox), 0)
+        msg = mail.outbox[0]
+        sender = 'Zulip <{}>'.format(settings.NOREPLY_EMAIL_ADDRESS)
+        from_email = sender
+        self.assertEqual(len(mail.outbox), 1)
+        if send_as_user:
+            from_email = '"%s" <%s>' % (othello.full_name, othello.email)
+            self.assertEqual(msg.extra_headers['Sender'], sender)
         else:
-            msg = mail.outbox[0]
-            sender = 'Zulip <{}>'.format(settings.NOREPLY_EMAIL_ADDRESS)
-            from_email = sender
-            self.assertEqual(len(mail.outbox), 1)
-            if send_as_user:
-                from_email = '"%s" <%s>' % (othello.full_name, othello.email)
-                self.assertEqual(msg.extra_headers['Sender'], sender)
-            else:
-                self.assertNotIn("Sender", msg.extra_headers)
-            self.assertEqual(msg.from_email, from_email)
-            self.assertIn(msg.extra_headers['Reply-To'], reply_to_addresses)
-            self.assertIn(body, self.normalize_string(msg.body))
+            self.assertNotIn("Sender", msg.extra_headers)
+        self.assertEqual(msg.from_email, from_email)
+        self.assertIn(msg.extra_headers['Reply-To'], reply_to_addresses)
+        self.assertIn(body, self.normalize_string(msg.body))
 
     @patch('zerver.lib.email_mirror.generate_random_token')
     def _extra_context_in_missed_stream_messages(self, send_as_user, mock_random_token):
@@ -131,7 +126,7 @@ class TestMissedMessages(ZulipTestCase):
         othello = get_user_profile_by_email('othello@zulip.com')
         hamlet = get_user_profile_by_email('hamlet@zulip.com')
         self.login("othello@zulip.com")
-        result = self.client_patch('/json/messages/'+str(msg_id), {'message_id':msg_id, 'content':' ', 'user_profile':othello})
+        result = self.client_patch('/json/messages/'+str(msg_id), {'message_id': msg_id, 'content': ' ', 'user_profile': othello})
         self.assert_json_success(result)
         handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id}])
         self.assertEqual(len(mail.outbox), 0)
@@ -147,7 +142,7 @@ class TestMissedMessages(ZulipTestCase):
         othello = get_user_profile_by_email('othello@zulip.com')
         hamlet = get_user_profile_by_email('hamlet@zulip.com')
         self.login("othello@zulip.com")
-        result = self.client_patch('/json/messages/'+str(msg_id), {'message_id':msg_id, 'content':' ', 'user_profile':othello})
+        result = self.client_patch('/json/messages/'+str(msg_id), {'message_id': msg_id, 'content': ' ', 'user_profile': othello})
         self.assert_json_success(result)
         handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id}])
         self.assertEqual(len(mail.outbox), 0)
@@ -164,7 +159,7 @@ class TestMissedMessages(ZulipTestCase):
         hamlet = get_user_profile_by_email('hamlet@zulip.com')
         iago = get_user_profile_by_email('iago@zulip.com')
         self.login("othello@zulip.com")
-        result = self.client_patch('/json/messages/'+str(msg_id), {'message_id':msg_id, 'content':' ', 'user_profile':othello})
+        result = self.client_patch('/json/messages/'+str(msg_id), {'message_id': msg_id, 'content': ' ', 'user_profile': othello})
         self.assert_json_success(result)
         handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id}])
         self.assertEqual(len(mail.outbox), 0)
