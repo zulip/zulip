@@ -764,8 +764,9 @@ input[type=checkbox].inline-block {
 }
 
 #settings_page .content-wrapper #settings_content {
+    position: relative;
     width: 100%;
-    height: calc(100% - 60px);
+    height: calc(100% - 45px);
 
     float: left;
     overflow-y: auto;
