@@ -9,7 +9,7 @@ from zerver.decorator import authenticated_json_post_view, require_post
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, \
     HttpResponseNotFound
 from django.middleware.csrf import get_token
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.translation import ugettext as _
 from django.core import signing
@@ -66,9 +66,10 @@ def maybe_send_to_registration(request, email, full_name=''):
             urllib.parse.quote_plus(full_name.encode('utf8')))))
     else:
         url = reverse('register')
-        return render_to_response('zerver/accounts_home.html',
-                                  {'form': form, 'current_url': lambda: url},
-                                  request=request)
+        return render(request,
+                      'zerver/accounts_home.html',
+                      context={'form': form, 'current_url': lambda: url},
+                      )
 
 def redirect_to_subdomain_login_url():
     # type: () -> HttpResponseRedirect
