@@ -184,6 +184,7 @@ function _want_normal_display() {
 }
 
 exports.update_one_user_row = function (elt) {
+    elt = elt.find('.user_sidebar_entry');
     if (_want_normal_display()) {
         elt.removeClass('user-fade');
     } else {

@@ -2209,7 +2209,7 @@ button.topic_edit_cancel {
 }
 
 .message-fade,
-.user-fade {
+.user_sidebar_entry.user-fade {
     opacity: 0.4;
 }
 
