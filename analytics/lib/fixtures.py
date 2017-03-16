@@ -14,7 +14,7 @@ from six.moves import range, zip
 
 def generate_time_series_data(days=100, business_hours_base=10, non_business_hours_base=10,
                               growth=1, autocorrelation=0, spikiness=1, holiday_rate=0,
-                              frequency=CountStat.DAY, is_gauge=False, random_seed=26):
+                              frequency=CountStat.DAY, partial_sum=False, random_seed=26):
     # type: (int, float, float, float, float, float, float, str, bool, int) -> List[int]
     """
     Generate semi-realistic looking time series data for testing analytics graphs.
@@ -32,7 +32,7 @@ def generate_time_series_data(days=100, business_hours_base=10, non_business_hou
         the variance.
     holiday_rate -- Fraction of days randomly set to 0, largely for testing how we handle 0s.
     frequency -- Should be CountStat.HOUR or CountStat.DAY.
-    is_gauge -- If True, return partial sum of the series.
+    partial_sum -- If True, return partial sum of the series.
     random_seed -- Seed for random number generator.
     """
     if frequency == CountStat.HOUR:
@@ -64,7 +64,7 @@ def generate_time_series_data(days=100, business_hours_base=10, non_business_hou
 
     values = [0 if holiday else int(v + sqrt(v)*noise_scalar*spikiness)
               for v, noise_scalar, holiday in zip(values_no_noise, noise_scalars, holidays)]
-    if is_gauge:
+    if partial_sum:
         for i in range(1, length):
             values[i] = values[i-1] + values[i]
     return [max(v, 0) for v in values]

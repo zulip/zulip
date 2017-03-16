@@ -29,18 +29,16 @@ logger = logging.getLogger("zulip.management")
 logger.setLevel(logging.INFO)
 logger.addHandler(file_handler)
 
-# First post office in Boston
-MIN_TIME = datetime(1639, 1, 1, 0, 0, 0, tzinfo=timezone.utc)
+# You can't subtract timedelta.max from a datetime, so use this instead
+TIMEDELTA_MAX = timedelta(days=365*1000)
 
 class CountStat(object):
     HOUR = 'hour'
     DAY = 'day'
     FREQUENCIES = frozenset([HOUR, DAY])
-    # Allowed intervals are HOUR, DAY, and, GAUGE
-    GAUGE = 'gauge'
 
-    def __init__(self, property, zerver_count_query, filter_args, group_by, frequency, is_gauge):
-        # type: (str, ZerverCountQuery, Dict[str, bool], Optional[Tuple[models.Model, str]], str, bool) -> None
+    def __init__(self, property, zerver_count_query, filter_args, group_by, frequency, interval=None):
+        # type: (str, ZerverCountQuery, Dict[str, bool], Optional[Tuple[models.Model, str]], str, Optional[timedelta]) -> None
         self.property = property
         self.zerver_count_query = zerver_count_query
         # might have to do something different for bitfields
@@ -49,7 +47,12 @@ class CountStat(object):
         if frequency not in self.FREQUENCIES:
             raise AssertionError("Unknown frequency: %s" % (frequency,))
         self.frequency = frequency
-        self.interval = self.GAUGE if is_gauge else frequency
+        if interval is not None:
+            self.interval = interval
+        elif frequency == CountStat.HOUR:
+            self.interval = timedelta(hours=1)
+        else: # frequency == CountStat.DAY
+            self.interval = timedelta(days=1)
         self.is_logging = False
         self.custom_pull_function = None # type: Optional[Callable[[CountStat, datetime, datetime], None]]
 
@@ -60,15 +63,15 @@ class CountStat(object):
 class LoggingCountStat(CountStat):
     def __init__(self, property, analytics_table, frequency):
         # type: (str, Type[BaseCount], str) -> None
-        CountStat.__init__(self, property, ZerverCountQuery(None, analytics_table, None), {}, None,
-                           frequency, False)
+        CountStat.__init__(self, property, ZerverCountQuery(None, analytics_table, None), {},
+                           None, frequency)
         self.is_logging = True
 
 class CustomPullCountStat(CountStat):
     def __init__(self, property, analytics_table, frequency, custom_pull_function):
         # type: (str, Type[BaseCount], str, Callable[[CountStat, datetime, datetime], None]) -> None
-        CountStat.__init__(self, property, ZerverCountQuery(None, analytics_table, None), {}, None,
-                           frequency, False)
+        CountStat.__init__(self, property, ZerverCountQuery(None, analytics_table, None), {},
+                           None, frequency)
         self.custom_pull_function = custom_pull_function
 
 class ZerverCountQuery(object):
@@ -106,14 +109,14 @@ def process_count_stat(stat, fill_to_time):
 
     currently_filled = currently_filled + timedelta(hours = 1)
     while currently_filled <= fill_to_time:
-        logger.info("START %s %s %s" % (stat.property, stat.interval, currently_filled))
+        logger.info("START %s %s" % (stat.property, currently_filled))
         start = time.time()
         do_update_fill_state(fill_state, currently_filled, FillState.STARTED)
         do_fill_count_stat_at_hour(stat, currently_filled)
         do_update_fill_state(fill_state, currently_filled, FillState.DONE)
         end = time.time()
         currently_filled = currently_filled + timedelta(hours = 1)
-        logger.info("DONE %s %s (%dms)" % (stat.property, stat.interval, (end-start)*1000))
+        logger.info("DONE %s (%dms)" % (stat.property, (end-start)*1000))
 
 # We assume end_time is on an hour boundary, and is timezone aware.
 # It is the caller's responsibility to enforce this!
@@ -122,13 +125,7 @@ def do_fill_count_stat_at_hour(stat, end_time):
     if stat.frequency == CountStat.DAY and (end_time != floor_to_day(end_time)):
         return
 
-    if stat.interval == CountStat.HOUR:
-        start_time = end_time - timedelta(hours = 1)
-    elif stat.interval == CountStat.DAY:
-        start_time = end_time - timedelta(days = 1)
-    else: # stat.interval == CountStat.GAUGE
-        start_time = MIN_TIME
-
+    start_time = end_time - stat.interval
     if stat.custom_pull_function is not None:
         stat.custom_pull_function(stat, start_time, end_time)
     elif not stat.is_logging:
@@ -404,15 +401,15 @@ def do_pull_minutes_active(stat, start_time, end_time):
 
 count_stats_ = [
     CountStat('active_users:is_bot:day', zerver_count_user_by_realm, {'is_active': True},
-              (UserProfile, 'is_bot'), CountStat.DAY, True),
+              (UserProfile, 'is_bot'), CountStat.DAY, interval=TIMEDELTA_MAX),
     CountStat('messages_sent:is_bot:hour', zerver_count_message_by_user, {},
-              (UserProfile, 'is_bot'), CountStat.HOUR, False),
+              (UserProfile, 'is_bot'), CountStat.HOUR),
     CountStat('messages_sent:message_type:day', zerver_count_message_type_by_user, {},
-              None, CountStat.DAY, False),
+              None, CountStat.DAY),
     CountStat('messages_sent:client:day', zerver_count_message_by_user, {},
-              (Message, 'sending_client_id'), CountStat.DAY, False),
+              (Message, 'sending_client_id'), CountStat.DAY),
     CountStat('messages_in_stream:is_bot:day', zerver_count_message_by_stream, {},
-              (UserProfile, 'is_bot'), CountStat.DAY, False),
+              (UserProfile, 'is_bot'), CountStat.DAY),
     LoggingCountStat('active_users_log:is_bot:day', RealmCount, CountStat.DAY),
     CustomPullCountStat('minutes_active::day', UserCount, CountStat.DAY, do_pull_minutes_active)
 ]
