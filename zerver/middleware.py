@@ -22,7 +22,7 @@ from django.views.csrf import csrf_failure as html_csrf_failure
 from django.utils.cache import patch_vary_headers
 from django.utils.http import cookie_date
 from zproject.jinja2 import render_to_response
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 
 import logging
 import time
@@ -371,7 +371,7 @@ class SessionHostDomainMiddleware(SessionMiddleware):
                 if subdomain != "":
                     realm = get_realm(subdomain)
                     if (realm is None):
-                        return render_to_response("zerver/invalid_realm.html")
+                        return render(render, "zerver/invalid_realm.html")
         """
         If request.session was modified, or if the configuration is to save the
         session every time, save the changes and set a session cookie.
