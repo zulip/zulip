@@ -7,7 +7,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, login, get_backends
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponseForbidden, HttpResponse, HttpRequest
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.template import RequestContext, loader
 from django.utils.timezone import now
 from django.core.exceptions import ValidationError
@@ -97,14 +97,15 @@ def accounts_register(request):
         realm = get_realm_by_email_domain(email)
 
     if realm and not email_allowed_for_realm(email, realm):
-        return render_to_response("zerver/closed_realm.html", {"closed_domain_name": realm.name})
+        return render(request, "zerver/closed_realm.html",
+                      context={"closed_domain_name": realm.name})
 
     if realm and realm.deactivated:
         # The user is trying to register for a deactivated realm. Advise them to
         # contact support.
-        return render_to_response("zerver/deactivated.html",
-                                  {"deactivated_domain_name": realm.name,
-                                   "zulip_administrator": settings.ZULIP_ADMINISTRATOR})
+        return render(request, "zerver/deactivated.html",
+                      context={"deactivated_domain_name": realm.name,
+                               "zulip_administrator": settings.ZULIP_ADMINISTRATOR})
 
     try:
         if existing_user_profile is not None and existing_user_profile.is_mirror_dummy:
@@ -237,19 +238,22 @@ def accounts_register(request):
         login(request, auth_result)
         return HttpResponseRedirect(realm.uri + reverse('zerver.views.home.home'))
 
-    return render_to_response(
+    return render(
+        request,
         'zerver/register.html',
-        {'form': form,
-         'email': email,
-         'key': key,
-         'full_name': request.session.get('authenticated_full_name', None),
-         'lock_name': name_validated and name_changes_disabled(realm),
-         # password_auth_enabled is normally set via our context processor,
-         # but for the registration form, there is no logged in user yet, so
-         # we have to set it here.
-         'creating_new_team': realm_creation,
-         'realms_have_subdomains': settings.REALMS_HAVE_SUBDOMAINS,
-         'password_auth_enabled': password_auth_enabled(realm), }, request=request)
+        context={'form': form,
+                 'email': email,
+                 'key': key,
+                 'full_name': request.session.get('authenticated_full_name', None),
+                 'lock_name': name_validated and name_changes_disabled(realm),
+                 # password_auth_enabled is normally set via our context processor,
+                 # but for the registration form, there is no logged in user yet, so
+                 # we have to set it here.
+                 'creating_new_team': realm_creation,
+                 'realms_have_subdomains': settings.REALMS_HAVE_SUBDOMAINS,
+                 'password_auth_enabled': password_auth_enabled(realm),
+                 }
+    )
 
 def create_preregistration_user(email, request, realm_creation=False):
     # type: (Text, HttpRequest, bool) -> HttpResponse
@@ -300,12 +304,12 @@ def create_realm(request, creation_key=None):
     # type: (HttpRequest, Optional[Text]) -> HttpResponse
     if not settings.OPEN_REALM_CREATION:
         if creation_key is None:
-            return render_to_response("zerver/realm_creation_failed.html",
-                                      {'message': _('New organization creation disabled.')})
+            return render(request, "zerver/realm_creation_failed.html",
+                          context={'message': _('New organization creation disabled.')})
         elif not check_key_is_valid(creation_key):
-            return render_to_response("zerver/realm_creation_failed.html",
-                                      {'message': _('The organization creation link has expired'
-                                                    ' or is not valid.')})
+            return render(request, "zerver/realm_creation_failed.html",
+                          context={'message': _('The organization creation link has expired'
+                                                ' or is not valid.')})
 
     # When settings.OPEN_REALM_CREATION is enabled, anyone can create a new realm,
     # subject to a few restrictions on their email address.
@@ -327,9 +331,10 @@ def create_realm(request, creation_key=None):
             return redirect_to_email_login_url(email)
     else:
         form = RealmCreationForm()
-    return render_to_response('zerver/create_realm.html',
-                              {'form': form, 'current_url': request.get_full_path},
-                              request=request)
+    return render(request,
+                  'zerver/create_realm.html',
+                  context={'form': form, 'current_url': request.get_full_path},
+                  )
 
 def confirmation_key(request):
     # type: (HttpRequest) -> HttpResponse
@@ -360,9 +365,10 @@ def accounts_home(request):
             return redirect_to_email_login_url(email)
     else:
         form = HomepageForm(realm=realm)
-    return render_to_response('zerver/accounts_home.html',
-                              {'form': form, 'current_url': request.get_full_path},
-                              request=request)
+    return render(request,
+                  'zerver/accounts_home.html',
+                  context={'form': form, 'current_url': request.get_full_path},
+                  )
 
 def generate_204(request):
     # type: (HttpRequest) -> HttpResponse
@@ -409,7 +415,7 @@ def find_my_team(request):
                 except ValidationError:
                     pass
 
-    return render_to_response('zerver/find_my_team.html',
-                              {'form': form, 'current_url': lambda: url,
-                               'emails': emails},
-                              request=request)
+    return render(request,
+                  'zerver/find_my_team.html',
+                  context={'form': form, 'current_url': lambda: url,
+                           'emails': emails},)
