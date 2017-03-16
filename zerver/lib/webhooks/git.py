@@ -17,6 +17,7 @@ PUSH_COMMITS_MESSAGE_TEMPLATE = u"""{user_name} {pushed_text} to branch {branch_
 """
 
 FORCE_PUSH_COMMITS_MESSAGE_TEMPLATE = u"{user_name} [force pushed]({url}) to branch {branch_name}. Head is now {head}"
+CREATE_BRANCH_MESSAGE_TEMPLATE = u"{user_name} created [{branch_name}]({url}) branch"
 REMOVE_BRANCH_MESSAGE_TEMPLATE = u"{user_name} deleted branch {branch_name}"
 
 PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE = u"{user_name} {action} [{type}{id}]({url})"
@@ -52,6 +53,14 @@ def get_force_push_commits_event_message(user_name, url, branch_name, head):
         url=url,
         branch_name=branch_name,
         head=head
+    )
+
+def get_create_branch_event_message(user_name, url, branch_name):
+    # type: (Text, Text, Text) -> Text
+    return CREATE_BRANCH_MESSAGE_TEMPLATE.format(
+        user_name=user_name,
+        url=url,
+        branch_name=branch_name,
     )
 
 def get_remove_branch_event_message(user_name, branch_name):
