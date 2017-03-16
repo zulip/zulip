@@ -30,6 +30,29 @@ function get_email_for_user_row(row) {
     return email;
 }
 
+function update_view_on_deactivate(row) {
+    var button = row.find("button.deactivate");
+    row.find('button.open-user-form').hide();
+    button.addClass("btn-warning");
+    button.removeClass("btn-danger");
+    button.addClass("reactivate");
+    button.removeClass("deactivate");
+    button.text(i18n.t("Reactivate"));
+    row.addClass("deactivated_user");
+}
+
+function update_view_on_reactivate(row) {
+    row.find(".user-admin-settings").show();
+    var button = row.find("button.reactivate");
+    row.find("button.open-user-form").show();
+    button.addClass("btn-danger");
+    button.removeClass("btn-warning");
+    button.addClass("deactivate");
+    button.removeClass("reactivate");
+    button.text(i18n.t("Deactivate"));
+    row.removeClass("deactivated_user");
+}
+
 exports.update_user_data = function (user_id, new_data) {
     if (!meta.loaded) {
         return;
@@ -502,6 +525,7 @@ function _setup_page() {
                 button.addClass("btn-warning reactivate").removeClass("btn-danger deactivate");
                 button.text(i18n.t("Reactivate"));
                 meta.current_deactivate_user_modal_row.addClass("deactivated_user");
+                meta.current_deactivate_user_modal_row.find('button.open-user-form').hide();
                 meta.current_deactivate_user_modal_row.find(".user-admin-settings").hide();
             },
         });
@@ -527,13 +551,7 @@ function _setup_page() {
                 }
             },
             success: function () {
-                var button = row.find("button.deactivate");
-                button.addClass("btn-warning");
-                button.removeClass("btn-danger");
-                button.addClass("reactivate");
-                button.removeClass("deactivate");
-                button.text(i18n.t("Reactivate"));
-                row.addClass("deactivated_user");
+                update_view_on_deactivate(row);
             },
         });
     });
@@ -559,14 +577,7 @@ function _setup_page() {
                 }
             },
             success: function () {
-                row.find(".user-admin-settings").show();
-                var button = row.find("button.reactivate");
-                button.addClass("btn-danger");
-                button.removeClass("btn-warning");
-                button.addClass("deactivate");
-                button.removeClass("reactivate");
-                button.text(i18n.t("Deactivate"));
-                row.removeClass("deactivated_user");
+                update_view_on_reactivate(row);
             },
         });
     });
