@@ -32,7 +32,7 @@ function replace_floating_recipient_bar(desired_label) {
         new_label.css('display', 'block');
         new_label.attr("zid", rows.id(rows.first_message_in_group(desired_label)));
 
-        new_label.toggleClass('faded', desired_label.hasClass('faded'));
+        new_label.toggleClass('message-fade', desired_label.hasClass('message-fade'));
         old_label = desired_label;
     }
     show_floating_recipient_bar();

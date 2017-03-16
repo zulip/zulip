@@ -40,21 +40,21 @@ exports.set_focused_recipient = function (msg_type) {
 
 function _display_messages_normally() {
     var table = rows.get_table(current_msg_list.table_name);
-    table.find('.recipient_row').removeClass("faded");
+    table.find('.recipient_row').removeClass("message-fade");
 
     normal_display = true;
     floating_recipient_bar.update();
 }
 
 function _display_users_normally() {
-    $('.user_sidebar_entry').removeClass('faded');
+    $('.user_sidebar_entry').removeClass('user-fade');
 }
 
 function change_fade_state(elt, should_fade_group) {
     if (should_fade_group) {
-        elt.addClass("faded");
+        elt.addClass("message-fade");
     } else {
-        elt.removeClass("faded");
+        elt.removeClass("message-fade");
     }
 }
 
@@ -142,11 +142,11 @@ function update_user_row_when_fading(elt) {
     var email = people.get_person_from_user_id(user_id).email;
     var would_receive = exports.would_receive_message(email);
     if (would_receive === false) {
-        elt.addClass('faded');
+        elt.addClass('user-fade');
     } else {
         // would_receive is either true (so definitely don't fade) or
         // undefined (in which case we don't presume to fade)
-        elt.removeClass('faded');
+        elt.removeClass('user-fade');
     }
 }
 
@@ -185,7 +185,7 @@ function _want_normal_display() {
 
 exports.update_one_user_row = function (elt) {
     if (_want_normal_display()) {
-        elt.removeClass('faded');
+        elt.removeClass('user-fade');
     } else {
         update_user_row_when_fading(elt);
     }
