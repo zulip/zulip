@@ -4,6 +4,7 @@ from collections import OrderedDict
 from django.views.generic import TemplateView
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
+from django.shortcuts import render
 
 import os
 import ujson
@@ -131,9 +132,8 @@ def api_endpoint_docs(request):
         for example_type in ('request', 'response'):
             for lang in call.get('example_' + example_type, []):
                 langs.add(lang)
-    return render_to_response(
-        'zerver/api_endpoints.html', {
-            'content': calls,
-            'langs': langs,
-        },
-        request=request)
+    return render(
+        request,
+        'zerver/api_endpoints.html',
+        context={'content': calls, 'langs': langs},
+    )
