@@ -129,21 +129,12 @@ class TestMissedMessages(ZulipTestCase):
         msg_id = self.send_message("othello@zulip.com", "denmark", Recipient.STREAM, '@**hamlet** to be deleted')
 
         othello = get_user_profile_by_email('othello@zulip.com')
-        (message, user_message) = access_message(othello, msg_id)
-        ums = UserMessage.objects.filter(
-            message=msg_id,
-            flags=~UserMessage.flags.historical)
-        message_users = UserProfile.objects.select_related().filter(
-            id__in={um.user_profile_id for um in ums})
-        content = '(deleted)'
-        rendered_content = render_incoming_message(message,
-                                                   content,
-                                                   message_users,
-                                                   othello.realm)
-        do_update_message(othello, message, None, '', content, rendered_content)
-
-        body = 'Denmark > test Othello, the Moor of Venice 1 2 3 4 5 6 7 8 9 10 @**hamlet** Should be deleted!'
-        self._test_cases(tokens, msg_id, body, send_as_user)
+        hamlet = get_user_profile_by_email('hamlet@zulip.com')
+        self.login("othello@zulip.com")
+        result = self.client_patch('/json/messages/'+str(msg_id), {'message_id':msg_id, 'content':' ', 'user_profile':othello})
+        self.assert_json_success(result)
+        handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id}])
+        self.assertEqual(len(mail.outbox), 0)
 
     @patch('zerver.lib.email_mirror.generate_random_token')
     def _deleted_message_in_personal_missed_stream_messages(self, send_as_user, mock_random_token):
@@ -154,21 +145,12 @@ class TestMissedMessages(ZulipTestCase):
         msg_id = self.send_message("othello@zulip.com", "hamlet@zulip.com", Recipient.PERSONAL, 'Extremely personal message! to be deleted!')
 
         othello = get_user_profile_by_email('othello@zulip.com')
-        (message, user_message) = access_message(othello, msg_id)
-        ums = UserMessage.objects.filter(
-            message=msg_id,
-            flags=~UserMessage.flags.historical)
-        message_users = UserProfile.objects.select_related().filter(
-            id__in={um.user_profile_id for um in ums})
-        content = '(deleted)'
-        rendered_content = render_incoming_message(message,
-                                                   content,
-                                                   message_users,
-                                                   othello.realm)
-        do_update_message(othello, message, None, '', content, rendered_content)
-
-        body = 'You and Othello, the Moor of Venice Extremely personal message! Should be deleted!'
-        self._test_cases(tokens, msg_id, body, send_as_user)
+        hamlet = get_user_profile_by_email('hamlet@zulip.com')
+        self.login("othello@zulip.com")
+        result = self.client_patch('/json/messages/'+str(msg_id), {'message_id':msg_id, 'content':' ', 'user_profile':othello})
+        self.assert_json_success(result)
+        handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id}])
+        self.assertEqual(len(mail.outbox), 0)
 
     @patch('zerver.lib.email_mirror.generate_random_token')
     def _deleted_message_in_huddle_missed_stream_messages(self, send_as_user, mock_random_token):
@@ -179,22 +161,15 @@ class TestMissedMessages(ZulipTestCase):
         msg_id = self.send_message("othello@zulip.com", ["hamlet@zulip.com", "iago@zulip.com"], Recipient.PERSONAL, 'Group personal message!')
 
         othello = get_user_profile_by_email('othello@zulip.com')
-        (message, user_message) = access_message(othello, msg_id)
-        ums = UserMessage.objects.filter(
-            message=msg_id,
-            flags=~UserMessage.flags.historical)
-        message_users = UserProfile.objects.select_related().filter(
-            id__in={um.user_profile_id for um in ums})
-        content = '(deleted)'
-        rendered_content = render_incoming_message(message,
-                                                   content,
-                                                   message_users,
-                                                   othello.realm)
-        do_update_message(othello, message, None, '', content, rendered_content)
-
-        body = ('You and Iago, Othello, the Moor of Venice Othello,'
-                ' the Moor of Venice Group personal message')
-        self._test_cases(tokens, msg_id, body, send_as_user)
+        hamlet = get_user_profile_by_email('hamlet@zulip.com')
+        iago = get_user_profile_by_email('iago@zulip.com')
+        self.login("othello@zulip.com")
+        result = self.client_patch('/json/messages/'+str(msg_id), {'message_id':msg_id, 'content':' ', 'user_profile':othello})
+        self.assert_json_success(result)
+        handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id}])
+        self.assertEqual(len(mail.outbox), 0)
+        handle_missedmessage_emails(iago.id, [{'message_id': msg_id}])
+        self.assertEqual(len(mail.outbox), 0)
 
     @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
     def test_extra_context_in_missed_stream_messages_as_user(self):
