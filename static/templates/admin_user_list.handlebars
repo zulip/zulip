@@ -1,5 +1,5 @@
 {{#with user}}
-<tr class="user_row" data-user-id="{{user_id}}" data-email="{{email}}">
+<tr class="user_row{{#unless is_active}} deactivated_user{{/unless}}" data-user-id="{{user_id}}" data-email="{{email}}">
   <td>
     <span class="user_name">{{full_name}}</span>
   </td>
@@ -34,16 +34,13 @@
         {{/if}}
       {{/if}}
     </span>
-    {{#if is_active}}
-      <button class="button btn-primary open-user-form" title="{{t 'Edit user' }}" data-user-id="{{user_id}}">
-          <i class="icon-vector-pencil"></i>
-      </button>
-    {{/if}}
+    <button class="button btn-primary open-user-form{{#unless is_active}} display-none{{/unless}}" title="{{t 'Edit user' }}" data-user-id="{{user_id}}">
+        <i class="icon-vector-pencil"></i>
+    </button>
     <div class='admin-user-status'>
     </div>
   </td>
 </tr>
-{{#if is_active}}
 <tr class="user-name-form display-none" data-user-id="{{user_id}}">
   <td colspan="{{#if is_bot}}4{{else}}3{{/if}}">
     <form class="form-horizontal name-setting">
@@ -64,5 +61,4 @@
     </form>
   </td>
 </tr>
-{{/if}}
 {{/with}}
