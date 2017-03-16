@@ -352,8 +352,13 @@ form#add_new_subscription {
 }
 
 .subscriber_list_add {
+    width: 100%;
     margin: 10px auto;
-    text-align: center;
+    text-align: right;
+}
+
+.subscriber_list_add .search {
+    float: left;
 }
 
 .subscriber_list_add .form-inline {

@@ -319,19 +319,22 @@ function show_subscription_settings(sub_row) {
         idempotent: true,
         success: function (data) {
             loading.destroy_indicator(indicator_elem);
-            var subscribers = _.map(data.subscribers, function (elem) {
-                var person = people.get_by_email(elem);
-                if (person === undefined) {
-                    return elem;
-                }
-                return format_member_list_elem(elem);
-            });
+            var filter_streams_input = $("[data-stream-id='" + stream_id + "'] .search");
 
-            var list_html = _.reduce(subscribers.sort(), function (accumulator, item) {
-                return accumulator + item;
-            }, "");
-
-            list.append(list_html);
+            list_render(list, data.subscribers.sort(), {
+                name: "stream_subscribers/" + stream_id,
+                modifier: function (item) {
+                    var person = people.get_by_email(item);
+                    return templates.render('stream_member_list_entry', {
+                        name: person.full_name,
+                        email: item,
+                        displaying_for_admin: page_params.is_admin}
+                    );
+                },
+                filter: {
+                    element: filter_streams_input,
+                },
+            }).init();
         },
         error: function () {
             loading.destroy_indicator(indicator_elem);
