@@ -102,7 +102,7 @@ def get_chart_data(request, user_profile, chart_name=REQ(),
         raise JsonableError(_("No analytics data available. Please contact your server administrator."))
 
     end_times = time_range(start, end, stat.frequency, min_length)
-    data = {'end_times': end_times, 'frequency': stat.frequency, 'interval': stat.interval}
+    data = {'end_times': end_times, 'frequency': stat.frequency}
     for table in tables:
         if table == RealmCount:
             data['realm'] = get_time_series_by_subgroup(

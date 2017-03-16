@@ -102,15 +102,9 @@ realm.
   subgroup. E.g. (UserProfile, is_bot).
 - frequency: How often to run the CountStat. Either 'hour' or
   'day'. E.g. 'day'.
-- interval: Either 'hour', 'day', or 'gauge'. If 'hour' or 'day', we're
-  interested in events that happen in the hour or day preceeding the
-  end_time. If gauge, we're interested in the state of the system at
-  end_time. Example: 'gauge'. (If 'hour', our example CountStat would
-  instead be measuring the number of currently active users who joined in
-  the last hour).
-
-Note that one should be careful about making new gauge CountStats; see
-[Performance Strategy](#performance-strategy) below.
+- interval: A timedelta that restricts events to the following time interval:
+  [end_time - interval, end_time). Example: TIMEDELTA_MAX. We're interested
+  in currently active users that joined any time since the start of time.
 
 ## The FillState table
 
@@ -160,8 +154,7 @@ efficient:
 - Not storing rows when the value is 0. An hourly user stat would otherwise
   collect 24 * 365 * roughly .5MB per db row = 4GB of data per user per
   year, most of whose values are 0. A related note is to be cautious about
-  adding gauge queries, since gauge measurements are typically non-zero
-  rather than being typically zero.
+  adding queries that are typically non-0 instead of being typically 0.
 
 ## Backend Testing
 

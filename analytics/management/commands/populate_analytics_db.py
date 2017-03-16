@@ -44,7 +44,7 @@ class Command(BaseCommand):
             days=self.DAYS_OF_DATA, business_hours_base=business_hours_base,
             non_business_hours_base=non_business_hours_base, growth=growth,
             autocorrelation=autocorrelation, spikiness=spikiness, holiday_rate=holiday_rate,
-            frequency=stat.frequency, is_gauge=(stat.interval == CountStat.GAUGE),
+            frequency=stat.frequency, partial_sum=(stat.interval > timedelta(days=1000)),
             random_seed=self.random_seed)
 
     def handle(self, *args, **options):
