@@ -375,6 +375,24 @@ count_message_by_stream_query = """
 """
 zerver_count_message_by_stream = ZerverCountQuery(Message, StreamCount, count_message_by_stream_query)
 
+check_useractivityinterval_by_user_query = """
+    INSERT INTO analytics_usercount
+        (user_id, realm_id, value, property, subgroup, end_time)
+    SELECT
+        zerver_userprofile.id, zerver_userprofile.realm_id, 1, '%(property)s', %(subgroup)s, %%(time_end)s
+    FROM zerver_userprofile
+    JOIN zerver_useractivityinterval
+    ON
+        zerver_userprofile.id = zerver_useractivityinterval.user_profile_id
+    WHERE
+        zerver_useractivityinterval.end >= %%(time_start)s AND
+        zerver_useractivityinterval.start < %%(time_end)s
+        %(join_args)s
+    GROUP BY zerver_userprofile.id %(group_by_clause)s
+"""
+zerver_check_useractivityinterval_by_user = ZerverCountQuery(
+    UserActivityInterval, UserCount, check_useractivityinterval_by_user_query)
+
 def do_pull_minutes_active(stat, start_time, end_time):
     # type: (CountStat, datetime, datetime) -> None
     timer_start = time.time()
@@ -410,6 +428,10 @@ count_stats_ = [
               (Message, 'sending_client_id'), CountStat.DAY),
     CountStat('messages_in_stream:is_bot:day', zerver_count_message_by_stream, {},
               (UserProfile, 'is_bot'), CountStat.DAY),
+    # The minutes=15 part is due to the 15 minutes added in
+    # zerver.lib.actions.do_update_user_activity_interval.
+    CountStat('15day_actives::day', zerver_check_useractivityinterval_by_user, {},
+              None, CountStat.DAY, interval=timedelta(days=15)-timedelta(minutes=15)),
     LoggingCountStat('active_users_log:is_bot:day', RealmCount, CountStat.DAY),
     CustomPullCountStat('minutes_active::day', UserCount, CountStat.DAY, do_pull_minutes_active)
 ]
