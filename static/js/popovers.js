@@ -545,7 +545,7 @@ exports.register_click_handlers = function () {
         compose.start('stream', {trigger: 'sidebar user actions'});
         var name = people.get_person_from_user_id(user_id).full_name;
         var textarea = $("#new_message_content");
-        textarea.val('@**' + name + '** ');
+        textarea.caret('@**' + name + '** ');
         popovers.hide_user_sidebar_popover();
         e.stopPropagation();
         e.preventDefault();
@@ -574,7 +574,7 @@ exports.register_click_handlers = function () {
         var user_id = $(e.target).parents('ul').attr('data-user-id');
         var name = people.get_person_from_user_id(user_id).full_name;
         var textarea = $("#new_message_content");
-        textarea.val('@**' + name + '** ');
+        textarea.caret('@**' + name + '** ');
         popovers.hide_message_info_popover();
         e.stopPropagation();
         e.preventDefault();
