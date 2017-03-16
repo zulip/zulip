@@ -56,6 +56,23 @@ exports.lower_bound = function (array, arg1, arg2, arg3, arg4) {
     return first;
 };
 
+exports.preview_node = function (node) {
+    if (node.constructor === jQuery) {
+        node = node[0];
+    }
+
+    var tag = node.tagName.toLowerCase();
+    var className = node.className.length ? node.className : false;
+    var id = node.id.length ? node.id : false;
+
+    var node_preview = "<" + tag +
+       (id ? " id='" + id + "'" : "") +
+       (className ? " class='" + className + "'" : "") +
+       "></" + tag + ">";
+
+      return node_preview;
+};
+
 exports.same_stream_and_topic = function util_same_stream_and_topic(a, b) {
     // Streams and topics are case-insensitive.
     return ((a.stream_id === b.stream_id) &&
