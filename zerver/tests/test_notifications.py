@@ -38,7 +38,7 @@ class TestMissedMessages(ZulipTestCase):
             reply_to_addresses = [settings.EMAIL_GATEWAY_PATTERN % (u'mm' + t) for t in tokens]
         else:
             reply_to_addresses = ["noreply@example.com"]
-        (message, usr_message) = access_message(hamlet, msg_id)
+        (message, user_message) = access_message(hamlet, msg_id)
         # No notification email should be sent for deleted messages
         if message.content == '(deleted)':
             self.assertEqual(len(mail.outbox), 0)
@@ -129,7 +129,7 @@ class TestMissedMessages(ZulipTestCase):
         msg_id = self.send_message("othello@zulip.com", "denmark", Recipient.STREAM, '@**hamlet** to be deleted')
 
         othello = get_user_profile_by_email('othello@zulip.com')
-        (message, usr_message) = access_message(othello, msg_id)
+        (message, user_message) = access_message(othello, msg_id)
         ums = UserMessage.objects.filter(
             message=msg_id,
             flags=~UserMessage.flags.historical)
@@ -154,7 +154,7 @@ class TestMissedMessages(ZulipTestCase):
         msg_id = self.send_message("othello@zulip.com", "hamlet@zulip.com", Recipient.PERSONAL, 'Extremely personal message! to be deleted!')
 
         othello = get_user_profile_by_email('othello@zulip.com')
-        (message, usr_message) = access_message(othello, msg_id)
+        (message, user_message) = access_message(othello, msg_id)
         ums = UserMessage.objects.filter(
             message=msg_id,
             flags=~UserMessage.flags.historical)
@@ -179,7 +179,7 @@ class TestMissedMessages(ZulipTestCase):
         msg_id = self.send_message("othello@zulip.com", ["hamlet@zulip.com", "iago@zulip.com"], Recipient.PERSONAL, 'Group personal message!')
 
         othello = get_user_profile_by_email('othello@zulip.com')
-        (message, usr_message) = access_message(othello, msg_id)
+        (message, user_message) = access_message(othello, msg_id)
         ums = UserMessage.objects.filter(
             message=msg_id,
             flags=~UserMessage.flags.historical)
