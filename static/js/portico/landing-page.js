@@ -129,6 +129,96 @@ var events = function () {
     $("#hamburger").click(function () {
         $("nav ul").addClass("show");
     });
+
+    $(window).scroll(function () {
+        if ($(document.activeElement).is(".price-box")) {
+            document.activeElement.blur();
+        }
+    });
+
+    (function () {
+        var $pricing_overlay = $(".pricing-overlay");
+        var $inline_overlay = $(".pricing-model:not(.pricing-overlay)");
+        var $pricing_container = $(".pricing-overlay .pricing-container");
+        var $info_box = $(".info-box");
+
+        var $original;
+        var $clone;
+        var height;
+
+        var calculate_position = {
+            initial: function (top, left) {
+                return ["transform", "translateX(" + (left - 50) + "px) translateY(" + (top - 50) + "px)"];
+            },
+            final: function (height) {
+                return ["transform", "translateX(0px) translateY(" + (window.innerHeight - 100 - height) / 2 + "px)"];
+            },
+        };
+
+        var reset = function () {
+            $info_box.removeClass("show").css("transform", "translateY(300px)");
+            $pricing_overlay.removeClass("active");
+            $inline_overlay.removeClass("stick");
+            if ($clone) {
+                setTimeout(function () {
+                    $clone.remove();
+                }, 300);
+            }
+        };
+
+        $("body").on("focus", ".price-box", function (e) {
+            $original = $(e.target);
+            var offset = $original.offset();
+            height = $original.height();
+
+            var top = offset.top - $("body").scrollTop() + 2;
+            var left = offset.left + 2;
+
+            if ($clone) {
+                $clone.remove();
+            }
+
+            $clone = $original.blur().clone(true);
+            // set the CSS initial position to match the inline position.
+
+            var initial_position = calculate_position.initial(top, left);
+            $clone.css.apply($clone, initial_position);
+            $pricing_container.prepend($clone);
+
+            // add an active class to make the overlay appear.
+            $pricing_overlay.addClass("active");
+            // add a stick class to the inline pricing model to make the :hover
+            // transform stick.
+            $inline_overlay.addClass("stick");
+            // remove any old pricing information and append the clone.
+
+
+            setTimeout(function () {
+                $clone.css.apply($clone, calculate_position.final(height));
+                setTimeout(function () {
+                    $info_box.addClass("show");
+                    $info_box.css({
+                        transform: "translateY(" + (window.innerHeight - 100 - height) / 2 + "px)",
+                        height: height + "px",
+                    });
+                }, 300);
+            }, 300);
+        });
+
+        $(window).resize(function () {
+            if ($pricing_overlay.hasClass("active")) {
+                $clone.css.apply($clone, calculate_position.final(height));
+                $info_box.css("transform", "translateY(" + (window.innerHeight - 100 - height) / 2 + "px)");
+            }
+        });
+
+        $pricing_overlay.click(function (e) {
+            if ($(e.target).is(".pricing-container, .pricing-overlay")) {
+                reset();
+            }
+        });
+    }());
+
     (function () {
         var $last = $(".details-box").eq(0).addClass("show");
         var $li = $("ul.sidebar li");
@@ -192,6 +282,13 @@ var load = function () {
     setTimeout(function () {
         $(".portico-landing").addClass("show");
     }, 200);
+
+    (function () {
+        // switch the hero images once every 4 seconds.
+        setInterval(function () {
+            $("x-grad").toggleClass("orange-grad blue-grad");
+        }, 4000);
+    }());
 
     // display the `x-grad` element a second after load so that the slide up
     // transition on the .portico-landing is nice and smooth.
