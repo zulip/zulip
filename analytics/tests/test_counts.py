@@ -614,7 +614,6 @@ class TestLoggingCountStats(AnalyticsTestCase):
 class TestDeleteStats(AnalyticsTestCase):
     def test_do_drop_all_analytics_tables(self):
         # type: () -> None
-        # The actual test that would be nice to do would be to
         user = self.create_user()
         stream = self.create_stream_with_recipient()[0]
         count_args = {'property': 'test', 'end_time': self.TIME_ZERO, 'value': 10}
