@@ -9,6 +9,7 @@ from django.http import HttpResponseNotFound, HttpRequest, HttpResponse
 from django.template import RequestContext, loader
 from django.utils import timezone
 from django.utils.translation import ugettext as _
+from django.shortcuts import render
 from jinja2 import Markup as mark_safe
 
 from analytics.lib.counts import CountStat, process_count_stat, COUNT_STATS
@@ -41,8 +42,9 @@ from typing import Any, Callable, Dict, List, Optional, Set, Text, \
 @zulip_login_required
 def stats(request):
     # type: (HttpRequest) -> HttpResponse
-    return render_to_response('analytics/stats.html',
-                              context=dict(realm_name = request.user.realm.name))
+    return render(request,
+                  'analytics/stats.html',
+                  context=dict(realm_name = request.user.realm.name))
 
 @has_request_variables
 def get_chart_data(request, user_profile, chart_name=REQ(),
@@ -765,10 +767,10 @@ def get_activity(request):
 
     title = 'Activity'
 
-    return render_to_response(
+    return render(
+        request,
         'analytics/activity.html',
-        dict(data=data, title=title, is_home=True),
-        request=request
+        context=dict(data=data, title=title, is_home=True),
     )
 
 def get_user_activity_records_for_realm(realm, is_bot):
@@ -1077,10 +1079,10 @@ def get_realm_activity(request, realm_str):
     realm_link += '&target=stats.gauges.staging.users.active.%s.0_16hr' % (realm_str,)
 
     title = realm_str
-    return render_to_response(
+    return render(
+        request,
         'analytics/activity.html',
-        dict(data=data, realm_link=realm_link, title=title),
-        request=request
+        context=dict(data=data, realm_link=realm_link, title=title),
     )
 
 @zulip_internal
@@ -1098,8 +1100,8 @@ def get_user_activity(request, email):
     data += [('Info', content)]
 
     title = email
-    return render_to_response(
+    return render(
+        request,
         'analytics/activity.html',
-        dict(data=data, title=title),
-        request=request
+        context=dict(data=data, title=title),
     )
