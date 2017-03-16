@@ -68,6 +68,24 @@ Feel free to join as many area label teams as as you'd like!
     label as well as any pull requests that reference issues labeled with your
     team's area label.
 
+* **Track inactive claimed issues** — If a claimed issue has not been updated
+for a week, **@zulipbot** will post a comment on the inactive issue to ask the
+assignee(s) if they are still working on the issue.
+
+    If you see this comment on an issue you claimed, you should post a comment
+    on the issue to notify **@zulipbot** that you're still working on it.
+
+    If **@zulipbot** does not receive a response from the assignee within 3 days
+    of an inactive issue prompt, **@zulipbot** will automatically remove the
+    issue's current assignee(s) and the "in progress" label to allow others to
+    work on an inactive issue.
+
+* **Receive Travis build status notifications** — If you would like to receive
+a notification whenever the build status of your pull request is updated, label
+your pull request with the "travis updates" label using the command `@zulipbot
+label "travis updates"`, and **@zulipbot** will let you know the build status
+(e.g. passed, failed, errored) of your pull request once all tests finish.
+
 ### Contributing
 
 If you wish to help develop and contribute to **@zulipbot**, check out the
