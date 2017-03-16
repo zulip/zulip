@@ -4,7 +4,7 @@ from typing import Any, List, Dict, Optional, Text
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponse, HttpRequest
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.utils import translation
 from django.utils.cache import patch_cache_control
 from six.moves import zip_longest, zip, range
@@ -52,12 +52,13 @@ def accounts_accept_terms(request):
     special_message_template = None
     if request.user.tos_version is None and settings.FIRST_TIME_TOS_TEMPLATE is not None:
         special_message_template = 'zerver/' + settings.FIRST_TIME_TOS_TEMPLATE
-    return render_to_response(
+    return render(
+        request,
         'zerver/accounts_accept_terms.html',
-        {'form': form,
-         'email': email,
-         'special_message_template': special_message_template},
-        request=request)
+        context={'form': form,
+                 'email': email,
+                 'special_message_template': special_message_template},
+    )
 
 def approximate_unread_count(user_profile):
     # type: (UserProfile) -> int
@@ -87,8 +88,7 @@ def sent_time_in_epoch_seconds(user_message):
 def home(request):
     # type: (HttpRequest) -> HttpResponse
     if settings.DEVELOPMENT and os.path.exists('var/handlebars-templates/compile.error'):
-        response = render_to_response('zerver/handlebars_compilation_failed.html',
-                                      request=request)
+        response = render(request, 'zerver/handlebars_compilation_failed.html')
         response.status_code = 500
         return response
     if not settings.SUBDOMAINS_HOMEPAGE:
@@ -101,8 +101,7 @@ def home(request):
     if subdomain != "":
         return home_real(request)
 
-    return render_to_response('zerver/hello.html',
-                              request=request)
+    return render(request, 'zerver/hello.html')
 
 @zulip_login_required
 def home_real(request):
@@ -338,21 +337,20 @@ def home_real(request):
         show_invites = False
 
     request._log_data['extra'] = "[%s]" % (register_ret["queue_id"],)
-    response = render_to_response('zerver/index.html',
-                                  {'user_profile': user_profile,
-                                   'page_params': simplejson.encoder.JSONEncoderForHTML().encode(page_params),
-                                   'nofontface': is_buggy_ua(request.META.get("HTTP_USER_AGENT", "Unspecified")),
-                                   'avatar_url': avatar_url(user_profile),
-                                   'show_debug':
-                                       settings.DEBUG and ('show_debug' in request.GET),
-                                   'pipeline': settings.PIPELINE_ENABLED,
-                                   'show_invites': show_invites,
-                                   'is_admin': user_profile.is_realm_admin,
-                                   'show_webathena': user_profile.realm.webathena_enabled,
-                                   'enable_feedback': settings.ENABLE_FEEDBACK,
-                                   'embedded': narrow_stream is not None,
-                                   },
-                                  request=request)
+    response = render(request, 'zerver/index.html',
+                      context={'user_profile': user_profile,
+                               'page_params': simplejson.encoder.JSONEncoderForHTML().encode(page_params),
+                               'nofontface': is_buggy_ua(request.META.get("HTTP_USER_AGENT", "Unspecified")),
+                               'avatar_url': avatar_url(user_profile),
+                               'show_debug':
+                               settings.DEBUG and ('show_debug' in request.GET),
+                               'pipeline': settings.PIPELINE_ENABLED,
+                               'show_invites': show_invites,
+                               'is_admin': user_profile.is_realm_admin,
+                               'show_webathena': user_profile.realm.webathena_enabled,
+                               'enable_feedback': settings.ENABLE_FEEDBACK,
+                               'embedded': narrow_stream is not None,
+                               },)
     patch_cache_control(response, no_cache=True, no_store=True, must_revalidate=True)
     return response
 
