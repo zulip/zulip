@@ -39,7 +39,7 @@ exports.set_focused_recipient = function (msg_type) {
 };
 
 function _display_messages_normally() {
-    rows.get_table(current_msg_list.table_name).find(".recipient_row, .message_row")
+    rows.get_table(current_msg_list.table_name).find(".recipient_row")
                                                .removeClass("faded").removeClass("unfaded");
 
     normal_display = true;
