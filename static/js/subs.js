@@ -102,6 +102,31 @@ function get_sub_for_target(target) {
     return sub;
 }
 
+function redraw_privacy_related_stuff(sub_row, sub) {
+    var stream_settings = settings_for_sub(sub);
+    var html;
+
+    sub = stream_data.add_admin_options(sub);
+
+    html = templates.render('subscription_setting_icon', sub);
+    sub_row.find('.icon').expectOne().replaceWith($(html));
+
+    html = templates.render('subscription_type', sub);
+    stream_settings.find('.subscription-type-text').expectOne().html(html);
+
+    if (sub.invite_only) {
+        stream_settings.find(".large-icon")
+            .removeClass("hash").addClass("lock")
+            .html("<i class='icon-vector-lock'></i>");
+    } else {
+        stream_settings.find(".large-icon")
+            .addClass("hash").removeClass("lock")
+            .html("");
+    }
+
+    stream_list.redraw_stream_privacy(sub.name);
+}
+
 function stream_home_view_clicked(e) {
     var sub = get_sub_for_target(e.target);
     if (!sub) {
@@ -616,31 +641,6 @@ function actually_filter_streams() {
         subscribed_only = false;
     }
     exports.filter_table({ input: query, subscribed_only: subscribed_only });
-}
-
-function redraw_privacy_related_stuff(sub_row, sub) {
-    var stream_settings = settings_for_sub(sub);
-    var html;
-
-    sub = stream_data.add_admin_options(sub);
-
-    html = templates.render('subscription_setting_icon', sub);
-    sub_row.find('.icon').expectOne().replaceWith($(html));
-
-    html = templates.render('subscription_type', sub);
-    stream_settings.find('.subscription-type-text').expectOne().html(html);
-
-    if (sub.invite_only) {
-        stream_settings.find(".large-icon")
-            .removeClass("hash").addClass("lock")
-            .html("<i class='icon-vector-lock'></i>");
-    } else {
-        stream_settings.find(".large-icon")
-            .addClass("hash").removeClass("lock")
-            .html("");
-    }
-
-    stream_list.redraw_stream_privacy(sub.name);
 }
 
 function change_stream_privacy(e) {
