@@ -20,9 +20,8 @@ class GithubWebhookTest(WebhookTestCase):
 
     def test_ping_event(self):
         # type: () -> None
-        payload = self.get_body('ping')
-        result = self.client_post(self.url, payload, HTTP_X_GITHUB_EVENT='ping', content_type="application/json")
-        self.assert_json_success(result)
+        expected_message = u"GitHub webhook has been successfully configured by TomaszKolek"
+        self.send_and_test_stream_message('ping', self.EXPECTED_SUBJECT_REPO_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='ping')
 
     def test_push_1_commit(self):
         # type: () -> None
