@@ -1084,6 +1084,15 @@ function render(template_name, args) {
     assert.equal($(html).find("tr").data("topic"), "Verona2");
 }());
 
+(function user_avatar() {
+    var args = {
+        avatar_url: 'http://emojipedia-us.s3.amazonaws.com/cache/46/7f/467fe69069c408e07517621f263ea9b5.png'
+    };
+
+    var html = render('user_avatar', args);
+    assert.equal($(html).data("src"), "http://emojipedia-us.s3.amazonaws.com/cache/46/7f/467fe69069c408e07517621f263ea9b5.png");
+}());
+
 // By the end of this test, we should have compiled all our templates.  Ideally,
 // we will also have exercised them to some degree, but that's a little trickier
 // to enforce.

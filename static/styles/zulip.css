@@ -1517,6 +1517,28 @@ blockquote p {
     margin: 0px;
 }
 
+#user-avatar {
+    display: inline-block;
+    height: 25px;
+    width: 25px;
+    position: absolute;
+    /*right: 50px;*/
+    left: 12px;
+    top: 7px
+}
+
+#user-avatar img {
+    height: 25px;
+    width: 25px;
+    border-radius: 2px;
+}
+
+@media (max-width: 975px) {
+    #user-avatar {
+        display: none;
+    }
+}
+
 #streamlist-toggle {
     display: none;
     position: absolute;

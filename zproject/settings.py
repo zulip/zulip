@@ -887,6 +887,7 @@ JS_SPECS = {
             'js/custom_markdown.js',
             'js/bot_data.js',
             'js/reactions.js',
+            'js/navbar.js'
             # JS bundled by webpack is also included here if PIPELINE_ENABLED setting is true
         ],
         'output_filename': 'min/app.js'
