@@ -13,7 +13,8 @@ from zerver.decorator import api_key_only_webhook_view, REQ, has_request_variabl
 from zerver.lib.webhooks.git import get_issue_event_message, SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE,\
     get_pull_request_event_message, SUBJECT_WITH_BRANCH_TEMPLATE,\
     get_push_commits_event_message, CONTENT_MESSAGE_TEMPLATE,\
-    get_commits_comment_action_message, get_push_tag_event_message
+    get_commits_comment_action_message, get_push_tag_event_message, \
+    get_setup_webhook_message
 
 class UnknownEventType(Exception):
     pass
@@ -296,6 +297,10 @@ def get_pull_request_review_comment_body(payload):
         type='PR Review Comment'
     )
 
+def get_ping_body(payload):
+    # type: (Dict[str, Any]) -> Text
+    return get_setup_webhook_message('GitHub', get_sender_name(payload))
+
 def get_repository_name(payload):
     # type: (Dict[str, Any]) -> Text
     return payload['repository']['name']
@@ -368,6 +373,7 @@ EVENT_FUNCTION_MAPPER = {
     'opened_or_update_pull_request': get_opened_or_update_pull_request_body,
     'assigned_or_unassigned_pull_request': get_assigned_or_unassigned_pull_request_body,
     'page_build': get_page_build_body,
+    'ping': get_ping_body,
     'public': get_public_body,
     'pull_request_review': get_pull_request_review_body,
     'pull_request_review_comment': get_pull_request_review_comment_body,
@@ -386,7 +392,7 @@ def api_github_webhook(
         payload=REQ(argument_type='body'), stream=REQ(default='github')):
     # type: (HttpRequest, UserProfile, Client, Dict[str, Any], Text) -> HttpResponse
     event = get_event(request, payload)
-    if event != 'ping' and event is not None:
+    if event is not None:
         subject = get_subject_based_on_type(payload, event)
         body = get_body_function_based_on_type(event)(payload)
         check_send_message(user_profile, client, 'stream', [stream], subject, body)
