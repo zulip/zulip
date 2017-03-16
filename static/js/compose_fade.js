@@ -39,22 +39,22 @@ exports.set_focused_recipient = function (msg_type) {
 };
 
 function _display_messages_normally() {
-    rows.get_table(current_msg_list.table_name).find(".recipient_row")
-                                               .removeClass("faded").removeClass("unfaded");
+    var table = rows.get_table(current_msg_list.table_name);
+    table.find('.recipient_row').removeClass("faded");
 
     normal_display = true;
     floating_recipient_bar.update();
 }
 
 function _display_users_normally() {
-    $('.user_sidebar_entry').removeClass('faded').removeClass('unfaded');
+    $('.user_sidebar_entry').removeClass('faded');
 }
 
 function change_fade_state(elt, should_fade_group) {
     if (should_fade_group) {
-        elt.removeClass("unfaded").addClass("faded");
+        elt.addClass("faded");
     } else {
-        elt.removeClass("faded").addClass("unfaded");
+        elt.removeClass("faded");
     }
 }
 
@@ -106,9 +106,9 @@ exports.would_receive_message = function (email) {
     // they would definitely not receive this message, and undefined if we
     // don't know (e.g. the recipient is a stream we're not subscribed to).
     //
-    // Yes it's slightly weird to have three return values, but this will be
-    // helpful if we want to emphasize the '.unfaded' class later (applied
-    // to users who will definitely receive the message).
+    // The distinction between undefined and true is historical.  We really
+    // only ever fade stuff if would_receive_message() returns false; i.e.
+    // we are **sure** that you would **not** receive the message.
 
     if (people.is_current_user(email)) {
         // We never want to fade you yourself, so pretend it's true even if
@@ -141,12 +141,12 @@ function update_user_row_when_fading(elt) {
     var user_id = elt.attr('data-user-id');
     var email = people.get_person_from_user_id(user_id).email;
     var would_receive = exports.would_receive_message(email);
-    if (would_receive === true) {
-        elt.addClass('unfaded').removeClass('faded');
-    } else if (would_receive === false) {
-        elt.addClass('faded').removeClass('unfaded');
+    if (would_receive === false) {
+        elt.addClass('faded');
     } else {
-        elt.removeClass('faded').removeClass('unfaded');
+        // would_receive is either true (so definitely don't fade) or
+        // undefined (in which case we don't presume to fade)
+        elt.removeClass('faded');
     }
 }
 
@@ -185,7 +185,7 @@ function _want_normal_display() {
 
 exports.update_one_user_row = function (elt) {
     if (_want_normal_display()) {
-        elt.removeClass('faded').removeClass('unfaded');
+        elt.removeClass('faded');
     } else {
         update_user_row_when_fading(elt);
     }
