@@ -317,7 +317,7 @@ function add_email_hint(row, email_address_hint_content) {
 // server_events code flow not having a good way to associate with
 // this request.  These should be appended to the top of the list so
 // they are more visible.
-function add_sub_to_table(sub) {
+exports.add_sub_to_table = function (sub) {
     sub = stream_data.add_admin_options(sub);
     stream_data.update_subscribers_count(sub);
     var html = templates.render('subscription', sub);
@@ -336,7 +336,7 @@ function add_sub_to_table(sub) {
         $(".stream-row[data-stream-id='" + stream_data.get_sub(meta.stream_created).stream_id + "']").click();
         meta.stream_created = undefined;
     }
-}
+};
 
 function format_member_list_elem(email) {
     var person = people.get_by_email(email);
@@ -479,7 +479,7 @@ exports.mark_subscribed = function (sub, subscribers) {
                                people.my_current_email());
         }
     } else {
-        add_sub_to_table(sub);
+        exports.add_sub_to_table(sub);
     }
 
     // Display the swatch and subscription settings
