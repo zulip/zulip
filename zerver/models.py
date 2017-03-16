@@ -611,7 +611,10 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     quota = models.IntegerField(default=DEFAULT_UPLOADS_QUOTA) # type: int
     # The maximum length of a timezone in pytz.all_timezones is 32.
     # Setting max_length=40 is a safe choice.
-    timezone = models.CharField(max_length=40, default='UTC')  # type: Text
+    # In Django, the convention is to use empty string instead of Null
+    # for text based fields. For more information, see
+    # https://docs.djangoproject.com/en/1.10/ref/models/fields/#django.db.models.Field.null.
+    timezone = models.CharField(max_length=40, default=u'')  # type: Text
 
     def can_admin_user(self, target_user):
         # type: (UserProfile) -> bool
