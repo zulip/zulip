@@ -17,7 +17,7 @@ from analytics.models import BaseCount, InstallationCount, RealmCount, \
 from zerver.lib.actions import do_create_user, do_deactivate_user, \
     do_activate_user, do_reactivate_user
 from zerver.models import Realm, UserProfile, Message, Stream, Recipient, \
-    Huddle, Client, get_user_profile_by_email, get_client
+    Huddle, Client, UserActivityInterval, get_user_profile_by_email, get_client
 
 from datetime import datetime, timedelta
 
@@ -482,6 +482,55 @@ class TestCountStats(AnalyticsTestCase):
                               [[3, 'false'], [2, 'true'], [2, 'false', self.second_realm]])
         self.assertTableState(InstallationCount, ['value', 'subgroup'], [[5, 'false'], [2, 'true']])
         self.assertTableState(UserCount, [], [])
+
+    def create_interval(self, user, start_offset, end_offset):
+        # type: (UserProfile, timedelta, timedelta) -> None
+        UserActivityInterval.objects.create(
+            user_profile=user, start=self.TIME_ZERO-start_offset,
+            end=self.TIME_ZERO-end_offset)
+
+    def test_minutes_active(self):
+        # type: () -> None
+        stat = COUNT_STATS['minutes_active::day']
+        self.current_property = stat.property
+
+        # Outside time range, should not appear. Also testing for intervals
+        # starting and ending on boundary
+        user1 = self.create_user()
+        self.create_interval(user1, 25*self.HOUR, self.DAY)
+        self.create_interval(user1, timedelta(0), -self.HOUR)
+
+        # Multiple intervals, including one outside boundary
+        user2 = self.create_user()
+        self.create_interval(user2, 20*self.DAY, 19*self.DAY)
+        self.create_interval(user2, 20*self.HOUR, 19*self.HOUR)
+        self.create_interval(user2, 20*self.MINUTE, 19*self.MINUTE)
+
+        # Intervals crossing boundary
+        user3 = self.create_user()
+        self.create_interval(user3, 25*self.HOUR, 22*self.HOUR)
+        self.create_interval(user3, self.MINUTE, -self.MINUTE)
+
+        # Interval subsuming time range
+        user4 = self.create_user()
+        self.create_interval(user4, 2*self.DAY, -2*self.DAY)
+
+        # Less than 60 seconds, should not appear
+        user5 = self.create_user()
+        self.create_interval(user5, self.MINUTE, timedelta(seconds=30))
+        self.create_interval(user5, timedelta(seconds=20), timedelta(seconds=10))
+
+        # Second realm
+        user6 = self.create_user(realm=self.second_realm)
+        self.create_interval(user6, 20*self.MINUTE, 19*self.MINUTE)
+
+        do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
+        self.assertTableState(UserCount, ['value', 'user'],
+                              [[61, user2], [121, user3], [24*60, user4], [1, user6]])
+        self.assertTableState(RealmCount, ['value', 'realm'],
+                              [[61 + 121 + 24*60, self.default_realm], [1, self.second_realm]])
+        self.assertTableState(InstallationCount, ['value'], [[61 + 121 + 24*60 + 1]])
+        self.assertTableState(StreamCount, [], [])
 
 class TestDoAggregateToSummaryTable(AnalyticsTestCase):
     # do_aggregate_to_summary_table is mostly tested by the end to end

@@ -5,12 +5,14 @@ from django.utils import timezone
 
 from analytics.models import InstallationCount, RealmCount, \
     UserCount, StreamCount, BaseCount, FillState, Anomaly, installation_epoch
-from zerver.models import Realm, UserProfile, Message, Stream, models
+from zerver.models import Realm, UserProfile, Message, Stream, \
+    UserActivityInterval, models
 from zerver.lib.timestamp import floor_to_day, floor_to_hour, ceiling_to_day, \
     ceiling_to_hour
 
-from typing import Any, Dict, Optional, Text, Tuple, Type, Union
+from typing import Any, Callable, Dict, Optional, Text, Tuple, Type, Union
 
+from collections import defaultdict
 from datetime import timedelta, datetime
 import logging
 import time
@@ -49,6 +51,7 @@ class CountStat(object):
         self.frequency = frequency
         self.interval = self.GAUGE if is_gauge else frequency
         self.is_logging = False
+        self.custom_pull_function = None # type: Optional[Callable[[CountStat, datetime, datetime], None]]
 
     def __unicode__(self):
         # type: () -> Text
@@ -60,6 +63,13 @@ class LoggingCountStat(CountStat):
         CountStat.__init__(self, property, ZerverCountQuery(None, analytics_table, None), {}, None,
                            frequency, False)
         self.is_logging = True
+
+class CustomPullCountStat(CountStat):
+    def __init__(self, property, analytics_table, frequency, custom_pull_function):
+        # type: (str, Type[BaseCount], str, Callable[[CountStat, datetime, datetime], None]) -> None
+        CountStat.__init__(self, property, ZerverCountQuery(None, analytics_table, None), {}, None,
+                           frequency, False)
+        self.custom_pull_function = custom_pull_function
 
 class ZerverCountQuery(object):
     def __init__(self, zerver_table, analytics_table, query):
@@ -119,7 +129,9 @@ def do_fill_count_stat_at_hour(stat, end_time):
     else: # stat.interval == CountStat.GAUGE
         start_time = MIN_TIME
 
-    if not stat.is_logging:
+    if stat.custom_pull_function is not None:
+        stat.custom_pull_function(stat, start_time, end_time)
+    elif not stat.is_logging:
         do_pull_from_zerver(stat, start_time, end_time)
     do_aggregate_to_summary_table(stat, end_time)
 
@@ -366,6 +378,30 @@ count_message_by_stream_query = """
 """
 zerver_count_message_by_stream = ZerverCountQuery(Message, StreamCount, count_message_by_stream_query)
 
+def do_pull_minutes_active(stat, start_time, end_time):
+    # type: (CountStat, datetime, datetime) -> None
+    timer_start = time.time()
+    user_activity_intervals = UserActivityInterval.objects.filter(
+        end__gt=start_time, start__lt=end_time
+    ).select_related(
+        'user_profile'
+    ).values_list(
+        'user_profile_id', 'user_profile__realm_id', 'start', 'end')
+
+    seconds_active = defaultdict(float) # type: Dict[Tuple[int, int], float]
+    for user_id, realm_id, interval_start, interval_end in user_activity_intervals:
+        start = max(start_time, interval_start)
+        end = min(end_time, interval_end)
+        seconds_active[(user_id, realm_id)] += (end - start).total_seconds()
+
+    rows = [UserCount(user_id=ids[0], realm_id=ids[1], property=stat.property,
+                      end_time=end_time, value=int(seconds // 60))
+            for ids, seconds in seconds_active.items() if seconds >= 60]
+    UserCount.objects.bulk_create(rows)
+
+    logger.info("%s do_pull_minutes_active (%dms/%sr)" %
+                (stat.property, (time.time()-timer_start)*1000, len(rows)))
+
 count_stats_ = [
     CountStat('active_users:is_bot:day', zerver_count_user_by_realm, {'is_active': True},
               (UserProfile, 'is_bot'), CountStat.DAY, True),
@@ -378,6 +414,7 @@ count_stats_ = [
     CountStat('messages_in_stream:is_bot:day', zerver_count_message_by_stream, {},
               (UserProfile, 'is_bot'), CountStat.DAY, False),
     LoggingCountStat('active_users_log:is_bot:day', RealmCount, CountStat.DAY),
+    CustomPullCountStat('minutes_active::day', UserCount, CountStat.DAY, do_pull_minutes_active)
 ]
 
 COUNT_STATS = {stat.property: stat for stat in count_stats_}
