@@ -12,7 +12,6 @@ import ujson
 from zerver.lib import bugdown
 from zerver.lib.integrations import INTEGRATIONS, HUBOT_LOZENGES
 from zerver.lib.utils import get_subdomain
-from zproject.jinja2 import render_to_response
 
 def add_api_uri_context(context, request):
     # type: (Dict[str, Any], HttpRequest) -> None

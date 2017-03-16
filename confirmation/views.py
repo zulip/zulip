@@ -12,7 +12,6 @@ from django.http import HttpRequest, HttpResponse
 
 from confirmation.models import Confirmation
 from zerver.models import PreregistrationUser
-from zproject.jinja2 import render_to_response
 
 
 def confirm(request, confirmation_key):

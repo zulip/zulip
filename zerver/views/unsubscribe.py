@@ -10,7 +10,6 @@ from zerver.lib.actions import do_change_enable_offline_email_notifications, \
     do_change_enable_digest_emails, clear_followup_emails_queue
 from zerver.models import UserProfile
 from zerver.context_processors import common_context
-from zproject.jinja2 import render_to_response
 
 def process_unsubscribe(request, token, subscription_type, unsubscribe_function):
     # type: (HttpRequest, str, str, Callable[[UserProfile], None]) -> HttpResponse

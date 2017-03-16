@@ -39,7 +39,6 @@ import requests
 import ujson
 
 from six.moves import urllib
-from zproject.jinja2 import render_to_response
 
 def redirect_and_log_into_subdomain(realm, full_name, email_address):
     # type: (Realm, Text, Text) -> HttpResponse
