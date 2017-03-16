@@ -27,7 +27,6 @@ from zerver.lib.users import check_change_full_name, check_full_name
 from zerver.lib.utils import generate_random_token
 from zerver.models import UserProfile, Stream, Realm, Message, get_user_profile_by_email, \
     email_allowed_for_realm, get_user_profile_by_id
-from zproject.jinja2 import render_to_response
 
 
 def deactivate_user_backend(request, user_profile, email):

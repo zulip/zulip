@@ -21,7 +21,6 @@ from django.contrib.sessions.middleware import SessionMiddleware
 from django.views.csrf import csrf_failure as html_csrf_failure
 from django.utils.cache import patch_vary_headers
 from django.utils.http import cookie_date
-from zproject.jinja2 import render_to_response
 from django.shortcuts import redirect, render
 
 import logging

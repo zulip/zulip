@@ -24,7 +24,6 @@ from zerver.lib.response import json_success
 from zerver.lib.timestamp import ceiling_to_hour, ceiling_to_day, timestamp_to_datetime
 from zerver.models import Realm, UserProfile, UserActivity, \
     UserActivityInterval, Client
-from zproject.jinja2 import render_to_response
 
 from collections import defaultdict
 from datetime import datetime, timedelta

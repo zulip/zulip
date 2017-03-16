@@ -27,7 +27,6 @@ from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.utils import statsd, get_subdomain
 from zproject.backends import password_auth_enabled
-from zproject.jinja2 import render_to_response
 
 import calendar
 import datetime
