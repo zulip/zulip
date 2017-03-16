@@ -12,6 +12,8 @@ exports.actively_scrolling = function () {
 
 // What, if anything, obscures the home tab?
 exports.home_tab_obscured = function () {
+    console.log("true");
+    console.trace();
     if ($('.overlay.show').length > 0) {
         return 'modal';
     }
@@ -406,13 +408,6 @@ $(function () {
         var obscured = exports.home_tab_obscured();
         if (!obscured) {
             throttled_mousewheelhandler(e, delta);
-        } else if (obscured === 'modal') {
-            // The modal itself has a handler invoked before this one (see below).
-            // preventDefault here so that the tab behind the modal doesn't scroll.
-            //
-            // This needs to include the events that would be ignored by throttling.
-            // That's why this code can't be moved into throttled_mousewheelhandler.
-            e.preventDefault();
         }
         // If on another tab, we neither handle the event nor preventDefault, allowing
         // the tab to scroll normally.
