@@ -78,7 +78,7 @@ def convert_jira_markup(content, realm):
     # Zulip user mention. We don't know the email, just the JIRA username,
     # so we naively guess at their Zulip account using this
     if realm:
-        mention_re = re.compile(r'\[~(.*?)\]')
+        mention_re = re.compile(u'\[~(.*?)\]')
         for username in mention_re.findall(content):
             # Try to look up username
             user_profile = guess_zulip_user_from_jira(username, realm)
