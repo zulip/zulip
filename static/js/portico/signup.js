@@ -4,7 +4,7 @@ $(function () {
 
     $.validator.addMethod('password_strength', function (value) {
         return password_quality(value, undefined, $('#id_password, #id_new_password1'));
-    }, i18n.t("Password is too weak."));
+    }, "Password is too weak.");
 
     function highlight(class_to_add) {
         // Set a class on the enclosing control group.
