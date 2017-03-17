@@ -633,7 +633,7 @@ def get_messages_backend(request, user_profile,
     # 'messages' list.
     search_fields = dict() # type: Dict[int, Dict[str, Text]]
     message_ids = [] # type: List[int]
-    user_message_flags = {} # type: Dict[int, List[str]]
+    user_message_flags = {} # type: Dict[int, List[Text]]
     if include_history:
         message_ids = [row[0] for row in query_result]
 
