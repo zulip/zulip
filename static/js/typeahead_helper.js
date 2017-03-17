@@ -116,7 +116,7 @@ function split_by_subscribers(people, current_stream) {
 
     if (!stream_data.get_sub(current_stream)) {
         // If there is no stream specified, everyone is considered as a subscriber.
-        return {subs: people, non_subs: []};
+        return {subscribers: people, non_subscribers: []};
     }
 
     _.each(people, function (person) {
@@ -129,7 +129,7 @@ function split_by_subscribers(people, current_stream) {
         }
     });
 
-    return {subs: subscribers, non_subs: non_subscribers};
+    return {subscribers: subscribers, non_subscribers: non_subscribers};
 }
 
 exports.sorter = function (query, objs, get_item) {
@@ -166,8 +166,8 @@ exports.compare_by_pms = function (user_a, user_b) {
 exports.sort_for_at_mentioning = function (objs, current_stream) {
     var objs_split = split_by_subscribers(objs, current_stream);
 
-    var subs_sorted = objs_split.subs.sort(exports.compare_by_pms);
-    var non_subs_sorted = objs_split.non_subs.sort(exports.compare_by_pms);
+    var subs_sorted = objs_split.subscribers.sort(exports.compare_by_pms);
+    var non_subs_sorted = objs_split.non_subscribers.sort(exports.compare_by_pms);
     return subs_sorted.concat(non_subs_sorted);
 };
 
