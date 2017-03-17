@@ -45,7 +45,7 @@ svg {
     margin-bottom: 30px;
 }
 
-.chart-tile{
+.chart-tile {
     background: white;
     padding: 15px;
 }
@@ -98,7 +98,7 @@ svg {
     display: none;
 }
 
-.analytics-btn{
+.analytics-btn {
     padding: 5px 10px 5px 10px !important;
     border-radius: 10px !important;
     border: 1px solid #ccc !important;
