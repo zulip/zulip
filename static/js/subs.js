@@ -231,9 +231,9 @@ function update_stream_description(sub, description) {
     sub_row.find(".description").text(description);
 
     // Update stream settings
-    var settings = settings_for_sub(sub);
-    settings.find('input.description').val(description);
-    settings.find('.stream-description-editable').text(description);
+    var stream_settings = settings_for_sub(sub);
+    stream_settings.find('input.description').val(description);
+    stream_settings.find('.stream-description-editable').text(description);
 }
 
 function stream_desktop_notifications_clicked(e) {
@@ -438,7 +438,7 @@ exports.mark_subscribed = function (sub, subscribers) {
     if (subscribers) {
         stream_data.set_subscriber_emails(sub, subscribers);
     }
-    var settings = settings_for_sub(sub);
+    var stream_settings = settings_for_sub(sub);
     var button = button_for_sub(sub);
     var settings_button = settings_button_for_sub(sub).removeClass("unsubscribed");
 
@@ -449,16 +449,16 @@ exports.mark_subscribed = function (sub, subscribers) {
         settings_button.text(i18n.t("Unsubscribe"));
         // Add the user to the member list if they're currently
         // viewing the members of this stream
-        if (sub.render_subscribers && settings.hasClass('in')) {
-            prepend_subscriber(settings,
+        if (sub.render_subscribers && stream_settings.hasClass('in')) {
+            prepend_subscriber(stream_settings,
                                people.my_current_email());
         }
     } else {
         add_sub_to_table(sub);
     }
 
-    // Display the swatch and subscription settings
-    var sub_row = settings.closest('.stream-row');
+    // Display the swatch and subscription stream_settings
+    var sub_row = stream_settings.closest('.stream-row');
     sub_row.find(".color_swatch").addClass('in');
     sub_row.find(".regular_subscription_settings").collapse('show');
 
@@ -486,15 +486,15 @@ exports.mark_sub_unsubscribed = function (sub) {
         button.toggleClass("checked");
         settings_button.text(i18n.t("Subscribe"));
 
-        var settings = settings_for_sub(sub);
-        if (settings.hasClass('in')) {
-            settings.collapse('hide');
+        var stream_settings = settings_for_sub(sub);
+        if (stream_settings.hasClass('in')) {
+            stream_settings.collapse('hide');
         }
 
         exports.rerender_subscribers_count(sub);
 
         // Hide the swatch and subscription settings
-        var sub_row = settings.closest('.stream-row');
+        var sub_row = stream_settings.closest('.stream-row');
         sub_row.find(".color_swatch").removeClass('in');
         if (sub.render_subscribers) {
             // TODO: having a completely empty settings div messes
