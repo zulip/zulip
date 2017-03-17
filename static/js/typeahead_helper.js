@@ -2,6 +2,17 @@ var typeahead_helper = (function () {
 
 var exports = {};
 
+// Returns an array of private message recipients, removing empty elements.
+// For example, "a,,b, " => ["a", "b"]
+exports.get_cleaned_pm_recipients = function (query_string) {
+    var recipients = util.extract_pm_recipients(query_string);
+    recipients = _.filter(recipients, function (elem) {
+        return elem.match(/\S/);
+    });
+    return recipients;
+};
+
+
 // Loosely based on Bootstrap's default highlighter, but with escaping added.
 exports.highlight_with_escaping = function (query, item) {
     // query: The text currently in the searchbox
@@ -213,7 +224,7 @@ exports.sort_streams = function (matches, query) {
 
 exports.sort_recipientbox_typeahead = function (query, matches, current_stream) {
     // input_text may be one or more pm recipients
-    var cleaned = composebox_typeahead.get_cleaned_pm_recipients(query);
+    var cleaned = exports.get_cleaned_pm_recipients(query);
     query = cleaned[cleaned.length - 1];
     return exports.sort_recipients(matches, query, current_stream);
 };
