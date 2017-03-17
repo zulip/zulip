@@ -1239,7 +1239,7 @@ $(function () {
     $(".subscriptions").on("focusout", "#create_stream_name", function () {
         var stream = $.trim($("#create_stream_name").val());
         if (stream.length !== 0) {
-            var stream_status = compose.check_stream_existence(stream);
+            var stream_status = exports.check_stream_existence(stream);
 
             if (stream_status !== "does-not-exist") {
                 $("#stream_name_error").text(i18n.t("A stream with this name already exists"));
@@ -1540,6 +1540,36 @@ function focus_on_narrowed_stream() {
 exports.show_and_focus_on_narrow = function () {
     $(document).one('subs_page_loaded.zulip', focus_on_narrowed_stream);
     ui.change_tab_to("#streams");
+};
+
+// *Synchronously* check if a stream exists.
+// This is deprecated nad we hope to remove it.
+exports.check_stream_existence = function (stream_name, autosubscribe) {
+    var result = "error";
+    var request = {stream: stream_name};
+    if (autosubscribe) {
+        request.autosubscribe = true;
+    }
+    channel.post({
+        url: "/json/subscriptions/exists",
+        data: request,
+        async: false,
+        success: function (data) {
+            if (data.subscribed) {
+                result = "subscribed";
+            } else {
+                result = "not-subscribed";
+            }
+        },
+        error: function (xhr) {
+            if (xhr.status === 404) {
+                result = "does-not-exist";
+            } else {
+                result = "error";
+            }
+        },
+    });
+    return result;
 };
 
 return exports;
