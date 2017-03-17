@@ -3,13 +3,12 @@ from __future__ import print_function
 import logging
 import http.client
 from six.moves.urllib.request import urlopen
+
+# Uses the Google search engine bindings
+#   pip install --upgrade google
 from google import search
 
-# Uses Google's Client Library
-#   pip install --upgrade google-api-python-client
-
-def get_google_result(original_content):
-    search_keywords = original_content.strip().split(' ', 1)[1]
+def get_google_result(search_keywords):
     if search_keywords == 'help':
         help_message = "To use this bot start message with @google \
                         followed by what you want to search for. If \
@@ -29,7 +28,7 @@ def get_google_result(original_content):
             return 'Error: Search failed. {}.'.format(e)
 
         if not urls:
-            return "No URLs returned by google."
+            return 'No URLs returned by google.'
 
         url = next(urls)
 
@@ -52,19 +51,6 @@ class GoogleSearchHandler(object):
             information on the bot usage. Users
             should preface messages with @google.
             '''
-
-    def triage_message(self, message, client):
-        # return True if we want to (possibly) respond to this message
-
-        original_content = message['content']
-
-        # This next line of code is defensive, as we
-        # never want to get into an infinite loop of posting google
-        # search links.
-        if message['display_recipient'] == 'google':
-            return False
-
-        return original_content.startswith('@google')
 
     def handle_message(self, message, client, state_handler):
         original_content = message['content']
@@ -90,7 +76,7 @@ handler_class = GoogleSearchHandler
 def test():
     try:
         urlopen('http://216.58.192.142', timeout=1)
-        print("Success")
+        print('Success')
         return True
     except http.client.RemoteDisconnected as e:
         print('Error: {}'.format(e))
