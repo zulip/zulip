@@ -200,6 +200,14 @@ v1_api_and_json_patterns = [
     url(r'^realm/filters/(?P<filter_id>\d+)$', rest_dispatch,
         {'DELETE': 'zerver.views.realm_filters.delete_filter'}),
 
+    # realm/profile_fields -> zerver.views.custom_profile_fields
+    url(r'^realm/profile_fields$', rest_dispatch,
+        {'GET': 'zerver.views.custom_profile_fields.list_realm_custom_profile_fields',
+         'POST': 'zerver.views.custom_profile_fields.create_realm_custom_profile_field'}),
+    url(r'^realm/profile_fields/(?P<field_id>\d+)$', rest_dispatch,
+        {'PATCH': 'zerver.views.custom_profile_fields.update_realm_custom_profile_field',
+         'DELETE': 'zerver.views.custom_profile_fields.delete_realm_custom_profile_field'}),
+
     # users -> zerver.views.users
     #
     # Since some of these endpoints do something different if used on
@@ -316,6 +324,10 @@ v1_api_and_json_patterns = [
          'POST': 'zerver.views.alert_words.set_alert_words',
          'PUT': 'zerver.views.alert_words.add_alert_words',
          'DELETE': 'zerver.views.alert_words.remove_alert_words'}),
+
+    # users/me/custom_profile_data -> zerver.views.custom_profile_data
+    url(r'^users/me/profile_data$', rest_dispatch,
+        {'PATCH': 'zerver.views.custom_profile_fields.update_user_custom_profile_data'}),
 
     url(r'^users/me/(?P<stream_id>\d+)/topics$', rest_dispatch,
         {'GET': 'zerver.views.streams.get_topics_backend'}),

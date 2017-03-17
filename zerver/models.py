@@ -1,18 +1,19 @@
 from __future__ import absolute_import
 from typing import Any, DefaultDict, Dict, List, Set, Tuple, TypeVar, Text, \
-    Union, Optional, Sequence, AbstractSet, Pattern, AnyStr
+    Union, Optional, Sequence, AbstractSet, Pattern, AnyStr, Callable
 from typing.re import Match
 from zerver.lib.str_utils import NonBinaryStr
 
 from django.db import models
 from django.db.models.query import QuerySet
-from django.db.models import Manager
+from django.db.models import Manager, CASCADE
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, UserManager, \
     PermissionsMixin
 import django.contrib.auth
 from django.core.exceptions import ValidationError
-from django.core.validators import URLValidator
+from django.core.validators import URLValidator, MinLengthValidator, \
+    RegexValidator
 from django.dispatch import receiver
 from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
     user_profile_by_id_cache_key, user_profile_by_email_cache_key, \
@@ -29,9 +30,10 @@ from django.utils.timezone import now as timezone_now
 from django.contrib.sessions.models import Session
 from zerver.lib.timestamp import datetime_to_timestamp
 from django.db.models.signals import pre_save, post_save, post_delete
-from django.core.validators import MinLengthValidator, RegexValidator
 from django.utils.translation import ugettext_lazy as _
 from zerver.lib import cache
+from zerver.lib.validator import check_int, check_float, check_string, \
+    check_short_string
 
 from bitfield import BitField
 from bitfield.types import BitHandler
@@ -641,6 +643,27 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
         timezone=Text,
         twenty_four_hour_time=bool,
     )
+
+    @property
+    def profile_data(self):
+        # type: () -> List[Dict[str, Union[int, float, Text]]]
+        values = CustomProfileFieldValue.objects.filter(user_profile=self)
+        user_data = {v.field_id: v.value for v in values}
+        data = []  # type: List[Dict[str, Union[int, float, Text]]]
+        for field in custom_profile_fields_for_realm(self.realm_id):
+            value = user_data.get(field.id, None)
+            field_type = field.field_type
+            if value is not None:
+                converter = field.FIELD_CONVERTERS[field_type]
+                value = converter(value)
+
+            field_data = {}  # type: Dict[str, Union[int, float, Text]]
+            for k, v in field.as_dict().items():
+                field_data[k] = v
+            field_data['value'] = value
+            data.append(field_data)
+
+        return data
 
     def can_admin_user(self, target_user):
         # type: (UserProfile) -> bool
@@ -1605,3 +1628,50 @@ class UserHotspot(models.Model):
 
     class Meta(object):
         unique_together = ("user", "hotspot")
+
+class CustomProfileField(models.Model):
+    realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
+    name = models.CharField(max_length=100)  # type: Text
+
+    INTEGER = 1
+    FLOAT = 2
+    SHORT_TEXT = 3
+    LONG_TEXT = 4
+
+    FIELD_TYPE_DATA = [
+        # Type, Name, Validator, Converter
+        (INTEGER, u'Integer', check_int, int),
+        (FLOAT, u'Float', check_float, float),
+        (SHORT_TEXT, u'Short Text', check_short_string, str),
+        (LONG_TEXT, u'Long Text', check_string, str),
+    ]  # type: List[Tuple[int, Text, Callable[[str, Any], str], Callable[[Any], Any]]]
+
+    FIELD_VALIDATORS = {item[0]: item[2] for item in FIELD_TYPE_DATA}  # type: Dict[int, Callable[[str, Any], str]]
+    FIELD_CONVERTERS = {item[0]: item[3] for item in FIELD_TYPE_DATA}  # type: Dict[int, Callable[[Any], Any]]
+    FIELD_TYPE_CHOICES = [(item[0], item[1]) for item in FIELD_TYPE_DATA]  # type: List[Tuple[int, Text]]
+
+    field_type = models.PositiveSmallIntegerField(choices=FIELD_TYPE_CHOICES,
+                                                  default=SHORT_TEXT)  # type: int
+
+    class Meta(object):
+        unique_together = ('realm', 'name')
+
+    def as_dict(self):
+        # type: () -> Dict[str, Union[int, Text]]
+        return {
+            'id': self.id,
+            'name': self.name,
+            'type': self.field_type,
+        }
+
+def custom_profile_fields_for_realm(realm_id):
+    # type: (int) -> List[CustomProfileField]
+    return CustomProfileField.objects.filter(realm=realm_id).order_by('name')
+
+class CustomProfileFieldValue(models.Model):
+    user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
+    field = models.ForeignKey(CustomProfileField, on_delete=CASCADE)  # type: CustomProfileField
+    value = models.TextField()  # type: Text
+
+    class Meta(object):
+        unique_together = ('user_profile', 'field')
