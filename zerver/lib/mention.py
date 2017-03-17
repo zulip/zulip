@@ -4,7 +4,7 @@ from typing import Text
 
 # Match multi-word string between @** ** or match any one-word
 # sequences after @
-FIND_MENTIONS = r'(?<![^\s\'\"\(,:<])@(?:\*\*([^\*]+)\*\*|(\w+))'
+FIND_MENTIONS_REGEX = r'(?<![^\s\'\"\(,:<])@(?:\*\*([^\*]+)\*\*|(\w+))'
 
 ONLINE = ['here', 'online']
 WILDCARDS = ['all', 'everyone'] + ONLINE

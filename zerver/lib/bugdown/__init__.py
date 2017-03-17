@@ -1180,7 +1180,7 @@ class Bugdown(markdown.Extension):
             'modal_link',
             ModalLink(r'!modal_link\((?P<relative_url>[^)]*), (?P<text>[^)]*)\)'),
             '>avatar')
-        md.inlinePatterns.add('usermention', UserMentionPattern(mention.FIND_MENTIONS), '>backtick')
+        md.inlinePatterns.add('usermention', UserMentionPattern(mention.FIND_MENTIONS_REGEX), '>backtick')
         stream_group = r"""
                         (?<![^\s'"\(,:<])            # Start after whitespace or specified chars
                         \#\*\*                       # and after hash sign followed by double asterisks
