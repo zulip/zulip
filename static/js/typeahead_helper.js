@@ -171,11 +171,9 @@ exports.sort_for_at_mentioning = function (objs, current_stream) {
     return subs_sorted.concat(non_subs_sorted);
 };
 
-exports.sort_recipients = function (matches, query) {
+exports.sort_recipients = function (matches, query, current_stream) {
     var name_results =  prefix_sort(query, matches, function (x) { return x.full_name; });
     var email_results = prefix_sort(query, name_results.rest, function (x) { return x.email; });
-
-    var current_stream = compose.stream_name();
 
     var matches_sorted = exports.sort_for_at_mentioning(
         name_results.matches.concat(email_results.matches),
@@ -213,11 +211,11 @@ exports.sort_streams = function (matches, query) {
     return name_results.matches.concat(desc_results.matches.concat(desc_results.rest));
 };
 
-exports.sort_recipientbox_typeahead = function (matches) {
+exports.sort_recipientbox_typeahead = function (query, matches, current_stream) {
     // input_text may be one or more pm recipients
-    var cleaned = composebox_typeahead.get_cleaned_pm_recipients(this.query);
-    var query = cleaned[cleaned.length - 1];
-    return exports.sort_recipients(matches, query);
+    var cleaned = composebox_typeahead.get_cleaned_pm_recipients(query);
+    query = cleaned[cleaned.length - 1];
+    return exports.sort_recipients(matches, query, current_stream);
 };
 
 return exports;

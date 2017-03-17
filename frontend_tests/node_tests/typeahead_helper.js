@@ -2,7 +2,6 @@ var th = require('js/typeahead_helper.js');
 
 global.stub_out_jquery();
 
-set_global('compose', {});
 set_global('page_params', {is_zephyr_mirror_realm: false});
 
 add_dependencies({
@@ -60,15 +59,18 @@ _.each(matches, function (person) {
 });
 
 (function test_sort_recipients() {
-    function get_typeahead_result(query) {
-        var result = th.sort_recipients(global.people.get_realm_persons(), query);
+    function get_typeahead_result(query, current_stream) {
+        var result = th.sort_recipients(
+            global.people.get_realm_persons(),
+            query,
+            current_stream
+        );
         return _.map(result, function (person) {
             return person.email;
         });
     }
 
-    global.compose.stream_name = function () { return ""; };
-    assert.deepEqual(get_typeahead_result("b"), [
+    assert.deepEqual(get_typeahead_result("b", ""), [
         'b_user_1@zulip.net',
         'b_user_2@zulip.net',
         'b_bot@example.com',
@@ -77,10 +79,9 @@ _.each(matches, function (person) {
         'a_bot@zulip.com',
      ]);
 
-    global.compose.stream_name = function () { return "Dev"; };
     var subscriber_email = "b_user_2@zulip.net";
     stream_data.add_subscriber("Dev", people.get_user_id(subscriber_email));
-    assert.deepEqual(get_typeahead_result("b"), [
+    assert.deepEqual(get_typeahead_result("b", "Dev"), [
         subscriber_email,
         'b_user_1@zulip.net',
         'b_bot@example.com',
@@ -90,8 +91,7 @@ _.each(matches, function (person) {
     ]);
 
     // No match
-    global.compose.stream_name = function () { return "Linux"; };
-    assert.deepEqual(get_typeahead_result("h"), [
+    assert.deepEqual(get_typeahead_result("h", "Linux"), [
         'a_user@zulip.org',
         'b_user_1@zulip.net',
         'b_user_2@zulip.net',

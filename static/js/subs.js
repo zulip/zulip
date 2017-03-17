@@ -397,7 +397,11 @@ function show_subscription_settings(sub_row) {
             return (item.email.toLowerCase().indexOf(query) !== -1) ||
                 (item.full_name.toLowerCase().indexOf(query) !== -1);
         },
-        sorter: typeahead_helper.sort_recipientbox_typeahead,
+        sorter: function (matches) {
+            var current_stream = compose.stream_name();
+            return typeahead_helper.sort_recipientbox_typeahead(
+                this.query, matches, current_stream);
+        },
         updater: function (item) {
             return item.email;
         },
