@@ -262,22 +262,6 @@ exports.show_failed_message_success = function (message_id) {
     });
 };
 
-exports.lightbox = function (data) {
-    switch (data.type) {
-        case "photo":
-            exports.lightbox_photo(data.image, data.user);
-            break;
-        case "youtube":
-            exports.youtube_video(data.id);
-            break;
-        default:
-            break;
-    }
-
-    $("#overlay").addClass("show");
-    popovers.hide_all();
-};
-
 $(document).ready(function () {
     var info_overlay_toggle = components.toggle({
         name: "info-overlay-toggle",
@@ -310,40 +294,6 @@ exports.show_info_overlay = function (target) {
         components.toggle.lookup("info-overlay-toggle").goto(target);
     }
 };
-
-exports.lightbox_photo = function (image, user) {
-    // image should be an Image Object in JavaScript.
-    var url = $(image).attr("src");
-    var title = $(image).parent().attr("title");
-
-    $("#overlay .player-container").hide();
-    $("#overlay .image-actions, .image-description, .download").show();
-
-    var img = new Image();
-    img.src = url;
-    $("#overlay .image-preview").html("").show()
-        .append(img);
-
-    $(".image-description .title").text(title || "N/A");
-    $(".image-description .user").text(user);
-
-    $(".image-actions .open, .image-actions .download").attr("href", url);
-};
-
-exports.youtube_video = function (id) {
-    $("#overlay .image-preview, .image-description, .download").hide();
-
-    var iframe = document.createElement("iframe");
-    iframe.width = window.innerWidth;
-    iframe.height = window.innerWidth * 0.5625;
-    iframe.src = "https://www.youtube.com/embed/" + id;
-    iframe.setAttribute("frameborder", 0);
-    iframe.setAttribute("allowfullscreen", true);
-
-    $("#overlay .player-container").html("").show().append(iframe);
-    $(".image-actions .open").attr("href", "https://youtu.be/" + id);
-};
-// k3O01EfM5fU
 
 var loading_more_messages_indicator_showing = false;
 exports.show_loading_more_messages_indicator = function () {

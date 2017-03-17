@@ -523,12 +523,12 @@ $(function () {
             e.stopPropagation();
 
             if ($target.parent().hasClass("youtube-video")) {
-                ui.lightbox({
+                lightbox.open({
                     type: "youtube",
                     id: $target.data("id"),
                 });
             } else {
-                ui.lightbox({
+                lightbox.open({
                     type: "photo",
                     image: img,
                     user: user,

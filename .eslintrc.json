@@ -25,6 +25,7 @@
         "popovers": false,
         "server_events": false,
         "ui": false,
+        "lightbox": false,
         "stream_color": false,
         "people": false,
         "navigate": false,

@@ -848,6 +848,7 @@ JS_SPECS = {
             'js/condense.js',
             'js/resize.js',
             'js/floating_recipient_bar.js',
+            'js/lightbox.js',
             'js/ui.js',
             'js/pointer.js',
             'js/click_handlers.js',
