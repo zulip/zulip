@@ -11,7 +11,7 @@ from zerver.models import UserProfile
 from zerver.context_processors import common_context
 from zproject.jinja2 import render_to_response
 
-def process_unsubscribe(token, subscription_type, unsubscribe_function):
+def process_unsubscribe(request, token, subscription_type, unsubscribe_function):
     # type: (HttpRequest, str, Callable[[UserProfile], None]) -> HttpResponse
     try:
         confirmation = Confirmation.objects.get(confirmation_key=token)
@@ -54,7 +54,7 @@ def email_unsubscribe(request, type, token):
     # type: (HttpRequest, str, str) -> HttpResponse
     if type in email_unsubscribers:
         display_name, unsubscribe_function = email_unsubscribers[type]
-        return process_unsubscribe(token, display_name, unsubscribe_function)
+        return process_unsubscribe(request, token, display_name, unsubscribe_function)
 
     return render_to_response('zerver/unsubscribe_link_error.html', {},
                               request=request)
