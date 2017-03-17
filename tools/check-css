@@ -16,9 +16,9 @@ def validate(fn):
     text = open(fn).read()
     section_list = parse(text)
     if text != section_list.text():
-        print('BOO! %s broken' % (fn,))
-        open('foo.txt', 'w').write(section_list.text())
-        os.system('diff %s foo.txt' % (fn,))
+        print('%s seems to be broken:' % (fn,))
+        open('/var/tmp/pretty_css.txt', 'w').write(section_list.text())
+        os.system('diff %s /var/tmp/pretty_css.txt' % (fn,))
         sys.exit(1)
 
 def check_our_files(filenames):
