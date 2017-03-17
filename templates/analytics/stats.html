@@ -14,15 +14,15 @@
   <div id="id_stats_errors" class="alert alert-error"></div>
   <h1 class="analytics-page-header">Zulip Analytics for {{ realm_name }}</h1>
   <div class="center-container">
-    <div class="center-block">
+    <div class="center-block chart-tile">
       <p class="graph-title" id="messages_timescale_anchor">Messages Sent Over Time</p>
       <div id="graph_container">
         <div id="button_container">
           <p id="button_label"> Aggregation </p>
-          <button class="button" type="button" id='hourly_button'> Hourly </button>
-          <button class="button" type="button" id='daily_button'> Daily </button>
-          <button class="button" type="button" id='weekly_button'> Weekly </button>
-          <button class="button" type="button" id='cumulative_button'> Cumulative </button>
+          <button class="button analytics-btn" type="button" id='hourly_button'> Hourly </button>
+          <button class="button analytics-btn" type="button" id='daily_button'> Daily </button>
+          <button class="button analytics-btn" type="button" id='weekly_button'> Weekly </button>
+          <button class="button analytics-btn" type="button" id='cumulative_button'> Cumulative </button>
         </div>
         <div id="id_messages_sent_over_time"></div>
         <div id="hoverinfo">
@@ -36,30 +36,30 @@
     </div>
   </div>
   <div id="pie_container">
-    <div id="pie_messages_sent_by_client">
+    <div class="chart-tile" id="pie_messages_sent_by_client">
       <p class="graph-title" id="messages_by_client_anchor">Messages Sent by Client</p>
       <div id="id_messages_sent_by_client"></div>
-      <button class="pie-button" type="button" id='messages_by_client_user_button'> Me </button>
-      <button class="pie-button" type="button" id='messages_by_client_realm_button'> Everyone </button>
-      <button class="pie-button" type="button" id='messages_by_client_last_week_button'> Last Week </button>
-      <button class="pie-button" type="button" id='messages_by_client_last_month_button'> Last Month </button>
-      <button class="pie-button" type="button" id='messages_by_client_last_year_button'> Last Year </button>
-      <button class="pie-button" type="button" id='messages_by_client_cumulative_button'> All Time </button>
+      <button class="pie-button analytics-btn" type="button" id='messages_by_client_user_button'> Me </button>
+      <button class="pie-button analytics-btn" type="button" id='messages_by_client_realm_button'> Everyone </button>
+      <button class="pie-button analytics-btn" type="button" id='messages_by_client_last_week_button'> Last Week </button>
+      <button class="pie-button analytics-btn" type="button" id='messages_by_client_last_month_button'> Last Month </button>
+      <button class="pie-button analytics-btn" type="button" id='messages_by_client_last_year_button'> Last Year </button>
+      <button class="pie-button analytics-btn" type="button" id='messages_by_client_cumulative_button'> All Time </button>
     </div>
-    <div id="pie_messages_sent_by_type">
+    <div  class="chart-tile" id="pie_messages_sent_by_type">
       <p class="graph-title" id="messages_by_type_anchor">Messages Sent by Recipient Type</p>
       <div id="id_messages_sent_by_message_type"></div>
       <div id="pie_messages_sent_by_type_total"> </div>
-      <button class="pie-button" type="button" id='messages_by_type_user_button'> Me </button>
-      <button class="pie-button" type="button" id='messages_by_type_realm_button'> Everyone </button>
-      <button class="pie-button" type="button" id='messages_by_type_last_week_button'> Last Week </button>
-      <button class="pie-button" type="button" id='messages_by_type_last_month_button'> Last Month </button>
-      <button class="pie-button" type="button" id='messages_by_type_last_year_button'> Last Year </button>
-      <button class="pie-button" type="button" id='messages_by_type_cumulative_button'> All Time </button>
+      <button class="pie-button analytics-btn" type="button" id='messages_by_type_user_button'> Me </button>
+      <button class="pie-button analytics-btn" type="button" id='messages_by_type_realm_button'> Everyone </button>
+      <button class="pie-button analytics-btn" type="button" id='messages_by_type_last_week_button'> Last Week </button>
+      <button class="pie-button analytics-btn" type="button" id='messages_by_type_last_month_button'> Last Month </button>
+      <button class="pie-button analytics-btn" type="button" id='messages_by_type_last_year_button'> Last Year </button>
+      <button class="pie-button analytics-btn" type="button" id='messages_by_type_cumulative_button'> All Time </button>
     </div>
   </div>
   <div class="center-container">
-    <div class="center-block">
+    <div class="center-block chart-tile">
       <p class="graph-title" id="users_anchor">Number of Users</p>
       <div id="id_number_of_users"></div>
       <div id="users_hover_info">
