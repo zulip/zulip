@@ -7,7 +7,7 @@ import simplejson as json
 from django.http import HttpRequest, HttpResponse
 
 from django.utils.translation import ugettext as _
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.conf import settings
 from six.moves import map
 
@@ -385,8 +385,8 @@ def authors_view(request):
     with open(settings.CONTRIBUTORS_DATA) as f:
         data = json.load(f)
 
-    return render_to_response(
+    return render(
+        request,
         'zerver/authors.html',
-        data,
-        request=request
+        context=data,
     )
