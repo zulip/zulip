@@ -326,7 +326,7 @@ exports.insert_user_into_list = function (user_id) {
 
     insert();
 
-    var elt = $('#user_presences').find('[data-user-id="' + user_id + '"]');
+    var elt = get_user_list_item(user_id);
     compose_fade.update_one_user_row(elt);
 };
 
