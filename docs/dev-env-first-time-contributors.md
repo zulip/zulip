@@ -334,7 +334,24 @@ Welcome to Ubuntu 14.04.1 LTS (GNU/Linux 4.4.0-21-generic x86_64)
 Congrats, you're now inside the Zulip development environment!
 
 You can confirm this by looking at the command prompt, which starts with
-`(zulip-venv)`.
+`(zulip-venv)`. In case it does not, your development environment might have halted
+while provisioning the vagrant guest. Check the `/var/log/zulip_provision.log`
+file present inside the guest machine to find it ending with something similar
+to the following lines in case of successful completion:
+
+```
+....
+
+Zulip development environment setup succeeded!
+Get:1 http://archive.ubuntu.com trusty InRelease
+Ign http://archive.ubuntu.com trusty InRelease
+....
+```
+If you encounter an incomplete `/var/log/zulip_provision.log file`, you need
+to update your environment. Re-provision your vagrant machine using `vagrant provision`.
+If the problem persists, please come chat with us [in the `provision` stream of our
+developers' chat](https://zulip.tabbott.net/#narrow/stream/provision).
+
 
 Next, start the Zulip server:
 
