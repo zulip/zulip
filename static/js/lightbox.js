@@ -6,12 +6,12 @@ function display_image(image, user) {
     var url = $(image).attr("src");
     var title = $(image).parent().attr("title");
 
-    $("#overlay .player-container").hide();
-    $("#overlay .image-actions, .image-description, .download").show();
+    $("#lightbox_overlay .player-container").hide();
+    $("#lightbox_overlay .image-actions, .image-description, .download").show();
 
     var img = new Image();
     img.src = url;
-    $("#overlay .image-preview").html("").show()
+    $("#lightbox_overlay .image-preview").html("").show()
         .append(img);
 
     $(".image-description .title").text(title || "N/A");
@@ -21,7 +21,7 @@ function display_image(image, user) {
 }
 
 function display_youtube_video(id) {
-    $("#overlay .image-preview, .image-description, .download").hide();
+    $("#lightbox_overlay .image-preview, .image-description, .download").hide();
 
     var iframe = document.createElement("iframe");
     iframe.width = window.innerWidth;
@@ -30,7 +30,7 @@ function display_youtube_video(id) {
     iframe.setAttribute("frameborder", 0);
     iframe.setAttribute("allowfullscreen", true);
 
-    $("#overlay .player-container").html("").show().append(iframe);
+    $("#lightbox_overlay .player-container").html("").show().append(iframe);
     $(".image-actions .open").attr("href", "https://youtu.be/" + id);
 }
 
@@ -46,7 +46,7 @@ exports.open = function (data) {
             break;
     }
 
-    $("#overlay").addClass("show");
+    $("#lightbox_overlay").addClass("show");
     popovers.hide_all();
 };
 

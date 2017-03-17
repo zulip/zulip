@@ -1,11 +1,11 @@
-#overlay {
+#lightbox_overlay {
     background-color: #19203a;
 
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
 
-#overlay .image-preview {
+#lightbox_overlay .image-preview {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -21,7 +21,7 @@
     background-position: center center;
 }
 
-#overlay .image-preview img {
+#lightbox_overlay .image-preview img {
     max-height: 100%;
     max-width: 100%;
 
@@ -44,7 +44,7 @@
     background-position: 0 0, 50px 0, 50px -50px, 0px 50px;
 }
 
-#overlay .exit {
+#lightbox_overlay .exit {
     float: right;
 
     color: rgba(255,255,255,0.8);
@@ -61,49 +61,49 @@
     transition: all 0.2s ease;
 }
 
-#overlay.show .exit {
+#lightbox_overlay.show .exit {
     pointer-events: auto;
     opacity: 1;
 }
 
-#overlay .image-info-wrapper {
+#lightbox_overlay .image-info-wrapper {
     background-color: transparent;
 }
 
-#overlay .image-description,
-#overlay .image-actions {
+#lightbox_overlay .image-description,
+#lightbox_overlay .image-actions {
     float: left;
     margin: 20px 20px;
 }
 
-#overlay .image-actions {
+#lightbox_overlay .image-actions {
     float: right;
 }
 
-#overlay .image-actions a {
+#lightbox_overlay .image-actions a {
     margin-bottom: 0px;
     margin-top: 0px;
 }
 
-#overlay .image-actions .icon {
+#lightbox_overlay .image-actions .icon {
     font-size: 1.1rem;
     display: inline-block;
 }
 
-#overlay .image-actions .icon .text {
+#lightbox_overlay .image-actions .icon .text {
     font-size: 0.9rem;
 }
 
-#overlay .image-actions span:nth-of-type(2) {
+#lightbox_overlay .image-actions span:nth-of-type(2) {
     position: relative;
     top: 1px;
 }
 
-#overlay .image-actions .open span:nth-of-type(2) {
+#lightbox_overlay .image-actions .open span:nth-of-type(2) {
     top: 2px;
 }
 
-#overlay .image-description {
+#lightbox_overlay .image-description {
     /* approx width of screen minus action buttons on the side. */
     width: calc(100% - 260px);
     /* add some extra margin top and remove some bottom to keep the
@@ -115,7 +115,7 @@
     color: #fff;
 }
 
-#overlay .image-description .title {
+#lightbox_overlay .image-description .title {
     display: inline-block;
     vertical-align: top;
 
@@ -129,12 +129,12 @@
     text-overflow: ellipsis;
 }
 
-#overlay .image-description .user::before {
+#lightbox_overlay .image-description .user::before {
     margin-right: 5px;
     content: "\2014";
 }
 
-#overlay .player-container {
+#lightbox_overlay .player-container {
     height: calc(100vh - 71px);
     display: flex;
     text-align: center;
@@ -142,13 +142,13 @@
     align-items: center;
 }
 
-#overlay .player-container iframe {
+#lightbox_overlay .player-container iframe {
     width: 80vw;
     height: 45vw;
     margin: auto;
 }
 
-#overlay .image-description .user {
+#lightbox_overlay .image-description .user {
     max-width: 200px;
     display: inline-block;
     vertical-align: top;
@@ -182,23 +182,23 @@
     top: 1px;
 }
 
-#overlay .clear-float {
+#lightbox_overlay .clear-float {
     clear: both;
 }
 
 @media only screen and (min-device-width : 320px) and (max-device-width : 736px) {
-    #overlay .image-actions {
+    #lightbox_overlay .image-actions {
         display: none !important;
     }
 
-    #overlay .image-description {
+    #lightbox_overlay .image-description {
         width: calc(100% - 100px);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
 
-    #overlay .image-description .title {
+    #lightbox_overlay .image-description .title {
         max-width: calc(100% - 60px);
     }
 }

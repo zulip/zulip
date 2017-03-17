@@ -536,7 +536,7 @@ $(function () {
             }
         });
 
-        $("#overlay .download").click(function () {
+        $("#lightbox_overlay .download").click(function () {
           this.blur();
         });
     }());

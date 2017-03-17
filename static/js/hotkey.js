@@ -156,7 +156,7 @@ exports.process_escape_key = function (e) {
         return false;
     }
 
-    if ($("#overlay").hasClass("show")) {
+    if ($("#lightbox_overlay").hasClass("show")) {
         modals.close_modal("lightbox");
         return true;
     }
