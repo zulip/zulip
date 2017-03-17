@@ -13,16 +13,6 @@ var composebox_typeahead = (function () {
 
 var exports = {};
 
-// Returns an array of private message recipients, removing empty elements.
-// For example, "a,,b, " => ["a", "b"]
-exports.get_cleaned_pm_recipients = function (query_string) {
-    var recipients = util.extract_pm_recipients(query_string);
-    recipients = _.filter(recipients, function (elem) {
-        return elem.match(/\S/);
-    });
-    return recipients;
-};
-
 var seen_topics = new Dict();
 
 exports.add_topic = function (uc_stream, uc_topic) {
@@ -483,7 +473,7 @@ exports.initialize = function () {
                 this.query, matches, current_stream);
         },
         updater: function (item, event) {
-            var previous_recipients = exports.get_cleaned_pm_recipients(this.query);
+            var previous_recipients = typeahead_helper.get_cleaned_pm_recipients(this.query);
             previous_recipients.pop();
             previous_recipients = previous_recipients.join(", ");
             if (previous_recipients.length !== 0) {
@@ -501,7 +491,7 @@ exports.initialize = function () {
 
     $( "#private_message_recipient" ).blur(function () {
         var val = $(this).val();
-        var recipients = exports.get_cleaned_pm_recipients(val);
+        var recipients = typeahead_helper.get_cleaned_pm_recipients(val);
         $(this).val(recipients.join(", "));
     });
 };
