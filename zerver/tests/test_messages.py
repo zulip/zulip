@@ -501,6 +501,46 @@ class StreamMessagesTest(ZulipTestCase):
         message = most_recent_message(user_profile)
         assert(UserMessage.objects.get(user_profile=user_profile, message=message).flags.mentioned.is_set)
 
+    def test_message_online_mentioned(self):
+        # type: () -> None
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        self.send_message("hamlet@zulip.com", "Denmark", Recipient.STREAM,
+                          content="test @**online** message")
+        message = most_recent_message(user_profile)
+        user_message = UserMessage.objects.get(user_profile=user_profile,
+                                               message=message)
+        assert(user_message.flags.online_mentioned.is_set)
+
+    def test_message_here_mentioned(self):
+        # type: () -> None
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        self.send_message("hamlet@zulip.com", "Denmark", Recipient.STREAM,
+                          content="test @**here** message")
+        message = most_recent_message(user_profile)
+        user_message = UserMessage.objects.get(user_profile=user_profile,
+                                               message=message)
+        assert(user_message.flags.online_mentioned.is_set)
+
+    def test_message_is_me_message(self):
+        # type: () -> None
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        self.send_message("hamlet@zulip.com", "Denmark", Recipient.STREAM,
+                          content="/me test status")
+        message = most_recent_message(user_profile)
+        user_message = UserMessage.objects.get(user_profile=user_profile,
+                                               message=message)
+        assert(user_message.flags.is_me_message.is_set)
+
+    def test_message_wildcard_mentioned(self):
+        # type: () -> None
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        self.send_message("hamlet@zulip.com", "Denmark", Recipient.STREAM,
+                          content="test @**all** message")
+        message = most_recent_message(user_profile)
+        user_message = UserMessage.objects.get(user_profile=user_profile,
+                                               message=message)
+        assert(user_message.flags.wildcard_mentioned.is_set)
+
     def test_stream_message_mirroring(self):
         # type: () -> None
         from zerver.lib.actions import do_change_is_admin
