@@ -74,12 +74,12 @@ global.people.add({
             full_name: 'everyone',
         },
         {
-            special_item_text: 'here (Notify online folks)',
+            special_item_text: 'here (Notify online users)',
             email: 'here',
             full_name: 'here',
         },
         {
-            special_item_text: 'online (Notify online folks)',
+            special_item_text: 'online (Notify online users)',
             email: 'online',
             full_name: 'online',
         },

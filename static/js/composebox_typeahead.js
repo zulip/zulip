@@ -276,12 +276,12 @@ exports.compose_content_begins_typeahead = function (query) {
             full_name: "everyone",
         };
         var here_item = {
-            special_item_text: "here (Notify online folks)",
+            special_item_text: "here (Notify online users)",
             email: "here",
             full_name: "here",
         };
         var online_item = {
-            special_item_text: "online (Notify online folks)",
+            special_item_text: "online (Notify online users)",
             email: "online",
             full_name: "online",
         };
