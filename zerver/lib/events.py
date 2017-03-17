@@ -32,7 +32,7 @@ from zerver.tornado.event_queue import request_event_queue, get_user_events
 from zerver.models import Client, Message, UserProfile, \
     get_user_profile_by_email, get_user_profile_by_id, \
     get_active_user_dicts_in_realm, realm_filters_for_realm, \
-    get_owned_bot_dicts
+    get_owned_bot_dicts, custom_profile_fields_for_realm
 from version import ZULIP_VERSION
 
 
@@ -70,6 +70,10 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
 
     if want('alert_words'):
         state['alert_words'] = user_alert_words(user_profile)
+
+    if want('custom_profile_fields'):
+        fields = custom_profile_fields_for_realm(user_profile.realm.id)
+        state['custom_profile_fields'] = [f.as_dict() for f in fields]
 
     if want('attachments'):
         state['attachments'] = user_attachments(user_profile)
@@ -188,6 +192,8 @@ def apply_event(state, event, user_profile, include_subscribers):
         state['max_message_id'] = max(state['max_message_id'], event['message']['id'])
     elif event['type'] == "hotspots":
         state['hotspots'] = event['hotspots']
+    elif event['type'] == "custom_profile_fields":
+        state['custom_profile_fields'] = event['fields']
     elif event['type'] == "pointer":
         state['pointer'] = max(state['pointer'], event['pointer'])
     elif event['type'] == "realm_user":

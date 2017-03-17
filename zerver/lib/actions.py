@@ -37,9 +37,11 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     email_allowed_for_realm, email_to_username, display_recipient_cache_key, \
     get_user_profile_by_email, get_stream_cache_key, \
     UserActivityInterval, get_active_user_dicts_in_realm, get_active_streams, \
-    realm_filters_for_realm, RealmFilter, ScheduledJob, get_owned_bot_dicts, \
+    realm_filters_for_realm, RealmFilter, receives_offline_notifications, \
+    ScheduledJob, get_owned_bot_dicts, \
     get_old_unclaimed_attachments, get_cross_realm_emails, \
-    Reaction, EmailChangeStatus
+    Reaction, EmailChangeStatus, CustomProfileField, custom_profile_fields_for_realm, \
+    CustomProfileFieldValue
 
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import avatar_url
@@ -3305,3 +3307,41 @@ def check_attachment_reference_change(prev_content, message):
     to_add = list(new_attachments - prev_attachments)
     if len(to_add) > 0:
         do_claim_attachments(message)
+
+def notify_realm_custom_profile_fields(realm):
+    # type: (Realm) -> None
+    fields = custom_profile_fields_for_realm(realm.id)
+    event = dict(type="custom_profile_fields",
+                 fields=[f.as_dict() for f in fields])
+    send_event(event, active_user_ids(realm))
+
+def try_add_realm_custom_profile_field(realm, name, field_type):
+    # type: (Realm, Text, int) -> CustomProfileField
+    field = CustomProfileField(realm=realm, name=name, field_type=field_type)
+    field.save()
+    notify_realm_custom_profile_fields(realm)
+    return field
+
+def do_remove_realm_custom_profile_field(realm, field):
+    # type: (Realm, CustomProfileField) -> None
+    """
+    Deleting a field will also delete the user profile data
+    associated with it in CustomProfileFieldValue model.
+    """
+    field.delete()
+    notify_realm_custom_profile_fields(realm)
+
+def try_update_realm_custom_profile_field(realm, field, name):
+    # type: (Realm, CustomProfileField, Text) -> None
+    field.name = name
+    field.save(update_fields=['name'])
+    notify_realm_custom_profile_fields(realm)
+
+def do_update_user_custom_profile_data(user_profile, data):
+    # type: (UserProfile, List[Dict[str, Union[int, Text]]]) -> None
+    with transaction.atomic():
+        update_or_create = CustomProfileFieldValue.objects.update_or_create
+        for field in data:
+            update_or_create(user_profile=user_profile,
+                             field_id=field['id'],
+                             defaults={'value': field['value']})
