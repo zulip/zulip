@@ -300,7 +300,7 @@ form#add_new_subscription {
 }
 
 .subscriber-list tr {
-   border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #eee;
 }
 
 .subscriber-list tr:last-of-type {
