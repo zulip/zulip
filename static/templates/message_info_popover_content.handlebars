@@ -1,7 +1,7 @@
 {{! Contents of the "message info" popup }}
 <ul class="nav nav-list actions_popover sender_info_popover" data-user-id="{{message.sender_id}}">
     <div class="popover_info">
-        <li>{{#tr this}}<b>__message.sender_full_name__</b>{{/tr}}</li>
+        <li><b>{{message.sender_full_name}}</b></li>
         <li class='my_email'>{{sender_email}}</li>
 
         {{#if message.historical}}
