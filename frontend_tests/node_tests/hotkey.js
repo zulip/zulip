@@ -101,7 +101,15 @@ function stubbing(func_name_to_stub, test_function) {
         var e = {
             which: s.charCodeAt(0),
         };
-        return hotkey.process_keypress(e);
+        try {
+            return hotkey.process_keypress(e);
+        } catch (err) {
+            // An exception will be thrown here if a different
+            // function is called than the one declared.  Try to
+            // provide a useful error message.
+            console.log();
+            console.log('ERROR: Mapping for character "' + e.which + '" does not match tests.');
+        }
     }
 
     function assert_mapping(c, func_name, shiftKey) {
@@ -206,7 +214,16 @@ function stubbing(func_name_to_stub, test_function) {
             shiftKey: shiftKey,
             ctrlKey: ctrlKey,
         };
-        return hotkey.process_keydown(e);
+
+        try {
+            return hotkey.process_keydown(e);
+        } catch (err) {
+            // An exception will be thrown here if a different
+            // function is called than the one declared.  Try to
+            // provide a useful error message.
+            console.log();
+            console.log('ERROR: Mapping for character "' + e.which + '" does not match tests.');
+        }
     }
 
     function assert_unmapped(name) {
