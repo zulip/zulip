@@ -117,10 +117,10 @@ class TestGetChartData(ZulipTestCase):
             'frequency': CountStat.DAY,
             'interval': CountStat.DAY,
             'realm': {'Public Streams': self.data(100), 'Private Streams': self.data(0),
-                      'PMs & Group PMs': self.data(101)},
+                      'Private Messages': self.data(101), 'Huddle Messages': self.data(0)},
             'user': {'Public Streams': self.data(200), 'Private Streams': self.data(201),
-                     'PMs & Group PMs': self.data(0)},
-            'display_order': ['PMs & Group PMs', 'Public Streams', 'Private Streams'],
+                     'Private Messages': self.data(0), 'Huddle Messages': self.data(0)},
+            'display_order': ['Private Messages', 'Public Streams', 'Private Streams', 'Huddle Messages'],
             'result': 'success',
         })
 
@@ -179,9 +179,9 @@ class TestGetChartData(ZulipTestCase):
         self.assert_json_success(result)
         data = ujson.loads(result.content)
         self.assertEqual(data['realm'], {
-            'Public Streams': [0], 'Private Streams': [0], 'PMs & Group PMs': [0]})
+            'Public Streams': [0], 'Private Streams': [0], 'Private Messages': [0], 'Huddle Messages': [0]})
         self.assertEqual(data['user'], {
-            'Public Streams': [0], 'Private Streams': [0], 'PMs & Group PMs': [0]})
+            'Public Streams': [0], 'Private Streams': [0], 'Private Messages': [0], 'Huddle Messages': [0]})
 
         FillState.objects.create(
             property='messages_sent:client:day', end_time=self.end_times_day[0], state=FillState.DONE)

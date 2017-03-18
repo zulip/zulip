@@ -309,7 +309,9 @@ count_message_type_by_user_query = """
     (
         SELECT zerver_userprofile.realm_id, zerver_userprofile.id, count(*),
         CASE WHEN
-                  zerver_recipient.type != 2 THEN 'private_message'
+                  zerver_recipient.type = 1 THEN 'private_message'
+             WHEN
+                  zerver_recipient.type = 3 THEN 'huddle_message'
              WHEN
                   zerver_stream.invite_only = TRUE THEN 'private_stream'
              ELSE 'public_stream'
