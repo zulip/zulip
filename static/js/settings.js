@@ -201,6 +201,11 @@ $("body").ready(function () {
     });
 
     $("body").on("click", "[data-sidebar-form-close]", close_sidebar);
+
+    function settings_close_modal() {
+        hashchange.exit_modal();
+    }
+    modals.set_close_handler("settings", settings_close_modal);
 });
 
 

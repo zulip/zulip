@@ -183,6 +183,15 @@ $(function () {
             lightbox[direction]();
         }
     });
+
+    function lightbox_close_modal() {
+        $(".player-container iframe").remove();
+        lightbox.is_open = false;
+        document.activeElement.blur();
+    }
+
+    modals.set_close_handler("lightbox", lightbox_close_modal);
+
 });
 
 return exports;

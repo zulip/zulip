@@ -2,32 +2,10 @@ var modals = (function () {
     "use strict";
 
     var exports = {
-        close: {
-            subscriptions: function () {
-                subs.close();
-            },
+        close : {},
 
-            drafts: function () {
-                hashchange.exit_modal();
-            },
-
-            informationalOverlays: function () {
-                $(".informational-overlays").removeClass("show");
-            },
-
-            settings: function () {
-                hashchange.exit_modal();
-            },
-
-            lightbox: function () {
-                $(".player-container iframe").remove();
-                lightbox.is_open = false;
-                document.activeElement.blur();
-            },
-
-            invite: function () {
-                hashchange.exit_modal();
-            },
+        set_close_handler : function (name, handler) {
+            exports.close[name] = handler;
         },
 
         close_modal: function (name) {
@@ -35,6 +13,8 @@ var modals = (function () {
 
             if (exports.close[name]) {
                 exports.close[name]();
+            } else {
+                blueslip.error("Modal close handler for " + name + " not properly setup." );
             }
         },
     };

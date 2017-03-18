@@ -1380,6 +1380,12 @@ $(function () {
         tr.remove();
     });
 
+    function subscriptions_close_modal() {
+        exports.close();
+    }
+
+    modals.set_close_handler("subscriptions", subscriptions_close_modal);
+
 });
 
 function focus_on_narrowed_stream() {
