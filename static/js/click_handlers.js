@@ -560,8 +560,12 @@ $(function () {
         // of modals or selecting text (for copy+paste) trigger cancelling.
         if (compose.composing() && !$(e.target).is("a") &&
             ($(e.target).closest(".modal").length === 0) &&
-            window.getSelection().toString() === "" &&
-            ($(e.target).closest('#emoji_map').length === 0)) {
+            ($(e.target).closest(".informational-overlays").length === 0) &&
+            ($(e.target).closest("#draft_overlay").length === 0) &&
+            ($(e.target).closest("#subscription_overlay").length === 0) &&
+            ($(e.target).closest("#settings_overlay_container").length === 0) &&
+            ($(e.target).closest('#emoji_map').length === 0) &&
+            window.getSelection().toString() === "") {
             compose.cancel();
         }
     });
