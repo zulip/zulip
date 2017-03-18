@@ -35,7 +35,7 @@ function send_typing_notification_ajax(recipients, operation) {
 }
 
 function check_and_send(operation) {
-    var compose_recipient = compose.recipient();
+    var compose_recipient = compose_state.recipient();
     var compose_nonempty = compose_state.has_message_content();
 
     // If we currently have an active typing notification out, and we

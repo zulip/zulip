@@ -201,12 +201,12 @@ function fill_in_opts_from_current_narrowed_view(msg_type, opts) {
 }
 
 function same_recipient_as_before(msg_type, opts) {
-    return (compose.composing() === msg_type) &&
+    return (compose_state.composing() === msg_type) &&
             ((msg_type === "stream" &&
               opts.stream === compose.stream_name() &&
               opts.subject === compose.subject()) ||
              (msg_type === "private" &&
-              opts.private_message_recipient === compose.recipient()));
+              opts.private_message_recipient === compose_state.recipient()));
 }
 
 function show_box_for_msg_type(msg_type, opts) {
@@ -245,7 +245,7 @@ exports.start = function (msg_type, opts) {
         opts.private_message_recipient = '';
     }
 
-    if (compose.composing() && !same_recipient_as_before(msg_type, opts)) {
+    if (compose_state.composing() && !same_recipient_as_before(msg_type, opts)) {
         // Clear the compose box if the existing message is to a different recipient
         clear_box();
     }
@@ -254,7 +254,7 @@ exports.start = function (msg_type, opts) {
     compose.subject(opts.subject);
 
     // Set the recipients with a space after each comma, so it looks nice.
-    compose.recipient(opts.private_message_recipient.replace(/,\s*/g, ", "));
+    compose_state.recipient(opts.private_message_recipient.replace(/,\s*/g, ", "));
 
     // If the user opens the compose box, types some text, and then clicks on a
     // different stream/subject, we want to keep the text in the compose box
@@ -329,7 +329,7 @@ function create_message_object() {
 
     // Changes here must also be kept in sync with echo.try_deliver_locally
     var message = {
-        type: compose.composing(),
+        type: compose_state.composing(),
         content: content,
         sender_id: page_params.user_id,
         queue_id: page_params.event_queue_id,
@@ -339,7 +339,7 @@ function create_message_object() {
 
     if (message.type === "private") {
         // TODO: this should be collapsed with the code in composebox_typeahead.js
-        var recipient = compose.recipient();
+        var recipient = compose_state.recipient();
         var emails = util.extract_pm_recipients(recipient);
         message.to = emails;
         message.reply_to = recipient;
@@ -359,7 +359,7 @@ function create_message_object() {
 }
 
 exports.snapshot_message = function () {
-    if (!exports.composing() || (exports.message_content() === "")) {
+    if (!compose_state.composing() || (exports.message_content() === "")) {
         // If you aren't in the middle of composing the body of a
         // message, don't try to snapshot.
         return;
@@ -833,7 +833,7 @@ function validate_private_message() {
         // For Zephyr mirroring realms, the frontend doesn't know which users exist
         return true;
     }
-    var private_recipients = util.extract_pm_recipients(compose.recipient());
+    var private_recipients = util.extract_pm_recipients(compose_state.recipient());
     var invalid_recipients = [];
     var context = {};
     _.each(private_recipients, function (email) {
@@ -1160,7 +1160,7 @@ $(function () {
         var filename = split_uri[split_uri.length - 1];
         // Urgh, yet another hack to make sure we're "composing"
         // when text gets added into the composebox.
-        if (!compose.composing()) {
+        if (!compose_state.composing()) {
             compose_actions.start('stream');
         }
 
@@ -1211,7 +1211,7 @@ $(function () {
         uploadFinished: uploadFinished,
         rawDrop: function (contents) {
             var textbox = $("#new_message_content");
-            if (!compose.composing()) {
+            if (!compose_state.composing()) {
                 compose_actions.start('stream');
             }
             textbox.val(textbox.val() + contents);

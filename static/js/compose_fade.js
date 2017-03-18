@@ -81,8 +81,8 @@ function _fade_messages() {
         var all_groups = rows.get_table(current_msg_list.table_name).find(".recipient_row");
 
         if (current_msg_list !== expected_msg_list ||
-            !compose.composing() ||
-            compose.recipient() !== expected_recipient) {
+            !compose_state.composing() ||
+            compose_state.recipient() !== expected_recipient) {
             return;
         }
 
@@ -97,7 +97,7 @@ function _fade_messages() {
         }
 
         floating_recipient_bar.update();
-    }, 0, current_msg_list, compose.recipient());
+    }, 0, current_msg_list, compose_state.recipient());
 }
 
 exports.would_receive_message = function (email) {

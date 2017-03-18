@@ -560,7 +560,7 @@ $(function () {
 
         // Unfocus our compose area if we click out of it. Don't let exits out
         // of modals or selecting text (for copy+paste) trigger cancelling.
-        if (compose.composing() && !$(e.target).is("a") &&
+        if (compose_state.composing() && !$(e.target).is("a") &&
             ($(e.target).closest(".modal").length === 0) &&
             window.getSelection().toString() === "" &&
             ($(e.target).closest('#emoji_map').length === 0)) {

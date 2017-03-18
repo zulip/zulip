@@ -10,7 +10,7 @@ function do_narrow_action(action) {
 
 function focus_in_empty_compose() {
     return (
-        compose.composing() &&
+        compose_state.composing() &&
         compose.message_content() === "" &&
         $('#new_message_content').is(':focus'));
 }
@@ -217,7 +217,7 @@ exports.process_escape_key = function (e) {
             return true;
         }
 
-        if (compose.composing()) {
+        if (compose_state.composing()) {
             // If the user hit the escape key, cancel the current compose
             compose_actions.cancel();
             return true;
@@ -235,7 +235,7 @@ exports.process_escape_key = function (e) {
         return true;
     }
 
-    if (compose.composing()) {
+    if (compose_state.composing()) {
         compose_actions.cancel();
         return true;
     }

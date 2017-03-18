@@ -21,16 +21,16 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
     url += "+csrf_token=" + encodeURIComponent(csrf_token);
 
     if (save_compose) {
-        if (compose.composing() === 'stream') {
+        if (compose_state.composing() === 'stream') {
             url += "+msg_type=stream";
             url += "+stream=" + encodeURIComponent(compose.stream_name());
             url += "+subject=" + encodeURIComponent(compose.subject());
-        } else if (compose.composing() === 'private') {
+        } else if (compose_state.composing() === 'private') {
             url += "+msg_type=private";
-            url += "+recipient=" + encodeURIComponent(compose.recipient());
+            url += "+recipient=" + encodeURIComponent(compose_state.recipient());
         }
 
-        if (compose.composing()) {
+        if (compose_state.composing()) {
             url += "+msg=" + encodeURIComponent(compose.message_content());
         }
     }
@@ -261,7 +261,7 @@ exports.initiate = function (options) {
                        compose_done_handler);
     };
 
-    if (compose.composing()) {
+    if (compose_state.composing()) {
         idle_control = $(document).idle({idle: composing_timeout,
                                          onIdle: reload_from_idle});
         $(document).on('compose_canceled.zulip compose_finished.zulip',

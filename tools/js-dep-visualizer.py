@@ -105,9 +105,7 @@ ignore_modules = [
     'ui', # initializes all the other widgets
 
     # some are just not very core:
-    'compose_fade',
     'drafts',
-    'message_edit',
     'notifications',
     'stream_popover',
 ]
