@@ -315,7 +315,7 @@ img.screenshot {
     padding-bottom: 2em;
 }
 
-.landing-page h2,h4 {
+.landing-page h2, h4 {
     font-weight: lighter;
 }
 
@@ -386,38 +386,38 @@ input.text-error {
     text-decoration: none;
     position: relative;
     line-height: 0.8;
- }
+}
 
- .header-main .logo .brand-logo {
-     width: 25px;
-     margin-top: 3px;
- }
+.header-main .logo .brand-logo {
+    width: 25px;
+    margin-top: 3px;
+}
 
- .header-main .logo span {
-     display: inline-block;
-     vertical-align: top;
-     margin-top: 8px;
-     margin-left: 10px;
+.header-main .logo span {
+    display: inline-block;
+    vertical-align: top;
+    margin-top: 8px;
+    margin-left: 10px;
 
-     color: #fff;
-     font-size: 1.2rem;
-     font-weight: 600;
-     letter-spacing: 0.1em;
-     text-transform: uppercase;
- }
+    color: #fff;
+    font-size: 1.2rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
 
- .header-main .portico-logo {
+.header-main .portico-logo {
     height: 28px;
     width: auto;
     padding: 6px 0px 6px 0px;
- }
+}
 
- .header-main .portico-simple-logo {
+.header-main .portico-simple-logo {
     height: 40px;
     width: auto;
- }
+}
 
- .app {
+.app {
     width: 100%;
     z-index: 99;
 }
@@ -464,7 +464,7 @@ input.text-error {
 
 .feature-line.light {
     background: white;
-  }
+}
 
 
 .feature-line .feature-text {
@@ -1054,9 +1054,9 @@ a.bottom-signup-button {
     padding: 2px 7px 1px 8px;
     font-weight: 600;
     font-size: 16px;
-   -moz-transition: all 0.2s ease-in;
-   -webkit-transition: all 0.2s ease-in;
-   -o-transition: all 0.2s ease-in;
+    -moz-transition: all 0.2s ease-in;
+    -webkit-transition: all 0.2s ease-in;
+    -o-transition: all 0.2s ease-in;
     transition: all 0.2s ease-in;
     border-radius: 4px;
 }
@@ -1389,102 +1389,102 @@ a.bottom-signup-button {
 }
 
 @media (max-width: 767px) {
-   body {
-      padding: 0px !important;
-   }
+    body {
+        padding: 0px !important;
+    }
 
-   .input-medium, .input-large {
-     display: block !important;
-     width: 100% !important;
-     min-height: 30px !important;
-     margin: 0px !important;
-     padding: 4px 6px !important;
-     line-height: 20px !important;
-     box-sizing: border-box !important;
-     margin-top: 10px !important;
-     margin-bottom: 10px !important;
-   }
+    .input-medium, .input-large {
+        display: block !important;
+        width: 100% !important;
+        min-height: 30px !important;
+        margin: 0px !important;
+        padding: 4px 6px !important;
+        line-height: 20px !important;
+        box-sizing: border-box !important;
+        margin-top: 10px !important;
+        margin-bottom: 10px !important;
+    }
 
-   .postal-envelope {
-      transform: none;
-     -webkit-transform: none;
-     -moz-transform: none;
-     -o-transform: none;
-     -ms-transform: none;
-   }
+    .postal-envelope {
+        transform: none;
+        -webkit-transform: none;
+        -moz-transform: none;
+        -o-transform: none;
+        -ms-transform: none;
+    }
 
-   .letter-form {
-      text-align: center;
-   }
+    .letter-form {
+        text-align: center;
+    }
 
-   .punc {
-      display: none;
-   }
+    .punc {
+        display: none;
+    }
 
-   .signup-section {
-      display: inline-block;
-      margin-top: 10px;
-   }
+    .signup-section {
+        display: inline-block;
+        margin-top: 10px;
+    }
 
-   .feature-block {
-       width: 100%;
-       display: block;
-   }
+    .feature-block {
+        width: 100%;
+        display: block;
+    }
 
-   .feature-block.left p, .feature-block.left h4 {
-       margin-right: 0px;
-   }
+    .feature-block.left p, .feature-block.left h4 {
+        margin-right: 0px;
+    }
 
 }
 
 @media (max-width: 500px) {
-  .center-container {
-    display: block;
-  }
+    .center-container {
+        display: block;
+    }
 
-  .app-main,
-  .header-main,
-  .footer-main {
-      min-width: auto;
-  }
+    .app-main,
+    .header-main,
+    .footer-main {
+        min-width: auto;
+    }
 
-  .header {
-      padding: 4px 0px 6px 0px;
-  }
+    .header {
+        padding: 4px 0px 6px 0px;
+    }
 
-  .header-main {
-      max-width: 100vw;
-  }
+    .header-main {
+        max-width: 100vw;
+    }
 
-  .markdown ol {
-      margin-left: 0px;
-  }
+    .markdown ol {
+        margin-left: 0px;
+    }
 
-  .footer-navigation {
-      font-size: 12px;
-  }
+    .footer-navigation {
+        font-size: 12px;
+    }
 
-  .app-main .markdown {
-      max-width: 85%;
-  }
+    .app-main .markdown {
+        max-width: 85%;
+    }
 
-  .markdown a {
-      white-space: pre-wrap;
-  }
+    .markdown a {
+        white-space: pre-wrap;
+    }
 
-  .markdown strong {
-      white-space: pre-wrap;
-  }
+    .markdown strong {
+        white-space: pre-wrap;
+    }
 
-  .main-headline-text .tagline {
-      font-size: 32px;
-      line-height: 34px;
-   }
+    .main-headline-text .tagline {
+        font-size: 32px;
+        line-height: 34px;
+    }
 
-   #apps-tabs li a {
-    padding-left: 6px;
-    padding-right: 6px;
-   }
+    #apps-tabs li a {
+        padding-left: 6px;
+        padding-right: 6px;
+    }
 
 }
 
@@ -1543,7 +1543,7 @@ label.label-title {
 }
 
 .input-group label.inline-block {
-  /* eyeballing off-centered aesth. */
+    /* eyeballing off-centered aesth. */
     margin-top: 1px;
 }
 
