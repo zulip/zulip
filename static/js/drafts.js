@@ -203,9 +203,120 @@ exports.setup_page = function (callback) {
     populate_and_fill();
 };
 
+exports.drafts_overlay_open = function () {
+    return $("#draft_overlay").hasClass("show");
+};
+
+exports.drafts_handle_events = function (e, event_key) {
+    var draft_arrow = draft_model.get();
+    var draft_id_arrow = Object.getOwnPropertyNames(draft_arrow);
+    // This detects up arrow key presses when the draft overlay
+    // is open and scrolls through the drafts.
+    if (event_key === "up_arrow") {
+        if ($(".draft-info-box:focus")[0] === undefined) {
+            if (draft_id_arrow.length > 0) {
+                var last_draft = draft_id_arrow[draft_id_arrow.length-1];
+                var last_draft_element = document.querySelectorAll('[data-draft-id="' + last_draft + '"]');
+                var focus_up_element = last_draft_element[0].children[0];
+                focus_up_element.focus();
+            }
+        }
+        var focus_draft_up_row = $(".draft-info-box:focus")[0].parentElement;
+        var prev_focus_draft_row = $(focus_draft_up_row).prev();
+        if ($(".draft-info-box:first")[0].parentElement === prev_focus_draft_row[0]) {
+            $(".drafts-list")[0].scrollTop = 0;
+        }
+        if (prev_focus_draft_row[0].children[0] !== undefined) {
+            prev_focus_draft_row[0].children[0].focus();
+            // If the next draft is cut off, scroll more.
+            if (prev_focus_draft_row.position().top < 55) {
+                // 55 is the minimum distance from the top that will require extra scrolling.
+                $(".drafts-list")[0].scrollTop = $(".drafts-list")[0].scrollTop - (55 - prev_focus_draft_row.position().top);
+            }
+            e.preventDefault();
+        }
+        return true;
+    }
+    // This detects down arrow key presses when the draft overlay
+    // is open and scrolls through the drafts.
+    if (event_key === "down_arrow") {
+        if ($(".draft-info-box:focus")[0] === undefined) {
+            if (draft_id_arrow.length > 0) {
+                var first_draft = draft_id_arrow[0];
+                var first_draft_element = document.querySelectorAll('[data-draft-id="' + first_draft + '"]');
+                var focus_down_element = first_draft_element[0].children[0];
+                focus_down_element.focus();
+            }
+        }
+        var focus_draft_down_row = $(".draft-info-box:focus")[0].parentElement;
+        var next_focus_draft_row = $(focus_draft_down_row).next();
+        if ($(".draft-info-box:last")[0].parentElement === next_focus_draft_row[0]) {
+            $(".drafts-list")[0].scrollTop = $('.drafts-list')[0].scrollHeight - $('.drafts-list').height();
+        }
+        if (next_focus_draft_row[0] !== undefined) {
+            next_focus_draft_row[0].children[0].focus();
+            // If the next draft is cut off, scroll more.
+            if (next_focus_draft_row.position() !== undefined) {
+                var dist_from_top = next_focus_draft_row.position().top;
+                var total_dist = dist_from_top + next_focus_draft_row[0].clientHeight;
+                var dist_from_bot = $(".drafts-container")[0].clientHeight - total_dist;
+                if (dist_from_bot < -4) {
+                    //-4 is the min dist from the bottom that will require extra scrolling.
+                    $(".drafts-list")[0].scrollTop = $(".drafts-list")[0].scrollTop + 2 - (dist_from_bot);
+                }
+            }
+            e.preventDefault();
+        }
+        return true;
+    }
+    // Allows user to delete drafts with backspace
+    if (event_key === "backspace") {
+        var actele = document.activeElement;
+        if (actele.parentElement.hasAttribute("data-draft-id")) {
+            var focused_draft = $(actele.parentElement)[0].getAttribute("data-draft-id");
+            var focus_draft_back_row = $(actele)[0].parentElement;
+            var backnext_focus_draft_row = $(focus_draft_back_row).next();
+            var backprev_focus_draft_row = $(focus_draft_back_row).prev();
+            var delete_id;
+            if (backnext_focus_draft_row[0] !== undefined) {
+                delete_id = backnext_focus_draft_row[0].getAttribute("data-draft-id");
+            } else if (backprev_focus_draft_row[0] !== undefined) {
+                delete_id = backprev_focus_draft_row[0].getAttribute("data-draft-id");
+            }
+            drafts.draft_model.deleteDraft(focused_draft);
+            document.activeElement.parentElement.remove();
+            var new_focus_element = document.querySelectorAll('[data-draft-id="' + delete_id + '"]');
+            if (new_focus_element[0] !== undefined) {
+                new_focus_element[0].children[0].focus();
+            }
+            if ($("#drafts_table .draft-row").length === 0) {
+                $('#drafts_table .no-drafts').show();
+            }
+            return true;
+        }
+    }
+};
+
+exports.toggle = function () {
+    if (exports.drafts_overlay_open()) {
+        modals.close_modal("drafts");
+    } else {
+        exports.launch();
+    }
+};
+
 exports.launch = function () {
     exports.setup_page(function () {
         $("#draft_overlay").addClass("show");
+        var draft_list = drafts.draft_model.get();
+        var draft_id_list = Object.getOwnPropertyNames(draft_list);
+        if (draft_id_list.length > 0) {
+            var last_draft = draft_id_list[draft_id_list.length-1];
+            var last_draft_element = document.querySelectorAll('[data-draft-id="' + last_draft + '"]');
+            var focus_element = last_draft_element[0].children[0];
+            focus_element.focus();
+            $(".drafts-list")[0].scrollTop = $('.drafts-list')[0].scrollHeight - $('.drafts-list').height();
+        }
     });
 };
 

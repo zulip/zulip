@@ -14,6 +14,11 @@
 set_global('activity', {
 });
 
+set_global('drafts', {
+    drafts_handle_events: function () { return; },
+    drafts_overlay_open: function () { return; },
+});
+
 set_global('$', function () {
     return {
         // Hack: Used for reactions hotkeys; may want to restructure.
@@ -139,7 +144,7 @@ function stubbing(func_name_to_stub, test_function) {
 
     // Unmapped keys should immediately return false, without
     // calling any functions outside of hotkey.js.
-    assert_unmapped('abdefhlmoptuxyz');
+    assert_unmapped('abefhlmoptuxyz');
     assert_unmapped('BEFHILNOQTWXYZ');
 
     // We have to skip some checks due to the way the code is
@@ -193,6 +198,7 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('C', 'compose_actions.start');
     assert_mapping('P', 'narrow.by');
     assert_mapping('g', 'gear_menu.open');
+    assert_mapping('d', 'drafts.toggle');
 
     // Next, test keys that only work on a selected message.
     var message_view_only_keys = '@*+rRjJkKsSvi:GM';
