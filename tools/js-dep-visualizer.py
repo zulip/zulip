@@ -32,8 +32,7 @@ for js_file in os.listdir(JS_FILES_DIR):
 
 tuples = set()
 for module in modules:
-
-    other_modules = filter(lambda x: x['name'] != module['name'], modules)
+    other_modules = [x for x in modules if x['name'] != module['name']]
 
     with open(module['path']) as f:
         module_content = f.read()
