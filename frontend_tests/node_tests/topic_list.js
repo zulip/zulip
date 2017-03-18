@@ -15,6 +15,10 @@ global.$ = require('jquery')(window);
 
 var topic_list = require('js/topic_list.js');
 
+set_global('hash_util', {
+    encodeHashComponent: global.hashchange.encodeHashComponent,
+});
+
 global.compile_template('topic_list_item');
 
 (function test_topic_list_build_widget() {

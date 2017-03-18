@@ -16,6 +16,11 @@ add_dependencies({
 
 var stream_list = require('js/stream_list.js');
 
+set_global('hash_util', {
+    encodeHashComponent: global.hashchange.encodeHashComponent,
+});
+
+
 var jsdom = require("jsdom");
 var window = jsdom.jsdom().defaultView;
 global.$ = require('jquery')(window);

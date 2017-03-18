@@ -14,6 +14,10 @@ set_global('message_store', {
 
 set_global('unread', {});
 
+set_global('hash_util', {
+    encodeHashComponent: global.hashchange.encodeHashComponent,
+});
+
 // TODO: move pm_list-related tests to their own module
 var pm_list = require('js/pm_list.js');
 

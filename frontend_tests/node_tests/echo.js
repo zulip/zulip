@@ -54,6 +54,11 @@ set_global('$', function (obj) {
 
 set_global('feature_flags', {local_echo: true});
 
+set_global('hash_util', {
+    encodeHashComponent: global.hashchange.encodeHashComponent,
+});
+
+
 jsdom.changeURL(window, 'http://zulip.zulipdev.com');
 set_global('window', window);
 

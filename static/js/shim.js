@@ -13,5 +13,8 @@ var compose_actions = {};
 compose_actions.start = compose.start;
 compose_actions.cancel = compose.cancel;
 
+var hash_util = {};
+hash_util.encodeHashComponent = hashchange.encodeHashComponent;
+
 var compose_state = {};
 compose_state.has_message_content = compose.has_message_content;

@@ -6,6 +6,11 @@ add_dependencies({
 
 var hashchange = require('js/hashchange.js');
 
+set_global('hash_util', {
+    encodeHashComponent: hashchange.encodeHashComponent,
+});
+
+
 (function test_operators_round_trip() {
     var operators;
     var hash;

@@ -48,6 +48,7 @@
         "topic_list": false,
         "gear_menu": false,
         "hashchange": false,
+        "hash_util": false,
         "message_list": false,
         "Filter": false,
         "pointer": false,
