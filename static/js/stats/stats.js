@@ -3,8 +3,8 @@ var font_14pt = {
     size: 14,
     color: '#000000',
 };
-var button_selected = '#D8D8D8';
-var button_unselected = '#F0F0F0';
+var button_selected = '#2294f4';
+var button_unselected = '#ffffff';
 var last_full_update = Math.min();
 
 // TODO: should take a dict of arrays and do it for all keys
