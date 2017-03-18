@@ -608,7 +608,7 @@ exports.respond_to_message = function (opts) {
         return;
     }
 
-    unread_ui.mark_message_as_read(message);
+    unread_ops.mark_message_as_read(message);
 
     var stream = '';
     var subject = '';

@@ -749,7 +749,7 @@ with_overrides(function (override) {
 with_overrides(function (override) {
     // update_message_flags__read
     var event = event_fixtures.update_message_flags__read;
-    override('unread_ui.mark_messages_as_read', noop);
+    override('unread_ops.mark_messages_as_read', noop);
 
     global.with_stub(function (stub) {
         override('message_store.get', stub.f);

@@ -32,7 +32,7 @@ exports.down = function (with_centering) {
         var current_msg_table = rows.get_table(current_msg_list.table_name);
         message_viewport.scrollTop(current_msg_table.outerHeight(true) -
                                    message_viewport.height() * 0.1);
-        unread_ui.mark_current_list_as_read();
+        unread_ops.mark_current_list_as_read();
     }
 };
 
@@ -49,7 +49,7 @@ exports.to_end = function () {
     message_viewport.last_movement_direction = 1;
     current_msg_list.select_id(next_id, {then_scroll: true,
                                          from_scroll: true});
-    unread_ui.mark_current_list_as_read();
+    unread_ops.mark_current_list_as_read();
 };
 
 exports.page_up = function () {
@@ -63,7 +63,7 @@ exports.page_up = function () {
 exports.page_down = function () {
     if (message_viewport.at_bottom() && !current_msg_list.empty()) {
         current_msg_list.select_id(current_msg_list.last().id, {then_scroll: false});
-        unread_ui.mark_current_list_as_read();
+        unread_ops.mark_current_list_as_read();
     } else {
         ui.page_down_the_right_amount();
     }

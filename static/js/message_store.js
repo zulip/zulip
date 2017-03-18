@@ -226,7 +226,7 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new, local
 
             new_messages = _.map(new_messages, add_message_metadata);
             exports.add_messages(new_messages, msg_list, {messages_are_new: messages_are_new});
-            unread_ui.process_visible();
+            unread_ops.process_visible();
             notifications.possibly_notify_new_messages_outside_viewport(new_messages, local_id);
             notifications.notify_messages_outside_current_search(elsewhere_messages);
         },
@@ -432,7 +432,7 @@ exports.insert_new_messages = function insert_new_messages(messages, local_id) {
         }
     }
 
-    unread_ui.process_visible();
+    unread_ops.process_visible();
     notifications.received_messages(messages);
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
