@@ -34,6 +34,7 @@
         "typing": false,
         "compose": false,
         "compose_actions": false,
+        "compose_state": false,
         "compose_fade": false,
         "modals": false,
         "subs": false,

@@ -191,7 +191,7 @@ exports.activate = function (raw_operators, opts) {
                                 trigger: opts ? opts.trigger : undefined,
                                 previous_id: current_msg_list.selected_id()});
 
-    var had_message_content = compose.has_message_content();
+    var had_message_content = compose_state.has_message_content();
 
     if (!had_message_content) {
         compose_actions.cancel();
@@ -453,7 +453,7 @@ exports.deactivate = function () {
         return;
     }
 
-    if (!compose.has_message_content()) {
+    if (!compose_state.has_message_content()) {
         compose_actions.cancel();
     }
 
