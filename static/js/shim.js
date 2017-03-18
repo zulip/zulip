@@ -12,3 +12,6 @@ narrow_state.set_compose_defaults = narrow.set_compose_defaults;
 var compose_actions = {};
 compose_actions.start = compose.start;
 compose_actions.cancel = compose.cancel;
+
+var compose_state = {};
+compose_state.has_message_content = compose.has_message_content;

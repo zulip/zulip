@@ -36,7 +36,7 @@ function send_typing_notification_ajax(recipients, operation) {
 
 function check_and_send(operation) {
     var compose_recipient = compose.recipient();
-    var compose_nonempty = compose.has_message_content();
+    var compose_nonempty = compose_state.has_message_content();
 
     // If we currently have an active typing notification out, and we
     // want to send a stop notice, or the compose recipient changed
