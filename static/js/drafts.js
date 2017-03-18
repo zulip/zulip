@@ -376,6 +376,12 @@ exports.launch = function () {
 };
 
 $(function () {
+
+    function drafts_close_modal() {
+        hashchange.exit_modal();
+    }
+    modals.set_close_handler("drafts", drafts_close_modal);
+
     window.addEventListener("beforeunload", function () {
         exports.update_draft();
     });

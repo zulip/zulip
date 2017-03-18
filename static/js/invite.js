@@ -133,6 +133,12 @@ $(function () {
         $('#streams_to_add :checkbox').prop('checked', false);
         e.preventDefault();
     });
+
+    function invite_close_modal() {
+        hashchange.exit_modal();
+    }
+
+    modals.set_close_handler("invite", invite_close_modal);
 });
 
 return exports;
