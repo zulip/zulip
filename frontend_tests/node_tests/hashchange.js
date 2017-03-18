@@ -1,14 +1,11 @@
 global.stub_out_jquery();
 
 add_dependencies({
+    hash_util: 'js/hash_util.js',
     people: 'js/people.js',
 });
 
 var hashchange = require('js/hashchange.js');
-
-set_global('hash_util', {
-    encodeHashComponent: hashchange.encodeHashComponent,
-});
 
 
 (function test_operators_round_trip() {

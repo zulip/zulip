@@ -50,7 +50,7 @@ def one_click_unsubscribe_link(user_profile, endpoint):
 
 def hashchange_encode(string):
     # type: (Text) -> Text
-    # Do the same encoding operation as hashchange.encodeHashComponent on the
+    # Do the same encoding operation as hash_util.encodeHashComponent on the
     # frontend.
     # `safe` has a default value of "/", but we want those encoded, too.
     return urllib.parse.quote(

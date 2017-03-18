@@ -19,6 +19,7 @@ add_dependencies({
     compose_fade: 'js/compose_fade.js',
     people: 'js/people.js',
     unread: 'js/unread.js',
+    hash_util: 'js/hash_util.js',
     hashchange: 'js/hashchange.js',
     narrow: 'js/narrow.js',
     activity: 'js/activity.js',
@@ -26,10 +27,6 @@ add_dependencies({
 
 set_global('resize', {
     resize_page_components: function () {},
-});
-
-set_global('hash_util', {
-    encodeHashComponent: global.hashchange.encodeHashComponent,
 });
 
 var me = {
@@ -350,4 +347,3 @@ activity.presence_info[norbert.user_id] = { status: activity.ACTIVE };
         },
     ]);
 }());
-

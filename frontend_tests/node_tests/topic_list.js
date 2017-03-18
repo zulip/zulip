@@ -1,5 +1,6 @@
 add_dependencies({
     Handlebars: 'handlebars',
+    hash_util: 'js/hash_util',
     hashchange: 'js/hashchange',
     muting: 'js/muting',
     narrow: 'js/narrow',
@@ -14,10 +15,6 @@ var window = jsdom.jsdom().defaultView;
 global.$ = require('jquery')(window);
 
 var topic_list = require('js/topic_list.js');
-
-set_global('hash_util', {
-    encodeHashComponent: global.hashchange.encodeHashComponent,
-});
 
 global.compile_template('topic_list_item');
 

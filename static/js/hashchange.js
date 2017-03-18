@@ -5,42 +5,6 @@ var exports = {};
 var expected_hash;
 var changing_hash = false;
 
-// Some browsers zealously URI-decode the contents of
-// window.location.hash.  So we hide our URI-encoding
-// by replacing % with . (like MediaWiki).
-
-exports.encodeHashComponent = function (str) {
-    return encodeURIComponent(str)
-        .replace(/\./g, '%2E')
-        .replace(/%/g,  '.');
-};
-
-exports.encode_operand = function (operator, operand) {
-    if ((operator === 'pm-with') || (operator === 'sender')) {
-        var slug = people.emails_to_slug(operand);
-        if (slug) {
-            return slug;
-        }
-    }
-
-    return exports.encodeHashComponent(operand);
-};
-
-function decodeHashComponent(str) {
-    return decodeURIComponent(str.replace(/\./g, '%'));
-}
-
-exports.decode_operand = function (operator, operand) {
-    if ((operator === 'pm-with') || (operator === 'sender')) {
-        var emails = people.slug_to_emails(operand);
-        if (emails) {
-            return emails;
-        }
-    }
-
-    return decodeHashComponent(operand);
-};
-
 function set_hash(hash) {
     var location = window.location;
 
@@ -89,7 +53,7 @@ exports.operators_to_hash = function (operators) {
 
             var sign = elem.negated ? '-' : '';
             hash += '/' + sign + hash_util.encodeHashComponent(operator)
-                  + '/' + hashchange.encode_operand(operator, operand);
+                  + '/' + hash_util.encode_operand(operator, operand);
         });
     }
 
@@ -111,8 +75,8 @@ exports.parse_narrow = function (hash) {
         // We don't construct URLs with an odd number of components,
         // but the user might write one.
         try {
-            var operator = decodeHashComponent(hash[i]);
-            var operand  = exports.decode_operand(operator, hash[i+1] || '');
+            var operator = hash_util.decodeHashComponent(hash[i]);
+            var operand  = hash_util.decode_operand(operator, hash[i+1] || '');
             var negated = false;
             if (operator[0] === '-') {
                 negated = true;
