@@ -65,8 +65,8 @@ function reaction_popover_reaction_on_click() {
 }
 
 function filter_emojis() {
-    var search = $(".reaction-popover-filter");
-    var search_term = search.expectOne().val().trim();
+    var elt = $(".reaction-popover-filter").expectOne();
+    var search_term = elt.val().trim();
     var reaction_list = $(".reaction-popover-reaction");
     if (search_term !== '') {
         reaction_list.filter(function () {
