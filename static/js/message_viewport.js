@@ -288,7 +288,7 @@ exports.recenter_view = function (message, opts) {
 
     // Barnowl-style recentering: if the pointer is too high, move it to
     // the 1/2 marks. If the pointer is too low, move it to the 1/7 mark.
-    // See keep_pointer_in_view() in pointer.js for related logic to keep the pointer onscreen.
+    // See keep_pointer_in_view() for related logic to keep the pointer onscreen.
 
     var viewport_info = exports.message_viewport_info();
     var top_threshold = viewport_info.visible_top;
@@ -323,6 +323,78 @@ exports.recenter_view = function (message, opts) {
     }
 };
 
+
+exports.keep_pointer_in_view = function () {
+    // See message_viewport.recenter_view() for related logic to keep the pointer onscreen.
+    // This function mostly comes into place for mouse scrollers, and it
+    // keeps the pointer in view.  For people who purely scroll with the
+    // mouse, the pointer is kind of meaningless to them, but keyboard
+    // users will occasionally do big mouse scrolls, so this gives them
+    // a pointer reasonably close to the middle of the screen.
+    var candidate;
+    var next_row = current_msg_list.selected_row();
+
+    if (next_row.length === 0) {
+        return;
+    }
+
+    var info = message_viewport.message_viewport_info();
+    var top_threshold = info.visible_top + (1/10 * info.visible_height);
+    var bottom_threshold = info.visible_top + (9/10 * info.visible_height);
+
+    function message_is_far_enough_down() {
+        if (message_viewport.at_top()) {
+            return true;
+        }
+
+        var message_top = next_row.offset().top;
+
+        // If the message starts after the very top of the screen, we just
+        // leave it alone.  This avoids bugs like #1608, where overzealousness
+        // about repositioning the pointer can cause users to miss messages.
+        if (message_top >= info.visible_top) {
+            return true;
+        }
+
+
+        // If at least part of the message is below top_threshold (10% from
+        // the top), then we also leave it alone.
+        var bottom_offset = message_top + next_row.outerHeight(true);
+        if (bottom_offset >= top_threshold) {
+            return true;
+        }
+
+        // If we got this far, the message is not "in view."
+        return false;
+    }
+
+    function message_is_far_enough_up() {
+        return message_viewport.at_bottom() ||
+            (next_row.offset().top <= bottom_threshold);
+    }
+
+    function adjust(in_view, get_next_row) {
+        // return true only if we make an actual adjustment, so
+        // that we know to short circuit the other direction
+        if (in_view(next_row)) {
+            return false;  // try other side
+        }
+        while (!in_view(next_row)) {
+            candidate = get_next_row(next_row);
+            if (candidate.length === 0) {
+                break;
+            }
+            next_row = candidate;
+        }
+        return true;
+    }
+
+    if (!adjust(message_is_far_enough_down, rows.next_visible)) {
+        adjust(message_is_far_enough_up, rows.prev_visible);
+    }
+
+    current_msg_list.select_id(rows.id(next_row), {from_scroll: true});
+};
 
 $(function () {
     jwindow = $(window);
