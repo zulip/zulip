@@ -1112,6 +1112,16 @@ $(function () {
 
     $("#subscriptions_table").on("click", "#create_stream_button", function (e) {
         e.preventDefault();
+
+        var stream = $.trim($("#search_stream_name").val());
+
+        if (!should_list_all_streams()) {
+	    // Realms that don't allow listing streams should simply be subscribed to.
+            meta.stream_created = stream;
+            ajaxSubscribe($("#search_stream_name").val());
+            return;
+        }
+
         // this changes the tab switcher (settings/preview) which isn't necessary
         // to a add new stream title.
         $(".display-type #add_new_stream_title").show();
@@ -1121,12 +1131,6 @@ $(function () {
 
         show_subs_pane.stream_creation();
 
-        if (!should_list_all_streams()) {
-            ajaxSubscribe($("#search_stream_name").val());
-            return;
-        }
-
-        var stream = $.trim($("#search_stream_name").val());
         $('#create_stream_name').val(stream);
         show_new_stream_modal();
 
@@ -1547,7 +1551,7 @@ exports.show_and_focus_on_narrow = function () {
 };
 
 // *Synchronously* check if a stream exists.
-// This is deprecated nad we hope to remove it.
+// This is deprecated and we hope to remove it.
 exports.check_stream_existence = function (stream_name, autosubscribe) {
     var result = "error";
     var request = {stream: stream_name};
