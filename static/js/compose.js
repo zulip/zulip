@@ -633,7 +633,7 @@ exports.respond_to_message = function (opts) {
     } else {
         msg_type = message.type;
     }
-    compose.start(msg_type, {stream: stream, subject: subject,
+    compose_actions.start(msg_type, {stream: stream, subject: subject,
                              private_message_recipient: pm_recipient,
                              replying_to_message: message,
                              trigger: opts.trigger});
@@ -1161,7 +1161,7 @@ $(function () {
         // Urgh, yet another hack to make sure we're "composing"
         // when text gets added into the composebox.
         if (!compose.composing()) {
-            compose.start('stream');
+            compose_actions.start('stream');
         }
 
         var uri = make_upload_absolute(response.uri);
@@ -1212,7 +1212,7 @@ $(function () {
         rawDrop: function (contents) {
             var textbox = $("#new_message_content");
             if (!compose.composing()) {
-                compose.start('stream');
+                compose_actions.start('stream');
             }
             textbox.val(textbox.val() + contents);
             exports.autosize_textarea();
@@ -1221,9 +1221,9 @@ $(function () {
 
     if (page_params.narrow !== undefined) {
         if (page_params.narrow_topic !== undefined) {
-            compose.start("stream", {subject: page_params.narrow_topic});
+            compose_actions.start("stream", {subject: page_params.narrow_topic});
         } else {
-            compose.start("stream", {});
+            compose_actions.start("stream", {});
         }
     }
 

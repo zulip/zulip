@@ -314,18 +314,18 @@ $(function () {
 
 
     $('.compose_stream_button').click(function () {
-        compose.start('stream', {trigger: 'new topic button'});
+        compose_actions.start('stream', {trigger: 'new topic button'});
     });
     $('.compose_private_button').click(function () {
-        compose.start('private');
+        compose_actions.start('private');
     });
 
     $('.empty_feed_compose_stream').click(function (e) {
-        compose.start('stream', {trigger: 'empty feed message'});
+        compose_actions.start('stream', {trigger: 'empty feed message'});
         e.preventDefault();
     });
     $('.empty_feed_compose_private').click(function (e) {
-        compose.start('private', {trigger: 'empty feed message'});
+        compose_actions.start('private', {trigger: 'empty feed message'});
         e.preventDefault();
     });
 
@@ -369,15 +369,17 @@ $(function () {
     // Keep these 2 feedback bot triggers separate because they have to
     // propagate the event differently.
     $('.feedback').click(function () {
-        compose.start('private', {private_message_recipient: 'feedback@zulip.com',
-                                  trigger: 'feedback menu item'});
+        compose_actions.start('private', {
+            private_message_recipient: 'feedback@zulip.com',
+            trigger: 'feedback menu item'});
 
     });
     $('#feedback_button').click(function (e) {
         e.stopPropagation();
         popovers.hide_all();
-        compose.start('private', {private_message_recipient: 'feedback@zulip.com',
-                                  trigger: 'feedback button'});
+        compose_actions.start('private', {
+            private_message_recipient: 'feedback@zulip.com',
+            trigger: 'feedback button'});
 
     });
 

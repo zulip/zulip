@@ -203,7 +203,7 @@ exports.register_stream_handlers = function () {
     $('body').on('click', '.compose_to_stream', function (e) {
         var sub = stream_popover_sub(e);
         exports.hide_stream_popover();
-        compose.start('stream', {stream: sub.name, trigger: 'sidebar stream actions'});
+        compose_actions.start('stream', {stream: sub.name, trigger: 'sidebar stream actions'});
         e.stopPropagation();
     });
 

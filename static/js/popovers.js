@@ -486,13 +486,13 @@ exports.register_click_handlers = function () {
         var email = people.get_person_from_user_id(user_id).email;
         popovers.hide_user_sidebar_popover();
 
-        compose.start('private', {private_message_recipient: email, trigger: 'sidebar user actions'});
+        compose_actions.start('private', {private_message_recipient: email, trigger: 'sidebar user actions'});
         e.stopPropagation();
     });
 
     $('body').on('click', '.user_popover .mention_user', function (e) {
         var user_id = $(e.target).parents('ul').attr('data-user-id');
-        compose.start('stream', {trigger: 'sidebar user actions'});
+        compose_actions.start('stream', {trigger: 'sidebar user actions'});
         var name = people.get_person_from_user_id(user_id).full_name;
         var textarea = $("#new_message_content");
         textarea.val('@**' + name + '** ');
