@@ -261,6 +261,14 @@ exports.process_escape_key = function (e) {
 
 // Returns true if we handled it, false if the browser should.
 exports.process_enter_key = function (e) {
+    if ($(".dropdown.open").length) {
+        // on #gear-menu li a[tabindex] elements, force a click and prevent default.
+        // this is because these links do not have an href and so don't force a
+        // default action.
+        e.target.click();
+        return true;
+    }
+
     if (exports.is_editing_stream_name(e)) {
         $(e.target).parent().find(".checkmark").click();
         return false;
