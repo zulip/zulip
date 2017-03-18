@@ -219,7 +219,7 @@ exports.process_escape_key = function (e) {
 
         if (compose.composing()) {
             // If the user hit the escape key, cancel the current compose
-            compose.cancel();
+            compose_actions.cancel();
             return true;
         }
 
@@ -236,7 +236,7 @@ exports.process_escape_key = function (e) {
     }
 
     if (compose.composing()) {
-        compose.cancel();
+        compose_actions.cancel();
         return true;
     }
 
@@ -447,13 +447,13 @@ exports.process_hotkey = function (e, hotkey) {
         // we handle this in other functions.
 
         if (event_name === 'left_arrow' && focus_in_empty_compose()) {
-            compose.cancel();
+            compose_actions.cancel();
             message_edit.edit_last_sent_message();
             return true;
         }
 
         if ((event_name === 'up_arrow' || event_name === 'down_arrow') && focus_in_empty_compose()) {
-            compose.cancel();
+            compose_actions.cancel();
             // don't return, as we still want it to be picked up by the code below
         } else if (event_name === "page_up") {
             $("#new_message_content").caret(0);

@@ -194,7 +194,7 @@ exports.activate = function (raw_operators, opts) {
     var had_message_content = compose.has_message_content();
 
     if (!had_message_content) {
-        compose.cancel();
+        compose_actions.cancel();
     } else {
         compose_fade.update_message_list();
     }
@@ -454,7 +454,7 @@ exports.deactivate = function () {
     }
 
     if (!compose.has_message_content()) {
-        compose.cancel();
+        compose_actions.cancel();
     }
 
     current_filter = undefined;

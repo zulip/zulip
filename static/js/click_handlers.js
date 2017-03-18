@@ -354,7 +354,7 @@ $(function () {
     $(".compose-content").click(handle_compose_click);
 
     $("#compose_close").click(function () {
-        compose.cancel();
+        compose_actions.cancel();
     });
 
     $("#join_unsub_stream").click(function (e) {
@@ -564,7 +564,7 @@ $(function () {
             ($(e.target).closest(".modal").length === 0) &&
             window.getSelection().toString() === "" &&
             ($(e.target).closest('#emoji_map').length === 0)) {
-            compose.cancel();
+            compose_actions.cancel();
         }
     });
 
