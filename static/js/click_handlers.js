@@ -157,7 +157,6 @@ $(function () {
         }
     });
 
-
     // MUTING
 
     $('body').on('click', '.on_hover_topic_mute', function (e) {
