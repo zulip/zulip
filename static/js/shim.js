@@ -18,3 +18,5 @@ hash_util.encodeHashComponent = hashchange.encodeHashComponent;
 
 var compose_state = {};
 compose_state.has_message_content = compose.has_message_content;
+compose_state.recipient = compose.recipient;
+compose_state.composing = compose.composing;

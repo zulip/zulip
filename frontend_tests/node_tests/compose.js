@@ -18,6 +18,10 @@ add_dependencies({
 
 var compose = require('js/compose.js');
 
+set_global('compose_state', {
+    recipient: compose.recipient,
+});
+
 var me = {
     email: 'me@example.com',
     user_id: 30,
@@ -66,7 +70,7 @@ people.add(bob);
         };
     };
 
-    compose.composing = function () {
+    global.compose_state.composing = function () {
         return 'stream';
     };
 
@@ -80,7 +84,7 @@ people.add(bob);
     assert.equal(message.subject, 'lunch');
     assert.equal(message.content, 'burrito');
 
-    compose.composing = function () {
+    global.compose_state.composing = function () {
         return 'private';
     };
     message = compose.snapshot_message();
