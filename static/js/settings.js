@@ -316,14 +316,14 @@ function _setup_page() {
         // Scroll to the top so the error message is visible.
         // We would scroll anyway if we end up submitting the form.
         message_viewport.scrollTop(0);
-        ui.report_error(message, xhr, $('#account-settings-status').expectOne());
+        ui_report.error(message, xhr, $('#account-settings-status').expectOne());
     }
 
     function settings_change_success(message) {
         // Scroll to the top so the error message is visible.
         // We would scroll anyway if we end up submitting the form.
         message_viewport.scrollTop(0);
-        ui.report_success(message, $('#account-settings-status').expectOne());
+        ui_report.success(message, $('#account-settings-status').expectOne());
     }
 
     $("form.your-account-settings").ajaxForm({
@@ -410,11 +410,11 @@ function _setup_page() {
             page_params.enable_digest_emails = result.enable_digest_emails;
         }
 
-        ui.report_success(i18n.t("Updated notification settings!"), notify_settings_status);
+        ui_report.success(i18n.t("Updated notification settings!"), notify_settings_status);
     }
 
     function update_notification_settings_error(xhr) {
-        ui.report_error(i18n.t("Error changing settings"), xhr, $('#notify-settings-status').expectOne());
+        ui_report.error(i18n.t("Error changing settings"), xhr, $('#notify-settings-status').expectOne());
     }
 
     function post_notify_settings_changes(notification_changes, success_func,
@@ -507,11 +507,11 @@ function _setup_page() {
             url: '/json/settings/display',
             data: data,
             success: function () {
-                ui.report_success(i18n.t("User list will appear on the __side__ hand side! You will need to reload the window for your changes to take effect.", context),
+                ui_report.success(i18n.t("User list will appear on the __side__ hand side! You will need to reload the window for your changes to take effect.", context),
                                   $('#display-settings-status').expectOne());
             },
             error: function (xhr) {
-                ui.report_error(i18n.t("Error updating user list placement setting"), xhr, $('#display-settings-status').expectOne());
+                ui_report.error(i18n.t("Error updating user list placement setting"), xhr, $('#display-settings-status').expectOne());
             },
         });
     });
@@ -531,11 +531,11 @@ function _setup_page() {
             url: '/json/settings/display',
             data: data,
             success: function () {
-                ui.report_success(i18n.t("Emoji reactions will appear as __text_or_images__!", context),
+                ui_report.success(i18n.t("Emoji reactions will appear as __text_or_images__!", context),
                                   $('#display-settings-status').expectOne());
             },
             error: function (xhr) {
-                ui.report_error(i18n.t("Error updating emoji appearance setting"), xhr, $('#display-settings-status').expectOne());
+                ui_report.error(i18n.t("Error updating emoji appearance setting"), xhr, $('#display-settings-status').expectOne());
             },
         });
     });
@@ -555,11 +555,11 @@ function _setup_page() {
             url: '/json/settings/display',
             data: data,
             success: function () {
-                ui.report_success(i18n.t("Time will now be displayed in the __format__-hour format!", context),
+                ui_report.success(i18n.t("Time will now be displayed in the __format__-hour format!", context),
                                   $('#display-settings-status').expectOne());
             },
             error: function (xhr) {
-                ui.report_error(i18n.t("Error updating time format setting"), xhr, $('#display-settings-status').expectOne());
+                ui_report.error(i18n.t("Error updating time format setting"), xhr, $('#display-settings-status').expectOne());
             },
         });
     });
@@ -588,11 +588,11 @@ function _setup_page() {
             url: '/json/settings/display',
             data: data,
             success: function () {
-                ui.report_success(i18n.t("__lang__ is now the default language!  You will need to reload the window for your changes to take effect", context),
+                ui_report.success(i18n.t("__lang__ is now the default language!  You will need to reload the window for your changes to take effect", context),
                                   $('#display-settings-status').expectOne());
             },
             error: function (xhr) {
-                ui.report_error(i18n.t("Error updating default language setting"), xhr, $('#display-settings-status').expectOne());
+                ui_report.error(i18n.t("Error updating default language setting"), xhr, $('#display-settings-status').expectOne());
             },
         });
     });
@@ -649,7 +649,7 @@ function _setup_page() {
                 window.location.href = "/login";
             },
             error: function (xhr) {
-                ui.report_error(i18n.t("Error deactivating account"), xhr, $('#account-settings-status').expectOne());
+                ui_report.error(i18n.t("Error deactivating account"), xhr, $('#account-settings-status').expectOne());
             },
         });
     });
@@ -669,7 +669,7 @@ function _setup_page() {
             settings_status.hide();
         },
         error: function (xhr) {
-            ui.report_error(i18n.t("Error getting API key"), xhr, $('#account-settings-status').expectOne());
+            ui_report.error(i18n.t("Error getting API key"), xhr, $('#account-settings-status').expectOne());
             $("#show_api_key_box").hide();
             $("#get_api_key_box").show();
         },
@@ -981,10 +981,10 @@ function _setup_page() {
                     resize.resize_page_components();
                 }
 
-                ui.report_success(message, ui_settings_status);
+                ui_report.success(message, ui_settings_status);
             },
             error: function (xhr) {
-                ui.report_error(i18n.t("Error changing settings"), xhr, $('#ui-settings-status').expectOne());
+                ui_report.error(i18n.t("Error changing settings"), xhr, $('#ui-settings-status').expectOne());
             },
         });
     });

@@ -124,11 +124,11 @@ exports.report_error = function (response, xhr, status_box, type) {
         response += ": " + JSON.parse(xhr.responseText).msg;
     }
 
-    ui.report_message(response, status_box, 'alert-error', type);
+    ui_report.message(response, status_box, 'alert-error', type);
 };
 
 exports.report_success = function (response, status_box, type) {
-    ui.report_message(response, status_box, 'alert-success', type);
+    ui_report.message(response, status_box, 'alert-success', type);
 };
 
 function update_message_in_all_views(message_id, callback) {

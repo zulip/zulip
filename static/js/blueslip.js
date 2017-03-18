@@ -152,7 +152,7 @@ function report_error(msg, stack, opts) {
                 // invoked).  In any case, it will pretty clear that
                 // something is wrong with the page and the user will
                 // probably try to reload anyway.
-                ui.report_message("Oops.  It seems something has gone wrong. " +
+                ui_report.message("Oops.  It seems something has gone wrong. " +
                                   "The error has been reported to the fine " +
                                   "folks at Zulip, but, in the mean time, " +
                                   "please try reloading the page.",
@@ -161,7 +161,7 @@ function report_error(msg, stack, opts) {
         },
         error: function () {
             if (opts.show_ui_msg && ui !== undefined) {
-                ui.report_message("Oops.  It seems something has gone wrong. " +
+                ui_report.message("Oops.  It seems something has gone wrong. " +
                                   "Please try reloading the page.",
                                   $("#home-error"), "alert-error");
             }

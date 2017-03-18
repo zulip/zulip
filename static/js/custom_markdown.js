@@ -21,11 +21,11 @@ var exports = {};
                     // Display the canonical stream capitalization.
                     var my_email = people.my_current_email();
                     var true_stream_name = data.already_subscribed[my_email][0];
-                    ui.report_success(i18n.t("Already subscribed to __stream__", {stream: true_stream_name}),
+                    ui_report.success(i18n.t("Already subscribed to __stream__", {stream: true_stream_name}),
                                       $status_message);
                 }
             }, function (xhr) {
-                ui.report_error(i18n.t("Error adding subscription"), xhr, $status_message);
+                ui_report.error(i18n.t("Error adding subscription"), xhr, $status_message);
             }
         );
     }
@@ -40,7 +40,7 @@ var exports = {};
             function () {
                 $status_message.hide();
             }, function (xhr) {
-                ui.report_error(i18n.t("Error removing subscription"), xhr, $status_message);
+                ui_report.error(i18n.t("Error removing subscription"), xhr, $status_message);
             }
         );
     }
