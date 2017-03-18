@@ -46,25 +46,72 @@ for module in modules:
                     continue # parsing mistake due to variable called "subs"
                 tuples.add(tup)
 
+IGNORE_TUPLES = [
+    # We ignore the following tuples to de-clutter the graph, since there is a
+    # pretty clear roadmap on how to break the dependencies.  You can comment
+    # these out to see what the "real" situation looks like now, and if you do
+    # the work of breaking the dependency, you can remove it.
+
+    ('typeahead_helper', 'composebox_typeahead'), # PR 4121
+    ('typeahead_helper', 'compose'), # PR 4121
+    ('typeahead_helper', 'subs'), # PR 4121
+
+    ('stream_data', 'narrow'), # split out narrow.by_foo functions
+
+    ('stream_data', 'stream_color'), # split out stream_color data/UI
+    ('stream_color', 'tab_bar'), # only one call
+    ('stream_color', 'subs'), # only one call
+
+    ('search', 'search_suggestion'), # move handler into search_suggestion
+
+    ('unread', 'narrow'), # create narrow_state.js
+
+    ('navigate', 'stream_list'), # move cycle_stream into stream_list.js
+
+    # This one is kind of tricky, but basically we want to split all the basic
+    # code out of both of these modules that's essentially just string manipulation.
+    ('narrow', 'hashchange'),
+
+    ('composebox_typeahead', 'compose'), # introduce compose_state.js
+
+    # This one might require some work, but the idea is to split out something
+    # like narrow_state.js.
+    ('pm_list', 'narrow'),
+
+    ('settings', 'subs'), # not much to fix, can call stream_data directly, maybe
+
+    ('modals', 'subs'), # add some kind of onClose mechanism in new modals.open
+
+    ('channel', 'reload'), # just one call to fix somehow
+    ('compose', 'reload'), # use channel stuff more directly?
+
+    ('settings', 'muting_ui'), # inline call or split out muting_settings.js
+
+    ('resize', 'navigate'), # split out scroll.js
+]
+
+for tuple in IGNORE_TUPLES:
+    tuples.discard(tuple)
+
+
 # print(tuples)
 graph = Graph(*tuples)
-tricky_modules = [
-    'blueslip',
-    'channel',
-    'filter',
-    'hashchange',
+ignore_modules = [
+    # some are really tricky
     'message_store',
-    'narrow',
     'popovers',
-    'reload',
-    'resize',
     'server_events', # has restart code
-    'socket',
-    'stream_color',
-    'ui',
-    'zulip', # zulip.com false positives
+    'unread_ui',
+    'ui', # initializes all the other widgets
+
+    # some are just not very core:
+    'compose_fade',
+    'drafts',
+    'message_edit',
+    'notifications',
+    'stream_popover',
 ]
-for node in tricky_modules:
+for node in ignore_modules:
     graph.remove(node)
 graph.remove_exterior_nodes()
 buffer = make_dot_file(graph)
