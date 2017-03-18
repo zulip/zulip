@@ -3,6 +3,7 @@ global.stub_out_jquery();
 add_dependencies({
     Handlebars: 'handlebars',
     templates: 'js/templates',
+    hash_util: 'js/hash_util',
     hashchange: 'js/hashchange',
     narrow: 'js/narrow',
     people: 'js/people',
@@ -13,10 +14,6 @@ set_global('message_store', {
 });
 
 set_global('unread', {});
-
-set_global('hash_util', {
-    encodeHashComponent: global.hashchange.encodeHashComponent,
-});
 
 // TODO: move pm_list-related tests to their own module
 var pm_list = require('js/pm_list.js');
@@ -70,4 +67,3 @@ global.people.initialize_current_user(me.user_id);
     var conversation = $(convos_html).find('a').text().trim();
     assert.equal(conversation, 'Alice, Bob');
 }());
-

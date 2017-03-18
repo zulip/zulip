@@ -866,6 +866,7 @@ JS_SPECS = {
             'js/hotkey.js',
             'js/favicon.js',
             'js/notifications.js',
+            'js/hash_util.js',
             'js/hashchange.js',
             'js/invite.js',
             'js/message_flags.js',

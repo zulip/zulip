@@ -34,6 +34,7 @@ add_dependencies({
     emoji: 'js/emoji.js',
     people: 'js/people.js',
     stream_data: 'js/stream_data.js',
+    hash_util: 'js/hash_util',
     hashchange: 'js/hashchange',
     fenced_code: 'js/fenced_code.js',
 });
@@ -53,10 +54,6 @@ set_global('$', function (obj) {
 });
 
 set_global('feature_flags', {local_echo: true});
-
-set_global('hash_util', {
-    encodeHashComponent: global.hashchange.encodeHashComponent,
-});
 
 
 jsdom.changeURL(window, 'http://zulip.zulipdev.com');

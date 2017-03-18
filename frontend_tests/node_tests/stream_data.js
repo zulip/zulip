@@ -9,15 +9,12 @@ add_dependencies({
     people: 'js/people.js',
     stream_color: 'js/stream_color.js',
     narrow: 'js/narrow.js',
+    hash_util: 'js/hash_util.js',
     hashchange: 'js/hashchange.js',
     util: 'js/util.js',
 });
 
 set_global('blueslip', {});
-
-set_global('hash_util', {
-    encodeHashComponent: global.hashchange.encodeHashComponent,
-});
 
 var stream_data = require('js/stream_data.js');
 var people = global.people;

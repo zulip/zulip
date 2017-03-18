@@ -3,6 +3,7 @@ global.stub_out_jquery();
 add_dependencies({
     Handlebars: 'handlebars',
     colorspace: 'js/colorspace',
+    hash_util: 'js/hash_util',
     hashchange: 'js/hashchange',
     muting: 'js/muting',
     narrow: 'js/narrow',
@@ -15,10 +16,6 @@ add_dependencies({
 });
 
 var stream_list = require('js/stream_list.js');
-
-set_global('hash_util', {
-    encodeHashComponent: global.hashchange.encodeHashComponent,
-});
 
 
 var jsdom = require("jsdom");
