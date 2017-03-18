@@ -379,7 +379,7 @@ exports.process_hotkey = function (e, hotkey) {
             return exports.process_shift_tab_key();
     }
 
-    if (hotkey.message_view_only && ui.home_tab_obscured()) {
+    if (hotkey.message_view_only && ui_state.home_tab_obscured()) {
         return false;
     }
 
