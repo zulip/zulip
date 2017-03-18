@@ -452,7 +452,7 @@ def build_custom_checkers(by_lang):
          'description': "Zulip CSS should have no dependencies on external resources"},
         {'pattern': '^[ ][ ][a-zA-Z0-9]',
          'description': "Incorrect 2-space indentation in CSS",
-         'exclude': set(['static/styles/thirdparty-fonts.css']),
+         'exclude': set(['static/third/thirdparty-fonts.css']),
          'strip': '\n'},
         {'pattern': '{\w',
          'description': "Missing whitespace after '{' in CSS (should be newline)."},

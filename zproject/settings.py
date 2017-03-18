@@ -675,7 +675,7 @@ PIPELINE = {
                 'third/zocial/zocial.css',
                 'styles/portico.css',
                 'styles/pygments.css',
-                'styles/thirdparty-fonts.css',
+                'third/thirdparty-fonts.css',
                 'styles/fonts.css',
             ),
             'output_filename': 'min/portico.css'
@@ -703,7 +703,7 @@ PIPELINE = {
                 'styles/right-sidebar.css',
                 'styles/lightbox.css',
                 'styles/pygments.css',
-                'styles/thirdparty-fonts.css',
+                'third/thirdparty-fonts.css',
                 'styles/media.css',
                 'styles/typing_notifications.css',
                 # We don't want fonts.css on QtWebKit, so its omitted here
@@ -727,7 +727,7 @@ PIPELINE = {
                 'styles/right-sidebar.css',
                 'styles/lightbox.css',
                 'styles/pygments.css',
-                'styles/thirdparty-fonts.css',
+                'third/thirdparty-fonts.css',
                 'styles/fonts.css',
                 'styles/media.css',
                 'styles/typing_notifications.css',
