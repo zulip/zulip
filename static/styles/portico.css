@@ -822,13 +822,17 @@ a.bottom-signup-button {
 }
 
 .btn-user {
-    background-color: #428bca;
-    border-color: #357ebd;
+    background-color: #7df3e1;
+    border-color: #abbde8;
+    color: #707979;
+    font-weight: bold;
 }
 
 .btn-admin {
-    background-color: #ff4136;
-    border-color: #bd7e35;
+    background-color: #fd7171;
+    border-color: #9cb4ed;
+    color: #ffffff;
+    font-weight: bold;
 }
 
 .feature-page-header {
