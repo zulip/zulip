@@ -134,8 +134,8 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('A', 'navigate.cycle_stream');
     assert_mapping('D', 'navigate.cycle_stream');
 
-    assert_mapping('c', 'compose.start');
-    assert_mapping('C', 'compose.start');
+    assert_mapping('c', 'compose_actions.start');
+    assert_mapping('C', 'compose_actions.start');
     assert_mapping('v', 'narrow.by');
 
     // Next, test keys that only work on a selected message.

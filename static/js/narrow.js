@@ -357,9 +357,9 @@ exports.activate = function (raw_operators, opts) {
 
     if (!had_message_content && opts.trigger === 'sidebar' && exports.narrowed_by_reply()) {
         if (exports.narrowed_to_topic()) {
-            compose.start('stream');
+            compose_actions.start('stream');
         } else {
-            compose.start('private');
+            compose_actions.start('private');
         }
     }
 

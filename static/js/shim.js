@@ -8,3 +8,6 @@ that still refer to the old name.
 
 var narrow_state = {}; // global, should be made into module
 narrow_state.set_compose_defaults = narrow.set_compose_defaults;
+
+var compose_actions = {};
+compose_actions.start = compose.start;

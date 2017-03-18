@@ -476,10 +476,10 @@ exports.process_hotkey = function (e, hotkey) {
     // Shortcuts that don't require a message
     switch (event_name) {
         case 'compose': // 'c': compose
-            compose.start('stream', {trigger: "compose_hotkey"});
+            compose_actions.start('stream', {trigger: "compose_hotkey"});
             return true;
         case 'compose_private_message':
-            compose.start('private', {trigger: "compose_hotkey"});
+            compose_actions.start('private', {trigger: "compose_hotkey"});
             return true;
         case 'narrow_private':
             return do_narrow_action(function (target, opts) {

@@ -110,7 +110,7 @@ exports.restore_draft = function (draft_id) {
     if (draft.type === "stream" && draft.stream === "") {
         draft_copy.subject = "";
     }
-    compose.start(draft_copy.type, draft_copy);
+    compose_actions.start(draft_copy.type, draft_copy);
     compose.autosize_textarea();
     $("#new_message_content").data("draft-id", draft_id);
 };
