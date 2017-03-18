@@ -64,7 +64,7 @@ exports.fast_forward_pointer = function () {
             unread_ops.mark_all_as_read(function () {
                 pointer.furthest_read = data.max_message_id;
                 unconditionally_send_pointer_update().then(function () {
-                    ui.change_tab_to('#home');
+                    ui_util.change_tab_to('#home');
                     reload.initiate({immediate: true,
                                      save_pointer: false,
                                      save_narrow: false,

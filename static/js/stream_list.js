@@ -474,7 +474,7 @@ $(function () {
             return;
         }
         if (ui_state.home_tab_obscured()) {
-            ui.change_tab_to('#home');
+            ui_util.change_tab_to('#home');
         }
         var stream = $(e.target).parents('li').attr('data-name');
         popovers.hide_all();
@@ -535,7 +535,7 @@ function maybe_select_stream(e) {
         if (topStream !== undefined) {
             // undefined if there are no results
             if (ui_state.home_tab_obscured()) {
-                ui.change_tab_to('#home');
+                ui_util.change_tab_to('#home');
             }
             exports.clear_and_hide_search();
             narrow.by('stream', topStream, {select_first_unread: true, trigger: 'sidebar enter key'});

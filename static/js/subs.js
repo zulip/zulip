@@ -1394,7 +1394,7 @@ function focus_on_narrowed_stream() {
 
 exports.show_and_focus_on_narrow = function () {
     $(document).one('subs_page_loaded.zulip', focus_on_narrowed_stream);
-    ui.change_tab_to("#streams");
+    ui_util.change_tab_to("#streams");
 };
 
 // *Synchronously* check if a stream exists.
