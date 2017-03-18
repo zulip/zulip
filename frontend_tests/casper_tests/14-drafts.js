@@ -160,20 +160,28 @@ casper.then(function () {
     waitWhileDraftsVisible(function () {
         casper.click('body');
         casper.page.sendEvent('keypress', "C");
-        casper.waitUntilVisible('#private-message', function () {
-            casper.fill('form#send_message_form', {
-                recipient: 'cordelia@zulip.com',
-                content: 'Test Private Message',
-            }, false);
-            casper.reload();
-        });
     });
 });
 
 casper.then(function () {
+    casper.waitUntilVisible('#private-message', function () {
+        casper.fill('form#send_message_form', {
+            recipient: 'cordelia@zulip.com',
+            content: 'Test Private Message',
+        }, false);
+    });
+    casper.reload();
+});
+
+casper.then(function () {
+    casper.test.info('Finished reloading; now opening drafts again');
     casper.waitUntilVisible('.drafts-link', function () {
         casper.click('.drafts-link');
     });
+});
+
+casper.then(function () {
+    casper.test.info('Checking drafts survived the reload');
     waitUntilDraftsVisible(function () {
         casper.test.assertElementCount('.draft-row', 2, 'Drafts loaded');
         casper.test.assertSelectorHasText('.draft-row .message_header_private_message .stream_label',
