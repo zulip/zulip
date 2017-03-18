@@ -38,7 +38,7 @@ function stylesheets() {
     var data = '';
     data += '<link href="../../static/styles/fonts.css" rel="stylesheet">\n';
     data += '<link href="../../static/styles/portico.css" rel="stylesheet">\n';
-    data += '<link href="../../static/styles/thirdparty-fonts.css" rel="stylesheet">\n';
+    data += '<link href="../../static/third/thirdparty-fonts.css" rel="stylesheet">\n';
     data += '<link href="../../static/styles/zulip.css" rel="stylesheet">\n';
     data += '<link href="../../static/styles/settings.css" rel="stylesheet">\n';
     data += '<link href="../../static/styles/left-sidebar.css" rel="stylesheet">\n';

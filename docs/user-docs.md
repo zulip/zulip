@@ -180,7 +180,7 @@ a new line to be formatted this way.
 You can refer to features in the Zulip UI by refrencing their names and
 their [FontAwesome](http://fontawesome.io) (version 3.0.2) text icons within
 parentheses. The source for the text icons is located in
-`static/styles/thirdparty-fonts.css`.
+`static/third/thirdparty-fonts.css`.
 
 * cog (<i class="fa fa-cog"></i>) icon — `cog (<i
 class="icon-vector-cog"></i>) icon`
