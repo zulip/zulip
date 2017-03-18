@@ -154,13 +154,14 @@ exports.update_stream_description = function (sub, description) {
 
     // Update stream row
     var sub_row = $('.stream-row[data-stream-id=' + sub.stream_id + ']');
-    sub_row.find(".description").text(description);
+    stream_data.render_stream_description(sub);
+    sub_row.find(".description").html(sub.rendered_description);
 
     // Update stream settings
     var stream_settings = settings_for_sub(sub);
-    stream_settings.find('input.description').val(description);
-    stream_settings.find('.stream-description-editable').text(description);
-};
+    stream_settings.find('input.description').val(sub.description);
+    stream_settings.find('.stream-description-editable').html(sub.rendered_description);
+}
 
 function stream_desktop_notifications_clicked(e) {
     var sub = get_sub_for_target(e.target);

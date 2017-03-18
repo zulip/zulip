@@ -21,7 +21,7 @@
     <a href="{{preview_url}}" class="button small white rounded" id="preview-stream-button" role="button">{{t "View stream"}}</a>
   </div>
   <div class="stream-description" data-no-description="{{t 'No description.' }}">
-      <span class="stream-description-editable editable-section">{{description}}</span>
+      <span class="stream-description-editable editable-section">{{{rendered_description}}}</span>
       {{#if is_admin}}
         <span class="editable" data-make-editable=".stream-description-editable"></span>
         <span class="checkmark" data-finish-editing=".stream-description-editable">✓</span>
