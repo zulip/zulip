@@ -106,6 +106,19 @@ exports.send_force_collapse = function send_force_collapse(messages, value) {
     send_flag(messages, "force_collapse", value);
 };
 
+exports.toggle_starred = function (message) {
+    if (message.flags.indexOf("starred") === -1) {
+        exports.send_starred([message], true);
+    } else {
+        exports.send_starred([message], false);
+    }
+};
+
+exports.toggle_starred_on_selected_message = function () {
+    exports.toggle_starred(util.get_selected_message());
+};
+
+
 return exports;
 }());
 
