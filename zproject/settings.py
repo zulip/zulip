@@ -1138,6 +1138,11 @@ else:
     ONLY_SSO = False
 AUTHENTICATION_BACKENDS += ('zproject.backends.ZulipDummyBackend',)
 
+# Redirect to /devlogin by default in dev mode
+if DEVELOPMENT:
+    HOME_NOT_LOGGED_IN = '/devlogin'
+    LOGIN_URL = '/devlogin'
+
 POPULATE_PROFILE_VIA_LDAP = bool(AUTH_LDAP_SERVER_URI)
 
 if POPULATE_PROFILE_VIA_LDAP and \
