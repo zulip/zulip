@@ -272,7 +272,7 @@ $(function () {
     });
 
     $(".brand").on('click', function (e) {
-        if (ui.home_tab_obscured()) {
+        if (ui_state.home_tab_obscured()) {
             ui.change_tab_to('#home');
         } else {
             narrow.restore_home_state();

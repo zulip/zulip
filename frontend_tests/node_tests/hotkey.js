@@ -116,7 +116,7 @@ function stubbing(func_name_to_stub, test_function) {
     _.each([return_true, return_false], function (is_settings_page) {
         _.each([return_true, return_false], function (home_tab_obscured) {
             hotkey.is_settings_page = is_settings_page;
-            set_global('ui', {home_tab_obscured: home_tab_obscured});
+            set_global('ui_state', {home_tab_obscured: home_tab_obscured});
 
             test_normal_typing();
         });

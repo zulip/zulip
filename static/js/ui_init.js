@@ -68,7 +68,7 @@ $(function () {
     });
 
     message_viewport.message_pane.mousewheel(function (e, delta) {
-        if (!ui.home_tab_obscured()) {
+        if (!ui_state.home_tab_obscured()) {
             // In the message view, we use a throttled mousewheel handler.
             throttled_mousewheelhandler(e, delta);
         }

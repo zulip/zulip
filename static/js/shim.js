@@ -13,6 +13,9 @@ var compose_actions = {};
 compose_actions.start = compose.start;
 compose_actions.cancel = compose.cancel;
 
+var ui_state = {};
+ui_state.home_tab_obscured = ui.home_tab_obscured;
+
 var compose_state = {};
 compose_state.has_message_content = compose.has_message_content;
 compose_state.recipient = compose.recipient;
