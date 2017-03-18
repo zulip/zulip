@@ -20,7 +20,7 @@
 
 #streams_inline_cog:hover,
 #streams_filter_icon:hover {
-   opacity: 1.0;
+    opacity: 1.0;
 }
 
 #join_unsub_stream {
@@ -248,7 +248,7 @@ ul.filters li.out_of_home_view li.muted_topic {
 }
 
 #stream_filters .subscription_block .stream-name {
-   overflow-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 #stream_filters .subscription_block.stream-with-count {
