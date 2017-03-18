@@ -86,6 +86,7 @@ var keypress_mappings = {
     113: {name: 'query_users', message_view_only: false}, // 'q'
     114: {name: 'reply_message', message_view_only: true}, // 'r'
     115: {name: 'narrow_by_recipient', message_view_only: true}, // 's'
+    118: {name: 'show_lightbox', message_view_only: true}, // 'v'
     119: {name: 'query_streams', message_view_only: false}, // 'w'
 };
 
@@ -555,6 +556,9 @@ exports.process_hotkey = function (e, hotkey) {
             return true;
         case 'compose_reply_with_mention': // '@': respond to message with mention to author
             compose.reply_with_mention({trigger: 'hotkey'});
+            return true;
+        case 'show_lightbox':
+            lightbox.show_from_selected_message();
             return true;
     }
 
