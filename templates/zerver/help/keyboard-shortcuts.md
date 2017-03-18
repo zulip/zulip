@@ -93,6 +93,8 @@ Zulip keyboard shortcuts are divided into four categories:
   message.
 * **Show the keyboard shortcuts**: `?` - This shortcut makes a modal
   window with a guide to all possible keyboard shortcuts appear.
+* **Open gear menu**: `g` - This shortcut opens the page's upper-right
+  gear menu.
 * **Open reaction popover menu**: `:` - This shortcut shows the
   reaction popover menu of the selected message (outlined in blue).
 * **React to selected message with +1**: `+` - This shortcut allows

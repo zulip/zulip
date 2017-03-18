@@ -97,6 +97,7 @@ var keypress_mappings = {
     82: {name: 'respond_to_author', message_view_only: true}, // 'R'
     83: {name: 'narrow_by_subject', message_view_only: true}, //'S'
     99: {name: 'compose', message_view_only: true}, // 'c'
+    103: {name: 'gear_menu', message_view_only: true}, // 'g'
     105: {name: 'message_actions', message_view_only: true}, // 'i'
     106: {name: 'vim_down', message_view_only: true}, // 'j'
     107: {name: 'vim_up', message_view_only: true}, // 'k'
@@ -529,6 +530,9 @@ exports.process_hotkey = function (e, hotkey) {
             return true;
         case 'search':
             search.initiate_search();
+            return true;
+        case 'gear_menu':
+            gear_menu.open();
             return true;
         case 'show_shortcuts': // Show keyboard shortcuts page
             ui.show_info_overlay("keyboard-shortcuts");
