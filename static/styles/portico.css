@@ -816,19 +816,22 @@ a.bottom-signup-button {
     margin-bottom: 0px;
     padding: 8px;
     font-size: 18px;
-    border-radius: 5px;
+    border-radius: 0px;
     min-width: 300px;
-    color: #fff;
 }
 
 .btn-user {
-    background-color: #428bca;
-    border-color: #357ebd;
+    background-color: #ffffff;
+    border-color: #55bdaa;
+    border-style: solid;
+    color: #3f9486;
 }
 
 .btn-admin {
-    background-color: #ff4136;
-    border-color: #bd7e35;
+    background-color: #ffffff;
+    border-color: #00a9f4;
+    border-style: solid;
+    color: #2196f3;
 }
 
 .feature-page-header {
