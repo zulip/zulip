@@ -66,6 +66,8 @@ function query_matches_stream(query, stream) {
 
 // Case-insensitive
 function query_matches_emoji(query, emoji) {
+    // replaces spaces with underscores
+    query = query.split(" ").join("_");
     return (emoji.emoji_name.toLowerCase().indexOf(query.toLowerCase()) !== -1);
 }
 
@@ -337,7 +339,7 @@ exports.compose_content_begins_typeahead = function (query) {
 exports.content_highlighter = function (item) {
     if (this.completing === 'emoji') {
         return typeahead_helper.render_typeahead_item({
-            primary: item.emoji_name,
+            primary: item.emoji_name.split("_").join(" "),
             img_src: item.emoji_url,
         });
     } else if (this.completing === 'mention') {
@@ -357,16 +359,16 @@ exports.content_typeahead_selected = function (item) {
     if (this.completing === 'emoji') {
         // leading and trailing spaces are required for emoji, except if it begins a message.
         if (beginning.lastIndexOf(":") === 0 || beginning.charAt(beginning.lastIndexOf(":") - 1) === " ") {
-            beginning = beginning.replace(/:\S+$/, "") + ":" + item.emoji_name + ": ";
+            beginning = (beginning.substring(0, beginning.length - this.token.length - 1)+ ":" + item.emoji_name + ": ");
         } else {
-            beginning = beginning.replace(/:\S+$/, "") + " :" + item.emoji_name + ": ";
+            beginning = (beginning.substring(0, beginning.length - this.token.length - 1) + " :" + item.emoji_name + ": ");
         }
     } else if (this.completing === 'mention') {
-        beginning = (beginning.substring(0, beginning.length - this.token.length-1)
+        beginning = (beginning.substring(0, beginning.length - this.token.length - 1)
                 + '@**' + item.full_name + '** ');
         $(document).trigger('usermention_completed.zulip', {mentioned: item});
     } else if (this.completing === 'stream') {
-        beginning = (beginning.substring(0, beginning.length - this.token.length-1)
+        beginning = (beginning.substring(0, beginning.length - this.token.length - 1)
                 + '#**' + item.name + '** ');
         $(document).trigger('streamname_completed.zulip', {stream: item});
     } else if (this.completing === 'syntax') {

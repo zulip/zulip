@@ -1,7 +1,10 @@
 var ct = require('js/composebox_typeahead.js');
 
 var emoji_list = [{emoji_name: "tada", emoji_url: "TBD"},
-                  {emoji_name: "moneybags", emoji_url: "TBD"}];
+                  {emoji_name: "moneybags", emoji_url: "TBD"},
+                  {emoji_name: "panda_face", emoji_url: "TBD"},
+                  {emoji_name: "see_no_evil", emoji_url: "TBD"},
+                  {emoji_name: "japanese_post_office", emoji_url: "TBD"}];
 var stream_list = ['Denmark', 'Sweden'];
 
 set_global('emoji', {emojis: emoji_list});
@@ -88,6 +91,10 @@ global.people.add({
     assert_typeahead_equals("hi emoji :", false);
     assert_typeahead_equals("hi emoji :ta", emoji_list);
     assert_typeahead_equals("hi emoji :da", emoji_list);
+    assert_typeahead_equals("hi emoji :da_", emoji_list);
+    assert_typeahead_equals("hi emoji :da ", emoji_list);
+    assert_typeahead_equals("hi :see no", emoji_list);
+    assert_typeahead_equals("hi :japanese post of", emoji_list);
 
     assert_typeahead_equals("test #", false);
     assert_typeahead_equals("test #D", stream_list);
