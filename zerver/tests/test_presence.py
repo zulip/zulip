@@ -229,11 +229,40 @@ class UserPresenceAggregationTests(ZulipTestCase):
                              HTTP_USER_AGENT="ZulipAndroid/1.0",
                              **self.api_auth(email))
         with mock.patch(timezone_util, return_value=validate_time - datetime.timedelta(seconds=7)):
-            self.client_post("/api/v1/users/me/presence", {'status': status},
-                             HTTP_USER_AGENT="ZulipIOS/1.0",
-                             **self.api_auth(email))
+            latest_result = self.client_post("/api/v1/users/me/presence", {'status': status},
+                                             HTTP_USER_AGENT="ZulipIOS/1.0",
+                                             **self.api_auth(email))
+        latest_result_dict = latest_result.json()
+        self.assertDictEqual(
+            latest_result_dict['presences'][email]['aggregated'],
+            {
+                'status': status,
+                'timestamp': datetime_to_timestamp(validate_time - datetime.timedelta(seconds=2)),
+                'client': 'ZulipAndroid'
+            }
+        )
         result = self.client_get("/json/users/%s/presence" % (email,))
         return result.json()
+
+    def test_aggregated_info(self):
+        # type: () -> None
+        email = "othello@zulip.com"
+        validate_time = timezone.now()
+        self._send_presence_for_aggregated_tests('othello@zulip.com', 'active', validate_time)
+        with mock.patch('django.utils.timezone.now',
+                        return_value=validate_time - datetime.timedelta(seconds=1)):
+            result = self.client_post("/api/v1/users/me/presence", {'status': 'active'},
+                                      HTTP_USER_AGENT="ZulipTestDev/1.0",
+                                      **self.api_auth(email))
+        result_dict = result.json()
+        self.assertDictEqual(
+            result_dict['presences'][email]['aggregated'],
+            {
+                'status': 'active',
+                'timestamp': datetime_to_timestamp(validate_time - datetime.timedelta(seconds=1)),
+                'client': 'ZulipTestDev'
+            }
+        )
 
     def test_aggregated_presense_active(self):
         # type: () -> None
