@@ -71,6 +71,7 @@
         "stream_list": false,
         "stream_popover": false,
         "narrow": false,
+        "narrow_state": false,
         "admin": false,
         "stream_data": false,
         "muting": false,
