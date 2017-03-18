@@ -850,7 +850,7 @@ a.bottom-signup-button {
 
 .register-form {
     margin: auto;
-    width: 400px;
+    width: 100%;
     text-align: center;
 }
 
@@ -861,6 +861,12 @@ a.bottom-signup-button {
 .new-organization-button {
     margin-top: 10px;
 }
+
+input.new-organization-button {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
 
 .login-form .control-label, .register-form .control-label {
     margin-bottom: 2px;
@@ -1448,6 +1454,10 @@ a.bottom-signup-button {
       min-width: auto;
   }
 
+  .app-main {
+    padding: 0px;
+  }
+
   .header {
       padding: 4px 0px 6px 0px;
   }
@@ -1540,6 +1550,10 @@ a.bottom-signup-button {
 
 label.label-title {
     font-weight: 600;
+}
+
+input.new-organization-button {
+    margin-left: auto;
 }
 
 .input-group label.inline-block {
