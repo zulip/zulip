@@ -3,6 +3,9 @@ $ python ./tools/js-dep-visualizer.py
 $ dot -Tpng var/zulip-deps.dot -o var/zulip-deps.png
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
+
 import os
 import re
 import sys
@@ -14,23 +17,22 @@ ROOT_DIR = os.path.dirname(TOOLS_DIR)
 sys.path.insert(0, ROOT_DIR)
 from tools.lib.graph import Graph, make_dot_file
 
-JS_FILES_DIR = os.path.abspath(os.path.join(ROOT_DIR, 'static/js'))
-OUTPUT_FILE_PATH = os.path.abspath(os.path.join(ROOT_DIR, 'var/zulip-deps.dot'))
+JS_FILES_DIR = os.path.join(ROOT_DIR, 'static/js')
+OUTPUT_FILE_PATH = os.path.relpath(os.path.join(ROOT_DIR, 'var/zulip-deps.dot'))
 
 names = set()
 modules = [] # type: List[Dict[str, Any]]
 for js_file in os.listdir(JS_FILES_DIR):
+    if not js_file.endswith('.js'):
+        continue
     name = js_file[:-3] # remove .js
-    file_path = os.path.abspath(os.path.join(JS_FILES_DIR, js_file))
-
-    if os.path.isfile(file_path) and js_file != '.eslintrc.json':
-        names.add(name)
-        modules.append(dict(
-            filename=js_file,
-            name=name,
-            path=file_path,
-            regex=re.compile('[^_]{}\.\w+\('.format(name))
-        ))
+    path = os.path.join(JS_FILES_DIR, js_file)
+    names.add(name)
+    modules.append(dict(
+        name=name,
+        path=path,
+        regex=re.compile('[^_]{}\.\w+\('.format(name))
+    ))
 
 COMMENT_REGEX = re.compile('\s+//')
 REGEX = re.compile('[^_](\w+)\.\w+\(')
@@ -59,15 +61,26 @@ IGNORE_TUPLES = [
     # these out to see what the "real" situation looks like now, and if you do
     # the work of breaking the dependency, you can remove it.
 
-    ('typeahead_helper', 'composebox_typeahead'), # PR 4121
-    ('typeahead_helper', 'compose'), # PR 4121
-    ('typeahead_helper', 'subs'), # PR 4121
+    ('echo', 'message_events'), # do something slimy here
+    ('echo', 'ui'),
 
     ('stream_data', 'narrow'), # split out narrow.by_foo functions
+    ('activity', 'narrow'),
+
+    ('subs', 'narrow'), # data functions
+    ('subs', 'compose'), # data functions
+
+    ('narrow', 'ui'), # just three functions
 
     ('stream_data', 'stream_color'), # split out stream_color data/UI
     ('stream_color', 'tab_bar'), # only one call
     ('stream_color', 'subs'), # only one call
+
+    ('subs', 'stream_events'), # see TODOs related to mark_{un,}subscribed
+
+    ('subs', 'hashchange'), # modal stuff
+
+    ('message_store', 'compose'), # split out compose_data
 
     ('search', 'search_suggestion'), # move handler into search_suggestion
 
@@ -95,31 +108,44 @@ IGNORE_TUPLES = [
     ('settings', 'muting_ui'), # inline call or split out muting_settings.js
 
     ('resize', 'navigate'), # split out scroll.js
+    ('resize', 'popovers'), # only three interactions
+
 ]
 
-for tuple in IGNORE_TUPLES:
-    tuples.discard(tuple)
+for tup in IGNORE_TUPLES:
+    try:
+        tuples.remove(tup)
+    except KeyError:
+        print('''
+            {} no longer needs to be ignored.  Help us celebrate
+            by removing it from IGNORE_TUPLES!
+        '''.format(tup))
+        sys.exit(1)
 
 
 # print(tuples)
 graph = Graph(*tuples)
 ignore_modules = [
-    # some are really tricky
-    'message_store',
-    'popovers',
-    'server_events', # has restart code
-    'unread_ui',
-    'ui', # initializes all the other widgets
-
-    # some are just not very core:
-    'drafts',
+    'blueslip',
+    'message_edit',
+    'message_util',
+    'modals',
     'notifications',
+    'popovers',
+    'server_events',
     'stream_popover',
+    'topic_list',
+    'tutorial',
+    'unread_ops',
+    'rows', # message_store
 ]
 for node in ignore_modules:
     graph.remove(node)
 graph.remove_exterior_nodes()
+graph.report()
 buffer = make_dot_file(graph)
 
 with open(OUTPUT_FILE_PATH, 'w') as f:
     f.write(buffer)
+print()
+print('see dot file here: {}'.format(OUTPUT_FILE_PATH))
