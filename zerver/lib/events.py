@@ -93,6 +93,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
 
     if want('realm'):
         state['realm_name'] = user_profile.realm.name
+        state['realm_description'] = user_profile.realm.description
         state['realm_restricted_to_domain'] = user_profile.realm.restricted_to_domain
         state['realm_invite_required'] = user_profile.realm.invite_required
         state['realm_invite_by_admins_only'] = user_profile.realm.invite_by_admins_only

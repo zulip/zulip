@@ -8,6 +8,7 @@ from zerver.decorator import require_realm_admin, to_non_negative_int
 from zerver.lib.actions import (
     do_set_realm_create_stream_by_admins_only,
     do_set_realm_name,
+    do_set_realm_description,
     do_set_realm_invite_by_admins_only,
     do_set_name_changes_disabled,
     do_set_email_changes_disabled,
@@ -28,6 +29,7 @@ from zerver.models import UserProfile
 @require_realm_admin
 @has_request_variables
 def update_realm(request, user_profile, name=REQ(validator=check_string, default=None),
+                 description=REQ(validator=check_string, default=None),
                  restricted_to_domain=REQ(validator=check_bool, default=None),
                  invite_required=REQ(validator=check_bool, default=None),
                  invite_by_admins_only=REQ(validator=check_bool, default=None),
@@ -40,7 +42,7 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
                  default_language=REQ(validator=check_string, default=None),
                  waiting_period_threshold=REQ(converter=to_non_negative_int, default=None),
                  authentication_methods=REQ(validator=check_dict([]), default=None)):
-    # type: (HttpRequest, UserProfile, Optional[str], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[int], Optional[str], Optional[int], Optional[dict]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Optional[str], Optional[str], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[int], Optional[str], Optional[int], Optional[dict]) -> HttpResponse
     # Validation for default_language
     if default_language is not None and default_language not in get_available_language_codes():
         raise JsonableError(_("Invalid language '%s'" % (default_language,)))
@@ -49,6 +51,9 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
     if name is not None and realm.name != name:
         do_set_realm_name(realm, name)
         data['name'] = 'updated'
+    if description is not None and realm.description != description:
+        do_set_realm_description(realm, description)
+        data['description'] = 'updated'
     if restricted_to_domain is not None and realm.restricted_to_domain != restricted_to_domain:
         do_set_realm_restricted_to_domain(realm, restricted_to_domain)
         data['restricted_to_domain'] = restricted_to_domain

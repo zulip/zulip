@@ -3,6 +3,7 @@
 {{t "Organization settings" }}</div>
   <form class="form-horizontal admin-realm-form">
     <div class="alert" id="admin-realm-name-status"></div>
+    <div class="alert" id="admin-realm-description-status"></div>
     <div class="alert" id="admin-realm-restricted-to-domain-status"></div>
     <div class="alert" id="admin-realm-invite-required-status"></div>
     <div class="alert" id="admin-realm-invite-by-admins-only-status"></div>
@@ -19,6 +20,11 @@
       <label for="realm_name">{{t "Your organization's name" }}</label>
       <input type="text" id="id_realm_name" name="realm_name" class="admin-realm-name"
              value="{{ realm_name }}" />
+    </div>
+    <div class="input-group admin-realm">
+      <label for="realm_description">{{t "Your organization's description" }}</label>
+      <input type="text" id="id_realm_description" name="realm_description" class="admin-realm-description"
+        maxlength="100" value="{{ realm_description }}" />
     </div>
     <div class="input-group admin-restricted-to-domain">
       <input type="checkbox" class="inline-block" id="id_realm_restricted_to_domain" name="realm_restricted_to_domain"

@@ -431,6 +431,20 @@ def do_set_realm_name(realm, name):
     )
     send_event(event, active_user_ids(realm))
 
+def do_set_realm_description(realm, description):
+    # type: (Realm, Text) -> None
+    if len(description) > 100:
+        description = description[:100]
+    realm.description = description
+    realm.save(update_fields=['description'])
+    event = dict(
+        type='realm',
+        op='update',
+        property='description',
+        value=description,
+    )
+    send_event(event, active_user_ids(realm))
+
 def do_set_realm_restricted_to_domain(realm, restricted):
     # type: (Realm, bool) -> None
     realm.restricted_to_domain = restricted

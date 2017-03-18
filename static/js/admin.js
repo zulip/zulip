@@ -176,6 +176,10 @@ exports.toggle_email_change_display = function () {
     $(".change_email_tooltip").toggle();
 };
 
+exports.update_realm_description = function (description) {
+    $('#id_realm_description').val(description);
+};
+
 exports.build_default_stream_table = function (streams_data) {
     var self = {};
 
@@ -373,6 +377,7 @@ exports.populate_auth_methods = function (auth_methods) {
 function _setup_page() {
     var options = {
         realm_name: page_params.realm_name,
+        realm_description: page_params.realm_description,
         realm_restricted_to_domain: page_params.realm_restricted_to_domain,
         realm_invite_required: page_params.realm_invite_required,
         realm_invite_by_admins_only: page_params.realm_invite_by_admins_only,
@@ -614,6 +619,7 @@ function _setup_page() {
 
     $(".administration").on("submit", "form.admin-realm-form", function (e) {
         var name_status = $("#admin-realm-name-status").expectOne();
+        var description_status = $("#admin-realm-description-status").expectOne();
         var restricted_to_domain_status = $("#admin-realm-restricted-to-domain-status").expectOne();
         var invite_required_status = $("#admin-realm-invite-required-status").expectOne();
         var invite_by_admins_only_status = $("#admin-realm-invite-by-admins-only-status").expectOne();
@@ -626,6 +632,7 @@ function _setup_page() {
         var default_language_status = $("#admin-realm-default-language-status").expectOne();
         var waiting_period_threshold_status = $("#admin-realm-waiting_period_threshold_status").expectOne();
         name_status.hide();
+        description_status.hide();
         restricted_to_domain_status.hide();
         invite_required_status.hide();
         invite_by_admins_only_status.hide();
@@ -642,6 +649,7 @@ function _setup_page() {
         e.stopPropagation();
 
         var new_name = $("#id_realm_name").val();
+        var new_description = $("#id_realm_description").val();
         var new_restricted = $("#id_realm_restricted_to_domain").prop("checked");
         var new_invite = $("#id_realm_invite_required").prop("checked");
         var new_invite_by_admins_only = $("#id_realm_invite_by_admins_only").prop("checked");
@@ -673,6 +681,7 @@ function _setup_page() {
         var url = "/json/realm";
         var data = {
             name: JSON.stringify(new_name),
+            description: JSON.stringify(new_description),
             restricted_to_domain: JSON.stringify(new_restricted),
             invite_required: JSON.stringify(new_invite),
             invite_by_admins_only: JSON.stringify(new_invite_by_admins_only),
@@ -694,6 +703,9 @@ function _setup_page() {
             success: function (response_data) {
                 if (response_data.name !== undefined) {
                     ui_report.success(i18n.t("Name changed!"), name_status);
+                }
+                if (response_data.description !== undefined) {
+                    ui.report_success(i18n.t("Description changed!"), description_status);
                 }
                 if (response_data.restricted_to_domain !== undefined) {
                     if (response_data.restricted_to_domain) {
