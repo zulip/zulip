@@ -820,6 +820,7 @@ JS_SPECS = {
             'js/channel.js',
             'js/setup.js',
             'js/unread_ui.js',
+            'js/unread_ops.js',
             'js/muting.js',
             'js/muting_ui.js',
             'js/message_viewport.js',

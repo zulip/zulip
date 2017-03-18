@@ -70,7 +70,7 @@ $(function () {
         // lists.
         var message = ui.find_message(message_id);
 
-        unread_ui.mark_message_as_read(message);
+        unread_ops.mark_message_as_read(message);
         ui.update_starred(message.id, message.starred !== true);
         message_flags.send_starred([message], message.starred);
     }

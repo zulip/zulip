@@ -211,7 +211,7 @@ exports.register_stream_handlers = function () {
     $('body').on('click', '.mark_stream_as_read', function (e) {
         var sub = stream_popover_sub(e);
         exports.hide_stream_popover();
-        unread_ui.mark_stream_as_read(sub.name);
+        unread_ops.mark_stream_as_read(sub.name);
         e.stopPropagation();
     });
 
@@ -347,7 +347,7 @@ exports.register_topic_handlers = function () {
 
         var topic = $(e.currentTarget).attr('data-topic-name');
         exports.hide_topic_popover();
-        unread_ui.mark_topic_as_read(sub.name, topic);
+        unread_ops.mark_topic_as_read(sub.name, topic);
         e.stopPropagation();
     });
 };

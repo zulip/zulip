@@ -69,7 +69,7 @@ exports.initialize = function () {
 
         // Update many places on the DOM to reflect unread
         // counts.
-        unread_ui.process_visible();
+        unread_ops.process_visible();
 
     }).blur(function () {
         window_has_focus = false;
