@@ -363,6 +363,7 @@ ZILENCER_ENABLED = 'zilencer' in INSTALLED_APPS
 # We override the port number when running frontend tests.
 TORNADO_SERVER = 'http://127.0.0.1:9993'
 RUNNING_INSIDE_TORNADO = False
+AUTORELOAD = DEBUG
 
 ########################################################################
 # DATABASE CONFIGURATION

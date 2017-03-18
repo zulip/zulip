@@ -19,5 +19,6 @@ def create_tornado_application():
     return tornado.web.Application(([(url, AsyncDjangoHandler) for url in urls] +
                                     get_sockjs_router().urls),
                                    debug=settings.DEBUG,
+                                   autoreload=settings.AUTORELOAD,
                                    # Disable Tornado's own request logging, since we have our own
                                    log_function=lambda x: None)

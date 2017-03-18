@@ -96,8 +96,12 @@ CACHES['database'] = {
     }
 }
 
-# Use local memory cache for backend tests.
-if not CASPER_TESTS:
+
+if CASPER_TESTS:
+    # Don't auto-restart Tornado server during casper tests
+    AUTORELOAD = False
+else:
+    # Use local memory cache for backend tests.
     CACHES['default'] = {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'
     }
