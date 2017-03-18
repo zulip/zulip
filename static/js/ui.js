@@ -288,7 +288,7 @@ function scroll_finished() {
 
     if ($('#home').hasClass('active')) {
         if (!pointer.suppress_scroll_pointer_update) {
-            pointer.keep_pointer_in_view();
+            message_viewport.keep_pointer_in_view();
         } else {
             pointer.suppress_scroll_pointer_update = false;
         }
