@@ -120,8 +120,8 @@ function stubbing(func_name_to_stub, test_function) {
             // An exception will be thrown here if a different
             // function is called than the one declared.  Try to
             // provide a useful error message.
-            console.log();
-            console.log('ERROR: Mapping for character "' + e.which + '" does not match tests.');
+            // add a newline to seperate from other console output.
+            console.log('\nERROR: Mapping for character "' + e.which + '" does not match tests.');
         }
     }
 
@@ -237,8 +237,8 @@ function stubbing(func_name_to_stub, test_function) {
             // An exception will be thrown here if a different
             // function is called than the one declared.  Try to
             // provide a useful error message.
-            console.log();
-            console.log('ERROR: Mapping for character "' + e.which + '" does not match tests.');
+            // add a newline to seperate from other console output.
+            console.log('\nERROR: Mapping for character "' + e.which + '" does not match tests.');
         }
     }
 
