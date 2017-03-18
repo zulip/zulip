@@ -91,7 +91,11 @@ function stubbing(func_name_to_stub, test_function) {
         var e = {
             which: s.charCodeAt(0),
         };
-        return hotkey.process_keypress(e);
+        try {
+            return hotkey.process_keypress(e);
+        } catch (err) {
+            console.log('Could not process key character "' + e.which + '". Please add a test for this.');
+        }
     }
 
     function assert_mapping(c, func_name, shiftKey) {
@@ -194,7 +198,12 @@ function stubbing(func_name_to_stub, test_function) {
             which: codes[name],
             ctrlKey: ctrlKey,
         };
-        return hotkey.process_keydown(e);
+
+        try {
+            return hotkey.process_keydown(e);
+        } catch (err) {
+            console.log('Could not process key character "' + e.which + '". Please add a test for this.');
+        }
     }
 
     function assert_unmapped(name) {
