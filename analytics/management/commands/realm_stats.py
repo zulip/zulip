@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from typing import Any
+from typing import Any, List
 
 from argparse import ArgumentParser
 import datetime
@@ -10,8 +10,10 @@ import pytz
 
 from django.core.management.base import BaseCommand
 from django.db.models import Count
+from django.utils import timezone
+
 from zerver.models import UserProfile, Realm, Stream, Message, Recipient, UserActivity, \
-    Subscription, UserMessage, get_realm_by_string_id
+    Subscription, UserMessage, get_realm
 
 MOBILE_CLIENT_LIST = ["Android", "ios"]
 HUMAN_CLIENT_LIST = MOBILE_CLIENT_LIST + ["website"]
@@ -29,27 +31,27 @@ class Command(BaseCommand):
     def active_users(self, realm):
         # type: (Realm) -> List[UserProfile]
         # Has been active (on the website, for now) in the last 7 days.
-        activity_cutoff = datetime.datetime.now(tz=pytz.utc) - datetime.timedelta(days=7)
+        activity_cutoff = timezone.now() - datetime.timedelta(days=7)
         return [activity.user_profile for activity in (
-                    UserActivity.objects.filter(user_profile__realm=realm,
-                                                user_profile__is_active=True,
-                                                last_visit__gt=activity_cutoff,
-                                                query="/json/users/me/pointer",
-                                                client__name="website"))]
+            UserActivity.objects.filter(user_profile__realm=realm,
+                                        user_profile__is_active=True,
+                                        last_visit__gt=activity_cutoff,
+                                        query="/json/users/me/pointer",
+                                        client__name="website"))]
 
     def messages_sent_by(self, user, days_ago):
         # type: (UserProfile, int) -> int
-        sent_time_cutoff = datetime.datetime.now(tz=pytz.utc) - datetime.timedelta(days=days_ago)
+        sent_time_cutoff = timezone.now() - datetime.timedelta(days=days_ago)
         return human_messages.filter(sender=user, pub_date__gt=sent_time_cutoff).count()
 
     def total_messages(self, realm, days_ago):
         # type: (Realm, int) -> int
-        sent_time_cutoff = datetime.datetime.now(tz=pytz.utc) - datetime.timedelta(days=days_ago)
+        sent_time_cutoff = timezone.now() - datetime.timedelta(days=days_ago)
         return Message.objects.filter(sender__realm=realm, pub_date__gt=sent_time_cutoff).count()
 
     def human_messages(self, realm, days_ago):
         # type: (Realm, int) -> int
-        sent_time_cutoff = datetime.datetime.now(tz=pytz.utc) - datetime.timedelta(days=days_ago)
+        sent_time_cutoff = timezone.now() - datetime.timedelta(days=days_ago)
         return human_messages.filter(sender__realm=realm, pub_date__gt=sent_time_cutoff).count()
 
     def api_messages(self, realm, days_ago):
@@ -58,19 +60,19 @@ class Command(BaseCommand):
 
     def stream_messages(self, realm, days_ago):
         # type: (Realm, int) -> int
-        sent_time_cutoff = datetime.datetime.now(tz=pytz.utc) - datetime.timedelta(days=days_ago)
+        sent_time_cutoff = timezone.now() - datetime.timedelta(days=days_ago)
         return human_messages.filter(sender__realm=realm, pub_date__gt=sent_time_cutoff,
                                      recipient__type=Recipient.STREAM).count()
 
     def private_messages(self, realm, days_ago):
         # type: (Realm, int) -> int
-        sent_time_cutoff = datetime.datetime.now(tz=pytz.utc) - datetime.timedelta(days=days_ago)
+        sent_time_cutoff = timezone.now() - datetime.timedelta(days=days_ago)
         return human_messages.filter(sender__realm=realm, pub_date__gt=sent_time_cutoff).exclude(
             recipient__type=Recipient.STREAM).exclude(recipient__type=Recipient.HUDDLE).count()
 
     def group_private_messages(self, realm, days_ago):
         # type: (Realm, int) -> int
-        sent_time_cutoff = datetime.datetime.now(tz=pytz.utc) - datetime.timedelta(days=days_ago)
+        sent_time_cutoff = timezone.now() - datetime.timedelta(days=days_ago)
         return human_messages.filter(sender__realm=realm, pub_date__gt=sent_time_cutoff).exclude(
             recipient__type=Recipient.STREAM).exclude(recipient__type=Recipient.PERSONAL).count()
 
@@ -86,7 +88,7 @@ class Command(BaseCommand):
         # type: (*Any, **Any) -> None
         if options['realms']:
             try:
-                realms = [get_realm_by_string_id(string_id) for string_id in options['realms']]
+                realms = [get_realm(string_id) for string_id in options['realms']]
             except Realm.DoesNotExist as e:
                 print(e)
                 exit(1)
@@ -121,7 +123,7 @@ class Command(BaseCommand):
                 print("%d messages sent via the API" % (self.api_messages(realm, days_ago),))
                 print("%d group private messages" % (self.group_private_messages(realm, days_ago),))
 
-            num_notifications_enabled = len([x for x in active_users if x.enable_desktop_notifications == True])
+            num_notifications_enabled = len([x for x in active_users if x.enable_desktop_notifications])
             self.report_percentage(num_notifications_enabled, num_active,
                                    "active users have desktop notifications enabled")
 

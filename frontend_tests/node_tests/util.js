@@ -30,6 +30,12 @@ var _ = global._;
     assert.equal(util.extract_pm_recipients('bob@foo.com, ').length, 1);
 }());
 
+(function test_rtrim() {
+    assert.equal(util.rtrim('foo'), 'foo');
+    assert.equal(util.rtrim('  foo'), '  foo');
+    assert.equal(util.rtrim('foo  '), 'foo');
+}());
+
 (function test_lower_bound() {
     var arr = [10, 20, 30, 40, 50];
     assert.equal(util.lower_bound(arr, 5), 0);
@@ -52,35 +58,25 @@ var _ = global._;
 }());
 
 (function test_same_recipient() {
-    _.each([util.same_recipient, util.same_major_recipient], function (same) {
-        assert(same(
-            {type: 'stream', stream: 'Foo', subject: 'Bar'},
-            {type: 'stream', stream: 'fOO', subject: 'bar'}));
-
-        assert(!same(
-            {type: 'stream', stream: 'Foo', subject: 'Bar'},
-            {type: 'stream', stream: 'yo', subject: 'whatever'}));
-
-        assert(same(
-            {type: 'private', reply_to: 'fred@zulip.com,melissa@zulip.com'},
-            {type: 'private', reply_to: 'fred@zulip.com,melissa@zulip.com'}));
-
-        assert(same(
-            {type: 'private', reply_to: 'fred@zulip.com'},
-            {type: 'private', reply_to: 'Fred@zulip.com'}));
-
-        assert(!same(
-            {type: 'stream', stream: 'Foo', subject: 'Bar'},
-            {type: 'private', reply_to: 'Fred@zulip.com'}));
-    });
-
-    assert(util.same_major_recipient(
-        {type: 'stream', stream: 'Foo', subject: 'sub1'},
-        {type: 'stream', stream: 'fOO', subject: 'sub2'}));
+    assert(util.same_recipient(
+        {type: 'stream', stream_id: 101, subject: 'Bar'},
+        {type: 'stream', stream_id: 101, subject: 'bar'}));
 
     assert(!util.same_recipient(
-        {type: 'stream', stream: 'Foo', subject: 'sub1'},
-        {type: 'stream', stream: 'fOO', subject: 'sub2'}));
+        {type: 'stream', stream_id: 101, subject: 'Bar'},
+        {type: 'stream', stream_id: 102, subject: 'whatever'}));
+
+    assert(util.same_recipient(
+        {type: 'private', to_user_ids: '101,102'},
+        {type: 'private', to_user_ids: '101,102'}));
+
+    assert(!util.same_recipient(
+        {type: 'private', to_user_ids: '101,102'},
+        {type: 'private', to_user_ids: '103'}));
+
+    assert(!util.same_recipient(
+        {type: 'stream', stream_id: 101, subject: 'Bar'},
+        {type: 'private'}));
 
 }());
 

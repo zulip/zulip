@@ -1,17 +1,39 @@
+global.stub_out_jquery();
+
 add_dependencies({
-    util: 'js/util.js',
+    people: 'js/people.js',
     stream_data: 'js/stream_data.js',
+    util: 'js/util.js',
 });
 
-set_global('page_params', {
-    email: 'hamlet@zulip.com',
-    domain: 'zulip.com',
-});
-
+set_global('page_params', {});
 set_global('feature_flags', {});
 
 var Filter = require('js/filter.js');
 var _ = global._;
+
+var me = {
+    email: 'me@example.com',
+    user_id: 30,
+    full_name: 'Me Myself',
+};
+
+var joe = {
+    email: 'joe@example.com',
+    user_id: 31,
+    full_name: 'joe',
+};
+
+var steve = {
+    email: 'STEVE@foo.com',
+    user_id: 32,
+    full_name: 'steve',
+};
+
+people.add(me);
+people.add(joe);
+people.add(steve);
+people.initialize_current_user(me.user_id);
 
 function assert_same_operators(result, terms) {
     terms = _.map(terms, function (term) {
@@ -147,11 +169,11 @@ function assert_same_operators(result, terms) {
 
     term = Filter.canonicalize_term({operator: 'sender', operand: 'me'});
     assert.equal(term.operator, 'sender');
-    assert.equal(term.operand, 'hamlet@zulip.com');
+    assert.equal(term.operand, 'me@example.com');
 
     term = Filter.canonicalize_term({operator: 'pm-with', operand: 'me'});
     assert.equal(term.operator, 'pm-with');
-    assert.equal(term.operand, 'hamlet@zulip.com');
+    assert.equal(term.operand, 'me@example.com');
 
     term = Filter.canonicalize_term({operator: 'search', operand: 'foo'});
     assert.equal(term.operator, 'search');
@@ -248,12 +270,18 @@ function get_predicate(operators) {
     assert(!predicate({type: 'stream', id: 5, subject: 'dinner'}));
 
     predicate = get_predicate([['sender', 'Joe@example.com']]);
-    assert(predicate({sender_email: 'JOE@example.com'}));
-    assert(!predicate({sender_email: 'steve@foo.com'}));
+    assert(predicate({sender_id: joe.user_id}));
+    assert(!predicate({sender_email: steve.user_id}));
 
     predicate = get_predicate([['pm-with', 'Joe@example.com']]);
-    assert(predicate({type: 'private', reply_to: 'JOE@example.com'}));
-    assert(!predicate({type: 'private', reply_to: 'steve@foo.com'}));
+    assert(predicate({
+        type: 'private',
+        display_recipient: [{id: joe.user_id}],
+    }));
+    assert(!predicate({
+        type: 'private',
+        display_recipient: [{user_id: steve.user_id}],
+    }));
 }());
 
 (function test_negated_predicates() {
@@ -377,6 +405,34 @@ function get_predicate(operators) {
         {operator: 'stream', operand: 'exclude', negated: true},
     ];
     _test();
+
+    string = 'text stream:foo more text';
+    operators = [
+        {operator: 'stream', operand: 'foo'},
+        {operator: 'search', operand: 'text more text'},
+    ];
+    _test();
+
+    string = 'stream:foo :emoji: are cool';
+    operators = [
+        {operator: 'stream', operand: 'foo'},
+        {operator: 'search', operand: ':emoji: are cool'},
+    ];
+    _test();
+
+    string = ':stream: stream:foo :emoji: are cool';
+    operators = [
+        {operator: 'stream', operand: 'foo'},
+        {operator: 'search', operand: ':stream: :emoji: are cool'},
+    ];
+    _test();
+
+    string = ':stream: stream:foo -:emoji: are cool';
+    operators = [
+        {operator: 'stream', operand: 'foo'},
+        {operator: 'search', operand: ':stream: -:emoji: are cool'},
+    ];
+    _test();
 }());
 
 (function test_unparse() {
@@ -493,4 +549,17 @@ function get_predicate(operators) {
     string = 'Narrow to stream devel, Exclude messages with one or more image';
     assert.equal(Filter.describe(narrow), string);
 
+}());
+
+(function test_update_email() {
+    var terms = [
+        {operator: 'pm-with', operand: 'steve@foo.com'},
+        {operator: 'sender', operand: 'steve@foo.com'},
+        {operator: 'stream', operand: 'steve@foo.com'}, // try to be tricky
+    ];
+    var filter = new Filter(terms);
+    filter.update_email(steve.user_id, 'showell@foo.com');
+    assert.deepEqual(filter.operands('pm-with'), ['showell@foo.com']);
+    assert.deepEqual(filter.operands('sender'), ['showell@foo.com']);
+    assert.deepEqual(filter.operands('stream'), ['steve@foo.com']);
 }());

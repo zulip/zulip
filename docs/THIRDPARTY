@@ -170,9 +170,10 @@ Files: static/third/marked/*
 Copyright: 2011-2013, Christopher Jeffrey
 License: Expat
 
-Files: static/third/string-prototype-codepointat/*
-Copyright: 2014 Mathias Bynens
-License: Expat
+Files: static/third/sockjs/sockjs-0.3.4.js
+Copyright: 2011-2012 VMware, Inc.
+ 2012 Douglas Crockford
+License: Expat and public-domain
 
 Files: static/third/sorttable/sorttable.js
 Copyright: 2007 Stuart Langridge
@@ -186,35 +187,9 @@ Files: static/third/spectrum/*
 Copyright: 2013 Brian Grinstead
 License: Expat
 
-Files: static/third/spin/spin.js
-Copyright: 2011-2013 Felix Gnass
-License: Expat
-
-Files: static/third/underscore/underscore.js
-Copyright: 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-License: Expat
-Comment: https://github.com/jashkenas/underscore/blob/master/LICENSE
-
-Files: static/third/winchan/*
-Copyright: 2012 Lloyd Hilaiel
-License: Expat
-Comment: https://github.com/mozilla/winchan
-
-Files: static/third/xdate/*
-Copyright: 2010 C. F., Wong
-License: Expat
-
 Files: static/third/zocial/*
 Copyright: Sam Collins
 License: Expat
-
-Files: tools/inject-messages/othello
-Copyright: Shakespeare
-License: public-domain
-
-Files: tools/review
-Copyright: 2010 Ksplice, Inc.
-License: Apache-2.0
 
 Files: zerver/lib/bugdown/fenced_code.py
 Copyright: 2006-2008 Waylan Limberg

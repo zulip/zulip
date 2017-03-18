@@ -4,7 +4,7 @@ from django.http import HttpResponse
 from django.test import TestCase, override_settings
 from django_auth_ldap.backend import _LDAPUser
 from django.test.client import RequestFactory
-from typing import Any, Callable, Dict, Optional, Text
+from typing import Any, Callable, Dict, List, Optional, Text
 from builtins import object
 from oauth2client.crypt import AppIdentityError
 from django.core import signing
@@ -16,14 +16,14 @@ import re
 
 from zerver.forms import HomepageForm
 from zerver.lib.actions import do_deactivate_realm, do_deactivate_user, \
-    do_reactivate_realm, do_reactivate_user
+    do_reactivate_realm, do_reactivate_user, do_set_realm_authentication_methods
 from zerver.lib.initial_password import initial_password
-from zerver.lib.session_user import get_session_dict_user
+from zerver.lib.sessions import get_session_dict_user
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 from zerver.models import \
-    get_realm_by_string_id, get_user_profile_by_email, email_to_username, UserProfile, \
+    get_realm, get_user_profile_by_email, email_to_username, UserProfile, \
     PreregistrationUser, Realm
 
 from confirmation.models import Confirmation
@@ -35,11 +35,12 @@ from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     SocialAuthMixin, AUTH_BACKEND_NAME_MAP
 
 from zerver.views.auth import maybe_send_to_registration
+from version import ZULIP_VERSION
 
-from social.exceptions import AuthFailed
-from social.strategies.django_strategy import DjangoStrategy
-from social.storage.django_orm import BaseDjangoStorage
-from social.backends.github import GithubOrganizationOAuth2, GithubTeamOAuth2, \
+from social_core.exceptions import AuthFailed, AuthStateForbidden
+from social_django.strategy import DjangoStrategy
+from social_django.storage import BaseDjangoStorage
+from social_core.backends.github import GithubOrganizationOAuth2, GithubTeamOAuth2, \
     GithubOAuth2
 
 from six.moves import urllib
@@ -228,22 +229,22 @@ class AuthBackendTest(TestCase):
         # Test LDAP auth fails when LDAP server rejects password
         with mock.patch('django_auth_ldap.backend._LDAPUser._authenticate_user_dn',
                         side_effect=_LDAPUser.AuthenticationFailed("Failed")), (
-             mock.patch('django_auth_ldap.backend._LDAPUser._check_requirements')), (
-             mock.patch('django_auth_ldap.backend._LDAPUser._get_user_attrs',
-                        return_value=dict(full_name=['Hamlet']))):
+            mock.patch('django_auth_ldap.backend._LDAPUser._check_requirements')), (
+            mock.patch('django_auth_ldap.backend._LDAPUser._get_user_attrs',
+                       return_value=dict(full_name=['Hamlet']))):
             self.assertIsNone(backend.authenticate(email, password))
 
         # For this backend, we mock the internals of django_auth_ldap
         with mock.patch('django_auth_ldap.backend._LDAPUser._authenticate_user_dn'), (
-             mock.patch('django_auth_ldap.backend._LDAPUser._check_requirements')), (
-             mock.patch('django_auth_ldap.backend._LDAPUser._get_user_attrs',
-                        return_value=dict(full_name=['Hamlet']))):
+            mock.patch('django_auth_ldap.backend._LDAPUser._check_requirements')), (
+            mock.patch('django_auth_ldap.backend._LDAPUser._get_user_attrs',
+                       return_value=dict(full_name=['Hamlet']))):
             self.verify_backend(backend, good_kwargs=dict(password=password))
 
         with mock.patch('django_auth_ldap.backend._LDAPUser._authenticate_user_dn'), (
-             mock.patch('django_auth_ldap.backend._LDAPUser._check_requirements')), (
-             mock.patch('django_auth_ldap.backend._LDAPUser._get_user_attrs',
-                        return_value=dict(full_name=['Hamlet']))):
+            mock.patch('django_auth_ldap.backend._LDAPUser._check_requirements')), (
+            mock.patch('django_auth_ldap.backend._LDAPUser._get_user_attrs',
+                       return_value=dict(full_name=['Hamlet']))):
             self.verify_backend(backend, good_kwargs=dict(password=password,
                                                           realm_subdomain='acme'))
 
@@ -251,9 +252,9 @@ class AuthBackendTest(TestCase):
             # With subdomains, authenticating with the right subdomain
             # works; using the wrong subdomain doesn't
             with mock.patch('django_auth_ldap.backend._LDAPUser._authenticate_user_dn'), (
-                 mock.patch('django_auth_ldap.backend._LDAPUser._check_requirements')), (
-                 mock.patch('django_auth_ldap.backend._LDAPUser._get_user_attrs',
-                            return_value=dict(full_name=['Hamlet']))):
+                mock.patch('django_auth_ldap.backend._LDAPUser._check_requirements')), (
+                mock.patch('django_auth_ldap.backend._LDAPUser._get_user_attrs',
+                           return_value=dict(full_name=['Hamlet']))):
                 self.verify_backend(backend,
                                     bad_kwargs=dict(password=password,
                                                     realm_subdomain='acme'),
@@ -357,9 +358,13 @@ class GitHubAuthBackendTest(ZulipTestCase):
         # type: () -> None
         self.assertEqual(self.backend.get_full_name(), '')
 
+    def test_full_name_with_none(self):
+        # type: () -> None
+        self.assertEqual(self.backend.get_full_name(response={'email': None}), '')
+
     def test_github_backend_do_auth_without_subdomains(self):
         # type: () -> None
-        with mock.patch('social.backends.github.GithubOAuth2.do_auth',
+        with mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
                         side_effect=self.do_auth), \
                 mock.patch('zerver.views.auth.login'):
             response = dict(email=self.email, name=self.name)
@@ -368,7 +373,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
     def test_github_backend_do_auth_with_non_existing_subdomain(self):
         # type: () -> None
-        with mock.patch('social.backends.github.GithubOAuth2.do_auth',
+        with mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
                         side_effect=self.do_auth):
             with self.settings(REALMS_HAVE_SUBDOMAINS=True):
                 self.backend.strategy.session_set('subdomain', 'test')
@@ -378,7 +383,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
     def test_github_backend_do_auth_with_subdomains(self):
         # type: () -> None
-        with mock.patch('social.backends.github.GithubOAuth2.do_auth',
+        with mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
                         side_effect=self.do_auth):
             with self.settings(REALMS_HAVE_SUBDOMAINS=True):
                 self.backend.strategy.session_set('subdomain', 'zulip')
@@ -388,7 +393,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
     def test_github_backend_do_auth_for_default(self):
         # type: () -> None
-        with mock.patch('social.backends.github.GithubOAuth2.do_auth',
+        with mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
                         side_effect=self.do_auth), \
                 mock.patch('zproject.backends.SocialAuthMixin.process_do_auth') as result:
             response = dict(email=self.email, name=self.name)
@@ -401,7 +406,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
     def test_github_backend_do_auth_for_team(self):
         # type: () -> None
-        with mock.patch('social.backends.github.GithubTeamOAuth2.do_auth',
+        with mock.patch('social_core.backends.github.GithubTeamOAuth2.do_auth',
                         side_effect=self.do_auth), \
                 mock.patch('zproject.backends.SocialAuthMixin.process_do_auth') as result:
             response = dict(email=self.email, name=self.name)
@@ -415,7 +420,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
     def test_github_backend_do_auth_for_team_auth_failed(self):
         # type: () -> None
-        with mock.patch('social.backends.github.GithubTeamOAuth2.do_auth',
+        with mock.patch('social_core.backends.github.GithubTeamOAuth2.do_auth',
                         side_effect=AuthFailed('Not found')), \
                 mock.patch('logging.info'), \
                 mock.patch('zproject.backends.SocialAuthMixin.process_do_auth') as result:
@@ -429,7 +434,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
     def test_github_backend_do_auth_for_org(self):
         # type: () -> None
-        with mock.patch('social.backends.github.GithubOrganizationOAuth2.do_auth',
+        with mock.patch('social_core.backends.github.GithubOrganizationOAuth2.do_auth',
                         side_effect=self.do_auth), \
                 mock.patch('zproject.backends.SocialAuthMixin.process_do_auth') as result:
             response = dict(email=self.email, name=self.name)
@@ -443,7 +448,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
     def test_github_backend_do_auth_for_org_auth_failed(self):
         # type: () -> None
-        with mock.patch('social.backends.github.GithubOrganizationOAuth2.do_auth',
+        with mock.patch('social_core.backends.github.GithubOrganizationOAuth2.do_auth',
                         side_effect=AuthFailed('Not found')), \
                 mock.patch('logging.info'), \
                 mock.patch('zproject.backends.SocialAuthMixin.process_do_auth') as result:
@@ -474,7 +479,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
             return self.user_profile
 
         with mock.patch('zerver.views.auth.login_or_register_remote_user') as result, \
-                mock.patch('social.backends.github.GithubOAuth2.do_auth',
+                mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
                            side_effect=do_auth_inactive):
             response = dict(email=self.email, name=self.name)
             user = self.backend.do_auth(response=response)
@@ -495,7 +500,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
             return_data['valid_attestation'] = True
             return None
 
-        with mock.patch('social.backends.github.GithubOAuth2.do_auth',
+        with mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
                         side_effect=do_auth):
             response = dict(email='nonexisting@phantom.com', name='Ghost')
             result = self.backend.do_auth(response=response)
@@ -507,6 +512,31 @@ class GitHubAuthBackendTest(ZulipTestCase):
         # type: () -> None
         result = self.client_get('/accounts/login/social/github')
         self.assertIn(reverse('social:begin', args=['github']), result.url)
+
+    def test_github_complete(self):
+        # type: () -> None
+        from social_django import utils
+        utils.BACKENDS = ('zproject.backends.GitHubAuthBackend',)
+        with mock.patch('social_core.backends.oauth.BaseOAuth2.process_error',
+                        side_effect=AuthFailed('Not found')):
+            result = self.client_get(reverse('social:complete', args=['github']))
+            self.assertEqual(result.status_code, 302)
+            self.assertIn('login', result.url)
+
+        utils.BACKENDS = settings.AUTHENTICATION_BACKENDS
+
+    def test_github_complete_when_base_exc_is_raised(self):
+        # type: () -> None
+        from social_django import utils
+        utils.BACKENDS = ('zproject.backends.GitHubAuthBackend',)
+        with mock.patch('social_core.backends.oauth.BaseOAuth2.auth_complete',
+                        side_effect=AuthStateForbidden('State forbidden')), \
+                mock.patch('zproject.backends.logging.exception'):
+            result = self.client_get(reverse('social:complete', args=['github']))
+            self.assertEqual(result.status_code, 302)
+            self.assertIn('login', result.url)
+
+        utils.BACKENDS = settings.AUTHENTICATION_BACKENDS
 
 class ResponseMock(object):
     def __init__(self, status_code, data):
@@ -541,7 +571,7 @@ class GoogleOAuthTest(ZulipTestCase):
         csrf_state = urllib.parse.parse_qs(parsed_url.query)['state']
 
         with mock.patch("requests.post", return_value=token_response), (
-             mock.patch("requests.get", return_value=account_response)):
+                mock.patch("requests.get", return_value=account_response)):
             result = self.client_get("/accounts/login/google/done/",
                                      dict(state=csrf_state))
         return result
@@ -643,8 +673,8 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         # type: () -> None
         """If the user doesn't exist yet, Google auth can be used to register an account"""
         with self.settings(REALMS_HAVE_SUBDOMAINS=True), (
-             mock.patch('zerver.views.auth.get_subdomain', return_value='zulip')), (
-             mock.patch('zerver.views.get_subdomain', return_value='zulip')):
+                mock.patch('zerver.views.auth.get_subdomain', return_value='zulip')), (
+                mock.patch('zerver.views.registration.get_subdomain', return_value='zulip')):
 
             email = "newuser@zulip.com"
             token_response = ResponseMock(200, {'access_token': "unique_token"})
@@ -965,8 +995,8 @@ class FetchAuthBackends(ZulipTestCase):
         self.assert_json_success(result)
         data = ujson.loads(result.content)
         self.assertEqual(set(data.keys()),
-                         {'msg', 'password', 'google', 'dev', 'result'})
-        for backend in set(data.keys()) - {'msg', 'result'}:
+                         {'msg', 'password', 'google', 'dev', 'result', 'zulip_version'})
+        for backend in set(data.keys()) - {'msg', 'result', 'zulip_version'}:
             self.assertTrue(isinstance(data[backend], bool))
 
     def test_fetch_auth_backend(self):
@@ -982,7 +1012,67 @@ class FetchAuthBackends(ZulipTestCase):
                 'google': True,
                 'dev': True,
                 'result': 'success',
+                'zulip_version': ZULIP_VERSION,
             })
+
+            # Test subdomains cases
+            with self.settings(REALMS_HAVE_SUBDOMAINS=True,
+                               SUBDOMAINS_HOMEPAGE=False):
+                result = self.client_get("/api/v1/get_auth_backends")
+                self.assert_json_success(result)
+                data = ujson.loads(result.content)
+                self.assertEqual(data, {
+                    'msg': '',
+                    'password': False,
+                    'google': True,
+                    'dev': True,
+                    'result': 'success',
+                    'zulip_version': ZULIP_VERSION,
+                })
+
+                # Verify invalid subdomain
+                result = self.client_get("/api/v1/get_auth_backends",
+                                         HTTP_HOST="invalid.testserver")
+                self.assert_json_error_contains(result, "Invalid subdomain", 400)
+
+                # Verify correct behavior with a valid subdomain with
+                # some backends disabled for the realm
+                realm = get_realm("zulip")
+                do_set_realm_authentication_methods(realm, dict(Google=False,
+                                                                Email=False,
+                                                                Dev=True))
+                result = self.client_get("/api/v1/get_auth_backends",
+                                         HTTP_HOST="zulip.testserver")
+                self.assert_json_success(result)
+                data = ujson.loads(result.content)
+                self.assertEqual(data, {
+                    'msg': '',
+                    'password': False,
+                    'google': False,
+                    'dev': True,
+                    'result': 'success',
+                    'zulip_version': ZULIP_VERSION,
+                })
+            with self.settings(REALMS_HAVE_SUBDOMAINS=True,
+                               SUBDOMAINS_HOMEPAGE=True):
+                # With SUBDOMAINS_HOMEPAGE, homepage fails
+                result = self.client_get("/api/v1/get_auth_backends",
+                                         HTTP_HOST="testserver")
+                self.assert_json_error_contains(result, "Subdomain required", 400)
+
+                # With SUBDOMAINS_HOMEPAGE, subdomain pages succeed
+                result = self.client_get("/api/v1/get_auth_backends",
+                                         HTTP_HOST="zulip.testserver")
+                self.assert_json_success(result)
+                data = ujson.loads(result.content)
+                self.assertEqual(data, {
+                    'msg': '',
+                    'password': False,
+                    'google': False,
+                    'dev': True,
+                    'result': 'success',
+                    'zulip_version': ZULIP_VERSION,
+                })
 
 class TestDevAuthBackend(ZulipTestCase):
     def test_login_success(self):
@@ -1000,24 +1090,16 @@ class TestDevAuthBackend(ZulipTestCase):
         data = {'direct_email': email}
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',)):
             with self.assertRaisesRegex(Exception, 'Direct login not supported.'):
-                try:
-                    with mock.patch('django.core.handlers.exception.logger'):
-                        self.client_post('/accounts/login/local/', data)
-                except ImportError:
-                    with mock.patch('django.core.handlers.base.logger'):
-                        self.client_post('/accounts/login/local/', data)
+                with mock.patch('django.core.handlers.exception.logger'):
+                    self.client_post('/accounts/login/local/', data)
 
     def test_login_failure_due_to_nonexistent_user(self):
         # type: () -> None
         email = 'nonexisting@zulip.com'
         data = {'direct_email': email}
         with self.assertRaisesRegex(Exception, 'User cannot login'):
-            try:
-                with mock.patch('django.core.handlers.exception.logger'):
-                    self.client_post('/accounts/login/local/', data)
-            except ImportError:
-                with mock.patch('django.core.handlers.base.logger'):
-                    self.client_post('/accounts/login/local/', data)
+            with mock.patch('django.core.handlers.exception.logger'):
+                self.client_post('/accounts/login/local/', data)
 
 class TestZulipRemoteUserBackend(ZulipTestCase):
     def test_login_success(self):
@@ -1072,7 +1154,8 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
         with self.settings(REALMS_HAVE_SUBDOMAINS=True,
                            AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',)):
             with mock.patch('zerver.views.auth.get_subdomain', return_value='acme'):
-                result = self.client_post('http://testserver:9080/accounts/login/sso/', REMOTE_USER=email)
+                result = self.client_post('http://testserver:9080/accounts/login/sso/',
+                                          REMOTE_USER=email)
                 self.assertEqual(result.status_code, 200)
                 self.assertIs(get_session_dict_user(self.client.session), None)
                 self.assertIn(b"Let's get started", result.content)
@@ -1083,7 +1166,8 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
         with self.settings(REALMS_HAVE_SUBDOMAINS=True,
                            AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',)):
             with mock.patch('zerver.views.auth.get_subdomain', return_value=''):
-                result = self.client_post('http://testserver:9080/accounts/login/sso/', REMOTE_USER=email)
+                result = self.client_post('http://testserver:9080/accounts/login/sso/',
+                                          REMOTE_USER=email)
                 self.assertEqual(result.status_code, 200)
                 self.assertIs(get_session_dict_user(self.client.session), None)
                 self.assertIn(b"Let's get started", result.content)
@@ -1224,6 +1308,10 @@ class TestLDAP(ZulipTestCase):
         self.mock_ldap = MockLDAP()
         self.mock_initialize.return_value = self.mock_ldap
         self.backend = ZulipLDAPAuthBackend()
+        # Internally `_realm` attribute is automatically set by the
+        # `authenticate()` method. But for testing the `get_or_create_user()`
+        # method separately, we need to set it manually.
+        self.backend._realm = get_realm('zulip')
 
     def tearDown(self):
         # type: () -> None
@@ -1335,6 +1423,20 @@ class TestLDAP(ZulipTestCase):
             self.assertEqual(user_profile.full_name, 'Full Name')
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
+    def test_get_or_create_user_when_user_has_invalid_name(self):
+        # type: () -> None
+        class _LDAPUser(object):
+            attrs = {'fn': ['<invalid name>'], 'sn': ['Short Name']}
+
+        ldap_user_attr_map = {'full_name': 'fn', 'short_name': 'sn'}
+
+        with self.settings(AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map):
+            backend = self.backend
+            email = 'nonexisting@zulip.com'
+            with self.assertRaisesRegex(Exception, "Invalid characters in name!"):
+                backend.get_or_create_user(email, _LDAPUser())
+
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_get_or_create_user_when_realm_is_deactivated(self):
         # type: () -> None
         class _LDAPUser(object):
@@ -1345,8 +1447,7 @@ class TestLDAP(ZulipTestCase):
         with self.settings(AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map):
             backend = self.backend
             email = 'nonexisting@zulip.com'
-            realm = get_realm_by_string_id('zulip')
-            do_deactivate_realm(realm)
+            do_deactivate_realm(backend._realm)
             with self.assertRaisesRegex(Exception, 'Realm has been deactivated'):
                 backend.get_or_create_user(email, _LDAPUser())
 
@@ -1427,6 +1528,26 @@ class TestLDAP(ZulipTestCase):
                                                      realm_subdomain='zulip')
             self.assertEqual(user_profile.email, 'hamlet@zulip.com')
 
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
+    def test_login_success_when_user_does_not_exist_with_valid_subdomain(self):
+        # type: () -> None
+        self.mock_ldap.directory = {
+            'uid=nonexisting,ou=users,dc=acme,dc=com': {
+                'cn': ['NonExisting', ],
+                'userPassword': 'testing'
+            }
+        }
+        with self.settings(
+                REALMS_HAVE_SUBDOMAINS=True,
+                LDAP_APPEND_DOMAIN='acme.com',
+                AUTH_LDAP_BIND_PASSWORD='',
+                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=acme,dc=com'):
+            user_profile = self.backend.authenticate('nonexisting@acme.com', 'testing',
+                                                     realm_subdomain='zulip')
+            self.assertEqual(user_profile.email, 'nonexisting@acme.com')
+            self.assertEqual(user_profile.full_name, 'NonExisting')
+            self.assertEqual(user_profile.realm.string_id, 'zulip')
+
 class TestZulipLDAPUserPopulator(ZulipTestCase):
     def test_authenticate(self):
         # type: () -> None
@@ -1445,7 +1566,7 @@ class TestPasswordAuthEnabled(ZulipTestCase):
     def test_password_auth_enabled_for_ldap(self):
         # type: () -> None
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',)):
-            realm = Realm.objects.get(domain='zulip.com')
+            realm = Realm.objects.get(string_id='zulip')
             self.assertTrue(password_auth_enabled(realm))
 
 class TestMaybeSendToRegistration(ZulipTestCase):
@@ -1518,7 +1639,7 @@ class TestAdminSetBackends(ZulipTestCase):
         result = self.client_patch("/json/realm", {
             'authentication_methods': ujson.dumps({u'Email': False, u'Dev': True})})
         self.assert_json_success(result)
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         self.assertFalse(password_auth_enabled(realm))
         self.assertTrue(dev_auth_enabled(realm))
 
@@ -1529,7 +1650,7 @@ class TestAdminSetBackends(ZulipTestCase):
         result = self.client_patch("/json/realm", {
             'authentication_methods': ujson.dumps({u'Email': False, u'Dev': False})})
         self.assert_json_error(result, 'At least one authentication method must be enabled.', status_code=403)
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         self.assertTrue(password_auth_enabled(realm))
         self.assertTrue(dev_auth_enabled(realm))
 
@@ -1541,7 +1662,7 @@ class TestAdminSetBackends(ZulipTestCase):
         result = self.client_patch("/json/realm", {
             'authentication_methods': ujson.dumps({u'Email': False, u'Dev': True, u'GitHub': False})})
         self.assert_json_success(result)
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         # Check that unsupported backend is not enabled
         self.assertFalse(github_auth_enabled(realm))
         self.assertTrue(dev_auth_enabled(realm))

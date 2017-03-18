@@ -11,10 +11,15 @@ import subprocess
 import re
 
 from six.moves import range
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+
 from typing import IO, Text
 
+# TODO: Convert this to use scripts/lib/queue_workers.py
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
-succesful_worker_launches = [
+successful_worker_launches = [
     'launching queue worker thread error_reports',
     'launching queue worker thread user_presence',
     'launching queue worker thread digest_emails',
@@ -25,6 +30,7 @@ succesful_worker_launches = [
     'launching queue worker thread test',
     'launching queue worker thread message_sender',
     'launching queue worker thread missedmessage_emails',
+    'launching queue worker thread missedmessage_email_senders',
     'launching queue worker thread email_mirror',
     'launching queue worker thread user_activity_interval',
     'launching queue worker thread invites',
@@ -36,7 +42,7 @@ def check_worker_launch(logfile):
     def check(content):
         # type: (str) -> bool
         flag = True
-        for entry in succesful_worker_launches:
+        for entry in successful_worker_launches:
             flag = flag and entry in content
         return flag
 
@@ -57,7 +63,7 @@ def check_worker_launch(logfile):
     sys.stdout.write('\n')
 
     if not failed:
-        print('Worker threads launched succesfully')
+        print('Worker threads launched successfully')
         return log_output
     else:
         print('Error in server startup. Dumping logs')

@@ -5,9 +5,9 @@ from typing import Any
 
 from django.core.management.base import BaseCommand
 
-from zerver.lib.actions import do_create_stream
+from zerver.lib.actions import create_stream_if_needed
 from zerver.lib.str_utils import force_text
-from zerver.models import Realm, get_realm_by_string_id
+from zerver.models import Realm, get_realm
 
 from argparse import ArgumentParser
 import sys
@@ -31,9 +31,9 @@ the command."""
         encoding = sys.getfilesystemencoding()
         stream_name = options['stream_name']
 
-        realm = get_realm_by_string_id(force_text(string_id, encoding))
+        realm = get_realm(force_text(string_id, encoding))
         if realm is None:
             print("Unknown string_id %s" % (string_id,))
             exit(1)
-        else:
-            do_create_stream(realm, force_text(stream_name, encoding))
+
+        create_stream_if_needed(realm, force_text(stream_name, encoding))

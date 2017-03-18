@@ -20,7 +20,7 @@
             </div>
             <form id="searchbox_form" class="form-search navbar-search">
               <div id="search_arrows" class="input-append">
-                <i class="icon-vector-search"></i>
+                <a class="search_icon" href="#search-operators" data-overlay-trigger="search-operators"><i class="icon-vector-search"></i></a>
                 <input class="search-query input-block-level" id="search_query" type="text" placeholder="{{ _('Search') }}"
                        autocomplete="off" />
                 {# Start the button off disabled since there is no active search #}
@@ -39,7 +39,7 @@
         <div id="navbar-buttons" {%if embedded %} style="visibility: hidden"{% endif %}>
             <ul class="nav" role="navigation">
               <li class="dropdown actual-dropdown-menu" id="gear-menu">
-                <a id="settings-dropdown" href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">
+                <a id="settings-dropdown" href="#" role="button" class="dropdown-toggle" data-target="nada" data-toggle="dropdown">
                   <i class="icon-vector-cog"></i><i class="icon-vector-caret-down settings-dropdown-caret"></i>
                 </a>
                 <ul class="dropdown-menu" role="menu" aria-labelledby="settings-dropdown">
@@ -49,29 +49,40 @@
                   anymore
                   #}
                   <li class="invisible" style="display:none;"><a href="#home" data-toggle="tab"></a></li>
-                  <li title="{{ _('Manage Streams') }}">
-                    <a href="#subscriptions">
-                      <i class="icon-vector-exchange"></i> {{ _('Manage Streams') }}
+                  <li title="{{ _('Manage streams') }}">
+                    <a href="#streams">
+                      <i class="icon-vector-exchange"></i> {{ _('Manage streams') }}
                     </a>
                   </li>
                   <li title="{{ _('Settings') }}">
-                    <a href="#settings" data-toggle="tab">
+                    <a href="#settings">
                       <i class="icon-vector-wrench"></i> {{ _('Settings') }}
                     </a>
                   </li>
+                  <li title="{{ _('Administration') }}" class="admin-menu-item">
+                    <a href="#administration" role="button">
+                      <i class="icon-vector-bolt"></i> {{ _('Administration') }}
+                    </a>
+                  </li>
+                  <li class="divider"></li>
+                  <li title="{{ _('User documentation') }}">
+                    <a href="/help" target="_blank" role="button">
+                      <i class="icon-vector-question-sign"></i> {{ _('User documentation') }}
+                    </a>
+                  </li>
                   <li title="{{ _('Keyboard shortcuts') }}">
-                    <a href="#keyboard-shortcuts" role="button" data-toggle="modal">
-                      <i class="icon-vector-question-sign"></i> {{ _('Keyboard shortcuts') }}
+                    <a role="button" data-overlay-trigger="keyboard-shortcuts">
+                      <i class="icon-vector-keyboard"></i> {{ _('Keyboard shortcuts') }}
                     </a>
                   </li>
                   <li title="{{ _('Message formatting') }}">
-                    <a href="#markdown-help" role="button" data-toggle="modal">
+                    <a role="button" data-overlay-trigger="markdown-help">
                       <i class="icon-vector-pencil"></i> {{ _('Message formatting') }}
                     </a>
                   </li>
-                  <li title="{{ _('Search help') }}">
-                    <a href="#search-operators" role="button" data-toggle="modal">
-                      <i class="icon-vector-search"></i> {{ _('Search help') }}
+                  <li title="{{ _('Search operators') }}">
+                    <a role="button" data-overlay-trigger="search-operators">
+                      <i class="icon-vector-search"></i> {{ _('Search operators') }}
                     </a>
                   </li>
                   <li class="divider"></li>
@@ -91,18 +102,6 @@
                     </a>
                   </li>
                   <li class="divider"></li>
-                  <li title="{{ _('Administration') }}" class="admin-menu-item">
-                    <a href="#administration" role="button" data-toggle="tab">
-                      <i class="icon-vector-bolt"></i> {{ _('Administration') }}
-                    </a>
-                  </li>
-                  {% if show_invites %}
-                  <li title="{% trans %}Invite more users to {{product_name}}.{% endtrans %}}">
-                    <a href="#invite-user" role="button" data-toggle="modal">
-                      <i class="icon-vector-plus-sign"></i> {{ _('Invite users') }}
-                    </a>
-                  </li>
-                  {% endif %}
                   {% if enable_feedback %}
                   <li title="{{ _('Feedback') }}">
                     <a href="#feedback" class="feedback">
@@ -110,9 +109,16 @@
                     </a>
                   </li>
                   {% endif %}
+                  {% if show_invites %}
+                  <li title="{% trans %}Invite more users to Zulip.{% endtrans %}}">
+                    <a href="#invite" role="button">
+                      <i class="icon-vector-plus-sign"></i> {{ _('Invite users') }}
+                    </a>
+                  </li>
                   <li class="divider"></li>
+                  {% endif %}
                   {% if show_webathena %}
-                  <li title="{% trans %}Grant {{product_name}} the Kerberos tickets needed to run your Zephyr mirror via Webathena{% endtrans %}" id="webathena_login_menu">
+                  <li title="{% trans %}Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via Webathena{% endtrans %}" id="webathena_login_menu">
                     <a href="#webathena" class="webathena_login">
                       <i class="icon-vector-bolt"></i>{{ _('Link with Webathena') }}
                     </a>

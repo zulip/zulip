@@ -6,13 +6,13 @@ from __future__ import print_function
 from django.db import connection
 from django.test import override_settings
 from sqlalchemy.sql import (
-    and_, select, column,
+    and_, select, column, table,
 )
 from sqlalchemy.sql import compiler # type: ignore
 
 from zerver.models import (
     Realm, Recipient, Stream, Subscription, UserProfile, Attachment,
-    get_display_recipient, get_recipient, get_realm_by_string_id, get_stream, get_user_profile_by_email,
+    get_display_recipient, get_recipient, get_realm, get_stream, get_user_profile_by_email,
     Reaction
 )
 from zerver.lib.message import (
@@ -21,6 +21,7 @@ from zerver.lib.message import (
 from zerver.lib.narrow import (
     build_narrow_filter,
 )
+from zerver.lib.request import JsonableError
 from zerver.lib.str_utils import force_bytes
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.test_helpers import (
@@ -34,10 +35,11 @@ from zerver.lib.test_classes import (
 from zerver.views.messages import (
     exclude_muting_conditions,
     get_old_messages_backend, ok_to_include_history,
-    NarrowBuilder, BadNarrowOperator, Query
+    NarrowBuilder, BadNarrowOperator, Query,
+    LARGER_THAN_MAX_MESSAGE_ID,
 )
 
-from typing import Mapping, Sequence, Tuple, Generic, Union, Any, Text
+from typing import Dict, List, Mapping, Sequence, Tuple, Generic, Union, Any, Text
 from six.moves import range
 import os
 import re
@@ -47,7 +49,6 @@ def get_sqlalchemy_query_params(query):
     # type: (Text) -> Dict[Text, Text]
     dialect = get_sqlalchemy_connection().dialect # type: ignore
     comp = compiler.SQLCompiler(dialect, query)
-    comp.compile()
     return comp.params
 
 def fix_ws(s):
@@ -61,7 +62,7 @@ def get_recipient_id_for_stream_name(realm, stream_name):
 
 def mute_stream(realm, user_profile, stream_name):
     # type: (Realm, Text, Text) -> None
-    stream = Stream.objects.get(realm=realm, name=stream_name)
+    stream = get_stream(stream_name, realm)
     recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
     subscription = Subscription.objects.get(recipient=recipient, user_profile=user_profile)
     subscription.in_home_view = False
@@ -70,10 +71,10 @@ def mute_stream(realm, user_profile, stream_name):
 class NarrowBuilderTest(ZulipTestCase):
     def setUp(self):
         # type: () -> None
-        self.realm = get_realm_by_string_id('zulip')
+        self.realm = get_realm('zulip')
         self.user_profile = get_user_profile_by_email("hamlet@zulip.com")
         self.builder = NarrowBuilder(self.user_profile, column('id'))
-        self.raw_query = select([column("id")], None, "zerver_message")
+        self.raw_query = select([column("id")], None, table("zerver_message"))
 
     def test_add_term_using_not_defined_operator(self):
         # type: () -> None
@@ -84,6 +85,18 @@ class NarrowBuilderTest(ZulipTestCase):
         # type: () -> None
         term = dict(operator='stream', operand='Scotland')
         self._do_add_term_test(term, 'WHERE recipient_id = :recipient_id_1')
+
+    def test_add_term_using_stream_operator_zephyr_hack_null(self):
+        # type: () -> None
+        """This tests the _pg_re_escape code path with a null byte"""
+        null_stream_name = u'fun\u0000test'
+        s = Stream.objects.create(realm=get_realm("zephyr"), name=null_stream_name)
+        Recipient.objects.create(type=Recipient.STREAM, type_id=s.id)
+        user_profile = get_user_profile_by_email("sipbtest@mit.edu")
+        builder = NarrowBuilder(user_profile, column('id'))
+        term = dict(operator='stream', operand=null_stream_name)
+        result = str(builder.add_term(self.raw_query, term))
+        self.assertTrue("WHERE recipient_id IN (:recipient_id_1)" in result)
 
     def test_add_term_using_stream_operator_and_negated(self):  # NEGATED
         # type: () -> None
@@ -330,10 +343,15 @@ class BuildNarrowFilterTest(TestCase):
             for e in reject_events:
                 self.assertFalse(narrow_filter(e))
 
+    def test_build_narrow_filter_invalid(self):
+        # type: () -> None
+        with self.assertRaises(JsonableError):
+            build_narrow_filter(["invalid_operator", "operand"])
+
 class IncludeHistoryTest(ZulipTestCase):
     def test_ok_to_include_history(self):
         # type: () -> None
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         self.make_stream('public_stream', realm=realm)
 
         # Negated stream searches should not include history.
@@ -469,21 +487,22 @@ class GetOldMessagesTest(ZulipTestCase):
             assert isinstance(dr, list)
             return ','.join(sorted(set([r['email'] for r in dr] + [me])))
 
+        self.send_message(me, 'iago@zulip.com', Recipient.PERSONAL)
+        self.send_message(me,
+                          ['iago@zulip.com', 'cordelia@zulip.com'],
+                          Recipient.HUDDLE)
         personals = [m for m in get_user_messages(get_user_profile_by_email(me))
-                     if m.recipient.type == Recipient.PERSONAL
-                     or m.recipient.type == Recipient.HUDDLE]
-        if not personals:
-            # FIXME: This is bad.  We should use test data that is guaranteed
-            # to contain some personals for every user.  See #617.
-            return
-        emails = dr_emails(get_display_recipient(personals[0].recipient))
+                     if m.recipient.type == Recipient.PERSONAL or
+                     m.recipient.type == Recipient.HUDDLE]
+        for personal in personals:
+            emails = dr_emails(get_display_recipient(personal.recipient))
 
-        self.login(me)
-        narrow = [dict(operator='pm-with', operand=emails)]
-        result = self.get_and_check_messages(dict(narrow=ujson.dumps(narrow)))
+            self.login(me)
+            narrow = [dict(operator='pm-with', operand=emails)]
+            result = self.get_and_check_messages(dict(narrow=ujson.dumps(narrow)))
 
-        for message in result["messages"]:
-            self.assertEqual(dr_emails(message['display_recipient']), emails)
+            for message in result["messages"]:
+                self.assertEqual(dr_emails(message['display_recipient']), emails)
 
     def test_get_old_messages_with_narrow_stream(self):
         # type: () -> None
@@ -492,7 +511,7 @@ class GetOldMessagesTest(ZulipTestCase):
         messages for that stream.
         """
         self.login("hamlet@zulip.com")
-        # We need to susbcribe to a stream and then send a message to
+        # We need to subscribe to a stream and then send a message to
         # it to ensure that we actually have a stream message in this
         # narrow view.
         self.subscribe_to_stream("hamlet@zulip.com", 'Scotland')
@@ -541,10 +560,26 @@ class GetOldMessagesTest(ZulipTestCase):
             stream_id = stream_messages[i].recipient.id
             self.assertEqual(message["recipient_id"], stream_id)
 
+    def test_get_old_messages_with_narrow_stream_mit_unicode_null_regex(self):
+        # type: () -> None
+        self.login("starnine@mit.edu")
+        null_stream_name = u"foo\000-stream"
+        self.subscribe_to_stream("starnine@mit.edu", null_stream_name)
+        self.send_message("starnine@mit.edu", null_stream_name, Recipient.STREAM)
+        narrow = [dict(operator='stream', operand=null_stream_name)]
+        result = self.get_and_check_messages(dict(num_before=2, num_after=2,
+                                                  narrow=ujson.dumps(narrow)))
+
+        messages = get_user_messages(get_user_profile_by_email("starnine@mit.edu"))
+        stream_messages = [msg for msg in messages if msg.recipient.type == Recipient.STREAM]
+        self.assertEqual(len(result["messages"]), 1)
+        self.assertEqual(result["messages"][0]["type"], "stream")
+        self.assertEqual(result["messages"][0]["recipient_id"], stream_messages[0].recipient.id)
+
     def test_get_old_messages_with_narrow_topic_mit_unicode_regex(self):
         # type: () -> None
         """
-        A request for old messages for a user in the mit.edu relam with unicode
+        A request for old messages for a user in the mit.edu realm with unicode
         topic name should be correctly escaped in the database query.
         """
         self.login("starnine@mit.edu")
@@ -557,15 +592,61 @@ class GetOldMessagesTest(ZulipTestCase):
                           subject=u"\u03bb-topic")
         self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
                           subject=u"\u03bb-topic.d")
+        self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
+                          subject=u"\u03bb-topic.d.d")
+        self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
+                          subject=u"\u03bb-topic.d.d.d")
+        self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
+                          subject=u"\u03bb-topic.d.d.d.d")
 
         narrow = [dict(operator='topic', operand=u'\u03bb-topic')]
         result = self.get_and_check_messages(dict(
-            num_after=2,
+            num_after=100,
             narrow=ujson.dumps(narrow)))
 
         messages = get_user_messages(get_user_profile_by_email("starnine@mit.edu"))
         stream_messages = [msg for msg in messages if msg.recipient.type == Recipient.STREAM]
-        self.assertEqual(len(result["messages"]), 2)
+        self.assertEqual(len(result["messages"]), 5)
+        for i, message in enumerate(result["messages"]):
+            self.assertEqual(message["type"], "stream")
+            stream_id = stream_messages[i].recipient.id
+            self.assertEqual(message["recipient_id"], stream_id)
+
+    def test_get_old_messages_with_narrow_topic_mit_personal(self):
+        # type: () -> None
+        """
+        We handle .d grouping for MIT realm personal messages correctly.
+        """
+        self.login("starnine@mit.edu")
+        # We need to susbcribe to a stream and then send a message to
+        # it to ensure that we actually have a stream message in this
+        # narrow view.
+        self.subscribe_to_stream("starnine@mit.edu", "Scotland")
+
+        self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
+                          subject=u".d.d")
+        self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
+                          subject=u"PERSONAL")
+        self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
+                          subject=u'(instance "").d')
+        self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
+                          subject=u".d.d.d")
+        self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
+                          subject=u"personal.d")
+        self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
+                          subject=u'(instance "")')
+        self.send_message("starnine@mit.edu", "Scotland", Recipient.STREAM,
+                          subject=u".d.d.d.d")
+
+        narrow = [dict(operator='topic', operand=u'personal.d.d')]
+        result = self.get_and_check_messages(dict(
+            num_before=50,
+            num_after=50,
+            narrow=ujson.dumps(narrow)))
+
+        messages = get_user_messages(get_user_profile_by_email("starnine@mit.edu"))
+        stream_messages = [msg for msg in messages if msg.recipient.type == Recipient.STREAM]
+        self.assertEqual(len(result["messages"]), 7)
         for i, message in enumerate(result["messages"]):
             self.assertEqual(message["type"], "stream")
             stream_id = stream_messages[i].recipient.id
@@ -694,6 +775,49 @@ class GetOldMessagesTest(ZulipTestCase):
             meeting_message['match_content'],
             '<p>I am hungry!</p>')
 
+        # Should not crash when multiple search operands are present
+        multi_search_narrow = [
+            dict(operator='search', operand='discuss'),
+            dict(operator='search', operand='after'),
+        ]
+        multi_search_result = self.get_and_check_messages(dict(
+            narrow=ujson.dumps(multi_search_narrow),
+            anchor=0,
+            num_after=10,
+        )) # type: Dict[str, Dict]
+        self.assertEqual(len(multi_search_result['messages']), 1)
+        self.assertEqual(multi_search_result['messages'][0]['match_content'], '<p><span class="highlight">discuss</span> lunch <span class="highlight">after</span> lunch</p>')
+
+    @override_settings(USING_PGROONGA=False)
+    def test_get_old_messages_with_search_not_subscribed(self):
+        # type: () -> None
+        """Verify support for searching a stream you're not subscribed to"""
+        self.subscribe_to_stream("hamlet@zulip.com", "newstream")
+        self.send_message(
+            sender_name="hamlet@zulip.com",
+            raw_recipients="newstream",
+            message_type=Recipient.STREAM,
+            content="Public special content!",
+            subject="new",
+        )
+        self._update_tsvector_index()
+
+        self.login("cordelia@zulip.com")
+
+        stream_search_narrow = [
+            dict(operator='search', operand='special'),
+            dict(operator='stream', operand='newstream'),
+        ]
+        stream_search_result = self.get_and_check_messages(dict(
+            narrow=ujson.dumps(stream_search_narrow),
+            anchor=0,
+            num_after=10,
+            num_before=10,
+        )) # type: Dict[str, Dict]
+        self.assertEqual(len(stream_search_result['messages']), 1)
+        self.assertEqual(stream_search_result['messages'][0]['match_content'],
+                         '<p>Public <span class="highlight">special</span> content!</p>')
+
     @override_settings(USING_PGROONGA=True)
     def test_get_old_messages_with_search_pgroonga(self):
         # type: () -> None
@@ -753,6 +877,19 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(
             english_message['match_content'],
             u'<p>I want to go to <span class="highlight">日本</span>!</p>')
+
+        # Should not crash when multiple search operands are present
+        multi_search_narrow = [
+            dict(operator='search', operand='can'),
+            dict(operator='search', operand='speak'),
+        ]
+        multi_search_result = self.get_and_check_messages(dict(
+            narrow=ujson.dumps(multi_search_narrow),
+            anchor=0,
+            num_after=10,
+        )) # type: Dict[str, Dict]
+        self.assertEqual(len(multi_search_result['messages']), 1)
+        self.assertEqual(multi_search_result['messages'][0]['match_content'], '<p><span class="highlight">Can</span> you <span class="highlight">speak</span> Japanese?</p>')
 
     def test_get_old_messages_with_only_searching_anchor(self):
         # type: () -> None
@@ -933,7 +1070,7 @@ class GetOldMessagesTest(ZulipTestCase):
                 sql = str(query['sql']).replace(" /* get_old_messages */", '')
                 self.assertEqual(sql, expected)
                 return
-        self.fail("get_old_messages query not found")
+        raise AssertionError("get_old_messages query not found")
 
     def test_use_first_unread_anchor_with_some_unread_messages(self):
         # type: () -> None
@@ -951,8 +1088,8 @@ class GetOldMessagesTest(ZulipTestCase):
         query_params = dict(
             use_first_unread_anchor='true',
             anchor=0,
-            num_before=0,
-            num_after=0,
+            num_before=10,
+            num_after=10,
             narrow='[]'
         )
         request = POSTRequestMock(query_params, user_profile)
@@ -964,10 +1101,12 @@ class GetOldMessagesTest(ZulipTestCase):
         queries = [q for q in all_queries if '/* get_old_messages */' in q['sql']]
         self.assertEqual(len(queries), 1)
         sql = queries[0]['sql']
-        self.assertNotIn('AND message_id = 10000000000000000', sql)
+        self.assertNotIn('AND message_id = %s' % (LARGER_THAN_MAX_MESSAGE_ID,), sql)
         self.assertIn('ORDER BY message_id ASC', sql)
 
-        cond = 'WHERE user_profile_id = %d AND message_id = %d' % (user_profile.id, last_message_id_to_hamlet)
+        cond = 'WHERE user_profile_id = %d AND message_id >= %d' % (user_profile.id, last_message_id_to_hamlet)
+        self.assertIn(cond, sql)
+        cond = 'WHERE user_profile_id = %d AND message_id <= %d' % (user_profile.id, last_message_id_to_hamlet - 1)
         self.assertIn(cond, sql)
 
     def test_use_first_unread_anchor_with_no_unread_messages(self):
@@ -977,8 +1116,8 @@ class GetOldMessagesTest(ZulipTestCase):
         query_params = dict(
             use_first_unread_anchor='true',
             anchor=0,
-            num_before=0,
-            num_after=0,
+            num_before=10,
+            num_after=10,
             narrow='[]'
         )
         request = POSTRequestMock(query_params, user_profile)
@@ -987,16 +1126,18 @@ class GetOldMessagesTest(ZulipTestCase):
             get_old_messages_backend(request, user_profile)
 
         # Next, verify the use_first_unread_anchor setting invokes
-        # the `message_id = 10000000000000000` hack.
+        # the `message_id = LARGER_THAN_MAX_MESSAGE_ID` hack.
         queries = [q for q in all_queries if '/* get_old_messages */' in q['sql']]
         self.assertEqual(len(queries), 1)
-        self.assertIn('AND message_id = 10000000000000000', queries[0]['sql'])
+        self.assertIn('AND message_id <= %d' % (LARGER_THAN_MAX_MESSAGE_ID - 1,), queries[0]['sql'])
+        # There should not be an after_query in this case, since it'd be useless
+        self.assertNotIn('AND message_id >= %d' % (LARGER_THAN_MAX_MESSAGE_ID,), queries[0]['sql'])
 
     def test_use_first_unread_anchor_with_muted_topics(self):
         # type: () -> None
         """
         Test that our logic related to `use_first_unread_anchor`
-        invokes the `message_id = 10000000000000000` hack for
+        invokes the `message_id = LARGER_THAN_MAX_MESSAGE_ID` hack for
         the `/* get_old_messages */` query when relevant muting
         is in effect.
 
@@ -1006,7 +1147,7 @@ class GetOldMessagesTest(ZulipTestCase):
         doing.
         """
 
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         self.make_stream('web stuff')
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
         user_profile.muted_topics = ujson.dumps([['Scotland', 'golf'], ['web stuff', 'css'], ['bogus', 'bogus']])
@@ -1035,14 +1176,15 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertIn(cond, queries[0]['sql'])
 
         # Next, verify the use_first_unread_anchor setting invokes
-        # the `message_id = 10000000000000000` hack.
+        # the `message_id = LARGER_THAN_MAX_MESSAGE_ID` hack.
         queries = [q for q in all_queries if '/* get_old_messages */' in q['sql']]
         self.assertEqual(len(queries), 1)
-        self.assertIn('AND message_id = 10000000000000000', queries[0]['sql'])
+        self.assertIn('AND message_id = %d' % (LARGER_THAN_MAX_MESSAGE_ID,),
+                      queries[0]['sql'])
 
     def test_exclude_muting_conditions(self):
         # type: () -> None
-        realm = get_realm_by_string_id('zulip')
+        realm = get_realm('zulip')
         self.make_stream('web stuff')
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
 
@@ -1068,7 +1210,7 @@ class GetOldMessagesTest(ZulipTestCase):
         ]
 
         muting_conditions = exclude_muting_conditions(user_profile, narrow)
-        query = select([column("id").label("message_id")], None, "zerver_message")
+        query = select([column("id").label("message_id")], None, table("zerver_message"))
         query = query.where(*muting_conditions)
         expected_query = '''
             SELECT id AS message_id
@@ -1084,7 +1226,7 @@ class GetOldMessagesTest(ZulipTestCase):
         mute_stream(realm, user_profile, 'Verona')
         narrow = []
         muting_conditions = exclude_muting_conditions(user_profile, narrow)
-        query = select([column("id")], None, "zerver_message")
+        query = select([column("id")], None, table("zerver_message"))
         query = query.where(and_(*muting_conditions))
 
         expected_query = '''

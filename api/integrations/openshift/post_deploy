@@ -1,0 +1,75 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# Zulip notification post-receive hook.
+# Copyright © 2012-2017 Zulip, Inc.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+
+import os
+import subprocess
+import sys
+from typing import Dict
+
+sys.path.insert(0, os.path.dirname(__file__))
+import zulip_openshift_config as config
+VERSION = '0.1'
+
+if config.ZULIP_API_PATH is not None:
+    sys.path.append(config.ZULIP_API_PATH)
+
+import zulip
+client = zulip.Client(
+    email=config.ZULIP_USER,
+    site=config.ZULIP_SITE,
+    api_key=config.ZULIP_API_KEY,
+    client='ZulipOpenShift/' + VERSION)
+
+def get_deployment_details():
+    # type: () -> Dict[str, str]
+    # "gear deployments" output example:
+    #   Activation time - Deployment ID - Git Ref - Git SHA1
+    #   2017-01-07 15:40:30 -0500 - 9e2b7143 - master - b9ce57c - ACTIVE
+    dep = subprocess.check_output(['gear', 'deployments']).splitlines()[1]
+    splits = dep.split(' - ')
+
+    return dict(app_name=os.environ['OPENSHIFT_APP_NAME'],
+                url=os.environ['OPENSHIFT_APP_DNS'],
+                branch=splits[2],
+                commit_id=splits[3])
+
+def send_bot_message(deployment):
+    # type: (Dict[str, str]) -> None
+    destination = config.deployment_notice_destination(deployment['branch'])
+    if destination is None:
+        # No message should be sent
+        return
+    message = config.format_deployment_message(**deployment)
+
+    client.send_message({
+        'type': 'stream',
+        'to': destination['stream'],
+        'subject': destination['subject'],
+        'content': message,
+    })
+
+    return
+
+deployment = get_deployment_details()
+send_bot_message(deployment)

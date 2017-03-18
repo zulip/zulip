@@ -13,7 +13,7 @@ function send_reaction_ajax(message_id, emoji_name, operation) {
         error: function (xhr) {
             var response = channel.xhr_error_message("Error sending reaction", xhr);
             blueslip.error(response);
-        }
+        },
     };
     if (operation === 'add') {
         channel.put(args);
@@ -108,7 +108,14 @@ function generate_title(emoji_name, user_ids) {
 exports.add_reaction = function (event) {
     event.emoji_name_css_class = emoji.emoji_name_to_css_class(event.emoji_name);
     event.user.id = event.user.user_id;
-    message_store.get(event.message_id).reactions.push(event);
+    var message = message_store.get(event.message_id);
+    if (message === undefined) {
+        // If we don't have the message in cache, do nothing; if we
+        // ever fetch it from the server, it'll come with the
+        // latest reactions attached
+        return;
+    }
+    message.reactions.push(event);
     var message_element = $('.message_table').find("[zid='" + event.message_id + "']");
     var message_reactions_element = message_element.find('.message_reactions');
     var user_list = get_user_list_for_message_reaction(event.message_id, event.emoji_name);
@@ -120,6 +127,12 @@ exports.add_reaction = function (event) {
         }
         event.count = 1;
         event.title = new_title;
+        event.emoji_alt_code = page_params.emoji_alt_code;
+        if (event.user.id === page_params.user_id) {
+            event.class = "message_reaction reacted";
+        } else {
+            event.class = "message_reaction";
+        }
         var reaction_button_element = message_reactions_element.find('.reaction_button');
         $(templates.render('message_reaction', event)).insertBefore(reaction_button_element);
     } else {
@@ -127,6 +140,9 @@ exports.add_reaction = function (event) {
         var count_element = reaction.find('.message_reaction_count');
         count_element.html(user_list.length);
         reaction.prop('title', new_title);
+        if (event.user.id === page_params.user_id) {
+            reaction.addClass("reacted");
+        }
     }
 };
 
@@ -134,8 +150,14 @@ exports.remove_reaction = function (event) {
     var emoji_name = event.emoji_name;
     var message_id = event.message_id;
     var user_id = event.user.user_id;
-    var message = message_store.get(message_id);
     var i = -1;
+    var message = message_store.get(message_id);
+    if (message === undefined) {
+        // If we don't have the message in cache, do nothing; if we
+        // ever fetch it from the server, it'll come with the
+        // latest reactions attached
+        return;
+    }
     _.each(message.reactions, function (reaction, index) {
         if (reaction.emoji_name === emoji_name && reaction.user.id === user_id) {
             i = index;
@@ -151,6 +173,9 @@ exports.remove_reaction = function (event) {
     var matching_reactions = message_reactions_element.find('[data-emoji-name="' + emoji_name + '"]');
     var count_element = matching_reactions.find('.message_reaction_count');
     matching_reactions.prop('title', new_title);
+    if (user_id === page_params.user_id) {
+        matching_reactions.removeClass("reacted");
+    }
     count_element.html(user_list.length);
     if (user_list.length === 0) {
         matching_reactions.remove();
@@ -179,16 +204,32 @@ exports.get_message_reactions = function (message) {
             emoji_name: item[0],
             emoji_name_css_class: emoji.emoji_name_to_css_class(item[0]),
             count: item[1].length,
-            title: generate_title(item[0], item[1])
+            title: generate_title(item[0], item[1]),
+            emoji_alt_code: page_params.emoji_alt_code,
         };
         if (emoji.realm_emojis[reaction.emoji_name]) {
             reaction.is_realm_emoji = true;
             reaction.url = emoji.realm_emojis[reaction.emoji_name].emoji_url;
         }
+        if (get_user_list_for_message_reaction(message.id,
+            reaction.emoji_name).indexOf(page_params.user_id) !== -1) {
+            reaction.class = "message_reaction reacted";
+        } else {
+            reaction.class = "message_reaction";
+        }
         return reaction;
     });
     return reactions;
 };
+
+$(function () {
+    $(document).on('message_id_changed', function (event) {
+        // When a message ID is changed via editing, update any
+        // data-message-id references to it.
+        var elts = $(".message_reactions[data-message-id='" + event.old_id + "']");
+        elts.attr("data-message-id", event.new_id);
+    });
+});
 
 return exports;
 }());

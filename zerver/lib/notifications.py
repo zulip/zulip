@@ -1,6 +1,6 @@
 from __future__ import print_function
 
-from typing import cast, Any, Iterable, Mapping, Optional, Sequence, Tuple, Text
+from typing import cast, Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Text
 
 import mandrill
 from confirmation.models import Confirmation
@@ -9,6 +9,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.template import loader
 from django.utils import timezone
 from zerver.decorator import statsd_increment, uses_mandrill
+from zerver.lib.queue import queue_json_publish
 from zerver.models import (
     Recipient,
     ScheduledJob,
@@ -98,7 +99,7 @@ def build_message_list(user_profile, messages):
         # structure of the URL to leverage.
         content = re.sub(
             r"/user_uploads/(\S*)",
-            settings.EXTERNAL_HOST + r"/user_uploads/\1", content)
+            user_profile.realm.uri + r"/user_uploads/\1", content)
 
         # Our proxying user-uploaded images seems to break inline images in HTML
         # emails, so scrub the image but leave the link.
@@ -108,8 +109,8 @@ def build_message_list(user_profile, messages):
         # URLs for emoji are of the form
         # "static/generated/emoji/images/emoji/snowflake.png".
         content = re.sub(
-            r"static/generated/emoji/images/emoji/",
-            settings.EXTERNAL_HOST + r"/static/generated/emoji/images/emoji/",
+            r"/static/generated/emoji/images/emoji/",
+            user_profile.realm.uri + r"/static/generated/emoji/images/emoji/",
             content)
 
         return content
@@ -147,7 +148,7 @@ def build_message_list(user_profile, messages):
         # type: (UserProfile, Message) -> Dict[str, Any]
         disp_recipient = get_display_recipient(message.recipient)
         if message.recipient.type == Recipient.PERSONAL:
-            header = u"You and %s" % (message.sender.full_name)
+            header = u"You and %s" % (message.sender.full_name,)
             html_link = pm_narrow_url(user_profile.realm, [message.sender.email])
             header_html = u"<a style='color: #ffffff;' href='%s'>%s</a>" % (html_link, header)
         elif message.recipient.type == Recipient.HUDDLE:
@@ -252,11 +253,23 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
         'name': user_profile.full_name,
         'messages': build_message_list(user_profile, missed_messages),
         'message_count': message_count,
-        'reply_warning': False,
         'mention': missed_messages[0].recipient.type == Recipient.STREAM,
-        'reply_to_zulip': True,
         'unsubscribe_link': unsubscribe_link,
     })
+
+    # If this setting (email mirroring integration) is enabled, only then
+    # can users reply to email to send message to Zulip. Thus, one must
+    # ensure to display warning in the template.
+    if settings.EMAIL_GATEWAY_PATTERN:
+        template_payload.update({
+            'reply_warning': False,
+            'reply_to_zulip': True,
+        })
+    else:
+        template_payload.update({
+            'reply_warning': True,
+            'reply_to_zulip': False,
+        })
 
     headers = {}
     from zerver.lib.email_mirror import create_missed_message_address
@@ -278,17 +291,38 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
         headers['Sender'] = from_email
         sender = missed_messages[0].sender
         from_email = '"%s" <%s>' % (sender_str, sender.email)
+        template_payload.update({
+            'reply_warning': False,
+            'reply_to_zulip': False,
+        })
 
     text_content = loader.render_to_string('zerver/missed_message_email.txt', template_payload)
-    html_content = loader.render_to_string('zerver/missed_message_email_html.txt', template_payload)
-
-    msg = EmailMultiAlternatives(subject, text_content, from_email, [user_profile.email],
-                                 headers = headers)
-    msg.attach_alternative(html_content, "text/html")
-    msg.send()
+    html_content = loader.render_to_string('zerver/missed_message_email.html', template_payload)
+    email_content = {
+        'subject': subject,
+        'text_content': text_content,
+        'html_content': html_content,
+        'from_email': from_email,
+        'to': [user_profile.email],
+        'headers': headers
+    }
+    queue_json_publish("missedmessage_email_senders", email_content, send_missedmessage_email)
 
     user_profile.last_reminder = timezone.now()
     user_profile.save(update_fields=['last_reminder'])
+
+
+def send_missedmessage_email(data):
+    # type: (Mapping[str, Any]) -> None
+    msg = EmailMultiAlternatives(
+        data.get('subject'),
+        data.get('text_content'),
+        data.get('from_email'),
+        data.get('to'),
+        headers=data.get('headers'))
+    msg.attach_alternative(data.get('html_content'), "text/html")
+    msg.send()
+
 
 def handle_missedmessage_emails(user_profile_id, missed_email_events):
     # type: (int, Iterable[Dict[str, Any]]) -> None
@@ -298,9 +332,13 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
     if not receives_offline_notifications(user_profile):
         return
 
-    messages = [um.message for um in UserMessage.objects.filter(user_profile=user_profile,
-                                                                message__id__in=message_ids,
-                                                                flags=~UserMessage.flags.read)]
+    messages = Message.objects.filter(usermessage__user_profile_id=user_profile,
+                                      id__in=message_ids,
+                                      usermessage__flags=~UserMessage.flags.read)
+
+    # Cancel missed-message emails for deleted messages
+    messages = [um for um in messages if um.content != "(deleted)"]
+
     if not messages:
         return
 
@@ -375,7 +413,7 @@ def send_future_email(recipients, email_html, email_text, subject,
        settings.EMAIL_BACKEND != 'django.core.mail.backends.console.EmailBackend':
         for recipient in recipients:
             email = recipient.get("email")
-            if get_user_profile_by_email(email).realm.domain != "zulip.com":
+            if get_user_profile_by_email(email).realm.string_id != "zulip":
                 raise ValueError("digest: refusing to send emails to non-zulip.com users.")
 
     # message = {"from_email": "othello@zulip.com",
@@ -418,11 +456,14 @@ def send_future_email(recipients, email_html, email_text, subject,
     # ignore any delays smaller than 1-minute because it's cheaper just to sent them immediately
     if not isinstance(delay, datetime.timedelta):
         raise TypeError("specified delay is of the wrong type: %s" % (type(delay),))
+    # Note: In the next section we hackishly use **{"async": False} to
+    # work around https://github.com/python/mypy/issues/2959 "# type: ignore" doesn't work
     if delay < datetime.timedelta(minutes=1):
-        results = mail_client.messages.send(message=message, async=False, ip_pool="Main Pool")
+        results = mail_client.messages.send(message=message, ip_pool="Main Pool", **{"async": False})
     else:
         send_time = (timezone.now() + delay).__format__("%Y-%m-%d %H:%M:%S")
-        results = mail_client.messages.send(message=message, async=False, ip_pool="Main Pool", send_at=send_time)
+        results = mail_client.messages.send(message=message, ip_pool="Main Pool",
+                                            send_at=send_time, **{"async": False})
     problems = [result for result in results if (result['status'] in ('rejected', 'invalid'))]
 
     if problems:
@@ -438,7 +479,7 @@ def send_future_email(recipients, email_html, email_text, subject,
                         user_profile = get_user_profile_by_email(bounce_email)
                         do_change_enable_digest_emails(user_profile, False)
                         log_digest_event("%s\nTurned off digest emails for %s" % (
-                                str(problems), bounce_email))
+                            str(problems), bounce_email))
                         continue
                 elif problem["reject_reason"] == "soft-bounce":
                     # A soft bounce is temporary; let it try to resolve itself.
@@ -453,7 +494,7 @@ def send_local_email_template_with_delay(recipients, template_prefix,
                                          tags=[], sender={'email': settings.NOREPLY_EMAIL_ADDRESS, 'name': 'Zulip'}):
     # type: (List[Dict[str, Any]], Text, Dict[str, Text], datetime.timedelta, Iterable[Text], Dict[str, Text]) -> None
     html_content = loader.render_to_string(template_prefix + ".html", template_payload)
-    text_content = loader.render_to_string(template_prefix + ".text", template_payload)
+    text_content = loader.render_to_string(template_prefix + ".txt", template_payload)
     subject = loader.render_to_string(template_prefix + ".subject", template_payload).strip()
 
     send_future_email(recipients,

@@ -43,7 +43,7 @@ import zulip_trac_config as config
 VERSION = "0.9"
 
 if False:
-    from typing import Any
+    from typing import Any, Dict
 
 if config.ZULIP_API_PATH is not None:
     sys.path.append(config.ZULIP_API_PATH)
@@ -76,11 +76,11 @@ def trac_subject(ticket):
 def send_update(ticket, content):
     # type: (Any, str) -> None
     client.send_message({
-            "type": "stream",
-            "to": config.STREAM_FOR_NOTIFICATIONS,
-            "content": content,
-            "subject": trac_subject(ticket)
-            })
+        "type": "stream",
+        "to": config.STREAM_FOR_NOTIFICATIONS,
+        "content": content,
+        "subject": trac_subject(ticket)
+    })
 
 class ZulipPlugin(Component):
     implements(ITicketChangeListener)

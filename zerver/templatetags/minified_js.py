@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from typing import Any
+from typing import Any, Dict
 
 from django.template import Node, Library, TemplateSyntaxError
 from django.conf import settings
@@ -19,7 +19,13 @@ class MinifiedJSNode(Node):
     def render(self, context):
         # type: (Dict[str, Any]) -> str
         if settings.DEBUG:
-            scripts = settings.JS_SPECS[self.sourcefile]['source_filenames']
+            source_files = settings.JS_SPECS[self.sourcefile]
+            normal_source = source_files['source_filenames']
+            minified_source = source_files.get('minifed_source_filenames', [])
+
+            # Minified source files (most likely libraries) should be loaded
+            # first to prevent any dependency errors.
+            scripts = minified_source + normal_source
         else:
             scripts = [settings.JS_SPECS[self.sourcefile]['output_filename']]
         script_urls = [staticfiles_storage.url(script) for script in scripts]

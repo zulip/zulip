@@ -5,11 +5,11 @@ from __future__ import print_function
 
 import os
 import sys
-import lister
 import argparse
 import subprocess
 import six
 
+import lister
 from typing import cast, Dict, List
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -20,34 +20,24 @@ api/integrations/asana/zulip_asana_config.py
 api/integrations/basecamp/zulip_basecamp_config.py
 api/integrations/codebase/zulip_codebase_config.py
 api/integrations/git/zulip_git_config.py
-api/integrations/hg/zulip-changegroup.py
 api/integrations/perforce/git_p4.py
 api/integrations/perforce/zulip_perforce_config.py
 api/integrations/svn/zulip_svn_config.py
 api/integrations/trac/zulip_trac_config.py
-api/integrations/asana/zulip_asana_mirror
-api/integrations/basecamp/zulip_basecamp_mirror
-api/integrations/codebase/zulip_codebase_mirror
 api/integrations/git/post-receive
-api/integrations/rss/rss-bot
-api/integrations/twitter/twitter-search-bot
-tools/deprecated/iframe-bot/show-last-messages
-tools/deprecated/inject-messages/inject-messages
 zproject/settings.py
 zproject/test_settings.py
-zerver/tests/test_decorators.py
 """.split()
 
 # We don't run mypy on contrib_bots, since the code there will
 # often be shared with other projects that do not want a mypy
 # dependency (at least while it's still kind of beta).
-exclude_common  += ['contrib_bots']
+exclude_common += ['contrib_bots']
 
 exclude_py2 = [] # type: List[str]
 
 exclude_py3 = """
 bots/process_ccache
-zerver/lib/ccache.py
 """.split()
 
 parser = argparse.ArgumentParser(description="Run mypy on files tracked by git.")
@@ -103,7 +93,12 @@ if six.PY2 and os.path.exists(MYPY_VENV_PATH):
 else:
     mypy_command = "mypy"
 
-extra_args = ["--fast-parser", "--silent-imports", "--check-untyped-defs", "--scripts-are-modules", "-i", "--cache-dir=var/mypy-cache"]
+extra_args = ["--fast-parser",
+              "--ignore-missing-imports",
+              "--follow-imports=silent",
+              "--check-untyped-defs",
+              "--scripts-are-modules",
+              "-i", "--cache-dir=var/mypy-cache"]
 if py_version == 2:
     extra_args.append("--py2")
 if args.linecoverage_report:

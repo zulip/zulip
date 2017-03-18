@@ -75,7 +75,8 @@ class REQ(object):
         self.argument_type = argument_type
 
         if converter and validator:
-            raise Exception(_('converter and validator are mutually exclusive'))
+            # Not user-facing, so shouldn't be tagged for translation
+            raise AssertionError('converter and validator are mutually exclusive')
 
 # Extracts variables from the request object and passes them as
 # named function arguments.  The request object must be the first
@@ -146,14 +147,14 @@ def has_request_variables(view_func):
                     val = param.converter(val)
                 except JsonableError:
                     raise
-                except:
+                except Exception:
                     raise RequestVariableConversionError(param.post_var_name, val)
 
             # Validators are like converters, but they don't handle JSON parsing; we do.
             if param.validator is not None and not default_assigned:
                 try:
                     val = ujson.loads(val)
-                except:
+                except Exception:
                     raise JsonableError(_('argument "%s" is not valid json.') % (param.post_var_name,))
 
                 error = param.validator(param.post_var_name, val)

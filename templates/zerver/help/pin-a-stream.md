@@ -1,52 +1,33 @@
-# Pinning a stream
+# Pin a stream
 
-Pinning a stream will put that stream at the top of your streams sidebar.
-If you are subscribed to a lot of streams,
-pinning your favorite streams can be a good way to keep things organized.
+If you are subscribed to a lot of streams, pinning important streams to the top
+of the **Streams** section on your left sidebar can be a good way to organize
+streams.
 
-## How to pin a stream
+## Pinning a stream using the left sidebar
 
-There are two easy ways to pin a stream:
+If you want to quickly pin a single stream, you can do so through the stream sidebar.
 
-### Pinning a stream using the sidebar
+{!stream-actions.md!}
 
-The quickest way to pin a stream is by using the
-**Pin stream ... to top** feature on the sidebar.
+2. Click on the {!down-chevron.md!} Select the **Pin stream (stream name) to top**
+option from the actions dropdown.
 
-1) On the sidebar, hover over the stream you want to pin and press the
-arrow to the right of the stream name.
+3. Upon selecting the **Pin stream (stream name) to top** option, the selected
+stream will be pinned the top of the **Streams** section, confirming the success
+of your pinning.
 
-![Arrow](/static/images/help/streams-arrow.png)
+### Pinning a stream using the [Streams](/#streams) page
 
-2) A menu will pop up. Press **Pin stream ... to top**.
+If you want to pin multiple streams at once, you should pin streams through the [Streams](/#streams) page.
 
-![Sidebar menu](/static/images/help/streams-pin-sidebar.png)
+{!subscriptions.md!}
+{!filter-streams.md!}
 
-### Pinning a stream using the stream settings
+2. Select the stream you want to pin in the [Streams](/#streams) page; {!stream-settings.md!}
 
-The other way to pin a stream is by ticking the **Pin stream to top of
-left sidebar** box in the stream settings.
+3. Select the **Pin stream to top of left sidebar** option in **Stream settings**.
 
-1) Open your subscription settings by pressing the gear at the top of
-the left sidebar.
-
-![Browse streams](/static/images/help/streams-1.png)
-
-2) Now select the stream you want to pin and tick the box **Pin stream
-to top of left sidebar**.
-
-![Stream settings](/static/images/help/streams-pin-settings.png)
-
-### Result
-
-The stream you just pinned will now be at the top of your streams list:
-
-![Result](/static/images/help/streams-pin-result.png)
-
-## How to unpin a stream
-
-Unpinning a stream works the same way as pinning a stream. You can:
-- Press the arrow to the right of the stream you want to unpin and
-select **Unpin stream ... from top**, or
-- Open your subscription settings, select the stream you want to unpin
-and untick the box **Pin stream to top of left sidebar**
+4. Once you close the [Streams](/#streams) page, the selected stream
+will be pinned the top of the **Streams** section, confirming the success of
+your pinning.

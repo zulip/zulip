@@ -4,20 +4,35 @@ set_global('page_params', {
     people_list: [],
 });
 
-add_dependencies({
-    util: 'js/util.js',
-    people: 'js/people.js',
-});
-
-set_global('resize', {
-    resize_page_components: function () {},
-});
+set_global('feature_flags', {});
 
 set_global('document', {
     hasFocus: function () {
         return true;
     },
 });
+
+add_dependencies({
+    Handlebars: 'handlebars',
+    templates: 'js/templates',
+    util: 'js/util.js',
+    compose_fade: 'js/compose_fade.js',
+    people: 'js/people.js',
+    unread: 'js/unread.js',
+    hashchange: 'js/hashchange.js',
+    narrow: 'js/narrow.js',
+    activity: 'js/activity.js',
+});
+
+set_global('resize', {
+    resize_page_components: function () {},
+});
+
+var me = {
+    email: 'me@zulip.com',
+    user_id: 999,
+    full_name: 'Me Myself',
+};
 
 var alice = {
     email: 'alice@zulip.com',
@@ -50,23 +65,38 @@ global.people.add(fred);
 global.people.add(jill);
 global.people.add(mark);
 global.people.add(norbert);
-
+global.people.add(me);
+global.people.initialize_current_user(me.user_id);
 
 var people = global.people;
 
 var activity = require('js/activity.js');
+var compose_fade = require('js/compose_fade.js');
+var jsdom = require('jsdom');
+var window = jsdom.jsdom().defaultView;
 
+global.$ = require('jquery')(window);
+$.fn.expectOne = function () {
+    assert(this.length === 1);
+    return this;
+};
+
+compose_fade.update_faded_users = function () {};
 activity.update_huddles = function () {};
+
+global.compile_template('user_presence_row');
+global.compile_template('user_presence_rows');
 
 (function test_sort_users() {
     var user_ids = [alice.user_id, fred.user_id, jill.user_id];
 
-    var user_info = {};
-    user_info[alice.user_id] = {status: 'inactive'};
-    user_info[fred.user_id] = {status: 'active'};
-    user_info[jill.user_id] = {status: 'active'};
+    var presence_info = {};
+    presence_info[alice.user_id] = { status: 'inactive' };
+    presence_info[fred.user_id] = { status: 'active' };
+    presence_info[jill.user_id] = { status: 'active' };
 
-    activity._sort_users(user_ids, user_info);
+    activity.presence_info = presence_info;
+    activity._sort_users(user_ids);
 
     assert.deepEqual(user_ids, [
         fred.user_id,
@@ -88,7 +118,7 @@ activity.update_huddles = function () {};
     var messages = [
         {
             type: 'private',
-            reply_to: huddle1,
+            display_recipient: [{id: jill.user_id}, {id: norbert.user_id}],
             timestamp: timestamp1,
         },
         {
@@ -96,16 +126,16 @@ activity.update_huddles = function () {};
         },
         {
             type: 'private',
-            reply_to: 'ignore@zulip.com',
+            display_recipient: [{id: me.user_id}], // PM to myself
         },
         {
             type: 'private',
-            reply_to: huddle2,
+            display_recipient: [{id: alice.user_id}, {id: fred.user_id}],
             timestamp: timestamp2,
         },
         {
             type: 'private',
-            reply_to: huddle2,
+            display_recipient: [{id: fred.user_id}, {id: alice.user_id}],
             timestamp: old_timestamp,
         },
     ];
@@ -164,14 +194,15 @@ activity.update_huddles = function () {};
     var huddle = 'alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com';
     huddle = people.emails_strings_to_user_ids_string(huddle);
 
-    var presence_list = {};
-    presence_list[alice.user_id] = {status: 'active'};
-    presence_list[fred.user_id] = {status: 'idle'}; // counts as present
+    var presence_info = {};
+    presence_info[alice.user_id] = { status: 'active' };
+    presence_info[fred.user_id] = { status: 'idle' }; // counts as present
     // jill not in list
-    presence_list[mark.user_id] = {status: 'offline'}; // does not count
+    presence_info[mark.user_id] = { status: 'offline' }; // does not count
+    activity.presence_info = presence_info;
 
     assert.equal(
-        activity.huddle_fraction_present(huddle, presence_list),
+        activity.huddle_fraction_present(huddle),
         '0.50');
 }());
 
@@ -229,3 +260,90 @@ activity.update_huddles = function () {};
     assert.equal(status.status, "offline");
 
 }());
+
+(function test_set_presence_info() {
+    var presences = {};
+    var base_time = 500;
+
+    presences[alice.email] = {
+        website: {
+            status: 'active',
+            timestamp: base_time,
+        },
+    };
+
+    presences[fred.email] = {
+        website: {
+            status: 'idle',
+            timestamp: base_time,
+        },
+    };
+
+    activity.set_presence_info(presences, base_time);
+
+    assert.deepEqual(activity.presence_info[alice.user_id],
+        { status: 'active', mobile: false}
+    );
+
+    assert.deepEqual(activity.presence_info[fred.user_id],
+        { status: 'idle', mobile: false}
+    );
+}());
+
+activity.presence_info = {};
+activity.presence_info[alice.user_id] = { status: activity.IDLE };
+activity.presence_info[fred.user_id] = { status: activity.ACTIVE };
+activity.presence_info[jill.user_id] = { status: activity.ACTIVE };
+activity.presence_info[mark.user_id] = { status: activity.IDLE };
+activity.presence_info[norbert.user_id] = { status: activity.ACTIVE };
+
+(function test_presence_list_full_update() {
+    var users = activity.build_user_sidebar();
+    assert.deepEqual(users, [{
+            name: 'Fred Flintstone',
+            href: '#narrow/pm-with/2-fred',
+            user_id: fred.user_id,
+            num_unread: 0,
+            type: 'active',
+            type_desc: 'is active',
+            mobile: undefined,
+        },
+        {
+            name: 'Jill Hill',
+            href: '#narrow/pm-with/3-jill',
+            user_id: jill.user_id,
+            num_unread: 0,
+            type: 'active',
+            type_desc: 'is active',
+            mobile: undefined,
+        },
+        {
+            name: 'Norbert Oswald',
+            href: '#narrow/pm-with/5-norbert',
+            user_id: norbert.user_id,
+            num_unread: 0,
+            type: 'active',
+            type_desc: 'is active',
+            mobile: undefined,
+        },
+        {
+            name: 'Alice Smith',
+            href: '#narrow/pm-with/1-alice',
+            user_id: alice.user_id,
+            num_unread: 0,
+            type: 'idle',
+            type_desc: 'is not active',
+            mobile: undefined,
+        },
+        {
+            name: 'Marky Mark',
+            href: '#narrow/pm-with/4-mark',
+            user_id: mark.user_id,
+            num_unread: 0,
+            type: 'idle',
+            type_desc: 'is not active',
+            mobile: undefined,
+        },
+    ]);
+}());
+

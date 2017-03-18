@@ -6,15 +6,18 @@ from django.contrib.auth.forms import SetPasswordForm, AuthenticationForm, \
     PasswordResetForm
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
+from django.core.validators import validate_email
 from django.db.models.query import QuerySet
 from django.utils.translation import ugettext as _
 from jinja2 import Markup as mark_safe
 
 from zerver.lib.actions import do_change_password, is_inactive, user_email_is_unique
 from zerver.lib.name_restrictions import is_reserved_subdomain, is_disposable_domain
+from zerver.lib.request import JsonableError
+from zerver.lib.users import check_full_name
 from zerver.lib.utils import get_subdomain, check_subdomain
 from zerver.models import Realm, get_user_profile_by_email, UserProfile, \
-    get_realm_by_email_domain, get_realm_by_string_id, \
+    get_realm_by_email_domain, get_realm, \
     get_unique_open_realm, email_to_domain, email_allowed_for_realm
 from zproject.backends import password_auth_enabled
 
@@ -22,7 +25,7 @@ import logging
 import re
 import DNS
 
-from typing import Any, Callable, Optional, Text
+from typing import Any, Callable, List, Optional, Text
 
 MIT_VALIDATION_ERROR = u'That user does not exist at MIT or is a ' + \
                        u'<a href="https://ist.mit.edu/email-lists">mailing list</a>. ' + \
@@ -31,13 +34,6 @@ MIT_VALIDATION_ERROR = u'That user does not exist at MIT or is a ' + \
 WRONG_SUBDOMAIN_ERROR = "Your Zulip account is not a member of the " + \
                         "organization associated with this subdomain.  " + \
                         "Please contact %s with any questions!" % (settings.ZULIP_ADMINISTRATOR,)
-
-def get_registration_string(domain):
-    # type: (Text) -> Text
-    register_url  = reverse('register') + domain
-    register_account_string = _('The organization with the domain already exists. '
-                                'Please register your account <a href=%(url)s>here</a>.') % {'url': register_url}
-    return register_account_string
 
 def email_is_not_mit_mailing_list(email):
     # type: (Text) -> None
@@ -68,6 +64,13 @@ class RegistrationForm(forms.Form):
     if settings.TERMS_OF_SERVICE:
         terms = forms.BooleanField(required=True)
 
+    def clean_full_name(self):
+        # type: () -> Text
+        try:
+            return check_full_name(self.cleaned_data['full_name'])
+        except JsonableError as e:
+            raise ValidationError(e.error)
+
     def clean_realm_subdomain(self):
         # type: () -> str
         if settings.REALMS_HAVE_SUBDOMAINS:
@@ -92,7 +95,7 @@ class RegistrationForm(forms.Form):
         if not re.match('^[a-z0-9-]*$', subdomain):
             raise ValidationError(error_strings['bad character'])
         if is_reserved_subdomain(subdomain) or \
-           get_realm_by_string_id(subdomain) is not None:
+           get_realm(subdomain) is not None:
             raise ValidationError(error_strings['unavailable'])
         return subdomain
 
@@ -154,7 +157,7 @@ class LoggingSetPasswordForm(SetPasswordForm):
     def save(self, commit=True):
         # type: (bool) -> UserProfile
         do_change_password(self.user, self.cleaned_data['new_password1'],
-                           log=True, commit=commit)
+                           commit=commit)
         return self.user
 
 class ZulipPasswordResetForm(PasswordResetForm):
@@ -201,3 +204,31 @@ Please contact %s to reactivate this group.""" % (
                             (user_profile.email, get_subdomain(self.request)))
             raise ValidationError(mark_safe(WRONG_SUBDOMAIN_ERROR))
         return email
+
+class MultiEmailField(forms.Field):
+    def to_python(self, emails):
+        # type: (Text) -> List[Text]
+        """Normalize data to a list of strings."""
+        if not emails:
+            return []
+
+        return [email.strip() for email in emails.split(',')]
+
+    def validate(self, emails):
+        # type: (List[Text]) -> None
+        """Check if value consists only of valid emails."""
+        super(MultiEmailField, self).validate(emails)
+        for email in emails:
+            validate_email(email)
+
+class FindMyTeamForm(forms.Form):
+    emails = MultiEmailField(
+        help_text="Add up to 10 comma-separated email addresses.")
+
+    def clean_emails(self):
+        # type: () -> List[Text]
+        emails = self.cleaned_data['emails']
+        if len(emails) > 10:
+            raise forms.ValidationError("Please enter at most 10 emails.")
+
+        return emails

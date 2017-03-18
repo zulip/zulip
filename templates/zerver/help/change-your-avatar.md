@@ -1,4 +1,4 @@
-# Change your Avatar
+# Change your avatar
 
 By default, Zulip uses avatars from [Gravatar](https://en.gravatar.com/).
 If your email address already has a gravatar associated with it, Zulip will
@@ -6,8 +6,10 @@ simply use your existing gravatar.
 
 You can also upload a custom avatar to Zulip.
 
-1. Go to the [Your Account](/#settings/your-account) tab of the
-    [Settings](/help/edit-settings) page.
-2. Click the **Upload New Avatar** button and choose an image to upload
+{!go-to-the.md!} [Your account](/#settings/your-account)
+{!settings.md!}
+
+2. Click the **Upload new avatar** button and choose an image to upload
     as your avatar.
-3. Click **Save Changes** once you’re finished.
+
+{!save-changes.md!} account settings.

@@ -11,8 +11,6 @@ import argparse
 import sys
 import six
 
-from typing import Optional, Set
-
 parser = argparse.ArgumentParser()
 parser.add_argument('--prev-deploy', metavar='DIR',
                     help='a previous deploy from which to reuse files if possible')
@@ -22,6 +20,9 @@ prev_deploy = args.prev_deploy
 # We have to pull out JS_SPECS, defined in our settings file, so we know what
 # JavaScript source files to minify (and what output files to create).
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+import scripts.lib.setup_path_on_import
+from typing import Optional, Set
+
 os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
 from django.conf import settings
 
@@ -87,7 +88,7 @@ CLOSURE_BINARY = '/usr/bin/closure-compiler'
 if not os.path.exists(CLOSURE_BINARY):
     CLOSURE_BINARY = 'tools/closure-compiler/run'
     if not os.path.exists(CLOSURE_BINARY):
-        print("closure-compiler not installed; the Vagrant tools/provision.py installs it via apt "
+        print("closure-compiler not installed; the Vagrant tools/provision installs it via apt "
               "or you can manually unpack http://dl.google.com/closure-compiler/compiler-latest.zip to "
               "tools/closure-compiler")
         sys.exit(1)
@@ -104,11 +105,15 @@ for js_group, filespec in six.iteritems(JS_SPECS):
     in_files = [os.path.join(STATIC_PATH, filename)
                 for filename in filespec['source_filenames']]
 
-    out_file = os.path.join(MIN_DIR, os.path.basename(filespec['output_filename']))
-    map_file = os.path.join(MAP_DIR, os.path.basename(filespec['output_filename'])
-                            + '.map')
+    min_files = [os.path.join(STATIC_PATH, filename)
+                 for filename in filespec.get('minifed_source_filenames', [])]
 
-    if (not 'force_minify' in filespec) and (prev_deploy and len(set(in_files) & changed_files) == 0):
+    out_file = os.path.join(MIN_DIR, os.path.basename(filespec['output_filename']))
+    map_file = os.path.join(MAP_DIR, os.path.basename(filespec['output_filename']) +
+                            '.map')
+
+    if ('force_minify' not in filespec) and \
+       (prev_deploy and len(set(in_files) & changed_files) == 0):
         # Try to reuse the output file from previous deploy
         try:
             for dest in [out_file, map_file]:
@@ -125,10 +130,16 @@ for js_group, filespec in six.iteritems(JS_SPECS):
     # (N.B. we include STATIC_HEADER_FILE before the JavaScripts.
     #  This way it doesn't throw off the source map.)
     cmd = '%s --language_in ECMASCRIPT5 --create_source_map %s %s %s' % (
-            CLOSURE_BINARY, map_file,
-            settings.STATIC_HEADER_FILE, ' '.join(in_files))
+        CLOSURE_BINARY, map_file,
+        settings.STATIC_HEADER_FILE, ' '.join(in_files))
     js = subprocess.check_output(cmd, shell=True)
 
     # Write out the JS
     with open(out_file, 'wb') as fp:
+        # Minified source files (most likely libraries) should be loaded
+        # first to prevent any dependency errors.
+        for file in min_files:
+            with open(file, 'rb') as f:
+                fp.write(f.read())
+
         fp.write(js)

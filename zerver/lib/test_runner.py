@@ -1,16 +1,20 @@
 from __future__ import print_function
 
-from typing import Any, Callable, Iterable, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, \
+    Text, Type
+from unittest import loader, runner  # type: ignore  # Mypy cannot pick these up.
+from unittest.result import TestResult
 
 from django.test import TestCase
-from django.test.runner import DiscoverRunner
+from django.test.runner import DiscoverRunner, RemoteTestResult
 from django.test.signals import template_rendered
 
 from zerver.lib.cache import bounce_key_prefix_for_testing
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.test_helpers import (
     get_all_templates, write_instrumentation_reports,
-    )
+    append_instrumentation_data
+)
 
 import os
 import subprocess
@@ -18,6 +22,9 @@ import sys
 import time
 import traceback
 import unittest
+
+if False:
+    from unittest.result import TestResult
 
 def slow(slowness_reason):
     # type: (str) -> Callable[[Callable], Callable]
@@ -71,22 +78,23 @@ def report_slow_tests():
             print('      consider removing @slow decorator')
             print('      This may no longer be true: %s' % (slowness_reason,))
 
-def enforce_timely_test_completion(test_method, test_name, delay):
-    # type: (Any, str, float) -> None
+def enforce_timely_test_completion(test_method, test_name, delay, result):
+    # type: (Any, str, float, TestResult) -> None
     if hasattr(test_method, 'slowness_reason'):
         max_delay = 1.1 # seconds
     else:
         max_delay = 0.4 # seconds
 
     if delay > max_delay:
-        print(' ** Test is TOO slow: %s (%.3f s)' % (test_name, delay))
+        msg = '** Test is TOO slow: %s (%.3f s)\n' % (test_name, delay)
+        result.addInfo(test_method, msg)
 
 def fast_tests_only():
     # type: () -> bool
     return "FAST_TESTS_ONLY" in os.environ
 
-def run_test(test):
-    # type: (TestCase) -> bool
+def run_test(test, result):
+    # type: (TestCase, TestResult) -> bool
     failed = False
     test_method = get_test_method(test)
 
@@ -97,55 +105,139 @@ def run_test(test):
 
     bounce_key_prefix_for_testing(test_name)
 
-    print('Running', test_name)
     if not hasattr(test, "_pre_setup"):
         # test_name is likely of the form unittest.loader.ModuleImportFailure.zerver.tests.test_upload
         import_failure_prefix = 'unittest.loader.ModuleImportFailure.'
         if test_name.startswith(import_failure_prefix):
             actual_test_name = test_name[len(import_failure_prefix):]
-            print()
-            print("Actual test to be run is %s, but import failed." % (actual_test_name,))
-            print("Importing test module directly to generate clearer traceback:")
+            error_msg = ("\nActual test to be run is %s, but import failed.\n"
+                         "Importing test module directly to generate clearer "
+                         "traceback:\n") % (actual_test_name,)
+            result.addInfo(test, error_msg)
+
             try:
                 command = [sys.executable, "-c", "import %s" % (actual_test_name,)]
-                print("Import test command: `%s`" % (' '.join(command),))
+                msg = "Import test command: `%s`" % (' '.join(command),)
+                result.addInfo(test, msg)
                 subprocess.check_call(command)
             except subprocess.CalledProcessError:
-                print("If that traceback is confusing, try doing the import inside `./manage.py shell`")
-                print()
+                msg = ("If that traceback is confusing, try doing the "
+                       "import inside `./manage.py shell`")
+                result.addInfo(test, msg)
+                result.addError(test, sys.exc_info())
                 return True
-            print("Import unexpectedly succeeded! Something is wrong.")
-            print("Try running `import %s` inside `./manage.py shell`" % (actual_test_name,))
-            print("If that works, you may have introduced an import cycle.")
+
+            msg = ("Import unexpectedly succeeded! Something is wrong. Try "
+                   "running `import %s` inside `./manage.py shell`.\n"
+                   "If that works, you may have introduced an import "
+                   "cycle.") % (actual_test_name,)
+            import_error = (Exception, Exception(msg), None)  # type: Tuple[Any, Any, Any]
+            result.addError(test, import_error)
             return True
         else:
-            print("Test doesn't have _pre_setup; something is wrong.")
-            print("Here's a debugger. Good luck!")
-            import pdb; pdb.set_trace()
+            msg = "Test doesn't have _pre_setup; something is wrong."
+            error_pre_setup = (Exception, Exception(msg), None)  # type: Tuple[Any, Any, Any]
+            result.addError(test, error_pre_setup)
+            return True
     test._pre_setup()
 
     start_time = time.time()
 
-    test.setUp()
-    try:
-        test_method()
-    except unittest.SkipTest as e:
-        print('Skipped:', e)
-    except Exception:
-        failed = True
-        traceback.print_exc()
-
-    test.tearDown()
+    test(result)  # unittest will handle skipping, error, failure and success.
 
     delay = time.time() - start_time
-    enforce_timely_test_completion(test_method, test_name, delay)
+    enforce_timely_test_completion(test_method, test_name, delay, result)
     slowness_reason = getattr(test_method, 'slowness_reason', '')
     TEST_TIMINGS.append((delay, test_name, slowness_reason))
 
     test._post_teardown()
     return failed
 
+class TextTestResult(runner.TextTestResult):
+    """
+    This class has unpythonic function names because base class follows
+    this style.
+    """
+    def addInfo(self, test, msg):
+        # type: (TestCase, Text) -> None
+        self.stream.write(msg)
+        self.stream.flush()
+
+    def addInstrumentation(self, test, data):
+        # type: (TestCase, Dict[str, Any]) -> None
+        append_instrumentation_data(data)
+
+    def startTest(self, test):
+        # type: (TestCase) -> None
+        TestResult.startTest(self, test)
+        self.stream.writeln("Running {}".format(full_test_name(test)))
+        self.stream.flush()
+
+    def addSuccess(self, *args, **kwargs):
+        # type: (*Any, **Any) -> None
+        TestResult.addSuccess(self, *args, **kwargs)
+
+    def addError(self, *args, **kwargs):
+        # type: (*Any, **Any) -> None
+        TestResult.addError(self, *args, **kwargs)
+
+    def addFailure(self, *args, **kwargs):
+        # type: (*Any, **Any) -> None
+        TestResult.addFailure(self, *args, **kwargs)
+
+    def addSkip(self, test, reason):
+        # type: (TestCase, Text) -> None
+        TestResult.addSkip(self, test, reason)
+        self.stream.writeln("** Skipping {}: {}".format(full_test_name(test),
+                                                        reason))
+        self.stream.flush()
+
+class TestSuite(unittest.TestSuite):
+    def run(self, result, debug=False):
+        # type: (TestResult, Optional[bool]) -> TestResult
+        """
+        This function mostly contains the code from
+        unittest.TestSuite.run. The need to override this function
+        occurred because we use run_test to run the testcase.
+        """
+        topLevel = False
+        if getattr(result, '_testRunEntered', False) is False:
+            result._testRunEntered = topLevel = True
+
+        for test in self:  # type: ignore  # Mypy cannot recognize this
+            # but this is correct. Taken from unittest.
+            if result.shouldStop:
+                break
+
+            if isinstance(test, TestSuite):
+                test.run(result, debug=debug)
+            else:
+                self._tearDownPreviousClass(test, result)  # type: ignore
+                self._handleModuleFixture(test, result)  # type: ignore
+                self._handleClassSetUp(test, result)  # type: ignore
+                result._previousTestClass = test.__class__
+                if (getattr(test.__class__, '_classSetupFailed', False) or
+                        getattr(result, '_moduleSetUpFailed', False)):
+                    continue
+
+                failed = run_test(test, result)
+                if failed or result.shouldStop:
+                    result.shouldStop = True
+                    break
+
+        if topLevel:
+            self._tearDownPreviousClass(None, result)  # type: ignore
+            self._handleModuleTearDown(result)  # type: ignore
+            result._testRunEntered = False
+        return result
+
+class TestLoader(loader.TestLoader):
+    suiteClass = TestSuite
+
 class Runner(DiscoverRunner):
+    test_suite = TestSuite
+    test_loader = TestLoader()
+
     def __init__(self, *args, **kwargs):
         # type: (*Any, **Any) -> None
         DiscoverRunner.__init__(self, *args, **kwargs)
@@ -157,6 +249,10 @@ class Runner(DiscoverRunner):
         # in `zerver.tests.test_templates`.
         self.shallow_tested_templates = set()  # type: Set[str]
         template_rendered.connect(self.on_template_rendered)
+
+    def get_resultclass(self):
+        # type: () -> Type[TestResult]
+        return TextTestResult
 
     def on_template_rendered(self, sender, context, **kwargs):
         # type: (Any, Dict[str, Any], **Any) -> None
@@ -172,19 +268,6 @@ class Runner(DiscoverRunner):
     def get_shallow_tested_templates(self):
         # type: () -> Set[str]
         return self.shallow_tested_templates
-
-    def run_suite(self, suite, fatal_errors=True):
-        # type: (Iterable[TestCase], bool) -> bool
-        failed = False
-        for test in suite:
-            # The attributes __unittest_skip__ and __unittest_skip_why__ are undocumented
-            if hasattr(test, '__unittest_skip__') and test.__unittest_skip__:
-                print('Skipping', full_test_name(test), "(%s)" % (test.__unittest_skip_why__,))
-            elif run_test(test):
-                failed = True
-                if fatal_errors:
-                    return failed
-        return failed
 
     def run_tests(self, test_labels, extra_tests=None,
                   full_suite=False, **kwargs):
@@ -206,8 +289,9 @@ class Runner(DiscoverRunner):
         # run a single test and getting an SA connection causes data from
         # a Django connection to be rolled back mid-test.
         get_sqlalchemy_connection()
-        failed = self.run_suite(suite, fatal_errors=kwargs.get('fatal_errors'))
+        result = self.run_suite(suite)
         self.teardown_test_environment()
+        failed = self.suite_result(suite, result)
         if not failed:
             write_instrumentation_reports(full_suite=full_suite)
         return failed

@@ -2,7 +2,7 @@ set_global('document', null);
 set_global('page_params', {});
 
 add_dependencies({
-    XDate: 'third/xdate/xdate.dev.js',
+    XDate: 'node_modules/xdate/src/xdate.js',
 });
 
 var message_edit = require('js/message_edit.js');
@@ -35,24 +35,24 @@ var editability_types = message_edit.editability_types;
     // For the rest of these tests, we only consider messages sent by the
     // user, and that were successfully sent (i.e. no failed_request or local_id)
     var message = {
-        sent_by_me: true
+        sent_by_me: true,
     };
 
     global.page_params = {
-        realm_allow_message_editing: false
+        realm_allow_message_editing: false,
     };
     assert.equal(get_editability(message), editability_types.NO);
 
     global.page_params = {
         realm_allow_message_editing: true,
         // Limit of 0 means no time limit on editing messages
-        realm_message_content_edit_limit_seconds: 0
+        realm_message_content_edit_limit_seconds: 0,
     };
     assert.equal(get_editability(message), editability_types.FULL);
 
     global.page_params = {
         realm_allow_message_editing: true,
-        realm_message_content_edit_limit_seconds: 10
+        realm_message_content_edit_limit_seconds: 10,
     };
     var now = new Date();
     var current_timestamp = now/1000;

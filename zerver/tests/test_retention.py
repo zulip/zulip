@@ -8,7 +8,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Message, Realm, Recipient, UserProfile
 from zerver.lib.retention import get_expired_messages
 
-from typing import Any
+from typing import Any, List
 
 from six.moves import range
 
@@ -21,13 +21,13 @@ class TestRetentionLib(ZulipTestCase):
     def setUp(self):
         # type: () -> None
         super(TestRetentionLib, self).setUp()
-        self.zulip_realm = self._set_realm_message_retention_value('zulip.com', 30)
-        self.mit_realm = self._set_realm_message_retention_value('mit.edu', 100)
+        self.zulip_realm = self._set_realm_message_retention_value('zulip', 30)
+        self.mit_realm = self._set_realm_message_retention_value('zephyr', 100)
 
     @staticmethod
-    def _set_realm_message_retention_value(domain, retention_period):
+    def _set_realm_message_retention_value(realm_str, retention_period):
         # type: (str, int) -> Realm
-        realm = Realm.objects.filter(domain=domain).first()
+        realm = Realm.objects.get(string_id=realm_str)
         realm.message_retention_days = retention_period
         realm.save()
         return realm

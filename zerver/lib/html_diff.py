@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from typing import Callable, Tuple, Text
+from typing import Callable, List, Tuple, Text
 
 from django.conf import settings
 
@@ -116,12 +116,14 @@ def highlight_html_differences(s1, s2):
 
     if not verify_html(retval):
         from zerver.lib.actions import internal_send_message
+        from zerver.models import get_user_profile_by_email
         # We probably want more information here
         logging.getLogger('').error('HTML diff produced mal-formed HTML')
 
         if settings.ERROR_BOT is not None:
             subject = "HTML diff failure on %s" % (platform.node(),)
-            internal_send_message(settings.ERROR_BOT, "stream",
+            realm = get_user_profile_by_email(settings.ERROR_BOT).realm
+            internal_send_message(realm, settings.ERROR_BOT, "stream",
                                   "errors", subject, "HTML diff produced malformed HTML")
         return s2
 

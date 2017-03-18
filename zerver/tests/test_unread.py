@@ -24,7 +24,7 @@ class PointerTest(ZulipTestCase):
         self.login("hamlet@zulip.com")
         self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, -1)
         msg_id = self.send_message("othello@zulip.com", "Verona", Recipient.STREAM)
-        result = self.client_put("/json/users/me/pointer", {"pointer": msg_id})
+        result = self.client_post("/json/users/me/pointer", {"pointer": msg_id})
         self.assert_json_success(result)
         self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, msg_id)
 
@@ -36,8 +36,8 @@ class PointerTest(ZulipTestCase):
         email = "hamlet@zulip.com"
         self.assertEqual(get_user_profile_by_email(email).pointer, -1)
         msg_id = self.send_message("othello@zulip.com", "Verona", Recipient.STREAM)
-        result = self.client_put("/api/v1/users/me/pointer", {"pointer": msg_id},
-                                 **self.api_auth(email))
+        result = self.client_post("/api/v1/users/me/pointer", {"pointer": msg_id},
+                                  **self.api_auth(email))
         self.assert_json_success(result)
         self.assertEqual(get_user_profile_by_email(email).pointer, msg_id)
 
@@ -49,7 +49,7 @@ class PointerTest(ZulipTestCase):
         """
         self.login("hamlet@zulip.com")
         self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, -1)
-        result = self.client_put("/json/users/me/pointer", {"foo": 1})
+        result = self.client_post("/json/users/me/pointer", {"foo": 1})
         self.assert_json_error(result, "Missing 'pointer' argument")
         self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, -1)
 
@@ -61,7 +61,7 @@ class PointerTest(ZulipTestCase):
         """
         self.login("hamlet@zulip.com")
         self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, -1)
-        result = self.client_put("/json/users/me/pointer", {"pointer": "foo"})
+        result = self.client_post("/json/users/me/pointer", {"pointer": "foo"})
         self.assert_json_error(result, "Bad value for 'pointer': foo")
         self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, -1)
 
@@ -73,16 +73,17 @@ class PointerTest(ZulipTestCase):
         """
         self.login("hamlet@zulip.com")
         self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, -1)
-        result = self.client_put("/json/users/me/pointer", {"pointer": -2})
+        result = self.client_post("/json/users/me/pointer", {"pointer": -2})
         self.assert_json_error(result, "Bad value for 'pointer': -2")
         self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, -1)
 
 class UnreadCountTests(ZulipTestCase):
     def setUp(self):
         # type: () -> None
-        self.unread_msg_ids = [self.send_message(
+        self.unread_msg_ids = [
+            self.send_message(
                 "iago@zulip.com", "hamlet@zulip.com", Recipient.PERSONAL, "hello"),
-                               self.send_message(
+            self.send_message(
                 "iago@zulip.com", "hamlet@zulip.com", Recipient.PERSONAL, "hello2")]
 
     # Sending a new message results in unread UserMessages being created
@@ -156,6 +157,7 @@ class UnreadCountTests(ZulipTestCase):
         self.login("hamlet@zulip.com")
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
         self.subscribe_to_stream(user_profile.email, "test_stream", user_profile.realm)
+        self.subscribe_to_stream("cordelia@zulip.com", "test_stream", user_profile.realm)
 
         message_id = self.send_message("hamlet@zulip.com", "test_stream", Recipient.STREAM, "hello")
         unrelated_message_id = self.send_message("hamlet@zulip.com", "Denmark", Recipient.STREAM, "hello")

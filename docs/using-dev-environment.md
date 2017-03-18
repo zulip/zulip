@@ -28,7 +28,7 @@ changes take effect.  The Handlebars frontend HTML templates
 `tools/compile-handlebars-templates` job, which runs as part of
 `tools/run-dev.py`.
 
-* If you change Python code used by the the main Django/Tornado server
+* If you change Python code used by the main Django/Tornado server
 processes, these services are run on top of Django's [manage.py
 runserver][django-runserver] which will automatically restart the
 Zulip Django and Tornado servers whenever you save changes to Python

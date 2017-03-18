@@ -201,31 +201,37 @@
     {
       "name": "many_emoji",
       "input":  "test :smile: again :poop:\n:) foo:)bar x::y::z :wasted waste: :fakeemojithisshouldnotrender:",
-      "expected_output": "<p>test <img alt=\":smile:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/smile.png\" title=\":smile:\"> again <img alt=\":poop:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/poop.png\" title=\":poop:\"><br>\n:) foo:)bar x::y::z :wasted waste: :fakeemojithisshouldnotrender:</p>",
+      "expected_output": "<p>test <img alt=\":smile:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/unicode/1f604.png\" title=\":smile:\"> again <img alt=\":poop:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/unicode/1f4a9.png\" title=\":poop:\"><br>\n:) foo:)bar x::y::z :wasted waste: :fakeemojithisshouldnotrender:</p>",
       "bugdown_matches_marked": true
     },
     {
       "name": "random_emoji_1",
-      "input": ":hankey:",
-      "expected_output": "<p><img alt=\":hankey:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/hankey.png\" title=\":hankey:\"></p>",
+      "input": ":airplane:",
+      "expected_output": "<p><img alt=\":airplane:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/unicode/2708.png\" title=\":airplane:\"></p>",
+      "bugdown_matches_marked": true
+    },
+    {
+      "name": "zulip_emoji",
+      "input": ":zulip:",
+      "expected_output": "<p><img alt=\":zulip:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/unicode/zulip.png\" title=\":zulip:\"></p>",
       "bugdown_matches_marked": true
     },
     {
       "name": "random_emoji_2",
       "input": ":poop:",
-      "expected_output": "<p><img alt=\":poop:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/poop.png\" title=\":poop:\"></p>",
+      "expected_output": "<p><img alt=\":poop:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/unicode/1f4a9.png\" title=\":poop:\"></p>",
       "bugdown_matches_marked": true
     },
     {
       "name": "emojis_without_space",
       "input": ":cat:hello:dog::rabbit:",
-      "expected_output": "<p><img alt=\":cat:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/cat.png\" title=\":cat:\">hello<img alt=\":dog:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/dog.png\" title=\":dog:\"><img alt=\":rabbit:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/rabbit.png\" title=\":rabbit:\"></p>",
+      "expected_output": "<p><img alt=\":cat:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/unicode/1f408.png\" title=\":cat:\">hello<img alt=\":dog:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/unicode/1f415.png\" title=\":dog:\"><img alt=\":rabbit:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/unicode/1f407.png\" title=\":rabbit:\"></p>",
       "bugdown_matches_marked": true
     },
     {
       "name": "emojis_newline",
       "input": ":cat:\n:dog:",
-      "expected_output": "<p><img alt=\":cat:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/cat.png\" title=\":cat:\"><br>\n<img alt=\":dog:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/dog.png\" title=\":dog:\"></p>",
+      "expected_output": "<p><img alt=\":cat:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/unicode/1f408.png\" title=\":cat:\"><br>\n<img alt=\":dog:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/unicode/1f415.png\" title=\":dog:\"></p>",
       "bugdown_matches_marked": true
     },
     {
@@ -273,7 +279,7 @@
     {
       "name": "emoji_alongside_punctuation",
       "input": ":smile:, :smile:; :smile:",
-      "expected_output": "<p><img alt=\":smile:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/smile.png\" title=\":smile:\">, <img alt=\":smile:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/smile.png\" title=\":smile:\">; <img alt=\":smile:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/smile.png\" title=\":smile:\"></p>",
+      "expected_output": "<p><img alt=\":smile:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/unicode/1f604.png\" title=\":smile:\">, <img alt=\":smile:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/unicode/1f604.png\" title=\":smile:\">; <img alt=\":smile:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/unicode/1f604.png\" title=\":smile:\"></p>",
       "bugdown_matches_marked": true
     },
     {

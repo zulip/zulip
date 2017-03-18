@@ -1,22 +1,10 @@
 #!/usr/bin/env python
 from __future__ import print_function
-import subprocess
 import optparse
-import time
+import subprocess
 import sys
 import os
 import glob
-try:
-    # We don't actually need typing, but it's a good guard for being
-    # outside a Zulip virtualenv.
-    from typing import Iterable
-    import requests
-    import django
-except ImportError as e:
-    print("ImportError: {}".format(e))
-    print("You need to run the Zulip tests inside a Zulip dev environment.")
-    print("If you are using Vagrant, you can `vagrant ssh` to enter the Vagrant guest.")
-    sys.exit(1)
 
 #
 # In order to use remote casperjs debugging, pass the --remote-debug flag
@@ -26,7 +14,6 @@ except ImportError as e:
 # on how to use remote debugging
 #
 
-os.environ["TORNADO_SERVER"] = "http://127.0.0.1:9983"
 os.environ["CASPER_TESTS"] = "1"
 os.environ["PHANTOMJS_EXECUTABLE"] = os.path.join(os.path.dirname(__file__), "../node_modules/.bin/phantomjs")
 
@@ -38,6 +25,9 @@ usage = """%prog [options]
     test-js-with-casper 01 03 # Run a few test files, 01-login.js and 03-narrow.js here"""
 parser = optparse.OptionParser(usage)
 
+parser.add_option('--skip-flaky-tests', dest='skip_flaky',
+                  action="store_true",
+                  default=False, help='Skip flaky tests')
 parser.add_option('--force', dest='force',
                   action="store_true",
                   default=False, help='Run tests despite possible problems.')
@@ -50,9 +40,14 @@ parser.add_option('--remote-debug',
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(TOOLS_DIR))
 
-from tools.lib.test_script import (
-    get_provisioning_status,
-)
+# check for the venv
+from tools.lib import sanity_check
+sanity_check.check_venv(__file__)
+
+from tools.lib.test_script import get_provisioning_status
+from tools.lib.test_server import test_server_running
+
+from typing import Iterable
 
 if not options.force:
     ok, msg = get_provisioning_status()
@@ -60,11 +55,6 @@ if not options.force:
         print(msg)
         print('If you really know what you are doing, use --force to run anyway.')
         sys.exit(1)
-
-from zerver.lib.test_fixtures import is_template_database_current
-os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.test_settings'
-django.setup()
-os.environ['PYTHONUNBUFFERED'] = 'y'
 
 os.chdir(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
 
@@ -75,29 +65,9 @@ subprocess.check_call(['mkdir', '-p', 'var/casper'])
 subprocess.check_call(['rm', '-f'] + glob.glob('var/casper/casper-failure*.png'))
 
 LOG_FILE = 'var/casper/server.log'
-if os.path.exists(LOG_FILE) and os.path.getsize(LOG_FILE) < 100000:
-    log = open(LOG_FILE, 'a')
-    log.write('\n\n')
-else:
-    log = open(LOG_FILE, 'w')
 
-def assert_server_running(server):
-    # type: (subprocess.Popen) -> None
-    """Get the exit code of the server, or None if it is still running."""
-    if server.poll() is not None:
-        raise RuntimeError('Server died unexpectedly! Check %s' % (LOG_FILE,))
-
-def server_is_up(server):
-    # type: (subprocess.Popen) -> bool
-    assert_server_running(server)
-    try:
-        # We could get a 501 error if the reverse proxy is up but the Django app isn't.
-        return requests.get('http://127.0.0.1:9981/accounts/home').status_code == 200
-    except:
-        return False
-
-def run_tests(realms_have_subdomains, files):
-    # type: (bool, Iterable[str]) -> None
+def run_tests(realms_have_subdomains, files, external_host):
+    # type: (bool, Iterable[str], str) -> None
     test_dir = os.path.join(os.path.dirname(__file__), '../frontend_tests/casper_tests')
     test_files = []
     for file in files:
@@ -109,34 +79,19 @@ def run_tests(realms_have_subdomains, files):
             file = os.path.join(test_dir, file)
         test_files.append(os.path.abspath(file))
 
-    generate_fixtures_command = ['tools/setup/generate-fixtures']
-    if not is_template_database_current():
-        generate_fixtures_command.append('--force')
-
-    subprocess.check_call(generate_fixtures_command)
-
     if not test_files:
         test_files = sorted(glob.glob(os.path.join(test_dir, '*.js')))
+
+    # 10-admin.js is too flaky!
+    if options.skip_flaky:
+        test_files = [fn for fn in test_files if '10-admin' not in fn]
 
     remote_debug = ""
     if options.remote_debug:
         remote_debug = "--remote-debugger-port=7777 --remote-debugger-autorun=yes"
 
-    # Run this not through the shell, so that we have the actual PID.
-    server = subprocess.Popen(('tools/run-dev.py', '--test'),
-                              stdout=log, stderr=log)
-
-    ret = 1
-
-    try:
-        # Wait for the server to start up.
-        sys.stdout.write('Waiting for test server')
-        while not server_is_up(server):
-            sys.stdout.write('.')
-            sys.stdout.flush()
-            time.sleep(0.1)
-        sys.stdout.write('\n')
-
+    with test_server_running(options.force, external_host, log_file=LOG_FILE, dots=True):
+        ret = 1
         for test_file in test_files:
             cmd = "node_modules/.bin/casperjs %s test --subdomains=%s %s" % (
                 remote_debug, realms_have_subdomains, test_file)
@@ -144,10 +99,6 @@ def run_tests(realms_have_subdomains, files):
             ret = subprocess.call(cmd, shell=True)
             if ret != 0:
                 break
-    finally:
-        assert_server_running(server)
-        server.terminate()
-
     if ret != 0:
         print("""
 Oops, the frontend tests failed. Tips for debugging:
@@ -158,14 +109,15 @@ Oops, the frontend tests failed. Tips for debugging:
 
         sys.exit(ret)
 
-os.environ["EXTERNAL_HOST"] = "localhost:9981"
+external_host = "localhost:9981"
 # First, run all tests with REALMS_HAVE_SUBDOMAINS set to False
-run_tests(False, args)
+run_tests(False, args, external_host)
+
 # Now run a subset of the tests with REALMS_HAVE_SUBDOMAINS set to True
 os.environ["REALMS_HAVE_SUBDOMAINS"] = "True"
-os.environ["EXTERNAL_HOST"] = "zulipdev.com:9981"
+external_host = "zulipdev.com:9981"
 if len(args) == 0:
-    run_tests(True, ["00-realm-creation.js", "01-login.js", "02-site.js"])
+    run_tests(True, ["00-realm-creation.js", "01-login.js", "02-site.js"], external_host)
 else:
-    run_tests(True, args)
+    run_tests(True, args, external_host)
 sys.exit(0)

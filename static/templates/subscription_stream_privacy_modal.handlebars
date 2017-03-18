@@ -1,0 +1,33 @@
+<div id="stream_privacy_modal" class="modal" tabindex="-1" role="dialog" aria-labelledby="stream_privacy_modal_label" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close close-privacy-modal" aria-hidden="true">×</button>
+        <h3 id="stream_privacy_modal_label">{{t "Change stream privacy" }} <span class="email"></span></h3>
+    </div>
+    <div class="modal-body">
+        {{#if is_private}}
+            {{#tr this}}
+            This stream is currently <span class="icon-vector-lock"></span> <b>an invite-only stream</b>
+            which means only invited members can join and access its content. Making it public will make
+            it possible for anyone in your organization to join and access it.
+            {{/tr}}
+        {{else}}
+            {{#tr this}}
+            This stream is currently <span class="icon-vector-globe"></span> <b>a public stream</b>
+            which means anyone in the organization can join it. Making it private will mean that
+            only the invited members can join and access its content. Members of the stream can
+            invite others.
+            {{/tr}}
+        {{/if}}
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-default close-privacy-modal" aria-hidden="true">{{t "Cancel" }}</button>
+        <button class="btn{{#if is_private}} btn-primary{{else}} btn-danger{{/if}}" id="change-stream-privacy-button"
+            tabindex="-1" data-stream-id="{{stream_id}}">
+            {{#if is_private}}
+            {{t "Make stream public"}}
+            {{else}}
+            {{t "Make stream invite-only"}}
+            {{/if}}
+        </button>
+    </div>
+</div>

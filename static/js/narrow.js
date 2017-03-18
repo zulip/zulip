@@ -32,6 +32,13 @@ exports.operators = function () {
     return current_filter.operators();
 };
 
+exports.update_email = function (user_id, new_email) {
+    if (current_filter !== undefined) {
+        current_filter.update_email(user_id, new_email);
+    }
+};
+
+
 /* Operators we should send to the server. */
 exports.public_operators = function () {
     if (current_filter === undefined) {
@@ -113,7 +120,7 @@ function report_narrow_time(initial_core_time, initial_free_time, network_time) 
         url: '/json/report_narrow_time',
         data: {initial_core: initial_core_time.toString(),
                initial_free: initial_free_time.toString(),
-               network: network_time.toString()}
+               network: network_time.toString()},
     });
 }
 
@@ -142,7 +149,7 @@ function report_unnarrow_time() {
     channel.post({
         url: '/json/report_unnarrow_time',
         data: {initial_core: initial_core_time.toString(),
-               initial_free: initial_free_time.toString()}
+               initial_free: initial_free_time.toString()},
     });
 
     unnarrow_times = {};
@@ -198,7 +205,7 @@ exports.activate = function (raw_operators, opts) {
         first_unread_from_server: false,
         from_reload: false,
         change_hash: true,
-        trigger: 'unknown'
+        trigger: 'unknown',
     });
     if (filter.has_operator("near")) {
         opts.then_select_id = parseInt(filter.operands("near")[0], 10);
@@ -241,7 +248,7 @@ exports.activate = function (raw_operators, opts) {
                 selected_idx_exact: current_msg_list._items.indexOf(
                                         current_msg_list.get(current_msg_list.selected_id())),
                 render_start: current_msg_list.view._render_win_start,
-                render_end: current_msg_list.view._render_win_end
+                render_end: current_msg_list.view._render_win_end,
             });
         }
         current_msg_list.pre_narrow_offset = current_msg_list.selected_row().offset().top;
@@ -257,7 +264,7 @@ exports.activate = function (raw_operators, opts) {
 
     var msg_list = new message_list.MessageList('zfilt', current_filter, {
         collapse_messages: ! current_filter.is_search(),
-        muting_enabled: muting_enabled
+        muting_enabled: muting_enabled,
     });
     msg_list.start_time = start_time;
 
@@ -292,14 +299,14 @@ exports.activate = function (raw_operators, opts) {
 
             message_list.narrowed.select_id(then_select_id, {then_scroll: then_scroll,
                                                          use_closest: true,
-                                                         force_rerender: true
+                                                         force_rerender: true,
                                                         });
 
             if (preserve_pre_narrowing_screen_position) {
                 // Scroll so that the selected message is in the same
                 // position in the viewport as it was prior to
                 // narrowing
-                viewport.set_message_offset(then_select_offset);
+                message_viewport.set_message_offset(then_select_offset);
             }
         }
     }
@@ -327,7 +334,7 @@ exports.activate = function (raw_operators, opts) {
             msg_list.network_time = new Date();
             maybe_report_narrow_time(msg_list);
         },
-        cont_will_add_messages: false
+        cont_will_add_messages: false,
     });
 
     if (! defer_selecting_closest) {
@@ -381,10 +388,10 @@ exports.by_subject = function (target_id, opts) {
         exports.by_recipient(target_id, opts);
         return;
     }
-    unread.mark_message_as_read(original);
+    unread_ui.mark_message_as_read(original);
     var search_terms = [
         {operator: 'stream', operand: original.stream},
-        {operator: 'topic', operand: original.subject}
+        {operator: 'topic', operand: original.subject},
     ];
     opts = _.defaults({}, opts, {then_select_id: target_id});
     exports.activate(search_terms, opts);
@@ -395,7 +402,7 @@ exports.by_recipient = function (target_id, opts) {
     opts = _.defaults({}, opts, {then_select_id: target_id});
     // don't use current_msg_list as it won't work for muted messages or for out-of-narrow links
     var message = message_store.get(target_id);
-    unread.mark_message_as_read(message);
+    unread_ui.mark_message_as_read(message);
     switch (message.type) {
     case 'private':
         exports.by('pm-with', message.reply_to, opts);
@@ -472,7 +479,7 @@ exports.deactivate = function () {
         var select_opts = {
             then_scroll: true,
             use_closest: true,
-            empty_ok: true
+            empty_ok: true,
         };
 
         // We fall back to the closest selected id, if the user has removed a
@@ -555,6 +562,9 @@ function pick_empty_narrow_banner() {
         }
     } else if ((first_operator === "stream") && !stream_data.is_subscribed(first_operand)) {
         // You are narrowed to a stream to which you aren't subscribed.
+        if (!stream_data.get_sub(narrow.stream())) {
+            return $("#nonsubbed_private_nonexistent_stream_narrow_message");
+        }
         return $("#nonsubbed_stream_narrow_message");
     } else if (first_operator === "search") {
         // You are narrowed to empty search results.
@@ -584,11 +594,23 @@ exports.hide_empty_narrow_message = function () {
 };
 
 exports.pm_with_uri = function (reply_to) {
-    return "#narrow/pm-with/" + hashchange.encodeHashComponent(reply_to);
+    return hashchange.operators_to_hash([
+        {operator: 'pm-with', operand: reply_to},
+    ]);
+};
+
+exports.huddle_with_uri = function (user_ids_string) {
+    // This method is convenient is convenient for callers
+    // that have already converted emails to a comma-delimited
+    // list of user_ids.  We should be careful to keep this
+    // consistent with hashchange.decode_operand.
+    return "#narrow/pm-with/" + user_ids_string + '-group';
 };
 
 exports.by_sender_uri = function (reply_to) {
-    return "#narrow/sender/" + hashchange.encodeHashComponent(reply_to);
+    return hashchange.operators_to_hash([
+        {operator: 'sender', operand: reply_to},
+    ]);
 };
 
 exports.by_stream_uri = function (stream) {

@@ -1,12 +1,12 @@
-from typing import Optional, Any, Text
+from typing import Optional, Any, Dict, List, Text
 
 SUBJECT_WITH_BRANCH_TEMPLATE = u'{repo} / {branch}'
 SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE = u'{repo} / {type} #{id} {title}'
 
 EMPTY_SHA = '0000000000000000000000000000000000000000'
 
-COMMITS_LIMIT = 10
-COMMIT_ROW_TEMPLATE = u'* [{commit_short_sha}]({commit_url}): {commit_msg}\n'
+COMMITS_LIMIT = 20
+COMMIT_ROW_TEMPLATE = u'* {commit_msg} ([{commit_short_sha}]({commit_url}))\n'
 COMMITS_MORE_THAN_LIMIT_TEMPLATE = u"[and {commits_number} more commit(s)]"
 
 PUSH_PUSHED_TEXT_WITH_URL = u"[pushed]({compare_url})"
@@ -17,11 +17,15 @@ PUSH_COMMITS_MESSAGE_TEMPLATE = u"""{user_name} {pushed_text} to branch {branch_
 """
 
 FORCE_PUSH_COMMITS_MESSAGE_TEMPLATE = u"{user_name} [force pushed]({url}) to branch {branch_name}. Head is now {head}"
+CREATE_BRANCH_MESSAGE_TEMPLATE = u"{user_name} created [{branch_name}]({url}) branch"
 REMOVE_BRANCH_MESSAGE_TEMPLATE = u"{user_name} deleted branch {branch_name}"
 
 PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE = u"{user_name} {action} [{type}{id}]({url})"
 PULL_REQUEST_OR_ISSUE_ASSIGNEE_INFO_TEMPLATE = u"(assigned to {assignee})"
 PULL_REQUEST_BRANCH_INFO_TEMPLATE = u"\nfrom `{target}` to `{base}`"
+
+SETUP_MESSAGE_TEMPLATE = u"{integration} webhook has been successfully configured"
+SETUP_MESSAGE_USER_PART = u" by {user_name}"
 
 CONTENT_MESSAGE_TEMPLATE = u"\n~~~ quote\n{message}\n~~~"
 
@@ -52,6 +56,14 @@ def get_force_push_commits_event_message(user_name, url, branch_name, head):
         url=url,
         branch_name=branch_name,
         head=head
+    )
+
+def get_create_branch_event_message(user_name, url, branch_name):
+    # type: (Text, Text, Text) -> Text
+    return CREATE_BRANCH_MESSAGE_TEMPLATE.format(
+        user_name=user_name,
+        url=url,
+        branch_name=branch_name,
     )
 
 def get_remove_branch_event_message(user_name, branch_name):
@@ -85,6 +97,13 @@ def get_pull_request_event_message(
     if message:
         main_message += '\n' + CONTENT_MESSAGE_TEMPLATE.format(message=message)
     return main_message.rstrip()
+
+def get_setup_webhook_message(integration, user_name=None):
+    # type: (Text, Optional[Text]) -> Text
+    content = SETUP_MESSAGE_TEMPLATE.format(integration=integration)
+    if user_name:
+        content += SETUP_MESSAGE_USER_PART.format(user_name=user_name)
+    return content
 
 def get_issue_event_message(user_name, action, url, number=None, message=None, assignee=None):
     # type: (Text, Text, Text, Optional[int], Optional[Text], Optional[Text]) -> Text

@@ -128,12 +128,12 @@ class Command(BaseCommand):
                 exit(posix.EX_DATAERR) # type: ignore # There are no stubs for posix in python 3
 
             queue_json_publish(
-                    "email_mirror",
-                    {
-                        "message": msg_text,
-                        "rcpt_to": rcpt_to
-                    },
-                    lambda x: None
+                "email_mirror",
+                {
+                    "message": msg_text,
+                    "rcpt_to": rcpt_to
+                },
+                lambda x: None
             )
         else:
             # We're probably running from cron, try to batch-process mail

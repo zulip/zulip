@@ -14,12 +14,6 @@ from .compressors import minified_js
 from zerver.templatetags.app_filters import display_list, render_markdown_path
 
 
-def render_to_response(*args, **kwargs):
-    # type: (*Any, **Any) -> HttpResponse
-    response = render_to_string(*args, **kwargs)
-    return HttpResponse(response)
-
-
 def environment(**options):
     # type: (**Any) -> Environment
     env = Environment(**options)
@@ -29,7 +23,7 @@ def environment(**options):
         'minified_js': minified_js,
     })
 
-    env.install_gettext_translations(translation, True)
+    env.install_gettext_translations(translation, True)  # type: ignore # https://github.com/python/typeshed/issues/927
 
     env.filters['slugify'] = slugify
     env.filters['pluralize'] = pluralize

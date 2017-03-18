@@ -1,0 +1,94 @@
+<p>
+    Go on your {{ settings_html|safe }}, create a Taiga bot.
+    Please note the bot name and API key.
+</p>
+
+<p>
+    Since Taiga allows you to integrate services on a per
+    project basis, you have to perform the following steps
+    for <b>every project</b> that you want to send
+    notifications to Zulip.
+</p>
+
+<ol>
+    <li>
+        <p>Go to Admin <b>></b> Integration <b>></b> Webhooks menu.</p>
+    </li>
+    <li>
+        <p>Click <b>Add a new webhook</b>.</p>
+    </li>
+    <li>
+        <p>Fill out the form by following the instructions: </p>
+        <ul>
+            <li>
+                <b>Name</b> - to recognize this service, preferably <code>Zulip</code>
+            </li>
+            <li>
+                <b>URL</b> -
+                <pre>{{ external_api_uri_subdomain }}/v1/external/taiga?stream=STREAM_NAME&amp;topic=TOPIC_NAME&amp;api_key=BOT_API_KEY</pre>
+                <ul>
+                    <li>
+                        <code>STREAM_NAME</code> - The url-encoded name of
+                        stream which you want to receive notifications.
+                        You can use an existing Zulip stream or create a
+                        new one for this.
+                    </li>
+                    <li>
+                        <code>TOPIC_NAME</code> - The url-encoded
+                        topic where your Taiga notifications will be
+                        posted. (Read the notes below.)
+                    </li>
+                    <li><code>BOT_API_KEY</code> - API key created in Zulip.</li>
+                </ul>
+            </li>
+        </ul>
+        <p>
+            Remember to url-encode the stream and topic
+            names. E.g. spaces need to be replaced
+            with <code>%20</code> (e.g. so if you want your stream
+            to be called "My awesome project", STREAM_NAME
+            should be <code>My%20awesome%20project</code>).
+        </p>
+    </li>
+    <li>
+        <b>Secret key</b> - once again the API key created in Zulip.
+    </li>
+
+    <li>
+        <p>Click <b>Save</b> once you've finished filling out the form.</p>
+    </li>
+</ol>
+<p>
+    That's it! Your actions on Taiga should now cause
+    notifications on the Zulip stream you specified above.
+    <img class="screenshot" src="/static/images/integrations/taiga/001.png"/>
+</p>
+<hr/>
+
+<p>
+    There are <b>two different ways</b> you may want to consider
+    when organizing your Taiga - Zulip integration:
+</p>
+<ul>
+    <li>
+        Use special Zulip stream for Taiga messages - name
+        it <code>Taiga</code>. (Make sure to create this stream
+        first!) For every integrated project, provide a new topic.
+
+        <pre>
+STREAM_NAME = Taiga
+TOPIC = Project</pre>
+
+    </li>
+    <li>
+        If you already have a Zulip stream for managing a project,
+        you can also use this existing stream and add Taiga
+        notifications using special topic.(Remember about
+        substituting spaces with <code>%20</code>).
+
+        <pre>
+STREAM_NAME = My%20existing%20Zulip%20stream
+TOPIC = Taiga</pre>
+
+    </li>
+</ul>

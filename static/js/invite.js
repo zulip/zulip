@@ -46,10 +46,8 @@ exports.initialize = function () {
     var invitee_emails_group = invitee_emails.closest('.control-group');
 
     $('#submit-invitation').button();
-    $('#invite-user').on('show', prepare_form_to_be_shown);
-    $('#invite-user').on('shown', function () {
-        invitee_emails.focus().autosize();
-    });
+    prepare_form_to_be_shown();
+    invitee_emails.focus().autosize();
 
     $("#invite_user_form").ajaxForm({
         dataType: 'json',
@@ -71,9 +69,11 @@ exports.initialize = function () {
             invitee_emails.val('');
 
             if (page_params.development_environment) {
-                $('#dev_env_msg').text('In the Zulip development environment, outgoing emails are printed to the run-dev.py console.')
-                            .addClass('alert-info')
-                            .show();
+                // line-wrapped to avoid the i18n linter, since we don't want to translate this.
+                $('#dev_env_msg').text(
+                    'In the Zulip development environment, outgoing emails are printed to the run-dev.py console.')
+                    .addClass('alert-info')
+                    .show();
             }
 
         },
@@ -110,9 +110,13 @@ exports.initialize = function () {
 
             }
 
-        }
+        },
     });
 
+    $("#invite-user").addClass("show");
+};
+
+$(function () {
     $(document).on('click', '.invite_check_all_button', function (e) {
         $('#streams_to_add :checkbox').prop('checked', true);
         e.preventDefault();
@@ -122,7 +126,7 @@ exports.initialize = function () {
         $('#streams_to_add :checkbox').prop('checked', false);
         e.preventDefault();
     });
-};
+});
 
 return exports;
 

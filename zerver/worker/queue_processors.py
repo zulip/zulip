@@ -1,21 +1,26 @@
+# Documented in http://zulip.readthedocs.io/en/latest/queuing.html
 from __future__ import absolute_import
-from typing import Any, Callable, Mapping
+from typing import Any, Callable, Dict, List, Mapping, Optional
 
 from django.conf import settings
 from django.core.handlers.wsgi import WSGIRequest
 from django.core.handlers.base import BaseHandler
 from zerver.models import get_user_profile_by_email, \
     get_user_profile_by_id, get_prereg_user_by_email, get_client, \
-    UserMessage, Message
+    UserMessage, Message, Realm
 from zerver.lib.context_managers import lockfile
+from zerver.lib.error_notify import do_report_error
+from zerver.lib.feedback import handle_feedback
 from zerver.lib.queue import SimpleQueueClient, queue_json_publish
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.notifications import handle_missedmessage_emails, enqueue_welcome_emails, \
-    clear_followup_emails_queue, send_local_email_template_with_delay
+    clear_followup_emails_queue, send_local_email_template_with_delay, \
+    send_missedmessage_email
+from zerver.lib.push_notifications import handle_push_notification
 from zerver.lib.actions import do_send_confirmation_email, \
     do_update_user_activity, do_update_user_activity_interval, do_update_user_presence, \
     internal_send_message, check_send_message, extract_recipients, \
-    handle_push_notification, render_incoming_message, do_update_embedded_data
+    render_incoming_message, do_update_embedded_data
 from zerver.lib.url_preview import preview as url_preview
 from zerver.lib.digest import handle_digest_email
 from zerver.lib.email_mirror import process_message as mirror_email
@@ -23,7 +28,6 @@ from zerver.decorator import JsonableError
 from zerver.tornado.socket import req_redis_key
 from confirmation.models import Confirmation
 from zerver.lib.db import reset_queries
-from django.core.mail import EmailMessage
 from zerver.lib.redis_utils import get_redis_client
 from zerver.context_processors import common_context
 
@@ -42,28 +46,35 @@ from six.moves import cStringIO as StringIO
 class WorkerDeclarationException(Exception):
     pass
 
-def assign_queue(queue_name, enabled=True):
-    # type: (str, bool) -> Callable[[QueueProcessingWorker], QueueProcessingWorker]
+def assign_queue(queue_name, enabled=True, queue_type="consumer"):
+    # type: (str, bool, Optional[str]) -> Callable[[QueueProcessingWorker], QueueProcessingWorker]
     def decorate(clazz):
         # type: (QueueProcessingWorker) -> QueueProcessingWorker
         clazz.queue_name = queue_name
         if enabled:
-            register_worker(queue_name, clazz)
+            register_worker(queue_name, clazz, queue_type)
         return clazz
     return decorate
 
 worker_classes = {} # type: Dict[str, Any] # Any here should be QueueProcessingWorker type
-def register_worker(queue_name, clazz):
-    # type: (str, QueueProcessingWorker) -> None
+queues = {}  # type: Dict[str, Dict[str, QueueProcessingWorker]]
+def register_worker(queue_name, clazz, queue_type):
+    # type: (str, QueueProcessingWorker, str) -> None
+    if queue_type not in queues:
+        queues[queue_type] = {}
+    queues[queue_type][queue_name] = clazz
     worker_classes[queue_name] = clazz
 
 def get_worker(queue_name):
     # type: (str) -> QueueProcessingWorker
     return worker_classes[queue_name]()
 
-def get_active_worker_queues():
-    # type: () -> List[str]
-    return list(worker_classes.keys())
+def get_active_worker_queues(queue_type=None):
+    # type: (Optional[str]) -> List[str]
+    """Returns all the non-test worker queues."""
+    if queue_type is None:
+        return list(worker_classes.keys())
+    return list(queues[queue_type].keys())
 
 class QueueProcessingWorker(object):
     queue_name = None # type: str
@@ -139,7 +150,8 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
         # type: (Mapping[str, Any]) -> None
         invitee = get_prereg_user_by_email(data["email"])
         referrer = get_user_profile_by_email(data["referrer_email"])
-        do_send_confirmation_email(invitee, referrer)
+        body = data["email_body"]
+        do_send_confirmation_email(invitee, referrer, body)
 
         # queue invitation reminder for two days from now.
         link = Confirmation.objects.get_link_for_object(invitee, host=referrer.realm.host)
@@ -187,7 +199,7 @@ class UserPresenceWorker(QueueProcessingWorker):
         status = event["status"]
         do_update_user_presence(user_profile, client, log_time, status)
 
-@assign_queue('missedmessage_emails')
+@assign_queue('missedmessage_emails', queue_type="loop")
 class MissedMessageWorker(QueueProcessingWorker):
     def start(self):
         # type: () -> None
@@ -206,6 +218,12 @@ class MissedMessageWorker(QueueProcessingWorker):
             # Aggregate all messages received every 2 minutes to let someone finish sending a batch
             # of messages
             time.sleep(2 * 60)
+
+@assign_queue('missedmessage_email_senders')
+class MissedMessageSendingWorker(QueueProcessingWorker):
+    def consume(self, data):
+        # type: (Mapping[str, Any]) -> None
+        send_missedmessage_email(data)
 
 @assign_queue('missedmessage_mobile_notifications')
 class PushNotificationsWorker(QueueProcessingWorker):
@@ -227,33 +245,10 @@ def make_feedback_client():
 # We probably could stop running this queue worker at all if ENABLE_FEEDBACK is False
 @assign_queue('feedback_messages')
 class FeedbackBot(QueueProcessingWorker):
-    def start(self):
-        # type: () -> None
-        if settings.ENABLE_FEEDBACK and settings.FEEDBACK_EMAIL is None:
-            self.staging_client = make_feedback_client()
-        QueueProcessingWorker.start(self)
-
     def consume(self, event):
         # type: (Mapping[str, Any]) -> None
-        if not settings.ENABLE_FEEDBACK:
-            return
-        if settings.FEEDBACK_EMAIL is not None:
-            to_email = settings.FEEDBACK_EMAIL
-            subject = "Zulip feedback from %s" % (event["sender_email"],)
-            content = event["content"]
-            from_email = '"%s" <%s>' % (event["sender_full_name"], settings.ZULIP_ADMINISTRATOR)
-            headers = {'Reply-To': '"%s" <%s>' % (event["sender_full_name"], event["sender_email"])}
-            msg = EmailMessage(subject, content, from_email, [to_email], headers=headers)
-            msg.send()
-        else:
-            # This code has been untested with the new API, and
-            # the endpoint it hits also uses a home-grown ticketing
-            # system that was from early days of Zulip, pre-open-source.
-            self.staging_client.call_endpoint(
-                method='POST',
-                url='deployments/feedback',
-                request=dict(message=simplejson.dumps(event))
-            )
+        logging.info("Received feedback from %s" % (event["sender_email"],))
+        handle_feedback(event)
 
 @assign_queue('error_reports')
 class ErrorReporter(QueueProcessingWorker):
@@ -266,18 +261,18 @@ class ErrorReporter(QueueProcessingWorker):
                 method='POST',
                 url='deployments/report_error',
                 make_request=(lambda type, report: {'type': type, 'report': simplejson.dumps(report)}),
-                )
+            )
         QueueProcessingWorker.start(self)
 
     def consume(self, event):
         # type: (Mapping[str, Any]) -> None
+        logging.info("Processing traceback with type %s for %s" % (event['type'], event.get('user_email')))
         if settings.DEPLOYMENT_ROLE_KEY:
             self.staging_client.forward_error(event['type'], event['report'])
-        elif settings.ZILENCER_ENABLED:
-            from zilencer.views import do_report_error
-            do_report_error(settings.DEPLOYMENT_ROLE_NAME, event['type'], event['report'])
+        elif settings.ERROR_REPORTING:
+            do_report_error(event['report']['host'], event['type'], event['report'])
 
-@assign_queue('slow_queries')
+@assign_queue('slow_queries', queue_type="loop")
 class SlowQueryWorker(QueueProcessingWorker):
     def start(self):
         # type: () -> None
@@ -300,7 +295,9 @@ class SlowQueryWorker(QueueProcessingWorker):
             for query in slow_queries:
                 content += "    %s\n" % (query,)
 
-            internal_send_message(settings.ERROR_BOT, "stream", "logs", topic, content)
+            error_bot_realm = get_user_profile_by_email(settings.ERROR_BOT).realm
+            internal_send_message(error_bot_realm, settings.ERROR_BOT,
+                                  "stream", "logs", topic, content)
 
         reset_queries()
 
@@ -317,19 +314,26 @@ class MessageSenderWorker(QueueProcessingWorker):
         # type: (Mapping[str, Any]) -> None
         server_meta = event['server_meta']
 
-        environ = {'REQUEST_METHOD': 'SOCKET',
-                   'SCRIPT_NAME': '',
-                   'PATH_INFO': '/json/messages',
-                   'SERVER_NAME': '127.0.0.1',
-                   'SERVER_PORT': 9993,
-                   'SERVER_PROTOCOL': 'ZULIP_SOCKET/1.0',
-                   'wsgi.version': (1, 0),
-                   'wsgi.input': StringIO(),
-                   'wsgi.errors': sys.stderr,
-                   'wsgi.multithread': False,
-                   'wsgi.multiprocess': True,
-                   'wsgi.run_once': False,
-                   'zulip.emulated_method': 'POST'}
+        environ = {
+            'REQUEST_METHOD': 'SOCKET',
+            'SCRIPT_NAME': '',
+            'PATH_INFO': '/json/messages',
+            'SERVER_NAME': '127.0.0.1',
+            'SERVER_PORT': 9993,
+            'SERVER_PROTOCOL': 'ZULIP_SOCKET/1.0',
+            'wsgi.version': (1, 0),
+            'wsgi.input': StringIO(),
+            'wsgi.errors': sys.stderr,
+            'wsgi.multithread': False,
+            'wsgi.multiprocess': True,
+            'wsgi.run_once': False,
+            'zulip.emulated_method': 'POST'
+        }
+
+        if 'socket_user_agent' in event['request']:
+            environ['HTTP_USER_AGENT'] = event['request']['socket_user_agent']
+            del event['request']['socket_user_agent']
+
         # We're mostly using a WSGIRequest for convenience
         environ.update(server_meta['request_environ'])
         request = WSGIRequest(environ)
@@ -372,7 +376,7 @@ class MirrorWorker(QueueProcessingWorker):
         mirror_email(email.message_from_string(event["message"]),
                      rcpt_to=event["rcpt_to"], pre_checked=True)
 
-@assign_queue('test')
+@assign_queue('test', queue_type="test")
 class TestWorker(QueueProcessingWorker):
     # This worker allows you to test the queue worker infrastructure without
     # creating significant side effects.  It can be useful in development or
@@ -402,10 +406,15 @@ class FetchLinksEmbedData(QueueProcessingWorker):
             ums = UserMessage.objects.filter(
                 message=message.id).select_related("user_profile")
             message_users = {um.user_profile for um in ums}
+
+            # Fetch the realm whose settings we're using for rendering
+            realm = Realm.objects.get(id=event['message_realm_id'])
+
             # If rendering fails, the called code will raise a JsonableError.
             rendered_content = render_incoming_message(
                 message,
-                content=message.content,
-                message_users=message_users)
+                message.content,
+                message_users,
+                realm)
             do_update_embedded_data(
                 message.sender, message, message.content, rendered_content)

@@ -72,6 +72,7 @@ def get_language_name(code):
     for lang in get_language_list():
         if lang['code'] == code:
             return lang['name']
+    return None
 
 def get_available_language_codes():
     # type: () -> List[Text]

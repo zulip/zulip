@@ -91,7 +91,7 @@ For all the modules where you want to run actual code, add a statement
 like the following to the top of your test file:
 
 >     add_dependencies({
->         _: 'third/underscore/underscore.js',
+>         _: 'node_modules/underscore/underscore.js',
 >         util: 'js/util.js',
 >         Dict: 'js/dict.js',
 >         Handlebars: 'handlebars',
@@ -165,4 +165,3 @@ asserts, the *actual* value comes first, the *expected* value second.
 
 The test runner (`index.js`) automatically runs all .js files in the
 frontend\_tests/node directory.
-

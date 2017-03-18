@@ -19,7 +19,7 @@ $(function () {
                 // Only send the token to relative URLs i.e. locally.
                 xhr.setRequestHeader("X-CSRFToken", csrf_token);
             }
-        }
+        },
     });
 
     // For some reason, jQuery wants this to be attached to an element.
@@ -38,6 +38,10 @@ $(function () {
                 blueslip.error("Expected one element in jQuery set, " + this.length + " found");
             }
             return this;
+        };
+
+        $.fn.within = function (sel) {
+            return ($(this).is(sel) || $(this).closest(sel).length);
         };
     }
 

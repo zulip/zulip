@@ -11,7 +11,6 @@ Django ORM.
 from __future__ import print_function
 from __future__ import division
 
-import datetime
 import sys
 import optparse
 import random
@@ -26,10 +25,6 @@ import scripts.lib.setup_path_on_import
 import django
 
 from typing import Any, Dict, List, Optional
-
-def total_seconds(timedelta):
-    # type: (datetime.timedelta) -> float
-    return (timedelta.microseconds + (timedelta.seconds + timedelta.days * 24 * 3600) * 10**6) / 10.**6
 
 usage = """Usage: send-receive.py [options] [config]
 
@@ -96,17 +91,20 @@ states = {
     "WARNING": 1,
     "CRITICAL": 2,
     "UNKNOWN": 3
-    }
+}
 
-def report(state, timestamp, msg=None):
+def report(state, timestamp=None, msg=None):
     # type: (str, Any, Optional[str]) -> None
     now = int(time.time())
     if msg is None:
         msg = "send time was %s" % (timestamp,)
-    with open("/var/lib/nagios_state/check_send_receive_state.tmp", 'w') as f:
+    if options.websocket:
+        state_file_path = "/var/lib/nagios_state/check_send_receive_websockets_state"
+    else:
+        state_file_path = "/var/lib/nagios_state/check_send_receive_state"
+    with open(state_file_path + ".tmp", 'w') as f:
         f.write("%s|%s|%s|%s\n" % (now, states[state], state, msg))
-    subprocess.check_call(["mv", "/var/lib/nagios_state/check_send_receive_state.tmp",
-                           "/var/lib/nagios_state/check_send_receive_state"])
+    subprocess.check_call(["mv", state_file_path + ".tmp", state_file_path])
     print("%s: %s" % (state, msg))
     exit(states[state])
 
@@ -114,18 +112,21 @@ def send_zulip(sender, message):
     # type: (zulip.Client, Dict[str, Any]) -> None
     result = sender.send_message(message)
     if result["result"] != "success" and options.nagios:
-        report("CRITICAL", "Error sending Zulip, args were: %s, %s" % (message, result))
+        report("CRITICAL", msg="Error sending Zulip, args were: %s, %s" % (message, result))
 
 def get_zulips():
     # type: () -> List[Dict[str, Any]]
     global queue_id, last_event_id
     res = zulip_recipient.get_events(queue_id=queue_id, last_event_id=last_event_id)
     if 'error' in res.get('result'):
-        report("CRITICAL", "Error receiving Zulips, error was: %s" % (res["msg"]))
+        report("CRITICAL", msg="Error receiving Zulips, error was: %s" % (res["msg"]))
     for event in res['events']:
         last_event_id = max(last_event_id, int(event['id']))
+    # If we get a heartbeat event, that means we've been hanging for
+    # 40s, and we should bail.
+    if 'heartbeat' in set(event['type'] for event in res['events']):
+        report("CRITICAL", msg="Got heartbeat waiting for Zulip, which means get_events is hanging")
     return [event['message'] for event in res['events']]
-
 
 def send_message_via_websocket(websocket_client, recepient_email, content):
     # type: (WebsocketClient, str, str) -> None
@@ -158,12 +159,12 @@ zulip_recipient = zulip.Client(
 try:
     res = zulip_recipient.register(event_types=["message"])
     if 'error' in res.get('result'):
-        report("CRITICAL", "Error subscribing to Zulips: %s" % (res['msg']))
+        report("CRITICAL", msg="Error subscribing to Zulips: %s" % (res['msg']))
     queue_id, last_event_id = (res['queue_id'], res['last_event_id'])
 except Exception:
-    report("CRITICAL", "Error subscribing to Zulips:\n%s" % (traceback.format_exc()))
+    report("CRITICAL", msg="Error subscribing to Zulips:\n%s" % (traceback.format_exc()))
 msg_to_send = str(random.getrandbits(64))
-time_start = datetime.datetime.now()
+time_start = time.time()
 
 if options.websocket:
     client = WebsocketClient(host_url=options.site, sockjs_url='/sockjs/366/v8nw22qe/websocket',
@@ -177,25 +178,25 @@ else:
         "content": msg_to_send,
         "subject": "time to send",
         "to": recipient.email,
-        })
+    })
 
 msg_content = [] # type: List[str]
 
 while msg_to_send not in msg_content:
     messages = get_zulips()
-    time_diff = datetime.datetime.now() - time_start
+    seconds_diff = time.time() - time_start
 
     msg_content = [m['content'] for m in messages]
 
 zulip_recipient.deregister(queue_id)
 
 if options.nagios:
-    if time_diff.seconds > 3:
-        report('WARNING', time_diff)
-    if time_diff.seconds > 6:
-        report('CRITICAL', time_diff)
+    if seconds_diff > 12:
+        report('CRITICAL', timestamp=seconds_diff)
+    if seconds_diff > 3:
+        report('WARNING', timestamp=seconds_diff)
 
 if options.munin:
-    print("sendreceive.value %s" % total_seconds(time_diff))
+    print("sendreceive.value %s" % (seconds_diff,))
 elif options.nagios:
-    report('OK', time_diff)
+    report('OK', timestamp=seconds_diff)

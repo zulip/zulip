@@ -1,0 +1,35 @@
+<p>
+    Zulip supports integration with Pingdom and can notify you of
+    uptime status changes from your Pingdom dashboard.
+</p>
+
+<p>
+    First, create the stream you'd like to use for Pingdom notifications,
+    and subscribe all interested parties to this stream. We
+    recommend the name <code>pingdom</code>.
+</p>
+
+<p><code>{{ external_api_uri_subdomain }}/v1/external/pingdom?api_key=abcdefgh&amp;stream=pingdom</code></p>
+
+<p>
+    where <code>api_key</code> is the API key of your Zulip bot,
+    and <code>stream</code> is the stream name you want the
+    notifications sent to.
+</p>
+
+<p>Next, under following url: </p>
+<p><code>https://my.pingdom.com/reports/integration/settings</code></p>
+<p>create your integration by clicking on <code>Add Integration</code> button and filling form as following:</p>
+<img class="screenshot" src="/static/images/integrations/pingdom/001.png"/>
+
+<p>
+    Last, during creating or editing your check, scroll down to <code>Connect Integrations</code>
+    section and ensure your integration is checked
+</p>
+
+<p>
+    <b>Congratulations! You're done!</b><br/> Example Zulip notification
+    looks like this:
+</p>
+
+<img class="screenshot" src="/static/images/integrations/pingdom/002.png"/>

@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 import logging
-from typing import Any, Set, Tuple, Optional, Text
+from typing import Any, Dict, List, Set, Tuple, Optional, Text
 
 from django.contrib.auth.backends import RemoteUserBackend
 from django.conf import settings
@@ -13,14 +13,16 @@ from zerver.lib.actions import do_create_user
 
 from zerver.models import UserProfile, Realm, get_user_profile_by_id, \
     get_user_profile_by_email, remote_user_to_email, email_to_username, \
-    get_realm_by_email_domain
+    get_realm, get_realm_by_email_domain
 
 from apiclient.sample_tools import client as googleapiclient
 from oauth2client.crypt import AppIdentityError
-from social.backends.github import GithubOAuth2, GithubOrganizationOAuth2, \
+from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, \
     GithubTeamOAuth2
-from social.exceptions import AuthFailed
+from social_core.exceptions import AuthFailed, SocialAuthBaseException
 from django.contrib.auth import authenticate
+from zerver.lib.users import check_full_name
+from zerver.lib.request import JsonableError
 from zerver.lib.utils import check_subdomain, get_subdomain
 
 def pad_method_dict(method_dict):
@@ -147,7 +149,7 @@ class SocialAuthMixin(ZulipAuthMixin):
         # dependency.
         from zerver.views.auth import (login_or_register_remote_user,
                                        redirect_to_subdomain_login_url)
-        from zerver.views import redirect_and_log_into_subdomain
+        from zerver.views.registration import redirect_and_log_into_subdomain
 
         return_data = kwargs.get('return_data', {})
 
@@ -175,6 +177,17 @@ class SocialAuthMixin(ZulipAuthMixin):
             return redirect_to_subdomain_login_url()
 
         return redirect_and_log_into_subdomain(realm, full_name, email_address)
+
+    def auth_complete(self, *args, **kwargs):
+        # type: (*Any, **Any) -> Optional[HttpResponse]
+        try:
+            # Call the auth_complete method of BaseOAuth2 is Python Social Auth
+            return super(SocialAuthMixin, self).auth_complete(*args, **kwargs)  # type: ignore
+        except AuthFailed:
+            return None
+        except SocialAuthBaseException as e:
+            logging.exception(e)
+            return None
 
 class ZulipDummyBackend(ZulipAuthMixin):
     """
@@ -268,6 +281,7 @@ class GoogleMobileOauth2Backend(ZulipAuthMixin):
             return user_profile
         else:
             return_data["valid_attestation"] = False
+            return None
 
 class ZulipRemoteUserBackend(RemoteUserBackend):
     create_unknown_user = False
@@ -332,6 +346,10 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
     def authenticate(self, username, password, realm_subdomain=None, return_data=None):
         # type: (Text, str, Optional[Text], Optional[Dict[str, Any]]) -> Optional[UserProfile]
         try:
+            if settings.REALMS_HAVE_SUBDOMAINS:
+                self._realm = get_realm(realm_subdomain)
+            else:
+                self._realm = get_realm_by_email_domain(username)
             username = self.django_to_ldap_username(username)
             user_profile = ZulipLDAPAuthBackendBase.authenticate(self, username, password)
             if user_profile is None:
@@ -354,18 +372,21 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
                 raise ZulipLDAPException("LDAP Authentication is not enabled")
             return user_profile, False
         except UserProfile.DoesNotExist:
-            realm = get_realm_by_email_domain(username)
             # No need to check for an inactive user since they don't exist yet
-            if realm.deactivated:
+            if self._realm.deactivated:
                 raise ZulipLDAPException("Realm has been deactivated")
 
             full_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["full_name"]
             short_name = full_name = ldap_user.attrs[full_name_attr][0]
+            try:
+                full_name = check_full_name(full_name)
+            except JsonableError as e:
+                raise ZulipLDAPException(e.error)
             if "short_name" in settings.AUTH_LDAP_USER_ATTR_MAP:
                 short_name_attr = settings.AUTH_LDAP_USER_ATTR_MAP["short_name"]
                 short_name = ldap_user.attrs[short_name_attr][0]
 
-            user_profile = do_create_user(username, None, realm, full_name, short_name)
+            user_profile = do_create_user(username, None, self._realm, full_name, short_name)
             return user_profile, True
 
 # Just like ZulipLDAPAuthBackend, but doesn't let you log in.
@@ -398,10 +419,19 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
 
     def get_full_name(self, *args, **kwargs):
         # type: (*Any, **Any) -> Text
+        # In case of any error return an empty string. Name is used by
+        # the registration page to pre-populate the name field. However,
+        # if it is not supplied, our registration process will make sure
+        # that the user enters a valid name.
         try:
-            return kwargs['response']['name']
+            name = kwargs['response']['name']
         except KeyError:
+            name = ''
+
+        if name is None:
             return ''
+
+        return name
 
     def do_auth(self, *args, **kwargs):
         # type: (*Any, **Any) -> Optional[HttpResponse]
@@ -416,14 +446,18 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
         org_name = settings.SOCIAL_AUTH_GITHUB_ORG_NAME
 
         if (team_id is None and org_name is None):
-            user_profile = GithubOAuth2.do_auth(self, *args, **kwargs)
+            try:
+                user_profile = GithubOAuth2.do_auth(self, *args, **kwargs)
+            except AuthFailed:
+                logging.info("User authentication failed.")
+                user_profile = None
 
         elif (team_id):
             backend = GithubTeamOAuth2(self.strategy, self.redirect_uri)
             try:
                 user_profile = backend.do_auth(*args, **kwargs)
             except AuthFailed:
-                logging.info("User profile not member of team.")
+                logging.info("User is not member of GitHub team.")
                 user_profile = None
 
         elif (org_name):
@@ -431,7 +465,7 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
             try:
                 user_profile = backend.do_auth(*args, **kwargs)
             except AuthFailed:
-                logging.info("User profile not member of organisation.")
+                logging.info("User is not member of GitHub organization.")
                 user_profile = None
 
         return self.process_do_auth(user_profile, *args, **kwargs)
@@ -443,4 +477,4 @@ AUTH_BACKEND_NAME_MAP = {
     u'Google': GoogleMobileOauth2Backend,
     u'LDAP': ZulipLDAPAuthBackend,
     u'RemoteUser': ZulipRemoteUserBackend,
-    } # type: Dict[Text, Any]
+} # type: Dict[Text, Any]

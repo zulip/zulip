@@ -28,16 +28,14 @@ function dispatch_normal_event(event) {
         break;
 
     case 'presence':
-        var users = {};
-        users[event.email] = event.presence;
-        activity.set_user_statuses(users, event.server_timestamp);
+        activity.set_user_status(event.email, event.presence, event.server_timestamp);
         break;
 
     case 'restart':
         var reload_options = {save_pointer: true,
                               save_narrow: true,
                               save_compose: true,
-                              message: "The application has been updated; reloading!"
+                              message: "The application has been updated; reloading!",
                              };
         if (event.immediate) {
             reload_options.immediate = true;
@@ -66,6 +64,12 @@ function dispatch_normal_event(event) {
             if (!page_params.is_admin) {
                 page_params.can_create_streams = !page_params.realm_create_stream_by_admins_only;
             }
+        } else if (event.op === 'update' && event.property === 'name_changes_disabled') {
+            page_params.realm_name_changes_disabled = event.value;
+            admin.toggle_name_change_display();
+        } else if (event.op === 'update' && event.property === 'email_changes_disabled') {
+            page_params.realm_email_changes_disabled = event.value;
+            admin.toggle_email_change_display();
         } else if (event.op === 'update' && event.property === 'add_emoji_by_admins_only') {
             page_params.add_emoji_by_admins_only = event.value;
         } else if (event.op === 'update' && event.property === 'restricted_to_domain') {
@@ -82,17 +86,28 @@ function dispatch_normal_event(event) {
             admin.reset_realm_default_language();
         } else if (event.op === 'update' && event.property === 'waiting_period_threshold') {
             page_params.realm_waiting_period_threshold = event.value;
+        } else if (event.op === 'update_dict' && event.property === 'icon') {
+            page_params.realm_icon_url = event.data.icon_url;
+            page_params.realm_icon_source = event.data.icon_source;
+            realm_icon.rerender();
         }
+
         break;
 
     case 'realm_bot':
         if (event.op === 'add') {
             bot_data.add(event.bot);
+            admin.update_user_data(event.bot.user_id, event.bot);
         } else if (event.op === 'remove') {
-            bot_data.remove(event.bot.email);
+            bot_data.deactivate(event.bot.email);
+            event.bot.is_active = false;
+            admin.update_user_data(event.bot.user_id, event.bot);
         } else if (event.op === 'update') {
+            if (_.has(event.bot, 'owner_id')) {
+                event.bot.owner = people.get_person_from_user_id(event.bot.owner_id).email;
+            }
             bot_data.update(event.bot.email, event.bot);
-            admin.update_user_full_name(event.bot.email, event.bot.full_name);
+            admin.update_user_data(event.bot.user_id, event.bot);
         }
         break;
 
@@ -107,14 +122,35 @@ function dispatch_normal_event(event) {
         admin.populate_filters(page_params.realm_filters);
         break;
 
+    case 'realm_domains':
+        var i;
+        if (event.op === 'add') {
+            page_params.domains.push(event.alias);
+        } else if (event.op === 'change') {
+            for (i = 0; i < page_params.domains.length; i += 1) {
+                if (page_params.domains[i].domain === event.alias.domain) {
+                    page_params.domains[i].allow_subdomains = event.alias.allow_subdomains;
+                    break;
+                }
+            }
+        } else if (event.op === 'remove') {
+            for (i = 0; i < page_params.domains.length; i += 1) {
+                if (page_params.domains[i].domain === event.domain) {
+                    page_params.domains.splice(i, 1);
+                    break;
+                }
+            }
+        }
+        admin.populate_realm_aliases(page_params.domains);
+        break;
+
     case 'realm_user':
         if (event.op === 'add') {
             people.add_in_realm(event.person);
         } else if (event.op === 'remove') {
             people.deactivate(event.person);
         } else if (event.op === 'update') {
-            people.update(event.person);
-            admin.update_user_full_name(event.person.email, event.person.full_name);
+            user_events.update_person(event.person);
         }
         break;
 
@@ -125,10 +161,24 @@ function dispatch_normal_event(event) {
     case 'stream':
         if (event.op === 'update') {
             // Legacy: Stream properties are still managed by subs.js on the client side.
-            subs.update_subscription_properties(event.name, event.property, event.value);
+            subs.update_subscription_properties(
+                event.stream_id,
+                event.property,
+                event.value
+            );
             admin.update_default_streams_table();
         } else if (event.op === 'create') {
             stream_data.create_streams(event.streams);
+        } else if (event.op === 'delete') {
+            _.each(event.streams, function (stream) {
+                if (stream_data.is_subscribed(stream.name)) {
+                    stream_list.remove_sidebar_row(stream.stream_id);
+                }
+                subs.remove_stream(stream.stream_id);
+                stream_data.delete_sub(stream.stream_id);
+                admin.remove_default_stream(stream.stream_id);
+                stream_data.remove_default_stream(stream.stream_id);
+            });
         }
         break;
 
@@ -137,8 +187,13 @@ function dispatch_normal_event(event) {
         var email;
 
         if (event.op === 'add') {
-            _.each(event.subscriptions, function (sub) {
-                subs.mark_subscribed(sub.name, sub);
+            _.each(event.subscriptions, function (rec) {
+                var sub = stream_data.get_sub_by_id(rec.stream_id);
+                if (sub) {
+                    subs.mark_subscribed(sub, rec.subscribers);
+                } else {
+                    blueslip.error('Subscribing to unknown stream' + rec.stream_id);
+                }
             });
         } else if (event.op === 'peer_add') {
             // TODO: remove email shim here and fix called functions
@@ -146,9 +201,13 @@ function dispatch_normal_event(event) {
             person = people.get_person_from_user_id(event.user_id);
             email = person.email;
             _.each(event.subscriptions, function (sub) {
-                stream_data.add_subscriber(sub, event.user_id);
-                $(document).trigger('peer_subscribe.zulip',
-                                    {stream_name: sub, user_email: email});
+                if (stream_data.add_subscriber(sub, event.user_id)) {
+                    $(document).trigger(
+                        'peer_subscribe.zulip',
+                        {stream_name: sub, user_email: email});
+                } else {
+                    blueslip.warn('Cannot process peer_add event');
+                }
             });
         } else if (event.op === 'peer_remove') {
             // TODO: remove email shim here and fix called functions
@@ -156,9 +215,13 @@ function dispatch_normal_event(event) {
             person = people.get_person_from_user_id(event.user_id);
             email = person.email;
             _.each(event.subscriptions, function (sub) {
-                stream_data.remove_subscriber(sub, event.user_id);
-                $(document).trigger('peer_unsubscribe.zulip',
-                                    {stream_name: sub, user_email: email});
+                if (stream_data.remove_subscriber(sub, event.user_id)) {
+                    $(document).trigger(
+                        'peer_unsubscribe.zulip',
+                        {stream_name: sub, user_email: email});
+                } else {
+                    blueslip.warn('Cannot process peer_remove event.');
+                }
             });
         } else if (event.op === 'remove') {
             _.each(event.subscriptions, function (rec) {
@@ -166,14 +229,44 @@ function dispatch_normal_event(event) {
                 subs.mark_sub_unsubscribed(sub);
             });
         } else if (event.op === 'update') {
-            subs.update_subscription_properties(event.name, event.property, event.value);
+            subs.update_subscription_properties(
+                event.stream_id,
+                event.property,
+                event.value
+            );
+        }
+        break;
+
+    case 'typing':
+        if (event.sender.user_id === page_params.user_id) {
+            // typing notifications are sent to the user who is typing
+            // as well as recipients; we ignore such self-generated events.
+            return;
+        }
+
+        if (event.op === 'start') {
+            typing.display_notification(event);
+        } else if (event.op === 'stop') {
+            typing.hide_notification(event);
         }
         break;
 
     case 'update_display_settings':
         if (event.setting_name === 'twenty_four_hour_time') {
             page_params.twenty_four_hour_time = event.setting;
-            // TODO: Make this rerender the existing elements to not require a reload.
+            // Rerender the whole message list UI
+            home_msg_list.rerender();
+            if (current_msg_list === message_list.narrowed) {
+                message_list.narrowed.rerender();
+            }
+        }
+        if (event.setting_name === 'emoji_alt_code') {
+            page_params.emoji_alt_code = event.setting;
+            // Rerender the whole message list UI
+            home_msg_list.rerender();
+            if (current_msg_list === message_list.narrowed) {
+                message_list.narrowed.rerender();
+            }
         }
         if (event.setting_name === 'left_side_userlist') {
             // TODO: Make this change the view immediately rather
@@ -210,7 +303,7 @@ function dispatch_normal_event(event) {
             var msgs_to_update = _.map(event.messages, function (message_id) {
                 return message_store.get(message_id);
             });
-            unread.mark_messages_as_read(msgs_to_update, {from: "server"});
+            unread_ui.mark_messages_as_read(msgs_to_update, {from: "server"});
             break;
         }
         break;
@@ -408,7 +501,7 @@ function get_events(options) {
             }
             var retry_sec = Math.min(90, Math.exp(get_events_failures/2));
             get_events_timeout = setTimeout(get_events, retry_sec*1000);
-        }
+        },
     });
 }
 
@@ -466,7 +559,7 @@ exports.cleanup_event_queue = function cleanup_event_queue() {
     page_params.event_queue_expired = true;
     channel.del({
         url:      '/json/events',
-        data:     {queue_id: page_params.event_queue_id}
+        data:     {queue_id: page_params.event_queue_id},
     });
 };
 

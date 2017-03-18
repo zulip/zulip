@@ -26,7 +26,7 @@ var settings = require("js/settings.js");
 (function test_generate_zuliprc_content() {
     var user = {
         email: "admin12@chatting.net",
-        api_key: "nSlA0mUm7G42LP85lMv7syqFTzDE2q34"
+        api_key: "nSlA0mUm7G42LP85lMv7syqFTzDE2q34",
     };
     var content = settings.generate_zuliprc_content(user.email, user.api_key);
     var expected = "[api]\nemail=admin12@chatting.net\n" +

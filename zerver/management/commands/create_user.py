@@ -11,7 +11,7 @@ from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
 from django.core import validators
 
-from zerver.models import Realm, get_realm_by_string_id, email_to_username
+from zerver.models import Realm, get_realm, email_to_username
 from zerver.lib.actions import do_create_user
 from zerver.lib.actions import notify_new_user
 from zerver.lib.initial_password import initial_password
@@ -52,7 +52,7 @@ Terms of Service by passing --this-user-has-accepted-the-tos.""")
             raise CommandError("""Please specify a realm by passing --realm.""")
 
         try:
-            realm = get_realm_by_string_id(options["string_id"])
+            realm = get_realm(options["string_id"])
         except Realm.DoesNotExist:
             raise CommandError("Realm does not exist.")
 

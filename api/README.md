@@ -44,7 +44,12 @@ Alternatively, you may explicitly use "--user", "--api-key", and
 `--site` in our examples, which is especially useful when testing.  If
 you are running several bots which share a home directory, we
 recommend using `--config` to specify the path to the `zuliprc` file
-for a specific bot.
+for a specific bot.  Finally, you can control the defaults for all of
+these variables using the environment variables `ZULIP_CONFIG`,
+`ZULIP_API_KEY`, `ZULIP_EMAIL`, `ZULIP_SITE`, `ZULIP_CERT`,
+`ZULIP_CERT_KEY`, and `ZULIP_CERT_BUNDLE`.  Command-line options take
+precedence over environment variables take precedence over the config
+files.
 
 The command line equivalents for other configuration options are:
 

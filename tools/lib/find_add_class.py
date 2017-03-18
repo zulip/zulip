@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-from typing import Set, Tuple
+from typing import List, Set, Tuple
 
 import os
 import re
@@ -18,6 +18,7 @@ GENERIC_KEYWORDS = [
     'show',
     'notdisplayed',
     'popover',
+    'no-border',
     'success',
     'text-error',
     'warning',
@@ -25,6 +26,7 @@ GENERIC_KEYWORDS = [
     'zoom-out',
     'first',
     'second',
+    'selected',
 ]
 
 def raise_error(fn, i, line):
@@ -55,6 +57,7 @@ def generic(html_class):
     for kw in GENERIC_KEYWORDS:
         if kw in html_class:
             return True
+    return False
 
 def display(fns):
     # type: (List[str]) -> None

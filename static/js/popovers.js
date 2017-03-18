@@ -9,6 +9,34 @@ var emoji_map_is_open = false;
 
 var userlist_placement = "right";
 
+var list_of_popovers = [];
+
+// this utilizes the proxy pattern to intercept all calls to $.fn.popover
+// and push the $.fn.data($o, "popover") results to an array.
+// this is needed so that when we try to unload popovers, we can kill all dead
+// ones that no longer have valid parents in the DOM.
+(function (popover) {
+
+    $.fn.popover = function () {
+        // apply the jQuery object as `this`, and popover function arguments.
+        popover.apply(this, arguments);
+
+        // if there is a valid "popover" key in the jQuery data object then
+        // push it to the array.
+        if (this.data("popover")) {
+            list_of_popovers.push(this.data("popover"));
+        }
+    };
+
+    // add back all shallow properties of $.fn.popover to the new proxied version.
+    for (var x in popover) {
+        if (popover.hasOwnProperty(x)) {
+            $.fn.popover[x] = popover[x];
+        }
+    }
+}($.fn.popover));
+
+
 function show_message_info_popover(element, id) {
     var last_popover_elem = current_message_info_popover_elem;
     popovers.hide_all();
@@ -25,19 +53,30 @@ function show_message_info_popover(element, id) {
                                      elt.closest(".message_row").find(".message_time"));
 
         var message = current_msg_list.get(id);
+        var sender = people.get_person_from_user_id(message.sender_id);
+        var sender_email;
+
+        if (sender) {
+            sender_email = sender.email;
+        } else {
+            blueslip.debug('Bad sender in message' + message.sender_id);
+            sender_email = message.sender_email;
+        }
+
         var args = {
             message:  message,
-            pm_with_uri: narrow.pm_with_uri(message.sender_email),
-            sent_by_uri: narrow.by_sender_uri(message.sender_email),
-            narrowed: narrow.active()
+            sender_email: sender_email,
+            pm_with_uri: narrow.pm_with_uri(sender_email),
+            sent_by_uri: narrow.by_sender_uri(sender_email),
+            narrowed: narrow.active(),
         };
 
-        var ypos = elt.offset().top - viewport.scrollTop();
+        var ypos = elt.offset().top - message_viewport.scrollTop();
         elt.popover({
-            placement: (ypos > (viewport.height() - 300)) ? 'top' : 'bottom',
+            placement: (ypos > (message_viewport.height() - 300)) ? 'top' : 'bottom',
             title:     templates.render('message_info_popover_title',   args),
             content:   templates.render('message_info_popover_content', args),
-            trigger:   "manual"
+            trigger:   "manual",
         });
         elt.popover("show");
         current_message_info_popover_elem = elt;
@@ -47,6 +86,7 @@ function show_message_info_popover(element, id) {
 exports.toggle_reactions_popover = function (element, id) {
     var last_popover_elem = current_message_reactions_popover_elem;
     popovers.hide_all();
+    $(element).closest('.message_row').toggleClass('has_popover has_reactions_popover');
     if (last_popover_elem !== undefined
         && last_popover_elem.get()[0] === element) {
         // We want it to be the case that a user can dismiss a popover
@@ -64,7 +104,7 @@ exports.toggle_reactions_popover = function (element, id) {
             emojis[realm_emoji_name] = {
                 name: realm_emoji_name,
                 is_realm_emoji: true,
-                url: realm_emoji.emoji_url
+                url: realm_emoji.emoji_url,
             };
         });
         _.each(emojis_used, function (emoji_name) {
@@ -75,7 +115,7 @@ exports.toggle_reactions_popover = function (element, id) {
                 has_reacted: true,
                 css_class: emoji.emoji_name_to_css_class(emoji_name),
                 is_realm_emoji: is_realm_emoji,
-                url: url
+                url: url,
             };
         });
 
@@ -86,8 +126,8 @@ exports.toggle_reactions_popover = function (element, id) {
 
         var approx_popover_height = 400;
         var approx_popover_width = 400;
-        var distance_from_bottom = viewport.height() - elt.offset().top;
-        var distance_from_right = viewport.width() - elt.offset().left;
+        var distance_from_bottom = message_viewport.height() - elt.offset().top;
+        var distance_from_right = message_viewport.width() - elt.offset().left;
         var will_extend_beyond_bottom_of_viewport = distance_from_bottom < approx_popover_height;
         var will_extend_beyond_top_of_viewport = elt.offset().top < approx_popover_height;
         var will_extend_beyond_left_of_viewport = elt.offset().left < (approx_popover_width / 2);
@@ -107,7 +147,7 @@ exports.toggle_reactions_popover = function (element, id) {
             placement: placement,
             title:     "",
             content:   templates.render('reaction_popover_content', args),
-            trigger:   "manual"
+            trigger:   "manual",
         });
         elt.popover("show");
         elt.prop('title', 'Add reaction...');
@@ -119,6 +159,7 @@ exports.toggle_reactions_popover = function (element, id) {
 exports.toggle_actions_popover = function (element, id) {
     var last_popover_elem = current_actions_popover_elem;
     popovers.hide_all();
+    $(element).closest('.message_row').toggleClass('has_popover has_actions_popover');
     if (last_popover_elem !== undefined
         && last_popover_elem.get()[0] === element) {
         // We want it to be the case that a user can dismiss a popover
@@ -138,10 +179,10 @@ exports.toggle_actions_popover = function (element, id) {
             editability_menu_item = i18n.t("Edit");
         } else if (editability === message_edit.editability_types.TOPIC_ONLY) {
             use_edit_icon = false;
-            editability_menu_item = i18n.t("View Source / Edit Topic");
+            editability_menu_item = i18n.t("View source / Edit topic");
         } else {
             use_edit_icon = false;
-            editability_menu_item = i18n.t("View Source");
+            editability_menu_item = i18n.t("View source");
         }
         var can_mute_topic =
                 message.stream &&
@@ -152,6 +193,10 @@ exports.toggle_actions_popover = function (element, id) {
                 message.subject &&
                 muting.is_topic_muted(message.stream, message.subject);
 
+        var should_display_edit_history_option = _.any(message.edit_history, function (entry) {
+            return entry.prev_content !== undefined;
+        });
+
         var args = {
             message: message,
             use_edit_icon: use_edit_icon,
@@ -159,16 +204,18 @@ exports.toggle_actions_popover = function (element, id) {
             can_mute_topic: can_mute_topic,
             can_unmute_topic: can_unmute_topic,
             should_display_add_reaction_option: message.sent_by_me,
+            should_display_edit_history_option: should_display_edit_history_option,
             conversation_time_uri: narrow.by_conversation_and_time_uri(message),
-            narrowed: narrow.active()
+            narrowed: narrow.active(),
         };
 
-        var ypos = elt.offset().top - viewport.scrollTop();
+        var ypos = elt.offset().top;
         elt.popover({
-            placement: (ypos > (viewport.height() - 300)) ? 'top' : 'bottom',
+            // Popover height with 7 items in it is ~190 px
+            placement: ((message_viewport.height() - ypos) < 220) ? 'top' : 'bottom',
             title:     "",
             content:   templates.render('actions_popover_content', args),
-            trigger:   "manual"
+            trigger:   "manual",
         });
         elt.popover("show");
         current_actions_popover_elem = elt;
@@ -223,23 +270,6 @@ exports.hide_actions_popover = function () {
     }
 };
 
-exports.topic_ops = {
-    mute: function (stream, topic) {
-        popovers.hide_topic_sidebar_popover();
-        muting.mute_topic(stream, topic);
-        muting_ui.persist_and_rerender();
-        muting_ui.notify_with_undo_option(stream, topic);
-    },
-    // we don't run a unmute_notif function because it isn't an issue as much
-    // if someone accidentally unmutes a stream rather than if they mute it
-    // and miss out on info.
-    unmute: function (stream, topic) {
-        popovers.hide_topic_sidebar_popover();
-        muting.unmute_topic(stream, topic);
-        muting_ui.persist_and_rerender();
-    }
-};
-
 function message_info_popped() {
     return current_message_info_popover_elem !== undefined;
 }
@@ -256,6 +286,7 @@ exports.hide_message_info_popover = function () {
 };
 
 exports.hide_reactions_popover = function () {
+    $('.has_popover').removeClass('has_popover has_reactions_popover');
     if (reaction_popped()) {
         current_message_reactions_popover_elem.popover("destroy");
         current_message_reactions_popover_elem = undefined;
@@ -264,10 +295,6 @@ exports.hide_reactions_popover = function () {
 
 exports.hide_userlist_sidebar = function () {
     $(".app-main .column-right").removeClass("expanded");
-};
-
-exports.hide_streamlist_sidebar = function () {
-    $(".app-main .column-left").removeClass("expanded");
 };
 
 exports.hide_pm_list_sidebar = function () {
@@ -279,32 +306,16 @@ exports.show_userlist_sidebar = function () {
     resize.resize_page_components();
 };
 
-exports.show_streamlist_sidebar = function () {
-    $(".app-main .column-left").addClass("expanded");
-    resize.resize_page_components();
-};
-
 exports.show_pm_list_sidebar = function () {
     $(".app-main .column-left").addClass("expanded");
     resize.resize_page_components();
 };
 
-var current_stream_sidebar_elem;
-var current_topic_sidebar_elem;
 var current_user_sidebar_user_id;
 var current_user_sidebar_popover;
 
-
 function user_sidebar_popped() {
     return current_user_sidebar_popover !== undefined;
-}
-
-function stream_sidebar_popped() {
-    return current_stream_sidebar_elem !== undefined;
-}
-
-function topic_sidebar_popped() {
-    return current_topic_sidebar_elem !== undefined;
 }
 
 exports.hide_emoji_map_popover = function () {
@@ -312,20 +323,6 @@ exports.hide_emoji_map_popover = function () {
         $('.emoji_popover').css('display', 'none');
         $('.drag').css('display', 'none');
         emoji_map_is_open = false;
-    }
-};
-
-exports.hide_stream_sidebar_popover = function () {
-    if (stream_sidebar_popped()) {
-        $(current_stream_sidebar_elem).popover("destroy");
-        current_stream_sidebar_elem = undefined;
-    }
-};
-
-exports.hide_topic_sidebar_popover = function () {
-    if (topic_sidebar_popped()) {
-        $(current_topic_sidebar_elem).popover("destroy");
-        current_topic_sidebar_elem = undefined;
     }
 };
 
@@ -344,9 +341,23 @@ exports.hide_user_sidebar_popover = function () {
 };
 
 function render_emoji_popover() {
-    var content = templates.render('emoji_popover_content', {
-        emoji_list: emoji.emojis_name_to_css_class
-    });
+    var content = (function () {
+        var map = {};
+        for (var x in emoji.emojis_name_to_css_class) {
+            if (!emoji.realm_emojis[x]) {
+                map[x] = {
+                    name: x,
+                    css_name: emoji.emojis_name_to_css_class[x],
+                    url: emoji.emojis_by_name[x],
+                };
+            }
+        }
+
+        return templates.render('emoji_popover_content', {
+            emoji_list: map,
+            realm_emoji: emoji.realm_emojis,
+        });
+    }());
 
     $('.emoji_popover').append(content);
 
@@ -365,7 +376,7 @@ exports.register_click_handlers = function () {
         popovers.toggle_actions_popover(this, rows.id(row));
     });
 
-    $("#main_div").on("click", ".reaction_button", function (e) {
+    $("#main_div").on("click", ".reactions_hover, .reaction_button", function (e) {
         var row = $(this).closest(".message_row");
         e.stopPropagation();
         popovers.toggle_reactions_popover(this, rows.id(row));
@@ -373,14 +384,15 @@ exports.register_click_handlers = function () {
 
 
     $("body").on("click", ".actions_popover .reaction_button", function (e) {
-        var msgid = $(e.currentTarget).data('msgid');
+        var msgid = $(e.currentTarget).data('message-id');
+        e.preventDefault();
         e.stopPropagation();
         // HACK: Because we need the popover to be based off an
         // element that definitely exists in the page even if the
         // message wasn't sent by us and thus the .reaction_hover
-        // element is not present, we use the message's .message_star
-        // element as the base for the popover.
-        popovers.toggle_reactions_popover($(".selected_message .message_star")[0], msgid);
+        // element is not present, we use the message's
+        // .icon-vector-chevron-down element as the base for the popover.
+        popovers.toggle_reactions_popover($(".selected_message .icon-vector-chevron-down")[0], msgid);
     });
 
     $("#main_div").on("click", ".sender_info_hover", function (e) {
@@ -394,11 +406,11 @@ exports.register_click_handlers = function () {
         var meta = {
           drag: false,
           c: {
-            y: null
+            y: null,
           },
           $popover: $(".emoji_popover"),
           MIN_HEIGHT: 25,
-          MAX_HEIGHT: 300
+          MAX_HEIGHT: 300,
         };
 
         // drag must start within the .drag zone.
@@ -434,7 +446,7 @@ exports.register_click_handlers = function () {
     $(".emoji_popover").on("click", ".emoji", function (e) {
         var emoji_choice = $(e.target).attr("title");
         var textarea = $("#new_message_content");
-        textarea.val(textarea.val() + " " + emoji_choice);
+        textarea.caret(emoji_choice);
         textarea.focus();
         e.stopPropagation();
     });
@@ -490,7 +502,8 @@ exports.register_click_handlers = function () {
     });
 
     $('body').on('click', '.sender_info_popover .narrow_to_private_messages', function (e) {
-        var email = $(e.target).parents('ul').attr('data-email');
+        var user_id = $(e.target).parents('ul').attr('data-user-id');
+        var email = people.get_person_from_user_id(user_id).email;
         narrow.by('pm-with', email, {select_first_unread: true, trigger: 'user sidebar popover'});
         popovers.hide_message_info_popover();
         e.stopPropagation();
@@ -498,7 +511,8 @@ exports.register_click_handlers = function () {
     });
 
     $('body').on('click', '.sender_info_popover .narrow_to_messages_sent', function (e) {
-        var email = $(e.target).parents('ul').attr('data-email');
+        var user_id = $(e.target).parents('ul').attr('data-user-id');
+        var email = people.get_person_from_user_id(user_id).email;
         narrow.by('sender', email, {select_first_unread: true, trigger: 'user sidebar popover'});
         popovers.hide_message_info_popover();
         e.stopPropagation();
@@ -542,7 +556,7 @@ exports.register_click_handlers = function () {
             content:   content,
             placement: userlist_placement === "left" ? "right" : "left",
             trigger:   "manual",
-            fixed: true
+            fixed: true,
         });
         target.popover("show");
         current_user_sidebar_user_id = user_id;
@@ -550,157 +564,23 @@ exports.register_click_handlers = function () {
 
     });
 
-    $('#stream_filters').on('click', '.topic-sidebar-arrow', function (e) {
-        var elt = e.target;
-
-        if (topic_sidebar_popped()
-            && current_topic_sidebar_elem === elt) {
-            // If the popover is already shown, clicking again should toggle it.
-            popovers.hide_topic_sidebar_popover();
-            e.stopPropagation();
-            return;
-        }
-
-        popovers.hide_all();
-        popovers.show_streamlist_sidebar();
-
-        var stream_name = $(elt).closest('.topic-list').expectOne().attr('data-stream');
-        var topic_name = $(elt).closest('li').expectOne().attr('data-name');
-
-        var is_muted = muting.is_topic_muted(stream_name, topic_name);
-        var can_mute_topic = !is_muted;
-        var can_unmute_topic = is_muted;
-
-        var content = templates.render('topic_sidebar_actions', {
-            stream_name: stream_name,
-            topic_name: topic_name,
-            can_mute_topic: can_mute_topic,
-            can_unmute_topic: can_unmute_topic
-        });
-
-        $(elt).popover({
-            content: content,
-            trigger: "manual",
-            fixed: true
-        });
-
-        $(elt).popover("show");
-
-        current_topic_sidebar_elem = elt;
-        e.stopPropagation();
-    });
-
-    $('body').on('click', '.narrow_to_topic', function (e) {
-        popovers.hide_topic_sidebar_popover();
-
-        var row = $(e.currentTarget).closest('.narrow_to_topic').expectOne();
-        var stream_name = row.attr('data-stream-name');
-        var topic_name = row.attr('data-topic-name');
-
-        var operators = [
-            {operator: 'stream', operand: stream_name},
-            {operator: 'topic', operand: topic_name}
-        ];
-        var opts = {select_first_unread: true, trigger: 'sidebar'};
-        narrow.activate(operators, opts);
-
-        e.stopPropagation();
-    });
-
-    $('body').on('click', '.sidebar-popover-mute-topic', function (e) {
-        var stream = $(e.currentTarget).attr('data-stream-name');
-        var topic = $(e.currentTarget).attr('data-topic-name');
-        exports.topic_ops.mute(stream, topic);
-        e.stopPropagation();
-        e.preventDefault();
-    });
-
-    $('body').on('click', '.sidebar-popover-unmute-topic', function (e) {
-        var stream = $(e.currentTarget).attr('data-stream-name');
-        var topic = $(e.currentTarget).attr('data-topic-name');
-        exports.topic_ops.unmute(stream, topic);
-        e.stopPropagation();
-        e.preventDefault();
-    });
-
-    $('body').on('click', '.sidebar-popover-mark-topic-read', function (e) {
-        var topic = $(e.currentTarget).attr('data-topic-name');
-        var stream = $(e.currentTarget).attr('data-stream-name');
-        popovers.hide_topic_sidebar_popover();
-        unread.mark_topic_as_read(stream,topic);
-        e.stopPropagation();
-    });
-
-    $('#stream_filters').on('click', '.stream-sidebar-arrow', function (e) {
-        var elt = e.target;
-        if (stream_sidebar_popped()
-            && current_stream_sidebar_elem === elt) {
-            // If the popover is already shown, clicking again should toggle it.
-            popovers.hide_stream_sidebar_popover();
-            e.stopPropagation();
-            return;
-        }
-
-        popovers.hide_all();
-        popovers.show_streamlist_sidebar();
-
-        var stream = $(elt).parents('li').attr('data-name');
-
-        $(elt).popover({
-            content:   templates.render('stream_sidebar_actions', {stream: stream_data.get_sub(stream)}),
-            trigger:   "manual",
-            fixed: true
-        });
-
-        // This little function is a workaround for the fact that
-        // Bootstrap popovers don't properly handle being resized --
-        // so after resizing our popover to add in the spectrum color
-        // picker, we need to adjust its height accordingly.
-        function update_spectrum(popover, update_func) {
-            var initial_height = popover[0].offsetHeight;
-
-            var colorpicker = popover.find('.colorpicker-container').find('.colorpicker');
-            update_func(colorpicker);
-            var after_height = popover[0].offsetHeight;
-
-            var popover_root = popover.closest(".popover");
-            var current_top_px = parseFloat(popover_root.css('top').replace('px', ''));
-            var height_delta = - (after_height - initial_height) * 0.5;
-
-            popover_root.css('top', (current_top_px + height_delta) + "px");
-        }
-
-        $(elt).popover("show");
-        var data_id = stream_data.get_sub(stream).stream_id;
-        var popover = $('.streams_popover[data-id=' + data_id + ']');
-        update_spectrum(popover, function (colorpicker) {
-            colorpicker.spectrum(stream_color.sidebar_popover_colorpicker_options);
-        });
-
-        $('.streams_popover').on('click', '.custom_color', function (e) {
-            update_spectrum($(e.target).closest('.streams_popover'), function (colorpicker) {
-                colorpicker.spectrum("destroy");
-                colorpicker.spectrum(stream_color.sidebar_popover_colorpicker_options_full);
-                // In theory this should clean up the old color picker,
-                // but this seems a bit flaky -- the new colorpicker
-                // doesn't fire until you click a button, but the buttons
-                // have been hidden.  We work around this by just manually
-                // fixing it up here.
-                colorpicker.parent().find('.sp-container').removeClass('sp-buttons-disabled');
-                $(e.target).hide();
-            });
-
-            $('.streams_popover').on('click', 'a.sp-cancel', function () {
-                popovers.hide_stream_sidebar_popover();
-            });
-        });
-
-        current_stream_sidebar_elem = elt;
-        e.stopPropagation();
-    });
-
     $('body').on('click', '.respond_button', function (e) {
+        var textarea = $("#new_message_content");
+        var msgid = $(e.currentTarget).data("message-id");
+
         compose.respond_to_message({trigger: 'popover respond'});
+        channel.get({
+            url: '/json/messages/' + msgid,
+            idempotent: true,
+            success: function (data) {
+                if (textarea.val() === "") {
+                    textarea.val("```quote\n" + data.raw_content +"\n```\n");
+                } else {
+                    textarea.val(textarea.val() + "\n```quote\n" + data.raw_content +"\n```\n");
+                }
+                $("#new_message_content").trigger("autosize.resize");
+            },
+        });
         popovers.hide_actions_popover();
         e.stopPropagation();
         e.preventDefault();
@@ -719,14 +599,14 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
     $('body').on('click', '.popover_narrow_by_conversation_and_time', function (e) {
-        var msgid = $(e.currentTarget).data('msgid');
+        var msgid = $(e.currentTarget).data('message-id');
         popovers.hide_actions_popover();
         narrow.by_conversation_and_time(msgid, {trigger: 'popover'});
         e.stopPropagation();
         e.preventDefault();
     });
     $('body').on('click', '.popover_toggle_collapse', function (e) {
-        var msgid = $(e.currentTarget).data('msgid');
+        var msgid = $(e.currentTarget).data('message-id');
         var row = current_msg_list.get_row(msgid);
         var message = current_msg_list.get(rows.id(row));
 
@@ -744,10 +624,22 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
     $('body').on('click', '.popover_edit_message', function (e) {
-        var msgid = $(e.currentTarget).data('msgid');
+        var msgid = $(e.currentTarget).data('message-id');
         var row = current_msg_list.get_row(msgid);
         popovers.hide_actions_popover();
         message_edit.start(row);
+        e.stopPropagation();
+        e.preventDefault();
+    });
+    $('body').on('click', '.view_edit_history', function (e) {
+        var msgid = $(e.currentTarget).data('msgid');
+        var row = current_msg_list.get_row(msgid);
+        var message = current_msg_list.get(rows.id(row));
+        var message_history_cancel_btn = $('#message-history-cancel');
+
+        popovers.hide_actions_popover();
+        message_edit.show_history(message);
+        message_history_cancel_btn.focus();
         e.stopPropagation();
         e.preventDefault();
     });
@@ -756,7 +648,7 @@ exports.register_click_handlers = function () {
         var stream = $(e.currentTarget).data('msg-stream');
         var topic = $(e.currentTarget).data('msg-topic');
         popovers.hide_actions_popover();
-        exports.topic_ops.mute(stream, topic);
+        stream_popover.topic_ops.mute(stream, topic);
         e.stopPropagation();
         e.preventDefault();
     });
@@ -765,78 +657,58 @@ exports.register_click_handlers = function () {
         var stream = $(e.currentTarget).data('msg-stream');
         var topic = $(e.currentTarget).data('msg-topic');
         popovers.hide_actions_popover();
-        muting.unmute_topic(stream, topic);
+        muting_ui.unmute_topic(stream, topic);
         muting_ui.persist_and_rerender();
         e.stopPropagation();
         e.preventDefault();
     });
 
-    $('body').on('click', '.toggle_home', function (e) {
-        var stream = $(e.currentTarget).parents('ul').attr('data-name');
-        popovers.hide_stream_sidebar_popover();
-        subs.toggle_home(stream);
-        e.stopPropagation();
-    });
+    (function () {
+        var last_scroll = 0;
 
-    $('body').on('click', '.narrow_to_stream', function (e) {
-        var stream = $(e.currentTarget).parents('ul').attr('data-name');
-        popovers.hide_stream_sidebar_popover();
-        narrow.by('stream', stream, {select_first_unread: true, trigger: 'sidebar popover'});
-        e.stopPropagation();
-    });
+        $('.app').on('scroll', function () {
+            var date = new Date().getTime();
 
-    $('body').on('click', '.compose_to_stream', function (e) {
-        var stream = $(e.currentTarget).parents('ul').attr('data-name');
-        popovers.hide_stream_sidebar_popover();
-        compose.start('stream', {stream: stream, trigger: 'sidebar stream actions'});
-        e.stopPropagation();
-    });
+            // only run `popovers.hide_all()` if the last scroll was more
+            // than 250ms ago.
+            if (date - last_scroll > 250) {
+                popovers.hide_all();
+            }
 
-    $('body').on('click', '.mark_stream_as_read', function (e) {
-        var stream = $(e.currentTarget).parents('ul').attr('data-name');
-        popovers.hide_stream_sidebar_popover();
-        unread.mark_stream_as_read(stream);
-        e.stopPropagation();
-    });
-
-    $('body').on('click', '.pin_to_top', function (e) {
-        var stream = $(e.currentTarget).parents('ul').attr('data-name');
-        popovers.hide_stream_sidebar_popover();
-        subs.toggle_pin_to_top_stream(stream);
-        e.stopPropagation();
-    });
-
-    $('body').on('click', '.open_stream_settings', function (e) {
-        var stream = $(e.currentTarget).parents('ul').attr('data-name');
-        popovers.hide_stream_sidebar_popover();
-
-        window.location.hash = "#subscriptions";
-        // the template for subs needs to render.
-
-        subs.onlaunch("narrow_to_row", function () {
-            $(".stream-row[data-stream-name='" + stream + "']").click();
-        }, true);
-    });
+            // update the scroll time on every event to make sure it doesn't
+            // retrigger `hide_all` while still scrolling.
+            last_scroll = date;
+        });
+    }());
 
 };
 
 exports.any_active = function () {
     // True if any popover (that this module manages) is currently shown.
-    return popovers.actions_popped() || user_sidebar_popped() || stream_sidebar_popped() ||
-        topic_sidebar_popped() || message_info_popped() || emoji_map_is_open ||
+    return popovers.actions_popped() || user_sidebar_popped() ||
+        stream_popover.stream_popped() || stream_popover.topic_popped() ||
+        message_info_popped() || emoji_map_is_open ||
         reaction_popped();
 };
 
 exports.hide_all = function () {
+    $('.has_popover').removeClass('has_popover has_actions_popover has_reactions_popover');
     popovers.hide_actions_popover();
     popovers.hide_message_info_popover();
     popovers.hide_reactions_popover();
-    popovers.hide_stream_sidebar_popover();
-    popovers.hide_topic_sidebar_popover();
+    stream_popover.hide_stream_popover();
+    stream_popover.hide_topic_popover();
     popovers.hide_user_sidebar_popover();
     popovers.hide_userlist_sidebar();
-    popovers.hide_streamlist_sidebar();
+    stream_popover.restore_stream_list_size();
     popovers.hide_emoji_map_popover();
+
+    // look through all the popovers that have been added and removed.
+    list_of_popovers.forEach(function ($o) {
+        if (!document.body.contains($o.$element[0]) && $o.$tip) {
+            $o.$tip.remove();
+        }
+    });
 };
 
 exports.set_userlist_placement = function (placement) {

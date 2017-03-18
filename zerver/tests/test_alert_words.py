@@ -128,7 +128,7 @@ class AlertWordTests(ZulipTestCase):
         # type: () -> None
         self.login("hamlet@zulip.com")
 
-        result = self.client_put('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
+        result = self.client_put('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one ', '\n two', 'three'])})
         self.assert_json_success(result)
 
         result = self.client_get('/json/users/me/alert_words')

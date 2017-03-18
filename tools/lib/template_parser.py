@@ -1,12 +1,23 @@
 from __future__ import absolute_import
 from __future__ import print_function
-from typing import Callable, Optional
+from typing import Callable, List, Optional
 from six.moves import range
 import re
 
 class TemplateParserException(Exception):
-    # TODO: Have callers pass in line numbers.
-    pass
+    def __init__(self, message):
+        # type: (str) -> None
+        self.message = message
+
+    def __str__(self):
+        # type: () -> str
+        return self.message
+
+class TokenizationException(Exception):
+    def __init__(self, message, line_content=None):
+        # type: (str, str) -> None
+        self.message = message
+        self.line_content = line_content
 
 class TokenizerState(object):
     def __init__(self):
@@ -16,13 +27,14 @@ class TokenizerState(object):
         self.col = 1
 
 class Token(object):
-    def __init__(self, kind, s, tag, line, col):
-        # type: (str, str, str, int, int) -> None
+    def __init__(self, kind, s, tag, line, col, line_span):
+        # type: (str, str, str, int, int, int) -> None
         self.kind = kind
         self.s = s
         self.tag = tag
         self.line = line
         self.col = col
+        self.line_span = line_span
 
 def tokenize(text):
     # type: (str) -> List[Token]
@@ -39,6 +51,18 @@ def tokenize(text):
     def looking_at(s):
         # type: (str) -> bool
         return text[state.i:state.i+len(s)] == s
+
+    def looking_at_htmlcomment():
+        # type: () -> bool
+        return looking_at("<!--")
+
+    def looking_at_handlebarcomment():
+        # type: () -> bool
+        return looking_at("{{!")
+
+    def looking_at_djangocomment():
+        # type: () -> bool
+        return looking_at("{#")
 
     def looking_at_html_start():
         # type: () -> bool
@@ -68,54 +92,86 @@ def tokenize(text):
     tokens = []
 
     while state.i < len(text):
-        if looking_at_html_start():
-            s = get_html_tag(text, state.i)
-            tag_parts = s[1:-1].split()
+        try:
+            if looking_at_htmlcomment():
+                s = get_html_comment(text, state.i)
+                tag = s[4:-3]
+                kind = 'html_comment'
+            elif looking_at_handlebarcomment():
+                s = get_handlebar_comment(text, state.i)
+                tag = s[3:-2]
+                kind = 'handlebar_comment'
+            elif looking_at_djangocomment():
+                s = get_django_comment(text, state.i)
+                tag = s[2:-2]
+                kind = 'django_comment'
+            elif looking_at_html_start():
+                s = get_html_tag(text, state.i)
+                tag_parts = s[1:-1].split()
 
-            if not tag_parts:
-                raise TemplateParserException("Tag name missing")
+                if not tag_parts:
+                    raise TemplateParserException("Tag name missing")
 
-            tag = tag_parts[0]
+                tag = tag_parts[0]
 
-            if is_special_html_tag(s, tag):
-                kind = 'html_special'
-            elif s.endswith('/>'):
-                kind = 'html_singleton'
+                if is_special_html_tag(s, tag):
+                    kind = 'html_special'
+                elif s.endswith('/>'):
+                    kind = 'html_singleton'
+                else:
+                    kind = 'html_start'
+            elif looking_at_html_end():
+                s = get_html_tag(text, state.i)
+                tag = s[2:-1]
+                kind = 'html_end'
+            elif looking_at_handlebars_start():
+                s = get_handlebars_tag(text, state.i)
+                tag = s[3:-2].split()[0]
+                kind = 'handlebars_start'
+            elif looking_at_handlebars_end():
+                s = get_handlebars_tag(text, state.i)
+                tag = s[3:-2]
+                kind = 'handlebars_end'
+            elif looking_at_django_start():
+                s = get_django_tag(text, state.i)
+                tag = s[3:-2].split()[0]
+                kind = 'django_start'
+            elif looking_at_django_end():
+                s = get_django_tag(text, state.i)
+                tag = s[6:-3]
+                kind = 'django_end'
             else:
-                kind = 'html_start'
-        elif looking_at_html_end():
-            s = get_html_tag(text, state.i)
-            tag = s[2:-1]
-            kind = 'html_end'
-        elif looking_at_handlebars_start():
-            s = get_handlebars_tag(text, state.i)
-            tag = s[3:-2].split()[0]
-            kind = 'handlebars_start'
-        elif looking_at_handlebars_end():
-            s = get_handlebars_tag(text, state.i)
-            tag = s[3:-2]
-            kind = 'handlebars_end'
-        elif looking_at_django_start():
-            s = get_django_tag(text, state.i)
-            tag = s[3:-2].split()[0]
-            kind = 'django_start'
-        elif looking_at_django_end():
-            s = get_django_tag(text, state.i)
-            tag = s[6:-3]
-            kind = 'django_end'
-        else:
-            advance(1)
-            continue
+                advance(1)
+                continue
+        except TokenizationException as e:
+            raise TemplateParserException('''%s at Line %d Col %d:"%s"''' %
+                                          (e.message, state.line, state.col,
+                                           e.line_content))
 
+        line_span = len(s.split('\n'))
         token = Token(
             kind=kind,
             s=s,
             tag=tag,
             line=state.line,
             col=state.col,
+            line_span=line_span
         )
         tokens.append(token)
         advance(len(s))
+        if kind == 'html_singleton':
+            # Here we insert a Pseudo html_singleton_end tag so as to have
+            # ease of detection of end of singleton html tags which might be
+            # needed in some cases as with our html pretty printer.
+            token = Token(
+                kind='html_singleton_end',
+                s='</' + tag + '>',
+                tag=tag,
+                line=state.line,
+                col=state.col,
+                line_span=1
+            )
+            tokens.append(token)
 
     return tokens
 
@@ -218,8 +274,7 @@ def validate(fn=None, text=None, check_indent=True):
 
 def is_special_html_tag(s, tag):
     # type: (str, str) -> bool
-    return (s.startswith('<!--') or
-            tag in ['link', 'meta', '!DOCTYPE'])
+    return tag in ['link', 'meta', '!DOCTYPE']
 
 def is_django_block_tag(tag):
     # type: (str) -> bool
@@ -242,7 +297,7 @@ def get_handlebars_tag(text, i):
     while end < len(text) - 1 and text[end] != '}':
         end += 1
     if text[end] != '}' or text[end+1] != '}':
-        raise TemplateParserException('Tag missing }}')
+        raise TokenizationException('Tag missing "}}"', text[i:end+2])
     s = text[i:end+2]
     return s
 
@@ -252,7 +307,7 @@ def get_django_tag(text, i):
     while end < len(text) - 1 and text[end] != '%':
         end += 1
     if text[end] != '%' or text[end+1] != '}':
-        raise TemplateParserException('Tag missing %}')
+        raise TokenizationException('Tag missing "%}"', text[i:end+2])
     s = text[i:end+2]
     return s
 
@@ -260,11 +315,55 @@ def get_html_tag(text, i):
     # type: (str, int) -> str
     quote_count = 0
     end = i + 1
-    while end < len(text) and (text[end] != '>' or quote_count % 2 != 0):
+    unclosed_end = 0
+    while end < len(text) and (text[end] != '>' or quote_count % 2 != 0 and text[end] != '<'):
         if text[end] == '"':
             quote_count += 1
+        if not unclosed_end and text[end] == '<':
+            unclosed_end = end
         end += 1
+    if quote_count % 2 != 0:
+        if unclosed_end:
+            raise TokenizationException('Unbalanced Quotes', text[i:unclosed_end])
+        else:
+            raise TokenizationException('Unbalanced Quotes', text[i:end+1])
     if end == len(text) or text[end] != '>':
-        raise TemplateParserException('Tag missing >')
+        raise TokenizationException('Tag missing ">"', text[i:end+1])
     s = text[i:end+1]
     return s
+
+def get_html_comment(text, i):
+    # type: (str, int) -> str
+    end = i + 7
+    unclosed_end = 0
+    while end <= len(text):
+        if text[end-3:end] == '-->':
+            return text[i:end]
+        if not unclosed_end and text[end] == '<':
+            unclosed_end = end
+        end += 1
+    raise TokenizationException('Unclosed comment', text[i:unclosed_end])
+
+def get_handlebar_comment(text, i):
+    # type: (str, int) -> str
+    end = i + 5
+    unclosed_end = 0
+    while end <= len(text):
+        if text[end-2:end] == '}}':
+            return text[i:end]
+        if not unclosed_end and text[end] == '<':
+            unclosed_end = end
+        end += 1
+    raise TokenizationException('Unclosed comment', text[i:unclosed_end])
+
+def get_django_comment(text, i):
+    # type: (str, int) -> str
+    end = i + 4
+    unclosed_end = 0
+    while end <= len(text):
+        if text[end-2:end] == '#}':
+            return text[i:end]
+        if not unclosed_end and text[end] == '<':
+            unclosed_end = end
+        end += 1
+    raise TokenizationException('Unclosed comment', text[i:unclosed_end])

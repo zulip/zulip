@@ -1,10 +1,13 @@
 from __future__ import absolute_import
 
+import six
 import sys
-from typing import Any, Optional, Union, Text
+
+from typing import Any, Dict, List, Optional, Union, Text
+if False:
+    from mypy_extensions import NoReturn
 
 import jinja2
-from django.utils import six
 from django.test.signals import template_rendered
 from django.template.backends import jinja2 as django_jinja2
 from django.template import TemplateDoesNotExist, TemplateSyntaxError, Context

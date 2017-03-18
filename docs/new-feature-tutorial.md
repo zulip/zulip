@@ -6,6 +6,11 @@ as an example of the specific steps needed to add a new feature: adding
 a new option to the application that is dynamically synced through the
 data system in real-time to all browsers the user may have open.
 
+As you read this, you may find you need to learn about Zulip's
+real-time push system; the
+[real-time push and events](events-system.html) documentation has a
+detailed explanation of how everything works.
+
 ## General Process in brief
 
 ### Adding a field to the database
@@ -31,7 +36,7 @@ interacting with the database in `zerver/lib/actions.py`. It should
 update the database and send an event announcing the change.
 
 **Application state:** Modify the `fetch_initial_state_data` and
-`apply_events` functions in `zerver/lib/actions.py` to update the state
+`apply_event` functions in `zerver/lib/events.py` to update the state
 based on the event you just created.
 
 **Backend implementation:** Make any other modifications to the backend
@@ -60,6 +65,10 @@ templates located in `templates/zerver`. For JavaScript, Zulip uses
 Handlebars templates located in `static/templates`. Templates are
 precompiled as part of the build/deploy process.
 
+Zulip is fully internationalized, so when writing both HTML templates
+or JavaScript code that generates user-facing strings, be sure to
+[tag those strings for translation](translating.html).
+
 **Testing:** There are two types of frontend tests: node-based unit
 tests and blackbox end-to-end tests. The blackbox tests are run in a
 headless browser using Casper.js and are located in
@@ -67,6 +76,13 @@ headless browser using Casper.js and are located in
 module are located in `frontend_tests/node_tests/`. For more
 information on writing and running tests see the [testing
 documentation](testing.html).
+
+### Documentation changes
+
+After implementing the new feature, you should
+document it and update any existing documentation that might be
+relevant to the new feature. For more information on the kinds of
+documentation Zulip has, see [Documentation](README.html).
 
 ## Example Feature
 
@@ -102,7 +118,9 @@ Create the migration file: `./manage.py makemigrations`. Make sure to
 commit the generated file to git: `git add zerver/migrations/NNNN_realm_invite_by_admins_only.py`
 (NNNN is a number that is equal to the number of migrations.)
 
-If you run into problems, the [Django migration documentation](https://docs.djangoproject.com/en/1.8/topics/migrations/) is helpful.
+If you run into problems, the
+[Django migration documentation](https://docs.djangoproject.com/en/1.8/topics/migrations/)
+is helpful.
 
 ### Test your migration changes
 
@@ -174,17 +192,17 @@ realm. :
 ### Update application state
 
 You then need to add code that will handle the event and update the
-application state. In `zerver/lib/actions.py` update the
-`fetch_initial_state` and `apply_events` functions. :
+application state. In `zerver/lib/events.py` update the
+`fetch_initial_state` and `apply_event` functions. :
 
-    def fetch_initial_state_data(user_profile, event_types, queue_id):
+    def fetch_initial_state_data(user_profile, event_types, queue_id, include_subscribers=True):
       # ...
       state['realm_invite_by_admins_only'] = user_profile.realm.invite_by_admins_only`
 
-In this case you don't need to change `apply_events` because there is
+In this case you don't need to change `apply_event` because there is
 already code that will correctly handle the realm update event type: :
 
-    def apply_events(state, events, user_profile):
+    def apply_event(state, events, user_profile, include_subscribers):
       for event in events:
         # ...
         elif event['type'] == 'realm':
@@ -198,10 +216,10 @@ newly-added `actions.py` code to update the database. This example
 feature adds a new parameter that should be sent to clients when the
 application loads and be accessible via JavaScript, and there is already
 a view that does this for related flags: `update_realm`. So in this
-case, we can add out code to the existing view instead of creating a
+case, we can add our code to the existing view instead of creating a
 new one. :
 
-    # zerver/views/__init__.py
+    # zerver/views/home.py
 
     def home(request):
       # ...
@@ -278,3 +296,23 @@ Any code needed to update the UI should be placed in
 function. This ensures the appropriate code will run even if the
 changes are made in another browser window. In this example most of
 the changes are on the backend, so no UI updates are required.
+
+### Update documentation
+
+After you add a new view, you should document your feature. This
+feature adds new functionality that restricts inviting new users to
+admins only. A recommended way to document this feature would be to
+update and/or augment [Zulip's user documentation](https://chat.zulip.org/help/)
+to reflect your changes and additions.
+
+At the very least, this will involve adding (or modifying) a Markdown file
+documenting the feature to `templates/zerver/help/` in the main Zulip
+server repository, where the source for Zulip's user documentation is
+stored. For information on writing user documentation, see
+[Zulip's general user guide documentation](user-docs.html).
+
+For a more concrete example of writing documentation for a new feature, see
+[the original commit in the Zulip repo](https://github.com/zulip/zulip/commit/5b4d9774e02a45e43465b0a28ffb3d9b373c9098)
+that documented this feature, [the current
+source](https://github.com/zulip/zulip/blob/master/templates/zerver/help/only-allow-admins-to-invite-new-users.md),
+and [the final rendered documentation](https://chat.zulip.org/help/only-allow-admins-to-invite-new-users).

@@ -4,8 +4,10 @@ from __future__ import print_function
 
 from django.http import HttpResponse
 from django.utils import timezone
+from mock import mock
 
 from typing import Any, Dict
+from zerver.lib.actions import do_deactivate_user
 from zerver.lib.test_helpers import (
     get_user_profile_by_email,
     make_client,
@@ -14,6 +16,7 @@ from zerver.lib.test_helpers import (
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
+from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import (
     email_to_domain,
     Client,
@@ -45,13 +48,22 @@ class ActivityTest(ZulipTestCase):
 
         self.assert_max_length(queries, 13)
 
+class TestClientModel(ZulipTestCase):
+    def test_client_stringification(self):
+        # type: () -> None
+        '''
+        This test is designed to cover __unicode__ method for Client.
+        '''
+        client = make_client('some_client')
+        self.assertEqual(str(client), u'<Client: some_client>')
+
 class UserPresenceTests(ZulipTestCase):
     def test_invalid_presence(self):
         # type: () -> None
         email = "hamlet@zulip.com"
         self.login(email)
         result = self.client_post("/json/users/me/presence", {'status': 'foo'})
-        self.assert_json_error(result, 'Invalid presence status: foo')
+        self.assert_json_error(result, 'Invalid status: foo')
 
     def test_set_idle(self):
         # type: () -> None
@@ -161,3 +173,124 @@ class UserPresenceTests(ZulipTestCase):
         # We only want @zulip.com emails
         for email in json['presences'].keys():
             self.assertEqual(email_to_domain(email), 'zulip.com')
+
+class SingleUserPresenceTests(ZulipTestCase):
+    def test_single_user_get(self):
+        # type: () -> None
+
+        # First, we setup the test with some data
+        email = "othello@zulip.com"
+        self.login("othello@zulip.com")
+        result = self.client_post("/json/users/me/presence", {'status': 'active'})
+        result = self.client_post("/json/users/me/presence", {'status': 'active'},
+                                  HTTP_USER_AGENT="ZulipDesktop/1.0")
+        result = self.client_post("/api/v1/users/me/presence", {'status': 'idle'},
+                                  HTTP_USER_AGENT="ZulipAndroid/1.0",
+                                  **self.api_auth(email))
+        self.assert_json_success(result)
+
+        # Check some error conditions
+        result = self.client_get("/json/users/nonexistence@zulip.com/presence")
+        self.assert_json_error(result, "No such user")
+
+        result = self.client_get("/json/users/cordelia@zulip.com/presence")
+        self.assert_json_error(result, "No presence data for cordelia@zulip.com")
+
+        do_deactivate_user(get_user_profile_by_email("cordelia@zulip.com"))
+        result = self.client_get("/json/users/cordelia@zulip.com/presence")
+        self.assert_json_error(result, "No such user")
+
+        result = self.client_get("/json/users/new-user-bot@zulip.com/presence")
+        self.assert_json_error(result, "No presence for bot users")
+
+        self.login("sipbtest@mit.edu")
+        result = self.client_get("/json/users/othello@zulip.com/presence")
+        self.assert_json_error(result, "No such user")
+
+        # Then, we check everything works
+        self.login("hamlet@zulip.com")
+        result = self.client_get("/json/users/othello@zulip.com/presence")
+        result_dict = ujson.loads(result.content)
+        self.assertEqual(
+            set(result_dict['presence'].keys()),
+            {"ZulipAndroid", "website", "aggregated"})
+        self.assertEqual(set(result_dict['presence']['website'].keys()), {"status", "timestamp"})
+
+
+class UserPresenceAggregationTests(ZulipTestCase):
+    def _send_presence_for_aggregated_tests(self, email, status, validate_time):
+        # type: (str, str, datetime.datetime) -> Dict[str, Dict[str, Any]]
+        self.login(email)
+        timezone_util = 'django.utils.timezone.now'
+        with mock.patch(timezone_util, return_value=validate_time - datetime.timedelta(seconds=5)):
+            self.client_post("/json/users/me/presence", {'status': status})
+        with mock.patch(timezone_util, return_value=validate_time - datetime.timedelta(seconds=2)):
+            self.client_post("/api/v1/users/me/presence", {'status': status},
+                             HTTP_USER_AGENT="ZulipAndroid/1.0",
+                             **self.api_auth(email))
+        with mock.patch(timezone_util, return_value=validate_time - datetime.timedelta(seconds=7)):
+            self.client_post("/api/v1/users/me/presence", {'status': status},
+                             HTTP_USER_AGENT="ZulipIOS/1.0",
+                             **self.api_auth(email))
+        result = self.client_get("/json/users/%s/presence" % (email,))
+        return result.json()
+
+    def test_aggregated_presense_active(self):
+        # type: () -> None
+        validate_time = timezone.now()
+        result_dict = self._send_presence_for_aggregated_tests('othello@zulip.com', 'active',
+                                                               validate_time)
+        self.assertDictEqual(
+            result_dict['presence']['aggregated'],
+            {
+                "status": "active",
+                "timestamp": datetime_to_timestamp(validate_time - datetime.timedelta(seconds=2))
+            }
+        )
+
+    def test_aggregated_presense_idle(self):
+        # type: () -> None
+        validate_time = timezone.now()
+        result_dict = self._send_presence_for_aggregated_tests('othello@zulip.com', 'idle',
+                                                               validate_time)
+        self.assertDictEqual(
+            result_dict['presence']['aggregated'],
+            {
+                "status": "idle",
+                "timestamp": datetime_to_timestamp(validate_time - datetime.timedelta(seconds=2))
+            }
+        )
+
+    def test_aggregated_presense_mixed(self):
+        # type: () -> None
+        email = "othello@zulip.com"
+        self.login(email)
+        validate_time = timezone.now()
+        with mock.patch('django.utils.timezone.now',
+                        return_value=validate_time - datetime.timedelta(seconds=3)):
+            self.client_post("/api/v1/users/me/presence", {'status': 'active'},
+                             HTTP_USER_AGENT="ZulipTestDev/1.0",
+                             **self.api_auth(email))
+        result_dict = self._send_presence_for_aggregated_tests(email, 'idle', validate_time)
+        self.assertDictEqual(
+            result_dict['presence']['aggregated'],
+            {
+                "status": "idle",
+                "timestamp": datetime_to_timestamp(validate_time - datetime.timedelta(seconds=2))
+            }
+        )
+
+    def test_aggregated_presense_offline(self):
+        # type: () -> None
+        email = "othello@zulip.com"
+        self.login(email)
+        validate_time = timezone.now()
+        with self.settings(OFFLINE_THRESHOLD_SECS=1):
+            result_dict = self._send_presence_for_aggregated_tests(email, 'idle', validate_time)
+        self.assertDictEqual(
+            result_dict['presence']['aggregated'],
+            {
+                "status": "offline",
+                "timestamp": datetime_to_timestamp(validate_time - datetime.timedelta(seconds=2))
+            }
+        )

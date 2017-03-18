@@ -35,6 +35,23 @@ class zulip::base {
     'xenial'  => '9.5',
   }
 
+  $normal_queues = [
+             'digest_emails',
+             'email_mirror',
+             'embed_links',
+             'error_reports',
+             'feedback_messages',
+             'invites',
+             'missedmessage_email_senders',
+             'missedmessage_emails',
+             'missedmessage_mobile_notifications',
+             'signups',
+             'slow_queries',
+             'user_activity',
+             'user_activity_interval',
+             'user_presence',
+  ]
+
   group { 'zulip':
     ensure     => present,
   }

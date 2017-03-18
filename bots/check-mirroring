@@ -76,21 +76,21 @@ if options.sharded:
         ("message", "p"),
         ("tabbott-nagios-test-32", "0"),
         ("tabbott-nagios-test-33", "1"),
-        ("tabbott-nagios-test-2",  "2"),
-        ("tabbott-nagios-test-5",  "3"),
+        ("tabbott-nagios-test-2", "2"),
+        ("tabbott-nagios-test-5", "3"),
         ("tabbott-nagios-test-13", "4"),
-        ("tabbott-nagios-test-7",  "5"),
+        ("tabbott-nagios-test-7", "5"),
         ("tabbott-nagios-test-22", "6"),
         ("tabbott-nagios-test-35", "7"),
-        ("tabbott-nagios-test-4",  "8"),
-        ("tabbott-nagios-test-3",  "9"),
-        ("tabbott-nagios-test-1",  "a"),
+        ("tabbott-nagios-test-4", "8"),
+        ("tabbott-nagios-test-3", "9"),
+        ("tabbott-nagios-test-1", "a"),
         ("tabbott-nagios-test-49", "b"),
         ("tabbott-nagios-test-34", "c"),
         ("tabbott-nagios-test-12", "d"),
         ("tabbott-nagios-test-11", "e"),
-        ("tabbott-nagios-test-9",  "f"),
-        ]
+        ("tabbott-nagios-test-9", "f"),
+    ]
     for (stream, test) in test_streams:
         if stream == "message":
             continue
@@ -99,7 +99,7 @@ else:
     test_streams = [
         ("message", "p"),
         ("tabbott-nagios-test", "a"),
-        ]
+    ]
 
 def print_status_and_exit(status):
     # type: (int) -> None
@@ -252,17 +252,17 @@ logger.info("Sent Zephyr messages!")
 for key, (stream, test) in hzkeys.items():
     if stream == "message":
         send_zulip({
-                "type": "private",
-                "content": str(key),
-                "to": zulip_user,
+            "type": "private",
+            "content": str(key),
+            "to": zulip_user,
         })
     else:
         send_zulip({
-                "type": "stream",
-                "subject": "test",
-                "content": str(key),
-                "to": stream,
-                })
+            "type": "stream",
+            "subject": "test",
+            "content": str(key),
+            "to": stream,
+        })
     receive_zephyrs()
 
 logger.info("Sent Zulip messages!")

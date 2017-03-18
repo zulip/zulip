@@ -2,7 +2,9 @@
 # This tools generates /etc/zulip/zulip-secrets.conf
 
 from __future__ import print_function
-import sys, os, os.path
+import sys
+import os
+import os.path
 from os.path import dirname, abspath
 if False:
     from typing import Dict, Optional, Text
@@ -45,7 +47,7 @@ def generate_django_secretkey():
     return get_random_string(50, chars)
 
 def get_old_conf(output_filename):
-    # type: (Text) -> Dict[str, Text]
+    # type: (str) -> Dict[str, Text]
     if not os.path.exists(output_filename):
         return {}
 
@@ -53,7 +55,7 @@ def get_old_conf(output_filename):
     secrets_file.read(output_filename)
 
     def get_secret(key):
-        # type: (Text) -> Optional[Text]
+        # type: (str) -> Optional[Text]
         if secrets_file.has_option('secrets', key):
             return secrets_file.get('secrets', key)
         return None

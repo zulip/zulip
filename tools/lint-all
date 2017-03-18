@@ -10,14 +10,12 @@ import optparse
 import subprocess
 import traceback
 
-try:
-    import lister
-    from typing import cast, Any, Callable, Dict, Iterator, List, Optional, Tuple
-except ImportError as e:
-    print("ImportError: {}".format(e))
-    print("You need to run the Zulip linters inside a Zulip dev environment.")
-    print("If you are using Vagrant, you can `vagrant ssh` to enter the Vagrant guest.")
-    sys.exit(1)
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+
+import lister
+from typing import cast, Any, Callable, Dict, Iterator, List, Optional, Tuple
 
 # Exclude some directories and files from lint checking
 EXCLUDED_FILES = [
@@ -82,11 +80,64 @@ def check_pep8(files):
     # type: (List[str]) -> bool
     failed = False
     ignored_rules = [
-        'E402', 'E501', 'W503', 'E711', 'E226',
-        'E126', 'E121', 'E123', 'E266', 'E265', 'E261', 'E221',
-        'E241', 'E712', 'E702', 'E401', 'E115', 'E114', 'E731', 'E302',
-        'E741', 'E714', 'W391', 'E713', 'E305', 'E251', 'E306',
+        # Each of these rules are ignored for the explained reason.
+
+        # "multiple spaces before operator"
+        # There are several typos here, but also several instances that are
+        # being used for alignment in dict keys/values using the `dict`
+        # constructor. We could fix the alignment cases by switching to the `{}`
+        # constructor, but it makes fixing this rule a little less
+        # straightforward.
+        'E221',
+
+        # 'missing whitespace around arithmetic operator'
+        # This should possibly be cleaned up, though changing some of
+        # these may make the code less readable.
+        'E226',
+
+        # "unexpected spaces around keyword / parameter equals"
+        # Many of these should be fixed, but many are also being used for
+        # alignment/making the code easier to read.
+        'E251',
+
+        # 'at least two spaces before inline comment'
+        # This we should probably clean up, but has 800+ instances in
+        # conflict (many of them type comments), so fixing this will
+        # be a lot of churn.
+        'E261',
+
+        # "block comment should start with '#'"
+        # These serve to show which lines should be changed in files customized
+        # by the user. We could probably resolve one of E265 or E266 by
+        # standardizing on a single style for lines that the user might want to
+        # change.
+        'E265',
+
+        # "too many leading '#' for block comment"
+        # Most of these are there for valid reasons.
+        'E266',
+
+        # "expected 2 blank lines after class or function definition"
+        # Zulip only uses 1 blank line after class/function
+        # definitions; the PEP-8 recommendation results in super sparse code.
+        'E302', 'E305',
+
+        # "module level import not at top of file"
+        # Most of these are there for valid reasons, though there might be a
+        # few that could be eliminated.
+        'E402',
+
+        # "line too long"
+        # Zulip is a bit less strict about line length, and has its
+        # own check for this (see max_length)
+        'E501',
+
+        # "do not assign a lambda expression, use a def"
+        # Fixing these would probably reduce readability in most cases.
+        'E731',
     ]
+    if len(files) == 0:
+        return False
     pep8 = subprocess.Popen(
         ['pycodestyle'] + files + ['--ignore={rules}'.format(rules=','.join(ignored_rules))],
         stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
@@ -143,6 +194,13 @@ def build_custom_checkers(by_lang):
                 exclude_list = rule.get('exclude_line', set())
                 if (fn, line_fully_stripped) in exclude_list:
                     continue
+                if rule.get("include_only"):
+                    found = False
+                    for item in rule.get("include_only", set()):
+                        if item in fn:
+                            found = True
+                    if not found:
+                        continue
                 try:
                     line_to_check = line_fully_stripped
                     if rule.get('strip') is not None:
@@ -157,10 +215,16 @@ def build_custom_checkers(by_lang):
                 except Exception:
                     print("Exception with %s at %s line %s" % (rule['pattern'], fn, i+1))
                     traceback.print_exc()
-            if (max_length is not None and len(line) > max_length and
+            if isinstance(line, bytes):
+                line_length = len(line.decode("utf-8"))
+            else:
+                line_length = len(line)
+            if (max_length is not None and line_length > max_length and
                 '# type' not in line and 'test' not in fn and 'example' not in fn and
+                not re.match("\[[ A-Za-z0-9_:,&()-]*\]: http.*", line) and
                     "#ignorelongline" not in line and 'migrations' not in fn):
                 print("Line too long (%s) at %s line %s: %s" % (len(line), fn, i+1, line_newline_stripped))
+                failed = True
             lastLine = line
         if lineFlag and '\n' not in lastLine:
             print("No newline at the end of file.  Fix with `sed -i '$a\\' %s`" % (fn,))
@@ -177,7 +241,7 @@ def build_custom_checkers(by_lang):
          'exclude': set(['zerver/lib/bugdown/codehilite.py',
                          'tools/travis/success-http-headers.txt']),
          'description': 'Fix tab-based whitespace'},
-        ] # type: RuleList
+    ] # type: RuleList
     markdown_whitespace_rules = list([rule for rule in whitespace_rules if rule['pattern'] != '\s+$']) + [
         # Two spaces trailing a line with other content is okay--it's a markdown line break.
         # This rule finds one space trailing a non-space, three or more trailing spaces, and
@@ -188,7 +252,7 @@ def build_custom_checkers(by_lang):
         {'pattern': '^#+[A-Za-z0-9]',
          'strip': '\n',
          'description': 'Missing space after # in heading'},
-       ] # type: RuleList
+    ] # type: RuleList
     js_rules = cast(RuleList, [
         {'pattern': '[^_]function\(',
          'description': 'The keyword "function" should be followed by a space'},
@@ -218,10 +282,11 @@ def build_custom_checkers(by_lang):
                          'frontend_tests/node_tests',
                          'static/js/debug.js']),
          'description': 'console.log and similar should not be used in webapp'},
-        {'pattern': 'button\.text\(["\']',
-         'exclude': set(['tools/lint-all',
-                         'frontend_tests/node_tests/templates.js']),
-         'description': 'Argument to button.text should be a literal string enclosed by i18n.t()'},
+        {'pattern': 'i18n[.]t',
+         'include_only': set(['static/js/portico']),
+         'description': 'i18n.t is not available in portico pages yet'},
+        {'pattern': '[.]text\(["\'][a-zA-Z]',
+         'description': 'Strings passed to $().text should be wrapped in i18n.t() for internationalization'},
         {'pattern': 'compose_error\(["\']',
          'exclude': set(['tools/lint-all']),
          'description': 'Argument to compose_error should be a literal string enclosed '
@@ -234,7 +299,7 @@ def build_custom_checkers(by_lang):
          'exclude': set(['tools/lint-all']),
          'description': 'Argument to report_error should be a literal string enclosed '
                         'by i18n.t()'},
-        ]) + whitespace_rules
+    ]) + whitespace_rules
     python_rules = cast(RuleList, [
         {'pattern': '^(?!#)@login_required',
          'description': '@login_required is unsupported; use @zulip_login_required'},
@@ -247,7 +312,7 @@ def build_custom_checkers(by_lang):
                          ]),
          'exclude_line': set([
              ('zerver/views/users.py',
-              "return json_error(_(\"Email '%(email)s' does not belong to domain '%(domain)s'\") %"),
+              "return json_error(_(\"Email '%(email)s' not allowed for realm '%(realm)s'\") %"),
              ('zproject/settings.py',
               "'format': '%(asctime)s %(levelname)-8s %(message)s'"),
          ]),
@@ -262,6 +327,8 @@ def build_custom_checkers(by_lang):
         {'pattern': "^\s+[#]\w",
          'strip': '\n',
          'description': 'Missing whitespace after "#"'},
+        {'pattern': "assertEquals[(]",
+         'description': 'Use assertEqual, not assertEquals (which is deprecated).'},
         {'pattern': "== None",
          'exclude': 'tools/lint-all',
          'description': 'Use `is None` to check whether something is None'},
@@ -281,52 +348,35 @@ def build_custom_checkers(by_lang):
         # This next check could have false positives, but it seems pretty
         # rare; if we find any, they can be added to the exclude list for
         # this rule.
-        {'pattern': '% [a-zA-Z0-9_.]*\)?$',
+        {'pattern': ' % [a-zA-Z0-9_.]*\)?$',
          'exclude_line': set([
              ('tools/tests/test_template_parser.py', '{% foo'),
          ]),
          'description': 'Used % comprehension without a tuple'},
+        {'pattern': '.*%s.* % \([a-zA-Z0-9_.]*\)$',
+         'description': 'Used % comprehension without a tuple'},
+        {'pattern': 'django.utils.translation',
+         'include_only': set(['test']),
+         'description': 'Test strings should not be tagged for translationx'},
         {'pattern': 'json_success\({}\)',
          'description': 'Use json_success() to return nothing'},
         # To avoid json_error(_variable) and json_error(_(variable))
         {'pattern': '\Wjson_error\(_\(?\w+\)',
-         'exclude': set(['tools/lint-all']),
+         'exclude': set(['tools/lint-all', 'zerver/tests']),
          'description': 'Argument to json_error should be a literal string enclosed by _()'},
-        {'pattern': '\Wjson_error\([^_].+[),]$',
-         'exclude': set(['tools/lint-all']),
+        {'pattern': '\Wjson_error\([\'"].+[),]$',
+         'exclude': set(['tools/lint-all', 'zerver/tests']),
          'exclude_line': set([
-             # function definition
-             ('zerver/lib/response.py', 'def json_error(msg, data=None, status=400):'),
-             # No need to worry about the following as the translation strings
-             # are already captured
-             ('zerver/middleware.py',
-              'return json_error(exception.to_json_error_msg(), status=status_code)'),
-             ('zerver/tornado/views.py', 'return json_error(result["message"])'),
-             ('zerver/views/invite.py',
-              'return json_error(data=error_data, msg=ret_error)'),
-             ('zerver/views/streams.py', 'return json_error(property_conversion)'),
-             # We can't do anything about this.
-             ('zerver/views/realm_emoji.py', 'return json_error(e.messages[0])'),
-             ('zerver/views/realm_filters.py', 'return json_error(e.messages[0], data={"errors": dict(e)})'),
+             # We don't want this string tagged for translation.
+             ('zerver/views/compatibility.py', 'return json_error("Client is too old")'),
          ]),
          'description': 'Argument to json_error should a literal string enclosed by _()'},
         # To avoid JsonableError(_variable) and JsonableError(_(variable))
         {'pattern': '\WJsonableError\(_\(?\w.+\)',
-         'exclude': set(['tools/lint-all']),
+         'exclude': set(['tools/lint-all', 'zerver/tests']),
          'description': 'Argument to JsonableError should be a literal string enclosed by _()'},
-        {'pattern': '\WJsonableError\([^_].+\)',
-         'exclude': set(['tools/lint-all']),
-         'exclude_line': set([
-             # class definition
-             ('zerver/lib/request.py', 'class JsonableError(Exception):'),
-             # No need to worry about the following as the translation strings
-             # are already captured
-             ('zerver/decorator.py', 'raise JsonableError(reason % (role,))'),
-             ('zerver/lib/actions.py', 'raise JsonableError(e.messages[0])'),
-             ('zerver/views/messages.py', 'raise JsonableError(error)'),
-             ('zerver/lib/request.py', 'raise JsonableError(error)'),
-             ('zerver/views/streams.py', 'raise JsonableError(response.content)'),
-         ]),
+        {'pattern': '\WJsonableError\(["\'].+\)',
+         'exclude': set(['tools/lint-all', 'zerver/tests']),
          'description': 'Argument to JsonableError should be a literal string enclosed by _()'},
         {'pattern': '([a-zA-Z0-9_]+)=REQ\([\'"]\\1[\'"]',
          'description': 'REQ\'s first argument already defaults to parameter name'},
@@ -336,20 +386,59 @@ def build_custom_checkers(by_lang):
          '''Do not call self.client directly for put/patch/post/get.
     See WRAPPER_COMMENT in test_helpers.py for details.
     '''},
+        # Directly fetching Message objects in e.g. views code is often a security bug.
+        {'pattern': '[^r][M]essage.objects.get',
+         'exclude': set(["zerver/tests", "zerver/worker/queue_processors.py"]),
+         'description': 'Please use access_message() to fetch Message objects',
+         },
+        {'pattern': '[S]tream.objects.get',
+         'include_only': set(["zerver/views/"]),
+         'description': 'Please use access_stream_by_*() to fetch Stream objects',
+         },
+        {'pattern': 'get_stream[(]',
+         'include_only': set(["zerver/views/", "zerver/lib/actions.py"]),
+         # messages.py needs to support accessing invite-only streams
+         # that you are no longer subscribed to, so need get_stream.
+         'exclude': set(['zerver/views/messages.py']),
+         'exclude_line': set([
+             # This is a check for whether a stream rename is invalid because it already exists
+             ('zerver/lib/actions.py', 'existing_deactivated_stream = get_stream(new_name, stream.realm)'),
+             # This one in check_message is kinda terrible, since it's
+             # how most instances are written, but better to exclude something than nothing
+             ('zerver/lib/actions.py', 'stream = get_stream(stream_name, realm)'),
+         ]),
+         'description': 'Please use access_stream_by_*() to fetch Stream objects',
+         },
+        {'pattern': '[S]tream.objects.filter',
+         'include_only': set(["zerver/views/"]),
+         'description': 'Please use access_stream_by_*() to fetch Stream objects',
+         },
+        {'pattern': '^from (zerver|analytics|confirmation)',
+         'include_only': set(["/migrations/"]),
+         'exclude': set(['zerver/migrations/0032_verify_all_medium_avatar_images.py',
+                         'zerver/migrations/0041_create_attachments_for_old_messages.py',
+                         'zerver/migrations/0060_move_avatars_to_be_uid_based.py']),
+         'description': "Don't import models or other code in migrations; see docs/schema-migrations.md",
+         },
+        {'pattern': 'datetime[.](now|utcnow)',
+         'include_only': set(["zerver/", "analytics/"]),
+         'description': "Don't use datetime in backend code.\n"
+         "See https://zulip.readthedocs.io/en/latest/code-style.html#naive-datetime-objects",
+         },
         # This rule might give false positives in virtualenv setup files which should be excluded,
         # and comments which should be rewritten to avoid use of "python2", "python3", etc.
         {'pattern': 'python[23]',
-         'exclude': set(['tools/provision.py',
+         'exclude': set(['tools/lib/provision.py',
                          'tools/setup/setup_venvs.py',
                          'scripts/lib/setup_venv.py',
                          'tools/lint-all']),
          'description': 'Explicit python invocations should not include a version'}
-        ]) + whitespace_rules
+    ]) + whitespace_rules
     bash_rules = [
         {'pattern': '#!.*sh [-xe]',
          'description': 'Fix shebang line with proper call to /usr/bin/env for Bash path, change -x|-e switches'
                         ' to set -x|set -e'},
-        ] + whitespace_rules[0:1] # type: RuleList
+    ] + whitespace_rules[0:1] # type: RuleList
     css_rules = cast(RuleList, [
         {'pattern': '^[^:]*:\S[^:]*;$',
          'description': "Missing whitespace after : in CSS"},
@@ -363,7 +452,7 @@ def build_custom_checkers(by_lang):
          'strip': '\n'},
         {'pattern': '{\w',
          'description': "Missing whitespace after '{' in CSS (should be newline)."},
-        ]) + whitespace_rules # type: RuleList
+    ]) + whitespace_rules # type: RuleList
     prose_style_rules = [
         {'pattern': '[^\/\#\-\"]([jJ]avascript)', # exclude usage in hrefs/divs
          'description': "javascript should be spelled JavaScript"},
@@ -371,31 +460,58 @@ def build_custom_checkers(by_lang):
          'description': "github should be spelled GitHub"},
         {'pattern': '[oO]rganisation', # exclude usage in hrefs/divs
          'description': "Organization is spelled with a z"},
+        {'pattern': '!!! warning',
+         'description': "!!! warning is invalid; it's spelled '!!! warn'"},
     ] # type: RuleList
     html_rules = whitespace_rules + prose_style_rules + [
         {'pattern': 'placeholder="[^{]',
          'description': "`placeholder` value should be translatable.",
+         'exclude_line': [('templates/zerver/register.html', 'placeholder="acme"'),
+                          ('templates/zerver/register.html', 'placeholder="Acme"'),
+                          ('static/templates/settings/realm-domains-modal.handlebars',
+                           '<td><input type="text" class="new-alias-domain" placeholder="acme.com"></input></td>')],
          'exclude': set(["static/templates/settings/emoji-settings-admin.handlebars",
-                         "static/templates/settings/realm-filter-settings-admin.handlebars"])},
+                         "static/templates/settings/realm-filter-settings-admin.handlebars",
+                         "static/templates/settings/bot-settings.handlebars"])},
         {'pattern': "placeholder='[^{]",
          'description': "`placeholder` value should be translatable."},
+        {'pattern': 'script src="http',
+         'description': "Don't directly load dependencies from CDNs.  See docs/front-end-build-process.md"},
         {'pattern': "title='[^{]",
          'description': "`title` value should be translatable."},
-        {'pattern': 'title="[^{]',
+        {'pattern': 'title="[^{\:]',
          'exclude_line': set([
              ('templates/zerver/markdown_help.html',
               '<td><img alt=":heart:" class="emoji" src="/static/generated/emoji/images/emoji/heart.png" title=":heart:" /></td>')
          ]),
          'description': "`title` value should be translatable."},
-        ] # type: RuleList
+    ] # type: RuleList
     handlebars_rules = html_rules + [
         {'pattern': "[<]script",
          'description': "Do not use inline <script> tags here; put JavaScript in static/js instead."},
+        {'pattern': "{{t '.*' }}[\.\?!]",
+         'description': "Period should be part of the translatable string."},
+        {'pattern': '{{t ".*" }}[\.\?!]',
+         'description': "Period should be part of the translatable string."},
+        {'pattern': "{{/tr}}[\.\?!]",
+         'description': "Period should be part of the translatable string."},
+    ]
+    jinja2_rules = html_rules + [
+        {'pattern': "{% endtrans %}[\.\?!]",
+         'description': "Period should be part of the translatable string."},
+        {'pattern': "{{ _(.+) }}[\.\?!]",
+         'description': "Period should be part of the translatable string."},
     ]
     json_rules = [] # type: RuleList # fix newlines at ends of files
     # It is okay that json_rules is empty, because the empty list
     # ensures we'll still check JSON files for whitespace.
     markdown_rules = markdown_whitespace_rules + prose_style_rules
+    help_markdown_rules = markdown_rules + [
+        {'pattern': '[a-z][.][A-Z]',
+         'description': "Likely missing space after end of sentence"},
+        {'pattern': '[rR]ealm',
+         'description': "Realms are referred to as Organizations in user-facing docs."},
+    ]
     txt_rules = whitespace_rules
 
     def check_custom_checks_py():
@@ -428,18 +544,39 @@ def build_custom_checkers(by_lang):
                 failed = True
 
         for fn in by_lang['html']:
-            if custom_check_file(fn, html_rules):
+            if custom_check_file(fn, jinja2_rules):
                 failed = True
 
         for fn in by_lang['json']:
             if custom_check_file(fn, json_rules):
                 failed = True
 
+        markdown_docs_length_exclude = {
+            "contrib_bots/bots/converter/readme.md",
+            "docs/bots-guide.md",
+            "docs/dev-env-first-time-contributors.md",
+            "docs/webhook-walkthrough.md",
+            "docs/life-of-a-request.md",
+            "docs/logging.md",
+            "docs/migration-renumbering.md",
+            "docs/readme-symlink.md",
+            "README.md",
+        }
         for fn in by_lang['md']:
-            if custom_check_file(fn, markdown_rules):
+            max_length = None
+            if fn not in markdown_docs_length_exclude:
+                max_length = 120
+            rules = markdown_rules
+            if fn.startswith("templates/zerver/help"):
+                rules = help_markdown_rules
+            if custom_check_file(fn, rules, max_length=max_length):
                 failed = True
 
         for fn in by_lang['txt'] + by_lang['text']:
+            if custom_check_file(fn, txt_rules):
+                failed = True
+
+        for fn in by_lang['yaml']:
             if custom_check_file(fn, txt_rules):
                 failed = True
 
@@ -487,7 +624,7 @@ def run():
     by_lang = cast(Dict[str, List[str]],
                    lister.list_files(args, modified_only=options.modified,
                                      ftypes=['py', 'sh', 'js', 'pp', 'css', 'handlebars',
-                                             'html', 'json', 'md', 'txt', 'text'],
+                                             'html', 'json', 'md', 'txt', 'text', 'yaml'],
                                      use_shebang=True, group_by_ftype=True, exclude=EXCLUDED_FILES))
 
     # Invoke the appropriate lint checker for each language,
@@ -542,8 +679,8 @@ def run():
             # type: () -> int
             if len(by_lang['js']) == 0:
                 return 0
-            result = subprocess.call(['node', 'node_modules/.bin/eslint', '--quiet']
-                                     + by_lang['js'])
+            result = subprocess.call(['node', 'node_modules/.bin/eslint', '--quiet'] +
+                                     by_lang['js'])
             return result
 
         @lint

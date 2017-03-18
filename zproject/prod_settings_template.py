@@ -9,23 +9,80 @@
 # sensible default values will be used.
 
 # The user-accessible Zulip hostname for this installation, e.g.
-# zulip.example.com
+# zulip.example.com.  This should match what users will put in their
+# web browser.  If you want to allow multiple hostnames, add the rest
+# to ALLOWED_HOSTS.
 EXTERNAL_HOST = 'zulip.example.com'
+
+# A comma-separated list of strings representing the host/domain names
+# that your users will enter in their browsers to access your Zulip
+# server. This is a security measure to prevent an attacker from
+# poisoning caches and triggering password reset emails with links to
+# malicious hosts by submitting requests with a fake HTTP Host
+# header. See Django's documentation here:
+# <https://docs.djangoproject.com/en/1.9/ref/settings/#allowed-hosts>.
+# Zulip adds 'localhost' and '127.0.0.1' to the list automatically.
+#
+# The default should work unless you are using multiple hostnames or
+# connecting directly to your server's IP address.  If this is set
+# wrong, all requests will get a "Bad Request" error.
+ALLOWED_HOSTS = [EXTERNAL_HOST]
 
 # The email address for the person or team who maintain the Zulip
 # Voyager installation. Will also get support emails. (e.g. zulip-admin@example.com)
 ZULIP_ADMINISTRATOR = 'zulip-admin@example.com'
 
+# Configure the outgoing SMTP server below. You will need working
+# SMTP to complete the installation process, in addition to sending
+# email address confirmations, missed message notifications, onboarding
+# follow-ups, and other user needs. If you do not have an SMTP server
+# already, we recommend services intended for developers such as Mailgun.
+#
+# To configure SMTP, you will need to complete the following steps:
+#
+# (1) Fill out the outgoing email sending configuration below.
+#
+# (2) Put the SMTP password for EMAIL_HOST_USER in
+# /etc/zulip/zulip-secrets.conf as email_password.
+#
+# If you are using a gmail account to send outgoing email, you
+# will likely need to read this Google support answer and configure
+# that account as "less secure":
+# https://support.google.com/accounts/answer/6010255
+#
+# You can quickly test your sending email configuration using:
+#   su zulip
+#   /home/zulip/deployments/current/manage.py send_test_email username@example.com
+#
+# A common problem is hosting providers that block outgoing SMTP traffic.
+#
+# With the exception of reading EMAIL_HOST_PASSWORD from
+# email_password in the Zulip secrets file, Zulip uses Django's
+# standard EmailBackend, so if you're having issues, you may want to
+# search for documentation on using your email provider with Django.
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = ''
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+# The email From address to be used for automatically generated emails
+DEFAULT_FROM_EMAIL = "Zulip <zulip@example.com>"
+# The noreply address to be used as Reply-To for certain generated emails.
+# Messages sent to this address should not be delivered anywhere.
+NOREPLY_EMAIL_ADDRESS = "noreply@example.com"
+
+
+### AUTHENTICATION SETTINGS
+#
 # Enable at least one of the following authentication backends.
 # See http://zulip.readthedocs.io/en/latest/prod-authentication-methods.html
 # for documentation on our authentication backends.
 AUTHENTICATION_BACKENDS = (
-    # 'zproject.backends.EmailAuthBackend', # Email and password; see SMTP setup below
+    # 'zproject.backends.EmailAuthBackend', # Email and password; just requires SMTP setup
     # 'zproject.backends.GoogleMobileOauth2Backend', # Google Apps, setup below
     # 'zproject.backends.GitHubAuthBackend', # GitHub auth, setup below
     # 'zproject.backends.ZulipLDAPAuthBackend', # LDAP, setup below
     # 'zproject.backends.ZulipRemoteUserBackend', # Local SSO, setup docs on readthedocs
-    )
+)
 
 # To enable Google authentication, you need to do the following:
 #
@@ -68,50 +125,6 @@ AUTHENTICATION_BACKENDS = (
 # SSO_APPEND_DOMAIN = "example.com")
 SSO_APPEND_DOMAIN = None # type: str
 
-# Configure the outgoing SMTP server below. For testing, you can skip
-# sending emails entirely by commenting out EMAIL_HOST, but you will
-# want to configure this to support email address confirmation emails,
-# missed message emails, onboarding follow-up emails, etc. To
-# configure SMTP, you will need to complete the following steps:
-#
-# (1) Fill out the outgoing email sending configuration below.
-#
-# (2) Put the SMTP password for EMAIL_HOST_USER in
-# /etc/zulip/zulip-secrets.conf as email_password.
-#
-# (3) If you are using a gmail account to send outgoing email, you
-# will likely need to read this Google support answer and configure
-# that account as "less secure":
-# https://support.google.com/mail/answer/14257.
-#
-# You can quickly test your sending email configuration using:
-#   ./manage.py send_test_email username@example.com
-#
-# A common problem is hosting providers that block outgoing SMTP traffic.
-#
-# With the exception of reading EMAIL_HOST_PASSWORD from
-# email_password in the Zulip secrets file, Zulip uses Django's
-# standard EmailBackend, so if you're having issues, you may want to
-# search for documentation on using your email provider with Django.
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = ''
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-# The email From address to be used for automatically generated emails
-DEFAULT_FROM_EMAIL = "Zulip <zulip@example.com>"
-# The noreply address to be used as Reply-To for certain generated emails.
-# Messages sent to this address should not be delivered anywhere.
-NOREPLY_EMAIL_ADDRESS = "noreply@example.com"
-
-# A comma-separated list of strings representing the host/domain names
-# that this Django site can serve. You should reset it to be a list of
-# domains/IP addresses for your site. This is a security measure to
-# prevent an attacker from poisoning caches and triggering password
-# reset emails with links to malicious hosts by submitting requests
-# with a fake HTTP Host header. See Django's documentation here:
-# <https://docs.djangoproject.com/en/1.9/ref/settings/#allowed-hosts>.
-# Zulip adds 'localhost' to the list automatically.
-ALLOWED_HOSTS = ['*']
 
 ### OPTIONAL SETTINGS
 
@@ -120,6 +133,11 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
 # Session cookie expiry in seconds after the last page load
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 7 * 2 # 2 weeks
+
+# Password strength requirements; learn about configuration at
+# http://zulip.readthedocs.io/en/latest/security-model.html.
+# PASSWORD_MIN_LENGTH = 6
+# PASSWORD_MIN_ZXCVBN_QUALITY = 0.5
 
 # Controls whether or not there is a feedback button in the UI.
 ENABLE_FEEDBACK = False
@@ -130,11 +148,11 @@ ENABLE_FEEDBACK = False
 # be sent to that email address.
 FEEDBACK_EMAIL = ZULIP_ADMINISTRATOR
 
-# Controls whether or not error reports are sent to Zulip.  Error
-# reports are used to improve the quality of the product and do not
-# include message contents; please contact Zulip support with any
-# questions.
-ERROR_REPORTING = True
+# Controls whether or not error reports (tracebacks) are emailed to the
+# server administrators.
+#ERROR_REPORTING = True
+# For frontend (JavaScript) tracebacks
+#BROWSER_ERROR_REPORTING = False
 
 # Controls whether or not Zulip will provide inline image preview when
 # a link to an image is referenced in a message.

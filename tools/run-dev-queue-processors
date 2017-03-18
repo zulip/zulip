@@ -5,18 +5,18 @@
 # separate script so that the import from zerver.worker.queue_processors (which
 # is slow) can be done in parallel with the rest of the work in bringing up the
 # dev server.
-
+from __future__ import absolute_import
 import sys
 import os
-import django
 import subprocess
 
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+
+import django
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 django.setup()
-
-from zerver.worker.queue_processors import get_active_worker_queues
-
-queues = get_active_worker_queues()
 
 args = sys.argv[1:]
 subprocess.Popen(['./manage.py', 'process_queue', '--all'] + args,

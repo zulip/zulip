@@ -21,7 +21,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 from __future__ import absolute_import
-from typing import IO, Any, Text, Union, Set, Tuple
+from typing import IO, Any, Dict, List, Text, Union, Set, Tuple
 from types import FrameType
 
 import sys
@@ -38,6 +38,7 @@ import optparse
 import os
 import datetime
 import textwrap
+import time
 import signal
 import logging
 import hashlib
@@ -85,7 +86,7 @@ def to_zephyr_username(zulip_username):
 # significantly shorter than the following line (which, if they were
 # in the same paragraph, should have been wrapped in a way consistent
 # with how the previous line was wrapped) or (2) shorter than 60
-# characters (our assumed minimum linewrapping threshhold for Zephyr)
+# characters (our assumed minimum linewrapping threshold for Zephyr)
 # or (3) the first word of the next line is longer than this entire
 # line.
 def different_paragraph(line, next_line):
@@ -104,8 +105,8 @@ def unwrap_lines(body):
     previous_line = lines[0]
     for line in lines[1:]:
         line = line.rstrip()
-        if (re.match(r'^\W', line, flags=re.UNICODE)
-                and re.match(r'^\W', previous_line, flags=re.UNICODE)):
+        if (re.match(r'^\W', line, flags=re.UNICODE) and
+                re.match(r'^\W', previous_line, flags=re.UNICODE)):
             result += previous_line + "\n"
         elif (line == "" or
               previous_line == "" or
@@ -206,7 +207,7 @@ def update_subscriptions():
         f = open(options.stream_file_path, "r")
         public_streams = simplejson.loads(f.read())
         f.close()
-    except:
+    except Exception:
         logger.exception("Error reading public streams:")
         return
 
@@ -762,8 +763,8 @@ def maybe_forward_to_zephyr(message):
             # Don't try forward private messages with non-MIT users
             # to MIT Zephyr.
             return
-        timestamp_now = datetime.datetime.now().strftime("%s")
-        if float(message["timestamp"]) < float(timestamp_now) - 15:
+        timestamp_now = int(time.time())
+        if float(message["timestamp"]) < timestamp_now - 15:
             logger.warning("Skipping out of order message: %s < %s" %
                            (message["timestamp"], timestamp_now))
             return

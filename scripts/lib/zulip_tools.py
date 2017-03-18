@@ -22,6 +22,8 @@ OKGREEN = '\033[92m'
 WARNING = '\033[93m'
 FAIL = '\033[91m'
 ENDC = '\033[0m'
+BLACKONYELLOW = '\x1b[0;30;43m'
+WHITEONRED = '\x1b[0;37;41m'
 
 def subprocess_text_output(args):
     # type: (Sequence[str]) -> str
@@ -65,18 +67,18 @@ def get_deployment_lock(error_rerun_script):
             got_lock = True
             break
         except OSError:
-            print(WARNING + "Another deployment in progress; waiting for lock... "
-                  + "(If no deployment is running, rmdir %s)" % (LOCK_DIR,) + ENDC)
+            print(WARNING + "Another deployment in progress; waiting for lock... " +
+                  "(If no deployment is running, rmdir %s)" % (LOCK_DIR,) + ENDC)
             sys.stdout.flush()
             time.sleep(3)
 
     if not got_lock:
-        print(FAIL + "Deployment already in progress.  Please run\n"
-              + "  %s\n" % (error_rerun_script,)
-              + "manually when the previous deployment finishes, or run\n"
-              + "  rmdir %s\n"  % (LOCK_DIR,)
-              + "if the previous deployment crashed."
-              + ENDC)
+        print(FAIL + "Deployment already in progress.  Please run\n" +
+              "  %s\n" % (error_rerun_script,) +
+              "manually when the previous deployment finishes, or run\n" +
+              "  rmdir %s\n"  % (LOCK_DIR,) +
+              "if the previous deployment crashed." +
+              ENDC)
         sys.exit(1)
 
 def release_deployment_lock():
@@ -84,7 +86,7 @@ def release_deployment_lock():
     shutil.rmtree(LOCK_DIR)
 
 def run(args, **kwargs):
-    # type: (Sequence[str], **Any) -> int
+    # type: (Sequence[str], **Any) -> None
     # Output what we're doing in the `set -x` style
     print("+ %s" % (" ".join(args)))
 
@@ -95,8 +97,10 @@ def run(args, **kwargs):
     try:
         subprocess.check_call(args, **kwargs)
     except subprocess.CalledProcessError:
-        print(WARNING + "A command run by %s failed; see output above." % (sys.argv[0])
-              + ENDC)
-        print(WARNING + "Command was: %s" % (" ".join(args))
-              + ENDC)
+        print()
+        print(WHITEONRED + "Error running a subcommand of %s: %s" % (sys.argv[0], " ".join(args)) +
+              ENDC)
+        print(WHITEONRED + "Actual error output for the subcommand is just above this." +
+              ENDC)
+        print()
         raise

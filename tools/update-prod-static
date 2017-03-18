@@ -16,9 +16,15 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
 from django.conf import settings
 from scripts.lib.node_cache import setup_node_modules
 
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--prev-deploy', metavar='DIR',
                     help='a previous deploy from which to reuse files if possible')
+parser.add_argument('--authors-not-required', action='store_true', default=False,
+                    help='Authors files need not be updated')
 args = parser.parse_args()
 prev_deploy = args.prev_deploy
 
@@ -31,18 +37,23 @@ fp = open('var/log/update-prod-static.log', 'w')
 # Install node packages
 setup_node_modules(npm_args=['--production'], stdout=fp, stderr=fp)
 
-# Compile Handlebars templates and minify JavaScript.
-subprocess.check_call(['./tools/minify-js']
-                      + (['--prev-deploy', prev_deploy] if prev_deploy else []),
-                      stdout=fp, stderr=fp)
-
 # Build emoji
 subprocess.check_call(['./tools/setup/emoji/build_emoji'],
                       stdout=fp, stderr=fp)
 
-# Collect the files that we're going to serve.
-subprocess.check_call(['./manage.py', 'collectstatic', '--noinput', '-i', 'assets'],
+# Compile Handlebars templates and minify JavaScript.
+subprocess.check_call(['./tools/minify-js'] +
+                      (['--prev-deploy', prev_deploy] if prev_deploy else []),
                       stdout=fp, stderr=fp)
+
+# Collect the files that we're going to serve; this creates prod-static/serve.
+subprocess.check_call(['./manage.py', 'collectstatic', '--no-default-ignore',
+                       '--noinput', '-i', 'assets', '-i' 'node_modules'],
+                      stdout=fp, stderr=fp)
+if not settings.PRODUCTION:
+    # When building a release tarball, we need to move staticfiles.json
+    subprocess.check_call(['mv', 'prod-static/serve/staticfiles.json', 'staticfiles.json'],
+                          stdout=fp, stderr=fp)
 
 # Compile translation strings to generate `.mo` files.
 subprocess.check_call(['./manage.py', 'compilemessages'],
@@ -62,5 +73,13 @@ subprocess.check_call(['mv', os.path.join(settings.STATIC_ROOT, 'source-map'),
 subprocess.check_call(['cp', '-a', 'static/locale',
                        os.path.join(settings.STATIC_ROOT, 'locale')],
                       stdout=fp, stderr=fp)
+
+# Generate /authors page markdown
+authors_cmd = ['./tools/update-authors-json']
+if os.environ.get("TRAVIS"):
+    authors_cmd.append("--use-fixture")
+if args.authors_not_required:
+    authors_cmd.append("--not-required")
+subprocess.check_call(authors_cmd, stdout=fp)
 
 fp.close()

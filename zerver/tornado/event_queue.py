@@ -1,9 +1,11 @@
+# See http://zulip.readthedocs.io/en/latest/events-system.html for
+# high-level documentation on how this system works.
 from __future__ import absolute_import
-from typing import cast, AbstractSet, Any, Optional, Iterable, Sequence, Mapping, MutableMapping, Callable, Union, Text
+from typing import cast, AbstractSet, Any, Callable, Dict, List, Mapping, MutableMapping, Optional, Iterable, Sequence, Set, Text, Union
 
 from django.utils.translation import ugettext as _
 from django.conf import settings
-from django.utils.timezone import now
+from django.utils import timezone
 from collections import deque
 import datetime
 import os
@@ -21,8 +23,6 @@ import random
 import traceback
 from zerver.models import UserProfile, Client
 from zerver.decorator import RespondAsynchronously
-from zerver.lib.cache import cache_get_many, \
-    user_profile_by_id_cache_key, cache_save_user_profile, cache_with_key
 from zerver.tornado.handlers import clear_handler_by_id, get_handler_by_id, \
     finish_handler, handler_stats_string
 from zerver.lib.utils import statsd
@@ -171,8 +171,8 @@ class ClientDescriptor(object):
         if not hasattr(self, 'queue_timeout'):
             self.queue_timeout = IDLE_EVENT_QUEUE_TIMEOUT_SECS
 
-        return (self.current_handler_id is None
-                and now - self.last_connection_time >= self.queue_timeout)
+        return (self.current_handler_id is None and
+                now - self.last_connection_time >= self.queue_timeout)
 
     def connect_handler(self, handler_id, client_name):
         # type: (int, Text) -> None
@@ -410,8 +410,8 @@ def gc_event_queues():
     # not have a current handler.
     do_gc_event_queues(to_remove, affected_users, affected_realms)
 
-    logging.info(('Tornado removed %d idle event queues owned by %d users in %.3fs.'
-                  + '  Now %d active queues, %s')
+    logging.info(('Tornado removed %d idle event queues owned by %d users in %.3fs.' +
+                  '  Now %d active queues, %s')
                  % (len(to_remove), len(affected_users), time.time() - start,
                     len(clients), handler_stats_string()))
     statsd.gauge('tornado.active_queues', len(clients))
@@ -470,7 +470,7 @@ def setup_event_queue():
         load_event_queues()
         atexit.register(dump_event_queues)
         # Make sure we dump event queues even if we exit via signal
-        signal.signal(signal.SIGTERM, lambda signum, stack: sys.exit(1))
+        signal.signal(signal.SIGTERM, lambda signum, stack: sys.exit(1))  # type: ignore # https://github.com/python/mypy/issues/2955
         tornado.autoreload.add_reload_hook(dump_event_queues) # type: ignore # TODO: Fix missing tornado.autoreload stub
 
     try:
@@ -606,7 +606,7 @@ def get_user_events(user_profile, queue_id, last_event_id):
         resp.raise_for_status()
 
         return extract_json_response(resp)['events']
-
+    return []
 
 # Send email notifications to idle users
 # after they are idle for 1 hour
@@ -677,7 +677,7 @@ def receiver_is_idle(user_profile_id, realm_presences):
     else:
         active_datetime = timestamp_to_datetime(latest_active_timestamp)
         # 140 seconds is consistent with activity.js:OFFLINE_THRESHOLD_SECS
-        idle = now() - active_datetime > datetime.timedelta(seconds=140)
+        idle = timezone.now() - active_datetime > datetime.timedelta(seconds=140)
 
     return off_zulip or idle
 
@@ -814,8 +814,8 @@ def send_notification_http(data):
     # type: (Mapping[str, Any]) -> None
     if settings.TORNADO_SERVER and not settings.RUNNING_INSIDE_TORNADO:
         requests_client.post(settings.TORNADO_SERVER + '/notify_tornado', data=dict(
-                data   = ujson.dumps(data),
-                secret = settings.SHARED_SECRET))
+            data   = ujson.dumps(data),
+            secret = settings.SHARED_SECRET))
     else:
         process_notification(data)
 

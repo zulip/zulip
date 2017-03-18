@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from typing import Any, Union, Mapping, Optional, Text
+from typing import Any, Dict, Mapping, Optional, Text, Union
 
 from django.conf import settings
 from django.utils import timezone
@@ -28,7 +28,7 @@ from zerver.lib.utils import statsd
 from zerver.middleware import record_request_start_data, record_request_stop_data, \
     record_request_restart_data, write_log_line, format_timedelta
 from zerver.lib.redis_utils import get_redis_client
-from zerver.lib.session_user import get_session_user
+from zerver.lib.sessions import get_session_user
 from zerver.tornado.event_queue import get_client_descriptor
 
 logger = logging.getLogger('zulip.socket')
@@ -249,13 +249,15 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
 
 def fake_message_sender(event):
     # type: (Dict[str, Any]) -> None
+    """This function is used only for Casper and backend tests, where
+    rabbitmq is disabled"""
     log_data = dict() # type: Dict[str, Any]
     record_request_start_data(log_data)
 
     req = event['request']
     try:
         sender = get_user_profile_by_id(event['server_meta']['user_id'])
-        client = get_client(req['client'])
+        client = get_client("website")
 
         msg_id = check_send_message(sender, client, req['type'],
                                     extract_recipients(req['to']),
@@ -304,8 +306,8 @@ def respond_send_message(data):
 # securely send us the zulip.com cookie, which we use as part of our
 # authentication scheme.
 sockjs_router = sockjs.tornado.SockJSRouter(SocketConnection, "/sockjs",
-                                            {'sockjs_url': 'https://%s/node_modules/sockjs-client/sockjs.js' % (
-                                                                settings.EXTERNAL_HOST,),
+                                            {'sockjs_url': 'https://%s/static/third/sockjs/sockjs-0.3.4.js' % (
+                                                settings.EXTERNAL_HOST,),
                                              'disabled_transports': ['eventsource', 'htmlfile']})
 def get_sockjs_router():
     # type: () -> sockjs.tornado.SockJSRouter

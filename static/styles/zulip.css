@@ -69,6 +69,18 @@ p.n-margin {
     border-radius: 4px;
 }
 
+.modal-backdrop {
+    z-index: 102;
+}
+
+.top-messages-logo {
+    position: absolute;
+    left: calc(50% - 12px);
+    top: 67px;
+    width: 24px;
+    height: 24px;
+}
+
 #unmute_muted_topic_notification {
     display: none;
     position: absolute;
@@ -144,6 +156,7 @@ p.n-margin {
     height: 100%;
     overflow-y: scroll;
     z-index: 99;
+    -webkit-overflow-scrolling: touch;
 }
 
 .app-main,
@@ -223,7 +236,7 @@ input {
 
 textarea,
 label {
-    font-size:   inherit;
+    font-size: inherit;
     line-height: inherit;
 }
 
@@ -245,7 +258,7 @@ input[type="tel"],
 input[type="color"]
 {
     font-size: inherit;
-    height:    1.4em;
+    height: 1.4em;
 }
 
 li,
@@ -255,8 +268,8 @@ li,
 }
 
 .btn {
-    font-size:  inherit;
-    height:     auto;
+    font-size: inherit;
+    height: auto;
     line-height: 100%;
 }
 
@@ -327,6 +340,12 @@ code {
 .message_content p code {
     white-space: pre-wrap;
     padding: 0px 4px;
+    background-color: #fff;
+}
+
+/* This ensures bulleted lists are nicely centered in 1-line messages */
+.message_content ul {
+    margin: 5px 0 5px 20px;
 }
 
 .codehilite {
@@ -336,16 +355,20 @@ code {
 }
 
 pre {
-    /* 12/14 em, so bootstrap's default 12 px,
-       when body is the default 14 px */
-    font-size: 0.857em;
-    line-height: inherit;
+    /* code block text is a bit smaller than normal text */
+    font-size: 0.8em;
+    line-height: 1.4;
     white-space: pre;
     overflow-x: auto;
     word-wrap: normal;
     /* Bootstrap's default here is top: 0px, bottom: 10px */
     margin-top: 5px;
     margin-bottom: 5px;
+    /* Bootstrap's default here is 9.5 on all sides */
+    padding-top: 5px;
+    padding-bottom: 3px;
+    padding-left: 7px;
+    padding-right: 7px;
 }
 
 /* Ensure the horizontal scrollbar is visible on Mac */
@@ -374,12 +397,12 @@ pre code {
 /* Style inline code inside a link
    to look more like a normal link */
 a code {
-    color:        #08C;
+    color: #08C;
     border-color: #08C;
 }
 
 a:hover code {
-    color:        #005580;
+    color: #005580;
     border-color: #005580;
 }
 
@@ -402,7 +425,6 @@ a:hover code {
     font-weight: 300;
     font-size: 12px;
 }
-
 
 .logout {
     white-space: nowrap;
@@ -439,183 +461,21 @@ a:hover code {
     position: relative;
 }
 
-#group-pms li:hover,
-#user_presences li:hover {
-    background-color: #e2e8dd;
-}
-
-#user_presences,
-#group-pms {
-    list-style-position: inside; /* Draw the bullets inside our box */
-    margin-left: 0;
-    overflow: hidden;
-}
-
-#user_presences:hover,
-#group-pms:hover {
-    overflow-y: auto;
-}
-
-#user_presences .user_sidebar_entry:hover,
-#group-pms .group-pms-sidebar-entry:hover {
-    cursor: pointer;
-}
-
-#user_presences li {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-.user_sidebar_entry .count,
-.group-pms-sidebar-entry .count {
-    display: none;
-}
-
-#user_presences li,
-#group-pms li {
-    list-style-type: none;
-}
-
-.user-status-indicator,
-.group-pm-status-indicator {
-    display: block;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    border: 1px solid;
-    float: left;
-    position: relative;
-    top: 5px;
-    margin-right: 0.5em;
-}
-
-.user_active .user-status-indicator,
-.group-pm-status-indicator {
-    background-color: #44C21D;
-    border-color: #44C21D;
-}
-
-.user_idle .user-status-indicator {
-    border-color: #EC7E18;
-    background-color: #EC7E18;
-
-    background: -moz-linear-gradient(top,  rgba(255,255,255,0) 50%, rgba(236,126,24,1) 50%); /* FF3.6+ */
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(50%,rgba(255,255,255,0)), color-stop(50%,rgba(236,126,24,1))); /* Chrome,Safari4+ */
-    background: -webkit-linear-gradient(top,  rgba(255,255,255,0) 50%,rgba(236,126,24,1) 50%); /* Chrome10+,Safari5.1+ */
-    background: -o-linear-gradient(top,  rgba(255,255,255,0) 50%,rgba(236,126,24,1) 50%); /* Opera 11.10+ */
-    background: -ms-linear-gradient(top,  rgba(255,255,255,0) 50%,rgba(236,126,24,1) 50%); /* IE10+ */
-    background: linear-gradient(to bottom,  rgba(255,255,255,0) 50%,rgba(236,126,24,1) 50%); /* W3C */
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#ec7e18',GradientType=0 ); /* IE6-9 */
-}
-
-.user_offline .user-status-indicator {
-    background-color: none;
-    border-color: gray;
-}
-
-.user-device-indicator {
-    display: inline-block;
-    font-size: 20px;
-    line-height: 0px;
-    position: absolute;
-    right: 12px;
-    top: 0px;
-    color: #777777;
-}
-
-.user-with-count .user-device-indicator {
-    right: 35px;
-}
-
-#user_presences a,
-#group-pms a {
-    color: #333;
-}
-
-#invite-user-link i {
-    text-decoration: none;
-    margin-right: 5px;
-}
-
 .message_header_stream a.message_label_clickable {
     color: #333;
-}
-
-.group-pms-sidebar-entry .selectable_sidebar_block {
-    width: 235px;
-    display: block;
-}
-
-.user_sidebar_entry .selectable_sidebar_block {
-    width: 218px;
-    display: block;
-}
-
-.user_sidebar_entry .selectable_sidebar_block.user-with-mobile {
-    width: 204px;
-}
-
-.group-pm-link {
-    margin-left: 17px;
-    display: block;
-}
-
-.user_sidebar_entry .selectable_sidebar_block {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.user_sidebar_entry.user-with-count .selectable_sidebar_block {
-    width: 200px;
-}
-
-.user_sidebar_entry.user-with-count .selectable_sidebar_block.user-with-mobile {
-    width: 180px;
-}
-
-.user_sidebar_entry.user-with-count .count {
-    display: inherit;
-}
-
-.group-pms-sidebar-entry.group-with-count .selectable_sidebar_block {
-    width: 170px;
-}
-
-.user_sidebar_entry .count,
-.group-pms-sidebar-entry .count {
-    position: absolute;
-    right: 20px;
-    top: 4px;
-    padding: 2px 3px 1px 3px;
-    background: #80837f;
-    border-radius: 0px;
-    color: #ffffff;
-    font-size: 12px;
-    font-weight: normal;
-    letter-spacing: 0.6px;
-}
-
-.group-pms-sidebar-entry .count {
-    right: 2px;
-}
-
-.user_sidebar_entry .count,
-.group-pms-sidebar-entry .count {
-    line-height: 13px;
-    top: 2px;
 }
 
 li.actual-dropdown-menu i {
     /* In gear menu, make icons the same width so labels line up. */
     display: inline-block;
     width: 14px;
+    text-align: center;
+    margin-right: 3px;
 }
 
 .message_area_padder {
     /* The height of the header and the tabbar plus a small gap */
-    margin-top: 68px;
+    margin-top: 100px;
     /* This is needed for the floating recipient bar
      in Firefox only, for some reason; otherwise it gets
      a scrollbar */
@@ -680,13 +540,13 @@ td.pointer {
 
 .message_time {
     display: block;
-    font-size: 11px;
-    color: #a1a1a1;
+    font-size: 12px;
+    color: #b1b1b1;
     vertical-align: middle;
     padding: 1px;
-    font-weight: 300;
+    font-weight: 400;
     position: absolute;
-    right: -80px;
+    right: -105px;
     line-height: 20px;
     text-align: right;
     -webkit-transition: background-color 2.7s ease-in, color 2.7s ease-in;
@@ -703,7 +563,24 @@ td.pointer {
     display: inline-block;
     position: absolute;
     top: 2px;
-    right: -55px;
+    right: -56px;
+    z-index: 1;
+}
+
+.message_controls > div {
+    opacity: 0;
+    pointer-events: none;
+
+    transition: all 0.2s ease;
+}
+
+.messagebox:hover .message_controls > div {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.message_controls > div {
+    padding: 0px 1px;
 }
 
 .include-sender .message_controls {
@@ -720,13 +597,13 @@ td.pointer {
 
 .message_header {
     vertical-align: middle;
-    text-align:     left;
+    text-align: left;
     /* We can overflow-y if the font size gets big */
-    overflow:       hidden;
-    text-overflow:  ellipsis;
-    white-space:    nowrap;
-    font-weight:    600;
-    line-height:    14px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 600;
+    line-height: 14px;
     position: relative;
     z-index: 0;
 }
@@ -736,10 +613,6 @@ td.pointer {
     border-bottom: 1px solid #e2e2e2;
     border-top: 1px solid #e2e2e2;
     margin-bottom: 10px;
-}
-
-.message_list .message_row:hover .message_time {
-    display: none;
 }
 
 .stream_label {
@@ -793,7 +666,7 @@ td.pointer {
    top: 50%;
    content: " ";
    height: 0px;
-   width:  0px;
+   width: 0px;
    position: absolute;
    pointer-events: none;
    margin-top: -14px;
@@ -818,18 +691,18 @@ td.pointer {
     top: 0;
 
     color: #888;
-    font-size: 0.8em;
+    font-size: 12px;
     font-weight: 600;
-    padding: 3px 10px 2px 10px;
+    padding: 3px 11px 2px 10px;
     height: 17px;
     line-height: 17px;
 }
 
-.recipient_row_date .hide-date {
+.recipient_row_date.hide-date {
     display: none;
 }
 
-.floating_recipient .recipient_row_date .hide-date {
+.floating_recipient .recipient_row_date.hide-date {
     display: block;
 }
 
@@ -926,8 +799,8 @@ just a temporary hack.
 }
 
 @keyframes rotate {
-    from { transform:rotate(0deg); }
-    to { transform:rotate(359deg); }
+    from { transform: rotate(0deg); }
+    to { transform: rotate(359deg); }
 }
 
 .messagebox-bottom {
@@ -1066,11 +939,12 @@ just a temporary hack.
     vertical-align: top;
     line-height: 12px;
     font-size: 14px;
+    margin-left: -3px;
 }
 
 .sender-status {
     display: block;
-    left: 45px;
+    left: 46px;
     top: -26px;
     padding-bottom: 6px;
     padding-right: 35px;
@@ -1098,6 +972,20 @@ just a temporary hack.
     border-color: #0088CC;
 }
 
+.message_sender .bot-icon {
+    position: relative;
+    vertical-align: top;
+    top: -4px;
+
+    height: 20px;
+    width: 20px;
+}
+
+.message_sender .sender-status .bot-icon {
+    top: -1px;
+    margin-left: -3px;
+}
+
 .actions_hover:hover {
     color: #0088CC;
 }
@@ -1112,14 +1000,7 @@ just a temporary hack.
 .message_failed {
     font-weight: bold;
     color: red;
-    padding: 0px 1px 0px 1px;
     position: relative;
-    left: 29px;
-}
-
-.message_failed i {
-    margin-left: 2px;
-    margin-right: 2px;
 }
 
 a.message_label_clickable:hover {
@@ -1141,51 +1022,46 @@ a.message_label_clickable:hover {
     opacity: 1.0;
 }
 
-.edit_content {
-    display: inline-block;
-    position: relative;
-    left: 22px;
-    width: 0px;
-    height: 0px;
-    color: #bbb;
+.on_hover_topic_mute {
+    opacity: .1;
 }
 
-.edit_content i {
-    position: absolute;
-    display: block;
-    top: -0.9em;
-    left: 0.4em;
-    border-radius: 1px;
-    padding: 1px 2px;
+.on_hover_topic_mute:hover {
+    cursor: pointer;
+    opacity: 1.0;
+}
+
+.edit_content {
+    width: 12px;
+    display: inline-block;
+    position: relative;
+    color: #bbb;
 }
 
 .edit_content:hover {
     cursor: pointer;
-    opacity: 1.0;
+    color: #0088CC;
 }
 
 .reactions_hover {
     display: inline-block;
     position: relative;
-    left: 22px;
-    width: 0px;
-    height: 0px;
     color: #bbb;
-    opacity: 0;
 }
 
-.reactions_hover i {
-    position: absolute;
-    display: block;
-    top: -0.9em;
-    left: 0.4em;
-    border-radius: 1px;
-    padding: 1px 2px;
+.reactions_hover:hover {
+    color: #0088CC;
 }
 
-.message_hovered .reactions_hover {
-    cursor: pointer;
-    opacity: 1.0;
+.message_hovered .reactions_hover,
+.has_reactions_popover .reactions_hover {
+    opacity: 1;
+}
+
+.message_hovered .info,
+.has_actions_popover .info,
+.message_hovered .empty-star {
+    opacity: 1;
 }
 
 /* Brighten text because of the dark background */
@@ -1226,18 +1102,11 @@ a.dark_background:hover,
     cursor: pointer;
 }
 
-.message_hovered .info,
-.message_hovered .empty-star {
-    visibility: visible;
-}
-
 .info {
     display: inline-block;
     position: relative;
-    left: 3px;
     font-size: 15px;
     color: #bbb;
-    visibility: hidden;
 }
 
 .actions_hovered .actions_link {
@@ -1333,6 +1202,22 @@ div.focused_table {
     max-width: 100%;
 }
 
+#message-edit-history .message_author {
+    position: relative;
+}
+
+#message-edit-history .author_details {
+    display: block;
+    font-size: 12px;
+    vertical-align: middle;
+    padding: 1px;
+    font-weight: 300;
+    position: absolute;
+    right: -80px;
+    line-height: 20px;
+    text-align: right;
+}
+
 .message_content.condensed {
     max-height: 8.5em;
     overflow: hidden;
@@ -1350,6 +1235,8 @@ div.focused_table {
     /* to match .message_content */
     margin-left: 5px;
     margin-right: 35px;
+    /* to make message-uncollapse easier */
+    margin-top: 10px;
 }
 
 .message_length_controller:hover {
@@ -1388,7 +1275,7 @@ blockquote {
 
 blockquote p {
     line-height: inherit;
-    font-size:   inherit;
+    font-size: inherit;
 }
 
 .messagebox {
@@ -1399,7 +1286,7 @@ blockquote p {
 }
 
 .messagebox-content {
-    padding: 4px 90px 1px 10px;
+    padding: 4px 115px 1px 10px;
 }
 
 .last_message .messagebox-content {
@@ -1448,12 +1335,12 @@ blockquote p {
     display: none;
 }
 
-#connection-error {
-    font-size: 13px;
-}
-
 .streamname {
     font-weight: bold;
+}
+
+.alert {
+    display: none;
 }
 
 .home-error-bar .alert {
@@ -1524,7 +1411,7 @@ blockquote p {
    top: 50%;
    content: " ";
    height: 0px;
-   width:  0px;
+   width: 0px;
    position: absolute;
    pointer-events: none;
    margin-top: -25px;
@@ -1540,7 +1427,7 @@ blockquote p {
    top: 50%;
    content: " ";
    height: 0px;
-   width:  0px;
+   width: 0px;
    position: absolute;
    pointer-events: none;
    margin-top: -28px;
@@ -1672,27 +1559,6 @@ blockquote p {
     color: #ffffff;
 }
 
-#userlist-toggle {
-    display: none;
-    position: absolute;
-    top: 0px;
-    right: 0px;
-    text-align: center;
-    vertical-align: middle;
-    border-left: 2px solid #afbfca;
-}
-
-#userlist-toggle-button {
-    text-decoration: none;
-    background-color: #e4e4e4;
-    color: #858585;
-    display: block;
-    width: 40px;
-    height: 19px;
-    padding-top: 12px;
-    padding-bottom: 9px;
-}
-
 .nav .dropdown-menu {
     left: auto;
     right: 0px;
@@ -1757,6 +1623,7 @@ blockquote p {
     top: 10px;
     z-index: 5;
 }
+
 
 nav .column-left {
     text-align: center;
@@ -1855,6 +1722,16 @@ nav a .no-style {
     visibility: hidden;
 }
 
+#searchbox a.search_icon {
+    color: #ccc;
+    text-decoration: none;
+}
+
+#searchbox a.search_icon:hover {
+    color: #000;
+    text-decoration: none;
+}
+
 .highlight {
     background-color: #FCEA81;
 }
@@ -1950,9 +1827,16 @@ div.floating_recipient {
     /* If you change these, make sure to adjust the constants in
      * loading.make_indicator as well */
     margin-left: 20px;
-    font-size:   33px;
-    font-weight: bold;
+    font-size: 1.2em;
+    font-weight: 300;
     line-height: 38px;
+}
+
+.settings-section #admin_page_users_loading_indicator,
+.settings-section #admin_page_deactivated_users_loading_indicator,
+.settings-section #admin_page_bots_loading_indicator,
+.settings-section #admin_page_streams_loading_indicator {
+    margin: 0 auto;
 }
 
 .settings-section .loading_indicator_text {
@@ -1965,8 +1849,8 @@ div.floating_recipient {
 }
 
 .settings-section .loading_indicator_spinner {
-    width: 12px;
-    height: 12px;
+    width: 100%;
+    height: 100%;
     vertical-align: middle;
     display: inline-block;
 }
@@ -2028,7 +1912,7 @@ div.floating_recipient {
     text-overflow: ellipsis;
     text-align: center;
 
-    font-size:   inherit;
+    font-size: inherit;
     line-height: inherit;
 }
 
@@ -2041,7 +1925,7 @@ div.floating_recipient {
 }
 
 .popover hr {
-    margin-top:    5px;
+    margin-top: 5px;
     margin-bottom: 5px;
 }
 
@@ -2090,9 +1974,7 @@ div.floating_recipient {
 #loading_more_messages_indicator_box {
     position: relative;
     left: -50%;
-    top: 25px;
-    border: 1px rgb(100, 100, 100) solid;
-    background-color: rgba(230, 230, 230, 0.8);
+    top: -40px;
     z-index: 1;
     -webkit-border-radius: 6px;
        -moz-border-radius: 6px;
@@ -2108,13 +1990,8 @@ div.floating_recipient {
     color: white;
 }
 
-#fmt_help_table {
+.help-table {
     table-layout: fixed;
-}
-
-.administration {
-    margin-top: 55px;
-    padding-left: 15px;
 }
 
 .conversation-partners {
@@ -2233,13 +2110,62 @@ button.topic_edit_cancel {
     margin-bottom: 0px;
 }
 
+#invite-user {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+#invite-user .modal-header {
+    padding: 7px 15px;
+    border-color: #ddd;
+}
+
+#invite-user .modal-header .exit {
+    font-size: 1.5rem;
+    font-weight: 600;
+    background-color: transparent;
+    border: none;
+    position: absolute;
+    top: 6px;
+    right: 5px;
+    color: #aaa;
+}
+
 #invitee_emails {
     min-height: 40px;
     max-height: 300px;
 }
 
+#invite-user .custom_invite_body {
+    margin-top: 10px;
+}
+
+#invite-user .overlay-content {
+    position: relative;
+    width: 500px;
+    background-color: #fff;
+    border-radius: 4px;
+}
+
+#invite-user .modal-body {
+    margin-bottom: 58px;
+}
+
+#invite-user .modal-footer {
+    position: absolute;
+    bottom: 0px;
+    width: calc(100% - 30px);
+}
+
 #invite_status {
     display: none;
+}
+
+#invite-user #invite-user-label {
+    font-size: 1em;
+    font-weight: 700;
+    text-align: center;
+    text-transform: uppercase;
 }
 
 .settings-dropdown-caret {
@@ -2273,12 +2199,17 @@ button.topic_edit_cancel {
     text-align: center;
 }
 
+.notification {
+    cursor: pointer;
+}
+
 #empty_narrow_private_message p,
 #empty_narrow_message p {
     text-align: center;
 }
 
-.faded {
+.message-fade,
+.user_sidebar_entry.user-fade {
     opacity: 0.4;
 }
 
@@ -2288,6 +2219,12 @@ button.topic_edit_cancel {
     position: relative;
     top: 3px;
     margin-top: -7px;
+}
+
+.emoji.realm-emoji {
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
 .twitter-tweet {
@@ -2305,14 +2242,17 @@ button.topic_edit_cancel {
 
 .star {
     display: inline-block;
-    opacity: 1;
     font-size: 14px;
     color: #2c8211;
 }
 
+.star:not(.empty-star) {
+    opacity: 1 !important;
+    pointer-events: all !important;
+}
+
 .empty-star {
     color: #bbb;
-    visibility: hidden;
 }
 
 .empty-star:hover {
@@ -2321,7 +2261,7 @@ button.topic_edit_cancel {
 }
 
 .star:hover {
-    cursor:  pointer;
+    cursor: pointer;
     color: #0d7245;
 }
 
@@ -2394,24 +2334,8 @@ button.topic_edit_cancel {
     margin-right: -50%;
 }
 
-#group-pm-list {
-    display: none;
-}
-
-#userlist-header,
-#group-pm-header {
-    border-top: 1px solid #e2e2e2;
-    margin-top: 5px;
-    margin-right: 10px;
-}
-
-.sidebar-items:first-of-type #userlist-header {
-    border-top: none;
-}
-
-#feedback_section {
-    text-align: left;
-    padding-bottom: 10px;
+.include-sender .message_edit {
+    margin-top: -14px;
 }
 
 .message_edit {
@@ -2421,18 +2345,18 @@ button.topic_edit_cancel {
 }
 
 /* Reduce some of the heavy padding from Bootstrap. */
+#message_edit_form {
+    margin-bottom: 10px;
+}
 #message_edit_form .edit-control-label {
-    width: auto;
-    float: left;
-    font-size: 80%;
     vertical-align: top;
     padding-top: 0px;
     margin-right: 10px;
+    font-size: 80%;
 }
 #message_edit_form .edit-controls {
-    margin-left: 35px; /* Match .message_content padding less 7px textarea padding and border */
-    margin-right: -7px;
-    margin-top: 10px;
+    margin-left: 0px;
+    margin-top: 0px;
 }
 #message_edit_form textarea {
     width: 100%;
@@ -2456,6 +2380,10 @@ button.topic_edit_cancel {
     float: right;
     padding-left: 5px;
     padding-top: 3px;
+}
+
+#message_edit_form .action-buttons {
+    margin: 10px 0px;
 }
 
 #topic_edit_form {
@@ -2558,21 +2486,85 @@ button.topic_edit_cancel {
     display: none;
 }
 
-.user-list-filter ,
-.add-user-list-filter {
-    width: 80%;
+/* embed */
+.message_content .message_embed {
+    display: block;
+    position: relative;
+    margin: 5px 0px;
+    border: none;
+    border-left: 3px solid #eee;
+    height: 70px;
+    padding: 5px;
+    z-index: 1;
 }
 
-/* embed */
-.message_embed {
-    border-left: 4px solid #ccc;
-    padding-left: 5px;
+.message_content .message_embed > * {
+    display: inherit;
+    padding: 5px;
+    border: none;
+}
+
+.message_embed .message_embed_title {
+    padding-top: 0px;
+    /* to remove the spacing that the font has from the top of the container. */
+    margin-top: -1px;
+
+    font-size: 1em;
+    font-weight: 600;
+    line-height: normal;
+}
+
+.message_embed .message_embed_description {
+    position: relative;
+    margin-top: -5px;
+    max-width: 500px;
+
+    /* to put it below the container gradient. */
+    z-index: -1;
+}
+
+.message_embed .message_embed_image {
+    display: inline-block;
+    width: 60px;
+    height: 60px;
+    background-size: cover;
+    background-position: center;
+}
+
+.message_embed .data-container {
+    padding: 0px 5px;
+    display: inline-block;
+    vertical-align: top;
+    max-width: calc(100% - 115px);
+    max-height: 70px;
+    overflow: hidden;
+}
+
+.message_embed .data-container div {
     display: block;
-    margin-bottom: 10px;
+    border: none;
 }
-.message_embed_title {
-    font-weight: bold;
+
+@media (max-width: 600px) {
+    .message_content .message_embed {
+        height: auto;
+    }
+
+    .message_embed .message_embed_image {
+        width: 100%;
+        height: 100px;
+    }
+
+    .message_embed .data-container {
+        display: block;
+        max-width: 100%;
+        margin-top: 10px;
+    }
 }
-.message_embed_image {
-    max-width: 80px;
+
+ul.sender_info_popover i {
+    display: inline-block;
+    width: 14px;
+    text-align: center;
+    margin-right: 3px;
 }

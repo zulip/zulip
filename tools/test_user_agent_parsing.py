@@ -4,6 +4,7 @@ import re
 from collections import defaultdict
 import os
 import sys
+from typing import Dict
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 

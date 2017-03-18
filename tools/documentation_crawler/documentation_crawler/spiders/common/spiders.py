@@ -14,12 +14,23 @@ from typing import Any, Generator, List, Optional, Tuple
 
 
 class BaseDocumentationSpider(scrapy.Spider):
-    name = None # type: Optional[str]
+    name = None  # type: Optional[str]
     # Exclude domain address.
-    deny_domains = [] # type: List[str]
-    start_urls = [] # type: List[str]
-    deny = () # type: Tuple
-    file_extensions = ['.' + ext for ext in IGNORED_EXTENSIONS] # type: List[str]
+    deny_domains = []  # type: List[str]
+    start_urls = []  # type: List[str]
+    deny = []  # type: List[str]
+    file_extensions = ['.' + ext for ext in IGNORED_EXTENSIONS]  # type: List[str]
+    tags = ('a', 'area', 'img')
+    attrs = ('href', 'src')
+
+    def __init__(self, *args, **kwargs):
+        # type: (*Any, **Any) -> None
+        super(BaseDocumentationSpider, self).__init__(*args, **kwargs)
+        self.has_error = False
+
+    def _set_error_state(self):
+        # type: () -> None
+        self.has_error = True
 
     def _has_extension(self, url):
         # type: (str) -> bool
@@ -43,19 +54,19 @@ class BaseDocumentationSpider(scrapy.Spider):
         permalink = m.group('permalink')
         # Check permalink existing on response page.
         if not response.selector.xpath(xpath_template.format(permalink=permalink)):
+            self._set_error_state()
             raise Exception(
                 "Permalink #{} is not found on page {}".format(permalink, response.request.url))
 
     def parse(self, response):
         # type: (Any) -> Generator[Request, None, None]
         self.log(response)
-        for link in LxmlLinkExtractor(deny_domains=self.deny_domains, deny_extensions=[],
-                                      deny=self.deny,
+        for link in LxmlLinkExtractor(deny_domains=self.deny_domains, deny_extensions=['doc'],
+                                      tags=self.tags, attrs=self.attrs, deny=self.deny,
                                       canonicalize=False).extract_links(response):
             callback = self.parse  # type: Any
             dont_filter = False
             method = 'GET'
-
             if self._is_external_url(link.url):
                 callback = self.check_existing
                 method = 'HEAD'
@@ -76,10 +87,14 @@ class BaseDocumentationSpider(scrapy.Spider):
         if hasattr(failure.value, 'response') and failure.value.response:
             response = failure.value.response
             if response.status == 404:
+                self._set_error_state()
                 raise Exception('Page not found: {}'.format(response))
             if response.status == 405 and response.request.method == 'HEAD':
                 # Method 'HEAD' not allowed, repeat request with 'GET'
                 return self.retry_request_with_get(response.request)
             self.log("Error! Please check link: {}".format(response), logging.ERROR)
+        elif isinstance(failure.type, IOError):
+            self._set_error_state()
         else:
             raise Exception(failure.value)
+        return None

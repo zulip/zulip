@@ -1,9 +1,10 @@
 from __future__ import absolute_import
 
 from six import binary_type
-from typing import Any, AnyStr, Callable, Iterable, MutableMapping, Optional, Text
+from typing import Any, AnyStr, Callable, Dict, Iterable, List, MutableMapping, Optional, Text
 
 from django.conf import settings
+from django.core.exceptions import DisallowedHost
 from django.utils.translation import ugettext as _
 
 from zerver.lib.response import json_error
@@ -14,14 +15,13 @@ from zerver.lib.utils import statsd, get_subdomain
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.cache import get_remote_cache_time, get_remote_cache_requests
 from zerver.lib.bugdown import get_bugdown_time, get_bugdown_requests
-from zerver.models import flush_per_request_caches, get_realm_by_string_id
+from zerver.models import flush_per_request_caches, get_realm
 from zerver.exceptions import RateLimited
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.views.csrf import csrf_failure as html_csrf_failure
 from django.utils.cache import patch_vary_headers
 from django.utils.http import cookie_date
-from zproject.jinja2 import render_to_response
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 
 import logging
 import time
@@ -106,7 +106,7 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
     if error_content is not None:
         error_content_iter = (error_content,)
 
-# For statsd timer name
+    # For statsd timer name
     if path == '/':
         statsd_path = u'webreq'
     else:
@@ -216,6 +216,7 @@ def write_log_line(log_data, path, method, remote_ip, email, client_name,
 
     # Log some additional data whenever we return certain 40x errors
     if 400 <= status_code < 500 and status_code not in [401, 404, 405]:
+        assert error_content_iter is not None
         error_content_list = list(error_content_iter)
         if error_content_list:
             error_data = u''
@@ -239,7 +240,7 @@ class LogRequests(object):
             connection.connection.queries = []
 
     def process_view(self, request, view_func, args, kwargs):
-        # type: (HttpRequest, Callable[..., HttpResponse], *str, **Any) -> None
+        # type: (HttpRequest, Callable[..., HttpResponse], List[str], Dict[str, Any]) -> None
         # process_request was already run; we save the initialization
         # time (i.e. the time between receiving the request and
         # figuring out which view function to call, which is primarily
@@ -297,7 +298,7 @@ class JsonErrorHandler(object):
 
 class TagRequests(object):
     def process_view(self, request, view_func, args, kwargs):
-        # type: (HttpRequest, Callable[..., HttpResponse], *str, **Any) -> None
+        # type: (HttpRequest, Callable[..., HttpResponse], List[str], Dict[str, Any]) -> None
         self.process_request(request)
 
     def process_request(self, request):
@@ -349,17 +350,27 @@ class FlushDisplayRecipientCache(object):
 class SessionHostDomainMiddleware(SessionMiddleware):
     def process_response(self, request, response):
         # type: (HttpRequest, HttpResponse) -> HttpResponse
+        try:
+            request.get_host()
+        except DisallowedHost:
+            # If we get a DisallowedHost exception trying to access
+            # the host, (1) the request is failed anyway and so the
+            # below code will do nothing, and (2) the below will
+            # trigger a recursive exception, breaking things, so we
+            # just return here.
+            return response
+
         if settings.REALMS_HAVE_SUBDOMAINS:
-            if (not request.path.startswith("/static/") and not request.path.startswith("/api/")
-                    and not request.path.startswith("/json/")):
+            if (not request.path.startswith("/static/") and not request.path.startswith("/api/") and
+                    not request.path.startswith("/json/")):
                 subdomain = get_subdomain(request)
                 if (request.get_host() == "127.0.0.1:9991" or request.get_host() == "localhost:9991"):
                     return redirect("%s%s" % (settings.EXTERNAL_URI_SCHEME,
                                               settings.EXTERNAL_HOST))
                 if subdomain != "":
-                    realm = get_realm_by_string_id(subdomain)
+                    realm = get_realm(subdomain)
                     if (realm is None):
-                        return render_to_response("zerver/invalid_realm.html")
+                        return render(render, "zerver/invalid_realm.html")
         """
         If request.session was modified, or if the configuration is to save the
         session every time, save the changes and set a session cookie.

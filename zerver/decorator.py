@@ -10,14 +10,14 @@ from zerver.models import UserProfile, get_client, get_user_profile_by_email
 from zerver.lib.response import json_error, json_unauthorized, json_success
 from django.shortcuts import resolve_url
 from django.utils.decorators import available_attrs
-from django.utils.timezone import now
+from django.utils import timezone
 from django.conf import settings
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import statsd, get_subdomain, check_subdomain
 from zerver.exceptions import RateLimited
 from zerver.lib.rate_limiter import incr_ratelimit, is_ratelimited, \
-     api_calls_left
+    api_calls_left
 from zerver.lib.request import REQ, has_request_variables, JsonableError, RequestVariableMissingError
 from django.core.handlers import base
 
@@ -84,7 +84,7 @@ def update_user_activity(request, user_profile):
 
     event = {'query': query,
              'user_profile_id': user_profile.id,
-             'time': datetime_to_timestamp(now()),
+             'time': datetime_to_timestamp(timezone.now()),
              'client': request.client.name}
     queue_json_publish("user_activity", event, lambda event: None)
 
@@ -94,9 +94,9 @@ def require_post(func):
     @wraps(func)
     def wrapper(request, *args, **kwargs):
         # type: (HttpRequest, *Any, **Any) -> HttpResponse
-        if (request.method != "POST"
-            and not (request.method == "SOCKET"
-                     and request.META['zulip.emulated_method'] == "POST")):
+        if (request.method != "POST" and
+            not (request.method == "SOCKET" and
+                 request.META['zulip.emulated_method'] == "POST")):
             if request.method == "SOCKET":
                 err_method = "SOCKET/%s" % (request.META['zulip.emulated_method'],)
             else:
@@ -126,14 +126,17 @@ def get_client_name(request, is_json_view):
     # User-Agent.
     if 'client' in request.GET:
         return request.GET['client']
-    elif 'client' in request.POST:
+    if 'client' in request.POST:
         return request.POST['client']
-    elif "HTTP_USER_AGENT" in request.META:
+    if "HTTP_USER_AGENT" in request.META:
         user_agent = parse_user_agent(request.META["HTTP_USER_AGENT"])
+    else:
+        user_agent = None
+    if user_agent is not None:
         # We could check for a browser's name being "Mozilla", but
         # e.g. Opera and MobileSafari don't set that, and it seems
         # more robust to just key off whether it was a json view
-        if user_agent["name"] != "ZulipDesktop" and is_json_view:
+        if is_json_view and user_agent["name"] not in {"ZulipDesktop", "ZulipElectron"}:
             # Avoid changing the client string for browsers Once this
             # is out to prod, we can name the field to something like
             # Browser for consistency.
@@ -191,11 +194,11 @@ def validate_api_key(request, role, api_key, is_webhook=False):
     except AttributeError:
         # Deployment objects don't have realms
         pass
-    if (not check_subdomain(get_subdomain(request), profile.realm.subdomain)
+    if (not check_subdomain(get_subdomain(request), profile.realm.subdomain) and
         # Allow access to localhost for Tornado
-        and not (settings.RUNNING_INSIDE_TORNADO and
-                 request.META["SERVER_NAME"] == "127.0.0.1" and
-                 request.META["REMOTE_ADDR"] == "127.0.0.1")):
+        not (settings.RUNNING_INSIDE_TORNADO and
+             request.META["SERVER_NAME"] == "127.0.0.1" and
+             request.META["REMOTE_ADDR"] == "127.0.0.1")):
         logging.warning("User %s attempted to access API on wrong subdomain %s" % (
             profile.email, get_subdomain(request)))
         raise JsonableError(_("Account is not associated with this subdomain"))
@@ -296,6 +299,16 @@ def logged_in_and_active(request):
         return False
     return check_subdomain(get_subdomain(request), request.user.realm.subdomain)
 
+def add_logging_data(view_func):
+    # type: (ViewFuncT) -> ViewFuncT
+    @wraps(view_func)
+    def _wrapped_view_func(request, *args, **kwargs):
+        # type: (HttpRequest, *Any, **Any) -> HttpResponse
+        request._email = request.user.email
+        process_client(request, request.user, is_json_view=True)
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
+
 # Based on Django 1.8's @login_required
 def zulip_login_required(function=None,
                          redirect_field_name=REDIRECT_FIELD_NAME,
@@ -307,7 +320,8 @@ def zulip_login_required(function=None,
         redirect_field_name=redirect_field_name
     )
     if function:
-        return actual_decorator(function)
+        # Add necessary logging data via add_logging_data
+        return actual_decorator(add_logging_data(function))
     return actual_decorator
 
 def zulip_internal(view_func):
@@ -320,9 +334,7 @@ def zulip_internal(view_func):
         if not request.user.is_staff:
             return HttpResponseRedirect(settings.HOME_NOT_LOGGED_IN)
 
-        request._email = request.user.email
-        process_client(request, request.user)
-        return view_func(request, *args, **kwargs)
+        return add_logging_data(view_func)(request, *args, **kwargs)
     return _wrapped_view_func # type: ignore # https://github.com/python/mypy/issues/1927
 
 # authenticated_api_view will add the authenticated user's
@@ -341,10 +353,10 @@ def authenticated_api_view(is_webhook=False):
                                     api_key_legacy=REQ('api-key', default=None),
                                     *args, **kwargs):
             # type: (HttpRequest, Text, Optional[Text], Optional[Text], *Any, **Any) -> HttpResponse
-            if not api_key and not api_key_legacy:
-                raise RequestVariableMissingError("api_key")
-            elif not api_key:
+            if api_key is None:
                 api_key = api_key_legacy
+            if api_key is None:
+                raise RequestVariableMissingError("api_key")
             user_profile = validate_api_key(request, email, api_key, is_webhook)
             request.user = user_profile
             request._email = user_profile.email
@@ -372,10 +384,10 @@ def authenticated_rest_api_view(is_webhook=False):
                 auth_type, credentials = request.META['HTTP_AUTHORIZATION'].split()
                 # case insensitive per RFC 1945
                 if auth_type.lower() != "basic":
-                    return json_error(_("Only Basic authentication is supported."))
+                    return json_error(_("This endpoint requires HTTP basic authentication."))
                 role, api_key = base64.b64decode(force_bytes(credentials)).decode('utf-8').split(":")
             except ValueError:
-                json_error(_("Invalid authorization header for basic auth"))
+                return json_unauthorized(_("Invalid authorization header for basic auth"))
             except KeyError:
                 return json_unauthorized("Missing authorization header for basic auth")
 
@@ -390,7 +402,7 @@ def authenticated_rest_api_view(is_webhook=False):
             if isinstance(profile, UserProfile):
                 request._email = profile.email
             else:
-                assert isinstance(profile, Deployment)
+                assert isinstance(profile, Deployment)  # type: ignore # https://github.com/python/mypy/issues/2957
                 request._email = "deployment:" + role
                 profile.rate_limits = ""
             # Apply rate limiting
@@ -486,17 +498,17 @@ def is_local_addr(addr):
 # secret, and also the originating IP (for now).
 def authenticate_notify(request):
     # type: (HttpRequest) -> bool
-    return (is_local_addr(request.META['REMOTE_ADDR'])
-            and request.POST.get('secret') == settings.SHARED_SECRET)
+    return (is_local_addr(request.META['REMOTE_ADDR']) and
+            request.POST.get('secret') == settings.SHARED_SECRET)
 
 def client_is_exempt_from_rate_limiting(request):
     # type: (HttpRequest) -> bool
 
     # Don't rate limit requests from Django that come from our own servers,
     # and don't rate-limit dev instances
-    return ((request.client and request.client.name.lower() == 'internal')
-            and (is_local_addr(request.META['REMOTE_ADDR']) or
-            settings.DEBUG_RATE_LIMITING))
+    return ((request.client and request.client.name.lower() == 'internal') and
+            (is_local_addr(request.META['REMOTE_ADDR']) or
+             settings.DEBUG_RATE_LIMITING))
 
 def internal_notify_view(view_func):
     # type: (ViewFuncT) -> ViewFuncT
@@ -576,8 +588,8 @@ def rate_limit_user(request, user, domain):
 
 def rate_limit(domain='all'):
     # type: (Text) -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]
-    """Rate-limits a view. Takes an optional 'domain' param if you wish to rate limit different
-    types of API calls independently.
+    """Rate-limits a view. Takes an optional 'domain' param if you wish to
+    rate limit different types of API calls independently.
 
     Returns a decorator"""
     def wrapper(func):
@@ -597,7 +609,7 @@ def rate_limit(domain='all'):
 
             try:
                 user = request.user
-            except:
+            except Exception:
                 # TODO: This logic is not tested, and I'm not sure we are
                 # doing the right thing here.
                 user = None
@@ -640,7 +652,7 @@ def profiled(func):
         # type: (*Any, **Any) -> Any
         fn = func.__name__ + ".profile"
         prof = cProfile.Profile()
-        retval = prof.runcall(func, *args, **kwargs)
+        retval = prof.runcall(func, *args, **kwargs) # type: Any
         prof.dump_stats(fn)
         return retval
     return wrapped_func # type: ignore # https://github.com/python/mypy/issues/1927

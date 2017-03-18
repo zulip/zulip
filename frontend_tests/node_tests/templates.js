@@ -6,6 +6,7 @@ set_global('page_params', {realm_emoji: {
 add_dependencies({
     Handlebars: 'handlebars',
     templates: 'js/templates',
+    emoji_codes: 'generated/emoji/emoji_codes.js',
     emoji: 'js/emoji',
     i18n: 'i18next',
 });
@@ -41,6 +42,8 @@ function render(template_name, args) {
         'notification-settings',
         'bot-settings',
         'alert-word-settings',
+        'attachments-settings',
+        'muted-topics-settings',
         'ui-settings',
     ]);
 }());
@@ -87,8 +90,33 @@ function render(template_name, args) {
     html += render('actions_popover_content', args);
     html += "</div>";
     var link = $(html).find("a.respond_button");
-    assert.equal(link.text().trim(), 'Reply');
+    assert.equal(link.text().trim(), 'Quote and reply');
     global.write_handlebars_output("actions_popover_content", html);
+}());
+
+(function admin_alias_list() {
+    var html = "<table>";
+    var args = {
+        alias: {
+            domain: 'zulip.org',
+            allow_subdomains: true,
+        },
+    };
+    html += render("admin-alias-list", args);
+    html += "</table>";
+
+    var button = $(html).find('.btn');
+    var domain = $(html).find('.domain');
+    var row = button.closest('tr');
+    var subdomains_checkbox = row.find('.allow-subdomains');
+
+    assert.equal(button.text().trim(), "Remove");
+    assert(button.hasClass("delete_alias"));
+    assert.equal(domain.text(), "zulip.org");
+
+    assert.equal(subdomains_checkbox.prop('checked'), true);
+
+    global.write_handlebars_output("admin-alias-list", html);
 }());
 
 (function admin_default_streams_list() {
@@ -200,7 +228,7 @@ function render(template_name, args) {
     assert.equal($(buttons[1]).text().trim(), "Make admin");
     assert($(buttons[1]).hasClass("make-admin"));
 
-    assert.equal($(buttons[2]).attr('title').trim(), "Edit User");
+    assert.equal($(buttons[2]).attr('title').trim(), "Edit user");
     assert($(buttons[2]).hasClass("open-user-form"));
 
     global.write_handlebars_output("admin_user_list", html);
@@ -224,6 +252,22 @@ function render(template_name, args) {
 (function announce_stream_docs() {
     var html = render('announce_stream_docs');
     global.write_handlebars_output("announce_stream_docs", html);
+}());
+
+(function attachment_settings_item() {
+    var html = '<ul id="attachments">';
+    var attachments = [
+        {messages: [], id: 42, name: "foo.txt"},
+        {messages: [], id: 43, name: "bar.txt"},
+    ];
+    _.each(attachments, function (attachment) {
+        var args = {attachment: attachment};
+        html += render('attachment-item', args);
+    });
+    html += "</ul>";
+    global.write_handlebars_output("attachment-item", html);
+    var li = $(html).find("li.attachment-item:first");
+    assert.equal(li.attr('data-attachment'), 42);
 }());
 
 (function bankruptcy_modal() {
@@ -267,8 +311,7 @@ function render(template_name, args) {
     var all_html = '';
 
     html = render('bookend', args);
-
-    assert.equal($(html).text().trim(), "subscribed to stream\n    \n        \n            \n            Unsubscribe");
+    assert.equal($(html).text().trim(), "subscribed to stream\n    \n        \n            Unsubscribe");
 
     all_html += html;
 
@@ -279,7 +322,7 @@ function render(template_name, args) {
     };
 
     html = render('bookend', args);
-    assert.equal($(html).text().trim(), 'Not subscribed to stream\n    \n        \n            \n            Subscribe');
+    assert.equal($(html).text().trim(), 'Not subscribed to stream\n    \n        \n            Subscribe');
 
     all_html += '<hr />';
     all_html += html;
@@ -292,7 +335,7 @@ function render(template_name, args) {
     html += '<div id="settings">';
     html += '<div id="bot-settings" class="settings-section">';
     html += '<div class="bot-settings-form">';
-    html += '<ol id="bots_list" style="display: block">';
+    html += '<ol id="active_bots_list" style="display: block">';
     var args = {
         email: "hamlet@zulip.com",
         api_key: "123456ABCD",
@@ -309,6 +352,25 @@ function render(template_name, args) {
     var img = $(html).find("img");
     assert.equal(img.attr('src'), '/hamlet/avatar/url');
 }());
+
+(function bot_owner_select() {
+    var args = {
+        users_list: [
+            {
+                email: "hamlet@zulip.com",
+                api_key: "123456ABCD",
+                full_name: "Hamlet",
+                avatar_url: "/hamlet/avatar/url",
+            },
+        ],
+    };
+    var html = render('bot_owner_select', args);
+    global.write_handlebars_output("bot_owner_select", html);
+    var option = $(html).find("option:last");
+    assert.equal(option.val(), "hamlet@zulip.com");
+    assert.equal(option.text(), "Hamlet");
+}());
+
 
 (function compose_invite_users() {
     var args = {
@@ -349,6 +411,51 @@ function render(template_name, args) {
     assert.equal(a.text(), "Narrow to here");
 }());
 
+(function draft_table_body() {
+    var args = {
+        drafts: [
+            {
+                draft_id: '1',
+                is_stream: true,
+                stream: 'all',
+                stream_color: '#FF0000',  // rgb(255, 0, 0)
+                topic: 'tests',
+                content: 'Public draft',
+            },
+            {
+                draft_id: '2',
+                is_stream: false,
+                recipients: 'Jordan, Michael',
+                content: 'Private draft',
+            },
+        ],
+    };
+
+    var html = '';
+    html += '<div id="drafts_table">';
+    html += render('draft_table_body', args);
+    html += '</div>';
+
+    global.write_handlebars_output("draft_table_body", html);
+
+    var row_1 = $(html).find(".draft-row[data-draft-id='1']");
+    assert.equal(row_1.find(".stream_label").text().trim(), "all");
+    assert.equal(row_1.find(".stream_label").css("background"), "rgb(255, 0, 0)");
+    assert.equal(row_1.find(".stream_topic").text().trim(), "tests");
+    assert(!row_1.find(".message_row").hasClass("private-message"));
+    assert.equal(row_1.find(".messagebox").css("box-shadow"),
+                 "inset 2px 0px 0px 0px #FF0000, -1px 0px 0px 0px #FF0000");
+    assert.equal(row_1.find(".message_content").text().trim(), "Public draft");
+
+    var row_2 = $(html).find(".draft-row[data-draft-id='2']");
+    assert.equal(row_2.find(".stream_label").text().trim(), "You and Jordan, Michael");
+    assert(row_2.find(".message_row").hasClass("private-message"));
+    assert.equal(row_2.find(".messagebox").css("box-shadow"),
+                 "inset 2px 0px 0px 0px #444444, -1px 0px 0px 0px #444444");
+    assert.equal(row_2.find(".message_content").text().trim(), "Private draft");
+}());
+
+
 (function email_address_hint() {
     var html = render('email_address_hint');
     global.write_handlebars_output("email_address_hint", html);
@@ -357,9 +464,23 @@ function render(template_name, args) {
 }());
 
 (function emoji_popover_content() {
-    var args = {
-        emoji_list: global.emoji.emojis_name_to_css_class,
-    };
+    var args = (function () {
+        var map = {};
+        for (var x in global.emoji.emojis_name_to_css_class) {
+            if (!global.emoji.realm_emojis[x]) {
+                map[x] = {
+                    name: x,
+                    css_name: global.emoji.emojis_name_to_css_class[x],
+                    url: global.emoji.emojis_by_name[x],
+                };
+            }
+        }
+
+        return {
+            emoji_list: map,
+            realm_emoji: global.emoji.realm_emojis,
+        };
+    }());
 
     var html = '<div style="height: 250px">';
     html += render('emoji_popover_content', args);
@@ -429,7 +550,7 @@ function render(template_name, args) {
     var first_message_text = first_message.find(".message_content").text().trim();
     assert.equal(first_message_text, "This is message one.");
 
-    var starred_title = first_message.find(".star span").attr("title");
+    var starred_title = first_message.find(".star").attr("title");
     assert.equal(starred_title, "Unstar this message");
 }());
 
@@ -483,6 +604,7 @@ function render(template_name, args) {
         },
     ];
 
+    render('loader');
     var html = render('message_group', {message_groups: groups, use_match_properties: true});
 
     var first_message_text = $(html).next('.recipient_row').find('div.messagebox:first .message_content').text().trim();
@@ -495,6 +617,27 @@ function render(template_name, args) {
     assert.equal(highlighted_subject_word, 'two');
 
     global.write_handlebars_output("message_group", html);
+}());
+
+(function message_edit_history() {
+    var message = {
+        content: "Let's go to lunch!",
+        edit_history: [
+            {
+                body_to_render: "<p>Let's go to <span class='highlight_text_replaced'>dinner</span>!</p>",
+                timestamp: 1468132659,
+                edited_by: 'Alice',
+                posted_or_edited: "Edited by",
+            },
+        ],
+    };
+    var html = render('message_edit_history', {
+            edited_messages: message.edit_history,
+        });
+    global.write_test_output("message_edit_history.handlebars", html);
+    var edited_message = $(html).find("div.messagebox-content");
+    assert.equal(edited_message.text().trim(),
+                "1468132659\n        Let's go to dinner!\n        Edited by Alice");
 }());
 
 (function message_info_popover_content() {
@@ -513,7 +656,7 @@ function render(template_name, args) {
     global.write_handlebars_output("message_info_popover_content", html);
 
     var a = $(html).find("a.respond_personal_button");
-    assert.equal(a.text().trim(), 'Send Alice Smith a private message');
+    assert.equal(a.text().trim(), 'Send private message');
 }());
 
 
@@ -535,7 +678,7 @@ function render(template_name, args) {
 (function message_reaction() {
     var args = {
         emoji_name: 'smile',
-        message_id: '1'
+        message_id: '1',
     };
 
     var html = '';
@@ -619,7 +762,6 @@ function render(template_name, args) {
     var page_params = $.extend(page_param_checkbox_options, {
         fullname: "Alyssa P. Hacker", password_auth_enabled: true,
         avatar_url: "https://google.com",
-        domain: "zulip.com",
     });
 
     var checkbox_ids = ["enable_stream_desktop_notifications",
@@ -733,6 +875,24 @@ function render(template_name, args) {
 }());
 
 
+(function subscription_stream_privacy_modal() {
+    var args = {
+        stream_id: 999,
+        is_private: true,
+    };
+    var html = render('subscription_stream_privacy_modal', args);
+
+    global.write_handlebars_output("subscription_stream_privacy_modal", html);
+
+    var stream_desc = $(html).find(".modal-body b");
+    assert.equal(stream_desc.text(), 'an invite-only stream');
+
+    var button = $(html).find("#change-stream-privacy-button");
+    assert(button.hasClass("btn-primary"));
+    assert.equal(button.text().trim(), "Make stream public");
+}());
+
+
 (function subscription_table_body() {
     var args = {
         subscriptions: [
@@ -747,13 +907,13 @@ function render(template_name, args) {
                 can_make_public: true,
                 can_make_private: true, /* not logical, but that's ok */
                 email_address: 'xxxxxxxxxxxxxxx@zulip.com',
-                id: 888,
+                stream_id: 888,
                 in_home_view: true,
             },
             {
                 name: 'social',
                 color: 'green',
-                id: 999,
+                stream_id: 999,
             },
         ],
     };
@@ -768,11 +928,12 @@ function render(template_name, args) {
     var span = $(html).find(".stream-name:first");
     assert.equal(span.text(), 'devel');
 
-    span = $(html).find(".admin-settings .sub_settings_title");
-    assert.equal(span.text(), 'Administrator settings');
-
     var div = $(html).find(".subscription-type");
     assert(div.text().indexOf('invite-only stream') > 0);
+
+    var anchor = $(html).find(".change-stream-privacy:first");
+    assert.equal(anchor.data("is-private"), true);
+    assert.equal(anchor.text(), "[Change]");
 }());
 
 
@@ -862,11 +1023,28 @@ function render(template_name, args) {
     });
 }());
 
+(function typing_notifications() {
+    var args = {
+        users: [{
+            full_name: 'Hamlet',
+            email: 'hamlet@zulip.com',
+        }],
+    };
+
+    var html = '';
+    html += '<ul>';
+    html += render('typing_notifications', args);
+    html += '</ul>';
+
+    global.write_handlebars_output('typing_notifications', html);
+    var li = $(html).find('li:first');
+    assert.equal(li.text(), 'Hamlet is typing...');
+}());
+
 (function user_presence_rows() {
     var args = {
         users: [
             {
-                my_fullname: true,
                 type_desc: "Active",
                 type: "active",
                 num_unread: 0,
@@ -890,7 +1068,7 @@ function render(template_name, args) {
 
     global.write_handlebars_output("user_presence_rows", html);
 
-    var a = $(html).find("a.my_fullname:first");
+    var a = $(html).find("a:first");
     assert.equal(a.text(), 'King Lear');
 }());
 
@@ -906,6 +1084,22 @@ function render(template_name, args) {
 
     var a = $(html).find("a.narrow_to_private_messages");
     assert.equal(a.text().trim(), 'Narrow to private messages with Hamlet');
+}());
+
+(function muted_topic_ui_row() {
+    var args = {
+        stream: 'Verona',
+        topic: 'Verona2',
+    };
+
+    var html = '<table id="muted-topics-table">';
+    html += '<tbody>';
+    html += render('muted_topic_ui_row', args);
+    html += '</tbody>';
+    html += '</table>';
+
+    assert.equal($(html).find("tr").data("stream"), "Verona");
+    assert.equal($(html).find("tr").data("topic"), "Verona2");
 }());
 
 // By the end of this test, we should have compiled all our templates.  Ideally,

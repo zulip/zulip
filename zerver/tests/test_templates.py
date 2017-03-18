@@ -63,27 +63,35 @@ class TemplateTestCase(ZulipTestCase):
 
         logged_in = [
             'analytics/stats.html',
+            'zerver/drafts.html',
             'zerver/home.html',
             'zerver/invite_user.html',
             'zerver/keyboard_shortcuts.html',
-            'zerver/left-sidebar.html',
+            'zerver/left_sidebar.html',
+            'zerver/landing_nav.html',
             'zerver/logout.html',
             'zerver/markdown_help.html',
             'zerver/navbar.html',
-            'zerver/right-sidebar.html',
+            'zerver/right_sidebar.html',
             'zerver/search_operators.html',
+            'zerver/settings_overlay.html',
+            'zerver/settings_sidebar.html',
             'zerver/stream_creation_prompt.html',
             'zerver/subscriptions.html',
             'zerver/tutorial_finale.html',
+            'zerver/message_history.html',
         ]
         unusual = [
             'confirmation/mituser_confirmation_email_body.txt',
             'confirmation/mituser_confirmation_email_subject.txt',
             'confirmation/mituser_invite_email_body.txt',
             'confirmation/mituser_invite_email_subject.txt',
+            'confirmation/emailchangestatus_confirmation_email.subject',
+            'confirmation/emailchangestatus_confirmation_email.html',
+            'confirmation/emailchangestatus_confirmation_email.txt',
+            'confirmation/notify_change_in_email_subject.txt',
             'corporate/mit.html',
             'corporate/privacy.html',
-            'corporate/terms-enterprise.html',
             'corporate/zephyr.html',
             'corporate/zephyr-mirror.html',
             'pipeline/css.jinja',
@@ -95,12 +103,13 @@ class TemplateTestCase(ZulipTestCase):
             'zerver/closed_realm.html',
             'zerver/topic_is_muted.html',
             'zerver/bankruptcy.html',
-            'zerver/image-overlay.html',
+            'zerver/lightbox_overlay.html',
             'zerver/invalid_realm.html',
             'zerver/compose.html',
             'zerver/debug.html',
             'zerver/base.html',
             'zerver/api_content.json',
+            'zerver/handlebars_compilation_failed.html',
         ]
         skip = covered + defer + logged_out + logged_in + unusual + ['tests/test_markdown.html', 'zerver/terms.html']
         templates = [t for t in get_all_templates() if t not in skip]
@@ -116,7 +125,7 @@ class TemplateTestCase(ZulipTestCase):
             template = get_template(template_name)
             try:
                 template.render(context)
-            except Exception:
+            except Exception:  # nocoverage # nicer error handler
                 logging.error("Exception while rendering '{}'".format(template.template.name))
                 raise
 
@@ -149,11 +158,11 @@ class TemplateTestCase(ZulipTestCase):
             shallow_tested=True,
             user_profile=user_profile,
             user=user_profile,
-            product_name='testing',
             form=DummyForm(
                 full_name=get_form_value('John Doe'),
                 terms=get_form_value(True),
                 email=get_form_value(email),
+                emails=get_form_value(email),
             ),
             current_url=lambda: 'www.zulip.com',
             hubot_lozenges_dict={},

@@ -87,7 +87,7 @@ exports.process_fenced_code = function (content) {
                         output_lines.push(text);
                         output_lines.push('');
                         handler_stack.pop();
-                    }
+                    },
                 };
             }
             return {
@@ -107,7 +107,7 @@ exports.process_fenced_code = function (content) {
                     output_lines.push(placeholder);
                     output_lines.push('');
                     handler_stack.pop();
-                }
+                },
             };
         }());
     }
@@ -119,7 +119,7 @@ exports.process_fenced_code = function (content) {
             },
             done: function () {
                 handler_stack.pop();
-            }
+            },
         };
     }
 

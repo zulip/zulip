@@ -2,7 +2,8 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 from django.core.management.base import BaseCommand
-from typing import Any
+from django.utils import timezone
+from typing import Any, Dict, List
 
 from zerver.models import UserPresence, UserActivity
 from zerver.lib.utils import statsd, statsd_key
@@ -18,7 +19,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
         # Get list of all active users in the last 1 week
-        cutoff = datetime.now() - timedelta(minutes=30, hours=168)
+        cutoff = timezone.now() - timedelta(minutes=30, hours=168)
 
         users = UserPresence.objects.select_related().filter(timestamp__gt=cutoff)
 
@@ -33,10 +34,10 @@ class Command(BaseCommand):
                 known_active = last_presence.timestamp
 
             for bucket in hour_buckets:
-                if bucket not in user_info[last_presence.user_profile.realm.domain]:
-                    user_info[last_presence.user_profile.realm.domain][bucket] = []
-                if datetime.now(known_active.tzinfo) - known_active < timedelta(hours=bucket):
-                    user_info[last_presence.user_profile.realm.domain][bucket].append(last_presence.user_profile.email)
+                if bucket not in user_info[last_presence.user_profile.realm.string_id]:
+                    user_info[last_presence.user_profile.realm.string_id][bucket] = []
+                if timezone.now() - known_active < timedelta(hours=bucket):
+                    user_info[last_presence.user_profile.realm.string_id][bucket].append(last_presence.user_profile.email)
 
         for realm, buckets in user_info.items():
             print("Realm %s" % (realm,))
@@ -49,10 +50,10 @@ class Command(BaseCommand):
         user_info = defaultdict(dict)
         for activity in users_reading:
             for bucket in hour_buckets:
-                if bucket not in user_info[activity.user_profile.realm.domain]:
-                    user_info[activity.user_profile.realm.domain][bucket] = []
-                if datetime.now(activity.last_visit.tzinfo) - activity.last_visit < timedelta(hours=bucket):
-                    user_info[activity.user_profile.realm.domain][bucket].append(activity.user_profile.email)
+                if bucket not in user_info[activity.user_profile.realm.string_id]:
+                    user_info[activity.user_profile.realm.string_id][bucket] = []
+                if timezone.now() - activity.last_visit < timedelta(hours=bucket):
+                    user_info[activity.user_profile.realm.string_id][bucket].append(activity.user_profile.email)
         for realm, buckets in user_info.items():
             print("Realm %s" % (realm,))
             for hr, users in sorted(buckets.items()):

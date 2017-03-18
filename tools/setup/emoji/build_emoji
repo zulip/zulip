@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+#
+# See docs/emoji.md for a high-level explanation of how this system
+# works.
 from __future__ import print_function
 import os
 import glob
@@ -9,9 +12,11 @@ import sys
 import hashlib
 import xml.etree.ElementTree as ET
 from six import unichr
-from typing import Union, Text
+from typing import Dict, Text, Union
 from os.path import dirname
 from PIL import Image, ImageDraw, ImageFont
+
+from emoji_setup_utils import emoji_names_for_picker
 
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../')
 sys.path.append(ZULIP_PATH)
@@ -28,6 +33,23 @@ EMOJI_DUMP_PATH = lambda p: os.path.join(EMOJI_DUMP_DIR_PATH, p)
 TARGET_EMOJI_DUMP = os.path.join(ZULIP_PATH, 'static', 'generated', 'emoji')
 EMOJI_CACHE_PATH = "/srv/zulip-emoji-cache"
 EMOJI_SCRIPT_DIR_PATH = os.path.join(ZULIP_PATH, 'tools', 'setup', 'emoji')
+
+EMOJI_CODES_FILE_TEMPLATE = """\
+var emoji_codes = (function () {
+var exports = {};
+
+exports.names = %(names)s;
+
+exports.codepoints = %(codepoints)s;
+
+exports.name_to_codepoint = %(name_to_codepoint)s;
+
+return exports;
+}());
+if (typeof module !== 'undefined') {
+    module.exports = emoji_codes;
+}
+"""
 
 # change directory
 os.chdir(EMOJI_SCRIPT_DIR_PATH)
@@ -103,9 +125,8 @@ def main():
     # https://github.com/behdad/fonttools/
 
     # NotoColorEmoji.tff is from
-    # https://android.googlesource.com/platform/external/noto-fonts/+/marshmallow-release/other/NotoColorEmoji.ttf
-    # note that you have to run it though base64 -D before being able
-    # to use it, since it downloads from that page base64 encoded
+    # https://android.googlesource.com/platform/external/noto-fonts/+/master/other/NotoColorEmoji.ttf
+    # Commit ID: 1e75a5582b3fb386725aaa944f32fba71f155588
 
     # this is so we don't accidently leave ttx files from previous
     # runs of this script lying around
@@ -137,7 +158,7 @@ def get_success_stamp():
     sha = hashlib.sha1()
 
     filenames = ['NotoColorEmoji.ttf', 'emoji_map.json', 'AndroidEmoji.ttf',
-                 'build_emoji']
+                 'build_emoji', 'emoji_setup_utils.py']
 
     for filename in filenames:
         with open(filename, 'rb') as reader:
@@ -150,9 +171,6 @@ def dump_emojis(cache_path):
     subprocess.call('ttx -v -z extfile -d {} NotoColorEmoji.ttf'.format(EMOJI_DUMP_DIR_PATH), shell=True)
 
     emoji_map = json.load(open('emoji_map.json'))
-    # Fix data problem with red/blue cars being inaccurate.
-    emoji_map['blue_car'] = emoji_map['red_car']
-    emoji_map['red_car'] = emoji_map['oncoming_automobile']
     code_point_to_fname_map = code_point_to_file_name_map(EMOJI_DUMP_PATH("NotoColorEmoji.ttx"))
 
     os.chdir(EMOJI_DUMP_DIR_PATH)
@@ -198,16 +216,49 @@ def dump_emojis(cache_path):
         print("Errors dumping emoji!")
         sys.exit(1)
 
-    subprocess.call('glue --quiet out/sprite . --namespace=emoji --sprite-namespace= --retina',
+    subprocess.call('glue --quiet out/sprite . --margin=1 --namespace=emoji --sprite-namespace= --retina',
                     shell=True)
 
     cache_emoji = os.path.join(cache_path, 'images', 'emoji')
+    cache_emoji_unicode = os.path.join(cache_path, 'images', 'emoji', 'unicode')
     run(['rm', '-rf', cache_path])
     run(['mkdir', '-p', cache_emoji])
     run(['mv', 'out/*', cache_emoji], shell=True)
     run(['mv', 'sprite*', cache_path], shell=True)
     assets = "{}/static/assets/zulip-emoji/*".format(ZULIP_PATH)
-    run(['cp', '-RPp', assets, cache_emoji], shell=True)
+    run(['cp', '-RPp', assets, cache_emoji_unicode], shell=True)
+
+    for fn in [os.path.basename(file_name) for file_name in glob.glob(assets)]:
+        os.symlink(
+            os.path.join(cache_emoji_unicode, fn),
+            os.path.join(cache_emoji, fn)
+        )
+
+    # Add zulip emoji to `emoji_map` so that we can avoid
+    # adding unnecessary exceptions to the rendering logic.
+    emoji_map['zulip'] = 'zulip'
+
+    EMOJI_CODES_PATH = os.path.join(cache_path, 'emoji_codes.js')
+    emoji_codes_file = open(EMOJI_CODES_PATH, 'w')
+
+    # put thumbs_up before thumbs_down
+    names = emoji_names_for_picker(emoji_map)
+    down_index = names.index('thumbs_down')
+    up_index = names.index('thumbs_up')
+    names[down_index], names[up_index] = ('thumbs_up', 'thumbs_down')
+
+    emoji_codes_file.write(EMOJI_CODES_FILE_TEMPLATE % {
+        'names': names,
+        'codepoints': sorted([str(code_point) for code_point in set(emoji_map.values())]),
+        'name_to_codepoint': {str(key): str(emoji_map[key]) for key in emoji_map}
+    })
+    emoji_codes_file.close()
+
+    NAME_TO_CODEPOINT_PATH = os.path.join(cache_path, 'name_to_codepoint.json')
+    name_to_codepoint_file = open(NAME_TO_CODEPOINT_PATH, 'w')
+
+    name_to_codepoint_file.write(json.dumps(emoji_map))
+    name_to_codepoint_file.close()
 
 if __name__ == "__main__":
     main()

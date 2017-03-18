@@ -21,7 +21,7 @@ from zerver.lib.response import json_response
 from zerver.middleware import async_request_stop, async_request_restart
 from zerver.tornado.descriptors import get_descriptor_by_handler_id
 
-from typing import Any, Callable
+from typing import Any, Callable, Dict, List
 
 current_handler_id = 0
 handlers = {} # type: Dict[int, AsyncDjangoHandler]
@@ -230,7 +230,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                     try:
                         callback, param_dict = resolver.resolve404()
                         response = callback(request, **param_dict)
-                    except:
+                    except Exception:
                         try:
                             response = self.handle_uncaught_exception(request, resolver,
                                                                       sys.exc_info())
@@ -247,7 +247,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                 try:
                     callback, param_dict = resolver.resolve403()
                     response = callback(request, **param_dict)
-                except:
+                except Exception:
                     try:
                         response = self.handle_uncaught_exception(request,
                                                                   resolver, sys.exc_info())
@@ -281,7 +281,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
                 response = middleware_method(request, response)
             if hasattr(self, 'apply_response_fixes'):
                 response = self.apply_response_fixes(request, response)
-        except:  # Any exception should be gathered and handled
+        except Exception:  # Any exception should be gathered and handled
             signals.got_request_exception.send(sender=self.__class__, request=request)
             response = self.handle_uncaught_exception(request, resolver, sys.exc_info())
 

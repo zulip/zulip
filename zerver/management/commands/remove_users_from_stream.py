@@ -9,7 +9,7 @@ from optparse import make_option
 from django.core.management.base import BaseCommand, CommandParser
 
 from zerver.lib.actions import bulk_remove_subscriptions
-from zerver.models import Realm, UserProfile, get_realm_by_string_id, get_stream, \
+from zerver.models import Realm, UserProfile, get_realm, get_stream, \
     get_user_profile_by_email
 
 class Command(BaseCommand):
@@ -40,13 +40,13 @@ class Command(BaseCommand):
                             help='Remove all users in this realm from this stream.')
 
     def handle(self, **options):
-        # type: (*Any, **Any) -> None
+        # type: (**Any) -> None
         if options["string_id"] is None or options["stream"] is None or \
                 (options["users"] is None and options["all_users"] is None):
             self.print_help("./manage.py", "remove_users_from_stream")
             exit(1)
 
-        realm = get_realm_by_string_id(options["string_id"])
+        realm = get_realm(options["string_id"])
         stream_name = options["stream"].strip()
         stream = get_stream(stream_name, realm)
 

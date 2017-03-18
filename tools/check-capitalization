@@ -1,0 +1,61 @@
+#!/usr/bin/env python
+from __future__ import absolute_import
+from __future__ import print_function
+
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+
+import argparse
+import json
+import os
+import re
+import subprocess
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from scripts.lib.zulip_tools import WARNING, FAIL, ENDC
+
+from tools.lib.capitalization import check_capitalization
+
+DJANGO_PO_REGEX = re.compile('msgid "(.*?)"')
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--show-ignored',
+                        action='store_true', dest='show_ignored', default=False,
+                        help='Show strings that passed the check because they '
+                             'contained ignored phrases.')
+    args = parser.parse_args()
+
+    subprocess.call(['./manage.py', 'makemessages'], stderr=subprocess.STDOUT)
+
+    with open('static/locale/en/translations.json') as f:
+        data = json.load(f)
+        frontend = check_capitalization(list(data.keys()))
+        frontend_errors, frontend_ignored = frontend
+
+    with open('static/locale/en/LC_MESSAGES/django.po') as f:
+        rows = [r for r in DJANGO_PO_REGEX.findall(f.read()) if r]
+        backend = check_capitalization(rows)
+        backend_errors, backend_ignored = backend
+
+    if frontend_errors:
+        print(WARNING + "Strings not properly capitalized in frontend:" + ENDC)
+        print('\n'.join(frontend_errors))
+
+    if backend_errors:
+        print(WARNING + "Strings not properly capitalized in backend:" + ENDC)
+        print('\n'.join(backend_errors))
+
+    if args.show_ignored:
+        print(WARNING + "Strings which were ignored: " + ENDC)
+        print('\n'.join(frontend_ignored + backend_ignored))
+
+    if frontend_errors or backend_errors:
+        # Point the user to the documentation on what the policy is.
+        print(WARNING + "See https://zulip.readthedocs.io/en/latest/translating.html#capitalization" + ENDC)
+        print(FAIL + "Failed!" + ENDC)
+        sys.exit(1)
+    else:
+        sys.exit(0)

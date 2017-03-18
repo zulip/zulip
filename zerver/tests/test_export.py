@@ -11,7 +11,7 @@ import ujson
 
 from mock import patch, MagicMock
 from six.moves import range
-from typing import Any
+from typing import Any, Dict, List, Set
 
 from zerver.lib.actions import (
     do_claim_attachments,
@@ -190,10 +190,9 @@ class ExportTest(TestCase):
         mkdir_p(output_dir)
         return output_dir
 
-    def _export_realm(self, domain, exportable_user_ids=None):
-        # type: (str, Set[int]) -> Dict[str, Any]
+    def _export_realm(self, realm, exportable_user_ids=None):
+        # type: (Realm, Set[int]) -> Dict[str, Any]
         output_dir = self._make_output_dir()
-        realm = Realm.objects.get(domain=domain)
         with patch('logging.info'), patch('zerver.lib.export.create_soft_link'):
             do_export_realm(
                 realm=realm,
@@ -225,7 +224,7 @@ class ExportTest(TestCase):
         # type: () -> None
         message = Message.objects.all()[0]
         user_profile = message.sender
-        url = upload_message_image(u'dummy.txt', u'text/plain', b'zulip!', user_profile)
+        url = upload_message_image(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
         path_id = url.replace('/user_uploads/', '')
         claim_attachment(
             user_profile=user_profile,
@@ -234,8 +233,8 @@ class ExportTest(TestCase):
             is_message_realm_public=True
         )
 
-        domain = 'zulip.com'
-        full_data = self._export_realm(domain=domain)
+        realm = Realm.objects.get(string_id='zulip')
+        full_data = self._export_realm(realm)
 
         data = full_data['attachment']
         self.assertEqual(len(data['zerver_attachment']), 1)
@@ -248,8 +247,8 @@ class ExportTest(TestCase):
 
     def test_zulip_realm(self):
         # type: () -> None
-        domain = 'zulip.com'
-        full_data = self._export_realm(domain=domain)
+        realm = Realm.objects.get(string_id='zulip')
+        full_data = self._export_realm(realm)
 
         data = full_data['realm']
         self.assertEqual(len(data['zerver_userprofile_crossrealm']), 0)
@@ -262,7 +261,7 @@ class ExportTest(TestCase):
             return values
 
         def find_by_id(table, db_id):
-            # type: (str) -> Dict[str, Any]
+            # type: (str, int) -> Dict[str, Any]
             return [
                 r for r in data[table]
                 if r['id'] == db_id][0]
@@ -294,10 +293,7 @@ class ExportTest(TestCase):
         hamlet = get_user_profile_by_email('hamlet@zulip.com')
         user_ids = set([cordelia.id, hamlet.id])
 
-        full_data = self._export_realm(
-            domain=domain,
-            exportable_user_ids=user_ids
-        )
+        full_data = self._export_realm(realm, exportable_user_ids=user_ids)
         data = full_data['realm']
         exported_user_emails = get_set('zerver_userprofile', 'email')
         self.assertIn('cordelia@zulip.com', exported_user_emails)

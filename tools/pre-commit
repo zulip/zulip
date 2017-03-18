@@ -10,10 +10,10 @@
 # will automatically be run through `vagrant ssh`.
 
 if [ -z "$VIRTUAL_ENV" ] && `which vagrant > /dev/null` && [ -e .vagrant ]; then
-    vcmd='/srv/zulip/tools/lint-all --force $(cd /srv/zulip && git diff --cached --name-only --diff-filter=ACM) || true'
+    vcmd='/srv/zulip/tools/lint-all --pep8 --force $(cd /srv/zulip && git diff --cached --name-only --diff-filter=ACM) || true'
     echo "Running lint-all using vagrant..."
     vagrant ssh -c "$vcmd"
 else
-    ./tools/lint-all --force $(git diff --cached --name-only --diff-filter=ACM) || true
+    ./tools/lint-all --pep8 --force $(git diff --cached --name-only --diff-filter=ACM) || true
 fi
 exit 0

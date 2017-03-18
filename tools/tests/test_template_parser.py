@@ -59,6 +59,14 @@ class ParserTest(unittest.TestCase):
             '''
         validate(text=my_html)
 
+    def test_validate_comment(self):
+        # type: () -> None
+        my_html = '''
+            <!---
+                <h1>foo</h1>
+            -->'''
+        validate(text=my_html)
+
     def test_validate_django(self):
         # type: () -> None
         my_html = '''
@@ -104,42 +112,51 @@ class ParserTest(unittest.TestCase):
         my_html = '''
             {{# foo
         '''
-        self._assert_validate_error('Tag missing }}', text=my_html)
+        self._assert_validate_error('''Tag missing "}}" at Line 2 Col 13:"{{# foo
+        "''', text=my_html)
 
     def test_validate_incomplete_handlebars_tag_2(self):
         # type: () -> None
         my_html = '''
             {{# foo }
         '''
-        self._assert_validate_error('Tag missing }}', text=my_html)
+        self._assert_validate_error('Tag missing "}}" at Line 2 Col 13:"{{# foo }\n"', text=my_html)
 
     def test_validate_incomplete_django_tag_1(self):
         # type: () -> None
         my_html = '''
             {% foo
         '''
-        self._assert_validate_error('Tag missing %}', text=my_html)
+        self._assert_validate_error('''Tag missing "%}" at Line 2 Col 13:"{% foo
+        "''', text=my_html)
 
     def test_validate_incomplete_django_tag_2(self):
         # type: () -> None
         my_html = '''
             {% foo %
         '''
-        self._assert_validate_error('Tag missing %}', text=my_html)
+        self._assert_validate_error('Tag missing "%}" at Line 2 Col 13:"{% foo %\n"', text=my_html)
 
     def test_validate_incomplete_html_tag_1(self):
         # type: () -> None
         my_html = '''
             <b
         '''
-        self._assert_validate_error('Tag missing >', text=my_html)
+        self._assert_validate_error('''Tag missing ">" at Line 2 Col 13:"<b
+        "''', text=my_html)
 
     def test_validate_incomplete_html_tag_2(self):
         # type: () -> None
         my_html = '''
             <a href="
         '''
-        self._assert_validate_error('Tag missing >', text=my_html)
+        my_html1 = '''
+            <a href=""
+        '''
+        self._assert_validate_error('''Tag missing ">" at Line 2 Col 13:"<a href=""
+        "''', text=my_html1)
+        self._assert_validate_error('''Unbalanced Quotes at Line 2 Col 13:"<a href="
+        "''', text=my_html)
 
     def test_validate_empty_html_tag(self):
         # type: () -> None

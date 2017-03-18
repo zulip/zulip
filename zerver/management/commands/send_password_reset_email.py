@@ -1,16 +1,15 @@
 from __future__ import absolute_import
 
 import logging
-from typing import Any, List, Optional, Text
+from typing import Any, Dict, List, Optional, Text
 
 from argparse import ArgumentParser
 from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 from django.core.mail import send_mail, BadHeaderError
 from zerver.forms import PasswordResetForm
-from zerver.models import UserProfile, get_user_profile_by_email, get_realm_by_string_id
+from zerver.models import UserProfile, get_user_profile_by_email, get_realm
 from django.template import loader
-from django.core.mail import EmailMultiAlternatives
 
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
@@ -35,7 +34,7 @@ class Command(BaseCommand):
         if options["to"]:
             users = [get_user_profile_by_email(options["to"])]
         elif options["realm"]:
-            realm = get_realm_by_string_id(options["realm"])
+            realm = get_realm(options["realm"])
             users = UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False,
                                                is_mirror_dummy=False)
         elif options["server"] == "YES":
@@ -66,24 +65,23 @@ class Command(BaseCommand):
             }
 
             logging.warning("Sending %s email to %s" % (email_template_name, user_profile.email,))
-            self.send_mail(subject_template_name, email_template_name,
-                           context, from_email, user_profile.email,
-                           html_email_template_name=html_email_template_name)
+            self.send_email(subject_template_name, email_template_name,
+                            context, from_email, user_profile.email,
+                            html_email_template_name=html_email_template_name)
 
-    def send_mail(self, subject_template_name, email_template_name,
-                  context, from_email, to_email, html_email_template_name=None):
+    def send_email(self, subject_template_name, email_template_name,
+                   context, from_email, to_email, html_email_template_name=None):
         # type: (str, str, Dict[str, Any], Text, Text, Optional[str]) -> None
         """
-        Sends a django.core.mail.EmailMultiAlternatives to `to_email`.
+        Sends a django.core.mail.send_mail to `to_email`.
         """
         subject = loader.render_to_string(subject_template_name, context)
         # Email subject *must not* contain newlines
         subject = ''.join(subject.splitlines())
         body = loader.render_to_string(email_template_name, context)
 
-        email_message = EmailMultiAlternatives(subject, body, from_email, [to_email])
         if html_email_template_name is not None:
             html_email = loader.render_to_string(html_email_template_name, context)
-            email_message.attach_alternative(html_email, 'text/html')
-
-        email_message.send()
+            send_mail(subject, body, from_email, [to_email], html_message=html_email)
+        else:
+            send_mail(subject, body, from_email, [to_email])

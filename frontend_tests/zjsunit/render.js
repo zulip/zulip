@@ -3,7 +3,7 @@ var render = (function () {
 var exports = {};
 
 var fs = require('fs');
-var _ = require('third/underscore/underscore.js');
+var _ = require('node_modules/underscore/underscore.js');
 var Handlebars = require('handlebars');
 
 function template_dir() {

@@ -8,6 +8,10 @@ import subprocess
 import sys
 import time
 
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
 from django.conf import settings
@@ -24,10 +28,25 @@ def get_templates():
 
 def run():
     # type: () -> None
-    subprocess.check_call(['node', 'node_modules/.bin/handlebars']
-                          + get_templates()
-                          + ['--output', os.path.join(STATIC_PATH, 'templates/compiled.js'),
-                             '--known', 'if,unless,each,with'])
+    subprocess.check_call(['node', 'node_modules/.bin/handlebars'] +
+                          get_templates() +
+                          ['--output', os.path.join(STATIC_PATH, 'templates/compiled.js'),
+                           '--known', 'if,unless,each,with'])
+
+
+def add_error_stamp_file(file_path):
+    # type: (str) -> None
+    file_dir = os.path.dirname(file_path)
+    if not os.path.exists(file_dir):
+        os.makedirs(file_dir)
+    open(file_path, 'a').close()
+
+
+def remove_error_stamp_file(file_path):
+    # type: (str) -> None
+    if os.path.exists(file_path):
+        os.remove(file_path)
+
 
 def run_forever():
     # type: () -> None
@@ -35,6 +54,8 @@ def run_forever():
     # django/utils/autoreload.py.  If any of our templates change, rebuild
     # compiled.js
     mtimes = {} # type: Dict[str, float]
+    error_file_path = os.path.join(settings.DEPLOY_ROOT,
+                                   'var/handlebars-templates/compile.error')
     while True:
         changed = False
         for fn in get_templates():
@@ -46,9 +67,12 @@ def run_forever():
             print('Recompiling templates')
             try:
                 run()
+                remove_error_stamp_file(error_file_path)
                 print('done')
-            except:
-                print('\n\n\nPLEASE FIX!!\n\n')
+            except Exception:
+                add_error_stamp_file(error_file_path)
+                print('\n\n\n\033[91mPLEASE FIX!!\033[0m\n\n')
+
         time.sleep(0.200)
 
 if __name__ == '__main__':

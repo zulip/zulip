@@ -18,7 +18,7 @@ var pointer_update_in_flight = false;
 function update_pointer() {
     if (!pointer_update_in_flight) {
         pointer_update_in_flight = true;
-        return channel.put({
+        return channel.post({
             url:      '/json/users/me/pointer',
             idempotent: true,
             data:     {pointer: pointer.furthest_read},
@@ -28,7 +28,7 @@ function update_pointer() {
             },
             error: function () {
                 pointer_update_in_flight = false;
-            }
+            },
         });
     }
     // Return an empty, resolved Deferred.
@@ -60,9 +60,8 @@ exports.fast_forward_pointer = function () {
     channel.get({
         url: '/json/users/me',
         idempotent: true,
-        data: {email: page_params.email},
         success: function (data) {
-            unread.mark_all_as_read(function () {
+            unread_ui.mark_all_as_read(function () {
                 pointer.furthest_read = data.max_message_id;
                 unconditionally_send_pointer_update().then(function () {
                     ui.change_tab_to('#home');
@@ -72,12 +71,12 @@ exports.fast_forward_pointer = function () {
                                      save_compose: true});
                 });
             });
-        }
+        },
     });
 };
 
 exports.keep_pointer_in_view = function () {
-    // See viewport.recenter_view() for related logic to keep the pointer onscreen.
+    // See message_viewport.recenter_view() for related logic to keep the pointer onscreen.
     // This function mostly comes into place for mouse scrollers, and it
     // keeps the pointer in view.  For people who purely scroll with the
     // mouse, the pointer is kind of meaningless to them, but keyboard
@@ -90,12 +89,12 @@ exports.keep_pointer_in_view = function () {
         return;
     }
 
-    var info = viewport.message_viewport_info();
+    var info = message_viewport.message_viewport_info();
     var top_threshold = info.visible_top + (1/10 * info.visible_height);
     var bottom_threshold = info.visible_top + (9/10 * info.visible_height);
 
     function message_is_far_enough_down() {
-        if (viewport.at_top()) {
+        if (message_viewport.at_top()) {
             return true;
         }
 
@@ -121,7 +120,7 @@ exports.keep_pointer_in_view = function () {
     }
 
     function message_is_far_enough_up() {
-        return viewport.at_bottom() ||
+        return message_viewport.at_bottom() ||
             (next_row.offset().top <= bottom_threshold);
     }
 
@@ -184,7 +183,7 @@ exports.initialize = function initialize() {
             } else {
                 messages = event.msg_list.message_range(event.previously_selected, event.id);
             }
-            unread.mark_messages_as_read(messages, {from: 'pointer'});
+            unread_ui.mark_messages_as_read(messages, {from: 'pointer'});
         }
     });
 };

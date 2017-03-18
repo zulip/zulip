@@ -12,12 +12,10 @@ exports.actively_scrolling = function () {
 
 // What, if anything, obscures the home tab?
 exports.home_tab_obscured = function () {
-    if ($('.modal:visible').length > 0) {
+    if ($('.overlay.show').length > 0) {
         return 'modal';
     }
-    if (! $('#home').hasClass('active')) {
-        return 'other_tab';
-    }
+
     return false;
 };
 
@@ -44,7 +42,7 @@ function amount_to_paginate() {
     // Some day we might have separate versions of this function
     // for Page Up vs. Page Down, but for now it's the same
     // strategy in either direction.
-    var info = viewport.message_viewport_info();
+    var info = message_viewport.message_viewport_info();
     var page_size = info.visible_height;
 
     // We don't want to page up a full page, because Zulip users
@@ -77,13 +75,13 @@ exports.page_up_the_right_amount = function () {
     // related adjustements, try to make those happen in the
     // scroll handlers, not here.
     var delta = amount_to_paginate();
-    viewport.scrollTop(viewport.scrollTop() - delta);
+    message_viewport.scrollTop(message_viewport.scrollTop() - delta);
 };
 
 exports.page_down_the_right_amount = function () {
     // see also: page_up_the_right_amount
     var delta = amount_to_paginate();
-    viewport.scrollTop(viewport.scrollTop() + delta);
+    message_viewport.scrollTop(message_viewport.scrollTop() + delta);
 };
 
 exports.replace_emoji_with_text = function (element) {
@@ -210,14 +208,19 @@ exports.update_starred = function (message_id, starred) {
     // lists.
     var message = exports.find_message(message_id);
 
-    unread.mark_message_as_read(message);
+    // If it isn't cached in the browser, no need to do anything
+    if (message === undefined) {
+        return;
+    }
+
+    unread_ui.mark_message_as_read(message);
 
     message.starred = starred;
 
     // Avoid a full re-render, but update the star in each message
     // table in which it is visible.
     update_message_in_all_views(message_id, function update_row(row) {
-        var elt = row.find(".message_star");
+        var elt = row.find(".star");
         if (starred) {
             elt.addClass("icon-vector-star").removeClass("icon-vector-star-empty").removeClass("empty-star");
         } else {
@@ -259,24 +262,6 @@ exports.show_failed_message_success = function (message_id) {
     });
 };
 
-exports.small_avatar_url = function (message) {
-    // Try to call this function in all places where we need 25px
-    // avatar images, so that the browser can help
-    // us avoid unnecessary network trips.  (For user-uploaded avatars,
-    // the s=25 parameter is essentially ignored, but it's harmless.)
-    //
-    // We actually request these at s=50, so that we look better
-    // on retina displays.
-    if (message.avatar_url) {
-        var url = message.avatar_url + "&s=50";
-        if (message.sent_by_me) {
-            url += "&stamp=" + settings.avatar_stamp;
-        }
-        return url;
-    }
-    return "";
-};
-
 exports.lightbox = function (data) {
     switch (data.type) {
         case "photo":
@@ -290,6 +275,40 @@ exports.lightbox = function (data) {
     }
 
     $("#overlay").addClass("show");
+    popovers.hide_all();
+};
+
+$(document).ready(function () {
+    var info_overlay_toggle = components.toggle({
+        name: "info-overlay-toggle",
+        selected: 0,
+        values: [
+            { label: "Keyboard shortcuts", key: "keyboard-shortcuts" },
+            { label: "Message formatting", key: "markdown-help" },
+            { label: "Search operators", key: "search-operators" },
+        ],
+        callback: function (name, key) {
+            $(".overlay-modal").hide();
+            $("#" + key).show();
+        },
+    }).get();
+
+    $(".informational-overlays .overlay-tabs")
+        .append($(info_overlay_toggle).addClass("large"));
+});
+
+exports.show_info_overlay = function (target) {
+    var el = {
+        overlay: $(".informational-overlays"),
+    };
+
+    if (!el.overlay.hasClass("show")) {
+        $(el.overlay).addClass("show");
+    }
+
+    if (target) {
+        components.toggle.lookup("info-overlay-toggle").goto(target);
+    }
 };
 
 exports.lightbox_photo = function (image, user) {
@@ -309,12 +328,6 @@ exports.lightbox_photo = function (image, user) {
     $(".image-description .user").text(user);
 
     $(".image-actions .open, .image-actions .download").attr("href", url);
-};
-
-exports.exit_lightbox_photo = function () {
-    $("#overlay").removeClass("show");
-    $(".player-container iframe").remove();
-    document.activeElement.blur();
 };
 
 exports.youtube_video = function (id) {
@@ -371,38 +384,25 @@ $(function () {
         // page, the pointer may still need to move.
 
         if (delta > 0) {
-            if (viewport.at_top()) {
+            if (message_viewport.at_top()) {
                 navigate.up();
             }
         } else if (delta < 0) {
-            if (viewport.at_bottom()) {
+            if (message_viewport.at_bottom()) {
                 navigate.down();
             }
         }
 
-        viewport.last_movement_direction = delta;
+        message_viewport.last_movement_direction = delta;
     });
 
-    viewport.message_pane.mousewheel(function (e, delta) {
-        // Ignore mousewheel events if a modal is visible.  It's weird if the
-        // user can scroll the main view by wheeling over the greyed-out area.
-        // Similarly, ignore events on settings page etc.
-        //
-        // We don't handle the compose box here, because it *should* work to
-        // select the compose box and then wheel over the message stream.
-        var obscured = exports.home_tab_obscured();
-        if (!obscured) {
+    message_viewport.message_pane.mousewheel(function (e, delta) {
+        if (!exports.home_tab_obscured()) {
+            // In the message view, we use a throttled mousewheel handler.
             throttled_mousewheelhandler(e, delta);
-        } else if (obscured === 'modal') {
-            // The modal itself has a handler invoked before this one (see below).
-            // preventDefault here so that the tab behind the modal doesn't scroll.
-            //
-            // This needs to include the events that would be ignored by throttling.
-            // That's why this code can't be moved into throttled_mousewheelhandler.
-            e.preventDefault();
         }
-        // If on another tab, we neither handle the event nor preventDefault, allowing
-        // the tab to scroll normally.
+        // If in a modal, we neither handle the event nor
+        // preventDefault, allowing the modal to scroll normally.
     });
 
     $(window).resize($.throttle(50, resize.handler));
@@ -511,16 +511,16 @@ $(function () {
                         _.pluck(event.msg_list._items, 'id'),
                         _.chain(current_msg_list._items).pluck('id').clone().value().sort()
                     ),
-                    found_in_dom: row_from_dom.length
+                    found_in_dom: row_from_dom.length,
                 });
             }
             if (event.target_scroll_offset !== undefined) {
-                viewport.set_message_offset(event.target_scroll_offset);
+                message_viewport.set_message_offset(event.target_scroll_offset);
             } else {
                 // Scroll to place the message within the current view;
                 // but if this is the initial placement of the pointer,
                 // just place it in the very center
-                viewport.recenter_view(row, {from_scroll: event.from_scroll,
+                message_viewport.recenter_view(row, {from_scroll: event.from_scroll,
                                     force_center: event.previously_selected === -1});
             }
         }
@@ -545,7 +545,7 @@ $(function () {
         $("#edit-message-hotkey-help").hide();
     }
 
-    if (page_params.presence_disabled) {
+    if (page_params.realm_presence_disabled) {
         $("#user-list").hide();
         $("#group-pm-list").hide();
     }
@@ -562,9 +562,8 @@ $(function () {
     notifications.initialize();
     gear_menu.initialize();
     hashchange.initialize();
-    invite.initialize();
     pointer.initialize();
-    unread.initialize();
+    unread_ui.initialize();
     activity.initialize();
     emoji.initialize();
 });
@@ -580,7 +579,7 @@ function scroll_finished() {
             pointer.suppress_scroll_pointer_update = false;
         }
         floating_recipient_bar.update();
-        if (viewport.scrollTop() === 0 &&
+        if (message_viewport.scrollTop() === 0 &&
             ui.have_scrolled_away_from_top) {
             ui.have_scrolled_away_from_top = false;
             message_store.load_more_messages(current_msg_list);
@@ -589,9 +588,9 @@ function scroll_finished() {
         }
         // When the window scrolls, it may cause some messages to
         // enter the screen and become read.  Calling
-        // unread.process_visible will update necessary
+        // unread_ui.process_visible will update necessary
         // data structures and DOM elements.
-        setTimeout(unread.process_visible, 0);
+        setTimeout(unread_ui.process_visible, 0);
     }
 }
 
@@ -607,8 +606,8 @@ function scroll_finish() {
 var saved_compose_cursor = 0;
 
 $(function () {
-    viewport.message_pane.scroll($.throttle(50, function () {
-        unread.process_visible();
+    message_viewport.message_pane.scroll($.throttle(50, function () {
+        unread_ui.process_visible();
         scroll_finish();
     }));
 

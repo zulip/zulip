@@ -33,7 +33,7 @@ from zerver.tornado.views import get_events_backend
 
 from six.moves.http_cookies import SimpleCookie
 
-from typing import Any, Callable, Generator, Optional
+from typing import Any, Callable, Dict, Generator, Optional
 
 
 class WebSocketBaseTestCase(AsyncHTTPTestCase, ZulipTestCase):
@@ -130,7 +130,7 @@ class TornadoTestCase(WebSocketBaseTestCase):
                 'narrow': [],
                 'user_profile_email': user_profile.email,
                 'all_public_streams': False,
-                'realm_id': user_profile.realm.id,
+                'realm_id': user_profile.realm_id,
                 'client_type_name': 'website',
                 'event_types': None,
                 'user_profile_id': user_profile.id,

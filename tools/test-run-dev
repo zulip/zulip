@@ -10,6 +10,9 @@ import signal
 import subprocess
 
 from six.moves import range
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
 from typing import IO
 
 

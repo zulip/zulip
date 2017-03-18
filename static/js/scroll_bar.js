@@ -2,7 +2,7 @@ $(function () {
     $("#stream-filters-container").perfectScrollbar({
         suppressScrollX: true,
         useKeyboard: false,
-        wheelSpeed: 20
+        wheelSpeed: 20,
     });
 });
 

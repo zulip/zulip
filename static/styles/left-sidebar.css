@@ -8,7 +8,8 @@
 }
 
 #streams_inline_cog,
-#streams_filter_icon {
+#streams_filter_icon,
+#join_unsub_stream {
     float: right;
     color: #000;
     font-size: 13px;
@@ -19,7 +20,11 @@
 
 #streams_inline_cog:hover,
 #streams_filter_icon:hover {
-   opacity: 1.0;
+    opacity: 1.0;
+}
+
+#join_unsub_stream {
+    margin-top: 1px;
 }
 
 #streams_header a {
@@ -42,6 +47,7 @@
     overflow-y: hidden;
     position: relative;
     z-index: 0;
+    width: 100%;
 }
 
 #stream-filters-container .ps-scrollbar-y-rail {
@@ -119,7 +125,7 @@ li.hidden-filter {
 #stream_filters .count {
     position: absolute;
     right: 20px;
-    top: 4px;
+    top: 2px;
     padding: 2px 3px 1px 3px;
     background: #80837f;
     border-radius: 0px;
@@ -137,7 +143,7 @@ li.hidden-filter {
 
 #global_filters .count {
     line-height: 13px;
-    top: 2px;
+    top: 3px;
 }
 
 .topic-name {
@@ -242,7 +248,7 @@ ul.filters li.out_of_home_view li.muted_topic {
 }
 
 #stream_filters .subscription_block .stream-name {
-   overflow-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 #stream_filters .subscription_block.stream-with-count {
@@ -424,7 +430,7 @@ li.show-more-topics a {
 }
 
 li.show-more-private-messages a {
-    font-size: 90%
+    font-size: 90%;
 }
 
 .zoom-in .show-more-topics {

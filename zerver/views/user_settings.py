@@ -1,30 +1,79 @@
 from __future__ import absolute_import
 from typing import Optional, Any
-from typing import Text
+from typing import Dict, Text
 
 from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.contrib.auth import authenticate, update_session_auth_hash
+from django.core.mail import send_mail
 from django.http import HttpRequest, HttpResponse
+from django.shortcuts import redirect, render
+from django.template.loader import render_to_string
+from django.urls import reverse
 
-from zerver.decorator import authenticated_json_post_view, has_request_variables, REQ
+from zerver.decorator import authenticated_json_post_view, has_request_variables, \
+    zulip_login_required, REQ
 from zerver.lib.actions import do_change_password, \
-    do_change_full_name, do_change_enable_desktop_notifications, \
+    do_change_enable_desktop_notifications, \
     do_change_enter_sends, do_change_enable_sounds, \
     do_change_enable_offline_email_notifications, do_change_enable_digest_emails, \
     do_change_enable_offline_push_notifications, do_change_enable_online_push_notifications, \
     do_change_default_desktop_notifications, do_change_autoscroll_forever, \
     do_change_enable_stream_desktop_notifications, do_change_enable_stream_sounds, \
-    do_regenerate_api_key, do_change_avatar_source, do_change_twenty_four_hour_time, \
-    do_change_left_side_userlist, do_change_default_language, \
-    do_change_pm_content_in_desktop_notifications
+    do_regenerate_api_key, do_change_avatar_fields, do_change_twenty_four_hour_time, \
+    do_change_left_side_userlist, do_change_emoji_alt_code, do_change_default_language, \
+    do_change_pm_content_in_desktop_notifications, validate_email, \
+    do_change_user_email, do_start_email_change_process, do_change_timezone
 from zerver.lib.avatar import avatar_url
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.response import json_success, json_error
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.validator import check_bool, check_string
 from zerver.lib.request import JsonableError
-from zerver.models import UserProfile, Realm, name_changes_disabled
+from zerver.lib.users import check_change_full_name
+from zerver.lib.timezone import get_all_timezones
+from zerver.models import UserProfile, Realm, name_changes_disabled, \
+    EmailChangeStatus
+from confirmation.models import EmailChangeConfirmation
+
+@zulip_login_required
+def confirm_email_change(request, confirmation_key):
+    # type: (HttpRequest, str) -> HttpResponse
+    user_profile = request.user
+    if user_profile.realm.email_changes_disabled:
+        raise JsonableError(_("Email address changes are disabled in this organization."))
+
+    confirmation_key = confirmation_key.lower()
+    obj = EmailChangeConfirmation.objects.confirm(confirmation_key)
+    confirmed = False
+    new_email = old_email = None  # type: Text
+    if obj:
+        confirmed = True
+        assert isinstance(obj, EmailChangeStatus)
+        new_email = obj.new_email
+        old_email = obj.old_email
+
+        do_change_user_email(obj.user_profile, obj.new_email)
+
+        context = {'support_email': settings.ZULIP_ADMINISTRATOR,
+                   'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS,
+                   'realm': obj.realm,
+                   'new_email': new_email,
+                   }
+        subject = render_to_string(
+            'confirmation/notify_change_in_email_subject.txt', context)
+        body = render_to_string(
+            'confirmation/notify_change_in_email_body.txt', context)
+        send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [old_email])
+
+    ctx = {
+        'confirmed': confirmed,
+        'support_email': settings.ZULIP_ADMINISTRATOR,
+        'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS,
+        'new_email': new_email,
+        'old_email': old_email,
+    }
+    return render(request, 'confirmation/confirm_email_change.html', context=ctx)
 
 @has_request_variables
 def json_change_ui_settings(request, user_profile,
@@ -52,11 +101,12 @@ def json_change_ui_settings(request, user_profile,
 @has_request_variables
 def json_change_settings(request, user_profile,
                          full_name=REQ(default=""),
+                         email=REQ(default=""),
                          old_password=REQ(default=""),
                          new_password=REQ(default=""),
                          confirm_password=REQ(default="")):
-    # type: (HttpRequest, UserProfile, Text, Text, Text, Text) -> HttpResponse
-    if not (full_name or new_password):
+    # type: (HttpRequest, UserProfile, Text, Text, Text, Text, Text) -> HttpResponse
+    if not (full_name or new_password or email):
         return json_error(_("No new data supplied"))
 
     if new_password != "" or confirm_password != "":
@@ -81,17 +131,26 @@ def json_change_settings(request, user_profile,
         request.session.save()
 
     result = {}
+    new_email = email.strip()
+    if user_profile.email != email and new_email != '':
+        if user_profile.realm.email_changes_disabled:
+            return json_error(_("Email address changes are disabled in this organization."))
+        error, skipped = validate_email(user_profile, new_email)
+        if error or skipped:
+            return json_error(error or skipped)
+
+        do_start_email_change_process(user_profile, new_email)
+        result['account_email'] = _('We have sent you an email on your '
+                                    'new email address for confirmation.')
+
     if user_profile.full_name != full_name and full_name.strip() != "":
         if name_changes_disabled(user_profile.realm):
             # Failingly silently is fine -- they can't do it through the UI, so
             # they'd have to be trying to break the rules.
             pass
         else:
-            new_full_name = full_name.strip()
-            if len(new_full_name) > UserProfile.MAX_NAME_LENGTH:
-                return json_error(_("Name too long!"))
-            do_change_full_name(user_profile, new_full_name)
-            result['full_name'] = new_full_name
+            # Note that check_change_full_name strips the passed name automatically
+            result['full_name'] = check_change_full_name(user_profile, full_name)
 
     return json_success(result)
 
@@ -99,11 +158,17 @@ def json_change_settings(request, user_profile,
 def update_display_settings_backend(request, user_profile,
                                     twenty_four_hour_time=REQ(validator=check_bool, default=None),
                                     default_language=REQ(validator=check_string, default=None),
-                                    left_side_userlist=REQ(validator=check_bool, default=None)):
-    # type: (HttpRequest, UserProfile, Optional[bool], Optional[str], Optional[bool]) -> HttpResponse
+                                    left_side_userlist=REQ(validator=check_bool, default=None),
+                                    emoji_alt_code=REQ(validator=check_bool, default=None),
+                                    timezone=REQ(validator=check_string, default=None)):
+    # type: (HttpRequest, UserProfile, Optional[bool], Optional[str], Optional[bool], Optional[bool], Optional[Text]) -> HttpResponse
     if (default_language is not None and
             default_language not in get_available_language_codes()):
         raise JsonableError(_("Invalid language '%s'" % (default_language,)))
+
+    if (timezone is not None and
+            timezone not in get_all_timezones()):
+        raise JsonableError(_("Invalid timezone '%s'" % (timezone,)))
 
     result = {} # type: Dict[str, Any]
     if (default_language is not None and
@@ -120,6 +185,16 @@ def update_display_settings_backend(request, user_profile,
             user_profile.left_side_userlist != left_side_userlist):
         do_change_left_side_userlist(user_profile, left_side_userlist)
         result['left_side_userlist'] = left_side_userlist
+
+    elif (emoji_alt_code is not None and
+            user_profile.emoji_alt_code != emoji_alt_code):
+        do_change_emoji_alt_code(user_profile, emoji_alt_code)
+        result['emoji_alt_code'] = emoji_alt_code
+
+    elif (timezone is not None and
+            user_profile.timezone != timezone):
+        do_change_timezone(user_profile, timezone)
+        result['timezone'] = timezone
 
     return json_success(result)
 
@@ -204,8 +279,11 @@ def set_avatar_backend(request, user_profile):
         return json_error(_("You must upload exactly one avatar."))
 
     user_file = list(request.FILES.values())[0]
-    upload_avatar_image(user_file, user_profile, user_profile.email)
-    do_change_avatar_source(user_profile, UserProfile.AVATAR_FROM_USER)
+    if ((settings.MAX_AVATAR_FILE_SIZE * 1024 * 1024) < user_file.size):
+        return json_error(_("Uploaded file is larger than the allowed limit of %s MB") % (
+            settings.MAX_AVATAR_FILE_SIZE))
+    upload_avatar_image(user_file, user_profile, user_profile)
+    do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_USER)
     user_avatar_url = avatar_url(user_profile)
 
     json_result = dict(
@@ -215,7 +293,7 @@ def set_avatar_backend(request, user_profile):
 
 def delete_avatar_backend(request, user_profile):
     # type: (HttpRequest, UserProfile) -> HttpResponse
-    do_change_avatar_source(user_profile, UserProfile.AVATAR_FROM_GRAVATAR)
+    do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_GRAVATAR)
     gravatar_url = avatar_url(user_profile)
 
     json_result = dict(

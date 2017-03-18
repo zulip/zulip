@@ -150,10 +150,10 @@ else:
 for status in statuses[::-1][:options.limit_tweets]:
     composed = "%s (%s)" % (status.user.name, status.user.screen_name)
     message = {
-      "type": "stream",
-      "to": [options.stream],
-      "subject": composed,
-      "content": status.text,
+        "type": "stream",
+        "to": [options.stream],
+        "subject": composed,
+        "content": status.text,
     }
 
     ret = client.send_message(message)

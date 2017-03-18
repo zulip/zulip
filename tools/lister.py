@@ -10,6 +10,7 @@ import re
 from collections import defaultdict
 import argparse
 from six.moves import filter
+
 from typing import Union, List, Dict
 
 def get_ftype(fpath, use_shebang):

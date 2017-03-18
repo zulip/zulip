@@ -9,7 +9,7 @@ from zproject import dev_urls
 from zproject.legacy_urls import legacy_urls
 from zerver.views.integrations import IntegrationView, APIView, HelpView
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
-from zerver.views.webhooks import github_dispatcher
+from zerver.webhooks import github_dispatcher
 
 
 from django.contrib.auth.views import (login, password_reset,
@@ -18,10 +18,15 @@ from django.contrib.auth.views import (login, password_reset,
 import zerver.tornado.views
 import zerver.views
 import zerver.views.auth
+import zerver.views.compatibility
+import zerver.views.home
+import zerver.views.registration
 import zerver.views.zephyr
 import zerver.views.users
 import zerver.views.unsubscribe
 import zerver.views.integrations
+import zerver.views.user_settings
+import zerver.views.muting
 import confirmation.views
 
 from zerver.lib.rest import rest_dispatch
@@ -44,11 +49,11 @@ from zerver.lib.rest import rest_dispatch
 # If you're adding a new page to the website (as opposed to a new
 # endpoint for use by code), you should add it here.
 i18n_urls = [
-    url(r'^$', zerver.views.home, name='zerver.views.home'),
+    url(r'^$', zerver.views.home.home, name='zerver.views.home.home'),
     # We have a desktop-specific landing page in case we change our /
     # to not log in in the future. We don't want to require a new
     # desktop app build for everyone in that case
-    url(r'^desktop_home/$', zerver.views.desktop_home, name='zerver.views.desktop_home'),
+    url(r'^desktop_home/$', zerver.views.home.desktop_home, name='zerver.views.home.desktop_home'),
 
     url(r'^accounts/login/sso/$', zerver.views.auth.remote_user_sso, name='login-sso'),
     url(r'^accounts/login/jwt/$', zerver.views.auth.remote_user_jwt, name='login-jwt'),
@@ -89,14 +94,21 @@ i18n_urls = [
         {'template_name': 'zerver/reset_done.html'}),
 
     # Avatar
-    url(r'^avatar/(?P<email>[\S]+)?', zerver.views.users.avatar, name='zerver.views.users.avatar'),
+    url(r'^avatar/(?P<email_or_id>[\S]+)?/(?P<medium>[\S]+)?', zerver.views.users.avatar, name='zerver.views.users.avatar'),
+    url(r'^avatar/(?P<email_or_id>[\S]+)?', zerver.views.users.avatar, name='zerver.views.users.avatar'),
 
     # Registration views, require a confirmation ID.
-    url(r'^accounts/home/', zerver.views.accounts_home, name='zerver.views.accounts_home'),
+    url(r'^accounts/home/', zerver.views.registration.accounts_home,
+        name='zerver.views.registration.accounts_home'),
     url(r'^accounts/send_confirm/(?P<email>[\S]+)?',
         TemplateView.as_view(template_name='zerver/accounts_send_confirm.html'), name='send_confirm'),
-    url(r'^accounts/register/', zerver.views.accounts_register, name='zerver.views.accounts_register'),
+    url(r'^accounts/register/', zerver.views.registration.accounts_register,
+        name='zerver.views.registration.accounts_register'),
     url(r'^accounts/do_confirm/(?P<confirmation_key>[\w]+)', confirmation.views.confirm, name='confirmation.views.confirm'),
+
+    url(r'^accounts/confirm_new_email/(?P<confirmation_key>[\w]+)',
+        zerver.views.user_settings.confirm_email_change,
+        name='zerver.views.user_settings.confirm_email_change'),
 
     # Email unsubscription endpoint. Allows for unsubscribing from various types of emails,
     # including the welcome emails (day 1 & 2), missed PMs, etc.
@@ -104,18 +116,19 @@ i18n_urls = [
         zerver.views.unsubscribe.email_unsubscribe, name='zerver.views.unsubscribe.email_unsubscribe'),
 
     # Portico-styled page used to provide email confirmation of terms acceptance.
-    url(r'^accounts/accept_terms/$', zerver.views.accounts_accept_terms, name='zerver.views.accounts_accept_terms'),
+    url(r'^accounts/accept_terms/$', zerver.views.home.accounts_accept_terms, name='zerver.views.home.accounts_accept_terms'),
 
     # Realm Creation
-    url(r'^create_realm/$', zerver.views.create_realm, name='zerver.views.create_realm'),
-    url(r'^create_realm/(?P<creation_key>[\w]+)$', zerver.views.create_realm, name='zerver.views.create_realm'),
+    url(r'^create_realm/$', zerver.views.registration.create_realm, name='zerver.views.create_realm'),
+    url(r'^create_realm/(?P<creation_key>[\w]+)$', zerver.views.registration.create_realm, name='zerver.views.create_realm'),
 
     # Login/registration
-    url(r'^register/$', zerver.views.accounts_home, name='register'),
-    url(r'^login/$',  zerver.views.auth.login_page, {'template_name': 'zerver/login.html'}, name='zerver.views.auth.login_page'),
+    url(r'^register/$', zerver.views.registration.accounts_home, name='register'),
+    url(r'^login/$', zerver.views.auth.login_page, {'template_name': 'zerver/login.html'}, name='zerver.views.auth.login_page'),
 
-    # A registration page that passes through the domain, for totally open realms.
-    url(r'^register/(?P<realm_str>\S+)/$', zerver.views.accounts_home_with_realm_str, name='zerver.views.accounts_home_with_realm_str'),
+    # A registration page that passes through the Realm.string_id, for totally open realms.
+    url(r'^register/(?P<realm_str>\S+)/$', zerver.views.registration.accounts_home_with_realm_str,
+        name='zerver.views.registration.accounts_home_with_realm_str'),
 
     # API and integrations documentation
     url(r'^api/$', APIView.as_view(template_name='zerver/api.html')),
@@ -127,15 +140,16 @@ i18n_urls = [
     url(r'^robots\.txt$', RedirectView.as_view(url='/static/robots.txt', permanent=True)),
 
     # Landing page, features pages, signup form, etc.
-    url(r'^hello/$', TemplateView.as_view(template_name='zerver/hello.html'),
-        name='landing-page'),
+    url(r'^hello/$', TemplateView.as_view(template_name='zerver/hello.html'), name='landing-page'),
     url(r'^new-user/$', RedirectView.as_view(url='/hello', permanent=True)),
     url(r'^features/$', TemplateView.as_view(template_name='zerver/features.html')),
+    url(r'^find_my_team/$', zerver.views.registration.find_my_team, name='zerver.views.registration.find_my_team'),
+    url(r'^authors/$', zerver.views.users.authors_view, name='zerver.views.users.authors_view')
 ]
 
 # If a Terms of Service is supplied, add that route
 if settings.TERMS_OF_SERVICE is not None:
-    i18n_urls += [url(r'^terms/$',   TemplateView.as_view(template_name='zerver/terms.html'))]
+    i18n_urls += [url(r'^terms/$', TemplateView.as_view(template_name='zerver/terms.html'))]
 
 # Make a copy of i18n_urls so that they appear without prefix for english
 urls = list(i18n_urls)
@@ -156,14 +170,28 @@ v1_api_and_json_patterns = [
         {'PATCH': 'zerver.views.realm.update_realm'}),
 
     # Returns a 204, used by desktop app to verify connectivity status
-    url(r'generate_204$', zerver.views.generate_204, name='zerver.views.generate_204'),
+    url(r'generate_204$', zerver.views.registration.generate_204, name='zerver.views.registration.generate_204'),
+
+    # realm/domains -> zerver.views.realm_aliases
+    url(r'^realm/domains$', rest_dispatch,
+        {'GET': 'zerver.views.realm_aliases.list_aliases',
+         'POST': 'zerver.views.realm_aliases.create_alias'}),
+    url(r'^realm/domains/(?P<domain>\S+)$', rest_dispatch,
+        {'PATCH': 'zerver.views.realm_aliases.patch_alias',
+         'DELETE': 'zerver.views.realm_aliases.delete_alias'}),
 
     # realm/emoji -> zerver.views.realm_emoji
     url(r'^realm/emoji$', rest_dispatch,
-        {'GET': 'zerver.views.realm_emoji.list_emoji',
-         'PUT': 'zerver.views.realm_emoji.upload_emoji'}),
-    url(r'^realm/emoji/(?P<emoji_name>[0-9a-zA-Z.\-_]+(?<![.\-_]))$', rest_dispatch,
-        {'DELETE': 'zerver.views.realm_emoji.delete_emoji'}),
+        {'GET': 'zerver.views.realm_emoji.list_emoji'}),
+    url(r'^realm/emoji/(?P<emoji_name>.*)$', rest_dispatch,
+        {'PUT': 'zerver.views.realm_emoji.upload_emoji',
+         'DELETE': 'zerver.views.realm_emoji.delete_emoji'}),
+
+    # realm/icon -> zerver.views.realm_icon
+    url(r'^realm/icon$', rest_dispatch,
+        {'PUT': 'zerver.views.realm_icon.upload_icon',
+         'DELETE': 'zerver.views.realm_icon.delete_icon_backend',
+         'GET': 'zerver.views.realm_icon.get_icon_backend'}),
 
     # realm/filters -> zerver.views.realm_filters
     url(r'^realm/filters$', rest_dispatch,
@@ -173,20 +201,28 @@ v1_api_and_json_patterns = [
         {'DELETE': 'zerver.views.realm_filters.delete_filter'}),
 
     # users -> zerver.views.users
+    #
+    # Since some of these endpoints do something different if used on
+    # yourself with `/me` as the email, we need to make sure that we
+    # don't accidentally trigger these.  The cleanest way to do that
+    # is to add a regular expression assertion that it isn't `/me/`
+    # (or ends with `/me`, in the case of hitting the root URL).
     url(r'^users$', rest_dispatch,
         {'GET': 'zerver.views.users.get_members_backend',
-         'PUT': 'zerver.views.users.create_user_backend'}),
-    url(r'^users/(?P<email>(?!me)[^/]*)/reactivate$', rest_dispatch,
+         'POST': 'zerver.views.users.create_user_backend'}),
+    url(r'^users/(?!me/)(?P<email>[^/]*)/reactivate$', rest_dispatch,
         {'POST': 'zerver.views.users.reactivate_user_backend'}),
-    url(r'^users/(?P<email>(?!me)[^/]*)$', rest_dispatch,
+    url(r'^users/(?!me/)(?P<email>[^/]*)/presence$', rest_dispatch,
+        {'GET': 'zerver.views.presence.get_presence_backend'}),
+    url(r'^users/(?!me$)(?P<email>[^/]*)$', rest_dispatch,
         {'PATCH': 'zerver.views.users.update_user_backend',
          'DELETE': 'zerver.views.users.deactivate_user_backend'}),
     url(r'^bots$', rest_dispatch,
         {'GET': 'zerver.views.users.get_bots_backend',
          'POST': 'zerver.views.users.add_bot_backend'}),
-    url(r'^bots/(?P<email>(?!me)[^/]*)/api_key/regenerate$', rest_dispatch,
+    url(r'^bots/(?!me/)(?P<email>[^/]*)/api_key/regenerate$', rest_dispatch,
         {'POST': 'zerver.views.users.regenerate_bot_api_key'}),
-    url(r'^bots/(?P<email>(?!me)[^/]*)$', rest_dispatch,
+    url(r'^bots/(?!me/)(?P<email>[^/]*)$', rest_dispatch,
         {'PATCH': 'zerver.views.users.patch_bot_backend',
          'DELETE': 'zerver.views.users.deactivate_bot_backend'}),
 
@@ -194,23 +230,30 @@ v1_api_and_json_patterns = [
     # GET returns messages, possibly filtered, POST sends a message
     url(r'^messages$', rest_dispatch,
         {'GET': 'zerver.views.messages.get_old_messages_backend',
-         'PATCH': 'zerver.views.messages.update_message_backend',
          'POST': 'zerver.views.messages.send_message_backend'}),
     url(r'^messages/(?P<message_id>[0-9]+)$', rest_dispatch,
         {'GET': 'zerver.views.messages.json_fetch_raw_message',
-         'PATCH': 'zerver.views.messages.json_update_message'}),
+         'PATCH': 'zerver.views.messages.update_message_backend'}),
     url(r'^messages/render$', rest_dispatch,
-        {'GET': 'zerver.views.messages.render_message_backend'}),
+        {'POST': 'zerver.views.messages.render_message_backend'}),
     url(r'^messages/flags$', rest_dispatch,
         {'POST': 'zerver.views.messages.update_message_flags'}),
+    url(r'^messages/(?P<message_id>\d+)/history$', rest_dispatch,
+        {'GET': 'zerver.views.messages.get_message_edit_history'}),
 
     # reactions -> zerver.view.reactions
     # PUT adds a reaction to a message
     # DELETE removes a reaction from a message
-    url(r'^messages/(?P<message_id>[0-9]+)/emoji_reactions/(?P<emoji_name>[+0-9a-zA-Z.\-_]+(?<![.\-_]))$',
+    url(r'^messages/(?P<message_id>[0-9]+)/emoji_reactions/(?P<emoji_name>.*)$',
         rest_dispatch,
         {'PUT': 'zerver.views.reactions.add_reaction_backend',
          'DELETE': 'zerver.views.reactions.remove_reaction_backend'}),
+
+    # attachments -> zerver.views.attachments
+    url(r'^attachments$', rest_dispatch,
+        {'GET': 'zerver.views.attachments.list_by_user'}),
+    url(r'^attachments/(?P<attachment_id>[0-9]+)$', rest_dispatch,
+        {'DELETE': 'zerver.views.attachments.remove'}),
 
     # typing -> zerver.views.typing
     # POST sends a typing notification event to recipients
@@ -221,13 +264,20 @@ v1_api_and_json_patterns = [
     url(r'^user_uploads$', rest_dispatch,
         {'POST': 'zerver.views.upload.upload_file_backend'}),
 
+    # invite -> zerver.views.invite
+    url(r'^invite/bulk$', rest_dispatch,
+        {'POST': 'zerver.views.invite.bulk_invite_users'}),
+
     # users/me -> zerver.views
     url(r'^users/me$', rest_dispatch,
         {'GET': 'zerver.views.users.get_profile_backend',
          'DELETE': 'zerver.views.users.deactivate_user_own_backend'}),
+    # PUT is currently used by mobile apps, we intend to remove the PUT version
+    # as soon as possible. POST exists to correct the erroneous use of PUT.
     url(r'^users/me/pointer$', rest_dispatch,
         {'GET': 'zerver.views.pointer.get_pointer_backend',
-         'PUT': 'zerver.views.pointer.update_pointer_backend'}),
+         'PUT': 'zerver.views.pointer.update_pointer_backend',
+         'POST': 'zerver.views.pointer.update_pointer_backend'}),
     url(r'^users/me/presence$', rest_dispatch,
         {'POST': 'zerver.views.presence.update_active_status_backend'}),
     # Endpoint used by mobile devices to register their push
@@ -272,16 +322,18 @@ v1_api_and_json_patterns = [
     url(r'^streams$', rest_dispatch,
         {'GET': 'zerver.views.streams.get_streams_backend'}),
 
+    # GET returns `stream_id`, stream name should be encoded in the url query (in `stream` param)
+    url(r'^get_stream_id', rest_dispatch,
+        {'GET': 'zerver.views.streams.json_get_stream_id'}),
+
     # GET returns "stream info" (undefined currently?), HEAD returns whether stream exists (200 or 404)
-    url(r'^streams/(?P<stream_name>.*)/members$', rest_dispatch,
+    url(r'^streams/(?P<stream_id>\d+)/members$', rest_dispatch,
         {'GET': 'zerver.views.streams.get_subscribers_backend'}),
-    url(r'^streams/(?P<stream_name>.*)$', rest_dispatch,
-        {'HEAD': 'zerver.views.streams.stream_exists_backend',
-         'GET': 'zerver.views.streams.stream_exists_backend',
-         'PATCH': 'zerver.views.streams.update_stream_backend',
+    url(r'^streams/(?P<stream_id>\d+)$', rest_dispatch,
+        {'PATCH': 'zerver.views.streams.update_stream_backend',
          'DELETE': 'zerver.views.streams.deactivate_stream_backend'}),
     url(r'^default_streams$', rest_dispatch,
-        {'PUT': 'zerver.views.streams.add_default_stream',
+        {'POST': 'zerver.views.streams.add_default_stream',
          'DELETE': 'zerver.views.streams.remove_default_stream'}),
     # GET lists your streams, POST bulk adds, PATCH bulk modifies/removes
     url(r'^users/me/subscriptions$', rest_dispatch,
@@ -289,10 +341,14 @@ v1_api_and_json_patterns = [
          'POST': 'zerver.views.streams.add_subscriptions_backend',
          'PATCH': 'zerver.views.streams.update_subscriptions_backend',
          'DELETE': 'zerver.views.streams.remove_subscriptions_backend'}),
+    # muting -> zerver.views.muting
+    url(r'^users/me/subscriptions/muted_topics$', rest_dispatch,
+        {'POST': 'zerver.views.muting.set_muted_topics',
+         'PATCH': 'zerver.views.muting.update_muted_topic'}),
 
     # used to register for an event queue in tornado
     url(r'^register$', rest_dispatch,
-        {'POST': 'zerver.views.events_register.api_events_register'}),
+        {'POST': 'zerver.views.events_register.events_register_backend'}),
 
     # events -> zerver.tornado.views
     url(r'^events$', rest_dispatch,
@@ -334,6 +390,9 @@ urls += [
     # backends the server allows, to display the proper UI and check for server existence
     url(r'^api/v1/get_auth_backends', zerver.views.auth.api_get_auth_backends, name='zerver.views.auth.api_get_auth_backends'),
 
+    # used by mobile apps to check if they are compatible with the server
+    url(r'^compatibility$', zerver.views.compatibility.check_compatibility),
+
     # This json format view used by the mobile apps accepts a username
     # password/pair and returns an API key.
     url(r'^api/v1/fetch_api_key$', zerver.views.auth.api_fetch_api_key, name='zerver.views.auth.api_fetch_api_key'),
@@ -364,7 +423,7 @@ urls += [
 ]
 
 # Python Social Auth
-urls += [url(r'^', include('social.apps.django_app.urls', namespace='social'))]
+urls += [url(r'^', include('social_django.urls', namespace='social'))]
 
 # User documentation site
 urls += [url(r'^help/(?P<article>.*)$', HelpView.as_view(template_name='zerver/help/main.html'))]

@@ -13,14 +13,9 @@ exports.full_width = false;
 // Beta rewrite of the Bot UI; probably worth finishing and deploying
 exports.new_bot_ui = false;
 
-// Experimental feature to not fade messages that differ only in
-// topic; was not a successful experiment so can be deleted.
-exports.fade_at_stream_granularity = false;
-
 // The features below have all settled into their final states and can
 // be removed when we get a chance
 exports.cleanup_before_reload = true;
-exports.fade_users_when_composing = true;
 exports.mark_read_at_bottom = true;
 exports.propagate_topic_edits = true;
 exports.clicking_notification_causes_narrow = true;

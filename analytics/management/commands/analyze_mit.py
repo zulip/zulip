@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-from typing import Any
+from typing import Any, Dict
 
 from optparse import make_option
 from django.core.management.base import BaseCommand, CommandParser
@@ -17,7 +17,7 @@ def compute_stats(log_level):
     logger.setLevel(log_level)
 
     one_week_ago = timestamp_to_datetime(time.time()) - datetime.timedelta(weeks=1)
-    mit_query = Message.objects.filter(sender__realm__domain="mit.edu",
+    mit_query = Message.objects.filter(sender__realm__string_id="zephyr",
                                        recipient__type=Recipient.STREAM,
                                        pub_date__gt=one_week_ago)
     for bot_sender_start in ["imap.", "rcmd.", "sys."]:

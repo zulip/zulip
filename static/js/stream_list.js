@@ -6,6 +6,27 @@ var zoomed_stream = '';
 var previous_sort_order;
 var previous_unpinned_order;
 
+function update_count_in_dom(unread_count_elem, count) {
+    var count_span = unread_count_elem.find('.count');
+    var value_span = count_span.find('.value');
+
+    if (count === 0) {
+        count_span.hide();
+        if (count_span.parent().hasClass("subscription_block")) {
+            count_span.parent(".subscription_block").removeClass("stream-with-count");
+        }
+        value_span.text('');
+        return;
+    }
+
+    count_span.show();
+
+    if (count_span.parent().hasClass("subscription_block")) {
+        count_span.parent(".subscription_block").addClass("stream-with-count");
+    }
+    value_span.text(count);
+}
+
 function filter_streams_by_search(streams) {
     var search_box = $(".stream-list-filter");
 
@@ -62,6 +83,13 @@ exports.stream_sidebar = (function () {
     return self;
 }());
 
+exports.remove_sidebar_row = function (stream_id) {
+    exports.stream_sidebar.remove_row(stream_id);
+    // We need to make sure we resort if the removed sub gets added again
+    previous_sort_order = undefined;
+    previous_unpinned_order = undefined;
+};
+
 exports.create_initial_sidebar_rows = function () {
     // This code is slightly opaque, but it ends up building
     // up list items and attaching them to the "sub" data
@@ -108,6 +136,8 @@ exports.build_stream_list = function () {
             unpinned_streams.push(stream);
         }
     });
+
+    pinned_streams.sort(util.strcmp);
 
     unpinned_streams.sort(function (a, b) {
         if (sort_recent) {
@@ -224,7 +254,7 @@ function build_stream_sidebar_li(sub) {
                 not_in_home_view: (stream_data.in_home_view(name) === false),
                 invite_only: sub.invite_only,
                 color: stream_data.get_color(name),
-                pin_to_top: sub.pin_to_top
+                pin_to_top: sub.pin_to_top,
                };
     args.dark_background = stream_color.get_color_class(args.color);
     var list_item = $(templates.render('stream_sidebar_row', args));
@@ -252,6 +282,14 @@ function build_stream_sidebar_row(sub) {
         list_item.remove();
     };
 
+
+    self.update_unread_count = function () {
+        var count = unread.num_unread_for_stream(stream_name);
+        update_count_in_dom(list_item, count);
+    };
+
+    self.update_unread_count();
+
     exports.stream_sidebar.set_row(sub.stream_id, self);
 }
 
@@ -274,7 +312,7 @@ exports.redraw_stream_privacy = function (stream_name) {
 
     var args = {
         invite_only: sub.invite_only,
-        dark_background: dark_background
+        dark_background: dark_background,
     };
 
     if (sub.invite_only) {
@@ -291,28 +329,9 @@ exports.get_stream_li = function (stream_name) {
     return get_filter_li('stream', stream_name);
 };
 
-function update_count_in_dom(count_span, value_span, count) {
-    if (count === 0) {
-        count_span.hide();
-        if (count_span.parent().hasClass("subscription_block")) {
-            count_span.parent(".subscription_block").removeClass("stream-with-count");
-        }
-        value_span.text('');
-        return;
-    }
-
-    count_span.show();
-
-    if (count_span.parent().hasClass("subscription_block")) {
-        count_span.parent(".subscription_block").addClass("stream-with-count");
-    }
-    value_span.text(count);
-}
-
 function set_count(type, name, count) {
-    var count_span = get_filter_li(type, name).find('.count');
-    var value_span = count_span.find('.value');
-    update_count_in_dom(count_span, value_span, count);
+    var unread_count_elem = get_filter_li(type, name);
+    update_count_in_dom(unread_count_elem, count);
 }
 
 function rebuild_recent_topics(stream) {
@@ -381,18 +400,23 @@ exports.refresh_pinned_or_unpinned_stream = function (sub) {
     exports.update_streams_sidebar();
 };
 
+function deselect_top_left_corner_items() {
+    $("ul.filters li").removeClass('active-filter active-sub-filter');
+}
+
 $(function () {
     // TODO, Eventually topic_list won't be a big singleton,
     // and we can create more component-based click handlers for
     // each stream.
     topic_list.set_click_handlers({
         zoom_in: zoom_in,
-        zoom_out: zoom_out
+        zoom_out: zoom_out,
     });
 
     pm_list.set_click_handlers();
 
     $(document).on('narrow_activated.zulip', function (event) {
+        deselect_top_left_corner_items();
         reset_to_unnarrowed(narrow.stream() === zoomed_stream);
 
         // TODO: handle confused filters like "in:all stream:foo"
@@ -424,11 +448,12 @@ $(function () {
                 stream_li.addClass('active-filter');
             }
             rebuild_recent_topics(op_stream[0]);
-            unread.process_visible();
+            unread_ui.process_visible();
         }
     });
 
     $(document).on('narrow_deactivated.zulip', function () {
+        deselect_top_left_corner_items();
         reset_to_unnarrowed();
         pm_list.close();
         $("#global_filters li[data-name='home']").addClass('active-filter');
@@ -440,11 +465,9 @@ $(function () {
     });
 
     $(document).on('subscription_remove_done.zulip', function (event) {
-        exports.stream_sidebar.remove_row(event.sub.stream_id);
-        // We need to make sure we resort if the removed sub gets added again
-        previous_sort_order = undefined;
-        previous_unpinned_order = undefined;
+        exports.remove_sidebar_row(event.sub.stream_id);
     });
+
 
     $('#stream_filters').on('click', 'li .subscription_block', function (e) {
         if (e.metaKey || e.ctrlKey) {

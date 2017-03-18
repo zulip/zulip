@@ -9,7 +9,7 @@ var active_widget;
 var zoomed = false;
 
 exports.remove_expanded_topics = function () {
-    popovers.hide_topic_sidebar_popover();
+    stream_popover.hide_topic_popover();
 
     if (active_widget) {
         active_widget.remove();
@@ -84,7 +84,7 @@ exports.build_widget = function (parent_elem, stream, active_topic, max_topics) 
                 unread: num_unread,
                 is_zero: num_unread === 0,
                 is_muted: muting.is_topic_muted(stream, topic_name),
-                url: narrow.by_stream_subject_uri(stream, topic_name)
+                url: narrow.by_stream_subject_uri(stream, topic_name),
             };
             var li = $(templates.render('topic_list_item', topic_info));
             self.topic_items.set(topic_name, li);

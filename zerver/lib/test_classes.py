@@ -11,9 +11,9 @@ from django.test.client import (
     BOUNDARY, MULTIPART_CONTENT, encode_multipart,
 )
 from django.template import loader
+from django.test.testcases import SerializeMixin
 from django.http import HttpResponse
 from django.db.utils import IntegrityError
-from django.utils.translation import ugettext as _
 
 from zerver.lib.initial_password import initial_password
 from zerver.lib.db import TimeTrackingCursor
@@ -63,6 +63,25 @@ from contextlib import contextmanager
 import six
 
 API_KEYS = {} # type: Dict[Text, Text]
+
+class UploadSerializeMixin(SerializeMixin):
+    """
+    We cannot use override_settings to change upload directory because
+    because settings.LOCAL_UPLOADS_DIR is used in url pattern and urls
+    are compiled only once. Otherwise using a different upload directory
+    for conflicting test cases would have provided better performance
+    while providing the required isolation.
+    """
+    lockfile = 'var/upload_lock'
+
+    @classmethod
+    def setUpClass(cls, *args, **kwargs):
+        # type: (*Any, **Any) -> None
+        if not os.path.exists(cls.lockfile):
+            with open(cls.lockfile, 'w'):  # nocoverage - rare locking case
+                pass
+
+        super(UploadSerializeMixin, cls).setUpClass(*args, **kwargs)
 
 class ZulipTestCase(TestCase):
     '''
@@ -146,6 +165,13 @@ class ZulipTestCase(TestCase):
         return django_client.delete(url, encoded, **kwargs)
 
     @instrument_url
+    def client_options(self, url, info={}, **kwargs):
+        # type: (Text, Dict[str, Any], **Any) -> HttpResponse
+        encoded = urllib.parse.urlencode(info)
+        django_client = self.client # see WRAPPER_COMMENT
+        return django_client.options(url, encoded, **kwargs)
+
+    @instrument_url
     def client_post(self, url, info={}, **kwargs):
         # type: (Text, Dict[str, Any], **Any) -> HttpResponse
         django_client = self.client # see WRAPPER_COMMENT
@@ -188,17 +214,15 @@ class ZulipTestCase(TestCase):
         else:
             self.assertFalse(self.client.login(username=email, password=password))
 
-    def register(self, username, password, domain="zulip.com"):
-        # type: (Text, Text, Text) -> HttpResponse
-        self.client_post('/accounts/home/',
-                         {'email': username + "@" + domain})
-        return self.submit_reg_form_for_user(username, password, domain=domain)
+    def register(self, email, password):
+        # type: (Text, Text) -> HttpResponse
+        self.client_post('/accounts/home/', {'email': email})
+        return self.submit_reg_form_for_user(email, password)
 
-    def submit_reg_form_for_user(self, username, password, domain="zulip.com",
-                                 realm_name="Zulip Test", realm_subdomain="zuliptest",
-                                 realm_org_type=Realm.COMMUNITY,
-                                 from_confirmation='', **kwargs):
-        # type: (Text, Text, Text, Optional[Text], Optional[Text], int, Optional[Text], **Any) -> HttpResponse
+    def submit_reg_form_for_user(self, email, password, realm_name="Zulip Test",
+                                 realm_subdomain="zuliptest", realm_org_type=Realm.COMMUNITY,
+                                 from_confirmation='', full_name=None, **kwargs):
+        # type: (Text, Text, Optional[Text], Optional[Text], int, Optional[Text], Optional[Text], **Any) -> HttpResponse
         """
         Stage two of the two-step registration process.
 
@@ -207,11 +231,14 @@ class ZulipTestCase(TestCase):
 
         You can pass the HTTP_HOST variable for subdomains via kwargs.
         """
+        if full_name is None:
+            full_name = email.replace("@", "_")
         return self.client_post('/accounts/register/',
-                                {'full_name': username, 'password': password,
+                                {'full_name': full_name,
+                                 'password': password,
                                  'realm_name': realm_name,
                                  'realm_subdomain': realm_subdomain,
-                                 'key': find_key_by_email(username + '@' + domain),
+                                 'key': find_key_by_email(email),
                                  'realm_org_type': realm_org_type,
                                  'terms': True,
                                  'from_confirmation': from_confirmation},
@@ -225,7 +252,7 @@ class ZulipTestCase(TestCase):
                 return re.search(settings.EXTERNAL_HOST + path_pattern,
                                  message.body).groups()[0]
         else:
-            raise ValueError("Couldn't find a confirmation email.")
+            raise AssertionError("Couldn't find a confirmation email.")
 
     def get_api_key(self, email):
         # type: (Text) -> Text
@@ -256,7 +283,7 @@ class ZulipTestCase(TestCase):
                      content=u"test content", subject=u"test", **kwargs):
         # type: (Text, Union[Text, List[Text]], int, Text, Text, **Any) -> int
         sender = get_user_profile_by_email(sender_name)
-        if message_type == Recipient.PERSONAL:
+        if message_type in [Recipient.PERSONAL, Recipient.HUDDLE]:
             message_type_name = "private"
         else:
             message_type_name = "stream"
@@ -291,7 +318,7 @@ class ZulipTestCase(TestCase):
         # type: (str, bytes) -> None
         response = self.client_get(url)
         data = b"".join(response.streaming_content)
-        self.assertEquals(result, data)
+        self.assertEqual(result, data)
 
     def assert_json_success(self, result):
         # type: (HttpResponse) -> Dict[str, Any]
@@ -338,10 +365,6 @@ class ZulipTestCase(TestCase):
         # type: (HttpResponse, Text, int) -> None
         self.assertIn(msg_substring, self.get_json_error(result, status_code=status_code))
 
-    def assert_equals_response(self, string, response):
-        # type: (Text, HttpResponse) -> None
-        self.assertEqual(string, response.content.decode('utf-8'))
-
     def assert_in_response(self, substring, response):
         # type: (Text, HttpResponse) -> None
         self.assertIn(substring, response.content.decode('utf-8'))
@@ -369,7 +392,7 @@ class ZulipTestCase(TestCase):
                 name=stream_name,
                 invite_only=invite_only,
             )
-        except IntegrityError:
+        except IntegrityError:  # nocoverage -- this is for bugs in the tests
             raise Exception('''
                 %s already exists
 
@@ -381,7 +404,7 @@ class ZulipTestCase(TestCase):
 
     # Subscribe to a stream directly
     def subscribe_to_stream(self, email, stream_name, realm=None):
-        # type: (Text, Text, Optional[Realm]) -> None
+        # type: (Text, Text, Optional[Realm]) -> Stream
         if realm is None:
             realm = get_realm_by_email_domain(email)
         stream = get_stream(stream_name, realm)
@@ -389,6 +412,7 @@ class ZulipTestCase(TestCase):
             stream, _ = create_stream_if_needed(realm, stream_name)
         user_profile = get_user_profile_by_email(email)
         bulk_add_subscriptions([stream], [user_profile])
+        return stream
 
     def unsubscribe_from_stream(self, email, stream_name):
         # type: (Text, Text) -> None

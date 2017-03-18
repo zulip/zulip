@@ -19,8 +19,8 @@ from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
     generic_bulk_cached_fetch, cache_set, flush_stream, \
     display_recipient_cache_key, cache_delete, \
     get_stream_cache_key, active_user_dicts_in_realm_cache_key, \
-    active_bot_dicts_in_realm_cache_key, active_user_dict_fields, \
-    active_bot_dict_fields, flush_message
+    bot_dicts_in_realm_cache_key, active_user_dict_fields, \
+    bot_dict_fields, flush_message
 from zerver.lib.utils import make_safe_digest, generate_random_token
 from zerver.lib.str_utils import ModelReprMixin
 from django.db import transaction
@@ -63,9 +63,9 @@ def get_display_recipient_by_id(recipient_id, recipient_type, recipient_type_id)
 def get_display_recipient(recipient):
     # type: (Recipient) -> Union[Text, List[Dict[str, Any]]]
     return get_display_recipient_by_id(
-            recipient.id,
-            recipient.type,
-            recipient.type_id
+        recipient.id,
+        recipient.type,
+        recipient.type_id
     )
 
 def flush_per_request_caches():
@@ -121,6 +121,7 @@ class Realm(ModelReprMixin, models.Model):
     mandatory_topics = models.BooleanField(default=False) # type: bool
     show_digest_email = models.BooleanField(default=True) # type: bool
     name_changes_disabled = models.BooleanField(default=False) # type: bool
+    email_changes_disabled = models.BooleanField(default=False) # type: bool
 
     allow_message_editing = models.BooleanField(default=True) # type: bool
     DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS = 600 # if changed, also change in admin.js
@@ -139,6 +140,16 @@ class Realm(ModelReprMixin, models.Model):
     authentication_methods = BitField(flags=AUTHENTICATION_FLAGS,
                                       default=2**31 - 1) # type: BitHandler
     waiting_period_threshold = models.PositiveIntegerField(default=0) # type: int
+
+    ICON_FROM_GRAVATAR = u'G'
+    ICON_UPLOADED = u'U'
+    ICON_SOURCES = (
+        (ICON_FROM_GRAVATAR, 'Hosted by Gravatar'),
+        (ICON_UPLOADED, 'Uploaded by administrator'),
+    )
+    icon_source = models.CharField(default=ICON_FROM_GRAVATAR, choices=ICON_SOURCES,
+                                   max_length=1)  # type: Text
+    icon_version = models.PositiveSmallIntegerField(default=1)  # type: int
 
     DEFAULT_NOTIFICATION_STREAM_NAME = u'announce'
 
@@ -162,29 +173,12 @@ class Realm(ModelReprMixin, models.Model):
 
     def __unicode__(self):
         # type: () -> Text
-        return u"<Realm: %s %s>" % (self.domain, self.id)
+        return u"<Realm: %s %s>" % (self.string_id, self.id)
 
     @cache_with_key(get_realm_emoji_cache_key, timeout=3600*24*7)
     def get_emoji(self):
-        # type: () -> Dict[Text, Dict[str, Text]]
+        # type: () -> Dict[Text, Optional[Dict[str, Text]]]
         return get_realm_emoji_uncached(self)
-
-    @property
-    def deployment(self):
-        # type: () -> Any # returns a Deployment from zilencer.models
-
-        # see https://github.com/zulip/zulip/issues/1845 before you
-        # attempt to add test coverage for this method, as we may
-        # be revisiting the deployments model soon
-        try:
-            return self._deployments.all()[0]
-        except IndexError:
-            return None
-
-    @deployment.setter # type: ignore # https://github.com/python/mypy/issues/220
-    def set_deployments(self, value):
-        # type: (Any) -> None
-        self._deployments = [value] # type: Any
 
     def get_admin_users(self):
         # type: () -> Sequence[UserProfile]
@@ -197,9 +191,19 @@ class Realm(ModelReprMixin, models.Model):
         # TODO: Change return type to QuerySet[UserProfile]
         return UserProfile.objects.filter(realm=self, is_active=True).select_related()
 
+    def get_bot_domain(self):
+        # type: () -> str
+        # Remove the port. Mainly needed for development environment.
+        external_host = settings.EXTERNAL_HOST.split(':')[0]
+        if settings.REALMS_HAVE_SUBDOMAINS or \
+           Realm.objects.filter(deactivated=False) \
+                        .exclude(string_id__in=settings.SYSTEM_ONLY_REALMS).count() > 1:
+            return "%s.%s" % (self.string_id, external_host)
+        return external_host
+
     @property
     def subdomain(self):
-        # type: () -> Text
+        # type: () -> Optional[Text]
         if settings.REALMS_HAVE_SUBDOMAINS:
             return self.string_id
         return None
@@ -222,7 +226,7 @@ class Realm(ModelReprMixin, models.Model):
     @property
     def is_zephyr_mirror_realm(self):
         # type: () -> bool
-        return self.domain == "mit.edu"
+        return self.string_id == "zephyr"
 
     @property
     def webathena_enabled(self):
@@ -242,27 +246,9 @@ class Realm(ModelReprMixin, models.Model):
 
 post_save.connect(flush_realm, sender=Realm)
 
-# This function is about to be deprecated. Consider using
-# get_realm_by_string_id instead.
-def get_realm(domain):
-    # type: (Text) -> Optional[Realm]
-    if not domain:
-        return None
-    try:
-        return Realm.objects.get(domain__iexact=domain.strip())
-    except Realm.DoesNotExist:
-        return None
-
-# Added to assist with the domain to string_id transition. Will eventually
-# be renamed and replace get_realm.
-def get_realm_by_string_id(string_id):
-    # type: (Text) -> Optional[Realm]
-    if not string_id:
-        return None
-    try:
-        return Realm.objects.get(string_id=string_id)
-    except Realm.DoesNotExist:
-        return None
+def get_realm(string_id):
+    # type: (Text) -> Realm
+    return Realm.objects.filter(string_id=string_id).first()
 
 def completely_open(realm):
     # type: (Realm) -> bool
@@ -283,7 +269,7 @@ def get_unique_open_realm():
     # On production installations, the (usually "zulip.com") system
     # realm is an empty realm just used for system bots, so don't
     # include it in this accounting.
-    realms = realms.exclude(domain__in=settings.SYSTEM_ONLY_REALMS)
+    realms = realms.exclude(string_id__in=settings.SYSTEM_ONLY_REALMS)
     if len(realms) != 1:
         return None
     realm = realms[0]
@@ -298,9 +284,13 @@ def name_changes_disabled(realm):
     return settings.NAME_CHANGES_DISABLED or realm.name_changes_disabled
 
 class RealmAlias(models.Model):
-    realm = models.ForeignKey(Realm, null=True) # type: Optional[Realm]
+    realm = models.ForeignKey(Realm) # type: Realm
     # should always be stored lowercase
     domain = models.CharField(max_length=80, db_index=True) # type: Text
+    allow_subdomains = models.BooleanField(default=False)
+
+    class Meta(object):
+        unique_together = ("realm", "domain")
 
 def can_add_alias(domain):
     # type: (Text) -> bool
@@ -333,11 +323,25 @@ def get_realm_by_email_domain(email):
     if settings.REALMS_HAVE_SUBDOMAINS:
         raise GetRealmByDomainException(
             "Cannot get realm from email domain when settings.REALMS_HAVE_SUBDOMAINS = True")
-    try:
-        alias = RealmAlias.objects.select_related('realm').get(domain = email_to_domain(email))
+    domain = email_to_domain(email)
+    query = RealmAlias.objects.select_related('realm')
+    # Search for the longest match. If found return immediately. Since in case of
+    # settings.REALMS_HAVE_SUBDOMAINS=True, we have a unique mapping between the
+    # realm and domain so don't worry about `allow_subdomains` being True or False.
+    alias = query.filter(domain=domain).first()
+    if alias is not None:
         return alias.realm
-    except RealmAlias.DoesNotExist:
-        return None
+    else:
+        # Since we have not found any match. We will now try matching the parent domain.
+        # Filter out the realm domains with `allow_subdomains=False` so that we don't end
+        # up matching 'test.zulip.com' wrongly to (realm, 'zulip.com', False).
+        query = query.filter(allow_subdomains=True)
+        while len(domain) > 0:
+            subdomain, sep, domain = domain.partition('.')
+            alias = query.filter(domain=domain).first()
+            if alias is not None:
+                return alias.realm
+    return None
 
 # Is a user with the given email address allowed to be in the given realm?
 # (This function does not check whether the user has been invited to the realm.
@@ -348,11 +352,20 @@ def email_allowed_for_realm(email, realm):
     if not realm.restricted_to_domain:
         return True
     domain = email_to_domain(email)
-    return RealmAlias.objects.filter(realm = realm, domain = domain).exists()
+    query = RealmAlias.objects.filter(realm=realm)
+    if query.filter(domain=domain).exists():
+        return True
+    else:
+        query = query.filter(allow_subdomains=True)
+        while len(domain) > 0:
+            subdomain, sep, domain = domain.partition('.')
+            if query.filter(domain=domain).exists():
+                return True
+    return False
 
 def list_of_domains_for_realm(realm):
-    # type: (Realm) -> List[Text]
-    return list(RealmAlias.objects.filter(realm = realm).values_list('domain', flat=True))
+    # type: (Realm) -> List[Dict[str, Union[str, bool]]]
+    return list(RealmAlias.objects.filter(realm=realm).values('domain', 'allow_subdomains'))
 
 class RealmEmoji(ModelReprMixin, models.Model):
     author = models.ForeignKey('UserProfile', blank=True, null=True)
@@ -360,7 +373,7 @@ class RealmEmoji(ModelReprMixin, models.Model):
     # Second part of the regex (negative lookbehind) disallows names ending with one of the punctuation characters
     name = models.TextField(validators=[MinLengthValidator(1),
                                         RegexValidator(regex=r'^[0-9a-zA-Z.\-_]+(?<![.\-_])$',
-                                                       message=_("Invalid characters in Emoji name"))]) # type: Text
+                                                       message=_("Invalid characters in emoji name"))]) # type: Text
     # URLs start having browser compatibility problem below 2000
     # characters, so 1000 seems like a safe limit.
     img_url = models.URLField(max_length=1000) # type: Text
@@ -370,10 +383,10 @@ class RealmEmoji(ModelReprMixin, models.Model):
 
     def __unicode__(self):
         # type: () -> Text
-        return u"<RealmEmoji(%s): %s %s>" % (self.realm.domain, self.name, self.img_url)
+        return u"<RealmEmoji(%s): %s %s>" % (self.realm.string_id, self.name, self.img_url)
 
 def get_realm_emoji_uncached(realm):
-    # type: (Realm) -> Dict[Text, Dict[str, Text]]
+    # type: (Realm) -> Dict[Text, Optional[Dict[str, Text]]]
     d = {}
     for row in RealmEmoji.objects.filter(realm=realm).select_related('author'):
         if row.author:
@@ -429,49 +442,48 @@ class RealmFilter(models.Model):
 
     def __unicode__(self):
         # type: () -> Text
-        return u"<RealmFilter(%s): %s %s>" % (self.realm.domain, self.pattern, self.url_format_string)
+        return u"<RealmFilter(%s): %s %s>" % (self.realm.string_id, self.pattern, self.url_format_string)
 
-def get_realm_filters_cache_key(domain):
-    # type: (Text) -> Text
-    return u'all_realm_filters:%s' % (domain,)
+def get_realm_filters_cache_key(realm_id):
+    # type: (int) -> Text
+    return u'all_realm_filters:%s' % (realm_id,)
 
 # We have a per-process cache to avoid doing 1000 remote cache queries during page load
-per_request_realm_filters_cache = {} # type: Dict[Text, List[Tuple[Text, Text, int]]]
+per_request_realm_filters_cache = {} # type: Dict[int, List[Tuple[Text, Text, int]]]
 
-def domain_in_local_realm_filters_cache(domain):
-    # type: (Text) -> bool
-    return domain in per_request_realm_filters_cache
+def realm_in_local_realm_filters_cache(realm_id):
+    # type: (int) -> bool
+    return realm_id in per_request_realm_filters_cache
 
-def realm_filters_for_domain(domain):
-    # type: (Text) -> List[Tuple[Text, Text, int]]
-    domain = domain.lower()
-    if not domain_in_local_realm_filters_cache(domain):
-        per_request_realm_filters_cache[domain] = realm_filters_for_domain_remote_cache(domain)
-    return per_request_realm_filters_cache[domain]
+def realm_filters_for_realm(realm_id):
+    # type: (int) -> List[Tuple[Text, Text, int]]
+    if not realm_in_local_realm_filters_cache(realm_id):
+        per_request_realm_filters_cache[realm_id] = realm_filters_for_realm_remote_cache(realm_id)
+    return per_request_realm_filters_cache[realm_id]
 
 @cache_with_key(get_realm_filters_cache_key, timeout=3600*24*7)
-def realm_filters_for_domain_remote_cache(domain):
-    # type: (Text) -> List[Tuple[Text, Text, int]]
+def realm_filters_for_realm_remote_cache(realm_id):
+    # type: (int) -> List[Tuple[Text, Text, int]]
     filters = []
-    for realm_filter in RealmFilter.objects.filter(realm=get_realm(domain)):
+    for realm_filter in RealmFilter.objects.filter(realm_id=realm_id):
         filters.append((realm_filter.pattern, realm_filter.url_format_string, realm_filter.id))
 
     return filters
 
 def all_realm_filters():
-    # type: () -> Dict[Text, List[Tuple[Text, Text, int]]]
-    filters = defaultdict(list) # type: Dict[Text, List[Tuple[Text, Text, int]]]
+    # type: () -> Dict[int, List[Tuple[Text, Text, int]]]
+    filters = defaultdict(list) # type: Dict[int, List[Tuple[Text, Text, int]]]
     for realm_filter in RealmFilter.objects.all():
-        filters[realm_filter.realm.domain].append((realm_filter.pattern, realm_filter.url_format_string, realm_filter.id))
+        filters[realm_filter.realm_id].append((realm_filter.pattern, realm_filter.url_format_string, realm_filter.id))
 
     return filters
 
 def flush_realm_filter(sender, **kwargs):
     # type: (Any, **Any) -> None
-    realm = kwargs['instance'].realm
-    cache_delete(get_realm_filters_cache_key(realm.domain))
+    realm_id = kwargs['instance'].realm_id
+    cache_delete(get_realm_filters_cache_key(realm_id))
     try:
-        per_request_realm_filters_cache.pop(realm.domain.lower())
+        per_request_realm_filters_cache.pop(realm_id)
     except KeyError:
         pass
 
@@ -502,6 +514,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = 'email'
     MAX_NAME_LENGTH = 100
+    NAME_INVALID_CHARS = ['*', '`', '>', '"', '@']
 
     # Our custom site-specific fields
     full_name = models.CharField(max_length=MAX_NAME_LENGTH) # type: Text
@@ -547,6 +560,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     enter_sends = models.NullBooleanField(default=False) # type: Optional[bool]
     autoscroll_forever = models.BooleanField(default=False) # type: bool
     left_side_userlist = models.BooleanField(default=False) # type: bool
+    emoji_alt_code = models.BooleanField(default=False) # type: bool
 
     # display settings
     twenty_four_hour_time = models.BooleanField(default=False) # type: bool
@@ -561,16 +575,17 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     AVATAR_FROM_GRAVATAR = u'G'
     AVATAR_FROM_USER = u'U'
     AVATAR_SOURCES = (
-            (AVATAR_FROM_GRAVATAR, 'Hosted by Gravatar'),
-            (AVATAR_FROM_USER, 'Uploaded by user'),
+        (AVATAR_FROM_GRAVATAR, 'Hosted by Gravatar'),
+        (AVATAR_FROM_USER, 'Uploaded by user'),
     )
     avatar_source = models.CharField(default=AVATAR_FROM_GRAVATAR, choices=AVATAR_SOURCES, max_length=1) # type: Text
+    avatar_version = models.PositiveSmallIntegerField(default=1) # type: int
 
     TUTORIAL_WAITING  = u'W'
     TUTORIAL_STARTED  = u'S'
     TUTORIAL_FINISHED = u'F'
-    TUTORIAL_STATES   = ((TUTORIAL_WAITING,  "Waiting"),
-                         (TUTORIAL_STARTED,  "Started"),
+    TUTORIAL_STATES   = ((TUTORIAL_WAITING, "Waiting"),
+                         (TUTORIAL_STARTED, "Started"),
                          (TUTORIAL_FINISHED, "Finished"))
 
     tutorial_status = models.CharField(default=TUTORIAL_WAITING, choices=TUTORIAL_STATES, max_length=1) # type: Text
@@ -590,6 +605,16 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     muted_topics = models.TextField(default=u'[]') # type: Text
 
     objects = UserManager() # type: UserManager
+
+    DEFAULT_UPLOADS_QUOTA = 1024*1024*1024
+
+    quota = models.IntegerField(default=DEFAULT_UPLOADS_QUOTA) # type: int
+    # The maximum length of a timezone in pytz.all_timezones is 32.
+    # Setting max_length=40 is a safe choice.
+    # In Django, the convention is to use empty string instead of Null
+    # for text based fields. For more information, see
+    # https://docs.djangoproject.com/en/1.10/ref/models/fields/#django.db.models.Field.null.
+    timezone = models.CharField(max_length=40, default=u'')  # type: Text
 
     def can_admin_user(self, target_user):
         # type: (UserProfile) -> bool
@@ -668,13 +693,25 @@ class PreregistrationUser(models.Model):
 
     realm = models.ForeignKey(Realm, null=True) # type: Optional[Realm]
 
+class EmailChangeStatus(models.Model):
+    new_email = models.EmailField() # type: Text
+    old_email = models.EmailField() # type: Text
+    updated_at = models.DateTimeField(auto_now=True) # type: datetime.datetime
+    user_profile = models.ForeignKey(UserProfile) # type: UserProfile
+
+    # status: whether an object has been confirmed.
+    #   if confirmed, set to confirmation.settings.STATUS_ACTIVE
+    status = models.IntegerField(default=0) # type: int
+
+    realm = models.ForeignKey(Realm) # type: Realm
+
 class PushDeviceToken(models.Model):
     APNS = 1
     GCM = 2
 
     KINDS = (
-        (APNS,  'apns'),
-        (GCM,   'gcm'),
+        (APNS, 'apns'),
+        (GCM, 'gcm'),
     )
 
     kind = models.PositiveSmallIntegerField(choices=KINDS) # type: int
@@ -683,7 +720,7 @@ class PushDeviceToken(models.Model):
     # sent to us from each device:
     #   - APNS token if kind == APNS
     #   - GCM registration id if kind == GCM
-    token = models.CharField(max_length=4096, unique=True) # type: Text
+    token = models.CharField(max_length=4096, unique=True) # type: bytes
     last_updated = models.DateTimeField(auto_now=True) # type: datetime.datetime
 
     # The user who's device this is
@@ -726,10 +763,10 @@ class Stream(ModelReprMixin, models.Model):
     def num_subscribers(self):
         # type: () -> int
         return Subscription.objects.filter(
-                recipient__type=Recipient.STREAM,
-                recipient__type_id=self.id,
-                user_profile__is_active=True,
-                active=True
+            recipient__type=Recipient.STREAM,
+            recipient__type_id=self.id,
+            user_profile__is_active=True,
+            active=True
         ).count()
 
     # This is stream information that is sent to clients
@@ -742,10 +779,6 @@ class Stream(ModelReprMixin, models.Model):
 
 post_save.connect(flush_stream, sender=Stream)
 post_delete.connect(flush_stream, sender=Stream)
-
-def valid_stream_name(name):
-    # type: (Text) -> bool
-    return name != ""
 
 # The Recipient table is used to map Messages to the set of users who
 # received the message.  It is implemented as a set of triples (id,
@@ -768,8 +801,8 @@ class Recipient(ModelReprMixin, models.Model):
     # N.B. If we used Django's choice=... we would get this for free (kinda)
     _type_names = {
         PERSONAL: 'personal',
-        STREAM:   'stream',
-        HUDDLE:   'huddle'}
+        STREAM: 'stream',
+        HUDDLE: 'huddle'}
 
     def type_name(self):
         # type: () -> str
@@ -937,8 +970,10 @@ class Message(ModelReprMixin, models.Model):
 
     @staticmethod
     def need_to_render_content(rendered_content, rendered_content_version, bugdown_version):
-        # type: (Optional[Text], int, int) -> bool
-        return rendered_content is None or rendered_content_version < bugdown_version
+        # type: (Optional[Text], Optional[int], int) -> bool
+        return (rendered_content is None or
+                rendered_content_version is None or
+                rendered_content_version < bugdown_version)
 
     def to_log_dict(self):
         # type: () -> Dict[str, Any]
@@ -981,6 +1016,7 @@ class Message(ModelReprMixin, models.Model):
             'sender__realm__id',
             'sender__realm__domain',
             'sender__avatar_source',
+            'sender__avatar_version',
             'sender__is_mirror_dummy',
         ]
         messages = Message.objects.filter(id__in=needed_ids).values(*fields)
@@ -997,8 +1033,9 @@ class Message(ModelReprMixin, models.Model):
         sending_client = self.sending_client.name.lower()
 
         return (sending_client in ('zulipandroid', 'zulipios', 'zulipdesktop',
+                                   'zulipmobile', 'zulipelectron', 'snipe',
                                    'website', 'ios', 'android')) or (
-                                   'desktop app' in sending_client)
+                                       'desktop app' in sending_client)
 
     @staticmethod
     def content_has_attachment(content):
@@ -1045,7 +1082,7 @@ def pre_save_message(sender, **kwargs):
         message.update_calculated_fields()
 
 def get_context_for_message(message):
-    # type: (Message) -> Sequence[Message]
+    # type: (Message) -> QuerySet[Message]
     # TODO: Change return type to QuerySet[Message]
     return Message.objects.filter(
         recipient_id=message.recipient_id,
@@ -1128,6 +1165,7 @@ class Attachment(ModelReprMixin, models.Model):
     is_realm_public = models.BooleanField(default=False) # type: bool
     messages = models.ManyToManyField(Message) # type: Manager
     create_time = models.DateTimeField(default=timezone.now, db_index=True) # type: datetime.datetime
+    size = models.IntegerField(null=True) # type: int
 
     def __unicode__(self):
         # type: () -> Text
@@ -1136,6 +1174,20 @@ class Attachment(ModelReprMixin, models.Model):
     def is_claimed(self):
         # type: () -> bool
         return self.messages.count() > 0
+
+    def to_dict(self):
+        # type: () -> Dict[str, Any]
+        return {
+            'id': self.id,
+            'name': self.file_name,
+            'path_id': self.path_id,
+            'messages': [{
+                'id': m.id,
+                # convert to JavaScript-style UNIX timestamp so we can take
+                # advantage of client timezones.
+                'name': time.mktime(m.pub_date.timetuple()) * 1000
+            } for m in self.messages.all()]
+        }
 
 def get_old_unclaimed_attachments(weeks_ago):
     # type: (int) -> Sequence[Attachment]
@@ -1184,31 +1236,32 @@ def get_active_user_dicts_in_realm(realm):
     return UserProfile.objects.filter(realm=realm, is_active=True) \
                               .values(*active_user_dict_fields)
 
-@cache_with_key(active_bot_dicts_in_realm_cache_key, timeout=3600*24*7)
-def get_active_bot_dicts_in_realm(realm):
+@cache_with_key(bot_dicts_in_realm_cache_key, timeout=3600*24*7)
+def get_bot_dicts_in_realm(realm):
     # type: (Realm) -> List[Dict[str, Any]]
-    return UserProfile.objects.filter(realm=realm, is_active=True, is_bot=True) \
-                              .values(*active_bot_dict_fields)
+    return UserProfile.objects.filter(realm=realm, is_bot=True).values(*bot_dict_fields)
 
 def get_owned_bot_dicts(user_profile, include_all_realm_bots_if_admin=True):
     # type: (UserProfile, bool) -> List[Dict[str, Any]]
     if user_profile.is_realm_admin and include_all_realm_bots_if_admin:
-        result = get_active_bot_dicts_in_realm(user_profile.realm)
+        result = get_bot_dicts_in_realm(user_profile.realm)
     else:
-        result = UserProfile.objects.filter(realm=user_profile.realm, is_active=True, is_bot=True,
-                                            bot_owner=user_profile).values(*active_bot_dict_fields)
+        result = UserProfile.objects.filter(realm=user_profile.realm, is_bot=True,
+                                            bot_owner=user_profile).values(*bot_dict_fields)
     # TODO: Remove this import cycle
     from zerver.lib.avatar import get_avatar_url
 
     return [{'email': botdict['email'],
              'user_id': botdict['id'],
              'full_name': botdict['full_name'],
+             'is_active': botdict['is_active'],
              'api_key': botdict['api_key'],
              'default_sending_stream': botdict['default_sending_stream__name'],
              'default_events_register_stream': botdict['default_events_register_stream__name'],
              'default_all_public_streams': botdict['default_all_public_streams'],
              'owner': botdict['bot_owner__email'],
-             'avatar_url': get_avatar_url(botdict['avatar_source'], botdict['email']),
+             'avatar_url': get_avatar_url(botdict['avatar_source'], botdict['email'],
+                                          botdict['avatar_version']),
              }
             for botdict in result]
 
@@ -1251,16 +1304,16 @@ def get_huddle(id_list):
 @cache_with_key(lambda huddle_hash, id_list: huddle_hash_cache_key(huddle_hash), timeout=3600*24*7)
 def get_huddle_backend(huddle_hash, id_list):
     # type: (Text, List[int]) -> Huddle
-    (huddle, created) = Huddle.objects.get_or_create(huddle_hash=huddle_hash)
-    if created:
-        with transaction.atomic():
+    with transaction.atomic():
+        (huddle, created) = Huddle.objects.get_or_create(huddle_hash=huddle_hash)
+        if created:
             recipient = Recipient.objects.create(type_id=huddle.id,
                                                  type=Recipient.HUDDLE)
             subs_to_create = [Subscription(recipient=recipient,
                                            user_profile=get_user_profile_by_id(user_profile_id))
                               for user_profile_id in id_list]
             Subscription.objects.bulk_create(subs_to_create)
-    return huddle
+        return huddle
 
 def clear_database():
     # type: () -> None
@@ -1306,65 +1359,97 @@ class UserPresence(models.Model):
             return 'active'
         elif status == UserPresence.IDLE:
             return 'idle'
+        else:
+            raise ValueError('Unknown status: %s' % (status,))
+
+    @staticmethod
+    def get_status_dict_by_user(user_profile):
+        # type: (UserProfile) -> defaultdict[Any, Dict[Any, Any]]
+        query = UserPresence.objects.filter(user_profile=user_profile).values(
+            'client__name',
+            'status',
+            'timestamp',
+            'user_profile__email',
+            'user_profile__id',
+            'user_profile__enable_offline_push_notifications',
+            'user_profile__is_mirror_dummy',
+        )
+
+        if PushDeviceToken.objects.filter(user=user_profile).exists():
+            mobile_user_ids = [user_profile.id]  # type: List[int]
+        else:
+            mobile_user_ids = []
+
+        return UserPresence.get_status_dicts_for_query(query, mobile_user_ids)
 
     @staticmethod
     def get_status_dict_by_realm(realm_id):
         # type: (int) -> defaultdict[Any, Dict[Any, Any]]
-        user_statuses = defaultdict(dict) # type: defaultdict[Any, Dict[Any, Any]]
-
         query = UserPresence.objects.filter(
-                user_profile__realm_id=realm_id,
-                user_profile__is_active=True,
-                user_profile__is_bot=False
+            user_profile__realm_id=realm_id,
+            user_profile__is_active=True,
+            user_profile__is_bot=False
         ).values(
-                'client__name',
-                'status',
-                'timestamp',
-                'user_profile__email',
-                'user_profile__id',
-                'user_profile__enable_offline_push_notifications',
-                'user_profile__is_mirror_dummy',
+            'client__name',
+            'status',
+            'timestamp',
+            'user_profile__email',
+            'user_profile__id',
+            'user_profile__enable_offline_push_notifications',
+            'user_profile__is_mirror_dummy',
         )
 
         mobile_user_ids = [row['user'] for row in PushDeviceToken.objects.filter(
-                user__realm_id=1,
-                user__is_active=True,
-                user__is_bot=False,
+            user__realm_id=1,
+            user__is_active=True,
+            user__is_bot=False,
         ).distinct("user").values("user")]
 
-        for row in query:
-            info = UserPresence.to_presence_dict(
-                    client_name=row['client__name'],
-                    status=row['status'],
-                    dt=row['timestamp'],
-                    push_enabled=row['user_profile__enable_offline_push_notifications'],
-                    has_push_devices=row['user_profile__id'] in mobile_user_ids,
-                    is_mirror_dummy=row['user_profile__is_mirror_dummy'],
-                    )
-            user_statuses[row['user_profile__email']][row['client__name']] = info
+        return UserPresence.get_status_dicts_for_query(query, mobile_user_ids)
 
+    @staticmethod
+    def get_status_dicts_for_query(query, mobile_user_ids):
+        # type: (QuerySet, List[int]) -> defaultdict[Any, Dict[Any, Any]]
+        user_statuses = defaultdict(dict) # type: defaultdict[Any, Dict[Any, Any]]
+        # Order of query is important to get a latest status as aggregated status.
+        for row in query.order_by("user_profile__id", "-timestamp"):
+            info = UserPresence.to_presence_dict(
+                row['client__name'],
+                row['status'],
+                row['timestamp'],
+                push_enabled=row['user_profile__enable_offline_push_notifications'],
+                has_push_devices=row['user_profile__id'] in mobile_user_ids,
+                is_mirror_dummy=row['user_profile__is_mirror_dummy'],
+            )
+            if not user_statuses.get(row['user_profile__email']):
+                # Applying the latest status as aggregated status for user.
+                user_statuses[row['user_profile__email']]['aggregated'] = {
+                    'status': info['status'],
+                    'timestamp': info['timestamp']
+                }
+            user_statuses[row['user_profile__email']][row['client__name']] = info
         return user_statuses
 
     @staticmethod
-    def to_presence_dict(client_name=None, status=None, dt=None, push_enabled=None,
+    def to_presence_dict(client_name, status, dt, push_enabled=None,
                          has_push_devices=None, is_mirror_dummy=None):
-        # type: (Optional[Text], Optional[int], Optional[datetime.datetime], Optional[bool], Optional[bool], Optional[bool]) -> Dict[str, Any]
+        # type: (Text, int, datetime.datetime, Optional[bool], Optional[bool], Optional[bool]) -> Dict[str, Any]
         presence_val = UserPresence.status_to_string(status)
 
         timestamp = datetime_to_timestamp(dt)
         return dict(
-                client=client_name,
-                status=presence_val,
-                timestamp=timestamp,
-                pushable=(push_enabled and has_push_devices),
+            client=client_name,
+            status=presence_val,
+            timestamp=timestamp,
+            pushable=(push_enabled and has_push_devices),
         )
 
     def to_dict(self):
         # type: () -> Dict[str, Any]
         return UserPresence.to_presence_dict(
-                client_name=self.client.name,
-                status=self.status,
-                dt=self.timestamp
+            self.client.name,
+            self.status,
+            self.timestamp
         )
 
     @staticmethod
@@ -1409,3 +1494,12 @@ class ScheduledJob(models.Model):
     # Kind if like a ForeignKey, but table is determined by type.
     filter_id = models.IntegerField(null=True) # type: Optional[int]
     filter_string = models.CharField(max_length=100) # type: Text
+
+class RealmAuditLog(models.Model):
+    realm = models.ForeignKey(Realm) # type: Realm
+    acting_user = models.ForeignKey(UserProfile, null=True, related_name='+') # type: Optional[UserProfile]
+    modified_user = models.ForeignKey(UserProfile, null=True, related_name='+') # type: Optional[UserProfile]
+    modified_stream = models.ForeignKey(Stream, null=True) # type: Optional[Stream]
+    event_type = models.CharField(max_length=40) # type: Text
+    event_time = models.DateTimeField() # type: datetime.datetime
+    backfilled = models.BooleanField(default=False) # type: bool

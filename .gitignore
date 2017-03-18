@@ -18,9 +18,14 @@ coverage/
 /zproject/dev-secrets.conf
 static/js/bundle.js
 static/generated/emoji
+static/generated/github-contributors.json
 static/locale/language_options.json
 /node_modules
+/staticfiles.json
 npm-debug.log
 *.mo
 var/*
 .vscode/
+tools/conf.ini
+tools/custom_provision
+contrib_bots/bots/john/assets/var/database.db

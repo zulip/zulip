@@ -1,38 +1,41 @@
-# Change Stream Color
-Zulip allows you to change stream colors to better customize an environment
-that best suits you.
+# Change the color of a stream
 
-### Using the streams sidebar
-The streams sidebar is the fastest approach to changing the color of a stream, to use this:
+You can optimize your Zulip environment by changing your streams' colors.
 
-1. Hover your cursor over the stream you would like to edit, then click the **down chevron**(![Down chevron](/static/images/help/chevron.png)) that will appear to the right of the stream name.
-2. From the pop-up menu select your desired stream color from the preset colors or open the color picker by clicking **Choose custom color**.
+## Change the color of a stream through the left sidebar
 
-![Change Stream Color](/static/images/help/stream-left-sidebar-color.png)
+If you want to quickly change the color of a single stream, you can do so
+through the left sidebar.
 
-You can also edit the color of a Stream from the **Subscriptions page**.
+{!stream-actions.md!}
 
-### Finding the subscriptions page
-There are multiple ways to navigate to the subscriptions page. You can either:
+2. Click on the {!down-chevron.md!}
 
-1. Click the **cog** (![cog](/static/images/help/cog.png)) icon in the top right corner.
-2. Select the **Manage Streams** option from the dropdown menu.
+3. Select the **Choose custom color** option from the actions dropdown.
 
-![settings](/static/images/help/settings-dropdown-streams.png)
+4. The stream will change colors in the left sidebar, confirming the success of
+the stream's color change.
 
-or
+## Change the color of a stream through the Streams page
 
-1. Click the **cog** (![cog](/static/images/help/cog.png)) icon located in the **left sidebar** next to **Streams**
+If you want to change the colors of multiple streams at once or specify a hex
+code for your stream's color, you should change the stream's colors through the
+[Streams](/#streams) page.
 
-![Streams Cog](/static/images/help/streams-1.png)
+{!subscriptions.md!}
+{!filter-streams.md!}
 
-### Change color
-Once on the **subscriptions page**:
+2. Select the stream you want to change the color of in the
+[Streams](/#streams) page; {!stream-settings.md!}
 
-1. Select the stream you want to edit by either searching for its name or finding it in the streams list.
-2. Under the **Stream Settings** section, select the **Stream Color** option.
-3. From the window select either a preset color, use the color picker, or enter the hex code of your desired color.
+2. Under the **Stream settings** section, select the **Stream color** option.
 
-<img src="/static/images/help/subscriptions-change-color.png" alt="Subscriptions Change Color" style="width: 50%;"/>
+3. In the tooltip that appears after selecting the **Stream color** option,
+select a color from the color palette.
 
-Congratulations, you're finished! You can now exit the **subscriptions page** by clicking the "**X**" in the top right corner of the modal.
+    !!! tip ""
+        Alternatively, you can use the color picker or enter the hex code of
+        your desired color. Click the **choose** button to save your changes.
+
+4. The stream will change colors in the [Streams](/#streams) page,
+confirming the success of the stream's color change.

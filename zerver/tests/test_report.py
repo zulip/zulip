@@ -2,8 +2,9 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-from typing import Any, Callable, Iterable, Tuple
+from typing import Any, Callable, Dict, Iterable, List, Tuple
 
+from django.test import override_settings
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
@@ -55,9 +56,9 @@ class TestReport(ZulipTestCase):
         self.assert_json_success(result)
 
         expected_calls = [
-            ('timing', ('endtoend.send_time.zulip_com', 5)),
-            ('timing', ('endtoend.receive_time.zulip_com', 6)),
-            ('timing', ('endtoend.displayed_time.zulip_com', 7)),
+            ('timing', ('endtoend.send_time.zulip', 5)),
+            ('timing', ('endtoend.receive_time.zulip', 6)),
+            ('timing', ('endtoend.displayed_time.zulip', 7)),
             ('incr', ('locally_echoed',)),
             ('incr', ('render_disparity',)),
         ]
@@ -80,9 +81,9 @@ class TestReport(ZulipTestCase):
         self.assert_json_success(result)
 
         expected_calls = [
-            ('timing', ('narrow.initial_core.zulip_com', 5)),
-            ('timing', ('narrow.initial_free.zulip_com', 6)),
-            ('timing', ('narrow.network.zulip_com', 7)),
+            ('timing', ('narrow.initial_core.zulip', 5)),
+            ('timing', ('narrow.initial_free.zulip', 6)),
+            ('timing', ('narrow.network.zulip', 7)),
         ]
         self.assertEqual(stats_mock.func_calls, expected_calls)
 
@@ -102,11 +103,12 @@ class TestReport(ZulipTestCase):
         self.assert_json_success(result)
 
         expected_calls = [
-            ('timing', ('unnarrow.initial_core.zulip_com', 5)),
-            ('timing', ('unnarrow.initial_free.zulip_com', 6)),
+            ('timing', ('unnarrow.initial_core.zulip', 5)),
+            ('timing', ('unnarrow.initial_free.zulip', 6)),
         ]
         self.assertEqual(stats_mock.func_calls, expected_calls)
 
+    @override_settings(BROWSER_ERROR_REPORTING=True)
     def test_report_error(self):
         # type: () -> None
         email = 'hamlet@zulip.com'
@@ -138,6 +140,17 @@ class TestReport(ZulipTestCase):
         self.assertEqual(report['more_info'], dict(foo='bar'))
         self.assertEqual(report['user_email'], email)
 
-        with self.settings(ERROR_REPORTING=False):
+        with self.settings(BROWSER_ERROR_REPORTING=False):
             result = self.client_post("/json/report_error", params)
         self.assert_json_success(result)
+
+        # If js_source_map is present, then the stack trace should be annotated.
+        # DEVELOPMENT=False and TEST_SUITE=False are necessary to ensure that
+        # js_source_map actually gets instantiated.
+        with \
+                self.settings(DEVELOPMENT=False, TEST_SUITE=False), \
+                mock.patch('zerver.lib.unminify.SourceMap.annotate_stacktrace') as annotate:
+            result = self.client_post("/json/report_error", params)
+        self.assert_json_success(result)
+        # fix_params (see above) adds quotes when JSON encoding.
+        annotate.assert_called_once_with('"trace"')

@@ -1,5 +1,7 @@
 from __future__ import absolute_import
 
+from django.utils import timezone
+
 import hashlib
 import logging
 import traceback
@@ -25,7 +27,7 @@ class _RateLimitFilter(object):
             try:
                 cache.set('RLF_TEST_KEY', 1, 1)
                 use_cache = cache.get('RLF_TEST_KEY') == 1
-            except:
+            except Exception:
                 use_cache = False
 
             if use_cache:
@@ -38,10 +40,10 @@ class _RateLimitFilter(object):
                 if not duplicate:
                     cache.set(key, 1, rate)
             else:
-                min_date = datetime.now() - timedelta(seconds=rate)
+                min_date = timezone.now() - timedelta(seconds=rate)
                 duplicate = (self.last_error >= min_date)
                 if not duplicate:
-                    self.last_error = datetime.now()
+                    self.last_error = timezone.now()
 
         return not duplicate
 
@@ -61,3 +63,22 @@ class RequireReallyDeployed(logging.Filter):
         # type: (logging.LogRecord) -> bool
         from django.conf import settings
         return settings.PRODUCTION
+
+def skip_200_and_304(record):
+    # type: (logging.LogRecord) -> bool
+    # Apparently, `status_code` is added by Django and is not an actual
+    # attribute of LogRecord; as a result, mypy throws an error if we
+    # access the `status_code` attribute directly.
+    if getattr(record, 'status_code') in [200, 304]:
+        return False
+
+    return True
+
+def skip_site_packages_logs(record):
+    # type: (logging.LogRecord) -> bool
+    # This skips the log records that are generated from libraries
+    # installed in site packages.
+    # Workaround for https://code.djangoproject.com/ticket/26886
+    if 'site-packages' in record.pathname:
+        return False
+    return True

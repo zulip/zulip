@@ -7,12 +7,12 @@ from argparse import ArgumentParser
 from optparse import make_option
 
 from django.core.management.base import BaseCommand
-from zerver.models import RealmFilter, all_realm_filters, get_realm_by_string_id
+from zerver.models import RealmFilter, all_realm_filters, get_realm
 from zerver.lib.actions import do_add_realm_filter, do_remove_realm_filter
 import sys
 
 class Command(BaseCommand):
-    help = """Create a link filter rule for the specified domain.
+    help = """Create a link filter rule for the specified realm.
 
 NOTE: Regexes must be simple enough that they can be easily translated to JavaScript
       RegExp syntax. In addition to JS-compatible syntax, the following features are available:
@@ -44,9 +44,9 @@ Example: ./manage.py realm_filters --realm=zulip --op=show
 
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
-        realm = get_realm_by_string_id(options["string_id"])
+        realm = get_realm(options["string_id"])
         if options["op"] == "show":
-            print("%s: %s" % (realm.domain, all_realm_filters().get(realm.domain, [])))
+            print("%s: %s" % (realm.string_id, all_realm_filters().get(realm.id, [])))
             sys.exit(0)
 
         pattern = options['pattern']

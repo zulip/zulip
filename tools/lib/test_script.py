@@ -33,7 +33,7 @@ version of dependencies than the version you provisioned last.
 This may be ok, but it's likely that you either want to rebase
 your branch on top of upstream/master or re-provision your VM.
 
-Do this: `./tools/provision.py`
+Do this: `./tools/provision`
 '''
 
 NEED_TO_UPGRADE = '''
@@ -41,7 +41,7 @@ It looks like you checked out a branch that has added
 dependencies beyond what you last provisioned. Your command
 is likely to fail until you add dependencies by provisioning.
 
-Do this: `./tools/provision.py`
+Do this: `./tools/provision`
 '''
 
 def get_provisioning_status():
@@ -52,7 +52,7 @@ def get_provisioning_status():
         # If the developer doesn't have a version_file written by
         # a previous provision, then we don't do any safety checks
         # here on the assumption that the developer is managing
-        # their own dependencies and not running provision.py.
+        # their own dependencies and not running provision.
         return True, None
 
     version = open(version_file).read().strip()

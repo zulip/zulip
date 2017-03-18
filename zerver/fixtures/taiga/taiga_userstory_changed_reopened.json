@@ -1,103 +1,100 @@
 {
-  "type":"userstory",
-  "action":"change",
-  "change":{
-    "diff":{
-      "is_closed":{
-        "from":true,
-        "to":false
-      },
-      "status":{
-        "from":721854,
-        "to":721850
-      },
-      "finish_date":{
-        "from":"2016-04-13 11:38:06.961674+00:00",
-        "to":"None"
-      }
-    },
-    "snapshot":null,
-    "values":{
-      "status":{
-        "721854":"Done",
-        "721850":"New"
-      }
-    },
-    "user":{
-      "pk":126383,
-      "name":"Antek"
-    },
-    "delete_comment_user":null,
-    "id":"311b8ba0-016c-11e6-b505-52540016141a",
-    "created_at":"2016-04-13T11:38:07+0000",
-    "type":1,
-    "key":"userstories.userstory:672899",
-    "comment":"",
-    "comment_html":"",
-    "delete_comment_date":null,
-    "is_hidden":false,
-    "is_snapshot":false
+  "by": {
+    "gravatar_id": "a2f998f1e3c224fc53cf1d595718961e",
+    "id": 187698,
+    "full_name": "TomaszKolek",
+    "permalink": "https://tree.taiga.io/profile/kolaszek",
+    "username": "kolaszek",
+    "photo": null
   },
-  "data":{
-    "custom_attributes_values":{
-
+  "change": {
+    "comment_html": "",
+    "comment": "",
+    "comment_versions": null,
+    "edit_comment_date": null,
+    "delete_comment_date": null,
+    "diff": {
+      "finish_date": {
+        "from": "2017-01-10 18:28:04.890549+00:00",
+        "to": "None"
+      },
+      "status": {
+        "from": "Done",
+        "to": "Ready"
+      },
+      "is_closed": {
+        "from": true,
+        "to": false
+      }
+    }
+  },
+  "date": "2017-01-10T18:28:24.669Z",
+  "action": "change",
+  "data": {
+    "watchers": [],
+    "client_requirement": false,
+    "id": 1171601,
+    "blocked_note": "",
+    "modified_date": "2017-01-10T18:28:24.456Z",
+    "owner": {
+      "gravatar_id": "a2f998f1e3c224fc53cf1d595718961e",
+      "id": 187698,
+      "full_name": "TomaszKolek",
+      "permalink": "https://tree.taiga.io/profile/kolaszek",
+      "username": "kolaszek",
+      "photo": null
     },
-    "is_watcher":false,
-    "total_watchers":0,
-    "watchers":[
-      128024,
-      126383
-    ],
-    "tags":[
-
-    ],
-    "external_reference":null,
-    "owner":{
-      "id":126383,
-      "name":"Antek"
+    "is_blocked": false,
+    "external_reference": null,
+    "ref": 5,
+    "subject": "UserStory",
+    "project": {
+      "name": "TomKol",
+      "id": 170130,
+      "logo_big_url": null,
+      "permalink": "https://tree.taiga.io/project/kolaszek-tomkol"
     },
-    "assigned_to":{
-      "id":126383,
-      "name":"Antek"
-    },
-    "points":[
+    "tribe_gig": null,
+    "is_closed": false,
+    "custom_attributes_values": {},
+    "milestone": null,
+    "finish_date": null,
+    "team_requirement": false,
+    "description": "",
+    "created_date": "2017-01-10T18:24:28.966Z",
+    "points": [
       {
-        "id":1483752,
-        "name":"?",
-        "value":null
+        "name": "?",
+        "value": null,
+        "role": "UX"
       },
       {
-        "id":1483757,
-        "name":"3",
-        "value":3.0
+        "name": "?",
+        "value": null,
+        "role": "Design"
       },
       {
-        "id":1483757,
-        "name":"3",
-        "value":3.0
+        "name": "?",
+        "value": null,
+        "role": "Front"
       },
       {
-        "id":1483757,
-        "name":"3",
-        "value":3.0
+        "name": "?",
+        "value": null,
+        "role": "Back"
       }
     ],
-    "id":672899,
-    "is_blocked":false,
-    "blocked_note":"",
-    "ref":2,
-    "milestone":null,
-    "project":123471,
-    "status":721854,
-    "is_closed":true,
-    "created_date":"2016-04-13T11:22:00+0000",
-    "modified_date":"2016-04-13T11:38:06+0000",
-    "finish_date":"2016-04-13T11:38:06+0000",
-    "subject":"A newer hope",
-    "description":"",
-    "client_requirement":false,
-    "team_requirement":true,
-    "generated_from_issue":null,
-    "tribe_gig":null
-  }
+    "generated_from_issue": null,
+    "tags": [],
+    "status": {
+      "name": "Ready",
+      "id": 1006446,
+      "color": "#ff8a84",
+      "is_archived": false,
+      "slug": "ready",
+      "is_closed": false
+    },
+    "assigned_to": null
+  },
+  "type": "userstory"
 }

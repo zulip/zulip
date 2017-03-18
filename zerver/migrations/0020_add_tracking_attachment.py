@@ -4,8 +4,6 @@ from __future__ import unicode_literals
 from django.db import models, migrations
 from django.conf import settings
 
-from zerver.models import Recipient
-
 class Migration(migrations.Migration):
 
     dependencies = [

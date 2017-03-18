@@ -58,15 +58,8 @@ exports.lower_bound = function (array, arg1, arg2, arg3, arg4) {
 
 exports.same_stream_and_topic = function util_same_stream_and_topic(a, b) {
     // Streams and topics are case-insensitive.
-    return ((a.stream.toLowerCase() === b.stream.toLowerCase()) &&
+    return ((a.stream_id === b.stream_id) &&
             (a.subject.toLowerCase() === b.subject.toLowerCase()));
-};
-
-exports.is_current_user = function (email) {
-    if (email === null || email === undefined) {
-        return false;
-    }
-    return email.toLowerCase() === page_params.email.toLowerCase();
 };
 
 exports.is_pm_recipient = function (email, message) {
@@ -80,27 +73,6 @@ exports.extract_pm_recipients = function (recipients) {
     });
 };
 
-exports.same_major_recipient = function (a, b) {
-    // Same behavior as same_recipient, except that it returns true for messages
-    // on different topics but the same stream.
-    if ((a === undefined) || (b === undefined)) {
-        return false;
-    }
-    if (a.type !== b.type) {
-        return false;
-    }
-
-    switch (a.type) {
-    case 'private':
-        return a.reply_to.toLowerCase() === b.reply_to.toLowerCase();
-    case 'stream':
-        return a.stream.toLowerCase() === b.stream.toLowerCase();
-    }
-
-    // should never get here
-    return false;
-};
-
 exports.same_recipient = function util_same_recipient(a, b) {
     if ((a === undefined) || (b === undefined)) {
         return false;
@@ -111,7 +83,10 @@ exports.same_recipient = function util_same_recipient(a, b) {
 
     switch (a.type) {
     case 'private':
-        return a.reply_to.toLowerCase() === b.reply_to.toLowerCase();
+        if (a.to_user_ids === undefined) {
+            return false;
+        }
+        return a.to_user_ids === b.to_user_ids;
     case 'stream':
         return exports.same_stream_and_topic(a, b);
     }
@@ -153,6 +128,10 @@ exports.robust_uri_decode = function (str) {
         }
     }
     return '';
+};
+
+exports.rtrim = function (str) {
+    return str.replace(/\s+$/, '');
 };
 
 // If we can, use a locale-aware sorter.  However, if the browser
@@ -214,7 +193,7 @@ exports.CachedValue.prototype = {
 
     reset: function CachedValue_reset() {
         this._value = unassigned_value_sentinel;
-    }
+    },
 };
 
 exports.execute_early = function (func) {

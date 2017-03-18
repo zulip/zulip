@@ -4,6 +4,7 @@ from collections import OrderedDict
 from django.views.generic import TemplateView
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
+from django.shortcuts import render
 
 import os
 import ujson
@@ -11,7 +12,6 @@ import ujson
 from zerver.lib import bugdown
 from zerver.lib.integrations import INTEGRATIONS, HUBOT_LOZENGES
 from zerver.lib.utils import get_subdomain
-from zproject.jinja2 import render_to_response
 
 def add_api_uri_context(context, request):
     # type: (Dict[str, Any], HttpRequest) -> None
@@ -38,7 +38,7 @@ def add_api_uri_context(context, request):
 
 class ApiURLView(TemplateView):
     def get_context_data(self, **kwargs):
-        # type: (Optional[Dict[str, Any]]) -> Dict[str, str]
+        # type: (**Any) -> Dict[str, str]
         context = super(ApiURLView, self).get_context_data(**kwargs)
         add_api_uri_context(context, self.request)
         return context
@@ -52,20 +52,22 @@ class HelpView(ApiURLView):
     path_template = os.path.join(settings.DEPLOY_ROOT, 'templates/zerver/help/%s.md')
 
     def get_path(self, article):
-        # type: (**Any) -> str
+        # type: (str) -> str
         if article == "":
             article = "index"
         return self.path_template % (article,)
 
     def get_context_data(self, **kwargs):
-        # type: (**Any) -> Dict[str, str]
+        # type: (**Any) -> Dict[str, Any]
         article = kwargs["article"]
-        context = super(HelpView, self).get_context_data()
+        context = super(HelpView, self).get_context_data()  # type: Dict[str, Any]
         path = self.get_path(article)
         if os.path.exists(path):
             context["article"] = path
         else:
             context["article"] = self.get_path("missing")
+        # For disabling the "Back to home" on the homepage
+        context["not_index_page"] = not path.endswith("/index.md")
         return context
 
     def get(self, request, article=""):
@@ -78,27 +80,31 @@ class HelpView(ApiURLView):
         return result
 
 
+def add_integrations_context(context):
+    # type: (Dict[str, Any]) -> None
+    alphabetical_sorted_integration = OrderedDict(sorted(INTEGRATIONS.items()))
+    alphabetical_sorted_hubot_lozenges = OrderedDict(sorted(HUBOT_LOZENGES.items()))
+    context['integrations_dict'] = alphabetical_sorted_integration
+    context['hubot_lozenges_dict'] = alphabetical_sorted_hubot_lozenges
+
+    if context["html_settings_links"]:
+        settings_html = '<a href="../#settings">Zulip settings page</a>'
+        subscriptions_html = '<a target="_blank" href="../#streams">streams page</a>'
+    else:
+        settings_html = 'Zulip settings page'
+        subscriptions_html = 'streams page'
+
+    context['settings_html'] = settings_html
+    context['subscriptions_html'] = subscriptions_html
+
+
 class IntegrationView(ApiURLView):
     template_name = 'zerver/integrations.html'
 
     def get_context_data(self, **kwargs):
-        # type: (Optional[Dict[str, Any]]) -> Dict[str, Any]
+        # type: (**Any) -> Dict[str, Any]
         context = super(IntegrationView, self).get_context_data(**kwargs)  # type: Dict[str, Any]
-        alphabetical_sorted_integration = OrderedDict(sorted(INTEGRATIONS.items()))
-        alphabetical_sorted_hubot_lozenges = OrderedDict(sorted(HUBOT_LOZENGES.items()))
-        context['integrations_dict'] = alphabetical_sorted_integration
-        context['hubot_lozenges_dict'] = alphabetical_sorted_hubot_lozenges
-
-        if context["html_settings_links"]:
-            settings_html = '<a href="../#settings">Zulip settings page</a>'
-            subscriptions_html = '<a target="_blank" href="../#subscriptions">subscriptions page</a>'
-        else:
-            settings_html = 'Zulip settings page'
-            subscriptions_html = 'subscriptions page'
-
-        context['settings_html'] = settings_html
-        context['subscriptions_html'] = subscriptions_html
-
+        add_integrations_context(context)
         return context
 
 
@@ -121,13 +127,12 @@ def api_endpoint_docs(request):
             extended_response = response.replace(", ", ",\n ")
         else:
             extended_response = response
-        call['rendered_response'] = bugdown.convert("~~~ .py\n" + extended_response + "\n~~~\n", "default")
+        call['rendered_response'] = bugdown.convert("~~~ .py\n" + extended_response + "\n~~~\n")
         for example_type in ('request', 'response'):
             for lang in call.get('example_' + example_type, []):
                 langs.add(lang)
-    return render_to_response(
-            'zerver/api_endpoints.html', {
-                'content': calls,
-                'langs': langs,
-                },
-            request=request)
+    return render(
+        request,
+        'zerver/api_endpoints.html',
+        context={'content': calls, 'langs': langs},
+    )

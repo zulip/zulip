@@ -1,14 +1,19 @@
 .compose-content {
-    background-color: #ffffff;
-   -webkit-transition: background-color 200ms linear;
-   -moz-transition: background-color 200ms linear;
-   -o-transition: background-color 200ms linear;
-   -ms-transition: background-color 200ms linear;
-   transition: background-color 200ms linear;
+    background-color: #fff;
+    border-top: 1px solid #eee;
+    -webkit-transition: background-color 200ms linear;
+    -moz-transition: background-color 200ms linear;
+    -o-transition: background-color 200ms linear;
+    -ms-transition: background-color 200ms linear;
+    transition: background-color 200ms linear;
 }
 
 .ztable_comp_col1 {
     width: 10px;
+}
+
+#compose_controls .drafts-link {
+    float: left;
 }
 
 .new_message_button {
@@ -20,8 +25,17 @@
     padding: 10px 10px 8px 5px;
 }
 
+.autocomplete_secondary {
+    opacity: 0.6;
+}
+
 #compose_buttons {
-    text-align: center;
+    text-align: right;
+}
+
+#compose_buttons .button.small {
+    font-size: 1em;
+    padding: 3px 10px;
 }
 
 .compose_table .message_header_colorblock,
@@ -104,7 +118,7 @@
 }
 
 .compose_table .messagebox {
-   box-shadow: none !important;
+    box-shadow: none !important;
 }
 
 
@@ -136,10 +150,6 @@ table.compose_table {
     margin-right: 0px;
 }
 
-#compose-send-button {
-    height: 31px; /* Same as height of compose textarea. */
-}
-
 #below-compose-content {
     width: 100%;
     margin-top: 6px;
@@ -157,22 +167,24 @@ table.compose_table {
     width: 100%;
     max-width: 1400px;
     margin: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 .compose-content {
-    border-top: 1px solid #dadada;
-    border-left: 1px solid #dadada;
-    border-right: 1px solid #dadada;
-    padding: 8px 15px 8px 10px;
+    padding: 8px 10px 8px 10px;
     margin-left: 250px;
     margin-right: 250px;
     position: relative;
+
+    border-left: 1px solid #eee;
+    border-right: 1px solid #eee;
 }
 
 #compose_close {
     display: none;
     position: absolute;
-    right: -4px;
+    right: 0px;
     top: 5px;
 }
 
@@ -208,27 +220,28 @@ table.compose_table {
 
 /* Like .nav-tabs > li > a */
 #send-status {
-    width: 90%;
+    width: calc(100% - 28px);
     padding: 8px 14px 8px 14px;
+    margin-bottom: 8px;
     line-height: 20px;
     display: none;
 }
 
 /* Like .alert .close */
 .send-status-close {
-    font-size:   17px;
+    font-size: 17px;
     font-weight: bold;
-    color:       black;
+    color: black;
     text-shadow: 0 1px 0 white;
-    opacity:     .2;
-    filter:      alpha(opacity=20);
-    float:       right;
+    opacity: .2;
+    filter: alpha(opacity=20);
+    float: right;
 }
 
 .send-status-close:hover {
-    cursor:  pointer;
+    cursor: pointer;
     opacity: .4;
-    filter:  alpha(opacity=40);
+    filter: alpha(opacity=40);
 }
 
 #out-of-view-notification {
@@ -261,24 +274,44 @@ table.compose_table {
     position: absolute;
     right: 5px;
     top: 5px;
-    font-size:   17px;
+    font-size: 17px;
     font-weight: bold;
-    color:       black;
+    color: black;
     text-shadow: 0 1px 0 white;
-    opacity:     .2;
-    filter:      alpha(opacity=20);
+    opacity: .2;
+    filter: alpha(opacity=20);
 }
 
 textarea.new_message_textarea {
     display: table-cell;
-    width: calc(100% - 10px);
+    width: calc(100% - 12px);
     padding: 5px;
     height: 1.5em;
     max-height: 22em;
     margin-bottom: 0px;
-    resize: none;
+    resize: vertical !important;
     margin-top: 5px;
 }
+
+textarea.new_message_textarea,
+#subject.recipient_box,
+#stream.recipient_box {
+    border: 1px solid #ddd;
+    box-shadow: none;
+    -webkit-box-shadow: none;
+    transition: border 0.2s ease;
+}
+
+textarea.new_message_textarea:focus,
+#subject.recipient_box:focus,
+#stream.recipient_box:focus {
+    border: 1px solid #AAA;
+}
+
+#stream.recipient_box:focus {
+    border-left: none;
+}
+
 
 input.recipient_box {
     margin: 0px;
@@ -294,7 +327,7 @@ input.recipient_box {
 }
 
 #subject.recipient_box {
-    width: 25%;
+    width: calc(20% + 14px);
     min-width: 140px;
 }
 
@@ -315,6 +348,7 @@ input.recipient_box {
 }
 
 #send_controls .compose_checkbox_label {
+    color: #aaa;
     margin-right: 2px;
 }
 
@@ -324,31 +358,30 @@ input.recipient_box {
 }
 
 #send_controls #compose-send-button {
+    border-radius: 4px;
+    padding-top: 4px;
+    padding-bottom: 2px;
+    margin-right: 7px;
     font-weight: 600;
-    height: 2.2em;
-    background-image: -moz-linear-gradient(top, rgba(14,70,67,1) 0%, rgba(14,83,68,1) 100%); /* FF3.6+ */
-    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(14,70,67,1)), color-stop(100%,rgba(14,83,68,1))); /* Chrome,Safari4+ */
-    background-image: -webkit-linear-gradient(top, rgba(14,70,67,1) 0%,rgba(14,83,68,1) 100%); /* Chrome10+,Safari5.1+ */
-    background-image: -o-linear-gradient(top, rgba(14,70,67,1) 0%,rgba(14,83,68,1) 100%); /* Opera 11.10+ */
-    background-image: -ms-linear-gradient(top, rgba(14,70,67,1) 0%,rgba(14,83,68,1) 100%); /* IE10+ */
-    background-image: linear-gradient(to bottom, rgba(14,70,67,1) 0%,rgba(14,83,68,1) 100%); /* W3C */
+    border: 1px solid #21af97;
+    background-color: #52c2af;
+    color: #fff;
 }
 
-#send_controls #compose-send-button:hover {
-    font-weight: 600;
-    height: 2.2em;
-    background: #fff;
-    background-image: -moz-linear-gradient(top, rgba(14,70,67,0.6) 0%, rgba(14,83,68,0.6) 100%); /* FF3.6+ */
-    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(14,70,67,0.6)), color-stop(100%,rgba(14,83,68,1))); /* Chrome,Safari4+ */
-    background-image: -webkit-linear-gradient(top, rgba(14,70,67,0.6) 0%,rgba(14,83,68,0.6) 100%); /* Chrome10+,Safari5.1+ */
-    background-image: -o-linear-gradient(top, rgba(14,70,67,0.6) 0%,rgba(14,83,68,0.6) 100%); /* Opera 11.10+ */
-    background-image: -ms-linear-gradient(top, rgba(14,70,67,0.6) 0%,rgba(14,83,68,0.6) 100%); /* IE10+ */
-    background-image: linear-gradient(to bottom, rgba(14,70,67,0.6) 0%,rgba(14,83,68,0.6) 100%); /* W3C */
+#compose-send-button:focus {
+    box-shadow: 0px 0px 10px #52c2af, 0px 0px 5px #52c2af;
 }
 
 #stream-message,
 #private-message {
     display: none;
+}
+
+.compose_table .drafts-link {
+    position: relative;
+    margin-right: 1em;
+    margin-left: 5px;
+    top: 2px;
 }
 
 #sending-indicator {
@@ -357,20 +390,8 @@ input.recipient_box {
     display: none;
 }
 
-#restore-draft {
-    display: none;
-    position: relative;
-    margin-right: 1em;
-    margin-left: 5px;
-    top: 2px;
-}
-
 #sending-indicator {
     padding-top: 2px;
-}
-
-#restore-draft:hover {
-    cursor:  pointer;
 }
 
 #compose a.message-control-button {
@@ -405,13 +426,15 @@ input.recipient_box {
     margin-top: 10px;
     bottom: 0px;
     z-index: 1010;
-    width: 100%;
+    /* take away 2px of borders and 2px of padding. */
+    width: calc(100% - 2px - 2px);
     height: 140px;
     padding: 1px;
     text-align: center;
     background-color: #ffffff;
-    border: 1px solid #ccc;
+    border: 1px solid #ddd;
     border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
     overflow: hidden;
     overflow-y: scroll;
 }
@@ -439,7 +462,7 @@ input.recipient_box {
 
 #preview_message_area {
     /* minus 5px padding. */
-    width: calc(100% - 10px);
+    width: calc(100% - 12px);
     padding: 5px;
     /* the maximum height the textarea gets to. */
     max-height: 308px;
@@ -449,12 +472,10 @@ input.recipient_box {
 
     margin-top: 5px;
 
-    border: 1px solid #cccccc;
+    border: 1px solid #aaa;
     border-radius: 4px;
-
-    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
-    -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
-    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+    background-color: #fafafa;
+    cursor: not-allowed;
 }
 
 a#markdown_preview,

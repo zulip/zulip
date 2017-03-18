@@ -24,11 +24,12 @@ features for writing and configuring integrations efficiently.
 class Integration(object):
     DEFAULT_LOGO_STATIC_PATH = 'static/images/integrations/logos/{name}.png'
 
-    def __init__(self, name, client_name, logo=None, secondary_line_text=None, display_name=None):
-        # type: (str, str, Optional[str], Optional[str], Optional[str]) -> None
+    def __init__(self, name, client_name, logo=None, secondary_line_text=None, display_name=None, doc=None):
+        # type: (str, str, Optional[str], Optional[str], Optional[str], Optional[str]) -> None
         self.name = name
         self.client_name = client_name
         self.secondary_line_text = secondary_line_text
+        self.doc = doc
 
         if logo is None:
             logo = self.DEFAULT_LOGO_STATIC_PATH.format(name=name)
@@ -48,13 +49,14 @@ class EmailIntegration(Integration):
         return settings.EMAIL_GATEWAY_BOT != ""
 
 class WebhookIntegration(Integration):
-    DEFAULT_FUNCTION_PATH = 'zerver.views.webhooks.{name}.api_{name}_webhook'
+    DEFAULT_FUNCTION_PATH = 'zerver.webhooks.{name}.view.api_{name}_webhook'
     DEFAULT_URL = 'api/v1/external/{name}'
     DEFAULT_CLIENT_NAME = 'Zulip{name}Webhook'
+    DEFAULT_DOC_PATH = '{name}/doc.html'
 
     def __init__(self, name, client_name=None, logo=None, secondary_line_text=None,
-                 function=None, url=None, display_name=None):
-        # type: (str, Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str]) -> None
+                 function=None, url=None, display_name=None, doc=None):
+        # type: (str, Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str]) -> None
         if client_name is None:
             client_name = self.DEFAULT_CLIENT_NAME.format(name=name.title())
         super(WebhookIntegration, self).__init__(name, client_name, logo, secondary_line_text, display_name)
@@ -70,6 +72,10 @@ class WebhookIntegration(Integration):
         if url is None:
             url = self.DEFAULT_URL.format(name=name)
         self.url = url
+
+        if doc is None:
+            doc = self.DEFAULT_DOC_PATH.format(name=name)
+        self.doc = doc
 
     @property
     def url_object(self):
@@ -109,11 +115,12 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('circleci', display_name='CircleCI'),
     WebhookIntegration('codeship'),
     WebhookIntegration('crashlytics'),
+    WebhookIntegration('delighted', display_name='Delighted'),
     WebhookIntegration('deskdotcom', logo='static/images/integrations/logos/deskcom.png', display_name='Desk.com'),
     WebhookIntegration('freshdesk'),
     GithubIntegration(
         'github',
-        function='zerver.views.webhooks.github.api_github_landing',
+        function='zerver.webhooks.github.view.api_github_landing',
         display_name='GitHub',
         secondary_line_text='(deprecated)'
     ),
@@ -122,14 +129,17 @@ WEBHOOK_INTEGRATIONS = [
         display_name='GitHub',
         logo='static/images/integrations/logos/github.png',
         secondary_line_text='(webhook)',
-        function='zerver.views.webhooks.github_webhook.api_github_webhook'
+        function='zerver.webhooks.github_webhook.view.api_github_webhook'
     ),
     WebhookIntegration('gitlab', display_name='GitLab'),
+    WebhookIntegration('gogs'),
     WebhookIntegration('gosquared', display_name='GoSquared'),
+    WebhookIntegration('greenhouse', display_name='Greenhouse'),
     WebhookIntegration('hellosign', display_name='HelloSign'),
     WebhookIntegration('helloworld', display_name='Hello World'),
     WebhookIntegration('heroku', display_name='Heroku'),
-    WebhookIntegration('ifttt', function='zerver.views.webhooks.ifttt.api_iftt_app_webhook', display_name='IFTTT'),
+    WebhookIntegration('homeassistant', display_name='Home Assistant'),
+    WebhookIntegration('ifttt', function='zerver.webhooks.ifttt.view.api_iftt_app_webhook', display_name='IFTTT'),
     WebhookIntegration('jira', secondary_line_text='(hosted or v5.2+)', display_name='JIRA'),
     WebhookIntegration('librato'),
     WebhookIntegration('mention', display_name='Mention'),
@@ -140,6 +150,8 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('pivotal', display_name='Pivotal Tracker'),
     WebhookIntegration('semaphore'),
     WebhookIntegration('sentry'),
+    WebhookIntegration('solano', display_name='Solano Labs'),
+    WebhookIntegration('splunk', display_name='Splunk'),
     WebhookIntegration('stash'),
     WebhookIntegration('stripe', display_name='Stripe'),
     WebhookIntegration('taiga'),
@@ -150,10 +162,12 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('updown'),
     WebhookIntegration(
         'yo',
-        function='zerver.views.webhooks.yo.api_yo_app_webhook',
+        function='zerver.webhooks.yo.view.api_yo_app_webhook',
         logo='static/images/integrations/logos/yo-app.png',
         display_name='Yo App'
     ),
+    WebhookIntegration('wordpress', display_name='WordPress'),
+    WebhookIntegration('zapier'),
     WebhookIntegration('zendesk')
 ]  # type: List[WebhookIntegration]
 
@@ -162,7 +176,7 @@ INTEGRATIONS = {
     'basecamp': Integration('basecamp', 'basecamp'),
     'capistrano': Integration('capistrano', 'capistrano'),
     'codebase': Integration('codebase', 'codebase'),
-    'email': Integration('email', 'email'),
+    'email': EmailIntegration('email', 'email'),
     'git': Integration('git', 'git'),
     'google-calendar': Integration('google-calendar', 'google-calendar', display_name='Google Calendar'),
     'hubot': Integration('hubot', 'hubot'),
@@ -176,6 +190,7 @@ INTEGRATIONS = {
     ),
     'mercurial': Integration('mercurial', 'mercurial', display_name='Mercurial (hg)'),
     'nagios': Integration('nagios', 'nagios'),
+    'openshift': Integration('openshift', 'openshift', display_name='OpenShift'),
     'perforce': Integration('perforce', 'perforce'),
     'phabricator': Integration('phabricator', 'phabricator'),
     'puppet': Integration('puppet', 'puppet'),

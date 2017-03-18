@@ -87,22 +87,32 @@ TUTORIAL_ENABLED = False
 
 # Disable use of memcached for caching
 CACHES['database'] = {
-    'BACKEND':  'django.core.cache.backends.dummy.DummyCache',
+    'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
     'LOCATION': 'zulip-database-test-cache',
-    'TIMEOUT':  3600,
+    'TIMEOUT': 3600,
     'CONN_MAX_AGE': 600,
     'OPTIONS': {
         'MAX_ENTRIES': 100000
     }
 }
 
+
+if CASPER_TESTS:
+    # Don't auto-restart Tornado server during casper tests
+    AUTORELOAD = False
+else:
+    # Use local memory cache for backend tests.
+    CACHES['default'] = {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'
+    }
+    LOGGING['loggers']['zulip.requests']['level'] = 'CRITICAL'
+    LOGGING['loggers']['zulip.management']['level'] = 'CRITICAL'
+    LOGGING['loggers']['django.request'] = {'level': 'ERROR'}
+    LOGGING['loggers']['fakeldap'] = {'level': 'ERROR'}
+
 # Enable file:/// hyperlink support by default in tests
 ENABLE_FILE_LINKS = True
 
-LOGGING['loggers']['zulip.requests']['level'] = 'CRITICAL'
-LOGGING['loggers']['zulip.management']['level'] = 'CRITICAL'
-LOGGING['loggers']['django.request'] = {'level': 'ERROR'}
-LOGGING['loggers']['fakeldap'] = {'level': 'ERROR'}
 
 LOCAL_UPLOADS_DIR = 'var/test_uploads'
 

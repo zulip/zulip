@@ -28,4 +28,5 @@ preparing a new release.
 
 * Post the release tarball on zulip.org and update zulip.org.
 * Create a git tag and push the tag.
+* Upload the release on GitHub so it doesn't provide a broken release tarball.
 * Email zulip-announce with the release notes.

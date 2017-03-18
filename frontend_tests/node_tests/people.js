@@ -5,35 +5,32 @@ add_dependencies({
 global.stub_out_jquery();
 
 var people = require("js/people.js");
-
-set_global('page_params', {
-    people_list: [],
-    email: 'hamlet@example.com',
-});
-set_global('activity', {
-    set_user_statuses: function () {},
-});
-set_global('admin', {
-    show_or_hide_menu_item: function () {},
-});
+set_global('blueslip', {});
 
 var _ = global._;
 
-(function test_basics() {
-    var orig_person = {
-        email: 'orig@example.com',
-        user_id: 31,
-        full_name: 'Original',
-    };
-    people.add(orig_person);
+var me = {
+    email: 'me@example.com',
+    user_id: 30,
+    full_name: 'Me Myself',
+};
 
+function initialize() {
+    people.init();
+    people.add(me);
+    people.initialize_current_user(me.user_id);
+}
+
+initialize();
+
+(function test_basics() {
     var persons = people.get_all_persons();
+
     assert.equal(_.size(persons), 1);
-    assert.equal(persons[0].full_name, 'Original');
+    assert.equal(persons[0].full_name, 'Me Myself');
 
     var realm_persons = people.get_realm_persons();
     assert.equal(_.size(realm_persons), 0);
-
 
     var full_name = 'Isaac Newton';
     var email = 'isaac@example.com';
@@ -59,24 +56,6 @@ var _ = global._;
     assert.equal(_.size(realm_persons), 1);
     assert.equal(realm_persons[0].full_name, 'Isaac Newton');
 
-    people.update({email: email, is_admin: true});
-    person = people.get_by_email(email);
-    assert.equal(person.full_name, full_name);
-    assert.equal(person.is_admin, true);
-
-    people.update({email: email, full_name: 'Sir Isaac'});
-    person = people.get_by_email(email);
-    assert.equal(person.full_name, 'Sir Isaac');
-    assert.equal(person.is_admin, true);
-
-    global.page_params.email = email;
-
-    people.update({email: email, is_admin: false});
-    assert(!global.page_params.is_admin);
-
-    people.update({email: email, full_name: 'The Godfather of Calculus'});
-    assert.equal(global.page_params.fullname, 'The Godfather of Calculus');
-
     // Now deactivate isaac
     people.deactivate(isaac);
     person = people.realm_get(email);
@@ -86,9 +65,17 @@ var _ = global._;
     person = people.get_by_email(email);
     assert.equal(person.email, email);
 
-    // The original person should still be there
-    person = people.get_by_email('orig@example.com');
-    assert.equal(person.full_name, 'Original');
+    // The current user should still be there
+    person = people.get_by_email('me@example.com');
+    assert.equal(person.full_name, 'Me Myself');
+}());
+
+(function test_updates() {
+    var person = people.get_by_email('me@example.com');
+    people.set_full_name(person, 'Me the Third');
+    assert.equal(people.my_full_name(), 'Me the Third');
+    assert.equal(person.full_name, 'Me the Third');
+    assert.equal(people.get_by_name('Me the Third').email, 'me@example.com');
 }());
 
 (function test_get_person_from_user_id() {
@@ -103,17 +90,7 @@ var _ = global._;
     person = people.get_person_from_user_id(42);
     assert.equal(person.email, 'mary@example.com');
 
-    // The semantics for update() are going to eventually
-    // change to use user_id as a key, but now we use email
-    // as a key and change attributes.  With the current
-    // behavior, we don't have to make update() do anything
-    // new.
-    person = {
-        email: 'mary@example.com',
-        user_id: 42,
-        full_name: 'Mary New',
-    };
-    people.update(person);
+    people.set_full_name(person, 'Mary New');
     person = people.get_person_from_user_id(42);
     assert.equal(person.full_name, 'Mary New');
 
@@ -128,12 +105,6 @@ var _ = global._;
 }());
 
 (function test_get_rest_of_realm() {
-    var myself = {
-        email: 'myself@example.com',
-        user_id: 201,
-        full_name: 'Yours Truly',
-    };
-    global.page_params.email = myself.email;
     var alice1 = {
         email: 'alice1@example.com',
         user_id: 202,
@@ -149,28 +120,27 @@ var _ = global._;
         user_id: 204,
         full_name: 'Bob van Roberts',
     };
-    people.add_in_realm(myself);
     people.add_in_realm(alice1);
     people.add_in_realm(bob);
     people.add_in_realm(alice2);
     var others = people.get_rest_of_realm();
     var expected = [
-        { email: 'alice1@example.com', full_name: 'Alice' },
-        { email: 'alice2@example.com', full_name: 'Alice' },
-        { email: 'bob@example.com', full_name: 'Bob van Roberts' },
+        { email: 'alice1@example.com', user_id: 202, full_name: 'Alice' },
+        { email: 'alice2@example.com', user_id: 203, full_name: 'Alice' },
+        { email: 'bob@example.com', user_id: 204, full_name: 'Bob van Roberts' },
     ];
     assert.deepEqual(others, expected);
 
 }());
 
-people.init();
+initialize();
 
 (function test_recipient_counts() {
-    var email = 'anybody@example.com';
-    assert.equal(people.get_recipient_count({email: email}), 0);
-    people.incr_recipient_count(email);
-    people.incr_recipient_count(email);
-    assert.equal(people.get_recipient_count({email: email}), 2);
+    var user_id = 99;
+    assert.equal(people.get_recipient_count({id: user_id}), 0);
+    people.incr_recipient_count(user_id);
+    people.incr_recipient_count(user_id);
+    assert.equal(people.get_recipient_count({user_id: user_id}), 2);
 
     assert.equal(people.get_recipient_count({pm_recipient_count: 5}), 5);
 }());
@@ -205,22 +175,22 @@ people.init();
     var search_term = 'a';
     var users = people.get_rest_of_realm();
     var filtered_people = people.filter_people_by_search_terms(users, [search_term]);
-    assert.equal(filtered_people["ashton@example.com"], true);
-    assert.equal(filtered_people["athens@example.com"], true);
-    assert.equal(_.keys(filtered_people).length, 2);
-    assert(!_.has(filtered_people, 'charles@example.com'));
+    assert.equal(filtered_people.num_items(), 2);
+    assert(filtered_people.has(ashton.user_id));
+    assert(filtered_people.has(maria.user_id));
+    assert(!filtered_people.has(charles.user_id));
 
     filtered_people = people.filter_people_by_search_terms(users, []);
-    assert(_.isEmpty(filtered_people));
+    assert.equal(filtered_people.num_items(), 0);
 
     filtered_people = people.filter_people_by_search_terms(users, ['ltorv']);
-    assert.equal(_.keys(filtered_people).length, 1);
-    assert(_.has(filtered_people, 'ltorvalds@example.com'));
+    assert.equal(filtered_people.num_items(), 1);
+    assert(filtered_people.has(linus.user_id));
 
     filtered_people = people.filter_people_by_search_terms(users, ['ch di', 'maria']);
-    assert.equal(_.keys(filtered_people).length, 2);
-    assert(_.has(filtered_people, 'charles@example.com'));
-    assert(_.has(filtered_people, 'athens@example.com'));
+    assert.equal(filtered_people.num_items(), 2);
+    assert(filtered_people.has(charles.user_id));
+    assert(filtered_people.has(maria.user_id));
 
 }());
 
@@ -244,7 +214,149 @@ people.init();
     var emails_string = people.user_ids_string_to_emails_string('402,401');
     assert.equal(emails_string, 'emp401@example.com,emp402@example.com');
 
+    emails_string = people.slug_to_emails('402,401-group');
+    assert.equal(emails_string, 'emp401@example.com,emp402@example.com');
+
     emails_string = 'emp402@example.com,EMP401@EXAMPLE.COM';
     var user_ids_string = people.emails_strings_to_user_ids_string(emails_string);
     assert.equal(user_ids_string, '401,402');
+
+    var slug = people.emails_to_slug(emails_string);
+    assert.equal(slug, '401,402-group');
 }());
+
+initialize();
+
+(function test_pm_with_url() {
+    var charles = {
+        email: 'charles@example.com',
+        user_id: 451,
+        full_name: 'Charles Dickens',
+    };
+    var maria = {
+        email: 'athens@example.com',
+        user_id: 452,
+        full_name: 'Maria Athens',
+    };
+    people.add(charles);
+    people.add(maria);
+
+    var message = {
+        type: 'private',
+        display_recipient: [
+            {id: maria.user_id},
+            {id: me.user_id},
+            {user_id: charles.user_id},
+        ],
+    };
+    assert.equal(people.pm_with_url(message), '#narrow/pm-with/451,452-group');
+
+    message = {
+        type: 'private',
+        display_recipient: [
+            {id: maria.user_id},
+            {user_id: me.user_id},
+        ],
+    };
+    assert.equal(people.pm_with_url(message), '#narrow/pm-with/452-athens');
+
+    message = {
+        type: 'private',
+        display_recipient: [
+            {user_id: me.user_id},
+        ],
+    };
+    assert.equal(people.pm_with_url(message), '#narrow/pm-with/30-me');
+}());
+
+(function test_slugs() {
+    var person = {
+        email: 'deBBie71@example.com',
+        user_id: 501,
+        full_name: 'Debra Henton',
+    };
+    people.add(person);
+
+    var slug = people.emails_to_slug(person.email);
+    assert.equal(slug, '501-debbie71');
+
+    var email = people.slug_to_emails(slug);
+    assert.equal(email, 'debbie71@example.com');
+}());
+
+initialize();
+
+(function test_updates() {
+    var old_email = 'FOO@example.com';
+    var new_email = 'bar@example.com';
+    var user_id = 502;
+
+    var person = {
+        email: old_email,
+        user_id: user_id,
+        full_name: 'Foo Barson',
+    };
+    people.add_in_realm(person);
+
+    // Do sanity checks on our data.
+    assert.equal(people.get_by_email(old_email).user_id, user_id);
+    assert.equal(people.realm_get(old_email).user_id, user_id);
+    assert (!people.is_cross_realm_email(old_email));
+
+    assert.equal(people.get_by_email(new_email), undefined);
+
+    // DO THE EMAIL UPDATE HERE.
+    people.update_email(user_id, new_email);
+
+    // Now look up using the new email.
+    assert.equal(people.get_by_email(new_email).user_id, user_id);
+    assert.equal(people.realm_get(new_email).user_id, user_id);
+    assert (!people.is_cross_realm_email(new_email));
+
+    var all_people = people.get_all_persons();
+    assert.equal(all_people.length, 2);
+
+    person = _.filter(all_people, function (p) {
+        return (p.email === new_email);
+    })[0];
+    assert.equal(person.full_name, 'Foo Barson');
+
+    // Test shim where we can still retrieve user info using the
+    // old email.
+    var warning;
+    global.blueslip.warn = function (w) {
+        warning = w;
+    };
+
+    person = people.get_by_email(old_email);
+    assert(/Obsolete email.*FOO.*bar/.test(warning));
+    assert.equal(person.user_id, user_id);
+}());
+
+initialize();
+
+(function test_update_email_in_reply_to() {
+    var charles = {
+        email: 'charles@example.com',
+        user_id: 601,
+        full_name: 'Charles Dickens',
+    };
+    var maria = {
+        email: 'athens@example.com',
+        user_id: 602,
+        full_name: 'Maria Athens',
+    };
+    people.add(charles);
+    people.add(maria);
+
+    var reply_to = '    charles@example.com,   athens@example.com';
+    assert.equal(
+        people.update_email_in_reply_to(reply_to, 9999, 'whatever'),
+        reply_to
+    );
+    assert.equal(
+        people.update_email_in_reply_to(reply_to, maria.user_id, 'maria@example.com'),
+        'charles@example.com,maria@example.com'
+    );
+}());
+

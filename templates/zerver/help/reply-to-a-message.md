@@ -1,61 +1,56 @@
-# Reply to a Message
-There are three ways to reply to a message in Zulip.
-## Click on a message
-To reply to a message, click on it.
-A message compose box will appear with the **Stream** (outlined in red
-below) and **Topic** (outlined in green below) fields
-autofilled to match the message you clicked on.
+# Reply to a message
+There are three ways to reply to a message in Zulip: by clicking on a
+message, through the message actions dropdown, or by using keyboard
+shortcuts.
 
-![reply messaging box](/static/images/help/reply-messaging-box.png)
+## Reply to a message by clicking on a message
+1. Click on the message you want to reply to.
 
-You can type your reply in the **Compose your message here...** field.
-Learn about formatting messages [here](/help/format-your-message-using-markdown).
+2. Upon clicking on a message, the compose box will appear with the
+**Stream** and **Topic** fields autocompleted to match the message you
+selected.
 
-## The chevron icon
-Hover over the message that you want to reply to.
-Three icons will appear at the far right side of the message.
+3. Type your reply in the **Compose your message here...** field.
 
-![hover icons](/static/images/help/hover-icons-message.png)
+4. Once you have finished completing your message, you can now send your
+message to the specified stream under the specified topic by pressing the
+Enter key or clicking the **Send** button, depending on your settings.
 
-Click on the chevron (![chevron](/static/images/help/chevron.png)) icon.
-This menu will appear:
+## Reply to a message through the message actions dropdown
+{!message-actions.md!}
+{!down-chevron.md!}
 
-![menu](/static/images/help/menu-message-hover-chevron.png)
+2. Select the **Reply** option from the dropdown to reply to the selected
+message. A message compose box will appear with the **Stream** (outlined in red
+below) and **Topic** (outlined in green below) fields autofilled to match the
+message you selected.
 
-Click on **Reply**. A message compose box will appear with the
-**Stream** (outlined in red below) and **Topic** (outlined in green
-below) fields autofilled to match the message you selected.
+3. Type your reply in the **Compose your message here...** field.
 
-![reply messaging box](/static/images/help/reply-messaging-box.png)
+4. Once you have finished completing your message, you can now send your
+message to the specified stream under the specified topic by pressing the
+Enter key or clicking the **Send** button, depending on your settings.
 
-You can then type your reply in the **Compose your message here...** field.
+## Reply to a message by using keyboard shortcuts
+1. While viewing messages in the message table, you will notice a blue
+highlight around one of the messages on your screen. Change the selected
+message is highlighted by scrolling through your messages or pressing the
+arrow, `j`, or `k` keys on your keyboard.
 
-## The `r` hotkey
-On the Zulip home screen, you will notice a blue box around one of the
-messages on your screen.
+2. Once you the message you want to reply to is highlighted, press the `r`
+key on your keyboard.
 
-![blue box](/static/images/help/blue-box-message.png)
+2. Upon pressing the `r` key, the compose box will appear with the
+**Stream** and **Topic** fields autocompleted to match the message you
+selected.
 
-This box indicates which message is currently highlighted.
-It is found on the home screen, in all streams, in your private
-messages, in your starred messages, and in your @-mentions.
+3. Type your reply in the **Compose your message here...** field.
 
-You can change which message is highlighted by scrolling or
-using the arrow or `j` and `k` keys on your keyboard.
-Pressing the `r` key on your keyboard will open a message compose
-box to type your reply in.
-This box will appear with the **Stream** (outlined in red below)
-and **Topic** (outlined in green below) fields
-autofilled to match the message that you highlighted.
+4. Once you have finished completing your message, you can now send your
+message to the specified stream under the specified topic by pressing the
+Enter key or clicking the **Send** button, depending on your settings.
 
-![reply messaging box](/static/images/help/reply-messaging-box.png)
-
-You can then type your reply in the **Compose your message here...** field.
-
-## Discard your reply
-
-At any time you can discard your reply by clicking the **x**
-(![x](/static/images/help/x.png)) icon located at the top-right corner
-of the messaging box or by pressing the `esc` key on your keyboard.
-This message will be saved as a draft if you wish to restore it later.
-Learn more about this [here](/help/restore-the-last-unsent-message).
+!!! tip ""
+    You can always cancel your message by clicking the x (<i
+    class="icon-vector-remove"></i>) icon located at the top-right corner of
+    your compose box or pressing the `Esc` key.

@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 from django.http import HttpRequest, HttpResponse
-from typing import Text
+from typing import List, Text
 
 from zerver.decorator import authenticated_json_post_view,\
     has_request_variables, REQ, JsonableError

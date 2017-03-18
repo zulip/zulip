@@ -1,4 +1,4 @@
-<div id="emoji-settings" class="settings-section">
+<div id="emoji-settings" data-name="emoji-settings" class="settings-section">
   <div class="settings-section-title"><i class="icon-vector-smile settings-section-icon"></i>
   {{t "Custom emoji" }}</div>
   <div class="admin-table-wrapper">
@@ -8,18 +8,19 @@
         <th>{{t "Name" }}</th>
         <th class="image">{{t "Image" }}</th>
         <th class="image">{{t "Author" }}</th>
-        <th class="actions">{{t "Actions" }}</th>
+        {{#if is_admin}}<th class="actions">{{t "Actions" }}</th>{{/if}}
       </tbody>
     </table>
   </div>
+
   <form class="form-horizontal admin-emoji-form">
     <div class="add-new-emoji-box grey-bg green-bg">
       <div class="new-emoji-form">
-        <div class="settings-section-title new-emoji-section-title no-padding">{{t "Add a New Emoji" }}</div>
+        <div class="settings-section-title new-emoji-section-title no-padding">{{t "Add a new emoji" }}</div>
         <div class="alert" id="admin-emoji-status"></div>
         <div class="input-group">
           <label for="emoji_name">{{t "Emoji name" }}</label>
-          <input type="text" name="name" id="emoji_name" placeholder="{{t 'mouse_face' }}" />
+          <input type="text" name="name" id="emoji_name" placeholder="mouse_face" />
         </div>
         <div class="input-group">
           <label for="emoji_url">{{t "Emoji URL" }}</label>

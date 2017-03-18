@@ -3,6 +3,7 @@
 # sample prod_settings.py file, with a few exceptions.
 from .prod_settings_template import *
 import os
+from typing import Set
 
 LOCAL_UPLOADS_DIR = 'var/uploads'
 # Default to subdomains disabled in development until we can update
@@ -41,3 +42,4 @@ POST_MIGRATION_CACHE_FLUSHING = True  # type: bool
 
 # Enable inline open graph preview in development for now
 INLINE_URL_EMBED_PREVIEW = True
+ANALYTICS_LOCK_DIR = "var/analytics-lock-dir"

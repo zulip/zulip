@@ -9,6 +9,8 @@ itself lives in api/bots/check-mirroring and should be run out of cron.
 See bots/zephyr-mirror-crontab for the crontab details.
 """
 from __future__ import print_function
+if False:
+    from typing import Dict
 
 import os
 import time
@@ -20,7 +22,7 @@ states = {
     "WARNING": 1,
     "CRITICAL": 2,
     "UNKNOWN": 3
-    } # type: Dict[str, int]
+} # type: Dict[str, int]
 
 def report(state, data, last_check):
     # type: (str, str, float) -> None

@@ -22,6 +22,14 @@ with these details in mind:
   as needed thereafter. If you're unfamiliar with how to rebase a pull request,
   [read this excellent guide][github-rebase-pr].
 
+  We use this strategy in order to avoid the extra commits that appear
+  when another branch is merged, that clutter the commit history (it's
+  popular with other large projects such as Django).  This makes
+  Zulip's commit history more readable, but a side effect is that many
+  pull requests we merge will be reported by GitHub's UI as *closed*
+  instead of *merged*, since GitHub has poor support for
+  rebase-oriented workflows.
+
 - We have a **[code style guide][zulip-rtd-code-style]**, a **[commit message
   guide][zulip-rtd-commit-messages]**, and strive for each commit to be *a
   minimal coherent idea* (see **[commit
@@ -30,6 +38,9 @@ with these details in mind:
 - We provide **many tools to help you submit quality code.** These include
   [linters][zulip-rtd-lint-tools], [tests][zulip-rtd-testing], continuous
   integration with [TravisCI][travis-ci], and [mypy][zulip-rtd-mypy].
+
+- We use [zulipbot][zulip-rtd-zulipbot-usage] to manage our issues and
+pull requests to create a better GitHub workflow for contributors.
 
 Finally, take a quick look at [Zulip-specific Git scripts][self-zulip-tools],
 install the [Zulip developer environment][zulip-rtd-dev-overview], and then
@@ -1394,6 +1405,7 @@ Current branch review-1913 is up to date.
 [zulip-rtd-travis-ci]: travis-ci.html
 [zulip-rtd-dev-overview]: dev-overview.html
 [zulip-rtd-dev-first-time]: dev-env-first-time-contributors.html
+[zulip-rtd-zulipbot-usage]: zulipbot-usage.html
 [gitgui-tower]: https://www.git-tower.com/
 [gitgui-fork]: https://git-fork.com/
 [gitgui-gitxdev]: https://rowanj.github.io/gitx/

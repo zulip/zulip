@@ -15,9 +15,31 @@ exports.encodeHashComponent = function (str) {
         .replace(/%/g,  '.');
 };
 
+exports.encode_operand = function (operator, operand) {
+    if ((operator === 'pm-with') || (operator === 'sender')) {
+        var slug = people.emails_to_slug(operand);
+        if (slug) {
+            return slug;
+        }
+    }
+
+    return exports.encodeHashComponent(operand);
+};
+
 function decodeHashComponent(str) {
     return decodeURIComponent(str.replace(/\./g, '%'));
 }
+
+exports.decode_operand = function (operator, operand) {
+    if ((operator === 'pm-with') || (operator === 'sender')) {
+        var emails = people.slug_to_emails(operand);
+        if (emails) {
+            return emails;
+        }
+    }
+
+    return decodeHashComponent(operand);
+};
 
 function set_hash(hash) {
     var location = window.location;
@@ -67,7 +89,7 @@ exports.operators_to_hash = function (operators) {
 
             var sign = elem.negated ? '-' : '';
             hash += '/' + sign + hashchange.encodeHashComponent(operator)
-                  + '/' + hashchange.encodeHashComponent(operand);
+                  + '/' + hashchange.encode_operand(operator, operand);
         });
     }
 
@@ -82,7 +104,7 @@ exports.save_narrow = function (operators) {
     exports.changehash(new_hash);
 };
 
-function parse_narrow(hash) {
+exports.parse_narrow = function (hash) {
     var i;
     var operators = [];
     for (i=1; i<hash.length; i+=2) {
@@ -90,7 +112,7 @@ function parse_narrow(hash) {
         // but the user might write one.
         try {
             var operator = decodeHashComponent(hash[i]);
-            var operand  = decodeHashComponent(hash[i+1] || '');
+            var operand  = exports.decode_operand(operator, hash[i+1] || '');
             var negated = false;
             if (operator[0] === '-') {
                 negated = true;
@@ -102,7 +124,7 @@ function parse_narrow(hash) {
         }
     }
     return operators;
-}
+};
 
 function activate_home_tab() {
     ui.change_tab_to("#home");
@@ -135,7 +157,7 @@ function do_hashchange(from_reload) {
     switch (hash[0]) {
     case "#narrow":
         ui.change_tab_to("#home");
-        var operators = parse_narrow(hash);
+        var operators = exports.parse_narrow(hash);
         if (operators === undefined) {
             // If the narrow URL didn't parse, clear
             // window.location.hash and send them to the home tab
@@ -146,7 +168,7 @@ function do_hashchange(from_reload) {
         var narrow_opts = {
             select_first_unread: true,
             change_hash:    false,  // already set
-            trigger: 'hash change'
+            trigger: 'hash change',
         };
         if (from_reload !== undefined && page_params.initial_narrow_pointer !== undefined) {
             narrow_opts.from_reload = true;
@@ -159,8 +181,11 @@ function do_hashchange(from_reload) {
     case "#":
         activate_home_tab();
         break;
-    case "#subscriptions":
-        ui.change_tab_to("#subscriptions");
+    case "#streams":
+        ui.change_tab_to("#streams");
+        break;
+    case "#drafts":
+        ui.change_tab_to("#drafts");
         break;
     case "#administration":
         ui.change_tab_to("#administration");
@@ -177,9 +202,9 @@ function do_hashchange(from_reload) {
 // When going from a normal view (eg. `narrow/is/private`) to a settings panel
 // (eg. `settings/your-bots`) it should trigger the `should_ignore` function and
 // return `true` for the current state -- we want to ignore hash changes from
-// within the settings page, as they will be handled by the settings page itself.
-//
-// There is then an `exit_settings` function that allows the hash to change exactly
+// within the settings page. The previous hash however should return `false` as it
+// was outside of the scope of settings.
+// there is then an `exit_modal` function that allows the hash to change exactly
 // once without triggering any events. This allows the hash to reset back from
 // a settings page to the previous view available before the settings page
 // (eg. narrow/is/private). This saves the state, scroll position, and makes the
@@ -187,43 +212,97 @@ function do_hashchange(from_reload) {
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- - -- //
 var ignore = {
     flag: false,
-    prev: null
+    prev: null,
+    old_hash: typeof window !== "undefined" ? window.location.hash : "#",
+    group: null,
 };
 
 function get_main_hash(hash) {
-    return hash.replace(/^#/, "").split(/\//)[0];
+    return hash ? hash.replace(/^#/, "").split(/\//)[0] : "";
 }
 
+function get_hash_components() {
+    var hash = window.location.hash.split(/\//);
+
+    return {
+        base: hash.shift(),
+        arguments: hash,
+    };
+}
+
+// different groups require different reloads. The grouped elements don't
+// require a reload or overlay change to run.
+var get_hash_group = (function () {
+    var groups = [
+        ["streams"],
+        ["settings", "administration"],
+        ["invite"],
+    ];
+
+    return function (value) {
+        var idx = null;
+
+        _.find(groups, function (o, i) {
+            if (o.indexOf(value) !== -1) {
+                idx = i;
+                return true;
+            }
+            return false;
+        });
+
+        return idx;
+    };
+}());
+
 function should_ignore(hash) {
-    // an array of hashes to ignore (eg. ["subscriptions", "settings", "administration"]).
-    var ignore_list = ["subscriptions"];
+    // Hash changes within this list are overlaws and should not unnarrow (etc.)
+    var ignore_list = ["streams", "drafts", "settings", "administration", "invite"];
     var main_hash = get_main_hash(hash);
 
     return (ignore_list.indexOf(main_hash) > -1);
 }
 
-function hide_overlays() {
-    $("#subscription_overlay").fadeOut(500);
-}
-
 function hashchanged(from_reload, e) {
     var old_hash;
     if (e) {
-        old_hash = "#" + e.oldURL.split(/#/).slice(1).join("");
+        old_hash = "#" + (e.oldURL || ignore.old_hash).split(/#/).slice(1).join("");
         ignore.last = old_hash;
+        ignore.old_hash = window.location.hash;
     }
 
     var base = get_main_hash(window.location.hash);
+
     if (should_ignore(window.location.hash)) {
-        if (!should_ignore(old_hash || "#")) {
-            if (base === "subscriptions") {
-                subs.launch();
+        // if the old has was a standard non-ignore hash OR the ignore hash
+        // base has changed, something needs to run again.
+
+        if (!should_ignore(old_hash || "#") || ignore.group !== get_hash_group(base)) {
+            if (ignore.group !== get_hash_group(base)) {
+                exports.close_modals();
             }
 
-            ignore.prev = old_hash;
+            // now only if the previous one should not have been ignored.
+            if (!should_ignore(old_hash || "#")) {
+                ignore.prev = old_hash;
+            }
+
+            if (base === "streams") {
+                subs.launch(get_hash_components());
+            } else if (base === "drafts") {
+                drafts.launch();
+            } else if (/settings|administration/.test(base)) {
+                settings.setup_page();
+                admin.setup_page();
+            } else if (base === "invite") {
+                invite.initialize();
+            }
+
+            ignore.group = get_hash_group(base);
+        } else {
+            subs.change_state(get_hash_components());
         }
     } else if (!should_ignore(window.location.hash) && !ignore.flag) {
-        hide_overlays();
+        exports.close_modals();
         changing_hash = true;
         var ret = do_hashchange(from_reload);
         changing_hash = false;
@@ -246,7 +325,11 @@ exports.initialize = function () {
     hashchanged(true);
 };
 
-exports.exit_settings = function (callback) {
+exports.close_modals = function () {
+    $(".overlay.show").removeClass("show");
+};
+
+exports.exit_modal = function (callback) {
     if (should_ignore(window.location.hash)) {
         ui.blur_active_element();
         ignore.flag = true;

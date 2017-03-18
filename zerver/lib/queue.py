@@ -13,7 +13,7 @@ import atexit
 from collections import defaultdict
 
 from zerver.lib.utils import statsd
-from typing import Any, Callable, Dict, Mapping, Optional, Set, Union
+from typing import Any, Callable, Dict, List, Mapping, Optional, Set, Union
 
 Consumer = Callable[[BlockingChannel, Basic.Deliver, pika.BasicProperties, str], None]
 
@@ -99,10 +99,10 @@ class SimpleQueueClient(object):
         def do_publish():
             # type: () -> None
             self.channel.basic_publish(
-                            exchange='',
-                            routing_key=queue_name,
-                            properties=pika.BasicProperties(delivery_mode=2),
-                            body=body)
+                exchange='',
+                routing_key=queue_name,
+                properties=pika.BasicProperties(delivery_mode=2),
+                body=body)
 
             statsd.incr("rabbitmq.publish.%s" % (queue_name,))
 

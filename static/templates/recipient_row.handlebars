@@ -51,7 +51,8 @@
           <span class="topic_edit_form" id="{{id}}"></span>
         </span>
 
-        <span class="recipient_row_date">{{{date}}}</span>
+        <i class="icon-vector-eye-close on_hover_topic_mute" data-stream-id="{{stream_id}}" data-topic-name="{{subject}}"></i>
+        <span class="recipient_row_date {{#if show_date}}{{else}}hide-date{{/if}}">{{{date}}}</span>
       </div>
     </div>
   </div>
@@ -65,7 +66,7 @@
         {{#tr this}}You and __display_reply_to__{{/tr}}
         </a>
 
-        <span class="recipient_row_date">{{{date}}}</span>
+        <span class="recipient_row_date {{#if show_date}}{{else}}hide-date{{/if}}">{{{date}}}</span>
       </div>
     </div>
   </div>

@@ -22,9 +22,9 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitUntilVisible("#settings-change-box", function () {
+    casper.waitUntilVisible("#settings_content .account-settings-form", function () {
         casper.test.assertUrlMatch(/^http:\/\/[^/]+\/#settings/, 'URL suggests we are on settings page');
-        casper.test.assertExists('#settings.tab-pane.active', 'Settings page is active');
+        casper.test.assertVisible('.account-settings-form', 'Settings page is active');
 
         casper.test.assertNotVisible("#pw_change_controls");
 
@@ -45,7 +45,7 @@ casper.then(function () {
                 full_name: "IagoNew",
                 old_password: test_credentials.default_user.password,
                 new_password: "qwertyuiop",
-                confirm_password: "qwertyuiop"
+                confirm_password: "qwertyuiop",
             });
             casper.click('input[name="change_settings"]');
         });
@@ -53,9 +53,10 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('#settings-status', function () {
-        casper.test.assertSelectorHasText('#settings-status', 'Updated settings!');
+    casper.waitUntilVisible('#account-settings-status', function () {
+        casper.test.assertSelectorHasText('#account-settings-status', 'Updated settings!');
 
+        casper.click('[data-section="your-bots"]');
         casper.click('#api_key_button');
     });
 });
@@ -76,7 +77,7 @@ casper.then(function () {
             full_name: "Iago",
             old_password: "qwertyuiop",
             new_password: test_credentials.default_user.password,
-            confirm_password: test_credentials.default_user.password
+            confirm_password: test_credentials.default_user.password,
         });
         casper.click('input[name="change_settings"]');
     });
@@ -94,14 +95,7 @@ casper.then(function () {
         casper.test.assertMatch(
             decodeURIComponent(casper.getElementsAttribute('#download_zuliprc', 'href')),
             regex_zuliprc,
-            'Looks like a zuliprc file'
-        );
-    });
-});
-
-casper.then(function () {
-    casper.waitUntilVisible('#settings-status', function () {
-        casper.test.assertSelectorHasText('#settings-status', 'Updated settings!');
+            'Looks like a zuliprc file');
     });
 });
 
@@ -112,15 +106,22 @@ casper.then(function create_bot() {
         bot_name: 'Bot 1',
         bot_short_name: '1',
         bot_default_sending_stream: 'Denmark',
-        bot_default_events_register_stream: 'Rome'
+        bot_default_events_register_stream: 'Rome',
     });
 
-    casper.test.info('Submiting the create bot form');
+    casper.test.info('Submitting the create bot form');
     casper.click('#create_bot_button');
 });
 
+var bot_email;
+if (REALMS_HAVE_SUBDOMAINS) {
+    bot_email = '1-bot@zulip.zulipdev.com';
+} else {
+    bot_email = '1-bot@zulip.localhost';
+}
+
 casper.then(function () {
-    var button_sel = '.download_bot_zuliprc[data-email="1-bot@zulip.com"]';
+    var button_sel = '.download_bot_zuliprc[data-email="' + bot_email + '"]';
 
     casper.waitUntilVisible(button_sel, function () {
         casper.click(button_sel);
@@ -129,40 +130,35 @@ casper.then(function () {
             casper.test.assertMatch(
                 decodeURIComponent(casper.getElementsAttribute(button_sel, 'href')),
                 regex_zuliprc,
-                'Looks like a bot ~/.zuliprc file'
-            );
+                'Looks like a bot ~/.zuliprc file');
         });
     });
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('.open_edit_bot_form[data-email="1-bot@zulip.com"]', function open_edit_bot_form() {
+    casper.waitUntilVisible('.open_edit_bot_form[data-email="' + bot_email + '"]', function open_edit_bot_form() {
         casper.test.info('Opening edit bot form');
-        casper.click('.open_edit_bot_form[data-email="1-bot@zulip.com"]');
+        casper.click('.open_edit_bot_form[data-email="' + bot_email + '"]');
     });
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('.edit_bot_form[data-email="1-bot@zulip.com"]', function test_edit_bot_form_values() {
-        var form_sel = '.edit_bot_form[data-email="1-bot@zulip.com"]';
+    casper.waitUntilVisible('.edit_bot_form[data-email="' + bot_email + '"]', function test_edit_bot_form_values() {
+        var form_sel = '.edit_bot_form[data-email="' + bot_email + '"]';
         casper.test.info('Testing edit bot form values');
 
     //     casper.test.assertEqual(
     //         common.get_form_field_value(form_sel + ' [name=bot_name]'),
-    //         'Bot 1'
-    //     );
+    //         'Bot 1');
     //     casper.test.assertEqual(
     //         common.get_form_field_value(form_sel + ' [name=bot_default_sending_stream]'),
-    //         'Denmark'
-    //     );
+    //         'Denmark');
     //     casper.test.assertEqual(
     //         common.get_form_field_value(form_sel + ' [name=bot_default_events_register_stream]'),
-    //         'Rome'
-    //     );
+    //         'Rome');
         casper.test.assertEqual(
             common.get_form_field_value(form_sel + ' [name=bot_name]'),
-            'Bot 1'
-        );
+            'Bot 1');
     });
 });
 
@@ -174,7 +170,7 @@ casper.then(function () {
    https://github.com/zulip/zulip/issues/1269. Consequently, we can't wait
    on any condition to avoid the race condition.
 
-casper.waitForSelector('#create_alert_word_form', function () {
+casper.waitUntilVisible('#create_alert_word_form', function () {
     casper.test.info('Attempting to submit an empty alert word');
     casper.click('#create_alert_word_button');
     casper.test.info('Checking that an error is displayed');
@@ -202,27 +198,28 @@ casper.waitForSelector('#create_alert_word_form', function () {
 
 casper.then(function change_default_language() {
     casper.test.info('Changing the default language');
-    casper.waitForSelector('#default_language');
+    casper.click('[data-section="display-settings"]');
+    casper.waitUntilVisible('#default_language');
 });
 
 casper.thenClick('#default_language');
 
 casper.waitUntilVisible('#default_language_modal');
 
-casper.thenClick('a[data-code="zh_CN"]');
+casper.thenClick('a[data-code="zh_Hans"]');
 
 casper.waitUntilVisible('#display-settings-status', function () {
-    casper.test.assertSelectorHasText('#display-settings-status', '简体中文 is now the default language');
+    casper.test.assertSelectorHasText('#display-settings-status', 'Chinese Simplified is now the default language');
     casper.test.info("Reloading the page.");
     casper.reload();
 });
 
 casper.then(function () {
-    casper.waitForSelector("#default_language", function () {
+    casper.waitUntilVisible("#default_language", function () {
         casper.test.info("Checking if we are on Chinese page.");
         casper.test.assertEvalEquals(function () {
             return $('#default_language_name').text();
-        }, '简体中文');
+        }, 'Chinese Simplified');
         casper.test.info("Opening German page through i18n url.");
     });
 });
@@ -236,12 +233,13 @@ if (REALMS_HAVE_SUBDOMAINS) {
 
 casper.thenOpen(settings_url);
 
-casper.waitForSelector("#settings-change-box", function check_url_preference() {
+casper.waitUntilVisible("#settings-change-box", function check_url_preference() {
     casper.test.info("Checking the i18n url language precedence.");
     casper.test.assertEvalEquals(function () {
         return document.documentElement.lang;
     }, 'de');
-    casper.test.info("Changing language back to English.");
+    casper.test.info("English is now the default language");
+    casper.click('[data-section="display-settings"]');
 });
 
 casper.thenClick('#default_language');
@@ -254,7 +252,7 @@ casper.thenClick('a[data-code="en"]');
  * Changing the language back to English so that subsequent tests pass.
  */
 casper.waitUntilVisible('#display-settings-status', function () {
-    casper.test.assertSelectorHasText('#display-settings-status', 'English is now the default language');
+    casper.test.assertSelectorHasText('#display-settings-status', 'English ist die neue Standardsprache!  Du musst das Fenster neu laden um die Änderungen anzuwenden');
 });
 
 if (REALMS_HAVE_SUBDOMAINS) {

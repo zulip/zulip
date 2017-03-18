@@ -28,7 +28,7 @@ class TranslationTestCase(ZulipTestCase):
         response = getattr(self.client, method)(url, **kwargs)
         self.assertEqual(response.status_code, expected_status,
                          msg="Expected %d, received %d for %s to %s" % (
-                                expected_status, response.status_code, method, url))
+                             expected_status, response.status_code, method, url))
         return response
 
     def test_accept_language_header(self):
@@ -36,7 +36,7 @@ class TranslationTestCase(ZulipTestCase):
         languages = [('en', u'Register'),
                      ('de', u'Registrieren'),
                      ('sr', u'Региструј се'),
-                     ('zh-cn', u'注册'),
+                     ('zh-hans', u'注册'),
                      ]
 
         for lang, word in languages:
@@ -49,7 +49,7 @@ class TranslationTestCase(ZulipTestCase):
         languages = [('en', u'Register'),
                      ('de', u'Registrieren'),
                      ('sr', u'Региструј се'),
-                     ('zh-cn', u'注册'),
+                     ('zh-hans', u'注册'),
                      ]
 
         for lang, word in languages:
@@ -65,13 +65,8 @@ class TranslationTestCase(ZulipTestCase):
         languages = [('en', u'Register'),
                      ('de', u'Registrieren'),
                      ('sr', u'Региструј се'),
+                     ('zh-hans', u'注册'),
                      ]
-
-        # 'zh-cn' was deprecated in Django 1.10
-        if django.VERSION >= (1, 10):
-            languages.append(('zh-hans', u'注册'))
-        else:
-            languages.append(('zh-cn', u'注册'))
 
         for lang, word in languages:
             response = self.fetch('get', '/{}/integrations/'.format(lang), 200)

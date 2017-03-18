@@ -5,14 +5,13 @@
 __revision__ = '$Id: views.py 21 2008-12-05 09:21:03Z jarek.zgoda $'
 
 
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.template import RequestContext
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 
 from confirmation.models import Confirmation
 from zerver.models import PreregistrationUser
-from zproject.jinja2 import render_to_response
 
 
 def confirm(request, confirmation_key):
@@ -43,4 +42,4 @@ def confirm(request, confirmation_key):
     if obj and isinstance(obj, (PreregistrationUser, Confirmation)):
         # if we have an object, we can use specific template
         templates.insert(0, 'confirmation/confirm_%s.html' % (obj._meta.model_name,))
-    return render_to_response(templates, ctx, request=request)
+    return render(request, templates, context=ctx)

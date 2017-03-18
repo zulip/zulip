@@ -67,7 +67,7 @@ the remote virtual machine, we recommend installing
 [Vagrant][install-vagrant] method so you can easily uninstall if you
 need to.
 
-If you wan to run a non-Ubuntu distribution, follow the [generic Linux
+If you want to run a non-Ubuntu distribution, follow the [generic Linux
 directions][install-generic].
 
 ## Next steps

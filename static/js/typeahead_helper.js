@@ -66,6 +66,21 @@ exports.render_person = function (person) {
     return person.full_name + " <" + person.email + ">";
 };
 
+exports.render_stream = function (token, stream) {
+    var desc = stream.description;
+    var short_desc = desc.substring(0, 35);
+
+    if (desc === short_desc) {
+        desc = exports.highlight_with_escaping(token, desc);
+    } else {
+        desc = exports.highlight_with_escaping(token, short_desc) + "...";
+    }
+
+    var name = exports.highlight_with_escaping(token, stream.name);
+
+    return name + '&nbsp;&nbsp;<small class = "autocomplete_secondary">' + desc + '</small>';
+};
+
 function prefix_sort(query, objs, get_item) {
     // Based on Bootstrap typeahead's default sorter, but taking into
     // account case sensitivity on "begins with"
@@ -100,7 +115,7 @@ function split_by_subscribers(people) {
     var non_subscribers = [];
     var current_stream = compose.stream_name();
 
-    if (current_stream === "") {
+    if (!stream_data.get_sub(current_stream)) {
         // If there is no stream specified, everyone is considered as a subscriber.
         return {subs: people, non_subs: []};
     }
@@ -173,9 +188,23 @@ exports.sort_emojis = function (matches, query) {
     return results.matches.concat(results.rest);
 };
 
+exports.compare_by_sub_count = function (stream_a, stream_b) {
+    return stream_a.subscribers.num_items() < stream_b.subscribers.num_items();
+};
+
 exports.sort_streams = function (matches, query) {
-    var results = prefix_sort(query, matches, function (x) { return x; });
-    return results.matches.concat(results.rest);
+    var name_results = prefix_sort(query, matches, function (x) { return x.name; });
+    var desc_results
+        = prefix_sort(query, name_results.rest, function (x) { return x.description; });
+
+    // Streams that start with the query.
+    name_results.matches = name_results.matches.sort(exports.compare_by_sub_count);
+    // Streams with descriptions that start with the query.
+    desc_results.matches = desc_results.matches.sort(exports.compare_by_sub_count);
+    // Streams with names and descriptions that don't start with the query.
+    desc_results.rest = desc_results.rest.sort(exports.compare_by_sub_count);
+
+    return name_results.matches.concat(desc_results.matches.concat(desc_results.rest));
 };
 
 exports.sort_recipientbox_typeahead = function (matches) {

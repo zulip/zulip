@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from types import TracebackType
-from typing import Any, Callable, Optional, Tuple, TypeVar
+from typing import Any, Callable, Optional, Tuple, Type, TypeVar
 
 import sys
 import time
@@ -42,7 +42,7 @@ def timeout(timeout, func, *args, **kwargs):
             # type: () -> None
             threading.Thread.__init__(self)
             self.result = None # type: Optional[ResultT]
-            self.exc_info = None # type: Optional[Tuple[type, BaseException, TracebackType]]
+            self.exc_info = None # type: Optional[Tuple[Type[BaseException], BaseException, TracebackType]]
 
             # Don't block the whole program from exiting
             # if this is the only thread left.

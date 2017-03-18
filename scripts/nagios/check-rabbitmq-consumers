@@ -8,6 +8,9 @@ from collections import defaultdict
 import os
 import subprocess
 
+if False:
+    from typing import Dict
+
 states = {
     0: "OK",
     1: "WARNING",
@@ -35,23 +38,30 @@ output = subprocess.check_output(['/usr/sbin/rabbitmqctl', 'list_consumers'],
 
 consumers = defaultdict(int) # type: Dict[str, int]
 
-worker_queues = {'error_reports',
-                 'user_presence',
-                 'digest_emails',
-                 'slow_queries',
-                 'missedmessage_mobile_notifications',
-                 'feedback_messages',
-                 'signups',
-                 'notify_tornado',
-                 'tornado_return',
-                 'message_sender',
-                 'missedmessage_emails',
-                 'email_mirror',
-                 'user_activity_interval',
-                 'invites',
-                 'user_activity'}
+sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
+from scripts.lib.zulip_tools import su_to_zulip
+queues = {
+    'digest_emails',
+    'email_mirror',
+    'embed_links',
+    'error_reports',
+    'feedback_messages',
+    'invites',
+    'message_sender',
+    'missedmessage_emails',
+    'missedmessage_email_senders',
+    'missedmessage_mobile_notifications',
+    'notify_tornado',
+    'signups',
+    'slow_queries',
+    'tornado_return',
+    'user_activity'
+    'user_activity_interval',
+    'user_presence',
+}
 
-for queue_name in worker_queues:
+for queue_name in queues:
+    queue_name = queue_name.strip()
     consumers[queue_name] = 0
 
 for line in output.split('\n'):

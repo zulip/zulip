@@ -18,13 +18,15 @@ Contents:
 * [Troubleshooting & Common Errors](#troubleshooting-common-errors)
 * [Specifying a proxy](#specifying-a-proxy)
 
-**If you encounter errors installing the Zulip development environment,** check
-[Troubleshooting & Common Errors](#troubleshooting-common-errors). If that
-doesn't help, please visit [the `provision` stream in the Zulip developers'
-chat](https://chat.zulip.org/#narrow/stream/provision) for real-time help, or
-send a note to the [Zulip-devel Google
-group](https://groups.google.com/forum/#!forum/zulip-devel) or [file an
-issue](https://github.com/zulip/zulip/issues).
+**If you encounter errors installing the Zulip development
+environment,** check
+[Troubleshooting & Common Errors](#troubleshooting-common-errors). If
+that doesn't help, please visit
+[#provision help](https://chat.zulip.org/#narrow/stream/provision.20help)
+in the [Zulip development community server](chat-zulip-org.html) for
+real-time help, send a note to the
+[Zulip-devel Google group](https://groups.google.com/forum/#!forum/zulip-devel)
+or [file an issue](https://github.com/zulip/zulip/issues).
 
 When reporting your issue, please include the following information:
 
@@ -32,7 +34,7 @@ When reporting your issue, please include the following information:
 * installation method (Vagrant or direct)
 * whether or not you are using a proxy
 * a copy of Zulip's `vagrant` provisioning logs, available in
-  `/var/log/zulip_provision.log` on your virtual machine
+  `/var/log/provision.log` on your virtual machine
 
 ### Requirements
 
@@ -268,15 +270,23 @@ does the following:
 - configures this virtual machine/container for use with Zulip,
 - creates a shared directory mapping your clone of the Zulip code inside the
   virtual machine/container at `~/zulip`
-- runs the `tools/provision.py` script inside the virtual machine/container, which
+- runs the `tools/provision` script inside the virtual machine/container, which
   downloads all required dependencies, sets up the python environment for
-  the Zulip development server, and initializes a default test database.
+  the Zulip development server, and initializes a default test
+  database.  We call this process "provisioning".
 
-You will need an active internet connection during the entire processes. (See
-[Specifying a proxy](#specifying-a-proxy) if you need a proxy to access the
-internet.) And if you're running into any problems, please come chat with us
-[in the `provision` stream of our developers'
-chat](https://chat.zulip.org/#narrow/stream/provision).
+You will need an active internet connection during the entire
+process. (See [Specifying a proxy](#specifying-a-proxy) if you need a
+proxy to access the internet.) `vagrant up` can fail while
+provisioning if your Internet connection is unreliable.  To retry, you
+can use `vagrant provision` (`vagrant up` will just boot the guest
+without provisioning after the first time).  Other common issues are
+documented in the
+[Troubleshooting & Common Errors](#troubleshooting-common-errors)
+section.  If that doesn't help, please visit
+[#provision help](https://chat.zulip.org/#narrow/stream/provision.20help)
+in the [Zulip development community server](chat-zulip-org.html) for
+real-time help.
 
 On Windows, you will see `The system cannot find the path specified.` message
 several times. This is expected behavior and is not an error.
@@ -323,8 +333,10 @@ Welcome to Ubuntu 14.04.1 LTS (GNU/Linux 4.4.0-21-generic x86_64)
 
 Congrats, you're now inside the Zulip development environment!
 
-You can confirm this by looking at the command prompt, which starts with
-`(zulip-venv)`.
+You can confirm this by looking at the command prompt, which starts
+with `(zulip-venv)vagrant@`.  If it just starts with `vagrant@`, your
+provisioning failed and you should look at the
+[troubleshooting section](#troubleshooting-common-errors).
 
 Next, start the Zulip server:
 
@@ -435,14 +447,15 @@ is likely because we've recently merged changes to the development
 environment provisioning process that you need to apply to your
 development environment.  To update your environment, you'll need to
 re-provision your vagrant machine using `vagrant provision` (this just
-runs `tools/provision.py` from your Zulip checkout inside the Vagrant
+runs `tools/provision` from your Zulip checkout inside the Vagrant
 guest); this should complete in about a minute.
 
 After provisioning, you'll want to
 [(re)start the Zulip development server](#step-3-start-the-development-environment).
 
 If you run into any trouble, the
-[provision stream on chat.zulip.org](https://chat.zulip.org/#narrow/stream/provision)
+[#provision help](https://chat.zulip.org/#narrow/stream/provision.20help)
+in the [Zulip development community server](chat-zulip-org.html) for
 is a great place to ask for help.
 
 #### Rebuilding the development environment
@@ -454,6 +467,14 @@ using `vagrant destroy` and then `vagrant up`.  This will usually be
 much faster than the original `vagrant up` since the base image is
 already cached on your machine (it takes about 5 minutes to run with a
 fast Internet connection).
+
+Any additional programs (e.g. Zsh, emacs, etc.) or configuration that
+you may have installed in the development environment will be lost
+when you recreate it.  To address this, you can create a script called
+`tools/custom_provision` in your Zulip Git checkout; and place any
+extra setup commands there.  Vagrant will run `tools/custom_provision`
+every time you run `vagrant provision` (or create a Vagrant guest via
+`vagrant up`).
 
 #### Shutting down the development environment for use later
 
@@ -523,16 +544,19 @@ Next, read the following to learn more about developing for Zulip:
 
 ### Troubleshooting & Common Errors
 
-Below you'll find a list of common errors and their solutions.
+Below you'll find a list of common errors and their solutions.  Most
+issues are resolved by just provisioning again (via
+`tools/provision.py` inside the Vagrant guest or equivalently `vagrant
+provision` from outside).
 
 If these solutions aren't working for you or you encounter an issue not
 documented below, there are a few ways to get further help:
 
-* visit [the `provision` stream in the Zulip developers'
-  chat](https://chat.zulip.org/#narrow/stream/provision) for real-time help,
+* Ask in [#provision help](https://chat.zulip.org/#narrow/stream/provision.20help)
+  in the [Zulip development community server](chat-zulip-org.html),
 * send a note to the [Zulip-devel Google
   group](https://groups.google.com/forum/#!forum/zulip-devel), or
-* [file an issue](https://github.com/zulip/zulip/issues).
+* [File an issue](https://github.com/zulip/zulip/issues).
 
 When reporting your issue, please include the following information:
 
@@ -540,7 +564,32 @@ When reporting your issue, please include the following information:
 * installation method (Vagrant or direct)
 * whether or not you are using a proxy
 * a copy of Zulip's `vagrant` provisioning logs, available in
-  `/var/log/zulip_provision.log` on your virtual machine
+  `/var/log/provision.log` on your virtual machine.  If you choose to
+  post just the error output, please include the **beginning of the
+  error output**, not just the last few lines.
+
+The output of `tools/diagnose` run inside the Vagrant guest is also
+usually helpful.
+
+#### Vagrant guest doesn't show (zulip-venv) at start of prompt
+
+This is caused by provisioning failing to complete successfully.  You
+can see the errors in `var/log/provision.log`; it should end with
+something like this:
+
+```
+ESC[94mZulip development environment setup succeeded!ESC[0m
+```
+
+The `ESC` stuff are the terminal color codes that make it show as a nice
+blue in the terminal, which unfortunately looks ugly in the logs.
+
+If you encounter an incomplete `/var/log/provision.log file`, you need to
+update your environment. Re-provision your vagrant machine; if the problem
+persists, please come chat with us (see instructions above) for help.
+
+After you provision successfully, you'll need to exit your `vagrant ssh`
+shell and run `vagrant ssh` again to get the virtualenv setup properly.
 
 #### The box 'ubuntu/trusty64' could not be found
 
@@ -682,16 +731,16 @@ The `vagrant up` command basically does the following:
 
 * Downloads an Ubuntu image and starts it using a Vagrant provider.
 * Uses `vagrant ssh` to connect to that Ubuntu guest, and then runs
-  `tools/provision.py`, which has a lot of subcommands that are
+  `tools/provision`, which has a lot of subcommands that are
   executed via Python's `subprocess` module.  These errors mean that
   one of those subcommands failed.
 
 To debug such errors, you can log in to the Vagrant guest machine by
 running `vagrant ssh`, which should present you with a standard shell
 prompt.  You can debug interactively by using e.g. `cd zulip &&
-./tools/provision.py`, and then running the individual subcommands
+./tools/provision`, and then running the individual subcommands
 that failed.  Once you've resolved the problem, you can rerun
-`tools/provision.py` to proceed; the provisioning system is designed
+`tools/provision` to proceed; the provisioning system is designed
 to recover well from failures.
 
 The zulip provisioning system is generally highly reliable; the most common
@@ -727,16 +776,16 @@ the VM.
 
 ##### npm install errors
 
-The `tools/provision.py` script may encounter an error related to `npm install`
+The `tools/provision` script may encounter an error related to `npm install`
 that looks something like:
 
 ```
 ==> default: + npm install
 ==> default: Traceback (most recent call last):
-==> default:   File "/srv/zulip/tools/provision.py", line 195, in <module>
+==> default:   File "/srv/zulip/tools/provision", line 195, in <module>
 ==> default:
 ==> default: sys.exit(main())
-==> default:   File "/srv/zulip/tools/provision.py", line 191, in main
+==> default:   File "/srv/zulip/tools/provision", line 191, in main
 ==> default:
 ==> default: run(["npm", "install"])
 ==> default:   File "/srv/zulip/scripts/lib/zulip_tools.py", line 78, in run

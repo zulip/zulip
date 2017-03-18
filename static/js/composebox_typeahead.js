@@ -67,7 +67,10 @@ function query_matches_person(query, person) {
 }
 
 function query_matches_stream(query, stream) {
-    return ( stream.toLowerCase().indexOf(query.toLowerCase()) !== -1);
+    query = query.toLowerCase();
+
+    return ( stream.name       .toLowerCase().indexOf(query) !== -1
+         ||  stream.description.toLowerCase().indexOf(query) !== -1);
 }
 
 // Case-insensitive
@@ -128,22 +131,25 @@ function handle_keydown(e) {
             // want to change focus right away in the private_message_recipient box since it
             // takes the typeaheads a little time to open after the user finishes typing, which
             // can lead to the focus moving without the autocomplete having a chance to happen.
-            if ((page_params.domain === "zulip.com" && nextFocus === "compose-send-button") ||
-                (page_params.domain !== "zulip.com" && nextFocus)) {
+            if (nextFocus) {
                 ui.focus_on(nextFocus);
                 nextFocus = false;
             }
 
             // Send the message on Ctrl/Cmd-Enter or if the user has configured enter to
-            // send and the shift key is not pressed.
-            if (e.target.id === "new_message_content" && code === 13 &&
-                (e.metaKey || e.ctrlKey || (page_params.enter_sends && !e.shiftKey))
-               ) {
-                e.preventDefault();
-                if ($("#compose-send-button").attr('disabled') !== "disabled") {
-                    $("#compose-send-button").attr('disabled', 'disabled');
-                    compose.finish();
+            // send and the Shift/Ctrl/Cmd/Alt keys are not pressed.
+            // Otherwise, make sure to insert a newline instead
+            if (e.target.id === "new_message_content" && code === 13) {
+                if ((!page_params.enter_sends && (e.metaKey || e.ctrlKey)) ||
+                    (page_params.enter_sends && !(e.shiftKey || e.ctrlKey || e.metaKey || e.altKey))
+                ) {
+                    e.preventDefault();
+                    if ($("#compose-send-button").attr('disabled') !== "disabled") {
+                        $("#compose-send-button").attr('disabled', 'disabled');
+                        compose.finish();
+                    }
                 }
+                // Don't prevent default -- just let the enter key go in as usual.
             }
         }
     }
@@ -199,14 +205,44 @@ exports.split_at_cursor = function (query, input) {
     return [query.slice(0, cursor), query.slice(cursor)];
 };
 
+exports.tokenize_compose_str = function (s) {
+    // This basically finds a token like "@alic" or
+    // "#Veron" as close to the end of the string as it
+    // can find it.  It wants to find white space or
+    // punctuation before the token, unless it's at the
+    // beginning of the line.  It doesn't matter what comes
+    // after the first character.
+    var i = s.length;
+
+    var min_i = s.length - 25;
+    if (min_i < 0) {
+        min_i = 0;
+    }
+
+    while (i > min_i) {
+        i -= 1;
+        switch (s[i]) {
+            case '#':
+            case '@':
+            case ':':
+                if (i === 0) {
+                    return s.slice(i);
+                } else if (/[\s(){}\[\]]/.test(s[i-1])) {
+                    return s.slice(i);
+                }
+        }
+    }
+
+    return '';
+};
+
 exports.compose_content_begins_typeahead = function (query) {
     var q = exports.split_at_cursor(query, this.$element)[0];
 
-    var strings = q.split(/[\s*(){}\[\]]/);
-    if (strings.length < 1) {
+    var current_token = exports.tokenize_compose_str(q);
+    if (current_token === '') {
         return false;
     }
-    var current_token = strings[strings.length-1];
 
     // Only start the emoji autocompleter if : is directly after one
     // of the whitespace or punctuation chars we split on.
@@ -241,12 +277,13 @@ exports.compose_content_begins_typeahead = function (query) {
             // Always sort above, under the assumption that names will
             // be longer and only contain "all" as a substring.
             pm_recipient_count: Infinity,
-            full_name: "all"
+            full_name: "all",
         };
         var everyone_item = {
             special_item_text: "everyone (Notify everyone)",
             email: "everyone",
-            full_name: "everyone"
+            pm_recipient_count: Infinity,
+            full_name: "everyone",
         };
         var persons = people.get_realm_persons();
         return [].concat(persons, [all_item, everyone_item]);
@@ -264,7 +301,7 @@ exports.compose_content_begins_typeahead = function (query) {
 
         this.completing = 'stream';
         this.token = current_token.substring(current_token.indexOf("#")+1);
-        return stream_data.subscribed_streams();
+        return stream_data.subscribed_subs();
     }
     return false;
 };
@@ -276,7 +313,7 @@ exports.content_highlighter = function (item) {
         var item_formatted = typeahead_helper.render_person(item);
         return typeahead_helper.highlight_with_escaping(this.token, item_formatted);
     } else if (this.completing === 'stream') {
-        return typeahead_helper.highlight_with_escaping(this.token, item);
+        return typeahead_helper.render_stream(this.token, item);
     }
 };
 
@@ -298,7 +335,7 @@ exports.content_typeahead_selected = function (item) {
         $(document).trigger('usermention_completed.zulip', {mentioned: item});
     } else if (this.completing === 'stream') {
         beginning = (beginning.substring(0, beginning.length - this.token.length-1)
-                + '#**' + item + '** ');
+                + '#**' + item.name + '** ');
         $(document).trigger('streamname_completed.zulip', {stream: item});
     }
 
@@ -339,7 +376,7 @@ exports.initialize_compose_typeahead = function (selector, completions) {
         },
         updater: exports.content_typeahead_selected,
         stopAdvance: true, // Do not advance to the next field on a tab or enter
-        completions: completions
+        completions: completions,
     });
 };
 
@@ -368,7 +405,7 @@ exports.initialize = function () {
         return channel.post({
             url: '/json/users/me/enter-sends',
             idempotent: true,
-            data: {enter_sends: page_params.enter_sends}
+            data: {enter_sends: page_params.enter_sends},
         });
     });
     $("#enter_sends").prop('checked', page_params.enter_sends);
@@ -392,7 +429,7 @@ exports.initialize = function () {
             // because we want to avoid mixing up streams.
             var q = this.query.trim().toLowerCase();
             return (item.toLowerCase().indexOf(q) === 0);
-        }
+        },
     });
 
     $( "#subject" ).typeahead({
@@ -409,7 +446,7 @@ exports.initialize = function () {
                 sorted.unshift(this.query);
             }
             return sorted;
-        }
+        },
     });
 
     $( "#private_message_recipient" ).typeahead({
@@ -424,9 +461,17 @@ exports.initialize = function () {
         },
         matcher: function (item) {
             var current_recipient = get_last_recipient_in_pm(this.query);
+            // If you type just a comma, there won't be any recipients.
+            if (!current_recipient) {
+                return false;
+            }
             // If the name is only whitespace (does not contain any non-whitespace),
             // we're between typing names; don't autocomplete anything for us.
             if (! current_recipient.match(/\S/)) {
+                return false;
+            }
+            var recipients = util.extract_pm_recipients(this.query);
+            if (recipients.indexOf(item.email) > -1) {
                 return false;
             }
 
@@ -445,7 +490,7 @@ exports.initialize = function () {
             }
             return previous_recipients + item.email + ", ";
         },
-        stopAdvance: true // Do not advance to the next field on a tab or enter
+        stopAdvance: true, // Do not advance to the next field on a tab or enter
     });
 
     exports.initialize_compose_typeahead("#new_message_content", {mention: true, emoji: true, stream: true});

@@ -6,26 +6,28 @@ from django.contrib.auth.views import login as django_login_page, \
     logout_then_login as django_logout_then_login
 from django.core.urlresolvers import reverse
 from zerver.decorator import authenticated_json_post_view, require_post
-from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, \
+    HttpResponseNotFound
 from django.middleware.csrf import get_token
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.translation import ugettext as _
 from django.core import signing
-from typing import Text
 from six.moves import urllib
-from typing import Any, Dict, Optional, Tuple, Text
+from typing import Any, Dict, List, Optional, Tuple, Text
 
 from confirmation.models import Confirmation
-from zerver.forms import HomepageForm, OurAuthenticationForm, WRONG_SUBDOMAIN_ERROR
+from zerver.forms import HomepageForm, OurAuthenticationForm, \
+    WRONG_SUBDOMAIN_ERROR
+
 from zerver.lib.request import REQ, has_request_variables, JsonableError
 from zerver.lib.response import json_success, json_error
-from zerver.lib.utils import get_subdomain
+from zerver.lib.utils import get_subdomain, is_subdomain_root_or_alias
 from zerver.models import PreregistrationUser, UserProfile, remote_user_to_email, Realm
-from zerver.views import create_preregistration_user, get_realm_from_request, \
+from zerver.views.registration import create_preregistration_user, get_realm_from_request, \
     redirect_and_log_into_subdomain
 from zproject.backends import password_auth_enabled, dev_auth_enabled, google_auth_enabled
-from zproject.jinja2 import render_to_response
+from version import ZULIP_VERSION
 
 import hashlib
 import hmac
@@ -63,9 +65,10 @@ def maybe_send_to_registration(request, email, full_name=''):
             urllib.parse.quote_plus(full_name.encode('utf8')))))
     else:
         url = reverse('register')
-        return render_to_response('zerver/accounts_home.html',
-                                  {'form': form, 'current_url': lambda: url},
-                                  request=request)
+        return render(request,
+                      'zerver/accounts_home.html',
+                      context={'form': form, 'current_url': lambda: url},
+                      )
 
 def redirect_to_subdomain_login_url():
     # type: () -> HttpResponseRedirect
@@ -323,18 +326,37 @@ def log_into_subdomain(request):
     return login_or_register_remote_user(request, email_address, user_profile,
                                          full_name, invalid_subdomain)
 
+def get_dev_users(extra_users_count=10):
+    # type: (int) -> List[UserProfile]
+    # Development environments usually have only a few users, but
+    # it still makes sense to limit how many extra users we render to
+    # support performance testing with DevAuthBackend.
+    users_query = UserProfile.objects.select_related().filter(is_bot=False, is_active=True)
+    shakespearian_users = users_query.exclude(email__startswith='extrauser').order_by('email')
+    extra_users = users_query.filter(email__startswith='extrauser').order_by('email')
+    # Limit the number of extra users we offer by default
+    extra_users = extra_users[0:extra_users_count]
+    users = list(shakespearian_users) + list(extra_users)
+    return users
+
 def login_page(request, **kwargs):
     # type: (HttpRequest, **Any) -> HttpResponse
+    if request.user.is_authenticated():
+        return HttpResponseRedirect("/")
+    if is_subdomain_root_or_alias(request) and settings.REALMS_HAVE_SUBDOMAINS:
+        redirect_url = reverse('zerver.views.registration.find_my_team')
+        return HttpResponseRedirect(redirect_url)
+
     extra_context = kwargs.pop('extra_context', {})
     if dev_auth_enabled():
-        # Development environments usually have only a few users, but
-        # it still makes sense to limit how many users we render to
-        # support performance testing with DevAuthBackend.
-        MAX_DEV_BACKEND_USERS = 100
-        users_query = UserProfile.objects.select_related().filter(is_bot=False, is_active=True)
-        users = users_query.order_by('email')[0:MAX_DEV_BACKEND_USERS]
+        users = get_dev_users()
         extra_context['direct_admins'] = [u.email for u in users if u.is_realm_admin]
-        extra_context['direct_users'] = [u.email for u in users if not u.is_realm_admin]
+        extra_context['direct_users'] = [
+            u.email for u in users
+            if not u.is_realm_admin and u.realm.string_id == 'zulip']
+        extra_context['community_users'] = [
+            u.email for u in users
+            if u.realm.string_id != 'zulip']
     template_response = django_login_page(
         request, authentication_form=OurAuthenticationForm,
         extra_context=extra_context, **kwargs)
@@ -383,10 +405,10 @@ def api_dev_fetch_api_key(request, username=REQ()):
     user_profile = authenticate(username=username,
                                 realm_subdomain=get_subdomain(request),
                                 return_data=return_data)
-    if return_data.get("inactive_realm") == True:
+    if return_data.get("inactive_realm"):
         return json_error(_("Your realm has been deactivated."),
                           data={"reason": "realm deactivated"}, status=403)
-    if return_data.get("inactive_user") == True:
+    if return_data.get("inactive_user"):
         return json_error(_("Your account has been disabled."),
                           data={"reason": "user disable"}, status=403)
     login(request, user_profile)
@@ -397,9 +419,7 @@ def api_dev_get_emails(request):
     # type: (HttpRequest) -> HttpResponse
     if not dev_auth_enabled() or settings.PRODUCTION:
         return json_error(_("Dev environment not enabled."))
-    MAX_DEV_BACKEND_USERS = 100 # type: int
-    users_query = UserProfile.objects.select_related().filter(is_bot=False, is_active=True)
-    users = users_query.order_by('email')[0:MAX_DEV_BACKEND_USERS]
+    users = get_dev_users()
     return json_success(dict(direct_admins=[u.email for u in users if u.is_realm_admin],
                              direct_users=[u.email for u in users if not u.is_realm_admin]))
 
@@ -418,17 +438,17 @@ def api_fetch_api_key(request, username=REQ(), password=REQ()):
                                     password=password,
                                     realm_subdomain=get_subdomain(request),
                                     return_data=return_data)
-    if return_data.get("inactive_user") == True:
+    if return_data.get("inactive_user"):
         return json_error(_("Your account has been disabled."),
                           data={"reason": "user disable"}, status=403)
-    if return_data.get("inactive_realm") == True:
+    if return_data.get("inactive_realm"):
         return json_error(_("Your realm has been deactivated."),
                           data={"reason": "realm deactivated"}, status=403)
-    if return_data.get("password_auth_disabled") == True:
+    if return_data.get("password_auth_disabled"):
         return json_error(_("Password auth is disabled in your team."),
                           data={"reason": "password auth disabled"}, status=403)
     if user_profile is None:
-        if return_data.get("valid_attestation") == True:
+        if return_data.get("valid_attestation"):
             # We can leak that the user is unregistered iff they present a valid authentication string for the user.
             return json_error(_("This user is not registered; do so from a browser."),
                               data={"reason": "unregistered"}, status=403)
@@ -439,11 +459,31 @@ def api_fetch_api_key(request, username=REQ(), password=REQ()):
 @csrf_exempt
 def api_get_auth_backends(request):
     # type: (HttpRequest) -> HttpResponse
-    # May return a false positive for password auth if it's been disabled
-    # for a specific realm. Currently only happens for zulip.com on prod
-    return json_success({"password": password_auth_enabled(None),
-                         "dev": dev_auth_enabled(),
-                         "google": google_auth_enabled(),
+    """Returns which authentication methods are enabled on the server"""
+    if settings.REALMS_HAVE_SUBDOMAINS:
+        subdomain = get_subdomain(request)
+        try:
+            realm = Realm.objects.get(string_id=subdomain)
+        except Realm.DoesNotExist:
+            # If not the root subdomain, this is an error
+            if subdomain != "":
+                return json_error(_("Invalid subdomain"))
+            # With the root subdomain, it's an error or not depending
+            # whether SUBDOMAINS_HOMEPAGE (which indicates whether
+            # there are some realms without subdomains on this server)
+            # is set.
+            if settings.SUBDOMAINS_HOMEPAGE:
+                return json_error(_("Subdomain required"))
+            else:
+                realm = None
+    else:
+        # Without subdomains, we just have to report what the server
+        # supports, since we don't know the realm.
+        realm = None
+    return json_success({"password": password_auth_enabled(realm),
+                         "dev": dev_auth_enabled(realm),
+                         "google": google_auth_enabled(realm),
+                         "zulip_version": ZULIP_VERSION,
                          })
 
 @authenticated_json_post_view

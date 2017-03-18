@@ -42,6 +42,9 @@ You can also run them individually:
 Finally, you can rely on our Travis CI setup to run linters for you, but
 it is good practice to run lint checks locally.
 
+**Note:** The linters only check files that git tracks. Remember to `git add`
+new files before running lint checks.
+
 Our linting tools generally support the ability to lint files
 individually--with some caveats--and those options will be described
 later in this document.
@@ -154,7 +157,7 @@ it would be inconvenient to enforce this too strictly.)
 
 Zulip also has custom regex-based rules that it applies to Python code.
 Look for `python_rules` in the source code for `lint-all`.  Note that we
-provide a mechanism to excude certain lines of codes from these checks.
+provide a mechanism to exclude certain lines of codes from these checks.
 Often, it is simply the case that our regex approach is too crude to
 correctly exonerate certain valid constructs.  In other cases, the code
 that we exempt may be deemed not worthwhile to fix.
@@ -186,7 +189,7 @@ Zulip uses two HTML templating systems:
 - [Django templates](https://docs.djangoproject.com/en/1.10/topics/templates/)
 - [handlebars](http://handlebarsjs.com/)
 
-Zulip has a home grown tool that validates both types of templates for
+Zulip has an internal tool that validates both types of templates for
 correct indentation and matching tags.  You can find the code here:
 
 - driver: [check-templates](https://github.com/zulip/zulip/blob/master/tools/check-templates)

@@ -12,7 +12,7 @@ add_dependencies({
 
 stream_data.create_streams([
     {name: 'Dev', subscribed: true, color: 'blue', stream_id: 1},
-    {name: 'Linux', subscribed: true, color: 'red', stream_id: 2}
+    {name: 'Linux', subscribed: true, color: 'red', stream_id: 2},
 ]);
 
 var matches = [
@@ -52,7 +52,7 @@ var matches = [
         is_admin: false,
         is_bot: false,
         user_id: 6,
-    }
+    },
 ];
 
 _.each(matches, function (person) {
@@ -74,7 +74,7 @@ _.each(matches, function (person) {
         'b_bot@example.com',
         'a_user@zulip.org',
         'zman@test.net',
-        'a_bot@zulip.com'
+        'a_bot@zulip.com',
      ]);
 
     global.compose.stream_name = function () { return "Dev"; };
@@ -86,7 +86,7 @@ _.each(matches, function (person) {
         'b_bot@example.com',
         'a_user@zulip.org',
         'zman@test.net',
-        'a_bot@zulip.com'
+        'a_bot@zulip.com',
     ]);
 
     // No match
@@ -97,7 +97,7 @@ _.each(matches, function (person) {
         'b_user_2@zulip.net',
         'zman@test.net',
         'a_bot@zulip.com',
-        'b_bot@example.com'
+        'b_bot@example.com',
     ]);
 
 }());

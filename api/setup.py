@@ -3,7 +3,7 @@
 
 from __future__ import print_function
 if False:
-    from typing import Any, Generator, List, Tuple
+    from typing import Any, Dict, Generator, List, Tuple
 
 import os
 import sys
@@ -40,12 +40,13 @@ package_info = dict(
         'License :: OSI Approved :: MIT License',
         'Topic :: Communications :: Chat',
     ],
-    url='https://www.zulip.com/dist/api/',
+    url='https://www.zulip.org/dist/api/',
     packages=['zulip'],
     data_files=[('share/zulip/examples',
                  ["examples/zuliprc",
                   "examples/create-user",
                   "examples/edit-message",
+                  "examples/get-presence",
                   "examples/get-public-streams",
                   "examples/list-members",
                   "examples/list-subscriptions",

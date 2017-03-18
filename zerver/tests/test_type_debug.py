@@ -14,9 +14,9 @@ def add(x=0, y=0):
     # type: (Any, Any) -> Any
     return x + y
 
-def to_dict(l=[]):
+def to_dict(v=[]):
     # type: (Iterable[Tuple[Any, Any]]) -> Dict[Any, Any]
-    return dict(l)
+    return dict(v)
 
 class TypesPrintTest(TestCase):
 
@@ -120,9 +120,9 @@ class TypesPrintTest(TestCase):
         class A(dict):
             pass
 
-        def to_A(l=[]):
+        def to_A(v=[]):
             # type: (Iterable[Tuple[Any, Any]]) -> A
-            return A(l)
+            return A(v)
 
         self.check_signature("to_A() -> A([])", A(()), to_A)
         self.check_signature("to_A([(int, str)]) -> A([(int, str)])",

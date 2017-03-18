@@ -12,7 +12,8 @@ from __future__ import absolute_import
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from django.core.mail import EmailMultiAlternatives, get_connection
+from django.core.mail import get_connection, send_mail
+from django.utils import timezone
 from django.utils.html import format_html
 
 from zerver.models import ScheduledJob
@@ -22,7 +23,7 @@ import time
 import logging
 from datetime import datetime
 from ujson import loads
-from typing import Any
+from typing import Any, Dict
 
 ## Setup ##
 log_format = "%(asctime)s: %(message)s"
@@ -54,15 +55,15 @@ def get_sender_as_string(dictionary):
 def send_email_job(job):
     # type: (ScheduledJob) -> bool
     data = loads(job.data)
-    fields = {'subject': data["email_subject"],
-              'body': data["email_text"],
-              'from_email': get_sender_as_string(data),
-              'to': [get_recipient_as_string(data)]}
+    subject = data["email_subject"]
+    message = data["email_text"]
+    from_email = get_sender_as_string(data)
+    to_email = get_recipient_as_string(data)
 
-    msg = EmailMultiAlternatives(**fields)
     if data["email_html"]:
-        msg.attach_alternative(data["email_html"], "text/html")
-    return msg.send() > 0
+        html_message = data["email_html"]
+        return send_mail(subject, message, from_email, [to_email], html_message=html_message) > 0
+    return send_mail(subject, message, from_email, [to_email]) > 0
 
 class Command(BaseCommand):
     help = """Deliver emails queued by various parts of Zulip
@@ -85,10 +86,8 @@ Usage: ./manage.py deliver_email
 
         with lockfile("/tmp/zulip_email_deliver.lockfile"):
             while True:
-                # make sure to use utcnow, otherwise it gets confused when you set the time with utcnow(),
-                # and select with now()
                 email_jobs_to_deliver = ScheduledJob.objects.filter(type=ScheduledJob.EMAIL,
-                                                                    scheduled_timestamp__lte=datetime.utcnow())
+                                                                    scheduled_timestamp__lte=timezone.now())
                 if email_jobs_to_deliver:
                     for job in email_jobs_to_deliver:
                         if not send_email_job(job):

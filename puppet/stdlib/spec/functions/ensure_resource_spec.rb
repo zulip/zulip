@@ -12,7 +12,7 @@ describe 'ensure_resource' do
     let :pre_condition do
       'user { "dan": }'
     end
-    it "should contain the the ensured resources" do
+    it "should contain the ensured resources" do
       subject.should run.with_params('user', 'dan', {})
       compiler.catalog.resource('User[dan]').to_s.should == 'User[dan]'
     end

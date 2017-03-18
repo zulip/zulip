@@ -1,6 +1,17 @@
 {% extends "zerver/portico.html" %}
 
-{# API information page #}
+{% block customhead %}
+{{ super() }}
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% stylesheet 'portico' %}
+{% stylesheet 'landing-page' %}
+{{ minified_js('landing-page')|safe }}
+
+{% endblock %}
+
+{% block hello_page_container %} hello-main{% endblock %}
+{% block hello_page_footer %} hello-footer{% endblock %}
 
 {% block os_announcement %}
   {% if show_oss_announcement %}
@@ -8,10 +19,10 @@
     <img src="/static/images/logo/zballoon.png" class="os-illustration" alt="Zulip balloon" />
     <div class="main-headline-text">
       <span class="tagline os-tagline">
-         Zulip has been released as open source software!
+         {{ _('Zulip has been released as open source software!') }}
       </span>
       <span class="footnote os-footnote">
-         Read the <a href="https://blogs.dropbox.com/tech/2015/09/open-sourcing-zulip-a-dropbox-hack-week-project" target="_blank">announcement</a> or go to <a href="https://www.zulip.org" target="_blank">the Zulip open source project website</a>.
+         {% trans %}Read the <a href="https://blogs.dropbox.com/tech/2015/09/open-sourcing-zulip-a-dropbox-hack-week-project" target="_blank">announcement</a> or go to <a href="https://www.zulip.org" target="_blank">the Zulip open source project website</a>.{% endtrans %}
       </span>
     </div>
   </div>
@@ -20,10 +31,16 @@
 
 {% block portico_content %}
 
-    <div class="portico-page-header"><a href="#"><i class="icon-vector-gears portico-page-header-icon"></i>Integrations</a></div>
+{% include 'zerver/landing_nav.html' %}
+
+<div class="portico-landing integrations">
+    <div class="main">
+        <div class="padded-content">
+            <div class="inner-content">
+    <div class="portico-page-header"><a href="#" class="no-style"><i class="icon-vector-gears portico-page-header-icon"></i>Integrations</a></div>
 
     <div id="integration-main-text">
-      <p class="portico-large-text">With Zulip integrations, your team
+      <p>With Zulip integrations, your team
         can stay up-to-date on code changes, issue tickets, build system
         results, tweets about your project, and much more.</p>
 
@@ -41,7 +58,7 @@
     </div>
 
     <div id="integration-instruction-block" class="integration-instruction-block">
-       <a href="#" id="integration-list-link"><i class="icon-vector-circle-arrow-left"></i>&nbsp;Back to list</a>
+       <a href="#" id="integration-list-link"><i class="icon-vector-circle-arrow-left"></i><span>Back to list</span></a>
     </div>
 
     <div class="integration-lozenges">
@@ -62,9 +79,9 @@
       {% endfor %}
     </div>
 
-    <div class="portico-page-header extra" id="hubot-integrations"><a href="#"><i class="icon-vector-gears portico-page-header-icon"></i>Integrations available via Hubot</a></div>
-    <p class="portico-large-text extra">The official <a class="integration-link integration-hubot" href="#hubot"><span class="integration-label">Hubot</span></a>
-    integration provides an extension point for additional Zulip integrations. </p><p class="portico-large-text extra"> A non-comprehensive list of integrations available through
+    <div class="portico-page-header extra" id="hubot-integrations"><a href="#" class="no-style"><i class="icon-vector-gears portico-page-header-icon"></i>Integrations available via Hubot</a></div>
+    <p class="extra">The official <a class="integration-link integration-hubot" href="#hubot"><span class="integration-label">Hubot</span></a>
+    integration provides an extension point for additional Zulip integrations. </p><p class="extra"> A non-comprehensive list of integrations available through
     <a class="integration-link integration-hubot" href="#hubot"><span class="integration-label">Hubot</span></a> follows below:</p>
 
     <div class="integration-lozenges">
@@ -79,76 +96,15 @@
     </div>
 
 <div id="integration-instructions-group">
-
-<div id="airbrake" class="integration-instructions">
-
-    <p>Get Zulip notifications for your Airbrake bug tracker!</p>
-
-    <p>First, create the stream you'd like to use for Airbrake notifications, and
-    subscribe all interested parties to this stream. We recommend the
-    name <code>airbrake</code>.</p>
-
-    <p>Next, on your {{ settings_html|safe }}, create an Airbrake bot.  Construct the URL for
-    the Airbrake bot using the API key and stream name:
-      <code>{{ external_api_uri_subdomain }}/v1/external/airbrake?api_key=abcdefgh&amp;stream=airbrake</code>
-    </p>
-
-    <p>Now, go to your project's settings on the Airbrake site.  Click
-      on the <code>Integration</code> section.
-      Choose <code>Webhook</code>, provide the above URL,
-      check <code>Enabled</code>, and save.  Your Webhook
-      configuration should look similar to:
-    </p>
-    <img class="screenshot" src="/static/images/integrations/airbrake/001.png" />
-
-    <p><b>Congratulations! You're done!</b><br /> Your messages may look like:</p>
-
-    <img class="screenshot" src="/static/images/integrations/airbrake/002.png" />
-</div>
-
-<div id="appfollow" class="integration-instructions">
-  <p>
-    Receive user reviews from your tracked apps on AppFolllow in Zulip
-    using the Zulip AppFollow plugin!
-  </p>
-
-  <p>
-    First, create the stream you'd like to use for AppFollow notifications, and
-    subscribe all interested parties to this stream. We recommend the
-    name <code>appfollow</code>.
-  </p>
-
-  <p>Next, on your {{ settings_html|safe }}, create an AppFollow bot.</p>
-
-  <p>Then, log into your account on <a href="http://appfollow.io">appfollow.io</a>, and:</p>
-
-  <ol>
-    <li>
-      <p>
-        Click on the app for which you'd like to receive reviews.
-        Click on <b>Integrations</b> and then go to the <b>Others</b> tab.
-      </p>
-
-      <img class="screenshot" src="/static/images/integrations/appfollow/001.png" />
-    </li>
-    <li>
-      <p>
-        In the Webhook URL field, enter the following URL, replacing the bot API key
-        and Zulip stream with the appropriate information.
-      </p>
-
-      <p><code>{{ external_api_uri_subdomain }}/v1/external/appfollow?api_key=<font color="#00A26F">test_api_key</font>&amp;stream=<font color="#00A26F">appfollow</font></code></p>
-    </li>
-  </ol>
-
-  <p>
-    <b>Save Changes</b> –  all done!<br />
-    New reviews for your app will be delivered to your Zulip stream.
-  </p>
-
-  <img class="screenshot" src="/static/images/integrations/appfollow/002.png" />
-</div>
-
+    {% for integration in integrations_dict.values() %}
+        {% if integration.is_enabled() %}
+            {% if integration.doc %}
+                <div id={{ integration.name }} class="integration-instructions">
+                    {% include integration.doc %}
+                </div>
+            {% endif %}
+        {% endif %}
+    {% endfor %}
 
 <div id="asana" class="integration-instructions">
 
@@ -252,84 +208,6 @@
       <img class="screenshot" src="/static/images/integrations/basecamp/002.png" />
     </div>
 
-<div id="beanstalk" class="integration-instructions">
-
-     <p>Zulip supports both SVN and Git notifications from Beanstalk.</p>
-
-     <p>First, create the stream <code>commits</code> and subscribe all
-     interested parties to this stream.</p>
-
-     <p>Next, in the Beanstalk web application, go to the Setup page and choose the Integrations tab.
-     Choose the <code>Webhooks</code> integration from the list presented. Make sure to replace the <code>@</code> in the bot's email address with <code>%40</code>,
-     as Beanstalk's website will incorrectly refuse to parse a username containing a <code>@</code>.</p>
-
-     <p>In the URL field, enter <code>{{ external_uri_scheme }}bot_email:bot_api_key@{{ external_api_path_subdomain }}/v1/external/beanstalk</code>:</p>
-      <img class="screenshot" src="/static/images/integrations/beanstalk/001.png" />
-
-      <p><b>Congratulations! You're done!</b><br /> Whenever you do a
-      deployment, you'll get an automated notification that looks like
-      this:</p>
-      <img class="screenshot" src="/static/images/integrations/beanstalk/002.png" />
-    </div>
-
-    <div id="bitbucket" class="integration-instructions">
-
-
-     <p>Zulip supports both Git and Mercurial notifications from
-     Bitbucket.  This integration is for the old-style Bitbucket
-     webhooks used by Bitbucket Enterprise.</p>
-
-     <p>First, create the stream you'd like to use for Bitbucket notifications,
-     and subscribe all interested parties to this stream. The integration will
-     use the default stream <code>commits</code> if no stream is supplied in the
-     hook; you still need to create the stream even if you are using this
-     default.</p>
-
-     <p>Next, from your repository's web page, go to the Administration page and choose Hooks on the left-hand side.
-     Choose the <code>POST</code> hook from the list presented and click "Add hook."   Make sure to replace the <code>@</code> in the bot's email address with <code>%40</code>,
-     as Bitbucket will not execute the hook if the username contains a <code>@</code>.</p>
-
-      <p>In the URL field, enter <code>{{ external_uri_scheme }}bot_email:bot_api_key@{{ external_api_path_subdomain }}/v1/external/bitbucket</code>:</p>
-      <img class="screenshot" src="/static/images/integrations/bitbucket/001.png" />
-
-      <p>By default, notifications are sent to the <code>commits</code> stream.
-      To send notifications to a different stream,
-      append <code style="white-space: nowrap;">?stream=stream_name</code> to
-      the URL.</p>
-
-      <p><b>Congratulations! You're done!</b><br /> Whenever you push code to your repository,
-        you'll get an automated notification that looks like this:</p>
-      <img class="screenshot" src="/static/images/integrations/bitbucket/002.png" />
-    </div>
-
-    <div id="bitbucket2" class="integration-instructions">
-
-     <p>Zulip supports both Git and Mercurial notifications from
-     Bitbucket.  This integration is for the new-style Bitbucket
-     webhooks used by the Bitbucket SAAS service.</p>
-
-     <p>First, create the stream you'd like to use for Bitbucket notifications,
-     and subscribe all interested parties to this stream. The integration will
-     use the default stream <code>bitbucket</code> if no stream is supplied in the
-     hook; you still need to create the stream even if you are using this
-     default.</p>
-
-     <p>The URL you create will be in the following format:</p>
-     <p><code>{{ external_api_uri_subdomain }}/v1/external/bitbucket2?api_key=abcdefgh&amp;stream=bitbucket</code></p>
-
-     <p>where <code>api_key</code> is the API key of your Zulip bot,
-       and <code>stream</code> is the stream name you want the
-       notifications sent to.</p>
-
-     <p>Next, from your repository's web page, go to the Settings page and choose Webhooks on the left-hand side.
-     Click <code>Add webhook</code>, set URL to the URL you created above. Remember to click the 'active' checkbox.
-     Click <code>Save</code>.</p>
-
-      <p><b>Congratulations! You're done!</b><br />
-      Example message:</p>
-      <img class="screenshot" src="/static/images/integrations/bitbucket/003.png" />
-    </div>
-
     <div id="capistrano" class="integration-instructions">
 
       <p>First, download and install our <a href="/api">Python
@@ -370,33 +248,6 @@
       <img class="screenshot" src="/static/images/integrations/capistrano/001.png" />
 
       <p><small>Thanks to Wes of TurboVote for <a href="https://gist.github.com/cap10morgan/5100822">submitting this integration</a>!</small></p>
-    </div>
-
-    <div id="circleci" class="integration-instructions">
-
-      <p>Zulip supports integration with CircleCI and can notify you of
-          your build statuses.</p>
-
-      <p>First, create the stream you'd like to use for CircleCI notifications,
-          and subscribe all interested parties to this stream. We
-          recommend the name <code>circleci</code>.</p>
-
-      <p><code>{{ external_api_uri_subdomain }}/v1/external/circleci?api_key=abcdefgh&amp;stream=circleci</code></p>
-
-      <p>where <code>api_key</code> is the API key of your Zulip bot,
-      and <code>stream</code> is the stream name you want the
-      notifications sent to.</p>
-
-      <p>
-        Next, modify your <code>circle.yml</code> as described
-        <a href="https://circleci.com/docs/configuration/#notify">here</a>.
-      </p>
-
-      <p><b>Congratulations! You're done!</b><br />  When a build is done,
-          you'll get a notification like this:</p>
-
-      <img class="screenshot" src="/static/images/integrations/circleci/001.png" />
-
     </div>
 
     <div id="codebase" class="integration-instructions">
@@ -440,161 +291,6 @@
       <img class="screenshot" src="/static/images/integrations/codebase/001.png" />
     </div>
 
-    <div id="codeship" class="integration-instructions">
-
-      <p>Zulip supports integration with Codeship and can notify you of
-          your build statuses.</p>
-
-      <p>First, create the stream you'd like to use for Codeship notifications,
-          and subscribe all interested parties to this stream. We
-          recommend the name <code>codeship</code>.</p>
-
-      <p><code>{{ external_api_uri_subdomain }}/v1/external/codeship?api_key=abcdefgh&amp;stream=codeship</code></p>
-
-      <p>where <code>api_key</code> is the API key of your Zulip bot,
-      and <code>stream</code> is the stream name you want the
-      notifications sent to.</p>
-
-      <p>Next, go to your project settings - notification settings
-      page.  The url should look like the following:</p>
-      <p><code>https://codeship.com/projects/PROJECT_ID/configure_notifications</code></p>
-      <p>where <code>PROJECT_ID</code> is the id of your project in Codeship.</p>
-      <p>Scroll to the <code>Webhook</code> section and fill out the form as follows:</p>
-      <img class="screenshot" src="/static/images/integrations/codeship/001.png" />
-
-      <p><b>Congratulations! You're done!</b><br />  When a build is
-      triggered, you'll get a notification like this:</p>
-
-      <img class="screenshot" src="/static/images/integrations/codeship/002.png" />
-
-    </div>
-
-    <div id="crashlytics" class="integration-instructions">
-
-      <p>Zulip supports integration with Crashlytics and can notify you
-          about Crashlytics issues.</p>
-
-      <p>First, create the stream you'd like to use for Crashlytics notifications,
-          and subscribe all interested parties to this stream. We
-          recommend the name <code>crashlytics</code>.</p>
-
-      <p><code>{{ external_api_uri_subdomain }}/v1/external/crashlytics?api_key=abcdefgh&amp;stream=crashlytics</code></p>
-
-      <p>where <code>api_key</code> is the API key of your Zulip bot,
-      and <code>stream</code> is the stream name you want the
-      notifications sent to.</p>
-
-      <p>Click on the app in
-          your <a href="https://fabric.io/settings/apps">Crashlytics settings panel</a>.
-          Next, on the integrations subpage, click “Web Hook,” enter the URL we created above and click
-          <code>Verify</code>.</p>
-      <p><b>Congratulations! You're done!</b><br /> When an issue occurs,
-          you'll get a notification like this:</p>
-
-      <img class="screenshot" src="/static/images/integrations/crashlytics/001.png" />
-
-    </div>
-
-    <div id="deskdotcom" class="integration-instructions">
-
-
-      <p>First, create the stream you'd like to use for Desk.com notifications,
-      and subscribe all interested parties to this stream. We recommend the
-      stream name <code>desk</code>. Keep in mind you still need to
-      create the stream first even if you are using this recommendation.</p>
-
-      <p>Next, in Desk.com, open your Admin view via the top-left corner
-      dropdown. In the Admin view, click on Apps, then click Install under
-      "Custom Action":</p>
-      <img src="/static/images/integrations/desk/001.png" />
-
-      <p>From there, click "Install Custom Action" and accept the terms. Fill
-      in the form like this:</p>
-      <ul>
-          <li><b>Name</b>: Zulip</li>
-          <li><b>Authentication Method</b>: Basic Auth</li>
-          <li><b>URL</b>: <code>{{ external_api_uri_subdomain }}/v1/external/deskdotcom</code></li>
-          <li><b>User name</b>: <em>your bot's user name, e.g.</em> <code>desk-bot@yourdomain.com</code></li>
-          <li><b>Password</b>: <em>your bot's API key</em></li>
-      </ul>
-
-      <img src="/static/images/integrations/desk/002.png" />
-
-      <p>Click Create to save your settings. From the next screen, click Add
-      Action add a new action. You'll do this for every action you want a
-      notification on Zulip for. (To add another action later, look for your
-      custom action on the Apps page under "Installed Apps."</p>
-
-      <img src="/static/images/integrations/desk/003.png" />
-
-      <p>Let's say you want a notification each time a case is updated. Put
-      in a descriptive name like "Announce case update", select "POST a string to a URL"
-      for Action Type, and copy-paste this to the "Appended URL path":</p>
-      {% raw %}
-      <p><code>?stream=desk&amp;topic={{case.id}}:+{{case.subject}}</code></p>
-      {% endraw %}
-      <p>The "appended URL path" will be the same for every notification —
-      it makes sure the notification goes to the appropriate stream and topic
-      within Zulip. </p>
-
-      <p>Next, copy this template Zulip message into "Message to
-      POST":</p>
-      {% raw %}
-      <pre><code
->Case [{{case.id}}, {{case.subject}}]({{case.direct_url}}), was updated.
-
-* Status: {{case.status.name}}
-* Priority: {{case.priority}}
-* Customer: {{customer.name}}
-* Company: {{customer.company}}
-* Description: {{case.description}}</code></pre>
-      <p>You don't need to edit that, although you may if you wish. All
-      the funny-looking stuff inside <code>{{</code> and <code>}}</code>
-      will be filled in by Desk.com for each event. The dialog should look
-      like this:</p>
-      {% endraw %}
-
-      <img src="/static/images/integrations/desk/004.png" />
-
-      <p>Click Add Action to save, and then on the next screen click the slider
-      next to the action to enable it. This is important — actions are turned off
-      by default!</p>
-
-      <img src="/static/images/integrations/desk/005.png" />
-
-      <p>Now you need to create a rule that triggers this action. Desk.com's
-      support center has a
-      <a href="https://support.desk.com/customer/portal/articles/1376">lengthy
-          article on rules</a>, but in short, click on "Cases" up at the top,
-      "Rules" on the left side, and then the specific event you want to notify
-      on — in our example, "Inbound Interaction". </p>
-
-      <img src="/static/images/integrations/desk/006.png" />
-
-      <p>Select the types of interaction you want your rule to apply to,
-      such as Chat. Specify the name and click on "Add Rule."</p>
-
-      <img src="/static/images/integrations/desk/007.png" />
-
-      <p>In the next screen, provide the details. First, click Add Actions to
-      display the rule actions. Select "Trigger an App Action" in the dropdown, and
-      then the name of the custom action you created earlier when the the second
-      dropdown appears. You can add additional "All" or "Any" conditions if desired.
-      Also select when the rule should run (if not "Anytime") and enable it.</p>
-
-      <img src="/static/images/integrations/desk/008.png" />
-
-      <p>Finally, click Update.</p>
-
-      <p><b>Congratulations! You're done!</b><br /> When a case is updated,
-      you'll see a notification like the following, to the stream
-      <code>desk</code>, with a topic that matches the case's subject name:</p>
-
-      <img class="screenshot" src="/static/images/integrations/desk/009.png" />
-
-    </div>
-
-
 {% if email_integration_enabled %}
     <div id="email" class="integration-instructions">
 
@@ -626,192 +322,6 @@
       in Zulip.</p>
     </div>
 {% endif %}
-
-
-    <div id="freshdesk" class="integration-instructions">
-      <h4>Freshdesk</h4>
-
-      <p>See customer support interactions right in Zulip, with our Freshdesk
-      integration! Note that this integration must be set up by an administrator
-      for your Freshdesk instance.</p>
-
-      <p>First, create the stream you'd like to use for Freshdesk notifications,
-      and subscribe all interested parties to this stream. We recommend the
-      stream name <code>freshdesk</code>.</p>
-
-      <p>Next, on your {{ settings_html|safe }}, create a Freshdesk bot.</p>
-
-      <p>Now we can set up the Freshdesk events that will trigger
-      Zulips. Freshdesk provides separate triggering mechanisms for ticket
-      creation and ticket changes, so we'll set up these triggers in two
-      parts.</p>
-
-      <h4>Part 1: Zulip notifications for new Freshdesk tickets</h4>
-
-      <ol>
-        <li>
-          <p>Visit your Freshdesk admin page. Under the <b>"Helpdesk
-          Productivity"</b> section, click the <b>"Dispatch'r"</b> icon:</p>
-
-          <img class="screenshot" src="/static/images/integrations/freshdesk/001.png" />
-
-          <p>Click the <b>"New rule"</b> button to create a new Dispatch'r rule
-          that will send notifications to Zulip when Freshdesk tickets are
-          opened.</p>
-        </li>
-        <li>
-          <p>On the Dispatch'r rule creation page, give the rule a name and
-          description. Next, we need to specify the conditions under which to
-          trigger Zulip notifications. There isn't a shortcut for "always
-          generate a notification on ticket creation", so we'll instead fake it
-          by picking two complementary conditions: when the source <b>is
-          email</b>, and when the source <b>is not email</b>:</p>
-
-          <img class="screenshot" src="/static/images/integrations/freshdesk/002.png" />
-        </li>
-        <li>
-
-          <p>In the <b>"Action"</b> section, add a new action of
-          type <b>"Trigger Webhook"</b>. Set the <b>"Request Type"</b>
-          to <b>"POST"</b>. Set the following <b>"Callback URL"</b>, replacing
-          the Zulip stream with your desired stream:</p>
-
-          <p><code>{{ external_api_uri_subdomain }}/v1/external/freshdesk?stream=<font color="#00A26F">freshdesk</font></code></p>
-
-          <p>Check the <b>"Requires Authentication"</b> box, and supply the bot
-          e-mail address and API key.</p>
-
-          <p>The Action section should look like this so far:</p>
-
-          <img class="screenshot" src="/static/images/integrations/freshdesk/003.png" />
-        </li>
-        <li>
-          <p>Select <b>"JSON"</b> for the <b>"Encoding"</b>. Under the encoding, select
-          <b>"Advanced"</b>. Paste the following JSON into the <b>"Content"</b>
-          box:</p>
-
-          <pre>{"freshdesk_webhook":
-    {
-        "triggered_event":"&#123;&#123;triggered_event&#125;&#125;",
-        "ticket_id":"&#123;&#123;ticket.id&#125;&#125;",
-        "ticket_url":"&#123;&#123;ticket.url&#125;&#125;",
-        "ticket_type":"&#123;&#123;ticket.ticket_type&#125;&#125;",
-        "ticket_subject":"&#123;&#123;ticket.subject&#125;&#125;",
-        "ticket_description":"&#123;&#123;ticket.description&#125;&#125;",
-        "ticket_status":"&#123;&#123;ticket.status&#125;&#125;",
-        "ticket_priority":"&#123;&#123;ticket.priority&#125;&#125;",
-        "requester_name":"&#123;&#123;ticket.requester.name&#125;&#125;",
-        "requester_email":"&#123;&#123;ticket.requester.email&#125;&#125;",
-    }
-}</pre>
-
-          <p>These ticket details are what will be forwarded to Zulip. The
-          pasted JSON should look like this:</p>
-
-          <img class="screenshot" src="/static/images/integrations/freshdesk/004.png" />
-        </li>
-        <li>
-          <p>Save your new Dispatch'r rule. The next time a Freshdesk ticket is
-          opened, the team will get a notification in Zulip!</p>
-        </li>
-      </ol>
-
-      <p>If you only want to receive Zulip notifications on ticket creation,
-      stop here, you're done! If you also want notifications on important ticket
-      changes, please continue to the next section.</p>
-
-      <h4>Part 2: Zulip notifications on ticket changes</h4>
-
-      <ol>
-        <li>
-          <p>Visit your Freshdesk admin page. Under the <b>"Helpdesk
-          Productivity"</b> section, click the <b>"Observer"</b> icon:</p>
-
-          <img class="screenshot" src="/static/images/integrations/freshdesk/005.png" />
-
-          <p>Click the <b>"New rule"</b> button to create a new Observer rule
-          that will send notifications to Zulip when Freshdesk tickets are
-          updated.</p>
-        </li>
-        <li>
-          <p>On the Observer rule creation page, give the rule a name and
-          description. Under <b>"When Any Of These Events Occur"</b>, create
-          these new rules:</p>
-          <ul>
-            <li><p>Priority is changed, from Any Priority, to Any Priority</p></li>
-            <li><p>Status is changed, from Any Status, to Any Status</p></li>
-            <li><p>Note is added, Type Any</p></li>
-          </ul>
-
-          <p>If you do not want to receive Zulip notifications on one or more of
-          these events, leave out the rule for that event.</p>
-
-          <p>Under <b>"And The Events Are Performed By"</b>,
-          select <b>"Anyone"</b>.</p>
-
-          <p>So far, the rule should look like this:</p>
-
-          <img class="screenshot" src="/static/images/integrations/freshdesk/006.png" />
-        </li>
-        <li>
-          <p>Next, we need to specify the types of tickets that will trigger
-          Zulip notifications. There isn't a shortcut for "always generate a
-          notification on ticket update", so as before we'll instead fake it by
-          picking two complementary conditions: when the source <b>is email</b>,
-          and when the source <b>is not email</b>:</p>
-
-          <img class="screenshot" src="/static/images/integrations/freshdesk/007.png" />
-        </li>
-        <li>
-          <p>Under <b>"Perform These Actions"</b>, add a new action of
-          type <b>"Trigger Webhook"</b>. Set the <b>"Request Type"</b>
-          to <b>"POST"</b>. Set the following <b>"Callback URL"</b>, replacing
-          the Zulip stream with your desired stream:</p>
-
-          <p><code>{{ external_api_uri_subdomain }}/v1/external/freshdesk?stream=<font color="#00A26F">freshdesk</font></code></p>
-
-          <p>Check the <b>"Requires Authentication"</b> box, and supply the bot
-          e-mail address and API key.</p>
-
-          <p>The Action section should look like this so far:</p>
-
-          <img class="screenshot" src="/static/images/integrations/freshdesk/008.png" />
-        </li>
-        <li>
-          <p>Select <b>"JSON"</b> for the <b>"Encoding"</b>. Under the encoding,
-          select <b>"Advanced"</b>. Paste the following JSON into
-          the <b>"Content"</b> box:</p>
-
-          <pre>{"freshdesk_webhook":
-    {
-        "triggered_event":"&#123;&#123;triggered_event&#125;&#125;",
-        "ticket_id":"&#123;&#123;ticket.id&#125;&#125;",
-        "ticket_url":"&#123;&#123;ticket.url&#125;&#125;",
-        "ticket_type":"&#123;&#123;ticket.ticket_type&#125;&#125;",
-        "ticket_subject":"&#123;&#123;ticket.subject&#125;&#125;",
-        "ticket_description":"&#123;&#123;ticket.description&#125;&#125;",
-        "ticket_status":"&#123;&#123;ticket.status&#125;&#125;",
-        "ticket_priority":"&#123;&#123;ticket.priority&#125;&#125;",
-        "requester_name":"&#123;&#123;ticket.requester.name&#125;&#125;",
-        "requester_email":"&#123;&#123;ticket.requester.email&#125;&#125;",
-    }
-}</pre>
-          <p>These ticket details are what will be forwarded to Zulip. The
-          pasted JSON should look like this:</p>
-
-          <img class="screenshot" src="/static/images/integrations/freshdesk/009.png" />
-        </li>
-        <li>
-         <p>Save your new Observer rule. The next time a Freshdesk ticket is
-         updated, the team will get a notification in Zulip!</p>
-        </li>
-      </ol>
-
-      <p><b>Congratulations! You're done!</b><br /> You'll now see support
-      progress in real time in Zulip:</p>
-
-      <img class="screenshot" src="/static/images/integrations/freshdesk/010.png" />
-    </div>
 
     <div id="git" class="integration-instructions">
 
@@ -860,154 +370,6 @@
       the <code>test-post-receive</code> branch.</p>
     </div>
 
-    <div id="github" class="integration-instructions">
-      <p>
-        This webhook bases on deprecated concept that is
-        <a href="https://github.com/github/github-services">GitHub Services</a>
-      </p>
-
-      <p>First, create the stream you'd like to use for GitHub notifications,
-      and subscribe all interested parties to this stream. The integration will
-      use the default stream <code>commits</code> if no stream is supplied in
-      the hook; you still need to create the stream even if you are using this
-      default.</p>
-
-      <p>Next, go to your repository page and click <b>"Settings"</b>:</p>
-      <p><img src="/static/images/integrations/github/001.png" /></p>
-
-      <p>From there, select <b>"Webhooks &amp; Services"</b>:</p>
-      <p><img src="/static/images/integrations/github/002.png" /></p>
-
-      <p>To find the Zulip hook, you have to click on <b>Configure services</b>.</p>
-      <p><img class="screenshot" src="/static/images/integrations/github/003.png" /></p>
-
-      <p>Select <b>"Zulip"</b> from the list of service hooks. Fill in
-      the API key and email address for your bot and check
-      the <b>"active"</b> checkbox. Specify
-      <code>{{ external_api_uri_subdomain }}/v1/external/github</code> as the <b>"Alternative
-      endpoint"</b>.  You can optionally supply the Zulip stream (the
-      default is <code>commits</code>) and restrict Zulip
-      notifications to a specified set of branches.</p>
-
-      <p>Further configuration is possible. By default, commits traffic (pushes, commit comments),
-      GitHub issues traffic, and pull requests are enabled. You can exclude certain types of traffic
-      via the checkboxes. If you want commit traffic, issue traffic, and pull requests to go to
-      different places, you can use the <b>Commit Stream</b> and <b>Issue Stream</b> overrides;
-      otherwise, it is safe to leave these fields blank and just have it default to the <b>Stream</b>
-      setting.</p>
-
-      <p>Click the <b>"Update settings"</b> button to complete the
-      configuration:</p>
-      <p><img src="/static/images/integrations/github/004.png" /></p>
-
-      <p><b>Congratulations! You're done!</b><br /> When team members push to
-      your repository, you'll get a Zulip notification that looks like this:</p>
-
-      <p><img class="screenshot" src="/static/images/integrations/github/005.png" /></p>
-
-    </div>
-
-    <div id="github_webhook" class="integration-instructions">
-
-      <p>First, create the stream you'd like to use for GitHub Webhook notifications,
-      and subscribe all interested parties to this stream. The integration will
-      use the default stream <code>github</code> if no stream is supplied in
-      the hook; you still need to create the stream even if you are using this
-      default.</p>
-
-      <p>Next, go to your repository page and click <b>"Settings"</b>:</p>
-      <p><img src="/static/images/integrations/github_webhook/001.png" /></p>
-
-      <p>From there, select <b>"Webhooks"</b>:</p>
-      <p><img src="/static/images/integrations/github_webhook/002.png" /></p>
-
-      <p>Click <b>"Add webhook"</b>.</p>
-      <p><img class="screenshot" src="/static/images/integrations/github_webhook/003.png" /></p>
-
-      <p>Authorize yourself and configure your webhook.</p>
-
-      <p>In the <b>"Payload URL"</b> field, enter a URL constructed like this:</p>
-
-      <p><code>{{ external_api_uri_subdomain }}/v1/external/github?api_key=abcdefgh&amp;stream=github</code></p>
-
-      <p>where <code>api_key</code> is the API key of your Zulip
-        bot. Select the actions that you want to result in a
-        Zulip notification and click <b>Add Webhook</b>.</p>
-
-      <p><b>Congratulations! You're done!</b><br />
-      Your messages will look like this:</p>
-
-      <p><img class="screenshot" src="/static/images/integrations/github_webhook/004.png" /></p>
-
-    </div>
-
-    <div id="gitlab" class="integration-instructions">
-
-      <p>First, create the stream you'd like to use for GitLab notifications,
-      and subscribe all interested parties to this stream. The integration will
-      use the default stream <code>gitlab</code> if no stream is supplied in
-      the URL; you still need to create the stream even if you are using this
-      default.</p>
-
-      <p>Next, go to your repository page and click gear icon.
-      From there, select <b>Webhooks</b>:</p>
-      <p><img src="/static/images/integrations/gitlab/001.png" /></p>
-
-      <p>In the URL field, enter a URL constructed like this:
-
-      <p><code>{{ external_api_uri_subdomain }}/v1/external/gitlab?api_key=abcdefgh&amp;stream=gitlab</code></p>
-
-      <p>where <code>api_key</code> is the API key of your Zulip
-        bot.</p>  Select the actions that you want to result in a
-        Zulip notification and click <b>Add Webhook</b>.</p>
-
-      <p><b>Congratulations! You're done!</b><br />
-      Your messages will look like this:</p>
-
-      <p><img class="screenshot" src="/static/images/integrations/gitlab/002.png" /></p>
-
-    </div>
-
-    <div id="gosquared" class="integration-instructions">
-
-      <p>
-        First, create a stream for GoSquared for where you would like to receive GoSquared notifications
-        and subscribe all interested parties to the stream. The integration will automatically
-        use the default stream <code>gosquared</code> if no stream is supplied, though you will
-        still need to create the stream manually even though it's the default.
-      </p>
-
-      <p>
-        Next, go to the Zulip settings page and create a bot named GoSquared. Go to the account settings page of
-        your GoSquared account and under Project Settings > Services > Webhook > Add New.
-        Add the below URL under the section 'Enter a URL to receive requests:' and name the integration, Zulip.
-      </p>
-
-      <p><code>{{ external_api_uri_subdomain }}/v1/external/gosquared?api_key=abcdefgh&amp;stream=gosquared</code></p>
-
-      <p><img class="screenshot" src="/static/images/integrations/gosquared/001.png" /></p>
-
-      <p>
-        Note: <code>api_key</code> must be reconfigured to be the API key of your Zulip bot.<br />
-        If you want to change the stream default that receives notifications, change <code>stream=</code> in the URL. <br />
-        To change the topic displayed by the bot, simply append <code>&amp;topic=name</code> to the end of the above URL.
-        Where <code>name</code> is your topic.
-      </p>
-
-      <p>
-        Under notifications of your GoSquared account page, press <code>Add New Notification</code> and select when and why you
-        want to be notified through Zulip. After you're done, remember to check the box of the webhook corresponding to Zulip.
-      </p>
-
-      <p>
-        <b>Congratulations! You're all set</b><br />
-        Your messages should look like this:
-      </p>
-
-      <p><img class="screenshot" src="/static/images/integrations/gosquared/000.png" /></p>
-
-    </div>
-
     <div id="google-calendar" class="integration-instructions">
 
         <p>
@@ -1022,9 +384,10 @@
         </p>
 
         <p>
-        Next, follow the instructions for <b>Step 1</b> at <a href="https://developers.google.com/
-        google-apps/calendar/quickstart/python">this link</a> to get a <code>client_secret</code>
-        file. Save this file to your <code>/~</code> directory instead of your working directory.
+        Next, follow the instructions for <b>Step 1</b> at
+        <a href="https://developers.google.com/google-apps/calendar/quickstart/python">this link</a>
+        to get a <code>client_secret</code> file. Save this file as <code>client_secret.json</code>
+        to your <code>~/</code> directory.
         </p>
 
         <p>
@@ -1039,9 +402,9 @@
         </p>
 
         <p>
-        Click on the tab that's labeled <b>Your Bots</b> and click on <b>Show/change your API
-        key</b>. Enter your password if prompted, and download the <code>.zuliprc</code> file. Save
-        this file to your <code>~/</code> folder.
+        Click on the tab that's labeled <b>Your bots</b> and click on <b>Show/change your API
+        key</b>. Enter your password if prompted, and download the <code>zuliprc</code> file. Save
+        this file as <code>.zuliprc</code> to your <code>~/</code> directory.
         </p>
 
         <p><img class="screenshot" src="/static/images/integrations/google/calendar/001.png" /></p>
@@ -1080,7 +443,7 @@
             <li>
             <code>--interval</code>: This flag specifies the interval of time - in minutes - between
             receiving the reminder, and the actual event. For example, an interval of 30 minutes
-            would mean that you would recieve a reminder for an event 30 minutes before it is
+            would mean that you would receive a reminder for an event 30 minutes before it is
             scheduled to occur.
             </li>
         </ol>
@@ -1096,126 +459,6 @@
         </p>
 
     </div>
-
-    <div id="hellosign" class="integration-instructions">
-
-      <p>
-        Configuring the HelloSign integration is easy. First, create a stream
-        (we recommend a name like "hellosign").
-      </p>
-
-      <p>
-        Next, go to the Zulip settings page and create a Zulip bot bot
-        for the HelloSign integration.  Note the bot API key and add
-        it to the URL below as <code>api_key</code>, and including the
-        name of the stream you'd like to receive the notifications
-        as <code>stream=</code> in the URL.  If you'd like to hardcode
-        the topic used by the bot, simply append
-        <code>&amp;topic=topic_name</code> to the end of the above URL, where
-        <code>topic_name</code> is your topic.
-      </p>
-
-      <p><code>{{ external_api_uri_subdomain }}/v1/external/hellosign?api_key=abcdefgh&amp;stream=stream_name</code></p>
-
-      <p>
-        Go to the account settings page of your HelloSign account and
-        under the Integrations tab, go to API and Account Callback.
-        Add the above URL with your modifications under the section 'Account Callback'.
-      </p>
-
-      <p><img class="screenshot" src="/static/images/integrations/hellosign/000.png" /></p>
-
-      <p>
-        <b>Congratulations! You're all set.</b><br />
-        Your messages should look like this:
-      </p>
-
-      <p><img class="screenshot" src="/static/images/integrations/hellosign/001.png" /></p>
-
-    </div>
-
-    <div id="helloworld" class="integration-instructions">
-
-        <p>Learn how Zulip integrations work with this simple Hello World example!</p>
-
-        <p>The Hello World webhook will use the <code>test</code> stream, which is
-        created by default in the Zulip dev environment. If you are running
-        Zulip in production, you should make sure this stream exists.</p>
-
-        <p>Next, on your {{ settings_html|safe }}, create a Hello World bot.  Construct the URL for
-        the Hello World bot using the API key and stream name:
-          <code>{{ external_api_uri_subdomain }}/v1/external/helloworld?api_key=abcdefgh&amp;stream=test</code>
-        </p>
-
-        <p>To trigger a notication using this webhook, use `send_webhook_fixture_message` from the Zulip command line:</p>
-        <div class="codehilite">
-          <pre>(zulip-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$
-./manage.py send_webhook_fixture_message \
-> --fixture=zerver/fixtures/helloworld/helloworld_hello.json \
-> '--url=http://localhost:9991/api/v1/external/helloworld?api_key=&lt;api_key&gt;'</pre>
-        </div>
-
-        <p>Or, use curl:</p>
-        <div class="codehilite">
-          <pre>curl -X POST -H "Content-Type: application/json" -d '{ "featured_title":"Marilyn Monroe", "featured_url":"https://en.wikipedia.org/wiki/Marilyn_Monroe" }' http://localhost:9991/api/v1/external/helloworld\?api_key\=&lt;api_key&gt;</pre>
-        </div>
-
-        <p><b>Congratulations! You're done!</b><br /> Your messages may look like:</p>
-
-        <img class="screenshot" src="/static/images/integrations/helloworld/001.png" />
-    </div>
-
-    <div id="heroku" class="integration-instructions">
-      <p>
-        Receive notifications in Zulip whenever a new version of an app is pushed to Heroku
-        using the Zulip Heroku plugin!
-      </p>
-
-      <p>
-        First, create the stream you'd like to use for Heroku notifications, and
-        subscribe all interested parties to this stream. We recommend the
-        name <code>heroku</code>.
-      </p>
-
-      <p>Next, on your {{ settings_html|safe }}, create a Heroku bot.</p>
-
-      <p>Then, log into your account on <a href="http://heroku.com">heroku.com</a>, and:</p>
-
-      <ol>
-        <li>
-          <p>
-            Visit the page for the project for which you'd like to generate
-            Zulip notifications. Click the "Resources" tab, and add the "Deploy Hooks" addon.
-            Choose the "HTTP Post Hook" plan, and click "Provision".
-          </p>
-
-          <img class="screenshot" src="/static/images/integrations/heroku/001.png" />
-        </li>
-        <li>
-          <p>
-            Click on the "Deploy Hooks" add-on that you just added.
-            You should be redirected to a page that looks like this:
-          </p>
-
-          <p><img class="screenshot" style="border:1px solid #000000" src="/static/images/integrations/heroku/002.png" /></p>
-
-          <p>
-            Enter the following webhook URI, replacing the bot API key
-            and Zulip stream with the appropriate information.
-          </p>
-
-          <p><code>{{ external_uri_scheme }}{{ external_api_path_subdomain }}/v1/external/heroku?api_key=<font color="#00A26F">test_api_key</font>&amp;stream=<font color="#00A26F">heroku</font></code></p>
-        </li>
-      </ol>
-
-      <p>
-        <b>Congratulations! You're done!</b><br />
-        When you deploy to Heroku, the team can see these updates in real time in Zulip:
-      </p>
-
-      <img class="screenshot" src="/static/images/integrations/heroku/003.png" />
-    </div>
-
 
     <div id="hubot" class="integration-instructions">
 
@@ -1306,82 +549,6 @@
       </p>
     </div>
 
-   <div id="ifttt" class="integration-instructions">
-      <p>Get notifications from every event supported by IFTTT.</p>
-      <p>First, create the stream you'd like to use for IFTTT notifications,
-          and subscribe all interested parties to this stream.</p>
-
-      <p><code>{{ external_api_uri_subdomain }}/v1/external/ifttt?api_key=abcdefgh&amp;stream=ifttt</code></p>
-
-      <p>Next, create an IFTTT recipe, picking the service you'd like
-          to receive notifications from as <code>this</code>,
-          and <code>Maker</code> as <code>that</code>.</p>
-      <img class="screenshot" src="/static/images/integrations/ifttt/001.png" />
-      <p>Choose the <code>Make a web request</code> action, and
-      configure it as follows:</p>
-
-      <ul>
-        <li><code>URL</code> is the url we created above</li>
-        <li><code>method</code> is POST</li>
-        <li><code>Content Type</code> is <code>application/json</code></li>
-      </ul>
-      <p>Finally, configure the request body.  You need to construct a JSON
-          object with two parameters: <code>content</code>
-          and <code>subject</code>.<br />
-          Example:
-          <code>{"content": "message content", "subject": "message subject"}</code>
-          <br/>
-          </p>
-          <p>You will most likely want to specify some IFTTT
-            "Ingredients" (click the beaker to see the available
-            options) to customize the subject and content of your
-            messages; the below screenshot uses ingredients available
-            if <code>this</code> is IFTTT's incoming email service.
-          </p>
-      <p>Example configuration:
-        <img class="screenshot" src="/static/images/integrations/ifttt/002.png" />
-      </p>
-
-       <p>You're done! Example message:</p>
-
-      <img class="screenshot" src="/static/images/integrations/ifttt/003.png" />
-    </div>
-
-   <div id="jira" class="integration-instructions">
-
-
-      <p><em>If you are running JIRA version 5.2 or greater, or if you are
-          using the hosted JIRA provided by Atlassian, you can use the built-in
-          web-hook support to connect to Zulip &mdash; read on. For older,
-          self-hosted JIRA installs, you can use our <a
-              href="#jira-plugin">JIRA Plugin</a>.</em></p>
-
-      <p>First, create the stream you'd like to use for JIRA notifications, and
-      subscribe all interested parties to this stream. We recommend the
-      name <code>jira</code>.</p>
-
-      <p>In your JIRA administration control panel, go to the Webhooks page. If you are using the OnDemand
-        hosted JIRA, follow the instructions <a href="https://developer.atlassian.com/display/JIRADEV/JIRA+Webhooks+Overview#JIRAWebhooksOverview-WhereistheJIRAAdministrationUIforwebhooks?">
-        on the Atlassian wiki</a> for locating the Webhook UI.
-      </p>
-      <p>Give your new web hook a name, and for the URL provide the following:</p>
-      <p>
-      <code>{{ external_api_uri_subdomain }}/v1/external/jira?api_key=abcdefgh&amp;stream=jira</code>
-      </p>
-
-      <p>where <code>api_key</code> is the API key of your Zulip bot,
-      and <code>stream</code> is the stream name you want the
-      notifications sent to.</p>
-
-      <p>Next, go back to Zulip and set up a stream called "jira," if it does not already exist.
-      (If you prefer your JIRA notifications to go to a stream other than "jira," then change the URL above to match it.)</p>
-
-      <p><b>Congratulations! You're done!</b><br />
-      Updates from JIRA will be sent to the Zulip stream you specified in the JIRA web-hook.
-      </p>
-      <img class="screenshot" src="/static/images/integrations/jira/001.png" />
-    </div>
-
    <div id="jira-plugin" class="integration-instructions">
 
 
@@ -1429,123 +596,6 @@
       <p><b>Congratulations! You're done!</b><br />
       Updates from JIRA will be sent to the stream you've configured, as below.</p>
       <img class="screenshot" src="/static/images/integrations/jira/001.png" />
-    </div>
-
-    <div id="librato" class="integration-instructions">
-
-    <p>Get Zulip notifications for your Librato alerts or snapshots!</p>
-
-    <p>First, create the stream you'd like to use for Librato notifications, and
-    subscribe all interested parties to this stream. We recommend the
-    name <code>librato</code>.</p>
-
-    <p>Next, on your <a href="/#settings" target="_blank">Zulip settings
-    page</a>, create a Librato bot. Please note the bot name and API key. Then:</p>
-
-      <p><b>Alerts configuration</b></p>
-
-      <p>1. Login into your Librato account and switch to the integrations page:</p>
-      <p><img src="/static/images/integrations/librato/001.png" /></p>
-
-      <p>2. From there, select <b>"Webhook"</b> integration:</p>
-      <p><img src="/static/images/integrations/librato/002.png" /></p>
-
-      <p>3. Fill in the title and URL fields using your bot's API key</p>
-      <p><img class="screenshot" src="/static/images/integrations/librato/003.png" /></p>
-
-      <p>The default stream name is <b>librato</b> and default topic name is <b>Alert alert_name</b>.</p>
-
-      <div class="codehilite"><pre>
-      URL = {{ external_api_uri }}/v1/external/librato?api_key=<b>your_api_key</b></pre></div>
-
-      <p>You can customize the stream name and topic name:</p>
-
-      <div class="codehilite"><pre>
-      URL = {{ external_api_uri }}/v1/external/librato?stream=<b>your_stream_name</b>&amp;topic=<b>your_topic_name</b>&amp;api_key=<b>your_api_key</b></pre></div>
-
-
-      <p>4. Next, go to your alerts page:</p>
-      <p><img class="screenshot" src="/static/images/integrations/librato/004.png" /></p>
-
-      <p>5. Choose the alert conditions and enable the your new
-      webhook under "Notification Services":</p>
-      <p><img class="screenshot" src="/static/images/integrations/librato/005.png" /></p>
-
-      <p>
-        <b>Congratulations! You're done!</b><br />
-        When an alert triggers, you'll get a Zulip notification that looks like this:
-      </p>
-
-      <p><img class="screenshot" src="/static/images/integrations/librato/006.png" /></p>
-
-
-      <p><b>Snapshot configuration</b></p>
-
-      <p>
-        Because of limitations in Librato's API, you need to use the
-        Slack integration to get Librato snapshots sent into Zulip.
-      </p>
-      <p><img src="/static/images/integrations/librato/007.png" /></p>
-      <p>Default stream name is <b>librato</b> and default topic name is <b>snapshots</b>.</p>
-
-      <p>
-        To send a snapshot, just click at one of your chart, use
-        the <b>send a snapshot</b> option and add the proper
-        integration.
-      </p>
-
-      <p><img class="screenshot" src="/static/images/integrations/librato/008.png" /></p>
-
-      <p>
-        <b>Congratulations! You're done!</b><br />
-        When a snapshot comes, you'll get a Zulip notification that looks like this:
-      </p>
-
-      <p><img class="screenshot" src="/static/images/integrations/librato/009.png" /></p>
-
-    </div>
-
-    <div id="mention" class="integration-instructions">
-
-      <p>First, create the stream you'd like to use for Mention Webhook notifications,
-      and subscribe all interested parties to this stream. The integration will
-      use the default stream <code>mention</code> if no stream is supplied in
-      the hook; you still need to create the stream even if you are using this
-      default.</p>
-
-      <p>Next, go to your Mention feed and click on your profile in the top right corner,
-      click on <b>Settings</b> in the drop down menu:</p>
-      <p><img src="/static/images/integrations/mention/001.png" /></p>
-
-      <p>From there, select <b>Integrations</b>:</p>
-      <p><img src="/static/images/integrations/mention/002.png" /></p>
-
-      <p>Select the <b>Zapier</b> integration, and click <b>Explore Mention on Zapier!</b>:</p>
-      <p><img src="/static/images/integrations/mention/003.png" /></p>
-
-      <p>Search for "webhooks" in the search bar, and click on <b>Webhooks by Zapier</b>.<br />
-      Scroll down and look for <b>Add Webhooks posts for new Mentions</b> and click on
-      <b>Use this Zap</b>:</p>
-      <p><img src="/static/images/integrations/mention/004.png" /></p>
-
-      <p>Select your Mention account Id and the alert that should trigger mentions
-      from the respective drop down menus, and click <b>Continue</b></p>
-
-      <p>Select <b>POST</b> on the page that says <b>Webhooks by Zapier Action</b>, and click
-       <b>Continue</b>.</p>
-
-      <p>In the <b>URL</b> field, enter a URL constructed like this:</p>
-
-      <p><code>{{ external_api_uri_subdomain }}/v1/external/mention?api_key=abcdefgh&amp;stream=mention</code></p>
-
-      <p>where <code>abcdefgh</code> should be replaced with the API key of your Zulip
-        bot. Select JSON for <b>Payload Type</b> and click <b>Continue</b>:</p>
-
-      <p><b>Congratulations! You're done!</b><br />
-      Your messages will look like this:</p>
-
-      <p><img src="/static/images/integrations/mention/005.png" /></p>
-
     </div>
 
     <div id="mercurial" class="integration-instructions">
@@ -1712,56 +762,79 @@ key = NAGIOS_BOT_API_KEY
       directly.</p>
     </div>
 
+    <div id="openshift" class="integration-instructions">
 
-    <div id="newrelic" class="integration-instructions">
+      <p>Ths integration sends a notification every time a deployment is
+      made in an OpenShift instance.</p>
+
+      <p>First, download our <a href="/api">Python
+      bindings and example scripts</a>, and move it to your local copy of
+      the application's repository.</p>
+
+      <p>Then, create a new commit including all the changes made to the
+      repository, and push it to your app.</p>
+
+      <p>After that, connect to the application through SSH. If you don't know
+      how to do this, log in to your OpenShift Online account, go to your
+      application's dashboard, and click "Want to log in to your application?".
+      <br />There you'll find the app's SSH user, address, and further
+      information on SSH, in case you need it.</p>
+
+      <img class="screenshot" src="/static/images/integrations/openshift/002.png" />
+
+      <p>Once you have connected, install the Python bindings by running:</p>
+
+      <div class="codehilite"><pre>
+<span class="s">$</span> cd ~/app-root/repo/&lt;python_bindings_path&gt;
+<span class="s">$</span> python setup.py install</pre>
+      </div>
+
+      <p>Where <code>&lt;python_bindings_path&gt;</code> is the path where you
+      saved the bindings in the first step.</p>
+
+      <p>Next, open <code>integrations/openshift/zulip_openshift_config.py</code>
+      inside the SSH terminal with your favorite editor, and change the
+      following lines to specify the email address and API key for your
+      OpenShift integration:</p>
 
 
-      <p>New Relic can send messages to a Zulip stream for alerts and
-      deploys.</p>
+      <div class="codehilite">
+<pre><span class="n">ZULIP_USER</span> <span class="o">=</span> <span class="s">"openshift-bot@example.com"</span>
+<span class="n">ZULIP_API_KEY</span> <span class="o">=</span> <span class="s">"0123456789abcdef0123456789abcdef"</span>
+{% if api_site_required %}<span class="n">ZULIP_SITE</span> <span class="o">=</span> <span class="s">"{{ external_api_uri_subdomain }}"</span>{% endif %}</pre>
+      </div>
 
-      <p>First, create the stream you'd like to use for New Relic
-      notifications, and subscribe all interested parties to this stream. We
-      recommend the name <code>newrelic</code>.</p>
+      <p>You can also specify which pushes will result in
+      notifications and to what stream the notifications will be sent
+      by modifying the <code>deployment_notice_destination</code> function
+      in <code>zulip_openshift_config.py</code>. By default, deployments
+      triggered by commits pushed to the <code>master</code> and
+      <code>test-post-receive</code> branches will result in a notification
+      to stream <code>deployments</code>.</p>
 
-      <p>Next, in your New Relic Account Settings page, click
-      "Integrations", then "Alerting notifications". On the "Webhook"
-      tab, enter the following webhook URL:</p>
+      <p>Save the file, and symlink
+      <code>$OPENSHIFT_PYTHON_DIR/virtenv/share/zulip/integrations/openshift/post-receive</code>
+      into the <code>~/app-root/repo/.openshift/action_hooks</code>
+      directory.</p>
 
-      <p><code>{{ external_api_uri_subdomain }}/v1/external/newrelic?api_key=abcdefgh&amp;stream=newrelic</code></p>
+      <p>Next, create the stream you'd like to use for OpenShift notifications,
+      and subscribe all interested parties to this stream. The integration will
+      use the default stream <code>deployments</code> if no stream is supplied
+      in the hook; you still need to create the stream even if you are using
+      this default.</p>
 
-      <p>where <code>api_key</code> is the API key of your Zulip bot,
-      and <code>stream</code> is the stream name you want the
-      notifications sent to.</p>
+      <p><b>Congratulations! You're done!</b><br /> Whenever you make
+      a push to the <code>master</code> branch of your application's repository
+      (or whichever branch you configured above), or if you force a deployment,
+      the Zulip OpenShift plugin will send an automated notification that
+      looks like this:</p>
 
-      <img class="screenshot" src="/static/images/integrations/newrelic/001.png" />
+      <img class="screenshot" src="/static/images/integrations/openshift/001.png" />
 
-      <p><b>Congratulations! You're done!</b><br /> Your New Relic events will
-       appear in Zulip:</p>
-      <img class="screenshot" src="/static/images/integrations/newrelic/002.png" />
+      <p><b>Testing</b><br />You can test the plugin without changing
+      your <code>master</code> branch by pushing to
+      the <code>test-post-receive</code> branch.</p>
     </div>
-
-    <div id="pagerduty" class="integration-instructions">
-
-      <p>First, create the stream you'd like to use for Pagerduty notifications,
-      and subscribe all interested parties to this stream. We recommend the
-      stream name <code>pagerduty</code>. Keep in mind you still need to create
-      the stream first even if you are using this recommendation.</p>
-
-      <p>Next, in Pagerduty, select Services under Configuration on the top
-      of the page.</p>
-      <img class="screenshot" src="/static/images/integrations/pagerduty/001.png" />
-
-      <p>Now navigate to the service you want to integrate with Zulip. From
-      there, click "Add a webhook". Fill in the form like this:</p>
-      <ul>
-          <li><b>Name</b>: Zulip</li>
-          <li><b>Endpoint URL</b>: <code>{{ external_api_uri_subdomain }}/v1/external/pagerduty?api_key=abcdefgh&amp;stream=pagerduty</code></li>
-      </ul>
-
-      <img class="screenshot" src="/static/images/integrations/pagerduty/002.png" />
-
-    </div>
-
 
     <div id="perforce" class="integration-instructions">
 
@@ -1810,8 +883,6 @@ key = NAGIOS_BOT_API_KEY
       <img class="screenshot" src="/static/images/integrations/perforce/001.png" />
     </div>
 
-
-
     <div id="phabricator" class="integration-instructions">
 
 
@@ -1825,66 +896,6 @@ key = NAGIOS_BOT_API_KEY
         to get it set up.
       </p>
 
-    </div>
-
-    <div id="pingdom" class="integration-instructions">
-
-      <p>Zulip supports integration with Pingdom and can notify you of
-          uptime status changes from your Pingdom dashboard.</p>
-
-      <p>First, create the stream you'd like to use for Pingdom notifications,
-          and subscribe all interested parties to this stream. We
-          recommend the name <code>pingdom</code>.</p>
-
-      <p><code>{{ external_api_uri_subdomain }}/v1/external/pingdom?api_key=abcdefgh&amp;stream=pingdom</code></p>
-
-      <p>where <code>api_key</code> is the API key of your Zulip bot,
-      and <code>stream</code> is the stream name you want the
-      notifications sent to.</p>
-
-      <p>Next, under following url: </p>
-      <p><code>https://my.pingdom.com/reports/integration/settings</code></p>
-      <p>create your integration by clicking on <code>Add Integration</code> button and filling form as following:</p>
-      <img class="screenshot" src="/static/images/integrations/pingdom/001.png" />
-
-      <p>Last, during creating or editing your check, scroll down to <code>Connect Integrations</code>
-         section and ensure your integration is checked</p>
-
-      <p><b>Congratulations! You're done!</b><br /> Example Zulip notification
-      looks like this:</p>
-
-      <img class="screenshot" src="/static/images/integrations/pingdom/002.png" />
-
-    </div>
-
-
-    <div id="pivotal" class="integration-instructions">
-
-
-      <p>Zulip supports integration with Pivotal Tracker and can notify you of changes
-      to the stories in your Pivotal Tracker project.</p>
-
-      <p>First, create the stream you'd like to use for Pivotal Tracker
-      notifications, and subscribe all interested parties to this stream. We
-      recommend the name <code>pivotal</code>.</p>
-
-      <p>Next, in the Settings page for your project, choose the Integrations
-      tab. Scroll down to the <code>Activity Web Hook</code> section, and enter
-      the following url:</p>
-
-      <p><code>{{ external_api_uri_subdomain }}/v1/external/pivotal?api_key=abcdefgh&amp;stream=pivotal</code></p>
-
-      <p>where <code>api_key</code> is the API key of your Zulip bot,
-      and <code>stream</code> is the stream name you want the
-      notifications sent to.</p>
-
-      <p>Choose version 5 of the API. Zulip supports both version 3 and version 5, but
-      version 5 contains more information that lets Zulip format more useful messages.</p>
-
-      <img class="screenshot" src="/static/images/integrations/pivotal/001.png" />
-
-      <p><b>Congratulations! You're done!</b><br /> When you make changes in Pivotal Tracker they will be reflected in Zulip:</p>
-      <img class="screenshot" src="/static/images/integrations/pivotal/002.png" />
     </div>
 
     <div id="puppet" class="integration-instructions">
@@ -1975,7 +986,6 @@ key = NAGIOS_BOT_API_KEY
       <img class="screenshot" src="/static/images/integrations/redmine/001.png" />
     </div>
 
-
     <div id="rss" class="integration-instructions">
       <h4>RSS</h4>
 
@@ -2001,210 +1011,6 @@ key = NAGIOS_BOT_API_KEY
       your feeds, the team can see these updates in real time in Zulip:</p>
 
       <img class="screenshot" src="/static/images/integrations/rss/001.png" />
-    </div>
-
-
-    <div id="semaphore" class="integration-instructions">
-      <h4>Semaphore</h4>
-
-      <p>See build and deploy statuses on Semaphore right in Zulip with the Zulip
-      Semaphore plugin!</p>
-
-      <p>First, create the stream you'd like to use for Semaphore notifications, and
-      subscribe all interested parties to this stream. We recommend the
-      name <code>builds</code>.</p>
-
-      <p>Next, on your {{ settings_html|safe }}, create a Semaphore bot.</p>
-
-      <p>Then, log into your account on <a href="http://semaphoreci.com">semaphoreci.com</a>, and:</p>
-
-      <ol>
-        <li>
-          <p>Visit the "Project Settings" page for the project for which you'd like to generate
-          Zulip notifications. Click the "Notifications" tab in the left sidebar,
-          click on "Webhooks" in the resulting menu, and then click on "+ Add Webhook".</p>
-
-          <img class="screenshot" src="/static/images/integrations/semaphore/001.png" />
-        </li>
-        <li>
-          <p> You should now see a form that looks like this: </p>
-
-          <p> <img class="screenshot" style="border:1px solid #000000" src="/static/images/integrations/semaphore/002.png" /> </p>
-
-          <p> Enter the following webhook URI, replacing the bot email address,
-          bot API key, and Zulip stream with the appropriate
-          information. <b>Note:</b> the <code>@</code>-sign in the bot e-mail
-          address must be escaped to <code>%40</code>:</p>
-
-          <p><code>{{ external_uri_scheme }}<font color="#00A26F">semaphore-bot%40example.com</font>:<font color="#00A26F">api_key</font>@{{ external_api_path_subdomain }}/v1/external/semaphore?stream=<font color="#00A26F">builds</font></code></p>
-        </li>
-      </ol>
-
-      <p><b>Congratulations! You're done!</b><br /> When you push to Semaphore, the
-      team can see these updates in real time in Zulip:</p>
-
-      <img class="screenshot" src="/static/images/integrations/semaphore/003.png" />
-    </div>
-
-    <div id="sentry" class="integration-instructions">
-      <p>Zulip supports integration with Sentry and can notify you of
-          issues that occurred in your project.</p>
-
-      <p>First, create the stream you'd like to use for Sentry notifications,
-          and subscribe all interested parties to this stream. We
-          recommend the name <code>sentry</code>.  Then, construct
-          the Sentry webhook URL as follows:</p>
-
-      <p><code>{{ external_api_uri_subdomain }}/v1/external/sentry?api_key=abcdefgh&amp;stream=sentry</code></p>
-
-      <p>where <code>api_key</code> is the API key of your Zulip bot,
-      and <code>stream</code> is the stream name you want the
-      notifications sent to.</p>
-
-      <p>Next, from Sentry dashboard choose your project.</p>
-      <img class="screenshot" src="/static/images/integrations/sentry/001.png" /><br/><br/>
-      <p>From the menu on the right, choose <code>Settings</code></p>
-      <img class="screenshot" src="/static/images/integrations/sentry/002.png" /><br/>
-      <p>On the settings page, from the menu on the left, choose <code>Notifications</code><br/>
-      In the <code>Inactive Integrations</code> section, choose <code>WEBHOOKS</code></p>
-      <img class="screenshot" src="/static/images/integrations/sentry/003.png" /><br/>
-      <p>In the <code>WebHooks</code> box, insert the above webhook
-      URL into the <code>Callback URLs*</code> field.</p>
-      <img class="screenshot" src="/static/images/integrations/sentry/004.png" /><br/>
-      <p>And click <code>Save Changes</code></p>
-
-      <p><b>Congratulations! You're done!</b><br /> You will receive Zulip notifications
-      like this whenever a new Sentry alert is triggered:</p>
-
-      <img class="screenshot" src="/static/images/integrations/sentry/005.png" />
-    </div>
-
-
-    <div id="stash" class="integration-instructions">
-      <h4>Stash</h4>
-
-      <p>See what the team is committing to Stash right in Zulip with the Zulip
-      Stash plugin!</p>
-
-      <p>First, create the stream you'd like to use for Stash notifications, and
-      subscribe all interested parties to this stream. We recommend the
-      name <code>commits</code>.</p>
-
-      <p>Next, on your {{ settings_html|safe }}, create a Stash bot.</p>
-
-      <p>Then:</p>
-
-      <ol>
-        <li>
-          <p>Visit the Settings page for the Project that you'd like to generate
-          Zulip notifications. Click the "Hooks" option in the left sidebar, and
-          click "Add Hook" on the resulting page. Click the "Search for hook
-          plugins" link:</p>
-
-          <img class="screenshot" src="/static/images/integrations/stash/001.png" />
-        </li>
-        <li>
-          <p>On the search results page, look for and install the "Post-Receive
-          WebHook for Stash" plugin:</p>
-
-          <img class="screenshot" src="/static/images/integrations/stash/002.png" />
-        </li>
-        <li>
-          <p>Return to the Settings page for this Project and click the "Hooks"
-          option in the left sidebar. The newly-installed post-receive webhook
-          plugin is now listed in the "Post-receive" hooks section. Click the
-          edit icon next to the hook to configure it:</p>
-
-          <img class="screenshot" src="/static/images/integrations/stash/003.png" />
-        </li>
-        <li>
-          <p>Supply the following webhook URL, replacing the bot email address,
-          bot API key, and Zulip stream with the appropriate
-          information. <b>Note:</b> the <code>@</code>-sign in the bot e-mail
-          address must be escaped to <code>%40</code>:</p>
-
-          <p><code>{{ external_uri_scheme }}<font color="#00A26F">stash-bot%40example.com</font>:<font color="#00A26F">api_key</font>@{{ external_api_path_subdomain }}/v1/external/stash?stream=<font color="#00A26F">commits</font></code></p>
-
-          <img class="screenshot" src="/static/images/integrations/stash/004.png" />
-        </li>
-      </ol>
-
-      <p><b>Congratulations! You're done!</b><br /> When you push to Stash, the
-      team can see these updates in real time in Zulip:</p>
-
-      <img class="screenshot" src="/static/images/integrations/stash/005.png" />
-    </div>
-
-    <div id="stripe" class = "integration-instructions">
-
-      <p>
-        You can choose to be notified whenever certain events are triggered on Stripe
-        by adding a webhook to your Stripe account. First, create a stream where the events
-        are to be sent.
-      </p>
-
-      <p>Next, on your {{ settings_html|safe }}, create a Stripe bot.</p>
-
-      <p>
-        Add a webhook to your Stripe account by going to "Your account"->"Account
-        settings"->"Webhooks"->"Add Endpoint" and adding the following URL,
-        replacing the bot email address (with the <code>@</code>sign escaped to <code>%40</code>),
-        bot API key, Zulip stream, and Zulip topic with the appropriate values:
-      </p>
-
-      <p>e.g.</p>
-
-      <ul>
-        <li>sales-bot%40example.com instead of stripe-bot%40example.com</li>
-        <li>abcdef0123 instead of api_key</li>
-        <li>finance instead of sales</li>
-        <li>transactions instead of Stripe</li>
-      </ul>
-      <code>{{ external_uri_scheme }}stripe-bot%40example.com:api_key@{{ external_api_path_subdomain }}/v1/external/stripe?stream=sales%26topic=Stripe</code>
-
-      <p>
-        {%if 'http:' in external_uri_scheme %}
-        <b><font color="#FF0000">Note that Stripe will only accept https webhooks!</font></b>
-        {%endif%}
-      </p>
-
-      <img class="screenshot" src="/static/images/integrations/stripe/001.png"/>
-
-      <p>
-        To set up different topics for different events, create separate webhooks
-        for those events, customizing the URL stream and topic for each.
-      </p>
-
-      <img class="screenshot" src="/static/images/integrations/stripe/003.png"/>
-
-      <p>
-        <b>Congratulations!</b>
-      </p>
-
-      <p>
-        You will now recieve notifications for the events you have chosen.
-        Zulip currently supports the following events:
-      </p>
-
-      <ul>
-        <li>Charge Dispute Closed</li>
-        <li>Charge Dispute Created</li>
-        <li>Charge Failed</li>
-        <li>Charge Succeeded</li>
-        <li>Customer Created</li>
-        <li>Customer Deleted</li>
-        <li>Customer Subscription Created</li>
-        <li>Customer Subsciption Deleted</li>
-        <li>Customer Subscription Trial Will End</li>
-        <li>Invoice Payment Failed</li>
-        <li>Order Payment Failed</li>
-        <li>Order Payment Succeeded</li>
-        <li>Order Updated</li>
-        <li>Transfer Failed</li>
-        <li>Transfer Paid</li>
-      </ul>
-
-      <img class="screenshot" src="/static/images/integrations/stripe/002.png"/>
     </div>
 
     <div id="subversion" class="integration-instructions">
@@ -2256,136 +1062,6 @@ key = NAGIOS_BOT_API_KEY
       <img class="screenshot" src="/static/images/integrations/svn/001.png" />
     </div>
 
-    <div id="taiga" class="integration-instructions">
-
-      <p>Go on your {{ settings_html|safe }}, create a Taiga bot.
-        Please note the bot name and API key.</p>
-
-      <p>Since Taiga allows you to integrate services on a per
-        project basis, you have to perform the following steps
-        for <b>every project</b> that you want to send
-        notifications to Zulip.</p>
-
-      <ol>
-        <li>
-          <p>Go to Admin <b>></b> Integration <b>></b> Webhooks menu.</p>
-        </li>
-        <li>
-          <p>Click <b>Add a new webhook</b>.</p>
-        </li>
-        <li>
-          <p>Fill out the form by following the instructions:
-            <ul>
-              <li>
-                <b>Name</b> - to recognize this service, preferably <code>Zulip</code>
-              </li>
-              <li>
-                <b>URL</b> -
-                <pre>
-{{ external_api_uri_subdomain }}/v1/external/taiga?stream=STREAM_NAME&amp;topic=TOPIC_NAME&amp;api_key=BOT_API_KEY</pre>
-                <ul>
-                  <li><code>STREAM_NAME</code> - The url-encoded name of
-                    stream which you want to receive notifications.
-                    You can use an existing Zulip stream or create a
-                    new one for this.
-                  </li>
-                  <li><code>TOPIC_NAME</code> - The url-encoded
-                    topic where your Taiga notifications will be
-                    posted. (Read the notes below.)</li>
-                  <li><code>BOT_API_KEY</code> - API key created in Zulip.</li>
-                </ul>
-                <p>Remember to url-encode the stream and topic
-                  names.  E.g. spaces need to be replaced
-                  with <code>%20</code> (e.g. so if you want your stream
-                  to be called "My awesome project", STREAM_NAME
-                  should be <code>My%20awesome%20project</code>).</p>
-              </li>
-              <li>
-                <b>Secret key</b> - once again the API key created in Zulip.
-              </li>
-            </ul>
-          </p>
-        </li>
-        <li>
-          <p>Click <b>Save</b> once you've finished filling out the form.</p>
-        </li>
-      </ol>
-      <p>That's it! Your actions on Taiga should now cause
-        notifications on the Zulip stream you specified above.
-        <img class="screenshot"
-        src="/static/images/integrations/taiga/001.png" /> <hr />
-
-        There are <b>two different ways</b> you may want to consider
-        when organizing your Taiga - Zulip integration:</p>
-      <ul>
-        <li>
-          Use special Zulip stream for Taiga messages - name
-          it <code>Taiga</code>. (Make sure to create this stream
-          first!) For every integrated project, provide a new topic.
-          <pre>
-STREAM_NAME = Taiga
-TOPIC = Project</pre>
-        </li>
-        <li>
-          If you already have a Zulip stream for managing a project,
-          you can also use this existing stream and add Taiga
-          notifications using special topic.(Remember about
-          substituting spaces with <code>%20</code>).<pre>
-STREAM_NAME = My%20existing%20Zulip%20stream
-TOPIC = Taiga</pre>
-        </li>
-      </ul>
-
-    </div>
-
-    <div id="teamcity" class="integration-instructions">
-
-      <p>See your Teamcity build status in Zulip!</p>
-
-      <p>First, create the stream you'd like to use for Teamcity
-      notifications, and subscribe all interested parties to this stream. We
-      recommend the name <code>teamcity</code>.</p>
-
-      <p>Next, set up a bot for the integration. You'll need the bot's API key
-      to construct a URL for Teamcity.</p>
-
-      <p>Next, install the <a href="https://github.com/tcplugins/tcWebHooks/releases">tcWebHooks plugin</a>
-      onto your Teamcity server. Follow the plugin instructions in your
-      Teamcity documentation, or refer to
-      <a href="https://confluence.jetbrains.com/display/TCD9/Installing+Additional+Plugins">the online Teamcity documentation</a>.</p>
-
-      <p>Next, in your Teamcity project overview page,
-      click the "Webhooks" tab, and add a new project webhook.
-      Enter the following URL:</p>
-
-      <p><code>{{ external_api_uri_subdomain }}/v1/external/teamcity?api_key=abcdefgh&amp;stream=teamcity</code></p>
-
-      <p>where <code>api_key</code> is the API key of your Zulip bot,
-      and <code>stream</code> is the stream name you want the
-      notifications sent to.</p>
-
-      <p>Uncheck all "Trigger on Events" options, and check
-      "Trigger when build is Successful" and "Trigger when build Fails".
-      Optionally, check "Only trigger when build changes from Failure to Success"
-      and "Only trigger when build changes from Success to Failure".</p>
-
-      <p>Set the Payload Format to "JSON" and save your webhook.</p>
-
-      <img class="screenshot" src="/static/images/integrations/teamcity/001.png" />
-
-      <p><b>Congratulations! You're done!</b><br /> Your Teamcity build
-       notifications will appear in Zulip:</p>
-      <img class="screenshot" src="/static/images/integrations/teamcity/002.png" />
-
-      <p><b>Personal Builds</b><br /> When a user runs a personal build, if Zulip can
-      map their Teamcity username to a Zulip user, that Zulip user will receive a
-      private message with the result of their personal build.</p>
-      <img class="screenshot" src="/static/images/integrations/teamcity/003.png" />
-
-
-    </div>
-
-
     <div id="trac" class="integration-instructions">
 
 
@@ -2435,139 +1111,6 @@ TOPIC = Taiga</pre>
       result in a Zulip notification using
       the <code>TRAC_NOTIFY_FIELDS</code> setting
       in <code>zulip_trac_config.py</code>.</p>
-    </div>
-
-    <div id="transifex" class="integration-instructions">
-
-      <p>First, create the stream you'd like to use for Transifex
-      notifications, and subscribe all interested parties to this stream. We
-      recommend the name <code>transifex</code>.</p>
-
-      <p>Next, set up a bot for the integration. You'll need the bot's API key
-      to construct a URL for Transifex.</p>
-
-      <p><code>{{ external_api_uri_subdomain }}/v1/external/transifex?api_key=abcdefgh&amp;stream=transifex</code></p>
-
-      <p>where <code>api_key</code> is the API key of your Zulip bot,
-      and <code>stream</code> is the stream name you want the
-      notifications sent to.</p>
-
-      <p>Next, in Transifex, go to your project settings page:
-      Project Details → Manage → Edit Project and scroll down to
-      WEB HOOK URL. Paste the URL you constructed into the box and
-      save your changes.</p>
-
-      <p><b>Congratulations! You're done!</b><br />
-          Example message:
-      </p>
-
-      <img class="screenshot" src="/static/images/integrations/transifex/001.png" />
-
-    </div>
-
-    <div id="travis" class="integration-instructions">
-
-      <p>See your Travis CI build notifications in Zulip!</p>
-
-      <p>First, create the stream you'd like to use for notifications, and subscribe
-      all interested parties to this stream. We recommend the name <code>travis</code>.</p>
-
-      <p>Next, set up a bot for the integration. You'll need the bot's API key
-      to construct a URL for Travis CI.</p>
-
-      <p>Finally, set up a webhook in your <code>.travis.yml</code> file:</p>
-
-<pre>
-notifications:
-  webhooks:
-    - {{ external_api_uri_subdomain }}/v1/external/travis?stream=travis&amp;topic=build-status&amp;api_key=abcdefgh
-</pre>
-
-      <p><b>Congratulations! You're done!</b><br /> When a code build occurs,
-      you're receive a notification on the specified stream and topic.</p>
-
-      <img class="screenshot" src="/static/images/integrations/travis/001.png" />
-    </div>
-
-    <div id="trello" class="integration-instructions">
-      <p>This webhook integration for Trello is the recommended way to
-        integrate with Trello, and should support all the features of
-        the <a href="#trello-plugin">legacy Trello cron-based
-        integration</a>.</p>
-
-      <p>
-        First, create the stream you'd like to use for Trello notifications,
-        and subscribe all interested parties to this stream. We recommend the
-        name <code>trello</code>.
-      </p>
-
-      <p>
-        Your webhook URL is:<br/>
-        <code>{{ external_api_uri_subdomain }}/v1/external/trello?api_key=abcdefgh&stream=trello</code><br/>
-        where <code>api_key</code> is the API key of your Zulip bot,
-          and <code>stream</code> is the stream name you want the notifications sent to.
-      </p>
-
-      <p>
-        Before you create a webhook,
-        you'll need to follow the steps below to get an <b>APPLICATION_KEY</b>, and a <b>UserToken</b>,
-        and to fetch the board's <b>idModel</b>.
-      </p>
-
-      <p>
-        To generate the <b>APPLICATION_KEY</b>, open this URL in your web browser:<br/>
-        <code>https://trello.com/1/appkey/generate</code>.
-      </p>
-
-      <p>
-        To generate a read access token, fill in and open this URL in the browser while logged into your Trello account:
-        <code>https://trello.com/1/authorize?key=&ltAPPLICATION_KEY&gt&name=Issue+Manager&expiration=never&response_type=token&scope=read</code><br/>
-        You will receive your <b>UserToken</b>. Note it.
-      </p>
-
-      <p>
-        Within the the board URL, you can find the <b>TRELLO_BOARD_SHORT_ID</b>.
-        The Trello URL format is:<br/>
-        <code>https://trello.com/b/TRELLO_BOARD_SHORT_ID/boardName</code>.
-      </p>
-
-      <p>
-        Now you have the <b>APPLICATION_KEY</b>, <b>UserToken</b> and <b>TRELLO_BOARD_SHORT_ID</b>.<br/>
-        Construct this URL and open it in your web browser:<br/>
-        <code>https://api.trello.com/1/board/&ltTRELLO_BOARD_SHORT_ID&gt?key=&ltAPPLICATION_KEY&gt&token=&ltUserToken&gt</code><br/>
-        You'll receive some JSON. Within that, find the <b>id</b> value. That's your <b>idModel</b>; note it.
-      </p>
-
-      <p>
-        Now you have the ingredients to create your webhook.
-        Send a <code>POST</code> request to this URL with this data:
-        <code>https://api.trello.com/1/tokens/&ltUserToken&gt/webhooks/?key=&ltAPPLICATION_KEY&gt</code>
-<pre>{
-  "description": "Webhook for Zulip integration",
-  "callbackURL": "&ltURL_TO_ZULIP_WEBHOOK_FROM_SECOND_STEP&gt",
-  "idModel": "&ltID_MODEL&gt",
-}</pre>
-        You can use <code>curl</code> to do this:<br/>
-<pre>curl 'https://api.trello.com/1/tokens/&ltUserToken&gt/webhooks/?key=&ltAPPLICATION_KEY&gt'
--H 'Content-Type: application/json' -H 'Accept: application/json'
---data-binary $'{\n  "description": "Webhook for Zulip integration",\n  "callbackURL": "&ltURL_TO_ZULIP_WEBHOOK_FROM_SECOND_STEP&gt",\n  "idModel": "&ltID_MODEL&gt"\n}'
---compressed</pre>
-        The response from Trello should look like:<br/>
-<pre>{
-  "id": "&ltWEBHOOK_ID&gt",
-  "description": "Webhook for Zulip integration",
-  "idModel": "&ltID_MODEL&gt",
-  "callbackURL": "&ltURL_TO_ZULIP_WEBHOOK_FROM_SECOND_STEP&gt",
-  "active": true
-}</pre>
-        Congratulations! You've created a webhook and your integration is live.
-      </p>
-
-      <p>
-        When you make changes in on this board in Trello, you will
-        receive Zulip notifications like this:
-      </p>
-      <p><img class="screenshot" src="/static/images/integrations/trello/001.png" /></p>
     </div>
 
     <div id="trello-plugin" class="integration-instructions">
@@ -2683,206 +1226,10 @@ access_token_secret =</pre>
       in <code>/etc/zulip/settings.py</code> on the Zulip server.</p>
 
     </div>
-
-    <div id="updown" class="integration-instructions">
-
-
-      <p>See Updown reports in Zulip! This is great to be up to date with
-      downtime in the services you monitor with Updown!
-      </p>
-
-      <p>First, create the stream you'd like to use for updown
-      notifications, and subscribe all interested parties to this
-      stream. We recommend the name <code>updown</code>.</p>
-
-      <p>Go to <a href="https://updown.io/settings/edit">your Updown
-      settings page</a> and in <code>WEBHOOKS</code> section, enter
-      the following as the URL:</p>
-
-      <p><code>{{ external_api_uri_subdomain }}/v1/external/updown?api_key=abcdefgh&amp;stream=updown</code></p>
-
-
-      <p><b>Congratulations! You're done!</b><br />
-          Now you'll receive Updown notifications for your service in Zulip.
-      </p>
-
-      <img class="screenshot" src="/static/images/integrations/updown/001.png" />
-
-    </div>
-
-    <div id="yo" class="integration-instructions">
-
-      <p>See your Yo App notifications in Zulip!</p>
-
-      <p><a href="/api/#api_keys">Go to your Zulip settings and set up a Zulip bot for the
-        integration.</a> You'll need the bot's API key to construct a URL for
-        <a href="http://docs.justyo.co/docs/receiving-a-yo-with-the-api">Yo App Callback</a>.</p>
-
-      <p>You will receive your notifications as a private message between you and the bot.</p>
-
-      <p>Create a URL using your bot's API key and the email address associated with your Zulip account:</p>
-
-      <p><pre><code>
-{{ external_api_uri_subdomain }}/api/v1/external/yo?email=awesome@zulip.example.com&amp;api_key=abcdefgh
-      </code></pre></p>
-
-      <p>Copy the URL created and go to <a href="https://yoapi.justyo.co">yoapi.justyo.co</a>.</p>
-      <p>Sign in using your username and password and go to <b>Edit Profile</b>.</p>
-
-      <img class="screenshot" src="/static/images/integrations/yo-app/001.png" />
-
-      <p>Paste the URL in the <b>Callback</b> field and click on <b>Update</b>.</p>
-
-      <p><b>Congratulations! You're done!</b><br />When someone sends your username a Yo,
-      you'll receive a notification as a private message from the bot
-      like this:</p>
-
-      <img class="screenshot" src="/static/images/integrations/yo-app/002.png" />
-
-      <p>Multiple users can use the same Yo bot; each user should use
-      their own Zulip account email in the webhook URL.</p>
-    </div>
-
-    <div id="zendesk" class="integration-instructions">
-      <p>First, create the stream you'd like to use for Zendesk notifications,
-      and subscribe all interested parties to this stream. We recommend the
-      stream name <code>zendesk</code>. Keep in mind you still need to create
-      the stream first even if you are using this recommendation.</p>
-
-      <p>Next, in Zendesk, open your Admin view via gear in the bottom-left
-      corner. In the Admin view, click on Extensions, then click "add
-      target".</p>
-      <img class="screenshot" src="/static/images/integrations/zendesk/001.png" />
-      <img class="screenshot" src="/static/images/integrations/zendesk/002.png" />
-
-      <p>From there, click "URL target". Fill in the form like this:</p>
-      <ul>
-          <li><b>Title</b>: Zulip</li>
-          <li><b>URL</b>: <code>{{ external_api_uri_subdomain }}{% raw %}/v1/external/zendesk?ticket_title={{ticket.title}}&amp;ticket_id={{ticket.id}}&amp;stream=zendesk{% endraw %}</code></li>
-          <li><b>Method</b>: POST</li>
-          <li><b>Attribute Name</b>: message</li>
-          <li><b>Username</b>: <em>your bot's user name, e.g.</em> <code>zendesk-bot@yourdomain.com</code></li>
-          <li><b>Password</b>: <em>your bot's API key</em></li>
-      </ul>
-
-      <img class="screenshot" src="/static/images/integrations/zendesk/003.png" />
-
-      <p>Now select "Test Target" and click Submit. A test message should
-      appear in the zendesk stream. If the message was received, save the
-      target by selecting "Create target" and clicking Submit.</p>
-
-      <p>From here, add a new trigger. You'll do this for every action you want
-      to create a Zulip notification. Triggers are added by selecting Triggers
-      in the left menu and then clicking "add trigger" in the top right.</p>
-      <img class="screenshot" src="/static/images/integrations/zendesk/004.png" />
-      <img class="screenshot" src="/static/images/integrations/zendesk/005.png" />
-
-      <p>Let's say you want a notification each time a ticket is updated. Put
-      in a descriptive title like "Announce ticket update". Under "Meet all of
-      the folllowing conditions" select "Ticket: is..." and then select
-      Updated. In the "Perform these actions" section select "Notification:
-      Notify target" then select Zulip.</p>
-
-      <p>Next we need need to enter the message body into Message. You can use
-      Zulip markdown and the Zendesk placeholders when creating your message.
-      You can copy this example template:</p>
-      {% raw %}
-      <pre><code>Ticket [#{{ticket.id}}: {{ticket.title}}]({{ticket.link}}), was updated by {{current_user.name}}
-
-* Status: {{ticket.status}}
-* Priority: {{ticket.priority}}
-* Type: {{ticket.ticket_type}}
-* Assignee: {{ticket.assignee.name}}
-* Tags: {{ticket.tags}}
-* Description:
-``` quote
-{{ticket.description}}
-``` </code></pre>
-      {% endraw %}
-
-      <img src="/static/images/integrations/zendesk/006.png" />
-
-      <p>Finally, click Submit.</p>
-
-      <p><b>Congratulations! You're Done!</b><br /> When a ticket is updated
-      you will see a notification like the following, to the stream
-      <code>zendesk</code>, with a topic that matches the ticket's subject
-      name:</p>
-      <img class="screenshot" src="/static/images/integrations/zendesk/007.png" />
-
-      </div>
-
 </div>
-
-{% endblock %}
-
-{% block customhead %}
-{{ super() }}
-<script type="text/javascript">
-$(function() {
-    $("a.title").addClass("show-integral");
-    $("a.title").prepend($("<span class='integral'>∫</span>"));
-    $("a.title").hover(function (e) {
-                         $(".integral").css("display", "inline");
-                         var width = $(".integral").width();
-                         $("a.title").css("left", -1 * width);
-                       },
-                       function (e) {
-                         $(".integral").css("display", "none");
-                         $("a.title").css("left", 0);
-                       });
-
-    var newlozenge,
-        currentblock,
-        currentlink,
-        currentlozenge,
-        instructionbox = $("#integration-instruction-block"),
-        hashes = $('.integration-instructions').map(function() {
-                    return this.id || null;
-                 }).get();
-
-
-
-    function switchToIntegration(integrationHash) {
-      var cleanHash = integrationHash.substr(1);
-      if (hashes.indexOf(cleanHash) > -1) {
-           currentblock = $(integrationHash);
-           currentlozenge = $(".integration-lozenge.integration-" + cleanHash);
-           $(".integration-lozenges, .portico-page-header.extra, .portico-large-text.extra").hide();
-           newlozenge = currentlozenge.clone();
-           newlozenge.find(".integration-logo").unwrap();
-           newlozenge.addClass("integration-lozenge-static");
-           instructionbox.hide();
-           $("#integration-main-text").hide();
-           instructionbox.children(".integration-lozenge").remove();
-           instructionbox.children(".integration-instructions").appendTo("#integration-instructions-group");
-           instructionbox.append(newlozenge);
-           instructionbox.append(currentblock);
-           instructionbox.show();
-           $("#integration-list-link").css("display", "block");
-           window.scrollTo(0,0);
-      }
-    }
-
-    function updateHash () {
-      var hash = document.location.hash;
-      if (hash && hash != '#hubot-integrations') {
-        switchToIntegration(document.location.hash);
-      }
-      else if (currentblock && newlozenge) {
-         $("#integration-list-link").css("display", "none");
-         $(".integration-lozenges, .portico-page-header.extra, .portico-large-text.extra").show();
-         $("#integration-main-text").show();
-         instructionbox.hide();
-         newlozenge.remove();
-         currentblock.appendTo("#integration-instructions-group");
-         $('html, body').animate({scrollTop: $(hash).offset().top}, 'slow');
-      }
-    }
-
-    window.onhashchange = updateHash;
-    updateHash();
-});
-</script>
+            </div> <!-- .inner-content -->
+        </div> <!-- .padded-content -->
+    </div> <!-- .main -->
+</div> <!-- .portico-landing -->
 
 {% endblock %}

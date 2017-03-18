@@ -123,6 +123,9 @@ We also strongly recommend reviewers to go through the following resources.
   article by Sarah Sharp
 * [Zulip & Good Code Review](https://www.harihareswara.net/sumana/2016/05/17/0)
   article by Sumana Harihareswara
+* [Code Review - A consolidation of advice and stuff from the
+   sinternet](https://gist.github.com/porterjamesj/002fb27dd70df003646df46f15e898de)
+  article by James J. Porter
 * [Zulip Code of Conduct](https://zulip.readthedocs.io/en/latest/code-of-conduct.html)
 
 [code-style]: code-style.html

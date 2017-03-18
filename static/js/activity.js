@@ -26,7 +26,7 @@ function is_mobile(device) {
 
 var presence_descriptions = {
     active: 'is active',
-    idle:   'is not active'
+    idle:   'is not active',
 };
 
 /* Keep in sync with views.py:update_active_status_backend() */
@@ -73,9 +73,13 @@ function update_count_in_dom(count_span, value_span, count) {
     value_span.text(count);
 }
 
+function get_user_list_item(user_id) {
+    return $("li.user_sidebar_entry[data-user-id='" + user_id + "']");
+}
+
 function get_filter_li(user_ids_string) {
     if (name.indexOf(",") < 0) {
-        return $("li.user_sidebar_entry[data-user-id='" + user_ids_string + "']");
+        get_user_list_item(user_ids_string);
     }
     return $("li.group-pms-sidebar-entry[data-user-ids='" + user_ids_string + "']");
 }
@@ -100,21 +104,14 @@ exports.process_loaded_messages = function (messages) {
     var need_resize = false;
 
     _.each(messages, function (message) {
-        if (message.type === 'private') {
-            if (message.reply_to.indexOf(',') > 0) {
-                var user_ids_string = people.emails_strings_to_user_ids_string(
-                    message.reply_to);
+        var huddle_string = people.huddle_string(message);
 
-                if (!user_ids_string) {
-                    blueslip.warn('Bad reply_to for huddle: ' + message.reply_to);
-                }
+        if (huddle_string) {
+            var old_timestamp = huddle_timestamps.get(huddle_string);
 
-                var old_timestamp = huddle_timestamps.get(user_ids_string);
-
-                if (!old_timestamp || (old_timestamp < message.timestamp)) {
-                    huddle_timestamps.set(user_ids_string, message.timestamp);
-                    need_resize = true;
-                }
+            if (!old_timestamp || (old_timestamp < message.timestamp)) {
+                huddle_timestamps.set(huddle_string, message.timestamp);
+                need_resize = true;
             }
         }
     });
@@ -167,7 +164,8 @@ exports.short_huddle_name = function (huddle) {
     return names.join(', ');
 };
 
-exports.huddle_fraction_present = function (huddle, presence_info) {
+exports.huddle_fraction_present = function (huddle) {
+    var presence_info = exports.presence_info;
     var user_ids = huddle.split(',');
 
     var num_present = 0;
@@ -185,33 +183,40 @@ exports.huddle_fraction_present = function (huddle, presence_info) {
     return ratio.toFixed(2);
 };
 
-function sort_users(user_ids, presence_info) {
+function compare_function(a, b) {
+    var presence_info = exports.presence_info;
+
+    function level(status) {
+        switch (status) {
+            case 'active':
+                return 1;
+            case 'idle':
+                return 2;
+            default:
+                return 3;
+        }
+    }
+
+    var level_a = level(presence_info[a].status);
+    var level_b = level(presence_info[b].status);
+    var diff = level_a - level_b;
+    if (diff !== 0) {
+        return diff;
+    }
+
+    // Sort equivalent PM names alphabetically
+    var person_a = people.get_person_from_user_id(a);
+    var person_b = people.get_person_from_user_id(b);
+
+    var full_name_a = person_a ? person_a.full_name : '';
+    var full_name_b = person_b ? person_b.full_name : '';
+
+    return util.strcmp(full_name_a, full_name_b);
+}
+
+function sort_users(user_ids) {
     // TODO sort by unread count first, once we support that
-    user_ids.sort(function (a, b) {
-        if (presence_info[a].status === 'active' && presence_info[b].status !== 'active') {
-            return -1;
-        } else if (presence_info[b].status === 'active' && presence_info[a].status !== 'active') {
-            return 1;
-        }
-
-        if (presence_info[a].status === 'idle' && presence_info[b].status !== 'idle') {
-            return -1;
-        } else if (presence_info[b].status === 'idle' && presence_info[a].status !== 'idle') {
-            return 1;
-        }
-
-        // Sort equivalent PM names alphabetically
-        var full_name_a = a;
-        var full_name_b = b;
-        if (people.get_person_from_user_id(a)) {
-            full_name_a = people.get_person_from_user_id(a).full_name;
-        }
-        if (people.get_person_from_user_id(b)) {
-            full_name_b = people.get_person_from_user_id(b).full_name;
-        }
-        return util.strcmp(full_name_a, full_name_b);
-    });
-
+    user_ids.sort(compare_function);
     return user_ids;
 }
 
@@ -219,10 +224,9 @@ function sort_users(user_ids, presence_info) {
 exports._sort_users = sort_users;
 
 function focus_lost() {
-    if (!exports.has_focus) {
-        return false;
-    }
-
+    // When we become idle, we don't immediately send anything to the
+    // server; instead, we wait for our next periodic update, since
+    // this data is fundamentally not timely.
     exports.has_focus = false;
 }
 
@@ -250,95 +254,119 @@ function filter_user_ids(user_ids) {
         return people.get_person_from_user_id(user_id);
     });
 
-    var email_dict = people.filter_people_by_search_terms(persons, search_terms);
-    user_ids = _.map(_.keys(email_dict), function (email) {
-        return people.get_user_id(email);
-    });
-    return user_ids;
+    var user_id_dict = people.filter_people_by_search_terms(persons, search_terms);
+    return user_id_dict.keys();
+}
+
+function matches_filter(user_id) {
+    // This is a roundabout way of checking a user if you look
+    // too hard at it, but it should be fine for now.
+    return (filter_user_ids([user_id]).length === 1);
 }
 
 function filter_and_sort(users) {
     var user_ids = Object.keys(users);
     user_ids = filter_user_ids(user_ids);
-    user_ids = sort_users(user_ids, exports.presence_info);
+    user_ids = sort_users(user_ids);
     return user_ids;
 }
 
 exports._filter_and_sort = filter_and_sort;
 
-exports.update_users = function (user_list) {
-    if (page_params.presence_disabled) {
+function get_num_unread(user_id) {
+    if (unread.suppress_unread_counts) {
+        return 0;
+    }
+    return unread.num_unread_for_person(user_id);
+}
+
+function info_for(user_id) {
+    var presence = exports.presence_info[user_id].status;
+    var person = people.get_person_from_user_id(user_id);
+    return {
+        href: narrow.pm_with_uri(person.email),
+        name: person.full_name,
+        user_id: user_id,
+        num_unread: get_num_unread(user_id),
+        type: presence,
+        type_desc: presence_descriptions[presence],
+        mobile: exports.presence_info[user_id].mobile,
+    };
+}
+
+exports.insert_user_into_list = function (user_id) {
+    if (page_params.realm_presence_disabled) {
+        return;
+    }
+
+    if (!matches_filter(user_id)) {
+        return;
+    }
+
+    var info = info_for(user_id);
+    $('#user_presences').find('[data-user-id="' + user_id + '"]').remove();
+    var html = templates.render('user_presence_row', info);
+
+    var items = $('#user_presences li').toArray();
+
+    function insert() {
+        var i = 0;
+
+        for (i = 0; i < items.length; i += 1) {
+            var li = $(items[i]);
+            var list_user_id = li.attr('data-user-id');
+            if (compare_function(user_id, list_user_id) < 0) {
+                li.before(html);
+                return;
+            }
+        }
+
+        $('#user_presences').append(html);
+    }
+
+    insert();
+
+    var elt = get_user_list_item(user_id);
+    compose_fade.update_one_user_row(elt);
+};
+
+exports.build_user_sidebar = function () {
+    if (page_params.realm_presence_disabled) {
         return;
     }
 
     var users = exports.presence_info;
-    var all_users;
-    if (user_list !== undefined) {
-        all_users = filter_and_sort(users);
-        users = user_list;
-    }
     users = filter_and_sort(users);
 
-    function get_num_unread(user_id) {
-        if (unread.suppress_unread_counts) {
-            return 0;
-        }
-        return unread.num_unread_for_person(user_id);
-    }
-
-    // Note that we do not include ourselves in the user list any more.
-    // If you want to figure out how to get details for "me", then revert
-    // the commit that added this comment.
-
-    function info_for(user_id) {
-        var presence = exports.presence_info[user_id].status;
-        var person = people.get_person_from_user_id(user_id);
-        return {
-            name: person.full_name,
-            user_id: user_id,
-            num_unread: get_num_unread(user_id),
-            type: presence,
-            type_desc: presence_descriptions[presence],
-            mobile: exports.presence_info[user_id].mobile
-        };
-    }
-
     var user_info = _.map(users, info_for);
-    if (user_list !== undefined) {
-        // Render right panel partially
-        _.each(user_info, function (user) {
-            var user_index = all_users.indexOf(user.user_id);
-            $('#user_presences').find('[data-user-id="' + user.user_id + '"]').remove();
-            $('#user_presences li').eq(user_index).before(templates.render('user_presence_row', user));
-        });
-    } else {
-        $('#user_presences').html(templates.render('user_presence_rows', {users: user_info}));
-    }
+    var html = templates.render('user_presence_rows', {users: user_info});
+    $('#user_presences').html(html);
 
     // Update user fading, if necessary.
     compose_fade.update_faded_users();
 
-    // Return updated users: useful for testing user performance fix
-    return user_info;
+    resize.resize_page_components();
+
+    return user_info; // for testing
 };
 
 function actually_update_users_for_search() {
-    exports.update_users();
+    exports.build_user_sidebar();
     resize.resize_page_components();
 }
 
 var update_users_for_search = _.throttle(actually_update_users_for_search, 50);
 
 function show_huddles() {
-    $('#group-pm-list').expectOne().show();
+    $('#group-pm-list').addClass("show");
 }
 
 function hide_huddles() {
-    $('#group-pm-list').expectOne().hide();
+    $('#group-pm-list').removeClass("show");
 }
 
 exports.update_huddles = function () {
-    if (page_params.presence_disabled) {
+    if (page_params.realm_presence_disabled) {
         return;
     }
 
@@ -353,8 +381,9 @@ exports.update_huddles = function () {
         return {
             user_ids_string: huddle,
             name: exports.full_huddle_name(huddle),
-            fraction_present: exports.huddle_fraction_present(huddle, exports.presence_info),
-            short_name: exports.short_huddle_name(huddle)
+            href: narrow.huddle_with_uri(huddle),
+            fraction_present: exports.huddle_fraction_present(huddle),
+            short_name: exports.short_huddle_name(huddle),
         };
     });
 
@@ -409,14 +438,13 @@ function status_from_timestamp(baseline_time, presence) {
 // For testing
 exports._status_from_timestamp = status_from_timestamp;
 
-function focus_ping() {
+function focus_ping(want_redraw) {
     channel.post({
         url: '/json/users/me/presence',
         data: {status: (exports.has_focus) ? exports.ACTIVE : exports.IDLE,
                new_user_input: exports.new_user_input},
         idempotent: true,
         success: function (data) {
-            exports.presence_info = {};
 
             // Update Zephyr mirror activity warning
             if (data.zephyr_mirror_active === false) {
@@ -427,28 +455,22 @@ function focus_ping() {
 
             exports.new_user_input = false;
 
-            // Ping returns the active peer list
-            _.each(data.presences, function (presence, this_email) {
-                if (!util.is_current_user(this_email)) {
-                    var user_id = people.get_user_id(this_email);
-                    if (user_id) {
-                        var status = status_from_timestamp(data.server_timestamp,
-                                                           presence);
-                        exports.presence_info[user_id] = status;
-                    }
-                }
-            });
-            exports.update_users();
-            exports.update_huddles();
-        }
+            // TODO: If want_redraw is false, we should have the server
+            // not send us any presences data.  But avoiding the redraw
+            // helps.
+            if (want_redraw) {
+                exports.set_presence_info(data.presences, data.server_timestamp);
+                exports.build_user_sidebar();
+                exports.update_huddles();
+            }
+        },
     });
 }
 
 function focus_gained() {
     if (!exports.has_focus) {
         exports.has_focus = true;
-
-        focus_ping();
+        focus_ping(false);
     }
 }
 
@@ -459,46 +481,71 @@ exports.initialize = function () {
                 onActive: focus_gained,
                 keepTracking: true});
 
-    setInterval(focus_ping, ACTIVE_PING_INTERVAL_MS);
-
-    focus_ping();
-
-    activity.set_user_statuses(page_params.initial_presences,
+    activity.set_presence_info(page_params.initial_presences,
                                page_params.initial_servertime);
+    exports.build_user_sidebar();
+    exports.update_huddles();
+
+    // Let the server know we're here, but pass "false" for
+    // want_redraw, since we just got all this info in page_params.
+    focus_ping(false);
+
+    function get_full_presence_list_update() {
+        focus_ping(true);
+    }
+
+    setInterval(get_full_presence_list_update, ACTIVE_PING_INTERVAL_MS);
 };
 
-// Set user statuses. `users` should be an object with user emails as keys
-// and presence information (see `status_from_timestamp`) as values.
-//
-// The object does not need to include every user, only the ones
-// whose presence you wish to update.
-//
-// This rerenders the user sidebar at the end, which can be slow if done too
-// often, so try to avoid calling this repeatedly.
-exports.set_user_statuses = function (users, server_time) {
-    var updated_users = {};
-    var status;
-    _.each(users, function (presence, email) {
-        if (util.is_current_user(email)) {
-            return;
-        }
-        status = status_from_timestamp(server_time, presence);
-        var user_id = people.get_user_id(email);
-        if (user_id) {
-            exports.presence_info[user_id] = status;
-            updated_users[user_id] = status;
-        } else {
-            blueslip.warn('unknown email: ' + email);
+exports.set_user_status = function (email, presence, server_time) {
+    if (people.is_current_user(email)) {
+        return;
+    }
+    var user_id = people.get_user_id(email);
+    if (user_id) {
+        var status = status_from_timestamp(server_time, presence);
+        exports.presence_info[user_id] = status;
+        exports.insert_user_into_list(user_id);
+    } else {
+        blueslip.warn('unknown email: ' + email);
+    }
+
+    exports.update_huddles();
+};
+
+exports.set_presence_info = function (presences, server_timestamp) {
+    exports.presence_info = {};
+    _.each(presences, function (presence, this_email) {
+        if (!people.is_current_user(this_email)) {
+            var user_id = people.get_user_id(this_email);
+            if (user_id) {
+                var status = status_from_timestamp(server_timestamp,
+                                                   presence);
+                exports.presence_info[user_id] = status;
+            }
         }
     });
+};
 
-    exports.update_users(updated_users);
+exports.redraw = function () {
+    exports.build_user_sidebar();
     exports.update_huddles();
 };
 
 exports.searching = function () {
     return $('.user-list-filter').expectOne().is(':focus');
 };
+
+function update_clear_search_button() {
+    var focused = $('.user-list-filter').is(':focus');
+
+    // Show button iff the search input is focused, or has non-empty contents
+    if (focused || $('.user-list-filter').val()) {
+        $('#clear_search_people_button').removeAttr('disabled');
+    } else {
+        $('#clear_search_people_button').attr('disabled', 'disabled');
+    }
+}
 
 exports.escape_search = function () {
     var filter = $('.user-list-filter').expectOne();
@@ -507,6 +554,7 @@ exports.escape_search = function () {
         return;
     }
     filter.val('');
+    update_clear_search_button();
     update_users_for_search();
 };
 
@@ -517,6 +565,14 @@ exports.initiate_search = function () {
 
 exports.blur_search = function () {
     $('.user-list-filter').blur();
+    update_clear_search_button();
+};
+
+exports.clear_search = function () {
+    $('.user-list-filter').val('');
+    $('.user-list-filter').blur();
+    update_clear_search_button();
+    update_users_for_search();
 };
 
 function maybe_select_person(e) {
@@ -532,6 +588,7 @@ function maybe_select_person(e) {
         if ((topPerson !== undefined) && (search_term !== '')) {
             // undefined if there are no results
             var email = people.get_person_from_user_id(topPerson).email;
+            narrow.by('pm-with', email, {select_first_unread: true, trigger: 'user sidebar'});
             compose.start('private',
                     {trigger: 'sidebar enter key', private_message_recipient: email});
         }
@@ -542,13 +599,16 @@ function maybe_select_person(e) {
 
 function focus_user_filter(e) {
     e.stopPropagation();
+    update_clear_search_button();
 }
 
 $(function () {
     $(".user-list-filter").expectOne()
         .on('click', focus_user_filter)
         .on('input', update_users_for_search)
-        .on('keydown', maybe_select_person);
+        .on('keydown', maybe_select_person)
+        .on('blur', update_clear_search_button);
+    $('#clear_search_people_button').on('click', exports.clear_search);
 });
 
 

@@ -73,14 +73,14 @@ var stream_color_palette = [
     ['a47462', 'c2726a', 'e4523d', 'e7664d', 'ee7e4a', 'f4ae55'],
     ['76ce90', '53a063', '94c849', 'bfd56f', 'fae589', 'f5ce6e'],
     ['a6dcbf', 'addfe5', 'a6c7e5', '4f8de4', '95a5fd', 'b0a5fd'],
-    ['c2c2c2', 'c8bebf', 'c6a8ad', 'e79ab5', 'bd86e5', '9987e1']
+    ['c2c2c2', 'c8bebf', 'c6a8ad', 'e79ab5', 'bd86e5', '9987e1'],
 ];
 
 var subscriptions_table_colorpicker_options = {
     clickoutFiresChange: true,
     showPalette: true,
     showInput: true,
-    palette: stream_color_palette
+    palette: stream_color_palette,
 };
 
 exports.set_colorpicker_color = function (colorpicker, color) {
@@ -88,7 +88,7 @@ exports.set_colorpicker_color = function (colorpicker, color) {
                          {color: color, container: "#subscription_overlay .subscription_settings.show"}));
 };
 
-exports.update_stream_color = function (sub, stream_name, color, opts) {
+exports.update_stream_color = function (sub, color, opts) {
     opts = _.defaults({}, opts, {update_historical: false});
     sub.color = color;
     var id = parseInt(sub.stream_id, 10);
@@ -99,7 +99,7 @@ exports.update_stream_color = function (sub, stream_name, color, opts) {
     $("#subscription_overlay .subscription_settings[data-stream-id='" + id + "'] .large-icon").css("color", color);
 
     if (opts.update_historical) {
-        update_historical_message_color(stream_name, color);
+        update_historical_message_color(sub.name, color);
     }
     update_stream_sidebar_swatch_color(id, color);
     tab_bar.colorize_tab_bar();
@@ -119,7 +119,7 @@ exports.sidebar_popover_colorpicker_options = {
     showInput: true,
     flat: true,
     palette: stream_color_palette,
-    change: picker_do_change_color
+    change: picker_do_change_color,
 };
 
 exports.sidebar_popover_colorpicker_options_full = {
@@ -130,7 +130,7 @@ exports.sidebar_popover_colorpicker_options_full = {
     cancelText: "",
     chooseText: "choose",
     palette: stream_color_palette,
-    change: picker_do_change_color
+    change: picker_do_change_color,
 };
 
 var lightness_threshold;

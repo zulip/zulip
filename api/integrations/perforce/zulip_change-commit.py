@@ -23,7 +23,7 @@
 '''Zulip notification change-commit hook.
 
 In Perforce, The "change-commit" trigger is fired after a metadata has been
-created, files have been transferred, and the changelist comitted to the depot
+created, files have been transferred, and the changelist committed to the depot
 database.
 
 This specific trigger expects command-line arguments in the form:

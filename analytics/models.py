@@ -3,7 +3,7 @@ from django.utils import timezone
 
 from zerver.models import Realm, UserProfile, Stream, Recipient
 from zerver.lib.str_utils import ModelReprMixin
-from zerver.lib.timestamp import datetime_to_UTC, floor_to_day
+from zerver.lib.timestamp import floor_to_day
 
 import datetime
 
@@ -24,19 +24,21 @@ class FillState(ModelReprMixin, models.Model):
         # type: () -> Text
         return u"<FillState: %s %s %s>" % (self.property, self.end_time, self.state)
 
-def get_fill_state(property):
-    # type: (Text) -> Optional[Dict[str, Any]]
-    try:
-        return FillState.objects.filter(property = property).values('end_time', 'state')[0]
-    except IndexError:
-        return None
-
 # The earliest/starting end_time in FillState
 # We assume there is at least one realm
 def installation_epoch():
     # type: () -> datetime.datetime
     earliest_realm_creation = Realm.objects.aggregate(models.Min('date_created'))['date_created__min']
-    return floor_to_day(datetime_to_UTC(earliest_realm_creation))
+    return floor_to_day(earliest_realm_creation)
+
+def last_successful_fill(property):
+    # type: (str) -> Optional[datetime.datetime]
+    fillstate = FillState.objects.filter(property=property).first()
+    if fillstate is None:
+        return None
+    if fillstate.state == FillState.DONE:
+        return fillstate.end_time
+    return fillstate.end_time - datetime.timedelta(hours=1)
 
 # would only ever make entries here by hand
 class Anomaly(ModelReprMixin, models.Model):
@@ -53,37 +55,16 @@ class BaseCount(ModelReprMixin, models.Model):
     property = models.CharField(max_length=32) # type: Text
     subgroup = models.CharField(max_length=16, null=True) # type: Text
     end_time = models.DateTimeField() # type: datetime.datetime
-    interval = models.CharField(max_length=8) # type: Text
     value = models.BigIntegerField() # type: int
     anomaly = models.ForeignKey(Anomaly, null=True) # type: Optional[Anomaly]
 
     class Meta(object):
         abstract = True
 
-    @staticmethod
-    def extended_id():
-        # type: () -> Tuple[str, ...]
-        raise NotImplementedError
-
-    @staticmethod
-    def key_model():
-        # type: () -> models.Model
-        raise NotImplementedError
-
 class InstallationCount(BaseCount):
 
     class Meta(object):
-        unique_together = ("property", "subgroup", "end_time", "interval")
-
-    @staticmethod
-    def extended_id():
-        # type: () -> Tuple[str, ...]
-        return ()
-
-    @staticmethod
-    def key_model():
-        # type: () -> models.Model
-        return None
+        unique_together = ("property", "subgroup", "end_time")
 
     def __unicode__(self):
         # type: () -> Text
@@ -93,17 +74,8 @@ class RealmCount(BaseCount):
     realm = models.ForeignKey(Realm)
 
     class Meta(object):
-        unique_together = ("realm", "property", "subgroup", "end_time", "interval")
-
-    @staticmethod
-    def extended_id():
-        # type: () -> Tuple[str, ...]
-        return ('realm_id',)
-
-    @staticmethod
-    def key_model():
-        # type: () -> models.Model
-        return Realm
+        unique_together = ("realm", "property", "subgroup", "end_time")
+        index_together = ["property", "end_time"]
 
     def __unicode__(self):
         # type: () -> Text
@@ -114,17 +86,10 @@ class UserCount(BaseCount):
     realm = models.ForeignKey(Realm)
 
     class Meta(object):
-        unique_together = ("user", "property", "subgroup", "end_time", "interval")
-
-    @staticmethod
-    def extended_id():
-        # type: () -> Tuple[str, ...]
-        return ('user_id', 'realm_id')
-
-    @staticmethod
-    def key_model():
-        # type: () -> models.Model
-        return UserProfile
+        unique_together = ("user", "property", "subgroup", "end_time")
+        # This index dramatically improves the performance of
+        # aggregating from users to realms
+        index_together = ["property", "realm", "end_time"]
 
     def __unicode__(self):
         # type: () -> Text
@@ -135,17 +100,10 @@ class StreamCount(BaseCount):
     realm = models.ForeignKey(Realm)
 
     class Meta(object):
-        unique_together = ("stream", "property", "subgroup", "end_time", "interval")
-
-    @staticmethod
-    def extended_id():
-        # type: () -> Tuple[str, ...]
-        return ('stream_id', 'realm_id')
-
-    @staticmethod
-    def key_model():
-        # type: () -> models.Model
-        return Stream
+        unique_together = ("stream", "property", "subgroup", "end_time")
+        # This index dramatically improves the performance of
+        # aggregating from streams to realms
+        index_together = ["property", "realm", "end_time"]
 
     def __unicode__(self):
         # type: () -> Text

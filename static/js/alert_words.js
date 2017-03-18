@@ -40,7 +40,7 @@ exports.process_message = function (message) {
 };
 
 exports.notifies = function (message) {
-    return !util.is_current_user(message.sender_email) && message.alerted;
+    return !people.is_current_user(message.sender_email) && message.alerted;
 };
 
 return exports;

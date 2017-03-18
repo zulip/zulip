@@ -14,37 +14,62 @@ exports.get = function get(message_id) {
     return stored_messages[message_id];
 };
 
-exports.get_private_message_recipient = function (message, attr, fallback_attr) {
+exports.get_pm_emails = function (message) {
     var recipient;
     var i;
     var other_recipients = _.filter(message.display_recipient,
                                   function (element) {
-                                      return !util.is_current_user(element.email);
+                                      return !people.is_current_user(element.email);
                                   });
     if (other_recipients.length === 0) {
         // private message with oneself
-        return message.display_recipient[0][attr];
+        return message.display_recipient[0].email;
     }
 
-    recipient = other_recipients[0][attr];
-    if (recipient === undefined && fallback_attr !== undefined) {
-        recipient = other_recipients[0][fallback_attr];
-    }
+    recipient = other_recipients[0].email;
+
     for (i = 1; i < other_recipients.length; i += 1) {
-        var attr_value = other_recipients[i][attr];
-        if (attr_value === undefined && fallback_attr !== undefined) {
-            attr_value = other_recipients[i][fallback_attr];
-        }
-        recipient += ', ' + attr_value;
+        var email = other_recipients[i].email;
+        recipient += ', ' + email;
     }
     return recipient;
 };
 
-exports.process_message_for_recent_private_messages =
-    function process_message_for_recent_private_messages(message) {
+exports.get_pm_full_names = function (message) {
+    function name(recip) {
+        if (recip.id) {
+            var person = people.get_person_from_user_id(recip.id);
+            if (person) {
+                return person.full_name;
+            }
+        }
+        return recip.full_name;
+    }
+
+    var other_recipients = _.filter(message.display_recipient,
+                                  function (element) {
+                                      return !people.is_current_user(element.email);
+                                  });
+
+    if (other_recipients.length === 0) {
+        // private message with oneself
+        return name(message.display_recipient[0]);
+    }
+
+    var names = _.map(other_recipients, name).sort();
+
+    return names.join(', ');
+};
+
+exports.process_message_for_recent_private_messages = function (message) {
     var current_timestamp = 0;
 
-    var user_ids_string = people.emails_strings_to_user_ids_string(message.reply_to);
+    var user_ids = people.pm_with_user_ids(message);
+    if (!user_ids) {
+        return;
+    }
+
+    var user_ids_string = user_ids.join(',');
 
     if (!user_ids_string) {
         blueslip.warn('Unknown reply_to in message: ' + user_ids_string);
@@ -59,7 +84,6 @@ exports.process_message_for_recent_private_messages =
     });
 
     var new_conversation = {user_ids_string: user_ids_string,
-                            display_reply_to: message.display_reply_to,
                             timestamp: Math.max(message.timestamp, current_timestamp)};
 
     exports.recent_private_messages.push(new_conversation);
@@ -96,7 +120,7 @@ function add_message_metadata(message) {
         return cached_msg;
     }
 
-    message.sent_by_me = util.is_current_user(message.sender_email);
+    message.sent_by_me = people.is_current_user(message.sender_email);
 
     message.flags = message.flags || [];
     message.historical = (message.flags !== undefined &&
@@ -110,6 +134,12 @@ function add_message_metadata(message) {
     message.is_me_message = message.flags.indexOf("is_me_message") !== -1;
 
     people.extract_people_from_message(message);
+
+    var sender = people.get_person_from_user_id(message.sender_id);
+    if (sender) {
+        message.sender_full_name = sender.full_name;
+        message.sender_email = sender.email;
+    }
 
     switch (message.type) {
     case 'stream':
@@ -125,8 +155,11 @@ function add_message_metadata(message) {
     case 'private':
         message.is_private = true;
         message.reply_to = util.normalize_recipients(
-                exports.get_private_message_recipient(message, 'email'));
-        message.display_reply_to = exports.get_private_message_recipient(message, 'full_name', 'email');
+                exports.get_pm_emails(message));
+        message.display_reply_to = exports.get_pm_full_names(message);
+        message.pm_with_url = people.pm_with_url(message);
+        message.to_user_ids = people.emails_strings_to_user_ids_string(
+                message.reply_to);
 
         exports.process_message_for_recent_private_messages(message);
         break;
@@ -161,7 +194,7 @@ exports.add_messages = function add_messages(messages, msg_list, opts) {
     }
 };
 
-function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
+function maybe_add_narrowed_messages(messages, msg_list, messages_are_new, local_id) {
     var ids = [];
     _.each(messages, function (elem) {
         ids.push(elem.id);
@@ -193,8 +226,8 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
 
             new_messages = _.map(new_messages, add_message_metadata);
             exports.add_messages(new_messages, msg_list, {messages_are_new: messages_are_new});
-            unread.process_visible();
-            notifications.possibly_notify_new_messages_outside_viewport(new_messages);
+            unread_ui.process_visible();
+            notifications.possibly_notify_new_messages_outside_viewport(new_messages, local_id);
             notifications.notify_messages_outside_current_search(elsewhere_messages);
         },
         error: function () {
@@ -203,7 +236,7 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
                 if (msg_list === current_msg_list) {
                     // Don't actually try again if we unnarrowed
                     // while waiting
-                    maybe_add_narrowed_messages(messages, msg_list, messages_are_new);
+                    maybe_add_narrowed_messages(messages, msg_list, messages_are_new, local_id);
                 }
             }, 5000);
         }});
@@ -267,7 +300,7 @@ exports.update_messages = function update_messages(events) {
                             var operators = new_filter.operators();
                             var opts = {
                                 trigger: 'topic change',
-                                then_select_id: current_id
+                                then_select_id: current_id,
                             };
                             narrow.activate(operators, opts);
                             changed_narrow = true;
@@ -298,6 +331,25 @@ exports.update_messages = function update_messages(events) {
             });
         }
 
+        if (event.orig_content !== undefined) {
+            // Most correctly, we should do this for topic edits as
+            // well; but we don't use the data except for content
+            // edits anyway.
+            var edit_history_entry = {
+                edited_by: event.edited_by,
+                prev_content: event.orig_content,
+                prev_rendered_content: event.orig_rendered_content,
+                prev_rendered_content_version: event.prev_rendered_content_version,
+                timestamp: event.edit_timestamp,
+            };
+            // Add message's edit_history in message dict
+            // For messages that are edited, edit_history needs to be added to message in frontend.
+            if (msg.edit_history === undefined) {
+                msg.edit_history = [];
+            }
+            msg.edit_history = [edit_history_entry].concat(msg.edit_history);
+        }
+
         msg.last_edit_timestamp = event.edit_timestamp;
         delete msg.last_edit_timestr;
 
@@ -321,7 +373,7 @@ exports.update_messages = function update_messages(events) {
             message_list.narrowed.view.rerender_messages(msgs_to_rerender);
         }
     }
-    unread.update_unread_counts();
+    unread_ui.update_unread_counts();
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
 };
@@ -330,11 +382,11 @@ exports.update_messages = function update_messages(events) {
 // This function could probably benefit from some refactoring
 exports.do_unread_count_updates = function do_unread_count_updates(messages) {
     unread.process_loaded_messages(messages);
-    unread.update_unread_counts();
+    unread_ui.update_unread_counts();
     resize.resize_page_components();
 };
 
-exports.insert_new_messages = function insert_new_messages(messages) {
+exports.insert_new_messages = function insert_new_messages(messages, local_id) {
     messages = _.map(messages, add_message_metadata);
 
     // You must add add messages to home_msg_list BEFORE
@@ -345,13 +397,13 @@ exports.insert_new_messages = function insert_new_messages(messages) {
     if (narrow.active()) {
         if (narrow.filter().can_apply_locally()) {
             exports.add_messages(messages, message_list.narrowed, {messages_are_new: true});
-            notifications.possibly_notify_new_messages_outside_viewport(messages);
+            notifications.possibly_notify_new_messages_outside_viewport(messages, local_id);
         } else {
             // if we cannot apply locally, we have to wait for this callback to happen to notify
-            maybe_add_narrowed_messages(messages, message_list.narrowed, true);
+            maybe_add_narrowed_messages(messages, message_list.narrowed, true, local_id);
         }
     } else {
-        notifications.possibly_notify_new_messages_outside_viewport(messages);
+        notifications.possibly_notify_new_messages_outside_viewport(messages, local_id);
     }
 
     activity.process_loaded_messages(messages);
@@ -380,7 +432,7 @@ exports.insert_new_messages = function insert_new_messages(messages) {
         }
     }
 
-    unread.process_visible();
+    unread_ui.process_visible();
     notifications.received_messages(messages);
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
@@ -496,7 +548,7 @@ exports.load_old_messages = function load_old_messages(opts) {
             setTimeout(function () {
                 exports.load_old_messages(opts);
             }, 5000);
-        }
+        },
     });
 };
 
@@ -529,7 +581,7 @@ exports.load_more_messages = function load_more_messages(msg_list) {
             if (messages.length >= batch_size) {
                 load_more_enabled = true;
             }
-        }
+        },
     });
 };
 
@@ -561,7 +613,7 @@ util.execute_early(function () {
                     num_before: 0,
                     num_after: 400,
                     msg_list: home_msg_list,
-                    cont: load_more
+                    cont: load_more,
                 });
                 return;
             }
@@ -578,7 +630,7 @@ util.execute_early(function () {
                                   anchor: first_id,
                                   num_before: backfill_batch_size,
                                   num_after: 0,
-                                  msg_list: home_msg_list
+                                  msg_list: home_msg_list,
                               });
                           }});
     }
@@ -589,7 +641,7 @@ util.execute_early(function () {
             num_before: 200,
             num_after: 200,
             msg_list: home_msg_list,
-            cont: load_more
+            cont: load_more,
         });
     } else {
         server_events.home_view_loaded();

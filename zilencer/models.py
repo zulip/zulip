@@ -1,12 +1,12 @@
 from django.db import models
 from django.db.models import Manager
-from typing import Text
+from typing import Dict, Text
 
 import zerver.models
 
-def get_deployment_by_domain(domain):
+def get_deployment_by_domain(realm_str):
     # type: (Text) -> Deployment
-    return Deployment.objects.get(realms__domain=domain)
+    return Deployment.objects.get(realms__string_id=realm_str)
 
 class Deployment(models.Model):
     realms = models.ManyToManyField(zerver.models.Realm,

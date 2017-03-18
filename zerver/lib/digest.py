@@ -1,8 +1,9 @@
 from __future__ import absolute_import
-from typing import Any, Callable, Iterable, Tuple, Text
+from typing import Any, Callable, Dict, Iterable, List, Set, Tuple, Text
 
 from collections import defaultdict
 import datetime
+import pytz
 import six
 
 from django.db.models import Q, QuerySet
@@ -88,13 +89,13 @@ def gather_hot_conversations(user_profile, stream_messages):
         # We'll display up to 2 messages from the conversation.
         first_few_messages = [user_message.message for user_message in
                               stream_messages.filter(
-                                message__recipient__type_id=stream_id,
-                                message__subject=subject)[:2]]
+                                  message__recipient__type_id=stream_id,
+                                  message__subject=subject)[:2]]
 
         teaser_data = {"participants": users,
                        "count": count - len(first_few_messages),
                        "first_few_messages": build_message_list(
-                        user_profile, first_few_messages)}
+                           user_profile, first_few_messages)}
 
         hot_conversation_render_payloads.append(teaser_data)
     return hot_conversation_render_payloads
@@ -107,8 +108,8 @@ def gather_new_users(user_profile, threshold):
         new_users = [] # type: List[UserProfile]
     else:
         new_users = list(UserProfile.objects.filter(
-                realm=user_profile.realm, date_joined__gt=threshold,
-                is_bot=False))
+            realm=user_profile.realm, date_joined__gt=threshold,
+            is_bot=False))
     user_names = [user.full_name for user in new_users]
 
     return len(user_names), user_names
@@ -119,9 +120,9 @@ def gather_new_streams(user_profile, threshold):
         new_streams = [] # type: List[Stream]
     else:
         new_streams = list(get_active_streams(user_profile.realm).filter(
-                invite_only=False, date_created__gt=threshold))
+            invite_only=False, date_created__gt=threshold))
 
-    base_url = u"https://%s/#narrow/stream/" % (settings.EXTERNAL_HOST,)
+    base_url = u"%s/#narrow/stream/" % (user_profile.realm.uri,)
 
     streams_html = []
     streams_plain = []
@@ -145,10 +146,9 @@ def enough_traffic(unread_pms, hot_conversations, new_streams, new_users):
         return True
     return False
 
-def send_digest_email(user_profile, html_content, text_content):
-    # type: (UserProfile, Text, Text) -> None
+def send_digest_email(user_profile, subject, html_content, text_content):
+    # type: (UserProfile, Text, Text, Text) -> None
     recipients = [{'email': user_profile.email, 'name': user_profile.full_name}]
-    subject = "While you've been gone - Zulip"
     sender = {'email': settings.NOREPLY_EMAIL_ADDRESS, 'name': 'Zulip'}
 
     # Send now, through Mandrill.
@@ -160,7 +160,7 @@ def handle_digest_email(user_profile_id, cutoff):
     # type: (int, float) -> None
     user_profile = UserProfile.objects.get(id=user_profile_id)
     # Convert from epoch seconds to a datetime object.
-    cutoff_date = datetime.datetime.utcfromtimestamp(int(cutoff))
+    cutoff_date = datetime.datetime.fromtimestamp(int(cutoff), tz=pytz.utc)
 
     all_messages = UserMessage.objects.filter(
         user_profile=user_profile,
@@ -172,7 +172,7 @@ def handle_digest_email(user_profile_id, cutoff):
     template_payload.update({
         'name': user_profile.full_name,
         'unsubscribe_link': one_click_unsubscribe_link(user_profile, "digest")
-        })
+    })
 
     # Gather recent missed PMs, re-using the missed PM email logic.
     # You can't have an unread message that you sent, but when testing
@@ -213,14 +213,15 @@ def handle_digest_email(user_profile_id, cutoff):
         user_profile, cutoff_date)
     template_payload["new_users"] = new_users
 
+    subject = loader.render_to_string('zerver/emails/digest/digest_email.subject').strip()
     text_content = loader.render_to_string(
         'zerver/emails/digest/digest_email.txt', template_payload)
     html_content = loader.render_to_string(
-        'zerver/emails/digest/digest_email_html.txt', template_payload)
+        'zerver/emails/digest/digest_email.html', template_payload)
 
     # We don't want to send emails containing almost no information.
     if enough_traffic(template_payload["unread_pms"],
                       template_payload["hot_conversations"],
                       new_streams_count, new_users_count):
         logger.info("Sending digest email for %s" % (user_profile.email,))
-        send_digest_email(user_profile, html_content, text_content)
+        send_digest_email(user_profile, subject, html_content, text_content)

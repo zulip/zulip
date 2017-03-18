@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from contextlib import contextmanager
 from typing import (cast, Any, Callable, Dict, Generator, Iterable, Iterator, List, Mapping,
-                    Optional, Sized, Tuple, Union, IO)
+                    Optional, Set, Sized, Tuple, Union, IO)
 
 from django.core.urlresolvers import LocaleRegexURLResolver
 from django.conf import settings
@@ -13,9 +13,9 @@ from django.test.client import (
 from django.template import loader
 from django.http import HttpResponse
 from django.db.utils import IntegrityError
-from django.utils.translation import ugettext as _
 
 from zerver.lib.avatar import avatar_url
+from zerver.lib.cache import get_cache_backend
 from zerver.lib.initial_password import initial_password
 from zerver.lib.db import TimeTrackingCursor
 from zerver.lib.str_utils import force_text
@@ -30,6 +30,7 @@ from zerver.lib.actions import (
 )
 
 from zerver.models import (
+    get_recipient,
     get_stream,
     get_user_profile_by_email,
     Client,
@@ -88,7 +89,12 @@ def simulated_queue_client(client):
 def tornado_redirected_to_list(lst):
     # type: (List[Mapping[str, Any]]) -> Iterator[None]
     real_event_queue_process_notification = event_queue.process_notification
-    event_queue.process_notification = lst.append
+    event_queue.process_notification = lambda notice: lst.append(notice)
+    # process_notification takes a single parameter called 'notice'.
+    # lst.append takes a single argument called 'object'.
+    # Some code might call process_notification using keyword arguments,
+    # so mypy doesn't allow assigning lst.append to process_notification
+    # So explicitly change parameter name to 'notice' to work around this problem
     yield
     event_queue.process_notification = real_event_queue_process_notification
 
@@ -98,14 +104,14 @@ def simulated_empty_cache():
     cache_queries = [] # type: List[Tuple[str, Union[Text, List[Text]], Text]]
 
     def my_cache_get(key, cache_name=None):
-        # type: (Text, Optional[str]) -> Any
+        # type: (Text, Optional[str]) -> Optional[Dict[Text, Any]]
         cache_queries.append(('get', key, cache_name))
         return None
 
-    def my_cache_get_many(keys, cache_name=None):
+    def my_cache_get_many(keys, cache_name=None):  # nocoverage -- simulated code doesn't use this
         # type: (List[Text], Optional[str]) -> Dict[Text, Any]
         cache_queries.append(('getmany', keys, cache_name))
-        return None
+        return {}
 
     old_get = cache.cache_get
     old_get_many = cache.cache_get_many
@@ -127,6 +133,8 @@ def queries_captured(include_savepoints=False):
 
     def wrapper_execute(self, action, sql, params=()):
         # type: (TimeTrackingCursor, Callable, NonBinaryStr, Iterable[Any]) -> None
+        cache = get_cache_backend(None)
+        cache.clear()
         start = time.time()
         try:
             return action(sql, params)
@@ -149,13 +157,23 @@ def queries_captured(include_savepoints=False):
 
     def cursor_executemany(self, sql, params=()):
         # type: (TimeTrackingCursor, NonBinaryStr, Iterable[Any]) -> None
-        return wrapper_execute(self, super(TimeTrackingCursor, self).executemany, sql, params) # type: ignore # https://github.com/JukkaL/mypy/issues/1167
+        return wrapper_execute(self, super(TimeTrackingCursor, self).executemany, sql, params) # type: ignore # https://github.com/JukkaL/mypy/issues/1167 # nocoverage -- doesn't actually get used in tests
     TimeTrackingCursor.executemany = cursor_executemany # type: ignore # https://github.com/JukkaL/mypy/issues/1167
 
     yield queries
 
     TimeTrackingCursor.execute = old_execute # type: ignore # https://github.com/JukkaL/mypy/issues/1167
     TimeTrackingCursor.executemany = old_executemany # type: ignore # https://github.com/JukkaL/mypy/issues/1167
+
+@contextmanager
+def stdout_suppressed():
+    # type: () -> Iterator[IO[str]]
+    """Redirect stdout to /dev/null."""
+
+    with open(os.devnull, 'a') as devnull:
+        stdout, sys.stdout = sys.stdout, devnull  # type: ignore
+        yield stdout
+        sys.stdout = stdout
 
 def get_test_image_file(filename):
     # type: (str) -> IO[Any]
@@ -166,6 +184,7 @@ def avatar_disk_path(user_profile, medium=False):
     # type: (UserProfile, bool) -> str
     avatar_url_path = avatar_url(user_profile, medium)
     avatar_disk_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars",
+                                    avatar_url_path.split("/")[-2],
                                     avatar_url_path.split("/")[-1].split("?")[0])
     return avatar_disk_path
 
@@ -175,12 +194,22 @@ def make_client(name):
     return client
 
 def find_key_by_email(address):
-    # type: (Text) -> Text
+    # type: (Text) -> Optional[Text]
     from django.core.mail import outbox
     key_regex = re.compile("accounts/do_confirm/([a-f0-9]{40})>")
     for message in reversed(outbox):
         if address in message.to:
             return key_regex.search(message.body).groups()[0]
+    return None  # nocoverage -- in theory a test might want this case, but none do
+
+def find_pattern_in_email(address, pattern):
+    # type: (Text, Text) -> Optional[Text]
+    from django.core.mail import outbox
+    key_regex = re.compile(pattern)
+    for message in reversed(outbox):
+        if address in message.to:
+            return key_regex.search(message.body).group(0)
+    return None  # nocoverage -- in theory a test might want this case, but none do
 
 def message_ids(result):
     # type: (Dict[str, Any]) -> Set[int]
@@ -205,6 +234,13 @@ def most_recent_message(user_profile):
     # type: (UserProfile) -> Message
     usermessage = most_recent_usermessage(user_profile)
     return usermessage.message
+
+def get_subscription(stream_name, user_profile):
+    # type: (Text, UserProfile) -> Subscription
+    stream = get_stream(stream_name, user_profile.realm)
+    recipient = get_recipient(Recipient.STREAM, stream.id)
+    return Subscription.objects.get(user_profile=user_profile,
+                                    recipient=recipient, active=True)
 
 def get_user_messages(user_profile):
     # type: (UserProfile) -> List[Message]
@@ -259,9 +295,13 @@ INSTRUMENTED_CALLS = [] # type: List[Dict[str, Any]]
 
 UrlFuncT = Callable[..., HttpResponse] # TODO: make more specific
 
+def append_instrumentation_data(data):
+    # type: (Dict[str, Any]) -> None
+    INSTRUMENTED_CALLS.append(data)
+
 def instrument_url(f):
     # type: (UrlFuncT) -> UrlFuncT
-    if not INSTRUMENTING:
+    if not INSTRUMENTING:  # nocoverage -- option is always enabled; should we remove?
         return f
     else:
         def wrapper(self, url, info={}, **kwargs):
@@ -275,7 +315,7 @@ def instrument_url(f):
             else:
                 extra_info = ''
 
-            INSTRUMENTED_CALLS.append(dict(
+            append_instrumentation_data(dict(
                 url=url,
                 status_code=result.status_code,
                 method=f.__name__,
@@ -322,7 +362,7 @@ def write_instrumentation_reports(full_suite):
             # type: (Any, List[str]) -> None
 
             if isinstance(pattern, type(LocaleRegexURLResolver)):
-                return
+                return  # nocoverage -- shouldn't actually happen
 
             if hasattr(pattern, 'url_patterns'):
                 return
@@ -365,7 +405,7 @@ def write_instrumentation_reports(full_suite):
                 try:
                     line = ujson.dumps(call)
                     f.write(line + '\n')
-                except OverflowError:
+                except OverflowError:  # nocoverage -- test suite error handling
                     print('''
                         A JSON overflow error was encountered while
                         producing the URL coverage report.  Sometimes
@@ -379,7 +419,7 @@ def write_instrumentation_reports(full_suite):
             print('INFO: URL coverage report is in %s' % (fn,))
             print('INFO: Try running: ./tools/create-test-api-docs')
 
-        if full_suite and len(untested_patterns):
+        if full_suite and len(untested_patterns):  # nocoverage -- test suite error handling
             print("\nERROR: Some URLs are untested!  Here's the list of untested URLs:")
             for untested_pattern in sorted(untested_patterns):
                 print("   %s" % (untested_pattern,))
@@ -395,10 +435,11 @@ def get_all_templates():
 
     def is_valid_template(p, n):
         # type: (Text, Text) -> bool
-        return (not n.startswith('.') and
-                not n.startswith('__init__') and
-                not n.endswith(".md") and
-                isfile(p))
+        return 'webhooks' not in p \
+               and not n.startswith('.') \
+               and not n.startswith('__init__') \
+               and not n.endswith('.md') \
+               and isfile(p)
 
     def process(template_dir, dirname, fnames):
         # type: (str, str, Iterable[str]) -> None

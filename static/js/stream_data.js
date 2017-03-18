@@ -20,19 +20,22 @@ exports.is_active = function (stream_name) {
     return recent_topics.has(stream_name);
 };
 
-exports.rename_sub = function (stream_id, new_name) {
-    var sub = subs_by_stream_id.get(stream_id);
+exports.rename_sub = function (sub, new_name) {
     var old_name = sub.name;
     sub.name = new_name;
     stream_info.del(old_name);
     stream_info.set(new_name, sub);
+};
 
-    return sub;
+exports.subscribe_myself = function (sub) {
+    var user_id = people.my_current_user_id();
+    exports.add_subscriber(sub.name, user_id);
+    sub.subscribed = true;
 };
 
 exports.unsubscribe_myself = function (sub) {
     // Remove user from subscriber's list
-    var user_id = people.get_user_id(page_params.email);
+    var user_id = people.my_current_user_id();
     exports.remove_subscriber(sub.name, user_id);
     sub.subscribed = false;
 };
@@ -54,8 +57,14 @@ exports.get_sub_by_id = function (stream_id) {
     return subs_by_stream_id.get(stream_id);
 };
 
-exports.delete_sub = function (stream_name) {
-    stream_info.del(stream_name);
+exports.delete_sub = function (stream_id) {
+    var sub = subs_by_stream_id.get(stream_id);
+    if (!sub) {
+        blueslip.warn('Failed to delete stream ' + stream_id);
+        return;
+    }
+    subs_by_stream_id.del(stream_id);
+    stream_info.del(sub.name);
 };
 
 exports.subscribed_subs = function () {
@@ -157,28 +166,32 @@ exports.add_subscriber = function (stream_name, user_id) {
     var sub = exports.get_sub(stream_name);
     if (typeof sub === 'undefined') {
         blueslip.warn("We got an add_subscriber call for a non-existent stream.");
-        return;
+        return false;
     }
     var person = people.get_person_from_user_id(user_id);
     if (person === undefined) {
         blueslip.error("We tried to add invalid subscriber: " + user_id);
-        return;
+        return false;
     }
     sub.subscribers.set(user_id, true);
+
+    return true;
 };
 
 exports.remove_subscriber = function (stream_name, user_id) {
     var sub = exports.get_sub(stream_name);
     if (typeof sub === 'undefined') {
         blueslip.warn("We got a remove_subscriber call for a non-existent stream " + stream_name);
-        return;
+        return false;
     }
     if (!sub.subscribers.has(user_id)) {
         blueslip.warn("We tried to remove invalid subscriber: " + user_id);
-        return;
+        return false;
     }
 
     sub.subscribers.del(user_id);
+
+    return true;
 };
 
 exports.user_is_subscribed = function (stream_name, user_email) {
@@ -204,7 +217,7 @@ exports.create_streams = function (streams) {
         // We handle subscriber stuff in other events.
         var attrs = _.defaults(stream, {
             subscribers: [],
-            subscribed: false
+            subscribed: false,
         });
         exports.create_sub_from_server_data(stream.name, attrs);
     });
@@ -237,7 +250,7 @@ exports.create_sub_from_server_data = function (stream_name, attrs) {
         invite_only: false,
         desktop_notifications: page_params.stream_desktop_notifications_enabled,
         audible_notifications: page_params.stream_sounds_enabled,
-        description: ''
+        description: '',
     });
 
     exports.set_subscribers(sub, subscriber_user_ids);
@@ -272,7 +285,7 @@ exports.add_admin_options = function (sub) {
     return _.extend(sub, {
         is_admin: page_params.is_admin,
         can_make_public: page_params.is_admin && sub.invite_only && sub.subscribed,
-        can_make_private: page_params.is_admin && !sub.invite_only
+        can_make_private: page_params.is_admin && !sub.invite_only,
     });
 };
 
@@ -335,6 +348,7 @@ exports.get_streams_for_settings_page = function () {
     var sub_rows = [];
     _.each(all_subs, function (sub) {
         sub = exports.add_admin_options(sub);
+        sub.preview_url = narrow.by_stream_uri(sub.name);
         exports.update_subscribers_count(sub);
         sub_rows.push(sub);
     });
@@ -369,6 +383,25 @@ exports.get_recent_topics = function (stream_name) {
 exports.populate_stream_topics_for_tests = function (stream_map) {
     // This is only used by tests.
     recent_topics = Dict.from(stream_map, {fold_case: true});
+};
+
+exports.get_newbie_stream = function () {
+    // This is the stream that we narrow folks to after the tutorial.
+
+    if (exports.is_subscribed("new members")) {
+        return "new members";
+    } else if (exports.in_home_view(page_params.notifications_stream)) {
+        return page_params.notifications_stream;
+    }
+    return undefined;
+};
+
+exports.remove_default_stream = function (stream_id) {
+    page_params.realm_default_streams = _.reject(page_params.realm_default_streams,
+        function (stream) {
+            return stream.stream_id === stream_id;
+        }
+    );
 };
 
 return exports;

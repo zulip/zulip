@@ -29,7 +29,7 @@ import optparse
 
 usage = """recent-messages [options] --count=<no. of previous messages> --user=<sender's email address> --api-key=<sender's api key>
 
-Prints out last count messages recieved by the indicated bot or user
+Prints out last count messages received by the indicated bot or user
 
 Example: recent-messages --count=101 --user=username@example.com --api-key=a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5
 

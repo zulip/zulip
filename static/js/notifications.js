@@ -29,12 +29,14 @@ if (window.webkitNotifications) {
             return 2;
         },
         requestPermission: window.Notification.requestPermission,
-        createNotification: function createNotification(icon, title, content) {
-            var notification_object = new window.Notification(title, {icon: icon, body: content});
+        createNotification: function createNotification(icon, title, content, tag) {
+            var notification_object = new window.Notification(title, {icon: icon,
+                                                                      body: content,
+                                                                      tag: tag});
             notification_object.show = function () {};
             notification_object.cancel = function () { notification_object.close(); };
             return notification_object;
-        }
+        },
     };
 }
 
@@ -67,7 +69,7 @@ exports.initialize = function () {
 
         // Update many places on the DOM to reflect unread
         // counts.
-        unread.process_visible();
+        unread_ui.process_visible();
 
     }).blur(function () {
         window_has_focus = false;
@@ -146,7 +148,7 @@ exports.redraw_title = function () {
     var new_title = (new_message_count ? ("(" + new_message_count + ") ") : "")
         + narrow.narrow_title + " - "
         + page_params.realm_name + " - "
-        + page_params.product_name;
+        + "Zulip";
 
     if (document.title === new_title) {
         return;
@@ -218,18 +220,27 @@ exports.window_has_focus = function () {
 };
 
 function in_browser_notify(message, title, content, raw_operators, opts) {
-    var notification_html = $(templates.render('notification', {gravatar_url: ui.small_avatar_url(message),
-                                                                title: title,
-                                                                content: content}));
-    $('.top-right').notify({
-        message: {html: notification_html},
-        fadeOut: {enabled: true, delay: 4000}
+    var notification_html = $(templates.render('notification', {
+        gravatar_url: people.small_avatar_url(message),
+        title: title,
+        content: content,
+        message_id: message.id,
+    }));
+
+    $(".top-right").notify({
+        message: {
+            html: notification_html,
+        },
+        fadeOut: {
+            enabled: true,
+            delay: 4000,
+        },
     }).show();
-    $('.top-right').on('click', function () {
-        ui.change_tab_to('#home');
-        narrow.activate(raw_operators, opts);
+
+    $(".notification[data-message-id='" + message.id + "']").expectOne().data("narrow", {
+        raw_operators: raw_operators,
+        opts_notif: opts,
     });
-    setTimeout(function () {$('.top-right').unbind("click");}, 5000);
 }
 
 exports.notify_above_composebox = function (note, link_class, link_msg_id, link_text) {
@@ -304,30 +315,37 @@ function process_notification(notification) {
         cancel_notification_object(notification_object);
     }
 
-    if (message.type === "private" && message.display_recipient.length > 2) {
-        // If the message has too many recipients to list them all...
-        if (content.length + title.length + other_recipients.length > 230) {
-            // Then count how many people are in the conversation and summarize
-            // by saying the conversation is with "you and [number] other people"
-            other_recipients = other_recipients.replace(/[^,]/g, "").length +
-                               " other people";
+    if (message.type === "private") {
+        if (message.display_recipient.length > 2) {
+            // If the message has too many recipients to list them all...
+            if (content.length + title.length + other_recipients.length > 230) {
+                // Then count how many people are in the conversation and summarize
+                // by saying the conversation is with "you and [number] other people"
+                other_recipients = other_recipients.replace(/[^,]/g, "").length +
+                                   " other people";
+            }
+
+            title += " (to you and " + other_recipients + ")";
+        } else {
+            title += " (to you)";
         }
-        title += " (to you and " + other_recipients + ")";
+
         raw_operators = [{operand: message.reply_to, operator: "pm-with"}];
     }
+
     if (message.type === "stream") {
         title += " (to " + message.stream + " > " + message.subject + ")";
-        raw_operators = [{operand: message.stream, operator: "stream"}];
-        if (message.subject !== "(no topic)") {raw_operators[1] = {operand: message.subject, operator: "topic"};}
+        raw_operators = [{operator: "stream", operand: message.stream},
+                         {operator: "topic", operand: message.subject}];
     }
 
     if (window.bridge === undefined && notification.webkit_notify === true) {
-        var icon_url = ui.small_avatar_url(message);
+        var icon_url = people.small_avatar_url(message);
         notice_memory[key] = {
             obj: notifications_api.createNotification(
-                    icon_url, title, content),
+                    icon_url, title, content, message.id),
             msg_count: msg_count,
-            message_id: message.id
+            message_id: message.id,
         };
         notification_object = notice_memory[key].obj;
         notification_object.onclick = function () {
@@ -346,7 +364,8 @@ function process_notification(notification) {
             if (perm === 'granted') {
                 notification_object = new Notification(title, {
                     body: content,
-                    iconUrl: ui.small_avatar_url(message)
+                    iconUrl: people.small_avatar_url(message),
+                    tag: message.id,
                 });
             } else {
                 in_browser_notify(message, title, content, raw_operators, opts);
@@ -503,15 +522,18 @@ function get_message_header(message) {
     if (message.display_recipient.length > 2) {
         return "group PM with " + message.display_reply_to;
     }
-    if (util.is_current_user(message.reply_to)) {
+    if (people.is_current_user(message.reply_to)) {
         return "PM with yourself";
     }
     return "PM with " + message.display_reply_to;
 }
 
-exports.possibly_notify_new_messages_outside_viewport = function (messages) {
+exports.possibly_notify_new_messages_outside_viewport = function (messages, local_id) {
     _.each(messages, function (message) {
-        if (!util.is_current_user(message.sender_email)) {
+        // A warning should only be displayed when the message was sent by the user and
+        // this is the tab he sent it in.
+        if (!people.is_current_user(message.sender_email) ||
+            local_id === undefined) {
             return;
         }
         // queue up offscreen because of narrowed, or (secondarily) offscreen
@@ -548,7 +570,7 @@ exports.possibly_notify_new_messages_outside_viewport = function (messages) {
 // the current_msg_list (!can_apply_locally; a.k.a. "a search").
 exports.notify_messages_outside_current_search = function (messages) {
     _.each(messages, function (message) {
-        if (!util.is_current_user(message.sender_email)) {
+        if (!people.is_current_user(message.sender_email)) {
             return;
         }
         exports.notify_above_composebox("Sent! Your recent message is outside the current search.",

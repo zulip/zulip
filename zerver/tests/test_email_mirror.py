@@ -14,7 +14,7 @@ from zerver.lib.test_classes import (
 
 from zerver.models import (
     get_display_recipient, get_stream, get_user_profile_by_email,
-    Recipient, get_realm_by_string_id,
+    Recipient, get_realm,
 )
 
 from zerver.lib.actions import (
@@ -31,6 +31,7 @@ from zerver.lib.digest import handle_digest_email
 from zerver.lib.notifications import (
     handle_missedmessage_emails,
 )
+from zerver.management.commands import email_mirror
 
 from email.mime.text import MIMEText
 
@@ -46,7 +47,7 @@ from six.moves import cStringIO as StringIO
 from django.conf import settings
 
 from zerver.lib.str_utils import force_str
-from typing import Any, Callable, Mapping, Union, Text
+from typing import Any, Callable, Dict, Mapping, Union, Text
 
 class TestEmailMirrorLibrary(ZulipTestCase):
     def test_get_missed_message_token(self):
@@ -265,7 +266,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         self.assert_json_success(result)
 
         user_profile = get_user_profile_by_email("othello@zulip.com")
-        cutoff = time.mktime(datetime.datetime(year=2016, month=1, day=1).timetuple()) # type: ignore # https://github.com/python/typeshed/pull/597
+        cutoff = time.mktime(datetime.datetime(year=2016, month=1, day=1).timetuple())
 
         handle_digest_email(user_profile.id, cutoff)
         self.assertEqual(mock_send_future_email.call_count, 1)
@@ -352,12 +353,12 @@ MAILS_DIR = os.path.join(dirname(dirname(abspath(__file__))), "fixtures", "email
 
 class TestCommandMTA(TestCase):
 
-    @mock.patch('zerver.lib.queue.queue_json_publish')
+    @mock.patch('zerver.management.commands.email_mirror.queue_json_publish')
     def test_success(self, mock_queue_json_publish):
         # type: (mock.Mock) -> None
 
         sender = "hamlet@zulip.com"
-        stream = get_stream("Denmark", get_realm_by_string_id("zulip"))
+        stream = get_stream("Denmark", get_realm("zulip"))
         stream_to_address = encode_email_address(stream)
 
         template_path = os.path.join(MAILS_DIR, "simple.txt")
@@ -375,8 +376,8 @@ class TestCommandMTA(TestCase):
         try:
             sys.stdin = StringIO(mail)
 
-            from zerver.management.commands import email_mirror
             command = email_mirror.Command()
             command.handle(recipient=force_str(stream_to_address))
         finally:
             sys.stdin = original_stdin
+        mock_queue_json_publish.assert_called_once()

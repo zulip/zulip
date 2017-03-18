@@ -1,4 +1,4 @@
-<div id="organization-settings" class="settings-section">
+<div id="organization-settings" data-name="organization-settings" class="settings-section">
 <div class="settings-section-title"><i class="icon-vector-gear settings-section-icon"></i>
 {{t "Organization settings" }}</div>
   <form class="form-horizontal admin-realm-form">
@@ -11,19 +11,24 @@
     <div class="alert" id="admin-realm-message-editing-status"></div>
     <div class="alert" id="admin-realm-default-language-status"></div>
     <div class="alert" id="admin-realm-waiting_period_threshold_status"></div>
+    <div class="alert" id="admin-realm-name-changes-disabled-status"></div>
+    <div class="alert" id="admin-realm-email-changes-disabled-status"></div>
 
+    <div class="m-10 inline-block grid organization-settings-parent">
     <div class="input-group admin-realm">
       <label for="realm_name">{{t "Your organization's name" }}</label>
       <input type="text" id="id_realm_name" name="realm_name" class="admin-realm-name"
              value="{{ realm_name }}" />
     </div>
-    <div class="input-group">
+    <div class="input-group admin-restricted-to-domain">
       <input type="checkbox" class="inline-block" id="id_realm_restricted_to_domain" name="realm_restricted_to_domain"
          {{#if realm_restricted_to_domain}}checked="checked"{{/if}} />
-      <label for="id_realm_restricted_to_domain" class="inline-block"
-        title="{{#tr this}}If checked, only users with an e-mail address ending in __atdomains_string__ will be able to join the organization.{{/tr}}">
-        {{#tr this}}Users restricted to __domains_string__{{/tr}}
+      <label for="id_realm_restricted_to_domain" class="inline" id="realm_restricted_to_domains_label"
+        title="{{#tr this}}If checked, only users with an e-mail address ending in these domains will be able to join the organization.{{/tr}}">
       </label>
+      {{#if is_admin }}
+      <a data-toggle="modal" href="#realm_aliases_modal">{{t "[Add or Change]" }}</a>
+      {{/if}}
     </div>
     <div class="input-group">
       <input type="checkbox" class="inline-block" id="id_realm_invite_required" name="realm_invite_required"
@@ -51,8 +56,30 @@
 
       <label for="id_realm_create_stream_by_admins_only" class="inline-block"
         id="id_realm_create_stream_by_admins_only_label"
-        title="{{t 'If checked, only administrators may create new streams.'}}">
+        title="{{t 'If checked, only administrators may create new streams.' }}">
         {{t "Only admins may create streams" }}
+      </label>
+    </div>
+    <div class="input-group">
+      <input type="checkbox" class="inline-block" id="id_realm_name_changes_disabled"
+             name="realm_name_changes_disabled"
+        {{#if realm_name_changes_disabled}}checked="checked"{{/if}} />
+
+      <label for="id_realm_name_changes_disabled" class="inline-block"
+        id="id_realm_name_changes_disabled_label" style="width:initial"
+        title="{{t 'If checked, users will be unable to change their name.' }}">
+        {{t "Prevent users from changing their name" }}
+      </label>
+    </div>
+    <div class="input-group">
+      <input type="checkbox" class="inline-block" id="id_realm_email_changes_disabled"
+             name="realm_email_changes_disabled"
+        {{#if realm_email_changes_disabled}}checked="checked"{{/if}} />
+
+      <label for="id_realm_email_changes_disabled" class="inline-block"
+        id="id_realm_email_changes_disabled_label" style="width:initial"
+        title="{{t 'If checked, users will be unable to change their email address.' }}">
+        {{t "Prevent users from changing their email address" }}
       </label>
     </div>
     <div class="input-group">
@@ -89,7 +116,7 @@
         {{#unless realm_allow_message_editing}}disabled="disabled"{{/unless}} />
     </div>
     <div class="input-group">
-      <label for="realm_default_language">{{t "Default Language" }}:</label>
+      <label for="realm_default_language">{{t "Default language" }}:</label>
       <select name="realm_default_language" id="id_realm_default_language">
         {{#each language_list}}
         <option value='{{this.code}}'>{{this.name}}</option>
@@ -105,6 +132,22 @@
     </div>
     <div class="input-group organization-submission">
       <input type="submit" class="button" value="{{t 'Save changes' }}" />
+    </div>
+    </div>
+    <div class="realm-icon-section box-shadow border-radius">
+      <div class="inline-block">
+        <img id="realm-settings-icon" src="{{ realm_icon_url }}"/>
+        <div id="realm_icon_file_input_error" class="text-error"></div>
+        <input type="file" name="realm_icon_file_input" class="notvisible"
+               id="realm_icon_file_input" value="{{t 'Upload icon' }}"/>
+        <div id="upload_icon_spinner"></div>
+      </div>
+      <div class="inline-block">
+        <button class="button sea-green w-200 m-t-10 block input-size"
+                id="realm_icon_upload_button">{{t 'Upload new icon' }}</button>
+        <button class="button btn-danger w-200 m-t-10 block input-size"
+                id="realm_icon_delete_button">{{t 'Delete icon' }}</button>
+      </div>
     </div>
   </form>
 </div>

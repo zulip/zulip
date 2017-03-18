@@ -66,10 +66,22 @@
     filter: brightness(1.1);
 }
 
+.new-style .button.white:hover {
+    border-color: #888;
+    background-color: #e4e4e4;
+}
+
 .new-style .button:active {
     -webkit-filter: brightness(0.9);
     -moz-filter: brightness(0.9);
     filter: brightness(0.9);
+}
+
+.new-style .button[disabled="disabled"] {
+    cursor: not-allowed;
+    -webkit-filter: saturate(0);
+    -moz-filter: saturate(0);
+    filter: saturate(0);
 }
 
 /* -- button style variations -- */
@@ -83,6 +95,10 @@
     box-shadow: none !important;
 }
 
+.new-style .button.rounded {
+    border-radius: 4px;
+}
+
 .new-style .button.green {
     background-color: #64ad89;
 }
@@ -92,6 +108,7 @@
 }
 
 .new-style .button.white {
+    padding: 7px 14px;
     background-color: #fff;
     color: inherit;
     border: 1px solid #CCC;
@@ -141,11 +158,15 @@
 .new-style .tab-switcher .ind-tab {
     display: inline-block;
     width: 90px;
-    margin: 0px -2px;
+    margin: 0px -0.5px;
     text-align: center;
     padding: 3px 10px;
     background-color: #fff;
     cursor: pointer;
+}
+
+.new-style .tab-switcher.large .ind-tab {
+    width: 130px;
 }
 
 .new-style .tab-switcher .ind-tab:not(.selected) {
@@ -154,12 +175,15 @@
 
 .new-style .tab-switcher .ind-tab.first {
     border-radius: 5px 0px 0px 5px;
-    border-right: none;
+    border-right: 1px solid transparent;
 }
 
-.new-style .tab-switcher .ind-tab.second {
+.new-style .tab-switcher .ind-tab.middle {
+    border-right: 1px solid transparent;
+}
+
+.new-style .tab-switcher .ind-tab.last {
     border-radius: 0px 5px 5px 0px;
-    border-left: none;
 }
 
 .new-style .tab-switcher .ind-tab.selected {
@@ -227,6 +251,49 @@
     opacity: 0.3;
 }
 
+.new-style input[type=text] {
+    border-radius: 5px;
+    box-shadow: none;
+}
+
 .new-style a.no-style {
     color: inherit;
+}
+
+/* -- unified overlay design component -- */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+
+    background-color: rgba(32,32,32,0.8);
+    z-index: 105;
+
+    pointer-events: none;
+    opacity: 0;
+
+    transition: opacity 0.3s ease;
+}
+
+.overlay.show {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.overlay .overlay-content {
+    -webkit-transform: scale(0.5);
+    transform: scale(0.5);
+
+    z-index: 102;
+
+    transition: transform 0.3s ease;
+}
+
+.overlay.show .overlay-content {
+    -webkit-transform: scale(1);
+    transform: scale(1);
 }

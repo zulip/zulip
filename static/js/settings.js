@@ -50,42 +50,45 @@ function build_stream_list($select, extra_names) {
 function add_bot_row(info) {
     info.id_suffix = _.uniqueId('_bot_');
     var row = $(templates.render('bot_avatar_row', info));
-    var default_sending_stream_select = row.find('select[name=bot_default_sending_stream]');
-    var default_events_register_stream_select = row.find('select[name=bot_default_events_register_stream]');
+    if (info.is_active) {
+        var default_sending_stream_select = row.find('select[name=bot_default_sending_stream]');
+        var default_events_register_stream_select = row.find('select[name=bot_default_events_register_stream]');
 
-    if (!feature_flags.new_bot_ui) {
-        row.find('.new-bot-ui').hide();
-    }
+        if (!feature_flags.new_bot_ui) {
+            row.find('.new-bot-ui').hide();
+        }
 
-    var to_extra_options = [];
-    if (info.default_sending_stream === null) {
-        to_extra_options.push(['', 'No default selected']);
-    }
-    build_stream_list(
-        default_sending_stream_select,
-        to_extra_options
-    );
-    default_sending_stream_select.val(
-        info.default_sending_stream,
-        to_extra_options
-    );
+        var to_extra_options = [];
+        if (info.default_sending_stream === null) {
+            to_extra_options.push(['', 'No default selected']);
+        }
+        build_stream_list(
+            default_sending_stream_select,
+            to_extra_options
+        );
+        default_sending_stream_select.val(
+            info.default_sending_stream,
+            to_extra_options
+        );
 
-    var events_extra_options = [['__all_public__', 'All public streams']];
-    if (info.default_events_register_stream === null && !info.default_all_public_streams) {
-        events_extra_options.unshift(['', 'No default selected']);
-    }
-    build_stream_list(
-        default_events_register_stream_select,
-        events_extra_options
-    );
-    if (info.default_all_public_streams) {
-        default_events_register_stream_select.val('__all_public__');
+        var events_extra_options = [['__all_public__', 'All public streams']];
+        if (info.default_events_register_stream === null && !info.default_all_public_streams) {
+            events_extra_options.unshift(['', 'No default selected']);
+        }
+        build_stream_list(
+            default_events_register_stream_select,
+            events_extra_options
+        );
+        if (info.default_all_public_streams) {
+            default_events_register_stream_select.val('__all_public__');
+        } else {
+            default_events_register_stream_select.val(info.default_events_register_stream);
+        }
+
+        $('#active_bots_list').append(row);
     } else {
-        default_events_register_stream_select.val(info.default_events_register_stream);
+        $('#inactive_bots_list').append(row);
     }
-
-    $('#bots_list').append(row);
-    $('#bots_list').show();
 }
 
 function add_bot_default_streams_to_form(formData, default_sending_stream,
@@ -110,20 +113,39 @@ function is_local_part(value, element) {
 }
 
 function render_bots() {
-    $('#bots_list').empty();
-    _.each(bot_data.get_editable(), function (elem) {
+    $('#active_bots_list').empty();
+    $('#inactive_bots_list').empty();
+
+    _.each(bot_data.get_all_bots_for_current_user(), function (elem) {
         add_bot_row({
             name: elem.full_name,
             email: elem.email,
             avatar_url: elem.avatar_url,
             api_key: elem.api_key,
+            is_active: elem.is_active,
             zuliprc: 'zuliprc', // Most browsers do not allow filename starting with `.`
             default_sending_stream: elem.default_sending_stream,
             default_events_register_stream: elem.default_events_register_stream,
-            default_all_public_streams: elem.default_all_public_streams
+            default_all_public_streams: elem.default_all_public_streams,
         });
     });
+
+    if ($("#bots_lists_navbar .active-bots-tab").hasClass("active")) {
+        $("#active_bots_list").show();
+        $("#inactive_bots_list").hide();
+    } else {
+        $("#active_bots_list").hide();
+        $("#inactive_bots_list").show();
+    }
 }
+
+exports.update_email = function (new_email) {
+    var email_input = $('#email_value');
+
+    if (email_input) {
+        email_input.text(new_email);
+    }
+};
 
 exports.generate_zuliprc_uri = function (email, api_key) {
     var data = settings.generate_zuliprc_content(email, api_key);
@@ -140,8 +162,47 @@ exports.generate_zuliprc_content = function (email, api_key) {
            "\n";
 };
 
-// Choose avatar stamp fairly randomly, to help get old avatars out of cache.
-exports.avatar_stamp = Math.floor(Math.random()*100);
+$("body").ready(function () {
+    var $sidebar = $(".form-sidebar");
+    var $targets = $sidebar.find("[data-target]");
+    var $title = $sidebar.find(".title h1");
+    var is_open = false;
+
+    var close_sidebar = function () {
+        $sidebar.removeClass("show");
+        is_open = false;
+    };
+
+    exports.trigger_sidebar = function (target) {
+        $targets.hide();
+        var $target = $(".form-sidebar").find("[data-target='" + target + "']");
+
+        $title.text($target.attr("data-title"));
+        $target.show();
+
+        $sidebar.addClass("show");
+        is_open = true;
+    };
+
+    $(".form-sidebar .exit").click(function (e) {
+        close_sidebar();
+        e.stopPropagation();
+    });
+
+    $("body").click(function (e) {
+        if (is_open && !$(e.target).within(".form-sidebar")) {
+            close_sidebar();
+        }
+    });
+
+    $("body").on("click", "[data-sidebar-form]", function (e) {
+        exports.trigger_sidebar($(this).attr("data-sidebar-form"));
+        e.stopPropagation();
+    });
+
+    $("body").on("click", "[data-sidebar-form-close]", close_sidebar);
+});
+
 
 function _setup_page() {
     // To build the edit bot streams dropdown we need both the bot and stream
@@ -149,6 +210,17 @@ function _setup_page() {
     // at page load. This promise will be resolved with a list of streams after
     // the first settings page load. build_stream_list then adds a callback to
     // the promise, which in most cases will already be resolved.
+
+    var tab = (function () {
+        var tab = false;
+        var hash_sequence = window.location.hash.split(/\//);
+        if (/#*(settings)/.test(hash_sequence[0])) {
+            tab = hash_sequence[1];
+            return tab || "your-account";
+        }
+        return tab;
+    }());
+
     if (_streams_deferred.state() !== "resolved") {
         channel.get({
             url: '/json/streams',
@@ -160,24 +232,36 @@ function _setup_page() {
                     $('#create_bot_default_events_register_stream'),
                     [['__all_public__', 'All public streams']]
                 );
-            }
+            },
         });
     }
 
     // Most browsers do not allow filenames to start with `.` without the user manually changing it.
-    var settings_tab = templates.render('settings_tab', {page_params: page_params, zuliprc: 'zuliprc'});
-    $("#settings").html(settings_tab);
-    $("#settings-status").hide();
+    // So we use zuliprc, not .zuliprc.
+
+    var settings_tab = templates.render('settings_tab', {
+        full_name: people.my_full_name(),
+        page_params: page_params,
+        zuliprc: 'zuliprc',
+    });
+
+    $(".settings-box").html(settings_tab);
+    $("#account-settings-status").hide();
     $("#notify-settings-status").hide();
     $("#display-settings-status").hide();
     $("#ui-settings-status").hide();
 
     alert_words_ui.set_up_alert_words();
+    attachments_ui.set_up_attachments();
 
     $("#api_key_value").text("");
     $("#get_api_key_box").hide();
     $("#show_api_key_box").hide();
     $("#api_key_button_box").show();
+
+    if (tab) {
+        exports.launch_page(tab);
+    }
 
     function clear_password_change() {
         // Clear the password boxes so that passwords don't linger in the DOM
@@ -204,14 +288,21 @@ function _setup_page() {
         if (page_params.password_auth_enabled !== false) {
             // zxcvbn.js is pretty big, and is only needed on password
             // change, so load it asynchronously.
-            $.getScript('/static/node_modules/zxcvbn/dist/zxcvbn.js', function () {
+            var zxcvbn_path = '/static/min/zxcvbn.js';
+            if (page_params.development_environment) {
+                // Usually the Django templates handle this path stuff
+                // for us, but in this case we need to hardcode it.
+                zxcvbn_path = '/static/node_modules/zxcvbn/dist/zxcvbn.js';
+            }
+            $.getScript(zxcvbn_path, function () {
                 $('#pw_strength .bar').removeClass("fade");
             });
         }
     });
 
     $('#new_password').on('change keyup', function () {
-        password_quality($('#new_password').val(), $('#pw_strength .bar'));
+        var field = $('#new_password');
+        password_quality(field.val(), $('#pw_strength .bar'), field);
     });
 
     if (!page_params.show_digest_email) {
@@ -224,15 +315,15 @@ function _setup_page() {
     function settings_change_error(message, xhr) {
         // Scroll to the top so the error message is visible.
         // We would scroll anyway if we end up submitting the form.
-        viewport.scrollTop(0);
-        ui.report_error(message, xhr, $('#settings-status').expectOne());
+        message_viewport.scrollTop(0);
+        ui.report_error(message, xhr, $('#account-settings-status').expectOne());
     }
 
     function settings_change_success(message) {
         // Scroll to the top so the error message is visible.
         // We would scroll anyway if we end up submitting the form.
-        viewport.scrollTop(0);
-        ui.report_success(message, $('#settings-status').expectOne());
+        message_viewport.scrollTop(0);
+        ui.report_success(message, $('#account-settings-status').expectOne());
     }
 
     $("form.your-account-settings").ajaxForm({
@@ -241,9 +332,10 @@ function _setup_page() {
             if (page_params.password_auth_enabled !== false) {
                 // FIXME: Check that the two password fields match
                 // FIXME: Use the same jQuery validation plugin as the signup form?
+                var field = $('#new_password');
                 var new_pw = $('#new_password').val();
                 if (new_pw !== '') {
-                    var password_ok = password_quality(new_pw);
+                    var password_ok = password_quality(new_pw, undefined, field);
                     if (password_ok === undefined) {
                         // zxcvbn.js didn't load, for whatever reason.
                         settings_change_error(
@@ -268,7 +360,7 @@ function _setup_page() {
             // Whether successful or not, clear the password boxes.
             // TODO: Clear these earlier, while the request is still pending.
             clear_password_change();
-        }
+        },
     });
 
     function update_notification_settings_success(resp, statusText, xhr) {
@@ -331,7 +423,7 @@ function _setup_page() {
             url: "/json/settings/notifications",
             data: notification_changes,
             success: success_func,
-            error: error_func
+            error: error_func,
         });
     }
 
@@ -359,7 +451,7 @@ function _setup_page() {
             url: "/json/settings/notifications",
             data: data,
             success: update_notification_settings_success,
-            error: update_notification_settings_error
+            error: update_notification_settings_error,
         });
     }
 
@@ -420,7 +512,31 @@ function _setup_page() {
             },
             error: function (xhr) {
                 ui.report_error(i18n.t("Error updating user list placement setting"), xhr, $('#display-settings-status').expectOne());
-            }
+            },
+        });
+    });
+
+    $("#emoji_alt_code").change(function () {
+        var emoji_alt_code = this.checked;
+        var data = {};
+        data.emoji_alt_code = JSON.stringify(emoji_alt_code);
+        var context = {};
+        if (data.emoji_alt_code === "true") {
+            context.text_or_images = i18n.t('text');
+        } else {
+            context.text_or_images = i18n.t('images');
+        }
+
+        channel.patch({
+            url: '/json/settings/display',
+            data: data,
+            success: function () {
+                ui.report_success(i18n.t("Emoji reactions will appear as __text_or_images__!", context),
+                                  $('#display-settings-status').expectOne());
+            },
+            error: function (xhr) {
+                ui.report_error(i18n.t("Error updating emoji appearance setting"), xhr, $('#display-settings-status').expectOne());
+            },
         });
     });
 
@@ -439,19 +555,23 @@ function _setup_page() {
             url: '/json/settings/display',
             data: data,
             success: function () {
-                ui.report_success(i18n.t("Time will be displayed in the __format__-hour format!  You will need to reload the window for your changes to take effect", context),
+                ui.report_success(i18n.t("Time will now be displayed in the __format__-hour format!", context),
                                   $('#display-settings-status').expectOne());
             },
             error: function (xhr) {
                 ui.report_error(i18n.t("Error updating time format setting"), xhr, $('#display-settings-status').expectOne());
-            }
+            },
         });
+    });
+
+    $("#default_language_modal [data-dismiss]").click(function () {
+      $("#default_language_modal").fadeOut(300);
     });
 
     $("#default_language_modal .language").click(function (e) {
         e.preventDefault();
         e.stopPropagation();
-        $('#default_language_modal').modal('hide');
+        $('#default_language_modal').fadeOut(300);
 
         var data = {};
         var $link = $(e.target).closest("a[data-code]");
@@ -473,14 +593,46 @@ function _setup_page() {
             },
             error: function (xhr) {
                 ui.report_error(i18n.t("Error updating default language setting"), xhr, $('#display-settings-status').expectOne());
-            }
+            },
+        });
+    });
+
+    $('#change_email_button').on('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $('#change_email_modal').modal('hide');
+
+        var data = {};
+        data.email = $('.email_change_container').find("input[name='email']").val();
+
+        channel.patch({
+            url: '/json/settings/change',
+            data: data,
+            success: function (data) {
+                if ('account_email' in data) {
+                    settings_change_success(data.account_email);
+                } else {
+                    settings_change_error(i18n.t("Error changing settings: No new data supplied."));
+                }
+            },
+            error: function (xhr) {
+                settings_change_error("Error changing settings", xhr);
+            },
         });
     });
 
     $('#default_language').on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        $('#default_language_modal').modal('show');
+        $('#default_language_modal').show().attr('aria-hidden', false);
+    });
+
+    $('#change_email').on('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $('#change_email_modal').modal('show');
+        var email = $('#email_value').text();
+        $('.email_change_container').find("input[name='email']").val(email);
     });
 
     $("#user_deactivate_account_button").on('click', function (e) {
@@ -497,8 +649,8 @@ function _setup_page() {
                 window.location.href = "/login";
             },
             error: function (xhr) {
-                ui.report_error(i18n.t("Error deactivating account"), xhr, $('#settings-status').expectOne());
-            }
+                ui.report_error(i18n.t("Error deactivating account"), xhr, $('#account-settings-status').expectOne());
+            },
         });
     });
 
@@ -508,7 +660,7 @@ function _setup_page() {
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
         success: function (resp, statusText, xhr) {
             var result = JSON.parse(xhr.responseText);
-            var settings_status = $('#settings-status').expectOne();
+            var settings_status = $('#account-settings-status').expectOne();
 
             $("#get_api_key_password").val("");
             $("#api_key_value").text(result.api_key);
@@ -517,10 +669,10 @@ function _setup_page() {
             settings_status.hide();
         },
         error: function (xhr) {
-            ui.report_error(i18n.t("Error getting API key"), xhr, $('#settings-status').expectOne());
+            ui.report_error(i18n.t("Error getting API key"), xhr, $('#account-settings-status').expectOne());
             $("#show_api_key_box").hide();
             $("#get_api_key_box").show();
-        }
+        },
     });
 
     function upload_avatar(file_input) {
@@ -542,11 +694,9 @@ function _setup_page() {
             contentType: false,
             success: function (data) {
                 loading.destroy_indicator($("#upload_avatar_spinner"));
-                var url = data.avatar_url + '&stamp=' + exports.avatar_stamp;
-                $("#user-settings-avatar").expectOne().attr("src", url);
+                $("#user-settings-avatar").expectOne().attr("src", data.avatar_url);
                 $("#user_avatar_delete_button").show();
-                exports.avatar_stamp += 1;
-            }
+            },
         });
 
     }
@@ -610,12 +760,12 @@ function _setup_page() {
                 },
                 complete: function () {
                     $('#create_bot_button').val('Create bot').prop('disabled', false);
-                }
+                },
             });
-        }
+        },
     });
 
-    $("#bots_list").on("click", "button.delete_bot", function (e) {
+    $("#active_bots_list").on("click", "button.delete_bot", function (e) {
         var email = $(e.currentTarget).data('email');
         channel.del({
             url: '/json/bots/' + encodeURIComponent(email),
@@ -625,11 +775,22 @@ function _setup_page() {
             },
             error: function (xhr) {
                 $('#bot_delete_error').text(JSON.parse(xhr.responseText).msg).show();
-            }
+            },
         });
     });
 
-    $("#bots_list").on("click", "button.regenerate_bot_api_key", function (e) {
+    $("#inactive_bots_list").on("click", "button.reactivate_bot", function (e) {
+        var email = $(e.currentTarget).data('email');
+
+        channel.post({
+            url: '/json/users/' + encodeURIComponent(email) + "/reactivate",
+            error: function (xhr) {
+                $('#bot_delete_error').text(JSON.parse(xhr.responseText).msg).show();
+            },
+        });
+    });
+
+    $("#active_bots_list").on("click", "button.regenerate_bot_api_key", function (e) {
         var email = $(e.currentTarget).data('email');
         channel.post({
             url: '/json/bots/' + encodeURIComponent(email) + '/api_key/regenerate',
@@ -642,37 +803,47 @@ function _setup_page() {
             error: function (xhr) {
                 var row = $(e.currentTarget).closest("li");
                 row.find(".api_key_error").text(JSON.parse(xhr.responseText).msg).show();
-            }
+            },
         });
     });
 
     var image_version = 0;
 
-    $("#bots_list").on("click", "button.open_edit_bot_form", function (e) {
+    var avatar_widget = avatar.build_bot_edit_widget($("#settings_page"));
+
+    $("#active_bots_list").on("click", "button.open_edit_bot_form", function (e) {
+        var users_list = people.get_realm_persons().filter(function (person)  {
+            return !person.is_bot;
+        });
         var li = $(e.currentTarget).closest('li');
         var edit_div = li.find('div.edit_bot');
-        var form = li.find('.edit_bot_form');
+        var form = $('#settings_page .edit_bot_form');
         var image = li.find(".image");
-        var bot_info = li.find(".bot_info");
+        var bot_info = li;
         var reset_edit_bot = li.find(".reset_edit_bot");
-
+        var owner_select = $(templates.render("bot_owner_select", {users_list:users_list}));
         var old_full_name = bot_info.find(".name").text();
-        form.find(".edit_bot_name").attr('value', old_full_name);
+        var old_owner = bot_data.get(bot_info.find(".email .value").text()).owner;
+        var bot_email = bot_info.find(".email .value").text();
 
-        image.hide();
-        bot_info.hide();
-        edit_div.show();
+        $("#settings_page .edit_bot .edit_bot_name").val(old_full_name);
+        $("#settings_page .edit_bot .select-form").text("").append(owner_select);
+        $("#settings_page .edit_bot .edit-bot-owner select").val(old_owner);
+        $("#settings_page .edit_bot_form").attr("data-email", bot_email);
+        $(".edit_bot_email").text(bot_email);
 
-        var avatar_widget = avatar.build_bot_edit_widget(li);
+        avatar_widget.clear();
+
 
         function show_row_again() {
             image.show();
             bot_info.show();
             edit_div.hide();
-            avatar_widget.close();
         }
 
         reset_edit_bot.click(function (event) {
+            form.find(".edit_bot_name").val(old_full_name);
+            owner_select.remove();
             show_row_again();
             $(this).off(event);
         });
@@ -685,9 +856,10 @@ function _setup_page() {
                 errors.hide();
             },
             submitHandler: function () {
-                var email = form.data('email');
+                var email = form.attr('data-email');
                 var full_name = form.find('.edit_bot_name').val();
-                var file_input = li.find('.edit_bot_avatar_file_input');
+                var bot_owner = form.find('.edit-bot-owner select').val();
+                var file_input = $(".edit_bot").find('.edit_bot_avatar_file_input');
                 var default_sending_stream = form.find('.edit_bot_default_sending_stream').val();
                 var default_events_register_stream = form.find('.edit_bot_default_events_register_stream').val();
                 var spinner = form.find('.edit_bot_spinner');
@@ -696,6 +868,7 @@ function _setup_page() {
 
                 formData.append('csrfmiddlewaretoken', csrf_token);
                 formData.append('full_name', full_name);
+                formData.append('bot_owner', bot_owner);
                 add_bot_default_streams_to_form(formData, default_sending_stream,
                                                 default_events_register_stream);
                 jQuery.each(file_input[0].files, function (i, file) {
@@ -714,6 +887,8 @@ function _setup_page() {
                         errors.hide();
                         edit_button.show();
                         show_row_again();
+                        avatar_widget.clear();
+
                         bot_info.find('.name').text(full_name);
                         if (data.avatar_url) {
                             // Note that the avatar_url won't actually change on the back end
@@ -727,16 +902,16 @@ function _setup_page() {
                         loading.destroy_indicator(spinner);
                         edit_button.show();
                         errors.text(JSON.parse(xhr.responseText).msg).show();
-                    }
+                    },
                 });
-            }
+            },
         });
 
 
     });
 
-    $("#bots_list").on("click", "a.download_bot_zuliprc", function () {
-        var bot_info = $(this).parent().parent();
+    $("#active_bots_list").on("click", "a.download_bot_zuliprc", function () {
+        var bot_info = $(this).closest(".bot-information-box");
         var email = bot_info.find(".email .value").text();
         var api_key = bot_info.find(".api_key .api-key-value-and-button .value").text();
 
@@ -747,7 +922,7 @@ function _setup_page() {
 
     $("#download_zuliprc").on("click", function () {
         $(this).attr("href", settings.generate_zuliprc_uri(
-            page_params.email,
+            people.my_current_email(),
             $("#api_key_value").text()
         ));
     });
@@ -761,8 +936,28 @@ function _setup_page() {
             },
             error: function (xhr) {
                 $('#user_api_key_error').text(JSON.parse(xhr.responseText).msg).show();
-            }
+            },
         });
+    });
+
+    $("#bots_lists_navbar .active-bots-tab").click(function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        $("#bots_lists_navbar .active-bots-tab").addClass("active");
+        $("#bots_lists_navbar .inactive-bots-tab").removeClass("active");
+        $("#active_bots_list").show();
+        $("#inactive_bots_list").hide();
+    });
+
+    $("#bots_lists_navbar .inactive-bots-tab").click(function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        $("#bots_lists_navbar .active-bots-tab").removeClass("active");
+        $("#bots_lists_navbar .inactive-bots-tab").addClass("active");
+        $("#active_bots_list").hide();
+        $("#inactive_bots_list").show();
     });
 
     $("#ui-settings").on("click", "input[name='change_settings']", function (e) {
@@ -777,7 +972,7 @@ function _setup_page() {
             url: '/json/settings/ui',
             data: labs_updates,
             success: function (resp, statusText, xhr) {
-                var message = i18n.t("Updated __product_name__ Labs settings!  You will need to reload for these changes to take effect.", page_params);
+                var message = i18n.t("Updated settings!  You will need to reload for these changes to take effect.", page_params);
                 var result = JSON.parse(xhr.responseText);
                 var ui_settings_status = $('#ui-settings-status').expectOne();
 
@@ -790,14 +985,29 @@ function _setup_page() {
             },
             error: function (xhr) {
                 ui.report_error(i18n.t("Error changing settings"), xhr, $('#ui-settings-status').expectOne());
-            }
+            },
         });
+    });
+
+    $(function () {
+        $('body').on('click', '.settings-unmute-topic', function (e) {
+            var $row = $(this).closest("tr");
+            var stream = $row.data("stream");
+            var topic = $row.data("topic");
+
+            stream_popover.topic_ops.unmute(stream, topic);
+            $row.remove();
+            e.stopImmediatePropagation();
+        });
+
+        muting_ui.set_up_muted_topics_ui(muting.get_muted_topics());
     });
 }
 
 function _update_page() {
     $("#twenty_four_hour_time").prop('checked', page_params.twenty_four_hour_time);
     $("#left_side_userlist").prop('checked', page_params.left_side_userlist);
+    $("#emoji_alt_code").prop('checked', page_params.emoji_alt_code);
     $("#default_language_name").text(page_params.default_language_name);
 
     $("#enable_stream_desktop_notifications").prop('checked', page_params.stream_desktop_notifications_enabled);
@@ -817,6 +1027,17 @@ exports.setup_page = function () {
 
 exports.update_page = function () {
     i18n.ensure_i18n(_update_page);
+};
+
+exports.launch_page = function (tab) {
+    var $active_tab = $("#settings_overlay_container li[data-section='" + tab + "']");
+
+    if (!$active_tab.hasClass("admin")) {
+        $(".sidebar .ind-tab[data-tab-key='settings']").click();
+    }
+
+    $("#settings_overlay_container").addClass("show");
+    $active_tab.click();
 };
 
 return exports;

@@ -9,6 +9,8 @@ mirrors when they receive the messages sent every minute by
 /etc/cron.d/test_zephyr_personal_mirrors
 """
 from __future__ import print_function
+if False:
+    from typing import Dict
 
 import os
 import time
@@ -20,7 +22,7 @@ states = {
     "WARNING": 1,
     "CRITICAL": 2,
     "UNKNOWN": 3
-    } # type: Dict[str, int]
+} # type: Dict[str, int]
 
 def report(state, output):
     # type: (str, str) -> None
@@ -35,7 +37,7 @@ for results_file_name in os.listdir(RESULTS_DIR):
     data = open(results_file).read().strip()
     last_check = os.stat(results_file).st_mtime
     time_since_last_check = time.time() - last_check
-    # time_since_last_check threshhold needs to be strictly greater
+    # time_since_last_check threshold needs to be strictly greater
     # than 1 minute, since with cron we expect intervals of at least 1
     # minute without any update
     if data.split("\n")[-1].strip() != "0" or time_since_last_check >= 90:

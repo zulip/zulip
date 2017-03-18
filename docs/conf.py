@@ -232,8 +232,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  (master_doc, 'zulip-contributor-docs.tex', u'Zulip Documentation',
-   u'The Zulip Team', 'manual'),
+    (master_doc, 'zulip-contributor-docs.tex', u'Zulip Documentation',
+     u'The Zulip Team', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -276,9 +276,9 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  (master_doc, 'zulip-contributor-docs', u'Zulip Documentation',
-   author, 'zulip-contributor-docs', 'Documentation for contributing to Zulip.',
-   'Miscellaneous'),
+    (master_doc, 'zulip-contributor-docs', u'Zulip Documentation',
+     author, 'zulip-contributor-docs', 'Documentation for contributing to Zulip.',
+     'Miscellaneous'),
 ]
 
 # Documents to append as an appendix to all manuals.
@@ -296,8 +296,8 @@ texinfo_documents = [
 from recommonmark.parser import CommonMarkParser
 
 source_parsers = {
-        '.md': CommonMarkParser,
-        }
+    '.md': CommonMarkParser,
+}
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:

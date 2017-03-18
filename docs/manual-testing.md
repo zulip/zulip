@@ -153,8 +153,8 @@ populated and where the focus is placed.
     - use C to compose a new PM
 
 - Buttons
-    - Narrow to a stream and click on "New stream message"
-    - Narrow "Private Messages" and click on "New stream message"
+    - Narrow to a stream and click on "New topic"
+    - Narrow "Private Messages" and click on "New topic"
     - Narrow to a stream and click on "New private message"
     - Narrow "Private Messages" and click on "New private message"
 
@@ -215,7 +215,7 @@ Here are the things to test:
     - Compose (send a message to the stream)
     - Mark as read (scroll back and then have Hamlet send you a message)
     - Mute/unmute (do both)
-    - Unsubcribe (and then go to Stream Settings in the gear menu to resubscribe)
+    - Unsubscribe (and then go to Stream settings in the gear menu to resubscribe)
     - Choose custom color (play around with this)
 
 - Topic sidebar menus
@@ -348,7 +348,7 @@ Miscellaneous:
 - Use the "x" icon to clear a search.
 - Use the "Esc" hotkey to clear a search.
 
-### Stream Settings ###
+### Stream settings ###
 
 Test various UI entry points into stream settings:
 - Use small gear menu in left sidebar, then filter to "devel".
@@ -370,7 +370,7 @@ Test subscribe/unsubscribe:
 - Log in as Hamlet and go to his stream settings.
 - As Cordelia, unsubscribe from "public1" using the checkmark in the
   streams settings page.
-- Verify that Hamlet sees that Corderlia has unsubscribed (and the
+- Verify that Hamlet sees that Cordelia has unsubscribed (and the
   subscriber count should decrement).
 - As Cordelia, resubscribe to "public1."
 - Verify Hamlet sees that change.
@@ -400,11 +400,11 @@ Test per-stream options:
 You can modify per-user settings by choosing "Settings" in the gear menu.
 Do these tasks as Cordelia.
 
-- Your Account
+- Your account
     - Change full name (Hamlet should see the name change)
     - Customize avatar
     - Deactivate account (and then log in as Iago to re-activate Cordelia)
-- Display Settings
+- Display settings
     - Right now, these unfortunately require reloads to take effect.
     - Default language (change to Spanish)
     - Display user list in narrow windows (verify by making window thinner)
@@ -451,7 +451,7 @@ Here are the tasks for this section:
 Make sure that these options launch appropriate help screens:
 - Proofread and try a couple random options:
     - Message formatting
-    - Search help
+    - Search operators
 - Make sure help launches in a separate browser tab:
     - Desktop and mobile apps
     - Integrations
@@ -473,6 +473,9 @@ Here are the tasks:
 
 ### To be continued... ###
 
-This document does not cover admin options yet.  The main thing to do
-when testing the admin system is to verify that changes are synced to
-other users.
+This document does not cover settings/admin options yet.  The main
+things to do when testing the settings system are:
+- Verify that changes are synced to other users.
+- Verify error messages appear if you do something wrong and look right.
+- For organization settings, verify that they look right in read-only
+  mode (i.e. when not logged into an administrator account).

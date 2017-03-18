@@ -1,25 +1,22 @@
 # Change the stream description
 
-Note: Only administrators can change a stream's description.
+{!admin-only.md!}
 
-To change a stream's description, you'll first need to access
-your current stream subscriptions.
-You can do this by clicking on the settings cog at the top of
-your streams list on the left.
+{!follow-steps.md!} change the description of any stream in your
+organization.
 
-![list of streams](/static/images/help/list-of-streams.png)
+{!subscriptions.md!}
+{!filter-streams.md!}
 
-(You can also access current stream subscriptions by clicking on
-**Manage Streams** from the settings cog (![](/static/images/help/cog.png))
-in the top right.)
+    !!! tip ""
+    {!all-streams.md!}
 
-A window with your current stream subscriptions will appear.
-From the left, select the stream whose description you'd like
-to change.
+3. Click on the stream that you want to change the description of;
+{!stream-settings.md!}
 
-![change description field](/static/images/help/change-stream-description.png)
+{!stream-settings-scroll.md!} **Administrator settings** section. This section
+shows all stream settings that can be modified by an organization administrator.
 
-Under **Administrator settings** on the right, there is a field
-with the current stream description.
-Change your stream's description in this field, and click
-**Change stream description** to save the change.
+6. To make a public stream private, input the new stream description in the
+field to the left of the **Change stream description** button. Click the
+**Change stream description** button to save your changes.

@@ -2,7 +2,7 @@ var finder = (function () {
 
 var exports = {};
 
-var _ = require('third/underscore/underscore.js');
+var _ = require('node_modules/underscore/underscore.js');
 var fs = require('fs');
 var path = require('path');
 
@@ -21,6 +21,7 @@ exports.find_files_to_run = function () {
     var tests_dir = __dirname.replace(/zjsunit/, 'node_tests');
 
     var tests = fs.readdirSync(tests_dir)
+      .filter(function (filename) {return !(/^\./i).test(filename);})
       .filter(function (filename) {return (/\.js$/i).test(filename);})
       .map(function (filename) {return filename.replace(/\.js$/i, '');});
 

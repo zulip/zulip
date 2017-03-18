@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from typing import Any, Optional, Text
+from typing import Any, Dict, List, Optional, Text
 
 import logging
 import re
@@ -56,7 +56,7 @@ def log_and_report(email_message, error_message, debug_info):
                                               scrubbed_error)
 
     if "stream" in debug_info:
-        scrubbed_error = u"Realm: %s\n%s" % (debug_info["stream"].realm.domain,
+        scrubbed_error = u"Realm: %s\n%s" % (debug_info["stream"].realm.string_id,
                                              scrubbed_error)
 
     logger.error(scrubbed_error)
@@ -176,8 +176,8 @@ def send_to_missed_message_address(address, message):
     else:
         recipient_type_name = 'private'
 
-    internal_send_message(user_profile.email, recipient_type_name,
-                          recipient_str, subject, body)
+    internal_send_message(user_profile.realm, user_profile.email,
+                          recipient_type_name, recipient_str, subject, body)
     logging.info("Successfully processed email from %s to %s" % (
         user_profile.email, recipient_str))
 
@@ -189,12 +189,12 @@ class ZulipEmailForwardError(Exception):
 def send_zulip(sender, stream, topic, content):
     # type: (Text, Stream, Text, Text) -> None
     internal_send_message(
-            sender,
-            "stream",
-            stream.name,
-            topic[:60],
-            content[:2000],
-            stream.realm)
+        stream.realm,
+        sender,
+        "stream",
+        stream.name,
+        topic[:60],
+        content[:2000])
 
 def valid_stream(stream_name, token):
     # type: (Text, Text) -> bool
@@ -205,7 +205,7 @@ def valid_stream(stream_name, token):
         return False
 
 def get_message_part_by_type(message, content_type):
-    # type: (message.Message, Text) -> Text
+    # type: (message.Message, Text) -> Optional[Text]
     charsets = message.get_charsets()
 
     for idx, part in enumerate(message.walk()):
@@ -215,6 +215,7 @@ def get_message_part_by_type(message, content_type):
             if charsets[idx]:
                 text = content.decode(charsets[idx], errors="ignore")
             return text
+    return None
 
 def extract_body(message):
     # type: (message.Message) -> Text
@@ -259,7 +260,7 @@ def extract_and_upload_attachments(message, realm):
         if filename:
             attachment = part.get_payload(decode=True)
             if isinstance(attachment, binary_type):
-                s3_url = upload_message_image(filename, content_type,
+                s3_url = upload_message_image(filename, len(attachment), content_type,
                                               attachment,
                                               user_profile,
                                               target_realm=realm)
@@ -312,7 +313,7 @@ def process_stream_message(to, subject, message, debug_info):
     debug_info["stream"] = stream
     send_zulip(settings.EMAIL_GATEWAY_BOT, stream, subject, body)
     logging.info("Successfully processed email to %s (%s)" % (
-        stream.name, stream.realm.domain))
+        stream.name, stream.realm.string_id))
 
 def process_missed_message(to, message, pre_checked):
     # type: (Text, message.Message, bool) -> None

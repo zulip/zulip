@@ -8,6 +8,10 @@ import os
 import sys
 import unittest
 
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--coverage', dest='coverage',

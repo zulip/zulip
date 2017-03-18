@@ -28,6 +28,7 @@
 .subscriptions {
     margin-top: 55px;
     padding-left: 15px;
+    -webkit-font-smoothing: antialiased;
 }
 
 .subscriptions div #response {
@@ -202,7 +203,7 @@
     border: 1px solid #adadad;
 }
 
-.btn.sub_unsub_button {
+.stream-row .btn.sub_unsub_button {
     display: inline-block;
     min-width: 140px;
     float: right;
@@ -281,35 +282,68 @@ form#add_new_subscription {
 
 .subscriber-list-box {
     text-align: center;
+    border: 1px solid #ddd;
+    border-radius: 4px;
 }
 
 .subscriber_list_container {
-    margin-top: 10px;
-    display: inline-block;
-    margin: auto;
     max-height: 300px;
     overflow: auto;
     text-align: left;
+    -webkit-overflow-scrolling: touch;
 }
 
 .subscriber-list {
-    width: auto;
+    width: 100%;
     margin: auto;
-    background: #efefef;
     border-radius: 6px;
 }
 
-.subscriber-list tr:nth-child(even) {
-   background: #fafafa;
+.subscriber-list tr {
+    border-bottom: 1px solid #eee;
+}
+
+.subscriber-list tr:last-of-type {
+    border-bottom: none;
+}
+
+.subscriber-list tr td {
+    padding: 4px 0px;
+}
+
+.subscriber-list tr td:first-of-type {
+    padding-left: 10px;
+}
+
+.subscriber-list tr td:last-of-type {
+    padding-right: 10px;
+}
+
+.subscriber-list tr td.unsubscribe {
+    text-align: right;
+}
+
+.subscriber-list .subscriber_list_remove {
+    display: inline-block;
+}
+
+.subscriber-list tbody:empty::after,
+.subscriber-list:empty::after {
+    content: "No subscribers to this stream.";
+    display: block;
+
+    text-align: center;
+    color: #aaa;
+}
+
+.subscriber-list:empty {
+    display: block;
+    padding: 5px;
 }
 
 .subscriber-name,
 .subscriber-email {
     padding: 5px;
-}
-
-.subscriber-name {
-    padding-left: 8px;
 }
 
 .subscriber-email {
@@ -318,8 +352,12 @@ form#add_new_subscription {
 }
 
 .subscriber_list_add {
-    margin: auto;
+    margin: 10px auto;
     text-align: center;
+}
+
+.subscriber_list_add .form-inline {
+    margin-bottom: 0px;
 }
 
 .remove-subscriber-form {
@@ -387,8 +425,35 @@ form#add_new_subscription {
     border-bottom: 1px solid #ddd;
 }
 
+.subscriptions-header .icon-vector-chevron-left {
+    display: none;
+
+    position: relative;
+    transform: translate(-50px, 0px);
+    opacity: 0;
+    color: #aaa;
+
+    float: left;
+    padding: 5px 10px;
+
+    cursor: pointer;
+
+    transition: all 0.3s ease;
+}
+
+.subscriptions-header.slide-left .icon-vector-chevron-left {
+    transform: translate(-0px, 0px);
+    opacity: 1;
+}
+
+.subscriptions-header .subscriptions-title {
+    display: inline-block;
+    transition: all 0.3s ease;
+    transform: translate(-13px, 0px);
+}
+
 .subscriptions-container .exit {
-    font-weight: 400;
+    font-weight: 600;
     position: absolute;
     top: 10px;
     right: 10px;
@@ -400,8 +465,8 @@ form#add_new_subscription {
     position: relative;
     top: 3px;
     margin-left: 3px;
-    font-size: 1.7em;
-    font-weight: 300;
+    font-size: 1.5rem;
+    font-weight: 600;
     cursor: pointer;
 }
 
@@ -527,13 +592,15 @@ form#add_new_subscription {
 }
 
 .streams-list {
+    position: relative;
     overflow: auto;
+    -webkit-overflow-scrolling: touch;
     height: calc(100% - 45px);
     width: 100%;
 }
 
 .stream-row {
-    padding: 15px 10px;
+    padding: 15px 10px 14px 10px;
     border-bottom: 1px solid #eee;
     cursor: pointer;
 }
@@ -550,14 +617,26 @@ form#add_new_subscription {
 .stream-row .check {
     width: 25px;
     height: 35px;
+    position: relative;
     margin-right: 8px;
     background-size: 60% auto;
     background-repeat: no-repeat;
     background-position: center center;
 }
 
-.stream-row .checked {
-    background-image: url(../images/checkbox-green.png);
+.stream-row .check svg {
+    fill: transparent;
+    width: 70%;
+    margin: 0% 15%;
+}
+
+.stream-row:hover .check:not(.checked) svg,
+.stream-row.active:hover .check:not(.checked) svg {
+    fill: #ddd;
+}
+
+.stream-row .checked svg {
+    fill: #52c2af;
 }
 
 .stream-row .icon {
@@ -615,7 +694,7 @@ form#add_new_subscription {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    line-height: 1;
+    line-height: 1.1;
 }
 
 #subscription_overlay .stream-description:empty:after,
@@ -629,6 +708,7 @@ form#add_new_subscription {
     max-height: calc(100% - 102px);
     overflow: auto;
     outline: none;
+    -webkit-overflow-scrolling: touch;
 }
 
 #subscription_overlay #stream-creation .modal-footer {
@@ -667,10 +747,26 @@ form#add_new_subscription {
     display: inline-block;
     font-size: 1.5em;
     font-weight: 600;
+    margin-left: -3px;
+}
+
+#subscription_overlay .stream-header .subscribe-button {
+    float: right;
+    margin-top: -5px;
+}
+
+#subscription_overlay .stream-header .subscribe-button.unsubscribed {
+    color: #5bb792;
+    border-color: #addcc9;
+}
+
+#subscription_overlay .stream-header .subscribe-button.unsubscribed:active {
+    background-color: rgba(91,183,146,0.2);
 }
 
 #subscription_overlay .stream-header .large-icon {
     display: inline-block;
+    vertical-align: top;
     margin-right: 5px;
     font-size: 1.5em;
 }
@@ -680,10 +776,80 @@ form#add_new_subscription {
     margin-bottom: 5px;
 }
 
+#preview-stream-button {
+    float: right;
+    margin-top: -5px;
+    margin-right: 5px;
+    text-decoration: none;
+    line-height: 16px;
+    vertical-align: middle;
+}
+
+.editable-section {
+    position: relative;
+    display: inline;
+    min-width: 10px;
+    max-width: 100%;
+}
+
+.editable-section[contenteditable=true] {
+    display: inline-block;
+    color: #52c2af;
+}
+
+.editable-section[contenteditable=true]:focus {
+    outline: none;
+}
+
+#subscription_overlay .editable {
+    position: relative;
+    top: -1px;
+    margin-left: 5px;
+    color: #aaa;
+    cursor: pointer;
+    font-size: 1.4rem;
+    font-weight: 300;
+
+    transition: all 0.3s ease;
+}
+
+#subscription_overlay .editable:empty:before {
+    content: "\f040";
+    font-family: "FontAwesome";
+    font-size: 0.8rem;
+    font-weight: normal;
+}
+
+#subscription_overlay .editable:not(:empty) {
+    position: relative;
+    top: 2px;
+}
+
+#subscription_overlay .editable:hover {
+    color: #444;
+}
+
+#subscription_overlay .checkmark {
+    display: none;
+    margin-left: 5px;
+    font-size: 0.9rem;
+    color: #aaa;
+
+    cursor: pointer;
+}
+
+#subscription_overlay .checkmark.show {
+    display: block;
+}
+
 #subscription_overlay .subscription-type {
     margin-bottom: 10px;
     font-size: 0.9em;
     color: #888;
+}
+
+#subscription_overlay .subscription-type .subscription-type-text {
+    display: inline;
 }
 
 #subscription_overlay .subscription-type b {
@@ -698,26 +864,11 @@ form#add_new_subscription {
     font-weight: 800;
 }
 
-#subscription_overlay {
-    display: none;
-    position: fixed;
-    top: 0px;
-    left: 0px;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0,0,0,0.8);
-    overflow: auto;
-    z-index: 102;
-}
-
-#subscription_overlay.show {
-    display: block;
-}
-
 #subscription_overlay .settings {
     position: relative;
     height: calc(100% - 45px);
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 #subscription_overlay .subscription_settings {
@@ -791,21 +942,48 @@ form#add_new_subscription {
 }
 
 @media (max-width: 700px) {
+    .subscriptions-container {
+        position: relative;
+    }
+
+    .subscriptions-header .icon-vector-chevron-left {
+        display: block;
+    }
+
     #subscription_overlay .left,
     #subscription_overlay .right {
+        position: absolute;
         display: block;
+        margin: 0;
         width: 100%;
+        height: calc(100% - 45px);
+
+        border: none;
     }
 
-    #subscription_overlay .left {
-        overflow: auto;
-        height: 30%;
+    .subscriptions-container {
+        overflow: hidden;
+    }
+
+    .subscriptions-container .search-container {
+        text-align: left;
     }
 
     #subscription_overlay .right {
-        overflow: auto;
-        height: calc(70% - 45px);
+        position: absolute;
+        left: 101%;
+
+        top: 45px;
         border-top: 1px solid #ddd;
+        background-color: #fff;
+        border-top: none;
+
+        transition: all 0.3s ease;
+        z-index: 10;
+    }
+
+    #subscription_overlay .right.show {
+        left: 0%;
     }
 
     #subscription_overlay .display-type {
@@ -816,12 +994,9 @@ form#add_new_subscription {
         height: 95%;
     }
 
-    #subscription_overlay .subscription_settings {
-        overflow: visible;
-    }
-
     #subscription_overlay .settings {
-        height: auto;
-        overflow: visible;
+        overflow: auto;
+        height: calc(100% - 20px);
+        -webkit-overflow-scrolling: touch;
     }
 }

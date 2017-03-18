@@ -11,13 +11,13 @@ from zerver.lib.actions import do_add_realm_filter, do_remove_realm_filter
 from zerver.lib.response import json_success, json_error
 from zerver.lib.rest import rest_dispatch as _rest_dispatch
 from zerver.lib.validator import check_string
-from zerver.models import realm_filters_for_domain, UserProfile, RealmFilter
+from zerver.models import realm_filters_for_realm, UserProfile, RealmFilter
 
 
 # Custom realm filters
 def list_filters(request, user_profile):
     # type: (HttpRequest, UserProfile) -> HttpResponse
-    filters = realm_filters_for_domain(user_profile.realm.domain)
+    filters = realm_filters_for_realm(user_profile.realm_id)
     return json_success({'filters': filters})
 
 

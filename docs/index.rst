@@ -54,6 +54,7 @@ Contents:
    prod-troubleshooting
    prod-customize
    prod-maintain-secure-upgrade
+   security-model
    prod-authentication-methods
    prod-postgres
 
@@ -76,9 +77,11 @@ Contents:
    :caption: Developer tutorials
 
    integration-guide
+   webhook-walkthrough
    new-feature-tutorial
    writing-views
    life-of-a-request
+   reading-list
 
 .. _code-docs:
 
@@ -91,6 +94,8 @@ Contents:
    code-style
    mypy
    code-reviewing
+   chat-zulip-org
+   zulipbot-usage
 
 .. _code-testing:
 
@@ -112,6 +117,7 @@ Contents:
    :caption: Subsystem documentation
 
    settings
+   events-system
    queuing
    bots-guide
    custom-apps
@@ -121,8 +127,11 @@ Contents:
    front-end-build-process
    schema-migrations
    html_css
+   emoji
    full-text-search
+   analytics
    translating
    logging
    release-checklist
    README
+   user-docs

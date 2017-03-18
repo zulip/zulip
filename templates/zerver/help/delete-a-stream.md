@@ -1,29 +1,23 @@
 # Delete a stream
 
-In Zulip, most of the stream administration is done on the
-subscription page.  Nevertheless, that is not the case for deleting a
-stream.  Follow these instructions to learn how it is done.
+{!admin-only.md!}
 
-## Locate the administration tab
+In Zulip, most of the stream administration is done on the subscription page.
+However, Zulip organization administrators must use their administration panels
+to delete streams.
 
-Only Zulip administrators may delete streams.  To delete a stream,
-click the gear (![cog](/static/images/help/cog.png)) at your top right
-corner.  Select the "Administration" tab.
+{!go-to-the.md!} [Delete streams](/#administration/streams-list-admin)
+{!admin.md!}
 
-![Streams Cog](/static/images/help/administration.png)
+2. Find the stream you want to delete, and click the **Delete stream** button to
+the right of it.
 
-Once on the administration page, first you should click on the
-**Streams Deletion** tab. Now you should be able to see a list of all the
-streams that can be deleted. Search for the stream you want to delete and
-click the **Delete Stream** button.
+3. Upon clicking on the **Delete stream** button, a confirmation window titled
+**Delete stream (stream name)** will appear. Click the **Yes, delete this stream**
+button to delete the stream.
 
-![Streams Deletion](/static/images/help/stream-deletion.png)
-
-A confirmation window will appear.
-
-![Streams Deletion Confirmation](/static/images/help/stream-confirm-deletion.png)
-
-Once you are ready to delete your stream, and aware of **all** the
-**consequences**, since this operation is not reversible.  You can
-confirm the deletion of that stream.  Once you click the **Yes, delete
-this stream** button, your stream will be deleted.
+!!! warn ""
+    **Warning:** Please be aware of the consequences of deleting a stream,
+    since this operation is irreversible. Deleting a stream will immediately
+    unsubscribe all users from the stream, and the stream's content will not be
+    recoverable.

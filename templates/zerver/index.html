@@ -60,6 +60,9 @@ var page_params = {{ page_params }};
 <div id="right-screen" class="screen"></div>
 <div id="clear-screen" class="screen"></div>
 
+<div id="settings_overlay_container" class="overlay" data-overlay="settings">
+  {% include "zerver/settings_overlay.html" %}
+</div>
 {% include "zerver/navbar.html" %}
 
 <div class="fixed-app">
@@ -73,7 +76,7 @@ var page_params = {{ page_params }};
 <div class="app">
 <div class="app-main">
     <div class="column-left">
-          {% include "zerver/left-sidebar.html" %}
+          {% include "zerver/left_sidebar.html" %}
     </div>
     <div class="column-middle">
         <div class="column-middle-inner tab-content">
@@ -102,10 +105,6 @@ var page_params = {{ page_params }};
             </div>
                 {% include "zerver/home.html" %}
             </div>
-            <div class="tab-pane new-style" id="administration">
-            </div>
-            <div class="tab-pane new-style" id="settings">
-            </div>
 
             {% if show_debug %}
             <div class="tab-pane" id="debug">
@@ -115,14 +114,24 @@ var page_params = {{ page_params }};
         </div><!--/tab-content-->
     </div>
     <div class="column-right">
-          {% include "zerver/right-sidebar.html" %}
+          {% include "zerver/right_sidebar.html" %}
     </div><!--/right sidebar-->
-    {% include "zerver/image-overlay.html" %}
+    {% include "zerver/lightbox_overlay.html" %}
     {% include "zerver/subscriptions.html" %}
+    {% include "zerver/drafts.html" %}
 </div><!--/row-->
-    {% include "zerver/keyboard_shortcuts.html" %}
-    {% include "zerver/search_operators.html" %}
-    {% include "zerver/markdown_help.html" %}
+    <div class="informational-overlays overlay new-style" data-overlay="informationalOverlays">
+        <div class="overlay-content">
+            <div class="overlay-tabs">
+                <button class="button no-style exit">&times;</button>
+            </div>
+            <div class="overlay-body">
+                {% include "zerver/keyboard_shortcuts.html" %}
+                {% include "zerver/search_operators.html" %}
+                {% include "zerver/markdown_help.html" %}
+            </div>
+        </div>
+    </div>
     {% include "zerver/invite_user.html" %}
     {% include "zerver/bankruptcy.html" %}
     {% include "zerver/logout.html" %}

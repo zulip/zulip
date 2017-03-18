@@ -1,28 +1,8 @@
 #overlay {
-    position: fixed;
-    top: 0px;
-    left: 0px;
-
-    width: 100vw;
-    height: 100vh;
-
-    pointer-events: none;
-    opacity: 0;
-
     background-color: #19203a;
-    box-shadow: 0 0 20px rgba(0,0,0,0.2);
-    z-index: 110;
-
-    transition: all 0.2s ease;
-    overflow: auto;
 
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-}
-
-#overlay.show {
-    pointer-events: auto;
-    opacity: 1;
 }
 
 #overlay .image-preview {
@@ -125,21 +105,33 @@
 
 #overlay .image-description {
     /* approx width of screen minus action buttons on the side. */
-    width: calc(100% - 320px);
+    width: calc(100% - 260px);
+    /* add some extra margin top and remove some bottom to keep the
+       height the same. and vertically center the text with the buttons. */
+    margin-top: 25px;
+    margin-bottom: 15px;
 
     font-size: 1.3rem;
     color: #fff;
 }
 
 #overlay .image-description .title {
+    display: inline-block;
+    vertical-align: top;
+
     font-weight: 500;
     line-height: normal;
-    max-width: calc(100%);
+    max-width: calc(100% - 210px);
 
     /* Required for text-overflow */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+#overlay .image-description .user::before {
+    margin-right: 5px;
+    content: "\2014";
 }
 
 #overlay .player-container {
@@ -157,7 +149,14 @@
 }
 
 #overlay .image-description .user {
+    max-width: 200px;
+    display: inline-block;
+    vertical-align: top;
     font-weight: 300;
+    line-height: normal;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: pre;
 }
 
 .image-actions .button {
@@ -197,5 +196,9 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+
+    #overlay .image-description .title {
+        max-width: calc(100% - 60px);
     }
 }

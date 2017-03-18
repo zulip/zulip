@@ -11,8 +11,6 @@ $(function () {
     var clicking = false;
     var mouse_moved = false;
 
-    var meta = {};
-
     function mousedown() {
         mouse_moved = false;
         clicking = true;
@@ -72,7 +70,7 @@ $(function () {
         // lists.
         var message = ui.find_message(message_id);
 
-        unread.mark_message_as_read(message);
+        unread_ui.mark_message_as_read(message);
         ui.update_starred(message.id, message.starred !== true);
         message_flags.send_starred([message], message.starred);
     }
@@ -98,6 +96,14 @@ $(function () {
             return;
         }
         window.location.href = $(this).attr('href');
+    });
+
+    // NOTIFICATION CLICK
+
+    $('body').on('click', '.notification', function () {
+        var payload = $(this).data("narrow");
+        ui.change_tab_to('#home');
+        narrow.activate(payload.raw_operators, payload.opts_notif);
     });
 
     // MESSAGE EDITING
@@ -151,8 +157,15 @@ $(function () {
         }
     });
 
-    $(window).on("focus", function () {
-        meta.focusing = true;
+
+    // MUTING
+
+    $('body').on('click', '.on_hover_topic_mute', function (e) {
+        e.stopPropagation();
+        var stream_id = $(e.currentTarget).attr('data-stream-id');
+        var topic = $(e.currentTarget).attr('data-topic-name');
+        var stream = stream_data.get_sub_by_id(stream_id);
+        stream_popover.topic_ops.mute(stream.name, topic);
     });
 
     // RECIPIENT BARS
@@ -207,7 +220,7 @@ $(function () {
         var sidebarHidden = !$(".app-main .column-left").hasClass("expanded");
         popovers.hide_all();
         if (sidebarHidden) {
-            popovers.show_streamlist_sidebar();
+            stream_popover.show_streamlist_sidebar();
         }
     });
 
@@ -241,22 +254,15 @@ $(function () {
     });
 
     $("#subscriptions_table").on("click", ".exit, #subscription_overlay", function (e) {
-        if (meta.focusing) {
-            meta.focusing = false;
-            return;
-        }
-
         if ($(e.target).is(".exit, .exit-sign, #subscription_overlay, #subscription_overlay > .flex")) {
-            $("#subscription_overlay").fadeOut(500);
-            subs.remove_miscategorized_streams();
-
-            hashchange.exit_settings();
+            subs.close();
         }
     });
+
     // HOME
 
     // Capture both the left-sidebar Home click and the tab breadcrumb Home
-    $(document).on('click', "li[data-name='home']", function (e) {
+    $(document).on('click', ".home-link[data-name='home']", function (e) {
         ui.change_tab_to('#home');
         narrow.deactivate();
         // We need to maybe scroll to the selected message
@@ -265,7 +271,6 @@ $(function () {
         e.preventDefault();
     });
 
-    // This is obsolete, I believe.
     $(".brand").on('click', function (e) {
         if (ui.home_tab_obscured()) {
             ui.change_tab_to('#home');
@@ -287,11 +292,13 @@ $(function () {
     }());
 
     popovers.register_click_handlers();
+    stream_popover.register_click_handlers();
     notifications.register_click_handlers();
 
-    $('.logout_button').click(function () {
+    $('body').on('click', '.logout_button', function () {
         $('#logout_form').submit();
     });
+
     $('.restart_get_events_button').click(function () {
         server_events.restart_get_events({dont_block: true});
     });
@@ -307,7 +314,7 @@ $(function () {
 
 
     $('.compose_stream_button').click(function () {
-        compose.start('stream');
+        compose.start('stream', {trigger: 'new topic button'});
     });
     $('.compose_private_button').click(function () {
         compose.start('private');
@@ -320,6 +327,10 @@ $(function () {
     $('.empty_feed_compose_private').click(function (e) {
         compose.start('private', {trigger: 'empty feed message'});
         e.preventDefault();
+    });
+
+    $("body").on("click", "[data-overlay-trigger]", function () {
+        ui.show_info_overlay($(this).attr("data-overlay-trigger"));
     });
 
     function handle_compose_click(e) {
@@ -344,6 +355,13 @@ $(function () {
 
     $("#compose_close").click(function () {
         compose.cancel();
+    });
+
+    $("#join_unsub_stream").click(function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        window.location.hash = "streams/all";
     });
 
     // FEEDBACK
@@ -374,8 +392,8 @@ $(function () {
             relay_url: "https://webathena.mit.edu/relay.html",
             params: {
                 realm: "ATHENA.MIT.EDU",
-                principal: principal
-            }
+                principal: principal,
+            },
         }, function (err, r) {
             if (err) {
                 blueslip.warn(err);
@@ -394,7 +412,7 @@ $(function () {
                 },
                 error: function () {
                     $("#zephyr-mirror-error").show();
-                }
+                },
             });
         });
         $('#settings-dropdown').dropdown("toggle");
@@ -406,15 +424,90 @@ $(function () {
     // BANKRUPTCY
 
     $(".bankruptcy_button").click(function () {
-        unread.enable();
+        unread_ui.enable();
     });
+
+    (function () {
+        var map = {
+            ".stream-description-editable": subs.change_stream_description,
+            ".stream-name-editable": subs.change_stream_name,
+        };
+
+        // http://stackoverflow.com/questions/4233265/contenteditable-set-caret-at-the-end-of-the-text-cross-browser
+        function place_caret_at_end(el) {
+            el.focus();
+
+            if (typeof window.getSelection !== "undefined"
+                    && typeof document.createRange !== "undefined") {
+                var range = document.createRange();
+                range.selectNodeContents(el);
+                range.collapse(false);
+                var sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range);
+            } else if (typeof document.body.createTextRange !== "undefined") {
+                var textRange = document.body.createTextRange();
+                textRange.moveToElementText(el);
+                textRange.collapse(false);
+                textRange.select();
+            }
+        }
+
+        $(document).on("keydown", ".editable-section", function (e) {
+            e.stopPropagation();
+        });
+
+        $(document).on("drop", ".editable-section", function () {
+            return false;
+        });
+
+        $(document).on("input", ".editable-section", function () {
+            // if there are any child nodes, inclusive of <br> which means you
+            // have lines in your description or title, you're doing something
+            // wrong.
+            if (this.hasChildNodes()) {
+                this.innerText = this.innerText;
+                place_caret_at_end(this);
+            }
+        });
+
+        $("body").on("click", "[data-make-editable]", function () {
+            var selector = $(this).attr("data-make-editable");
+            var edit_area = $(this).parent().find(selector);
+            if (edit_area.attr("contenteditable") === "true") {
+                $("[data-finish-editing='" + selector + "']").hide();
+                edit_area.attr("contenteditable", false);
+                edit_area.text(edit_area.attr("data-prev-text"));
+                $(this).html("");
+            } else {
+                $("[data-finish-editing='" + selector + "']").show();
+
+                edit_area.attr("data-prev-text", edit_area.text().trim())
+                    .attr("contenteditable", true);
+
+                place_caret_at_end(edit_area[0]);
+
+                $(this).html("&times;");
+            }
+        });
+
+        $("body").on("click", "[data-finish-editing]", function (e) {
+            var selector = $(this).attr("data-finish-editing");
+            if (map[selector]) {
+                map[selector](e);
+                $(this).hide();
+                $(this).parent().find(selector).attr("contenteditable", false);
+                $("[data-make-editable='" + selector + "']").html("");
+            }
+        });
+    }());
 
     $('#yes-bankrupt').click(function () {
         pointer.fast_forward_pointer();
         $("#yes-bankrupt").hide();
         $("#no-bankrupt").hide();
         $(this).after($("<div>").addClass("alert alert-info settings_committed")
-               .text("Bringing you to your latest messages…"));
+                      .text(i18n.t("Bringing you to your latest messages…")));
     });
 
     (function () {
@@ -432,20 +525,14 @@ $(function () {
             if ($target.parent().hasClass("youtube-video")) {
                 ui.lightbox({
                     type: "youtube",
-                    id: $target.data("id")
+                    id: $target.data("id"),
                 });
             } else {
                 ui.lightbox({
                     type: "photo",
                     image: img,
-                    user: user
+                    user: user,
                 });
-            }
-        });
-
-        $("#overlay .exit, #overlay .image-preview").click(function (e) {
-            if ($(e.target).is(".exit, .image-preview")) {
-                ui.exit_lightbox_photo();
             }
         });
 
@@ -485,6 +572,64 @@ $(function () {
     $('a.dropdown-toggle, .dropdown-menu a').on('touchstart', function (e) {
         e.stopPropagation();
     });
+
+    $("#settings_overlay_container .sidebar").on("click", "li[data-section]", function () {
+        var $this = $(this);
+
+        $("#settings_overlay_container .sidebar li").removeClass("active no-border");
+            $this.addClass("active");
+        $this.prev().addClass("no-border");
+    });
+
+    $("#settings_overlay_container .sidebar").on("click", "li[data-section]", function () {
+        var $this = $(this);
+        var section = $this.data("section");
+        var sel = "[data-name='" + section + "']";
+
+        $("#settings_overlay_container .sidebar li").removeClass("active no-border");
+        $this.addClass("active");
+        $this.prev().addClass("no-border");
+
+        if ($this.hasClass("admin")) {
+            window.location.hash = "administration/" + section;
+        } else {
+            window.location.hash = "settings/" + section;
+        }
+
+        $(".settings-section, .settings-wrapper").removeClass("show");
+        $(".settings-section" + sel + ", .settings-wrapper" + sel).addClass("show");
+    });
+
+    $("#settings_overlay_container").on("click", function (e) {
+        var $target = $(e.target);
+        if ($target.is(".exit-sign, .exit")) {
+            hashchange.exit_modal();
+        }
+    });
+
+    (function () {
+        var settings_toggle = components.toggle({
+            name: "settings-toggle",
+            values: [
+                { label: "Settings", key: "settings" },
+                { label: "Administration", key: "administration" },
+            ],
+            callback: function (name, key) {
+                $(".sidebar li").hide();
+
+                if (key === "administration") {
+                    $("li.admin").show();
+                    $("li[data-section='organization-settings']").click();
+                } else {
+                    $("li:not(.admin)").show();
+                    $("li[data-section='your-account']").click();
+                }
+            },
+        }).get();
+
+        $("#settings_overlay_container .tab-container")
+            .append(settings_toggle);
+    }());
 });
 
 return exports;

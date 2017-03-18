@@ -145,7 +145,12 @@ function cleanup_before_reload() {
         $('*').off();
 
         // Abort all pending ajax requests`
-        channel.abort_all();
+        try {
+            channel.abort_all();
+        } catch (ex) {
+            // This seems to throw exceptions for no apparent reason sometimes
+            blueslip.debug("Error aborting XHR requests on reload; ignoring");
+        }
 
         // Free all the DOM in the main_div
         $("#main_div").empty();
@@ -196,7 +201,7 @@ exports.initiate = function (options) {
         save_pointer: true,
         save_narrow: true,
         save_compose: true,
-        send_after_reload: false
+        send_after_reload: false,
     });
 
     if (options.save_pointer === undefined ||

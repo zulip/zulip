@@ -31,7 +31,7 @@ function batched_updater(flag, op, immediate) {
             data:     {messages: JSON.stringify(real_msg_ids),
                        op:       op,
                        flag:     flag},
-            success:  on_success
+            success:  on_success,
         });
     }
 

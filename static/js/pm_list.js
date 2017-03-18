@@ -62,7 +62,7 @@ function set_pm_conversation_count(conversation, count) {
 }
 
 function remove_expanded_private_messages() {
-    popovers.hide_topic_sidebar_popover();
+    stream_popover.hide_topic_popover();
     $("ul.expanded_private_messages").remove();
     resize.resize_stream_filters_container();
 }
@@ -76,7 +76,6 @@ function zoom_in() {
 exports.close = function () {
     private_messages_open = false;
     zoomed_in = false;
-    $("ul.filters li").removeClass('active-filter active-sub-filter');
     remove_expanded_private_messages();
 };
 
@@ -92,9 +91,9 @@ exports._build_private_messages_list = function (active_conversation, max_privat
     }
 
     _.each(private_messages, function (private_message_obj, idx) {
-        var recipients_string = private_message_obj.display_reply_to;
         var user_ids_string = private_message_obj.user_ids_string;
         var reply_to = people.user_ids_string_to_emails_string(user_ids_string);
+        var recipients_string = people.get_recipients(user_ids_string);
 
         var num_unread = unread.num_unread_for_person(user_ids_string);
 
@@ -113,7 +112,7 @@ exports._build_private_messages_list = function (active_conversation, max_privat
             unread: num_unread,
             is_zero: num_unread === 0,
             zoom_out_hide: !always_visible,
-            url: narrow.pm_with_uri(reply_to)
+            url: narrow.pm_with_uri(reply_to),
         };
         display_messages.push(display_message);
     });
@@ -166,6 +165,7 @@ exports.update_private_messages = function () {
         exports.rebuild_recent("");
     } else if (is_pm_filter) {
         exports.rebuild_recent("");
+        $("#global_filters li[data-name='private']").addClass('active-filter');
     }
 };
 

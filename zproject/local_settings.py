@@ -9,6 +9,7 @@
 import platform
 import six.moves.configparser
 from base64 import b64decode
+from typing import Set
 
 config_file = six.moves.configparser.RawConfigParser() # type: ignore # https://github.com/python/typeshed/pull/206
 config_file.read("/etc/zulip/zulip.conf")
@@ -22,8 +23,8 @@ PRODUCTION = config_file.has_option('machine', 'deploy_type')
 # Zulip run by Zulip, Inc.  We will eventually be able to get rid of
 # them and just have the PRODUCTION flag, but we need them for now.
 ZULIP_COM_STAGING = PRODUCTION and config_file.get('machine', 'deploy_type') == 'zulip.com-staging'
-ZULIP_COM = ((PRODUCTION and config_file.get('machine', 'deploy_type') == 'zulip.com-prod')
-             or ZULIP_COM_STAGING)
+ZULIP_COM = ((PRODUCTION and config_file.get('machine', 'deploy_type') == 'zulip.com-prod') or
+             ZULIP_COM_STAGING)
 if not ZULIP_COM:
     raise Exception("You should create your own local settings from prod_settings_template.")
 

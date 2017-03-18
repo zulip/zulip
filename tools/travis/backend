@@ -6,12 +6,14 @@ set -e
 set -x
 
 ./tools/lint-all --pep8 # Include the slow and thus non-default pep8 linter check
-./tools/test-backend --coverage --no-verbose-coverage
-./tools/test-management
+./tools/test-tools
+./tools/test-backend --coverage
 ./tools/test-migrations
-./tools/test-run-dev
+# test-run-dev temporarily disabled due to weird Travis CI issues.
+#./tools/test-run-dev
 ./tools/test-documentation
 ./tools/test-help-documentation.py
+./tools/test-api
+python -W ignore tools/check-capitalization
 # Some test suites disabled in CI for being flaky
 #./tools/test-queue-worker-reload
-

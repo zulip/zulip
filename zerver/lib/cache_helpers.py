@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 from six import binary_type
-from typing import Any, Dict, Callable, Tuple, Text
+from typing import Any, Callable, Dict, List, Tuple, Text
 
 # This file needs to be different from cache.py because cache.py
 # cannot import anything from zerver.models or we'd have an import
@@ -78,7 +78,7 @@ cache_fillers = {
     #    'message': (message_fetch_objects, message_cache_items, 3600 * 24, 1000),
     'huddle': (lambda: Huddle.objects.select_related().all(), huddle_cache_items, 3600*24*7, 10000),
     'session': (lambda: Session.objects.all(), session_cache_items, 3600*24*7, 10000),
-    } # type: Dict[str, Tuple[Callable[[], List[Any]], Callable[[Dict[Text, Any], Any], None], int, int]]
+} # type: Dict[str, Tuple[Callable[[], List[Any]], Callable[[Dict[Text, Any], Any], None], int, int]]
 
 def fill_remote_cache(cache):
     # type: (str) -> None

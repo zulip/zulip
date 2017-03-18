@@ -1,24 +1,33 @@
 {{! Contents of the "message actions" popup }}
 <ul class="nav nav-list actions_popover pull-right">
   <li>
-    <a href="#" class="popover_edit_message" data-msgid="{{message.id}}">
+    <a href="#" class="popover_edit_message" data-message-id="{{message.id}}">
       {{! Can consider http://fontawesome.io/icon/file-code-o/ when we upgrade to font awesome 4.}}
       <i class="{{#if use_edit_icon}}icon-vector-pencil{{else}}icon-vector-file-text-alt{{/if}}"></i> {{editability_menu_item}}
     </a>
   </li>
 
   <li>
-    <a href="#" class="respond_button">
-      <i class="icon-vector-share-alt"></i> {{t "Reply" }}
+    <a href="#" class="respond_button" data-message-id="{{message.id}}">
+      <i class="icon-vector-share-alt"></i> {{t "Quote and reply" }}
     </a>
   </li>
 
   <li>
-    <a href="#" class="popover_toggle_collapse" data-msgid="{{message.id}}">
+    <a href="#" class="popover_toggle_collapse" data-message-id="{{message.id}}">
       <i class="{{#if message.collapsed}}icon-vector-plus{{else}}icon-vector-minus{{/if}}"></i>
         {{#if message.collapsed}}{{t "Un-collapse" }}{{else}}{{t "Collapse" }}{{/if}}
     </a>
   </li>
+
+  {{#if should_display_edit_history_option}}
+  <li>
+    <a href="#" class="view_edit_history" data-msgid="{{message.id}}">
+      <i class="icon-vector-time"></i>
+        {{t "View edit history" }}
+    </a>
+  </li>
+  {{/if}}
 
   {{#if can_mute_topic}}
   <li>
@@ -40,7 +49,7 @@
 
   {{#if should_display_add_reaction_option}}
   <li>
-    <a href="#" class="reaction_button" data-msgid="{{message.id}}">
+    <a href="#" class="reaction_button" data-message-id="{{message.id}}">
       <i class="icon-vector-smile"></i>
       {{#tr message}}Add emoji reaction{{/tr}}
     </a>
@@ -48,7 +57,7 @@
   {{/if}}
 
   <li>
-    <a href="{{ conversation_time_uri }}" class="popover_narrow_by_conversation_and_time" data-msgid="{{message.id}}">
+    <a href="{{ conversation_time_uri }}" class="popover_narrow_by_conversation_and_time" data-message-id="{{message.id}}">
       <i class="icon-vector-link"></i> {{t "Link to this conversation" }}
     </a>
   </li>

@@ -8,7 +8,6 @@ from django.core.management.base import BaseCommand, CommandParser
 from django.db import connection
 from django.conf import settings
 
-from zerver.lib.actions import do_create_stream
 from zerver.models import Realm, Stream, UserProfile, Recipient, Subscription, \
     Message, UserMessage, Huddle, DefaultStream, RealmAlias, RealmFilter, Client
 from zerver.lib.export import do_import_realm

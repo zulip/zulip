@@ -16,7 +16,7 @@ import ujson
 from zerver.lib.export import (
     do_export_realm, do_write_stats_file_for_realm_export
 )
-from zerver.models import get_realm_by_string_id
+from zerver.models import get_realm
 
 class Command(BaseCommand):
     help = """Exports all data from a Zulip realm
@@ -112,7 +112,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
         try:
-            realm = get_realm_by_string_id(options["realm"])
+            realm = get_realm(options["realm"])
         except ValidationError:
             raise CommandError("No such realm.")
 
@@ -122,7 +122,7 @@ class Command(BaseCommand):
         if os.path.exists(output_dir):
             shutil.rmtree(output_dir)
         os.makedirs(output_dir)
-        print("Exporting realm %s" % (realm.domain,))
+        print("Exporting realm %s" % (realm.string_id,))
         num_threads = int(options['threads'])
         if num_threads < 1:
             raise CommandError('You must have at least one thread.')

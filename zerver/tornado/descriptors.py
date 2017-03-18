@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
 if False:
     import zerver.tornado.event_queue
@@ -19,4 +19,3 @@ def set_descriptor_by_handler_id(handler_id, client_descriptor):
 def clear_descriptor_by_handler_id(handler_id, client_descriptor):
     # type: (int, Optional[zerver.tornado.event_queue.ClientDescriptor]) -> None
     del descriptors_by_handler_id[handler_id]
-

@@ -9,7 +9,7 @@ from django.conf import settings
 from django.db.models import Q
 from django.core.cache.backends.base import BaseCache
 
-from typing import Any, Callable, Iterable, Optional, Union, TypeVar, Text
+from typing import Any, Callable, Dict, Iterable, List, Optional, Union, TypeVar, Text
 
 from zerver.lib.utils import statsd, statsd_key, make_safe_digest
 import subprocess
@@ -313,23 +313,25 @@ def user_profile_by_id_cache_key(user_profile_id):
 # TODO: Refactor these cache helpers into another file that can import
 # models.py so that python v3 style type annotations can also work.
 
-def cache_save_user_profile(user_profile):
-    # type: (UserProfile) -> None
-    cache_set(user_profile_by_id_cache_key(user_profile.id), user_profile, timeout=3600*24*7)
+active_user_dict_fields = [
+    'id', 'full_name', 'short_name', 'email',
+    'avatar_source', 'avatar_version',
+    'is_realm_admin', 'is_bot'] # type: List[str]
 
-active_user_dict_fields = ['id', 'full_name', 'short_name', 'email', 'is_realm_admin', 'is_bot'] # type: List[str]
 def active_user_dicts_in_realm_cache_key(realm):
     # type: (Realm) -> Text
     return u"active_user_dicts_in_realm:%s" % (realm.id,)
 
-active_bot_dict_fields = ['id', 'full_name', 'short_name',
-                          'email', 'default_sending_stream__name',
-                          'default_events_register_stream__name',
-                          'default_all_public_streams', 'api_key',
-                          'bot_owner__email', 'avatar_source'] # type: List[str]
-def active_bot_dicts_in_realm_cache_key(realm):
+bot_dict_fields = ['id', 'full_name', 'short_name', 'email',
+                   'is_active', 'default_sending_stream__name',
+                   'default_events_register_stream__name',
+                   'default_all_public_streams', 'api_key',
+                   'bot_owner__email', 'avatar_source',
+                   'avatar_version'] # type: List[str]
+
+def bot_dicts_in_realm_cache_key(realm):
     # type: (Realm) -> Text
-    return u"active_bot_dicts_in_realm:%s" % (realm.id,)
+    return u"bot_dicts_in_realm:%s" % (realm.id,)
 
 def get_stream_cache_key(stream_name, realm):
     # type: (Text, Union[Realm, int]) -> Text
@@ -350,6 +352,14 @@ def delete_user_profile_caches(user_profiles):
 
     cache_delete_many(keys)
 
+def delete_display_recipient_cache(user_profile):
+    # type: (UserProfile) -> None
+    from zerver.models import Subscription  # We need to import here to avoid cyclic dependency.
+    recipient_ids = Subscription.objects.filter(user_profile=user_profile)
+    recipient_ids = recipient_ids.values_list('recipient_id', flat=True)
+    keys = [display_recipient_cache_key(rid) for rid in recipient_ids]
+    cache_delete_many(keys)
+
 # Called by models.py to flush the user_profile cache whenever we save
 # a user_profile object
 def flush_user_profile(sender, **kwargs):
@@ -360,16 +370,19 @@ def flush_user_profile(sender, **kwargs):
     # Invalidate our active_users_in_realm info dict if any user has changed
     # the fields in the dict or become (in)active
     if kwargs.get('update_fields') is None or \
-            len(set(active_user_dict_fields + ['is_active']) &
+            len(set(active_user_dict_fields + ['is_active', 'email']) &
                 set(kwargs['update_fields'])) > 0:
         cache_delete(active_user_dicts_in_realm_cache_key(user_profile.realm))
 
-    # Invalidate our active_bots_in_realm info dict if any bot has
+    if kwargs.get('updated_fields') is None or \
+            'email' in kwargs['update_fields']:
+        delete_display_recipient_cache(user_profile)
+
+    # Invalidate our bots_in_realm info dict if any bot has
     # changed the fields in the dict or become (in)active
     if user_profile.is_bot and (kwargs['update_fields'] is None or
-                                (set(active_bot_dict_fields + ['is_active']) &
-                                 set(kwargs['update_fields']))):
-        cache_delete(active_bot_dicts_in_realm_cache_key(user_profile.realm))
+                                (set(bot_dict_fields) & set(kwargs['update_fields']))):
+        cache_delete(bot_dicts_in_realm_cache_key(user_profile.realm))
 
     # Invalidate realm-wide alert words cache if any user in the realm has changed
     # alert words
@@ -387,12 +400,12 @@ def flush_realm(sender, **kwargs):
 
     if realm.deactivated:
         cache_delete(active_user_dicts_in_realm_cache_key(realm))
-        cache_delete(active_bot_dicts_in_realm_cache_key(realm))
+        cache_delete(bot_dicts_in_realm_cache_key(realm))
         cache_delete(realm_alert_words_cache_key(realm))
 
 def realm_alert_words_cache_key(realm):
     # type: (Realm) -> Text
-    return u"realm_alert_words:%s" % (realm.domain,)
+    return u"realm_alert_words:%s" % (realm.string_id,)
 
 # Called by models.py to flush the stream cache whenever we save a stream
 # object.
@@ -407,9 +420,8 @@ def flush_stream(sender, **kwargs):
     if kwargs.get('update_fields') is None or 'name' in kwargs['update_fields'] and \
        UserProfile.objects.filter(
            Q(default_sending_stream=stream) |
-           Q(default_events_register_stream=stream)
-       ).exists():
-        cache_delete(active_bot_dicts_in_realm_cache_key(stream.realm))
+           Q(default_events_register_stream=stream)).exists():
+        cache_delete(bot_dicts_in_realm_cache_key(stream.realm))
 
 # TODO: Rename to_dict_cache_key_id and to_dict_cache_key
 def to_dict_cache_key_id(message_id, apply_markdown):

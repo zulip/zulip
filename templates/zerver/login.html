@@ -30,9 +30,7 @@
 {% if password_auth_enabled %}
 <script type="text/javascript">
 {% if email %}
-{% if not desktop_sso_dispatch %}
 autofocus('#id_password');
-{% endif %}
 {% else %}
 autofocus('#id_username');
 {% endif %}
@@ -44,7 +42,7 @@ autofocus('#id_username');
   <div class="app-main login-page-container">
 
     {% if dev_auth_enabled %}
-    <h3 class="login-page-header">{{ _('Zulip Dev Login') }}</h3>
+    <h3 class="login-page-header">{{ _('Development login') }}</h3>
     {% if not password_auth_enabled %}
     <h4 class="login-page-subheader">{{ _('Choose a user:') }}</h4>
     {% endif %}
@@ -62,15 +60,11 @@ autofocus('#id_username');
 {% else %}
 {# Non-SSO users. #}
 
-{% if form.errors or desktop_sso_unknown_email %}
+{% if form.errors %}
 <div class="alert alert-error">
-    {% if desktop_sso_unknown_email %}
-        {{ _('Zulip is not currently available for your domain.') }} <br />
-    {% else %}
-        {% for error in form.errors.values() %}
-        <div>{{ error | striptags }}</div>
-        {% endfor %}
-    {% endif %}
+    {% for error in form.errors.values() %}
+    <div>{{ error | striptags }}</div>
+    {% endfor %}
 </div>
 {% endif %}
 
@@ -86,14 +80,9 @@ autofocus('#id_username');
     </div>
     {% endif %}
 
-        {% if password_auth_enabled or desktop_sso_dispatch %}
+        {% if password_auth_enabled %}
         <form name="login_form" id="login_form" method="post" class="login-form"
-            {% if desktop_sso_dispatch %}
-            {# desktop_sso_dispatch is only set when this template is invoked by zilencer.views #}
-              action="{{ url('zilencer.views.account_deployment_dispatch') }}"
-            {% else %}
               action="{{ url('django.contrib.auth.views.login') }}?next={{ next }}"
-            {% endif %}
         >
             {{ csrf_input }}
             <div class="control-group">
@@ -110,22 +99,19 @@ autofocus('#id_username');
                 </div>
             </div>
 
-            {% if not desktop_sso_dispatch %}
             <div class="control-group">
                 <label for="id_password" class="control-label">{{ _('Password') }}</label>
                 <div class="controls">
                     <input id="id_password" name="password" class="required" type="password" />
                 </div>
             </div>
-            {% endif %}
+
             <div class="control-group">
                 <div class="controls">
                     <input type="submit" class="btn btn-large btn-primary" value="Log in" />
-                    {% if not desktop_sso_dispatch %}
                     <span class="login-forgot-password">
                       <a href="{{ url('django.contrib.auth.views.password_reset') }}">{{ _('Forgot password?') }}</a>
                     </span>
-                    {% endif %}
                 </div>
             </div>
         </form>
@@ -143,8 +129,14 @@ autofocus('#id_username');
                     {% for user_email in direct_admins %}
                     <p><input type="submit" name="direct_email" class="btn-direct btn-admin" value="{{ user_email }}" /></p>
                     {% endfor %}
+
                     <p>({{ _('Normal users') }})</p>
                     {% for user_email in direct_users %}
+                    <p><input type="submit" name="direct_email" class="btn-direct btn-user" value="{{ user_email }}" /></p>
+                    {% endfor %}
+
+                    <p>({{ _('Community users') }})</p>
+                    {% for user_email in community_users %}
                     <p><input type="submit" name="direct_email" class="btn-direct btn-user" value="{{ user_email }}" /></p>
                     {% endfor %}
                 </div>

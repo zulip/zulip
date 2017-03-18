@@ -62,9 +62,13 @@ class ParserTestHappyPath(unittest.TestCase):
             p { color: red }
         '''
 
+        reformatted_css = '''
+            p { color: red;}
+        '''
+
         res = parse(my_css)
 
-        self.assertEqual(res.text(), my_css)
+        self.assertEqual(res.text(), reformatted_css)
 
         section = cast(CssSection, res.sections[0])
 
@@ -76,7 +80,7 @@ class ParserTestHappyPath(unittest.TestCase):
             div {
             }'''
         error = 'Empty declaration'
-        with self.assertRaisesRegex(CssParserException, error): # type: ignore # See https://github.com/python/typeshed/issues/372
+        with self.assertRaisesRegex(CssParserException, error):
             parse(my_css)
 
     def test_multi_line_selector(self):
@@ -144,7 +148,7 @@ class ParserTestSadPath(unittest.TestCase):
 
     def _assert_error(self, my_css, error):
         # type: (str, str) -> None
-        with self.assertRaisesRegex(CssParserException, error): # type: ignore # See https://github.com/python/typeshed/issues/372
+        with self.assertRaisesRegex(CssParserException, error):
             parse(my_css)
 
     def test_unexpected_end_brace(self):
@@ -191,6 +195,16 @@ class ParserTestSadPath(unittest.TestCase):
                 bottom: 0
             }'''
         error = 'Missing selector'
+        self._assert_error(my_css, error)
+
+    def test_missing_value(self):
+        # type: () -> None
+        my_css = '''
+            h1
+            {
+                bottom:
+            }'''
+        error = 'Missing value'
         self._assert_error(my_css, error)
 
     def test_disallow_comments_in_selectors(self):

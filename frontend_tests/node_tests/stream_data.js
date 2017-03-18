@@ -8,6 +8,8 @@ set_global('page_params', {
 add_dependencies({
     people: 'js/people.js',
     stream_color: 'js/stream_color.js',
+    narrow: 'js/narrow.js',
+    hashchange: 'js/hashchange.js',
     util: 'js/util.js',
 });
 
@@ -85,7 +87,7 @@ var people = global.people;
     sub = stream_data.get_sub_by_id(id);
     assert.equal(sub.color, 'red');
 
-    stream_data.rename_sub(id, 'Sweden');
+    stream_data.rename_sub(sub, 'Sweden');
     sub = stream_data.get_sub_by_id(id);
     assert.equal(sub.color, 'red');
     assert.equal(sub.name, 'Sweden');
@@ -102,8 +104,8 @@ var people = global.people;
     };
 
     // set up user data
-    global.page_params.email = 'me@zulip.com';
     people.add(me);
+    people.initialize_current_user(me.user_id);
 
     // set up our subscription
     stream_data.add_sub('devel', sub);
@@ -166,7 +168,8 @@ var people = global.people;
     assert(!stream_data.user_is_subscribed('Rome', email));
 
     // add
-    stream_data.add_subscriber('Rome', brutus.user_id);
+    var ok = stream_data.add_subscriber('Rome', brutus.user_id);
+    assert(ok);
     assert(stream_data.user_is_subscribed('Rome', email));
     sub = stream_data.get_sub('Rome');
     stream_data.update_subscribers_count(sub);
@@ -180,7 +183,8 @@ var people = global.people;
     assert.equal(sub.subscriber_count, 1);
 
     // remove
-    stream_data.remove_subscriber('Rome', brutus.user_id);
+    ok = stream_data.remove_subscriber('Rome', brutus.user_id);
+    assert(ok);
     assert(!stream_data.user_is_subscribed('Rome', email));
     sub = stream_data.get_sub('Rome');
     stream_data.update_subscribers_count(sub);
@@ -191,7 +195,8 @@ var people = global.people;
     global.blueslip.warn = function () {};
 
     // verify that removing an already-removed subscriber is a noop
-    stream_data.remove_subscriber('Rome', brutus.user_id);
+    ok = stream_data.remove_subscriber('Rome', brutus.user_id);
+    assert(!ok);
     assert(!stream_data.user_is_subscribed('Rome', email));
     sub = stream_data.get_sub('Rome');
     stream_data.update_subscribers_count(sub);
@@ -207,11 +212,20 @@ var people = global.people;
 
     // Verify that we noop and don't crash when unsubscribed.
     sub.subscribed = false;
-    stream_data.add_subscriber('Rome', brutus.user_id);
+    ok = stream_data.add_subscriber('Rome', brutus.user_id);
+    assert(ok);
     assert.equal(stream_data.user_is_subscribed('Rome', email), undefined);
     stream_data.remove_subscriber('Rome', brutus.user_id);
     assert.equal(stream_data.user_is_subscribed('Rome', email), undefined);
 
+    // Verify that we don't crash and return false for a bad stream.
+    ok = stream_data.add_subscriber('UNKNOWN', brutus.user_id);
+    assert(!ok);
+
+    // Verify that we don't crash and return false for a bad user id.
+    global.blueslip.error = function () {};
+    ok = stream_data.add_subscriber('Rome', 9999999);
+    assert(!ok);
 }());
 
 (function test_process_message_for_recent_topics() {
@@ -365,4 +379,24 @@ var people = global.people;
     assert.equal(sub_rows[1].color, 'amber');
     assert.equal(sub_rows[2].color, 'cinnamon');
 
+}());
+
+(function test_delete_sub() {
+    var canada = {
+        stream_id: 101,
+        name: 'Canada',
+        subscribed: true,
+    };
+
+    stream_data.clear_subscriptions();
+    stream_data.add_sub('Canada', canada);
+
+    assert(stream_data.is_subscribed('Canada'));
+    assert(stream_data.get_sub('Canada').stream_id, canada.stream_id);
+    assert(stream_data.get_sub_by_id(canada.stream_id).name, 'Canada');
+
+    stream_data.delete_sub(canada.stream_id);
+    assert(!stream_data.is_subscribed('Canada'));
+    assert(!stream_data.get_sub('Canada'));
+    assert(!stream_data.get_sub_by_id(canada.stream_id));
 }());
