@@ -352,7 +352,7 @@ function handleStream(streamName) {
     }
     return '<a class="stream" data-stream-id="' + stream.stream_id + '" ' +
         'href="' + window.location.origin + '/#narrow/stream/' +
-        hashchange.encodeHashComponent(stream.name) + '"' +
+        hash_util.encodeHashComponent(stream.name) + '"' +
         '>' + '#' + stream.name + '</a>';
 
 }

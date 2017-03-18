@@ -92,7 +92,7 @@ $(function () {
         e.preventDefault();
         var stream = stream_data.get_sub_by_id($(this).attr('data-stream-id'));
         if (stream) {
-            window.location.href = '/#narrow/stream/' + hashchange.encodeHashComponent(stream.name);
+            window.location.href = '/#narrow/stream/' + hash_util.encodeHashComponent(stream.name);
             return;
         }
         window.location.href = $(this).attr('href');

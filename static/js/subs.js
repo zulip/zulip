@@ -1419,7 +1419,7 @@ $(function () {
 
             window.location.hash = "#streams" + "/" +
                 stream_id + "/" +
-                hashchange.encodeHashComponent(sub.name);
+                hash_util.encodeHashComponent(sub.name);
         }
     });
 

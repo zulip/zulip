@@ -88,7 +88,7 @@ exports.operators_to_hash = function (operators) {
             var operand = elem.operand;
 
             var sign = elem.negated ? '-' : '';
-            hash += '/' + sign + hashchange.encodeHashComponent(operator)
+            hash += '/' + sign + hash_util.encodeHashComponent(operator)
                   + '/' + hashchange.encode_operand(operator, operand);
         });
     }

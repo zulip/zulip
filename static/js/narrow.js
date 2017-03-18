@@ -614,30 +614,30 @@ exports.by_sender_uri = function (reply_to) {
 };
 
 exports.by_stream_uri = function (stream) {
-    return "#narrow/stream/" + hashchange.encodeHashComponent(stream);
+    return "#narrow/stream/" + hash_util.encodeHashComponent(stream);
 };
 
 exports.by_stream_subject_uri = function (stream, subject) {
-    return "#narrow/stream/" + hashchange.encodeHashComponent(stream) +
-           "/subject/" + hashchange.encodeHashComponent(subject);
+    return "#narrow/stream/" + hash_util.encodeHashComponent(stream) +
+           "/subject/" + hash_util.encodeHashComponent(subject);
 };
 
 exports.by_message_uri = function (message_id) {
-    return "#narrow/id/" + hashchange.encodeHashComponent(message_id);
+    return "#narrow/id/" + hash_util.encodeHashComponent(message_id);
 };
 
 exports.by_near_uri = function (message_id) {
-    return "#narrow/near/" + hashchange.encodeHashComponent(message_id);
+    return "#narrow/near/" + hash_util.encodeHashComponent(message_id);
 };
 
 exports.by_conversation_and_time_uri = function (message) {
     if (message.type === "stream") {
-        return "#narrow/stream/" + hashchange.encodeHashComponent(message.stream) +
-            "/subject/" + hashchange.encodeHashComponent(message.subject) +
-            "/near/" + hashchange.encodeHashComponent(message.id);
+        return "#narrow/stream/" + hash_util.encodeHashComponent(message.stream) +
+            "/subject/" + hash_util.encodeHashComponent(message.subject) +
+            "/near/" + hash_util.encodeHashComponent(message.id);
     }
-    return "#narrow/pm-with/" + hashchange.encodeHashComponent(message.reply_to) +
-        "/near/" + hashchange.encodeHashComponent(message.id);
+    return "#narrow/pm-with/" + hash_util.encodeHashComponent(message.reply_to) +
+        "/near/" + hash_util.encodeHashComponent(message.id);
 };
 
 // Are we narrowed to PMs: all PMs or PMs with particular people.

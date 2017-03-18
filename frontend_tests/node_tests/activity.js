@@ -28,6 +28,10 @@ set_global('resize', {
     resize_page_components: function () {},
 });
 
+set_global('hash_util', {
+    encodeHashComponent: global.hashchange.encodeHashComponent,
+});
+
 var me = {
     email: 'me@zulip.com',
     user_id: 999,
