@@ -629,6 +629,34 @@ class MessageDictTest(ZulipTestCase):
         self.assertEqual(message.rendered_content, expected_content)
         self.assertEqual(message.rendered_content_version, bugdown.version)
 
+    @mock.patch("zerver.lib.message.bugdown.convert")
+    def test_applying_markdown_invalid_format(self, convert_mock):
+        # type: () -> None
+        # pretend the converter returned an invalid message without raising an exception
+        convert_mock.return_value = None
+        sender = get_user_profile_by_email('othello@zulip.com')
+        receiver = get_user_profile_by_email('hamlet@zulip.com')
+        recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
+        sending_client = make_client(name="test suite")
+        message = Message(
+            sender=sender,
+            recipient=recipient,
+            subject='whatever',
+            content='hello **world**',
+            pub_date=timezone.now(),
+            sending_client=sending_client,
+            last_edit_time=timezone.now(),
+            edit_history='[]'
+        )
+        message.save()
+
+        # An important part of this test is to get the message through this exact code path,
+        # because there is an ugly hack we need to cover.  So don't just say "row = message".
+        row = Message.get_raw_db_rows([message.id])[0]
+        dct = MessageDict.build_dict_from_raw_db_row(row, apply_markdown=True)
+        error_content = '<p>[Zulip note: Sorry, we could not understand the formatting of your message]</p>'
+        self.assertEqual(dct['content'], error_content)
+
     def test_reaction(self):
         # type: () -> None
         sender = get_user_profile_by_email('othello@zulip.com')
