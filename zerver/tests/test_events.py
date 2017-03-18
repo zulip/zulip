@@ -10,7 +10,7 @@ from django.http import HttpRequest, HttpResponse
 from django.test import TestCase
 
 from zerver.models import (
-    get_client, get_realm, get_stream, get_user_profile_by_email,
+    get_client, get_realm, get_recipient, get_stream, get_user_profile_by_email,
     Message, RealmAlias, Recipient, UserProfile
 )
 
@@ -18,6 +18,7 @@ from zerver.lib.actions import (
     bulk_remove_subscriptions,
     do_add_alert_words,
     check_add_realm_emoji,
+    check_send_typing_notification,
     do_add_realm_filter,
     do_change_avatar_fields,
     do_change_default_all_public_streams,
@@ -410,6 +411,28 @@ class EventsRegisterTest(ZulipTestCase):
         events = self.do_test(
             lambda: do_update_message(self.user_profile, message, topic,
                                       propagate_mode, content, rendered_content),
+            state_change_expected=False,
+        )
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_typing_events(self):
+        # type: () -> None
+        schema_checker = check_dict([
+            ('type', equals('typing')),
+            ('op', equals('start')),
+            ('sender', check_dict([
+                ('email', check_string),
+                ('user_id', check_int)])),
+            ('recipients', check_list(check_dict([
+                ('email', check_string),
+                ('user_id', check_int),
+            ]))),
+        ])
+
+        events = self.do_test(
+            lambda: check_send_typing_notification(
+                self.user_profile, ["cordelia@zulip.com"], "start"),
             state_change_expected=False,
         )
         error = schema_checker('events[0]', events[0])

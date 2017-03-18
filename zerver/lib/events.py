@@ -351,6 +351,9 @@ def apply_event(state, event, user_profile, include_subscribers):
         pass
     elif event['type'] == "referral":
         state['referrals'] = event['referrals']
+    elif event['type'] == 'typing':
+        # Typing notification events are transient and thus ignored
+        pass
     elif event['type'] == "update_message_flags":
         # The client will get the message with the updated flags directly
         pass
