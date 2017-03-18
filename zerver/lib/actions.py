@@ -2759,7 +2759,7 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
 
     # Set first_rendered_content to be the oldest version of the
     # rendered content recorded; which is the current version if the
-    # content hasn't been edited before.  Note that because one could
+    # content hasn't been edited before. Note that because one could
     # have edited just the subject, not every edit history event
     # contains a prev_rendered_content element.
     first_rendered_content = message.rendered_content

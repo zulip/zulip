@@ -335,6 +335,11 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
     messages = Message.objects.filter(usermessage__user_profile_id=user_profile,
                                       id__in=message_ids,
                                       usermessage__flags=~UserMessage.flags.read)
+
+    # Missed-message emails should not be sent for deleted messages
+    # Fixes: #3873
+    messages = [um for um in messages if um.content != "(deleted)"]
+
     if not messages:
         return
 

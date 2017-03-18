@@ -14,8 +14,10 @@ from six.moves import range
 from typing import Any, Dict, List, Text
 
 from zerver.lib.notifications import handle_missedmessage_emails
+from zerver.lib.actions import render_incoming_message, do_update_message
+from zerver.lib.message import access_message
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import get_user_profile_by_email, Recipient
+from zerver.models import get_user_profile_by_email, Recipient, UserMessage, UserProfile
 
 class TestMissedMessages(ZulipTestCase):
     def normalize_string(self, s):
@@ -113,6 +115,57 @@ class TestMissedMessages(ZulipTestCase):
                 ' the Moor of Venice Group personal message')
         self._test_cases(tokens, msg_id, body, send_as_user)
 
+    @patch('zerver.lib.email_mirror.generate_random_token')
+    def _deleted_message_in_missed_stream_messages(self, send_as_user, mock_random_token):
+        # type: (bool, MagicMock) -> None
+        tokens = self._get_tokens()
+        mock_random_token.side_effect = tokens
+
+        msg_id = self.send_message("othello@zulip.com", "denmark", Recipient.STREAM, '@**hamlet** to be deleted')
+
+        othello = get_user_profile_by_email('othello@zulip.com')
+        hamlet = get_user_profile_by_email('hamlet@zulip.com')
+        self.login("othello@zulip.com")
+        result = self.client_patch('/json/messages/'+str(msg_id), {'message_id': msg_id, 'content': ' ', 'user_profile': othello})
+        self.assert_json_success(result)
+        handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id}])
+        self.assertEqual(len(mail.outbox), 0)
+
+    @patch('zerver.lib.email_mirror.generate_random_token')
+    def _deleted_message_in_personal_missed_stream_messages(self, send_as_user, mock_random_token):
+        # type: (bool, MagicMock) -> None
+        tokens = self._get_tokens()
+        mock_random_token.side_effect = tokens
+
+        msg_id = self.send_message("othello@zulip.com", "hamlet@zulip.com", Recipient.PERSONAL, 'Extremely personal message! to be deleted!')
+
+        othello = get_user_profile_by_email('othello@zulip.com')
+        hamlet = get_user_profile_by_email('hamlet@zulip.com')
+        self.login("othello@zulip.com")
+        result = self.client_patch('/json/messages/'+str(msg_id), {'message_id': msg_id, 'content': ' ', 'user_profile': othello})
+        self.assert_json_success(result)
+        handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id}])
+        self.assertEqual(len(mail.outbox), 0)
+
+    @patch('zerver.lib.email_mirror.generate_random_token')
+    def _deleted_message_in_huddle_missed_stream_messages(self, send_as_user, mock_random_token):
+        # type: (bool, MagicMock) -> None
+        tokens = self._get_tokens()
+        mock_random_token.side_effect = tokens
+
+        msg_id = self.send_message("othello@zulip.com", ["hamlet@zulip.com", "iago@zulip.com"], Recipient.PERSONAL, 'Group personal message!')
+
+        othello = get_user_profile_by_email('othello@zulip.com')
+        hamlet = get_user_profile_by_email('hamlet@zulip.com')
+        iago = get_user_profile_by_email('iago@zulip.com')
+        self.login("othello@zulip.com")
+        result = self.client_patch('/json/messages/'+str(msg_id), {'message_id': msg_id, 'content': ' ', 'user_profile': othello})
+        self.assert_json_success(result)
+        handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id}])
+        self.assertEqual(len(mail.outbox), 0)
+        handle_missedmessage_emails(iago.id, [{'message_id': msg_id}])
+        self.assertEqual(len(mail.outbox), 0)
+
     @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
     def test_extra_context_in_missed_stream_messages_as_user(self):
         # type: () -> None
@@ -148,3 +201,30 @@ class TestMissedMessages(ZulipTestCase):
     def test_extra_context_in_huddle_missed_stream_messages(self):
         # type: () -> None
         self._extra_context_in_huddle_missed_stream_messages(False)
+
+    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
+    def test_deleted_message_in_missed_stream_messages_as_user(self):
+        # type: () -> None
+        self._deleted_message_in_missed_stream_messages(True)
+
+    def test_deleted_message_in_missed_stream_messages(self):
+        # type: () -> None
+        self._deleted_message_in_missed_stream_messages(False)
+
+    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
+    def test_deleted_message_in_personal_missed_stream_messages_as_user(self):
+        # type: () -> None
+        self._deleted_message_in_personal_missed_stream_messages(True)
+
+    def test_deleted_message_in_personal_missed_stream_messages(self):
+        # type: () -> None
+        self._deleted_message_in_personal_missed_stream_messages(False)
+
+    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
+    def test_deleted_message_in_huddle_missed_stream_messages_as_user(self):
+        # type: () -> None
+        self._deleted_message_in_huddle_missed_stream_messages(True)
+
+    def test_deleted_message_in_huddle_missed_stream_messages(self):
+        # type: () -> None
+        self._deleted_message_in_huddle_missed_stream_messages(False)
