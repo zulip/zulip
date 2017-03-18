@@ -82,6 +82,7 @@ var keypress_mappings = {
     105: {name: 'message_actions', message_view_only: true}, // 'i'
     106: {name: 'vim_down', message_view_only: true}, // 'j'
     107: {name: 'vim_up', message_view_only: true}, // 'k'
+    108: {name: 'show_light_box', message_view_only: true}, // 'l'
     113: {name: 'query_users', message_view_only: false}, // 'q'
     114: {name: 'reply_message', message_view_only: true}, // 'r'
     115: {name: 'narrow_by_recipient', message_view_only: true}, // 's'
@@ -555,6 +556,9 @@ exports.process_hotkey = function (e, hotkey) {
             return true;
         case 'compose_reply_with_mention': // '@': respond to message with mention to author
             compose.reply_with_mention({trigger: 'hotkey'});
+            return true;
+        case 'show_light_box':
+            lightbox.show_image_from_selected_message();
             return true;
     }
 

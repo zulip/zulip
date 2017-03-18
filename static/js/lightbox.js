@@ -50,6 +50,20 @@ exports.open = function (data) {
     popovers.hide_all();
 };
 
+exports.show_image_from_selected_message = function () {
+    var selected_msg = $(".selected_message");
+    var selected_zid = selected_msg.attr("zid");
+    var full_name = message_store.get(selected_zid).sender_full_name;
+    var image = selected_msg.find("img").eq(0);
+    var data = {
+        type: "photo",
+        user: full_name,
+        image: image,
+    };
+    lightbox.open(data);
+    return true;
+};
+
 return exports;
 }());
 
