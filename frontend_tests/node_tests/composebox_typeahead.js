@@ -12,8 +12,16 @@ var emoji_moneybag = {
     emoji_name: 'moneybag',
     emoji_url: 'TBD',
 };
+var japanese_post_office = {
+    emoji_name: 'japanese_post_office',
+    emoji_url: 'TBD',
+};
+var see_no_evil = {
+    emoji_name: 'see_no_evil',
+    emoji_url: 'TBD',
+};
 
-var emoji_list = [ emoji_tada, emoji_moneybag, emoji_stadium ];
+var emoji_list = [ emoji_tada, emoji_moneybag, emoji_stadium, japanese_post_office, see_no_evil ];
 var stream_list = ['Denmark', 'Sweden', 'The Netherlands'];
 var sweden_stream = {
     name: 'Sweden',
@@ -130,6 +138,7 @@ global.people.add(deactivated_user);
     // emoji
     fake_this.completing = 'emoji';
     fake_this.query = ':octo';
+    fake_this.token = 'octo';
     var item = {
         emoji_name: 'octopus',
     };
@@ -139,11 +148,13 @@ global.people.add(deactivated_user);
     assert.equal(actual_value, expected_value);
 
     fake_this.query = ' :octo';
+    fake_this.token = 'octo';
     actual_value = ct.content_typeahead_selected.call(fake_this, item);
     expected_value = ' :octopus: ';
     assert.equal(actual_value, expected_value);
 
     fake_this.query = '{:octo';
+    fake_this.token = 'octo';
     actual_value = ct.content_typeahead_selected.call(fake_this, item);
     expected_value = '{ :octopus: ';
     assert.equal(actual_value, expected_value);
@@ -747,10 +758,14 @@ global.people.add(deactivated_user);
     assert_typeahead_equals("hi emoj:i", false);
     assert_typeahead_equals("hi emoji :ta", emoji_list);
     assert_typeahead_equals("hi emoji :da", emoji_list);
+    assert_typeahead_equals("hi emoji :da_", emoji_list);
+    assert_typeahead_equals("hi emoji :da ", emoji_list);
     assert_typeahead_equals("hi emoji\n:da", emoji_list);
     assert_typeahead_equals("hi emoji\n :ra", emoji_list);
     assert_typeahead_equals(":la", emoji_list);
     assert_typeahead_equals(" :lee", emoji_list);
+    assert_typeahead_equals("hi :see no", emoji_list);
+    assert_typeahead_equals("hi :japanese post of", emoji_list);
 
     assert_typeahead_equals("#", false);
     assert_typeahead_equals("# ", false);
