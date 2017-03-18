@@ -147,6 +147,22 @@
     min-width: inherit;
 }
 
+/* new button styles */
+.new-style .button.neon-green {
+    background: transparent;
+    color: #5bb792;
+    border: 1px solid #addcc9;
+}
+.new-style .button.neon-red {
+    background: transparent;
+    color: #d9534f;
+    border: 1px solid #e2a7a5;
+}
+
+.button-icon {
+    margin-right: 5px;
+    font-size: 16px;
+}
 /* -- tab switcher -- */
 
 .new-style .tab-switcher {
