@@ -254,21 +254,6 @@ class ReactionDict(object):
                          'full_name': row.get('user_profile__full_name')}}
 
 
-def re_render_content_for_management_command(message):
-    # type: (Message) -> None
-    '''
-    Please avoid using this function, as its only used in a management command that
-    is somewhat deprecated.
-    '''
-    assert Message.need_to_render_content(message.rendered_content,
-                                          message.rendered_content_version,
-                                          bugdown.version)
-
-    rendered_content = render_markdown(message, message.content)
-    message.rendered_content = rendered_content
-    message.rendered_content_version = bugdown.version
-    message.save_rendered_content()
-
 def access_message(user_profile, message_id):
     # type: (UserProfile, int) -> Tuple[Message, UserMessage]
     """You can access a message by ID in our APIs that either:
