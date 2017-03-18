@@ -184,7 +184,7 @@ function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compos
     }
 
     // TODO: We need a better API for showing messages.
-    ui.report_message(message, $("#reloading-application"));
+    ui_report.message(message, $("#reloading-application"));
     blueslip.log('Starting server requested page reload');
     reload_in_progress = true;
 

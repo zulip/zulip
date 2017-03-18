@@ -93,11 +93,11 @@ exports.update_user_data = function (user_id, new_data) {
 
 function failed_listing_users(xhr) {
     loading.destroy_indicator($('#subs_page_loading_indicator'));
-    ui.report_error(i18n.t("Error listing users or bots"), xhr, $("#administration-status"));
+    ui_report.error(i18n.t("Error listing users or bots"), xhr, $("#administration-status"));
 }
 
 function failed_listing_streams(xhr) {
-    ui.report_error(i18n.t("Error listing streams"), xhr, $("#administration-status"));
+    ui_report.error(i18n.t("Error listing streams"), xhr, $("#administration-status"));
 }
 
 function populate_users(realm_people_data) {
@@ -513,7 +513,7 @@ function _setup_page() {
 
         if ($("#deactivation_user_modal .email").html() !== email) {
             blueslip.error("User deactivation canceled due to non-matching fields.");
-            ui.report_message("Deactivation encountered an error. Please reload and try again.",
+            ui_report.message("Deactivation encountered an error. Please reload and try again.",
                $("#home-error"), 'alert-error');
         }
         $("#deactivation_user_modal").modal("hide");
@@ -693,60 +693,60 @@ function _setup_page() {
             data: data,
             success: function (response_data) {
                 if (response_data.name !== undefined) {
-                    ui.report_success(i18n.t("Name changed!"), name_status);
+                    ui_report.success(i18n.t("Name changed!"), name_status);
                 }
                 if (response_data.restricted_to_domain !== undefined) {
                     if (response_data.restricted_to_domain) {
-                        ui.report_success(i18n.t("New user e-mails now restricted to certain domains!"), restricted_to_domain_status);
+                        ui_report.success(i18n.t("New user e-mails now restricted to certain domains!"), restricted_to_domain_status);
                     } else {
-                        ui.report_success(i18n.t("New users may have arbitrary e-mails!"), restricted_to_domain_status);
+                        ui_report.success(i18n.t("New users may have arbitrary e-mails!"), restricted_to_domain_status);
                     }
                 }
                 if (response_data.invite_required !== undefined) {
                     if (response_data.invite_required) {
-                        ui.report_success(i18n.t("New users must be invited by e-mail!"), invite_required_status);
+                        ui_report.success(i18n.t("New users must be invited by e-mail!"), invite_required_status);
                     } else {
-                        ui.report_success(i18n.t("New users may sign up online!"), invite_required_status);
+                        ui_report.success(i18n.t("New users may sign up online!"), invite_required_status);
                     }
                 }
                 if (response_data.invite_by_admins_only !== undefined) {
                     if (response_data.invite_by_admins_only) {
-                        ui.report_success(i18n.t("New users must be invited by an admin!"), invite_by_admins_only_status);
+                        ui_report.success(i18n.t("New users must be invited by an admin!"), invite_by_admins_only_status);
                     } else {
-                        ui.report_success(i18n.t("Any user may now invite new users!"), invite_by_admins_only_status);
+                        ui_report.success(i18n.t("Any user may now invite new users!"), invite_by_admins_only_status);
                     }
                 }
                 if (response_data.create_stream_by_admins_only !== undefined) {
                     if (response_data.create_stream_by_admins_only) {
-                        ui.report_success(i18n.t("Only administrators may now create new streams!"), create_stream_by_admins_only_status);
+                        ui_report.success(i18n.t("Only administrators may now create new streams!"), create_stream_by_admins_only_status);
                     } else {
-                        ui.report_success(i18n.t("Any user may now create new streams!"), create_stream_by_admins_only_status);
+                        ui_report.success(i18n.t("Any user may now create new streams!"), create_stream_by_admins_only_status);
                     }
                 }
                 if (response_data.name_changes_disabled !== undefined) {
                     if (response_data.name_changes_disabled) {
-                        ui.report_success(i18n.t("Users cannot change their name!"), name_changes_disabled_status);
+                        ui_report.success(i18n.t("Users cannot change their name!"), name_changes_disabled_status);
                     } else {
-                        ui.report_success(i18n.t("Users may now change their name!"), name_changes_disabled_status);
+                        ui_report.success(i18n.t("Users may now change their name!"), name_changes_disabled_status);
                     }
                 }
                 if (response_data.email_changes_disabled !== undefined) {
                     if (response_data.email_changes_disabled) {
-                        ui.report_success(i18n.t("Users cannot change their email!"), email_changes_disabled_status);
+                        ui_report.success(i18n.t("Users cannot change their email!"), email_changes_disabled_status);
                     } else {
-                        ui.report_success(i18n.t("Users may now change their email!"), email_changes_disabled_status);
+                        ui_report.success(i18n.t("Users may now change their email!"), email_changes_disabled_status);
                     }
                 }
                 if (response_data.add_emoji_by_admins_only !== undefined) {
                     if (response_data.add_emoji_by_admins_only) {
-                        ui.report_success(i18n.t("Only administrators may now add new emoji!"), add_emoji_by_admins_only_status);
+                        ui_report.success(i18n.t("Only administrators may now add new emoji!"), add_emoji_by_admins_only_status);
                     } else {
-                        ui.report_success(i18n.t("Any user may now add new emoji!"), add_emoji_by_admins_only_status);
+                        ui_report.success(i18n.t("Any user may now add new emoji!"), add_emoji_by_admins_only_status);
                     }
                 }
                 if (response_data.authentication_methods !== undefined) {
                     if (response_data.authentication_methods) {
-                        ui.report_success(i18n.t("Authentication methods saved!"), authentication_methods_status);
+                        ui_report.success(i18n.t("Authentication methods saved!"), authentication_methods_status);
                     }
                 }
                 if (response_data.allow_message_editing !== undefined) {
@@ -756,16 +756,16 @@ function _setup_page() {
                         Math.ceil(response_data.message_content_edit_limit_seconds / 60);
                     if (response_data.allow_message_editing) {
                         if (response_data.message_content_edit_limit_seconds > 0) {
-                            ui.report_success(i18n.t("Users can now edit topics for all their messages,"
+                            ui_report.success(i18n.t("Users can now edit topics for all their messages,"
                                                       +" and the content of messages which are less than __num_minutes__ minutes old.",
                                                      {num_minutes :
                                                        data_message_content_edit_limit_minutes}),
                                               message_editing_status);
                         } else {
-                            ui.report_success(i18n.t("Users can now edit the content and topics of all their past messages!"), message_editing_status);
+                            ui_report.success(i18n.t("Users can now edit the content and topics of all their past messages!"), message_editing_status);
                         }
                     } else {
-                        ui.report_success(i18n.t("Users can no longer edit their past messages!"), message_editing_status);
+                        ui_report.success(i18n.t("Users can no longer edit their past messages!"), message_editing_status);
                     }
                     // message_content_edit_limit_seconds could have been changed earlier
                     // in this function, so update the field just in case
@@ -773,12 +773,12 @@ function _setup_page() {
                 }
                 if (response_data.default_language !== undefined) {
                     if (response_data.default_language) {
-                        ui.report_success(i18n.t("Default language changed!"), default_language_status);
+                        ui_report.success(i18n.t("Default language changed!"), default_language_status);
                     }
                 }
                 if (response_data.waiting_period_threshold !== undefined) {
                     if (response_data.waiting_period_threshold > 0) {
-                        ui.report_success(i18n.t("Waiting period threshold changed!"), waiting_period_threshold_status);
+                        ui_report.success(i18n.t("Waiting period threshold changed!"), waiting_period_threshold_status);
                     }
                 }
                 // Check if no changes made
@@ -789,15 +789,15 @@ function _setup_page() {
                     }
                 }
                 if (no_changes_made) {
-                    ui.report_success(i18n.t("No changes to save!"), name_status);
+                    ui_report.success(i18n.t("No changes to save!"), name_status);
                 }
             },
             error: function (xhr) {
                 var reason = $.parseJSON(xhr.responseText).reason;
                 if (reason === "no authentication") {
-                    ui.report_error(i18n.t("Failed!"), xhr, authentication_methods_status);
+                    ui_report.error(i18n.t("Failed!"), xhr, authentication_methods_status);
                 } else {
-                    ui.report_error(i18n.t("Failed!"), xhr, name_status);
+                    ui_report.error(i18n.t("Failed!"), xhr, name_status);
                 }
             },
         });
@@ -829,7 +829,7 @@ function _setup_page() {
             },
             error: function (xhr) {
                 var status = row.find(".admin-user-status");
-                ui.report_error(i18n.t("Failed!"), xhr, status);
+                ui_report.error(i18n.t("Failed!"), xhr, status);
             },
         });
     });
@@ -860,7 +860,7 @@ function _setup_page() {
             },
             error: function (xhr) {
                 var status = row.find(".admin-user-status");
-                ui.report_error(i18n.t("Failed!"), xhr, status);
+                ui_report.error(i18n.t("Failed!"), xhr, status);
             },
         });
     });
@@ -916,10 +916,10 @@ function _setup_page() {
                 url: url,
                 data: data,
                 success: function () {
-                    ui.report_success(i18n.t('Updated successfully!'), admin_status);
+                    ui_report.success(i18n.t('Updated successfully!'), admin_status);
                 },
                 error: function () {
-                    ui.report_error(i18n.t('Update failed!'), admin_status);
+                    ui_report.error(i18n.t('Update failed!'), admin_status);
                 },
             });
         });
@@ -928,7 +928,7 @@ function _setup_page() {
     $("#do_deactivate_stream_button").click(function () {
         if ($("#deactivation_stream_modal .stream_name").text() !== $(".active_stream_row").find('.stream_name').text()) {
             blueslip.error("Stream deactivation canceled due to non-matching fields.");
-            ui.report_message("Deactivation encountered an error. Please reload and try again.",
+            ui_report.message("Deactivation encountered an error. Please reload and try again.",
                $("#home-error"), 'alert-error');
         }
         $("#deactivation_stream_modal").modal("hide");
@@ -990,14 +990,14 @@ function _setup_page() {
             data: $(this).serialize(),
             success: function () {
                 $('#admin-emoji-status').hide();
-                ui.report_success(i18n.t("Custom emoji added!"), emoji_status);
+                ui_report.success(i18n.t("Custom emoji added!"), emoji_status);
                 $("form.admin-emoji-form input[type='text']").val("");
             },
             error: function (xhr) {
                 $('#admin-emoji-status').hide();
                 var errors = JSON.parse(xhr.responseText).msg;
                 xhr.responseText = JSON.stringify({msg: errors});
-                ui.report_error(i18n.t("Failed!"), xhr, emoji_status);
+                ui_report.error(i18n.t("Failed!"), xhr, emoji_status);
             },
         });
     });
@@ -1044,21 +1044,21 @@ function _setup_page() {
             data: $(this).serialize(),
             success: function (data) {
                 filter.id = data.id;
-                ui.report_success(i18n.t("Custom filter added!"), filter_status);
+                ui_report.success(i18n.t("Custom filter added!"), filter_status);
             },
             error: function (xhr) {
                 var errors = $.parseJSON(xhr.responseText).errors;
                 if (errors.pattern !== undefined) {
                     xhr.responseText = JSON.stringify({msg: errors.pattern});
-                    ui.report_error(i18n.t("Failed"), xhr, pattern_status);
+                    ui_report.error(i18n.t("Failed"), xhr, pattern_status);
                 }
                 if (errors.url_format_string !== undefined) {
                     xhr.responseText = JSON.stringify({msg: errors.url_format_string});
-                    ui.report_error(i18n.t("Failed"), xhr, format_status);
+                    ui_report.error(i18n.t("Failed"), xhr, format_status);
                 }
                 if (errors.__all__ !== undefined) {
                     xhr.responseText = JSON.stringify({msg: errors.__all__});
-                    ui.report_error(i18n.t("Failed"), xhr, filter_status);
+                    ui_report.error(i18n.t("Failed"), xhr, filter_status);
                 }
             },
         });

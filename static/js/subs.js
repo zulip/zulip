@@ -780,13 +780,13 @@ function ajaxSubscribe(stream) {
             if (!$.isEmptyObject(res.already_subscribed)) {
                 // Display the canonical stream capitalization.
                 true_stream_name = res.already_subscribed[people.my_current_email()][0];
-                ui.report_success(i18n.t("Already subscribed to __stream__", {stream: true_stream_name}),
+                ui_report.success(i18n.t("Already subscribed to __stream__", {stream: true_stream_name}),
                                   $("#subscriptions-status"), 'subscriptions-status');
             }
             // The rest of the work is done via the subscribe event we will get
         },
         error: function (xhr) {
-            ui.report_error(i18n.t("Error adding subscription"), xhr,
+            ui_report.error(i18n.t("Error adding subscription"), xhr,
                             $("#subscriptions-status"), 'subscriptions-status');
         },
     });
@@ -802,7 +802,7 @@ function ajaxUnsubscribe(sub) {
             // The rest of the work is done via the unsubscribe event we will get
         },
         error: function (xhr) {
-            ui.report_error(i18n.t("Error removing subscription"), xhr,
+            ui_report.error(i18n.t("Error removing subscription"), xhr,
                             $("#subscriptions-status"), 'subscriptions-status');
         },
     });
@@ -824,7 +824,7 @@ function ajaxSubscribeForCreation(stream, description, principals, invite_only, 
             // The rest of the work is done via the subscribe event we will get
         },
         error: function (xhr) {
-            ui.report_error(i18n.t("Error creating stream"), xhr,
+            ui_report.error(i18n.t("Error creating stream"), xhr,
                             $("#subscriptions-status"), 'subscriptions-status');
         },
     });
@@ -932,11 +932,11 @@ exports.change_stream_description = function (e) {
         },
         success: function () {
             // The event from the server will update the rest of the UI
-            ui.report_success(i18n.t("The stream description has been updated!"),
+            ui_report.success(i18n.t("The stream description has been updated!"),
                              $("#subscriptions-status"), 'subscriptions-status');
         },
         error: function (xhr) {
-            ui.report_error(i18n.t("Error updating the stream description"), xhr,
+            ui_report.error(i18n.t("Error updating the stream description"), xhr,
                             $("#subscriptions-status"), 'subscriptions-status');
         },
     });
@@ -957,11 +957,11 @@ exports.change_stream_name = function (e) {
         data: {new_name: JSON.stringify(new_name)},
         success: function () {
             new_name_box.val('');
-            ui.report_success(i18n.t("The stream has been renamed!"), $("#subscriptions-status "),
+            ui_report.success(i18n.t("The stream has been renamed!"), $("#subscriptions-status "),
                               'subscriptions-status');
         },
         error: function (xhr) {
-            ui.report_error(i18n.t("Error renaming stream"), xhr,
+            ui_report.error(i18n.t("Error renaming stream"), xhr,
                             $("#subscriptions-status"), 'subscriptions-status');
         },
     });

@@ -419,7 +419,7 @@ exports.show_history = function (message) {
             }));
         },
         error: function (xhr) {
-            ui.report_error(i18n.t("Error fetching message edit history"), xhr,
+            ui_report.error(i18n.t("Error fetching message edit history"), xhr,
                             $("#message-history-error"));
         },
     });

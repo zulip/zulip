@@ -268,9 +268,9 @@ form control in `static/js/admin.js`. :
       success: function (data) {
         # ...
         if (data.invite_by_admins_only) {
-          ui.report_success("New users must be invited by an admin!", invite_by_admins_only_status);
+          ui_report.success("New users must be invited by an admin!", invite_by_admins_only_status);
         } else {
-          ui.report_success("Any user may now invite new users!", invite_by_admins_only_status);
+          ui_report.success("Any user may now invite new users!", invite_by_admins_only_status);
         }
         # ...
       }
