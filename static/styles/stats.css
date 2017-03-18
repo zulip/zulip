@@ -6,7 +6,6 @@
 
 body {
     font-family: 'Humbug', 'Helvetica Neue', sans-serif !important;
-    background-color: #EBEBEB;
 }
 
 p {
@@ -43,11 +42,6 @@ svg {
     text-align: center;
     font-size: 20px;
     margin-bottom: 30px;
-}
-
-.chart-tile {
-    background: white;
-    padding: 15px;
 }
 
 #graph_container {
@@ -98,14 +92,6 @@ svg {
     display: none;
 }
 
-.analytics-btn {
-    padding: 0px 10px 0px 10px !important;
-    border-radius: 10px !important;
-    border: 1px solid #ccc !important;
-    background: transparent !important;
-    transition: all 0.2s;
-}
-
 .button {
     font-family: 'Humbug', 'Helvetica Neue', sans-serif !important;
     border: none;
@@ -114,8 +100,7 @@ svg {
 }
 
 .button:hover {
-    background: #2294f4 !important;
-    color: white;
+    background: #D8D8D8 !important;
 }
 
 .pie-button {
@@ -128,8 +113,7 @@ svg {
 }
 
 .pie-button:hover {
-    background: #2294f4 !important;
-    color: white;
+    background: #D8D8D8 !important;
 }
 
 #button_container {
@@ -139,24 +123,32 @@ svg {
 }
 
 #hourly_button {
+    padding: 0px 5px 0px 5px;
     font-size: 14px;
     margin-left: 40px;
     margin-top: 0px;
+    background: #F0F0F0;
 }
 
 #daily_button {
+    padding: 0px 5px 0px 5px;
     font-size: 14px;
     margin-top: 0px;
+    background: #F0F0F0;
 }
 
 #weekly_button {
+    padding: 0px 5px 0px 5px;
     font-size: 14px;
     margin-top: 0px;
+    background: #F0F0F0;
 }
 
 #cumulative_button {
+    padding: 0px 5px 0px 5px;
     font-size: 14px;
     margin-top: 0px;
+    background: #F0F0F0;
 }
 
 #messages_by_client_realm_button {
@@ -227,20 +219,20 @@ svg {
     margin-left: 50px;
 }
 
-.pie_container {
+#pie_container {
     text-align: center;
 }
 
 #pie_messages_sent_by_client {
     display: inline-block;
     vertical-align: top;
-    margin: 50px 40px 50px 0px;
+    margin: 100px 40px 0px 0px;
 }
 
 #pie_messages_sent_by_type {
     display: inline-block;
     vertical-align: top;
-    margin: 50px 0px 50px 0px;
+    margin: 100px 0px 0px 0px;
 }
 
 #pie_messages_sent_by_client_total {
