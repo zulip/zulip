@@ -96,7 +96,7 @@ if options.interface is None:
 elif options.interface == "":
     options.interface = None
 
-runserver_args = []
+runserver_args = [] # type: List[str]
 base_port = 9991
 if options.test:
     base_port = 9981
