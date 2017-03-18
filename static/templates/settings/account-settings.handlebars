@@ -53,7 +53,7 @@
           {{#if page_params.password_auth_enabled}}
           <div class="input-group" id="pw_change_link">
             <label for="change_password_button" class="inline-block title">{{t "Password" }}</label>
-            <button class="change_password_button grey button inline-block input-size" data-dismiss="modal" aria-hidden="true">{{t "Change password" }}</button>
+            <button class="change_password_button button white rounded inline-block input-size" data-dismiss="modal" aria-hidden="true">{{t "Change password" }}</button>
           </div>
 
           <div id="pw_change_controls">
@@ -84,11 +84,15 @@
 
           <div class="input-group no-border">
             <label for="" class="inline-block"></label>
-            <input type="submit" class="button w-200 sea-green input-size" name="change_settings" value="{{t 'Save changes' }}" />
+            <button type="submit" class="button white rounded w-200 sea-green input-size" name="change_settings">
+              {{t 'Save changes'}}
+            </button>
           </div>
           <div class="input-group">
             <label for="" class="inline-block"></label>
-            <button type="submit" class="button w-200 btn-danger input-size" id="user_deactivate_account_button">{{t 'Deactivate account' }}</button>
+            <button type="submit" class="button white rounded w-200 btn-danger input-size" id="user_deactivate_account_button">
+              {{t 'Deactivate account' }}
+            </button>
           </div>
         </div>
       </div>
@@ -105,8 +109,12 @@
           <div id="upload_avatar_spinner"></div>
         </div>
         <div class="inline-block">
-            <button class="button sea-green w-200 m-t-20 block" id="user_avatar_upload_button">{{t 'Upload new avatar' }}</button>
-            <button class="button btn-danger w-200 m-t-20 block" id="user_avatar_delete_button">{{t 'Delete avatar' }}</button>
+            <button class="button white rounded sea-green w-200 m-t-20 block" id="user_avatar_upload_button">
+              {{t 'Upload new avatar' }}
+            </button>
+            <button class="button white rounded btn-danger w-200 m-t-20 block" id="user_avatar_delete_button">
+              {{t 'Delete avatar' }}
+            </button>
         </div>
       </div>
       <div class="clear-float"></div>

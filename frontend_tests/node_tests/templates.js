@@ -290,7 +290,7 @@ function render(template_name, args) {
     html += "</table>";
 
     buttons = $(html).find('.button');
-    assert.equal($(buttons).length, 0);
+    assert.equal($(buttons).length, 6);
 
     global.write_handlebars_output("admin_user_list", html);
 }());

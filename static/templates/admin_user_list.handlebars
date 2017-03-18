@@ -18,11 +18,11 @@
     <td>
       <span class="user-status-settings">
         {{#if is_active}}
-          <button class="button deactivate btn-danger">
+          <button class="button white rounded small deactivate btn-danger">
             {{t "Deactivate" }}
           </button>
         {{else}}
-          <button class="button reactivate btn-warning">
+          <button class="button white rounded small reactivate btn-warning">
             {{t "Reactivate" }}
           </button>
         {{/if}}
@@ -30,17 +30,17 @@
       <span class="user-admin-settings">
         {{#if is_active_human}}
           {{#if is_admin}}
-            <button class="button remove-admin btn-danger">
+            <button class="button white rounded small remove-admin btn-danger">
               {{t "Remove admin" }}
             </button>
           {{else}}
-            <button class="button make-admin btn-warning">
+            <button class="button white rounded small make-admin btn-warning">
               {{t "Make admin" }}
             </button>
           {{/if}}
         {{/if}}
       </span>
-      <button class="button btn-primary open-user-form{{#unless is_active}} display-none{{/unless}}" title="{{t 'Edit user' }}" data-user-id="{{user_id}}">
+      <button class="button white rounded small btn-warning open-user-form{{#unless is_active}} display-none{{/unless}}" title="{{t 'Edit user' }}" data-user-id="{{user_id}}">
           <i class="icon-vector-pencil"></i>
       </button>
       <div class='admin-user-status'>
@@ -62,8 +62,10 @@
         </div>
       {{/if}}
       <div class="input-group">
-        <input type="button" class="btn btn-primary submit_name_changes" value="{{t 'Save changes' }}" />
-        <button type="button" class="btn btn-default reset_edit_user">{{t 'Cancel' }}</button>
+        <button type="button" class="button white rounded sea-green submit_name_changes">
+          {{t 'Save changes' }}
+        </button>
+        <button type="button" class="button white rounded btn-danger reset_edit_user">{{t 'Cancel' }}</button>
       </div>
     </form>
   </td>
