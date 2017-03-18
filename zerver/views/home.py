@@ -302,6 +302,7 @@ def home_real(request):
         'realm_invite_required',
         'realm_message_content_edit_limit_seconds',
         'realm_name',
+        'realm_description',
         'realm_name_changes_disabled',
         'realm_restricted_to_domain',
         'realm_waiting_period_threshold',

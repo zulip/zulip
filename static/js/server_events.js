@@ -55,6 +55,9 @@ function dispatch_normal_event(event) {
         if (event.op === 'update' && event.property === 'name') {
             page_params.realm_name = event.value;
             notifications.redraw_title();
+        } else if (event.op === 'update' && event.property === 'description') {
+            page_params.realm_description = event.value;
+            admin.update_realm_description(event.value);
         } else if (event.op === 'update' && event.property === 'invite_required') {
             page_params.realm_invite_required = event.value;
         } else if (event.op === 'update' && event.property === 'invite_by_admins_only') {
