@@ -21,12 +21,25 @@ class Graph(object):
         while still_work_to_do:
             still_work_to_do = False # for now
             for node in self.nodes:
-                if self.parents[node] and self.children[node]:
-                    # we are an interior node still
-                    continue
-                self.remove(node)
-                still_work_to_do = True
-                break
+                if self.is_exterior_node(node):
+                    self.remove(node)
+                    still_work_to_do = True
+                    break
+
+    def is_exterior_node(self, node):
+        # type: (str) -> bool
+        parents = self.parents[node]
+        children = self.children[node]
+        if not parents:
+            return True
+        if not children:
+            return True
+        if len(parents) > 1 or len(children) > 1:
+            return False
+
+        # If our only parent and child are the same node, then we could
+        # effectively be collapsed into the parent, so don't add clutter.
+        return parents[0] == children[0]
 
     def remove(self, node):
         # type: (str) -> None
