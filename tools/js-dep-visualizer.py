@@ -64,10 +64,13 @@ IGNORE_TUPLES = [
     ('typeahead_helper', 'subs'), # PR 4121
 
     ('stream_data', 'narrow'), # split out narrow.by_foo functions
+    ('activity', 'narrow'),
 
     ('stream_data', 'stream_color'), # split out stream_color data/UI
     ('stream_color', 'tab_bar'), # only one call
     ('stream_color', 'subs'), # only one call
+
+    ('subs', 'stream_events'), # see TODOs related to mark_{un,}subscribed
 
     ('search', 'search_suggestion'), # move handler into search_suggestion
 
@@ -95,6 +98,7 @@ IGNORE_TUPLES = [
     ('settings', 'muting_ui'), # inline call or split out muting_settings.js
 
     ('resize', 'navigate'), # split out scroll.js
+    ('resize', 'popovers'), # only three interactions
 ]
 
 for tuple in IGNORE_TUPLES:
@@ -104,21 +108,20 @@ for tuple in IGNORE_TUPLES:
 # print(tuples)
 graph = Graph(*tuples)
 ignore_modules = [
-    # some are really tricky
-    'message_store',
-    'popovers',
-    'server_events', # has restart code
-    'unread_ui',
-    'ui', # initializes all the other widgets
-
-    # some are just not very core:
-    'drafts',
+    'blueslip',
+    'echo',
+    'message_edit',
     'notifications',
+    'popovers',
+    'server_events',
     'stream_popover',
+    'unread_ops',
+    'rows', # message_store
 ]
 for node in ignore_modules:
     graph.remove(node)
 graph.remove_exterior_nodes()
+graph.report()
 buffer = make_dot_file(graph)
 
 with open(OUTPUT_FILE_PATH, 'w') as f:
