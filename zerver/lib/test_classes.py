@@ -370,7 +370,7 @@ class ZulipTestCase(TestCase):
         self.assertIn(substring, response.content.decode('utf-8'))
 
     def assert_in_success_response(self, substrings, response):
-        # type: (Iterable[Text], HttpResponse) -> None
+        # type: (List[Text], HttpResponse) -> None
         self.assertEqual(response.status_code, 200)
         decoded = response.content.decode('utf-8')
         for substring in substrings:

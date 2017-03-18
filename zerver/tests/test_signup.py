@@ -972,7 +972,7 @@ class UserSignUpTest(ZulipTestCase):
 
         # Pick a password and agree to the ToS.
         result = self.submit_reg_form_for_user(email, password, full_name="<invalid>")
-        self.assert_in_success_response("Invalid characters in name!", result)
+        self.assert_in_success_response(["Invalid characters in name!"], result)
 
     def test_unique_completely_open_domain(self):
         # type: () -> None
