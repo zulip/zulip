@@ -374,9 +374,9 @@ exports.edit_last_sent_message = function () {
         message_edit.start(msg_row, function () {
             var editability_type = message_edit.get_editability(msg, 5);
             if (editability_type === message_edit.editability_types.TOPIC_ONLY) {
-                ui.focus_on('message_edit_topic');
+                ui_util.focus_on('message_edit_topic');
             } else {
-                ui.focus_on('message_edit_content');
+                ui_util.focus_on('message_edit_content');
             }
         });
     }

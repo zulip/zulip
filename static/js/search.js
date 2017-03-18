@@ -4,7 +4,7 @@ var exports = {};
 
 function narrow_or_search_for_term(search_string) {
     var search_query_box = $("#search_query");
-    ui.change_tab_to('#home');
+    ui_util.change_tab_to('#home');
     var operators = Filter.parse(search_string);
     narrow.activate(operators, {trigger: 'search'});
 

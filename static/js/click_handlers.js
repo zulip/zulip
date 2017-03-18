@@ -102,7 +102,7 @@ $(function () {
 
     $('body').on('click', '.notification', function () {
         var payload = $(this).data("narrow");
-        ui.change_tab_to('#home');
+        ui_util.change_tab_to('#home');
         narrow.activate(payload.raw_operators, payload.opts_notif);
     });
 
@@ -153,7 +153,7 @@ $(function () {
     });
     $("body").on("click", "a", function () {
         if (document.activeElement === this) {
-            ui.blur_active_element();
+            ui_util.blur_active_element();
         }
     });
 
@@ -263,7 +263,7 @@ $(function () {
 
     // Capture both the left-sidebar Home click and the tab breadcrumb Home
     $(document).on('click', ".home-link[data-name='home']", function (e) {
-        ui.change_tab_to('#home');
+        ui_util.change_tab_to('#home');
         narrow.deactivate();
         // We need to maybe scroll to the selected message
         // once we have the proper viewport set up
@@ -273,7 +273,7 @@ $(function () {
 
     $(".brand").on('click', function (e) {
         if (ui_state.home_tab_obscured()) {
-            ui.change_tab_to('#home');
+            ui_util.change_tab_to('#home');
         } else {
             narrow.restore_home_state();
         }

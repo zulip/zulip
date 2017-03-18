@@ -91,7 +91,7 @@ exports.parse_narrow = function (hash) {
 };
 
 function activate_home_tab() {
-    ui.change_tab_to("#home");
+    ui_util.change_tab_to("#home");
     narrow.deactivate();
     floating_recipient_bar.update();
 }
@@ -120,7 +120,7 @@ function do_hashchange(from_reload) {
     var hash = window.location.hash.split("/");
     switch (hash[0]) {
     case "#narrow":
-        ui.change_tab_to("#home");
+        ui_util.change_tab_to("#home");
         var operators = exports.parse_narrow(hash);
         if (operators === undefined) {
             // If the narrow URL didn't parse, clear
@@ -146,16 +146,16 @@ function do_hashchange(from_reload) {
         activate_home_tab();
         break;
     case "#streams":
-        ui.change_tab_to("#streams");
+        ui_util.change_tab_to("#streams");
         break;
     case "#drafts":
-        ui.change_tab_to("#drafts");
+        ui_util.change_tab_to("#drafts");
         break;
     case "#administration":
-        ui.change_tab_to("#administration");
+        ui_util.change_tab_to("#administration");
         break;
     case "#settings":
-        ui.change_tab_to("#settings");
+        ui_util.change_tab_to("#settings");
         break;
     }
     return false;
@@ -295,7 +295,7 @@ exports.close_modals = function () {
 
 exports.exit_modal = function (callback) {
     if (should_ignore(window.location.hash)) {
-        ui.blur_active_element();
+        ui_util.blur_active_element();
         ignore.flag = true;
         window.location.hash = ignore.prev || "#";
         if (typeof callback === "function") {

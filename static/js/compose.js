@@ -262,7 +262,7 @@ exports.start = function (msg_type, opts) {
         compose.message_content(opts.content);
     }
 
-    ui.change_tab_to("#home");
+    ui_util.change_tab_to("#home");
 
     is_composing_message = msg_type;
 

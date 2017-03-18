@@ -27,6 +27,7 @@
         "ui": false,
         "ui_state": false,
         "ui_report": false,
+        "ui_util": false,
         "lightbox": false,
         "stream_color": false,
         "people": false,
