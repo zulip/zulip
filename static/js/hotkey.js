@@ -110,6 +110,7 @@ var keypress_mappings = {
     85: {name: 'keyboard_sub', message_view_only: false}, //'U'
     86: {name: 'view_selected_stream', message_view_only: false}, //'V'
     99: {name: 'compose', message_view_only: true}, // 'c'
+    100: {name: 'open_drafts', message_view_only: false}, // 'd'
     103: {name: 'gear_menu', message_view_only: true}, // 'g'
     105: {name: 'message_actions', message_view_only: true}, // 'i'
     106: {name: 'vim_down', message_view_only: true}, // 'j'
@@ -207,7 +208,7 @@ exports.process_escape_key = function (e) {
         return true;
     }
 
-    if ($("#draft_overlay").hasClass("show")) {
+    if (drafts.drafts_overlay_open()) {
         modals.close_modal("drafts");
         return true;
     }
@@ -333,6 +334,21 @@ exports.process_enter_key = function (e) {
         return false;
     }
 
+    // This handles when pressing enter while looking at drafts.
+    // It restores draft that is focused.
+    if (drafts.drafts_overlay_open()) {
+        var draft_list = drafts.draft_model.get();
+        if (document.activeElement.parentElement.hasAttribute("data-draft-id")) {
+             var focused_draft = document.activeElement.parentElement.getAttribute("data-draft-id");
+             drafts.restore_draft(focused_draft);
+        } else {
+            var draft_id_list = Object.getOwnPropertyNames(draft_list);
+            var first_draft = draft_id_list[draft_id_list.length-1];
+            drafts.restore_draft(first_draft);
+        }
+        return true;
+    }
+
     // If we're on a button or a link and have pressed enter, let the
     // browser handle the keypress
     //
@@ -433,6 +449,10 @@ exports.process_hotkey = function (e, hotkey) {
             return exports.process_shift_tab_key();
         case 'esc_ctrl':
             return exports.process_escape_key(e);
+    }
+
+    if (drafts.drafts_overlay_open()) {
+        drafts.drafts_handle_events(e, event_name);
     }
 
     if (hotkey.message_view_only && ui_state.home_tab_obscured()) {
@@ -597,6 +617,9 @@ exports.process_hotkey = function (e, hotkey) {
             if (exports.is_subs()) {
                 subs.new_stream_clicked();
             }
+            return true;
+        case 'open_drafts':
+            drafts.toggle();
             return true;
     }
 
