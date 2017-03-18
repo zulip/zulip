@@ -350,6 +350,9 @@ exports.get_streams_for_settings_page = function () {
         sub = exports.add_admin_options(sub);
         sub.preview_url = narrow.by_stream_uri(sub.name);
         exports.update_subscribers_count(sub);
+        if (sub.description) {
+            sub.description = marked(sub.description).replace('<p>', '').replace('</p>', '');
+        }
         sub_rows.push(sub);
     });
 

@@ -6,6 +6,7 @@ set_global('page_params', {
 });
 
 add_dependencies({
+    marked: 'third/marked/lib/marked.js',
     people: 'js/people.js',
     stream_color: 'js/stream_color.js',
     narrow: 'js/narrow.js',
