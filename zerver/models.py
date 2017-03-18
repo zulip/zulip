@@ -1425,7 +1425,8 @@ class UserPresence(models.Model):
                 # Applying the latest status as aggregated status for user.
                 user_statuses[row['user_profile__email']]['aggregated'] = {
                     'status': info['status'],
-                    'timestamp': info['timestamp']
+                    'timestamp': info['timestamp'],
+                    'client': info['client']
                 }
             user_statuses[row['user_profile__email']][row['client__name']] = info
         return user_statuses
