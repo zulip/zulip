@@ -633,7 +633,7 @@ with_overrides(function (override) {
     var event = event_fixtures.stream;
 
     global.with_stub(function (stub) {
-        override('subs.update_subscription_properties', stub.f);
+        override('stream_events.update_property', stub.f);
         override('admin.update_default_streams_table', noop);
         dispatch(event);
         var args = stub.get_args('stream_id', 'property', 'value');
@@ -700,7 +700,7 @@ with_overrides(function (override) {
 
     event = event_fixtures.subscription__update;
     global.with_stub(function (stub) {
-        override('subs.update_subscription_properties', stub.f);
+        override('stream_events.update_property', stub.f);
         dispatch(event);
         var args = stub.get_args('stream_id', 'property', 'value');
         assert_same(args.stream_id, event.stream_id);

@@ -134,25 +134,7 @@ exports.toggle_pin_to_top_stream = function (sub) {
     set_stream_property(sub, 'pin_to_top', !sub.pin_to_top);
 };
 
-function update_stream_desktop_notifications(sub, value) {
-    var desktop_notifications_checkbox = $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] #sub_desktop_notifications_setting .sub_setting_control");
-    desktop_notifications_checkbox.prop('checked', value);
-    sub.desktop_notifications = value;
-}
-
-function update_stream_audible_notifications(sub, value) {
-    var audible_notifications_checkbox = $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] #sub_audible_notifications_setting .sub_setting_control");
-    audible_notifications_checkbox.prop('checked', value);
-    sub.audible_notifications = value;
-}
-
-function update_stream_pin(sub, value) {
-    var pin_checkbox = $('#pinstream-' + sub.stream_id);
-    pin_checkbox.prop('checked', value);
-    sub.pin_to_top = value;
-}
-
-function update_stream_name(sub, new_name) {
+exports.update_stream_name = function (sub, new_name) {
     // Rename the stream internally.
     stream_data.rename_sub(sub, new_name);
     var stream_id = sub.stream_id;
@@ -171,9 +153,9 @@ function update_stream_name(sub, new_name) {
 
     // Update the message feed.
     message_live_update.update_stream_name(stream_id, new_name);
-}
+};
 
-function update_stream_description(sub, description) {
+exports.update_stream_description = function (sub, description) {
     sub.description = description;
 
     // Update stream row
@@ -184,7 +166,7 @@ function update_stream_description(sub, description) {
     var stream_settings = settings_for_sub(sub);
     stream_settings.find('input.description').val(description);
     stream_settings.find('.stream-description-editable').text(description);
-}
+};
 
 function stream_desktop_notifications_clicked(e) {
     var sub = get_sub_for_target(e.target);
@@ -778,48 +760,6 @@ exports.close = function () {
     hashchange.exit_modal();
     meta.is_open = false;
     subs.remove_miscategorized_streams();
-};
-
-exports.update_subscription_properties = function (stream_id, property, value) {
-    var sub = stream_data.get_sub_by_id(stream_id);
-    if (sub === undefined) {
-        // This isn't a stream we know about, so ignore it.
-        blueslip.warn("Update for an unknown subscription", {stream_id: stream_id,
-                                                            property: property,
-                                                            value: value});
-        return;
-    }
-
-    switch (property) {
-    case 'color':
-        stream_color.update_stream_color(sub, value, {update_historical: true});
-        break;
-    case 'in_home_view':
-        stream_muting.update_in_home_view(sub, value);
-        break;
-    case 'desktop_notifications':
-        update_stream_desktop_notifications(sub, value);
-        break;
-    case 'audible_notifications':
-        update_stream_audible_notifications(sub, value);
-        break;
-    case 'name':
-        update_stream_name(sub, value);
-        break;
-    case 'description':
-        update_stream_description(sub, value);
-        break;
-    case 'email_address':
-        sub.email_address = value;
-        break;
-    case 'pin_to_top':
-        update_stream_pin(sub, value);
-        stream_list.refresh_pinned_or_unpinned_stream(sub);
-        break;
-    default:
-        blueslip.warn("Unexpected subscription property type", {property: property,
-                                                                value: value});
-    }
 };
 
 function ajaxSubscribe(stream) {

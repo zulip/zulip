@@ -41,6 +41,7 @@
         "modals": false,
         "subs": false,
         "stream_muting": false,
+        "stream_events": false,
         "timerender": false,
         "message_live_update": false,
         "message_edit": false,

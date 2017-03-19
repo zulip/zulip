@@ -161,7 +161,7 @@ function dispatch_normal_event(event) {
     case 'stream':
         if (event.op === 'update') {
             // Legacy: Stream properties are still managed by subs.js on the client side.
-            subs.update_subscription_properties(
+            stream_events.update_property(
                 event.stream_id,
                 event.property,
                 event.value
@@ -229,7 +229,7 @@ function dispatch_normal_event(event) {
                 subs.mark_sub_unsubscribed(sub);
             });
         } else if (event.op === 'update') {
-            subs.update_subscription_properties(
+            stream_events.update_property(
                 event.stream_id,
                 event.property,
                 event.value
