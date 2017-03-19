@@ -65,7 +65,7 @@ Zulip keyboard shortcuts are divided into four categories:
   blue).
 * **Narrow by topic**: `S` - This shortcut narrows the view to show all
   messages with the topic of the selected message (outlined in blue).
-* **Narrow to all private messages**: `v` - This shortcut narrows the
+* **Narrow to all private messages**: `P` - This shortcut narrows the
   view to show all of the user's private messages.
 * **Cycle between stream narrows**: `A` and `D` - This shortcut allows the
   user to cycle through the narrows showing the messages of a stream

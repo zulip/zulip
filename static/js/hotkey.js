@@ -76,6 +76,7 @@ var keypress_mappings = {
     68: {name: 'stream_cycle_forward', message_view_only: true}, // 'D'
     74: {name: 'vim_page_down', message_view_only: true}, // 'J'
     75: {name: 'vim_page_up', message_view_only: true}, // 'K'
+    80: {name: 'narrow_private', message_view_only: true}, // 'P'
     82: {name: 'respond_to_author', message_view_only: true}, // 'R'
     83: {name: 'narrow_by_subject', message_view_only: true}, //'S'
     99: {name: 'compose', message_view_only: true}, // 'c'
@@ -85,7 +86,6 @@ var keypress_mappings = {
     113: {name: 'query_users', message_view_only: false}, // 'q'
     114: {name: 'reply_message', message_view_only: true}, // 'r'
     115: {name: 'narrow_by_recipient', message_view_only: true}, // 's'
-    118: {name: 'narrow_private', message_view_only: true}, // 'v'
     119: {name: 'query_streams', message_view_only: false}, // 'w'
 };
 

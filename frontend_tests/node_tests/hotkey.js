@@ -90,8 +90,8 @@ function stubbing(func_name_to_stub, test_function) {
 
     // Unmapped keys should immediately return false, without
     // calling any functions outside of hotkey.js.
-    assert_unmapped('abdefghlmnoptuxyz');
-    assert_unmapped('BEFGHILMNOPQTUVWXYZ');
+    assert_unmapped('abdefghlmnoptuvxyz');
+    assert_unmapped('BEFGHILMNOQTUVWXYZ');
 
     // We have to skip some checks due to the way the code is
     // currently organized for mapped keys.
@@ -136,7 +136,7 @@ function stubbing(func_name_to_stub, test_function) {
 
     assert_mapping('c', 'compose_actions.start');
     assert_mapping('C', 'compose_actions.start');
-    assert_mapping('v', 'narrow.by');
+    assert_mapping('P', 'narrow.by');
 
     // Next, test keys that only work on a selected message.
     global.current_msg_list.empty = return_true;
