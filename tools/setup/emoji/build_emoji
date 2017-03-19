@@ -16,7 +16,7 @@ from typing import Dict, Text, Union
 from os.path import dirname
 from PIL import Image, ImageDraw, ImageFont
 
-from emoji_setup_utils import emoji_names_for_picker
+from emoji_setup_utils import generate_emoji_catalog, emoji_names_for_picker
 
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../')
 sys.path.append(ZULIP_PATH)
@@ -33,6 +33,7 @@ EMOJI_DUMP_PATH = lambda p: os.path.join(EMOJI_DUMP_DIR_PATH, p)
 TARGET_EMOJI_DUMP = os.path.join(ZULIP_PATH, 'static', 'generated', 'emoji')
 EMOJI_CACHE_PATH = "/srv/zulip-emoji-cache"
 EMOJI_SCRIPT_DIR_PATH = os.path.join(ZULIP_PATH, 'tools', 'setup', 'emoji')
+EMOJI_DATA_PATH = os.path.join(ZULIP_PATH, 'static', 'third', 'emoji-data')
 
 EMOJI_CODES_FILE_TEMPLATE = """\
 var emoji_codes = (function () {
@@ -43,6 +44,8 @@ exports.names = %(names)s;
 exports.codepoints = %(codepoints)s;
 
 exports.name_to_codepoint = %(name_to_codepoint)s;
+
+exports.emoji_catalog = %(emoji_catalog)s;
 
 return exports;
 }());
@@ -172,6 +175,8 @@ def dump_emojis(cache_path):
 
     emoji_map = json.load(open('emoji_map.json'))
     code_point_to_fname_map = code_point_to_file_name_map(EMOJI_DUMP_PATH("NotoColorEmoji.ttx"))
+    emoji_data = json.load(open(os.path.join(EMOJI_DATA_PATH, 'emoji.json')))
+    emoji_catalog = generate_emoji_catalog(emoji_data)
 
     os.chdir(EMOJI_DUMP_DIR_PATH)
 
@@ -250,7 +255,8 @@ def dump_emojis(cache_path):
     emoji_codes_file.write(EMOJI_CODES_FILE_TEMPLATE % {
         'names': names,
         'codepoints': sorted([str(code_point) for code_point in set(emoji_map.values())]),
-        'name_to_codepoint': {str(key): str(emoji_map[key]) for key in emoji_map}
+        'name_to_codepoint': {str(key): str(emoji_map[key]) for key in emoji_map},
+        'emoji_catalog': emoji_catalog
     })
     emoji_codes_file.close()
 
