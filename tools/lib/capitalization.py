@@ -25,6 +25,7 @@ IGNORED_PHRASES = [
     r"Kerberos",
     r"Mac",
     r"MiB",
+    r"OTP",
     r"Pivotal",
     r'REMOTE_USER',
     r'Slack',

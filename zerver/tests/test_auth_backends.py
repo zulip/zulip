@@ -22,6 +22,7 @@ from zerver.lib.actions import (
     do_reactivate_user,
     do_set_realm_authentication_methods,
 )
+from zerver.lib.mobile_auth_otp import otp_decrypt_api_key
 from zerver.lib.validator import validate_login_email
 from zerver.lib.request import JsonableError
 from zerver.lib.initial_password import initial_password
@@ -660,19 +661,21 @@ class ResponseMock(object):
         return "Response text"
 
 class GoogleOAuthTest(ZulipTestCase):
-    def google_oauth2_test(self, token_response, account_response, subdomain=None):
-        # type: (ResponseMock, ResponseMock, Optional[str]) -> HttpResponse
+    def google_oauth2_test(self, token_response, account_response, subdomain=None,
+                           mobile_flow_otp=None):
+        # type: (ResponseMock, ResponseMock, Optional[str], Optional[str]) -> HttpResponse
         url = "/accounts/login/google/"
         params = {}
         headers = {}
         if subdomain is not None:
             headers['HTTP_HOST'] = subdomain + ".testserver"
+        if mobile_flow_otp is not None:
+            params['mobile_flow_otp'] = mobile_flow_otp
         if len(params) > 0:
             url += "?%s" % (urllib.parse.urlencode(params))
 
         result = self.client_get(url, **headers)
-        self.assertEqual(result.status_code, 302)
-        if '/accounts/login/google/send/' not in result.url:
+        if result.status_code != 302 or '/accounts/login/google/send/' not in result.url:
             return result
 
         # Now do the /google/send/ request
@@ -728,6 +731,37 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
                                  parsed_url.path)
         self.assertEqual(uri, 'http://zulip.testserver/accounts/login/subdomain/')
+
+    def test_google_oauth2_mobile_success(self):
+        # type: () -> None
+        mobile_flow_otp = '1234abcd' * 8
+        token_response = ResponseMock(200, {'access_token': "unique_token"})
+        account_data = dict(name=dict(formatted="Full Name"),
+                            emails=[dict(type="account",
+                                         value="hamlet@zulip.com")])
+        account_response = ResponseMock(200, account_data)
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True):
+            # Verify that the right thing happens with an invalid-format OTP
+            result = self.google_oauth2_test(token_response, account_response, 'zulip',
+                                             mobile_flow_otp="1234")
+            self.assert_json_error(result, "Invalid OTP")
+            result = self.google_oauth2_test(token_response, account_response, 'zulip',
+                                             mobile_flow_otp="invalido" * 8)
+            self.assert_json_error(result, "Invalid OTP")
+
+            # Now do it correctly
+            result = self.google_oauth2_test(token_response, account_response, 'zulip',
+                                             mobile_flow_otp=mobile_flow_otp)
+        self.assertEqual(result.status_code, 302)
+        redirect_url = result['Location']
+        parsed_url = urllib.parse.urlparse(redirect_url)
+        query_params = urllib.parse.parse_qs(parsed_url.query)
+        self.assertEqual(parsed_url.scheme, 'zulip')
+        self.assertEqual(query_params["realm"], ['http://zulip.testserver'])
+        self.assertEqual(query_params["email"], ['hamlet@zulip.com'])
+        encrypted_api_key = query_params["otp_encrypted_api_key"][0]
+        self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").api_key,
+                         otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp))
 
     def test_log_into_subdomain(self):
         # type: () -> None
@@ -994,7 +1028,7 @@ class GoogleLoginTest(GoogleOAuthTest):
     def test_google_oauth2_csrf_badstate(self):
         # type: () -> None
         with mock.patch("logging.warning") as m:
-            result = self.client_get("/accounts/login/google/done/?state=badstate:otherbadstate:")
+            result = self.client_get("/accounts/login/google/done/?state=badstate:otherbadstate:more:")
         self.assertEqual(result.status_code, 400)
         self.assertEqual(m.call_args_list[0][0][0],
                          'Google oauth2 CSRF error')
