@@ -67,13 +67,13 @@ Jump to:
 #### macOS
 
 1. Install [Vagrant][vagrant-dl-macos] (1.8.4-1.8.6, do not use 1.8.7).
-2. Install [VirtualBox][vbox-dl] (>= 5.1.8)
+2. Install [VirtualBox][vbox-dl] (>= 5.1.8).
 
 (For a non-free option, but better performance, you can also use [VMWare
 Fusion][vmware-fusion-dl] with the [VMWare Fusion Vagrant
 plugin][vagrant-vmware-fusion-dl].)
 
-Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code)
+Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code).
 
 #### Ubuntu
 
@@ -220,9 +220,11 @@ If you haven't already created an ssh key and added it to your GitHub account,
 you should do that now by following [these
 instructions](https://help.github.com/articles/generating-an-ssh-key/).
 
-1. In your browser, visit [https://github.com/zulip/zulip](https://github.com/zulip/zulip)
-   and click the `fork` button. You will need to be logged in to GitHub to do this.
-2. Open Terminal (macOS/Ubuntu) or Git BASH (Windows; must **run as an Administrator**)
+1. In your browser, visit <https://github.com/zulip/zulip>
+   and click the `fork` button. You will need to be logged in to GitHub to
+   do this.
+2. Open Terminal (macOS/Ubuntu) or Git BASH (Windows; must
+   **run as an Administrator**).
 3. In Terminal/Git BASH, clone your fork:
 ```
 git clone git@github.com:YOURUSERNAME/zulip.git
@@ -378,8 +380,7 @@ webpack: bundle is now VALID.
 ```
 
 Now the Zulip server should be running and accessible. Verify this by
-navigating to [http://localhost:9991/](http://localhost:9991/) in your browser
-on your main machine.
+navigating to <http://localhost:9991/> in the browser on your main machine.
 
 You should see something like this:
 

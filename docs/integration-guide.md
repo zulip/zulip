@@ -96,7 +96,7 @@ New Zulip webhook integrations can take just a few hours to write,
 including tests and documentation, if you use the right process.
 Here's how we recommend doing it:
 
-* First, use http://requestb.in/ or a similar site to capture an
+* First, use <http://requestb.in/> or a similar site to capture an
   example webhook payload from the service you're integrating.  You
   can use these captured payloads to create a set of test fixtures for
   your integration under `zerver/fixtures`.

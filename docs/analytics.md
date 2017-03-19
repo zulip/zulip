@@ -226,13 +226,13 @@ when writing this sort of code to have a lot of semi-repeated code blocks
 
 Tips and tricks:
 
-- Use $.get to fetch data from the backend. You can grep through stats.js to
-  find examples of this.
+- Use `$.get` to fetch data from the backend. You can grep through stats.js
+  to find examples of this.
 - The Plotly documentation is at
-  [https://plot.ly/javascript/](https://plot.ly/javascript/) (check out the
-  full reference, event reference, and function reference). The
-  documentation pages seem to work better in chrome than in firefox, though
-  this hasn't been extensively verified.
+  <https://plot.ly/javascript/> (check out the full reference, event
+  reference, and function reference). The documentation pages seem to work
+  better in Chrome than in Firefox, though this hasn't been extensively
+  verified.
 - Unless a graph has a ton of data, it is typically better to just redraw it
   when something changes (e.g. in the various aggregation click handlers)
   rather than to use retrace or relayout or do other complicated

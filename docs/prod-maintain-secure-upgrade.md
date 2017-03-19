@@ -20,8 +20,7 @@ You may also want to read this related content:
 upgrade.**
 
 To upgrade to a new version of the zulip server, download the appropriate
-release tarball from
-[https://www.zulip.org/dist/releases/](https://www.zulip.org/dist/releases/)
+release tarball from <https://www.zulip.org/dist/releases/>.
 
 You also have the option of creating your own release tarballs from a
 copy of the zulip.git repository using
@@ -170,8 +169,7 @@ into S3 using [wal-e](https://github.com/wal-e/wal-e) in
 `puppet/zulip_internal/manifests/postgres_common.pp` (that's what we
 use for zulip.com's database backups).  Note that this module isn't
 part of the Zulip server releases since it's part of the zulip.com
-configuration (see
-[https://github.com/zulip/zulip/issues/293](https://github.com/zulip/zulip/issues/293)
+configuration (see <https://github.com/zulip/zulip/issues/293>
 for a ticket about fixing this to make life easier for running
 backups).
 

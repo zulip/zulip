@@ -8,11 +8,11 @@ maintaining such documentation highly efficient.
 ## Editing and testing
 
 The user documentation is available under `/help/` on any Zulip server;
-(e.g. [https://chat.zulip.org/help/](https://chat.zulip.org/help/) or
-`http://localhost:9991/help/` in the Zulip development environment). The
-user documentation is not hosted on ReadTheDocs, since Zulip supports
-running a server completely disconnected from the Internet, and we'd like
-the documentation to be available in that environment.
+(e.g. <https://chat.zulip.org/help/> or `http://localhost:9991/help/` in
+the Zulip development environment). The user documentation is not hosted on
+ReadTheDocs, since Zulip supports running a server completely disconnected
+from the Internet, and we'd like the documentation to be available in that
+environment.
 
  The source for this user documentation is the Markdown files under
 `templates/zerver/help/` in the
