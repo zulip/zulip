@@ -671,7 +671,9 @@ def run():
         @lint
         def css():
             # type: () -> int
-            result = subprocess.call(['tools/check-css'])
+            if not by_lang['css']:
+                return 0
+            result = subprocess.call(['tools/check-css'] + by_lang['css'])
             return result
 
         @lint

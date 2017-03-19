@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 from __future__ import print_function
 from lib.css_parser import parse, CssParserException
+from typing import Iterable, Text
 import os
 import sys
 import glob
@@ -11,7 +12,7 @@ from lib import sanity_check
 sanity_check.check_venv(__file__)
 
 def validate(fn):
-    # type: (str) -> None
+    # type: (Text) -> None
     text = open(fn).read()
     section_list = parse(text)
     if text != section_list.text():
@@ -20,20 +21,24 @@ def validate(fn):
         os.system('diff %s foo.txt' % (fn,))
         sys.exit(1)
 
-def check_our_files():
-    # type: () -> None
-    fns = glob.glob('static/styles/*.css')
-    for fn in fns:
+def check_our_files(filenames):
+    # type: (Iterable[Text]) -> None
+    for filename in filenames:
         try:
-            validate(fn)
+            validate(filename)
         except CssParserException as e:
             msg = '''
                 ERROR! Some CSS seems to be misformatted.
                 {}
                 See line {} in file {}
-                '''.format(e.msg, e.token.line, fn)
+                '''.format(e.msg, e.token.line, filename)
             print(msg)
             sys.exit(1)
 
 if __name__ == '__main__':
-    check_our_files()
+    # If command arguments are provided, we only check those filenames.
+    # Otherwise, we check all possible filenames.
+    filenames = sys.argv[1:]
+    if not filenames:
+        filenames = glob.glob('static/styles/*.css')
+    check_our_files(filenames)
