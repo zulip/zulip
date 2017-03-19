@@ -22,17 +22,8 @@ EXCLUDED_FILES = [
     "tools/tests/test_template_data",
 ]
 
-def check_our_files():
-    # type: () -> None
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-m', '--modified',
-                        action='store_true', default=False,
-                        help='only check modified files')
-    parser.add_argument('--all-dups',
-                        action="store_true", default=False,
-                        help='Run lint tool to detect duplicate ids on ignored files as well')
-    args = parser.parse_args()
-
+def check_our_files(modified_only, all_dups):
+    # type: (bool, bool) -> None
     by_lang = cast(
         Dict[str, List[str]],
         lister.list_files(
@@ -245,4 +236,12 @@ def check_handlebar_templates(templates):
                 sys.exit(1)
 
 if __name__ == '__main__':
-    check_our_files()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-m', '--modified',
+                        action='store_true', default=False,
+                        help='only check modified files')
+    parser.add_argument('--all-dups',
+                        action="store_true", default=False,
+                        help='Run lint tool to detect duplicate ids on ignored files as well')
+    args = parser.parse_args()
+    check_our_files(args.modified, args.all_dups)
