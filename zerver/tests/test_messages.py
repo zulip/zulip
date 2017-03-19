@@ -18,7 +18,7 @@ from zerver.lib.message import (
 from zerver.lib.test_helpers import (
     get_user_messages,
     make_client,
-    message_ids, message_stream_count,
+    message_stream_count,
     most_recent_message,
     most_recent_usermessage,
     queries_captured,

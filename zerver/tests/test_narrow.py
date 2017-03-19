@@ -27,7 +27,7 @@ from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.test_helpers import (
     POSTRequestMock,
     TestCase,
-    get_user_messages, message_ids, queries_captured,
+    get_user_messages, queries_captured,
 )
 from zerver.lib.test_classes import (
     ZulipTestCase,
