@@ -151,7 +151,7 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('J', 'navigate.page_down');
     assert_mapping('k', 'navigate.up');
     assert_mapping('K', 'navigate.page_up');
-    assert_mapping('l', 'lightbox.show_image_from_selected_message');
+    assert_mapping('l', 'lightbox.show_from_selected_message');
     assert_mapping('s', 'narrow.by_recipient');
     assert_mapping('S', 'narrow.by_subject');
     assert_mapping('i', 'popovers.open_message_menu');

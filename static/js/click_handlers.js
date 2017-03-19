@@ -514,28 +514,14 @@ $(function () {
 
     (function () {
         $("#main_div").on("click", ".message_inline_image a", function (e) {
-            var img = e.target;
-            var row = rows.id($(img).closest(".message_row"));
-            var user = current_msg_list.get(row).sender_full_name;
-            var $target = $(this);
+            var $img = $(this).find("img");
 
             // prevent the link from opening in a new page.
             e.preventDefault();
             // prevent the message compose dialog from happening.
             e.stopPropagation();
 
-            if ($target.parent().hasClass("youtube-video")) {
-                lightbox.open({
-                    type: "youtube",
-                    id: $target.data("id"),
-                });
-            } else {
-                lightbox.open({
-                    type: "photo",
-                    image: img,
-                    user: user,
-                });
-            }
+            lightbox.show_from_inline_image($img);
         });
 
         $("#lightbox_overlay .download").click(function () {

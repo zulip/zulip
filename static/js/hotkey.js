@@ -558,7 +558,7 @@ exports.process_hotkey = function (e, hotkey) {
             compose.reply_with_mention({trigger: 'hotkey'});
             return true;
         case 'show_light_box':
-            lightbox.show_image_from_selected_message();
+            lightbox.show_from_selected_message();
             return true;
     }
 

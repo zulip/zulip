@@ -50,18 +50,28 @@ exports.open = function (data) {
     popovers.hide_all();
 };
 
-exports.show_image_from_selected_message = function () {
-    var selected_msg = $(".selected_message");
-    var selected_zid = selected_msg.attr("zid");
-    var full_name = message_store.get(selected_zid).sender_full_name;
-    var image = selected_msg.find("img").eq(0);
-    var data = {
-        type: "photo",
-        user: full_name,
-        image: image,
-    };
-    lightbox.open(data);
-    return true;
+exports.show_from_selected_message = function () {
+    var selected_msg = $(".selected_message").find("img");
+    if (selected_msg.length !== 0) {
+      exports.show_from_inline_image(selected_msg);
+    }
+};
+
+exports.show_from_inline_image = function ($img) {
+    var zid = rows.id($img.closest(".message_row"));
+    var user = message_store.get(zid).sender_full_name;
+    if ($img.parent().parent().hasClass("youtube-video")) {
+        lightbox.open({
+            type: "youtube",
+            id: $img.data("id"),
+        });
+    } else {
+        lightbox.open({
+            type: "photo",
+            image: $img[0],
+            user: user,
+        });
+    }
 };
 
 return exports;
