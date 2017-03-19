@@ -12,6 +12,8 @@ exports.actively_scrolling = function () {
 
 // What, if anything, obscures the home tab?
 exports.home_tab_obscured = function () {
+    console.log("true");
+    console.trace();
     if ($('.overlay.show').length > 0) {
         return 'modal';
     }
