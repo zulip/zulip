@@ -44,6 +44,8 @@ from zerver.lib.actions import (
     do_set_realm_create_stream_by_admins_only,
     do_set_realm_name,
     do_set_realm_description,
+    do_set_realm_waiting_period_threshold,
+    do_set_realm_add_emoji_by_admins_only,
     do_set_realm_restricted_to_domain,
     do_set_realm_invite_required,
     do_set_realm_invite_by_admins_only,
@@ -574,6 +576,30 @@ class EventsRegisterTest(ZulipTestCase):
             ('value', check_string),
         ])
         events = self.do_test(lambda: do_set_realm_description(self.user_profile.realm, 'New Realm Description'))
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_change_realm_waiting_period_threshold(self):
+        # type: () -> None
+        schema_checker = check_dict([
+            ('type', equals('realm')),
+            ('op', equals('update')),
+            ('property', equals('waiting_period_threshold')),
+            ('value', check_int),
+        ])
+        events = self.do_test(lambda: do_set_realm_waiting_period_threshold(self.user_profile.realm, 17))
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_change_realm_add_emoji_by_admins_only(self):
+        # type: () -> None
+        schema_checker = check_dict([
+            ('type', equals('realm')),
+            ('op', equals('update')),
+            ('property', equals('add_emoji_by_admins_only')),
+            ('value', check_bool),
+        ])
+        events = self.do_test(lambda: do_set_realm_add_emoji_by_admins_only(self.user_profile.realm, True))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
