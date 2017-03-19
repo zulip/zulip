@@ -999,6 +999,42 @@ class UserSignUpTest(ZulipTestCase):
         result = self.submit_reg_form_for_user(email, password, full_name="<invalid>")
         self.assert_in_success_response("Invalid characters in name!", result)
 
+    def test_signup_without_password(self):
+        # type: () -> None
+        """
+        Check if signing up without a password works properly when
+        password_auth_enabled is False.
+        """
+
+        email = "newuser@zulip.com"
+
+        result = self.client_post('/accounts/home/', {'email': email})
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(
+            "/accounts/send_confirm/%s" % (email,)))
+        result = self.client_get(result["Location"])
+        self.assert_in_response("Check your email so we can get started.", result)
+
+        # Visit the confirmation link.
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        result = self.client_get(confirmation_url)
+        self.assertEqual(result.status_code, 200)
+
+        with patch('zerver.views.registration.password_auth_enabled', return_value=False):
+            result = self.client_post(
+                '/accounts/register/',
+                {'full_name': 'New User',
+                 'realm_name': 'Zulip Test',
+                 'realm_subdomain': 'zuliptest',
+                 'key': find_key_by_email(email),
+                 'realm_org_type': Realm.COMMUNITY,
+                 'terms': True})
+
+        # User should now be logged in.
+        self.assertEqual(result.status_code, 302)
+        user_profile = get_user_profile_by_email(email)
+        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+
     def test_signup_without_full_name(self):
         # type: () -> None
         """
@@ -1030,6 +1066,46 @@ class UserSignUpTest(ZulipTestCase):
              'terms': True,
              'from_confirmation': '1'})
         self.assert_in_success_response(["You're almost there."], result)
+
+    def test_signup_invalid_subdomain(self):
+        # type: () -> None
+        """
+        Check if attempting to authenticate to the wrong subdomain logs an
+        error and redirects.
+        """
+        email = "newuser@zulip.com"
+        password = "newpassword"
+
+        result = self.client_post('/accounts/home/', {'email': email})
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(
+            "/accounts/send_confirm/%s" % (email,)))
+        result = self.client_get(result["Location"])
+        self.assert_in_response("Check your email so we can get started.", result)
+
+        # Visit the confirmation link.
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        result = self.client_get(confirmation_url)
+        self.assertEqual(result.status_code, 200)
+
+        def invalid_subdomain(**kwargs):
+            # type: (**Any) -> Any
+            return_data = kwargs.get('return_data', {})
+            return_data['invalid_subdomain'] = True
+
+        with patch('zerver.views.registration.authenticate', side_effect=invalid_subdomain):
+            with patch('logging.error') as mock_error:
+                result = self.client_post(
+                    '/accounts/register/',
+                    {'password': password,
+                     'full_name': 'New User',
+                     'realm_name': 'Zulip Test',
+                     'realm_subdomain': 'zuliptest',
+                     'key': find_key_by_email(email),
+                     'realm_org_type': Realm.COMMUNITY,
+                     'terms': True})
+        mock_error.assert_called_once()
+        self.assertEqual(result.status_code, 302)
 
     def test_unique_completely_open_domain(self):
         # type: () -> None
@@ -1222,6 +1298,24 @@ class UserSignUpTest(ZulipTestCase):
                 AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
             result = self.client_get(confirmation_url)
             self.assertEqual(result.status_code, 200)
+
+            # The full_name should not be overriden by the value from LDAP if
+            # request.session['authenticated_full_name'] has not been set yet.
+            with patch('zerver.views.registration.name_changes_disabled', return_value=True):
+                result = self.submit_reg_form_for_user(email,
+                                                       password,
+                                                       full_name="Non LDAP Full Name",
+                                                       realm_name=realm_name,
+                                                       realm_subdomain=subdomain,
+                                                       # Pass HTTP_HOST for the target subdomain
+                                                       HTTP_HOST=subdomain + ".testserver")
+            self.assert_in_success_response(["You're almost there.",
+                                             "Non LDAP Full Name",
+                                             "newuser@zulip.com"],
+                                            result)
+
+            # Submitting the registration form with from_confirmation='1' sets
+            # the value of request.session['authenticated_full_name'] from LDAP.
             result = self.submit_reg_form_for_user(email,
                                                    password,
                                                    realm_name=realm_name,
@@ -1229,7 +1323,22 @@ class UserSignUpTest(ZulipTestCase):
                                                    from_confirmation='1',
                                                    # Pass HTTP_HOST for the target subdomain
                                                    HTTP_HOST=subdomain + ".testserver")
+            self.assert_in_success_response(["You're almost there.",
+                                             "New User Name",
+                                             "newuser@zulip.com"],
+                                            result)
 
+            # The full name be populated from the value of
+            # request.session['authenticated_full_name'] from LDAP in the case
+            # where from_confirmation and name_changes_disabled are both False.
+            with patch('zerver.views.registration.name_changes_disabled', return_value=True):
+                result = self.submit_reg_form_for_user(email,
+                                                       password,
+                                                       full_name="Non LDAP Full Name",
+                                                       realm_name=realm_name,
+                                                       realm_subdomain=subdomain,
+                                                       # Pass HTTP_HOST for the target subdomain
+                                                       HTTP_HOST=subdomain + ".testserver")
             self.assert_in_success_response(["You're almost there.",
                                              "New User Name",
                                              "newuser@zulip.com"],
