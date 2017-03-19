@@ -52,6 +52,7 @@ var keydown_unshift_mappings = {
 };
 
 var keydown_ctrl_mappings = {
+    219: {name: 'esc_ctrl', message_view_only: false}, // '['
 };
 
 var keydown_either_mappings = {
@@ -387,6 +388,8 @@ exports.process_hotkey = function (e, hotkey) {
             return exports.process_tab_key();
         case 'shift_tab':
             return exports.process_shift_tab_key();
+        case 'esc_ctrl':
+            return exports.process_escape_key(e);
     }
 
     if (hotkey.message_view_only && ui.home_tab_obscured()) {
