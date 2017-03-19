@@ -969,17 +969,6 @@ class GetOldMessagesTest(ZulipTestCase):
             self.assert_json_error(result,
                                    "Bad value for 'narrow': %s" % (type,))
 
-    def test_old_empty_narrow(self):
-        # type: () -> None
-        """
-        '{}' is accepted to mean 'no narrow', for use by old mobile clients.
-        """
-        self.login("hamlet@zulip.com")
-        all_result    = self.get_and_check_messages({}) # type: Dict[str, Dict]
-        narrow_result = self.get_and_check_messages({'narrow': '{}'}) # type: Dict[str, Dict]
-
-        self.assertEqual(message_ids(all_result), message_ids(narrow_result))
-
     def test_bad_narrow_operator(self):
         # type: () -> None
         """
