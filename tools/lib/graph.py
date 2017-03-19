@@ -49,6 +49,15 @@ class Graph(object):
             self.parents[child].remove(node)
         self.nodes.remove(node)
 
+    def report(self):
+        # type: () -> None
+        tups = [
+            (len(self.children[node]), len(self.parents[node]), node)
+            for node in self.nodes]
+        tups.sort()
+        for tup in tups:
+            print tup
+
 def make_dot_file(graph):
     # type: (Graph) -> str
     buffer = 'digraph G {\n'
