@@ -35,6 +35,7 @@ var keydown_shift_mappings = {
     // these can be triggered by shift + key only
     9: {name: 'shift_tab', message_view_only: false}, // tab
     32: {name: 'shift_spacebar', message_view_only: true},  // space bar
+    187: {name: 'thumbs_up_emoji', message_view_only: true}, // '+'
 };
 
 var keydown_unshift_mappings = {
@@ -555,6 +556,9 @@ exports.process_hotkey = function (e, hotkey) {
             return true;
         case 'compose_reply_with_mention': // '@': respond to message with mention to author
             compose.reply_with_mention({trigger: 'hotkey'});
+            return true;
+        case 'thumbs_up_emoji': // '+': reacts with thumbs up emoji on selected message
+            reactions.reaction_popover(current_msg_list.selected_id(), '+1');
             return true;
     }
 

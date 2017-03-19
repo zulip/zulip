@@ -166,11 +166,13 @@ function stubbing(func_name_to_stub, test_function) {
         page_down: 34,
         spacebar: 32,
         up_arrow: 38,
+        '+': 187,
     };
 
-    function process(name) {
+    function process(name, shiftKey) {
         var e = {
             which: codes[name],
+            shiftKey: shiftKey,
         };
         return hotkey.process_keydown(e);
     }
@@ -179,9 +181,9 @@ function stubbing(func_name_to_stub, test_function) {
         assert.equal(process(name), false);
     }
 
-    function assert_mapping(key_name, func_name) {
+    function assert_mapping(key_name, func_name, shiftKey) {
         stubbing(func_name, function () {
-            assert(process(key_name));
+            assert(process(key_name, shiftKey));
         });
     }
 
@@ -206,6 +208,7 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('page_down', 'navigate.page_down');
     assert_mapping('spacebar', 'navigate.page_down');
     assert_mapping('up_arrow', 'navigate.up');
+    assert_mapping('+', 'reactions.reaction_popover', true);
 
     hotkey.is_settings_page = return_true;
     assert_unmapped('end');
