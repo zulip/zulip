@@ -55,7 +55,7 @@ var message_store = require('js/message_store.js');
         display_recipient: [me, bob, cindy],
         flags: ['has_alert_word'],
     };
-    message_store._add_message_metadata(message);
+    message_store.add_message_metadata(message);
 
     assert.equal(message.is_private, true);
     assert.equal(message.reply_to, 'bob@example.com,cindy@example.com');
