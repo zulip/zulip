@@ -851,6 +851,7 @@ JS_SPECS = {
             'js/resize.js',
             'js/floating_recipient_bar.js',
             'js/lightbox.js',
+            'js/ui_state.js',
             'js/ui.js',
             'js/ui_util.js',
             'js/pointer.js',

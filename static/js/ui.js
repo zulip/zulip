@@ -11,13 +11,6 @@ exports.actively_scrolling = function () {
 };
 
 // What, if anything, obscures the home tab?
-exports.home_tab_obscured = function () {
-    if ($('.overlay.show').length > 0) {
-        return 'modal';
-    }
-
-    return false;
-};
 
 exports.replace_emoji_with_text = function (element) {
     element.find(".emoji").replaceWith(function () {
