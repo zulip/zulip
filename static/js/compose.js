@@ -87,7 +87,7 @@ function show_box(tabname, focus_area, opts) {
 }
 
 function show_all_everyone_warnings() {
-    var current_stream = stream_data.get_sub(compose.stream_name());
+    var current_stream = stream_data.get_sub(compose.stream_name_get());
     var stream_count = current_stream.subscribers.num_items();
 
     var all_everyone_template = templates.render("compose_all_everyone", {count: stream_count});
@@ -203,7 +203,7 @@ function fill_in_opts_from_current_narrowed_view(msg_type, opts) {
 function same_recipient_as_before(msg_type, opts) {
     return (compose_state.composing() === msg_type) &&
             ((msg_type === "stream" &&
-              opts.stream === compose.stream_name() &&
+              opts.stream === compose.stream_name_get() &&
               opts.subject === compose.subject()) ||
              (msg_type === "private" &&
               opts.private_message_recipient === compose_state.recipient()));
@@ -253,7 +253,7 @@ exports.start = function (msg_type, opts) {
         clear_box();
     }
 
-    compose.stream_name(opts.stream);
+    compose.stream_name_set(opts.stream);
     compose.subject(opts.subject);
 
     // Set the recipients with a space after each comma, so it looks nice.
@@ -345,7 +345,7 @@ function create_message_object() {
         message.private_message_recipient = recipient;
         message.to_user_ids = people.email_list_to_user_ids_string(emails);
     } else {
-        var stream_name = compose.stream_name();
+        var stream_name = compose.stream_name_get();
         message.to = stream_name;
         message.stream = stream_name;
         var sub = stream_data.get_sub(stream_name);
@@ -712,7 +712,18 @@ function get_or_set(fieldname, keep_leading_whitespace) {
     };
 }
 
-exports.stream_name     = get_or_set('stream');
+function trim_field_val(selector) {
+   return $.trim($(selector).val());
+}
+
+exports.stream_name_get = function () {
+    return trim_field_val("#stream");
+};
+
+exports.stream_name_set = function (newval) {
+    $('#stream').val(newval);
+};
+
 exports.subject         = get_or_set('subject');
 // We can't trim leading whitespace in `new_message_content` because
 // of the indented syntax for multi-line code blocks.
@@ -821,7 +832,7 @@ function validate_stream_message_address_info(stream_name) {
 }
 
 function validate_stream_message() {
-    var stream_name = exports.stream_name();
+    var stream_name = exports.stream_name_get();
     if (stream_name === "") {
         compose_error(i18n.t("Please specify a stream"), $("#stream"));
         return false;
@@ -1012,7 +1023,7 @@ $(function () {
             $(event.target).attr('disabled', true);
         }
 
-        var stream_name = compose.stream_name();
+        var stream_name = compose.stream_name_get();
         var sub = stream_data.get_sub(stream_name);
         if (!sub) {
             // This should only happen if a stream rename occurs
