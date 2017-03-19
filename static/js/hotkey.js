@@ -72,6 +72,7 @@ var keydown_either_mappings = {
 };
 
 var keypress_mappings = {
+    42: {name: 'star_message', message_view_only: true}, // '*'
     47: {name: 'search', message_view_only: false}, // '/'
     63: {name: 'show_shortcuts', message_view_only: false}, // '?'
     64: {name: 'compose_reply_with_mention', message_view_only: true}, // '@'
@@ -556,6 +557,8 @@ exports.process_hotkey = function (e, hotkey) {
     switch (event_name) {
         case 'message_actions':
             return popovers.open_message_menu();
+        case 'star_message':
+            return message_flags.toggle_starred(current_msg_list.selected_message());
         case 'narrow_by_recipient':
             return do_narrow_action(narrow.by_recipient);
         case 'narrow_by_subject':
