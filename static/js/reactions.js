@@ -46,23 +46,16 @@ exports.message_reaction_on_click = function (message_id, emoji_name) {
     send_reaction_ajax(message_id, emoji_name, operation);
 };
 
-function reaction_popover_reaction_on_click() {
-    // When an emoji is clicked in the popover,
-    // if the user has reacted to this message with this emoji
-    // the reaction is removed
-    // otherwise, the reaction is added
-    var emoji_name = this.title;
-    var message_id = $(this).parent().attr('data-message-id');
+exports.reaction_popover = function (message_id, emoji_name) {
     var user_list = get_user_list_for_message_reaction(message_id, emoji_name);
     var operation = 'add';
     if (user_list.indexOf(page_params.user_id) !== -1) {
         // User has reacted with this emoji to this message
-        $(this).removeClass('reacted');
         operation = 'remove';
     }
     send_reaction_ajax(message_id, emoji_name, operation);
     popovers.hide_reactions_popover();
-}
+};
 
 function filter_emojis() {
     var elt = $(".reaction-popover-filter").expectOne();
@@ -80,8 +73,36 @@ function filter_emojis() {
     }
 }
 
-$(document).on('click', '.reaction-popover-reaction', reaction_popover_reaction_on_click);
+function maybe_select_emoji(e) {
+    var reaction_list = $(".reaction-popover-reaction");
+    if (e.keyCode === 13) {
+        e.preventDefault();
+        var reaction_show_list = reaction_list.filter(function () {
+            return this.style.display === "block";
+        });
+        if (reaction_show_list.length) {
+            $(".reaction-popover-filter").val("");
+            exports.reaction_popover(current_msg_list.selected_id(), reaction_show_list[0].title);
+        }
+    }
+}
+
+$(document).on('click', '.reaction-popover-reaction', function () {
+    // When an emoji is clicked in the popover,
+    // if the user has reacted to this message with this emoji
+    // the reaction is removed
+    // otherwise, the reaction is added
+    var emoji_name = this.title;
+    var message_id = $(this).parent().attr('data-message-id');
+    var user_list = get_user_list_for_message_reaction(message_id, emoji_name);
+    if (user_list.indexOf(page_params.user_id) !== -1) {
+        $(this).removeClass('reacted');
+    }
+    exports.reaction_popover(message_id, emoji_name);
+});
+
 $(document).on('input', '.reaction-popover-filter', filter_emojis);
+$(document).on('keydown', '.reaction-popover-filter', maybe_select_emoji);
 
 function full_name(user_id) {
     if (user_id === page_params.user_id) {
