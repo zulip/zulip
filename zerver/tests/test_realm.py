@@ -70,18 +70,17 @@ class RealmTest(ZulipTestCase):
 
     def test_realm_description_length(self):
         # type: () -> None
-        realm = get_realm('zulip')
         new_description = 'A' * 101
-        events = []  # type: List[Dict[str, Any]]
-        with tornado_redirected_to_list(events):
-            do_set_realm_description(realm, new_description)
-        event = events[0]['event']
-        self.assertEqual(event, dict(
-            type='realm',
-            op='update',
-            property='description',
-            value=new_description[:100],
-        ))
+        data = dict(description=ujson.dumps(new_description))
+
+        # create an admin user
+        email = 'iago@zulip.com'
+        self.login(email)
+
+        result = self.client_patch('/json/realm', data)
+        self.assert_json_error(result, 'Realm description cannot exceed 100 characters.')
+        realm = get_realm('zulip')
+        self.assertNotEqual(realm.description, new_description)
 
     def test_update_realm_api(self):
         # type: () -> None

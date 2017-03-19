@@ -433,8 +433,6 @@ def do_set_realm_name(realm, name):
 
 def do_set_realm_description(realm, description):
     # type: (Realm, Text) -> None
-    if len(description) > 100:
-        description = description[:100]
     realm.description = description
     realm.save(update_fields=['description'])
     event = dict(

@@ -52,6 +52,8 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
         do_set_realm_name(realm, name)
         data['name'] = 'updated'
     if description is not None and realm.description != description:
+        if len(description) > 100:
+            return json_error(_("Realm description cannot exceed 100 characters."))
         do_set_realm_description(realm, description)
         data['description'] = 'updated'
     if restricted_to_domain is not None and realm.restricted_to_domain != restricted_to_domain:
