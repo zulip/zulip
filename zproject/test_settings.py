@@ -121,3 +121,7 @@ REALMS_HAVE_SUBDOMAINS = bool(os.getenv('REALMS_HAVE_SUBDOMAINS', False))
 TERMS_OF_SERVICE = 'corporate/terms.md'
 
 INLINE_URL_EMBED_PREVIEW = False
+
+# By default will not send emails when login occurs.
+# Explicity set this to True within tests that must have this on.
+SEND_LOGIN_EMAILS = False

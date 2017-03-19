@@ -413,3 +413,24 @@ class SessionHostDomainMiddleware(SessionMiddleware):
                                         secure=settings.SESSION_COOKIE_SECURE or None,
                                         httponly=settings.SESSION_COOKIE_HTTPONLY or None)
         return response
+
+class SetRemoteAddrFromForwardedFor(object):
+    """
+    Middleware that sets REMOTE_ADDR based on the HTTP_X_FORWARDED_FOR.
+
+    This middleware replicates Django's former SetRemoteAddrFromForwardedFor middleware.
+    Because Zulip sits behind a NGINX reverse proxy, if the HTTP_X_FORWARDED_FOR
+    is set in the request, then it has properly been set by NGINX.
+    Therefore HTTP_X_FORWARDED_FOR's value is trusted.
+    """
+    def process_request(self, request):
+        # type: (HttpRequest) -> None
+        try:
+            real_ip = request.META['HTTP_X_FORWARDED_FOR']
+        except KeyError:
+            return None
+        else:
+            # HTTP_X_FORWARDED_FOR can be a comma-separated list of IPs.
+            # For NGINX reverse proxy servers, the client's IP will be the first one.
+            real_ip = real_ip.split(",")[0].strip()
+            request.META['REMOTE_ADDR'] = real_ip
