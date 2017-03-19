@@ -213,14 +213,19 @@ exports.user_is_subscribed = function (stream_name, user_email) {
 };
 
 exports.create_streams = function (streams) {
+    // New subscriptions.
+    var subscriptions = [];
     _.each(streams, function (stream) {
         // We handle subscriber stuff in other events.
         var attrs = _.defaults(stream, {
             subscribers: [],
             subscribed: false,
         });
-        exports.create_sub_from_server_data(stream.name, attrs);
+        if (!exports.get_sub(stream.name)) {
+            subscriptions.push(exports.create_sub_from_server_data(stream.name, attrs));
+        }
     });
+    return subscriptions;
 };
 
 exports.create_sub_from_server_data = function (stream_name, attrs) {

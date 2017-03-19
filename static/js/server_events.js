@@ -168,7 +168,10 @@ function dispatch_normal_event(event) {
             );
             admin.update_default_streams_table();
         } else if (event.op === 'create') {
-            stream_data.create_streams(event.streams);
+            var subscriptions = stream_data.create_streams(event.streams);
+            _.each(subscriptions, function (sub) {
+                subs.add_sub_to_table(sub);
+            });
         } else if (event.op === 'delete') {
             _.each(event.streams, function (stream) {
                 if (stream_data.is_subscribed(stream.name)) {

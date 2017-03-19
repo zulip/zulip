@@ -2049,6 +2049,38 @@ def do_change_stream_invite_only(stream, invite_only):
     stream.invite_only = invite_only
     stream.save(update_fields=['invite_only'])
 
+    subscriptions = Subscription.objects.filter(recipient__type=Recipient.STREAM,
+                                                recipient__type_id=stream.id,
+                                                ).values('user_profile_id')
+    # User IDs of all the users who have subscribed at least once,
+    # irrespective of the current status of the subscription.
+    subscribed = {sub['user_profile_id'] for sub in subscriptions}
+    never_subscribed = set(active_user_ids(stream.realm)) - subscribed
+    stream_dict = dict(
+        stream.to_dict(),
+        subscribers=private_stream_user_ids(stream),
+    )
+    event = dict(
+        op="update",
+        type="stream",
+        name=stream.name,
+        property='invite_only',
+        value=stream.invite_only,
+        stream_id=stream.id,
+    )
+    if stream.invite_only:
+        # public -> private transition
+        send_event(event, subscribed)
+        event = dict(type="stream", op="delete",
+                     streams=[stream_dict, ])
+        send_event(event, never_subscribed)
+    else:
+        # private -> public transition
+        send_event(event, subscribed)
+        event = dict(type="stream", op="create",
+                     streams=[stream_dict, ])
+        send_event(event, never_subscribed)
+
 def do_rename_stream(stream, new_name, log=True):
     # type: (Stream, Text, bool) -> Dict[str, Text]
     old_name = stream.name
