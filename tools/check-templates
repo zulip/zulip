@@ -22,11 +22,12 @@ EXCLUDED_FILES = [
     "tools/tests/test_template_data",
 ]
 
-def check_our_files(modified_only, all_dups):
-    # type: (bool, bool) -> None
+def check_our_files(modified_only, all_dups, targets):
+    # type: (bool, bool, List[str]) -> None
     by_lang = cast(
         Dict[str, List[str]],
         lister.list_files(
+            targets=targets,
             modified_only=args.modified,
             ftypes=['handlebars', 'html'],
             group_by_ftype=True, exclude=EXCLUDED_FILES))
@@ -243,5 +244,6 @@ if __name__ == '__main__':
     parser.add_argument('--all-dups',
                         action="store_true", default=False,
                         help='Run lint tool to detect duplicate ids on ignored files as well')
+    parser.add_argument('targets', nargs=argparse.REMAINDER)
     args = parser.parse_args()
-    check_our_files(args.modified, args.all_dups)
+    check_our_files(args.modified, args.all_dups, args.targets)
