@@ -56,34 +56,17 @@
     border-radius: 2px;
 
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
 }
 
-/* -- button states -- */
-.new-style .button:hover {
-    -webkit-filter: brightness(1.1);
-    -moz-filter: brightness(1.1);
-    filter: brightness(1.1);
+.new-style .button .button-icon {
+    color: inherit;
+    margin-right: 9px;
+    font-size: 16px;
 }
-
-.new-style .button.white:hover {
-    border-color: #888;
-    background-color: #e4e4e4;
+.new-style .button .button-icon.grey-icon {
+    color: #aaa;
 }
-
-.new-style .button:active {
-    -webkit-filter: brightness(0.9);
-    -moz-filter: brightness(0.9);
-    filter: brightness(0.9);
-}
-
-.new-style .button[disabled="disabled"] {
-    cursor: not-allowed;
-    -webkit-filter: saturate(0);
-    -moz-filter: saturate(0);
-    filter: saturate(0);
-}
-
 /* -- button style variations -- */
 .new-style .button.no-style {
     padding: 0px;
@@ -124,44 +107,81 @@
     min-width: inherit;
     padding: 6px 10px;
 }
-
-.new-style .button.btn-danger {
-    color: #fff;
-    background-color: #d9534f;
-    border-color: #d43f3a;
-}
-
-.new-style .button.btn-warning {
-    color: #fff;
-    background-color: #f0ad4e;
-    border-color: #eea236;
-}
-
-.new-style .button.sea-green {
-    background-color: #24cac2;
-    color: #fff;
-}
-
 .new-style .button.small-flex {
     width: auto;
     min-width: inherit;
 }
-
-/* new button styles */
-.new-style .button.neon-green {
-    background: transparent;
-    color: #5bb792;
-    border: 1px solid #addcc9;
+/* -- button states -- */
+.new-style .button:hover {
+    -webkit-filter: brightness(1.1);
+    -moz-filter: brightness(1.1);
+    filter: brightness(1.1);
 }
-.new-style .button.neon-red {
-    background: transparent;
-    color: #d9534f;
+
+.new-style .button.white:hover {
+    border-color: #888;
+    background-color: #e4e4e4;
+}
+
+.new-style .button:active {
+    -webkit-filter: brightness(0.94);
+    -moz-filter: brightness(0.94);
+    filter: brightness(0.94);
+}
+
+.new-style .button[disabled="disabled"] {
+    cursor: not-allowed;
+    -webkit-filter: saturate(0);
+    -moz-filter: saturate(0);
+    filter: saturate(0);
+    background-color: #eee;
+    color: #888181;
+}
+.new-style .button.sea-green {
+    color: #5bb792;
+    border-color: #addcc9;
+}
+.new-style .button.btn-warning {
+    color: #f1a02e;
+    border-color: #ffdfb1;
+}
+.new-style .button.btn-danger {
+    color: #e6898d;
+    border-color: #f5d0ce;
+}
+
+.new-style .button.btn-danger:hover {
+    background-color: rgba(245, 179, 179, 0.05);
+    color: #d1686c;
     border: 1px solid #e2a7a5;
 }
 
-.button-icon {
-    margin-right: 5px;
-    font-size: 16px;
+.new-style .button.btn-warning:hover {
+    background-color: rgba(238, 162, 54, 0.05);
+    color: #ff9600;
+    border: 1px solid #eea236;
+}
+
+.new-style .button.sea-green:hover {
+    background-color: rgba(91,183,146,0.05);
+    border: 1px solid #52c2af;
+    color: #1daf93;
+}
+
+.new-style .button.sea-green:active {
+    color: #1daf93;
+    background-color: rgba(91, 183, 146, 0.2);
+    border: 1px solid #52c2af;
+}
+.new-style .button.btn-danger:active {
+    color: #d1686c;
+    background-color: rgba(245, 179, 179, 0.2);
+    border: 1px solid #e2a7a5;
+}
+.new-style .button.btn-warning:active {
+    color: #eea236;
+    background-color: rgba(238, 162, 54, 0.2);
+    border: 1px solid #eea236;
 }
 /* -- tab switcher -- */
 

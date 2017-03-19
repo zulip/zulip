@@ -22,7 +22,7 @@ casper.waitForSelector('#settings_overlay_container.show', function () {
 // Test setting limiting stream creation to administrators
 casper.waitForSelector('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]', function () {
     casper.click('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]');
-    casper.click('form.admin-realm-form input.button');
+    casper.click('form.admin-realm-form button.button');
 });
 
 casper.then(function () {
@@ -52,7 +52,7 @@ casper.waitUntilVisible('input[type="checkbox"][id="id_realm_create_stream_by_ad
 
     // Deactivate setting
     casper.click('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]');
-    casper.click('form.admin-realm-form input.button');
+    casper.click('form.admin-realm-form button.button');
 });
 
 casper.then(function () {
@@ -104,7 +104,7 @@ casper.then(function () {
             pattern: '#(?P<id>[0-9]+)',
             url_format_string: 'https://trac.example.com/ticket/%(id)s',
         });
-        casper.click('form.admin-filter-form input.btn');
+        casper.click('form.admin-filter-form button.button');
     });
 });
 
@@ -134,7 +134,7 @@ casper.then(function () {
             pattern: 'a$',
             url_format_string: 'https://trac.example.com/ticket/%(id)s',
         });
-        casper.click('form.admin-filter-form input.btn');
+        casper.click('form.admin-filter-form button.button');
     });
 });
 
@@ -237,7 +237,7 @@ casper.then(function () {
         casper.evaluate(function () {
             $('#id_realm_default_language').val('de').change();
         });
-        casper.click('form.admin-realm-form input.button');
+        casper.click('form.admin-realm-form button.button');
     });
 });
 
@@ -253,7 +253,7 @@ casper.then(function () {
     casper.click("li[data-section='auth-methods']");
     casper.waitUntilVisible(".method_row[data-method='Email'] input[type='checkbox']", function () {
         casper.click(".method_row[data-method='Email'] input[type='checkbox']");
-        casper.click('form.admin-realm-form input.button');
+        casper.click('form.admin-realm-form button.button');
     });
 });
 
@@ -288,7 +288,7 @@ casper.then(function () {
 // Deactivate setting--default is checked
 casper.then(function () {
     casper.click(".method_row[data-method='Email'] input[type='checkbox']");
-    casper.click('form.admin-realm-form input.button');
+    casper.click('form.admin-realm-form button.button');
     casper.waitUntilVisible('#admin-realm-authentication-methods-status', function () {
         casper.test.assertSelectorHasText('#admin-realm-authentication-methods-status', 'Authentication methods saved!');
         casper.test.assertEval(function () {
