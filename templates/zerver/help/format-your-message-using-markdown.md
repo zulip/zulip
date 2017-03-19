@@ -110,19 +110,24 @@ You can surround a portion of code with ``
 
 ![Inline code](/static/images/help/inline-code-screenshot.png)
 
-Multi-line blocks of code are either fenced by lines with <code>``````
-three back-ticks```<code>```</code></code> or indented with four
-spaces.
+Multi-line blocks of code are either fenced by lines with three back-ticks
+(<code>```</code>) or indented with four spaces.
 
 ![No code syntax highlighting](/static/images/help/no-syntax.png)
 
-In addition, to highlight language syntax, add the file extension of
-the language (for example, Python would be **.py**) right after the
-first set of back-ticks.
+Zulip also supports syntax highlighting of multi-line code blocks using
+[Pygments](http://pygments.org). To add syntax highlighting to a multi-line code
+block, add the language's **first**
+[Pygments short name](http://pygments.org/docs/lexers/) after the first set of
+back-ticks.
 
 ![Python syntax highlighting](/static/images/help/python-syntax.png)
 
 ![JavaScript syntax highlighting](/static/images/help/javascript-syntax.png)
+
+![Rust syntax highlighting](/static/images/help/rust-syntax.png)
+
+![C# syntax highlighting](/static/images/help/csharp-syntax.png)
 
 ## Quotes
 
