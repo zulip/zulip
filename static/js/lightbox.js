@@ -50,6 +50,30 @@ exports.open = function (data) {
     popovers.hide_all();
 };
 
+exports.show_from_selected_message = function () {
+    var selected_msg = $(".selected_message").find("img");
+    if (selected_msg.length !== 0) {
+      exports.show_from_inline_image(selected_msg);
+    }
+};
+
+exports.show_from_inline_image = function ($img) {
+    var zid = rows.id($img.closest(".message_row"));
+    var user = message_store.get(zid).sender_full_name;
+    if ($img.parent().parent().hasClass("youtube-video")) {
+        lightbox.open({
+            type: "youtube",
+            id: $img.data("id"),
+        });
+    } else {
+        lightbox.open({
+            type: "photo",
+            image: $img[0],
+            user: user,
+        });
+    }
+};
+
 return exports;
 }());
 

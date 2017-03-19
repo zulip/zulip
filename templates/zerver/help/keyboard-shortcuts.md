@@ -80,6 +80,8 @@ Zulip keyboard shortcuts are divided into four categories:
 * **Open message actions menu**: `i` - This shortcut shows the
   available message actions of the selected message (outlined in
   blue).
+* **Open lightbox for selected message**: `l` - This opens the lightbox
+  if the selected message has images or videos embedded.
 * **Edit last message you sent**: `⇽` - This starts editing the
   last editable message that you sent in the current view (if any).
 * **Edit selected message**: `i` then `Enter` (`Return` on Mac) -
