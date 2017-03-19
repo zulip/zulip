@@ -423,7 +423,7 @@ with_overrides(function (override) {
     var event = event_fixtures.message;
 
     global.with_stub(function (stub) {
-        override('message_store.insert_new_messages', stub.f);
+        override('message_events.insert_new_messages', stub.f);
         dispatch(event);
         var args = stub.get_args('messages');
         assert_same(args.messages[0].content, event.message.content);
