@@ -646,52 +646,25 @@ def run():
         lint_functions[func.__name__] = func
         return func
 
+    def external_linter(name, command, target_langs=[]):
+        # type: (str, List[str], List[str]) -> None
+        def run_linter():
+            # type: () -> int
+            if len(target_langs) == 0:
+                return subprocess.call(command)
+            targets = [target for lang in target_langs for target in by_lang[lang]]
+            if len(targets) == 0:
+                return 0
+            return subprocess.call(command + targets)
+        lint_functions[name] = run_linter
+
     with bright_red_output():
-        @lint
-        def urls():
-            # type: () -> int
-            result = subprocess.call(['tools/check-urls'])
-            return result
-
-        @lint
-        def templates():
-            # type: () -> int
-            if len(by_lang['handlebars']) == 0 and len(by_lang['html']) == 0:
-                return 0
-            args = ['tools/check-templates']
-            result = subprocess.call(args + by_lang['handlebars'] + by_lang['html'])
-            return result
-
-        @lint
-        def add_class():
-            # type: () -> int
-            result = subprocess.call(['tools/find-add-class'])
-            return result
-
-        @lint
-        def css():
-            # type: () -> int
-            if len(by_lang['css']) == 0:
-                return 0
-            result = subprocess.call(['tools/check-css'] + by_lang['css'])
-            return result
-
-        @lint
-        def eslint():
-            # type: () -> int
-            if len(by_lang['js']) == 0:
-                return 0
-            result = subprocess.call(['node', 'node_modules/.bin/eslint', '--quiet'] +
-                                     by_lang['js'])
-            return result
-
-        @lint
-        def puppet():
-            # type: () -> int
-            if len(by_lang['pp']) == 0:
-                return 0
-            result = subprocess.call(['puppet', 'parser', 'validate'] + by_lang['pp'])
-            return result
+        external_linter('add_class', ['tools/find-add-class'])
+        external_linter('css', ['tools/check-css'], ['css'])
+        external_linter('eslint', ['node', 'node_modules/.bin/eslint', '--quiet'], ['js'])
+        external_linter('puppet', ['puppet', 'parser', 'validate'], ['pp'])
+        external_linter('templates', ['tools/check-templates'], ['handlebars', 'html'])
+        external_linter('urls', ['tools/check-urls'])
 
         @lint
         def custom_py():
