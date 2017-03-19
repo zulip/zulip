@@ -207,7 +207,8 @@ def apply_event(state, event, user_profile, include_subscribers):
                         if not p['is_admin'] and person['is_admin']:
                             state['realm_bots'] = get_owned_bot_dicts(user_profile)
 
-                    # Now update the person
+                # Now update the person
+                if person['user_id'] == p['user_id']:
                     p.update(person)
     elif event['type'] == 'realm_bot':
         if event['op'] == 'add':

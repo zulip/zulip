@@ -29,6 +29,7 @@ from __future__ import absolute_import
 from django.utils.translation import ugettext as _
 import six
 from typing import Any, Callable, Iterable, Optional, Tuple, TypeVar
+import re
 
 Validator = Callable[[str, Any], Optional[str]]
 
@@ -48,6 +49,12 @@ def check_bool(var_name, val):
     # type: (str, Any) -> Optional[str]
     if not isinstance(val, bool):
         return _('%s is not a boolean') % (var_name,)
+    return None
+
+def check_email(var_name, val):
+    # type: (str, Any) -> Optional[str]
+    if not re.match(r"[^@]+@[^@]+\.[^@]+", val):
+        return _('%s is not an email address') % (var_name,)
     return None
 
 def check_none_or(sub_validator):
