@@ -458,7 +458,7 @@ def ok_to_include_history(narrow, realm):
     # If we screw this up, then we can get into a nasty situation of
     # polluting our narrow results with messages from other realms.
     include_history = False
-    if narrow is not None:
+    if narrow:
         for term in narrow:
             if term['operator'] == "stream" and not term.get('negated', False):
                 if is_public_stream(term['operand'], realm):
@@ -474,6 +474,8 @@ def ok_to_include_history(narrow, realm):
 
 def get_stream_name_from_narrow(narrow):
     # type: (Iterable[Dict[str, Any]]) -> Optional[Text]
+    if narrow is None:
+        return None
     for term in narrow:
         if term['operator'] == 'stream':
             return term['operand'].lower()
@@ -540,7 +542,7 @@ def get_old_messages_backend(request, user_profile,
     if include_history and not use_first_unread_anchor:
         query = select([column("id").label("message_id")], None, table("zerver_message"))
         inner_msg_id_col = literal_column("zerver_message.id")
-    elif narrow is None:
+    elif not narrow:
         query = select([column("message_id"), column("flags")],
                        column("user_profile_id") == literal(user_profile.id),
                        table("zerver_usermessage"))
@@ -557,7 +559,7 @@ def get_old_messages_backend(request, user_profile,
     num_extra_messages = 1
     is_search = False
 
-    if narrow is not None:
+    if narrow:
         # Add some metadata to our logging data for narrows
         verbose_operators = []
         for term in narrow:
