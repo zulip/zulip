@@ -225,7 +225,7 @@ extension is handled by `tools/postgres-init-dev-db` (invoked by
 `tools/provision`).  That file also manages setting up the
 development postgresql user.
 
-`tools/provision also invokes `tools/do-destroy-rebuild-database`
+`tools/provision` also invokes `tools/do-destroy-rebuild-database`
 to create the actual database with its schema.
 
 ### Nagios
