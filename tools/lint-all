@@ -656,10 +656,10 @@ def run():
         @lint
         def templates():
             # type: () -> int
+            if len(by_lang['handlebars']) == 0 and len(by_lang['html']) == 0:
+                return 0
             args = ['tools/check-templates']
-            if options.modified:
-                args.append('-m')
-            result = subprocess.call(args)
+            result = subprocess.call(args + by_lang['handlebars'] + by_lang['html'])
             return result
 
         @lint
