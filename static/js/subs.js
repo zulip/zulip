@@ -26,12 +26,6 @@ function settings_button_for_sub(sub) {
     return $(".subscription_settings[data-stream-id='" + id + "'] .subscribe-button");
 }
 
-function get_color() {
-    var used_colors = stream_data.get_colors();
-    var color = stream_color.pick_color(used_colors);
-    return color;
-}
-
 function selectText(element) {
   var range;
   var sel;
@@ -357,23 +351,7 @@ exports.show_settings_for = function (stream_id) {
     show_subscription_settings(sub_row);
 };
 
-exports.mark_subscribed = function (sub, subscribers) {
-    if (sub === undefined) {
-        blueslip.error('Undefined sub passed to mark_subscribed');
-        return;
-    }
-
-    if (sub.subscribed) {
-        return;
-    }
-
-    // Add yourself to a stream we already know about client-side.
-    var color = get_color();
-    exports.set_color(sub.stream_id, color);
-    stream_data.subscribe_myself(sub);
-    if (subscribers) {
-        stream_data.set_subscriber_emails(sub, subscribers);
-    }
+exports.update_settings_for_subscribed = function (sub) {
     var stream_settings = settings_for_sub(sub);
     var button = button_for_sub(sub);
     var settings_button = settings_button_for_sub(sub).removeClass("unsubscribed");
@@ -397,60 +375,33 @@ exports.mark_subscribed = function (sub, subscribers) {
     var sub_row = stream_settings.closest('.stream-row');
     sub_row.find(".color_swatch").addClass('in');
     sub_row.find(".regular_subscription_settings").collapse('show');
-
-    if (current_msg_list.narrowed) {
-        current_msg_list.update_trailing_bookend();
-    }
-
-    // Update unread counts as the new stream in sidebar might
-    // need its unread counts re-calculated
-    message_store.do_unread_count_updates(message_list.all.all_messages());
-
-    $(document).trigger($.Event('subscription_add_done.zulip', {sub: sub}));
 };
 
-exports.mark_sub_unsubscribed = function (sub) {
-    if (sub === undefined) {
-        // We don't know about this stream
-        return;
-    } else if (sub.subscribed) {
-        stream_data.unsubscribe_myself(sub);
+exports.update_settings_for_unsubscribed = function (sub) {
+    var button = button_for_sub(sub);
+    var settings_button = settings_button_for_sub(sub).addClass("unsubscribed");
 
-        var button = button_for_sub(sub);
-        var settings_button = settings_button_for_sub(sub).addClass("unsubscribed");
+    button.toggleClass("checked");
+    settings_button.text(i18n.t("Subscribe"));
 
-        button.toggleClass("checked");
-        settings_button.text(i18n.t("Subscribe"));
-
-        var stream_settings = settings_for_sub(sub);
-        if (stream_settings.hasClass('in')) {
-            stream_settings.collapse('hide');
-        }
-
-        exports.rerender_subscribers_count(sub);
-
-        // Hide the swatch and subscription settings
-        var sub_row = stream_settings.closest('.stream-row');
-        sub_row.find(".color_swatch").removeClass('in');
-        if (sub.render_subscribers) {
-            // TODO: having a completely empty settings div messes
-            // with Bootstrap's collapser.  We currently just ensure
-            // that it's not empty for Zephyr mirror realms, even though it
-            // looks weird
-            sub_row.find(".regular_subscription_settings").collapse('hide');
-        }
-    } else {
-        // Already unsubscribed
-        return;
+    var stream_settings = settings_for_sub(sub);
+    if (stream_settings.hasClass('in')) {
+        stream_settings.collapse('hide');
     }
 
-    if (current_msg_list.narrowed) {
-        current_msg_list.update_trailing_bookend();
+    exports.rerender_subscribers_count(sub);
+
+    // Hide the swatch and subscription settings
+    var sub_row = stream_settings.closest('.stream-row');
+    sub_row.find(".color_swatch").removeClass('in');
+    if (sub.render_subscribers) {
+        // TODO: having a completely empty settings div messes
+        // with Bootstrap's collapser.  We currently just ensure
+        // that it's not empty for Zephyr mirror realms, even though it
+        // looks weird
+        sub_row.find(".regular_subscription_settings").collapse('hide');
     }
-
-    $(document).trigger($.Event('subscription_remove_done.zulip', {sub: sub}));
-
-    $(".stream-row[data-stream-id='" + sub.stream_id + "']").attr("data-temp-view", true);
+    row_for_stream_id(subs.stream_id).attr("data-temp-view", true);
 };
 
 // these streams are miscategorized so they don't jump off the page when being
@@ -1274,7 +1225,10 @@ $(function () {
                 warning_elem.addClass("hide");
                 if (people.is_current_user(principal)) {
                     // mark_subscribed adds the user to the member list
-                    exports.mark_subscribed(sub);
+                    // TODO: We should really let the event system
+                    //       handle this, as mark_subscribed has
+                    //       lots of side effects.
+                    stream_events.mark_subscribed(sub);
                 }
             } else {
                 error_elem.addClass("hide");
@@ -1354,7 +1308,10 @@ $(function () {
                 if (people.is_current_user(principal)) {
                     // If you're unsubscribing yourself, mark whole
                     // stream entry as you being unsubscribed.
-                    exports.mark_sub_unsubscribed(sub);
+                    // TODO: We should really let the event system
+                    //       handle this, as mark_unsubscribed has
+                    //       lots of side effects.
+                    stream_events.mark_unsubscribed(sub);
                 }
             } else {
                 error_elem.addClass("hide");

@@ -190,7 +190,7 @@ function dispatch_normal_event(event) {
             _.each(event.subscriptions, function (rec) {
                 var sub = stream_data.get_sub_by_id(rec.stream_id);
                 if (sub) {
-                    subs.mark_subscribed(sub, rec.subscribers);
+                    stream_events.mark_subscribed(sub, rec.subscribers);
                 } else {
                     blueslip.error('Subscribing to unknown stream' + rec.stream_id);
                 }
@@ -226,7 +226,7 @@ function dispatch_normal_event(event) {
         } else if (event.op === 'remove') {
             _.each(event.subscriptions, function (rec) {
                 var sub = stream_data.get_sub_by_id(rec.stream_id);
-                subs.mark_sub_unsubscribed(sub);
+                stream_events.mark_unsubscribed(sub);
             });
         } else if (event.op === 'update') {
             stream_events.update_property(
