@@ -878,6 +878,7 @@ JS_SPECS = {
             'js/alert_words_ui.js',
             'js/attachments_ui.js',
             'js/message_store.js',
+            'js/message_util.js',
             'js/message_events.js',
             'js/message_fetch.js',
             'js/server_events.js',

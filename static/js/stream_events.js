@@ -94,7 +94,7 @@ exports.mark_subscribed = function (sub, subscribers) {
 
     // Update unread counts as the new stream in sidebar might
     // need its unread counts re-calculated
-    message_store.do_unread_count_updates(message_list.all.all_messages());
+    message_util.do_unread_count_updates(message_list.all.all_messages());
 
     $(document).trigger($.Event('subscription_add_done.zulip', {sub: sub}));
 };

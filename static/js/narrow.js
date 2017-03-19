@@ -315,7 +315,7 @@ exports.activate = function (raw_operators, opts) {
     // the message we want anyway or if the filter can't be applied
     // locally.
     if (message_list.all.get(then_select_id) !== undefined && current_filter.can_apply_locally()) {
-        message_store.add_messages(message_list.all.all_messages(), message_list.narrowed,
+        message_util.add_messages(message_list.all.all_messages(), message_list.narrowed,
                                    {delay_render: true});
     }
 
