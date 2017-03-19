@@ -114,7 +114,7 @@ def update_user_backend(request, user_profile, email,
 # TODO: Since eventually we want to support using the same email with
 # different organizations, we'll eventually want this to be a
 # logged-in endpoint so that we can access the realm_id.
-def avatar(request, email_or_id, medium=None):
+def avatar(request, email_or_id, medium=False):
     # type: (HttpRequest, str, bool) -> HttpResponse
     """Accepts an email address or user ID and returns the avatar"""
     try:

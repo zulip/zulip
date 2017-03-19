@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from typing import (
     AbstractSet, Any, AnyStr, Callable, Dict, Iterable, List, Mapping, MutableMapping,
-    Optional, Sequence, Set, Text, Tuple, TypeVar, Union
+    Optional, Sequence, Set, Text, Tuple, TypeVar, Union, cast,
 )
 
 from django.utils.html import escape
@@ -358,7 +358,7 @@ def notify_created_bot(user_profile):
     # type: (UserProfile) -> None
 
     def stream_name(stream):
-        # type: (Stream) -> Optional[Text]
+        # type: (Optional[Stream]) -> Optional[Text]
         if not stream:
             return None
         return stream.name
@@ -792,10 +792,10 @@ def get_recipient_user_profiles(recipient, sender_id):
         raise ValueError('Bad recipient type')
     return recipients
 
-def do_send_messages(messages):
+def do_send_messages(messages_maybe_none):
     # type: (Sequence[Optional[MutableMapping[str, Any]]]) -> List[int]
     # Filter out messages which didn't pass internal_prep_message properly
-    messages = [message for message in messages if message is not None]
+    messages = [message for message in messages_maybe_none if message is not None]
 
     # Filter out zephyr mirror anomalies where the message was already sent
     already_sent_ids = [] # type: List[int]
@@ -1082,7 +1082,7 @@ def create_streams_if_needed(realm, stream_dicts):
 
 def recipient_for_emails(emails, not_forged_mirror_message,
                          user_profile, sender):
-    # type: (Iterable[Text], bool, UserProfile, UserProfile) -> Recipient
+    # type: (Iterable[Text], bool, Optional[UserProfile], UserProfile) -> Recipient
     recipient_profile_ids = set()
 
     # We exempt cross-realm bots from the check that all the recipients
@@ -1189,7 +1189,7 @@ def check_stream_name(stream_name):
         raise JsonableError(_("Stream name too long (limit: %s characters)" % (Stream.MAX_NAME_LENGTH)))
 
 def send_pm_if_empty_stream(sender, stream, stream_name, realm):
-    # type: (UserProfile, Stream, Text, Realm) -> None
+    # type: (UserProfile, Optional[Stream], Text, Realm) -> None
     """If a bot sends a message to a stream that doesn't exist or has no
     subscribers, sends a notification to the bot owner (if not a
     cross-realm bot) so that the owner can correct the issue."""
@@ -1242,7 +1242,7 @@ def check_message(sender, client, message_type_name, message_to,
                   subject_name, message_content_raw, realm=None, forged=False,
                   forged_timestamp=None, forwarder_user_profile=None, local_id=None,
                   sender_queue_id=None):
-    # type: (UserProfile, Client, Text, Sequence[Text], Text, Text, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[Text], Optional[Text]) -> Dict[str, Any]
+    # type: (UserProfile, Client, Text, Sequence[Text], Optional[Text], Text, Optional[Realm], bool, Optional[float], Optional[UserProfile], Optional[Text], Optional[Text]) -> Dict[str, Any]
     stream = None
     if not message_to and message_type_name == 'stream' and sender.default_sending_stream:
         # Use the users default stream
@@ -1403,7 +1403,7 @@ def validate_user_access_to_subscribers(user_profile, stream):
          "invite_only": stream.invite_only},
         # We use a lambda here so that we only compute whether the
         # user is subscribed if we have to
-        lambda: subscribed_to_stream(user_profile, stream))
+        lambda: subscribed_to_stream(cast(UserProfile, user_profile), stream))
 
 def validate_user_access_to_subscribers_helper(user_profile, stream_dict, check_user_subscribed):
     # type: (Optional[UserProfile], Mapping[str, Any], Callable[[], bool]) -> None
@@ -1448,7 +1448,7 @@ def bulk_get_subscriber_user_ids(stream_dicts, user_profile, sub_dict):
     return result
 
 def get_subscribers_query(stream, requesting_user):
-    # type: (Stream, UserProfile) -> QuerySet
+    # type: (Stream, Optional[UserProfile]) -> QuerySet
     # TODO: Make a generic stub for QuerySet
     """ Build a query to get the subscribers list for a stream, raising a JsonableError if:
 
@@ -2971,7 +2971,7 @@ def gather_subscriptions_helper(user_profile, include_subscribers=True):
             # This stream has been deactivated, don't include it.
             continue
 
-        subscribers = subscriber_map[stream["id"]]
+        subscribers = subscriber_map[stream["id"]]  # type: Optional[List[int]]
 
         # Important: don't show the subscribers if the stream is invite only
         # and this user isn't on it anymore.
@@ -3065,7 +3065,7 @@ def do_send_confirmation_email(invitee, referrer, body):
     """
     subject_template_path = 'confirmation/invite_email.subject'
     body_template_path = 'confirmation/invite_email.txt'
-    html_body_template_path = 'confirmation/invite_email.html'
+    html_body_template_path = 'confirmation/invite_email.html'  # type: Optional[str]
 
     context = {'referrer': referrer,
                'support_email': settings.ZULIP_ADMINISTRATOR,

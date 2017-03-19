@@ -197,6 +197,7 @@ class ZulipDummyBackend(ZulipAuthMixin):
     def authenticate(self, username=None, realm_subdomain=None, use_dummy_backend=False,
                      return_data=None):
         # type: (Optional[Text], Optional[Text], bool, Optional[Dict[str, Any]]) -> Optional[UserProfile]
+        assert username is not None
         if use_dummy_backend:
             user_profile = common_get_active_user_by_email(username)
             if user_profile is None:
