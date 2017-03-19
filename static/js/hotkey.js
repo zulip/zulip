@@ -29,6 +29,10 @@ exports.is_settings_page = function () {
   return (/^#*(settings|administration)/g).test(window.location.hash);
 };
 
+exports.is_lightbox_open = function () {
+    return lightbox.is_open;
+};
+
 var actions_dropdown_hotkeys = [
     'down_arrow',
     'up_arrow',
@@ -57,7 +61,8 @@ var keydown_unshift_mappings = {
     34: {name: 'page_down', message_view_only: true}, // page down
     35: {name: 'end', message_view_only: true}, // end
     36: {name: 'home', message_view_only: true}, // home
-    37: {name: 'left_arrow', message_view_only: true}, // left arrow
+    37: {name: 'left_arrow', message_view_only: false}, // left arrow
+    39: {name: 'right_arrow', message_view_only: false}, // right arrow
     38: {name: 'up_arrow', message_view_only: true}, // up arrow
     40: {name: 'down_arrow', message_view_only: true}, // down arrow
 };
@@ -183,7 +188,7 @@ exports.process_escape_key = function (e) {
         return false;
     }
 
-    if ($("#lightbox_overlay").hasClass("show")) {
+    if (exports.is_lightbox_open()) {
         modals.close_modal("lightbox");
         return true;
     }
@@ -506,8 +511,20 @@ exports.process_hotkey = function (e, hotkey) {
     }
 
     if (event_name === 'left_arrow') {
+        if (exports.is_lightbox_open()) {
+            lightbox.prev();
+            return true;
+        }
+
         message_edit.edit_last_sent_message();
         return true;
+    }
+
+    if (event_name === 'right_arrow') {
+        if (exports.is_lightbox_open()) {
+            lightbox.next();
+            return true;
+        }
     }
 
     // Shortcuts that don't require a message

@@ -1,10 +1,40 @@
 var lightbox = (function () {
 var exports = {};
 
+var images = [];
+var is_open = false;
+
+var get_image_title = function (image) {
+    var image_title = $(image).attr("title");
+    if (image_title) {
+        return image_title;
+    }
+    return $(image).parent().attr("title");
+};
+
 function display_image(image, user) {
+    if (!is_open) {
+        images = Array.prototype.slice.call($(".focused_table .messagebox-content img"));
+        var $image_list = $("#lightbox_overlay .image-list").html("");
+
+        images.forEach(function (img) {
+            var src = img.getAttribute("src");
+            var className = $(image).attr("src").match(src) ? "image selected" : "image";
+
+            var node = $("<div></div>", {
+                class: className,
+                title: get_image_title(img),
+                "data-zid": $(img).closest(".message_row").attr("zid"),
+                "data-src": src,
+            }).css({ backgroundImage: "url(" + src + ")"});
+
+            $image_list.append(node);
+        }, "");
+    }
+
     // image should be an Image Object in JavaScript.
     var url = $(image).attr("src");
-    var title = $(image).parent().attr("title");
+    var title = get_image_title(image);
 
     $("#lightbox_overlay .player-container").hide();
     $("#lightbox_overlay .image-actions, .image-description, .download").show();
@@ -38,9 +68,11 @@ exports.open = function (data) {
     switch (data.type) {
         case "photo":
             display_image(data.image, data.user);
+            is_open = true;
             break;
         case "youtube":
             display_youtube_video(data.id);
+            is_open = true;
             break;
         default:
             break;
@@ -48,6 +80,7 @@ exports.open = function (data) {
 
     $("#lightbox_overlay").addClass("show");
     popovers.hide_all();
+    lightbox.is_open = true;
 };
 
 exports.show_from_selected_message = function () {
@@ -73,6 +106,25 @@ exports.show_from_inline_image = function ($img) {
         });
     }
 };
+
+exports.prev = function () {
+    $(".image-list .image.selected").prev().click();
+};
+
+exports.next = function () {
+    $(".image-list .image.selected").next().click();
+};
+
+Object.defineProperty(exports, "is_open", {
+    get: function () {
+        return is_open;
+    },
+    set: function (value) {
+        if (typeof value === "boolean") {
+            is_open = value;
+        }
+    },
+});
 
 return exports;
 }());
