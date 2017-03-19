@@ -13,7 +13,7 @@ integration.
 The first step in creating a webhook is to examine the data that the
 service you want to integrate will be sending to Zulip.
 
-You can use [requestb.in](http://requestb.in/) or a similar tool to capture
+You can use <http://requestb.in> or a similar tool to capture
 webhook payload(s) from the service you are integrating. Examining this
 data allows you to do two things:
 
@@ -319,8 +319,7 @@ DONE!
 ## Step 5: Create documentation
 
 Next, we add end-user documentation for our webhook integration.  You
-can see the existing examples at
-[https://zulipchat.com/integrations](https://zulipchat.com/integrations)
+can see the existing examples at <https://zulipchat.com/integrations>
 or by accessing `/integrations` in your Zulip development environment.
 
 There are two parts to the end-user documentation on this page.

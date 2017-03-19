@@ -17,7 +17,7 @@ previews, group private messages, audible notifications,
 missed-message emails, desktop apps, and much more.
 
 Further information on the Zulip project and its features can be found
-at [https://www.zulip.org](https://www.zulip.org).
+at <https://www.zulip.org>.
 
 [![Build Status](https://travis-ci.org/zulip/zulip.svg?branch=master)](https://travis-ci.org/zulip/zulip) [![Coverage Status](https://coveralls.io/repos/github/zulip/zulip/badge.svg?branch=master)](https://coveralls.io/github/zulip/zulip?branch=master) [![docs](https://readthedocs.org/projects/zulip/badge/?version=latest)](http://zulip.readthedocs.io/en/latest/) [![Zulip chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://chat.zulip.org)
 
@@ -66,7 +66,7 @@ installation guide][dev-install].
 Zulip in production supports Ubuntu 14.04 Trusty and Ubuntu 16.04
 Xenial. Work is ongoing on adding support for additional
 platforms. The installation process is documented at
-https://zulip.org/server.html and in more detail in [the
+<https://zulip.org/server.html> and in more detail in [the
 documentation](https://zulip.readthedocs.io/en/latest/prod-install.html).
 
 ## Ways to contribute
@@ -213,7 +213,7 @@ Another way to find issues in Zulip is to take advantage of our
 our issues into areas like admin, compose, emoji, hotkeys, i18n,
 onboarding, search, etc.  You can see this here:
 
-[https://github.com/zulip/zulip/labels]
+<https://github.com/zulip/zulip/labels>
 
 Click on any of the "area:" labels and you will see all the tickets
 related to your area of interest.
