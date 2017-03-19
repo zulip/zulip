@@ -46,7 +46,7 @@ exports.message_reaction_on_click = function (message_id, emoji_name) {
     send_reaction_ajax(message_id, emoji_name, operation);
 };
 
-exports.reaction_popover = function(message_id, emoji_name) {
+exports.reaction_popover = function (message_id, emoji_name) {
     var user_list = get_user_list_for_message_reaction(message_id, emoji_name);
     var operation = 'add';
     if (user_list.indexOf(page_params.user_id) !== -1) {
@@ -87,7 +87,7 @@ function maybe_select_emoji(e) {
     }
 }
 
-$(document).on('click', '.reaction-popover-reaction', function() {
+$(document).on('click', '.reaction-popover-reaction', function () {
     // When an emoji is clicked in the popover,
     // if the user has reacted to this message with this emoji
     // the reaction is removed
@@ -95,7 +95,9 @@ $(document).on('click', '.reaction-popover-reaction', function() {
     var emoji_name = this.title;
     var message_id = $(this).parent().attr('data-message-id');
     var user_list = get_user_list_for_message_reaction(message_id, emoji_name);
-    if (user_list.indexOf(page_params.user_id) !== -1) $(this).removeClass('reacted');
+    if (user_list.indexOf(page_params.user_id) !== -1) {
+        $(this).removeClass('reacted');
+    }
     exports.reaction_popover(message_id, emoji_name);
 });
 

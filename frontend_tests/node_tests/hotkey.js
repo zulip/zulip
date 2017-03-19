@@ -15,7 +15,7 @@ var hotkey = require('js/hotkey.js');
 
 set_global('current_msg_list', {
     selected_id: function () { return 42; },
-    selected_message: function () { return {sent_by_me: true} },
+    selected_message: function () { return {sent_by_me: true}; },
 });
 
 function return_true() { return true; }

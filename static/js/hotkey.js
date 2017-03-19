@@ -18,7 +18,9 @@ function focus_in_empty_compose() {
 function open_reactions() {
     var message = current_msg_list.selected_message();
     var target = $(".selected_message .icon-vector-smile")[0];
-    if (message.sent_by_me) target = $(".selected_message .icon-vector-chevron-down")[0];
+    if (message.sent_by_me) {
+        target = $(".selected_message .icon-vector-chevron-down")[0];
+    }
     popovers.toggle_reactions_popover(target, current_msg_list.selected_id());
     return true;
 }
