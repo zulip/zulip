@@ -10,7 +10,7 @@ from django.db.models import Q, QuerySet
 from django.template import loader
 from django.conf import settings
 
-from zerver.lib.notifications import build_message_list, hashchange_encode, \
+from zerver.lib.notifications import build_message_list, hash_util_encode, \
     send_future_email, one_click_unsubscribe_link
 from zerver.models import UserProfile, UserMessage, Recipient, Stream, \
     Subscription, get_active_streams
@@ -128,7 +128,7 @@ def gather_new_streams(user_profile, threshold):
     streams_plain = []
 
     for stream in new_streams:
-        narrow_url = base_url + hashchange_encode(stream.name)
+        narrow_url = base_url + hash_util_encode(stream.name)
         stream_link = u"<a href='%s'>%s</a>" % (narrow_url, stream.name)
         streams_html.append(stream_link)
         streams_plain.append(stream.name)

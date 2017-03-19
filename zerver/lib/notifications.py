@@ -48,7 +48,7 @@ def one_click_unsubscribe_link(user_profile, endpoint):
     resource_path = "accounts/unsubscribe/%s/%s" % (endpoint, token)
     return "%s/%s" % (user_profile.realm.uri.rstrip("/"), resource_path)
 
-def hashchange_encode(string):
+def hash_util_encode(string):
     # type: (Text) -> Text
     # Do the same encoding operation as hash_util.encodeHashComponent on the
     # frontend.
@@ -60,18 +60,18 @@ def pm_narrow_url(realm, participants):
     # type: (Realm, List[Text]) -> Text
     participants.sort()
     base_url = u"%s/#narrow/pm-with/" % (realm.uri,)
-    return base_url + hashchange_encode(",".join(participants))
+    return base_url + hash_util_encode(",".join(participants))
 
 def stream_narrow_url(realm, stream):
     # type: (Realm, Text) -> Text
     base_url = u"%s/#narrow/stream/" % (realm.uri,)
-    return base_url + hashchange_encode(stream)
+    return base_url + hash_util_encode(stream)
 
 def topic_narrow_url(realm, stream, topic):
     # type: (Realm, Text, Text) -> Text
     base_url = u"%s/#narrow/stream/" % (realm.uri,)
-    return u"%s%s/topic/%s" % (base_url, hashchange_encode(stream),
-                               hashchange_encode(topic))
+    return u"%s%s/topic/%s" % (base_url, hash_util_encode(stream),
+                               hash_util_encode(topic))
 
 def build_message_list(user_profile, messages):
     # type: (UserProfile, List[Message]) -> List[Dict[str, Any]]
