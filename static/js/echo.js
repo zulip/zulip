@@ -193,7 +193,10 @@ function insert_local_message(message_request, local_id) {
         });
     }
 
-    message_store.insert_new_messages([message], local_id);
+    // It is a little bit funny to go through the message_events
+    // codepath, but it's sort of the idea behind local echo that
+    // we are simulating server events before they actually arrive.
+    message_events.insert_new_messages([message], local_id);
     return message.local_id;
 }
 

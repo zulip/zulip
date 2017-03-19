@@ -38,7 +38,7 @@ var server_events = require('js/server_events.js');
 
 var setup = function (results) {
     server_events.home_view_loaded();
-    set_global('message_store', {
+    set_global('message_events', {
         insert_new_messages: function () {
             throw Error('insert error');
         },
