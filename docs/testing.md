@@ -170,3 +170,13 @@ installed).
 To run `check-py3` on just the Python files in a particular directory, you
 can change the current working directory (e.g. `cd zerver/`) and run
 `check-py3` from there.
+
+Also, if you're using Vagrant or if you set up virtualenvs in the
+[non-Vagrant setup](dev-setup-non-vagrant.html#all-systems), you should
+have two different virtualenvs: one for Python 2 (which is the one used by
+default), and another one for Python 3. This is useful if you want to do
+some manual testing using either version.
+
+To switch between both virtualenvs, run:
+ - Use Python 2: `source /srv/zulip-venv/bin/activate`
+ - Use Python 3: `source /srv/zulip-py3-venv/bin/activate`
