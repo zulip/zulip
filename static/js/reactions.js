@@ -73,7 +73,21 @@ function filter_emojis() {
     }
 }
 
-$(document).on('click', '.reaction-popover-reaction', function() {
+function maybe_select_emoji(e) {
+    var reaction_list = $(".reaction-popover-reaction");
+    if (e.keyCode === 13) {
+        e.preventDefault();
+        var reaction_show_list = reaction_list.filter(function () {
+            return this.style.display === "block";
+        });
+        if (reaction_show_list.length) {
+            $(".reaction-popover-filter").val("");
+            exports.toggle_reaction(current_msg_list.selected_id(), reaction_show_list[0].title);
+        }
+    }
+}
+
+$(document).on('click', '.reaction-popover-reaction', function () {
     // When an emoji is clicked in the popover,
     // if the user has reacted to this message with this emoji
     // the reaction is removed
@@ -88,6 +102,7 @@ $(document).on('click', '.reaction-popover-reaction', function() {
 });
 
 $(document).on('input', '.reaction-popover-filter', filter_emojis);
+$(document).on('keydown', '.reaction-popover-filter', maybe_select_emoji);
 
 function full_name(user_id) {
     if (user_id === page_params.user_id) {
