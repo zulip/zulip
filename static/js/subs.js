@@ -125,58 +125,8 @@ function stream_home_view_clicked(e) {
     }
 }
 
-function update_in_home_view(sub, value) {
-    sub.in_home_view = value;
-
-    setTimeout(function () {
-        var msg_offset;
-        var saved_ypos;
-        // Save our current scroll position
-        if (ui_state.home_tab_obscured()) {
-            saved_ypos = message_viewport.scrollTop();
-        } else if (home_msg_list === current_msg_list &&
-                   current_msg_list.selected_row().offset() !== null) {
-            msg_offset = current_msg_list.selected_row().offset().top;
-        }
-
-        home_msg_list.clear({clear_selected_id: false});
-
-        // Recreate the home_msg_list with the newly filtered message_list.all
-        message_store.add_messages(message_list.all.all_messages(), home_msg_list);
-
-        // Ensure we're still at the same scroll position
-        if (ui_state.home_tab_obscured()) {
-            message_viewport.scrollTop(saved_ypos);
-        } else if (home_msg_list === current_msg_list) {
-            // We pass use_closest to handle the case where the
-            // currently selected message is being hidden from the
-            // home view
-            home_msg_list.select_id(home_msg_list.selected_id(),
-                                    {use_closest: true, empty_ok: true});
-            if (current_msg_list.selected_id() !== -1) {
-                message_viewport.set_message_offset(msg_offset);
-            }
-        }
-
-        // In case we added messages to what's visible in the home view, we need to re-scroll to
-        // make sure the pointer is still visible. We don't want the auto-scroll handler to move
-        // our pointer to the old scroll location before we have a chance to update it.
-        pointer.recenter_pointer_on_display = true;
-        pointer.suppress_scroll_pointer_update = true;
-
-        if (! home_msg_list.empty()) {
-            message_store.do_unread_count_updates(home_msg_list.all_messages());
-        }
-    }, 0);
-
-    stream_list.set_in_home_view(sub.name, sub.in_home_view);
-
-    var not_in_home_view_checkbox = $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] #sub_setting_not_in_home_view .sub_setting_control");
-    not_in_home_view_checkbox.prop('checked', !value);
-}
-
 exports.toggle_home = function (sub) {
-    update_in_home_view(sub, ! sub.in_home_view);
+    stream_muting.update_in_home_view(sub, ! sub.in_home_view);
     set_stream_property(sub, 'in_home_view', sub.in_home_view);
 };
 
@@ -845,7 +795,7 @@ exports.update_subscription_properties = function (stream_id, property, value) {
         stream_color.update_stream_color(sub, value, {update_historical: true});
         break;
     case 'in_home_view':
-        update_in_home_view(sub, value);
+        stream_muting.update_in_home_view(sub, value);
         break;
     case 'desktop_notifications':
         update_stream_desktop_notifications(sub, value);

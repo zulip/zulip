@@ -843,6 +843,7 @@ JS_SPECS = {
             'js/compose.js',
             'js/stream_color.js',
             'js/stream_data.js',
+            'js/stream_muting.js',
             'js/subs.js',
             'js/message_edit.js',
             'js/condense.js',
