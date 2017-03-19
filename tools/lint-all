@@ -648,7 +648,7 @@ def run():
 
     with bright_red_output():
         @lint
-        def check_urls():
+        def urls():
             # type: () -> int
             result = subprocess.call(['tools/check-urls'])
             return result
