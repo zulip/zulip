@@ -211,10 +211,6 @@ def find_pattern_in_email(address, pattern):
             return key_regex.search(message.body).group(0)
     return None  # nocoverage -- in theory a test might want this case, but none do
 
-def message_ids(result):
-    # type: (Dict[str, Any]) -> Set[int]
-    return set(message['id'] for message in result['messages'])
-
 def message_stream_count(user_profile):
     # type: (UserProfile) -> int
     return UserMessage.objects. \
