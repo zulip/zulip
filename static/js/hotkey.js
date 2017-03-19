@@ -15,6 +15,14 @@ function focus_in_empty_compose() {
         $('#new_message_content').is(':focus'));
 }
 
+function open_reactions() {
+    var message = current_msg_list.selected_message();
+    var target = $(".selected_message .icon-vector-smile")[0];
+    if (message.sent_by_me) target = $(".selected_message .icon-vector-chevron-down")[0];
+    popovers.toggle_reactions_popover(target, current_msg_list.selected_id());
+    return true;
+}
+
 exports.is_settings_page = function () {
   return (/^#*(settings|administration)/g).test(window.location.hash);
 };
@@ -70,6 +78,7 @@ var keydown_either_mappings = {
 
 var keypress_mappings = {
     47: {name: 'search', message_view_only: false}, // '/'
+    58: {name: 'open_reactions', message_view_only: true}, // ':'
     63: {name: 'show_shortcuts', message_view_only: false}, // '?'
     64: {name: 'compose_reply_with_mention', message_view_only: true}, // '@'
     65: {name: 'stream_cycle_backward', message_view_only: true}, // 'A'
@@ -556,6 +565,9 @@ exports.process_hotkey = function (e, hotkey) {
             return true;
         case 'compose_reply_with_mention': // '@': respond to message with mention to author
             compose.reply_with_mention({trigger: 'hotkey'});
+            return true;
+        case 'open_reactions': // ':': open reactions to message
+            open_reactions();
             return true;
         case 'thumbs_up_emoji': // '+': reacts with thumbs up emoji on selected message
             reactions.reaction_popover(current_msg_list.selected_id(), '+1');
