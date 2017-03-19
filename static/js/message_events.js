@@ -33,7 +33,7 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new, local
             });
 
             new_messages = _.map(new_messages, message_store.add_message_metadata);
-            message_store.add_messages(
+            message_util.add_messages(
                 new_messages,
                 msg_list,
                 {messages_are_new: messages_are_new}
@@ -60,12 +60,12 @@ exports.insert_new_messages = function insert_new_messages(messages, local_id) {
 
     // You must add add messages to home_msg_list BEFORE
     // calling unread.process_loaded_messages.
-    message_store.add_messages(messages, home_msg_list, {messages_are_new: true});
-    message_store.add_messages(messages, message_list.all, {messages_are_new: true});
+    message_util.add_messages(messages, home_msg_list, {messages_are_new: true});
+    message_util.add_messages(messages, message_list.all, {messages_are_new: true});
 
     if (narrow.active()) {
         if (narrow.filter().can_apply_locally()) {
-            message_store.add_messages(messages, message_list.narrowed, {messages_are_new: true});
+            message_util.add_messages(messages, message_list.narrowed, {messages_are_new: true});
             notifications.possibly_notify_new_messages_outside_viewport(messages, local_id);
         } else {
             // if we cannot apply locally, we have to wait for this callback to happen to notify
@@ -76,7 +76,7 @@ exports.insert_new_messages = function insert_new_messages(messages, local_id) {
     }
 
     activity.process_loaded_messages(messages);
-    message_store.do_unread_count_updates(messages);
+    message_util.do_unread_count_updates(messages);
 
     if (narrow.narrowed_by_reply()) {
         // If you send a message when narrowed to a recipient, move the

@@ -29,12 +29,12 @@ function process_result(messages, opts) {
     // the message_list.all as well, as the home_msg_list is reconstructed
     // from message_list.all.
     if (opts.msg_list === home_msg_list) {
-        message_store.do_unread_count_updates(messages);
-        message_store.add_messages(messages, message_list.all, {messages_are_new: false});
+        message_util.do_unread_count_updates(messages);
+        message_util.add_messages(messages, message_list.all, {messages_are_new: false});
     }
 
     if (messages.length !== 0 && !opts.cont_will_add_messages) {
-        message_store.add_messages(messages, opts.msg_list, {messages_are_new: false});
+        message_util.add_messages(messages, opts.msg_list, {messages_are_new: false});
     }
 
     activity.process_loaded_messages(messages);
