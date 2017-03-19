@@ -3,6 +3,8 @@ set_global('activity', {
 
 set_global('$', function () {
     return {
+        // Hack: Used for reactions hotkeys; may want to restructure.
+        find: function () {return ['target'];},
         keydown: function () {},
         keypress: function () {},
     };
@@ -14,8 +16,16 @@ set_global('document', {
 var hotkey = require('js/hotkey.js');
 
 set_global('current_msg_list', {
-    selected_id: function () { return 42; },
-    selected_message: function () { return {flags: ["read", "starred"]}; },
+    selected_id: function () {
+        return 42;
+    },
+    selected_message: function () {
+        return {
+            sent_by_me: true,
+            flags: ["read", "starred"],
+        };
+    },
+    selected_row: function () {},
 });
 
 function return_true() { return true; }
@@ -158,7 +168,7 @@ function stubbing(func_name_to_stub, test_function) {
 
     // Next, test keys that only work on a selected message.
     global.current_msg_list.empty = return_true;
-    assert_unmapped('@rRjJkKsSi');
+    assert_unmapped('@rRjJkKsSi:');
 
     global.current_msg_list.empty = return_false;
 
@@ -174,6 +184,7 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('S', 'narrow.by_subject');
     assert_mapping('v', 'lightbox.show_from_selected_message');
     assert_mapping('i', 'popovers.open_message_menu');
+    assert_mapping(':', 'popovers.toggle_reactions_popover', true);
 }());
 
 (function test_motion_keys() {
