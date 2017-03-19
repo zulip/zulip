@@ -228,13 +228,6 @@ exports.move_array_elements_to_front = function util_move_array_elements_to_fron
     return selected_elements.concat(unselected_elements);
 };
 
-exports.get_selected_message = function get_selected_message() {
-    var selected_msg = $(".selected_message");
-    var selected_zid = selected_msg.attr("zid");
-    var message =  message_store.get(selected_zid);
-    return message;
-};
-
 return exports;
 }());
 if (typeof module !== 'undefined') {

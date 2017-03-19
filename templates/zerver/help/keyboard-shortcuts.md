@@ -87,7 +87,7 @@ Zulip keyboard shortcuts are divided into four categories:
   in blue) if the user authored the selected message. If the selected
   message was written by another user, this shortcut will enable the
   user to view the source code of the message.
-* **Toggle starred flag**: `*` - This shortcut toggles the starred
-  flag on the selected message.
+* **Toggle starred flag**: `*` - This shortcut stars the selected
+  message.
 * **Show the keyboard shortcuts**: `?` - This shortcut makes a modal
   window with a guide to all possible keyboard shortcuts appear.

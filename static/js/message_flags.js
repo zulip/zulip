@@ -114,11 +114,6 @@ exports.toggle_starred = function (message) {
     }
 };
 
-exports.toggle_starred_on_selected_message = function () {
-    exports.toggle_starred(util.get_selected_message());
-};
-
-
 return exports;
 }());
 

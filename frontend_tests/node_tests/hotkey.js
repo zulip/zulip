@@ -15,6 +15,7 @@ var hotkey = require('js/hotkey.js');
 
 set_global('current_msg_list', {
     selected_id: function () { return 42; },
+    selected_message: function () { return {flags: "starred"}; },
 });
 
 function return_true() { return true; }
@@ -110,7 +111,7 @@ function stubbing(func_name_to_stub, test_function) {
         assert_unmapped(' ');
         assert_unmapped('[]\\.,;');
         assert_unmapped('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
-        assert_unmapped('~!@#$%^()_+{}:"<>?');
+        assert_unmapped('~!@#$%^*()_+{}:"<>?');
     }
 
     _.each([return_true, return_false], function (is_settings_page) {
@@ -145,7 +146,7 @@ function stubbing(func_name_to_stub, test_function) {
     global.current_msg_list.empty = return_false;
 
     assert_mapping('@', 'compose.reply_with_mention');
-    assert_mapping('*', 'message_flags.toggle_starred_on_selected_message');
+    assert_mapping('*', 'message_flags.toggle_starred');
     assert_mapping('r', 'compose.respond_to_message');
     assert_mapping('R', 'compose.respond_to_message', true);
     assert_mapping('j', 'navigate.down');
