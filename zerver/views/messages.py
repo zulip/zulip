@@ -389,6 +389,9 @@ def narrow_parameter(json):
     data = ujson.loads(json)
     if not isinstance(data, list):
         raise ValueError("argument is not a list")
+    if len(data) == 0:
+        # The "empty narrow" should be None, and not []
+        return None
 
     def convert_term(elem):
         # type: (Union[Dict, List]) -> Dict[str, Any]
@@ -469,10 +472,11 @@ def ok_to_include_history(narrow, realm):
     return include_history
 
 def get_stream_name_from_narrow(narrow):
-    # type: (Iterable[Dict[str, Any]]) -> Optional[Text]
-    for term in narrow:
-        if term['operator'] == 'stream':
-            return term['operand'].lower()
+    # type: (Optional[Iterable[Dict[str, Any]]]) -> Optional[Text]
+    if narrow is not None:
+        for term in narrow:
+            if term['operator'] == 'stream':
+                return term['operand'].lower()
     return None
 
 def exclude_muting_conditions(user_profile, narrow):
@@ -1069,7 +1073,7 @@ def json_messages_in_narrow(request, user_profile):
 def messages_in_narrow_backend(request, user_profile,
                                msg_ids = REQ(validator=check_list(check_int)),
                                narrow = REQ(converter=narrow_parameter)):
-    # type: (HttpRequest, UserProfile, List[int], List[Dict[str, Any]]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, List[int], Optional[List[Dict[str, Any]]]) -> HttpResponse
 
     # Note that this function will only work on messages the user
     # actually received
@@ -1086,8 +1090,9 @@ def messages_in_narrow_backend(request, user_profile,
                         literal_column("zerver_message.id")))
 
     builder = NarrowBuilder(user_profile, column("message_id"))
-    for term in narrow:
-        query = builder.add_term(query, term)
+    if narrow is not None:
+        for term in narrow:
+            query = builder.add_term(query, term)
 
     sa_conn = get_sqlalchemy_connection()
     query_result = list(sa_conn.execute(query).fetchall())
