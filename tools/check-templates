@@ -40,11 +40,11 @@ def check_our_files():
             ftypes=['handlebars', 'html'],
             group_by_ftype=True, exclude=EXCLUDED_FILES))
 
-    check_handlebar_templates(by_lang['handlebars'], args.modified)
-    check_html_templates(by_lang['html'], args.modified, args.all_dups)
+    check_handlebar_templates(by_lang['handlebars'])
+    check_html_templates(by_lang['html'], args.all_dups)
 
-def check_html_templates(templates, modified_only, all_dups):
-    # type: (Iterable[str], bool, bool) -> None
+def check_html_templates(templates, all_dups):
+    # type: (Iterable[str], bool) -> None
     # Our files with .html extensions are usually for Django, but we also
     # have a few static .html files.
     # The file base.html has a bit of funny HTML that we can't parse here yet.
@@ -98,8 +98,6 @@ def check_html_templates(templates, modified_only, all_dups):
         print('Exiting--please clean up all duplicates before running this again.')
         sys.exit(1)
 
-    if not modified_only:
-        assert len(templates) >= 10 # sanity check that we are actually doing work
     for fn in templates:
         # Many of our Django templates have strange indentation.  The
         # indentation errors are often harmless, even stylistically
@@ -196,12 +194,10 @@ def check_html_templates(templates, modified_only, all_dups):
             if not validate_indent_html(fn):
                 sys.exit(1)
 
-def check_handlebar_templates(templates, modified_only):
-    # type: (Iterable[str], bool) -> None
+def check_handlebar_templates(templates):
+    # type: (Iterable[str]) -> None
     # Check all our handlebars templates.
     templates = [fn for fn in templates if fn.endswith('.handlebars')]
-    if not modified_only:
-        assert len(templates) >= 10 # sanity check that we are actually doing work
     for fn in templates:
         validate(fn=fn, check_indent=True)
 
