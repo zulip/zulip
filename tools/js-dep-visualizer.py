@@ -17,12 +17,14 @@ from tools.lib.graph import Graph, make_dot_file
 JS_FILES_DIR = os.path.abspath(os.path.join(ROOT_DIR, 'static/js'))
 OUTPUT_FILE_PATH = os.path.abspath(os.path.join(ROOT_DIR, 'var/zulip-deps.dot'))
 
+names = set()
 modules = [] # type: List[Dict[str, Any]]
 for js_file in os.listdir(JS_FILES_DIR):
     name = js_file[:-3] # remove .js
     file_path = os.path.abspath(os.path.join(JS_FILES_DIR, js_file))
 
     if os.path.isfile(file_path) and js_file != '.eslintrc.json':
+        names.add(name)
         modules.append(dict(
             filename=js_file,
             name=name,
@@ -30,21 +32,26 @@ for js_file in os.listdir(JS_FILES_DIR):
             regex=re.compile('[^_]{}\.\w+\('.format(name))
         ))
 
+COMMENT_REGEX = re.compile('\s+//')
+REGEX = re.compile('[^_](\w+)\.\w+\(')
+
 tuples = set()
 for module in modules:
-    other_modules = [x for x in modules if x['name'] != module['name']]
+    parent = module['name']
 
     with open(module['path']) as f:
-        module_content = f.read()
-        for other_module in other_modules:
-            dependencies = re.findall(other_module['regex'], module_content)
-            if dependencies:
-                parent = module['name']
-                child = other_module['name']
-                tup = (parent, child)
-                if tup == ('stream_data', 'subs'):
-                    continue # parsing mistake due to variable called "subs"
-                tuples.add(tup)
+        for line in f:
+            if COMMENT_REGEX.match(line):
+                continue
+            if 'subs.forEach' in line:
+                continue
+            m = REGEX.search(line)
+            if not m:
+                continue
+            for child in m.groups():
+                if (child in names) and (child != parent):
+                    tup = (parent, child)
+                    tuples.add(tup)
 
 IGNORE_TUPLES = [
     # We ignore the following tuples to de-clutter the graph, since there is a
