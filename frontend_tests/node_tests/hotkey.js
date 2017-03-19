@@ -238,6 +238,9 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('spacebar', 'navigate.page_down');
     assert_mapping('up_arrow', 'navigate.up');
 
+    hotkey.is_lightbox_open = return_true;
+    assert_mapping('left_arrow', 'lightbox.prev');
+
     hotkey.is_settings_page = return_true;
     assert_unmapped('end');
     assert_unmapped('home');
