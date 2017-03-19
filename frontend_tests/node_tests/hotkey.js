@@ -37,10 +37,11 @@ function stubbing(func_name_to_stub, test_function) {
         });
     }
 
-    function map_down(which, shiftKey) {
+    function map_down(which, shiftKey, ctrlKey) {
         return hotkey.get_keydown_hotkey({
             which: which,
             shiftKey: shiftKey,
+            ctrlKey: ctrlKey,
         });
     }
 
@@ -62,10 +63,26 @@ function stubbing(func_name_to_stub, test_function) {
     assert.equal(map_press(47).name, 'search'); // slash
     assert.equal(map_press(106).name, 'vim_down'); // j
 
+    assert.equal(map_down(219, false, true).name, 'esc_ctrl');
+
     // More negative tests.
     assert.equal(map_down(47), undefined);
     assert.equal(map_press(27), undefined);
     assert.equal(map_down(27, true), undefined);
+    assert.equal(map_down(67, false, true), undefined); // ctrl + c
+    assert.equal(map_down(86, false, true), undefined); // ctrl + v
+    assert.equal(map_down(90, false, true), undefined); // ctrl + z
+    assert.equal(map_down(84, false, true), undefined); // ctrl + t
+    assert.equal(map_down(82, false, true), undefined); // ctrl + r
+    assert.equal(map_down(79, false, true), undefined); // ctrl + o
+    assert.equal(map_down(80, false, true), undefined); // ctrl + p
+    assert.equal(map_down(65, false, true), undefined); // ctrl + a
+    assert.equal(map_down(83, false, true), undefined); // ctrl + s
+    assert.equal(map_down(70, false, true), undefined); // ctrl + f
+    assert.equal(map_down(72, false, true), undefined); // ctrl + h
+    assert.equal(map_down(88, false, true), undefined); // ctrl + x
+    assert.equal(map_down(78, false, true), undefined); // ctrl + n
+    assert.equal(map_down(77, false, true), undefined); // ctrl + m
 }());
 
 (function test_basic_chars() {
@@ -168,9 +185,10 @@ function stubbing(func_name_to_stub, test_function) {
         up_arrow: 38,
     };
 
-    function process(name) {
+    function process(name, ctrlKey) {
         var e = {
             which: codes[name],
+            ctrlKey: ctrlKey,
         };
         return hotkey.process_keydown(e);
     }
@@ -179,9 +197,9 @@ function stubbing(func_name_to_stub, test_function) {
         assert.equal(process(name), false);
     }
 
-    function assert_mapping(key_name, func_name) {
+    function assert_mapping(key_name, func_name, ctrlKey) {
         stubbing(func_name, function () {
-            assert(process(key_name));
+            assert(process(key_name, ctrlKey));
         });
     }
 
