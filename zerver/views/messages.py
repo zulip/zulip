@@ -386,10 +386,6 @@ def get_search_fields(rendered_content, subject, content_matches, subject_matche
 def narrow_parameter(json):
     # type: (str) -> Optional[List[Dict[str, Any]]]
 
-    # FIXME: A hack to support old mobile clients
-    if json == '{}':
-        return None
-
     data = ujson.loads(json)
     if not isinstance(data, list):
         raise ValueError("argument is not a list")
