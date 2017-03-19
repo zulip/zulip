@@ -658,7 +658,7 @@ with_overrides(function (override) {
         override('stream_data.get_sub_by_id', function (stream_id) {
             return {stream_id: stream_id};
         });
-        override('subs.mark_subscribed', stub.f);
+        override('stream_events.mark_subscribed', stub.f);
         dispatch(event);
         var args = stub.get_args('sub', 'subscribers');
         assert_same(args.sub.stream_id, event.subscriptions[0].stream_id);
@@ -691,7 +691,7 @@ with_overrides(function (override) {
         return sub_stub;
     });
     global.with_stub(function (stub) {
-        override('subs.mark_sub_unsubscribed', stub.f);
+        override('stream_events.mark_unsubscribed', stub.f);
         dispatch(event);
         var args = stub.get_args('sub');
         assert_same(stream_id_looked_up, event.subscriptions[0].stream_id);
