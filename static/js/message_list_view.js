@@ -546,7 +546,7 @@ MessageListView.prototype = {
             self._post_process_dom_messages(dom_messages.get());
             last_group_row.append(dom_messages);
 
-            new_dom_elements = new_dom_elements.concat(dom_messages);
+            condense.condense_and_collapse(dom_messages);
         }
 
         // Add new message groups to the end
