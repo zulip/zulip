@@ -91,3 +91,8 @@ Zulip keyboard shortcuts are divided into four categories:
   user to view the source code of the message.
 * **Show the keyboard shortcuts**: `?` - This shortcut makes a modal
   window with a guide to all possible keyboard shortcuts appear.
+* **Open reaction popover menu**: `:` - This shortcut shows the
+  reaction popover menu of the selected message (outlined in blue).
+* **React to selected message with +1**: `+` - This shortcut allows
+  you to react to the selected message (outlined in blue) with the
+  +1 (thumbs up) emoji.
