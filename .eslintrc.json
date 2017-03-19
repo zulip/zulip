@@ -87,6 +87,7 @@
         "unread": false,
         "alert_words_ui": false,
         "message_store": false,
+        "message_fetch": false,
         "favicon": false,
         "condense": false,
         "floating_recipient_bar": false,

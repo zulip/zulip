@@ -320,7 +320,7 @@ exports.activate = function (raw_operators, opts) {
     }
 
     var defer_selecting_closest = message_list.narrowed.empty();
-    message_store.load_old_messages({
+    message_fetch.load_old_messages({
         anchor: then_select_id.toFixed(),
         num_before: 50,
         num_after: 50,
@@ -338,7 +338,7 @@ exports.activate = function (raw_operators, opts) {
     });
 
     if (! defer_selecting_closest) {
-        message_store.reset_load_more_status();
+        message_fetch.reset_load_more_status();
         maybe_select_closest();
     } else {
         ui.show_loading_more_messages_indicator();
@@ -468,7 +468,7 @@ exports.deactivate = function () {
     condense.condense_and_collapse($("#zhome tr.message_row"));
 
     $('#search_query').val('');
-    message_store.reset_load_more_status();
+    message_fetch.reset_load_more_status();
     hashchange.save_narrow();
 
     if (current_msg_list.selected_id() !== -1) {
