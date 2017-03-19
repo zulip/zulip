@@ -51,6 +51,10 @@ var keydown_unshift_mappings = {
     40: {name: 'down_arrow', message_view_only: true}, // down arrow
 };
 
+var keydown_ctrl_mappings = {
+    219: {name: 'esc_ctrl', message_view_only: false}, // '['
+};
+
 var keydown_either_mappings = {
     // these can be triggered by key or shift + key
     // Note that codes for letters are still case sensitive!
@@ -110,11 +114,18 @@ exports.tab_up_down = (function () {
 }());
 
 exports.get_keydown_hotkey = function (e) {
-    if (e.metaKey || e.ctrlKey || e.altKey) {
+    if (e.metaKey || e.altKey) {
         return;
     }
 
     var hotkey;
+    if (e.ctrlKey) {
+        hotkey = keydown_ctrl_mappings[e.which];
+        if (hotkey) {
+            return hotkey;
+        }
+    }
+
     if (e.shiftKey) {
         hotkey = keydown_shift_mappings[e.which];
         if (hotkey) {
@@ -378,6 +389,8 @@ exports.process_hotkey = function (e, hotkey) {
             return exports.process_tab_key();
         case 'shift_tab':
             return exports.process_shift_tab_key();
+        case 'esc_ctrl':
+            return exports.process_escape_key(e);
     }
 
     if (hotkey.message_view_only && ui_state.home_tab_obscured()) {
