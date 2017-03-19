@@ -476,7 +476,7 @@ def ok_to_include_history(narrow, realm):
     return include_history
 
 def get_stream_name_from_narrow(narrow):
-    # type: (Iterable[Dict[str, Any]]) -> Optional[Text]
+    # type: (Optional[Iterable[Dict[str, Any]]]) -> Optional[Text]
     if narrow is not None:
         for term in narrow:
             if term['operator'] == 'stream':
