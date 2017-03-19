@@ -21,7 +21,7 @@ from typing import Any, Dict, List, Optional, Tuple, Text
 from confirmation.models import Confirmation
 from zerver.forms import HomepageForm, OurAuthenticationForm, \
     WRONG_SUBDOMAIN_ERROR
-
+from zerver.lib.mobile_auth_otp import is_valid_otp, otp_encrypt_api_key
 from zerver.lib.request import REQ, has_request_variables, JsonableError
 from zerver.lib.response import json_success, json_error
 from zerver.lib.utils import get_subdomain, is_subdomain_root_or_alias
@@ -81,8 +81,8 @@ def redirect_to_subdomain_login_url():
     return HttpResponseRedirect(redirect_url)
 
 def login_or_register_remote_user(request, remote_username, user_profile, full_name='',
-                                  invalid_subdomain=False):
-    # type: (HttpRequest, Text, UserProfile, Text, Optional[bool]) -> HttpResponse
+                                  invalid_subdomain=False, mobile_flow_otp=None):
+    # type: (HttpRequest, Text, UserProfile, Text, bool, Optional[str]) -> HttpResponse
     if invalid_subdomain:
         # Show login page with an error message
         return redirect_to_subdomain_login_url()
@@ -93,6 +93,19 @@ def login_or_register_remote_user(request, remote_username, user_profile, full_n
         # PreregistrationUser flow.
         return maybe_send_to_registration(request, remote_user_to_email(remote_username), full_name)
     else:
+        # For the mobile Oauth flow, we send the API key and other
+        # necessary details in a redirect to a zulip:// URI scheme.
+        if mobile_flow_otp is not None:
+            params = {
+                'otp_encrypted_api_key': otp_encrypt_api_key(user_profile, mobile_flow_otp),
+                'email': remote_username,
+                'realm': user_profile.realm.uri,
+            }
+            # We can't use HttpResponseRedirect, since it only allows HTTP(S) URLs
+            response = HttpResponse(status=302)
+            response['Location'] = 'zulip://login?' + urllib.parse.urlencode(params)
+            return response
+
         login(request, user_profile)
         if settings.REALMS_HAVE_SUBDOMAINS and user_profile.realm.subdomain is not None:
             return HttpResponseRedirect(user_profile.realm.uri)
@@ -179,8 +192,19 @@ def redirect_to_main_site(request, url, is_signup=False):
         settings.EXTERNAL_HOST,
         url,
     ))
-    params = {'subdomain': get_subdomain(request),
-              'is_signup': '1' if is_signup else '0'}
+    params = {
+        'subdomain': get_subdomain(request),
+        'is_signup': '1' if is_signup else '0',
+    }
+
+    # mobile_flow_otp is a one-time pad provided by the app that we
+    # can use to encrypt the API key when passing back to the app.
+    mobile_flow_otp = request.GET.get('mobile_flow_otp')
+    if mobile_flow_otp is not None:
+        if not is_valid_otp(mobile_flow_otp):
+            raise JsonableError(_("Invalid OTP"))
+        params['mobile_flow_otp'] = mobile_flow_otp
+
     return redirect(main_site_uri + '?' + urllib.parse.urlencode(params))
 
 def start_social_login(request, backend):
@@ -191,13 +215,15 @@ def start_social_login(request, backend):
 def send_oauth_request_to_google(request):
     # type: (HttpRequest) -> HttpResponse
     subdomain = request.GET.get('subdomain', '')
+    mobile_flow_otp = request.GET.get('mobile_flow_otp', '0')
+
     if settings.REALMS_HAVE_SUBDOMAINS:
         if not subdomain or not Realm.objects.filter(string_id=subdomain).exists():
             return redirect_to_subdomain_login_url()
 
     google_uri = 'https://accounts.google.com/o/oauth2/auth?'
     cur_time = str(int(time.time()))
-    csrf_state = '%s:%s' % (cur_time, subdomain)
+    csrf_state = '%s:%s:%s' % (cur_time, subdomain, mobile_flow_otp)
 
     # Now compute the CSRF hash with the other parameters as an input
     csrf_state += ":%s" % (google_oauth2_csrf(request, csrf_state),)
@@ -225,7 +251,7 @@ def finish_google_oauth2(request):
         return HttpResponse(status=400)
 
     csrf_state = request.GET.get('state')
-    if csrf_state is None or len(csrf_state.split(':')) != 3:
+    if csrf_state is None or len(csrf_state.split(':')) != 4:
         logging.warning('Missing Google oauth2 CSRF state')
         return HttpResponse(status=400)
 
@@ -233,7 +259,9 @@ def finish_google_oauth2(request):
     if hmac_value != google_oauth2_csrf(request, csrf_data):
         logging.warning('Google oauth2 CSRF error')
         return HttpResponse(status=400)
-    cur_time, subdomain = csrf_data.split(':')
+    cur_time, subdomain, mobile_flow_otp = csrf_data.split(':')
+    if mobile_flow_otp == '0':
+        mobile_flow_otp = None
 
     resp = requests.post(
         'https://www.googleapis.com/oauth2/v3/token',
@@ -284,12 +312,15 @@ def finish_google_oauth2(request):
         return HttpResponse(status=400)
 
     email_address = email['value']
-    if not subdomain:
+
+    if not subdomain or mobile_flow_otp is not None:
         # When request was not initiated from subdomain.
-        user_profile, return_data = authenticate_remote_user(request, email_address)
+        user_profile, return_data = authenticate_remote_user(request, email_address,
+                                                             subdomain=subdomain)
         invalid_subdomain = bool(return_data.get('invalid_subdomain'))
         return login_or_register_remote_user(request, email_address, user_profile,
-                                             full_name, invalid_subdomain)
+                                             full_name, invalid_subdomain,
+                                             mobile_flow_otp=mobile_flow_otp)
 
     try:
         realm = Realm.objects.get(string_id=subdomain)
@@ -298,8 +329,8 @@ def finish_google_oauth2(request):
 
     return redirect_and_log_into_subdomain(realm, full_name, email_address)
 
-def authenticate_remote_user(request, email_address):
-    # type: (HttpRequest, str) -> Tuple[UserProfile, Dict[str, Any]]
+def authenticate_remote_user(request, email_address, subdomain=None):
+    # type: (HttpRequest, str, Optional[Text]) -> Tuple[UserProfile, Dict[str, Any]]
     return_data = {} # type: Dict[str, bool]
     if email_address is None:
         # No need to authenticate if email address is None. We already
@@ -309,9 +340,11 @@ def authenticate_remote_user(request, email_address):
         logging.warning("Email address was None while trying to authenticate "
                         "remote user.")
         return None, return_data
+    if subdomain is None:
+        subdomain = get_subdomain(request)
 
     user_profile = authenticate(username=email_address,
-                                realm_subdomain=get_subdomain(request),
+                                realm_subdomain=subdomain,
                                 use_dummy_backend=True,
                                 return_data=return_data)
     return user_profile, return_data
