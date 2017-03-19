@@ -51,6 +51,9 @@ var keydown_unshift_mappings = {
     40: {name: 'down_arrow', message_view_only: true}, // down arrow
 };
 
+var keydown_ctrl_mappings = {
+};
+
 var keydown_either_mappings = {
     // these can be triggered by key or shift + key
     // Note that codes for letters are still case sensitive!
@@ -110,11 +113,19 @@ exports.tab_up_down = (function () {
 }());
 
 exports.get_keydown_hotkey = function (e) {
-    if (e.metaKey || e.ctrlKey || e.altKey) {
+    if (e.metaKey || e.altKey) {
         return;
     }
 
     var hotkey;
+    if (e.ctrlKey) {
+        hotkey = keydown_ctrl_mappings[e.which];
+        if (hotkey) {
+            return hotkey;
+        }
+        return;
+    }
+
     if (e.shiftKey) {
         hotkey = keydown_shift_mappings[e.which];
         if (hotkey) {
