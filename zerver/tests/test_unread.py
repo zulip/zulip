@@ -77,6 +77,87 @@ class PointerTest(ZulipTestCase):
         self.assert_json_error(result, "Bad value for 'pointer': -2")
         self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, -1)
 
+    def test_use_first_unread_anchor_interaction_with_pointer(self):
+        # type: () -> None
+        """
+        Getting old messages (a get request to /json/messages) should never
+        return an unread message older than the current pointer, when there's
+        no narrow set.
+        """
+        self.login("hamlet@zulip.com")
+        # Ensure the pointer is not set (-1)
+        self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, -1)
+        # Mark all existing messages as read
+        result = self.client_post("/json/messages/flags", {"messages": ujson.dumps([]),
+                                                           "op": "add",
+                                                           "flag": "read",
+                                                           "all": ujson.dumps(True)})
+        self.assert_json_success(result)
+
+        # Send a new message (this will be unread)
+        new_message_id = self.send_message("othello@zulip.com", "Verona",
+                                           Recipient.STREAM, "test")
+
+        # If we call get_messages with use_first_unread_anchor=True, we
+        # should get the message we just sent
+        messages = self.get_messages(
+            anchor=0, num_before=0, num_after=1, use_first_unread_anchor=True)
+        self.assertEqual(messages[0]['id'], new_message_id)
+
+        # We want to get the message_id of an arbitrar old message. We can
+        # call get_messages with use_first_unread_anchor=False and simply
+        # save the first message we're returned.
+        messages = self.get_messages(
+            anchor=0, num_before=0, num_after=2, use_first_unread_anchor=False)
+        old_message_id = messages[0]['id']
+        next_old_message_id = messages[1]['id']
+
+        # Verify the message is marked as read
+        user_message = UserMessage.objects.get(
+            message_id=old_message_id,
+            user_profile=get_user_profile_by_email("hamlet@zulip.com"))
+        self.assertTrue(user_message.flags.read)
+
+        # Let's set this old message to be unread
+        result = self.client_post("/json/messages/flags",
+                                  {"messages": ujson.dumps([old_message_id]),
+                                   "op": "remove",
+                                   "flag": "read"})
+
+        # Verify it's now marked as unread
+        user_message = UserMessage.objects.get(
+            message_id=old_message_id,
+            user_profile=get_user_profile_by_email("hamlet@zulip.com"))
+        self.assert_json_success(result)
+        self.assertFalse(user_message.flags.read)
+
+        # Now if we call get_messages with use_first_unread_anchor=True,
+        # we should get the old message we just set to unread
+        messages = self.get_messages(
+            anchor=0, num_before=0, num_after=1, use_first_unread_anchor=True)
+        self.assertEqual(messages[0]['id'], old_message_id)
+
+        # Let's update the pointer to be *after* this old unread message (but
+        # still on or before the new unread message we just sent)
+        result = self.client_post("/json/users/me/pointer",
+                                  {"pointer": next_old_message_id})
+        self.assert_json_success(result)
+        self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer,
+                         next_old_message_id)
+
+        # Verify that moving the pointer didn't mark our message as read.
+        user_message = UserMessage.objects.get(
+            message_id=old_message_id,
+            user_profile=get_user_profile_by_email("hamlet@zulip.com"))
+        self.assertFalse(user_message.flags.read)
+
+        # Now if we call get_messages with use_first_unread_anchor=True,
+        # we should not get the old unread message (because it's before the
+        # pointer), and instead should get the newly sent unread message
+        messages = self.get_messages(
+            anchor=0, num_before=0, num_after=1, use_first_unread_anchor=True)
+        self.assertEqual(messages[0]['id'], new_message_id)
+
 class UnreadCountTests(ZulipTestCase):
     def setUp(self):
         # type: () -> None
