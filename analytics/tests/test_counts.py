@@ -375,16 +375,19 @@ class TestCountStats(AnalyticsTestCase):
                                [2, 'private_stream', user2],
                                [2, 'public_stream', user1],
                                [1, 'public_stream', user2],
-                               [2, 'private_message', user1],
-                               [2, 'private_message', user2],
+                               [1, 'private_message', user1],
+                               [1, 'private_message', user2],
                                [1, 'private_message', user3],
+                               [1, 'huddle_message', user1],
+                               [1, 'huddle_message', user2],
                                [1, 'public_stream', self.hourly_user],
                                [1, 'public_stream', self.daily_user]])
         self.assertTableState(RealmCount, ['value', 'subgroup', 'realm'],
-                              [[3, 'private_stream'], [3, 'public_stream'], [5, 'private_message'],
-                               [2, 'public_stream', self.second_realm]])
+                              [[3, 'private_stream'], [3, 'public_stream'], [3, 'private_message'],
+                               [2, 'huddle_message'], [2, 'public_stream', self.second_realm]])
         self.assertTableState(InstallationCount, ['value', 'subgroup'],
-                              [[3, 'private_stream'], [5, 'public_stream'], [5, 'private_message']])
+                              [[3, 'private_stream'], [5, 'public_stream'], [3, 'private_message'],
+                               [2, 'huddle_message']])
         self.assertTableState(StreamCount, [], [])
 
     def test_messages_sent_to_recipients_with_same_id(self):
@@ -403,7 +406,8 @@ class TestCountStats(AnalyticsTestCase):
 
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
 
-        self.assertCountEquals(UserCount, 2, subgroup='private_message')
+        self.assertCountEquals(UserCount, 1, subgroup='private_message')
+        self.assertCountEquals(UserCount, 1, subgroup='huddle_message')
         self.assertCountEquals(UserCount, 1, subgroup='public_stream')
 
     def test_messages_sent_by_client(self):
