@@ -83,6 +83,27 @@ function show_message_info_popover(element, id) {
     }
 }
 
+function promote_popular(a, b) {
+    function rank(name) {
+        switch (name) {
+            case '+1': return 1;
+            case 'tada': return 2;
+            case 'simple_smile': return 3;
+            case 'laughing': return 4;
+            case '100': return 5;
+            default: return 999;
+        }
+    }
+
+    var diff = rank(a.name) - rank(b.name);
+
+    if (diff !== 0) {
+        return diff;
+    }
+
+    return util.strcmp(a.name, b.name);
+}
+
 exports.toggle_reactions_popover = function (element, id) {
     var last_popover_elem = current_message_reactions_popover_elem;
     popovers.hide_all();
@@ -131,6 +152,8 @@ exports.toggle_reactions_popover = function (element, id) {
                 is_realm_emoji: false,
             };
         });
+
+        emoji_recs.sort(promote_popular);
 
         var args = {
             message_id: id,
