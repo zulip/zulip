@@ -49,7 +49,6 @@ var keydown_shift_mappings = {
     // these can be triggered by shift + key only
     9: {name: 'shift_tab', message_view_only: false}, // tab
     32: {name: 'shift_spacebar', message_view_only: true},  // space bar
-    187: {name: 'thumbs_up_emoji', message_view_only: true}, // '+'
 };
 
 var keydown_unshift_mappings = {
@@ -89,6 +88,7 @@ var keydown_either_mappings = {
 
 var keypress_mappings = {
     42: {name: 'star_message', message_view_only: true}, // '*'
+    43: {name: 'thumbs_up_emoji', message_view_only: true}, // '+'
     47: {name: 'search', message_view_only: false}, // '/'
     58: {name: 'open_reactions', message_view_only: true}, // ':'
     63: {name: 'show_shortcuts', message_view_only: false}, // '?'
