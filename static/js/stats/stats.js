@@ -292,11 +292,12 @@ function populate_messages_sent_over_time(data) {
         last_week_is_partial = info.last_value_is_partial;
         weekly_traces = make_traces(info.dates, info.values, 'bar', date_formatter);
 
+        var values;
         var dates = data.end_times.map(function (timestamp) {
             return new Date(timestamp * 1000);
         });
         if (all_msgs) {
-            var values = {human: partial_sums(data.realm.human),
+            values = {human: partial_sums(data.realm.human),
                           bot: partial_sums(data.realm.bot),
                          };
         } else if (my_msgs) {
