@@ -10,7 +10,6 @@ from typing import Any, Dict, List, Text
 from zerver.lib.actions import (
     do_change_is_admin,
     do_set_realm_name,
-    do_set_realm_description,
     do_deactivate_realm,
     do_set_name_changes_disabled,
 )
@@ -55,11 +54,18 @@ class RealmTest(ZulipTestCase):
 
     def test_do_set_realm_description(self):
         # type: () -> None
+        email = 'iago@zulip.com'
+        self.login(email)
         realm = get_realm('zulip')
         new_description = 'zulip dev group'
+        data = dict(description=ujson.dumps(new_description))
         events = [] # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
-            do_set_realm_description(realm, new_description)
+            result = self.client_patch('/json/realm', data)
+            self.assert_json_success(result)
+            realm = get_realm('zulip')
+            self.assertEqual(realm.description, new_description)
+
         event = events[0]['event']
         self.assertEqual(event, dict(
             type='realm',
