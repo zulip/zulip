@@ -16,7 +16,17 @@
   <div class="center-container">
     <div class="center-block">
       <p class="graph-title" id="messages_timescale_anchor">Messages Sent Over Time</p>
-      <div id="graph_container">
+        <div id="graph_container">
+        <div class="dropdown" id="filter-plot-message">
+            <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
+                    Filter <span class="caret"></span>
+                </button>
+            <ul class="dropdown-menu pull-right" role="menu" aria-labelledby="menu1">
+                    <li role="presentation"><a role="menuitem" tabindex="-1" data-name="everyone">All Messages</a>
+                    </li>
+                    <li role="presentation"><a role="menuitem" tabindex="-1" data-name="me">Sent By Me</a></li>
+                </ul>
+        </div>
         <div id="button_container">
           <p id="button_label"> Aggregation </p>
           <button class="button" type="button" id='hourly_button'> Hourly </button>
@@ -31,6 +41,8 @@
             <span id="hover_human_value"></span>
             <span id="hover_bot">Bots:</span>
             <span id="hover_bot_value"></span>
+            <span id="hover_me">Me:</span>
+            <span id="hover_me_value"></span>
         </div>
       </div>
     </div>
