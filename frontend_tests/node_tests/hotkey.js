@@ -1,3 +1,16 @@
+// Important note on these tests:
+//
+// The way the Zulip hotkey tests work is as follows.  First, we set
+// up various contexts by monkey-patching the various hotkeys exports
+// functions (like hotkeys.is_settings_page).  Within that context, to
+// test whether a given key (e.g. `x`) results in a specific function
+// (e.g. `ui.foo()`), we fail to import any modules other than
+// hotkey.js so that accessing them will result in a ReferenceError.
+//
+// Then we create a stub `ui.foo`, and call the hotkey function.  If
+// it calls any external module other than `ui.foo`, it'll crash.
+// Future work includes making sure it actually does call `ui.foo()`.
+
 set_global('activity', {
 });
 
