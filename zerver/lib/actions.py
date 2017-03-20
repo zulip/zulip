@@ -1081,7 +1081,7 @@ def create_streams_if_needed(realm, stream_dicts):
     return added_streams, existing_streams
 
 def recipient_for_emails(emails, not_forged_mirror_message,
-                         user_profile, sender):
+                         forwarder_user_profile, sender):
     # type: (Iterable[Text], bool, Optional[UserProfile], UserProfile) -> Recipient
     recipient_profile_ids = set()
 
@@ -1104,8 +1104,10 @@ def recipient_for_emails(emails, not_forged_mirror_message,
         if email not in exempt_emails:
             realms.add(user_profile.realm_id)
 
-    if not_forged_mirror_message and user_profile.id not in recipient_profile_ids:
-        raise ValidationError(_("User not authorized for this query"))
+    if not_forged_mirror_message:
+        assert forwarder_user_profile is not None
+        if forwarder_user_profile.id not in recipient_profile_ids:
+            raise ValidationError(_("User not authorized for this query"))
 
     if len(realms) > 1:
         raise ValidationError(_("You can't send private messages outside of your organization."))
