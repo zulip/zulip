@@ -83,6 +83,27 @@ function show_message_info_popover(element, id) {
     }
 }
 
+function promote_smilies(a, b) {
+    function rank(name) {
+        switch (name) {
+            case 'smile': return 1;
+            case 'laughing': return 2;
+            case '+1': return 3;
+            case 'octopus': return 4;
+            case 'heavy_check_mark': return 5;
+            default: return 999;
+        }
+    }
+
+    var diff = rank(a.name) - rank(b.name);
+
+    if (diff !== 0) {
+        return diff;
+    }
+
+    return util.strcmp(a.name, b.name);
+}
+
 exports.toggle_reactions_popover = function (element, id) {
     var last_popover_elem = current_message_reactions_popover_elem;
     popovers.hide_all();
@@ -119,9 +140,24 @@ exports.toggle_reactions_popover = function (element, id) {
             };
         });
 
+        var emoji_recs = _.map(emojis, function (val, emoji_name) {
+            if (val.name) {
+                return val;
+            }
+
+            return {
+                name: emoji_name,
+                css_class: emoji.emoji_name_to_css_class(emoji_name),
+                has_reacted: false,
+                is_realm_emoji: false,
+            };
+        });
+
+        emoji_recs.sort(promote_smilies);
+
         var args = {
             message_id: id,
-            emojis: emojis,
+            emojis: emoji_recs,
         };
 
         var approx_popover_height = 400;
