@@ -373,6 +373,14 @@ function handleRealmFilter(pattern, matches) {
     return url;
 }
 
+function handleTex(tex, fullmatch) {
+    try {
+        return katex.renderToString(tex);
+    } catch (ex) {
+        return '<span class="tex-error">' + escape(fullmatch) + '</span>';
+    }
+}
+
 function python_to_js_filter(pattern, url) {
     // Converts a python named-group regex to a javascript-compatible numbered
     // group regex... with a regex!
@@ -514,6 +522,7 @@ $(function () {
         unicodeEmojiHandler: handleUnicodeEmoji,
         streamHandler: handleStream,
         realmFilterHandler: handleRealmFilter,
+        texHandler: handleTex,
         renderer: r,
         preprocessors: [preprocess_code_blocks],
     });

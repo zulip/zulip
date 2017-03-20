@@ -715,6 +715,7 @@ PIPELINE = {
                 'third/bootstrap-notify/css/bootstrap-notify.css',
                 'third/spectrum/spectrum.css',
                 'third/jquery-perfect-scrollbar/css/perfect-scrollbar.css',
+                'node_modules/katex/dist/katex.css',
                 'styles/components.css',
                 'styles/zulip.css',
                 'styles/settings.css',
@@ -927,6 +928,12 @@ JS_SPECS = {
         'source_filenames': ['third/sockjs/sockjs-0.3.4.js'],
         'output_filename': 'min/sockjs-0.3.4.min.js'
     },
+    'katex': {
+        'source_filenames': [
+            'node_modules/katex/dist/katex.js',
+        ],
+        'output_filename': 'min/katex.js'
+    }
 }
 
 if PIPELINE_ENABLED:

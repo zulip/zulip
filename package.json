@@ -13,6 +13,7 @@
     "i18next-localstorage-cache": "0.3.0",
     "jquery": "1.12.1",
     "jquery-validation": "1.16.0",
+    "katex": "0.7.1",
     "plotly.js": "1.19.2",
     "string.prototype.codepointat": "0.2.0",
     "underscore": "1.8.3",
