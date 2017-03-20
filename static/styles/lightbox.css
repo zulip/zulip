@@ -11,7 +11,7 @@
     justify-content: center;
     position: relative;
     width: 100%;
-    height: calc(100% - 65px - 90px);
+    height: calc(100% - 65px - 95px);
     margin: 0px;
 
     background-size: contain;
@@ -133,7 +133,7 @@
 }
 
 #lightbox_overlay .player-container {
-    height: calc(100vh - 71px);
+    height: calc(100% - 65px - 95px);
     display: flex;
     text-align: center;
     justify-content: center;
@@ -141,8 +141,9 @@
 }
 
 #lightbox_overlay .player-container iframe {
-    width: 80vw;
-    height: 45vw;
+    /* maintain 16:9 ratio. */
+    width: calc((100vh - 65px - 95px) * 16 / 9);
+    height: 100%;
     margin: auto;
 }
 
@@ -254,5 +255,12 @@
 
     #lightbox_overlay .center .image-list {
         max-width: 80vw;
+    }
+
+    #lightbox_overlay .player-container iframe {
+        /* maintain 16:9 ratio. */
+        width: 100%;
+        height: calc((100vw) * 9 / 16);
+        margin: auto;
     }
 }
