@@ -119,9 +119,22 @@ exports.toggle_reactions_popover = function (element, id) {
             };
         });
 
+        var emoji_recs = _.map(emojis, function (val, emoji_name) {
+            if (val.name) {
+                return val;
+            }
+
+            return {
+                name: emoji_name,
+                css_class: emoji.emoji_name_to_css_class(emoji_name),
+                has_reacted: false,
+                is_realm_emoji: false,
+            };
+        });
+
         var args = {
             message_id: id,
-            emojis: emojis,
+            emojis: emoji_recs,
         };
 
         var approx_popover_height = 400;

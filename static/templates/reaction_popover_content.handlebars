@@ -6,11 +6,11 @@
     </div>
     <div class="reaction-popover-emoji-map" data-message-id="{{message_id}}">
         {{#each emojis}}
-        <div class="reaction-popover-reaction {{#if this/has_reacted}} reacted {{/if}}" title={{@key}}>
-            {{#if this/is_realm_emoji}}
-            <img src="{{this/url}}" class="emoji" title= ":{{@key}}:" />
+        <div class="reaction-popover-reaction {{#if has_reacted}} reacted {{/if}}" title={{name}}>
+            {{#if is_realm_emoji}}
+            <img src="{{url}}" class="emoji" title= ":{{name}}:" />
             {{else}}
-            <div class="emoji emoji-{{#if this/has_reacted}}{{this/css_class}}{{else}}{{this}}{{/if}}" title= ":{{@key}}:" />
+            <div class="emoji emoji-{{css_class}}" title= ":{{name}}:" />
             {{/if}}
         </div>
         {{/each}}

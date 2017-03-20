@@ -738,7 +738,10 @@ function render(template_name, args) {
     var args = {
         search: 'Search',
         message_id: 1,
-        emojis: global.emoji.emojis_name_to_css_class,
+        emojis: [{
+            name: '100',
+            css_class: '100',
+        }],
     };
 
     var html = '<div style="height: 250px">';
