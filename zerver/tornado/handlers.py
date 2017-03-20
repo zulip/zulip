@@ -85,7 +85,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
 
         # Set up middleware if needed. We couldn't do this earlier, because
         # settings weren't available.
-        self._request_middleware = None
+        self._request_middleware = None  # type: ignore # See self._request_middleware block below
         self.initLock.acquire()
         # Check that middleware is still uninitialised.
         if self._request_middleware is None:
