@@ -705,7 +705,7 @@ function _setup_page() {
                     ui_report.success(i18n.t("Name changed!"), name_status);
                 }
                 if (response_data.description !== undefined) {
-                    ui.report_success(i18n.t("Description changed!"), description_status);
+                    ui_report.success(i18n.t("Description changed!"), description_status);
                 }
                 if (response_data.restricted_to_domain !== undefined) {
                     if (response_data.restricted_to_domain) {
