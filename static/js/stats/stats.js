@@ -298,8 +298,8 @@ function populate_messages_sent_over_time(data) {
         });
         if (all_msgs) {
             values = {human: partial_sums(data.realm.human),
-                          bot: partial_sums(data.realm.bot),
-                         };
+                      bot: partial_sums(data.realm.bot),
+                     };
         } else if (my_msgs) {
             values = {human: partial_sums(data.realm.human)};
         }
