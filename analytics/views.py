@@ -121,7 +121,7 @@ def sort_by_totals(value_arrays):
     totals = []
     for label, values in value_arrays.items():
         totals.append((label, sum(values)))
-    totals.sort(key=lambda label_total: label_total[1], reverse=True)
+    totals.sort(key=lambda label_total: "%s:%s" % (label_total[1], label_total[0]), reverse=True)
     return [label for label, total in totals]
 
 # For any given user, we want to show a fixed set of clients in the chart,
