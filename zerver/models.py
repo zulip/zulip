@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from typing import Any, Dict, List, Set, Tuple, TypeVar, Text, \
+from typing import Any, DefaultDict, Dict, List, Set, Tuple, TypeVar, Text, \
     Union, Optional, Sequence, AbstractSet, Pattern, AnyStr
 from typing.re import Match
 from zerver.lib.str_utils import NonBinaryStr
@@ -473,7 +473,7 @@ def realm_filters_for_realm_remote_cache(realm_id):
 
 def all_realm_filters():
     # type: () -> Dict[int, List[Tuple[Text, Text, int]]]
-    filters = defaultdict(list) # type: Dict[int, List[Tuple[Text, Text, int]]]
+    filters = defaultdict(list) # type: DefaultDict[int, List[Tuple[Text, Text, int]]]
     for realm_filter in RealmFilter.objects.all():
         filters[realm_filter.realm_id].append((realm_filter.pattern, realm_filter.url_format_string, realm_filter.id))
 
@@ -1365,7 +1365,7 @@ class UserPresence(models.Model):
 
     @staticmethod
     def get_status_dict_by_user(user_profile):
-        # type: (UserProfile) -> defaultdict[Any, Dict[Any, Any]]
+        # type: (UserProfile) -> DefaultDict[Any, Dict[Any, Any]]
         query = UserPresence.objects.filter(user_profile=user_profile).values(
             'client__name',
             'status',
@@ -1385,7 +1385,7 @@ class UserPresence(models.Model):
 
     @staticmethod
     def get_status_dict_by_realm(realm_id):
-        # type: (int) -> defaultdict[Any, Dict[Any, Any]]
+        # type: (int) -> DefaultDict[Any, Dict[Any, Any]]
         query = UserPresence.objects.filter(
             user_profile__realm_id=realm_id,
             user_profile__is_active=True,
@@ -1410,8 +1410,8 @@ class UserPresence(models.Model):
 
     @staticmethod
     def get_status_dicts_for_query(query, mobile_user_ids):
-        # type: (QuerySet, List[int]) -> defaultdict[Any, Dict[Any, Any]]
-        user_statuses = defaultdict(dict) # type: defaultdict[Any, Dict[Any, Any]]
+        # type: (QuerySet, List[int]) -> DefaultDict[Any, Dict[Any, Any]]
+        user_statuses = defaultdict(dict) # type: DefaultDict[Any, Dict[Any, Any]]
         # Order of query is important to get a latest status as aggregated status.
         for row in query.order_by("user_profile__id", "-timestamp"):
             info = UserPresence.to_presence_dict(

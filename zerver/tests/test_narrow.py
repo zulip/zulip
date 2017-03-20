@@ -959,7 +959,7 @@ class GetOldMessagesTest(ZulipTestCase):
         """
         self.login("hamlet@zulip.com")
 
-        other_params = [("anchor", 0), ("num_before", 0), ("num_after", 0)] # type: list[Tuple[Text, Union[int, str, bool]]]
+        other_params = [("anchor", 0), ("num_before", 0), ("num_after", 0)] # type: List[Tuple[Text, Union[int, str, bool]]]
 
         bad_types = (False, 0, '', '{malformed json,',
                      '{foo: 3}', '[1,2]', '[["x","y","z"]]') # type: Tuple[Union[int, str, bool], ...]

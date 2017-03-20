@@ -1,12 +1,12 @@
 from collections import defaultdict
 
-from typing import List, Set, Tuple
+from typing import DefaultDict, List, Set, Tuple
 
 class Graph(object):
     def __init__(self, *tuples):
         # type: (Tuple[str, str]) -> None
-        self.children = defaultdict(list) # type: defaultdict[str, List[str]]
-        self.parents = defaultdict(list) # type: defaultdict[str, List[str]]
+        self.children = defaultdict(list) # type: DefaultDict[str, List[str]]
+        self.parents = defaultdict(list) # type: DefaultDict[str, List[str]]
         self.nodes = set() # type: Set[str]
 
         for parent, child in tuples:
