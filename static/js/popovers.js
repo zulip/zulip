@@ -358,7 +358,7 @@ function render_emoji_popover() {
             realm_emoji: emoji.realm_emojis,
         });
     }());
-
+    $('.emoji_popover').empty();
     $('.emoji_popover').append(content);
 
     $('.drag').show();
