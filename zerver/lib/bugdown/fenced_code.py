@@ -37,6 +37,21 @@ Include tilde's in a code block and wrap with blank lines:
     ~~~~
     </code></pre>
 
+Removes trailing whitespace from code blocks that cause horizontal scrolling
+    >>> import markdown
+    >>> text = '''
+    ... A paragraph before a fenced code block:
+    ...
+    ... ~~~
+    ... Fenced code block    \t\t\t\t\t\t\t
+    ... ~~~
+    ... '''
+    >>> html = markdown.markdown(text, extensions=['fenced_code'])
+    >>> print html
+    <p>A paragraph before a fenced code block:</p>
+    <pre><code>Fenced code block
+    </code></pre>
+
 Language tags:
 
     >>> text = '''
@@ -92,7 +107,7 @@ FENCE_RE = re.compile(u"""
     """, re.VERBOSE)
 
 
-CODE_WRAP = u'<pre><code%s>%s</code></pre>'
+CODE_WRAP = u'<pre><code%s>%s\n</code></pre>'
 LANG_TAG = u' class="%s"'
 
 class FencedCodeExtension(markdown.Extension):
@@ -193,7 +208,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
                 if line.rstrip() == self.fence:
                     self.done()
                 else:
-                    self.lines.append(line)
+                    self.lines.append(line.rstrip())
 
             def done(self):
                 # type: () -> None

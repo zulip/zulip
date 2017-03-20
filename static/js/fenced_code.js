@@ -127,7 +127,7 @@ exports.process_fenced_code = function (content) {
                     if (line === fence) {
                         this.done();
                     } else {
-                        lines.push(line);
+                        lines.push(util.rtrim(line));
                     }
                 },
 
