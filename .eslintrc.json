@@ -114,7 +114,8 @@
         "user_events": false,
         "Plotly": false,
         "emoji_codes": false,
-        "drafts": false
+        "drafts": false,
+        "katex": false
     },
     "rules": {
         "no-restricted-syntax": 0,

@@ -1931,6 +1931,15 @@ div.floating_recipient {
     font-weight: bold;
 }
 
+.katex-html {
+    line-height: initial;
+    white-space: initial;
+}
+
+.tex-error {
+    color: red;
+}
+
 .popover {
     width: auto;
 }

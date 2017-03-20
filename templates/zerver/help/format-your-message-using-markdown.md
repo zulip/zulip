@@ -143,3 +143,25 @@ a space before your phrase or submit it as a quote block by following
 the code syntax highlighting format.
 
 ![Quotes](/static/images/help/quotes-screenshot.png)
+
+## TeX math
+
+You can display mathematical symbols, expressions and equations using Zulip's
+[TeX](http://www.tug.org/interest.html#doc) typesetting implementation,
+based on [KaTeX](https://github.com/Khan/KaTeX).
+
+!!! tip ""
+    Visit the [KaTeX Wiki](https://github.com/Khan/KaTeX/wiki/Function-Support-in-KaTeX)
+    to view a complete of compatible commands.
+
+Surround elements in valid TeX syntax with `$$two dollar signs$$` to display it
+as inline content.
+
+![Inline TeX](/static/images/help/inline-tex-screenshot.png)
+
+Also, you can show expressions, such as expanded integrals, in TeX
+*display mode* to present them fully-sized in the center of the messages by
+fencing them with three back-ticks ` ``` ` or tildes `~~~`, with **math**,
+**tex** or **latex** immediately after the first set of back-ticks.
+
+![Display mode TeX](/static/images/help/display-mode-tex-screenshot.png)

@@ -479,9 +479,10 @@ var inline = {
   usermention: noop,
   stream: noop,
   avatar: noop,
+  tex: noop,
   gravatar: noop,
   realm_filters: [],
-  text: /^[\s\S]+?(?=[\\<!\[_*`]| {2,}\n|$)/
+  text: /^[\s\S]+?(?=[\\<!\[_*`$]| {2,}\n|$)/
 };
 
 inline._inside = /(?:\[[^\]]*\]|[^\[\]]|\](?=[^\[]*\]))*/;
@@ -541,6 +542,7 @@ inline.zulip = merge({}, inline.breaks, {
   stream: /^#\*\*([^\*]+)\*\*/m,
   avatar: /^!avatar\(([^)]+)\)/,
   gravatar: /^!gravatar\(([^)]+)\)/,
+  tex: /^(\$\$([^ _$](\\\$|[^$])*)(?! )\$\$)\B/,
   realm_filters: [],
   text: replace(inline.breaks.text)
     ('|', '|(\ud83c[\udf00-\udfff]|\ud83d[\udc00-\ude4f]|\ud83d[\ude80-\udeff]|[\u2600-\u26FF]|[\u2700-\u27BF])|')
@@ -797,6 +799,13 @@ InlineLexer.prototype.output = function(src) {
       continue;
     }
 
+    // tex
+    if (cap = this.rules.tex.exec(src)) {
+      src = src.substring(cap[0].length);
+      out += this.tex(cap[2], cap[0]);
+      continue;
+    }
+
     // text
     if (cap = this.rules.text.exec(src)) {
       src = src.substring(cap[0].length);
@@ -838,6 +847,12 @@ InlineLexer.prototype.unicodeEmoji = function (name) {
   return this.options.unicodeEmojiHandler(name);
 };
 
+InlineLexer.prototype.tex = function (tex, fullmatch) {
+  if (typeof this.options.texHandler !== 'function')
+    return fullmatch;
+  return this.options.texHandler(tex, fullmatch);
+};
+
 InlineLexer.prototype.userAvatar = function (email) {
   if (typeof this.options.avatarHandler !== 'function')
     return '!avatar(' + email + ')';
@@ -849,7 +864,6 @@ InlineLexer.prototype.userGravatar = function (email) {
     return '!gravatar(' + email + ')';
   return this.options.avatarHandler(email);
 };
-
 
 InlineLexer.prototype.realm_filter = function (filter, matches, orig) {
   if (typeof this.options.realmFilterHandler !== 'function')
