@@ -126,6 +126,67 @@ Object.defineProperty(exports, "is_open", {
     },
 });
 
+// this is a block of events that are required for the lightbox to work.
+$(function () {
+    $("#main_div").on("click", ".message_inline_image a", function (e) {
+        var $img = $(this).find("img");
+
+        // prevent the link from opening in a new page.
+        e.preventDefault();
+        // prevent the message compose dialog from happening.
+        e.stopPropagation();
+
+        lightbox.show_from_inline_image($img);
+    });
+
+    $("#lightbox_overlay .download").click(function () {
+      this.blur();
+    });
+
+    $("#lightbox_overlay").on("click", ".image-list .image", function () {
+        var $image_list = $(this).parent();
+
+        var image = $("<img />", {
+            src: this.dataset.src,
+            title: this.title,
+        });
+
+        lightbox.open({
+            type: "photo",
+            user: message_store.get($(this).attr("data-zid")).sender_full_name,
+            image: image,
+        });
+
+        $(".image-list .image.selected").removeClass("selected");
+        $(this).addClass("selected");
+
+        var parentOffset = this.parentNode.clientWidth + this.parentNode.scrollLeft;
+        // this is the left and right of the image compared to its parent.
+        var coords = {
+            left: this.offsetLeft,
+            right: this.offsetLeft + this.clientWidth,
+        };
+
+        if (coords.right > parentOffset) {
+            // add 2px margin
+            $image_list.animate({
+                scrollLeft: coords.right - this.parentNode.clientWidth + 2,
+            }, 100);
+        } else if (coords.left < this.parentNode.scrollLeft) {
+            // subtract 2px margin
+            $image_list.animate({ scrollLeft: coords.left - 2 }, 100);
+        }
+    });
+
+    $("#lightbox_overlay").on("click", ".center .arrow", function () {
+        var direction = $(this).attr("data-direction");
+
+        if (/^(next|prev)$/.test(direction)) {
+            lightbox[direction]();
+        }
+    });
+});
+
 return exports;
 }());
 
