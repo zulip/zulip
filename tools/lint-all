@@ -425,6 +425,10 @@ def build_custom_checkers(by_lang):
          'description': "Don't use datetime in backend code.\n"
          "See https://zulip.readthedocs.io/en/latest/code-style.html#naive-datetime-objects",
          },
+        {'pattern': 'render_to_response\(',
+         'description': "Use render() instead of render_to_response().",
+         'exclude': set(['tools/lint-all']),
+         },
         # This rule might give false positives in virtualenv setup files which should be excluded,
         # and comments which should be rewritten to avoid use of "python2", "python3", etc.
         {'pattern': 'python[23]',
