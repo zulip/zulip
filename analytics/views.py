@@ -55,21 +55,21 @@ def get_chart_data(request, user_profile, chart_name=REQ(),
         stat = COUNT_STATS['active_users:is_bot:day']
         tables = [RealmCount]
         subgroups = ['false', 'true']
-        labels = ['human', 'bot']
+        labels = [_('human'), _('bot')]
         labels_sort_function = None
         include_empty_subgroups = [True]
     elif chart_name == 'messages_sent_over_time':
         stat = COUNT_STATS['messages_sent:is_bot:hour']
         tables = [RealmCount, UserCount]
         subgroups = ['false', 'true']
-        labels = ['human', 'bot']
+        labels = [_('human'), _('bot')]
         labels_sort_function = None
         include_empty_subgroups = [True, False]
     elif chart_name == 'messages_sent_by_message_type':
         stat = COUNT_STATS['messages_sent:message_type:day']
         tables = [RealmCount, UserCount]
         subgroups = ['public_stream', 'private_stream', 'private_message', 'huddle_message']
-        labels = ['Public streams', 'Private streams', 'Private messages', 'Group private messages']
+        labels = [_('Public streams'), _('Private streams'), _('Private messages'), _('Group private messages')]
         labels_sort_function = lambda data: sort_by_totals(data['realm'])
         include_empty_subgroups = [True, True]
     elif chart_name == 'messages_sent_by_client':
