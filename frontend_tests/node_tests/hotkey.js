@@ -101,7 +101,11 @@ function stubbing(func_name_to_stub, test_function) {
         var e = {
             which: s.charCodeAt(0),
         };
-        return hotkey.process_keypress(e);
+        try {
+            return hotkey.process_keypress(e);
+        } catch (err) {
+            console.log('Could not process key character "' + e.which + '". Please add a test for this.');
+        }
     }
 
     function assert_mapping(c, func_name, shiftKey) {
@@ -118,7 +122,7 @@ function stubbing(func_name_to_stub, test_function) {
 
     // Unmapped keys should immediately return false, without
     // calling any functions outside of hotkey.js.
-    assert_unmapped('abdefghlmnoptuxyz');
+    assert_unmapped('abdefhlmnoptuxyz');
     assert_unmapped('BEFGHILMNOQTUVWXYZ');
 
     // We have to skip some checks due to the way the code is
@@ -165,6 +169,7 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('c', 'compose_actions.start');
     assert_mapping('C', 'compose_actions.start');
     assert_mapping('P', 'narrow.by');
+    assert_mapping('g', 'gear_menu.open');
 
     // Next, test keys that only work on a selected message.
     global.current_msg_list.empty = return_true;
@@ -206,7 +211,12 @@ function stubbing(func_name_to_stub, test_function) {
             shiftKey: shiftKey,
             ctrlKey: ctrlKey,
         };
-        return hotkey.process_keydown(e);
+
+        try {
+            return hotkey.process_keydown(e);
+        } catch (err) {
+            console.log('Could not process key character "' + e.which + '". Please add a test for this.');
+        }
     }
 
     function assert_unmapped(name) {
@@ -241,6 +251,9 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('spacebar', 'navigate.page_down');
     assert_mapping('up_arrow', 'navigate.up');
     assert_mapping('+', 'reactions.toggle_reaction', true, false);
+
+    hotkey.is_lightbox_open = return_true;
+    assert_mapping('left_arrow', 'lightbox.prev');
 
     hotkey.is_settings_page = return_true;
     assert_unmapped('end');

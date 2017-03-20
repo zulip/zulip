@@ -29,6 +29,10 @@ exports.is_settings_page = function () {
   return (/^#*(settings|administration)/g).test(window.location.hash);
 };
 
+exports.is_lightbox_open = function () {
+    return lightbox.is_open;
+};
+
 var actions_dropdown_hotkeys = [
     'down_arrow',
     'up_arrow',
@@ -57,7 +61,8 @@ var keydown_unshift_mappings = {
     34: {name: 'page_down', message_view_only: true}, // page down
     35: {name: 'end', message_view_only: true}, // end
     36: {name: 'home', message_view_only: true}, // home
-    37: {name: 'left_arrow', message_view_only: true}, // left arrow
+    37: {name: 'left_arrow', message_view_only: false}, // left arrow
+    39: {name: 'right_arrow', message_view_only: false}, // right arrow
     38: {name: 'up_arrow', message_view_only: true}, // up arrow
     40: {name: 'down_arrow', message_view_only: true}, // down arrow
 };
@@ -97,6 +102,7 @@ var keypress_mappings = {
     82: {name: 'respond_to_author', message_view_only: true}, // 'R'
     83: {name: 'narrow_by_subject', message_view_only: true}, //'S'
     99: {name: 'compose', message_view_only: true}, // 'c'
+    103: {name: 'gear_menu', message_view_only: true}, // 'g'
     105: {name: 'message_actions', message_view_only: true}, // 'i'
     106: {name: 'vim_down', message_view_only: true}, // 'j'
     107: {name: 'vim_up', message_view_only: true}, // 'k'
@@ -272,6 +278,14 @@ exports.process_escape_key = function (e) {
 
 // Returns true if we handled it, false if the browser should.
 exports.process_enter_key = function (e) {
+    if ($(".dropdown.open").length) {
+        // on #gear-menu li a[tabindex] elements, force a click and prevent default.
+        // this is because these links do not have an href and so don't force a
+        // default action.
+        e.target.click();
+        return true;
+    }
+
     if (exports.is_editing_stream_name(e)) {
         $(e.target).parent().find(".checkmark").click();
         return false;
@@ -497,8 +511,20 @@ exports.process_hotkey = function (e, hotkey) {
     }
 
     if (event_name === 'left_arrow') {
+        if (exports.is_lightbox_open()) {
+            lightbox.prev();
+            return true;
+        }
+
         message_edit.edit_last_sent_message();
         return true;
+    }
+
+    if (event_name === 'right_arrow') {
+        if ($("#lightbox_overlay").hasClass("show")) {
+            lightbox.next();
+            return true;
+        }
     }
 
     // Shortcuts that don't require a message
@@ -521,6 +547,9 @@ exports.process_hotkey = function (e, hotkey) {
             return true;
         case 'search':
             search.initiate_search();
+            return true;
+        case 'gear_menu':
+            gear_menu.open();
             return true;
         case 'show_shortcuts': // Show keyboard shortcuts page
             ui.show_info_overlay("keyboard-shortcuts");

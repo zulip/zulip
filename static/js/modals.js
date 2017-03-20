@@ -21,6 +21,7 @@ var modals = (function () {
 
             lightbox: function () {
                 $(".player-container iframe").remove();
+                lightbox.is_open = false;
                 document.activeElement.blur();
             },
 
