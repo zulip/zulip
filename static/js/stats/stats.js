@@ -263,19 +263,21 @@ function populate_messages_sent_over_time(data) {
         }
     }
 
-    var date_formatter, hourly_traces, info,
-        last_day_is_partial, daily_traces,
-        last_week_is_partial, weekly_traces,
-        dates, values, cumulative_traces;
+    var daily_traces;
+    var hourly_traces;
+    var last_week_is_partial;
+    var weekly_traces;
+    var last_day_is_partial;
+    var cumulative_traces;
 
     function generate_traces() {
 
-        date_formatter = function (date) {
+        var date_formatter = function (date) {
             return format_date(date, true);
         };
         hourly_traces = make_traces(start_dates, data.realm, 'bar', date_formatter);
 
-        info = aggregate_data('day');
+        var info = aggregate_data('day');
         date_formatter = function (date) {
             return format_date(date, false);
         };
@@ -290,13 +292,13 @@ function populate_messages_sent_over_time(data) {
         last_week_is_partial = info.last_value_is_partial;
         weekly_traces = make_traces(info.dates, info.values, 'bar', date_formatter);
 
-        dates = data.end_times.map(function (timestamp) {
+        var dates = data.end_times.map(function (timestamp) {
             return new Date(timestamp * 1000);
         });
         if (all_msgs) {
-            values = {human: partial_sums(data.realm.human),
-                      bot: partial_sums(data.realm.bot)
-                     };
+            var values = {human: partial_sums(data.realm.human),
+                          bot: partial_sums(data.realm.bot),
+                         };
         } else if (my_msgs) {
             values = {human: partial_sums(data.realm.human)};
         }
