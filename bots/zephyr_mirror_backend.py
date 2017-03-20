@@ -313,7 +313,7 @@ def parse_crypt_table(zephyr_class, instance):
         if line.strip() == "":
             # Ignore blank lines
             continue
-        match = re.match("^crypt-(?P<class>[^:]+):\s+((?P<algorithm>(AES|DES)):\s+)?(?P<keypath>\S+)$", line)
+        match = re.match("^crypt-(?P<class>\S+):\s+((?P<algorithm>(AES|DES)):\s+)?(?P<keypath>\S+)$", line)
         if match is None:
             # Malformed crypt_table line
             logger.debug("Invalid crypt_table line!")
