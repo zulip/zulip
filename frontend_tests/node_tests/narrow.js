@@ -165,6 +165,11 @@ function set_filter(operators) {
     assert.equal(hide_id,'.empty_feed_notice');
     assert.equal(show_id, '#empty_star_narrow_message');
 
+    set_filter([['is', 'unread']]);
+    narrow.show_empty_narrow_message();
+    assert.equal(hide_id,'.empty_feed_notice');
+    assert.equal(show_id, '#empty_unread_narrow_message');
+
     set_filter([['is', 'mentioned']]);
     narrow.show_empty_narrow_message();
     assert.equal(hide_id,'.empty_feed_notice');

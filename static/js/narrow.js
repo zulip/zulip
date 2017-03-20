@@ -554,6 +554,9 @@ function pick_empty_narrow_banner() {
         if (first_operand === "starred") {
             // You have no starred messages.
             return $("#empty_star_narrow_message");
+        } else if (first_operand === "unread") {
+            // You have no unread messages.
+            return $("#empty_unread_narrow_message");
         } else if (first_operand === "mentioned") {
             return $("#empty_narrow_all_mentioned");
         } else if (first_operand === "private") {

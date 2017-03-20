@@ -343,6 +343,7 @@ init();
         "in:all",
         "is:private",
         "is:starred",
+        "is:unread",
         "is:mentioned",
         "is:alerted",
         "sender:bob@zulip.com",
@@ -358,6 +359,7 @@ init();
     assert.equal(describe('in:all'), 'All messages');
     assert.equal(describe('is:private'), 'Private messages');
     assert.equal(describe('is:starred'), 'Starred messages');
+    assert.equal(describe('is:unread'), 'Unread messages');
     assert.equal(describe('is:mentioned'), '@-mentions');
     assert.equal(describe('is:alerted'), 'Alerted messages');
     assert.equal(describe('sender:bob@zulip.com'), 'Sent by me');

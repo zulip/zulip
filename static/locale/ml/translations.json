@@ -374,5 +374,6 @@
   "more topics": "\u0d15\u0d42\u0d1f\u0d41\u0d24\u0d7d \u0d35\u0d3f\u0d37\u0d2f\u0d19\u0d4d\u0d19\u0d7e", 
   "right": "right", 
   "waiting period threshold changed!": "waiting period threshold changed!", 
-  "{{#if msg/starred}}Unstar{{else}}Star{{/if}} this message": " \u0d08 \u0d38\u0d28\u0d4d\u0d26\u0d47\u0d36\u0d02 {{#if msg/starred}}Unstar{{else}}Star{{/if}} \u0d1a\u0d46\u0d2f\u0d4d\u0d2f\u0d41\u0d15"
+  "Mark this message as {{#if msg/unread}}Read{{else}}Unread{{/if}}": "{{#if msg/unread}}Read{{else}}Unread{{/if}}",
+  "{{#if msg/starred}}Unstar{{else}}Star{{/if}} this message": " \u0d08 \u0d38\u0d28\u0d4d\u0d26\u0d47\u0d36\u0d02 {{#if msg/starred}}Unstar{{else}}Star{{/if}} \u0d1a\u0d46\u0d2f\u0d4d\u0d2f\u0d41\u0d15",
 }
