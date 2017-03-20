@@ -2,7 +2,7 @@
 #
 # See docs/emoji.md for a high-level explanation of how this system
 # works.
-from __future__ import print_function
+from __future__ import division, print_function
 import os
 import glob
 import shutil
@@ -51,6 +51,32 @@ return exports;
 }());
 if (typeof module !== 'undefined') {
     module.exports = emoji_codes;
+}
+"""
+
+SPRITE_CSS_FILE_TEMPLATE = """\
+div.emoji,
+span.emoji
+{
+    display: inline-block;
+    background-image: url('sheet_google_32.png');
+    -webkit-background-size: 1025px 1025px;
+    -moz-background-size: 1025px 1025px;
+    background-size: 1025px 1025px;
+    background-repeat: no-repeat;
+
+    /* Hide the text. */
+    text-indent: 100%%;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+%(emoji_positions)s
+"""
+
+EMOJI_POS_INFO_TEMPLATE = """\
+.emoji-%(codepoint)s {
+    background-position: %(pos_x)s%% %(pos_y)s%%;
 }
 """
 
@@ -238,6 +264,20 @@ def dump_emojis(cache_path):
             os.path.join(cache_emoji_unicode, fn),
             os.path.join(cache_emoji, fn)
         )
+
+    sprite_sheet_google = os.path.join(EMOJI_DATA_PATH, 'sheet_google_32.png')
+    run(['cp', sprite_sheet_google, cache_path], shell=True)
+    emoji_positions = ""
+    for emoji in emoji_data:
+        if emoji["has_img_google"]:
+            emoji_positions += EMOJI_POS_INFO_TEMPLATE % {'codepoint': emoji['unified'],
+                                                          'pos_x': (emoji["sheet_x"] * 100) / 40,
+                                                          'pos_y': (emoji["sheet_y"] * 100) / 40,
+                                                          }
+    SPRITE_CSS_PATH = os.path.join(cache_path, 'google_sprite.css')
+    sprite_css_file = open(SPRITE_CSS_PATH, 'w')
+    sprite_css_file.write(SPRITE_CSS_FILE_TEMPLATE % {'emoji_positions': emoji_positions, })
+    sprite_css_file.close()
 
     # Add zulip emoji to `emoji_map` so that we can avoid
     # adding unnecessary exceptions to the rendering logic.
