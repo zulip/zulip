@@ -21,7 +21,7 @@ parser.add_option('--verbose',
                   action='store_true')
 parser.add_option('--site',
                   dest='site',
-                  default="https://api.zulip.com",
+                  default=None,
                   action='store')
 parser.add_option('--sharded',
                   default=False,
