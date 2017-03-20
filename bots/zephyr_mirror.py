@@ -29,6 +29,7 @@ import os
 import traceback
 import signal
 
+sys.path[:0] = [os.path.dirname(__file__)]
 from .zephyr_mirror_backend import parse_args
 
 (options, args) = parse_args()
