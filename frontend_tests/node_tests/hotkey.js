@@ -196,6 +196,7 @@ function stubbing(func_name_to_stub, test_function) {
 
     assert_mapping('@', 'compose.reply_with_mention');
     assert_mapping('*', 'message_flags.toggle_starred');
+    assert_mapping('+', 'reactions.toggle_reaction');
     assert_mapping('r', 'compose.respond_to_message');
     assert_mapping('R', 'compose.respond_to_message', true);
     assert_mapping('j', 'navigate.down');
@@ -272,7 +273,6 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('page_down', 'navigate.page_down');
     assert_mapping('spacebar', 'navigate.page_down');
     assert_mapping('up_arrow', 'navigate.up');
-    assert_mapping('+', 'reactions.toggle_reaction', true, false);
 
     hotkey.is_lightbox_open = return_true;
     assert_mapping('left_arrow', 'lightbox.prev');
