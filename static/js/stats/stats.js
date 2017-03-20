@@ -101,17 +101,17 @@ function populate_messages_sent_over_time(data) {
         if (all_msgs) {
             return {
                 human: $.extend({ // 5062a0
-                    name: "Humans", y: values.human, marker: {color: '#5f6ea0'}
+                    name: "Humans", y: values.human, marker: {color: '#5f6ea0'},
                 }, common),
                 bot: $.extend({ // a09b5f bbb56e
-                    name: "Bots", y: values.bot, marker: {color: '#b7b867'}
-                }, common)
+                    name: "Bots", y: values.bot, marker: {color: '#b7b867'},
+                }, common),
             };
         } else if (my_msgs) {
             return {
                 human: $.extend({ // 5062a0
-                    name: "Me", y: values.human, marker: {color: '#5f6ea0'}
-                }, common)
+                    name: "Me", y: values.human, marker: {color: '#5f6ea0'},
+                }, common),
             };
         }
     }
@@ -138,7 +138,7 @@ function populate_messages_sent_over_time(data) {
             x: x, y: y,
             buttons: [$.extend({stepmode: 'backward'}, button1),
                 $.extend({stepmode: 'backward'}, button2),
-                {step: 'all', label: 'All time'}]
+                {step: 'all', label: 'All time'}],
         };
     }
 
@@ -228,7 +228,7 @@ function populate_messages_sent_over_time(data) {
             return {
                 dates: dates, values: values,
                 last_value_is_partial: !is_boundary(new Date(
-                    start_dates[start_dates.length - 1].getTime() + 60 * 60 * 1000))
+                    start_dates[start_dates.length - 1].getTime() + 60 * 60 * 1000)),
             };
         }
 
@@ -252,12 +252,15 @@ function populate_messages_sent_over_time(data) {
             return {
                 dates: dates, values: values,
                 last_value_is_partial: !is_boundary(new Date(
-                    start_dates[start_dates.length - 1].getTime() + 60 * 60 * 1000))
+                    start_dates[start_dates.length - 1].getTime() + 60 * 60 * 1000)),
             };
         }
 
-        if (all_msgs) return agg_all_msgs();
-        else if (my_msgs) return agg_my_msgs();
+        if (all_msgs) {
+            return agg_all_msgs();
+        } else if (my_msgs) {
+            return agg_my_msgs();
+        }
     }
 
     var date_formatter, hourly_traces, info,
@@ -290,9 +293,13 @@ function populate_messages_sent_over_time(data) {
         dates = data.end_times.map(function (timestamp) {
             return new Date(timestamp * 1000);
         });
-        values;
-        if (all_msgs) values = {human: partial_sums(data.realm.human), bot: partial_sums(data.realm.bot)};
-        else if (my_msgs) values = {human: partial_sums(data.realm.human)};
+        if (all_msgs) {
+            values = {human: partial_sums(data.realm.human),
+                      bot: partial_sums(data.realm.bot)
+                     };
+        } else if (my_msgs) {
+            values = {human: partial_sums(data.realm.human)};
+        }
         date_formatter = function (date) {
             return format_date(date, true);
         };
@@ -317,14 +324,19 @@ function populate_messages_sent_over_time(data) {
         } else {
             var plotDiv = document.getElementById('id_messages_sent_over_time');
             traces.human.visible = plotDiv.data[0].visible;
-            if (all_msgs) traces.bot.visible = plotDiv.data[1].visible;
+            if (all_msgs) {
+                traces.bot.visible = plotDiv.data[1].visible;
+            }
         }
         layout.xaxis.rangeselector = rangeselector;
         if (clicked_cumulative || initial_draw) {
-            if (all_msgs) Plotly.newPlot('id_messages_sent_over_time',
-                [traces.human, traces.bot], layout, {displayModeBar: false});
-            else if (my_msgs) Plotly.newPlot('id_messages_sent_over_time',
-                [traces.human], layout, {displayModeBar: false});
+            if (all_msgs) {
+                Plotly.newPlot('id_messages_sent_over_time',
+                    [traces.human, traces.bot], layout, {displayModeBar: false});
+            } else if (my_msgs) {
+                Plotly.newPlot('id_messages_sent_over_time',
+                    [traces.human], layout, {displayModeBar: false});
+            }
             add_hover_handler();
         } else {
             if (all_msgs) {
@@ -380,7 +392,7 @@ function populate_messages_sent_over_time(data) {
         if (type === "everyone") {
             all_msgs = true;
             my_msgs = false;
-        } else if (type == "me") {
+        } else if (type === "me") {
             all_msgs = false;
             my_msgs = true;
         }
