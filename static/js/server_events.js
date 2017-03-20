@@ -392,7 +392,7 @@ function get_events_success(events) {
     if (messages.length !== 0) {
         try {
             messages = echo.process_from_server(messages);
-            message_store.insert_new_messages(messages);
+            message_events.insert_new_messages(messages);
         } catch (ex2) {
             blueslip.error('Failed to insert new messages\n' +
                            blueslip.exception_msg(ex2),
@@ -414,7 +414,7 @@ function get_events_success(events) {
 
     if (messages_to_update.length !== 0) {
         try {
-            message_store.update_messages(messages_to_update);
+            message_events.update_messages(messages_to_update);
         } catch (ex3) {
             blueslip.error('Failed to update messages\n' +
                            blueslip.exception_msg(ex3),

@@ -224,7 +224,7 @@ function scroll_finished() {
         if (message_viewport.scrollTop() === 0 &&
             ui.have_scrolled_away_from_top) {
             ui.have_scrolled_away_from_top = false;
-            message_store.load_more_messages(current_msg_list);
+            message_fetch.load_more_messages(current_msg_list);
         } else if (!ui.have_scrolled_away_from_top) {
             ui.have_scrolled_away_from_top = true;
         }
