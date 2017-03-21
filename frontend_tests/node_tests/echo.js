@@ -37,6 +37,7 @@ add_dependencies({
     hash_util: 'js/hash_util',
     hashchange: 'js/hashchange',
     fenced_code: 'js/fenced_code.js',
+    katex: 'node_modules/katex/dist/katex.min.js',
 });
 
 var doc = "";
