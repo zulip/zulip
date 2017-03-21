@@ -232,6 +232,8 @@ def generate_emoji_catalog(emoji_data):
     sort_order = {} # type: Dict[str, int]
     emoji_catalog = {} # type: Dict[str, List[str]]
     for emoji in emoji_data:
+        if not emoji_is_universal(emoji):
+            continue
         category = str(emoji["category"])
         codepoint = str(emoji["unified"])
         sort_order[codepoint] = emoji["sort_order"]
@@ -242,3 +244,13 @@ def generate_emoji_catalog(emoji_data):
     for category in emoji_catalog:
         emoji_catalog[category].sort(key=lambda codepoint: sort_order[codepoint])
     return emoji_catalog
+
+# Use only those names for which images are present in all
+# the emoji sets so that we can switch emoji sets seemlessly.
+def emoji_is_universal(emoji_dict):
+    # type: (Dict[Text, Any]) -> bool
+    emoji_sets = ['apple', 'emojione', 'google', 'twitter']
+    for emoji_set in emoji_sets:
+        if not emoji_dict['has_img_' + emoji_set]:
+            return False
+    return True
