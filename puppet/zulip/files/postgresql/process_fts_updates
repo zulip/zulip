@@ -76,12 +76,14 @@ if remote_postgres_host != '':
     postgres_password = ''
     if settings.DATABASES['default']['PASSWORD'] is not None:
         postgres_password = "password='%s'" % settings.DATABASES['default']['PASSWORD']
+    postgres_user = "user='%s'" % settings.DATABASES['default']['USER']
+    postgres_dbname = "dbname='%s'" % settings.DATABASES['default']['NAME']
     if settings.REMOTE_POSTGRES_SSLMODE != '':
         postgres_sslmode = settings.REMOTE_POSTGRES_SSLMODE
     else:
         postgres_sslmode = 'verify-full'
-    conn = psycopg2.connect("user=zulip %s host='%s' dbname=zulip connect_timeout=600 sslmode='%s'" % (
-        postgres_password, remote_postgres_host, postgres_sslmode))
+    conn = psycopg2.connect("%s %s host='%s' %s connect_timeout=600 sslmode='%s'" % (
+        postgres_user, postgres_password, remote_postgres_host, postgres_dbname, postgres_sslmode))
 else:
     conn = psycopg2.connect("user=zulip")
 cursor = conn.cursor()
