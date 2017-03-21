@@ -222,6 +222,7 @@ function add_email_hint(row, email_address_hint_content) {
 function add_sub_to_table(sub) {
     sub = stream_data.add_admin_options(sub);
     stream_data.update_subscribers_count(sub);
+    stream_data.render_stream_description(sub);
     var html = templates.render('subscription', sub);
     var settings_html = templates.render('subscription_settings', sub);
     if (meta.stream_created === sub.name) {
