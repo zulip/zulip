@@ -111,7 +111,7 @@ var events = function () {
     // get the location url like `zulipchat.com/features/`, cut off the trailing
     // `/` and then split by `/` to get ["zulipchat.com", "features"], then
     // pop the last element to get the current section (eg. `features`).
-    var location = window.location.href.replace(/\/#*$/, "").split(/\//).pop();
+    var location = window.location.pathname.replace(/\/#*$/, "").split(/\//).pop();
 
     $("[on-page='" + location + "']").addClass("active");
 
