@@ -902,6 +902,7 @@ JS_SPECS = {
             'js/bot_data.js',
             'js/reactions.js',
             'js/typing.js',
+            'js/typing_status.js',
             'js/typing_data.js',
             'js/ui_init.js',
             'js/shim.js',

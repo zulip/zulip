@@ -3,21 +3,11 @@ var exports = {};
 // How long before we assume a client has gone away
 // and expire its typing status
 var TYPING_STARTED_EXPIRY_PERIOD = 15000; // 15s
-// How frequently 'still typing' notifications are sent
-// to extend the expiry
-var TYPING_STARTED_SEND_FREQUENCY = 10000; // 10s
-// How long after someone stops editing in the compose box
-// do we send a 'stopped typing' notification
-var TYPING_STOPPED_WAIT_PERIOD = 5000; // 5s
 
-var current_recipient;
+// Note!: There are also timing constants in typing_status.js
+// that make typing indicators work.
+
 var stop_typing_timers = new Dict();
-
-// Our logic is a bit too complex to encapsulate in
-// _.throttle/_.debounce (since we need to cancel things), so we do it
-// manually.
-var stop_timer;
-var last_start_time;
 
 function send_typing_notification_ajax(recipients, operation) {
     channel.post({
@@ -33,61 +23,59 @@ function send_typing_notification_ajax(recipients, operation) {
     });
 }
 
-function check_and_send(operation) {
+function get_recipient() {
     var compose_recipient = compose_state.recipient();
-    var compose_nonempty = compose_state.has_message_content();
-
-    // If we currently have an active typing notification out, and we
-    // want to send a stop notice, or the compose recipient changed
-    // (and implicitly we're sending a start notice), send a stop
-    // notice to the old recipient.
-    if (current_recipient !== undefined &&
-        (operation === 'stop' ||
-         current_recipient !== compose_recipient)) {
-        send_typing_notification_ajax(current_recipient, 'stop');
-        // clear the automatic stop notification timer and recipient.
-        clearTimeout(stop_timer);
-        stop_timer = undefined;
-        current_recipient = undefined;
+    if (compose_recipient === "") {
+        return undefined;
     }
-    if (operation === 'start') {
-        if (compose_recipient !== undefined && compose_recipient !== "" && compose_nonempty) {
-            current_recipient = compose_recipient;
-            send_typing_notification_ajax(compose_recipient, operation);
-        }
-    }
+    return compose_recipient;
 }
 
-// Note: Because we don't make sure we send a final start notification
-// at the last time a user typed something, we require that
-// TYPING_STARTED_SEND_FREQUENCY + TYPING_STOPPED_WAIT_PERIOD <= TYPING_STARTED_EXPIRY_PERIOD
+function is_valid_conversation(recipient) {
+    // TODO: Check to make sure we're in a PM conversation
+    //       with valid emails.
+    if (!recipient) {
+        return false;
+    }
+
+    var compose_empty = !compose_state.has_message_content();
+    if (compose_empty) {
+        return false;
+    }
+
+    return true;
+}
+
+function get_current_time() {
+    return new Date();
+}
+
+function notify_server_start(recipients) {
+    send_typing_notification_ajax(recipients, "start");
+}
+
+function notify_server_stop(recipients) {
+    send_typing_notification_ajax(recipients, "stop");
+}
+
+var worker = {
+    get_recipient: get_recipient,
+    is_valid_conversation: is_valid_conversation,
+    get_current_time: get_current_time,
+    notify_server_start: notify_server_start,
+    notify_server_stop: notify_server_stop,
+};
+
 $(document).on('input', '#new_message_content', function () {
     // If our previous state was no typing notification, send a
     // start-typing notice immediately.
-    var current_time = new Date();
-    if (current_recipient === undefined ||
-        current_time - last_start_time > TYPING_STARTED_SEND_FREQUENCY) {
-        last_start_time = current_time;
-        check_and_send("start");
-    }
-
-    // Then, regardless of whether we changed state, reset the
-    // stop-notification timeout to TYPING_STOPPED_WAIT_PERIOD from
-    // now, so that we'll send a stop notice exactly that long after
-    // stopping typing.
-    if (stop_timer !== undefined) {
-        // Clear an existing stop_timer, if any.
-        clearTimeout(stop_timer);
-    }
-    stop_timer = setTimeout(function () {
-        check_and_send('stop');
-    }, TYPING_STOPPED_WAIT_PERIOD);
+    typing_status.handle_text_input(worker);
 });
 
 // We send a stop-typing notification immediately when compose is
 // closed/cancelled
 $(document).on('compose_canceled.zulip compose_finished.zulip', function () {
-    check_and_send('stop');
+    typing_status.stop(worker);
 });
 
 function get_users_typing_for_narrow() {
