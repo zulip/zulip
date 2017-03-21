@@ -15,8 +15,13 @@ import mock
 import re
 
 from zerver.forms import HomepageForm
-from zerver.lib.actions import do_deactivate_realm, do_deactivate_user, \
-    do_reactivate_realm, do_reactivate_user, do_set_realm_authentication_methods
+from zerver.lib.actions import (
+    do_deactivate_realm,
+    do_deactivate_user,
+    do_reactivate_realm,
+    do_reactivate_user,
+    do_set_realm_authentication_methods,
+)
 from zerver.lib.initial_password import initial_password
 from zerver.lib.sessions import get_session_dict_user
 from zerver.lib.test_classes import (
@@ -1038,9 +1043,7 @@ class FetchAuthBackends(ZulipTestCase):
                 # Verify correct behavior with a valid subdomain with
                 # some backends disabled for the realm
                 realm = get_realm("zulip")
-                do_set_realm_authentication_methods(realm, dict(Google=False,
-                                                                Email=False,
-                                                                Dev=True))
+                do_set_realm_authentication_methods(realm, dict(Google=False, Email=False, Dev=True))
                 result = self.client_get("/api/v1/get_auth_backends",
                                          HTTP_HOST="zulip.testserver")
                 self.assert_json_success(result)

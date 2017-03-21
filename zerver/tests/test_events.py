@@ -43,21 +43,11 @@ from zerver.lib.actions import (
     do_add_default_stream,
     do_remove_default_stream,
     do_set_muted_topics,
-    do_set_realm_create_stream_by_admins_only,
-    do_set_realm_name,
-    do_set_realm_description,
-    do_set_realm_waiting_period_threshold,
-    do_set_realm_add_emoji_by_admins_only,
-    do_set_realm_restricted_to_domain,
-    do_set_realm_invite_required,
-    do_set_realm_invite_by_admins_only,
+    do_set_realm_property,
+    do_set_realm_authentication_methods,
     do_set_name_changes_disabled,
     do_set_email_changes_disabled,
-    do_set_realm_inline_image_preview,
-    do_set_realm_inline_url_embed_preview,
     do_set_realm_message_editing,
-    do_set_realm_default_language,
-    do_set_realm_authentication_methods,
     do_update_message,
     do_update_pointer,
     do_change_twenty_four_hour_time,
@@ -615,7 +605,8 @@ class EventsRegisterTest(ZulipTestCase):
             ('property', equals('name')),
             ('value', check_string),
         ])
-        events = self.do_test(lambda: do_set_realm_name(self.user_profile.realm, 'New Realm Name'))
+        events = self.do_test(
+            lambda: do_set_realm_property(self.user_profile.realm, 'name', 'New Realm Name'))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
@@ -627,7 +618,8 @@ class EventsRegisterTest(ZulipTestCase):
             ('property', equals('description')),
             ('value', check_string),
         ])
-        events = self.do_test(lambda: do_set_realm_description(self.user_profile.realm, 'New Realm Description'))
+        events = self.do_test(
+            lambda: do_set_realm_property(self.user_profile.realm, 'description', 'New Realm Description'))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
@@ -639,7 +631,8 @@ class EventsRegisterTest(ZulipTestCase):
             ('property', equals('waiting_period_threshold')),
             ('value', check_int),
         ])
-        events = self.do_test(lambda: do_set_realm_waiting_period_threshold(self.user_profile.realm, 17))
+        events = self.do_test(
+            lambda: do_set_realm_property(self.user_profile.realm, 'waiting_period_threshold', 17))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
@@ -651,7 +644,8 @@ class EventsRegisterTest(ZulipTestCase):
             ('property', equals('add_emoji_by_admins_only')),
             ('value', check_bool),
         ])
-        events = self.do_test(lambda: do_set_realm_add_emoji_by_admins_only(self.user_profile.realm, True))
+        events = self.do_test(
+            lambda: do_set_realm_property(self.user_profile.realm, 'add_emoji_by_admins_only', True))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
@@ -663,9 +657,10 @@ class EventsRegisterTest(ZulipTestCase):
             ('property', equals('restricted_to_domain')),
             ('value', check_bool),
         ])
-        do_set_realm_restricted_to_domain(self.user_profile.realm, True)
+        do_set_realm_property(self.user_profile.realm, 'restricted_to_domain', True)
         for restricted_to_domain in (False, True):
-            events = self.do_test(lambda: do_set_realm_restricted_to_domain(self.user_profile.realm, restricted_to_domain))
+            events = self.do_test(
+                lambda: do_set_realm_property(self.user_profile.realm, 'restricted_to_domain', restricted_to_domain))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
@@ -677,9 +672,11 @@ class EventsRegisterTest(ZulipTestCase):
             ('property', equals('invite_required')),
             ('value', check_bool),
         ])
-        do_set_realm_invite_required(self.user_profile.realm, invite_required=False)
+        invite_required = False
+        do_set_realm_property(self.user_profile.realm, 'invite_required', invite_required)
         for invite_required in (True, False):
-            events = self.do_test(lambda: do_set_realm_invite_required(self.user_profile.realm, invite_required))
+            events = self.do_test(
+                lambda: do_set_realm_property(self.user_profile.realm, 'invite_required', invite_required))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
@@ -691,7 +688,8 @@ class EventsRegisterTest(ZulipTestCase):
             ('property', equals('name_changes_disabled')),
             ('value', check_bool),
         ])
-        do_set_name_changes_disabled(self.user_profile.realm, name_changes_disabled=True)
+        name_changes_disabled = True
+        do_set_name_changes_disabled(self.user_profile.realm, name_changes_disabled)
         for name_changes_disabled in (False, True):
             events = self.do_test(lambda: do_set_name_changes_disabled(self.user_profile.realm, name_changes_disabled))
             error = schema_checker('events[0]', events[0])
@@ -705,7 +703,8 @@ class EventsRegisterTest(ZulipTestCase):
             ('property', equals('email_changes_disabled')),
             ('value', check_bool),
         ])
-        do_set_email_changes_disabled(self.user_profile.realm, email_changes_disabled=True)
+        email_changes_disabled = True
+        do_set_email_changes_disabled(self.user_profile.realm, email_changes_disabled)
         for email_changes_disabled in (False, True):
             events = self.do_test(lambda: do_set_email_changes_disabled(self.user_profile.realm, email_changes_disabled))
             error = schema_checker('events[0]', events[0])
@@ -757,9 +756,11 @@ class EventsRegisterTest(ZulipTestCase):
             ('property', equals('invite_by_admins_only')),
             ('value', check_bool),
         ])
-        do_set_realm_invite_by_admins_only(self.user_profile.realm, invite_by_admins_only=False)
+        invite_by_admins_only = False
+        do_set_realm_property(self.user_profile.realm, 'invite_by_admins_only', invite_by_admins_only)
         for invite_by_admins_only in (True, False):
-            events = self.do_test(lambda: do_set_realm_invite_by_admins_only(self.user_profile.realm, invite_by_admins_only))
+            events = self.do_test(
+                lambda: do_set_realm_property(self.user_profile.realm, 'invite_by_admins_only', invite_by_admins_only))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
@@ -771,9 +772,11 @@ class EventsRegisterTest(ZulipTestCase):
             ('property', equals('inline_image_preview')),
             ('value', check_bool),
         ])
-        do_set_realm_inline_image_preview(self.user_profile.realm, inline_image_preview=False)
+        inline_image_preview = False
+        do_set_realm_property(self.user_profile.realm, 'inline_image_preview', inline_image_preview)
         for inline_image_preview in (True, False):
-            events = self.do_test(lambda: do_set_realm_inline_image_preview(self.user_profile.realm, inline_image_preview))
+            events = self.do_test(
+                lambda: do_set_realm_property(self.user_profile.realm, 'inline_image_preview', inline_image_preview))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
@@ -785,9 +788,11 @@ class EventsRegisterTest(ZulipTestCase):
             ('property', equals('inline_url_embed_preview')),
             ('value', check_bool),
         ])
-        do_set_realm_inline_url_embed_preview(self.user_profile.realm, inline_url_embed_preview=False)
+        inline_url_embed_preview = False
+        do_set_realm_property(self.user_profile.realm, 'inline_url_embed_preview', inline_url_embed_preview)
         for inline_url_embed_preview in (True, False):
-            events = self.do_test(lambda: do_set_realm_inline_url_embed_preview(self.user_profile.realm, inline_url_embed_preview))
+            events = self.do_test(
+                lambda: do_set_realm_property(self.user_profile.realm, 'inline_url_embed_preview', inline_url_embed_preview))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
@@ -799,7 +804,8 @@ class EventsRegisterTest(ZulipTestCase):
             ('property', equals('default_language')),
             ('value', check_string),
         ])
-        events = self.do_test(lambda: do_set_realm_default_language(self.user_profile.realm, 'de'))
+        events = self.do_test(
+            lambda: do_set_realm_property(self.user_profile.realm, 'default_language', 'de'))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
@@ -811,12 +817,13 @@ class EventsRegisterTest(ZulipTestCase):
             ('property', equals('create_stream_by_admins_only')),
             ('value', check_bool),
         ])
-        do_set_realm_create_stream_by_admins_only(self.user_profile.realm, False)
+        do_set_realm_property(self.user_profile.realm, 'create_stream_by_admins_only', False)
 
         for create_stream_by_admins_only in (True, False):
             events = self.do_test(
-                lambda: do_set_realm_create_stream_by_admins_only(
+                lambda: do_set_realm_property(
                     self.user_profile.realm,
+                    'create_stream_by_admins_only',
                     create_stream_by_admins_only))
 
             error = schema_checker('events[0]', events[0])
@@ -853,8 +860,10 @@ class EventsRegisterTest(ZulipTestCase):
             ((True, 0), (False, 0), (True, 0), (False, 1234), (True, 0), (True, 1234), (True, 0),
              (False, 0), (False, 1234), (False, 0), (True, 1234), (False, 0),
              (True, 1234), (True, 600), (False, 600), (False, 1234), (True, 600)):
-            events = self.do_test(lambda: do_set_realm_message_editing(self.user_profile.realm,
-                                                                       allow_message_editing, message_content_edit_limit_seconds))
+            events = self.do_test(
+                lambda: do_set_realm_message_editing(self.user_profile.realm,
+                                                     allow_message_editing,
+                                                     message_content_edit_limit_seconds))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 

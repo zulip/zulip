@@ -420,89 +420,21 @@ def active_humans_in_realm(realm):
     # type: (Realm) -> Sequence[UserProfile]
     return UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False)
 
-def do_set_realm_name(realm, name):
-    # type: (Realm, Text) -> None
-    realm.name = name
-    realm.save(update_fields=['name'])
-    event = dict(
-        type="realm",
-        op="update",
-        property='name',
-        value=name,
-    )
-    send_event(event, active_user_ids(realm))
 
-def do_set_realm_description(realm, description):
-    # type: (Realm, Text) -> None
-    realm.description = description
-    realm.save(update_fields=['description'])
+def do_set_realm_property(realm, name, value):
+    # type: (Realm, Text, Union[Text, bool, int]) -> None
+    """Takes in a realm object, the name of an attribute to update, and the value to update.
+    """
+    setattr(realm, name, value)
+    realm.save(update_fields=[name])
     event = dict(
         type='realm',
         op='update',
-        property='description',
-        value=description,
+        property=name,
+        value=value,
     )
     send_event(event, active_user_ids(realm))
 
-def do_set_realm_restricted_to_domain(realm, restricted):
-    # type: (Realm, bool) -> None
-    realm.restricted_to_domain = restricted
-    realm.save(update_fields=['restricted_to_domain'])
-    event = dict(
-        type="realm",
-        op="update",
-        property='restricted_to_domain',
-        value=restricted,
-    )
-    send_event(event, active_user_ids(realm))
-
-def do_set_realm_invite_required(realm, invite_required):
-    # type: (Realm, bool) -> None
-    realm.invite_required = invite_required
-    realm.save(update_fields=['invite_required'])
-    event = dict(
-        type="realm",
-        op="update",
-        property='invite_required',
-        value=invite_required,
-    )
-    send_event(event, active_user_ids(realm))
-
-def do_set_realm_invite_by_admins_only(realm, invite_by_admins_only):
-    # type: (Realm, bool) -> None
-    realm.invite_by_admins_only = invite_by_admins_only
-    realm.save(update_fields=['invite_by_admins_only'])
-    event = dict(
-        type="realm",
-        op="update",
-        property='invite_by_admins_only',
-        value=invite_by_admins_only,
-    )
-    send_event(event, active_user_ids(realm))
-
-def do_set_realm_inline_image_preview(realm, inline_image_preview):
-    # type: (Realm, bool) -> None
-    realm.inline_image_preview = inline_image_preview
-    realm.save(update_fields=['inline_image_preview'])
-    event = dict(
-        type="realm",
-        op="update",
-        property='inline_image_preview',
-        value=inline_image_preview,
-    )
-    send_event(event, active_user_ids(realm))
-
-def do_set_realm_inline_url_embed_preview(realm, inline_url_embed_preview):
-    # type: (Realm, bool) -> None
-    realm.inline_url_embed_preview = inline_url_embed_preview
-    realm.save(update_fields=['inline_url_embed_preview'])
-    event = dict(
-        type="realm",
-        op="update",
-        property='inline_url_embed_preview',
-        value=inline_url_embed_preview,
-    )
-    send_event(event, active_user_ids(realm))
 
 def do_set_realm_authentication_methods(realm, authentication_methods):
     # type: (Realm, Dict[str, bool]) -> None
@@ -518,29 +450,6 @@ def do_set_realm_authentication_methods(realm, authentication_methods):
     )
     send_event(event, active_user_ids(realm))
 
-def do_set_realm_create_stream_by_admins_only(realm, create_stream_by_admins_only):
-    # type: (Realm, bool) -> None
-    realm.create_stream_by_admins_only = create_stream_by_admins_only
-    realm.save(update_fields=['create_stream_by_admins_only'])
-    event = dict(
-        type="realm",
-        op="update",
-        property='create_stream_by_admins_only',
-        value=create_stream_by_admins_only,
-    )
-    send_event(event, active_user_ids(realm))
-
-def do_set_realm_add_emoji_by_admins_only(realm, add_emoji_by_admins_only):
-    # type: (Realm, bool) -> None
-    realm.add_emoji_by_admins_only = add_emoji_by_admins_only
-    realm.save(update_fields=['add_emoji_by_admins_only'])
-    event = dict(
-        type="realm",
-        op="update",
-        property='add_emoji_by_admins_only',
-        value=add_emoji_by_admins_only,
-    )
-    send_event(event, active_user_ids(realm))
 
 def do_set_realm_message_editing(realm, allow_message_editing, message_content_edit_limit_seconds):
     # type: (Realm, bool, int) -> None
@@ -556,30 +465,6 @@ def do_set_realm_message_editing(realm, allow_message_editing, message_content_e
     )
     send_event(event, active_user_ids(realm))
 
-def do_set_realm_default_language(realm, default_language):
-    # type: (Realm, Text) -> None
-
-    realm.default_language = default_language
-    realm.save(update_fields=['default_language'])
-    event = dict(
-        type="realm",
-        op="update",
-        property="default_language",
-        value=default_language
-    )
-    send_event(event, active_user_ids(realm))
-
-def do_set_realm_waiting_period_threshold(realm, threshold):
-    # type: (Realm, int) -> None
-    realm.waiting_period_threshold = threshold
-    realm.save(update_fields=['waiting_period_threshold'])
-    event = dict(
-        type="realm",
-        op="update",
-        property='waiting_period_threshold',
-        value=threshold,
-    )
-    send_event(event, active_user_ids(realm))
 
 def do_deactivate_realm(realm):
     # type: (Realm) -> None
@@ -3350,7 +3235,7 @@ def do_remove_realm_alias(alias):
         # longer restricted to domain, because the feature doesn't do
         # anything if there are no domains, and this is probably less
         # confusing than the alternative.
-        do_set_realm_restricted_to_domain(realm, False)
+        do_set_realm_property(realm, 'restricted_to_domain', False)
     event = dict(type="realm_domains", op="remove", domain=domain)
     send_event(event, active_user_ids(realm))
 
