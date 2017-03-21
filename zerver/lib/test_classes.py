@@ -84,6 +84,9 @@ class UploadSerializeMixin(SerializeMixin):
         super(UploadSerializeMixin, cls).setUpClass(*args, **kwargs)
 
 class ZulipTestCase(TestCase):
+    # Ensure that the test system just shows us diffs
+    maxDiff = None  # type: int
+
     '''
     WRAPPER_COMMENT:
 

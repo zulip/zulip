@@ -32,8 +32,6 @@ class TestStatsEndpoint(ZulipTestCase):
         self.assert_in_response("Zulip Analytics for", result)
 
 class TestGetChartData(ZulipTestCase):
-    maxDiff = None  # type: int
-
     def setUp(self):
         # type: () -> None
         self.realm = get_realm('zulip')
