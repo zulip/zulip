@@ -455,8 +455,6 @@ a:not(.no-style):hover:before {
     top: 21px;
     opacity: 0;
     transform: translateX(3px);
-
-    transition: all 0.3s ease;
 }
 
 .portico-landing.apps .main ul.sidebar li.active::after {
