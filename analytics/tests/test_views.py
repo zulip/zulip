@@ -32,7 +32,7 @@ class TestStatsEndpoint(ZulipTestCase):
         self.assert_in_response("Zulip Analytics for", result)
 
 class TestGetChartData(ZulipTestCase):
-    maxDiff = None
+    maxDiff = None  # type: int
 
     def setUp(self):
         # type: () -> None
