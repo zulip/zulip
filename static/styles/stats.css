@@ -306,6 +306,59 @@ svg {
     max-width: 350px;
 }
 
+#filter-plot-message {
+    text-align: right;
+}
+
+#filter-plot-message * {
+    background-color: #F0F0F0;
+    font-family: 'Century Gothic', sans-serif;
+    style: "text-align: right";
+    font-size: 11px;
+}
+
+#filter-plot-message .btn-default {
+    height: 100%;
+    width: auto !important;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 100%;
+    margin-bottom: 0px;
+    margin-right: 35px;
+}
+
+#filter-plot-message .btn-default:hover {
+    background-color: #D8D8D8;
+}
+
+#filter-plot-message .dropdown-menu {
+    text-align: right;
+    margin-right: 35px;
+    width: auto !important;
+    height: auto !important;
+    min-width: 0px !important;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+#filter-plot-message .dropdown-menu a {
+    display: block;
+    padding: 0px 12px;
+    line-height: 20px;
+    color: #000000;
+}
+
+#filter-plot-message .dropdown-menu li > a:hover,
+#filter-plot-message .dropdown-submenu:hover > a {
+    background-color: #D8D8D8;
+}
+
+#filter-plot-message .actual-dropdown-menu li > a:hover,
+#filter-plot-message .dropdown-menu li > a:focus {
+    color: #ffffff;
+    background-image: linear-gradient(to bottom, #D8D8D8, #D8D8D8);
+}
+
+
 @media (max-width: 1127px) {
     #pie_messages_sent_by_client {
         margin-right: 0px;
