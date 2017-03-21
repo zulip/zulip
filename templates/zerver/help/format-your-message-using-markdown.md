@@ -104,14 +104,16 @@ For more information on mentions, visit [here](/help/at-mention-a-team-member).
 
 ## Code
 
-You can surround a portion of code with ``
-`back-ticks`
-`` to display it as inline code.
+You can surround a portion of code with `` `back-ticks` `` to display it as
+inline code.
 
 ![Inline code](/static/images/help/inline-code-screenshot.png)
 
-Multi-line blocks of code are either fenced by lines with three back-ticks
-(<code>```</code>) or indented with four spaces.
+Multi-line blocks of code are either:
+
+- Fenced by lines with three back-ticks (` ``` `).
+- Fenced by lines with three tildes (`~~~`).
+- Indented with four spaces.
 
 ![No code syntax highlighting](/static/images/help/no-syntax.png)
 
@@ -120,6 +122,11 @@ Zulip also supports syntax highlighting of multi-line code blocks using
 block, add the language's **first**
 [Pygments short name](http://pygments.org/docs/lexers/) after the first set of
 back-ticks.
+
+!!! warn ""
+    You can only specify the language's short name in fenced code blocks.
+    It is not possible to use the syntax highlighter in blocks indented with
+    spaces.
 
 ![Python syntax highlighting](/static/images/help/python-syntax.png)
 
