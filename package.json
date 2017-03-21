@@ -11,7 +11,7 @@
     "i18next-xhr-backend": "0.5.4",
     "i18next-browser-languagedetector": "0.3.0",
     "i18next-localstorage-cache": "0.3.0",
-    "jquery": "1.12.1",
+    "jquery": "2.2.3",
     "jquery-validation": "1.16.0",
     "plotly.js": "1.19.2",
     "string.prototype.codepointat": "0.2.0",
