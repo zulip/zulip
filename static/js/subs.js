@@ -161,7 +161,7 @@ exports.update_stream_description = function (sub, description) {
     var stream_settings = settings_for_sub(sub);
     stream_settings.find('input.description').val(sub.description);
     stream_settings.find('.stream-description-editable').html(sub.rendered_description);
-}
+};
 
 function stream_desktop_notifications_clicked(e) {
     var sub = get_sub_for_target(e.target);
