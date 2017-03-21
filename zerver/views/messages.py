@@ -540,7 +540,7 @@ def get_old_messages_backend(request, user_profile,
     if include_history and not use_first_unread_anchor:
         query = select([column("id").label("message_id")], None, table("zerver_message"))
         inner_msg_id_col = literal_column("zerver_message.id")
-    elif narrow is None:
+    elif narrow is None and not use_first_unread_anchor:
         query = select([column("message_id"), column("flags")],
                        column("user_profile_id") == literal(user_profile.id),
                        table("zerver_usermessage"))
