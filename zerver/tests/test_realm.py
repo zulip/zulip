@@ -9,9 +9,8 @@ from typing import Any, Dict, List, Text
 
 from zerver.lib.actions import (
     do_change_is_admin,
-    do_set_realm_name,
+    do_set_realm_property,
     do_deactivate_realm,
-    do_set_name_changes_disabled,
 )
 
 from zerver.lib.test_classes import ZulipTestCase
@@ -33,33 +32,48 @@ class RealmTest(ZulipTestCase):
         get_user_profile_by_email('hamlet@zulip.com')
         realm = get_realm('zulip')
         new_name = 'Zed You Elle Eye Pea'
-        do_set_realm_name(realm, new_name)
+        do_set_realm_property(realm, 'name', new_name)
         self.assertEqual(get_realm(realm.string_id).name, new_name)
         self.assert_user_profile_cache_gets_new_name('hamlet@zulip.com', new_name)
 
-    def test_do_set_realm_name_events(self):
+    def test_update_realm_name_events(self):
         # type: () -> None
         realm = get_realm('zulip')
         new_name = 'Puliz'
-        events = [] # type: List[Dict[str, Any]]
+        events = []  # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
-            do_set_realm_name(realm, new_name)
+            do_set_realm_property(realm, 'name', new_name)
         event = events[0]['event']
         self.assertEqual(event, dict(
-            type = 'realm',
-            op = 'update',
-            property = 'name',
-            value = new_name,
+            type='realm',
+            op='update',
+            property='name',
+            value=new_name,
         ))
 
-    def test_do_set_realm_description(self):
+    def test_update_realm_description_events(self):
+        # type: () -> None
+        realm = get_realm('zulip')
+        new_description = 'zulip dev group'
+        events = []  # type: List[Dict[str, Any]]
+        with tornado_redirected_to_list(events):
+            do_set_realm_property(realm, 'description', new_description)
+        event = events[0]['event']
+        self.assertEqual(event, dict(
+            type='realm',
+            op='update',
+            property='description',
+            value=new_description,
+        ))
+
+    def test_update_realm_description(self):
         # type: () -> None
         email = 'iago@zulip.com'
         self.login(email)
         realm = get_realm('zulip')
         new_description = 'zulip dev group'
         data = dict(description=ujson.dumps(new_description))
-        events = [] # type: List[Dict[str, Any]]
+        events = []  # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
             result = self.client_patch('/json/realm', data)
             self.assert_json_success(result)
@@ -217,7 +231,7 @@ class RealmTest(ZulipTestCase):
         email = 'hamlet@zulip.com'
         self.login(email)
         user_profile = get_user_profile_by_email(email)
-        do_set_name_changes_disabled(user_profile.realm, name_changes_disabled=True)
+        do_set_realm_property(user_profile.realm, 'name_changes_disabled', True)
         url = '/json/settings/change'
         result = self.client_post(url, data)
         self.assertEqual(result.status_code, 200)
@@ -237,7 +251,7 @@ class RealmTest(ZulipTestCase):
         user = get_user_profile_by_email('hamlet@zulip.com')
         self.assertTrue(user.realm.deactivated)
 
-    def test_do_set_realm_default_language(self):
+    def test_change_realm_default_language(self):
         # type: () -> None
         new_lang = "de"
         realm = get_realm('zulip')

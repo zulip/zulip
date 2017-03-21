@@ -33,8 +33,11 @@ from zerver.lib.actions import (
 )
 
 from zerver.lib.initial_password import initial_password
-from zerver.lib.actions import do_deactivate_realm, do_set_realm_default_language, \
-    add_new_user_history
+from zerver.lib.actions import (
+    do_deactivate_realm,
+    do_set_realm_property,
+    add_new_user_history,
+)
 from zerver.lib.digest import send_digest_email
 from zerver.lib.notifications import (
     enqueue_welcome_emails, one_click_unsubscribe_link, send_local_email_template_with_delay)
@@ -942,7 +945,7 @@ class UserSignUpTest(ZulipTestCase):
         email = "newguy@zulip.com"
         password = "newpassword"
         realm = get_realm('zulip')
-        do_set_realm_default_language(realm, "de")
+        do_set_realm_property(realm, 'default_language', "de")
 
         result = self.client_post('/accounts/home/', {'email': email})
         self.assertEqual(result.status_code, 302)
