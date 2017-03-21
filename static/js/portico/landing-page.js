@@ -48,14 +48,14 @@ var integration_events = function () {
         if (hashes.indexOf(_hash) > -1) {
             $lozenge_icon = $(".integration-lozenges .integration-lozenge.integration-" + _hash).clone(true);
             currentblock = $(hash);
-            instructionbox.children(".integration-lozenge").replaceWith($lozenge_icon);
+            instructionbox.hide().children(".integration-lozenge").replaceWith($lozenge_icon);
             instructionbox.append($lozenge_icon, currentblock);
 
             $(".inner-content").removeClass("show");
             setTimeout(function () {
                 instructionbox.hide();
                 $(".integration-lozenges").addClass("hide");
-                $(".portico-page-header.extra, .portico-large-text.extra, #integration-main-text").hide();
+                $(".extra, #integration-main-text").hide();
 
                 instructionbox.append(currentblock);
                 instructionbox.show();
@@ -77,7 +77,7 @@ var integration_events = function () {
             setTimeout(function () {
                 $("#integration-list-link").css("display", "none");
                 $(".integration-lozenges").removeClass("hide");
-                $(".portico-page-header.extra, .portico-large-text.extra, #integration-main-text").show();
+                $(".extra, #integration-main-text").show();
                 instructionbox.hide();
                 $lozenge_icon.remove();
                 currentblock.appendTo("#integration-instructions-group");
