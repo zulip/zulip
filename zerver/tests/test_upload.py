@@ -409,6 +409,8 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
                          "/user_avatars/hash.png?x=x")
         self.assertEqual(backend.get_avatar_url("hash", True),
                          "/user_avatars/hash-medium.png?x=x")
+        self.assertEqual(backend.get_realm_icon_url(15, 1),
+                         "/user_avatars/15/realm/icon.png?version=1")
 
         with self.settings(S3_AVATAR_BUCKET="bucket"):
             backend = S3UploadBackend()
@@ -416,6 +418,8 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
                              "https://bucket.s3.amazonaws.com/hash?x=x")
             self.assertEqual(backend.get_avatar_url("hash", True),
                              "https://bucket.s3.amazonaws.com/hash-medium.png?x=x")
+            self.assertEqual(backend.get_realm_icon_url(15, 1),
+                             "https://bucket.s3.amazonaws.com/15/realm/icon.png?version=1")
 
     def test_multiple_upload_failure(self):
         # type: () -> None
