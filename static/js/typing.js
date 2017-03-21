@@ -11,7 +11,6 @@ var TYPING_STARTED_SEND_FREQUENCY = 10000; // 10s
 var TYPING_STOPPED_WAIT_PERIOD = 5000; // 5s
 
 var current_recipient;
-var users_currently_typing = new Dict();
 var stop_typing_timers = new Dict();
 
 // Our logic is a bit too complex to encapsulate in
@@ -99,20 +98,16 @@ function get_users_typing_for_narrow() {
     if (narrow.operators()[0].operator === 'pm-with') {
         // Get list of users typing in this conversation
         var narrow_emails_string = narrow.operators()[0].operand;
+        // TODO: Create people.emails_strings_to_user_ids.
         var narrow_user_ids_string = people.emails_strings_to_user_ids_string(narrow_emails_string);
         var narrow_user_ids = narrow_user_ids_string.split(',').map(function (user_id_string) {
             return parseInt(user_id_string, 10);
         });
         var group = narrow_user_ids.concat([page_params.user_id]);
-        group.sort();
-        return users_currently_typing.setdefault(group, []);
+        return typing_data.get_group_typists(group);
     }
     // Get all users typing (in all private conversations with current user)
-    var all_typing_users = [];
-    users_currently_typing.each(function (users_typing) {
-        all_typing_users = all_typing_users.concat(users_typing);
-    });
-    return all_typing_users;
+    return typing_data.get_all_typists();
 }
 
 function render_notifications_for_narrow() {
@@ -142,12 +137,11 @@ exports.hide_notification = function (event) {
         stop_typing_timers[recipients] = undefined;
     }
 
-    var users_typing = users_currently_typing.get(recipients);
-    var i = users_typing.indexOf(event.sender.user_id);
-    if (i !== -1) {
-        users_typing.splice(i);
+    var removed = typing_data.remove_typist(recipients, event.sender.user_id);
+
+    if (removed) {
+        render_notifications_for_narrow();
     }
-    render_notifications_for_narrow();
 };
 
 exports.display_notification = function (event) {
@@ -156,13 +150,10 @@ exports.display_notification = function (event) {
     });
     recipients.sort();
 
-    event.sender.name = people.get_person_from_user_id(event.sender.user_id).full_name;
+    var sender_id = event.sender.user_id;
+    event.sender.name = people.get_person_from_user_id(sender_id).full_name;
 
-    var users_typing = users_currently_typing.setdefault(recipients, []);
-    var i = users_typing.indexOf(event.sender.user_id);
-    if (i === -1) {
-        users_typing.push(event.sender.user_id);
-    }
+    typing_data.add_typist(recipients, sender_id);
 
     render_notifications_for_narrow();
     // If there's an existing timeout for this typing notifications
