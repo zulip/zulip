@@ -2576,3 +2576,10 @@ ul.sender_info_popover i {
     text-align: center;
     margin-right: 3px;
 }
+
+ul.actions_popover i {
+    display: inline-block;
+    width: 14px;
+    text-align: center;
+    margin-right: 3px;
+}
