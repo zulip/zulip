@@ -149,14 +149,16 @@ def private_stream_user_ids(stream):
     return {sub['user_profile_id'] for sub in subscriptions.values('user_profile_id')}
 
 def bot_owner_userids(user_profile):
-    # type: (UserProfile) -> Sequence[int]
+    # type: (UserProfile) -> Set[int]
     is_private_bot = (
         user_profile.default_sending_stream and user_profile.default_sending_stream.invite_only or
         user_profile.default_events_register_stream and user_profile.default_events_register_stream.invite_only)
     if is_private_bot:
-        return (user_profile.bot_owner_id,) # TODO: change this to list instead of tuple
+        return {user_profile.bot_owner_id, }
     else:
-        return active_user_ids(user_profile.realm)
+        users = {user.id for user in user_profile.realm.get_admin_users()}
+        users.add(user_profile.bot_owner_id)
+        return users
 
 def realm_user_count(realm):
     # type: (Realm) -> int
