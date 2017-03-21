@@ -1010,6 +1010,11 @@ else:
 # Used for test_logging_handlers
 LOGGING_NOT_DISABLED = True
 
+DEFAULT_ZULIP_HANDLERS = (
+    (['zulip_admins'] if ERROR_REPORTING else []) +
+    ['console', 'file', 'errors_file']
+)
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
@@ -1077,24 +1082,23 @@ LOGGING = {
     },
     'loggers': {
         '': {
-            'handlers': ['console', 'file', 'errors_file'],
+            'handlers': DEFAULT_ZULIP_HANDLERS,
             'filters': ['require_logging_enabled'],
             'level': 'INFO',
             'propagate': False,
         },
         'django': {
-            'handlers': (['zulip_admins'] if ERROR_REPORTING else [] +
-                         ['console', 'file', 'errors_file']),
+            'handlers': DEFAULT_ZULIP_HANDLERS,
             'level': 'INFO',
             'propagate': False,
         },
         'zulip.requests': {
-            'handlers': ['console', 'file', 'errors_file'],
+            'handlers': DEFAULT_ZULIP_HANDLERS,
             'level': 'INFO',
             'propagate': False,
         },
         'zulip.queue': {
-            'handlers': ['console', 'file', 'errors_file'],
+            'handlers': DEFAULT_ZULIP_HANDLERS,
             'level': 'WARNING',
             'propagate': False,
         },
@@ -1104,7 +1108,7 @@ LOGGING = {
             'propagate': False,
         },
         'requests': {
-            'handlers': ['console', 'file', 'errors_file'],
+            'handlers': DEFAULT_ZULIP_HANDLERS,
             'level': 'WARNING',
             'propagate': False,
         },
