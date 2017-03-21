@@ -255,6 +255,11 @@ exports.process_escape_key = function (e) {
             return true;
         }
 
+        if (popovers.reactions_popped()) {
+            popovers.hide_reactions_popover();
+            return true;
+        }
+
         // We pressed Esc and something was focused, and the composebox
         // wasn't open. In that case, we should blur the input.
         // (this is almost certainly the searchbar)

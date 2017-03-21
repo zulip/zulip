@@ -310,9 +310,9 @@ function message_info_popped() {
     return current_message_info_popover_elem !== undefined;
 }
 
-function reaction_popped() {
+exports.reactions_popped = function () {
     return current_message_reactions_popover_elem !== undefined;
-}
+};
 
 exports.hide_message_info_popover = function () {
     if (message_info_popped()) {
@@ -323,7 +323,7 @@ exports.hide_message_info_popover = function () {
 
 exports.hide_reactions_popover = function () {
     $('.has_popover').removeClass('has_popover has_reactions_popover');
-    if (reaction_popped()) {
+    if (exports.reactions_popped()) {
         current_message_reactions_popover_elem.popover("destroy");
         current_message_reactions_popover_elem = undefined;
     }
@@ -724,7 +724,7 @@ exports.any_active = function () {
     return popovers.actions_popped() || user_sidebar_popped() ||
         stream_popover.stream_popped() || stream_popover.topic_popped() ||
         message_info_popped() || emoji_map_is_open ||
-        reaction_popped();
+        popovers.reactions_popped();
 };
 
 exports.hide_all = function () {
