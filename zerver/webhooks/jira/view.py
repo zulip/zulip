@@ -265,7 +265,7 @@ def api_jira_webhook(request, user_profile, client,
         else:
             if not settings.TEST_SUITE:
                 logging.warning("Got JIRA event type we don't support: {}".format(event))
-            return json_error(_("Got JIRA event type we don't support: {}".format(event)))
+            return json_success()
 
     check_send_message(user_profile, client, "stream", [stream], subject, content)
     return json_success()
