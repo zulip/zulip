@@ -732,6 +732,10 @@ a.bottom-signup-button {
     margin-bottom: 50px;
 }
 
+.login-page-header {
+    width: 100%;
+}
+
 .login-page-subheader {
     font-weight: 300;
     font-size: 24px;
