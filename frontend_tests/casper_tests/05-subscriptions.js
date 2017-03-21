@@ -99,20 +99,25 @@ casper.then(function () {
                              true,
                              "Rome is visible again");
 });
-casper.waitUntilVisible('#stream_creation_form', function () {
-    casper.test.assertTextExists('Create stream', 'New stream creation panel');
-    casper.fill('form#stream_creation_form', {stream_name: 'Waseemio', stream_description: 'Oimeesaw'});
-    casper.click('input[value="Scotland"] ~ span');
-    casper.click('input[value="cordelia@zulip.com"] ~ span');
-    casper.click('input[value="othello@zulip.com"] ~ span');
-    casper.click('form#stream_creation_form button.btn.btn-primary');
-});
-
-casper.waitFor(function () {
-    return casper.evaluate(function () {
-        return $('.stream-name').is(':contains("Waseemio")');
+casper.then(function () {
+    casper.waitUntilVisible('#stream_creation_form', function () {
+        casper.test.assertTextExists('Create stream', 'New stream creation panel');
+        casper.fill('form#stream_creation_form', {stream_name: 'Waseemio', stream_description: 'Oimeesaw'});
+        casper.click('input[value="Scotland"] ~ span');
+        casper.click('input[value="cordelia@zulip.com"] ~ span');
+        casper.click('input[value="othello@zulip.com"] ~ span');
+        casper.click('form#stream_creation_form button.btn.btn-primary');
     });
 });
+
+casper.then(function () {
+    casper.waitFor(function () {
+        return casper.evaluate(function () {
+            return $('.stream-name').is(':contains("Waseemio")');
+        });
+    });
+});
+
 casper.then(function () {
     casper.test.info("User should be subscribed to stream Waseemio");
     casper.test.assertSelectorHasText('.stream-name', 'Waseemio');
