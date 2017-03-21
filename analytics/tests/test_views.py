@@ -32,6 +32,8 @@ class TestStatsEndpoint(ZulipTestCase):
         self.assert_in_response("Zulip Analytics for", result)
 
 class TestGetChartData(ZulipTestCase):
+    maxDiff = None
+
     def setUp(self):
         # type: () -> None
         self.realm = get_realm('zulip')
@@ -116,11 +118,11 @@ class TestGetChartData(ZulipTestCase):
             'end_times': [datetime_to_timestamp(dt) for dt in self.end_times_day],
             'frequency': CountStat.DAY,
             'interval': CountStat.DAY,
-            'realm': {'Public Streams': self.data(100), 'Private Streams': self.data(0),
-                      'Private Messages': self.data(101), 'Huddle Messages': self.data(0)},
-            'user': {'Public Streams': self.data(200), 'Private Streams': self.data(201),
-                     'Private Messages': self.data(0), 'Huddle Messages': self.data(0)},
-            'display_order': ['Private Messages', 'Public Streams', 'Private Streams', 'Huddle Messages'],
+            'realm': {'Public streams': self.data(100), 'Private streams': self.data(0),
+                      'Private messages': self.data(101), 'Group private messages': self.data(0)},
+            'user': {'Public streams': self.data(200), 'Private streams': self.data(201),
+                     'Private messages': self.data(0), 'Group private messages': self.data(0)},
+            'display_order': ['Private messages', 'Public streams', 'Private streams', 'Group private messages'],
             'result': 'success',
         })
 
@@ -179,9 +181,9 @@ class TestGetChartData(ZulipTestCase):
         self.assert_json_success(result)
         data = ujson.loads(result.content)
         self.assertEqual(data['realm'], {
-            'Public Streams': [0], 'Private Streams': [0], 'Private Messages': [0], 'Huddle Messages': [0]})
+            'Public streams': [0], 'Private streams': [0], 'Private messages': [0], 'Group private messages': [0]})
         self.assertEqual(data['user'], {
-            'Public Streams': [0], 'Private Streams': [0], 'Private Messages': [0], 'Huddle Messages': [0]})
+            'Public streams': [0], 'Private streams': [0], 'Private messages': [0], 'Group private messages': [0]})
 
         FillState.objects.create(
             property='messages_sent:client:day', end_time=self.end_times_day[0], state=FillState.DONE)
