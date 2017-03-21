@@ -891,15 +891,14 @@ function _setup_page() {
         var owner_select = $(templates.render("bot_owner_select", {users_list: users_list}));
         var admin_status = $('#administration-status').expectOne();
         var person = people.get_person_from_user_id(user_id);
-
         if (!person) {
             return;
+        } else if (person.is_bot) {
+            // Dynamically add the owner select control in order to
+            // avoid performance issues in case of large number of users.
+            owner_select.val(bot_data.get(person.email).owner || "");
+            form_row.find(".edit_bot_owner_container").append(owner_select);
         }
-
-        // Dynamically add the owner select control in order to
-        // avoid performance issues in case of large number of users.
-        owner_select.val(bot_data.get(person.email).owner || "");
-        form_row.find(".edit_bot_owner_container").append(owner_select);
 
         // Show user form.
         user_row.hide();
