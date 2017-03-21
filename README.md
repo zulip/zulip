@@ -166,6 +166,10 @@ and are participating in 2017 as well.  For guidance, please read
 and feel free to email
 [our GSoC mailing list](https://groups.google.com/forum/#!forum/zulip-gsoc).
 
+**Note**: For GSoC, we will be focused on making our [React Native app](https://github.com/zulip/zulip-mobile) better rather than maintaining [Java Android app](https://github.com/zulip/zulip-android)
+and [React Native app](https://github.com/zulip/zulip-mobile) in parallel. For
+more clarification, please go through [our detailed plan](https://github.com/zulip/zulip-android/blob/master/android-strategy.md).
+
 ## How to get involved with contributing to Zulip
 
 First, subscribe to the Zulip [development discussion mailing
