@@ -99,6 +99,8 @@ function populate_messages_sent_over_time(data) {
                 name: "Humans", y: values.human, marker: {color: '#5f6ea0'}}, common),
             bot: $.extend({ // a09b5f bbb56e
                 name: "Bots", y: values.bot, marker: {color: '#b7b867'}}, common),
+            me: $.extend({
+                name: "Me", y: values.me, marker: {color: '#be6d68'}}, common),
         };
     }
 
@@ -114,7 +116,7 @@ function populate_messages_sent_over_time(data) {
         },
         yaxis: { fixedrange: true, rangemode: 'tozero' },
         legend: {
-            x: 0.75, y: 1.12, orientation: 'h', font: font_14pt,
+            x: 0.62, y: 1.12, orientation: 'h', font: font_14pt,
         },
         font: font_14pt,
     };
@@ -143,25 +145,21 @@ function populate_messages_sent_over_time(data) {
         document.getElementById('id_messages_sent_over_time').on('plotly_hover', function (data) {
             document.getElementById('hover_date').innerText =
                 data.points[0].data.text[data.points[0].pointNumber];
-            var values = [null, null];
+            var values = [null, null, null];
             data.points.forEach(function (trace) {
                 values[trace.curveNumber] = trace.y;
             });
-            if (values[0] !== null) {
-                document.getElementById('hover_human').style.display = 'inline';
-                document.getElementById('hover_human_value').style.display = 'inline';
-                document.getElementById('hover_human_value').innerText = values[0];
-            } else {
-                document.getElementById('hover_human').style.display = 'none';
-                document.getElementById('hover_human_value').style.display = 'none';
-            }
-            if (values[1] !== null) {
-                document.getElementById('hover_bot').style.display = 'inline';
-                document.getElementById('hover_bot_value').style.display = 'inline';
-                document.getElementById('hover_bot_value').innerText = values[1];
-            } else {
-                document.getElementById('hover_bot').style.display = 'none';
-                document.getElementById('hover_bot_value').style.display = 'none';
+            var hover_text_ids = ['hover_me', 'hover_human', 'hover_bot'];
+            var hover_value_ids = ['hover_me_value', 'hover_human_value', 'hover_bot_value'];
+            for (var i = 0; i < values.length; i += 1) {
+                if (values[i] !== null) {
+                    document.getElementById(hover_text_ids[i]).style.display = 'inline';
+                    document.getElementById(hover_value_ids[i]).style.display = 'inline';
+                    document.getElementById(hover_value_ids[i]).innerText = values[i];
+                } else {
+                    document.getElementById(hover_text_ids[i]).style.display = 'none';
+                    document.getElementById(hover_value_ids[i]).style.display = 'none';
+                }
             }
         });
     }
@@ -186,11 +184,11 @@ function populate_messages_sent_over_time(data) {
             };
         }
         var dates = [start];
-        var values = {human: [], bot: []};
-        var current = {human: 0, bot: 0};
+        var values = {human: [], bot: [], me: []};
+        var current = {human: 0, bot: 0, me: 0};
         var i_init = 0;
         if (is_boundary(start_dates[0])) {
-            current = {human: data.realm.human[0], bot: data.realm.bot[0]};
+            current = {human: data.realm.human[0], bot: data.realm.bot[0], me: data.user.human[0]};
             i_init = 1;
         }
         for (var i = i_init; i < start_dates.length; i += 1) {
@@ -198,13 +196,16 @@ function populate_messages_sent_over_time(data) {
                 dates.push(start_dates[i]);
                 values.human.push(current.human);
                 values.bot.push(current.bot);
-                current = {human: 0, bot: 0};
+                values.me.push(current.me);
+                current = {human: 0, bot: 0, me: 0};
             }
             current.human += data.realm.human[i];
             current.bot += data.realm.bot[i];
+            current.me += data.user.human[i];
         }
         values.human.push(current.human);
         values.bot.push(current.bot);
+        values.me.push(current.me);
         return {
             dates: dates, values: values,
             last_value_is_partial: !is_boundary(new Date(
@@ -215,7 +216,8 @@ function populate_messages_sent_over_time(data) {
     var date_formatter = function (date) {
         return format_date(date, true);
     };
-    var hourly_traces = make_traces(start_dates, data.realm, 'bar', date_formatter);
+    var values = {me: data.user.human, human: data.realm.human, bot: data.realm.bot};
+    var hourly_traces = make_traces(start_dates, values, 'bar', date_formatter);
 
     var info = aggregate_data('day');
     date_formatter = function (date) {
@@ -235,7 +237,8 @@ function populate_messages_sent_over_time(data) {
     var dates = data.end_times.map(function (timestamp) {
         return new Date(timestamp*1000);
     });
-    var values = {human: partial_sums(data.realm.human), bot: partial_sums(data.realm.bot)};
+    values = {human: partial_sums(data.realm.human), bot: partial_sums(data.realm.bot),
+        me: partial_sums(data.user.human)};
     date_formatter = function (date) {
         return format_date(date, true);
     };
@@ -255,19 +258,21 @@ function populate_messages_sent_over_time(data) {
         if (initial_draw) {
             traces.human.visible = true;
             traces.bot.visible = 'legendonly';
+            traces.me.visible = 'legendonly';
         } else {
             var plotDiv = document.getElementById('id_messages_sent_over_time');
-            traces.human.visible = plotDiv.data[0].visible;
-            traces.bot.visible = plotDiv.data[1].visible;
+            traces.me.visible = plotDiv.data[0].visible;
+            traces.human.visible = plotDiv.data[1].visible;
+            traces.bot.visible = plotDiv.data[2].visible;
         }
         layout.xaxis.rangeselector = rangeselector;
         if (clicked_cumulative || initial_draw) {
             Plotly.newPlot('id_messages_sent_over_time',
-                           [traces.human, traces.bot], layout, {displayModeBar: false});
+                           [traces.me, traces.human, traces.bot], layout, {displayModeBar: false});
             add_hover_handler();
         } else {
-            Plotly.deleteTraces('id_messages_sent_over_time', [0,1]);
-            Plotly.addTraces('id_messages_sent_over_time', [traces.human, traces.bot]);
+            Plotly.deleteTraces('id_messages_sent_over_time', [0, 1, 2]);
+            Plotly.addTraces('id_messages_sent_over_time', [traces.me, traces.human, traces.bot]);
             Plotly.relayout('id_messages_sent_over_time', layout);
         }
         $('#id_messages_sent_over_time').attr('last_value_is_partial', last_value_is_partial);

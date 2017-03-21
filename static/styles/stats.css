@@ -58,7 +58,7 @@ svg {
     position: relative;
     top: -33px;
     height: 0;
-    width: 350px;
+    width: 400px;
     z-index: 1;
     font-size: 14px;
     margin-left: 40px;
@@ -82,10 +82,11 @@ svg {
 
 #hover_human {
     font-weight: 400;
-    margin-left: 18px;
+    margin-left: 10px;
     display: none;
 }
 
+#hover_me,
 #hover_bot {
     font-weight: 400;
     margin-left: 8px;
