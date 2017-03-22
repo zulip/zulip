@@ -994,6 +994,8 @@ if IS_WORKER:
     FILE_LOG_PATH = WORKER_LOG_PATH
 else:
     FILE_LOG_PATH = SERVER_LOG_PATH
+# Used for test_logging_handlers
+LOGGING_NOT_DISABLED = True
 
 LOGGING = {
     'version': 1,
@@ -1018,6 +1020,9 @@ LOGGING = {
         },
         'nop': {
             '()': 'zerver.lib.logging_util.ReturnTrue',
+        },
+        'require_logging_enabled': {
+            '()': 'zerver.lib.logging_util.ReturnEnabled',
         },
         'require_really_deployed': {
             '()': 'zerver.lib.logging_util.RequireReallyDeployed',
@@ -1060,6 +1065,7 @@ LOGGING = {
     'loggers': {
         '': {
             'handlers': ['console', 'file', 'errors_file'],
+            'filters': ['require_logging_enabled'],
             'level': 'INFO',
             'propagate': False,
         },

@@ -6,6 +6,7 @@ import hashlib
 import logging
 import traceback
 from datetime import datetime, timedelta
+from django.conf import settings
 from zerver.lib.str_utils import force_bytes
 
 # Adapted http://djangosnippets.org/snippets/2242/ by user s29 (October 25, 2010)
@@ -57,6 +58,11 @@ class ReturnTrue(logging.Filter):
     def filter(self, record):
         # type: (logging.LogRecord) -> bool
         return True
+
+class ReturnEnabled(logging.Filter):
+    def filter(self, record):
+        # type: (logging.LogRecord) -> bool
+        return settings.LOGGING_NOT_DISABLED
 
 class RequireReallyDeployed(logging.Filter):
     def filter(self, record):
