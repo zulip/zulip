@@ -1192,7 +1192,11 @@ $(function () {
 
     $("#subscriptions_table").on("click", ".sub_unsub_button", function (e) {
         var sub = get_sub_for_target(e.target);
+        var stream_row = $(this).parent();
+        var stream_id = stream_row.attr("data-stream-id");
         exports.sub_or_unsub(sub);
+        show_stream_row(this, true);
+        setup_subscriptions_stream_hash(sub, stream_id);
         e.preventDefault();
         e.stopPropagation();
     });
