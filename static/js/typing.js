@@ -1,13 +1,9 @@
 var typing = (function () {
 var exports = {};
-// How long before we assume a client has gone away
-// and expire its typing status
-var TYPING_STARTED_EXPIRY_PERIOD = 15000; // 15s
 
-// Note!: There are also timing constants in typing_status.js
-// that make typing indicators work.
-
-var stop_typing_timers = new Dict();
+// This module handles the outbound side of typing indicators.
+// We detect changes in the compose box and notify the server
+// when we are typing.  For the inbound side see typing_events.js.
 
 function send_typing_notification_ajax(recipients, operation) {
     channel.post({
@@ -94,83 +90,6 @@ $(document).on('input', '#new_message_content', function () {
 $(document).on('compose_canceled.zulip compose_finished.zulip', function () {
     typing_status.stop(worker);
 });
-
-function get_users_typing_for_narrow() {
-    if (!narrow.narrowed_to_pms()) {
-        // Narrow is neither pm-with nor is: private
-        return [];
-    }
-    if (narrow.operators()[0].operator === 'pm-with') {
-        // Get list of users typing in this conversation
-        var narrow_emails_string = narrow.operators()[0].operand;
-        // TODO: Create people.emails_strings_to_user_ids.
-        var narrow_user_ids_string = people.emails_strings_to_user_ids_string(narrow_emails_string);
-        var narrow_user_ids = narrow_user_ids_string.split(',').map(function (user_id_string) {
-            return parseInt(user_id_string, 10);
-        });
-        var group = narrow_user_ids.concat([page_params.user_id]);
-        return typing_data.get_group_typists(group);
-    }
-    // Get all users typing (in all private conversations with current user)
-    return typing_data.get_all_typists();
-}
-
-function render_notifications_for_narrow() {
-    var user_ids = get_users_typing_for_narrow();
-    var users_typing = user_ids.map(people.get_person_from_user_id);
-    if (users_typing.length === 0) {
-        $('#typing_notifications').hide();
-    } else {
-        $('#typing_notifications').html(templates.render('typing_notifications', {users: users_typing}));
-        $('#typing_notifications').show();
-    }
-}
-
-$(document).on('narrow_activated.zulip', render_notifications_for_narrow);
-$(document).on('narrow_deactivated.zulip', render_notifications_for_narrow);
-
-exports.hide_notification = function (event) {
-    var recipients = event.recipients.map(function (user) {
-        return user.user_id;
-    });
-    recipients.sort();
-
-    // If there's an existing timer for this typing notifications
-    // thread, clear it.
-    if (stop_typing_timers[recipients] !== undefined) {
-        clearTimeout(stop_typing_timers[recipients]);
-        stop_typing_timers[recipients] = undefined;
-    }
-
-    var removed = typing_data.remove_typist(recipients, event.sender.user_id);
-
-    if (removed) {
-        render_notifications_for_narrow();
-    }
-};
-
-exports.display_notification = function (event) {
-    var recipients = event.recipients.map(function (user) {
-        return user.user_id;
-    });
-    recipients.sort();
-
-    var sender_id = event.sender.user_id;
-    event.sender.name = people.get_person_from_user_id(sender_id).full_name;
-
-    typing_data.add_typist(recipients, sender_id);
-
-    render_notifications_for_narrow();
-    // If there's an existing timeout for this typing notifications
-    // thread, clear it.
-    if (stop_typing_timers[recipients] !== undefined) {
-        clearTimeout(stop_typing_timers[recipients]);
-    }
-    // Set a time to expire the data if the sender stops transmitting
-    stop_typing_timers[recipients] = setTimeout(function () {
-        exports.hide_notification(event);
-    }, TYPING_STARTED_EXPIRY_PERIOD);
-};
 
 return exports;
 }());

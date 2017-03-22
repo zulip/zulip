@@ -36,6 +36,7 @@
         "resize": false,
         "loading": false,
         "typing": false,
+        "typing_events": false,
         "typing_data": false,
         "typing_status": false,
         "compose": false,

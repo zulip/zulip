@@ -5,7 +5,7 @@ var exports = {};
 // The following constants are tuned to work with
 // TYPING_STARTED_EXPIRY_PERIOD, which is what the other
 // users will use to time out our messages.  (Or us,
-// depending on your perspective.) See typing.js.
+// depending on your perspective.) See typing_events.js.
 
 // How frequently 'still typing' notifications are sent
 // to extend the expiry
