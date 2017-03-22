@@ -14,12 +14,12 @@ from typing import Any, Dict, List
 from zerver.lib.actions import do_change_stream_invite_only
 from zerver.models import get_realm, get_stream, get_user_profile_by_email, \
     Realm, Stream, UserProfile
-from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_classes import ZulipTestCase, UploadSerializeMixin
 from zerver.lib.test_helpers import (
     avatar_disk_path, get_test_image_file, tornado_redirected_to_list,
 )
 
-class BotTest(ZulipTestCase):
+class BotTest(ZulipTestCase, UploadSerializeMixin):
     def assert_num_bots_equal(self, count):
         # type: (int) -> None
         result = self.client_get("/json/bots")
