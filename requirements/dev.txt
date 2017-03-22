@@ -21,6 +21,13 @@ pyflakes==1.5.0
 # Needed to run tests in parallel
 tblib==1.3.0
 
+# Needed to lint Git commit messages
+gitlint==0.8.1
+
+# Needed for gitlint
+arrow==0.10.0
+sh==1.11
+
 # Needed to sync translations from transifex
 transifex-client==0.12.4
 

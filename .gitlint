@@ -1,0 +1,11 @@
+[general]
+ignore=title-trailing-punctuation, body-min-length, body-is-missing
+
+[title-match-regex]
+regex=^.+\.$
+
+[title-max-length]
+line-length=76
+
+[body-max-line-length]
+line-length=76

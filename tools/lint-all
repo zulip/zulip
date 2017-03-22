@@ -617,6 +617,9 @@ def run():
     parser.add_option('--pep8',
                       action='store_true',
                       help='Run the pep8 checker')
+    parser.add_option('--no-gitlint',
+                      action='store_true',
+                      help='Disable gitlint')
     parser.add_option('--modified', '-m',
                       action='store_true',
                       help='Only check modified files')
@@ -686,6 +689,9 @@ def run():
         external_linter('puppet', ['puppet', 'parser', 'validate'], ['pp'])
         external_linter('templates', ['tools/check-templates'], ['handlebars', 'html'])
         external_linter('urls', ['tools/check-urls'])
+
+        if not options.no_gitlint:
+            external_linter('commit_messages', ['tools/lint-commits'])
 
         @lint
         def custom_py():
