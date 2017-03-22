@@ -88,6 +88,7 @@ exports.mark_subscribed = function (sub, subscribers, color) {
         // If the backend didn't, and we have a color already, send
         // the backend that color.  It's not clear this code path is
         // needed.
+        blueslip.warn("Frontend needed to pick a color in mark_subscribed");
         color = get_color();
         subs.set_color(sub.stream_id, color);
     }
