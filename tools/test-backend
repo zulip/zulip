@@ -130,6 +130,21 @@ if __name__ == "__main__":
     parser.add_option('--verbose-coverage', dest='verbose_coverage',
                       action="store_true",
                       default=False, help='Enable verbose print of coverage report.')
+
+    def allow_positive_int(option, opt_str, value, parser):
+        # type: (optparse.Option, str, int, optparse.OptionParser) -> None
+        if value < 1:
+            raise optparse.OptionValueError(
+                "option {}: Only positive integers are allowed.".format(opt_str))
+        setattr(parser.values, option.dest, value)
+
+    parser.add_option('--processes', dest='processes',
+                      type="int",
+                      callback=allow_positive_int,
+                      action='callback',
+                      default=1,
+                      help='Specify the number of processes to run the '
+                           'tests in. Default is 1.')
     parser.add_option('--profile', dest='profile',
                       action="store_true",
                       default=False, help='Profile test runtime.')
@@ -243,17 +258,16 @@ if __name__ == "__main__":
         subprocess.call(generate_fixtures_command)
 
     TestRunner = get_runner(settings)
-    """
-    - To run tests in serial, set parallel=1. This is the default
-      currently because parallel mode is not stable at the moment.
-    - To change the number of parallel processes, you can either:
-        * Use 'DJANGO_TEST_PROCESSES' environment variable.
-        * Set parallel>1.
-    - For automatic determination of the number of processes,
-      set parallel=django.test.runner.default_test_processes().
-    """
+    parallel = options.processes
+
+    if parallel > 1:
+        print("-- Running tests in parallel mode with {} "
+              "processes.".format(parallel))
+    else:
+        print("-- Running tests in serial mode.")
+
     test_runner = TestRunner(failfast=options.fatal_errors, verbosity=2,
-                             parallel=1, keepdb=True)
+                             parallel=parallel, keepdb=True)
     failures = test_runner.run_tests(suites, full_suite=full_suite)
 
     templates_not_rendered = test_runner.get_shallow_tested_templates()
