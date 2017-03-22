@@ -93,3 +93,19 @@ people.add(bob);
     assert.equal(message.content, 'burrito');
 
 }());
+
+(function test_get_focus_area() {
+    assert.equal(compose._get_focus_area('private', {}), 'private_message_recipient');
+    assert.equal(compose._get_focus_area('private', {
+        private_message_recipient: 'bob@example.com'}), 'new_message_content');
+    assert.equal(compose._get_focus_area('stream', {}), 'stream');
+    assert.equal(compose._get_focus_area('stream', {stream: 'fun'}),
+                 'subject');
+    assert.equal(compose._get_focus_area('stream', {stream: 'fun',
+                                                    subject: 'more'}),
+                 'new_message_content');
+    assert.equal(compose._get_focus_area('stream', {stream: 'fun',
+                                                    subject: 'more',
+                                                    trigger: 'new topic button'}),
+                 'subject');
+}());
