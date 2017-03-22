@@ -293,8 +293,8 @@ function stubbing(func_name_to_stub, test_function) {
 
     hotkey.is_subs = return_true;
     global.ui_state.home_tab_obscured = return_true;
-    assert_mapping('up_arrow', 'subs.arrow_keys');
-    assert_mapping('down_arrow', 'subs.arrow_keys');
+    assert_mapping('up_arrow', 'subs.switch_rows');
+    assert_mapping('down_arrow', 'subs.switch_rows');
     global.ui_state.home_tab_obscured = return_false;
 
     hotkey.is_settings_page = return_true;

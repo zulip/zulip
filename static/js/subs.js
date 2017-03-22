@@ -707,7 +707,7 @@ exports.close = function () {
     subs.remove_miscategorized_streams();
 };
 
-exports.arrow_keys = function (event) {
+exports.switch_rows = function (event) {
     var active_row = $('div.stream-row.active'); // current active row
     var switch_row; // initialize var for row that we're switching to
     // if rows have undefined attributes (no selected/active row)

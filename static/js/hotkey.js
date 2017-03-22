@@ -435,7 +435,7 @@ exports.process_hotkey = function (e, hotkey) {
     if (hotkey.message_view_only && ui_state.home_tab_obscured()) {
         // if up/down arrow key was pressed and streams menu is open
         if ((event_name === 'up_arrow' || event_name === 'down_arrow') && exports.is_subs()) {
-            subs.arrow_keys(event_name);
+            subs.switch_rows(event_name);
             return true;
         }
         return false;
