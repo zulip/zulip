@@ -375,8 +375,7 @@ exports.update_settings_for_subscribed = function (sub) {
 
     // Display the swatch and subscription stream_settings
     var sub_row = stream_settings.closest('.stream-row');
-    sub_row.find(".color_swatch").addClass('in');
-    sub_row.find(".regular_subscription_settings").collapse('show');
+    sub_row.find(".regular_subscription_settings").addClass('in');
 };
 
 exports.update_settings_for_unsubscribed = function (sub) {
@@ -395,14 +394,7 @@ exports.update_settings_for_unsubscribed = function (sub) {
 
     // Hide the swatch and subscription settings
     var sub_row = stream_settings.closest('.stream-row');
-    sub_row.find(".color_swatch").removeClass('in');
-    if (sub.render_subscribers) {
-        // TODO: having a completely empty settings div messes
-        // with Bootstrap's collapser.  We currently just ensure
-        // that it's not empty for Zephyr mirror realms, even though it
-        // looks weird
-        sub_row.find(".regular_subscription_settings").collapse('hide');
-    }
+    sub_row.find(".regular_subscription_settings").removeClass('in');
     row_for_stream_id(subs.stream_id).attr("data-temp-view", true);
 };
 
@@ -1388,13 +1380,6 @@ $(function () {
 
     $("#subscriptions_table").on("click", ".close-privacy-modal", function () {
         $("#stream_privacy_modal").remove();
-    });
-
-    $("#subscriptions_table").on("show", ".regular_subscription_settings", function (e) {
-        // We want 'show' events that originate from
-        // 'regular_subscription_settings' divs not to trigger the
-        // handler for the entire subscription_settings div
-        e.stopPropagation();
     });
 
     $("#subscriptions_table").on("hide", ".subscription_settings", function (e) {
