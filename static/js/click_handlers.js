@@ -481,8 +481,11 @@ $(function () {
             // if there are any child nodes, inclusive of <br> which means you
             // have lines in your description or title, you're doing something
             // wrong.
-            if (this.hasChildNodes()) {
-                this.innerText = this.innerText;
+            for (var x = 0; x < this.childNodes.length; x += 1) {
+                if (this.childNodes[x].nodeType !== 3) {
+                    this.innerText = this.innerText.replace(/\n/, "");
+                    break;
+                }
             }
         });
 
