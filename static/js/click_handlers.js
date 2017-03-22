@@ -470,6 +470,8 @@ $(function () {
                 $(this).attr("contenteditable", false);
                 $(this).text($(this).attr("data-prev-text"));
                 $("[data-make-editable]").html("");
+            } else if (e.which === 13) {
+                $(this).siblings(".checkmark").click();
             }
         });
 
