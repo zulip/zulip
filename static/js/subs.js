@@ -1195,7 +1195,15 @@ $(function () {
         var stream_row = $(this).parent();
         var stream_id = stream_row.attr("data-stream-id");
         exports.sub_or_unsub(sub);
-        show_stream_row(this, true);
+        var sub_settings = settings_for_sub(sub);
+        var regular_sub_settings = sub_settings.find(".regular_subscription_settings");
+        if (!sub.subscribed) {
+            regular_sub_settings.addClass("in");
+            show_stream_row(stream_row, true);
+        } else {
+            regular_sub_settings.removeClass("in");
+        }
+
         setup_subscriptions_stream_hash(sub, stream_id);
         e.preventDefault();
         e.stopPropagation();
