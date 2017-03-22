@@ -793,6 +793,7 @@ JS_SPECS = {
             'third/bootstrap-notify/js/bootstrap-notify.js',
             'third/html5-formdata/formdata.js',
             'node_modules/jquery-validation/dist/jquery.validate.js',
+            'node_modules/clipboard/dist/clipboard.js',
             'third/jquery-form/jquery.form.js',
             'third/jquery-filedrop/jquery.filedrop.js',
             'third/jquery-caret/jquery.caret.1.5.2.js',

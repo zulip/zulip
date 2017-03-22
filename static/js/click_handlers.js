@@ -151,6 +151,14 @@ $(function () {
         e.stopPropagation();
         popovers.hide_all();
     });
+    $("body").on("click", ".copy_message", function (e) {
+        $(this).attr("data-original-title", "Copied!");
+        $(this).tooltip().tooltip('show');
+        var row = $(this).closest(".message_row");
+        message_edit.end(row);
+        e.preventDefault();
+        e.stopPropagation();
+    });
     $("body").on("click", "a", function () {
         if (document.activeElement === this) {
             ui_util.blur_active_element();

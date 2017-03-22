@@ -281,6 +281,27 @@ li,
     line-height: 100%;
 }
 
+.copy_message, .copy_message:focus {
+    background-image: url('/static/images/clippy.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-color: white;
+    background-position: center;
+    height: 20px;
+    width: 15px;
+    padding: 5px 10px;
+    border-radius: 2px;
+    position: relative;
+    top: 32px;
+    left: -5px;
+    margin-top: -8px;
+    display: block;
+}
+
+.copy_message:hover {
+    background-color: #dadada;
+}
+
 .btn-large {
     font-size: 115%;
 }

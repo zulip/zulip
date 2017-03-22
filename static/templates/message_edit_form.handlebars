@@ -16,6 +16,8 @@
 {{/if}}
     <div class="control-group no-margin">
         <div class="controls edit-controls">
+            <button class="btn pull-right copy_message" data-toggle="tooltip" title="{{t "Copy to clipboard" }}" data-clipboard-target="#message_edit_content">
+            </button>
             <label class="edit-control-label" for="message_edit_topic">{{t "Content" }}</label>
             <textarea class="message_edit_content" id="message_edit_content">{{content}}</textarea>
         </div>
