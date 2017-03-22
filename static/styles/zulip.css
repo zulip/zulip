@@ -1961,37 +1961,6 @@ div.floating_recipient {
     color: red;
 }
 
-.popover {
-    width: auto;
-}
-
-.popover-title {
-    overflow-x: hidden;
-    text-overflow: ellipsis;
-    text-align: center;
-
-    font-size: inherit;
-    line-height: inherit;
-}
-
-.popover-title:empty {
-    display: none;
-}
-
-.popover_info {
-    text-align: center;
-}
-
-.popover hr {
-    margin-top: 5px;
-    margin-bottom: 5px;
-}
-
-.popover-left,
-.popover-right {
-    max-width: 200px;
-}
-
 .hotkeys_table {
     width: 245px;
     margin-right: 10px;
@@ -2088,34 +2057,6 @@ div.floating_recipient {
 
 #copy-from-stream-expand-collapse {
     cursor: pointer;
-}
-
-.streams_popover .sp-container {
-    background: white;
-    cursor: pointer;
-    border: none;
-}
-
-.sp-container {
-    z-index: 100;
-}
-
-.streams_popover .sp-palette-container {
-    border-right: none;
-}
-
-.streams_popover .colorpicker-container {
-    display: inline-block;
-    margin-right: 10px;
-}
-
-.streams_popover .popover_sub_unsub_button {
-    margin-top: 0px;
-    float: none;
-}
-
-.streams_popover .popover_sub_unsub_button::after {
-    content: " Unsubscribe";
 }
 
 .stream_sub_unsub_button {
@@ -2619,39 +2560,4 @@ button.topic_edit_cancel {
         max-width: 100%;
         margin-top: 10px;
     }
-}
-
-ul.sender_info_popover i {
-    display: inline-block;
-    width: 14px;
-    text-align: center;
-    margin-right: 3px;
-}
-
-ul.actions_popover i {
-    display: inline-block;
-    width: 14px;
-    text-align: center;
-    margin-right: 3px;
-}
-
-.user_popover {
-    top: 100px!important;
-    margin: -15px;
-}
-
-.popover-avatar .popover-inner {
-    width: 240px;
-}
-
-.popover-avatar {
-    height: 240px;
-    width: 240px;
-    background-size: cover;
-    background-position: center;
-    margin-top: -8px;
-    margin-left: -14px;
-    margin-right: -8px;
-    margin-bottom: -8px;
-    position: relative;
 }

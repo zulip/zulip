@@ -1,0 +1,93 @@
+.popover {
+    width: auto;
+}
+
+.popover-title {
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+
+    font-size: inherit;
+    line-height: inherit;
+}
+
+.popover-title:empty {
+    display: none;
+}
+
+.popover_info {
+    text-align: center;
+}
+
+.popover hr {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.popover-left,
+.popover-right {
+    max-width: 200px;
+}
+
+.streams_popover .popover_sub_unsub_button::after {
+    content: " Unsubscribe";
+}
+
+.streams_popover .sp-container {
+    background: white;
+    cursor: pointer;
+    border: none;
+}
+
+.sp-container {
+    z-index: 100;
+}
+
+.streams_popover .sp-palette-container {
+    border-right: none;
+}
+
+.streams_popover .colorpicker-container {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.streams_popover .popover_sub_unsub_button {
+    margin-top: 0px;
+    float: none;
+}
+
+ul.sender_info_popover i {
+    display: inline-block;
+    width: 14px;
+    text-align: center;
+    margin-right: 3px;
+}
+
+ul.actions_popover i {
+    display: inline-block;
+    width: 14px;
+    text-align: center;
+    margin-right: 3px;
+}
+
+.user_popover {
+    top: 100px!important;
+    margin: -15px;
+}
+
+.popover-avatar .popover-inner {
+    width: 240px;
+}
+
+.popover-avatar {
+    height: 240px;
+    width: 240px;
+    background-size: cover;
+    background-position: center;
+    margin-top: -8px;
+    margin-left: -14px;
+    margin-right: -8px;
+    margin-bottom: -8px;
+    position: relative;
+}
