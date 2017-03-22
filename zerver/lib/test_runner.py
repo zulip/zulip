@@ -14,6 +14,7 @@ from django.test.signals import template_rendered
 
 from zerver.lib import test_classes, test_helpers
 from zerver.lib.cache import bounce_key_prefix_for_testing
+from zerver.lib.test_classes import flush_caches_for_testing
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.test_helpers import (
     get_all_templates, write_instrumentation_reports,
@@ -111,6 +112,7 @@ def run_test(test, result):
     test_name = full_test_name(test)
 
     bounce_key_prefix_for_testing(test_name)
+    flush_caches_for_testing()
 
     if not hasattr(test, "_pre_setup"):
         # test_name is likely of the form unittest.loader.ModuleImportFailure.zerver.tests.test_upload
