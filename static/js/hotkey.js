@@ -33,6 +33,10 @@ exports.is_lightbox_open = function () {
     return lightbox.is_open;
 };
 
+exports.is_subs = function () {
+    return subs.is_open;
+};
+
 var actions_dropdown_hotkeys = [
     'down_arrow',
     'up_arrow',
@@ -427,6 +431,11 @@ exports.process_hotkey = function (e, hotkey) {
     }
 
     if (hotkey.message_view_only && ui_state.home_tab_obscured()) {
+        // if up/down arrow key was pressed and streams menu is open
+        if ((event_name === 'up_arrow' || event_name === 'down_arrow') && exports.is_subs()) {
+            subs.arrow_keys(event_name);
+            return true;
+        }
         return false;
     }
 
