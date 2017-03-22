@@ -1278,11 +1278,11 @@ $(function () {
         exports.invite_user_to_stream(principal, sub, invite_success, invite_failure);
     });
 
-    function show_stream_row(node, e) {
+    function show_stream_row(node, show_settings) {
         $(".display-type #add_new_stream_title").hide();
         $(".display-type #stream_settings_title, .right .settings").show();
         $(".stream-row.active").removeClass("active");
-        if (e) {
+        if (show_settings) {
             show_subs_pane.settings();
 
             $(node).addClass("active");
@@ -1294,7 +1294,7 @@ $(function () {
 
     $("#subscriptions_table").on("click", ".stream-row", function (e) {
         if ($(e.target).closest(".check, .subscription_settings").length === 0) {
-            show_stream_row(this, e);
+            show_stream_row(this, true);
             var stream_id = $(this).attr("data-stream-id");
             var sub = stream_data.get_sub_by_id(stream_id);
             setup_subscriptions_stream_hash(sub, stream_id);
@@ -1306,7 +1306,7 @@ $(function () {
 
         $("#subscriptions_table").on("click", sel, function (e) {
             if ($(e.target).is(sel)) {
-                show_stream_row(this);
+                show_stream_row(this, false);
             }
         });
     }());
