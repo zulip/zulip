@@ -167,6 +167,10 @@ if __name__ == "__main__":
                       action="store_true",
                       default=False,
                       help="Show which tests are slowest.")
+    parser.add_option('--reverse', dest='reverse',
+                      action="store_true",
+                      default=False,
+                      help="Run tests in reverse order.")
 
     (options, args) = parser.parse_args()
 
@@ -267,7 +271,8 @@ if __name__ == "__main__":
         print("-- Running tests in serial mode.")
 
     test_runner = TestRunner(failfast=options.fatal_errors, verbosity=2,
-                             parallel=parallel, keepdb=True)
+                             parallel=parallel, reverse=options.reverse,
+                             keepdb=True)
     failures = test_runner.run_tests(suites, full_suite=full_suite)
 
     templates_not_rendered = test_runner.get_shallow_tested_templates()
