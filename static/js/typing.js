@@ -52,6 +52,14 @@ function is_valid_conversation(recipient) {
         return false;
     }
 
+    if (compose.get_invalid_recipient_emails().length > 0) {
+        // If we have invalid recipient emails, it's highly
+        // likely the user is either still deciding who to
+        // compose to, or is confused.  Also, the server
+        // will just reject our requests.
+        return false;
+    }
+
     return true;
 }
 
