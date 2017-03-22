@@ -212,11 +212,16 @@ function same_recipient_as_before(msg_type, opts) {
 function show_box_for_msg_type(msg_type, opts) {
     var focus_area;
 
+    // Set focus to "Topic" when narrowed to a stream+topic and "New topic" button clicked.
     if (msg_type === 'stream' && opts.stream && ! opts.subject) {
         focus_area = 'subject';
     } else if ((msg_type === 'stream' && opts.stream)
                || (msg_type === 'private' && opts.private_message_recipient)) {
-        focus_area = 'new_message_content';
+        if (opts.trigger === "new topic button") {
+            focus_area = 'subject';
+        } else {
+            focus_area = 'new_message_content';
+        }
     }
 
     if (msg_type === 'stream') {
@@ -266,13 +271,8 @@ exports.start = function (msg_type, opts) {
 
     is_composing_message = msg_type;
 
-    // Set focus to "Topic" when narrowed to a stream+topic and "New topic" button clicked.
-    if (opts.trigger === "new topic button") {
-        show_box('stream', $("#subject"), opts);
-    } else {
-        // Show either stream/topic fields or "You and" field.
-        show_box_for_msg_type(msg_type, opts);
-    }
+    // Show either stream/topic fields or "You and" field.
+    show_box_for_msg_type(msg_type, opts);
 
     compose_fade.start_compose(msg_type);
 
