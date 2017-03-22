@@ -235,7 +235,12 @@ label the issue as **in progress**. For more details, check out
 
 You're encouraged to ask questions on how to best implement or debug
 your changes -- the Zulip maintainers are excited to answer questions
-to help you stay unblocked and working efficiently.
+to help you stay unblocked and working efficiently. It's great to ask
+questions in comments on GitHub issues and pull requests, or [on
+chat.zulip.org](https://zulip.readthedocs.io/en/latest/chat-zulip-org.html). We'll
+direct longer discussions to Zulip chat, but please post a summary of
+what you learned from the chat, or link to the conversation, in a
+comment on the GitHub issue.
 
 We also welcome suggestions of features that you feel would be
 valuable or changes that you feel would make Zulip a better open
