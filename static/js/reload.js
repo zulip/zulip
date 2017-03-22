@@ -1,3 +1,4 @@
+// Read https://zulip.readthedocs.io/en/latest/hashchange-system.html
 var reload = (function () {
 
 var exports = {};
