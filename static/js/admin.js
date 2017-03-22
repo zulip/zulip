@@ -742,16 +742,16 @@ function _setup_page() {
                 }
                 if (response_data.inline_image_preview !== undefined) {
                     if (response_data.inline_image_preview) {
-                        ui.report_success(i18n.t("Previews of uploaded and linked images will be shown!"), inline_image_preview_status);
+                        ui_report.success(i18n.t("Previews of uploaded and linked images will be shown!"), inline_image_preview_status);
                     } else {
-                        ui.report_success(i18n.t("Previews of uploaded and linked images will not be shown!"), inline_image_preview_status);
+                        ui_report.success(i18n.t("Previews of uploaded and linked images will not be shown!"), inline_image_preview_status);
                     }
                 }
                 if (response_data.inline_url_embed_preview !== undefined) {
                     if (response_data.inline_url_embed_preview) {
-                        ui.report_success(i18n.t("Previews for linked websites will be shown!"), inline_url_embed_preview_status);
+                        ui_report.success(i18n.t("Previews for linked websites will be shown!"), inline_url_embed_preview_status);
                     } else {
-                        ui.report_success(i18n.t("Previews for linked websites will not be shown!"), inline_url_embed_preview_status);
+                        ui_report.success(i18n.t("Previews for linked websites will not be shown!"), inline_url_embed_preview_status);
                     }
                 }
                 if (response_data.create_stream_by_admins_only !== undefined) {
