@@ -174,6 +174,7 @@ function stubbing(func_name_to_stub, test_function) {
     // Ok, now test keys that work when we're viewing messages.
     hotkey.processing_text = return_false;
     hotkey.is_settings_page = return_false;
+    hotkey.is_subs = return_false;
 
     assert_mapping('?', 'ui.show_info_overlay');
     assert_mapping('/', 'search.initiate_search');
@@ -277,6 +278,12 @@ function stubbing(func_name_to_stub, test_function) {
     hotkey.is_lightbox_open = return_true;
     assert_mapping('left_arrow', 'lightbox.prev');
     assert_mapping('right_arrow', 'lightbox.next');
+
+    hotkey.is_subs = return_true;
+    global.ui_state.home_tab_obscured = return_true;
+    assert_mapping('up_arrow', 'subs.arrow_keys');
+    assert_mapping('down_arrow', 'subs.arrow_keys');
+    global.ui_state.home_tab_obscured = return_false;
 
     hotkey.is_settings_page = return_true;
     assert_unmapped('end');

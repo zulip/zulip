@@ -715,6 +715,31 @@ exports.close = function () {
     subs.remove_miscategorized_streams();
 };
 
+exports.arrow_keys = function (event) {
+    var active_row = $('div.stream-row.active'); // current active row
+    var switch_row; // initialize var for row that we're switching to
+    // if rows have undefined attributes (no selected/active row)
+    if (!active_row.attr('data-stream-id')) {
+        switch_row = $('div.stream-row:first-child'); // set active row to first row
+    } else if (event === 'up_arrow') {
+        switch_row = active_row.prev(); // previous row
+    } else if (event === 'down_arrow') {
+        switch_row = active_row.next(); // next row
+    }
+
+    var switch_row_id = switch_row.attr('data-stream-id');
+    // if both ID and row are defined, making sure to escape hidden rows
+    if (switch_row_id && !switch_row.hasClass('notdisplayed')) {
+        var switch_row_name = stream_data.get_sub_by_id(switch_row_id).name;
+        var hash = ['#streams', switch_row_id, switch_row_name]; // set hash
+        var hash_components = { // hash_components to send to subs.change_state()
+            base: hash.shift(),
+            arguments: hash,
+        };
+        exports.change_state(hash_components);
+    }
+};
+
 function ajaxSubscribe(stream) {
     // Subscribe yourself to a single stream.
     var true_stream_name;

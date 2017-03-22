@@ -15,31 +15,6 @@ function focus_in_empty_compose() {
         $('#new_message_content').is(':focus'));
 }
 
-function subs_arrow_keys(event) {
-    var active_row = $('div.stream-row.active'); // current active row
-    var switch_row; // initialize var for row that we're switching to
-    // if rows have undefined attributes (no selected/active row)
-    if (!active_row.attr('data-stream-id')) {
-        switch_row = $('div.stream-row:first-child'); // set active row to first row
-    } else if (event === 'up_arrow') {
-        switch_row = active_row.prev(); // previous row
-    } else if (event === 'down_arrow') {
-        switch_row = active_row.next(); // next row
-    }
-
-    var switch_row_id = switch_row.attr('data-stream-id');
-    // if both ID and row are defined, making sure to escape hidden rows
-    if (switch_row_id && !switch_row.hasClass('notdisplayed')) {
-        var switch_row_name = stream_data.get_sub_by_id(switch_row_id).name;
-        var hash = ['#streams', switch_row_id, switch_row_name]; // set hash
-        var hash_components = { // hash_components to send to subs.change_state()
-            base: hash.shift(),
-            arguments: hash,
-        };
-        subs.change_state(hash_components);
-    }
-}
-
 function open_reactions() {
     var message = current_msg_list.selected_message();
     var target = $(current_msg_list.selected_row()).find(".icon-vector-chevron-down")[0];
@@ -56,6 +31,10 @@ exports.is_settings_page = function () {
 
 exports.is_lightbox_open = function () {
     return lightbox.is_open;
+};
+
+exports.is_subs = function () {
+    return subs.is_open;
 };
 
 var actions_dropdown_hotkeys = [
@@ -453,8 +432,9 @@ exports.process_hotkey = function (e, hotkey) {
 
     if (hotkey.message_view_only && ui_state.home_tab_obscured()) {
         // if up/down arrow key was pressed and streams menu is open
-        if ((event_name === 'up_arrow' || event_name === 'down_arrow') && subs.is_open) {
-            subs_arrow_keys(event_name);
+        if ((event_name === 'up_arrow' || event_name === 'down_arrow') && exports.is_subs()) {
+            subs.arrow_keys(event_name);
+            return true;
         }
         return false;
     }
