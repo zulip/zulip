@@ -1844,7 +1844,7 @@ div.floating_recipient {
     font-weight: 400;
     vertical-align: middle;
     line-height: 20px;
-    display: inline-block;
+    display: none;
     float: none;
 }
 
