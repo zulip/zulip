@@ -468,7 +468,6 @@ $(function () {
             // wrong.
             if (this.hasChildNodes()) {
                 this.innerText = this.innerText;
-                place_caret_at_end(this);
             }
         });
 
