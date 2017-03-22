@@ -1169,6 +1169,13 @@ $(function () {
         selectText(this);
     });
 
+    function setup_subscriptions_stream_hash(sub, stream_id) {
+        exports.change_state.prevent_once();
+        window.location.hash = "#streams" + "/" +
+            stream_id + "/" +
+            hash_util.encodeHashComponent(sub.name);
+    }
+
     $("#subscriptions_table").on("click", ".sub_unsub_button", function (e) {
         var sub = get_sub_for_target(e.target);
         exports.sub_or_unsub(sub);
@@ -1288,13 +1295,9 @@ $(function () {
     $("#subscriptions_table").on("click", ".stream-row", function (e) {
         if ($(e.target).closest(".check, .subscription_settings").length === 0) {
             show_stream_row(this, e);
-            exports.change_state.prevent_once();
             var stream_id = $(this).attr("data-stream-id");
             var sub = stream_data.get_sub_by_id(stream_id);
-
-            window.location.hash = "#streams" + "/" +
-                stream_id + "/" +
-                hash_util.encodeHashComponent(sub.name);
+            setup_subscriptions_stream_hash(sub, stream_id);
         }
     });
 
