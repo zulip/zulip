@@ -81,9 +81,21 @@ function show_message_info_popover(element, id) {
             private_message_class: "respond_personal_button",
         };
 
-        var ypos = elt.offset().top - message_viewport.scrollTop();
+        var ypos = elt.offset().top;
+        var popover_size = 418;
+        var placement = "right";
+
+        if (!((ypos + (popover_size / 2) < message_viewport.height()) &&
+            (ypos > (popover_size / 2)))) {
+            if (((ypos + popover_size) < message_viewport.height())) {
+                placement = "bottom";
+            } else if (ypos > popover_size) {
+                placement = "top";
+            }
+        }
+
         elt.popover({
-            placement: (ypos > (message_viewport.height() - 300)) ? 'top' : 'bottom',
+            placement: placement,
             template:  templates.render('user_info_popover',   {class: "message-info-popover"}),
             title:     templates.render('user_info_popover_title', {user_avatar: "avatar/" + sender_email}),
             content:   templates.render('user_info_popover_content', args),
