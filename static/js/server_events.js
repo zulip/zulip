@@ -252,9 +252,9 @@ function dispatch_normal_event(event) {
         }
 
         if (event.op === 'start') {
-            typing.display_notification(event);
+            typing_events.display_notification(event);
         } else if (event.op === 'stop') {
-            typing.hide_notification(event);
+            typing_events.hide_notification(event);
         }
         break;
 

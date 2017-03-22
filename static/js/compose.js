@@ -735,6 +735,26 @@ exports.update_email = function (user_id, new_email) {
     exports.recipient(reply_to);
 };
 
+exports.get_invalid_recipient_emails = function () {
+    var private_recipients = util.extract_pm_recipients(compose_state.recipient());
+    var invalid_recipients = [];
+    _.each(private_recipients, function (email) {
+        // This case occurs when exports.recipient() ends with ','
+        if (email === "") {
+            return;
+        }
+        if (people.realm_get(email) !== undefined) {
+            return;
+        }
+        if (people.is_cross_realm_email(email)) {
+            return;
+        }
+        invalid_recipients.push(email);
+    });
+
+    return invalid_recipients;
+};
+
 // Checks if a stream exists. If not, displays an error and returns
 // false.
 function check_stream_for_send(stream_name, autosubscribe) {
@@ -822,6 +842,7 @@ function validate_stream_message() {
 
     return true;
 }
+
 // The function checks whether the recipients are users of the realm or cross realm users (bots
 // for now)
 function validate_private_message() {
@@ -832,22 +853,10 @@ function validate_private_message() {
         // For Zephyr mirroring realms, the frontend doesn't know which users exist
         return true;
     }
-    var private_recipients = util.extract_pm_recipients(compose_state.recipient());
-    var invalid_recipients = [];
+
+    var invalid_recipients = exports.get_invalid_recipient_emails();
+
     var context = {};
-    _.each(private_recipients, function (email) {
-        // This case occurs when exports.recipient() ends with ','
-        if (email === "") {
-            return;
-        }
-        if (people.realm_get(email) !== undefined) {
-            return;
-        }
-        if (people.is_cross_realm_email(email)) {
-            return;
-        }
-        invalid_recipients.push(email);
-    });
     if (invalid_recipients.length === 1) {
         context = {recipient: invalid_recipients.join()};
         compose_error(i18n.t("The recipient __recipient__ is not valid ", context), $("#private_message_recipient"));

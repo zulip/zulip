@@ -902,7 +902,9 @@ JS_SPECS = {
             'js/bot_data.js',
             'js/reactions.js',
             'js/typing.js',
+            'js/typing_status.js',
             'js/typing_data.js',
+            'js/typing_events.js',
             'js/ui_init.js',
             'js/shim.js',
             # JS bundled by webpack is also included here if PIPELINE_ENABLED setting is true
