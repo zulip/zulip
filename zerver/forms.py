@@ -50,13 +50,14 @@ def email_is_not_mit_mailing_list(email):
                 raise
 
 class RegistrationForm(forms.Form):
+    MAX_PASSWORD_LENGTH = 100
     full_name = forms.CharField(max_length=100)
     # The required-ness of the password field gets overridden if it isn't
     # actually required for a realm
-    password = forms.CharField(widget=forms.PasswordInput, max_length=100,
+    password = forms.CharField(widget=forms.PasswordInput, max_length=MAX_PASSWORD_LENGTH,
                                required=False)
-    realm_name = forms.CharField(max_length=100, required=False)
-    realm_subdomain = forms.CharField(max_length=40, required=False)
+    realm_name = forms.CharField(max_length=Realm.MAX_REALM_NAME_LENGTH, required=False)
+    realm_subdomain = forms.CharField(max_length=Realm.MAX_REALM_SUBDOMAIN_LENGTH, required=False)
     realm_org_type = forms.ChoiceField(((Realm.COMMUNITY, 'Community'),
                                         (Realm.CORPORATE, 'Corporate')),
                                        initial=Realm.COMMUNITY, required=False)

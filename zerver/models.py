@@ -103,10 +103,12 @@ def get_realm_emoji_cache_key(realm):
     return u'realm_emoji:%s' % (realm.id,)
 
 class Realm(ModelReprMixin, models.Model):
+    MAX_REALM_NAME_LENGTH = 40
+    MAX_REALM_SUBDOMAIN_LENGTH = 40
     AUTHENTICATION_FLAGS = [u'Google', u'Email', u'GitHub', u'LDAP', u'Dev', u'RemoteUser']
 
-    name = models.CharField(max_length=40, null=True) # type: Optional[Text]
-    string_id = models.CharField(max_length=40, unique=True) # type: Text
+    name = models.CharField(max_length=MAX_REALM_NAME_LENGTH, null=True) # type: Optional[Text]
+    string_id = models.CharField(max_length=MAX_REALM_SUBDOMAIN_LENGTH, unique=True) # type: Text
     restricted_to_domain = models.BooleanField(default=False) # type: bool
     invite_required = models.BooleanField(default=True) # type: bool
     invite_by_admins_only = models.BooleanField(default=False) # type: bool
