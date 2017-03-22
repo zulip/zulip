@@ -1169,9 +1169,21 @@ $(function () {
         selectText(this);
     });
 
+    function setup_subscriptions_stream_hash(sub, stream_id) {
+        exports.change_state.prevent_once();
+        window.location.hash = "#streams" + "/" +
+            stream_id + "/" +
+            hashchange.encodeHashComponent(sub.name);
+    }
+
     $("#subscriptions_table").on("click", ".sub_unsub_button", function (e) {
         var sub = get_sub_for_target(e.target);
+        var stream_row = $(this).parent();
+        var stream_id = stream_row.attr("data-stream-id");
+
         exports.sub_or_unsub(sub);
+        select_stream_row(this);
+        setup_subscriptions_stream_hash(sub, stream_id);
         e.preventDefault();
         e.stopPropagation();
     });
@@ -1271,30 +1283,31 @@ $(function () {
         exports.invite_user_to_stream(principal, sub, invite_success, invite_failure);
     });
 
-    function show_stream_row(node, e) {
+    function select_stream_row(node) {
         $(".display-type #add_new_stream_title").hide();
         $(".display-type #stream_settings_title, .right .settings").show();
         $(".stream-row.active").removeClass("active");
-        if (e) {
-            show_subs_pane.settings();
+        
+        show_subs_pane.settings();
+        $(node).addClass("active");
+        exports.show_settings_for(get_stream_id(node));
+    }
 
-            $(node).addClass("active");
-            exports.show_settings_for(get_stream_id(node));
-        } else {
-            show_subs_pane.nothing_selected();
-        }
+    function show_stream_row(node) {
+        $(".display-type #add_new_stream_title").hide();
+        $(".display-type #stream_settings_title, .right .settings").show();
+        $(".stream-row.active").removeClass("active");
+
+        show_subs_pane.nothing_selected();
     }
 
     $("#subscriptions_table").on("click", ".stream-row", function (e) {
         if ($(e.target).closest(".check, .subscription_settings").length === 0) {
-            show_stream_row(this, e);
-            exports.change_state.prevent_once();
+            select_stream_row(this);
             var stream_id = $(this).attr("data-stream-id");
             var sub = stream_data.get_sub_by_id(stream_id);
 
-            window.location.hash = "#streams" + "/" +
-                stream_id + "/" +
-                hash_util.encodeHashComponent(sub.name);
+            setup_subscriptions_stream_hash(sub, stream_id);
         }
     });
 
