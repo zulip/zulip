@@ -271,7 +271,7 @@ exports.start = function (msg_type, opts) {
 
     // Show either stream/topic fields or "You and" field.
     var focus_area = get_focus_area(msg_type, opts);
-    show_box(msg_type, $("#" + focus_area));
+    show_box(msg_type, $("#" + focus_area), opts);
 
     compose_fade.start_compose(msg_type);
 
