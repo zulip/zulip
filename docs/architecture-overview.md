@@ -276,3 +276,9 @@ are welcome!
     constraint. Whether a user has or has not starred a particular
     message is private; other users and realm admins don't know
     whether a message has been starred, or by whom.
+
+* **bankruptcy**: When a user has been off Zulip for several days and
+    has hundreds of unread messages, they are prompted for whether
+    they want to mark all their unread messages as read.  This is
+    called "declaring bankruptcy" (in reference to the concept in
+    finance).
