@@ -64,6 +64,11 @@ import six
 
 API_KEYS = {} # type: Dict[Text, Text]
 
+def flush_caches_for_testing():
+    # type: () -> None
+    global API_KEYS
+    API_KEYS = {}
+
 class UploadSerializeMixin(SerializeMixin):
     """
     We cannot use override_settings to change upload directory because
