@@ -464,6 +464,13 @@ $(function () {
 
         $(document).on("keydown", ".editable-section", function (e) {
             e.stopPropagation();
+            // Cancel editing description if Escape key is pressed.
+            if (e.which === 27) {
+                $("[data-finish-editing='.stream-description-editable']").hide();
+                $(this).attr("contenteditable", false);
+                $(this).text($(this).attr("data-prev-text"));
+                $("[data-make-editable]").html("");
+            }
         });
 
         $(document).on("drop", ".editable-section", function () {
