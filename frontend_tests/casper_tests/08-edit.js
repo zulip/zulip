@@ -141,6 +141,55 @@ casper.then(function () {
     });
 });
 
+// test editing close on renarrowing
+casper.then(function () {
+    casper.click('a[href="#"]');
+});
+
+common.then_send_message('stream', {
+    stream:  'Verona',
+    subject: 'edits',
+    content: 'test renarrowing',
+});
+
+casper.waitForText("test renarrowing");
+common.wait_for_message_actually_sent();
+
+then_edit_last_message();
+
+casper.then(function () {
+    casper.evaluate(function () {
+        var msg = $('#zhome .message_row:last');
+        msg.find('.message_edit_topic').val("topic edited for renarrowing");
+        msg.find('.message_edit_content').val("content edited for renarrowing");
+    });
+    casper.click('a[href="#"]');
+});
+
+casper.waitWhileVisible(".last_message .message_edit", function () {
+    casper.test.assertSelectorHasText(".last_message .message_edit_content", "test renarrowing");
+});
+
+then_edit_last_message();
+
+casper.waitUntilVisible(".last_message .message_edit", function () {
+    var text = casper.evaluate(function () {
+        var msg = $('#zhome .message_row:last');
+        return {edit_content : msg.find('.message_edit_content').val(),
+                edit_topic   : msg.find('.message_edit_topic').val()};
+    });
+    casper.test.assertEquals(text.edit_content, "content edited for renarrowing");
+    casper.test.assertEquals(text.edit_topic,   "topic edited for renarrowing");
+    casper.evaluate(function () {
+        var msg = $('#zhome .message_row:last');
+        msg.find('.message_edit_cancel').click();
+    });
+});
+
+casper.waitWhileVisible(".last_message .message_edit", function () {
+    casper.test.info('Message edit box closed on renarrowing.');
+});
+
 casper.run(function () {
     casper.test.done();
 });
