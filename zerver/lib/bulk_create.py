@@ -20,7 +20,8 @@ def bulk_create_users(realm, users_raw, bot_type=None, tos_version=None):
     for (email, full_name, short_name, active) in users:
         profile = create_user_profile(realm, email,
                                       initial_password(email), active, bot_type,
-                                      full_name, short_name, None, False, tos_version)
+                                      full_name, short_name, None, False, tos_version,
+                                      tutorial_status=UserProfile.TUTORIAL_FINISHED)
         profiles_to_create.append(profile)
     UserProfile.objects.bulk_create(profiles_to_create)
 

@@ -25,8 +25,9 @@ def random_api_key():
 # create_user (below) which will also make the Subscription and
 # Recipient objects
 def create_user_profile(realm, email, password, active, bot_type, full_name,
-                        short_name, bot_owner, is_mirror_dummy, tos_version):
-    # type: (Realm, Text, Optional[Text], bool, Optional[int], Text, Text, Optional[UserProfile], bool, Optional[Text]) -> UserProfile
+                        short_name, bot_owner, is_mirror_dummy, tos_version,
+                        tutorial_status=UserProfile.TUTORIAL_WAITING):
+    # type: (Realm, Text, Optional[Text], bool, Optional[int], Text, Text, Optional[UserProfile], bool, Optional[Text], Optional[Text]) -> UserProfile
     now = timezone.now()
     email = UserManager.normalize_email(email)
 
@@ -36,6 +37,7 @@ def create_user_profile(realm, email, password, active, bot_type, full_name,
                                pointer=-1, is_bot=bool(bot_type), bot_type=bot_type,
                                bot_owner=bot_owner, is_mirror_dummy=is_mirror_dummy,
                                tos_version=tos_version,
+                               tutorial_status=tutorial_status,
                                onboarding_steps=ujson.dumps([]),
                                default_language=realm.default_language)
 
