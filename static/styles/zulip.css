@@ -2640,7 +2640,7 @@ ul.actions_popover i {
     margin: -15px;
 }
 
-.popover-inner {
+.popover-avatar .popover-inner {
     width: 240px;
 }
 
