@@ -276,3 +276,8 @@ are welcome!
     constraint. Whether a user has or has not starred a particular
     message is private; other users and realm admins don't know
     whether a message has been starred, or by whom.
+
+* **bankruptcy**: When a user has been offline or idle for a longer
+    time, they get asked whether they want to mark all their unread
+    messages as read. As this zeroes the number of unread messages,
+    it is called declaring bankruptcy.
