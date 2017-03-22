@@ -109,6 +109,7 @@ class Realm(ModelReprMixin, models.Model):
     domain = models.CharField(max_length=40, db_index=True, unique=True) # type: Text
     # name is the user-visible identifier for the realm. It has no required
     # structure.
+    MAX_REALM_NAME_LENGTH = 40
     AUTHENTICATION_FLAGS = [u'Google', u'Email', u'GitHub', u'LDAP', u'Dev', u'RemoteUser']
 
     name = models.CharField(max_length=40, null=True) # type: Optional[Text]
