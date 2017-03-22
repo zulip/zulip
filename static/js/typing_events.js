@@ -14,8 +14,6 @@ var TYPING_STARTED_EXPIRY_PERIOD = 15000; // 15s
 // Note!: There are also timing constants in typing_status.js
 // that make typing indicators work.
 
-var stop_typing_timers = new Dict();
-
 function get_users_typing_for_narrow() {
     if (!narrow.narrowed_to_pms()) {
         // Narrow is neither pm-with nor is: private
@@ -53,12 +51,7 @@ exports.hide_notification = function (event) {
     });
     recipients.sort();
 
-    // If there's an existing timer for this typing notifications
-    // thread, clear it.
-    if (stop_typing_timers[recipients] !== undefined) {
-        clearTimeout(stop_typing_timers[recipients]);
-        stop_typing_timers[recipients] = undefined;
-    }
+    typing_data.clear_inbound_timer(recipients);
 
     var removed = typing_data.remove_typist(recipients, event.sender.user_id);
 
@@ -79,15 +72,14 @@ exports.display_notification = function (event) {
     typing_data.add_typist(recipients, sender_id);
 
     render_notifications_for_narrow();
-    // If there's an existing timeout for this typing notifications
-    // thread, clear it.
-    if (stop_typing_timers[recipients] !== undefined) {
-        clearTimeout(stop_typing_timers[recipients]);
-    }
-    // Set a time to expire the data if the sender stops transmitting
-    stop_typing_timers[recipients] = setTimeout(function () {
-        exports.hide_notification(event);
-    }, TYPING_STARTED_EXPIRY_PERIOD);
+
+    typing_data.kickstart_inbound_timer(
+        recipients,
+        TYPING_STARTED_EXPIRY_PERIOD,
+        function () {
+            exports.hide_notification(event);
+        }
+    );
 };
 
 $(document).on('narrow_activated.zulip', render_notifications_for_narrow);

@@ -45,3 +45,78 @@ var typing_data = require("js/typing_data.js");
     typing_data.add_typist([20, 40, 20], 20);
     assert.deepEqual(typing_data.get_group_typists([20, 40]), [20]);
 }());
+
+
+(function test_timers() {
+    var events = {};
+
+    var stub_timer_id = 'timer_id_stub';
+    var stub_group = [5, 10, 15];
+    var stub_delay = 99;
+    var stub_f = 'function';
+
+    function set_timeout(f, delay) {
+        assert.equal(delay, stub_delay);
+        events.f = f;
+        events.timer_set = true;
+        return stub_timer_id;
+    }
+
+    function clear_timeout(timer) {
+        assert.equal(timer, stub_timer_id);
+        events.timer_cleared = true;
+    }
+
+    function reset_events() {
+        events.f = undefined;
+        events.timer_cleared = false;
+        events.timer_set = false;
+    }
+
+    function kickstart() {
+        reset_events();
+        typing_data.kickstart_inbound_timer(stub_group, stub_delay, stub_f);
+    }
+
+    function clear() {
+        reset_events();
+        typing_data.clear_inbound_timer(stub_group);
+    }
+
+    global.patch_builtin('setTimeout', set_timeout);
+    global.patch_builtin('clearTimeout', clear_timeout);
+
+    // first time, we set
+    kickstart();
+    assert.deepEqual(events, {
+        f: stub_f,
+        timer_cleared: false,
+        timer_set: true,
+    });
+
+    // second time we clear and set
+    kickstart();
+    assert.deepEqual(events, {
+        f: stub_f,
+        timer_cleared: true,
+        timer_set: true,
+    });
+
+    // first time clearing, we clear
+    clear();
+    assert.deepEqual(events, {
+        f: undefined,
+        timer_cleared: true,
+        timer_set: false,
+    });
+
+    // second time clearing, we noop
+    clear();
+    assert.deepEqual(events, {
+        f: undefined,
+        timer_cleared: false,
+        timer_set: false,
+    });
+
+}());
+

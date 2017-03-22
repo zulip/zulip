@@ -2,6 +2,7 @@ var typing_data = (function () {
 var exports = {};
 
 var typist_dct = new Dict();
+var inbound_timer_dict = new Dict();
 
 function to_int(s) {
     return parseInt(s, 10);
@@ -62,6 +63,25 @@ exports.get_all_typists = function () {
     typists = _.uniq(typists, true);
     return typists;
 };
+
+// The next functions aren't pure data, but it is easy
+// enough to mock the setTimeout/clearTimeout functions.
+exports.clear_inbound_timer = function (group) {
+    var key = get_key(group);
+    var timer = inbound_timer_dict.get(key);
+    if (timer) {
+        clearTimeout(timer);
+        inbound_timer_dict.set(key, undefined);
+    }
+};
+
+exports.kickstart_inbound_timer = function (group, delay, callback) {
+    var key = get_key(group);
+    exports.clear_inbound_timer(group);
+    var timer = setTimeout(callback, delay);
+    inbound_timer_dict.set(key, timer);
+};
+
 
 return exports;
 }());
