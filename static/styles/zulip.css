@@ -1246,6 +1246,12 @@ div.focused_table {
     text-align: right;
 }
 
+#message-edit-history #message-history-label{
+    text-align: center;
+    font-size: 1.1em;
+    text-transform: uppercase;
+}
+
 .message_content.condensed {
     max-height: 8.5em;
     overflow: hidden;
@@ -2323,6 +2329,7 @@ button.topic_edit_cancel {
 .date_row {
     text-align: center;
     padding-bottom: 10px;
+    margin-top: 20px;
 }
 
 .date_row .date-direction {

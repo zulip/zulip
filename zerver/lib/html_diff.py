@@ -105,7 +105,8 @@ def highlight_html_differences(s1, s2):
             retval += highlight_chunks(chunks, highlight_replaced)
             idx += 1
         elif op == diff_match_patch.DIFF_DELETE:
-            retval += highlight_deleted('&nbsp;')
+            chunks, in_tag = chunkize(text, in_tag)
+            retval += highlight_chunks(chunks, highlight_deleted)
         elif op == diff_match_patch.DIFF_INSERT:
             chunks, in_tag = chunkize(text, in_tag)
             retval += highlight_chunks(chunks, highlight_inserted)

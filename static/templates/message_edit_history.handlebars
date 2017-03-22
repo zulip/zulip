@@ -5,9 +5,17 @@
 <div class="">
     <div class="messagebox-border">
       <div class="messagebox-content">
-        <div class="message_top_line"><span class="message_time">{{ timestamp }}</span></div>
+        <div class="message_top_line"><span class="message_time">{{{ show_day }}} {{ show_time }}</span></div>
         <div class="message_edit_content">{{{ body_to_render }}}</div>
-        <div class="message_author"><div class="author_details">{{ posted_or_edited }} {{ edited_by }}</div></div>
+        <div class="message_author">
+        	<div class="author_details">
+        		{{#if posted_not_edited}}
+        			<i class="icon-vector-share-alt"></i> {{ edited_by }}
+        		{{else}}
+        			<i class="icon-vector-pencil"></i> {{ edited_by }}
+     			{{/if}}
+        	</div>
+        </div>
       </div>
     </div>
 </div>
