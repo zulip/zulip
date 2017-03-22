@@ -11,7 +11,7 @@ from zerver.lib.str_utils import force_bytes
 # Adapted http://djangosnippets.org/snippets/2242/ by user s29 (October 25, 2010)
 
 class _RateLimitFilter(object):
-    last_error = datetime.min
+    last_error = datetime.min.replace(tzinfo=timezone.utc)
 
     def filter(self, record):
         # type: (logging.LogRecord) -> bool
