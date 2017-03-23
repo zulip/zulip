@@ -69,6 +69,8 @@ Zulip keyboard shortcuts are divided into four categories:
   messages with the topic of the selected message (outlined in blue).
 * **Narrow to all private messages**: `P` - This shortcut narrows the
   view to show all of the user's private messages.
+* **Narrow to next unread topic**: `n` - This shortcut narrows the
+  view to the next unread topic in the stream sidebar.
 * **Cycle between stream narrows**: `A` and `D` - This shortcut allows the
   user to cycle through the narrows showing the messages of a stream
   according to Stream order in the left sidebar. `A` allows the user
