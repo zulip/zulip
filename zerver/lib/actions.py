@@ -993,6 +993,11 @@ def notify_reaction_update(user_profile, message, emoji_name, op):
     # performance tradeoff, since otherwise we'd need to send all
     # reactions to public stream messages to every browser for every
     # client in the organization, which doesn't scale.
+    #
+    # However, to ensure that reactions do live-update for any user
+    # who has actually participated in reacting to a message, we add a
+    # "historical" UserMessage row for any user who reacts to message,
+    # subscribing them to future notifications.
     ums = UserMessage.objects.filter(message=message.id)
     send_event(event, [um.user_profile_id for um in ums])
 

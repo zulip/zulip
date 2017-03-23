@@ -7,7 +7,7 @@ from six import string_types
 
 from zerver.lib.test_helpers import tornado_redirected_to_list, get_display_recipient
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import get_user_profile_by_email
+from zerver.models import get_realm, get_user_profile_by_email, Recipient, UserMessage
 
 class ReactionEmojiTest(ZulipTestCase):
     def test_missing_emoji(self):
@@ -50,6 +50,34 @@ class ReactionEmojiTest(ZulipTestCase):
                                  **self.api_auth(sender))
         self.assert_json_success(result)
         self.assertEqual(200, result.status_code)
+
+    def test_valid_emoji_react_historical(self):
+        # type: () -> None
+        """
+        Reacting with valid emoji on a historical message succeeds
+        """
+        realm = get_realm("zulip")
+        stream_name = "Saxony"
+        self.subscribe_to_stream("cordelia@zulip.com", stream_name, realm=realm)
+        message_id = self.send_message("cordelia@zulip.com", stream_name, Recipient.STREAM)
+
+        sender = 'hamlet@zulip.com'
+        user_profile = get_user_profile_by_email(sender)
+
+        # Verify that hamlet did not receive the message.
+        self.assertFalse(UserMessage.objects.filter(user_profile=user_profile,
+                                                    message_id=message_id).exists())
+
+        # Have hamlet react to the message
+        result = self.client_put('/api/v1/messages/%s/emoji_reactions/smile' % (message_id,),
+                                 **self.api_auth(sender))
+        self.assert_json_success(result)
+
+        # Fetch the now-created UserMessage object to confirm it exists and is historical
+        user_message = UserMessage.objects.get(user_profile=user_profile, message_id=message_id)
+        self.assertTrue(user_message.flags.historical)
+        self.assertTrue(user_message.flags.read)
+        self.assertFalse(user_message.flags.starred)
 
     def test_valid_realm_emoji(self):
         # type: () -> None
