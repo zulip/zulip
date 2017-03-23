@@ -160,9 +160,26 @@
     width: 90px;
     margin: 0px -0.5px;
     text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    vertical-align: bottom; /* See http://stackoverflow.com/a/43266155/ */
     padding: 3px 10px;
     background-color: #fff;
     cursor: pointer;
+    justify-content: center;
+    align-items: center;
+}
+
+.informational-overlays .tab-switcher {
+    display: flex;
+}
+
+.informational-overlays .tab-switcher .ind-tab {
+    display: flex;
+    text-overflow: initial;
+    white-space: initial;
+    vertical-align: middle;
 }
 
 .new-style .tab-switcher.large .ind-tab {
