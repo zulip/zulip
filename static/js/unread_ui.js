@@ -94,7 +94,8 @@ function consider_bankruptcy() {
 }
 
 exports.initialize = function initialize() {
-    $(".bankruptcy_button").click(function () {
+    // No matter how the bankruptcy modal is closed, show unread counts after.
+    $("#bankruptcy").on("hide", function () {
         unread_ui.enable();
     });
 
