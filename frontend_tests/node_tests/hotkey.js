@@ -140,7 +140,7 @@ function stubbing(func_name_to_stub, test_function) {
     // Unmapped keys should immediately return false, without
     // calling any functions outside of hotkey.js.
     assert_unmapped('abdefhlmnoptuxyz');
-    assert_unmapped('BEFGHILMNOQTUVWXYZ');
+    assert_unmapped('BEFHILMNOQTUVWXYZ');
 
     // We have to skip some checks due to the way the code is
     // currently organized for mapped keys.
@@ -209,6 +209,7 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('v', 'lightbox.show_from_selected_message');
     assert_mapping('i', 'popovers.open_message_menu');
     assert_mapping(':', 'popovers.toggle_reactions_popover', true);
+    assert_mapping('G', 'navigate.to_end');
 }());
 
 (function test_motion_keys() {
