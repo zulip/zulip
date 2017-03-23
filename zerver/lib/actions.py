@@ -661,12 +661,12 @@ def do_deactivate_stream(stream, log=True):
     old_name = stream.name
     new_name = ("!DEACTIVATED:" + old_name)[:Stream.MAX_NAME_LENGTH]
     for i in range(20):
-        existing_deactivated_stream = get_stream(new_name, stream.realm)
-        if existing_deactivated_stream:
+        try:
+            get_stream(new_name, stream.realm)
             # This stream has alrady been deactivated, keep prepending !s until
             # we have a unique stream name or you've hit a rename limit.
             new_name = ("!" + new_name)[:Stream.MAX_NAME_LENGTH]
-        else:
+        except Stream.DoesNotExist:
             break
 
     # If you don't have a unique name at this point, this will fail later in the
@@ -1285,11 +1285,13 @@ def check_message(sender, client, message_type_name, message_to,
             raise JsonableError(_("Topic can't be empty"))
         subject = truncate_topic(subject)
 
-        stream = get_stream(stream_name, realm)
+        try:
+            stream = get_stream(stream_name, realm)
 
-        send_pm_if_empty_stream(sender, stream, stream_name, realm)
+            send_pm_if_empty_stream(sender, stream, stream_name, realm)
 
-        if stream is None:
+        except Stream.DoesNotExist:
+            send_pm_if_empty_stream(sender, None, stream_name, realm)
             raise JsonableError(_("Stream '%(stream_name)s' does not exist") % {'stream_name': escape(stream_name)})
         recipient = get_recipient(Recipient.STREAM, stream.id)
 
