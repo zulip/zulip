@@ -779,6 +779,14 @@ exports.toggle_view = function (event) {
     }
 };
 
+exports.view_stream = function () {
+    var active_data = get_active_data();
+    var row_data = get_row_data(active_data[0]);
+    if (row_data) {
+        window.location.hash = '#narrow/stream/' + row_data[1].name;
+    }
+};
+
 function ajaxSubscribe(stream) {
     // Subscribe yourself to a single stream.
     var true_stream_name;

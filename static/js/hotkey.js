@@ -108,6 +108,7 @@ var keypress_mappings = {
     82: {name: 'respond_to_author', message_view_only: true}, // 'R'
     83: {name: 'narrow_by_subject', message_view_only: true}, //'S'
     85: {name: 'keyboard_sub', message_view_only: false}, //'U'
+    86: {name: 'view_selected_stream', message_view_only: false}, //'V'
     99: {name: 'compose', message_view_only: true}, // 'c'
     103: {name: 'gear_menu', message_view_only: true}, // 'g'
     105: {name: 'message_actions', message_view_only: true}, // 'i'
@@ -585,6 +586,11 @@ exports.process_hotkey = function (e, hotkey) {
         case 'keyboard_sub':
             if (exports.is_subs()) {
                 subs.keyboard_sub();
+            }
+            return true;
+        case 'view_selected_stream':
+            if (exports.is_subs()) {
+                subs.view_stream();
             }
             return true;
     }
