@@ -530,6 +530,9 @@ exports.process_hotkey = function (e, hotkey) {
         if (exports.is_lightbox_open()) {
             lightbox.prev();
             return true;
+        } else if (exports.is_subs()) {
+            subs.toggle_view(event_name);
+            return true;
         }
 
         message_edit.edit_last_sent_message();
@@ -539,6 +542,9 @@ exports.process_hotkey = function (e, hotkey) {
     if (event_name === 'right_arrow') {
         if (exports.is_lightbox_open()) {
             lightbox.next();
+            return true;
+        } else if (exports.is_subs()) {
+            subs.toggle_view(event_name);
             return true;
         }
     }

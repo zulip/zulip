@@ -761,6 +761,18 @@ exports.keyboard_sub = function () {
     }
 };
 
+exports.toggle_view = function (event) {
+    var active_data = get_active_data();
+    var hash;
+    if (event === 'right_arrow' && active_data[2].text() === 'Subscribed') {
+        hash = ['#streams', 'all'];
+        export_hash(hash);
+    } else if (event === 'left_arrow' && active_data[2].text() === 'All streams') {
+        hash = ['#streams', 'subscribed'];
+        export_hash(hash);
+    }
+};
+
 function ajaxSubscribe(stream) {
     // Subscribe yourself to a single stream.
     var true_stream_name;
