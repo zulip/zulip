@@ -366,7 +366,7 @@ code {
     font-size: 0.857em;
 }
 
-.message_content p code {
+.message_content code {
     white-space: pre-wrap;
     padding: 0px 4px;
     background-color: #fff;
