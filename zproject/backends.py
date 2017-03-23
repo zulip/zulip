@@ -145,7 +145,7 @@ class SocialAuthMixin(ZulipAuthMixin):
 
     def process_do_auth(self, user_profile, *args, **kwargs):
         # type: (UserProfile, *Any, **Any) -> Optional[HttpResponse]
-        # This function needs to be imported from here due to the cyclic
+        # These functions need to be imported here to avoid cyclic
         # dependency.
         from zerver.views.auth import (login_or_register_remote_user,
                                        redirect_to_subdomain_login_url)
