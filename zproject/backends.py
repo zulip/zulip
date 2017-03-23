@@ -116,6 +116,7 @@ class SocialAuthMixin(ZulipAuthMixin):
 
         email_address = self.get_email_address(*args, **kwargs)
         if not email_address:
+            return_data['invalid_email'] = True
             return None
 
         try:
@@ -156,9 +157,15 @@ class SocialAuthMixin(ZulipAuthMixin):
         inactive_user = return_data.get('inactive_user')
         inactive_realm = return_data.get('inactive_realm')
         invalid_subdomain = return_data.get('invalid_subdomain')
+        invalid_email = return_data.get('invalid_email')
 
-        if inactive_user or inactive_realm:
+        if inactive_user or inactive_realm or invalid_email:
+            # Redirect to login page. We can't send to registration
+            # workflow with these errors.
             return None
+
+        # If user_profile is `None` here, send the user to registration
+        # workflow.
 
         strategy = self.strategy  # type: ignore # This comes from Python Social Auth.
         request = strategy.request
