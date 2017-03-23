@@ -295,8 +295,8 @@ class StreamAdminTest(ZulipTestCase):
         ))
         notified_user_ids = set(events[1]['users'])
 
-        stream_name1_exists = get_stream('stream_name1', realm)
-        self.assertFalse(stream_name1_exists)
+        self.assertRaises(Stream.DoesNotExist, get_stream, 'stream_name1', realm)
+
         stream_name2_exists = get_stream('stream_name2', realm)
         self.assertTrue(stream_name2_exists)
 
@@ -326,8 +326,8 @@ class StreamAdminTest(ZulipTestCase):
                                        {'new_name': ujson.dumps(u'नाम में क्या रक्खा हे'.encode('utf-8'))})
         self.assert_json_success(result)
         # While querying, system can handle unicode strings.
-        stream_name_old_uni_exists = get_stream(u'नया नाम', realm)
-        self.assertFalse(stream_name_old_uni_exists)
+        self.assertRaises(Stream.DoesNotExist, get_stream, u'नया नाम', realm)
+
         stream_name_new_uni_exists = get_stream(u'नाम में क्या रक्खा हे', realm)
         self.assertTrue(stream_name_new_uni_exists)
 
@@ -1183,8 +1183,9 @@ class SubscriptionAPITest(ZulipTestCase):
             self.assertIsInstance(stream['name'], six.string_types)
             self.assertIsInstance(stream['color'], six.string_types)
             self.assertIsInstance(stream['invite_only'], bool)
-            # check that the stream name corresponds to an actual stream
-            self.assertIsNotNone(get_stream(stream['name'], self.realm))
+            # check that the stream name corresponds to an actual
+            # stream; will throw Stream.DoesNotExist if it doesn't
+            get_stream(stream['name'], self.realm)
         list_streams = [stream['name'] for stream in json["subscriptions"]]
         # also check that this matches the list of your subscriptions
         self.assertEqual(sorted(list_streams), sorted(self.streams))

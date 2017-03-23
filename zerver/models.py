@@ -860,11 +860,8 @@ def get_active_streams(realm):
     return Stream.objects.filter(realm=realm, deactivated=False)
 
 def get_stream(stream_name, realm):
-    # type: (Text, Realm) -> Optional[Stream]
-    try:
-        return get_stream_backend(stream_name, realm)
-    except Stream.DoesNotExist:
-        return None
+    # type: (Text, Realm) -> Stream
+    return get_stream_backend(stream_name, realm)
 
 def bulk_get_streams(realm, stream_names):
     # type: (Realm, STREAM_NAMES) -> Dict[Text, Any]

@@ -165,8 +165,9 @@ class NarrowBuilder(object):
 
     def by_stream(self, query, operand, maybe_negate):
         # type: (Query, str, ConditionTransform) -> Query
-        stream = get_stream(operand, self.user_profile.realm)
-        if stream is None:
+        try:
+            stream = get_stream(operand, self.user_profile.realm)
+        except Stream.DoesNotExist:
             raise BadNarrowOperator('unknown stream ' + operand)
 
         if self.user_profile.realm.is_zephyr_mirror_realm:
@@ -437,8 +438,9 @@ def is_public_stream(stream_name, realm):
     False in that situation, and subsequent code will do
     validation and raise the appropriate JsonableError.
     """
-    stream = get_stream(stream_name, realm)
-    if stream is None:
+    try:
+        stream = get_stream(stream_name, realm)
+    except Stream.DoesNotExist:
         return False
     return stream.is_public()
 
@@ -724,8 +726,9 @@ def update_message_flags(request, user_profile,
     request._log_data["extra"] = log_data_str
     stream = None
     if stream_name is not None:
-        stream = get_stream(stream_name, user_profile.realm)
-        if not stream:
+        try:
+            stream = get_stream(stream_name, user_profile.realm)
+        except Stream.DoesNotExist:
             raise JsonableError(_('No such stream \'%s\'') % (stream_name,))
         if topic_name:
             topic_exists = UserMessage.objects.filter(user_profile=user_profile,
