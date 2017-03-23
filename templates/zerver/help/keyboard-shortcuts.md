@@ -34,7 +34,7 @@ Zulip keyboard shortcuts are divided into four categories:
 * **Scroll down**: `J`, `Spacebar`, or `PgDn` (`Fn` + `↓` on Mac) -
   This shortcut allows the user to scroll down through the messages in
   their view.
-* **Last message**: `End` (`Fn`+`⇾` on Mac) - This shortcut
+* **Last message**: `End` (`Fn`+`⇾` on Mac) or `G` - This shortcut
   allows the user to scroll to the most recent message in their view.
 * **First message in view**: `Home` (`Fn`+`⇽` on Mac) - This shortcut
   allows the user to scroll to the most recent message in their view.
