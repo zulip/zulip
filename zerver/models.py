@@ -1552,3 +1552,4 @@ class RealmAuditLog(models.Model):
     event_type = models.CharField(max_length=40) # type: Text
     event_time = models.DateTimeField() # type: datetime.datetime
     backfilled = models.BooleanField(default=False) # type: bool
+    extra_data = models.TextField() # type: Text

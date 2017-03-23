@@ -1819,16 +1819,16 @@ def do_regenerate_api_key(user_profile, log=True):
                                  )),
                    bot_owner_userids(user_profile))
 
-def do_change_avatar_fields(user_profile, avatar_source, log=True):
-    # type: (UserProfile, Text, bool) -> None
+def do_change_avatar_fields(user_profile, avatar_source):
+    # type: (UserProfile, Text) -> None
     user_profile.avatar_source = avatar_source
     user_profile.avatar_version += 1
     user_profile.save(update_fields=["avatar_source", "avatar_version"])
-
-    if log:
-        log_event({'type': 'user_change_avatar_source',
-                   'user': user_profile.email,
-                   'avatar_source': avatar_source})
+    event_time = timezone.now()
+    RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
+                                 event_type='user_change_avatar_source',
+                                 extra_data={'avatar_source': avatar_source},
+                                 event_time=event_time)
 
     if user_profile.is_bot:
         send_event(dict(type='realm_bot',
