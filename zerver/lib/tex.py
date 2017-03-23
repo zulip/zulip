@@ -4,11 +4,11 @@ import logging
 import os
 import subprocess
 from django.conf import settings
-from typing import Text
+from typing import Optional, Text
 from zerver.lib.str_utils import force_bytes
 
 def render_tex(tex, is_inline=True):
-    # type: (Text, bool) -> Text
+    # type: (Text, bool) -> Optional[Text]
     """Render a TeX string into HTML using KaTeX
 
     Returns the HTML string, or None if there was some error in the TeX syntax
@@ -36,6 +36,7 @@ def render_tex(tex, is_inline=True):
     stdout = katex.communicate(input=force_bytes(tex))[0]
     if katex.returncode == 0:
         # stdout contains a newline at the end
+        assert stdout is not None
         return stdout.decode('utf-8').strip()
     else:
         return None
