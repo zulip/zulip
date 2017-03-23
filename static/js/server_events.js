@@ -478,7 +478,7 @@ function get_events(options) {
                     page_params.event_queue_expired = true;
                     reload.initiate({immediate: true,
                                      save_pointer: false,
-                                     save_narrow: false,
+                                     save_narrow: true,
                                      save_compose: true});
                 }
 
