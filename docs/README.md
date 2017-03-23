@@ -42,9 +42,11 @@ cd docs/
 make html
 ```
 
-and then opening `file:///path/to/zulip/docs/_build/html/index.html` in
-your browser (you can also use e.g. `firefox
-docs/_build/html/index.html` from the root of your Zulip checkout).
+and then opening `http://127.0.0.1:9991/docs/index.html` in your
+browser.  The raw files are available at
+`file:///path/to/zulip/docs/_build/html/index.html` in your browser
+(so you can also use e.g. `firefox docs/_build/html/index.html` from
+the root of your Zulip checkout).
 
 If you are adding a new page to the table of contents, you will want
 to modify `docs/index.rst` and run `make clean` before `make html`, so

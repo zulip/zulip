@@ -11,10 +11,18 @@ use_prod_static = getattr(settings, 'PIPELINE_ENABLED', False)
 static_root = os.path.join(settings.DEPLOY_ROOT, 'prod-static/serve' if use_prod_static else 'static')
 
 urls = [
+    url(r'^coverage/(?P<path>.*)$',
+        serve, {'document_root':
+                os.path.join(settings.DEPLOY_ROOT, 'var/coverage'),
+                'show_indexes': True}),
+    url(r'^docs/(?P<path>.*)$',
+        serve, {'document_root':
+                os.path.join(settings.DEPLOY_ROOT, 'docs/_build/html')}),
     url(r'^static/(?P<path>.*)$', serve, {'document_root': static_root}),
     url(r'^devlogin/$', zerver.views.auth.login_page,
         {'template_name': 'zerver/dev_login.html'}, name='zerver.views.auth.login_page'),
 ]
+
 i18n_urls = [
     url(r'^confirmation_key/$', zerver.views.registration.confirmation_key),
 ]
