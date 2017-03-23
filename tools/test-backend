@@ -90,8 +90,6 @@ not_yet_fully_covered = {
     # Getting views file coverage to 100% is a major project goal
     'zerver/views/auth.py',
     'zerver/views/home.py',
-    # Getting this to 100% is a major project goal.
-    'zproject/backends.py',
 }
 
 enforce_fully_covered = sorted(target_fully_covered - not_yet_fully_covered)
