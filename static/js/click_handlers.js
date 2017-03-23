@@ -430,12 +430,6 @@ $(function () {
     });
     // End Webathena code
 
-    // BANKRUPTCY
-
-    $(".bankruptcy_button").click(function () {
-        unread_ui.enable();
-    });
-
     (function () {
         var map = {
             ".stream-description-editable": subs.change_stream_description,
@@ -521,14 +515,6 @@ $(function () {
             }
         });
     }());
-
-    $('#yes-bankrupt').click(function () {
-        pointer.fast_forward_pointer();
-        $("#yes-bankrupt").hide();
-        $("#no-bankrupt").hide();
-        $(this).after($("<div>").addClass("alert alert-info settings_committed")
-                      .text(i18n.t("Bringing you to your latest messages…")));
-    });
 
     // MAIN CLICK HANDLER
 
