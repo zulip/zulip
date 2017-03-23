@@ -972,17 +972,14 @@ def do_send_messages(messages_maybe_none):
     # intermingle sending zephyr messages with other messages.
     return already_sent_ids + [message['message'].id for message in messages]
 
-def do_add_reaction(user_profile, message, emoji_name):
-    # type: (UserProfile, Message, Text) -> None
-    reaction = Reaction(user_profile=user_profile, message=message, emoji_name=emoji_name)
-    reaction.save()
-
+def notify_reaction_update(user_profile, message, emoji_name, op):
+    # type: (UserProfile, Message, Text, Text) -> None
     user_dict = {'user_id': user_profile.id,
                  'email': user_profile.email,
                  'full_name': user_profile.full_name}
 
     event = {'type': 'reaction',
-             'op': 'add',
+             'op': op,
              'user': user_dict,
              'message_id': message.id,
              'emoji_name': emoji_name} # type: Dict[str, Any]
@@ -999,33 +996,18 @@ def do_add_reaction(user_profile, message, emoji_name):
     ums = UserMessage.objects.filter(message=message.id)
     send_event(event, [um.user_profile_id for um in ums])
 
+def do_add_reaction(user_profile, message, emoji_name):
+    # type: (UserProfile, Message, Text) -> None
+    reaction = Reaction(user_profile=user_profile, message=message, emoji_name=emoji_name)
+    reaction.save()
+    notify_reaction_update(user_profile, message, emoji_name, "add")
+
 def do_remove_reaction(user_profile, message, emoji_name):
     # type: (UserProfile, Message, Text) -> None
     Reaction.objects.filter(user_profile=user_profile,
                             message=message,
                             emoji_name=emoji_name).delete()
-
-    user_dict = {'user_id': user_profile.id,
-                 'email': user_profile.email,
-                 'full_name': user_profile.full_name} # type: Dict[str, Any]
-
-    event = {'type': 'reaction',
-             'op': 'remove',
-             'user': user_dict,
-             'message_id': message.id,
-             'emoji_name': emoji_name} # type: Dict[str, Any]
-
-    # Clear the cached message since reaction is removed.
-    update_to_dict_cache([message])
-
-    # Recipients for message update events, including reactions, are
-    # everyone who got the original message.  This means reactions
-    # won't live-update in preview narrows, but it's the right
-    # performance tradeoff, since otherwise we'd need to send all
-    # reactions to public stream messages to every browser for every
-    # client in the organization, which doesn't scale.
-    ums = UserMessage.objects.filter(message=message.id)
-    send_event(event, [um.user_profile_id for um in ums])
+    notify_reaction_update(user_profile, message, emoji_name, "remove")
 
 def do_send_typing_notification(notification):
     # type: (Dict[str, Any]) -> None
