@@ -114,6 +114,7 @@ var keypress_mappings = {
     105: {name: 'message_actions', message_view_only: true}, // 'i'
     106: {name: 'vim_down', message_view_only: true}, // 'j'
     107: {name: 'vim_up', message_view_only: true}, // 'k'
+    110: {name: 'new_stream', message_view_only: false}, // 'n'
     113: {name: 'query_users', message_view_only: false}, // 'q'
     114: {name: 'reply_message', message_view_only: true}, // 'r'
     115: {name: 'narrow_by_recipient', message_view_only: true}, // 's'
@@ -591,6 +592,11 @@ exports.process_hotkey = function (e, hotkey) {
         case 'view_selected_stream':
             if (exports.is_subs()) {
                 subs.view_stream();
+            }
+            return true;
+        case 'new_stream':
+            if (exports.is_subs()) {
+                subs.new_stream_clicked();
             }
             return true;
     }

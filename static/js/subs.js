@@ -685,7 +685,7 @@ exports.change_state = (function () {
         if (hash.arguments.length > 0) {
             // if in #streams/new form.
             if (hash.arguments[0] === "new") {
-                $("#create_stream_button").click();
+                exports.new_stream_clicked();
                 components.toggle.lookup("stream-filter-toggle").goto("All streams");
             } else if (hash.arguments[0] === "all") {
                 components.toggle.lookup("stream-filter-toggle").goto("All streams");
@@ -1000,6 +1000,46 @@ exports.sub_or_unsub = function (sub) {
     }
 };
 
+exports.new_stream_clicked = function () {
+    var stream = $.trim($("#search_stream_name").val());
+
+    if (!should_list_all_streams()) {
+        // Realms that don't allow listing streams should simply be subscribed to.
+        meta.stream_created = stream;
+        ajaxSubscribe($("#search_stream_name").val());
+        return;
+    }
+
+    // this changes the tab switcher (settings/preview) which isn't necessary
+    // to a add new stream title.
+    $(".display-type #add_new_stream_title").show();
+    $(".display-type #stream_settings_title").hide();
+
+    $(".stream-row.active").removeClass("active");
+
+    $("#stream_settings_title, .subscriptions-container .settings, .nothing-selected").hide();
+    $("#stream-creation, #add_new_stream_title").show();
+
+    $('#create_stream_name').val(stream);
+    show_new_stream_modal();
+
+    // at less than 700px we have a @media query that when you tap the
+    // #create_stream_button, the stream prompt slides in. However, when you
+    // focus  the button on that page, the entire app view jumps over to
+    // the other tab, and the animation breaks.
+    // it is unclear whether this is a browser bug or "feature", however what
+    // is clear is that this shoudn't be touched unless you're also changing
+    // the mobile @media query at 700px.
+    if (window.innerWidth > 700) {
+        $('#create_stream_name').focus();
+    }
+
+    // change the hash to #streams/new to allow for linking and
+    // easy discovery.
+
+    window.location.hash = "#streams/new";
+};
+
 
 $(function () {
 
@@ -1015,10 +1055,6 @@ $(function () {
             $(".nothing-selected, #stream_settings_title").show();
             $("#add_new_stream_title, .settings, #stream-creation").hide();
         },
-        stream_creation: function () {
-            $("#stream_settings_title, .subscriptions-container .settings, .nothing-selected").hide();
-            $("#stream-creation, #add_new_stream_title").show();
-        },
         settings: function () {
             $(".settings, #stream_settings_title").show();
             $("#add_new_stream_title, #stream-creation, .nothing-selected").hide();
@@ -1027,43 +1063,7 @@ $(function () {
 
     $("#subscriptions_table").on("click", "#create_stream_button", function (e) {
         e.preventDefault();
-
-        var stream = $.trim($("#search_stream_name").val());
-
-        if (!should_list_all_streams()) {
-            // Realms that don't allow listing streams should simply be subscribed to.
-            meta.stream_created = stream;
-            ajaxSubscribe($("#search_stream_name").val());
-            return;
-        }
-
-        // this changes the tab switcher (settings/preview) which isn't necessary
-        // to a add new stream title.
-        $(".display-type #add_new_stream_title").show();
-        $(".display-type #stream_settings_title").hide();
-
-        $(".stream-row.active").removeClass("active");
-
-        show_subs_pane.stream_creation();
-
-        $('#create_stream_name').val(stream);
-        show_new_stream_modal();
-
-        // at less than 700px we have a @media query that when you tap the
-        // #create_stream_button, the stream prompt slides in. However, when you
-        // focus  the button on that page, the entire app view jumps over to
-        // the other tab, and the animation breaks.
-        // it is unclear whether this is a browser bug or "feature", however what
-        // is clear is that this shoudn't be touched unless you're also changing
-        // the mobile @media query at 700px.
-        if (window.innerWidth > 700) {
-            $('#create_stream_name').focus();
-        }
-
-        // change the hash to #streams/new to allow for linking and
-        // easy discovery.
-
-        window.location.hash = "#streams/new";
+        exports.new_stream_clicked();
     });
 
     $('body').on('change', '#user-checkboxes input, #make-invite-only input', update_announce_stream_state);
