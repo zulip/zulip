@@ -739,6 +739,10 @@ exports.switch_rows = function (event) {
         switch_row = active_data[0].prev();
     } else if (event === 'down_arrow') {
         switch_row = active_data[0].next();
+        if ($('#search_stream_name').is(":focus")) {
+            $('#search_stream_name').blur();
+            return;
+        }
     }
 
     var row_data = get_row_data(switch_row);
@@ -746,6 +750,8 @@ exports.switch_rows = function (event) {
         var switch_row_name = row_data[1].name;
         var hash = ['#streams', row_data[0], switch_row_name];
         export_hash(hash);
+    } else if (event === 'up_arrow' && !row_data) {
+        $('#search_stream_name').focus();
     }
 };
 
