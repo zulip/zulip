@@ -26,6 +26,29 @@ function settings_button_for_sub(sub) {
     return $(".subscription_settings[data-stream-id='" + id + "'] .subscribe-button");
 }
 
+function get_row_data(row) {
+    var row_id = row.attr('data-stream-id');
+    if (row_id) {
+        var row_object = stream_data.get_sub_by_id(row_id);
+        return [row_id, row_object];
+    }
+}
+
+function get_active_data() {
+    var active_row = $('div.stream-row.active');
+    var valid_active_id = active_row.attr('data-stream-id');
+    var active_tab = $('.subscriptions-container').find('div.ind-tab.selected');
+    return [active_row, valid_active_id, active_tab];
+}
+
+function export_hash(hash) {
+    var hash_components = {
+        base: hash.shift(),
+        arguments: hash,
+    };
+    exports.change_state(hash_components);
+}
+
 function selectText(element) {
   var range;
   var sel;
@@ -708,40 +731,33 @@ exports.close = function () {
 };
 
 exports.switch_rows = function (event) {
-    var active_row = $('div.stream-row.active'); // current active row
-    var switch_row; // initialize var for row that we're switching to
-    // if rows have undefined attributes (no selected/active row)
-    if (!active_row.attr('data-stream-id')) {
-        switch_row = $('div.stream-row:first-child'); // set active row to first row
+    var active_data = get_active_data();
+    var switch_row;
+    if (!active_data[1] || active_data[0].hasClass('notdisplayed')) {
+        switch_row = $('div.stream-row:not(.notdisplayed):first');
     } else if (event === 'up_arrow') {
-        switch_row = active_row.prev(); // previous row
+        switch_row = active_data[0].prev();
     } else if (event === 'down_arrow') {
-        switch_row = active_row.next(); // next row
+        switch_row = active_data[0].next();
     }
 
-    var switch_row_id = switch_row.attr('data-stream-id');
-    // if both ID and row are defined, making sure to escape hidden rows
-    if (switch_row_id && !switch_row.hasClass('notdisplayed')) {
-        var switch_row_name = stream_data.get_sub_by_id(switch_row_id).name;
-        var hash = ['#streams', switch_row_id, switch_row_name]; // set hash
-        var hash_components = { // hash_components to send to subs.change_state()
-            base: hash.shift(),
-            arguments: hash,
-        };
-        exports.change_state(hash_components);
+    var row_data = get_row_data(switch_row);
+    if (row_data && !switch_row.hasClass('notdisplayed')) {
+        var switch_row_name = row_data[1].name;
+        var hash = ['#streams', row_data[0], switch_row_name];
+        export_hash(hash);
     }
 };
 
 exports.keyboard_sub = function () {
-    var active_row = $('div.stream-row.active');
-    var row_id = active_row.attr('data-stream-id');
-    var row = stream_data.get_sub_by_id(row_id);
-    var sub_tab_text = $('.subscriptions-container').find('div.ind-tab.selected').text();
-    subs.sub_or_unsub(row);
-    if (row.subscribed && sub_tab_text === 'Subscribed') {
-        // unsubbing/subbing repeatedly results in weird appearing/disappearing,
-        // so hide once unsubbed
-        active_row.addClass('notdisplayed');
+    var active_data = get_active_data();
+    var row_data = get_row_data(active_data[0]);
+    if (row_data) {
+        subs.sub_or_unsub(row_data[1]);
+        if (row_data[1].subscribed && active_data[2].text() === 'Subscribed') {
+            active_data[0].addClass('notdisplayed');
+            active_data[0].removeClass('active');
+        }
     }
 };
 
