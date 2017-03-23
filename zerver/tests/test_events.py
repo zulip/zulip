@@ -20,6 +20,8 @@ from zerver.lib.actions import (
     check_add_realm_emoji,
     check_send_typing_notification,
     do_add_realm_filter,
+    do_add_reaction,
+    do_remove_reaction,
     do_change_avatar_fields,
     do_change_default_all_public_streams,
     do_change_default_events_register_stream,
@@ -416,6 +418,54 @@ class EventsRegisterTest(ZulipTestCase):
         events = self.do_test(
             lambda: do_update_message(self.user_profile, message, topic,
                                       propagate_mode, content, rendered_content),
+            state_change_expected=False,
+        )
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_send_reaction(self):
+        # type: () -> None
+        schema_checker = check_dict([
+            ('type', equals('reaction')),
+            ('op', equals('add')),
+            ('message_id', check_int),
+            ('emoji_name', check_string),
+            ('user', check_dict([
+                ('email', check_string),
+                ('full_name', check_string),
+                ('user_id', check_int)
+            ])),
+        ])
+
+        message_id = self.send_message("hamlet@zulip.com", "Verona", Recipient.STREAM, "hello")
+        message = Message.objects.get(id=message_id)
+        events = self.do_test(
+            lambda: do_add_reaction(
+                self.user_profile, message, "tada"),
+            state_change_expected=False,
+        )
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_remove_reaction(self):
+        # type: () -> None
+        schema_checker = check_dict([
+            ('type', equals('reaction')),
+            ('op', equals('remove')),
+            ('message_id', check_int),
+            ('emoji_name', check_string),
+            ('user', check_dict([
+                ('email', check_string),
+                ('full_name', check_string),
+                ('user_id', check_int)
+            ])),
+        ])
+
+        message_id = self.send_message("hamlet@zulip.com", "Verona", Recipient.STREAM, "hello")
+        message = Message.objects.get(id=message_id)
+        events = self.do_test(
+            lambda: do_remove_reaction(
+                self.user_profile, message, "tada"),
             state_change_expected=False,
         )
         error = schema_checker('events[0]', events[0])
