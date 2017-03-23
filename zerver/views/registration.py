@@ -245,7 +245,7 @@ def accounts_register(request):
                  'creating_new_team': realm_creation,
                  'realms_have_subdomains': settings.REALMS_HAVE_SUBDOMAINS,
                  'password_auth_enabled': password_auth_enabled(realm),
-                 'MAX_REALM_NAME_LENGTH': str(MAX_REALM_NAME_LENGTH)
+                 'MAX_REALM_NAME_LENGTH': str(Realm.MAX_REALM_NAME_LENGTH)
                  }
     )
 
