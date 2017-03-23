@@ -242,7 +242,10 @@ typically simulate their behavior using mocks.
 modules.  You can use the `--coverage` option to generate coverage
 reports, and new code should have 100% coverage, which generally requires
 testing not only the "happy path" but also error handling code and
-edge cases.  Note that `test-backend --coverage` will assert that
+edge cases.  It will generate a nice HTML report that you can view in
+a browser that can access your development enviroment.
+
+Note that `test-backend --coverage` will assert that
 various specific files in the project have 100% test coverage and
 throw an error if their coverage has fallen.  One of our project goals
 is to expand that checking to ever-larger parts of the codebase.

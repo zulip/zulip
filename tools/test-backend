@@ -292,7 +292,7 @@ if __name__ == "__main__":
             print("Printing coverage data")
             cov.report(show_missing=False)
         cov.html_report(directory='var/coverage')
-        print("HTML report saved to var/coverage")
+        print("HTML report saved; visit at http://127.0.0.1:9991/coverage/index.html")
     if full_suite and not failures and options.coverage:
         # Assert that various files have full coverage
         for path in enforce_fully_covered:
