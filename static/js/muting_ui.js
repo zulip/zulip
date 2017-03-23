@@ -55,7 +55,7 @@ exports.notify_with_undo_option = (function () {
           meta.$mute.find("#unmute").click(function () {
               // it should reference the meta variable and not get stuck with
               // a pass-by-value of stream, topic.
-              stream_popover.topic_ops.unmute(meta.stream, meta.topic);
+              exports.unmute(meta.stream, meta.topic);
               animate.fadeOut();
           });
         }
@@ -136,6 +136,24 @@ exports.set_up_muted_topics_ui = function (muted_topics) {
         var row = templates.render('muted_topic_ui_row', {stream: list[0], topic: list[1]});
         muted_topics_table.append(row);
     });
+};
+
+exports.mute = function (stream, topic) {
+    stream_popover.hide_topic_popover();
+    exports.mute_topic(stream, topic);
+    exports.persist_and_rerender();
+    exports.notify_with_undo_option(stream, topic);
+    exports.set_up_muted_topics_ui(muting.get_muted_topics());
+};
+
+exports.unmute = function (stream, topic) {
+    // we don't run a unmute_notify function because it isn't an issue as much
+    // if someone accidentally unmutes a stream rather than if they mute it
+    // and miss out on info.
+    stream_popover.hide_topic_popover();
+    exports.unmute_topic(stream, topic);
+    exports.persist_and_rerender();
+    exports.set_up_muted_topics_ui(muting.get_muted_topics());
 };
 
 $(function () {
