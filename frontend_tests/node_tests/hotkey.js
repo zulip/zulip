@@ -190,10 +190,20 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('g', 'gear_menu.open');
 
     // Next, test keys that only work on a selected message.
+    var message_view_only_keys = '@*+rRjJkKsSvi:G';
+
+    // Check that they do nothing without a selected message
     global.current_msg_list.empty = return_true;
-    assert_unmapped('@rRjJkKsSi:');
+    assert_unmapped(message_view_only_keys);
 
     global.current_msg_list.empty = return_false;
+
+    // Check that they do nothing while in the settings overlay
+    hotkey.is_settings_page = return_true;
+    assert_unmapped('@*+rRjJkKsSvi:G');
+    hotkey.is_settings_page = return_false;
+
+    // TODO: Similar check for being in the subs page
 
     assert_mapping('@', 'compose.reply_with_mention');
     assert_mapping('*', 'message_flags.toggle_starred');
