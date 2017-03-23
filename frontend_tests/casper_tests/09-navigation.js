@@ -96,6 +96,11 @@ casper.then(function () {
         hash = casper.evaluate(function () {
             return window.location.hash;
         });
+    });
+});
+
+casper.then(function () {
+    casper.waitUntilVisible('#zfilt', function () {
         // Verify that we're narrowed to the target stream
         casper.test.assertEquals(orig_hash, hash);
         casper.test.assertVisible("#zfilt");
