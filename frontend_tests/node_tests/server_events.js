@@ -31,6 +31,10 @@ set_global('echo', {
     },
     set_realm_filters: noop,
 });
+set_global('ui', {
+    hide_error: function () { return false; },
+    show_error: function () { return false; },
+});
 
 var server_events = require('js/server_events.js');
 

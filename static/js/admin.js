@@ -417,7 +417,7 @@ function _setup_page() {
 
     var admin_tab = templates.render('admin_tab', options);
     $("#settings_content .administration-box").html(admin_tab);
-    $("#settings_content .alert").hide();
+    $("#settings_content .alert").removeClass("show");
 
     var tab = (function () {
         var tab = false;
