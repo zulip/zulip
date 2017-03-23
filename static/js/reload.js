@@ -69,7 +69,19 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
     }
     url += "+oldhash=" + encodeURIComponent(oldhash);
 
-    window.location.replace(url);
+    // To protect the browser against CSRF type attacks, the reload
+    // logic uses a random token (to distinct this browser from
+    // others) which is passed via the URL to the browser (post
+    // reloading).  The token is a key into local storage, where we
+    // marshall and store the URL.
+    //
+    // TODO: Remove the now-unnecessary URL-encoding logic above and
+    // just pass the actual data structures through local storage.
+    var token = util.random_int(0, 1024*1024*1024*1024);
+    var ls = localstorage();
+
+    ls.set("reload:" + token, url);
+    window.location.replace("#reload:" + token);
 }
 
 
@@ -77,10 +89,24 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
 // done before the first call to get_events
 exports.initialize = function reload__initialize() {
     var location = window.location.toString();
-    var fragment = location.substring(location.indexOf('#') + 1);
-    if (fragment.search("reload:") !== 0) {
+    var hash_fragment = location.substring(location.indexOf('#') + 1);
+
+    // hash_fragment should be e.g. `reload:12345123412312`
+    if (hash_fragment.search("reload:") !== 0) {
         return;
     }
+
+    // Using the token, recover the saved pre-reload data from local
+    // storage.  Afterwards, we clear the reload entry from local
+    // storage to avoid a local storage space leak.
+    var ls = localstorage();
+    var fragment = ls.get(hash_fragment);
+    if (fragment === undefined) {
+        blueslip.error("Invalid hash change reload token");
+        return;
+    }
+    ls.remove(hash_fragment);
+
     fragment = fragment.replace(/^reload:/, "");
     var keyvals = fragment.split("+");
     var vars = {};
@@ -88,12 +114,6 @@ exports.initialize = function reload__initialize() {
         var pair = str.split("=");
         vars[pair[0]] = decodeURIComponent(pair[1]);
     });
-
-    // Prevent random people on the Internet from constructing links
-    // that make you send a message.
-    if (vars.csrf_token !== csrf_token) {
-        return;
-    }
 
     if (vars.msg !== undefined) {
         var send_now = parseInt(vars.send_after_reload, 10);
