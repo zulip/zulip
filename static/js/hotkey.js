@@ -103,6 +103,7 @@ var keypress_mappings = {
     71: {name: 'G_end', message_view_only: true}, // 'G'
     74: {name: 'vim_page_down', message_view_only: true}, // 'J'
     75: {name: 'vim_page_up', message_view_only: true}, // 'K'
+    77: {name: 'toggle_mute', message_view_only: true}, // 'M'
     80: {name: 'narrow_private', message_view_only: true}, // 'P'
     82: {name: 'respond_to_author', message_view_only: true}, // 'R'
     83: {name: 'narrow_by_subject', message_view_only: true}, //'S'
@@ -610,12 +611,13 @@ exports.process_hotkey = function (e, hotkey) {
             return true;
     }
 
+    var msg = current_msg_list.selected_message();
     // Shortcuts that operate on a message
     switch (event_name) {
         case 'message_actions':
             return popovers.open_message_menu();
         case 'star_message':
-            return message_flags.toggle_starred(current_msg_list.selected_message());
+            return message_flags.toggle_starred(msg);
         case 'narrow_by_recipient':
             return do_narrow_action(narrow.by_recipient);
         case 'narrow_by_subject':
@@ -638,7 +640,10 @@ exports.process_hotkey = function (e, hotkey) {
             open_reactions();
             return true;
         case 'thumbs_up_emoji': // '+': reacts with thumbs up emoji on selected message
-            reactions.toggle_reaction(current_msg_list.selected_id(), '+1');
+            reactions.toggle_reaction(msg.id, '+1');
+            return true;
+        case 'toggle_mute':
+            muting_ui.toggle_mute(msg);
             return true;
     }
 
