@@ -244,6 +244,16 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping(':', 'emoji_picker.toggle_emoji_popover', true);
     assert_mapping('G', 'navigate.to_end');
     assert_mapping('M', 'muting_ui.toggle_mute');
+
+    // Test keys that work when a message is selected and
+    // also when the message list is empty.
+    assert_mapping('n', 'narrow.narrow_to_next_topic');
+
+    global.current_msg_list.empty = return_true;
+    assert_mapping('n', 'narrow.narrow_to_next_topic');
+
+    global.current_msg_list.empty = return_false;
+
 }());
 
 (function test_motion_keys() {
