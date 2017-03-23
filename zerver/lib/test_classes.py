@@ -415,8 +415,9 @@ class ZulipTestCase(TestCase):
         # type: (Text, Text, Optional[Realm]) -> Stream
         if realm is None:
             realm = get_realm_by_email_domain(email)
-        stream = get_stream(stream_name, realm)
-        if stream is None:
+        try:
+            stream = get_stream(stream_name, realm)
+        except Stream.DoesNotExist:
             stream, _ = create_stream_if_needed(realm, stream_name)
         user_profile = get_user_profile_by_email(email)
         bulk_add_subscriptions([stream], [user_profile])
