@@ -195,7 +195,6 @@ ul.filters .arrow {
 
 ul.filters li:hover .arrow {
     display: inline;
-    cursor: pointer;
     color: #888;
 }
 
@@ -245,6 +244,7 @@ ul.filters li.out_of_home_view li.muted_topic {
     padding-top: 4px;
     margin-right: 15px;
     padding-left: 33px;
+    cursor: pointer;
 }
 
 #stream_filters .subscription_block .stream-name {
