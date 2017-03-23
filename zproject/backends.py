@@ -180,6 +180,10 @@ class SocialAuthMixin(ZulipAuthMixin):
 
     def auth_complete(self, *args, **kwargs):
         # type: (*Any, **Any) -> Optional[HttpResponse]
+        """
+        Returning `None` from this function will redirect the browser
+        to the login page.
+        """
         try:
             # Call the auth_complete method of BaseOAuth2 is Python Social Auth
             return super(SocialAuthMixin, self).auth_complete(*args, **kwargs)  # type: ignore
@@ -436,6 +440,17 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
 
     def do_auth(self, *args, **kwargs):
         # type: (*Any, **Any) -> Optional[HttpResponse]
+        """
+        This function is called once the OAuth2 workflow is complete. We
+        override this function to:
+            1. Inject `return_data` and `realm_admin` kwargs. These will
+               be used by `authenticate()` function to make the decision.
+            2. Call the proper `do_auth` function depending on whether
+               we are doing individual, team or organization based GitHub
+               authentication.
+        The actual decision on authentication is done in
+        SocialAuthMixin.authenticate().
+        """
         kwargs['return_data'] = {}
 
         request = self.strategy.request
