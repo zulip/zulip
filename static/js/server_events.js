@@ -471,12 +471,10 @@ function get_events(options) {
         error: function (xhr, error_type) {
             try {
                 get_events_xhr = undefined;
-                // If we are old enough to have messages outside of the
-                // Tornado cache or if we're old enough that our message
-                // queue has been garbage collected, immediately reload.
+                // If we're old enough that our message queue has been
+                // garbage collected, immediately reload.
                 if ((xhr.status === 400) &&
-                    (JSON.parse(xhr.responseText).msg.indexOf("too old") !== -1 ||
-                     JSON.parse(xhr.responseText).msg.indexOf("Bad event queue id") !== -1)) {
+                    (JSON.parse(xhr.responseText).msg.indexOf("Bad event queue id") !== -1)) {
                     page_params.event_queue_expired = true;
                     reload.initiate({immediate: true,
                                      save_pointer: false,
