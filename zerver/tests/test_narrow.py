@@ -220,6 +220,21 @@ class NarrowBuilderTest(ZulipTestCase):
         term = dict(operator='id', operand=555, negated=True)
         self._do_add_term_test(term, 'WHERE id != :param_1')
 
+    def test_add_term_using_group_pm_operator_and_not_the_same_user_as_operand(self):
+        # type: () -> None
+        term = dict(operator='group-pm-with', operand='othello@zulip.com')
+        self._do_add_term_test(term, 'WHERE recipient_id != recipient_id')
+
+    def test_add_term_using_group_pm_operator_not_the_same_user_as_operand_and_negated(self):  # NEGATED
+        # type: () -> None
+        term = dict(operator='group-pm-with', operand='othello@zulip.com', negated=True)
+        self._do_add_term_test(term, 'WHERE recipient_id = recipient_id')
+
+    def test_add_term_using_group_pm_operator_with_non_existing_user_as_operand(self):
+        # type: () -> None
+        term = dict(operator='group-pm-with', operand='non-existing@zulip.com')
+        self.assertRaises(BadNarrowOperator, self._build_query, term)
+
     @override_settings(USING_PGROONGA=False)
     def test_add_term_using_search_operator(self):
         # type: () -> None
@@ -503,6 +518,30 @@ class GetOldMessagesTest(ZulipTestCase):
 
             for message in result["messages"]:
                 self.assertEqual(dr_emails(message['display_recipient']), emails)
+
+    def test_get_messages_with_narrow_group_pm_with(self):
+        # type: () -> None
+        """
+        A request for old messages with a narrow by group-pm-with only returns
+        group-private conversations with that user.
+        """
+        me = 'hamlet@zulip.com'
+
+        matching_message_ids = []
+        matching_message_ids.append(self.send_message(me, ['iago@zulip.com', 'cordelia@zulip.com', 'othello@zulip.com'], Recipient.HUDDLE))
+        matching_message_ids.append(self.send_message(me, ['cordelia@zulip.com', 'othello@zulip.com'], Recipient.HUDDLE))
+
+        non_matching_message_ids = []
+        non_matching_message_ids.append(self.send_message(me, 'cordelia@zulip.com', Recipient.PERSONAL))
+        non_matching_message_ids.append(self.send_message(me, ['iago@zulip.com', 'othello@zulip.com'], Recipient.HUDDLE))
+        non_matching_message_ids.append(self.send_message('cordelia@zulip.com', ['iago@zulip.com', 'othello@zulip.com'], Recipient.HUDDLE))
+
+        self.login(me)
+        narrow = [dict(operator='group-pm-with', operand='cordelia@zulip.com')]
+        result = self.get_and_check_messages(dict(narrow=ujson.dumps(narrow)))
+        for message in result["messages"]:
+            self.assertIn(message["id"], matching_message_ids)
+            self.assertNotIn(message["id"], non_matching_message_ids)
 
     def test_get_messages_with_narrow_stream(self):
         # type: () -> None

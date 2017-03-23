@@ -289,6 +289,30 @@ class NarrowBuilder(object):
                             column("recipient_id") == narrow_recipient.id))
             return query.where(maybe_negate(cond))
 
+    def by_group_pm_with(self, query, operand, maybe_negate):
+        # type: (Query, str, ConditionTransform) -> Query
+        try:
+            narrow_profile = get_user_profile_by_email(operand)
+        except UserProfile.DoesNotExist:
+            raise BadNarrowOperator('unknown user ' + operand)
+
+        self_recipient_ids = [
+            recipient_tuple['recipient_id'] for recipient_tuple
+            in Subscription.objects.filter(
+                user_profile=self.user_profile,
+                recipient__type=Recipient.HUDDLE
+            ).values("recipient_id")]
+        narrow_recipient_ids = [
+            recipient_tuple['recipient_id'] for recipient_tuple
+            in Subscription.objects.filter(
+                user_profile=narrow_profile,
+                recipient__type=Recipient.HUDDLE
+            ).values("recipient_id")]
+
+        recipient_ids = set(self_recipient_ids) & set(narrow_recipient_ids)
+        cond = column("recipient_id").in_(recipient_ids)
+        return query.where(maybe_negate(cond))
+
     def by_search(self, query, operand, maybe_negate):
         # type: (Query, str, ConditionTransform) -> Query
         if settings.USING_PGROONGA:
