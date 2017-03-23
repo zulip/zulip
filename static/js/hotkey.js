@@ -107,6 +107,7 @@ var keypress_mappings = {
     80: {name: 'narrow_private', message_view_only: true}, // 'P'
     82: {name: 'respond_to_author', message_view_only: true}, // 'R'
     83: {name: 'narrow_by_subject', message_view_only: true}, //'S'
+    85: {name: 'keyboard_sub', message_view_only: false}, //'U'
     99: {name: 'compose', message_view_only: true}, // 'c'
     103: {name: 'gear_menu', message_view_only: true}, // 'g'
     105: {name: 'message_actions', message_view_only: true}, // 'i'
@@ -433,7 +434,6 @@ exports.process_hotkey = function (e, hotkey) {
     }
 
     if (hotkey.message_view_only && ui_state.home_tab_obscured()) {
-        // if up/down arrow key was pressed and streams menu is open
         if ((event_name === 'up_arrow' || event_name === 'down_arrow') && exports.is_subs()) {
             subs.switch_rows(event_name);
             return true;
@@ -575,6 +575,11 @@ exports.process_hotkey = function (e, hotkey) {
             return true;
         case 'stream_cycle_forward':
             navigate.cycle_stream('forward');
+            return true;
+        case 'keyboard_sub':
+            if (exports.is_subs()) {
+                subs.keyboard_sub();
+            }
             return true;
     }
 

@@ -732,6 +732,19 @@ exports.switch_rows = function (event) {
     }
 };
 
+exports.keyboard_sub = function () {
+    var active_row = $('div.stream-row.active');
+    var row_id = active_row.attr('data-stream-id');
+    var row = stream_data.get_sub_by_id(row_id);
+    var sub_tab_text = $('.subscriptions-container').find('div.ind-tab.selected').text();
+    subs.sub_or_unsub(row);
+    if (row.subscribed && sub_tab_text === 'Subscribed') {
+        // unsubbing/subbing repeatedly results in weird appearing/disappearing,
+        // so hide once unsubbed
+        active_row.addClass('notdisplayed');
+    }
+};
+
 function ajaxSubscribe(stream) {
     // Subscribe yourself to a single stream.
     var true_stream_name;

@@ -140,7 +140,7 @@ function stubbing(func_name_to_stub, test_function) {
     // Unmapped keys should immediately return false, without
     // calling any functions outside of hotkey.js.
     assert_unmapped('abdefhlmnoptuxyz');
-    assert_unmapped('BEFHILNOQTUVWXYZ');
+    assert_unmapped('BEFHILNOQTVWXYZ');
 
     // We have to skip some checks due to the way the code is
     // currently organized for mapped keys.
@@ -174,6 +174,9 @@ function stubbing(func_name_to_stub, test_function) {
     // Ok, now test keys that work when we're viewing messages.
     hotkey.processing_text = return_false;
     hotkey.is_settings_page = return_false;
+
+    hotkey.is_subs = return_true;
+    assert_mapping('U', 'subs.keyboard_sub');
     hotkey.is_subs = return_false;
 
     assert_mapping('?', 'ui.show_info_overlay');
@@ -268,6 +271,7 @@ function stubbing(func_name_to_stub, test_function) {
     hotkey.tab_up_down = function () { return {flag: false}; };
     global.current_msg_list.empty = return_true;
     hotkey.is_settings_page = return_false;
+    hotkey.is_subs = return_false;
 
     assert_unmapped('down_arrow');
     assert_unmapped('end');
@@ -296,6 +300,7 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('up_arrow', 'subs.switch_rows');
     assert_mapping('down_arrow', 'subs.switch_rows');
     global.ui_state.home_tab_obscured = return_false;
+    hotkey.is_subs = return_false;
 
     hotkey.is_settings_page = return_true;
     assert_unmapped('end');
