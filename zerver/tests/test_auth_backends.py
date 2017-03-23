@@ -136,6 +136,17 @@ class AuthBackendTest(TestCase):
                             bad_kwargs=dict(password=''),
                             good_kwargs=dict(password=password))
 
+        with mock.patch('zproject.backends.email_auth_enabled',
+                        return_value=False), \
+                mock.patch('zproject.backends.password_auth_enabled',
+                           return_value=True):
+            return_data = {}  # type: Dict[str, bool]
+            user = EmailAuthBackend().authenticate(email,
+                                                   password=password,
+                                                   return_data=return_data)
+            self.assertEqual(user, None)
+            self.assertTrue(return_data['email_auth_disabled'])
+
         # Subdomain is ignored when feature is not enabled
         self.verify_backend(EmailAuthBackend(),
                             good_kwargs=dict(password=password,
@@ -261,6 +272,20 @@ class AuthBackendTest(TestCase):
                                     good_kwargs=dict(password=password,
                                                      realm_subdomain='zulip'))
 
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True):
+            # With subdomains, authenticating with the right subdomain
+            # works; using the wrong subdomain doesn't
+            with mock.patch('django_auth_ldap.backend._LDAPUser._authenticate_user_dn'), (
+                mock.patch('django_auth_ldap.backend._LDAPUser._check_requirements')), (
+                mock.patch('zproject.backends.get_realm', side_effect=Realm.DoesNotExist)), (
+                mock.patch('django_auth_ldap.backend._LDAPUser._get_user_attrs',
+                           return_value=dict(full_name=['Hamlet']))):
+
+                user = backend.authenticate(email,
+                                            password=password,
+                                            realm_subdomain='zulip')
+                self.assertEqual(user, None)
+
     def test_devauth_backend(self):
         # type: () -> None
         self.verify_backend(DevAuthBackend())
@@ -357,6 +382,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
     def test_full_name_with_missing_key(self):
         # type: () -> None
         self.assertEqual(self.backend.get_full_name(), '')
+        self.assertEqual(self.backend.get_full_name(response={'name': None}), '')
 
     def test_full_name_with_none(self):
         # type: () -> None
@@ -403,6 +429,20 @@ class GitHubAuthBackendTest(ZulipTestCase):
                       'response': response,
                       'return_data': {}}
             result.assert_called_with(self.user_profile, 'fake-access-token', **kwargs)
+
+    def test_github_backend_do_auth_for_default_auth_failed(self):
+        # type: () -> None
+        with mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
+                        side_effect=AuthFailed('Not found')), \
+                mock.patch('logging.info'), \
+                mock.patch('zproject.backends.SocialAuthMixin.process_do_auth') as result:
+            response = dict(email=self.email, name=self.name)
+
+            self.backend.do_auth('fake-access-token', response=response)
+            kwargs = {'realm_subdomain': 'acme',
+                      'response': response,
+                      'return_data': {}}
+            result.assert_called_with(None, 'fake-access-token', **kwargs)
 
     def test_github_backend_do_auth_for_team(self):
         # type: () -> None
@@ -469,6 +509,14 @@ class GitHubAuthBackendTest(ZulipTestCase):
             user = self.backend.authenticate(return_data=return_data, response=response)
             self.assertIs(user, None)
             self.assertTrue(return_data['valid_attestation'])
+
+    def test_github_backend_authenticate_invalid_email(self):
+        # type: () -> None
+        response = dict(email=None, name=self.name)
+        return_data = dict() # type: Dict[str, Any]
+        user = self.backend.authenticate(return_data=return_data, response=response)
+        self.assertIs(user, None)
+        self.assertTrue(return_data['invalid_email'])
 
     def test_github_backend_inactive_user(self):
         # type: () -> None
@@ -537,6 +585,20 @@ class GitHubAuthBackendTest(ZulipTestCase):
             self.assertIn('login', result.url)
 
         utils.BACKENDS = settings.AUTHENTICATION_BACKENDS
+
+    def test_github_complete_when_email_is_invalid(self):
+        # type: () -> None
+        from social_django import utils
+        utils.BACKENDS = ('zproject.backends.GitHubAuthBackend',)
+        with mock.patch('zproject.backends.GitHubAuthBackend.get_email_address',
+                        return_value=None), \
+                mock.patch('zproject.backends.logging.exception'):
+            result = self.client_get(reverse('social:complete', args=['github']))
+            self.assertEqual(result.status_code, 302)
+            self.assertIn('login', result.url)
+
+        utils.BACKENDS = settings.AUTHENTICATION_BACKENDS
+
 
 class ResponseMock(object):
     def __init__(self, status_code, data):
