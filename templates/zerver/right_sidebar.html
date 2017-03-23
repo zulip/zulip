@@ -1,33 +1,4 @@
 <div class="right-sidebar" id="right-sidebar">
-    <div class="alert-box">
-        <div class="alert alert_sidebar alert-error home-error-bar" id="connection-error">
-            {% trans %}<strong>Unable to connect to Zulip.</strong>  Updates may be delayed.{% endtrans %}
-            <br /><br /> {{ _('Retrying soon...') }} <br /><br /> <a class="restart_get_updates_button">{{ _('Try now.') }}</a>
-        </div>
-        <div class="alert alert_sidebar alert-error home-error-bar" id="get_old_messages_error">
-            {% trans %}<strong>Unable to connect to Zulip.</strong>  Could not fetch messages.{% endtrans %}
-            <br /><br /> {{ _('Retrying soon...') }} <br /><br />
-        </div>
-        <div class="alert alert_sidebar alert-error home-error-bar" id="zephyr-mirror-error">
-            {# The below isn't tagged for translation
-            intentionally, because the feature is only used at
-            MIT. #}
-            <strong>Your Zephyr mirror is not working.</strong>
-            <span id="normal-zephyr-mirror-error-text">
-                We recommend that
-                you <a class="webathena_login">give Zulip the
-                        ability to mirror the messages for you via
-                WebAthena</a>.  If you'd prefer, you can instead
-                <a href="/zephyr-mirror" target="_blank">run the
-                Zephyr mirror script yourself</a> in a screen
-                session.
-            </span>
-            <span id="desktop-zephyr-mirror-error-text" class="notdisplayed">To fix
-              this, you'll need to use the web interface.</span>
-        </div>
-        <div class="alert alert_sidebar alert-error home-error-bar" id="home-error"></div>
-        <div class="alert alert_sidebar alert-error home-error-bar" id="reloading-application"></div>
-    </div>
     <div class="sidebar-items">
         {% if enable_feedback %}
         <div id="feedback_section">

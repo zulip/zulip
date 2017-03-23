@@ -27,6 +27,7 @@ GENERIC_KEYWORDS = [
     'first',
     'second',
     'selected',
+    'fade-out',
 ]
 
 def raise_error(fn, i, line):

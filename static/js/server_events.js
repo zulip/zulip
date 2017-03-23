@@ -465,7 +465,7 @@ function get_events(options) {
             try {
                 get_events_xhr = undefined;
                 get_events_failures = 0;
-                $('#connection-error').hide();
+                ui_report.hide_error($("#connection-error"));
 
                 get_events_success(data.events);
             } catch (ex) {
@@ -496,15 +496,15 @@ function get_events(options) {
                 } else if (error_type === 'timeout') {
                     // Retry indefinitely on timeout.
                     get_events_failures = 0;
-                    $('#connection-error').hide();
+                    ui_report.hide_error($("#connection-error"));
                 } else {
                     get_events_failures += 1;
                 }
 
                 if (get_events_failures >= 5) {
-                    $('#connection-error').show();
+                    ui_report.show_error($("#connection-error"));
                 } else {
-                    $('#connection-error').hide();
+                    ui_report.hide_error($("#connection-error"));
                 }
             } catch (ex) {
                 blueslip.error('Failed to handle get_events error\n' +
