@@ -39,6 +39,7 @@ from zerver.lib.actions import (
     do_deactivate_stream,
     do_deactivate_user,
     do_reactivate_user,
+    do_refer_friend,
     do_regenerate_api_key,
     do_remove_alert_words,
     do_remove_realm_emoji,
@@ -574,6 +575,19 @@ class EventsRegisterTest(ZulipTestCase):
             ('pointer', check_int)
         ])
         events = self.do_test(lambda: do_update_pointer(self.user_profile, 1500))
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_referral_events(self):
+        # type: () -> None
+        schema_checker = check_dict([
+            ('type', equals('referral')),
+            ('referrals', check_dict([
+                ('granted', check_int),
+                ('used', check_int),
+            ])),
+        ])
+        events = self.do_test(lambda: do_refer_friend(self.user_profile, "friend@example.com"))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
