@@ -198,13 +198,17 @@ class SocialAuthMixin(ZulipAuthMixin):
         invalid_subdomain = return_data.get('invalid_subdomain')
         invalid_email = return_data.get('invalid_email')
 
-        if inactive_user or inactive_realm or invalid_email:
+        if inactive_user or inactive_realm:
             # Redirect to login page. We can't send to registration
-            # workflow with these errors.
+            # workflow with these errors. We will redirect to login page.
             return None
 
-        # If user_profile is `None` here, send the user to registration
-        # workflow.
+        if invalid_email:
+            # In case of invalid email, we will end up on registration page.
+            # This seems better than redirecting to login page.
+            logging.warning(
+                "{} got invalid email argument.".format(self.auth_backend_name)
+            )
 
         strategy = self.strategy  # type: ignore # This comes from Python Social Auth.
         request = strategy.request
