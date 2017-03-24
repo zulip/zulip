@@ -156,6 +156,14 @@ exports.unmute = function (stream, topic) {
     exports.set_up_muted_topics_ui(muting.get_muted_topics());
 };
 
+exports.toggle_mute = function (msg) {
+    if (muting.is_topic_muted(msg.stream, msg.subject)) {
+        exports.unmute(msg.stream, msg.subject);
+    } else if (msg.type === 'stream') {
+        exports.mute(msg.stream, msg.subject);
+    }
+};
+
 $(function () {
     exports.update_muted_topics(page_params.muted_topics);
 });
