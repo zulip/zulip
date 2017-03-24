@@ -248,7 +248,7 @@ def accounts_register(request):
                  'MAX_REALM_NAME_LENGTH': str(Realm.MAX_REALM_NAME_LENGTH),
                  'MAX_NAME_LENGTH': str(UserProfile.MAX_NAME_LENGTH),
                  'MAX_PASSWORD_LENGTH': str(form.MAX_PASSWORD_LENGTH),
-                 'MAX_REALM_SUBDOMAIN_LENGTH': str(form.MAX_REALM_SUBDOMAIN_LENGTH)
+                 'MAX_REALM_SUBDOMAIN_LENGTH': str(Realm.MAX_REALM_SUBDOMAIN_LENGTH)
                  }
     )
 
