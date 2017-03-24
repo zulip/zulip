@@ -153,9 +153,8 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         state['twenty_four_hour_time'] = user_profile.twenty_four_hour_time
         state['left_side_userlist'] = user_profile.left_side_userlist
         state['emoji_alt_code'] = user_profile.emoji_alt_code
-
-        default_language = user_profile.default_language
-        state['default_language'] = default_language
+        state['timezone'] = user_profile.timezone
+        state['default_language'] = user_profile.default_language
 
     if want('update_global_notifications'):
         state['enable_stream_desktop_notifications'] = user_profile.enable_stream_desktop_notifications
@@ -386,6 +385,8 @@ def apply_event(state, event, user_profile, include_subscribers):
             state['emoji_alt_code'] = event["setting"]
         if event['setting_name'] == 'default_language':
             state['default_language'] = event["setting"]
+        if event['setting_name'] == 'timezone':
+            state['timezone'] = event["setting"]
     elif event['type'] == "update_global_notifications":
         if event['notification_name'] == "enable_stream_desktop_notifications":
             state['enable_stream_desktop_notifications'] = event['setting']

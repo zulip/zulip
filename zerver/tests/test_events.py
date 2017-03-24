@@ -32,6 +32,7 @@ from zerver.lib.actions import (
     do_change_is_admin,
     do_change_stream_description,
     do_change_subscription_property,
+    do_change_timezone,
     do_create_user,
     do_deactivate_stream,
     do_deactivate_user,
@@ -933,6 +934,19 @@ class EventsRegisterTest(ZulipTestCase):
         ])
         for setting_value in ['de', 'es', 'en']:
             events = self.do_test(lambda: do_change_default_language(self.user_profile, setting_value))
+            error = schema_checker('events[0]', events[0])
+            self.assert_on_error(error)
+
+    def test_change_timezone(self):
+        # type: () -> None
+        schema_checker = check_dict([
+            ('type', equals('update_display_settings')),
+            ('setting_name', equals('timezone')),
+            ('user', check_string),
+            ('setting', check_string),
+        ])
+        for setting_value in ['US/Mountain', 'US/Samoa', 'Pacific/Galapagos', '']:
+            events = self.do_test(lambda: do_change_timezone(self.user_profile, setting_value))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
