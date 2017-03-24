@@ -604,7 +604,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('value', check_string),
         ])
         events = self.do_test(
-            lambda: do_set_realm_property(self.user_profile.realm, 'name', 'New Realm Name'))
+            lambda: do_set_realm_property(self.user_profile.realm, 'name', u'New Realm Name'))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
@@ -617,7 +617,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('value', check_string),
         ])
         events = self.do_test(
-            lambda: do_set_realm_property(self.user_profile.realm, 'description', 'New Realm Description'))
+            lambda: do_set_realm_property(self.user_profile.realm, 'description', u'New Realm Description'))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
@@ -802,7 +802,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('value', check_string),
         ])
         events = self.do_test(
-            lambda: do_set_realm_property(self.user_profile.realm, 'default_language', 'de'))
+            lambda: do_set_realm_property(self.user_profile.realm, 'default_language', u'de'))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 

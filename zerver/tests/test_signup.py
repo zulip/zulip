@@ -945,7 +945,7 @@ class UserSignUpTest(ZulipTestCase):
         email = "newguy@zulip.com"
         password = "newpassword"
         realm = get_realm('zulip')
-        do_set_realm_property(realm, 'default_language', "de")
+        do_set_realm_property(realm, 'default_language', u"de")
 
         result = self.client_post('/accounts/home/', {'email': email})
         self.assertEqual(result.status_code, 302)

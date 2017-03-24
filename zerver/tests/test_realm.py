@@ -31,7 +31,7 @@ class RealmTest(ZulipTestCase):
         by checking the cache to ensure that the new value is there."""
         get_user_profile_by_email('hamlet@zulip.com')
         realm = get_realm('zulip')
-        new_name = 'Zed You Elle Eye Pea'
+        new_name = u'Zed You Elle Eye Pea'
         do_set_realm_property(realm, 'name', new_name)
         self.assertEqual(get_realm(realm.string_id).name, new_name)
         self.assert_user_profile_cache_gets_new_name('hamlet@zulip.com', new_name)
@@ -39,7 +39,7 @@ class RealmTest(ZulipTestCase):
     def test_update_realm_name_events(self):
         # type: () -> None
         realm = get_realm('zulip')
-        new_name = 'Puliz'
+        new_name = u'Puliz'
         events = []  # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
             do_set_realm_property(realm, 'name', new_name)
@@ -54,7 +54,7 @@ class RealmTest(ZulipTestCase):
     def test_update_realm_description_events(self):
         # type: () -> None
         realm = get_realm('zulip')
-        new_description = 'zulip dev group'
+        new_description = u'zulip dev group'
         events = []  # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
             do_set_realm_property(realm, 'description', new_description)
@@ -71,7 +71,7 @@ class RealmTest(ZulipTestCase):
         email = 'iago@zulip.com'
         self.login(email)
         realm = get_realm('zulip')
-        new_description = 'zulip dev group'
+        new_description = u'zulip dev group'
         data = dict(description=ujson.dumps(new_description))
         events = []  # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
@@ -90,7 +90,7 @@ class RealmTest(ZulipTestCase):
 
     def test_realm_description_length(self):
         # type: () -> None
-        new_description = 'A' * 101
+        new_description = u'A' * 101
         data = dict(description=ujson.dumps(new_description))
 
         # create an admin user
@@ -104,7 +104,7 @@ class RealmTest(ZulipTestCase):
 
     def test_update_realm_api(self):
         # type: () -> None
-        new_name = 'Zulip: Worldwide Exporter of APIs'
+        new_name = u'Zulip: Worldwide Exporter of APIs'
 
         email = 'cordelia@zulip.com'
         self.login(email)
