@@ -7,7 +7,7 @@ import os
 import glob
 import shutil
 import subprocess
-import json
+import ujson
 import sys
 import hashlib
 import xml.etree.ElementTree as ET
@@ -200,9 +200,9 @@ def dump_emojis(cache_path):
     # type: (str) -> None
     subprocess.call('ttx -v -z extfile -d {} NotoColorEmoji.ttf'.format(EMOJI_DUMP_DIR_PATH), shell=True)
 
-    emoji_map = json.load(open('emoji_map.json'))
+    emoji_map = ujson.load(open('emoji_map.json'))
     code_point_to_fname_map = code_point_to_file_name_map(EMOJI_DUMP_PATH("NotoColorEmoji.ttx"))
-    emoji_data = json.load(open(os.path.join(EMOJI_DATA_PATH, 'emoji.json')))
+    emoji_data = ujson.load(open(os.path.join(EMOJI_DATA_PATH, 'emoji.json')))
     emoji_catalog = generate_emoji_catalog(emoji_data)
 
     os.chdir(EMOJI_DUMP_DIR_PATH)
@@ -308,7 +308,7 @@ def dump_emojis(cache_path):
     NAME_TO_CODEPOINT_PATH = os.path.join(cache_path, 'name_to_codepoint.json')
     name_to_codepoint_file = open(NAME_TO_CODEPOINT_PATH, 'w')
 
-    name_to_codepoint_file.write(json.dumps(emoji_map))
+    name_to_codepoint_file.write(ujson.dumps(emoji_map))
     name_to_codepoint_file.close()
 
 if __name__ == "__main__":
