@@ -36,6 +36,9 @@ class TestCommandsCanStart(TestCase):
 
                 with self.assertRaises(SystemExit):
                     call_command(command, '--help')
+        # zerver/management/commands/runtornado.py sets this to True;
+        # we need to reset it here.  See #3685 for details.
+        settings.RUNNING_INSIDE_TORNADO = False
 
 class TestSendWebhookFixtureMessage(TestCase):
     COMMAND_NAME = 'send_webhook_fixture_message'
