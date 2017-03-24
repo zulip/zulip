@@ -49,6 +49,7 @@ from zerver.lib.actions import (
     do_set_realm_authentication_methods,
     do_set_realm_message_editing,
     do_update_message,
+    do_update_message_flags,
     do_update_pointer,
     do_change_twenty_four_hour_time,
     do_change_left_side_userlist,
@@ -408,6 +409,42 @@ class EventsRegisterTest(ZulipTestCase):
         events = self.do_test(
             lambda: do_update_message(self.user_profile, message, topic,
                                       propagate_mode, content, rendered_content),
+            state_change_expected=False,
+        )
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_update_message_flags(self):
+        # type: () -> None
+        # Test message flag update events
+        schema_checker = check_dict([
+            ('id', check_int),
+            ('type', equals('update_message_flags')),
+            ('flag', check_string),
+            ('messages', check_list(check_int)),
+            ('operation', equals("add")),
+        ])
+
+        message = self.send_message("cordelia@zulip.com", "hamlet@zulip.com", Recipient.PERSONAL, "hello")
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        events = self.do_test(
+            lambda: do_update_message_flags(user_profile, 'add', 'starred',
+                                            [message], False, None, None),
+            state_change_expected=False,
+        )
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        schema_checker = check_dict([
+            ('id', check_int),
+            ('type', equals('update_message_flags')),
+            ('flag', check_string),
+            ('messages', check_list(check_int)),
+            ('operation', equals("remove")),
+        ])
+        events = self.do_test(
+            lambda: do_update_message_flags(user_profile, 'remove', 'starred',
+                                            [message], False, None, None),
             state_change_expected=False,
         )
         error = schema_checker('events[0]', events[0])
