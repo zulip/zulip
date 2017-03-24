@@ -1195,18 +1195,30 @@ class EventsRegisterTest(ZulipTestCase):
         # type: () -> None
         bot = self.create_bot('test-bot@zulip.com')
         stream = get_stream("Rome", bot.realm)
+
         action = lambda: do_change_default_sending_stream(bot, stream)
         events = self.do_test(action)
         error = self.realm_bot_schema('default_sending_stream', check_string)('events[0]', events[0])
+        self.assert_on_error(error)
+
+        action = lambda: do_change_default_sending_stream(bot, None)
+        events = self.do_test(action)
+        error = self.realm_bot_schema('default_sending_stream', equals(None))('events[0]', events[0])
         self.assert_on_error(error)
 
     def test_change_bot_default_events_register_stream(self):
         # type: () -> None
         bot = self.create_bot('test-bot@zulip.com')
         stream = get_stream("Rome", bot.realm)
+
         action = lambda: do_change_default_events_register_stream(bot, stream)
         events = self.do_test(action)
         error = self.realm_bot_schema('default_events_register_stream', check_string)('events[0]', events[0])
+        self.assert_on_error(error)
+
+        action = lambda: do_change_default_events_register_stream(bot, None)
+        events = self.do_test(action)
+        error = self.realm_bot_schema('default_events_register_stream', equals(None))('events[0]', events[0])
         self.assert_on_error(error)
 
     def test_change_bot_owner(self):
