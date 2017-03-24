@@ -306,7 +306,7 @@ class ZulipTestCase(TestCase):
             content, forged=False, forged_timestamp=None,
             forwarder_user_profile=sender, realm=sender.realm, **kwargs)
 
-    def get_old_messages(self, anchor=1, num_before=100, num_after=100):
+    def get_messages(self, anchor=1, num_before=100, num_after=100):
         # type: (int, int, int) -> List[Dict[str, Any]]
         post_params = {"anchor": anchor, "num_before": num_before,
                        "num_after": num_after}

@@ -528,14 +528,14 @@ def exclude_muting_conditions(user_profile, narrow):
     return conditions
 
 @has_request_variables
-def get_old_messages_backend(request, user_profile,
-                             anchor = REQ(converter=int),
-                             num_before = REQ(converter=to_non_negative_int),
-                             num_after = REQ(converter=to_non_negative_int),
-                             narrow = REQ('narrow', converter=narrow_parameter, default=None),
-                             use_first_unread_anchor = REQ(default=False, converter=ujson.loads),
-                             apply_markdown=REQ(default=True,
-                                                converter=ujson.loads)):
+def get_messages_backend(request, user_profile,
+                         anchor = REQ(converter=int),
+                         num_before = REQ(converter=to_non_negative_int),
+                         num_after = REQ(converter=to_non_negative_int),
+                         narrow = REQ('narrow', converter=narrow_parameter, default=None),
+                         use_first_unread_anchor = REQ(default=False, converter=ujson.loads),
+                         apply_markdown=REQ(default=True,
+                                            converter=ujson.loads)):
     # type: (HttpRequest, UserProfile, int, int, int, Optional[List[Dict[str, Any]]], bool, bool) -> HttpResponse
     include_history = ok_to_include_history(narrow, user_profile.realm)
 
@@ -645,7 +645,7 @@ def get_old_messages_backend(request, user_profile,
     main_query = alias(query)
     query = select(main_query.c, None, main_query).order_by(column("message_id").asc())
     # This is a hack to tag the query we use for testing
-    query = query.prefix_with("/* get_old_messages */")
+    query = query.prefix_with("/* get_messages */")
     query_result = list(sa_conn.execute(query).fetchall())
 
     # The following is a little messy, but ensures that the code paths

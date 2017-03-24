@@ -73,7 +73,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         state['attachments'] = user_attachments(user_profile)
 
     if want('message'):
-        # The client should use get_old_messages() to fetch messages
+        # The client should use get_messages() to fetch messages
         # starting with the max_message_id.  They will get messages
         # newer than that ID via get_events()
         messages = Message.objects.filter(usermessage__user_profile=user_profile).order_by('-id')[:1]

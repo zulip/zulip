@@ -1679,7 +1679,7 @@ class StarTests(ZulipTestCase):
         result = self.change_star(message_ids)
         self.assert_json_success(result)
 
-        for msg in self.get_old_messages():
+        for msg in self.get_messages():
             if msg['id'] in message_ids:
                 self.assertEqual(msg['flags'], ['starred'])
             else:
@@ -1689,7 +1689,7 @@ class StarTests(ZulipTestCase):
         self.assert_json_success(result)
 
         # Remove the stars.
-        for msg in self.get_old_messages():
+        for msg in self.get_messages():
             if msg['id'] in message_ids:
                 self.assertEqual(msg['flags'], [])
 
@@ -1726,7 +1726,7 @@ class StarTests(ZulipTestCase):
         result = self.change_star(message_ids)
         self.assert_json_success(result)
 
-        for msg in self.get_old_messages():
+        for msg in self.get_messages():
             if msg['id'] in message_ids + other_message_ids:
                 self.assertEqual(set(msg['flags']), {'starred', 'historical', 'read'})
             else:

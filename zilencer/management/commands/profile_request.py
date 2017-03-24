@@ -5,7 +5,7 @@ from django.http import HttpRequest, HttpResponse
 from optparse import make_option
 from django.core.management.base import BaseCommand, CommandParser
 from zerver.models import get_user_profile_by_email, UserMessage
-from zerver.views.messages import get_old_messages_backend
+from zerver.views.messages import get_messages_backend
 import cProfile
 import logging
 from zerver.middleware import LogRequests
@@ -41,8 +41,8 @@ def profile_request(request):
     request_logger.process_request(request)
     prof = cProfile.Profile()
     prof.enable()
-    ret = get_old_messages_backend(request, request.user,
-                                   apply_markdown=True)
+    ret = get_messages_backend(request, request.user,
+                               apply_markdown=True)
     prof.disable()
     prof.dump_stats("/tmp/profile.data")
     request_logger.process_response(request, ret)

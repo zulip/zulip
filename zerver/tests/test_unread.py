@@ -111,7 +111,7 @@ class UnreadCountTests(ZulipTestCase):
 
         # Ensure we properly set the flags
         found = 0
-        for msg in self.get_old_messages():
+        for msg in self.get_messages():
             if msg['id'] in self.unread_msg_ids:
                 self.assertEqual(msg['flags'], ['read'])
                 found += 1
@@ -123,7 +123,7 @@ class UnreadCountTests(ZulipTestCase):
         self.assert_json_success(result)
 
         # Ensure we properly remove just one flag
-        for msg in self.get_old_messages():
+        for msg in self.get_messages():
             if msg['id'] == self.unread_msg_ids[0]:
                 self.assertEqual(msg['flags'], ['read'])
             elif msg['id'] == self.unread_msg_ids[1]:
@@ -149,7 +149,7 @@ class UnreadCountTests(ZulipTestCase):
                                                            "all": ujson.dumps(True)})
         self.assert_json_success(result)
 
-        for msg in self.get_old_messages():
+        for msg in self.get_messages():
             self.assertEqual(msg['flags'], [])
 
     def test_mark_all_in_stream_read(self):

@@ -1012,7 +1012,7 @@ class Message(ModelReprMixin, models.Model):
     def get_raw_db_rows(needed_ids):
         # type: (List[int]) -> List[Dict[str, Any]]
         # This is a special purpose function optimized for
-        # callers like get_old_messages_backend().
+        # callers like get_messages_backend().
         fields = [
             'id',
             'subject',
