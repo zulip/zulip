@@ -50,6 +50,7 @@ from zerver.lib.actions import (
     do_set_realm_property,
     do_set_realm_authentication_methods,
     do_set_realm_message_editing,
+    do_update_embedded_data,
     do_update_message,
     do_update_message_flags,
     do_update_muted_topic,
@@ -383,6 +384,7 @@ class EventsRegisterTest(ZulipTestCase):
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
+        # Verify message editing
         schema_checker = check_dict([
             ('type', equals('update_message')),
             ('flags', check_list(None)),
@@ -413,6 +415,26 @@ class EventsRegisterTest(ZulipTestCase):
         events = self.do_test(
             lambda: do_update_message(self.user_profile, message, topic,
                                       propagate_mode, content, rendered_content),
+            state_change_expected=False,
+        )
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        # Verify do_update_embedded_data
+        schema_checker = check_dict([
+            ('type', equals('update_message')),
+            ('flags', check_list(None)),
+            ('content', check_string),
+            ('flags', check_list(None)),
+            ('message_id', check_int),
+            ('message_ids', check_list(check_int)),
+            ('rendered_content', check_string),
+            ('sender', check_string),
+        ])
+
+        events = self.do_test(
+            lambda: do_update_embedded_data(self.user_profile, message,
+                                            u"embed_content", "<p>embed_content</p>"),
             state_change_expected=False,
         )
         error = schema_checker('events[0]', events[0])
