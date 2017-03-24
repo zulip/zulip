@@ -3,7 +3,7 @@
 # high-level documentation on how this system works.
 from __future__ import absolute_import
 from __future__ import print_function
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Union, Text
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
@@ -726,130 +726,89 @@ class EventsRegisterTest(ZulipTestCase):
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
+    def test_change_message_retention_days(self):
+        # type: () -> None
+        self.do_set_realm_property_test("message_retention_days", [30])
+
     def test_change_realm_name(self):
         # type: () -> None
+        self.do_set_realm_property_test('name', [u'New Realm Name'])
+
+    def do_set_realm_property_test(self, name, values_list):
+        # type: (str, List[Union[int, bool, Text]]) -> None
+
+        property_type = self.user_profile.realm.property_types[name]
+        if property_type is bool:
+            validator = check_bool
+        elif property_type is Text:
+            validator = check_string
+        elif property_type is int:
+            validator = check_int
+        else:
+            raise AssertionError("Unexpected property type %s" % (property_type,))
+
         schema_checker = check_dict([
             ('type', equals('realm')),
             ('op', equals('update')),
-            ('property', equals('name')),
-            ('value', check_string),
+            ('property', equals(name)),
+            ('value', validator),
         ])
-        events = self.do_test(
-            lambda: do_set_realm_property(self.user_profile.realm, 'name', u'New Realm Name'))
-        error = schema_checker('events[0]', events[0])
-        self.assert_on_error(error)
+
+        if property_type == bool:
+            do_set_realm_property(self.user_profile.realm, name, False)
+        for value in values_list:
+            events = self.do_test(
+                lambda: do_set_realm_property(self.user_profile.realm, name, value))
+            error = schema_checker('events[0]', events[0])
+            self.assert_on_error(error)
 
     def test_change_realm_description(self):
         # type: () -> None
-        schema_checker = check_dict([
-            ('type', equals('realm')),
-            ('op', equals('update')),
-            ('property', equals('description')),
-            ('value', check_string),
-        ])
-        events = self.do_test(
-            lambda: do_set_realm_property(self.user_profile.realm, 'description', u'New Realm Description'))
-        error = schema_checker('events[0]', events[0])
-        self.assert_on_error(error)
+        self.do_set_realm_property_test('description', [u'New Realm Description'])
 
     def test_change_realm_waiting_period_threshold(self):
         # type: () -> None
-        schema_checker = check_dict([
-            ('type', equals('realm')),
-            ('op', equals('update')),
-            ('property', equals('waiting_period_threshold')),
-            ('value', check_int),
-        ])
-        events = self.do_test(
-            lambda: do_set_realm_property(self.user_profile.realm, 'waiting_period_threshold', 17))
-        error = schema_checker('events[0]', events[0])
-        self.assert_on_error(error)
+        self.do_set_realm_property_test('waiting_period_threshold', [17])
 
-    def test_change_message_retention_days(self):
+    def test_change_realm_default_language(self):
         # type: () -> None
-        schema_checker = check_dict([
-            ('type', equals('realm')),
-            ('op', equals('update')),
-            ('property', equals('message_retention_days')),
-            ('value', check_int),
-        ])
-        events = self.do_test(
-            lambda: do_set_realm_property(self.user_profile.realm, "message_retention_days", 30))
-        error = schema_checker('events[0]', events[0])
-        self.assert_on_error(error)
+        self.do_set_realm_property_test('default_language', [u'de'])
 
     def test_change_realm_add_emoji_by_admins_only(self):
         # type: () -> None
-        schema_checker = check_dict([
-            ('type', equals('realm')),
-            ('op', equals('update')),
-            ('property', equals('add_emoji_by_admins_only')),
-            ('value', check_bool),
-        ])
-        events = self.do_test(
-            lambda: do_set_realm_property(self.user_profile.realm, 'add_emoji_by_admins_only', True))
-        error = schema_checker('events[0]', events[0])
-        self.assert_on_error(error)
+        self.do_set_realm_property_test('add_emoji_by_admins_only', [True, False])
 
     def test_change_realm_restricted_to_domain(self):
         # type: () -> None
-        schema_checker = check_dict([
-            ('type', equals('realm')),
-            ('op', equals('update')),
-            ('property', equals('restricted_to_domain')),
-            ('value', check_bool),
-        ])
-        do_set_realm_property(self.user_profile.realm, 'restricted_to_domain', True)
-        for restricted_to_domain in (False, True):
-            events = self.do_test(
-                lambda: do_set_realm_property(self.user_profile.realm, 'restricted_to_domain', restricted_to_domain))
-            error = schema_checker('events[0]', events[0])
-            self.assert_on_error(error)
+        self.do_set_realm_property_test('restricted_to_domain', [True, False])
 
     def test_change_realm_invite_required(self):
         # type: () -> None
-        schema_checker = check_dict([
-            ('type', equals('realm')),
-            ('op', equals('update')),
-            ('property', equals('invite_required')),
-            ('value', check_bool),
-        ])
-        invite_required = False
-        do_set_realm_property(self.user_profile.realm, 'invite_required', invite_required)
-        for invite_required in (True, False):
-            events = self.do_test(
-                lambda: do_set_realm_property(self.user_profile.realm, 'invite_required', invite_required))
-            error = schema_checker('events[0]', events[0])
-            self.assert_on_error(error)
+        self.do_set_realm_property_test('invite_required', [True, False])
 
     def test_change_realm_name_changes_disabled(self):
         # type: () -> None
-        schema_checker = check_dict([
-            ('type', equals('realm')),
-            ('op', equals('update')),
-            ('property', equals('name_changes_disabled')),
-            ('value', check_bool),
-        ])
-        do_set_realm_property(self.user_profile.realm, 'name_changes_disabled', True)
-        for name_changes_disabled in (False, True):
-            events = self.do_test(
-                lambda: do_set_realm_property(self.user_profile.realm, 'name_changes_disabled', name_changes_disabled))
-            error = schema_checker('events[0]', events[0])
-            self.assert_on_error(error)
+        self.do_set_realm_property_test('name_changes_disabled', [True, False])
 
     def test_change_realm_email_changes_disabled(self):
         # type: () -> None
-        schema_checker = check_dict([
-            ('type', equals('realm')),
-            ('op', equals('update')),
-            ('property', equals('email_changes_disabled')),
-            ('value', check_bool),
-        ])
-        do_set_realm_property(self.user_profile.realm, 'email_changes_disabled', True)
-        for email_changes_disabled in (False, True):
-            events = self.do_test(lambda: do_set_realm_property(self.user_profile.realm, 'email_changes_disabled', email_changes_disabled))
-            error = schema_checker('events[0]', events[0])
-            self.assert_on_error(error)
+        self.do_set_realm_property_test('email_changes_disabled', [True, False])
+
+    def test_change_realm_invite_by_admins_only(self):
+        # type: () -> None
+        self.do_set_realm_property_test('invite_by_admins_only', [True, False])
+
+    def test_change_realm_inline_image_preview(self):
+        # type: () -> None
+        self.do_set_realm_property_test('inline_image_preview', [True, False])
+
+    def test_change_realm_inline_url_embed_preview(self):
+        # type: () -> None
+        self.do_set_realm_property_test('inline_url_embed_preview', [True, False])
+
+    def test_change_realm_create_stream_by_admins_only(self):
+        # type: () -> None
+        self.do_set_realm_property_test('create_stream_by_admins_only', [True, False])
 
     def test_change_realm_authentication_methods(self):
         # type: () -> None
@@ -885,87 +844,6 @@ class EventsRegisterTest(ZulipTestCase):
                     lambda: do_set_realm_authentication_methods(
                         self.user_profile.realm,
                         auth_method_dict))
-
-            error = schema_checker('events[0]', events[0])
-            self.assert_on_error(error)
-
-    def test_change_realm_invite_by_admins_only(self):
-        # type: () -> None
-        schema_checker = check_dict([
-            ('type', equals('realm')),
-            ('op', equals('update')),
-            ('property', equals('invite_by_admins_only')),
-            ('value', check_bool),
-        ])
-        invite_by_admins_only = False
-        do_set_realm_property(self.user_profile.realm, 'invite_by_admins_only', invite_by_admins_only)
-        for invite_by_admins_only in (True, False):
-            events = self.do_test(
-                lambda: do_set_realm_property(self.user_profile.realm, 'invite_by_admins_only', invite_by_admins_only))
-            error = schema_checker('events[0]', events[0])
-            self.assert_on_error(error)
-
-    def test_change_realm_inline_image_preview(self):
-        # type: () -> None
-        schema_checker = check_dict([
-            ('type', equals('realm')),
-            ('op', equals('update')),
-            ('property', equals('inline_image_preview')),
-            ('value', check_bool),
-        ])
-        inline_image_preview = False
-        do_set_realm_property(self.user_profile.realm, 'inline_image_preview', inline_image_preview)
-        for inline_image_preview in (True, False):
-            events = self.do_test(
-                lambda: do_set_realm_property(self.user_profile.realm, 'inline_image_preview', inline_image_preview))
-            error = schema_checker('events[0]', events[0])
-            self.assert_on_error(error)
-
-    def test_change_realm_inline_url_embed_preview(self):
-        # type: () -> None
-        schema_checker = check_dict([
-            ('type', equals('realm')),
-            ('op', equals('update')),
-            ('property', equals('inline_url_embed_preview')),
-            ('value', check_bool),
-        ])
-        inline_url_embed_preview = False
-        do_set_realm_property(self.user_profile.realm, 'inline_url_embed_preview', inline_url_embed_preview)
-        for inline_url_embed_preview in (True, False):
-            events = self.do_test(
-                lambda: do_set_realm_property(self.user_profile.realm, 'inline_url_embed_preview', inline_url_embed_preview))
-            error = schema_checker('events[0]', events[0])
-            self.assert_on_error(error)
-
-    def test_change_realm_default_language(self):
-        # type: () -> None
-        schema_checker = check_dict([
-            ('type', equals('realm')),
-            ('op', equals('update')),
-            ('property', equals('default_language')),
-            ('value', check_string),
-        ])
-        events = self.do_test(
-            lambda: do_set_realm_property(self.user_profile.realm, 'default_language', u'de'))
-        error = schema_checker('events[0]', events[0])
-        self.assert_on_error(error)
-
-    def test_change_realm_create_stream_by_admins_only(self):
-        # type: () -> None
-        schema_checker = check_dict([
-            ('type', equals('realm')),
-            ('op', equals('update')),
-            ('property', equals('create_stream_by_admins_only')),
-            ('value', check_bool),
-        ])
-        do_set_realm_property(self.user_profile.realm, 'create_stream_by_admins_only', False)
-
-        for create_stream_by_admins_only in (True, False):
-            events = self.do_test(
-                lambda: do_set_realm_property(
-                    self.user_profile.realm,
-                    'create_stream_by_admins_only',
-                    create_stream_by_admins_only))
 
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
