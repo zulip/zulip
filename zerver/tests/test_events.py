@@ -8,10 +8,11 @@ from typing import Any, Callable, Dict, List, Optional
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.test import TestCase
+from django.utils import timezone
 
 from zerver.models import (
     get_client, get_realm, get_recipient, get_stream, get_user_profile_by_email,
-    Message, RealmAlias, Recipient, UserProfile
+    Message, RealmAlias, Recipient, UserPresence, UserProfile
 )
 
 from zerver.lib.actions import (
@@ -51,6 +52,7 @@ from zerver.lib.actions import (
     do_update_message,
     do_update_message_flags,
     do_update_pointer,
+    do_update_user_presence,
     do_change_twenty_four_hour_time,
     do_change_left_side_userlist,
     do_change_emoji_alt_code,
@@ -77,7 +79,7 @@ from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 from zerver.lib.validator import (
-    check_bool, check_dict, check_int, check_list, check_string,
+    check_bool, check_dict, check_float, check_int, check_list, check_string,
     equals, check_none_or, Validator
 )
 
@@ -519,6 +521,27 @@ class EventsRegisterTest(ZulipTestCase):
         )
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
+
+    def test_presence_events(self):
+        # type: () -> None
+        schema_checker = check_dict([
+            ('type', equals('pointer')),
+            ('email', check_string),
+            ('timestamp', check_float),
+            ('presence', check_dict([
+                # TODO: Add more here once the test below works
+            ])),
+        ])
+        # BUG: Marked as failing for now because this is a failing
+        # test, due to the `aggregated` feature not being supported by
+        # our events code.
+
+        with self.assertRaises(AssertionError):
+            events = self.do_test(lambda: do_update_user_presence(
+                self.user_profile, get_client("website"), timezone.now(), UserPresence.ACTIVE))
+            # Marked as nocoverage since unreachable
+            error = schema_checker('events[0]', events[0])  # nocoverage
+            self.assert_on_error(error)  # nocoverage
 
     def test_pointer_events(self):
         # type: () -> None
