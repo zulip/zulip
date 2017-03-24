@@ -23,6 +23,7 @@ from zerver.lib.actions import (
     do_add_reaction,
     do_remove_reaction,
     do_change_avatar_fields,
+    do_change_default_language,
     do_change_default_all_public_streams,
     do_change_default_events_register_stream,
     do_change_default_sending_stream,
@@ -919,6 +920,19 @@ class EventsRegisterTest(ZulipTestCase):
         do_change_emoji_alt_code(self.user_profile, False)
         for setting_value in [True, False]:
             events = self.do_test(lambda: do_change_emoji_alt_code(self.user_profile, setting_value))
+            error = schema_checker('events[0]', events[0])
+            self.assert_on_error(error)
+
+    def test_change_default_language(self):
+        # type: () -> None
+        schema_checker = check_dict([
+            ('type', equals('update_display_settings')),
+            ('setting_name', equals('default_language')),
+            ('user', check_string),
+            ('setting', check_string),
+        ])
+        for setting_value in ['de', 'es', 'en']:
+            events = self.do_test(lambda: do_change_default_language(self.user_profile, setting_value))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 

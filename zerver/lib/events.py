@@ -384,6 +384,8 @@ def apply_event(state, event, user_profile, include_subscribers):
             state['left_side_userlist'] = event["setting"]
         if event['setting_name'] == 'emoji_alt_code':
             state['emoji_alt_code'] = event["setting"]
+        if event['setting_name'] == 'default_language':
+            state['default_language'] = event["setting"]
     elif event['type'] == "update_global_notifications":
         if event['notification_name'] == "enable_stream_desktop_notifications":
             state['enable_stream_desktop_notifications'] = event['setting']
