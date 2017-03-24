@@ -407,7 +407,7 @@ def apply_event(state, event, user_profile, include_subscribers):
         elif event['notification_name'] == "enable_digest_emails":
             state['enable_digest_emails'] = event['setting']
     else:
-        raise ValueError("Unexpected event type %s" % (event['type'],))
+        raise AssertionError("Unexpected event type %s" % (event['type'],))
 
 def do_events_register(user_profile, user_client, apply_markdown=True,
                        event_types=None, queue_lifespan_secs=0, all_public_streams=False,

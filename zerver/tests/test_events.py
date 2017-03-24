@@ -12,7 +12,7 @@ from django.utils import timezone
 
 from zerver.models import (
     get_client, get_realm, get_recipient, get_stream, get_user_profile_by_email,
-    Message, RealmAlias, Recipient, UserPresence, UserProfile
+    Message, RealmAlias, Recipient, UserMessage, UserPresence, UserProfile
 )
 
 from zerver.lib.actions import (
@@ -102,13 +102,41 @@ class EventsEndpointTest(ZulipTestCase):
     def test_events_register_endpoint(self):
         # type: () -> None
 
-        # This test is intended to get minimal coverage on
-        # zerver.views.events_register.events_register_backend, so we can have
-        # 100% views coverage.
+        # This test is intended to get minimal coverage on the
+        # events_register code paths
         email = 'hamlet@zulip.com'
         with mock.patch('zerver.views.events_register.do_events_register', return_value={}):
             result = self.client_post('/json/register', **self.api_auth(email))
         self.assert_json_success(result)
+
+        with mock.patch('zerver.lib.events.request_event_queue', return_value=None):
+            result = self.client_post('/json/register', **self.api_auth(email))
+        self.assert_json_error(result, "Could not allocate event queue")
+
+        with mock.patch('zerver.lib.events.request_event_queue', return_value='15:11'):
+            with mock.patch('zerver.lib.events.get_user_events',
+                            return_value=[]):
+                result = self.client_post('/json/register', dict(event_types=ujson.dumps(['pointer'])),
+                                          **self.api_auth(email))
+        self.assert_json_success(result)
+        result_dict = ujson.loads(result.content)
+        self.assertEqual(result_dict['last_event_id'], -1)
+        self.assertEqual(result_dict['queue_id'], '15:11')
+
+        with mock.patch('zerver.lib.events.request_event_queue', return_value='15:12'):
+            with mock.patch('zerver.lib.events.get_user_events',
+                            return_value=[{
+                                'id': 6,
+                                'type': 'pointer',
+                                'pointer': 15,
+                            }]):
+                result = self.client_post('/json/register', dict(event_types=ujson.dumps(['pointer'])),
+                                          **self.api_auth(email))
+        self.assert_json_success(result)
+        result_dict = ujson.loads(result.content)
+        self.assertEqual(result_dict['last_event_id'], 6)
+        self.assertEqual(result_dict['pointer'], 15)
+        self.assertEqual(result_dict['queue_id'], '15:12')
 
     def test_tornado_endpoint(self):
         # type: () -> None
@@ -1621,6 +1649,15 @@ class FetchInitialStateDataTest(ZulipTestCase):
         self.assertTrue(user_profile.is_realm_admin)
         result = fetch_initial_state_data(user_profile, None, "")
         self.assertTrue(len(result['realm_bots']) > 5)
+
+    def test_max_message_id_with_no_history(self):
+        # type: () -> None
+        email = 'aaron@zulip.com'
+        user_profile = get_user_profile_by_email(email)
+        # Delete all historical messages for this user
+        UserMessage.objects.filter(user_profile=user_profile).delete()
+        result = fetch_initial_state_data(user_profile, None, "")
+        self.assertEqual(result['max_message_id'], -1)
 
 class EventQueueTest(TestCase):
     def test_one_event(self):
