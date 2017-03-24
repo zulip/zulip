@@ -623,11 +623,19 @@ class GitHubAuthBackendTest(ZulipTestCase):
         from social_django import utils
         utils.BACKENDS = ('zproject.backends.GitHubAuthBackend',)
         with mock.patch('zproject.backends.GitHubAuthBackend.get_email_address',
-                        return_value=None), \
-                mock.patch('zproject.backends.logging.exception'):
-            result = self.client_get(reverse('social:complete', args=['github']))
-            self.assertEqual(result.status_code, 302)
-            self.assertIn('login', result.url)
+                        return_value=None) as mock_get_email_address, \
+                mock.patch('social_core.backends.oauth.OAuthAuth.validate_state',
+                           return_value='state'), \
+                mock.patch('social_core.backends.oauth.BaseOAuth2.request_access_token',
+                           return_value={'access_token': 'token'}), \
+                mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
+                           side_effect=self.do_auth), \
+                mock.patch('zproject.backends.logging.warning'):
+            result = self.client_get(reverse('social:complete', args=['github']),
+                                     info={'state': 'state'})
+            self.assertEqual(result.status_code, 200)
+            self.assertIn("Let's get started", result.content.decode('utf8'))
+            self.assertEqual(mock_get_email_address.call_count, 2)
 
         utils.BACKENDS = settings.AUTHENTICATION_BACKENDS
 
