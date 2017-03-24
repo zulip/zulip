@@ -12,7 +12,12 @@ function send_reaction_ajax(message_id, emoji_name, operation) {
         success: function () {},
         error: function (xhr) {
             var response = channel.xhr_error_message("Error sending reaction", xhr);
-            blueslip.error(response);
+            // Errors are somewhat commmon here, due to race conditions
+            // where the user tries to add/remove the reaction when there is already
+            // an in-flight request.  We eventually want to make this a blueslip
+            // error, rather than a warning, but we need to implement either
+            // #4291 or #4295 first.
+            blueslip.warn(response);
         },
     };
     if (operation === 'add') {
