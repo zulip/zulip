@@ -6,7 +6,7 @@
     </div>
     <div class="reaction-popover-emoji-map" data-message-id="{{message_id}}">
         {{#each emojis}}
-        <div class="reaction-popover-reaction {{#if has_reacted}} reacted {{/if}}" title={{name}}>
+        <div class="reaction-popover-reaction {{#if has_reacted}} reacted {{/if}}" title={{name}} tabindex="0">
             {{#if is_realm_emoji}}
             <img src="{{url}}" class="emoji" title= ":{{name}}:" />
             {{else}}
