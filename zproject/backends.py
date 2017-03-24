@@ -266,8 +266,11 @@ class GoogleMobileOauth2Backend(ZulipAuthMixin):
 
     """
 
-    def authenticate(self, google_oauth2_token=None, realm_subdomain=None, return_data={}):
-        # type: (Optional[str], Optional[Text], Dict[str, Any]) -> Optional[UserProfile]
+    def authenticate(self, google_oauth2_token=None, realm_subdomain=None, return_data=None):
+        # type: (Optional[str], Optional[Text], Optional[Dict[str, Any]]) -> Optional[UserProfile]
+        if return_data is None:
+            return_data = {}
+
         try:
             token_payload = googleapiclient.verify_id_token(google_oauth2_token, settings.GOOGLE_CLIENT_ID)
         except AppIdentityError:
