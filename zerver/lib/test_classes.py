@@ -417,10 +417,11 @@ class ZulipTestCase(TestCase):
             realm = get_realm_by_email_domain(email)
         try:
             stream = get_stream(stream_name, realm)
+            from_creation = False
         except Stream.DoesNotExist:
-            stream, _ = create_stream_if_needed(realm, stream_name)
+            stream, from_creation = create_stream_if_needed(realm, stream_name)
         user_profile = get_user_profile_by_email(email)
-        bulk_add_subscriptions([stream], [user_profile])
+        bulk_add_subscriptions([stream], [user_profile], from_creation=from_creation)
         return stream
 
     def unsubscribe_from_stream(self, email, stream_name):

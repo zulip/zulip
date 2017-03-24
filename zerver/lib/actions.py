@@ -232,6 +232,13 @@ def send_signup_message(sender, signups_stream, user_profile,
 
     # We also send a notification to the Zulip administrative realm
     admin_realm = get_user_profile_by_email(sender).realm
+    try:
+        # Check whether the stream exists
+        get_stream(signups_stream, admin_realm)
+    except Stream.DoesNotExist:
+        # If the signups stream hasn't been created in the admin
+        # realm, don't auto-create it to send to it; just do nothing.
+        return
     internal_send_message(
         admin_realm,
         sender,
@@ -1454,8 +1461,8 @@ def query_all_subs_by_stream(streams):
         all_subs_by_stream[sub.recipient.type_id].append(sub.user_profile)
     return all_subs_by_stream
 
-def bulk_add_subscriptions(streams, users):
-    # type: (Iterable[Stream], Iterable[UserProfile]) -> Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile, Stream]]]
+def bulk_add_subscriptions(streams, users, from_creation=False):
+    # type: (Iterable[Stream], Iterable[UserProfile], bool) -> Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile, Stream]]]
     recipients_map = bulk_get_recipients(Recipient.STREAM, [stream.id for stream in streams]) # type: Mapping[int, Recipient]
     recipients = [recipient.id for recipient in recipients_map.values()] # type: List[int]
 
@@ -1509,7 +1516,7 @@ def bulk_add_subscriptions(streams, users):
     new_occupied_streams = [stream for stream in
                             set(occupied_streams_after) - set(occupied_streams_before)
                             if not stream.invite_only]
-    if new_occupied_streams:
+    if new_occupied_streams and not from_creation:
         event = dict(type="stream", op="occupy",
                      streams=[stream.to_dict()
                               for stream in new_occupied_streams])

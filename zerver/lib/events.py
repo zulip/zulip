@@ -238,6 +238,8 @@ def apply_event(state, event, user_profile, include_subscribers):
                         stream_data['subscribers'] = []
                     # Add stream to never_subscribed (if not invite_only)
                     state['never_subscribed'].append(stream_data)
+                state['streams'].append(stream)
+            state['streams'].sort(key=lambda elt: elt["name"])
 
         if event['op'] == 'delete':
             deleted_stream_ids = {stream['stream_id'] for stream in event['streams']}

@@ -16,6 +16,7 @@ from zerver.models import (
 )
 
 from zerver.lib.actions import (
+    bulk_add_subscriptions,
     bulk_remove_subscriptions,
     do_add_alert_words,
     check_add_realm_emoji,
@@ -566,21 +567,10 @@ class EventsRegisterTest(ZulipTestCase):
                 ('is_bot', check_bool),
             ])),
         ])
-        stream_create_checker = check_dict([
-            ('type', equals('stream')),
-            ('op', equals('create')),
-            ('streams', check_list(check_dict([
-                ('description', check_string),
-                ('invite_only', check_bool),
-                ('name', check_string),
-                ('stream_id', check_int),
-            ])))
-        ])
 
         events = self.do_test(lambda: self.register("test1@zulip.com", "test1"))
+        self.assert_length(events, 1)
         error = realm_user_add_checker('events[0]', events[0])
-        self.assert_on_error(error)
-        error = stream_create_checker('events[1]', events[1])
         self.assert_on_error(error)
 
     def test_alert_words_events(self):
@@ -1429,13 +1419,14 @@ class EventsRegisterTest(ZulipTestCase):
         # type: () -> None
         action = lambda: self.subscribe_to_stream("othello@zulip.com", u"test_stream")
         events = self.do_test(action)
-        schema_checker = check_dict([
+        self.assert_length(events, 2)
+        peer_add_schema_checker = check_dict([
             ('type', equals('subscription')),
             ('op', equals('peer_add')),
             ('user_id', check_int),
             ('subscriptions', check_list(check_string)),
         ])
-        error = schema_checker('events[2]', events[2])
+        error = peer_add_schema_checker('events[1]', events[1])
         self.assert_on_error(error)
 
     def test_subscribe_events(self):
@@ -1464,6 +1455,16 @@ class EventsRegisterTest(ZulipTestCase):
         subscription_schema_checker = check_list(
             check_dict(subscription_fields),
         )
+        stream_create_schema_checker = check_dict([
+            ('type', equals('stream')),
+            ('op', equals('create')),
+            ('streams', check_list(check_dict([
+                ('name', check_string),
+                ('stream_id', check_int),
+                ('invite_only', check_bool),
+                ('description', check_string),
+            ]))),
+        ])
         add_schema_checker = check_dict([
             ('type', equals('subscription')),
             ('op', equals('add')),
@@ -1549,6 +1550,16 @@ class EventsRegisterTest(ZulipTestCase):
         events = self.do_test(action,
                               include_subscribers=include_subscribers)
         error = stream_update_schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        # Subscribe to a totally new invite-only stream, so it's just Hamlet on it
+        stream = self.make_stream("private", get_realm("zulip"), invite_only=True)
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        action = lambda: bulk_add_subscriptions([stream], [user_profile])
+        events = self.do_test(action, include_subscribers=include_subscribers)
+        self.assert_length(events, 2)
+        error = stream_create_schema_checker('events[0]', events[0])
+        error = add_schema_checker('events[1]', events[1])
         self.assert_on_error(error)
 
 class FetchInitialStateDataTest(ZulipTestCase):
