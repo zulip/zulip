@@ -51,6 +51,7 @@ from zerver.lib.actions import (
     do_set_realm_message_editing,
     do_update_message,
     do_update_message_flags,
+    do_update_muted_topic,
     do_update_pointer,
     do_update_user_presence,
     do_change_twenty_four_hour_time,
@@ -623,6 +624,16 @@ class EventsRegisterTest(ZulipTestCase):
             ('muted_topics', check_list(check_list(check_string, 2))),
         ])
         events = self.do_test(lambda: do_set_muted_topics(self.user_profile, [[u"Denmark", u"topic"]]))
+        error = muted_topics_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        events = self.do_test(lambda: do_update_muted_topic(
+            self.user_profile, "Denmark", "topic", "add"))
+        error = muted_topics_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        events = self.do_test(lambda: do_update_muted_topic(
+            self.user_profile, "Denmark", "topic", "remove"))
         error = muted_topics_checker('events[0]', events[0])
         self.assert_on_error(error)
 
