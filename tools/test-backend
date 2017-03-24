@@ -96,6 +96,11 @@ if __name__ == "__main__":
     TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
     os.chdir(os.path.dirname(TOOLS_DIR))
     sys.path.insert(0, os.path.dirname(TOOLS_DIR))
+
+    # Remove proxy settings for running backend tests
+    os.environ["http_proxy"] = ""
+    os.environ["https_proxy"] = ""
+
     from zerver.lib.test_fixtures import is_template_database_current
 
     from tools.lib.test_script import (

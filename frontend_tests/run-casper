@@ -16,6 +16,8 @@ import glob
 
 os.environ["CASPER_TESTS"] = "1"
 os.environ["PHANTOMJS_EXECUTABLE"] = os.path.join(os.path.dirname(__file__), "../node_modules/.bin/phantomjs")
+os.environ["http_proxy"] = ""
+os.environ["https_proxy"] = ""
 
 usage = """%prog [options]
     test-js-with-casper # Run all test files
