@@ -100,3 +100,5 @@ Zulip keyboard shortcuts are divided into four categories:
 * **React to selected message with +1**: `+` - This shortcut allows
   you to react to the selected message (outlined in blue) with the
   +1 (thumbs up) emoji.
+* **Mute/Unmute topic**: `M` - This shortcut toggles the selected
+  message's (outlined in blue) topic between muted and unmuted.
