@@ -30,7 +30,7 @@ from zerver.decorator import (
     return_success_on_head_request
 )
 from zerver.lib.validator import (
-    check_string, check_dict, check_bool, check_int, check_list, Validator,
+    check_string, check_dict, check_bool, check_float, check_int, check_list, Validator,
     check_variable_type, equals, check_none_or,
 )
 from zerver.models import \
@@ -417,6 +417,17 @@ class ValidatorTestCase(TestCase):
 
         x = [{}]
         self.assertEqual(check_int('x', x), 'x is not an integer')
+
+    def test_check_float(self):
+        # type: () -> None
+        x = 5.5 # type: Any
+        self.assertEqual(check_float('x', x), None)
+
+        x = 5
+        self.assertEqual(check_float('x', x), 'x is not a float')
+
+        x = [{}]
+        self.assertEqual(check_float('x', x), 'x is not a float')
 
     def test_check_list(self):
         # type: () -> None

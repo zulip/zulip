@@ -44,6 +44,12 @@ def check_int(var_name, val):
         return _('%s is not an integer') % (var_name,)
     return None
 
+def check_float(var_name, val):
+    # type: (str, Any) -> Optional[str]
+    if not isinstance(val, float):
+        return _('%s is not a float') % (var_name,)
+    return None
+
 def check_bool(var_name, val):
     # type: (str, Any) -> Optional[str]
     if not isinstance(val, bool):
