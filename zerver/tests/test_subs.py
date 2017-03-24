@@ -38,8 +38,8 @@ from zerver.models import (
 )
 
 from zerver.lib.actions import (
-    do_add_default_stream, do_change_is_admin, do_set_realm_waiting_period_threshold,
-    do_create_realm, do_remove_default_stream, do_set_realm_create_stream_by_admins_only,
+    do_add_default_stream, do_change_is_admin, do_set_realm_property,
+    do_create_realm, do_remove_default_stream,
     gather_subscriptions_helper, bulk_add_subscriptions, bulk_remove_subscriptions,
     gather_subscriptions, get_default_streams_for_realm, get_realm, get_stream,
     get_user_profile_by_email, set_default_streams, check_stream_name,
@@ -609,7 +609,7 @@ class StreamAdminTest(ZulipTestCase):
         email = 'hamlet@zulip.com'
         user_profile = get_user_profile_by_email(email)
         self.login(email)
-        do_set_realm_create_stream_by_admins_only(user_profile.realm, True)
+        do_set_realm_property(user_profile.realm, 'create_stream_by_admins_only', True)
 
         stream_name = ['adminsonlysetting']
         result = self.common_subscribe_to_streams(
@@ -629,7 +629,7 @@ class StreamAdminTest(ZulipTestCase):
         self.login(email)
         do_change_is_admin(user_profile, False)
 
-        do_set_realm_waiting_period_threshold(user_profile.realm, 10)
+        do_set_realm_property(user_profile.realm, 'waiting_period_threshold', 10)
 
         stream_name = ['waitingperiodtest']
         result = self.common_subscribe_to_streams(
@@ -638,7 +638,7 @@ class StreamAdminTest(ZulipTestCase):
         )
         self.assert_json_error(result, 'User cannot create streams.')
 
-        do_set_realm_waiting_period_threshold(user_profile.realm, 0)
+        do_set_realm_property(user_profile.realm, 'waiting_period_threshold', 0)
 
         result = self.common_subscribe_to_streams(
             email,
