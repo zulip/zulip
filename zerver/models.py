@@ -144,6 +144,23 @@ class Realm(ModelReprMixin, models.Model):
                                       default=2**31 - 1) # type: BitHandler
     waiting_period_threshold = models.PositiveIntegerField(default=0) # type: int
 
+    # Define the types of the various automatically managed properties
+    property_types = dict(
+        add_emoji_by_admins_only=bool,
+        create_stream_by_admins_only=bool,
+        default_language=Text,
+        description=Text,
+        email_changes_disabled=bool,
+        invite_required=bool,
+        invite_by_admins_only=bool,
+        inline_image_preview=bool,
+        inline_url_embed_preview=bool,
+        name=Text,
+        name_changes_disabled=bool,
+        restricted_to_domain=bool,
+        waiting_period_threshold=int,
+    )
+
     ICON_FROM_GRAVATAR = u'G'
     ICON_UPLOADED = u'U'
     ICON_SOURCES = (
