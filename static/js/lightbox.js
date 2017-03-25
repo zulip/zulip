@@ -10,7 +10,7 @@ var asset_map = {
 
 function render_lightbox_list_images(preview_source) {
     if (!is_open) {
-        var images = Array.prototype.slice.call($(".focused_table .messagebox-content img"));
+        var images = Array.prototype.slice.call($(".focused_table .message_inline_image img"));
         var $image_list = $("#lightbox_overlay .image-list").html("");
 
         images.forEach(function (img) {
