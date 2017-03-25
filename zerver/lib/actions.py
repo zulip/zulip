@@ -818,6 +818,20 @@ def do_send_messages(messages_maybe_none):
             if user_profile.email in user_presences:
                 presences[user_profile.id] = user_presences[user_profile.email]
 
+        if message['message'].recipient.type != Recipient.STREAM:
+            # PM triggers for personal and huddle messsages
+            if not message['message'].sender.is_bot or \
+                    message['message'].sender.bot_type != UserProfile.OUTGOING_WEBHOOK_BOT:
+                # to prevent triggers for messages sent by bots
+                for recipient in message['recipients']:
+                    if recipient.is_bot and recipient.bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
+                        trigger_event = {"bot_email": recipient.email,
+                                         "command": message['message'].content,
+                                         "retry": 0,
+                                         "service_name": None,
+                                         "message": message['message'].to_log_dict()}
+                        queue_json_publish("outgoing_webhooks", trigger_event, lambda x: None)
+
         for bot_email, command in message['message'].outgoing_webhook_bot_triggers:
             trigger_event = {"bot_email": bot_email,
                              "command": command,

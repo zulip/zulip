@@ -50,7 +50,10 @@ class ServiceMessageActions(object):
                                   trigger_message['subject'], response_message_content)
         else:
             # Private message; only send if the bot is there in the recipients
-            trigger_message_recipients = [recipient['email'] for recipient in trigger_message['display_recipient']]
+            trigger_message_recipients = [recipient['email'] for recipient in trigger_message['recipient']]
+            if trigger_message['sender_email'] not in trigger_message_recipients:
+                trigger_message_recipients.append(trigger_message['sender_email'])
+            recipient_type_name = 'private'
             if bot_email in trigger_message_recipients:
                 recipients = ','.join(trigger_message_recipients)
                 internal_send_message(realm, bot_email, recipient_type_name, recipients,
