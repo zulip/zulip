@@ -15,6 +15,12 @@
         </a>
     </li>
     <li>
+        <a class="mention_user">
+            <i class="fa fa-at" aria-hidden="true"></i> {{#tr this}}Reply mentioning user{{/tr}}
+        </a>
+    </li>
+    <hr />
+    <li>
         <a href="{{ pm_with_uri }}" class="narrow_to_private_messages">
             <i class="icon-vector-user"></i> {{#tr this}}Private messages with user{{/tr}}
         </a>
@@ -22,11 +28,6 @@
     <li>
         <a href="{{ sent_by_uri }}" class="narrow_to_messages_sent">
             <i class="icon-vector-bullhorn"></i> {{#tr this}}Messages sent by user{{/tr}}
-        </a>
-    </li>
-    <li>
-        <a class="mention_user">
-            <i class="fa fa-at" aria-hidden="true"></i> {{#tr this}}Reply mentioning user{{/tr}}
         </a>
     </li>
 </ul>
