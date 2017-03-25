@@ -30,7 +30,10 @@ function get_row_data(row) {
     var row_id = row.attr('data-stream-id');
     if (row_id) {
         var row_object = stream_data.get_sub_by_id(row_id);
-        return [row_id, row_object];
+        return {
+            id: row_id,
+            object: row_object,
+        };
     }
 }
 
@@ -38,7 +41,11 @@ function get_active_data() {
     var active_row = $('div.stream-row.active');
     var valid_active_id = active_row.attr('data-stream-id');
     var active_tab = $('.subscriptions-container').find('div.ind-tab.selected');
-    return [active_row, valid_active_id, active_tab];
+    return {
+        row: active_row,
+        id: valid_active_id,
+        tab: active_tab,
+    };
 }
 
 function export_hash(hash) {
@@ -733,12 +740,12 @@ exports.close = function () {
 exports.switch_rows = function (event) {
     var active_data = get_active_data();
     var switch_row;
-    if (!active_data[1] || active_data[0].hasClass('notdisplayed')) {
+    if (!active_data.id || active_data.row.hasClass('notdisplayed')) {
         switch_row = $('div.stream-row:not(.notdisplayed):first');
     } else if (event === 'up_arrow') {
-        switch_row = active_data[0].prev();
+        switch_row = active_data.row.prev();
     } else if (event === 'down_arrow') {
-        switch_row = active_data[0].next();
+        switch_row = active_data.row.next();
         if ($('#search_stream_name').is(":focus")) {
             $('#search_stream_name').blur();
             return;
@@ -747,8 +754,8 @@ exports.switch_rows = function (event) {
 
     var row_data = get_row_data(switch_row);
     if (row_data && !switch_row.hasClass('notdisplayed')) {
-        var switch_row_name = row_data[1].name;
-        var hash = ['#streams', row_data[0], switch_row_name];
+        var switch_row_name = row_data.object.name;
+        var hash = ['#streams', row_data.id, switch_row_name];
         export_hash(hash);
     } else if (event === 'up_arrow' && !row_data) {
         $('#search_stream_name').focus();
@@ -757,12 +764,12 @@ exports.switch_rows = function (event) {
 
 exports.keyboard_sub = function () {
     var active_data = get_active_data();
-    var row_data = get_row_data(active_data[0]);
+    var row_data = get_row_data(active_data.row);
     if (row_data) {
-        subs.sub_or_unsub(row_data[1]);
-        if (row_data[1].subscribed && active_data[2].text() === 'Subscribed') {
-            active_data[0].addClass('notdisplayed');
-            active_data[0].removeClass('active');
+        subs.sub_or_unsub(row_data.object);
+        if (row_data.object.subscribed && active_data.tab.text() === 'Subscribed') {
+            active_data.row.addClass('notdisplayed');
+            active_data.row.removeClass('active');
         }
     }
 };
@@ -770,10 +777,10 @@ exports.keyboard_sub = function () {
 exports.toggle_view = function (event) {
     var active_data = get_active_data();
     var hash;
-    if (event === 'right_arrow' && active_data[2].text() === 'Subscribed') {
+    if (event === 'right_arrow' && active_data.tab.text() === 'Subscribed') {
         hash = ['#streams', 'all'];
         export_hash(hash);
-    } else if (event === 'left_arrow' && active_data[2].text() === 'All streams') {
+    } else if (event === 'left_arrow' && active_data.tab.text() === 'All streams') {
         hash = ['#streams', 'subscribed'];
         export_hash(hash);
     }
@@ -781,9 +788,9 @@ exports.toggle_view = function (event) {
 
 exports.view_stream = function () {
     var active_data = get_active_data();
-    var row_data = get_row_data(active_data[0]);
+    var row_data = get_row_data(active_data.row);
     if (row_data) {
-        window.location.hash = '#narrow/stream/' + row_data[1].name;
+        window.location.hash = '#narrow/stream/' + row_data.object.name;
     }
 };
 
