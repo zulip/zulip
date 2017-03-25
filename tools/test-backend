@@ -86,7 +86,6 @@ not_yet_fully_covered = {
     # they don't!  There are open issues for all of these.
     'zerver/tests/test_tornado.py',
     # Getting views file coverage to 100% is a major project goal
-    'zerver/views/auth.py',
     'zerver/views/home.py',
 }
 
