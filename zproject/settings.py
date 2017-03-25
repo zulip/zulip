@@ -328,6 +328,8 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    # django oauth toolkit
+    'corsheaders.middleware.CorsMiddleware',
 )
 
 ANONYMOUS_USER_ID = None
@@ -354,6 +356,8 @@ INSTALLED_APPS = [
     'pipeline',
     'zerver',
     'social_django',
+    # oatuh toolkit
+    'oauth2_provider',
 ]
 if USING_PGROONGA:
     INSTALLED_APPS += ['pgroonga']
@@ -1152,8 +1156,8 @@ AUTHENTICATION_BACKENDS += ('zproject.backends.ZulipDummyBackend',)
 
 # Redirect to /devlogin by default in dev mode
 if DEVELOPMENT:
-    HOME_NOT_LOGGED_IN = '/devlogin'
-    LOGIN_URL = '/devlogin'
+    HOME_NOT_LOGGED_IN = '/login'
+    LOGIN_URL = '/login'
 
 POPULATE_PROFILE_VIA_LDAP = bool(AUTH_LDAP_SERVER_URI)
 
@@ -1216,3 +1220,7 @@ PROFILE_ALL_REQUESTS = False
 CROSS_REALM_BOT_EMAILS = set(('feedback@zulip.com', 'notification-bot@zulip.com'))
 
 CONTRIBUTORS_DATA = os.path.join(STATIC_ROOT, 'generated/github-contributors.json')
+
+
+# allow cors request from all domains for demo propose
+CORS_ORIGIN_ALLOW_ALL = True

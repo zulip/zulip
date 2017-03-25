@@ -429,6 +429,9 @@ urls += [
 # Python Social Auth
 urls += [url(r'^', include('social_django.urls', namespace='social'))]
 
+# django oauth toolkit
+urls += [url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),]
+
 # User documentation site
 urls += [url(r'^help/(?P<article>.*)$', HelpView.as_view(template_name='zerver/help/main.html'))]
 

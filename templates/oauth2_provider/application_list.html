@@ -1,0 +1,18 @@
+{% extends "oauth2_provider/base.html" %}
+
+{% block content %}
+    <div class="block-center">
+        <h3 class="block-center-heading">{{ _("Your application list") }}</h3>
+        {% if applications %}
+            <ul>
+                {% for application in applications %}
+                    <li><a href="{{ application.get_absolute_url() }}">{{ application.name }}</a></li>
+                {% endfor %}
+            </ul>
+
+            <a class="btn btn-success" href="{{ url('oauth2_provider:register') }}">New Application</a>
+        {% else %}
+            <p>{{ _("No application defined") }} <a href="{{ url('oauth2_provider:register') }}">     {{ _("Click here") }}</a> {{ _("If you want to register new one.") }}</p>
+        {% endif %}
+    </div>
+{% endblock %}

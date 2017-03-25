@@ -1,0 +1,18 @@
+{% extends "oauth2_provider/base.html" %}
+
+
+{% block content %}
+    <div class="block-center">
+        <h3 class="block-center-heading">{{_("Are you sure to delete the application")}} {{ application.name }}?</h3>
+        <form method="post" action="{{ url('oauth2_provider:delete', args=[application.pk]) }}">
+            {% csrf_token %}
+
+            <div class="control-group">
+                <div class="controls">
+                    <a class="btn btn-large" href="{{ url('oauth2_provider:list' }}">{{ _("Cancel") }}</a>
+                    <input type="submit" class="btn btn-large btn-danger" name="allow" value="{{ _("Delete") }}"/>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}

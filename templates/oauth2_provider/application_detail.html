@@ -1,0 +1,41 @@
+{% extends "oauth2_provider/base.html" %}
+
+
+{% block content %}
+    <div class="block-center">
+        <h3 class="block-center-heading">{{ application.name }}</h3>
+
+        <ul class="unstyled">
+            <li>
+                <p><b>{{_("clinet id")}}</b></p>
+                <input class="input-block-level" type="text" value="{{ application.client_id }}" readonly>
+            </li>
+
+            <li>
+                <p><b>{{_("client secret")}}</b></p>
+                <input class="input-block-level" type="text" value="{{ application.client_secret }}" readonly>
+            </li>
+
+            <li>
+                <p><b>{{_("client type")}}</b></p>
+                <p>{{ application.client_type }}</p>
+            </li>
+
+            <li>
+                <p><b>{{_("Authorization grant type")}}</b></p>
+                <p>{{ application.authorization_grant_type }}</p>
+            </li>
+
+            <li>
+                <p><b>{{_("Redirect uris")}}</b></p>
+                <textarea class="input-block-level" readonly>{{ application.redirect_uris }}</textarea>
+            </li>
+        </ul>
+
+        <div class="btn-toolbar">
+            <a class="btn" href="{{ url('oauth2_provider:list')}}">{{_("Go Back")}}</a>
+            <a class="btn btn-primary" href="{{ url('oauth2_provider:update', args=[application.id]) }}">{{_("Edit")}}</a>
+            <a class="btn btn-danger" href="{{ url('oauth2_provider:delete', args=[application.id]) }}">{{_("Delete")}}</a>
+        </div>
+    </div>
+{% endblock content %}

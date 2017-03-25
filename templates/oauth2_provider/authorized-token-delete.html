@@ -1,0 +1,9 @@
+{% extends "oauth2_provider/base.html" %}
+
+{% load i18n %}
+{% block content %}
+    <form action="" method="post"><input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+        <p>{{_("Are you sure you want to delete this token?") }}</p>
+        <input type="submit" value="{{_("Delete")}}" />
+    </form>
+{% endblock %}
