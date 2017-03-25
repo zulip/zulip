@@ -594,8 +594,8 @@ exports.setup_page = function (callback) {
             name: "stream-filter-toggle",
             selected: 0,
             values: [
-                { label: "Subscribed" },
-                { label: "All streams" },
+                { label: i18n.t("Subscribed") },
+                { label: i18n.t("All streams") },
             ],
             callback: function () {
                 actually_filter_streams();
