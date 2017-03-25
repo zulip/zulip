@@ -1,4 +1,3 @@
-
 <p>
     First, create the stream you'd like to use for GitHub Webhook notifications,
     and subscribe all interested parties to this stream. The integration will
@@ -26,6 +25,12 @@
     where <code>api_key</code> is the API key of your Zulip
     bot.
 </p>
+<p>
+    You can also limit the branches you receive notifications for by
+    specifying them in a comma-separated list at the end of the URL,
+    like so:
+</p>
+<p><code>{{ external_api_uri_subdomain }}/v1/external/github?api_key=abcdefgh&amp;stream=github&amp;branches=master,development</code></p>
 <p>
     Then, set <b>"Content type"</b> to <code>application/json</code>.
 </p>
