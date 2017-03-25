@@ -85,8 +85,6 @@ not_yet_fully_covered = {
     # Test files should have full coverage; it's a bug in the test if
     # they don't!  There are open issues for all of these.
     'zerver/tests/test_tornado.py',
-    # Getting views file coverage to 100% is a major project goal
-    'zerver/views/home.py',
 }
 
 enforce_fully_covered = sorted(target_fully_covered - not_yet_fully_covered)
