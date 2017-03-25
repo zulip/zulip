@@ -44,6 +44,12 @@ svg {
     margin-bottom: 30px;
 }
 
+#insufficient_data {
+    display: none;
+    font-size: 30px;
+    font-weight: bold;
+}
+
 #graph_container {
     position: relative;
 }

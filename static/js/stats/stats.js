@@ -82,12 +82,96 @@ $(document).ready(function () {
     });
 });
 
-function populate_messages_sent_over_time(data) {
-    if (data.end_times.length === 0) {
-        // TODO: do something nicer here
-        return;
-    }
+function replace_data_with_fixture_data() {
+    var trace1 = {
+      x: [1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010],
+      y: [10, 15, 13, 17, 10, 15, 13, 17, 10, 15, 13, 17],
+      type: 'bar',
+      visible: true,
+      name:'Humans',
+      hoverinfo: 'none',
+    };
+    var layout1 = {
+        barmode: 'group',
+        width: 750,
+        height: 400,
+        margin: { l: 40, r: 0, b: 40, t: 0 },
+        xaxis: {
+            fixedrange: true,
+            rangeslider: { bordercolor: '#D8D8D8', borderwidth: 1 },
+            type: 'date',
+        },
+        yaxis: { fixedrange: true, rangemode: 'tozero' },
+        legend: {
+            x: 0.75, y: 1.12, orientation: 'h', font: font_14pt,
+        },
+        font: font_14pt,
+    };
+    var layout2 = {
+        width: 750,
+        height: 370,
+        margin: {
+            l: 40, r: 0, b: 100, t: 20,
+        },
+        xaxis: {
+            fixedrange: true,
+            rangeselector: {
+                x: 0.808,
+                y: -0.2,
+                buttons: [
+                    {
+                        count: 30,
+                        label: 'Last 30 Days',
+                        step: 'day',
+                        stepmode: 'backward',
+                    },
+                    {
+                        step: 'all',
+                        label: 'All time',
+                    },
+                ],
+            },
+        },
+        yaxis: {
+            fixedrange: true,
+            rangemode: 'tozero',
+        },
+        font: font_14pt,
+    };
+    var trace3 = {
+        x: [1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010],
+        y: [16, 5, 11, 9, 1, 8, 3, 17, 10, 5, 13, 7],
+        type: 'scatter',
+        name: "Active users",
+        hoverinfo: 'none',
+        visible: true,
+    };
+    Plotly.plot('id_messages_sent_over_time', [trace1], layout1, {displayModeBar: false});
+    Plotly.newPlot('id_number_of_users', [trace3], layout2, {displayModeBar: false});
+    return;
+}
 
+function make_everything_opaque() {
+    document.getElementById("messages_timescale_anchor").style.opacity='0.2';
+    document.getElementById("graph_container").style.opacity='0.2';
+    document.getElementById("pie_messages_sent_by_client").style.opacity='0.2';
+    document.getElementById("pie_messages_sent_by_type").style.opacity='0.2';
+    document.getElementById("users_anchor").style.opacity='0.2';
+    document.getElementById("id_number_of_users").style.opacity='0.2';
+    document.getElementById("users_total").style.opacity='0.2';
+    return;
+}
+
+function show_insufficient_data_message() {
+    document.getElementById("insufficient_data").style.display='inline';
+    return;
+}
+
+function get_days_of_data(data) {
+    return ((data.end_times[data.end_times.length-1] - data.end_times[0])/(24*60*60));
+}
+
+function populate_messages_sent_over_time(data) {
     // Helper functions
     function make_traces(dates, values, type, date_formatter) {
         var text = dates.map(function (date) {
@@ -311,11 +395,17 @@ function populate_messages_sent_over_time(data) {
 
 $.get({
     url: '/json/analytics/chart_data',
-    data: {chart_name: 'messages_sent_over_time', min_length: '10'},
+    data: {chart_name: 'messages_sent_over_time'},
     idempotent: true,
     success: function (data) {
-        populate_messages_sent_over_time(data);
-        update_last_full_update(data.end_times);
+        if (get_days_of_data(data) <= 3) {
+            replace_data_with_fixture_data();
+            make_everything_opaque();
+            show_insufficient_data_message();
+        } else {
+            populate_messages_sent_over_time(data);
+            update_last_full_update(data.end_times);
+        }
     },
     error: function (xhr) {
         $('#id_stats_errors').show().text($.parseJSON(xhr.responseText).msg);
@@ -376,6 +466,14 @@ function compute_summary_chart_data(time_series_data, num_steps, labels_) {
         percentages: round_to_percentages(values, total),
         total: total,
     };
+}
+
+// Disable buttons if data is insufficient
+function disable_buttons() {
+    $('#messages_by_type_realm_button').disable(true);
+    $('#messages_by_type_user_button').disable(true);
+    $('#messages_by_type_cumulative_button').disable(true);
+    return;
 }
 
 function populate_messages_sent_by_client(data) {
@@ -560,11 +658,14 @@ function populate_messages_sent_by_client(data) {
 
 $.get({
     url: '/json/analytics/chart_data',
-    data: {chart_name: 'messages_sent_by_client', min_length: '10'},
+    data: {chart_name: 'messages_sent_by_client'},
     idempotent: true,
     success: function (data) {
         populate_messages_sent_by_client(data);
         update_last_full_update(data.end_times);
+        if (get_days_of_data(data) <= 3) {
+            disable_buttons();
+        }
     },
     error: function (xhr) {
         $('#id_stats_errors').show().text($.parseJSON(xhr.responseText).msg);
@@ -711,7 +812,7 @@ function populate_messages_sent_by_message_type(data) {
 
 $.get({
     url: '/json/analytics/chart_data',
-    data: {chart_name: 'messages_sent_by_message_type', min_length: '10'},
+    data: {chart_name: 'messages_sent_by_message_type'},
     idempotent: true,
     success: function (data) {
         populate_messages_sent_by_message_type(data);
@@ -789,11 +890,13 @@ function populate_number_of_users(data) {
 
 $.get({
     url: '/json/analytics/chart_data',
-    data: {chart_name: 'number_of_humans', min_length: '10'},
+    data: {chart_name: 'number_of_humans'},
     idempotent: true,
     success: function (data) {
-        populate_number_of_users(data);
-        update_last_full_update(data.end_times);
+        if (get_days_of_data(data) >= 3) {
+            populate_number_of_users(data);
+            update_last_full_update(data.end_times);
+        }
     },
     error: function (xhr) {
         $('#id_stats_errors').show().text($.parseJSON(xhr.responseText).msg);
