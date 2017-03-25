@@ -6,7 +6,7 @@ var current_actions_popover_elem;
 var current_message_info_popover_elem;
 var current_message_reactions_popover_elem;
 var emoji_map_is_open = false;
-
+var emoji_map_is_rendered = false;
 var userlist_placement = "right";
 
 var list_of_popovers = [];
@@ -385,10 +385,19 @@ exports.hide_emoji_map_popover = function () {
     if (emoji_map_is_open) {
         $('.emoji_popover').css('display', 'none');
         $('.drag').css('display', 'none');
+        $("#new_message_content").focus();
         emoji_map_is_open = false;
     }
 };
-
+exports.show_emoji_map_popover = function () {
+    if (!emoji_map_is_open) {
+        $('.emoji_popover').css('display', 'inline-block');
+        $('.emoji_popover').scrollTop(0);
+        $('.drag').show();
+        $("#new_message_content").focus();
+        emoji_map_is_open = true;
+    }
+};
 exports.hide_user_sidebar_popover = function () {
     if (user_sidebar_popped()) {
         // this hide_* method looks different from all the others since
@@ -423,13 +432,6 @@ function render_emoji_popover() {
     }());
     $('.emoji_popover').empty();
     $('.emoji_popover').append(content);
-
-    $('.drag').show();
-    $('.emoji_popover').css('display', 'inline-block');
-
-    $("#new_message_content").focus();
-
-    emoji_map_is_open = true;
 }
 
 exports.register_click_handlers = function () {
@@ -520,10 +522,14 @@ exports.register_click_handlers = function () {
         if (emoji_map_is_open) {
             // If the popover is already shown, clicking again should toggle it.
             popovers.hide_emoji_map_popover();
-            return;
+        } else {
+            // If the emoji_map is not rendered before then, a call to render_emoji_popover is made.
+            if (!emoji_map_is_rendered) {
+                render_emoji_popover();
+                emoji_map_is_rendered = true;
+            }
+            popovers.show_emoji_map_popover();
         }
-        popovers.hide_all();
-        render_emoji_popover();
     });
 
     $('body').on('click', '.user_popover .narrow_to_private_messages', function (e) {
