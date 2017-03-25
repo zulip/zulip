@@ -97,7 +97,7 @@ class TestGetChartData(ZulipTestCase):
             'frequency': CountStat.HOUR,
             'interval': CountStat.HOUR,
             'realm': {'bot': self.data(100), 'human': self.data(101)},
-            'user': {'human': self.data(200)},
+            'user': {'bot': self.data(0), 'human': self.data(200)},
             'display_order': None,
             'result': 'success',
         })
@@ -170,7 +170,7 @@ class TestGetChartData(ZulipTestCase):
         self.assert_json_success(result)
         data = ujson.loads(result.content)
         self.assertEqual(data['realm'], {'human': [0], 'bot': [0]})
-        self.assertEqual(data['user'], {})
+        self.assertEqual(data['user'], {'human': [0], 'bot': [0]})
 
         FillState.objects.create(
             property='messages_sent:message_type:day', end_time=self.end_times_day[0], state=FillState.DONE)
