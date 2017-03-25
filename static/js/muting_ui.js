@@ -85,6 +85,13 @@ exports.notify_with_undo_option = (function () {
     };
 }());
 
+exports.dismiss_mute_confirmation = function () {
+    var $mute = $("#unmute_muted_topic_notification");
+    if ($mute) {
+        $mute.fadeOut(500).removeClass("show");
+    }
+};
+
 exports.persist_and_rerender = function () {
     // Optimistically rerender our new muting preferences.  The back
     // end should eventually save it, and if it doesn't, it's a recoverable
@@ -154,6 +161,7 @@ exports.unmute = function (stream, topic) {
     exports.unmute_topic(stream, topic);
     exports.persist_and_rerender();
     exports.set_up_muted_topics_ui(muting.get_muted_topics());
+    exports.dismiss_mute_confirmation();
 };
 
 exports.toggle_mute = function (msg) {
