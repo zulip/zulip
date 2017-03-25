@@ -820,14 +820,15 @@ def do_send_messages(messages_maybe_none):
                 if user_profile.bot_type != UserProfile.OUTGOING_WEBHOOK_BOT:
                     continue
 
-                # Currently, we only support mentions as triggers, but
-                # this code structure should make it easy to add more.
-
+                # Mention triggers, primarily for stream messages
                 if user_profile.id in mentioned_ids:
                     trigger = "mention"
-
+                # PM triggers for personal and huddle messsages
+                if message['message'].recipient.type != Recipient.STREAM:
+                    trigger = "private_message"
                 if trigger is None:
                     continue
+
                 message['message'].outgoing_webhook_bot_triggers.append({
                     'trigger': trigger,
                     'user_profile': user_profile,
