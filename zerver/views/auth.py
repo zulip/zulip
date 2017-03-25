@@ -153,12 +153,8 @@ def google_oauth2_csrf(request, value):
     # type: (HttpRequest, str) -> HttpResponse
     # In Django 1.10, get_token returns a salted token which changes
     # everytime get_token is called.
-    try:
-        from django.middleware.csrf import _unsalt_cipher_token
-        token = _unsalt_cipher_token(get_token(request))
-    except ImportError:
-        token = get_token(request)
-
+    from django.middleware.csrf import _unsalt_cipher_token
+    token = _unsalt_cipher_token(get_token(request))
     return hmac.new(token.encode('utf-8'), value.encode("utf-8"), hashlib.sha256).hexdigest()
 
 def start_google_oauth2(request):

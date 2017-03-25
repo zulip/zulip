@@ -701,6 +701,15 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
             user_profile = get_user_profile_by_email('hamlet@zulip.com')
             self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
+            # If authenticate_remote_user detects a subdomain mismatch, then
+            # the result should redirect to the login page.
+            with mock.patch(
+                    'zerver.views.auth.authenticate_remote_user',
+                    return_value=(None, {'invalid_subdomain': True})):
+                result = self.client_get('/accounts/login/subdomain/')
+                self.assertEqual(result.status_code, 302)
+                self.assertTrue(result['Location'].endswith, '?subdomain=1')
+
     def test_user_cannot_log_into_nonexisting_realm(self):
         # type: () -> None
         token_response = ResponseMock(200, {'access_token': "unique_token"})
@@ -956,6 +965,45 @@ class FetchAPIKeyTest(ZulipTestCase):
                                        password="wrong"))
         self.assert_json_error(result, "Your username or password is incorrect.", 403)
 
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.GoogleMobileOauth2Backend',))
+    def test_google_oauth2_token_success(self):
+        # type: () -> None
+        with mock.patch(
+                'apiclient.sample_tools.client.verify_id_token',
+                return_value={
+                    "email_verified": True,
+                    "email": "hamlet@zulip.com",
+                }):
+            result = self.client_post("/api/v1/fetch_api_key",
+                                      dict(username="google-oauth2-token",
+                                           password="token"))
+        self.assert_json_success(result)
+
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.GoogleMobileOauth2Backend',))
+    def test_google_oauth2_token_failure(self):
+        # type: () -> None
+        result = self.client_post("/api/v1/fetch_api_key",
+                                  dict(username="google-oauth2-token",
+                                       password="token"))
+        self.assert_json_error(result, "Your username or password is incorrect.", 403)
+
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.GoogleMobileOauth2Backend',))
+    def test_google_oauth2_token_unregistered(self):
+        # type: () -> None
+        with mock.patch(
+                'apiclient.sample_tools.client.verify_id_token',
+                return_value={
+                    "email_verified": True,
+                    "email": "nobody@zulip.com",
+                }):
+            result = self.client_post("/api/v1/fetch_api_key",
+                                      dict(username="google-oauth2-token",
+                                           password="token"))
+        self.assert_json_error(
+            result,
+            "This user is not registered; do so from a browser.",
+            403)
+
     def test_password_auth_disabled(self):
         # type: () -> None
         with mock.patch('zproject.backends.password_auth_enabled', return_value=False):
@@ -1149,6 +1197,16 @@ class TestDevAuthBackend(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
+    def test_login_with_subdomain(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        user_profile = get_user_profile_by_email(email)
+        data = {'direct_email': email}
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True):
+            result = self.client_post('/accounts/login/local/', data)
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
+
     def test_login_failure(self):
         # type: () -> None
         email = 'hamlet@zulip.com'
@@ -1317,6 +1375,15 @@ class TestJWTLogin(ZulipTestCase):
             web_token = jwt.encode(payload, auth_key).decode('utf8')
             data = {'json_web_token': web_token}
             result = self.client_post('/accounts/login/jwt/', data)
+            self.assertEqual(result.status_code, 302) # This should ideally be not 200.
+            self.assertIs(get_session_dict_user(self.client.session), None)
+
+            # The /accounts/login/jwt/ endpoint should also handle the case
+            # where the authentication attempt throws UserProfile.DoesNotExist.
+            with mock.patch(
+                    'zerver.views.auth.authenticate',
+                    side_effect=UserProfile.DoesNotExist("Do not exist")):
+                result = self.client_post('/accounts/login/jwt/', data)
             self.assertEqual(result.status_code, 302) # This should ideally be not 200.
             self.assertIs(get_session_dict_user(self.client.session), None)
 
