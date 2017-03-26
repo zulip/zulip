@@ -67,6 +67,18 @@
       "bugdown_matches_marked": true
     },
     {
+      "name": "four_space_code_block",
+      "input": "    def foo(): pass",
+      "expected_output": "<div class=\"codehilite\"><pre><span></span>def foo(): pass\n</pre></div>",
+      "bugdown_matches_marked": false
+    },
+    {
+      "name": "two_space_not_code_block",
+      "input": "  notcode",
+      "expected_output": "<p>notcode</p>",
+      "bugdown_matches_marked": false
+    },
+    {
       "name": "ulist_standard",
       "input": "Some text with a list:\n\n* One item\n* Two items\n* Three items",
       "expected_output": "<p>Some text with a list:</p>\n<ul>\n<li>One item</li>\n<li>Two items</li>\n<li>Three items</li>\n</ul>",
@@ -89,6 +101,18 @@
       "input": "Plain list\n* Alpha\n* Beta\n\nAnd Again:\n* A\n* B\n* C\n\nOnce more for feeling:\n* Q\n* E\n* D",
       "expected_output": "<p>Plain list</p>\n<ul>\n<li>Alpha</li>\n<li>Beta</li>\n</ul>\n<p>And Again:</p>\n<ul>\n<li>A</li>\n<li>B</li>\n<li>C</li>\n</ul>\n<p>Once more for feeling:</p>\n<ul>\n<li>Q</li>\n<li>E</li>\n<li>D</li>\n</ul>",
       "bugdown_matches_marked": true
+    },
+    {
+      "name": "ulist_nested_ulist_two_space_indent",
+      "input": "Nested list\n* I am outer list\n  * I am inner nested list first item\n  * I am inner nested list second item",
+      "expected_output": "<p>Nested list</p>\n<ul>\n<li>I am outer list<ul>\n<li>I am inner nested list first item</li>\n<li>I am inner nested list second item</li>\n</ul>\n</li>\n</ul>",
+      "bugdown_matches_marked": true
+    },
+    {
+      "name": "ulist_list_two_space_indent",
+      "input": "* I am outer list\n  I am something inside",
+      "expected_output": "<ul>\n<li>I am outer list<br>\n  I am something inside</li>\n</ul>",
+      "bugdown_matches_marked": false
     },
     {
       "name": "ulist_codeblock",

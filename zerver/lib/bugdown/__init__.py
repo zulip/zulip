@@ -892,6 +892,32 @@ class UListProcessor(markdown.blockprocessors.UListProcessor):
     TAG = 'ul'
     RE = re.compile(u'^[ ]{0,3}[*][ ]+(.*)')
 
+    def __init__(self, parser):
+        # type: (Any) -> None
+
+        # HACK: Set the tab length to 2 just for the initialization of
+        # this class, so that bulleted lists (and only bulleted lists)
+        # work off 2-space indentation.
+        parser.markdown.tab_length = 2
+        super(UListProcessor, self).__init__(parser)
+        parser.markdown.tab_length = 4
+
+class ListIndentProcessor(markdown.blockprocessors.ListIndentProcessor):
+    """ Process unordered list blocks.
+
+        Based on markdown.blockprocessors.ListIndentProcessor, but with 2-space indent
+    """
+
+    def __init__(self, parser):
+        # type: (Any) -> None
+
+        # HACK: Set the tab length to 2 just for the initialization of
+        # this class, so that bulleted lists (and only bulleted lists)
+        # work off 2-space indentation.
+        parser.markdown.tab_length = 2
+        super(ListIndentProcessor, self).__init__(parser)
+        parser.markdown.tab_length = 4
+
 class BugdownUListPreprocessor(markdown.preprocessors.Preprocessor):
     """ Allows unordered list blocks that come directly after a
         paragraph to be rendered as an unordered list
@@ -1137,10 +1163,11 @@ class Bugdown(markdown.Extension):
             markdown.inlinepatterns.SimpleTagPattern(r'(\*)(?!\s+)([^\*^\n]+)(?<!\s)\*', 'em'),
             '>strong')
 
-        for k in ('hashheader', 'setextheader', 'olist', 'ulist'):
+        for k in ('hashheader', 'setextheader', 'olist', 'ulist', 'indent'):
             del md.parser.blockprocessors[k]
 
         md.parser.blockprocessors.add('ulist', UListProcessor(md.parser), '>hr')
+        md.parser.blockprocessors.add('indent', ListIndentProcessor(md.parser), '<ulist')
 
         # Note that !gravatar syntax should be deprecated long term.
         md.inlinePatterns.add('avatar', Avatar(r'!avatar\((?P<email>[^)]*)\)'), '>backtick')
