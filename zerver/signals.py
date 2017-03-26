@@ -7,6 +7,7 @@ from django.conf import settings
 from django.template import loader
 from django.utils import timezone
 from typing import Any, Dict, Optional
+from zerver.models import UserProfile
 
 def get_device_browser(user_agent):
     # type: (str) -> Optional[str]
@@ -53,7 +54,6 @@ def email_on_new_login(sender, user, request, **kwargs):
     # We import here to minimize the dependencies of this module,
     # since it runs as part of `manage.py` initialization
     from zerver.context_processors import common_context
-    from zerver.models import UserProfile
 
     if not settings.SEND_LOGIN_EMAILS:
         return
