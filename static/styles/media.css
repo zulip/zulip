@@ -127,7 +127,8 @@
         width: 250px;
     }
 
-    body, html,
+    body,
+    html,
     .app-main,
     .header-main {
         min-width: 350px;
@@ -264,7 +265,8 @@
         top: 5px;
     }
 
-    #searchbox .search_button, #searchbox .search_button[disabled]:hover {
+    #searchbox .search_button,
+    #searchbox .search_button[disabled]:hover {
         top: 2px;
     }
 
