@@ -1,0 +1,12 @@
+{% extends "zerver/portico.html" %}
+
+{% block portico_content %}
+
+<h1>{% trans %}Unknown email unsubscribe request{% endtrans %}</h1>
+
+<p>{% trans %}Hi there! It looks like you tried to unsubscribe from something, but we don't
+recognize the URL.{% endtrans %}</p>
+
+<p>{% trans %}Please double-check that you have the full URL and try again, or <a href="mailto:{{ zulip_admin }}?Subject=Unsubscribe%20me%2C%20please!&Body=Hi%20there!%0A%0AI%20clicked%20this%20unsubscribe%20link%20in%20a%20Zulip%20e-mail%2C%20but%20it%20took%20me%20to%20an%20error%20page%3A%0A%0A_____________%0A%0APlease%20unsubscribe%20me.%0A%0AThanks%2C%0A_____________%0A">email us</a> and we'll get this squared away!{% endtrans %}</p>
+
+{% endblock %}

@@ -1,0 +1,3 @@
+social-auth-core==1.2.0
+social-auth-app-django==1.1.0
+python-openid==2.2.5

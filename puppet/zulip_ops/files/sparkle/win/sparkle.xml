@@ -1,0 +1,60 @@
+<?xml version="1.0" ?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+   <channel>
+      <title>Zulip Changelog</title>
+      <link>https://zulip.org/dist/apps/win/sparkle.xml</link>
+      <description>Latest updates to Zulip's Desktop App</description>
+      <language>en</language>
+      <item>
+         <title>Version 0.4.4</title>
+         <sparkle:releaseNotesLink>
+             https://zulip.org/dist/apps/win/sparkle-changelog.html
+         </sparkle:releaseNotesLink>
+         <pubDate>Fri, 21 Feb 2014 10:15:57 </pubDate>
+         <enclosure sparkle:version="0.4.4" type="application/octet-stream" url="https://zulip.org/dist/apps/win/zulip-0.4.4.exe"/>
+      </item><item>
+         <title>Version 0.4.3</title>
+         <sparkle:releaseNotesLink>
+             https://zulip.org/dist/apps/win/sparkle-changelog.html
+         </sparkle:releaseNotesLink>
+         <pubDate>Wed, 12 Feb 2014 15:41:52 </pubDate>
+         <enclosure sparkle:version="0.4.3" type="application/octet-stream" url="https://zulip.org/dist/apps/win/zulip-0.4.3.exe"/>
+      </item><item>
+         <title>Version 0.4.0</title>
+         <sparkle:releaseNotesLink>
+             https://zulip.org/dist/apps/win/sparkle-changelog.html
+         </sparkle:releaseNotesLink>
+         <pubDate>Mon, 25 Nov 2013 16:28:44 </pubDate>
+         <enclosure sparkle:version="0.4.0" type="application/octet-stream" url="https://zulip.org/dist/apps/win/zulip-0.4.0.exe"/>
+      </item><item>
+         <title>Version 0.3.10</title>
+         <sparkle:releaseNotesLink>
+             https://zulip.org/dist/apps/win/sparkle-changelog.html
+         </sparkle:releaseNotesLink>
+         <pubDate>Wed, 06 Nov 2013 14:06:30 </pubDate>
+         <enclosure sparkle:version="0.3.10" type="application/octet-stream" url="https://zulip.org/dist/apps/win/zulip-0.3.10.exe"/>
+      </item><item>
+         <title>Version 0.3.7</title>
+         <sparkle:releaseNotesLink>
+             https://zulip.org/dist/apps/win/sparkle-changelog.html
+         </sparkle:releaseNotesLink>
+         <pubDate>Thu, 19 Sep 2013 10:51:01 </pubDate>
+         <enclosure sparkle:version="0.3.7" type="application/octet-stream" url="https://zulip.org/dist/apps/win/zulip-0.3.7.exe"/>
+      </item><item>
+         <title>Version 0.3.5</title>
+         <sparkle:releaseNotesLink>
+             https://zulip.org/dist/apps/win/sparkle-changelog.html
+         </sparkle:releaseNotesLink>
+         <pubDate>Tue, 27 Aug 2013 11:57:04 </pubDate>
+         <enclosure sparkle:version="0.3.5" type="application/octet-stream" url="https://zulip.org/dist/apps/win/zulip-0.3.5.exe"/>
+      </item><item>
+         <title>
+             Version 0.3.4
+         </title>
+         <sparkle:releaseNotesLink>
+             https://zulip.org/dist/apps/win/sparkle-changelog.html
+         </sparkle:releaseNotesLink>
+         <pubDate>Mon, 15 Jul 2013 16:20:11 +0000</pubDate>
+         <enclosure sparkle:version="0.3.4" type="application/octet-stream" url="https://zulip.org/dist/apps/win/zulip-0.3.4.exe"/>
+      </item>
+   </channel>
+</rss>

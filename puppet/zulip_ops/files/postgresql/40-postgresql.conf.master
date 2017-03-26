@@ -1,0 +1,9 @@
+# Virtual memory settings
+vm.swappiness = 0
+vm.overcommit_memory = 2
+
+# We don't want these numbers to be too large or else performance
+# will be too spiky.  These seem to give a good balance between low
+# numbers and sequential write performance
+vm.dirty_ratio = 5
+vm.dirty_background_ratio = 2

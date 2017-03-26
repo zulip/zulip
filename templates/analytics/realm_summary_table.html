@@ -1,0 +1,72 @@
+<h2 style="text-align: center;">{{ num_active_sites }} active sites</h2>
+
+<table class="table summary-table sortable table-striped table-bordered">
+
+    <thead class="activity_head">
+    <tr>
+        <th>Realm</th>
+        <th>Active users</th>
+        <th>At-risk users</th>
+        <th>Total users</th>
+        <th>Bots</th>
+        <th>Hours per user</th>
+        <th>Hours</th>
+        <th></th>
+        <th colspan=8>Messages sent</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    {% for row in rows %}
+        <tr>
+
+            {# Realm #}
+            <td>
+                {{ row.string_id }}
+            </td>
+
+            {# Active users #}
+            <td class="number">
+                {{ row.active_user_count }}
+            </td>
+
+            {# At risk users #}
+            <td class="number">
+                {{ row.at_risk_count }}
+            </td>
+
+            {# Total users #}
+            <td class="number">
+                {{ row.user_profile_count }}
+            </td>
+
+            {# Bots #}
+            <td class="number">
+                {{ row.bot_count }}
+            </td>
+
+            {# Hours per user #}
+            <td class="number">
+                {% if row.hours_per_user %}
+                {{ row.hours_per_user }}
+                {% endif %}
+            </td>
+
+            {# Hours #}
+            <td class="number">
+                {{ row.hours }}
+            </td>
+
+            <td>&nbsp;</td>
+
+            {# Messages sent #}
+            {% if row.history %}
+                {{ row.history|safe }}
+            {% else %}
+                <td colspan=8></td>
+            {% endif %}
+        </tr>
+    {% endfor %}
+    </tbody>
+
+</table>

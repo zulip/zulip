@@ -1,0 +1,117 @@
+#!/usr/bin/env python
+from __future__ import print_function
+
+import errno
+import os
+import platform
+import re
+import sys
+import shutil
+import subprocess
+import traceback
+
+try:
+    # Use the Zulip virtualenv if available
+    sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+    import scripts.lib.setup_path_on_import
+except ImportError:
+    pass
+
+import json
+import ujson
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../api"))
+import zulip
+from typing import List
+
+lock_path = "/var/tmp/log2zulip.lock"
+control_path = "/etc/log2zulip.conf"
+
+def mkdir_p(path):
+    # type: (str) -> None
+    # Python doesn't have an analog to `mkdir -p` < Python 3.2.
+    try:
+        os.makedirs(path)
+    except OSError as e:
+        if e.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else:
+            raise
+
+def send_log_zulip(file_name, count, lines, extra=""):
+    # type: (str, int, List[str], str) -> None
+    content = "%s new errors%s:\n```\n%s\n```" % (count, extra, "\n".join(lines))
+    zulip_client.send_message({
+        "type": "stream",
+        "to": "logs",
+        "subject": "%s on %s" % (file_name, platform.node()),
+        "content": content,
+    })
+
+def process_lines(raw_lines, file_name):
+    # type: (List[str], str) -> None
+    lines = []
+    for line in raw_lines:
+        # Add any filtering or modification code here
+        if re.match(".*upstream timed out.*while reading upstream.*", line):
+            continue
+        lines.append(line)
+
+    if len(lines) == 0:
+        return
+    elif len(lines) > 10:
+        send_log_zulip(file_name, len(lines), lines[0:3], extra=", examples include")
+    else:
+        send_log_zulip(file_name, len(lines), lines)
+
+def process_logs():
+    # type: () -> None
+    for filename in log_files:
+        data_file_path = "/var/tmp/log2zulip.state"
+    mkdir_p(os.path.dirname(data_file_path))
+    if not os.path.exists(data_file_path):
+        open(data_file_path, "w").write("{}")
+    last_data = ujson.loads(open(data_file_path).read())
+    new_data = {}
+    for log_file in log_files:
+        file_data = last_data.get(log_file, {})
+        if not os.path.exists(log_file):
+            # If the file doesn't exist, log an error and then move on to the next file
+            print("Log file does not exist or could not stat log file: %s" % (log_file,))
+            continue
+        length = int(subprocess.check_output(["wc", "-l", log_file]).split()[0])
+        if file_data.get("last") is None:
+            file_data["last"] = 1
+        if length + 1 < file_data["last"]:
+            # The log file was rotated, restart from empty.  Note that
+            # because we don't actually store the log file content, if
+            # a log file ends up at the same line length as before
+            # immediately after rotation, this tool won't notice.
+            file_data["last"] = 1
+        new_lines = subprocess.check_output(["tail", "-n+%s" % (file_data["last"],), log_file]).split('\n')[:-1]
+        if len(new_lines) > 0:
+            process_lines(new_lines, filename)
+            file_data["last"] += len(new_lines)
+        new_data[log_file] = file_data
+    open(data_file_path, "w").write(ujson.dumps(new_data))
+
+if __name__ == "__main__":
+    if os.path.exists(lock_path):
+        print("Log2zulip lock held; not doing anything")
+        sys.exit(0)
+
+    try:
+        open(lock_path, "w").write("1")
+        zulip_client = zulip.Client(config_file="/etc/log2zulip.zuliprc")
+        try:
+            log_files = ujson.loads(open(control_path, "r").read())
+        except Exception:
+            print("Could not load control data from %s" % (control_path,))
+            traceback.print_exc()
+            sys.exit(1)
+        process_logs()
+    finally:
+        try:
+            os.remove(lock_path)
+        except OSError as IOError:
+            pass

@@ -1,0 +1,42 @@
+{
+    "created": 1326853478,
+    "livemode": false,
+    "id": "evt_00000000000000",
+    "type": "customer.created",
+    "object": "event",
+    "request": null,
+    "pending_webhooks": 1,
+    "api_version": "2016-07-06",
+    "data": {
+        "object": {
+            "id": "cus_00000000000000",
+            "object": "customer",
+            "account_balance": 0,
+            "created": 1480672088,
+            "currency": "aud",
+            "default_source": null,
+            "delinquent": false,
+            "description": null,
+            "discount": null,
+            "email": null,
+            "livemode": false,
+            "metadata": {},
+            "shipping": null,
+            "sources": {
+                "object": "list",
+                "data": [],
+                "has_more": false,
+                "total_count": 0,
+                "url": "/v1/customers/cus_9fYl7K4F7pQxrY/sources"
+            },
+            "subscriptions": {
+                "object": "list",
+                "data": [],
+                "has_more": false,
+                "total_count": 0,
+                "url": "/v1/customers/cus_9fYl7K4F7pQxrY/subscriptions"
+            }
+        }
+    }
+}
+

@@ -1,0 +1,31 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <title>Zulip</title>
+</head>
+<body>
+<p>Hi {{ user_profile.full_name }},</p>
+
+<p>You can log in to your Zulip organization, {{ user_profile.realm.name }},
+at the following link:</p>
+
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <td align="center">
+      <a href="{{ user_profile.realm.uri }}" style="color:#08c">{{ user_profile.realm.uri }}</a>
+    </td>
+  </tr>
+</table>
+
+<p>The email address associated with your account is <b>{{ user_profile.email }}</b>.</p>
+
+{% if verbose_support_offers %}
+<p>If you have trouble signing in, please contact Zulip support by replying to
+  this email.</p>
+
+{% endif %}
+<p>Thanks for using Zulip!</p>
+
+</body>
+</html>

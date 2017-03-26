@@ -1,0 +1,14 @@
+[main]
+host = https://www.transifex.com
+
+[zulip.djangopo]
+source_file = static/locale/en/LC_MESSAGES/django.po
+source_lang = en
+type = PO
+file_filter = static/locale/<lang>/LC_MESSAGES/django.po
+
+[zulip.translationsjson]
+source_file = static/locale/en/translations.json
+source_lang = en
+type = KEYVALUEJSON
+file_filter = static/locale/<lang>/translations.json

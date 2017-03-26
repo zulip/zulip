@@ -1,0 +1,10 @@
+{{! User Presence rows }}
+{{#each group_pms}}
+<li data-user-ids="{{user_ids_string}}" class="group-pms-sidebar-entry narrow-filter">
+    <span class="selectable_sidebar_block">
+        <span class="group-pm-status-indicator" style="background:rgba(68,194,29,{{fraction_present}});"></span>
+        <a href="{{href}}" data-name="{{name}}" title="{{name}}" class="group-pm-link">{{short_name}}</a>
+    </span>
+    <span class="count"><span class="value"></span></span>
+</li>
+{{/each}}

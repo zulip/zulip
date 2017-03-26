@@ -1,0 +1,44 @@
+#!/usr/bin/env python
+from __future__ import print_function
+from __future__ import absolute_import
+import os
+import sys
+
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+
+import django
+TOOLS_DIR = os.path.dirname(__file__)
+ROOT_DIR = os.path.dirname(TOOLS_DIR)
+sys.path.insert(0, ROOT_DIR)
+
+api_path = os.path.abspath(os.path.join(ROOT_DIR, 'api'))
+if not os.path.exists(api_path):
+    raise Exception('programming error--files probably got moved')
+
+sys.path.insert(0, api_path)
+from zulip import Client
+
+from tools.lib.test_server import test_server_running
+from tools.lib.api_tests import test_the_api
+
+os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.test_settings'
+django.setup()
+from zerver.models import get_user_profile_by_email
+
+
+with test_server_running():
+    email = 'iago@zulip.com' # Iago is an admin
+    api_key = get_user_profile_by_email(email).api_key
+    site = 'http://127.0.0.1:9981'
+
+    client = Client(
+        email=email,
+        api_key=api_key,
+        site=site)
+
+    print("Running API tests...")
+    test_the_api(client)
+
+print("API tests passed!")

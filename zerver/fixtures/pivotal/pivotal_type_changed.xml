@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<activity>
+    <id type="integer">346170371</id>
+    <version type="integer">14</version>
+    <event_type>story_update</event_type>
+    <occurred_at type="datetime">2013/04/17 20:23:23 UTC</occurred_at>
+    <author>Leo Franchi</author>
+    <project_id type="integer">807213</project_id>
+    <description>Leo Franchi edited &quot;My new Feature story&quot;</description>
+    <stories type="array">
+        <story>
+            <id type="integer">48276573</id>
+            <url>http://www.pivotaltracker.com/services/v3/projects/807213/stories/48276573</url>
+            <story_type>chore</story_type>
+        </story>
+    </stories>
+</activity>

@@ -1,0 +1,54 @@
+<h4>Semaphore</h4>
+
+<p>
+    See build and deploy statuses on Semaphore right in Zulip with the Zulip
+    Semaphore plugin!
+</p>
+
+<p>
+    First, create the stream you'd like to use for Semaphore notifications, and
+    subscribe all interested parties to this stream. We recommend the
+    name <code>builds</code>.
+</p>
+
+<p>Next, on your {{ settings_html|safe }}, create a Semaphore bot.</p>
+
+<p>Then, log into your account on <a href="http://semaphoreci.com">semaphoreci.com</a>, and:</p>
+
+<ol>
+    <li>
+        <p>
+            Visit the "Project Settings" page for the project for which you'd like to generate
+            Zulip notifications. Click the "Notifications" tab in the left sidebar,
+            click on "Webhooks" in the resulting menu, and then click on "+ Add Webhook".
+        </p>
+
+        <img class="screenshot" src="/static/images/integrations/semaphore/001.png"/>
+    </li>
+    <li>
+        <p> You should now see a form that looks like this: </p>
+
+        <p>
+            <img class="screenshot" style="border:1px solid #000000"
+                 src="/static/images/integrations/semaphore/002.png"/>
+        </p>
+
+        <p>
+            Enter the following webhook URI, replacing the bot email address,
+            bot API key, and Zulip stream with the appropriate
+            information. <b>Note:</b> the <code>@</code>-sign in the bot e-mail
+            address must be escaped to <code>%40</code>:
+        </p>
+
+        <p>
+            <code>{{ external_uri_scheme }}<font color="#00A26F">semaphore-bot%40example.com</font>:<font color="#00A26F">api_key</font>@{{ external_api_path_subdomain }}/v1/external/semaphore?stream=<font color="#00A26F">builds</font></code>
+        </p>
+    </li>
+</ol>
+
+<p>
+    <b>Congratulations! You're done!</b><br/> When you push to Semaphore, the
+    team can see these updates in real time in Zulip:
+</p>
+
+<img class="screenshot" src="/static/images/integrations/semaphore/003.png"/>

@@ -1,0 +1,38 @@
+{{! Client-side Mustache template for rendering users in the stream creation modal.}}
+
+<div id="copy-from-stream-expand-collapse" class="add-user-label">
+    <i class="toggle icon-vector-caret-right"></i>
+    <span class="control-label">
+        {{t "Copy from stream" }}
+    </span>
+</div>
+
+<div id="stream-checkboxes">
+    {{#each streams}}
+    <label class="checkbox add-user-label" data-stream-id="{{this.stream_id}}" data-stream-name="{{this.name}}">
+        <input type="checkbox" name="stream" value="{{this.name}}" />
+        <span></span>
+        {{this.name}} ( <i class="icon-vector-user"></i> {{this.subscriber_count}})
+    </label>
+    {{/each}}
+</div>
+
+<br />
+<input class="add-user-list-filter" name="user_list_filter" type="text"
+ autocomplete="off" placeholder="{{t "Filter" }}" />
+
+
+<div>
+    <a href="#" draggable="false" class="subs_set_all_users">{{t "Check all" }}</a> |
+    <a href="#" draggable="false" class="subs_unset_all_users">{{t "Uncheck all" }}</a>
+</div>
+
+<div id="user-checkboxes">
+    {{#each users}}
+    <label class="checkbox add-user-label" data-user-id="{{this.user_id}}" data-email="{{this.email}}">
+        <input type="checkbox" name="user" value="{{this.email}}" />
+        <span></span>
+        {{this.full_name}} ({{this.email}})
+    </label>
+    {{/each}}
+</div>

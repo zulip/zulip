@@ -1,0 +1,50 @@
+.activity_head {
+    background-color: aliceblue;
+}
+
+.table td {
+    padding-top: 2px;
+    padding-bottom: 2px;
+    white-space: nowrap;
+}
+
+.table-striped tr.recently_active td {
+    background-color: #afa;
+}
+
+.table-striped tr.recently_active:nth-child(odd) td {
+    background-color: #9e9;
+}
+
+.table-striped tr.long_inactive td {
+    background-color: #faa;
+}
+
+.table-striped tr.long_inactive:nth-child(odd) td {
+    background-color: #e99;
+}
+
+td.number {
+    text-align: right;
+}
+
+.summary-table {
+    width: auto;
+    margin: 0px auto;
+}
+
+tr.admin td:first-child {
+    font-weight: bold;
+    color: blue;
+    font-size: 110%;
+}
+
+.good {
+    font-weight: bold;
+    color: #0a0;
+}
+
+.bad {
+    font-weight: bold;
+    color: #c00;
+}

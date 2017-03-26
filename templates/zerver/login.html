@@ -1,0 +1,137 @@
+{% extends "zerver/portico.html" %}
+
+{# Login page. #}
+
+{% block customhead %}
+    {{ super() }}
+    {{ minified_js('signup')|safe }}
+{% endblock %}
+
+{% block os_announcement %}
+  {% if show_oss_announcement %}
+  <div class="os-headline-container">
+    <img src="/static/images/logo/zballoon.png" class="os-illustration" alt="Zulip balloon" />
+    <div class="main-headline-text">
+      <span class="tagline os-tagline">
+         {{ _('Zulip has been released as open source software!') }}
+      </span>
+      {% trans %}
+      <span class="footnote os-footnote">
+         Read the <a href="https://blogs.dropbox.com/tech/2015/09/open-sourcing-zulip-a-dropbox-hack-week-project" target="_blank">announcement</a> or go to <a href="https://www.zulip.org" target="_blank">the Zulip open source project website</a>.
+      </span>
+      {% endtrans %}
+    </div>
+  </div>
+  {% endif %}
+{% endblock %}
+
+{% block portico_content %}
+
+{% if password_auth_enabled %}
+<script type="text/javascript">
+{% if email %}
+autofocus('#id_password');
+{% else %}
+autofocus('#id_username');
+{% endif %}
+</script>
+{% endif %}
+
+
+<div class="app login-page">
+  <div class="app-main login-page-container">
+    <h3 class="login-page-header">{{ _('You look familiar.') }}</h3>
+
+{% if only_sso %}
+    {# SSO users don't have a password. #}
+
+    <div class="login-sso">
+      <a href="/accounts/login/sso" class="btn btn-large btn-primary">{{ _('Sign in with SSO') }}</a>
+    </div>
+
+{% else %}
+{# Non-SSO users. #}
+
+{% if form.errors %}
+<div class="alert alert-error">
+    {% for error in form.errors.values() %}
+    <div>{{ error | striptags }}</div>
+    {% endfor %}
+</div>
+{% endif %}
+
+    {% if email %}
+    <div class="alert">
+        {{ _("You've already registered with this email address. Please log in below.") }}
+    </div>
+    {% endif %}
+
+    {% if subdomain %}
+    <div class="alert">
+        {{ wrong_subdomain_error }}.
+    </div>
+    {% endif %}
+
+        {% if password_auth_enabled %}
+        <form name="login_form" id="login_form" method="post" class="login-form"
+              action="{{ url('django.contrib.auth.views.login') }}?next={{ next }}"
+        >
+            {{ csrf_input }}
+            <div class="control-group">
+                <label for="id_username" class="control-label">{{ _('Email') }}</label>
+                <div class="controls">
+                  <input id="id_username" type="email" name="username"
+                         class="email required"
+                         {% if email %}
+                         value="{{ email }}"
+                         {% else %}
+                         value=""
+                         {% endif %}
+                         maxlength="72" />
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label for="id_password" class="control-label">{{ _('Password') }}</label>
+                <div class="controls">
+                    <input id="id_password" name="password" class="required" type="password" />
+                </div>
+            </div>
+
+            <div class="control-group">
+                <div class="controls">
+                    <input type="submit" class="btn btn-large btn-primary" value="Log in" />
+                    <span class="login-forgot-password">
+                      <a href="{{ url('django.contrib.auth.views.password_reset') }}">{{ _('Forgot password?') }}</a>
+                    </span>
+                </div>
+            </div>
+        </form>
+        {% endif %}
+
+    {% if google_auth_enabled %}
+    <div class="login-google">
+    or <a href="{{ url('zerver.views.auth.start_google_oauth2') }}" class="login-google-button zocial google">{{ _('Sign in with Google') }}</a>
+    </div>
+    {% endif %}
+
+    {% if github_auth_enabled %}
+    <div class="login-github">
+        or <a href="{{ url('login-social', args=('github',)) }}" class="login-github-button zocial github">
+            <span>{{ _('Sign in with GitHub') }}</span>
+        </a>
+    </div>
+    {% endif %}
+
+{% endif %}
+
+</div>
+<div class="footer-padder"></div>
+</div>
+<script type="text/javascript">
+if (window.location.hash.substring(0, 1) === "#") {
+    document.login_form.action += window.location.hash;
+}
+</script>
+
+{% endblock %}

@@ -1,0 +1,101 @@
+#!/usr/bin/env python
+
+from __future__ import print_function
+from __future__ import absolute_import
+
+import os
+import sys
+import time
+import signal
+import subprocess
+
+from six.moves import range
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+from typing import IO
+
+
+TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+def start_server(logfile):
+    # type: (IO[str]) -> bool
+    failure = True
+    key = "Quit the server with CTRL-C."
+    for i in range(200):
+        time.sleep(0.5)
+        print("Polling run-dev...")
+        logfile.seek(0)
+        if key in logfile.read():
+            failure = False
+            break
+
+    return failure
+
+
+def test_nagios(nagios_logfile):
+    # type: (IO[str]) -> bool
+    ZULIP_DIR = os.path.join(TOOLS_DIR, '..')
+    API_DIR = os.path.join(ZULIP_DIR, 'api')
+    os.chdir(API_DIR)
+    subprocess.call(['./setup.py', 'install'])
+    PUPPET_DIR = os.path.join(ZULIP_DIR, 'puppet')
+    os.chdir(ZULIP_DIR)
+    my_env = os.environ.copy()
+    my_env['PYTHONPATH'] = ZULIP_DIR
+    args = [
+        os.path.join(PUPPET_DIR,
+                     'zulip/files/nagios_plugins/zulip_app_frontend/check_send_receive_time'),
+        '--nagios',
+        '--site=http://127.0.0.1:9991',
+    ]
+    result = subprocess.check_output(args, env=my_env, universal_newlines=True,
+                                     stderr=nagios_logfile)
+
+    if result.startswith("OK:"):
+        return True
+
+    print(result)
+    return False
+
+
+def close_and_get_content(file_handle):
+    # type: (IO[str]) -> str
+    file_handle.seek(0)
+    content = file_handle.read()
+    file_handle.close()
+    return content
+
+
+if __name__ == '__main__':
+    print("Testing development server start!")
+
+    logfile = open('/tmp/run-dev-output', 'w+')
+    nagios_logfile = open('/tmp/test-nagios-output', 'w+')
+
+    args = ["{}/run-dev.py".format(TOOLS_DIR)]
+    run_dev = subprocess.Popen(args, stdout=logfile, stderr=logfile)
+
+    try:
+        failure = start_server(logfile)
+        failure = failure or not test_nagios(nagios_logfile)
+    finally:
+        log = close_and_get_content(logfile)
+        nagios_log = close_and_get_content(nagios_logfile)
+
+    run_dev.send_signal(signal.SIGINT)
+    run_dev.wait()
+
+    if not failure and 'Traceback' in log + ' ' + nagios_log:
+        failure = True
+
+    if failure:
+        print("Development server is not working properly:")
+        print(log)
+        print("check_send_receive_time output:")
+        print(nagios_log)
+        sys.exit(1)
+    else:
+        print("Development server is working properly.")
+        sys.exit(0)

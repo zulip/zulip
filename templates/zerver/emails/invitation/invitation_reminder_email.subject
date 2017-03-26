@@ -1,0 +1,1 @@
+Reminder: {{ referrer.full_name }} invited you to join Zulip{% if referrer.realm.name %} for {{ referrer.realm.name }}{% endif %}

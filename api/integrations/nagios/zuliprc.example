@@ -1,0 +1,5 @@
+# Fill these values in with the appropriate values for your realm, and
+# then install this value at /etc/nagios3/zuliprc
+[api]
+email = nagios-bot@example.com
+key = 0123456789abcdef0123456789abcdef

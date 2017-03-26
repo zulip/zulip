@@ -1,0 +1,44 @@
+#!/usr/bin/env python
+from __future__ import absolute_import
+
+import argparse
+import os
+import subprocess
+import sys
+
+# check for the venv
+from lib import sanity_check
+sanity_check.check_venv(__file__)
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
+from django.conf import settings
+
+os.chdir(settings.DEPLOY_ROOT)
+STATIC_PATH = 'static/'
+
+def run():
+    # type: () -> None
+    """Builds for production, writing the output to disk"""
+    subprocess.check_call(['node', 'node_modules/.bin/webpack'] +
+                          ['--config', 'tools/webpack.production.config.js'])
+
+def run_watch(port):
+    # type: (str) -> None
+    """watches and rebuilds on changes, serving files from memory via webpack-dev-server"""
+    subprocess.Popen(['node', 'node_modules/.bin/webpack-dev-server'] +
+                     ['--config', 'tools/webpack.config.js', '--watch-poll', '--port', port])
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--watch',
+                    action='store_true', dest='watch', default=False,
+                    help='watch for changes to source files (for development)')
+parser.add_argument('--port',
+                    action='store', dest='port',
+                    default='9994', help='set the port for the webpack server to run on')
+args = parser.parse_args()
+
+if args.watch:
+    run_watch(args.port)
+else:
+    run()

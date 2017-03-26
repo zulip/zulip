@@ -1,0 +1,9 @@
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Icons/Bots/Tint">
+            <path d="M5,9.9973917 C5,8.89426273 5.89706013,8 7.00585866,8 L16.9941413,8 C18.1019465,8 19,8.89585781 19,9.9973917 L19,15.0026083 C19,16.1057373 18.1029399,17 16.9941413,17 L7.00585866,17 C5.89805351,17 5,16.1041422 5,15.0026083 L5,9.9973917 Z M9.5,14 C10.3284271,14 11,13.3284271 11,12.5 C11,11.6715729 10.3284271,11 9.5,11 C8.67157288,11 8,11.6715729 8,12.5 C8,13.3284271 8.67157288,14 9.5,14 Z M14.5,14 C15.3284271,14 16,13.3284271 16,12.5 C16,11.6715729 15.3284271,11 14.5,11 C13.6715729,11 13,11.6715729 13,12.5 C13,13.3284271 13.6715729,14 14.5,14 Z" id="Combined-Shape" fill="#BAC0C0"></path>
+            <path d="M7,6 L10,9" id="Path-36" stroke="#BAC0C0" stroke-width="2" stroke-linecap="round"></path>
+            <path d="M14,6 L17,9" id="Path-36" stroke="#BAC0C0" stroke-width="2" stroke-linecap="round" transform="translate(15.500000, 7.500000) scale(-1, 1) translate(-15.500000, -7.500000) "></path>
+        </g>
+    </g>
+</svg>

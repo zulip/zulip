@@ -1,0 +1,87 @@
+<?xml version="1.0" ?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+   <channel>
+      <title>Zulip Changelog</title>
+      <link>https://zulip.org/dist/apps/mac/sparkle.xml</link>
+      <description>Latest updates to Zulip's Desktop Application</description>
+      <language>en</language><item>
+         <title>Version 0.4.4</title>
+         <sparkle:releaseNotesLink>
+             https://zulip.org/dist/apps/mac/sparkle-changelog.html
+         </sparkle:releaseNotesLink>
+         <pubDate>Fri, 21 Feb 2014 10:15:23 </pubDate>
+         <enclosure length="8833524" sparkle:dsaSignature="MCwCFAp+Pnfc+sqi7RzO7/QHGtBtpjBlAhQjTBu0npAZfBc3PDJ7goZwTW9EIQ==" sparkle:version="0.4.4" type="application/octet-stream" url="https://zulip.org/dist/apps/mac/Zulip-0.4.4.tar.bz2"/>
+      </item><item>
+         <title>Version 0.4.3</title>
+         <sparkle:releaseNotesLink>
+             https://zulip.org/dist/apps/mac/sparkle-changelog.html
+         </sparkle:releaseNotesLink>
+         <pubDate>Wed, 12 Feb 2014 15:40:46 </pubDate>
+         <enclosure length="8860711" sparkle:dsaSignature="MCwCFGFTNr7KljzIIprR9+gCZtnazbUwAhRbR3/lGiw9a3nL3jw4nBkRNFP3Uw==" sparkle:version="0.4.3" type="application/octet-stream" url="https://zulip.org/dist/apps/mac/Zulip-0.4.3.tar.bz2"/>
+      </item><item>
+         <title>Version 0.4.2</title>
+         <sparkle:releaseNotesLink>
+             https://zulip.org/dist/apps/mac/sparkle-changelog.html
+         </sparkle:releaseNotesLink>
+         <pubDate>Wed, 18 Dec 2013 16:04:54 </pubDate>
+         <enclosure length="8848286" sparkle:dsaSignature="MC0CFAXSRoEYVsSraOhfseOimOetEEjNAhUAgXpxbmVqk7/qzmWKLKplsvQUon0=" sparkle:version="0.4.2" type="application/octet-stream" url="https://zulip.org/dist/apps/mac/Zulip-0.4.2.tar.bz2"/>
+      </item><item>
+         <title>Version 0.4.1</title>
+         <sparkle:releaseNotesLink>
+             https://zulip.org/dist/apps/mac/sparkle-changelog.html
+         </sparkle:releaseNotesLink>
+         <pubDate>Mon, 02 Dec 2013 14:59:27 </pubDate>
+         <enclosure length="8847397" sparkle:dsaSignature="MC0CFGuSCEjwI+wClkRyLw40GnBP+yUxAhUAi/Pga4re5Jk3HHUCMM0JOIQn5TY=" sparkle:version="0.4.1" type="application/octet-stream" url="https://zulip.org/dist/apps/mac/Zulip-0.4.1.tar.bz2"/>
+      </item><item>
+         <title>Version 0.4.0</title>
+         <sparkle:releaseNotesLink>
+             https://zulip.org/dist/apps/mac/sparkle-changelog.html
+         </sparkle:releaseNotesLink>
+         <pubDate>Tue, 26 Nov 2013 16:56:26 </pubDate>
+         <enclosure length="8847438" sparkle:dsaSignature="MCwCFBXr0LLd9KWJa17lqcRCM3s4e7vQAhReHUhxvvuTY6+bFcqTdOWY8lYBLA==" sparkle:version="0.4.0" type="application/octet-stream" url="https://zulip.org/dist/apps/mac/Zulip-0.4.0.tar.bz2"/>
+      </item><item>
+         <title>Version 0.3.10</title>
+         <sparkle:releaseNotesLink>
+             https://zulip.org/dist/apps/mac/sparkle-changelog.html
+         </sparkle:releaseNotesLink>
+         <pubDate>Wed, 06 Nov 2013 14:06:20 </pubDate>
+         <enclosure length="8830865" sparkle:dsaSignature="MC0CFGYT1K9kbVNCrVsF4h2gIICfJ0gEAhUAi3LbwbJBoqVQ8TagxaEL4zVARXU=" sparkle:version="0.3.10" type="application/octet-stream" url="https://zulip.org/dist/apps/mac/Zulip-0.3.10.tar.bz2"/>
+      </item><item>
+         <title>Version 0.3.8</title>
+         <sparkle:releaseNotesLink>
+             https://zulip.org/dist/apps/mac/sparkle-changelog.html
+         </sparkle:releaseNotesLink>
+         <pubDate>Wed, 25 Sep 2013 11:15:29 </pubDate>
+         <enclosure length="8726257" sparkle:dsaSignature="MCwCFErd5wf1WkEUfWc/+mjFbf7NhsdNAhQps4h3pghrROSZTH1swbF8j6EtFQ==" sparkle:version="0.3.8" type="application/octet-stream" url="https://zulip.org/dist/apps/mac/Zulip-0.3.8.tar.bz2"/>
+      </item><item>
+         <title>Version 0.3.7</title>
+         <sparkle:releaseNotesLink>
+             https://zulip.org/dist/apps/mac/sparkle-changelog.html
+         </sparkle:releaseNotesLink>
+         <pubDate>Thu, 19 Sep 2013 10:50:32 </pubDate>
+         <enclosure length="8725554" sparkle:dsaSignature="MCwCFAHB3c8BkmNePyypJ3cwYaUTG0klAhQcg+k8I6ge9reMhy/u0ZtFsvowsg==" sparkle:version="0.3.7" type="application/octet-stream" url="https://zulip.org/dist/apps/mac/Zulip-0.3.7.tar.bz2"/>
+      </item><item>
+         <title>Version 0.3.6</title>
+         <sparkle:releaseNotesLink>
+             https://zulip.org/dist/apps/mac/sparkle-changelog.html
+         </sparkle:releaseNotesLink>
+         <pubDate>Wed, 28 Aug 2013 14:11:01 </pubDate>
+         <enclosure length="8725012" sparkle:dsaSignature="MCwCFGjq6ETatCmBoE1HNqfHnUW4NdELAhRTSSkfQ1RbBa1KrtdnIlEhrEJklQ==" sparkle:version="0.3.6" type="application/octet-stream" url="https://zulip.org/dist/apps/mac/Zulip-0.3.6.tar.bz2"/>
+      </item><item>
+         <title>Version 0.3.5</title>
+         <sparkle:releaseNotesLink>
+             https://zulip.org/dist/apps/mac/sparkle-changelog.html
+         </sparkle:releaseNotesLink>
+         <pubDate>Tue, 27 Aug 2013 15:29:03 </pubDate>
+         <enclosure length="8721619" sparkle:dsaSignature="MCwCFH9WVvolwxWKo+NBUU+3Egu/OcsnAhRhjW2ZEmnpkw1MIGqZm97OdCn3aA==" sparkle:version="0.3.5" type="application/octet-stream" url="https://zulip.org/dist/apps/mac/Zulip-0.3.5.tar.bz2"/>
+      </item><item>
+         <title>
+             Version 0.3.4
+         </title>
+         <sparkle:releaseNotesLink>
+             https://zulip.org/dist/apps/mac/sparkle-changelog.html
+         </sparkle:releaseNotesLink>
+         <pubDate>Mon, 15 Jul 2013 16:20:11 +0000</pubDate>
+         <enclosure length="8700959" sparkle:dsaSignature="MC0CFQCqn2WvVmBo54A6TjiuPxk2nFemYgIUW/So38cwNogoo86zpuS/ql3rST4=" sparkle:version="0.3.4" type="application/octet-stream" url="https://zulip.org/dist/apps/mac/Zulip-0.3.4.tar.bz2"/>
+      </item>
+   </channel>
+</rss>

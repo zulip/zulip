@@ -1,0 +1,4 @@
+MAILTO=root
+
+# Remove any stale apple device tokens from our list
+0 3 * * * zulip cd /home/zulip/deployments/current && ./manage.py check_apns_tokens

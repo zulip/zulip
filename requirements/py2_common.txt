@@ -1,0 +1,14 @@
+-r common.txt
+
+# Used for Hesiod lookups, etc.
+pydns==2.3.6
+
+# Needed for LDAP integration
+python-ldap==2.4.32
+
+# need for ipython, only on python 2
+backports.shutil_get_terminal_size==1.0.0
+enum34==1.1.6
+
+# Install Python Social Auth
+-r py2_socialauth.txt

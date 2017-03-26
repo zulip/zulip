@@ -1,0 +1,21 @@
+Hello,
+
+Thanks for giving Zulip a try!
+
+There are a few steps you need to take to ensure Zulip works with your
+MIT Zephyr account.
+
+ 1) Create a password and activate your account:
+        <{{ activate_url }}>
+
+ 2) Follow the instructions on <https://zephyr.zulipchat.com/zephyr> to setup
+ the Zephyr mirroring system.
+
+Feel free to send us a message via the Feedback button under the gear
+tab within the app if you have any questions or encounter any
+problems.
+
+
+Cheers,
+
+All of us here at Zulip

@@ -1,0 +1,68 @@
+LazyLoad Changelog
+================================================================================
+
+Version 2.0.3 (2011-07-05)
+  * Fixed a bug caused by an unwanted Closure Compiler optimization that broke
+    CSS load completion detection in Gecko when using the minified version of
+    LazyLoad. [Allex Wang]
+  * Fixed a race condition in which a URL could be removed from the "pending"
+    queue if it finished loading before other URLs in the same batch had been
+    added to the queue, resulting in the queue's length changing unexpectedly
+    during iteration. [Klaas Neirinck]
+
+Version 2.0.2 (2011-04-17)
+  * Added support for reliable detection of CSS load completion in Gecko
+    browsers based on a technique described by Zach Leatherman at
+    <http://www.zachleat.com/web/2010/07/29/load-css-dynamically/>.
+  * Fixed a bug that prevented CSS load completion from being detected in WebKit
+    when there were no other stylesheets on the page. [Klaas Neirinck]
+  * Fixed a bug that could prevent CSS callbacks from being called in IE.
+
+Version 2.0.1 (2011-03-05)
+  * Added support for async=false. This ensures that parallel script loading
+    still works in Firefox 4 while preserving execution order. For more info,
+    see <http://wiki.whatwg.org/wiki/Dynamic_Script_Execution_Order>.
+  * Stylesheet load completion is now detected reliably in WebKit by polling
+    document.styleSheets for changes. Thanks to Jonathan Cook for suggesting
+    this solution.
+  * Dynamically created script and link nodes are now given a "lazyload" class
+    so they can be identified later.
+  * The charset for dynamically created script and link nodes is set to "utf-8".
+
+Version 2.0.0 (2009-08-06)
+  * Added support for CSS. Caveat: Gecko and WebKit don't support the onload
+    event for link nodes, so the CSS callback will fire almost immediately in
+    those browsers.
+  * When an array of URLs is specified, the resources will be loaded in parallel
+    in browsers that support it. Currently, all browsers support loading CSS in
+    parallel, but only Gecko and Opera support parallel scripts while preserving
+    execution order. 
+  * The load() method has been replaced by css() and js() methods for loading
+    CSS and JS, respectively.
+  * The loadOnce() method has been removed, since it wasn't terribly useful.
+  * Improved reliability in all supported browsers.
+
+Version 1.0.4 (2008-07-24)
+  * Improved reliability with all supported browsers.
+  * Reduced the minified size to 1751 bytes (a whopping 67 bytes smaller than
+    version 1.0.3).
+  * Fixed a bug that caused the load completion callback to fire immediately in
+    Safari 3.x.
+  * Fixed a bug that caused the load completion callback to fail to fire in
+    Internet Explorer if the script was loaded from the cache.
+
+Version 1.0.3 (2007-06-18)
+  * Added "force" parameter to the loadOnce() method to force execution of the
+    callback even when all specified scripts have already been loaded.
+
+Version 1.0.2 (2007-06-02)
+  * Improved browser detection.
+  * Switched to NaturalDocs for source documentation.
+
+Version 1.0.1 (2007-05-30)
+  * Fixed potential race condition when load() is called multiple times in
+    succession.
+  * Refactored to reduce complexity.
+
+Version 1.0.0 (2007-05-29)
+  * First release.

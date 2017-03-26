@@ -1,0 +1,11 @@
+<li data-user-id="{{user_id}}" class="user_sidebar_entry {{#if num_unread}}user-with-count {{/if}}narrow-filter user_{{type}}">
+    <span class="selectable_sidebar_block">
+        <span class="user-status-indicator"></span>
+        <a href="{{href}}"
+            data-user-id="{{user_id}}"
+            data-name="{{name}}"
+            title="{{name}} {{type_desc}}">{{name}}</a>
+    </span>
+    <span class="count"><span class="value">{{#if num_unread}}{{num_unread}}{{/if}}</span></span>
+    <span class="arrow"><i class="icon-vector-chevron-down"></i></span>
+</li>

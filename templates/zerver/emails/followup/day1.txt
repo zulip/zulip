@@ -1,0 +1,29 @@
+Hi there!
+
+Welcome to Zulip.
+
+{{ server_uri }}/hello has a nice overview of what we're up to, but here are a couple tips that'll help you get the most out of it:
+
+1. Zulip works best when it's always open, so grab our apps! (Mac, Windows, Linux, Android, iOS)
+   {{ realm_uri }}/apps
+
+2. Want to share files in Zulip? No problem! Start a new message and click the paperclip, or just drag-and-drop the file into the textbox.
+
+3. Trying to get someone's attention? Type in an @-sign followed by their name to "mention" them. (Want more or fewer notifications? Select Settings under the gear menu to customize how and when Zulip notifies you of new messages.)
+
+4. Bulleted lists, bold, code blocks, and more are all at your fingertips - just check out "Message formatting" in the gear menu.
+
+5. Are you a keyboard power user? Learn about keyboard shortcuts in the "Keyboard shortcuts" tab under the gear icon. (Or press '?')
+
+6. Emoji. Because :ramen:
+{% if verbose_support_offers %}
+Zulip has a team of engineers standing by to respond to your feedback, so please let us know what you think! Click the "Send feedback" button inside Zulip, or just reply to this email.
+{% endif %}
+Thanks,
+Zulip
+----
+Manage email preferences:
+{{ realm_uri }}/#settings
+
+Unsubscribe from welcome emails (but there's only one more and aren't you a little curious?):
+{{ unsubscribe_link }}

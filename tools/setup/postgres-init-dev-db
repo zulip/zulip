@@ -1,0 +1,96 @@
+#!/usr/bin/env bash
+set -x
+set -e
+
+DEFAULT_USER="postgres"
+if [ "$(uname)" = "OpenBSD" ]; then
+  DEFAULT_USER="_postgresql"
+fi
+
+ROOT_POSTGRES="sudo -i -u "$DEFAULT_USER" psql"
+DEFAULT_DB=""
+if [ "$(uname)" = "Darwin" ]; then
+   ROOT_POSTGRES="psql"
+   DEFAULT_DB="postgres"
+fi
+
+if [ "$(uname)" = "OpenBSD" ]; then
+  DEFAULT_DB="postgres"
+fi
+
+VAGRANTUSERNAME=$(whoami)
+
+if [[ $# == 0 ]]; then
+    USERNAME=zulip
+    PASSWORD=$("$(dirname "$0")/../../scripts/get-django-setting" LOCAL_DATABASE_PASSWORD)
+    DBNAME=zulip
+    SEARCH_PATH="$USERNAME",public
+elif [[ $# == 4 ]]; then
+    USERNAME=$1
+    PASSWORD=$2
+    DBNAME=$3
+    SEARCH_PATH=$4
+else
+    echo "Usage Instructions"
+    echo "Run with either no arguments (sets up devel db for local deploy--zulip with user zulip)"
+    echo "or specify <db-username> <password> <db-name> <user-schema-search-path>"
+    exit
+fi
+
+DBNAME_BASE=${DBNAME}_base
+
+if ! pg_isready -U "$DEFAULT_USER" -q; then
+    set +x
+    echo
+    echo 'ERROR: PostgreSQL Server is not running! Ensure the service is enabled.'
+    echo 'ERROR: Try `sudo service postgresql start`?'
+    echo "ERROR: You can easily test if you fixed it using: pg_isready -U \$DEFAULT_USER"
+    exit 1
+fi
+
+$ROOT_POSTGRES "$DEFAULT_DB" << EOF
+CREATE USER $USERNAME;
+ALTER USER $USERNAME PASSWORD '$PASSWORD';
+ALTER USER $USERNAME CREATEDB;
+ALTER ROLE $USERNAME SET search_path TO $SEARCH_PATH;
+
+CREATE USER $VAGRANTUSERNAME;
+GRANT $USERNAME TO $VAGRANTUSERNAME;
+ALTER ROLE $VAGRANTUSERNAME SET search_path TO $SEARCH_PATH;
+EOF
+
+umask go-rw
+PGPASS_PREFIX="*:*:*:$USERNAME:"
+PGPASS_ESCAPED_PREFIX="*:\*:\*:$USERNAME:"
+if ! grep -q "$PGPASS_ESCAPED_PREFIX" ~/.pgpass; then
+    echo "$PGPASS_PREFIX$PASSWORD" >> ~/.pgpass
+else
+    sed -i "s/$PGPASS_ESCAPED_PREFIX.*\$/$PGPASS_PREFIX$PASSWORD/" ~/.pgpass
+fi
+chmod go-rw ~/.pgpass
+
+"$(dirname "$0")/../../scripts/setup/terminate-psql-sessions" "$USERNAME" "$DBNAME" "$DBNAME_BASE"
+
+psql -h localhost postgres "$USERNAME" <<EOF
+DROP DATABASE IF EXISTS $DBNAME;
+DROP DATABASE IF EXISTS $DBNAME_BASE;
+CREATE DATABASE $DBNAME_BASE
+EOF
+
+psql -h localhost "$DBNAME_BASE" "$USERNAME" <<EOF
+CREATE SCHEMA zulip;
+EOF
+
+$ROOT_POSTGRES "$DBNAME_BASE" << EOF
+CREATE EXTENSION tsearch_extras SCHEMA zulip;
+CREATE EXTENSION pgroonga;
+GRANT USAGE ON SCHEMA pgroonga TO $USERNAME;
+EOF
+
+psql -h localhost postgres "$USERNAME" <<EOF
+CREATE DATABASE $DBNAME TEMPLATE $DBNAME_BASE;
+EOF
+
+sh "$(dirname "$0")/../../scripts/setup/flush-memcached"
+
+echo "Database created"

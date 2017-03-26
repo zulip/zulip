@@ -1,0 +1,54 @@
+<div class="hide" id="stream-creation" tabindex="-1" role="dialog"
+    aria-labelledby="stream-creation-label" aria-hidden="true">
+    <form id="stream_creation_form" class="form-inline">
+        <div class="stream-creation-body">
+            <section class="block">
+                <div class="create-stream-title">
+                    {{t "Stream name" }}
+                </div>
+                <input type="text" name="stream_name" id="create_stream_name"
+                     placeholder="{{t 'Stream name' }}" value="" autocomplete="off" />
+                <div id="stream_name_error"></div>
+            </section>
+            <section class="block">
+                <b>{{t "Stream description (optional)"}}</b><br />
+                <textarea name="stream_description" id="create_stream_description"
+                   placeholder="{{t 'Stream description' }}" value="" autocomplete="off"></textarea>
+            </section>
+            <section class="block" id="make-invite-only">
+                <div class="create-stream-title">
+                    {{t "Stream accessibility" }}
+                </div>
+                <label class="radio">
+                    <input type="radio" name="privacy" value="public" checked />
+                    <span class="icon-vector-globe"></span>
+                    {{t "Anyone can join" }}
+                </label><br />
+                <label class="radio">
+                    <input type="radio" name="privacy" value="invite-only" />
+                    <span class="icon-vector-lock"></span>
+                    {{t "People must be invited" }}
+                </label>
+                <div id="announce-new-stream">
+                    <label class="checkbox">
+                        <input type="checkbox" name="announce" value="announce" checked />
+                        <span></span>
+                        <div class="icon-vector-bullhorn"></div>
+                        {{t "Announce stream" }}
+                    </label>
+                    <span class="icon-vector-question-sign" id="announce-stream-docs"></span>
+                </div>
+            </section>
+            <section class="block">
+                <label class="control-label" for="people_to_add">
+                    {{t "People to add" }}
+                </label>
+                <div class="controls" id="people_to_add"></div>
+            </section>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">{{t "Cancel" }}</button>
+            <button class="btn btn-primary" type="submit">{{t "Create" }}</button>
+        </div>
+    </form>
+</div>

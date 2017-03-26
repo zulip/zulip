@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -e
+
+
+case $1 in
+    -h|--help)
+    echo "--help, -h                   show this help message and exit"
+    echo "--loglevel=LEVEL, -L LEVEL   log level (default: ERROR)"
+    exit 0
+    ;;
+    -L|--loglevel)
+    loglevel="$1 $2"
+    ;;
+esac
+
+cd "$(dirname "$0")"/../docs
+make html
+cd ../tools/documentation_crawler
+
+echo -en "\033[0;94m"
+echo "Testing links in documentation..."
+echo -en "\033[0m"
+
+set +e
+scrapy crawl_with_status documentation_crawler $loglevel
+result=$?
+if [ "$result" = 1 ]; then
+    echo -en "\033[0;91m"
+    echo "Failed!"
+    echo -en "\033[0m"
+    exit 1
+else
+    echo -en "\033[0;92m"
+    echo "Passed!"
+    echo -en "\033[0m"
+    exit 0
+fi

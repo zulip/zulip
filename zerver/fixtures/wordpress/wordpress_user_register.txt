@@ -1,0 +1,1 @@
+stream=wordpress&topic=New%20Blog%20Users&post_type=post&hook=user_register&display_name=test_user&user_email=test_user@example.com
