@@ -305,6 +305,7 @@ def add_logging_data(view_func):
     def _wrapped_view_func(request, *args, **kwargs):
         # type: (HttpRequest, *Any, **Any) -> HttpResponse
         request._email = request.user.email
+        request._query = view_func.__name__
         process_client(request, request.user, is_json_view=True)
         return view_func(request, *args, **kwargs)
     return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
