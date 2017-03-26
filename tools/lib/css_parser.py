@@ -378,7 +378,7 @@ class CssNestedSection(object):
         res = ''
         res += self.pre_fluff
         res += self.selector_list.text()
-        res += '{'
+        res += ' {'
         section_list_lines = self.section_list.text().split('\n')
         formatted_section_list = []
         for ln in section_list_lines:
@@ -405,6 +405,7 @@ class CssSection(object):
         res = ''
         res += handle_prefluff(self.pre_fluff)
         res += self.selector_list.text()
+        res += ' '
         res += self.declaration_block.text()
         res += handle_postfluff(self.post_fluff, space_after_first_line=True)
         return res
@@ -425,8 +426,6 @@ class CssSelectorList(object):
             res += sel_list_render
             if i != len(self.selectors) - 1:
                 res += ','
-        if res[-1] != ' ' and res[-1] != '\n':
-            res += ' '
         return res
 
 class CssSelector(object):

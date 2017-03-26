@@ -263,8 +263,7 @@ input[type="email"],
 input[type="url"],
 input[type="search"],
 input[type="tel"],
-input[type="color"]
-{
+input[type="color"] {
     font-size: inherit;
     height: 1.4em;
 }
