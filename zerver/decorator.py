@@ -465,7 +465,7 @@ def authenticate_log_and_execute_json(request, view_func, *args, **kwargs):
 
     process_client(request, user_profile, True)
     request._email = user_profile.email
-    return view_func(request, user_profile, *args, **kwargs)
+    return rate_limit()(view_func)(request, user_profile, *args, **kwargs)
 
 # Checks if the request is a POST request and that the user is logged
 # in.  If not, return an error (the @login_required behavior of
