@@ -93,6 +93,17 @@ exports.get_user_id = function (email) {
     return user_id;
 };
 
+exports.is_known_user_id = function (user_id) {
+    /*
+    For certain low-stakes operations, such as emoji reactions,
+    we may get a user_id that we don't know about, because the
+    user may have been deactivated.  (We eventually want to track
+    deactivated users on the client, but until then, this is an
+    expedient thing we can check.)
+    */
+    return people_by_user_id_dict.has(user_id);
+};
+
 exports.huddle_string = function (message) {
     if (message.type !== 'private') {
         return;

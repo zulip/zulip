@@ -39,7 +39,10 @@ initialize();
         user_id: 32,
         full_name: full_name,
     };
+
+    assert(!people.is_known_user_id(32));
     people.add(isaac);
+    assert(people.is_known_user_id(32));
 
     var person = people.get_by_name(full_name);
     assert.equal(people.get_user_id(email), 32);
