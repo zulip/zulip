@@ -84,7 +84,7 @@ from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 from zerver.lib.validator import (
-    check_bool, check_dict, check_float, check_int, check_list, check_string,
+    check_bool, check_dict, check_dict_only, check_float, check_int, check_list, check_string,
     equals, check_none_or, Validator
 )
 
@@ -315,10 +315,11 @@ class EventsRegisterTest(ZulipTestCase):
 
     def realm_bot_schema(self, field_name, check):
         # type: (str, Validator) -> Validator
-        return check_dict([
+        return check_dict_only([
+            ('id', check_int),
             ('type', equals('realm_bot')),
             ('op', equals('update')),
-            ('bot', check_dict([
+            ('bot', check_dict_only([
                 ('email', check_string),
                 ('user_id', check_int),
                 (field_name, check),
