@@ -282,15 +282,11 @@ li,
 
 .copy_message,
 .copy_message:focus {
-    background-image: url('/static/images/clippy.svg');
-    background-size: contain;
-    background-repeat: no-repeat;
     background-color: white;
-    background-position: center;
     height: 20px;
     width: 15px;
     padding: 5px 10px;
-    border-radius: 2px;
+    border: none;
     position: relative;
     top: 32px;
     left: -5px;
@@ -298,8 +294,12 @@ li,
     display: block;
 }
 
-.copy_message:hover {
-    background-color: #dadada;
+#clipboard_image {
+    height: inherit;
+    width: inherit;
+    max-width: inherit;
+    margin-top: inherit;
+    margin-left: -7px;
 }
 
 .btn-large {
