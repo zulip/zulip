@@ -226,11 +226,13 @@ exports.get_message_reactions = function (message) {
         user_list.push(reaction.user.id);
     });
     var reactions = message_reactions.items().map(function (item) {
+        var emoji_name = item[0];
+        var user_ids = item[1];
         var reaction = {
-            emoji_name: item[0],
-            emoji_name_css_class: emoji.emoji_name_to_css_class(item[0]),
-            count: item[1].length,
-            title: generate_title(item[0], item[1]),
+            emoji_name: emoji_name,
+            emoji_name_css_class: emoji.emoji_name_to_css_class(emoji_name),
+            count: user_ids.length,
+            title: generate_title(emoji_name, user_ids),
             emoji_alt_code: page_params.emoji_alt_code,
         };
         if (emoji.realm_emojis[reaction.emoji_name]) {
