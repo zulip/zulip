@@ -193,14 +193,15 @@ function edit_message(row, raw_content) {
     currently_editing_messages[message.id] = edit_obj;
     current_msg_list.show_edit_message(row, edit_obj);
 
-    initClipboard(row.find('.copy_message')[0]);
-
     form.keydown(_.partial(handle_edit_keydown, false));
 
     var message_edit_content = row.find('textarea.message_edit_content');
     var message_edit_topic = row.find('input.message_edit_topic');
     var message_edit_topic_propagate = row.find('select.message_edit_topic_propagate');
     var message_edit_countdown_timer = row.find('.message_edit_countdown_timer');
+    var copy_message = row.find('.copy_message');
+
+    initClipboard(copy_message[0]);
 
     if (editability === editability_types.NO) {
         message_edit_content.prop("readonly", "readonly");
@@ -217,6 +218,7 @@ function edit_message(row, raw_content) {
         // Hint why you can edit the topic but not the message content
         message_edit_countdown_timer.text(i18n.t("Topic editing only"));
     } else if (editability === editability_types.FULL) {
+        copy_message.remove();
         composebox_typeahead.initialize_compose_typeahead("#message_edit_content", {emoji: true, stream: true});
     }
 
