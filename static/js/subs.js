@@ -454,9 +454,11 @@ exports.launch = function (hash) {
             overlay: $("#subscription_overlay"),
             on_close: exports.close,
         });
-
         exports.change_state(hash);
     });
+    if (!get_active_data().id) {
+        $('#search_stream_name').focus();
+    }
 };
 
 exports.close = function () {
@@ -472,14 +474,20 @@ exports.switch_rows = function (event) {
         return false;
     } else if (!active_data.id || active_data.row.hasClass('notdisplayed')) {
         switch_row = $('div.stream-row:not(.notdisplayed):first');
+        if ($('#search_stream_name').is(":focus")) {
+            $('#search_stream_name').blur();
+        }
     } else if (event === 'up_arrow') {
         switch_row = active_data.row.prev();
+        if ($('#search_stream_name').is(":focus")) {
+            // remove focus from Filter streams input instead of switching rows
+            // if Filter streams input is focused
+            return $('#search_stream_name').blur();
+        }
     } else if (event === 'down_arrow') {
         switch_row = active_data.row.next();
         if ($('#search_stream_name').is(":focus")) {
-            // When going from the filter box, go the first row.
-            $('#search_stream_name').blur();
-            switch_row = $('div.stream-row:not(.notdisplayed):first');
+            return $('#search_stream_name').blur();
         }
     }
 
