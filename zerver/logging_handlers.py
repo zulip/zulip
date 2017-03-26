@@ -78,7 +78,8 @@ class AdminZulipHandler(logging.Handler):
                 message = record.getMessage(),
                 stack_trace = stack_trace,
             )
-            add_request_metadata(report, record.request)  # type: ignore  # record.request is added dynamically
+            if hasattr(record, "request"):
+                add_request_metadata(report, record.request)  # type: ignore  # record.request is added dynamically
         except Exception:
             traceback.print_exc()
             report = dict(

@@ -55,6 +55,28 @@ class AdminZulipHandlerTest(ZulipTestCase):
         # type: () -> None
         settings.LOGGING_NOT_DISABLED = True
 
+    def get_admin_zulip_handler(self, logger):
+        # type: (logging.Logger) -> Any
+
+        # Ensure that AdminEmailHandler does not get filtered out
+        # even with DEBUG=True.
+        admin_email_handler = [
+            h for h in logger.handlers
+            if h.__class__.__name__ == "AdminZulipHandler"
+        ][0]
+        return admin_email_handler
+
+    def test_basic(self):
+        # type: () -> None
+        """A random exception passes happily through AdminZulipHandler"""
+        handler = self.get_admin_zulip_handler(self.logger)
+        try:
+            raise Exception("Testing Error!")
+        except Exception:
+            exc_info = sys.exc_info()
+        record = self.logger.makeRecord('name', logging.ERROR, 'function', 16, 'message', None, exc_info)  # type: ignore # https://github.com/python/typeshed/pull/1100
+        handler.emit(record)
+
     def run_handler(self, record):
         # type: (logging.LogRecord) -> Dict[str, Any]
         with patch('zerver.logging_handlers.queue_json_publish') as patched_publish:
