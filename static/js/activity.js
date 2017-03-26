@@ -400,10 +400,14 @@ exports.update_huddles = function () {
 
 function status_from_timestamp(baseline_time, presence) {
     var status = 'offline';
+    var last_active = 0;
     var mobileAvailable = false;
     var nonmobileAvailable = false;
     _.each(presence, function (device_presence, device) {
         var age = baseline_time - device_presence.timestamp;
+        if (last_active < device_presence.timestamp) {
+            last_active = device_presence.timestamp;
+        }
         if (is_mobile(device)) {
             mobileAvailable = device_presence.pushable || mobileAvailable;
         }
@@ -432,7 +436,9 @@ function status_from_timestamp(baseline_time, presence) {
             }
         }
     });
-    return {status: status, mobile: !nonmobileAvailable && mobileAvailable };
+    return {status: status,
+            mobile: !nonmobileAvailable && mobileAvailable,
+            last_active: last_active };
 }
 
 // For testing

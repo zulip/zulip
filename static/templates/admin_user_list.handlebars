@@ -10,17 +10,22 @@
     <td>
       <span class="owner">{{bot_owner}}</span>
     </td>
+  {{else}}
+    <td class="last_active">
+    </td>
   {{/if}}
   <td>
-    {{#if is_active}}
-      <button class="button deactivate btn-danger">
-        {{t "Deactivate" }}
-      </button>
-    {{else}}
-      <button class="button reactivate btn-warning">
-        {{t "Reactivate" }}
-      </button>
-    {{/if}}
+    <span class="user-status-settings">
+      {{#if is_active}}
+        <button class="button deactivate btn-danger">
+          {{t "Deactivate" }}
+        </button>
+      {{else}}
+        <button class="button reactivate btn-warning">
+          {{t "Reactivate" }}
+        </button>
+      {{/if}}
+    </span>
     <span class="user-admin-settings">
       {{#if is_active_human}}
         {{#if is_admin}}

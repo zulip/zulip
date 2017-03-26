@@ -1059,3 +1059,7 @@ input[type=text]#settings_search {
 #muted_topics_table tbody {
     border-bottom: none;
 }
+
+#admin_users_table .last_active {
+    width: 15%;
+}
