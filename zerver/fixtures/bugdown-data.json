@@ -91,6 +91,12 @@
       "bugdown_matches_marked": true
     },
     {
+      "name": "ulist_nested_ulist_two_space_indent",
+      "input": "Nested list\n* I am outer list\n  * I am inner nested list first item\n  * I am inner nested list second item",
+      "expected_output": "<p>Nested list</p>\n<ul>\n<li>I am outer list<ul>\n<li>I am inner nested list first item</li>\n<li>I am inner nested list second item</li>\n</ul>\n</li>\n</ul>",
+      "bugdown_matches_marked": true
+    },
+    {
       "name": "ulist_codeblock",
       "input": "~~~\nint x = 3\n* 4;\n~~~",
       "expected_output": "<div class=\"codehilite\"><pre><span></span>int x = 3\n* 4;\n</pre></div>",
