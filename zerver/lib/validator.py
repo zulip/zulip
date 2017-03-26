@@ -87,8 +87,8 @@ def check_list(sub_validator, length=None):
         return None
     return f
 
-def check_dict(required_keys):
-    # type: (Iterable[Tuple[str, Validator]]) -> Validator
+def check_dict(required_keys, _allow_only_listed_keys=False):
+    # type: (Iterable[Tuple[str, Validator]], bool) -> Validator
     def f(var_name, val):
         # type: (str, Any) -> Optional[str]
         if not isinstance(val, dict):
@@ -103,9 +103,18 @@ def check_dict(required_keys):
             if error:
                 return error
 
+        if _allow_only_listed_keys:
+            delta_keys = set(val.keys()) - set(x[0] for x in required_keys)
+            if len(delta_keys) != 0:
+                return _("Unexpected arguments: %s" % (", ".join(list(delta_keys))))
+
         return None
 
     return f
+
+def check_dict_only(required_keys):
+    # type: (Iterable[Tuple[str, Validator]]) -> Validator
+    return check_dict(required_keys, _allow_only_listed_keys=True)
 
 def check_variable_type(allowed_type_funcs):
     # type: (Iterable[Validator]) -> Validator
