@@ -4,6 +4,7 @@ from __future__ import print_function
 from typing import Tuple
 
 import os
+from distutils.version import LooseVersion
 from version import PROVISION_VERSION
 
 def get_major_version(v):
@@ -63,7 +64,7 @@ def get_provisioning_status():
 
     # We may be more provisioned than the branch we just moved to.  As
     # long as the major version hasn't changed, then we should be ok.
-    if version > PROVISION_VERSION:
+    if LooseVersion(version) > LooseVersion(PROVISION_VERSION):
         if get_major_version(version) == get_major_version(PROVISION_VERSION):
             return True, None
         else:
