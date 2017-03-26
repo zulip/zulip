@@ -325,8 +325,9 @@ class EventsRegisterTest(ZulipTestCase):
             ])),
         ])
 
-    def do_test(self, action, event_types=None, include_subscribers=True, state_change_expected=True):
-        # type: (Callable[[], Any], Optional[List[str]], bool, bool) -> List[Dict[str, Any]]
+    def do_test(self, action, event_types=None, include_subscribers=True, state_change_expected=True,
+                num_events=1):
+        # type: (Callable[[], Any], Optional[List[str]], bool, bool, int) -> List[Dict[str, Any]]
         client = allocate_client_descriptor(
             dict(user_profile_id = self.user_profile.id,
                  user_profile_email = self.user_profile.email,
@@ -344,7 +345,7 @@ class EventsRegisterTest(ZulipTestCase):
         hybrid_state = fetch_initial_state_data(self.user_profile, event_types, "", include_subscribers=include_subscribers)
         action()
         events = client.event_queue.contents()
-        self.assertTrue(len(events) > 0)
+        self.assertTrue(len(events) == num_events)
 
         before = ujson.dumps(hybrid_state)
         apply_events(hybrid_state, events, self.user_profile, include_subscribers=include_subscribers)
@@ -1306,7 +1307,7 @@ class EventsRegisterTest(ZulipTestCase):
             ])),
         ])
         action = lambda: self.create_bot('test-bot@zulip.com')
-        events = self.do_test(action)
+        events = self.do_test(action, num_events=2)
         error = bot_created_checker('events[1]', events[1])
         self.assert_on_error(error)
 
@@ -1314,7 +1315,7 @@ class EventsRegisterTest(ZulipTestCase):
         # type: () -> None
         bot = self.create_bot('test-bot@zulip.com')
         action = lambda: do_change_full_name(bot, 'New Bot Name')
-        events = self.do_test(action)
+        events = self.do_test(action, num_events=2)
         error = self.realm_bot_schema('full_name', check_string)('events[1]', events[1])
         self.assert_on_error(error)
 
@@ -1330,8 +1331,9 @@ class EventsRegisterTest(ZulipTestCase):
         # type: () -> None
         bot = self.create_bot('test-bot@zulip.com')
         action = lambda: do_change_avatar_fields(bot, bot.AVATAR_FROM_USER)
-        events = self.do_test(action)
+        events = self.do_test(action, num_events=2)
         error = self.realm_bot_schema('avatar_url', check_string)('events[0]', events[0])
+        self.assertEqual(events[1]['type'], 'realm_user')
         self.assert_on_error(error)
 
     def test_change_realm_icon_source(self):
@@ -1419,7 +1421,7 @@ class EventsRegisterTest(ZulipTestCase):
         ])
         bot = self.create_bot('foo-bot@zulip.com')
         action = lambda: do_deactivate_user(bot)
-        events = self.do_test(action)
+        events = self.do_test(action, num_events=2)
         error = bot_deactivate_checker('events[1]', events[1])
         self.assert_on_error(error)
 
@@ -1444,7 +1446,7 @@ class EventsRegisterTest(ZulipTestCase):
         bot = self.create_bot('foo-bot@zulip.com')
         do_deactivate_user(bot)
         action = lambda: do_reactivate_user(bot)
-        events = self.do_test(action)
+        events = self.do_test(action, num_events=2)
         error = bot_reactivate_checker('events[1]', events[1])
         self.assert_on_error(error)
 
@@ -1455,7 +1457,7 @@ class EventsRegisterTest(ZulipTestCase):
         self.subscribe_to_stream(self.user_profile.email, stream.name)
 
         action = lambda: do_rename_stream(stream, new_name)
-        events = self.do_test(action)
+        events = self.do_test(action, num_events=2)
 
         schema_checker = check_dict([
             ('type', equals('stream')),
@@ -1496,8 +1498,7 @@ class EventsRegisterTest(ZulipTestCase):
     def test_subscribe_other_user_never_subscribed(self):
         # type: () -> None
         action = lambda: self.subscribe_to_stream("othello@zulip.com", u"test_stream")
-        events = self.do_test(action)
-        self.assert_length(events, 2)
+        events = self.do_test(action, num_events=2)
         peer_add_schema_checker = check_dict([
             ('type', equals('subscription')),
             ('op', equals('peer_add')),
@@ -1613,14 +1614,16 @@ class EventsRegisterTest(ZulipTestCase):
             [get_user_profile_by_email("hamlet@zulip.com")],
             [stream])
         events = self.do_test(action,
-                              include_subscribers=include_subscribers)
+                              include_subscribers=include_subscribers,
+                              num_events=2)
         error = remove_schema_checker('events[1]', events[1])
         self.assert_on_error(error)
 
         # Now resubscribe a user, to make sure that works on a vacated stream
         action = lambda: self.subscribe_to_stream("hamlet@zulip.com", "test_stream")
         events = self.do_test(action,
-                              include_subscribers=include_subscribers)
+                              include_subscribers=include_subscribers,
+                              num_events=2)
         error = add_schema_checker('events[1]', events[1])
         self.assert_on_error(error)
 
@@ -1634,8 +1637,8 @@ class EventsRegisterTest(ZulipTestCase):
         stream = self.make_stream("private", get_realm("zulip"), invite_only=True)
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
         action = lambda: bulk_add_subscriptions([stream], [user_profile])
-        events = self.do_test(action, include_subscribers=include_subscribers)
-        self.assert_length(events, 2)
+        events = self.do_test(action, include_subscribers=include_subscribers,
+                              num_events=2)
         error = stream_create_schema_checker('events[0]', events[0])
         error = add_schema_checker('events[1]', events[1])
         self.assert_on_error(error)
