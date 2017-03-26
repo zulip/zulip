@@ -84,6 +84,16 @@ ul.actions_popover i {
     position: relative;
 }
 
+.sender_info_popover .popover_info {
+  /* width : popover_container width - (popover_content padding) - (navlist padding)*/
+    width: calc(240px - (15px*2) - (14px * 2));
+
+}
+
+.sender_info_popover .popover_info li {
+    word-wrap: break-word;
+}
+
 .message-info-popover {
     padding: 0;
 }
