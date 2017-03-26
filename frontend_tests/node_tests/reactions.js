@@ -14,6 +14,10 @@ set_global('emoji', {
     realm_emojis: {},
 });
 
+set_global('blueslip', {
+    warn: function () {},
+});
+
 set_global('page_params', {user_id: 1});
 
 (function make_people() {
@@ -44,6 +48,10 @@ set_global('page_params', {user_id: 1});
             {emoji_name: 'smile', user: {id: 5}},
             {emoji_name: 'smile', user: {id: 6}},
             {emoji_name: 'frown', user: {id: 7}},
+
+            // add some bogus user_ids
+            {emoji_name: 'octopus', user: {id: 8888}},
+            {emoji_name: 'frown', user: {id: 9999}},
         ],
     };
 

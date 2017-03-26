@@ -222,8 +222,15 @@ exports.get_emojis_used_by_user_for_message_id = function (message_id) {
 exports.get_message_reactions = function (message) {
     var message_reactions = new Dict();
     _.each(message.reactions, function (reaction) {
+        var user_id = reaction.user.id;
+        if (!people.is_known_user_id(user_id)) {
+            blueslip.warn('Unknown user_id ' + user_id +
+                          'in reaction for message ' + message.id);
+            return;
+        }
+
         var user_list = message_reactions.setdefault(reaction.emoji_name, []);
-        user_list.push(reaction.user.id);
+        user_list.push(user_id);
     });
     var reactions = message_reactions.items().map(function (item) {
         var emoji_name = item[0];
