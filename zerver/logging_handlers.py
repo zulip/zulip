@@ -70,12 +70,14 @@ class AdminZulipHandler(logging.Handler):
         try:
             if record.exc_info:
                 stack_trace = ''.join(traceback.format_exception(*record.exc_info))  # type: Optional[str]
+                message = str(record.exc_info[1])
             else:
                 stack_trace = None
+                message = record.getMessage()
 
             report = dict(
                 node = platform.node(),
-                message = record.getMessage(),
+                message = message,
                 stack_trace = stack_trace,
             )
             if hasattr(record, "request"):
