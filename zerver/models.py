@@ -447,7 +447,7 @@ def filter_pattern_validator(value):
 
 def filter_format_validator(value):
     # type: (str) -> None
-    regex = re.compile(r'^[\.\/:a-zA-Z0-9_-]+%\(([a-zA-Z0-9_-]+)\)s[a-zA-Z0-9_-]*$')
+    regex = re.compile(r'^[\.\/:a-zA-Z0-9_?=-]+%\(([a-zA-Z0-9_-]+)\)s[a-zA-Z0-9_-]*$')
 
     if not regex.match(value):
         raise ValidationError('URL format string must be in the following format: `https://example.com/%(\w+)s`')
