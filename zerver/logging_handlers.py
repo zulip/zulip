@@ -37,6 +37,17 @@ class AdminZulipHandler(logging.Handler):
             else:
                 stack_trace = None
 
+            report = dict(
+                node = platform.node(),
+                message = record.getMessage(),
+                stack_trace = stack_trace,
+            )
+
+            report['path'] = request.path
+            report['method'] = request.method
+            report['remote_addr'] = request.META.get('REMOTE_ADDR', None),
+            report['query_string'] = request.META.get('QUERY_STRING', None),
+            report['server_name'] = request.META.get('SERVER_NAME', None),
             try:
                 from django.contrib.auth.models import AnonymousUser
                 user_profile = request.user
@@ -51,36 +62,24 @@ class AdminZulipHandler(logging.Handler):
                 traceback.print_exc()
                 user_full_name = None
                 user_email = None
+            report['user_email'] = user_email
+            report['user_full_name'] = user_full_name
 
             try:
-                data = request.GET if request.method == 'GET' else \
+                report['data'] = request.GET if request.method == 'GET' else \
                     exception_filter.get_post_parameters(request)
             except Exception:
                 # exception_filter.get_post_parameters will throw
                 # RequestDataTooBig if there's a really big file uploaded
-                data = {}
+                report['data'] = {}
 
             try:
-                host = request.get_host().split(':')[0]
+                report['host'] = request.get_host().split(':')[0]
             except Exception:
                 # request.get_host() will throw a DisallowedHost
                 # exception if the host is invalid
-                host = platform.node()
+                report['host'] = platform.node()
 
-            report = dict(
-                node = platform.node(),
-                host = host,
-                method = request.method,
-                path = request.path,
-                data = data,
-                remote_addr = request.META.get('REMOTE_ADDR', None),
-                query_string = request.META.get('QUERY_STRING', None),
-                server_name = request.META.get('SERVER_NAME', None),
-                message = record.getMessage(),
-                stack_trace = stack_trace,
-                user_full_name = user_full_name,
-                user_email = user_email,
-            )
         except Exception:
             traceback.print_exc()
             report = dict(
