@@ -105,3 +105,67 @@ class AdminZulipHandlerTest(ZulipTestCase):
             self.assertIn("user_email", report)
             self.assertIn("message", report)
             self.assertIn("stack_trace", report)
+
+            # Test that `add_request_metadata` throwing an exception is fine
+            with patch("zerver.logging_handlers.traceback.print_exc"):
+                with patch("zerver.logging_handlers.add_request_metadata",
+                           side_effect=Exception("Unexpected exception!")):
+                    report = self.run_handler(record)
+            self.assertNotIn("user_email", report)
+            self.assertIn("message", report)
+            self.assertEqual(report["stack_trace"], "See /var/log/zulip/errors.log")
+
+            # Check anonymous user is handled correctly
+            record.request.user = AnonymousUser()
+            report = self.run_handler(record)
+            self.assertIn("user_email", report)
+            self.assertIn("message", report)
+            self.assertIn("stack_trace", report)
+
+            # Now simulate a DisallowedHost exception
+            def get_host_error():
+                # type: () -> None
+                raise Exception("Get Host Failure!")
+            orig_get_host = record.request.get_host
+            record.request.get_host = get_host_error
+            report = self.run_handler(record)
+            record.request.get_host = orig_get_host
+            self.assertIn("user_email", report)
+            self.assertIn("message", report)
+            self.assertIn("stack_trace", report)
+
+            # Test an exception_filter exception
+            with patch("zerver.logging_handlers.get_exception_reporter_filter",
+                       return_value=15):
+                record.request.method = "POST"
+                report = self.run_handler(record)
+                record.request.method = "GET"
+            self.assertIn("user_email", report)
+            self.assertIn("message", report)
+            self.assertIn("stack_trace", report)
+
+            # Test the catch-all exception handler doesn't throw
+            with patch('zerver.logging_handlers.queue_json_publish',
+                       side_effect=Exception("queue error")):
+                self.handler.emit(record)
+
+            # Test the STAGING_ERROR_NOTIFICATIONS code path
+            with self.settings(STAGING_ERROR_NOTIFICATIONS=True):
+                with patch('zerver.lib.error_notify.notify_server_error',
+                           side_effect=Exception("queue error")):
+                    self.handler.emit(record)
+
+            # Test no exc_info
+            record.exc_info = None
+            report = self.run_handler(record)
+            self.assertIn("user_email", report)
+            self.assertIn("message", report)
+            self.assertEqual(report["stack_trace"], None)
+
+            # Test arbitrary exceptions from request.user
+            record.request.user = None
+            with patch("zerver.logging_handlers.traceback.print_exc"):
+                report = self.run_handler(record)
+            self.assertIn("user_email", report)
+            self.assertIn("message", report)
+            self.assertIn("stack_trace", report)

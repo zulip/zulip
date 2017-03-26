@@ -86,13 +86,14 @@ class AdminZulipHandler(logging.Handler):
                 node = platform.node(),
                 host = platform.node(),
                 message = record.getMessage(),
+                stack_trace = "See /var/log/zulip/errors.log",
             )
 
         try:
             if settings.STAGING_ERROR_NOTIFICATIONS:
                 # On staging, process the report directly so it can happen inside this
                 # try/except to prevent looping
-                from zilencer.error_notify import notify_server_error
+                from zerver.lib.error_notify import notify_server_error
                 notify_server_error(report)
             else:
                 queue_json_publish('error_reports', dict(

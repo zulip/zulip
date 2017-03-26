@@ -37,6 +37,7 @@ target_fully_covered = {path for target in [
     'zerver/lib/streams.py',
     'zerver/lib/users.py',
     'zerver/lib/webhooks/*.py',
+    'zerver/logging_handlers.py',
     'zerver/views/*.py',
     'zerver/tests/*.py',
     # Once we have a nice negative tests system, we can add these:
