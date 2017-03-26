@@ -60,7 +60,8 @@
     padding-bottom: 0;
 }
 
-.footer, .push {
+.footer,
+.push {
     height: 56px;
 }
 
@@ -315,7 +316,8 @@ img.screenshot {
     padding-bottom: 2em;
 }
 
-.landing-page h2, h4 {
+.landing-page h2,
+.landing-page h4 {
     font-weight: lighter;
 }
 
@@ -368,7 +370,8 @@ input.text-error {
     outline-color: red;
 }
 
-.header, .footer {
+.header,
+.footer {
     position: absolute;
     z-index: 100;
     width: 100%;
@@ -453,7 +456,8 @@ input.text-error {
     margin-left: 60px;
 }
 
-.feature-block.left p, .feature-block.left h4 {
+.feature-block.left p,
+.feature-block.left h4 {
     margin-right: 40px;
 }
 
@@ -883,7 +887,8 @@ input.new-organization-button {
     margin-right: auto;
 }
 
-.login-form .control-label, .register-form .control-label {
+.login-form .control-label,
+.register-form .control-label {
     margin-bottom: 2px;
 }
 
@@ -897,7 +902,8 @@ input.new-organization-button {
     width: 100%;
 }
 
-.login-form .control-group, .register-form .control-group {
+.login-form .control-group,
+.register-form .control-group {
     margin-right: 10px;
 }
 
@@ -909,7 +915,10 @@ input.new-organization-button {
     font-weight: 300;
 }
 
-.login-google, .register-google, .login-sso, .login-github {
+.login-google,
+.register-google,
+.login-sso,
+.login-github {
     max-width: 100%;
     min-width: 300px;
     margin: auto;
@@ -917,7 +926,9 @@ input.new-organization-button {
     margin-top: 30px;
 }
 
-.login-google-button, .register-google-button, .login-github-button {
+.login-google-button,
+.register-google-button,
+.login-github-button {
     margin-left: 10px;
 }
 
@@ -1037,7 +1048,8 @@ input.new-organization-button {
     padding-top: 16px;
 }
 
-.footer-navigation li, .footer-navigation li a {
+.footer-navigation li,
+.footer-navigation li a {
     display: inline-block;
     vertical-align: middle;
     color: #888;
@@ -1414,7 +1426,8 @@ input.new-organization-button {
         padding: 0px !important;
     }
 
-    .input-medium, .input-large {
+    .input-medium,
+    .input-large {
         display: block !important;
         width: 100% !important;
         min-height: 30px !important;
@@ -1452,7 +1465,8 @@ input.new-organization-button {
         display: block;
     }
 
-    .feature-block.left p, .feature-block.left h4 {
+    .feature-block.left p,
+    .feature-block.left h4 {
         margin-right: 0px;
     }
 

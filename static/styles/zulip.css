@@ -280,7 +280,8 @@ li,
     line-height: 100%;
 }
 
-.copy_message, .copy_message:focus {
+.copy_message,
+.copy_message:focus {
     background-image: url('/static/images/clippy.svg');
     background-size: contain;
     background-repeat: no-repeat;

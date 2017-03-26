@@ -418,15 +418,7 @@ class CssSelectorList(object):
 
     def text(self):
         # type: () -> str
-        res = ''
-        for i, sel in enumerate(self.selectors):
-            sel_list_render = sel.text()
-            if i != 0 and sel_list_render[0] != '\n':
-                res += ' '
-            res += sel_list_render
-            if i != len(self.selectors) - 1:
-                res += ','
-        return res
+        return ',\n'.join(sel.text() for sel in self.selectors)
 
 class CssSelector(object):
     def __init__(self, tokens, pre_fluff, post_fluff, levels):
@@ -438,10 +430,7 @@ class CssSelector(object):
 
     def text(self):
         # type: () -> str
-        res = ''
-        res += handle_prefluff(self.pre_fluff)
-        res += ' '.join(level.s for level in self.levels)
-        res += handle_postfluff(self.post_fluff)
+        res = ' '.join(level.s for level in self.levels)
         return res
 
 class CssDeclarationBlock(object):

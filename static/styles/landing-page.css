@@ -219,7 +219,9 @@ nav ul li.active::after {
 
 /* -- generic styles -- */
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
     margin: 10px 0px;
 
     font-weight: 300;
@@ -232,7 +234,9 @@ p {
     line-height: 1.5;
 }
 
-a, a:hover, a:visited {
+a,
+a:hover,
+a:visited {
     color: #4fc0ad;
 }
 
@@ -334,7 +338,9 @@ a:not(.no-style):hover:before {
     padding: 0 !important;
 }
 
-.header, .footer, .portico-os-announcement {
+.header,
+.footer,
+.portico-os-announcement {
     display: none;
 }
 
@@ -1060,7 +1066,8 @@ a:not(.no-style):hover:before {
         padding-top: 20px;
     }
 
-    .main, .portico-landing.integrations .main {
+    .main,
+    .portico-landing.integrations .main {
         width: 100%;
         margin: 0;
     }
