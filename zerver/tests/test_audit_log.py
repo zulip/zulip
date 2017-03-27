@@ -3,7 +3,7 @@ from django.utils import timezone
 
 from zerver.lib.actions import do_create_user, do_deactivate_user, \
     do_activate_user, do_reactivate_user, do_change_password, \
-    do_change_user_email
+    do_change_user_email, do_change_avatar_fields
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import RealmAuditLog, get_realm
 
@@ -51,3 +51,15 @@ class TestChangeEmail(ZulipTestCase):
         self.assertEqual(RealmAuditLog.objects.filter(event_type='user_email_changed',
                                                       event_time__gte=now).count(), 1)
         self.assertEqual(email, user.email)
+
+class TestChangeAvatarFields(ZulipTestCase):
+    def test_change_avatar_source(self):
+        # type: () -> None
+        realm = get_realm('zulip')
+        now = timezone.now()
+        user = do_create_user('email', 'password', realm, 'full_name', 'short_name')
+        avatar_source = u'G'
+        do_change_avatar_fields(user, avatar_source)
+        self.assertEqual(RealmAuditLog.objects.filter(event_type='user_change_avatar_source',
+                                                      event_time__gte=now).count(), 1)
+        self.assertEqual(avatar_source, user.avatar_source)
