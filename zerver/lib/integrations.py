@@ -175,7 +175,6 @@ WEBHOOK_INTEGRATIONS = [
 
 INTEGRATIONS = {
     'asana': Integration('asana', 'asana'),
-    'basecamp': Integration('basecamp', 'basecamp'),
     'capistrano': Integration('capistrano', 'capistrano'),
     'codebase': Integration('codebase', 'codebase'),
     'email': EmailIntegration('email', 'email'),
