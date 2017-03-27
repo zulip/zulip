@@ -61,6 +61,14 @@ a clean history before we will merge them; it's best to write your
 commits following these guidelines in the first place, but if you don't,
 you can always fix your history using git rebase -i.
 
+Try to avoid mixing changes in your commits. If you find some issue that
+is unrelated to what you were working on but it's too minor to create a
+dedicated pull request, feel free to append it in a sepparate commit to
+the pull request you were already using. This is always way better than
+leaving that little problem without fixing. Make sure that you clearly
+explain in the commit message the purpose of such change, so it's easier
+for reviewers to check your work.
+
 It can take some practice to get used to writing your commits with a
 clean history so that you don't spend much time doing interactive
 rebases. For example, often you'll start adding a feature, and discover
