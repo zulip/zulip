@@ -148,6 +148,8 @@ class Command(BaseCommand):
             create_users(zulip_realm, names)
             iago = UserProfile.objects.get(email="iago@zulip.com")
             do_change_is_admin(iago, True)
+            iago.is_staff = True
+            iago.save(update_fields=['is_staff'])
             # Create public streams.
             stream_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome"]
             stream_dict = {
