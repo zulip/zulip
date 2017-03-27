@@ -373,19 +373,36 @@ exports.maybe_show_edit = function (row, id) {
 };
 
 exports.edit_last_sent_message = function () {
-    var msg = current_msg_list.get_last_own_editable_message();
-    if (msg !== undefined) {
-        var msg_row = current_msg_list.get_row(msg.id);
-        current_msg_list.select_id(rows.id(msg_row), {then_scroll: true, from_scroll: true});
-        message_edit.start(msg_row, function () {
-            var editability_type = message_edit.get_editability(msg, 5);
-            if (editability_type === message_edit.editability_types.TOPIC_ONLY) {
-                ui_util.focus_on('message_edit_topic');
-            } else {
-                ui_util.focus_on('message_edit_content');
-            }
-        });
+    var msg = current_msg_list.get_last_message_sent_by_me();
+
+    if (!msg) {
+        return;
     }
+
+    if (!msg.id) {
+        blueslip.error('Message has invalid id in edit_last_sent_message.');
+        return;
+    }
+
+    var msg_editability_type = exports.get_editability(msg, 5);
+    if (msg_editability_type !== editability_types.FULL) {
+        return;
+    }
+
+    var msg_row = current_msg_list.get_row(msg.id);
+    if (!msg_row) {
+        // This should never happen, since we got the message above
+        // from current_msg_list.
+        blueslip.error('Could not find row for id ' + msg.id);
+        return;
+    }
+
+    current_msg_list.select_id(msg.id, {then_scroll: true, from_scroll: true});
+
+    // Finally do the real work!
+    message_edit.start(msg_row, function () {
+        ui_util.focus_on('message_edit_content');
+    });
 };
 
 exports.show_history = function (message) {
