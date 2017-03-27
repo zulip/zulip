@@ -157,10 +157,15 @@ exports.MessageList.prototype = {
                 previously_selected: this._selected_id,
             });
 
-        id = parseFloat(id);
-        if (isNaN(id)) {
-            blueslip.fatal("Bad message id");
+        function convert_id(str_id) {
+            var id = parseFloat(str_id);
+            if (isNaN(id)) {
+                blueslip.fatal("Bad message id " + str_id);
+            }
+            return id;
         }
+
+        id = convert_id(id);
 
         var closest_id = this.closest_id(id);
 
