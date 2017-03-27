@@ -584,6 +584,23 @@ td.pointer {
     transition: background-color 2.7s ease-in, color 2.7s ease-in;
 }
 
+.alert-copied {
+    position: absolute;
+    right: -110px;
+    font-size: 14px;
+    color: #52c2af;
+    background-color: white;
+    z-index: 999;
+    padding-left: 20px;
+    padding-right: 40px;
+    font-weight: 400;
+    display: none;
+}
+
+.include-sender .alert-copied {
+    top: -3px;
+}
+
 .status-time {
     top: 8px !important;
 }

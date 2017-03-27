@@ -152,10 +152,10 @@ $(function () {
         popovers.hide_all();
     });
     $("body").on("click", ".copy_message", function (e) {
-        $(this).attr("data-original-title", "Copied!");
-        $(this).tooltip().tooltip('show');
         var row = $(this).closest(".message_row");
         message_edit.end(row);
+        row.find(".alert-copied").css("display", "block");
+        row.find(".alert-copied").delay(1000).fadeOut(300);
         e.preventDefault();
         e.stopPropagation();
     });
