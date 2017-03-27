@@ -57,6 +57,8 @@ Zulip keyboard shortcuts are divided into four categories:
   shortcut allows the user to send the message that they've written.
 * **Cancel compose**: `Esc` - This shortcut allows the user to cancel
   and discard their unsent message.
+* **Open drafts**: `d` - This shortcut allows the user to open the
+  drafts overlay.
 
 ## Narrowing
 
