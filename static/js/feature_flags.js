@@ -15,7 +15,6 @@ exports.new_bot_ui = false;
 
 // The features below have all settled into their final states and can
 // be removed when we get a chance
-exports.cleanup_before_reload = true;
 exports.mark_read_at_bottom = true;
 exports.propagate_topic_edits = true;
 exports.clicking_notification_causes_narrow = true;

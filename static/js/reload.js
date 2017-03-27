@@ -152,46 +152,6 @@ exports.initialize = function reload__initialize() {
     hashchange.changehash(vars.oldhash);
 };
 
-function clear_message_list(msg_list) {
-    if (!msg_list) { return; }
-    msg_list.clear();
-    // Some pending ajax calls may still be processed and they to not expect an
-    // empty msg_list.
-    msg_list._items = [{id: 1}];
-}
-
-function cleanup_before_reload() {
-    try {
-        // Unbind all the jQuery event listeners
-        $('*').off();
-
-        // Abort all pending ajax requests`
-        try {
-            channel.abort_all();
-        } catch (ex) {
-            // This seems to throw exceptions for no apparent reason sometimes
-            blueslip.debug("Error aborting XHR requests on reload; ignoring");
-        }
-
-        // Free all the DOM in the main_div
-        $("#main_div").empty();
-
-        // Now that the DOM is empty our beforeunload callback may
-        // have been removed, so explicitly remove event queue here.
-        server_events.cleanup_event_queue();
-
-        // Empty the large collections
-        clear_message_list(message_list.all);
-        clear_message_list(home_msg_list);
-        clear_message_list(message_list.narrowed);
-        message_store.clear();
-
-    } catch (ex) {
-        blueslip.error('Failed to cleanup before reloading',
-                       undefined, ex.stack);
-    }
-}
-
 function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compose, message) {
     if (reload_in_progress) { return; }
 
@@ -209,8 +169,11 @@ function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compos
     blueslip.log('Starting server requested page reload');
     reload_in_progress = true;
 
-    if (feature_flags.cleanup_before_reload) {
-        cleanup_before_reload();
+    try {
+        server_events.cleanup_event_queue();
+    } catch (ex) {
+        blueslip.error('Failed to cleanup before reloading',
+                       undefined, ex.stack);
     }
 
     window.location.reload(true);
