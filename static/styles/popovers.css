@@ -1,5 +1,24 @@
 .popover {
     width: auto;
+
+    -webkit-box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2), 0px 0px 25px rgba(0, 0, 0, 0.2);
+    -moz-box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2), 0px 0px 25px rgba(0, 0, 0, 0.2);
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2), 0px 0px 25px rgba(0, 0, 0, 0.2);
+
+    border-radius: 0px;
+    border: none;
+}
+
+.popover ul li a {
+    color: inherit;
+}
+
+.popover-content {
+    padding: 0px;
+}
+
+.nav-list {
+    padding: 0px 10px;
 }
 
 .popover-title {
