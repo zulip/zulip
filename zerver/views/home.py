@@ -234,6 +234,7 @@ def home_real(request):
         avatar_url_medium     = avatar_url(user_profile, medium=True),
         avatar_source         = user_profile.avatar_source,
         timezone              = user_profile.timezone,
+        buddy_list            = register_ret['buddy_list'],
 
         # Stream message notification settings:
         stream_desktop_notifications_enabled = user_profile.enable_stream_desktop_notifications,
