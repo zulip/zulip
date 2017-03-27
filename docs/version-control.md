@@ -61,6 +61,19 @@ a clean history before we will merge them; it's best to write your
 commits following these guidelines in the first place, but if you don't,
 you can always fix your history using git rebase -i.
 
+Never mix multiple changes together in a single commit, but it's great
+to include several related changes, each in their own commit, in a
+single pull request.  If you notice an issue that is only somewhat
+related to what you were working on, but you feel that it's too minor
+to create a dedicated pull request, feel free to append it as an
+additional commit in the pull request for your main project (that
+commit should have a clear explanation of the bug in its commit
+message).  This way, the bug gets fixed, but this independent change
+is highlighted for reviewers.  Or just create a dedicated pull request
+for it.  Whatever you do, don't squash unrelated changes together in a
+single commit; the reviewer will ask you to split the changes out into
+their own commits.
+
 It can take some practice to get used to writing your commits with a
 clean history so that you don't spend much time doing interactive
 rebases. For example, often you'll start adding a feature, and discover
