@@ -255,7 +255,7 @@ a.arrow:after {
 
     top: 3px;
 
-    background-image: url(/static/images/landing-page/assets/arrow.png);
+    background-image: url(/static/images/landing-page/arrow.png);
     background-size: 100%;
 
     margin-left: 5px;
@@ -984,7 +984,7 @@ a:not(.no-style):hover:before {
         height: 40px;
 
         background-size: 100% auto;
-        background-image: url(/static/images/landing-page/assets/bad-logo.png);
+        background-image: url(/static/images/landing-page/bad-logo.png);
         background-position: center;
 
         -webkit-filter: invert(0.7);
