@@ -157,7 +157,12 @@ function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compos
 
     // TODO: we should completely disable the UI here
     if (save_pointer || save_narrow || save_compose) {
-        preserve_state(send_after_reload, save_pointer, save_narrow, save_compose);
+        try {
+            preserve_state(send_after_reload, save_pointer, save_narrow, save_compose);
+        } catch (ex) {
+            blueslip.error('Failed to preserve state',
+                           undefined, ex.stack);
+        }
     }
 
     if (message === undefined) {
