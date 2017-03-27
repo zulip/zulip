@@ -52,7 +52,7 @@ strip_whitespace_right = re.compile(u"(%s-?\\s*(trans|pluralize).*?-%s)\\s+" % (
 strip_whitespace_left = re.compile(u"\\s+(%s-\\s*(endtrans|pluralize).*?-?%s)" % (
                                    BLOCK_TAG_START, BLOCK_TAG_END), re.U)
 
-regexes = ['{{#tr .*?}}(.*?){{/tr}}',
+regexes = ['{{#tr .*?}}([\s\S]*?){{/tr}}',  # '.' doesn't match '\n' by default
            '{{t "(.*?)"\W*}}',
            "{{t '(.*?)'\W*}}",
            "i18n\.t\('([^\']*?)'\)",
@@ -144,6 +144,9 @@ class Command(makemessages.Command):
         translation_strings = {} # type: Dict[str, str]
         for regex in frontend_compiled_regexes:
             for match in regex.findall(data):
+                match = match.strip()
+                match = ' '.join(line.strip() for line in match.splitlines())
+                match = match.replace('\n', '\\n')
                 translation_strings[match] = ""
 
         return translation_strings
@@ -168,7 +171,6 @@ class Command(makemessages.Command):
                     continue
                 with open(os.path.join(dirpath, filename), 'r') as reader:
                     data = reader.read()
-                    data = data.replace('\n', '\\n')
                     translation_strings.update(self.extract_strings(data))
 
         dirname = os.path.join(settings.DEPLOY_ROOT, 'static/js')

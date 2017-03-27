@@ -57,10 +57,10 @@ IGNORED_PHRASES = [
     # Fragments of larger strings
     (r'Change notification settings for individual streams on your '
      '<a href="/#streams">Streams page</a>.'),
-    (r'<p class="bot-settings-note padded-container"> Looking for our '
+    (r'Looking for our '
      '<a href="/integrations" target="_blank">Integrations</a> or '
      '<a href="{{ server_uri }}/api" target="_blank">API</a> '
-     'documentation? </p>'),
+     'documentation?'),
     r'Most stream administration is done on the <a href="/#streams">Streams page</a>.',
     r"one or more people...",
     r"confirmation email",

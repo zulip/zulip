@@ -602,11 +602,11 @@ function validate_private_message() {
     var context = {};
     if (invalid_recipients.length === 1) {
         context = {recipient: invalid_recipients.join()};
-        compose_error(i18n.t("The recipient __recipient__ is not valid ", context), $("#private_message_recipient"));
+        compose_error(i18n.t("The recipient __recipient__ is not valid", context), $("#private_message_recipient"));
         return false;
     } else if (invalid_recipients.length > 1) {
         context = {recipients: invalid_recipients.join()};
-        compose_error(i18n.t("The recipients __recipients__ are not valid ", context), $("#private_message_recipient"));
+        compose_error(i18n.t("The recipients __recipients__ are not valid", context), $("#private_message_recipient"));
         return false;
     }
     return true;
@@ -886,7 +886,8 @@ $(function () {
             break;
         case 'FileTooLarge':
             // sanitization not needed as the file name is not potentially parsed as HTML, etc.
-            msg = "\"" + file.name + "\"" + i18n.t(" was too large; the maximum file size is 25MiB.");
+            var context = { file_name: file.name };
+            msg = i18n.t('"__file_name__" was too large; the maximum file size is 25MiB.', context);
             break;
         case 'REQUEST ENTITY TOO LARGE':
             msg = i18n.t("Sorry, the file was too large.");
