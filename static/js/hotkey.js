@@ -507,7 +507,6 @@ exports.process_hotkey = function (e, hotkey) {
         // we handle this in other functions.
 
         if (event_name === 'left_arrow' && focus_in_empty_compose()) {
-            compose_actions.cancel();
             message_edit.edit_last_sent_message();
             return true;
         }

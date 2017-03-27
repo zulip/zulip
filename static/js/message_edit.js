@@ -400,6 +400,7 @@ exports.edit_last_sent_message = function () {
     current_msg_list.select_id(msg.id, {then_scroll: true, from_scroll: true});
 
     // Finally do the real work!
+    compose_actions.cancel();
     message_edit.start(msg_row, function () {
         ui_util.focus_on('message_edit_content');
     });
