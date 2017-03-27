@@ -101,6 +101,12 @@
             {% if integration.doc %}
                 <div id={{ integration.name }} class="integration-instructions">
                     {% include integration.doc %}
+                    <p style="font-size:11px; font-style:italic;">
+                        Logos are trademarks of their respective owners.
+                        None of the integrations on this page are created by,
+                        affiliated with, or supported by the companies
+                        represented by the logos.
+                    </p>
                 </div>
             {% endif %}
         {% endif %}
@@ -182,6 +188,13 @@
         and/or different kinds of Asana events that you'd like to receive
         notifications about.
     </p>
+
+    <p style="font-size:11px; font-style:italic;">
+        Logos are trademarks of their respective owners.
+        None of the integrations on this page are created by,
+        affiliated with, or supported by the companies
+        represented by the logos.
+    </p>
 </div>
 
 <div id="basecamp" class="integration-instructions">
@@ -223,6 +236,12 @@
       calendar event, comment, message, or more, you'll get a notification in your selected stream
       with the project or calendar as the topic.</p>
       <img class="screenshot" src="/static/images/integrations/basecamp/002.png" />
+    <p style="font-size:11px; font-style:italic;">
+        Logos are trademarks of their respective owners.
+        None of the integrations on this page are created by,
+        affiliated with, or supported by the companies
+        represented by the logos.
+    </p>
     </div>
 
     <div id="capistrano" class="integration-instructions">
@@ -265,6 +284,13 @@
       <img class="screenshot" src="/static/images/integrations/capistrano/001.png" />
 
       <p><small>Thanks to Wes of TurboVote for <a href="https://gist.github.com/cap10morgan/5100822">submitting this integration</a>!</small></p>
+
+      <p style="font-size:11px; font-style:italic;">
+        Logos are trademarks of their respective owners.
+        None of the integrations on this page are created by,
+        affiliated with, or supported by the companies
+        represented by the logos.
+      </p>
     </div>
 
     <div id="codebase" class="integration-instructions">
@@ -306,6 +332,13 @@
       commit, issue, deployment, or more, you'll get notifications in your selected streams
       with the associated information.</p>
       <img class="screenshot" src="/static/images/integrations/codebase/001.png" />
+
+      <p style="font-size:11px; font-style:italic;">
+        Logos are trademarks of their respective owners.
+        None of the integrations on this page are created by,
+        affiliated with, or supported by the companies
+        represented by the logos.
+      </p>
     </div>
 
 {% if email_integration_enabled %}
@@ -337,6 +370,13 @@
 
       <p>Please note that it may take up to one minute for the message to show up
       in Zulip.</p>
+
+      <p style="font-size:11px; font-style:italic;">
+        Logos are trademarks of their respective owners.
+        None of the integrations on this page are created by,
+        affiliated with, or supported by the companies
+        represented by the logos.
+      </p>
     </div>
 {% endif %}
 
@@ -385,6 +425,13 @@
       <p><b>Testing</b><br />You can test the plugin without changing
       your <code>master</code> branch by pushing to
       the <code>test-post-receive</code> branch.</p>
+
+      <p style="font-size:11px; font-style:italic;">
+        Logos are trademarks of their respective owners.
+        None of the integrations on this page are created by,
+        affiliated with, or supported by the companies
+        represented by the logos.
+      </p>
     </div>
 
     <div id="google-calendar" class="integration-instructions">
@@ -475,6 +522,13 @@
         <img class="screenshot" src="/static/images/integrations/google/calendar/003.png" />
         </p>
 
+        <p style="font-size:11px; font-style:italic;">
+            Logos are trademarks of their respective owners.
+            None of the integrations on this page are created by,
+            affiliated with, or supported by the companies
+            represented by the logos.
+        </p>
+
     </div>
 
     <div id="hubot" class="integration-instructions">
@@ -509,6 +563,13 @@
 
       <p><a href='https://github.com/zulip/hubot-zulip'>Source code for the hubot-zulip adapter is available on GitHub</a>.</p>
       <p><a href="#hubot-integrations">Check out additional Zulip integrations available via Hubot</a></p>
+
+      <p style="font-size:11px; font-style:italic;">
+        Logos are trademarks of their respective owners.
+        None of the integrations on this page are created by,
+        affiliated with, or supported by the companies
+        represented by the logos.
+      </p>
     </div>
 
     <div id="jenkins" class="integration-instructions">
@@ -564,6 +625,13 @@
           <li>Still stuck? Email <a href="mailto:zulip-devel@googlegroups.com?subject=Jenkins">zulip-devel@googlegroups.com</a>.</li>
         </ul>
       </p>
+
+      <p style="font-size:11px; font-style:italic;">
+        Logos are trademarks of their respective owners.
+        None of the integrations on this page are created by,
+        affiliated with, or supported by the companies
+        represented by the logos.
+      </p>
     </div>
 
    <div id="jira-plugin" class="integration-instructions">
@@ -613,6 +681,13 @@
       <p><b>Congratulations! You're done!</b><br />
       Updates from JIRA will be sent to the stream you've configured, as below.</p>
       <img class="screenshot" src="/static/images/integrations/jira/001.png" />
+
+      <p style="font-size:11px; font-style:italic;">
+        Logos are trademarks of their respective owners.
+        None of the integrations on this page are created by,
+        affiliated with, or supported by the companies
+        represented by the logos.
+      </p>
     </div>
 
     <div id="mercurial" class="integration-instructions">
@@ -709,6 +784,13 @@ ignore_branches = "noisy,even-more-noisy"</pre>
       looks like this:</p>
 
       <img class="screenshot" src="/static/images/integrations/hg/001.png" />
+
+      <p style="font-size:11px; font-style:italic;">
+        Logos are trademarks of their respective owners.
+        None of the integrations on this page are created by,
+        affiliated with, or supported by the companies
+        represented by the logos.
+      </p>
     </div>
 
     <div id="nagios" class="integration-instructions">
@@ -777,6 +859,13 @@ key = NAGIOS_BOT_API_KEY
       whether you've configured the Zulip plugin code correctly by
       running <code>/usr/local/share/zulip/integrations/nagios/nagios-notify-zulip</code>
       directly.</p>
+
+      <p style="font-size:11px; font-style:italic;">
+        Logos are trademarks of their respective owners.
+        None of the integrations on this page are created by,
+        affiliated with, or supported by the companies
+        represented by the logos.
+      </p>
     </div>
 
     <div id="openshift" class="integration-instructions">
@@ -851,6 +940,13 @@ key = NAGIOS_BOT_API_KEY
       <p><b>Testing</b><br />You can test the plugin without changing
       your <code>master</code> branch by pushing to
       the <code>test-post-receive</code> branch.</p>
+
+      <p style="font-size:11px; font-style:italic;">
+        Logos are trademarks of their respective owners.
+        None of the integrations on this page are created by,
+        affiliated with, or supported by the companies
+        represented by the logos.
+      </p>
     </div>
 
     <div id="perforce" class="integration-instructions">
@@ -898,6 +994,13 @@ key = NAGIOS_BOT_API_KEY
       Zulip:</p>
 
       <img class="screenshot" src="/static/images/integrations/perforce/001.png" />
+
+      <p style="font-size:11px; font-style:italic;">
+        Logos are trademarks of their respective owners.
+        None of the integrations on this page are created by,
+        affiliated with, or supported by the companies
+        represented by the logos.
+      </p>
     </div>
 
     <div id="phabricator" class="integration-instructions">
@@ -913,6 +1016,13 @@ key = NAGIOS_BOT_API_KEY
         to get it set up.
       </p>
 
+      <p style="font-size:11px; font-style:italic;">
+        Logos are trademarks of their respective owners.
+        None of the integrations on this page are created by,
+        affiliated with, or supported by the companies
+        represented by the logos.
+      </p>
+
     </div>
 
     <div id="puppet" class="integration-instructions">
@@ -926,6 +1036,13 @@ key = NAGIOS_BOT_API_KEY
       </p>
 
       <p><small>Thanks to Matt from Kensho for submitting this integration!</small></p>
+
+      <p style="font-size:11px; font-style:italic;">
+        Logos are trademarks of their respective owners.
+        None of the integrations on this page are created by,
+        affiliated with, or supported by the companies
+        represented by the logos.
+       </p>
 
     </div>
 
@@ -1001,6 +1118,13 @@ key = NAGIOS_BOT_API_KEY
       Redmine, the team can see these updates in real time in Zulip:</p>
 
       <img class="screenshot" src="/static/images/integrations/redmine/001.png" />
+
+      <p style="font-size:11px; font-style:italic;">
+        Logos are trademarks of their respective owners.
+        None of the integrations on this page are created by,
+        affiliated with, or supported by the companies
+        represented by the logos.
+      </p>
     </div>
 
     <div id="rss" class="integration-instructions">
@@ -1028,6 +1152,13 @@ key = NAGIOS_BOT_API_KEY
       your feeds, the team can see these updates in real time in Zulip:</p>
 
       <img class="screenshot" src="/static/images/integrations/rss/001.png" />
+
+      <p style="font-size:11px; font-style:italic;">
+        Logos are trademarks of their respective owners.
+        None of the integrations on this page are created by,
+        affiliated with, or supported by the companies
+        represented by the logos.
+      </p>
     </div>
 
     <div id="subversion" class="integration-instructions">
@@ -1077,6 +1208,13 @@ key = NAGIOS_BOT_API_KEY
       repository, the team can see these updates in real time in Zulip:</p>
 
       <img class="screenshot" src="/static/images/integrations/svn/001.png" />
+
+      <p style="font-size:11px; font-style:italic;">
+        Logos are trademarks of their respective owners.
+        None of the integrations on this page are created by,
+        affiliated with, or supported by the companies
+        represented by the logos.
+      </p>
     </div>
 
     <div id="trac" class="integration-instructions">
@@ -1128,6 +1266,14 @@ key = NAGIOS_BOT_API_KEY
       result in a Zulip notification using
       the <code>TRAC_NOTIFY_FIELDS</code> setting
       in <code>zulip_trac_config.py</code>.</p>
+
+      <p style="font-size:11px; font-style:italic;">
+        Logos are trademarks of their respective owners.
+        None of the integrations on this page are created by,
+        affiliated with, or supported by the companies
+        represented by the logos.
+      </p>
+
     </div>
 
     <div id="trello-plugin" class="integration-instructions">
@@ -1153,6 +1299,13 @@ key = NAGIOS_BOT_API_KEY
 
       <img class="screenshot" src="/static/images/integrations/trello/002.png" />
       <p><small>Thanks to Nathan from FoundationDB for submitting this integration!</small></p>
+
+      <p style="font-size:11px; font-style:italic;">
+        Logos are trademarks of their respective owners.
+        None of the integrations on this page are created by,
+        affiliated with, or supported by the companies
+        represented by the logos.
+      </p>
     </div>
 
     <div id="twitter" class="integration-instructions">
@@ -1241,6 +1394,13 @@ access_token_secret =</pre>
       links to tweets</b>; the pretty inline previews of tweets are
       generated by the Twitter card rendering integration configured
       in <code>/etc/zulip/settings.py</code> on the Zulip server.</p>
+
+      <p style="font-size:11px; font-style:italic;">
+        Logos are trademarks of their respective owners.
+        None of the integrations on this page are created by,
+        affiliated with, or supported by the companies
+        represented by the logos.
+      </p>
 
     </div>
 </div>
