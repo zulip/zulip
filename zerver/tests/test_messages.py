@@ -1707,9 +1707,18 @@ class StarTests(ZulipTestCase):
         # Send a second message so we can verify it isn't modified
         other_message_ids = [self.send_message("hamlet@zulip.com", stream_name,
                                                Recipient.STREAM, "test_unused")]
+        received_message_ids = [self.send_message("hamlet@zulip.com", ['cordelia@zulip.com'],
+                                                  Recipient.PERSONAL, "test_received")]
 
         # Now login as another user who wasn't on that stream
         self.login("cordelia@zulip.com")
+        # Send a message to yourself to make sure we have at least one with the read flag
+        sent_message_ids = [self.send_message("cordelia@zulip.com", ['cordelia@zulip.com'],
+                                              Recipient.PERSONAL, "test_read_message")]
+        result = self.client_post("/json/messages/flags",
+                                  {"messages": ujson.dumps(sent_message_ids),
+                                   "op": "add",
+                                   "flag": "read"})
 
         # We can't change flags other than "starred" on historical messages:
         result = self.client_post("/json/messages/flags",
@@ -1727,10 +1736,13 @@ class StarTests(ZulipTestCase):
         self.assert_json_success(result)
 
         for msg in self.get_messages():
-            if msg['id'] in message_ids + other_message_ids:
+            if msg['id'] in message_ids:
                 self.assertEqual(set(msg['flags']), {'starred', 'historical', 'read'})
+            elif msg['id'] in received_message_ids:
+                self.assertEqual(msg['flags'], [])
             else:
                 self.assertEqual(msg['flags'], ['read'])
+            self.assertNotIn(msg['id'], other_message_ids)
 
         result = self.change_star(message_ids, False)
         self.assert_json_success(result)
