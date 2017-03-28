@@ -778,7 +778,8 @@ a:not(.no-style):hover:before {
 }
 
 .portico-landing.integrations .integration-lozenge img {
-    max-width: 90%;
+    max-width: 80%;
+    max-height: 100px;
     display: block;
     margin: 10% auto 0 auto;
     border-radius: 8px;

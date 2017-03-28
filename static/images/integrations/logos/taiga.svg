@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   version="1.1"
+   width="100%"
+   height="100%"
+   viewBox="0 0 1000 1000"
+   id="svg2"
+   style="color:#ffffff;display:block">
+  <metadata
+     id="metadata32">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs30" />
+  <g
+     transform="translate(0,-52.362183)"
+     id="g4"
+     style="color:#ffffff">
+    <g
+       transform="matrix(1.1783562,0,0,1.1783562,2450.4425,-1298.9778)"
+       id="g6"
+       style="color:#ffffff">
+      <g
+         transform="translate(-905.09668,1190.7678)"
+         id="g8"
+         style="color:#ffffff">
+        <rect
+           width="263"
+           height="263"
+           x="19.4"
+           y="454"
+           transform="matrix(-0.1406648,0.99005728,-0.99005728,0.14066481,0,0)"
+           id="rect10"
+           style="opacity:0.8;color:#ffffff;fill:#a295ae" />
+        <rect
+           width="263"
+           height="263"
+           x="-545.40002"
+           y="-980.29999"
+           transform="matrix(0.1406648,-0.99005728,0.99005728,-0.14066481,0,0)"
+           id="rect12"
+           style="opacity:0.8;color:#ffffff;fill:#5d6f6d" />
+        <rect
+           width="263"
+           height="263"
+           x="-1091.8"
+           y="239.39999"
+           transform="matrix(0.99005728,0.1406648,0.14066481,0.99005728,0,0)"
+           id="rect14"
+           style="opacity:0.8;color:#ffffff;fill:#8cd592" />
+        <rect
+           width="263"
+           height="263"
+           x="565.79999"
+           y="-765"
+           transform="matrix(-0.99005728,-0.1406648,-0.14066481,-0.99005728,0,0)"
+           id="rect16"
+           style="opacity:0.8;color:#ffffff;fill:#665e74" />
+        <rect
+           width="263"
+           height="263"
+           x="123.2"
+           y="-1125"
+           transform="matrix(-0.60061118,-0.79954125,0.60061117,-0.79954125,0,0)"
+           id="rect18"
+           style="opacity:0.8;color:#ffffff;fill:#3c3647" />
+        <rect
+           width="263"
+           height="263"
+           x="522.40002"
+           y="-110.1"
+           transform="matrix(-0.79954125,0.60061118,-0.79954125,-0.60061117,0,0)"
+           id="rect20"
+           style="opacity:0.8;color:#ffffff;fill:#837193" />
+        <rect
+           width="263"
+           height="263"
+           x="-649.59998"
+           y="599.29999"
+           transform="matrix(0.60061118,0.79954125,-0.60061118,0.79954125,0,0)"
+           id="rect22"
+           style="opacity:0.8;color:#ffffff;fill:#a2f4ac" />
+        <rect
+           width="263"
+           height="263"
+           x="-1048.9"
+           y="-415.20001"
+           transform="matrix(0.79954125,-0.60061118,0.79954125,0.60061117,0,0)"
+           id="rect24"
+           style="opacity:0.8;color:#ffffff;fill:#7ea685" />
+      </g>
+      <rect
+         width="141.39999"
+         height="141.39999"
+         x="-130.2"
+         y="2210.7"
+         transform="matrix(0.70710678,0.70710678,-0.70710678,0.70710678,0,0)"
+         id="rect26"
+         style="color:#ffffff;fill:#3c3647" />
+    </g>
+  </g>
+</svg>
