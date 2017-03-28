@@ -113,17 +113,19 @@ function make_stream_default(stream_name) {
     var data = {
         stream_name: stream_name,
     };
+    var default_stream_status = $("#admin-default-stream-status");
+    default_stream_status.hide();
 
     channel.post({
         url: '/json/default_streams',
         data: data,
         error: function (xhr) {
             if (xhr.status.toString().charAt(0) === "4") {
-                $(".active_stream_row button").closest("td").html(
-                    $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg));
+                ui_report.error(i18n.t("Failed!"), xhr, default_stream_status);
             } else {
-                $(".active_stream_row button").text(i18n.t("Failed!"));
+                ui_report.error(i18n.t("Failed!"), default_stream_status);
             }
+            default_stream_status.show();
         },
     });
 }
