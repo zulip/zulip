@@ -181,6 +181,15 @@ exports.on_load_success = function (streams_data) {
         },
     });
 
+    $(".default-stream-form").on("click", "#do_submit_stream", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var default_stream_input = $(".create_default_stream");
+        make_stream_default(default_stream_input.val());
+        // Clear value inside input box
+        default_stream_input[0].value = "";
+    });
+
     $("#do_deactivate_stream_button").click(function () {
         if ($("#deactivation_stream_modal .stream_name").text() !== $(".active_stream_row").find('.stream_name').text()) {
             blueslip.error("Stream deactivation canceled due to non-matching fields.");
