@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Generator: Adobe Illustrator 19.2.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="Layer_1"
+   x="0px"
+   y="0px"
+   viewBox="0 0 121.94154 121.84154"
+   xml:space="preserve"
+   inkscape:version="0.48.5 r10040"
+   width="100%"
+   height="100%"
+   sodipodi:docname="slack.svg"><metadata
+     id="metadata29"><rdf:RDF><cc:Work
+         rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+     id="defs27" /><sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="640"
+     inkscape:window-height="480"
+     id="namedview25"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:zoom="0.87407407"
+     inkscape:cx="59.730355"
+     inkscape:cy="66.430355"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="Layer_1" /><style
+     type="text/css"
+     id="style3">
+	.st0{fill:#ECB32D;}
+	.st1{fill:#63C1A0;}
+	.st2{fill:#E01A59;}
+	.st3{fill:#331433;}
+	.st4{fill:#D62027;}
+	.st5{fill:#89D3DF;}
+	.st6{fill:#258B74;}
+	.st7{fill:#819C3C;}
+</style><g
+     id="g5"
+     transform="translate(-75.269645,-79.58882)"><g
+       id="g7"><path
+         class="st0"
+         d="m 154.3,87.1 c -1.9,-5.7 -8,-8.8 -13.7,-7 -5.7,1.9 -8.8,8 -7,13.7 l 28.1,86.4 c 1.9,5.3 7.7,8.3 13.2,6.7 5.8,-1.7 9.3,-7.8 7.4,-13.4 0,-0.2 -28,-86.4 -28,-86.4 z"
+         id="path9"
+         inkscape:connector-curvature="0"
+         style="fill:#ecb32d" /><path
+         class="st1"
+         d="m 110.8,101.2 c -1.9,-5.7 -8,-8.8 -13.7,-7 -5.7,1.9 -8.8,8 -7,13.7 l 28.1,86.4 c 1.9,5.3 7.7,8.3 13.2,6.7 5.8,-1.7 9.3,-7.8 7.4,-13.4 0,-0.2 -28,-86.4 -28,-86.4 z"
+         id="path11"
+         inkscape:connector-curvature="0"
+         style="fill:#63c1a0" /><path
+         class="st2"
+         d="m 189.7,158.6 c 5.7,-1.9 8.8,-8 7,-13.7 -1.9,-5.7 -8,-8.8 -13.7,-7 l -86.5,28.2 c -5.3,1.9 -8.3,7.7 -6.7,13.2 1.7,5.8 7.8,9.3 13.4,7.4 0.2,0 86.5,-28.1 86.5,-28.1 z"
+         id="path13"
+         inkscape:connector-curvature="0"
+         style="fill:#e01a59" /><path
+         class="st3"
+         d="m 114.5,183.1 c 5.6,-1.8 12.9,-4.2 20.7,-6.7 -1.8,-5.6 -4.2,-12.9 -6.7,-20.7 l -20.7,6.7 6.7,20.7 z"
+         id="path15"
+         inkscape:connector-curvature="0"
+         style="fill:#331433" /><path
+         class="st4"
+         d="m 158.1,168.9 c 7.8,-2.5 15.1,-4.9 20.7,-6.7 -1.8,-5.6 -4.2,-12.9 -6.7,-20.7 l -20.7,6.7 6.7,20.7 z"
+         id="path17"
+         inkscape:connector-curvature="0"
+         style="fill:#d62027" /><path
+         class="st5"
+         d="m 175.5,115.1 c 5.7,-1.9 8.8,-8 7,-13.7 -1.9,-5.7 -8,-8.8 -13.7,-7 l -86.4,28.1 c -5.3,1.9 -8.3,7.7 -6.7,13.2 1.7,5.8 7.8,9.3 13.4,7.4 0.2,0 86.4,-28 86.4,-28 z"
+         id="path19"
+         inkscape:connector-curvature="0"
+         style="fill:#89d3df" /><path
+         class="st6"
+         d="m 100.4,139.5 c 5.6,-1.8 12.9,-4.2 20.7,-6.7 -2.5,-7.8 -4.9,-15.1 -6.7,-20.7 l -20.7,6.7 6.7,20.7 z"
+         id="path21"
+         inkscape:connector-curvature="0"
+         style="fill:#258b74" /><path
+         class="st7"
+         d="m 143.9,125.4 c 7.8,-2.5 15.1,-4.9 20.7,-6.7 -2.5,-7.8 -4.9,-15.1 -6.7,-20.7 l -20.7,6.7 6.7,20.7 z"
+         id="path23"
+         inkscape:connector-curvature="0"
+         style="fill:#819c3c" /></g></g></svg>

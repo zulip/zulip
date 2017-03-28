@@ -1,4 +1,5 @@
 from typing import Dict, List, Optional, TypeVar
+import os.path
 from django.conf import settings
 from django.conf.urls import url
 from django.core.urlresolvers import LocaleRegexProvider
@@ -22,7 +23,8 @@ features for writing and configuring integrations efficiently.
 """
 
 class Integration(object):
-    DEFAULT_LOGO_STATIC_PATH = 'static/images/integrations/logos/{name}.png'
+    DEFAULT_LOGO_STATIC_PATH_PNG = 'static/images/integrations/logos/{name}.png'
+    DEFAULT_LOGO_STATIC_PATH_SVG = 'static/images/integrations/logos/{name}.svg'
 
     def __init__(self, name, client_name, logo=None, secondary_line_text=None, display_name=None, doc=None):
         # type: (str, str, Optional[str], Optional[str], Optional[str], Optional[str]) -> None
@@ -32,7 +34,10 @@ class Integration(object):
         self.doc = doc
 
         if logo is None:
-            logo = self.DEFAULT_LOGO_STATIC_PATH.format(name=name)
+            if os.path.isfile(self.DEFAULT_LOGO_STATIC_PATH_SVG.format(name=name)):
+                logo = self.DEFAULT_LOGO_STATIC_PATH_SVG.format(name=name)
+            else:
+                logo = self.DEFAULT_LOGO_STATIC_PATH_PNG.format(name=name)
         self.logo = logo
 
         if display_name is None:
@@ -111,8 +116,14 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('appfollow', display_name='AppFollow'),
     WebhookIntegration('beanstalk'),
     WebhookIntegration('basecamp'),
-    WebhookIntegration('bitbucket2', logo='static/images/integrations/logos/bitbucket.png', display_name='Bitbucket'),
-    WebhookIntegration('bitbucket', secondary_line_text='(Enterprise)'),
+    WebhookIntegration('bitbucket2', logo='static/images/integrations/logos/bitbucket.svg', display_name='Bitbucket'),
+    WebhookIntegration('bitbucket', display_name='Bitbucket', secondary_line_text='(Enterprise)'),
+    WebhookIntegration(
+        'stash',
+        display_name='Bitbucket Server',
+        secondary_line_text='(Stash)',
+        logo='static/images/integrations/logos/bitbucket.svg'
+    ),
     WebhookIntegration('circleci', display_name='CircleCI'),
     WebhookIntegration('codeship'),
     WebhookIntegration('crashlytics'),
@@ -128,7 +139,7 @@ WEBHOOK_INTEGRATIONS = [
     GithubIntegration(
         'github_webhook',
         display_name='GitHub',
-        logo='static/images/integrations/logos/github.png',
+        logo='static/images/integrations/logos/github.svg',
         secondary_line_text='(webhook)',
         function='zerver.webhooks.github_webhook.view.api_github_webhook'
     ),
@@ -154,7 +165,6 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('slack'),
     WebhookIntegration('solano', display_name='Solano Labs'),
     WebhookIntegration('splunk', display_name='Splunk'),
-    WebhookIntegration('stash'),
     WebhookIntegration('stripe', display_name='Stripe'),
     WebhookIntegration('taiga'),
     WebhookIntegration('teamcity'),
@@ -165,7 +175,6 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration(
         'yo',
         function='zerver.webhooks.yo.view.api_yo_app_webhook',
-        logo='static/images/integrations/logos/yo-app.png',
         display_name='Yo App'
     ),
     WebhookIntegration('wordpress', display_name='WordPress'),
@@ -186,7 +195,7 @@ INTEGRATIONS = {
     'jira-plugin': Integration(
         'jira-plugin',
         'jira-plugin',
-        logo='static/images/integrations/logos/jira.png',
+        logo='static/images/integrations/logos/jira.svg',
         secondary_line_text='(locally installed)',
         display_name='JIRA'
     ),
@@ -203,7 +212,7 @@ INTEGRATIONS = {
     'trello-plugin': Integration(
         'trello-plugin',
         'trello-plugin',
-        logo='static/images/integrations/logos/trello.png',
+        logo='static/images/integrations/logos/trello.svg',
         secondary_line_text='(legacy)',
         display_name='Trello'
     ),
@@ -217,7 +226,7 @@ HUBOT_LOZENGES = {
     'chartbeat': HubotLozenge('chartbeat'),
     'darksky': HubotLozenge('darksky', display_name='Dark Sky', logo_alt='Dark Sky logo'),
     'hangouts': HubotLozenge('google-hangouts', display_name="Hangouts"),
-    'instagram': HubotLozenge('instagram'),
+    'instagram': HubotLozenge('instagram', logo='static/images/integrations/logos/instagram.png'),
     'mailchimp': HubotLozenge('mailchimp', display_name='MailChimp', logo_alt='MailChimp logo'),
     'translate': HubotLozenge('google-translate', display_name="Translate", logo_alt='Google Translate logo'),
     'youtube': HubotLozenge('youtube', display_name='YouTube', logo_alt='YouTube logo')
