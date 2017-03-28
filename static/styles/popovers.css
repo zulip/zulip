@@ -85,9 +85,13 @@ ul.actions_popover i {
     width: 240px;
     background-size: cover;
     background-position: center;
-    margin-top: -8px;
-    margin-left: -14px;
-    margin-right: -8px;
-    margin-bottom: -8px;
     position: relative;
+}
+
+.message-info-popover {
+    padding: 0;
+}
+
+.message-info-popover .popover-title {
+    padding: 0;
 }
