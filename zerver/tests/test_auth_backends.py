@@ -54,6 +54,16 @@ import ujson
 from zerver.lib.test_helpers import MockLDAP
 
 class AuthBackendTest(TestCase):
+    email = u"hamlet@zulip.com"
+
+    def get_username(self, email_to_username=None):
+        # type: (Optional[Callable[[Text], Text]]) -> Text
+        username = self.email
+        if email_to_username is not None:
+            username = email_to_username(self.email)
+
+        return username
+
     def verify_backend(self, backend, good_args=None,
                        good_kwargs=None, bad_kwargs=None,
                        email_to_username=None):
@@ -65,9 +75,7 @@ class AuthBackendTest(TestCase):
         email = u"hamlet@zulip.com"
         user_profile = get_user_profile_by_email(email)
 
-        username = email
-        if email_to_username is not None:
-            username = email_to_username(email)
+        username = self.get_username(email_to_username=email_to_username)
 
         # If bad_kwargs was specified, verify auth fails in that case
         if bad_kwargs is not None:
