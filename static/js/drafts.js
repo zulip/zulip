@@ -292,6 +292,7 @@ exports.drafts_handle_events = function (e, event_key) {
             if ($("#drafts_table .draft-row").length === 0) {
                 $('#drafts_table .no-drafts').show();
             }
+            e.preventDefault();
             return true;
         }
     }
