@@ -224,12 +224,12 @@ class MultiEmailField(forms.Field):
 
 class FindMyTeamForm(forms.Form):
     emails = MultiEmailField(
-        help_text="Add up to 10 comma-separated email addresses.")
+        help_text=_("Add up to 10 comma-separated email addresses."))
 
     def clean_emails(self):
         # type: () -> List[Text]
         emails = self.cleaned_data['emails']
         if len(emails) > 10:
-            raise forms.ValidationError("Please enter at most 10 emails.")
+            raise forms.ValidationError(_("Please enter at most 10 emails."))
 
         return emails
