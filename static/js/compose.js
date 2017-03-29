@@ -356,17 +356,8 @@ function create_message_object() {
     }
     return message;
 }
-
-exports.snapshot_message = function () {
-    if (!compose_state.composing() || (exports.message_content() === "")) {
-        // If you aren't in the middle of composing the body of a
-        // message, don't try to snapshot.
-        return;
-    }
-
-    // Save what we can.
-    return create_message_object();
-};
+// Export for testing
+exports.create_message_object = create_message_object;
 
 function compose_error(error_text, bad_input) {
     $('#send-status').removeClass(status_classes)

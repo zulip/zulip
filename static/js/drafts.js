@@ -63,8 +63,35 @@ var draft_model = (function () {
 
 exports.draft_model = draft_model;
 
+exports.snapshot_message = function () {
+    if (!compose_state.composing() || (compose.message_content() === "")) {
+        // If you aren't in the middle of composing the body of a
+        // message, don't try to snapshot.
+        return;
+    }
+
+    // Save what we can.
+    var message = {
+        type: compose_state.composing(),
+        content: compose.message_content(),
+    };
+    if (message.type === "private") {
+        var recipient = compose_state.recipient();
+        message.reply_to = recipient;
+        message.private_message_recipient = recipient;
+    } else {
+        message.stream = compose.stream_name();
+        var subject = compose.subject();
+        if (subject === "") {
+          subject = compose.empty_topic_placeholder();
+        }
+        message.subject = subject;
+    }
+    return message;
+};
+
 exports.update_draft = function () {
-    var draft = compose.snapshot_message();
+    var draft = drafts.snapshot_message();
     var draft_id = $("#new_message_content").data("draft-id");
 
     if (draft_id !== undefined) {

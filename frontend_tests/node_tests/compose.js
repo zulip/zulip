@@ -79,7 +79,7 @@ people.add(bob);
     };
 
 
-    var message = compose.snapshot_message();
+    var message = compose.create_message_object();
     assert.equal(message.to, 'social');
     assert.equal(message.subject, 'lunch');
     assert.equal(message.content, 'burrito');
@@ -87,7 +87,7 @@ people.add(bob);
     global.compose_state.composing = function () {
         return 'private';
     };
-    message = compose.snapshot_message();
+    message = compose.create_message_object();
     assert.deepEqual(message.to, ['alice@example.com', 'bob@example.com']);
     assert.equal(message.to_user_ids, '31,32');
     assert.equal(message.content, 'burrito');
