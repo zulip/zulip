@@ -20,6 +20,8 @@ set_global('localStorage', {
         ls_container = {};
     },
 });
+set_global('compose', {});
+set_global('compose_state', {});
 
 function stub_timestamp(timestamp, func) {
     var original_func = Date.prototype.getTime;
@@ -38,6 +40,7 @@ var draft_1 = {
 };
 var draft_2 = {
     private_message_recipient: "aaron@zulip.com",
+    reply_to: "aaron@zulip.com",
     type: "private",
     content: "Test Private Message",
 };
@@ -92,4 +95,33 @@ var draft_2 = {
 
          assert.deepEqual(ls.get("drafts"), {});
     }());
+}());
+
+(function test_snapshot_message() {
+    function stub_draft(draft) {
+        global.compose_state.composing = function () {
+            return draft.type;
+        };
+        global.compose.message_content = function () {
+            return draft.content;
+        };
+        global.compose_state.recipient = function () {
+            return draft.private_message_recipient;
+        };
+        global.compose.stream_name = function () {
+            return draft.stream;
+        };
+        global.compose.subject = function () {
+            return draft.subject;
+        };
+    }
+
+    stub_draft(draft_1);
+    assert.deepEqual(drafts.snapshot_message(), draft_1);
+
+    stub_draft(draft_2);
+    assert.deepEqual(drafts.snapshot_message(), draft_2);
+
+    stub_draft({});
+    assert.equal(drafts.snapshot_message(), undefined);
 }());
