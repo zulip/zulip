@@ -452,3 +452,7 @@ li.show-more-private-messages a {
 .zoom-in .zoom-in-hide {
     display: none;
 }
+
+.show-all-streams .icon-vector-chevron-left {
+    text-decoration: none;
+}
