@@ -145,6 +145,8 @@ def find_edges_to_remove(graph, methods):
         return edge in EXEMPT_EDGES
 
     APPROVED_CUTS = [
+        ('unread_ui', 'pointer'),
+        ('typing_events', 'narrow'),
         ('echo', 'message_events'),
         ('resize', 'navigate'),
         ('narrow', 'search'),
@@ -182,6 +184,7 @@ def find_edges_to_remove(graph, methods):
         ('navigate', 'stream_list'),
         ('pm_list', 'narrow'),
         ('pm_list', 'stream_popover'),
+        ('muting_ui', 'stream_popover'),
         ('popovers', 'stream_popover'),
         ('topic_list', 'stream_popover'),
         ('topic_list', 'narrow'),
