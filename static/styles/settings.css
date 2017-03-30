@@ -35,10 +35,6 @@ label {
     margin-top: 10px;
 }
 
-.new-style .grid label {
-    width: 200px;
-}
-
 .new-style .grid .warning {
     display: inline-block;
     vertical-align: top;
