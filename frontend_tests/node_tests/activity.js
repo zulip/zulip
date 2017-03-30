@@ -66,15 +66,22 @@ var norbert = {
     full_name: 'Norbert Oswald',
 };
 
-global.people.add(alice);
-global.people.add(fred);
-global.people.add(jill);
-global.people.add(mark);
-global.people.add(norbert);
-global.people.add(me);
-global.people.initialize_current_user(me.user_id);
+var zoe = {
+    email: 'zoe@example.com',
+    user_id: 6,
+    full_name: 'Zoe Yang',
+};
 
 var people = global.people;
+
+people.add_in_realm(alice);
+people.add_in_realm(fred);
+people.add_in_realm(jill);
+people.add_in_realm(mark);
+people.add_in_realm(norbert);
+people.add_in_realm(zoe);
+people.add_in_realm(me);
+people.initialize_current_user(me.user_id);
 
 var activity = require('js/activity.js');
 var compose_fade = require('js/compose_fade.js');
@@ -296,6 +303,10 @@ global.compile_template('user_presence_rows');
 
     assert.deepEqual(presence.presence_info[fred.user_id],
         { status: 'idle', mobile: false, last_active: 500}
+    );
+
+    assert.deepEqual(presence.presence_info[zoe.user_id],
+        { status: 'offline', mobile: false, last_active: undefined}
     );
 }());
 

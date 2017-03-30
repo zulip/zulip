@@ -12,6 +12,8 @@ exports.presence_info = {};
  */
 var OFFLINE_THRESHOLD_SECS = 140;
 
+var BIG_REALM_COUNT = 250;
+
 var MOBILE_DEVICES = ["Android", "ZulipiOS", "ios"];
 
 function is_mobile(device) {
@@ -105,6 +107,40 @@ exports.set_info = function (presences, server_timestamp) {
                 exports.presence_info[user_id] = status;
             }
         }
+    });
+    exports.update_info_for_small_realm();
+};
+
+exports.update_info_for_small_realm = function () {
+    if (people.get_realm_count() >= BIG_REALM_COUNT) {
+        // For big realms, we don't want to bloat our buddy
+        // lists with lots of long-time-inactive users.
+        return;
+    }
+
+    // For small realms, we create presence info for users
+    // that the server didn't include in its presence update.
+    var presence_info = exports.presence_info;
+    var persons = people.get_realm_persons();
+
+    _.each(persons, function (person) {
+        var user_id = person.user_id;
+
+        if (people.is_my_user_id(user_id)) {
+            return;
+        }
+
+        if (presence_info[user_id]) {
+            // this is normal, we have data for active
+            // users that we don't want to clobber.
+            return;
+        }
+
+        presence_info[user_id] = {
+            status: "offline",
+            mobile: false,
+            last_active: undefined,
+        };
     });
 };
 
