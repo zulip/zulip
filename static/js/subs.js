@@ -299,44 +299,37 @@ function show_subscription_settings(sub_row) {
     var stream_id = sub_row.data("stream-id");
     var sub = stream_data.get_sub_by_id(stream_id);
     var sub_settings = settings_for_sub(sub);
-    var warning_elem = sub_settings.find('.subscriber_list_container .alert-warning');
-    var error_elem = sub_settings.find('.subscriber_list_container .alert-error');
-    var indicator_elem = sub_settings.find('.subscriber_list_loading_indicator');
+    var alerts = sub_settings
+        .find('.subscriber_list_container')
+        .find('.alert-warning, .alert-error');
+
+    var colorpicker = sub_settings.find('.colorpicker');
+    var color = stream_data.get_color(sub.name);
+    stream_color.set_colorpicker_color(colorpicker, color);
 
     if (!sub.render_subscribers) {
         return;
     }
 
+    // fetch subscriber list from memory.
     var list = get_subscriber_list(sub_settings);
-    warning_elem.addClass('hide');
-    error_elem.addClass('hide');
+    alerts.addClass("hide");
     list.empty();
 
-    loading.make_indicator(indicator_elem);
+    var emails = [];
+    sub.subscribers.each(function (o, i) {
+        var email = people.get_person_from_user_id(i).email;
+        emails.push(format_member_list_elem(email));
+    });
 
-    channel.get({
-        url: "/json/streams/" + stream_id + "/members",
-        idempotent: true,
-        success: function (data) {
-            loading.destroy_indicator(indicator_elem);
-            var subscribers = _.map(data.subscribers, function (elem) {
-                var person = people.get_by_email(elem);
-                if (person === undefined) {
-                    return elem;
-                }
-                return format_member_list_elem(elem);
-            });
+    var list_html = emails.sort().reduce(function (accumulator, item) {
+        return accumulator + item;
+    }, "");
 
-            var list_html = _.reduce(subscribers.sort(), function (accumulator, item) {
-                return accumulator + item;
-            }, "");
-
-            list.append(list_html);
-        },
-        error: function () {
-            loading.destroy_indicator(indicator_elem);
-            error_elem.removeClass("hide").text(i18n.t("Could not fetch subscriber list"));
-        },
+    // wait for the next frame to append the list so other things can happen in
+    // the meanwhile.
+    window.requestAnimationFrame(function () {
+        list.append(list_html);
     });
 
     sub_settings.find('input[name="principal"]').typeahead({
@@ -364,10 +357,6 @@ function show_subscription_settings(sub_row) {
             return item.email;
         },
     });
-
-    var colorpicker = sub_settings.find('.colorpicker');
-    var color = stream_data.get_color(sub.name);
-    stream_color.set_colorpicker_color(colorpicker, color);
 }
 
 exports.show_settings_for = function (stream_id) {
