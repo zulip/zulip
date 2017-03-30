@@ -1027,7 +1027,9 @@ exports.new_stream_clicked = function () {
     $("#stream_settings_title, .subscriptions-container .settings, .nothing-selected").hide();
     $("#stream-creation, #add_new_stream_title").show();
 
-    $('#create_stream_name').val(stream);
+    if (stream !== '') {
+        $('#create_stream_name').val(stream);
+    }
     show_new_stream_modal();
 
     // at less than 700px we have a @media query that when you tap the
