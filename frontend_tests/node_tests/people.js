@@ -31,6 +31,7 @@ initialize();
 
     var realm_persons = people.get_realm_persons();
     assert.equal(_.size(realm_persons), 0);
+    assert.equal(people.get_realm_count(), 0);
 
     var full_name = 'Isaac Newton';
     var email = 'isaac@example.com';
@@ -43,6 +44,7 @@ initialize();
     assert(!people.is_known_user_id(32));
     people.add(isaac);
     assert(people.is_known_user_id(32));
+    assert.equal(people.get_realm_count(), 0);
 
     var person = people.get_by_name(full_name);
     assert.equal(people.get_user_id(email), 32);
@@ -52,6 +54,7 @@ initialize();
     person = people.realm_get(email);
     assert(!person);
     people.add_in_realm(isaac);
+    assert.equal(people.get_realm_count(), 1);
     person = people.realm_get(email);
     assert.equal(person.email, email);
 
@@ -63,6 +66,7 @@ initialize();
     people.deactivate(isaac);
     person = people.realm_get(email);
     assert(!person);
+    assert.equal(people.get_realm_count(), 0);
 
     // We can still get their info for non-realm needs.
     person = people.get_by_email(email);
@@ -131,6 +135,8 @@ initialize();
     people.add_in_realm(alice1);
     people.add_in_realm(bob);
     people.add_in_realm(alice2);
+    assert.equal(people.get_realm_count(), 3);
+
     var others = people.get_rest_of_realm();
     var expected = [
         { email: 'alice1@example.com', user_id: 202, full_name: 'Alice' },
