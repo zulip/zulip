@@ -694,6 +694,7 @@ PIPELINE = {
             'source_filenames': (
                 'third/bootstrap-notify/css/bootstrap-notify.css',
                 'third/spectrum/spectrum.css',
+                'third/thirdparty-fonts.css',
                 'styles/components.css',
                 'styles/zulip.css',
                 'styles/settings.css',
@@ -707,7 +708,6 @@ PIPELINE = {
                 'styles/lightbox.css',
                 'styles/popovers.css',
                 'styles/pygments.css',
-                'third/thirdparty-fonts.css',
                 'styles/media.css',
                 'styles/typing_notifications.css',
                 # We don't want fonts.css on QtWebKit, so its omitted here
@@ -718,6 +718,7 @@ PIPELINE = {
             'source_filenames': (
                 'third/bootstrap-notify/css/bootstrap-notify.css',
                 'third/spectrum/spectrum.css',
+                'third/thirdparty-fonts.css',
                 'third/jquery-perfect-scrollbar/css/perfect-scrollbar.css',
                 'node_modules/katex/dist/katex.css',
                 'styles/components.css',
@@ -733,7 +734,6 @@ PIPELINE = {
                 'styles/lightbox.css',
                 'styles/popovers.css',
                 'styles/pygments.css',
-                'third/thirdparty-fonts.css',
                 'styles/fonts.css',
                 'styles/media.css',
                 'styles/typing_notifications.css',
