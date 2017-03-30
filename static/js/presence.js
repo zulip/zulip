@@ -1,0 +1,127 @@
+var presence = (function () {
+var exports = {};
+
+// This module just manages data.  See activity.js for
+// the UI of our buddy list.
+
+exports.presence_info = {};
+
+
+/* Mark users as offline after 140 seconds since their last checkin,
+ * Keep in sync with zerver/tornado/event_queue.py:receiver_is_idle
+ */
+var OFFLINE_THRESHOLD_SECS = 140;
+
+var MOBILE_DEVICES = ["Android", "ZulipiOS", "ios"];
+
+function is_mobile(device) {
+    return MOBILE_DEVICES.indexOf(device) !== -1;
+}
+
+exports.is_not_offline = function (user_id) {
+    var presence_info = exports.presence_info;
+
+    if (presence_info[user_id]) {
+        var status = presence_info[user_id].status;
+        if (status && (status !== 'offline')) {
+            return true;
+        }
+    }
+    return false;
+};
+
+exports.get_status = function (user_id) {
+    return exports.presence_info[user_id].status;
+};
+
+exports.get_mobile = function (user_id) {
+    return exports.presence_info[user_id].mobile;
+};
+
+exports.get_user_ids = function () {
+    var user_ids = Object.keys(exports.presence_info);
+    return user_ids;
+};
+
+function status_from_timestamp(baseline_time, info) {
+    var status = 'offline';
+    var last_active = 0;
+    var mobileAvailable = false;
+    var nonmobileAvailable = false;
+    _.each(info, function (device_presence, device) {
+        var age = baseline_time - device_presence.timestamp;
+        if (last_active < device_presence.timestamp) {
+            last_active = device_presence.timestamp;
+        }
+        if (is_mobile(device)) {
+            mobileAvailable = device_presence.pushable || mobileAvailable;
+        }
+        if (age < OFFLINE_THRESHOLD_SECS) {
+            switch (device_presence.status) {
+                case 'active':
+                    if (is_mobile(device)) {
+                        mobileAvailable = true;
+                    } else {
+                        nonmobileAvailable = true;
+                    }
+                    status = device_presence.status;
+                    break;
+                case 'idle':
+                    if (status !== 'active') {
+                        status = device_presence.status;
+                    }
+                    break;
+                case 'offline':
+                    if (status !== 'active' && status !== 'idle') {
+                        status = device_presence.status;
+                    }
+                    break;
+                default:
+                    blueslip.error('Unexpected status', {presence_object: device_presence, device: device}, undefined);
+            }
+        }
+    });
+    return {status: status,
+            mobile: !nonmobileAvailable && mobileAvailable,
+            last_active: last_active };
+}
+
+// For testing
+exports._status_from_timestamp = status_from_timestamp;
+
+exports.set_user_status = function (user_id, info, server_time) {
+    var status = status_from_timestamp(server_time, info);
+    exports.presence_info[user_id] = status;
+};
+
+exports.set_info = function (presences, server_timestamp) {
+    exports.presence_info = {};
+    _.each(presences, function (info, this_email) {
+        if (!people.is_current_user(this_email)) {
+            var user_id = people.get_user_id(this_email);
+            if (user_id) {
+                var status = status_from_timestamp(server_timestamp,
+                                                   info);
+                exports.presence_info[user_id] = status;
+            }
+        }
+    });
+};
+
+exports.last_active_date = function (user_id) {
+    var info = exports.presence_info[user_id];
+
+    if (!info || !info.last_active) {
+        return;
+    }
+
+    var date = new XDate(info.last_active * 1000);
+    return date;
+};
+
+return exports;
+
+}());
+if (typeof module !== 'undefined') {
+    module.exports = presence;
+}

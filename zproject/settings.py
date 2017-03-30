@@ -893,6 +893,7 @@ JS_SPECS = {
             'js/message_fetch.js',
             'js/server_events.js',
             'js/zulip.js',
+            'js/presence.js',
             'js/activity.js',
             'js/user_events.js',
             'js/colorspace.js',

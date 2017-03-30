@@ -22,8 +22,13 @@ add_dependencies({
     hash_util: 'js/hash_util.js',
     hashchange: 'js/hashchange.js',
     narrow: 'js/narrow.js',
+    presence: 'js/presence.js',
     activity: 'js/activity.js',
 });
+
+var presence = global.presence;
+
+var OFFLINE_THRESHOLD_SECS = 140;
 
 set_global('resize', {
     resize_page_components: function () {},
@@ -96,7 +101,7 @@ global.compile_template('user_presence_rows');
     presence_info[fred.user_id] = { status: 'active' };
     presence_info[jill.user_id] = { status: 'active' };
 
-    activity.presence_info = presence_info;
+    presence.presence_info = presence_info;
     activity._sort_users(user_ids);
 
     assert.deepEqual(user_ids, [
@@ -200,7 +205,7 @@ global.compile_template('user_presence_rows');
     presence_info[fred.user_id] = { status: 'idle' }; // counts as present
     // jill not in list
     presence_info[mark.user_id] = { status: 'offline' }; // does not count
-    activity.presence_info = presence_info;
+    presence.presence_info = presence_info;
 
     assert.equal(
         activity.huddle_fraction_present(huddle),
@@ -209,54 +214,57 @@ global.compile_template('user_presence_rows');
 
 
 (function test_on_mobile_property() {
+    // TODO: move this test to a new test module directly testing presence.js
+    var status_from_timestamp = presence._status_from_timestamp;
+
     var base_time = 500;
-    var presence = {
+    var info = {
         website: {
             status: "active",
             timestamp: base_time,
         },
     };
-    var status = activity._status_from_timestamp(
-        base_time + activity._OFFLINE_THRESHOLD_SECS - 1, presence);
+    var status = status_from_timestamp(
+        base_time + OFFLINE_THRESHOLD_SECS - 1, info);
     assert.equal(status.mobile, false);
 
-    presence.Android = {
+    info.Android = {
         status: "active",
-        timestamp: base_time + activity._OFFLINE_THRESHOLD_SECS / 2,
+        timestamp: base_time + OFFLINE_THRESHOLD_SECS / 2,
         pushable: false,
     };
-    status = activity._status_from_timestamp(
-        base_time + activity._OFFLINE_THRESHOLD_SECS, presence);
+    status = status_from_timestamp(
+        base_time + OFFLINE_THRESHOLD_SECS, info);
     assert.equal(status.mobile, true);
     assert.equal(status.status, "active");
 
-    status = activity._status_from_timestamp(
-        base_time + activity._OFFLINE_THRESHOLD_SECS - 1, presence);
+    status = status_from_timestamp(
+        base_time + OFFLINE_THRESHOLD_SECS - 1, info);
     assert.equal(status.mobile, false);
     assert.equal(status.status, "active");
 
-    status = activity._status_from_timestamp(
-        base_time + activity._OFFLINE_THRESHOLD_SECS * 2, presence);
+    status = status_from_timestamp(
+        base_time + OFFLINE_THRESHOLD_SECS * 2, info);
     assert.equal(status.mobile, false);
     assert.equal(status.status, "offline");
 
-    presence.Android = {
+    info.Android = {
         status: "idle",
-        timestamp: base_time + activity._OFFLINE_THRESHOLD_SECS / 2,
+        timestamp: base_time + OFFLINE_THRESHOLD_SECS / 2,
         pushable: true,
     };
-    status = activity._status_from_timestamp(
-        base_time + activity._OFFLINE_THRESHOLD_SECS, presence);
+    status = status_from_timestamp(
+        base_time + OFFLINE_THRESHOLD_SECS, info);
     assert.equal(status.mobile, true);
     assert.equal(status.status, "idle");
 
-    status = activity._status_from_timestamp(
-        base_time + activity._OFFLINE_THRESHOLD_SECS - 1, presence);
+    status = status_from_timestamp(
+        base_time + OFFLINE_THRESHOLD_SECS - 1, info);
     assert.equal(status.mobile, false);
     assert.equal(status.status, "active");
 
-    status = activity._status_from_timestamp(
-        base_time + activity._OFFLINE_THRESHOLD_SECS * 2, presence);
+    status = status_from_timestamp(
+        base_time + OFFLINE_THRESHOLD_SECS * 2, info);
     assert.equal(status.mobile, true);
     assert.equal(status.status, "offline");
 
@@ -280,23 +288,23 @@ global.compile_template('user_presence_rows');
         },
     };
 
-    activity.set_presence_info(presences, base_time);
+    presence.set_info(presences, base_time);
 
-    assert.deepEqual(activity.presence_info[alice.user_id],
+    assert.deepEqual(presence.presence_info[alice.user_id],
         { status: 'active', mobile: false, last_active: 500}
     );
 
-    assert.deepEqual(activity.presence_info[fred.user_id],
+    assert.deepEqual(presence.presence_info[fred.user_id],
         { status: 'idle', mobile: false, last_active: 500}
     );
 }());
 
-activity.presence_info = {};
-activity.presence_info[alice.user_id] = { status: activity.IDLE };
-activity.presence_info[fred.user_id] = { status: activity.ACTIVE };
-activity.presence_info[jill.user_id] = { status: activity.ACTIVE };
-activity.presence_info[mark.user_id] = { status: activity.IDLE };
-activity.presence_info[norbert.user_id] = { status: activity.ACTIVE };
+presence.presence_info = {};
+presence.presence_info[alice.user_id] = { status: activity.IDLE };
+presence.presence_info[fred.user_id] = { status: activity.ACTIVE };
+presence.presence_info[jill.user_id] = { status: activity.ACTIVE };
+presence.presence_info[mark.user_id] = { status: activity.IDLE };
+presence.presence_info[norbert.user_id] = { status: activity.ACTIVE };
 
 (function test_presence_list_full_update() {
     var users = activity.build_user_sidebar();

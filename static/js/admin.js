@@ -139,12 +139,13 @@ function populate_users(realm_people_data) {
         var row = $(templates.render("admin_user_list", {user: user}));
         if (people.is_current_user(user.email)) {
             activity_rendered = timerender.render_date(new XDate());
-        } else if (activity.presence_info[user.user_id]) {
-            // XDate takes number of milliseconds since UTC epoch.
-            var last_active = activity.presence_info[user.user_id].last_active * 1000;
-            activity_rendered = timerender.render_date(new XDate(last_active));
         } else {
-            activity_rendered = $("<span></span>").text(i18n.t("Never"));
+            var last_active_date = presence.last_active_date(user.user_id);
+            if (last_active_date) {
+                activity_rendered = timerender.render_date(last_active_date);
+            } else {
+                activity_rendered = $("<span></span>").text(i18n.t("Never"));
+            }
         }
         row.find(".last_active").append(activity_rendered);
         users_table.append(row);

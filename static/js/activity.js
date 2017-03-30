@@ -10,20 +10,6 @@ var DEFAULT_IDLE_TIMEOUT_MS = 5 * 60 * 1000;
 /* Time between keep-alive pings */
 var ACTIVE_PING_INTERVAL_MS = 50 * 1000;
 
-/* Mark users as offline after 140 seconds since their last checkin,
- * Keep in sync with zerver/tornado/event_queue.py:receiver_is_idle
- */
-var OFFLINE_THRESHOLD_SECS = 140;
-
-// Testing
-exports._OFFLINE_THRESHOLD_SECS = OFFLINE_THRESHOLD_SECS;
-
-var MOBILE_DEVICES = ["Android", "ZulipiOS", "ios"];
-
-function is_mobile(device) {
-    return MOBILE_DEVICES.indexOf(device) !== -1;
-}
-
 var presence_descriptions = {
     active: 'is active',
     idle:   'is not active',
@@ -46,8 +32,6 @@ exports.new_user_input = true;
 $("html").on("mousemove", function () {
     exports.new_user_input = true;
 });
-
-exports.presence_info = {};
 
 var huddle_timestamps = new Dict();
 
@@ -165,16 +149,12 @@ exports.short_huddle_name = function (huddle) {
 };
 
 exports.huddle_fraction_present = function (huddle) {
-    var presence_info = exports.presence_info;
     var user_ids = huddle.split(',');
 
     var num_present = 0;
     _.each(user_ids, function (user_id) {
-        if (presence_info[user_id]) {
-            var status = presence_info[user_id].status;
-            if (status && (status !== 'offline')) {
-                num_present += 1;
-            }
+        if (presence.is_not_offline(user_id)) {
+            num_present += 1;
         }
     });
 
@@ -184,7 +164,6 @@ exports.huddle_fraction_present = function (huddle) {
 };
 
 function compare_function(a, b) {
-    var presence_info = exports.presence_info;
 
     function level(status) {
         switch (status) {
@@ -197,8 +176,8 @@ function compare_function(a, b) {
         }
     }
 
-    var level_a = level(presence_info[a].status);
-    var level_b = level(presence_info[b].status);
+    var level_a = level(presence.get_status(a));
+    var level_b = level(presence.get_status(b));
     var diff = level_a - level_b;
     if (diff !== 0) {
         return diff;
@@ -264,8 +243,7 @@ function matches_filter(user_id) {
     return (filter_user_ids([user_id]).length === 1);
 }
 
-function filter_and_sort(users) {
-    var user_ids = Object.keys(users);
+function filter_and_sort(user_ids) {
     user_ids = filter_user_ids(user_ids);
     user_ids = sort_users(user_ids);
     return user_ids;
@@ -281,16 +259,16 @@ function get_num_unread(user_id) {
 }
 
 function info_for(user_id) {
-    var presence = exports.presence_info[user_id].status;
+    var status = presence.get_status(user_id);
     var person = people.get_person_from_user_id(user_id);
     return {
         href: narrow.pm_with_uri(person.email),
         name: person.full_name,
         user_id: user_id,
         num_unread: get_num_unread(user_id),
-        type: presence,
-        type_desc: presence_descriptions[presence],
-        mobile: exports.presence_info[user_id].mobile,
+        type: status,
+        type_desc: presence_descriptions[status],
+        mobile: presence.get_mobile(user_id),
     };
 }
 
@@ -335,10 +313,9 @@ exports.build_user_sidebar = function () {
         return;
     }
 
-    var users = exports.presence_info;
-    users = filter_and_sort(users);
+    var user_ids = filter_and_sort(presence.get_user_ids());
 
-    var user_info = _.map(users, info_for);
+    var user_info = _.map(user_ids, info_for);
     var html = templates.render('user_presence_rows', {users: user_info});
     $('#user_presences').html(html);
 
@@ -398,51 +375,6 @@ exports.update_huddles = function () {
     show_huddles();
 };
 
-function status_from_timestamp(baseline_time, presence) {
-    var status = 'offline';
-    var last_active = 0;
-    var mobileAvailable = false;
-    var nonmobileAvailable = false;
-    _.each(presence, function (device_presence, device) {
-        var age = baseline_time - device_presence.timestamp;
-        if (last_active < device_presence.timestamp) {
-            last_active = device_presence.timestamp;
-        }
-        if (is_mobile(device)) {
-            mobileAvailable = device_presence.pushable || mobileAvailable;
-        }
-        if (age < OFFLINE_THRESHOLD_SECS) {
-            switch (device_presence.status) {
-                case 'active':
-                    if (is_mobile(device)) {
-                        mobileAvailable = true;
-                    } else {
-                        nonmobileAvailable = true;
-                    }
-                    status = device_presence.status;
-                    break;
-                case 'idle':
-                    if (status !== 'active') {
-                        status = device_presence.status;
-                    }
-                    break;
-                case 'offline':
-                    if (status !== 'active' && status !== 'idle') {
-                        status = device_presence.status;
-                    }
-                    break;
-                default:
-                    blueslip.error('Unexpected status', {presence_object: device_presence, device: device}, undefined);
-            }
-        }
-    });
-    return {status: status,
-            mobile: !nonmobileAvailable && mobileAvailable,
-            last_active: last_active };
-}
-
-// For testing
-exports._status_from_timestamp = status_from_timestamp;
 
 function focus_ping(want_redraw) {
     channel.post({
@@ -465,7 +397,7 @@ function focus_ping(want_redraw) {
             // not send us any presences data.  But avoiding the redraw
             // helps.
             if (want_redraw) {
-                exports.set_presence_info(data.presences, data.server_timestamp);
+                presence.set_info(data.presences, data.server_timestamp);
                 exports.build_user_sidebar();
                 exports.update_huddles();
             }
@@ -487,7 +419,7 @@ exports.initialize = function () {
                 onActive: focus_gained,
                 keepTracking: true});
 
-    activity.set_presence_info(page_params.initial_presences,
+    presence.set_info(page_params.initial_presences,
                                page_params.initial_servertime);
     exports.build_user_sidebar();
     exports.update_huddles();
@@ -503,34 +435,20 @@ exports.initialize = function () {
     setInterval(get_full_presence_list_update, ACTIVE_PING_INTERVAL_MS);
 };
 
-exports.set_user_status = function (email, presence, server_time) {
+exports.set_user_status = function (email, info, server_time) {
     if (people.is_current_user(email)) {
         return;
     }
+
     var user_id = people.get_user_id(email);
-    if (user_id) {
-        var status = status_from_timestamp(server_time, presence);
-        exports.presence_info[user_id] = status;
-        exports.insert_user_into_list(user_id);
-    } else {
+    if (!user_id) {
         blueslip.warn('unknown email: ' + email);
+        return;
     }
 
+    presence.set_user_status(user_id, info, server_time);
+    exports.insert_user_into_list(user_id);
     exports.update_huddles();
-};
-
-exports.set_presence_info = function (presences, server_timestamp) {
-    exports.presence_info = {};
-    _.each(presences, function (presence, this_email) {
-        if (!people.is_current_user(this_email)) {
-            var user_id = people.get_user_id(this_email);
-            if (user_id) {
-                var status = status_from_timestamp(server_timestamp,
-                                                   presence);
-                exports.presence_info[user_id] = status;
-            }
-        }
-    });
 };
 
 exports.redraw = function () {

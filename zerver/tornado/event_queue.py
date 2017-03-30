@@ -677,7 +677,7 @@ def receiver_is_idle(user_profile_id, realm_presences):
         idle = True
     else:
         active_datetime = timestamp_to_datetime(latest_active_timestamp)
-        # 140 seconds is consistent with activity.js:OFFLINE_THRESHOLD_SECS
+        # 140 seconds is consistent with presence.js:OFFLINE_THRESHOLD_SECS
         idle = timezone.now() - active_datetime > datetime.timedelta(seconds=140)
 
     return off_zulip or idle
