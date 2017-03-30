@@ -133,7 +133,8 @@ class AnalyticsTestCase(TestCase):
         defaults = {
             'property': self.current_property,
             'subgroup': None,
-            'end_time': self.TIME_ZERO}
+            'end_time': self.TIME_ZERO,
+            'value': 1}
         for values in arg_values:
             kwargs = {} # type: Dict[str, Any]
             for i in range(len(values)):
