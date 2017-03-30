@@ -54,6 +54,12 @@ exports.get_by_email = function (email) {
     return person;
 };
 
+exports.get_realm_count = function () {
+    // This returns the number of active people in our realm.  It should
+    // exclude bots and deactivated users.
+    return realm_people_dict.num_items();
+};
+
 exports.id_matches_email_operand = function (user_id, email) {
     var person = exports.get_by_email(email);
 
