@@ -1561,6 +1561,8 @@ class RealmAuditLog(models.Model):
     modified_stream = models.ForeignKey(Stream, null=True) # type: Optional[Stream]
     event_type = models.CharField(max_length=40) # type: Text
     event_time = models.DateTimeField() # type: datetime.datetime
+    # If True, event_time is an overestimate of the true time. Can be used
+    # by migrations when introducing a new event_type.
     backfilled = models.BooleanField(default=False) # type: bool
     extra_data = models.TextField(null=True) # type: Text
 
