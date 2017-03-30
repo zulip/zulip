@@ -152,9 +152,9 @@ class Command(makemessages.Command):
         # type: (str) -> str
 
         # Removes multi line comments.
-        data = re.sub(multiline_js_comment, "", data)
+        data = multiline_js_comment.sub('', data)
         # Removes single line (//) comments.
-        data = re.sub(singleline_js_comment, "", data)
+        data = singleline_js_comment.sub('', data)
         return data
 
     def get_translation_strings(self):
