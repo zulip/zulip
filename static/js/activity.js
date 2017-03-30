@@ -380,6 +380,7 @@ function focus_ping(want_redraw) {
     channel.post({
         url: '/json/users/me/presence',
         data: {status: (exports.has_focus) ? exports.ACTIVE : exports.IDLE,
+               ping_only: !want_redraw,
                new_user_input: exports.new_user_input},
         idempotent: true,
         success: function (data) {
@@ -393,9 +394,6 @@ function focus_ping(want_redraw) {
 
             exports.new_user_input = false;
 
-            // TODO: If want_redraw is false, we should have the server
-            // not send us any presences data.  But avoiding the redraw
-            // helps.
             if (want_redraw) {
                 presence.set_info(data.presences, data.server_timestamp);
                 exports.build_user_sidebar();

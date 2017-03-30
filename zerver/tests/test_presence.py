@@ -251,6 +251,16 @@ class SingleUserPresenceTests(ZulipTestCase):
             {"ZulipAndroid", "website", "aggregated"})
         self.assertEqual(set(result_dict['presence']['website'].keys()), {"status", "timestamp"})
 
+    def test_ping_only(self):
+        # type: () -> None
+
+        self.login("othello@zulip.com")
+        req = dict(
+            status='active',
+            ping_only='true',
+        )
+        result = self.client_post("/json/users/me/presence", req)
+        self.assertEqual(result.json()['msg'], '')
 
 class UserPresenceAggregationTests(ZulipTestCase):
     def _send_presence_for_aggregated_tests(self, email, status, validate_time):
