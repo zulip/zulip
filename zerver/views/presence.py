@@ -54,8 +54,9 @@ def get_presence_backend(request, user_profile, email):
 
 @has_request_variables
 def update_active_status_backend(request, user_profile, status=REQ(),
+                                 ping_only=REQ(validator=check_bool, default=False),
                                  new_user_input=REQ(validator=check_bool, default=False)):
-    # type: (HttpRequest, UserProfile, str, bool) -> HttpResponse
+    # type: (HttpRequest, UserProfile, str, bool, bool) -> HttpResponse
     status_val = UserPresence.status_from_string(status)
     if status_val is None:
         raise JsonableError(_("Invalid status: %s") % (status,))
@@ -63,7 +64,11 @@ def update_active_status_backend(request, user_profile, status=REQ(),
         update_user_presence(user_profile, request.client, timezone.now(),
                              status_val, new_user_input)
 
-    ret = get_status_list(user_profile)
+    if ping_only:
+        ret = {} # type: Dict[str, Any]
+    else:
+        ret = get_status_list(user_profile)
+
     if user_profile.realm.is_zephyr_mirror_realm:
         # In zephyr mirroring realms, users can't see the presence of other
         # users, but each user **is** interested in whether their mirror bot
