@@ -1343,7 +1343,11 @@ blockquote p {
 }
 
 .messagebox p {
-    margin: 3px 0px 3px 0px;
+    margin: 3px 0px 10px 0px;
+}
+
+.messagebox p:last-of-type {
+    margin-bottom: 3px;
 }
 
 .messagebox blockquote {
