@@ -98,6 +98,7 @@
         "floating_recipient_bar": false,
         "tab_bar": false,
         "emoji": false,
+        "presence": false,
         "activity": false,
         "invite": false,
         "colorspace": false,
