@@ -97,7 +97,7 @@ function render(template_name, args) {
 (function admin_alias_list() {
     var html = "<table>";
     var args = {
-        alias: {
+        realm_domain: {
             domain: 'zulip.org',
             allow_subdomains: true,
         },
@@ -111,7 +111,7 @@ function render(template_name, args) {
     var subdomains_checkbox = row.find('.allow-subdomains');
 
     assert.equal(button.text().trim(), "Remove");
-    assert(button.hasClass("delete_alias"));
+    assert(button.hasClass("delete_realm_domain"));
     assert.equal(domain.text(), "zulip.org");
 
     assert.equal(subdomains_checkbox.prop('checked'), true);

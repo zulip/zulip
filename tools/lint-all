@@ -480,7 +480,7 @@ def build_custom_checkers(by_lang):
          'exclude_line': [('templates/zerver/register.html', 'placeholder="acme"'),
                           ('templates/zerver/register.html', 'placeholder="Acme"'),
                           ('static/templates/settings/realm-domains-modal.handlebars',
-                           '<td><input type="text" class="new-alias-domain" placeholder="acme.com"></input></td>')],
+                           '<td><input type="text" class="new-realm-domain" placeholder="acme.com"></input></td>')],
          'exclude': set(["static/templates/settings/emoji-settings-admin.handlebars",
                          "static/templates/settings/realm-filter-settings-admin.handlebars",
                          "static/templates/settings/bot-settings.handlebars"])},
