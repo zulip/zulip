@@ -1137,7 +1137,7 @@ class EventsRegisterTest(ZulipTestCase):
         schema_checker = check_dict([
             ('type', equals('realm_domains')),
             ('op', equals('add')),
-            ('alias', check_dict([
+            ('realm_domain', check_dict([
                 ('domain', check_string),
                 ('allow_subdomains', check_bool),
             ])),
@@ -1150,7 +1150,7 @@ class EventsRegisterTest(ZulipTestCase):
         schema_checker = check_dict([
             ('type', equals('realm_domains')),
             ('op', equals('change')),
-            ('alias', check_dict([
+            ('realm_domain', check_dict([
                 ('domain', equals('zulip.org')),
                 ('allow_subdomains', equals(True)),
             ])),

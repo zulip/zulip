@@ -140,11 +140,11 @@ function dispatch_normal_event(event) {
     case 'realm_domains':
         var i;
         if (event.op === 'add') {
-            page_params.domains.push(event.alias);
+            page_params.domains.push(event.realm_domain);
         } else if (event.op === 'change') {
             for (i = 0; i < page_params.domains.length; i += 1) {
-                if (page_params.domains[i].domain === event.alias.domain) {
-                    page_params.domains[i].allow_subdomains = event.alias.allow_subdomains;
+                if (page_params.domains[i].domain === event.realm_domain.domain) {
+                    page_params.domains[i].allow_subdomains = event.realm_domain.allow_subdomains;
                     break;
                 }
             }

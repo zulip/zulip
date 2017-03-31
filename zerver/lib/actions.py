@@ -3223,30 +3223,30 @@ def get_realm_domains(realm):
 
 def do_add_realm_domain(realm, domain, allow_subdomains):
     # type: (Realm, Text, bool) -> (RealmDomain)
-    alias = RealmDomain.objects.create(realm=realm, domain=domain,
-                                       allow_subdomains=allow_subdomains)
+    realm_domain = RealmDomain.objects.create(realm=realm, domain=domain,
+                                              allow_subdomains=allow_subdomains)
     event = dict(type="realm_domains", op="add",
-                 alias=dict(domain=alias.domain,
-                            allow_subdomains=alias.allow_subdomains))
+                 realm_domain=dict(domain=realm_domain.domain,
+                                   allow_subdomains=realm_domain.allow_subdomains))
     send_event(event, active_user_ids(realm))
-    return alias
+    return realm_domain
 
-def do_change_realm_domain(alias, allow_subdomains):
+def do_change_realm_domain(realm_domain, allow_subdomains):
     # type: (RealmDomain, bool) -> None
-    alias.allow_subdomains = allow_subdomains
-    alias.save(update_fields=['allow_subdomains'])
+    realm_domain.allow_subdomains = allow_subdomains
+    realm_domain.save(update_fields=['allow_subdomains'])
     event = dict(type="realm_domains", op="change",
-                 alias=dict(domain=alias.domain,
-                            allow_subdomains=alias.allow_subdomains))
-    send_event(event, active_user_ids(alias.realm))
+                 realm_domain=dict(domain=realm_domain.domain,
+                                   allow_subdomains=realm_domain.allow_subdomains))
+    send_event(event, active_user_ids(realm_domain.realm))
 
-def do_remove_realm_domain(alias):
+def do_remove_realm_domain(realm_domain):
     # type: (RealmDomain) -> None
-    realm = alias.realm
-    domain = alias.domain
-    alias.delete()
+    realm = realm_domain.realm
+    domain = realm_domain.domain
+    realm_domain.delete()
     if RealmDomain.objects.filter(realm=realm).count() == 0 and realm.restricted_to_domain:
-        # If this was the last realm alias, we mark the realm as no
+        # If this was the last realm domain, we mark the realm as no
         # longer restricted to domain, because the feature doesn't do
         # anything if there are no domains, and this is probably less
         # confusing than the alternative.
