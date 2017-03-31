@@ -353,7 +353,7 @@ exports.populate_realm_domains = function (realm_domains) {
     var realm_domains_table_body = $("#realm_domains_table tbody").expectOne();
     realm_domains_table_body.find("tr").remove();
     _.each(realm_domains, function (realm_domain) {
-        realm_domains_table_body.append(templates.render("admin-alias-list", {realm_domain: realm_domain}));
+        realm_domains_table_body.append(templates.render("admin-realm-domains-list", {realm_domain: realm_domain}));
     });
 };
 

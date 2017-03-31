@@ -208,7 +208,7 @@ def check_handlebar_templates(templates):
         'static/templates/subscription_settings.handlebars',
         'static/templates/user_sidebar_actions.handlebars',
         'static/templates/settings/account-settings.handlebars',
-        'static/templates/settings/admin-alias-list.handlebars',
+        'static/templates/settings/admin-realm-domains-list.handlebars',
         'static/templates/settings/admin_auth_methods_list.handlebars',
         'static/templates/settings/alert-word-settings.handlebars',
         'static/templates/settings/attachment-item.handlebars',
