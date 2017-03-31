@@ -2,6 +2,8 @@
 from __future__ import absolute_import
 import datetime
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.sites.models import Site
 from django.http import HttpResponse
 from django.test import TestCase
 from django.utils import timezone
@@ -22,7 +24,7 @@ from zerver.models import (
     get_unique_open_realm, completely_open,
     PreregistrationUser, Realm, RealmDomain, Recipient,
     Referral, ScheduledJob, UserProfile, UserMessage,
-    Stream, Subscription, ScheduledJob
+    Stream, Subscription, ScheduledJob, flush_per_request_caches
 )
 from zerver.management.commands.deliver_email import send_email_job
 
@@ -176,10 +178,15 @@ class LoginTest(ZulipTestCase):
             self.make_stream(stream_name, realm=realm)
 
         set_default_streams(realm, stream_dict)
+        # Clear all the caches.
+        flush_per_request_caches()
+        ContentType.objects.clear_cache()
+        Site.objects.clear_cache()
+
         with queries_captured() as queries:
             self.register("test@zulip.com", "test")
         # Ensure the number of queries we make is not O(streams)
-        self.assert_max_length(queries, 69)
+        self.assert_length(queries, 47)
         user_profile = get_user_profile_by_email('test@zulip.com')
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
         self.assertFalse(user_profile.enable_stream_desktop_notifications)
