@@ -3240,7 +3240,7 @@ def do_change_realm_domain(alias, allow_subdomains):
                             allow_subdomains=alias.allow_subdomains))
     send_event(event, active_user_ids(alias.realm))
 
-def do_remove_realm_alias(alias):
+def do_remove_realm_domain(alias):
     # type: (RealmDomain) -> None
     realm = alias.realm
     domain = alias.domain

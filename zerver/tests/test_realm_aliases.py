@@ -7,7 +7,7 @@ from typing import Optional, Text
 
 from zerver.lib.actions import do_change_is_admin, \
     do_change_realm_domain, do_create_realm, \
-    do_remove_realm_alias
+    do_remove_realm_domain
 from zerver.lib.domains import validate_domain
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import email_allowed_for_realm, get_realm, \
@@ -111,7 +111,7 @@ class RealmDomainTest(ZulipTestCase):
 
         self.assertTrue(realm.restricted_to_domain)
         for alias in query.all():
-            do_remove_realm_alias(alias)
+            do_remove_realm_domain(alias)
         self.assertEqual(query.count(), 0)
         # Deleting last alias should set `restricted_to_domain` to False.
         # This should be tested on a fresh instance, since the cached
