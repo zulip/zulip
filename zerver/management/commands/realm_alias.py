@@ -10,7 +10,7 @@ from django.db.utils import IntegrityError
 from django.utils.translation import ugettext as _
 from zerver.models import get_realm, can_add_realm_domain, \
     Realm, RealmDomain
-from zerver.lib.actions import get_realm_aliases
+from zerver.lib.actions import get_realm_domains
 from zerver.lib.domains import validate_domain
 import sys
 
@@ -42,7 +42,7 @@ class Command(BaseCommand):
         realm = get_realm(options["string_id"])
         if options["op"] == "show":
             print("Aliases for %s:" % (realm.string_id,))
-            for alias in get_realm_aliases(realm):
+            for alias in get_realm_domains(realm):
                 if alias["allow_subdomains"]:
                     print(alias["domain"] + " (subdomains allowed)")
                 else:

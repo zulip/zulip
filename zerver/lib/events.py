@@ -26,7 +26,7 @@ from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.request import JsonableError
 from zerver.lib.actions import validate_user_access_to_subscribers_helper, \
     do_get_streams, get_default_streams_for_realm, \
-    gather_subscriptions_helper, get_realm_aliases, \
+    gather_subscriptions_helper, get_realm_domains, \
     get_status_dict, streams_to_dicts_sorted
 from zerver.tornado.event_queue import request_event_queue, get_user_events
 from zerver.models import Client, Message, UserProfile, \
@@ -119,7 +119,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         state['realm_bot_domain'] = user_profile.realm.get_bot_domain()
 
     if want('realm_domains'):
-        state['realm_domains'] = get_realm_aliases(user_profile.realm)
+        state['realm_domains'] = get_realm_domains(user_profile.realm)
 
     if want('realm_emoji'):
         state['realm_emoji'] = user_profile.realm.get_emoji()
