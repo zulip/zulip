@@ -78,6 +78,8 @@ from zerver.lib.upload import attachment_url_re, attachment_url_to_path_id, \
 from zerver.lib.str_utils import NonBinaryStr, force_str
 from zerver.tornado.event_queue import request_event_queue, send_event
 
+from analytics.models import StreamCount
+
 import DNS
 import ujson
 import time
@@ -2868,6 +2870,16 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
     send_event(event, list(map(user_info, ums)))
     return len(changed_messages)
 
+def get_stream_message_count(stream_id):
+    count = 0
+    stat = COUNT_STATS['messages_in_stream:is_bot:day']
+    d = datetime.date.today() - datetime.timedelta(days=7)
+    queryset = StreamCount.objects.filter(stream_id=stream_id).filter(property=stat.property,
+            end_time__gte=d).values_list('value')
+    for val in queryset:
+        count += val[0]
+    return count
+
 def encode_email_address(stream):
     # type: (Stream) -> Text
     return encode_email_address_helper(stream.name, stream.email_token)
@@ -2935,7 +2947,7 @@ def gather_subscriptions_helper(user_profile, include_subscribers=True):
     stream_ids = set([sub["recipient__type_id"] for sub in sub_dicts])
     all_streams = get_active_streams(user_profile.realm).select_related(
         "realm").values("id", "name", "invite_only", "realm_id",
-                        "realm__domain", "email_token", "description")
+                        "realm__domain", "email_token", "description","date_created")
 
     stream_dicts = [stream for stream in all_streams if stream['id'] in stream_ids]
     stream_hash = {}
@@ -2987,6 +2999,8 @@ def gather_subscriptions_helper(user_profile, include_subscribers=True):
                        'pin_to_top': sub["pin_to_top"],
                        'stream_id': stream["id"],
                        'description': stream["description"],
+                       'stream_message_count': get_stream_message_count(stream["id"]),
+                       'is_old_stream': False if (datetime.date.today() - stream["date_created"].date()).days < 7 else True,
                        'email_address': encode_email_address_helper(stream["name"], stream["email_token"])}
         if subscribers is not None:
             stream_dict['subscribers'] = subscribers
@@ -3009,6 +3023,8 @@ def gather_subscriptions_helper(user_profile, include_subscribers=True):
             stream_dict = {'name': stream['name'],
                            'invite_only': stream['invite_only'],
                            'stream_id': stream['id'],
+                           'stream_message_count': get_stream_message_count(stream["id"]),
+                           'is_old_stream': False if (datetime.date.today() - stream["date_created"].date()).days < 7 else True,
                            'description': stream['description']}
             subscribers = subscriber_map[stream["id"]]
             if subscribers is not None:
