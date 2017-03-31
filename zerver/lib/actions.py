@@ -2947,7 +2947,7 @@ def gather_subscriptions_helper(user_profile, include_subscribers=True):
     stream_ids = set([sub["recipient__type_id"] for sub in sub_dicts])
     all_streams = get_active_streams(user_profile.realm).select_related(
         "realm").values("id", "name", "invite_only", "realm_id",
-                        "realm__domain", "email_token", "description","date_created")
+                        "email_token", "description","date_created")
 
     stream_dicts = [stream for stream in all_streams if stream['id'] in stream_ids]
     stream_hash = {}
