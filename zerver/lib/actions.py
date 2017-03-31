@@ -1776,14 +1776,14 @@ def do_change_full_name(user_profile, full_name, log=True):
         send_event(dict(type='realm_bot', op='update', bot=payload),
                    bot_owner_userids(user_profile))
 
-def do_change_bot_owner(user_profile, bot_owner, log=True):
-    # type: (UserProfile, UserProfile, bool) -> None
+def do_change_bot_owner(user_profile, bot_owner):
+    # type: (UserProfile, UserProfile) -> None
     user_profile.bot_owner = bot_owner
     user_profile.save()
-    if log:
-        log_event({'type': 'user_change_owner',
-                   'user': user_profile.email,
-                   'owner': user_profile.bot_owner.email})
+    event_time = timezone.now()
+    RealmAuditLog.objects.create(realm=user_profile.realm, acting_user=user_profile,
+                                 modified_user=user_profile, event_type='user_change_owner',
+                                 event_time=event_time)
     send_event(dict(type='realm_bot',
                     op='update',
                     bot=dict(email=user_profile.email,
