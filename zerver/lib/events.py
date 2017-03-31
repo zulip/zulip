@@ -370,13 +370,14 @@ def apply_event(state, event, user_profile, include_subscribers):
         pass
     elif event['type'] == "realm_domains":
         if event['op'] == 'add':
-            state['realm_domains'].append(event['alias'])
+            state['realm_domains'].append(event['realm_domain'])
         elif event['op'] == 'change':
             for realm_domain in state['realm_domains']:
-                if realm_domain['domain'] == event['alias']['domain']:
-                    realm_domain['allow_subdomains'] = event['alias']['allow_subdomains']
+                if realm_domain['domain'] == event['realm_domain']['domain']:
+                    realm_domain['allow_subdomains'] = event['realm_domain']['allow_subdomains']
         elif event['op'] == 'remove':
-            state['realm_domains'] = [alias for alias in state['realm_domains'] if alias['domain'] != event['domain']]
+            state['realm_domains'] = [realm_domain for realm_domain in state['realm_domains']
+                                      if realm_domain['domain'] != event['domain']]
     elif event['type'] == "realm_emoji":
         state['realm_emoji'] = event['realm_emoji']
     elif event['type'] == "alert_words":
