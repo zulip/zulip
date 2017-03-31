@@ -32,7 +32,7 @@ from zerver.models import (
     MAX_MESSAGE_LENGTH, MAX_SUBJECT_LENGTH,
     Message, Realm, Recipient, Stream, UserMessage, UserProfile, Attachment, RealmAlias,
     get_realm, get_stream, get_user_profile_by_email,
-    Reaction, sew_messages_and_reactions
+    Reaction, sew_messages_and_reactions, flush_per_request_caches
 )
 
 from zerver.lib.actions import (
@@ -460,11 +460,12 @@ class StreamMessagesTest(ZulipTestCase):
             check_send_message(sender, sending_client, message_type_name, [stream],
                                subject, content, forwarder_user_profile=sender, realm=realm)
 
+        flush_per_request_caches()
         send_message() # prime the caches
         with queries_captured() as queries:
             send_message()
 
-        self.assert_max_length(queries, 14)
+        self.assert_length(queries, 12)
 
     def test_stream_message_dict(self):
         # type: () -> None
@@ -588,6 +589,7 @@ class MessageDictTest(ZulipTestCase):
         num_ids = len(ids)
         self.assertTrue(num_ids >= 600)
 
+        flush_per_request_caches()
         t = time.time()
         with queries_captured() as queries:
             rows = list(Message.get_raw_db_rows(ids))
@@ -598,7 +600,7 @@ class MessageDictTest(ZulipTestCase):
         delay = time.time() - t
         # Make sure we don't take longer than 1ms per message to extract messages.
         self.assertTrue(delay < 0.001 * num_ids)
-        self.assert_max_length(queries, 11)
+        self.assert_length(queries, 10)
         self.assertEqual(len(rows), num_ids)
 
     def test_applying_markdown(self):
