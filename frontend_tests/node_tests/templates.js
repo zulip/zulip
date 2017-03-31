@@ -94,7 +94,7 @@ function render(template_name, args) {
     global.write_handlebars_output("actions_popover_content", html);
 }());
 
-(function admin_alias_list() {
+(function admin_realm_domains_list() {
     var html = "<table>";
     var args = {
         realm_domain: {
@@ -102,7 +102,7 @@ function render(template_name, args) {
             allow_subdomains: true,
         },
     };
-    html += render("admin-alias-list", args);
+    html += render("admin-realm-domains-list", args);
     html += "</table>";
 
     var button = $(html).find('.btn');
@@ -116,7 +116,7 @@ function render(template_name, args) {
 
     assert.equal(subdomains_checkbox.prop('checked'), true);
 
-    global.write_handlebars_output("admin-alias-list", html);
+    global.write_handlebars_output("admin-realm-domains-list", html);
 }());
 
 (function admin_default_streams_list() {
