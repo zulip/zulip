@@ -60,6 +60,8 @@ class Command(BaseCommand):
             string_id='analytics', name='Analytics', domain='analytics.ds',
             date_created=installation_time)
         shylock = self.create_user('shylock@analytics.ds', 'Shylock', True, installation_time, realm)
+        stream = Stream.objects.create(
+                name ='all', realm=realm, date_created=installation_time)
 
         def insert_fixture_data(stat, fixture_data, table):
             # type: (CountStat, Dict[Optional[str], List[int]], Type[BaseCount]) -> None
@@ -69,6 +71,9 @@ class Command(BaseCommand):
                 id_args = {'realm': realm}
             if table == UserCount:
                 id_args = {'realm': realm, 'user': shylock}
+            if table == StreamCount:
+                id_args = {'stream': stream, 'realm': realm}
+
             for subgroup, values in fixture_data.items():
                 table.objects.bulk_create([
                     table(property=stat.property, subgroup=subgroup, end_time=end_time,
@@ -138,3 +143,12 @@ class Command(BaseCommand):
                                  state=FillState.DONE)
 
         # TODO: messages_sent_to_stream:is_bot
+        stat = COUNT_STATS['messages_in_stream:is_bot:day']
+        realm_data = {'false': self.generate_fixture_data(stat, 35, 15, 6, .6, 4)}
+        insert_fixture_data(stat, realm_data, RealmCount)
+        stream_data = {'false': self.generate_fixture_data(stat, 30, 7, 5, .6, 4),
+                      'true': self.generate_fixture_data(stat, 5, 3, 2, .4, 2)}
+        insert_fixture_data(stat, stream_data, StreamCount)
+        FillState.objects.create(property=stat.property, end_time=last_end_time,
+                                 state=FillState.DONE)
+
