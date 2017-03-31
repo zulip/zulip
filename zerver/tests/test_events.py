@@ -70,7 +70,7 @@ from zerver.lib.actions import (
     do_change_enable_online_push_notifications,
     do_change_pm_content_in_desktop_notifications,
     do_change_enable_digest_emails,
-    do_add_realm_alias,
+    do_add_realm_domain,
     do_change_realm_alias,
     do_remove_realm_alias,
     do_change_icon_source,
@@ -1143,7 +1143,7 @@ class EventsRegisterTest(ZulipTestCase):
             ])),
         ])
         realm = get_realm('zulip')
-        events = self.do_test(lambda: do_add_realm_alias(realm, 'zulip.org', False))
+        events = self.do_test(lambda: do_add_realm_domain(realm, 'zulip.org', False))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 

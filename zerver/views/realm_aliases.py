@@ -5,7 +5,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
 from zerver.decorator import has_request_variables, require_realm_admin, REQ
-from zerver.lib.actions import do_add_realm_alias, do_change_realm_alias, \
+from zerver.lib.actions import do_add_realm_domain, do_change_realm_alias, \
     do_remove_realm_alias, get_realm_domains
 from zerver.lib.domains import validate_domain
 from zerver.lib.response import json_error, json_success
@@ -32,7 +32,7 @@ def create_alias(request, user_profile, domain=REQ(validator=check_string), allo
         return json_error(_("The domain %(domain)s is already a part of your organization.") % {'domain': domain})
     if not can_add_realm_domain(domain):
         return json_error(_("The domain %(domain)s belongs to another organization.") % {'domain': domain})
-    alias = do_add_realm_alias(user_profile.realm, domain, allow_subdomains)
+    alias = do_add_realm_domain(user_profile.realm, domain, allow_subdomains)
     return json_success({'new_domain': [alias.id, alias.domain]})
 
 @require_realm_admin
