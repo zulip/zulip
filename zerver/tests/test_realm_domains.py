@@ -18,7 +18,7 @@ import ujson
 
 
 class RealmDomainTest(ZulipTestCase):
-    def test_list_aliases(self):
+    def test_list_realm_domains(self):
         # type: () -> None
         self.login("iago@zulip.com")
         realm = get_realm('zulip')
@@ -41,7 +41,7 @@ class RealmDomainTest(ZulipTestCase):
         result = self.client_delete("/json/realm/domains/15")
         self.assert_json_error(result, 'Must be a realm administrator')
 
-    def test_create_alias(self):
+    def test_create_realm_domain(self):
         # type: () -> None
         self.login("iago@zulip.com")
         data = {'domain': ujson.dumps(''),
@@ -69,7 +69,7 @@ class RealmDomainTest(ZulipTestCase):
                                       HTTP_HOST=mit_user_profile.realm.host)
             self.assert_json_success(result)
 
-    def test_patch_alias(self):
+    def test_patch_realm_domain(self):
         # type: () -> None
         self.login("iago@zulip.com")
         realm = get_realm('zulip')
@@ -89,7 +89,7 @@ class RealmDomainTest(ZulipTestCase):
         self.assertEqual(result.status_code, 400)
         self.assert_json_error(result, 'No entry found for domain non-existent.com.')
 
-    def test_delete_alias(self):
+    def test_delete_realm_domain(self):
         # type: () -> None
         self.login("iago@zulip.com")
         realm = get_realm('zulip')
@@ -103,19 +103,19 @@ class RealmDomainTest(ZulipTestCase):
         self.assertFalse(RealmDomain.objects.filter(domain='acme.com').exists())
         self.assertTrue(realm.restricted_to_domain)
 
-    def test_delete_all_aliases(self):
+    def test_delete_all_realm_domains(self):
         # type: () -> None
         self.login("iago@zulip.com")
         realm = get_realm('zulip')
         query = RealmDomain.objects.filter(realm=realm)
 
         self.assertTrue(realm.restricted_to_domain)
-        for alias in query.all():
-            do_remove_realm_domain(alias)
+        for realm_domain in query.all():
+            do_remove_realm_domain(realm_domain)
         self.assertEqual(query.count(), 0)
-        # Deleting last alias should set `restricted_to_domain` to False.
-        # This should be tested on a fresh instance, since the cached
-        # objects would not be updated.
+        # Deleting last realm_domain should set `restricted_to_domain` to False.
+        # This should be tested on a fresh instance, since the cached objects
+        # would not be updated.
         self.assertFalse(get_realm('zulip').restricted_to_domain)
 
     def test_get_realm_by_email_domain(self):
@@ -124,8 +124,8 @@ class RealmDomainTest(ZulipTestCase):
         realm2, created = do_create_realm('testrealm2', 'Test Realm 2')
         realm3, created = do_create_realm('testrealm3', 'Test Realm 3')
 
-        alias1 = RealmDomain.objects.create(realm=realm1, domain='test1.com', allow_subdomains=True)
-        alias2 = RealmDomain.objects.create(realm=realm2, domain='test2.test1.com', allow_subdomains=False)
+        realm_domain_1 = RealmDomain.objects.create(realm=realm1, domain='test1.com', allow_subdomains=True)
+        realm_domain_2 = RealmDomain.objects.create(realm=realm2, domain='test2.test1.com', allow_subdomains=False)
         RealmDomain.objects.create(realm=realm3, domain='test3.test2.test1.com', allow_subdomains=True)
 
         def assert_and_check(email, realm_string_id):
@@ -146,11 +146,11 @@ class RealmDomainTest(ZulipTestCase):
         assert_and_check('user@test2.test2.test1.com', 'testrealm1')
         assert_and_check('user@test1.test3.test2.test1.com', 'testrealm3')
 
-        do_change_realm_domain(alias1, False)
+        do_change_realm_domain(realm_domain_1, False)
         assert_and_check('user@test1.test1.com', None)
         assert_and_check('user@test1.com', 'testrealm1')
 
-        do_change_realm_domain(alias2, True)
+        do_change_realm_domain(realm_domain_2, True)
         assert_and_check('user@test2.test1.com', 'testrealm2')
         assert_and_check('user@test2.test2.test1.com', 'testrealm2')
 
@@ -163,7 +163,7 @@ class RealmDomainTest(ZulipTestCase):
         realm1, created = do_create_realm('testrealm1', 'Test Realm 1', restricted_to_domain=True)
         realm2, created = do_create_realm('testrealm2', 'Test Realm 2', restricted_to_domain=True)
 
-        alias = RealmDomain.objects.create(realm=realm1, domain='test1.com', allow_subdomains=False)
+        realm_domain = RealmDomain.objects.create(realm=realm1, domain='test1.com', allow_subdomains=False)
         RealmDomain.objects.create(realm=realm2, domain='test2.test1.com', allow_subdomains=True)
 
         self.assertEqual(email_allowed_for_realm('user@test1.com', realm1), True)
@@ -172,12 +172,12 @@ class RealmDomainTest(ZulipTestCase):
         self.assertEqual(email_allowed_for_realm('user@test3.test2.test1.com', realm2), True)
         self.assertEqual(email_allowed_for_realm('user@test3.test1.com', realm2), False)
 
-        do_change_realm_domain(alias, True)
+        do_change_realm_domain(realm_domain, True)
         self.assertEqual(email_allowed_for_realm('user@test1.com', realm1), True)
         self.assertEqual(email_allowed_for_realm('user@test2.test1.com', realm1), True)
         self.assertEqual(email_allowed_for_realm('user@test2.com', realm1), False)
 
-    def test_realm_aliases_uniqueness(self):
+    def test_realm_realm_domains_uniqueness(self):
         # type: () -> None
         realm = get_realm('zulip')
         with self.settings(REALMS_HAVE_SUBDOMAINS=True), self.assertRaises(IntegrityError):
