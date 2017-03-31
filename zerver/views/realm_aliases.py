@@ -5,7 +5,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
 from zerver.decorator import has_request_variables, require_realm_admin, REQ
-from zerver.lib.actions import do_add_realm_domain, do_change_realm_alias, \
+from zerver.lib.actions import do_add_realm_domain, do_change_realm_domain, \
     do_remove_realm_alias, get_realm_domains
 from zerver.lib.domains import validate_domain
 from zerver.lib.response import json_error, json_success
@@ -41,7 +41,7 @@ def patch_alias(request, user_profile, domain, allow_subdomains=REQ(validator=ch
     # type: (HttpRequest, UserProfile, Text, bool) -> (HttpResponse)
     try:
         alias = RealmDomain.objects.get(realm=user_profile.realm, domain=domain)
-        do_change_realm_alias(alias, allow_subdomains)
+        do_change_realm_domain(alias, allow_subdomains)
     except RealmDomain.DoesNotExist:
         return json_error(_('No entry found for domain %(domain)s.' % {'domain': domain}))
     return json_success()

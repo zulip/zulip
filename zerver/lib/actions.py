@@ -3231,7 +3231,7 @@ def do_add_realm_domain(realm, domain, allow_subdomains):
     send_event(event, active_user_ids(realm))
     return alias
 
-def do_change_realm_alias(alias, allow_subdomains):
+def do_change_realm_domain(alias, allow_subdomains):
     # type: (RealmDomain, bool) -> None
     alias.allow_subdomains = allow_subdomains
     alias.save(update_fields=['allow_subdomains'])

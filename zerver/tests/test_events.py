@@ -71,7 +71,7 @@ from zerver.lib.actions import (
     do_change_pm_content_in_desktop_notifications,
     do_change_enable_digest_emails,
     do_add_realm_domain,
-    do_change_realm_alias,
+    do_change_realm_domain,
     do_remove_realm_alias,
     do_change_icon_source,
 )
@@ -1156,7 +1156,7 @@ class EventsRegisterTest(ZulipTestCase):
             ])),
         ])
         alias = RealmDomain.objects.get(realm=realm, domain='zulip.org')
-        events = self.do_test(lambda: do_change_realm_alias(alias, True))
+        events = self.do_test(lambda: do_change_realm_domain(alias, True))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
