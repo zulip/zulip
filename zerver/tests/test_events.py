@@ -1132,7 +1132,7 @@ class EventsRegisterTest(ZulipTestCase):
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
-    def test_realm_alias_events(self):
+    def test_realm_domain_events(self):
         # type: () -> None
         schema_checker = check_dict([
             ('type', equals('realm_domains')),
@@ -1155,8 +1155,8 @@ class EventsRegisterTest(ZulipTestCase):
                 ('allow_subdomains', equals(True)),
             ])),
         ])
-        alias = RealmDomain.objects.get(realm=realm, domain='zulip.org')
-        events = self.do_test(lambda: do_change_realm_domain(alias, True))
+        test_domain = RealmDomain.objects.get(realm=realm, domain='zulip.org')
+        events = self.do_test(lambda: do_change_realm_domain(test_domain, True))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
@@ -1165,7 +1165,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('op', equals('remove')),
             ('domain', equals('zulip.org')),
         ])
-        events = self.do_test(lambda: do_remove_realm_domain(alias))
+        events = self.do_test(lambda: do_remove_realm_domain(test_domain))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
