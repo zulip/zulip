@@ -372,7 +372,7 @@ class GetProfileTest(ZulipTestCase):
             with simulated_empty_cache() as cache_queries:
                 user_profile = get_user_profile_by_email('hamlet@zulip.com')
 
-        self.assert_max_length(queries, 1)
+        self.assert_length(queries, 1)
         self.assert_length(cache_queries, 1)
         self.assertEqual(user_profile.email, 'hamlet@zulip.com')
 
