@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
+import re
 from typing import Any, Dict, Iterable
 import logging
 
@@ -111,8 +112,11 @@ class TemplateTestCase(ZulipTestCase):
             'zerver/api_content.json',
             'zerver/handlebars_compilation_failed.html',
         ]
+
+        integrations_regexp = re.compile('zerver/integrations/.*.html')
+
         skip = covered + defer + logged_out + logged_in + unusual + ['tests/test_markdown.html', 'zerver/terms.html']
-        templates = [t for t in get_all_templates() if t not in skip]
+        templates = [t for t in get_all_templates() if not (t in skip or integrations_regexp.match(t))]
         self.render_templates(templates, self.get_context())
 
         # Test the deferred templates with updated context.

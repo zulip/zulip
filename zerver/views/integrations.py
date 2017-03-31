@@ -99,7 +99,7 @@ def add_integrations_context(context):
 
 
 class IntegrationView(ApiURLView):
-    template_name = 'zerver/integrations.html'
+    template_name = 'zerver/integrations/index.html'
 
     def get_context_data(self, **kwargs):
         # type: (**Any) -> Dict[str, Any]
