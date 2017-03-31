@@ -14,14 +14,14 @@ from zerver.models import can_add_realm_domain, RealmDomain, UserProfile
 
 from typing import Text
 
-def list_aliases(request, user_profile):
+def list_realm_domains(request, user_profile):
     # type: (HttpRequest, UserProfile) -> (HttpResponse)
-    aliases = get_realm_domains(user_profile.realm)
-    return json_success({'domains': aliases})
+    domains = get_realm_domains(user_profile.realm)
+    return json_success({'domains': domains})
 
 @require_realm_admin
 @has_request_variables
-def create_alias(request, user_profile, domain=REQ(validator=check_string), allow_subdomains=REQ(validator=check_bool)):
+def create_realm_domain(request, user_profile, domain=REQ(validator=check_string), allow_subdomains=REQ(validator=check_bool)):
     # type: (HttpRequest, UserProfile, Text, bool) -> (HttpResponse)
     domain = domain.strip().lower()
     try:
@@ -32,27 +32,27 @@ def create_alias(request, user_profile, domain=REQ(validator=check_string), allo
         return json_error(_("The domain %(domain)s is already a part of your organization.") % {'domain': domain})
     if not can_add_realm_domain(domain):
         return json_error(_("The domain %(domain)s belongs to another organization.") % {'domain': domain})
-    alias = do_add_realm_domain(user_profile.realm, domain, allow_subdomains)
-    return json_success({'new_domain': [alias.id, alias.domain]})
+    realm_domain = do_add_realm_domain(user_profile.realm, domain, allow_subdomains)
+    return json_success({'new_domain': [realm_domain.id, realm_domain.domain]})
 
 @require_realm_admin
 @has_request_variables
-def patch_alias(request, user_profile, domain, allow_subdomains=REQ(validator=check_bool)):
+def patch_realm_domain(request, user_profile, domain, allow_subdomains=REQ(validator=check_bool)):
     # type: (HttpRequest, UserProfile, Text, bool) -> (HttpResponse)
     try:
-        alias = RealmDomain.objects.get(realm=user_profile.realm, domain=domain)
-        do_change_realm_domain(alias, allow_subdomains)
+        realm_domain = RealmDomain.objects.get(realm=user_profile.realm, domain=domain)
+        do_change_realm_domain(realm_domain, allow_subdomains)
     except RealmDomain.DoesNotExist:
         return json_error(_('No entry found for domain %(domain)s.' % {'domain': domain}))
     return json_success()
 
 @require_realm_admin
 @has_request_variables
-def delete_alias(request, user_profile, domain):
+def delete_realm_domain(request, user_profile, domain):
     # type: (HttpRequest, UserProfile, Text) -> (HttpResponse)
     try:
-        alias = RealmDomain.objects.get(realm=user_profile.realm, domain=domain)
-        do_remove_realm_domain(alias)
+        realm_domain = RealmDomain.objects.get(realm=user_profile.realm, domain=domain)
+        do_remove_realm_domain(realm_domain)
     except RealmDomain.DoesNotExist:
         return json_error(_('No entry found for domain %(domain)s.' % {'domain': domain}))
     return json_success()
