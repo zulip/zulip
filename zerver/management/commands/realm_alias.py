@@ -15,7 +15,7 @@ from zerver.lib.domains import validate_domain
 import sys
 
 class Command(BaseCommand):
-    help = """Manage aliases for the specified realm"""
+    help = """Manage domains for the specified realm"""
 
     def add_arguments(self, parser):
         # type: (ArgumentParser) -> None
@@ -34,22 +34,22 @@ class Command(BaseCommand):
                             action="store_true",
                             default=False,
                             help='Whether subdomains are allowed or not.')
-        parser.add_argument('alias', metavar='<alias>', type=str, nargs='?',
-                            help="alias to add or remove")
+        parser.add_argument('domain', metavar='<domain>', type=str, nargs='?',
+                            help="domain to add or remove")
 
     def handle(self, *args, **options):
         # type: (*Any, **str) -> None
         realm = get_realm(options["string_id"])
         if options["op"] == "show":
-            print("Aliases for %s:" % (realm.string_id,))
-            for alias in get_realm_domains(realm):
-                if alias["allow_subdomains"]:
-                    print(alias["domain"] + " (subdomains allowed)")
+            print("Domains for %s:" % (realm.string_id,))
+            for realm_domain in get_realm_domains(realm):
+                if realm_domain["allow_subdomains"]:
+                    print(realm_domain["domain"] + " (subdomains allowed)")
                 else:
-                    print(alias["domain"] + " (subdomains not allowed)")
+                    print(realm_domain["domain"] + " (subdomains not allowed)")
             sys.exit(0)
 
-        domain = options['alias'].strip().lower()
+        domain = options['domain'].strip().lower()
         try:
             validate_domain(domain)
         except ValidationError as e:
