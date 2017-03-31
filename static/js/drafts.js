@@ -209,21 +209,27 @@ exports.drafts_overlay_open = function () {
 
 exports.drafts_handle_events = function (e, event_key) {
     var draft_arrow = draft_model.get();
+    // draft_id_arrow gets all the ids of the drafts.
     var draft_id_arrow = Object.getOwnPropertyNames(draft_arrow);
     // This detects up arrow key presses when the draft overlay
     // is open and scrolls through the drafts.
     if (event_key === "up_arrow") {
+        // This first checks if a draft is currently focused.
         if ($(".draft-info-box:focus")[0] === undefined) {
             if (draft_id_arrow.length > 0) {
+                // If not, focus the last draft.
                 var last_draft = draft_id_arrow[draft_id_arrow.length-1];
                 var last_draft_element = document.querySelectorAll('[data-draft-id="' + last_draft + '"]');
                 var focus_up_element = last_draft_element[0].children[0];
                 focus_up_element.focus();
             }
         }
+        // focus_draft_up_row gets the current focused draft.
         var focus_draft_up_row = $(".draft-info-box:focus")[0].parentElement;
+        // prev_focus_draft_row gets the draft on top of the focused draft.
         var prev_focus_draft_row = $(focus_draft_up_row).prev();
         if ($(".draft-info-box:first")[0].parentElement === prev_focus_draft_row[0]) {
+            // If the next draft is the first draft, set scrollTop to 0.
             $(".drafts-list")[0].scrollTop = 0;
         }
         if (prev_focus_draft_row[0].children[0] !== undefined) {
@@ -231,7 +237,7 @@ exports.drafts_handle_events = function (e, event_key) {
             // If the next draft is cut off, scroll more.
             if (prev_focus_draft_row.position().top < 55) {
                 // 55 is the minimum distance from the top that will require extra scrolling.
-                $(".drafts-list")[0].scrollTop = $(".drafts-list")[0].scrollTop - (55 - prev_focus_draft_row.position().top);
+                $(".drafts-list")[0].scrollTop -= $(".drafts-list")[0].clientHeight / 2;
             }
             e.preventDefault();
         }
@@ -240,29 +246,36 @@ exports.drafts_handle_events = function (e, event_key) {
     // This detects down arrow key presses when the draft overlay
     // is open and scrolls through the drafts.
     if (event_key === "down_arrow") {
+        // This first checks if a draft is currently focused.
         if ($(".draft-info-box:focus")[0] === undefined) {
             if (draft_id_arrow.length > 0) {
+                // If not, focus the first draft.
                 var first_draft = draft_id_arrow[0];
                 var first_draft_element = document.querySelectorAll('[data-draft-id="' + first_draft + '"]');
                 var focus_down_element = first_draft_element[0].children[0];
                 focus_down_element.focus();
             }
         }
+        // focus_draft_down_row gets the current focused draft
         var focus_draft_down_row = $(".draft-info-box:focus")[0].parentElement;
+        // next_focus_draft_row gets the draft on below of the focused draft.
         var next_focus_draft_row = $(focus_draft_down_row).next();
         if ($(".draft-info-box:last")[0].parentElement === next_focus_draft_row[0]) {
+            // If the next draft is the last draft, set scrollTop to the lowest.
             $(".drafts-list")[0].scrollTop = $('.drafts-list')[0].scrollHeight - $('.drafts-list').height();
         }
         if (next_focus_draft_row[0] !== undefined) {
             next_focus_draft_row[0].children[0].focus();
             // If the next draft is cut off, scroll more.
             if (next_focus_draft_row.position() !== undefined) {
+                // The next variables basically calculate the distance from the bottom
+                // of the draft to the bottom of the draft overlay.
                 var dist_from_top = next_focus_draft_row.position().top;
                 var total_dist = dist_from_top + next_focus_draft_row[0].clientHeight;
                 var dist_from_bottom = $(".drafts-container")[0].clientHeight - total_dist;
                 if (dist_from_bottom < -4) {
-                    //-4 is the min dist from the bottom that will require extra scrolling.
-                    $(".drafts-list")[0].scrollTop = $(".drafts-list")[0].scrollTop + 2 - (dist_from_bottom);
+                    // -4 is the min dist from the bottom that will require extra scrolling.
+                    $(".drafts-list")[0].scrollTop += $(".drafts-list")[0].clientHeight / 2;
                 }
             }
             e.preventDefault();
@@ -271,12 +284,18 @@ exports.drafts_handle_events = function (e, event_key) {
     }
     // Allows user to delete drafts with backspace
     if (event_key === "backspace") {
+        // Find the current focused element
         var elt = document.activeElement;
+        // Check if it is a draft
         if (elt.parentElement.hasAttribute("data-draft-id")) {
+            // Back out to the list of rows which are iterable
             var focused_draft = $(elt.parentElement)[0].getAttribute("data-draft-id");
             var focus_draft_back_row = $(elt)[0].parentElement;
+            // Get the next and previous draft
             var backnext_focus_draft_row = $(focus_draft_back_row).next();
             var backprev_focus_draft_row = $(focus_draft_back_row).prev();
+            // delete_id stores the id of the draft which will be focused
+            // after the current draft is deleted
             var delete_id;
             if (backnext_focus_draft_row[0] !== undefined) {
                 delete_id = backnext_focus_draft_row[0].getAttribute("data-draft-id");
@@ -285,10 +304,12 @@ exports.drafts_handle_events = function (e, event_key) {
             }
             drafts.draft_model.deleteDraft(focused_draft);
             document.activeElement.parentElement.remove();
+            // Find the next draft to focus
             var new_focus_element = document.querySelectorAll('[data-draft-id="' + delete_id + '"]');
             if (new_focus_element[0] !== undefined) {
                 new_focus_element[0].children[0].focus();
             }
+            // If no more drafts, show no drafts.
             if ($("#drafts_table .draft-row").length === 0) {
                 $('#drafts_table .no-drafts').show();
             }
