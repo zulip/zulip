@@ -10,7 +10,7 @@ from zerver.lib.actions import do_add_realm_alias, do_change_realm_alias, \
 from zerver.lib.domains import validate_domain
 from zerver.lib.response import json_error, json_success
 from zerver.lib.validator import check_bool, check_string
-from zerver.models import can_add_alias, RealmAlias, UserProfile
+from zerver.models import can_add_alias, RealmDomain, UserProfile
 
 from typing import Text
 
@@ -28,7 +28,7 @@ def create_alias(request, user_profile, domain=REQ(validator=check_string), allo
         validate_domain(domain)
     except ValidationError as e:
         return json_error(_('Invalid domain: {}').format(e.messages[0]))
-    if RealmAlias.objects.filter(realm=user_profile.realm, domain=domain).exists():
+    if RealmDomain.objects.filter(realm=user_profile.realm, domain=domain).exists():
         return json_error(_("The domain %(domain)s is already a part of your organization.") % {'domain': domain})
     if not can_add_alias(domain):
         return json_error(_("The domain %(domain)s belongs to another organization.") % {'domain': domain})
@@ -40,9 +40,9 @@ def create_alias(request, user_profile, domain=REQ(validator=check_string), allo
 def patch_alias(request, user_profile, domain, allow_subdomains=REQ(validator=check_bool)):
     # type: (HttpRequest, UserProfile, Text, bool) -> (HttpResponse)
     try:
-        alias = RealmAlias.objects.get(realm=user_profile.realm, domain=domain)
+        alias = RealmDomain.objects.get(realm=user_profile.realm, domain=domain)
         do_change_realm_alias(alias, allow_subdomains)
-    except RealmAlias.DoesNotExist:
+    except RealmDomain.DoesNotExist:
         return json_error(_('No entry found for domain %(domain)s.' % {'domain': domain}))
     return json_success()
 
@@ -51,8 +51,8 @@ def patch_alias(request, user_profile, domain, allow_subdomains=REQ(validator=ch
 def delete_alias(request, user_profile, domain):
     # type: (HttpRequest, UserProfile, Text) -> (HttpResponse)
     try:
-        alias = RealmAlias.objects.get(realm=user_profile.realm, domain=domain)
+        alias = RealmDomain.objects.get(realm=user_profile.realm, domain=domain)
         do_remove_realm_alias(alias)
-    except RealmAlias.DoesNotExist:
+    except RealmDomain.DoesNotExist:
         return json_error(_('No entry found for domain %(domain)s.' % {'domain': domain}))
     return json_success()

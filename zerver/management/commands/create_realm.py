@@ -8,7 +8,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand, CommandParser
 from zerver.lib.actions import Realm, do_create_realm, set_default_streams
-from zerver.models import RealmAlias, can_add_alias, get_realm
+from zerver.models import RealmDomain, can_add_alias, get_realm
 
 import re
 import sys

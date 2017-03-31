@@ -28,7 +28,7 @@ from zerver.lib.message import (
     render_markdown,
 )
 from zerver.lib.realm_icon import realm_icon_url
-from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, RealmAlias, \
+from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, RealmDomain, \
     Subscription, Recipient, Message, Attachment, UserMessage, RealmAuditLog, UserHotspot, \
     Client, DefaultStream, UserPresence, Referral, PushDeviceToken, MAX_SUBJECT_LENGTH, \
     MAX_MESSAGE_LENGTH, get_client, get_stream, get_recipient, get_huddle, \
@@ -3219,12 +3219,12 @@ def get_emails_from_user_ids(user_ids):
 
 def get_realm_aliases(realm):
     # type: (Realm) -> List[Dict[str, Text]]
-    return list(realm.realmalias_set.values('domain', 'allow_subdomains'))
+    return list(realm.realmdomain_set.values('domain', 'allow_subdomains'))
 
 def do_add_realm_alias(realm, domain, allow_subdomains):
-    # type: (Realm, Text, bool) -> (RealmAlias)
-    alias = RealmAlias.objects.create(realm=realm, domain=domain,
-                                      allow_subdomains=allow_subdomains)
+    # type: (Realm, Text, bool) -> (RealmDomain)
+    alias = RealmDomain.objects.create(realm=realm, domain=domain,
+                                       allow_subdomains=allow_subdomains)
     event = dict(type="realm_domains", op="add",
                  alias=dict(domain=alias.domain,
                             allow_subdomains=alias.allow_subdomains))
@@ -3232,7 +3232,7 @@ def do_add_realm_alias(realm, domain, allow_subdomains):
     return alias
 
 def do_change_realm_alias(alias, allow_subdomains):
-    # type: (RealmAlias, bool) -> None
+    # type: (RealmDomain, bool) -> None
     alias.allow_subdomains = allow_subdomains
     alias.save(update_fields=['allow_subdomains'])
     event = dict(type="realm_domains", op="change",
@@ -3241,11 +3241,11 @@ def do_change_realm_alias(alias, allow_subdomains):
     send_event(event, active_user_ids(alias.realm))
 
 def do_remove_realm_alias(alias):
-    # type: (RealmAlias) -> None
+    # type: (RealmDomain) -> None
     realm = alias.realm
     domain = alias.domain
     alias.delete()
-    if RealmAlias.objects.filter(realm=realm).count() == 0 and realm.restricted_to_domain:
+    if RealmDomain.objects.filter(realm=realm).count() == 0 and realm.restricted_to_domain:
         # If this was the last realm alias, we mark the realm as no
         # longer restricted to domain, because the feature doesn't do
         # anything if there are no domains, and this is probably less

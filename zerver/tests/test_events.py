@@ -12,7 +12,7 @@ from django.utils import timezone
 
 from zerver.models import (
     get_client, get_realm, get_recipient, get_stream, get_user_profile_by_email,
-    Message, RealmAlias, Recipient, UserMessage, UserPresence, UserProfile
+    Message, RealmDomain, Recipient, UserMessage, UserPresence, UserProfile
 )
 
 from zerver.lib.actions import (
@@ -1155,7 +1155,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ('allow_subdomains', equals(True)),
             ])),
         ])
-        alias = RealmAlias.objects.get(realm=realm, domain='zulip.org')
+        alias = RealmDomain.objects.get(realm=realm, domain='zulip.org')
         events = self.do_test(lambda: do_change_realm_alias(alias, True))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)

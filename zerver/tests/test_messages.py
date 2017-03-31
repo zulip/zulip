@@ -30,7 +30,7 @@ from zerver.lib.test_classes import (
 
 from zerver.models import (
     MAX_MESSAGE_LENGTH, MAX_SUBJECT_LENGTH,
-    Message, Realm, Recipient, Stream, UserMessage, UserProfile, Attachment, RealmAlias,
+    Message, Realm, Recipient, Stream, UserMessage, UserProfile, Attachment, RealmDomain,
     get_realm, get_stream, get_user_profile_by_email,
     Reaction, sew_messages_and_reactions
 )
@@ -149,7 +149,7 @@ class TestCrossRealmPMs(ZulipTestCase):
     def make_realm(self, domain):
         # type: (Text) -> Realm
         realm = Realm.objects.create(string_id=domain, invite_required=False)
-        RealmAlias.objects.create(realm=realm, domain=domain)
+        RealmDomain.objects.create(realm=realm, domain=domain)
         return realm
 
     def setUp(self):

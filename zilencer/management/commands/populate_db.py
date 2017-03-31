@@ -6,7 +6,7 @@ from django.core.management.base import BaseCommand, CommandParser
 from django.utils import timezone
 
 from zerver.models import Message, UserProfile, Stream, Recipient, UserPresence, \
-    Subscription, get_huddle, Realm, UserMessage, RealmAlias, \
+    Subscription, get_huddle, Realm, UserMessage, RealmDomain, \
     clear_database, get_client, get_user_profile_by_id, \
     email_to_username
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, do_send_messages, \
@@ -125,12 +125,12 @@ class Command(BaseCommand):
             zulip_realm = Realm.objects.create(
                 string_id="zulip", name="Zulip Dev", restricted_to_domain=True,
                 invite_required=False, org_type=Realm.CORPORATE)
-            RealmAlias.objects.create(realm=zulip_realm, domain="zulip.com")
+            RealmDomain.objects.create(realm=zulip_realm, domain="zulip.com")
             if options["test_suite"]:
                 mit_realm = Realm.objects.create(
                     string_id="zephyr", name="MIT", restricted_to_domain=True,
                     invite_required=False, org_type=Realm.CORPORATE)
-                RealmAlias.objects.create(realm=mit_realm, domain="mit.edu")
+                RealmDomain.objects.create(realm=mit_realm, domain="mit.edu")
 
             # Create test Users (UserProfiles are automatically created,
             # as are subscriptions to the ability to receive personals).

@@ -41,7 +41,7 @@ from zerver.lib.utils import statsd
 from zerver.lib.validator import \
     check_list, check_int, check_dict, check_string, check_bool
 from zerver.models import Message, UserProfile, Stream, Subscription, \
-    Realm, RealmAlias, Recipient, UserMessage, bulk_get_recipients, get_recipient, \
+    Realm, RealmDomain, Recipient, UserMessage, bulk_get_recipients, get_recipient, \
     get_user_profile_by_email, get_stream, \
     parse_usermessage_flags, \
     email_to_domain, get_realm, get_active_streams, \
@@ -801,10 +801,10 @@ def same_realm_zephyr_user(user_profile, email):
 
     domain = email_to_domain(email)
 
-    # Assumes allow_subdomains=False for all RealmAlias's corresponding to
+    # Assumes allow_subdomains=False for all RealmDomain's corresponding to
     # these realms.
     return user_profile.realm.is_zephyr_mirror_realm and \
-        RealmAlias.objects.filter(realm=user_profile.realm, domain=domain).exists()
+        RealmDomain.objects.filter(realm=user_profile.realm, domain=domain).exists()
 
 def same_realm_irc_user(user_profile, email):
     # type: (UserProfile, Text) -> bool
@@ -818,9 +818,9 @@ def same_realm_irc_user(user_profile, email):
 
     domain = email_to_domain(email).replace("irc.", "")
 
-    # Assumes allow_subdomains=False for all RealmAlias's corresponding to
+    # Assumes allow_subdomains=False for all RealmDomain's corresponding to
     # these realms.
-    return RealmAlias.objects.filter(realm=user_profile.realm, domain=domain).exists()
+    return RealmDomain.objects.filter(realm=user_profile.realm, domain=domain).exists()
 
 def same_realm_jabber_user(user_profile, email):
     # type: (UserProfile, Text) -> bool
@@ -833,9 +833,9 @@ def same_realm_jabber_user(user_profile, email):
     # Zulip users, this is where you would do any translation.
     domain = email_to_domain(email)
 
-    # Assumes allow_subdomains=False for all RealmAlias's corresponding to
+    # Assumes allow_subdomains=False for all RealmDomain's corresponding to
     # these realms.
-    return RealmAlias.objects.filter(realm=user_profile.realm, domain=domain).exists()
+    return RealmDomain.objects.filter(realm=user_profile.realm, domain=domain).exists()
 
 # We do not @require_login for send_message_backend, since it is used
 # both from the API and the web service.  Code calling

@@ -63,7 +63,7 @@ that we process them in `do_export_realm()`:
 
 #### Public Realm Data
 
-`Realm/RealmAlias/RealmEmoji/RealmFilter/DefaultStream`.
+`Realm/RealmDomain/RealmEmoji/RealmFilter/DefaultStream`.
 
 #### Cross Realm Data
 
@@ -261,7 +261,7 @@ We have code in place to exclude `password` and `api_key` from
 
 ### Public Realm Data
 
-- models: `Realm/RealmAlias/RealmEmoji/RealmFilter/DefaultStream`
+- models: `Realm/RealmDomain/RealmEmoji/RealmFilter/DefaultStream`
 - asserts: `realm.json`
 
 All of these tables are public (per-realm), and they are keyed by
