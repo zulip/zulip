@@ -10,7 +10,7 @@ from zerver.lib.actions import do_add_realm_alias, do_change_realm_alias, \
 from zerver.lib.domains import validate_domain
 from zerver.lib.response import json_error, json_success
 from zerver.lib.validator import check_bool, check_string
-from zerver.models import can_add_alias, RealmDomain, UserProfile
+from zerver.models import can_add_realm_domain, RealmDomain, UserProfile
 
 from typing import Text
 
@@ -30,7 +30,7 @@ def create_alias(request, user_profile, domain=REQ(validator=check_string), allo
         return json_error(_('Invalid domain: {}').format(e.messages[0]))
     if RealmDomain.objects.filter(realm=user_profile.realm, domain=domain).exists():
         return json_error(_("The domain %(domain)s is already a part of your organization.") % {'domain': domain})
-    if not can_add_alias(domain):
+    if not can_add_realm_domain(domain):
         return json_error(_("The domain %(domain)s belongs to another organization.") % {'domain': domain})
     alias = do_add_realm_alias(user_profile.realm, domain, allow_subdomains)
     return json_success({'new_domain': [alias.id, alias.domain]})

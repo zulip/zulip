@@ -8,7 +8,7 @@ from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand
 from django.db.utils import IntegrityError
 from django.utils.translation import ugettext as _
-from zerver.models import get_realm, can_add_alias, \
+from zerver.models import get_realm, can_add_realm_domain, \
     Realm, RealmDomain
 from zerver.lib.actions import get_realm_aliases
 from zerver.lib.domains import validate_domain
@@ -57,7 +57,7 @@ class Command(BaseCommand):
             sys.exit(1)
         if options["op"] == "add":
             try:
-                if not can_add_alias(domain):
+                if not can_add_realm_domain(domain):
                     print(_("The domain %(domain)s belongs to another organization.") % {'domain': domain})
                     sys.exit(1)
                 RealmDomain.objects.create(realm=realm, domain=domain,

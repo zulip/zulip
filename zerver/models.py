@@ -309,7 +309,7 @@ class RealmDomain(models.Model):
     class Meta(object):
         unique_together = ("realm", "domain")
 
-def can_add_alias(domain):
+def can_add_realm_domain(domain):
     # type: (Text) -> bool
     if settings.REALMS_HAVE_SUBDOMAINS:
         return True
