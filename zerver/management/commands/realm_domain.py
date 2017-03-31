@@ -74,5 +74,5 @@ class Command(BaseCommand):
                 print("No such entry found!")
                 sys.exit(1)
         else:
-            self.print_help("./manage.py", "realm_alias")
+            self.print_help("./manage.py", "realm_domain")
             sys.exit(1)
