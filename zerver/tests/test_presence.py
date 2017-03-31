@@ -22,6 +22,7 @@ from zerver.models import (
     Client,
     UserActivity,
     UserProfile,
+    flush_per_request_caches
 )
 
 import datetime
@@ -43,10 +44,11 @@ class ActivityTest(ZulipTestCase):
                 count=count,
                 last_visit=last_visit
             )
+        flush_per_request_caches()
         with queries_captured() as queries:
             self.client_get('/activity')
 
-        self.assert_max_length(queries, 13)
+        self.assert_length(queries, 2)
 
 class TestClientModel(ZulipTestCase):
     def test_client_stringification(self):
