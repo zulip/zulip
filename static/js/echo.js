@@ -377,7 +377,10 @@ function handleTex(tex, fullmatch) {
     try {
         return katex.renderToString(tex);
     } catch (ex) {
-        return '<span class="tex-error">' + escape(fullmatch) + '</span>';
+        if (ex.message.startsWith('KaTeX parse error')) { // TeX syntax error
+            return '<span class="tex-error">' + escape(fullmatch) + '</span>';
+        }
+        blueslip.error(ex);
     }
 }
 
