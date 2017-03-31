@@ -72,7 +72,7 @@ from zerver.lib.actions import (
     do_change_enable_digest_emails,
     do_add_realm_domain,
     do_change_realm_domain,
-    do_remove_realm_alias,
+    do_remove_realm_domain,
     do_change_icon_source,
 )
 from zerver.lib.events import (
@@ -1165,7 +1165,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('op', equals('remove')),
             ('domain', equals('zulip.org')),
         ])
-        events = self.do_test(lambda: do_remove_realm_alias(alias))
+        events = self.do_test(lambda: do_remove_realm_domain(alias))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
