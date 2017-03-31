@@ -144,7 +144,7 @@ function populate_users(realm_people_data) {
             if (last_active_date) {
                 activity_rendered = timerender.render_date(last_active_date);
             } else {
-                activity_rendered = $("<span></span>").text(i18n.t("Never"));
+                activity_rendered = $("<span></span>").text(i18n.t("Unknown"));
             }
         }
         row.find(".last_active").append(activity_rendered);
