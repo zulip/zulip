@@ -363,12 +363,6 @@ class ZulipTestCase(TestCase):
         return self.assertTrue(actual_count == count,
                                "len(%s) == %s, != %s" % (queries, actual_count, count))
 
-    def assert_max_length(self, queries, count):
-        # type: (Sized, int) -> None
-        actual_count = len(queries)
-        return self.assertTrue(actual_count <= count,
-                               "len(%s) == %s, > %s" % (queries, actual_count, count))
-
     def assert_json_error_contains(self, result, msg_substring, status_code=400):
         # type: (HttpResponse, Text, int) -> None
         self.assertIn(msg_substring, self.get_json_error(result, status_code=status_code))
