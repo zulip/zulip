@@ -156,7 +156,7 @@ function dispatch_normal_event(event) {
                 }
             }
         }
-        admin.populate_realm_aliases(page_params.domains);
+        admin.populate_realm_domains(page_params.domains);
         break;
 
     case 'realm_user':

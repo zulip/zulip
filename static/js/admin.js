@@ -333,13 +333,13 @@ exports.populate_filters = function (filters_data) {
     loading.destroy_indicator($('#admin_page_filters_loading_indicator'));
 };
 
-exports.populate_realm_aliases = function (aliases) {
+exports.populate_realm_domains = function (realm_domains) {
     if (!meta.loaded) {
         return;
     }
 
-    var domains_list = _.map(aliases, function (alias) {
-        return (alias.allow_subdomains ? "*." + alias.domain : alias.domain);
+    var domains_list = _.map(realm_domains, function (realm_domain) {
+        return (realm_domain.allow_subdomains ? "*." + realm_domain.domain : realm_domain.domain);
     });
     var domains = domains_list.join(', ');
 
@@ -350,10 +350,10 @@ exports.populate_realm_aliases = function (aliases) {
     }
     $("#realm_restricted_to_domains_label").text(i18n.t("New users restricted to the following domains: __domains__", {domains: domains}));
 
-    var alias_table_body = $("#alias_table tbody").expectOne();
-    alias_table_body.find("tr").remove();
-    _.each(aliases, function (alias) {
-        alias_table_body.append(templates.render("admin-alias-list", {alias: alias}));
+    var realm_domains_table_body = $("#realm_domains_table tbody").expectOne();
+    realm_domains_table_body.find("tr").remove();
+    _.each(realm_domains, function (realm_domain) {
+        realm_domains_table_body.append(templates.render("admin-alias-list", {realm_domain: realm_domain}));
     });
 };
 
@@ -478,8 +478,8 @@ function _setup_page() {
     // Populate filters table
     exports.populate_filters(page_params.realm_filters);
 
-    // Populate realm aliases
-    exports.populate_realm_aliases(page_params.domains);
+    // Populate realm domains
+    exports.populate_realm_domains(page_params.domains);
 
     // Setup click handlers
     $(".admin_user_table").on("click", ".deactivate", function (e) {
@@ -1121,55 +1121,58 @@ function _setup_page() {
         });
     });
 
-    $("#alias_table").on("click", ".delete_alias", function () {
+    $("#realm_domains_table").on("click", ".delete_realm_domain", function () {
         var domain = $(this).parents("tr").find(".domain").text();
         var url = "/json/realm/domains/" + domain;
-        var aliases_info = $("#realm_aliases_modal").find(".aliases_info");
+        var realm_domains_info = $("#realm_domains_modal").find(".realm_domains_info");
 
         channel.del({
             url: url,
             success: function () {
-                aliases_info.removeClass("text-error");
-                aliases_info.addClass("text-success");
-                aliases_info.text(i18n.t("Deleted successfully!"));
+                realm_domains_info.removeClass("text-error");
+                realm_domains_info.addClass("text-success");
+                realm_domains_info.text(i18n.t("Deleted successfully!"));
             },
             error: function (xhr) {
-                aliases_info.removeClass("text-success");
-                aliases_info.addClass("text-error");
-                aliases_info.text(JSON.parse(xhr.responseText).msg);
+                realm_domains_info.removeClass("text-success");
+                realm_domains_info.addClass("text-error");
+                realm_domains_info.text(JSON.parse(xhr.responseText).msg);
             },
         });
     });
 
-    $("#submit-add-alias").click(function () {
-        var aliases_info = $("#realm_aliases_modal").find(".aliases_info");
+    $("#submit-add-realm-domain").click(function () {
+        var realm_domains_info = $("#realm_domains_modal").find(".realm_domains_info");
+        var widget = $("#add-realm-domain-widget");
+        var domain = widget.find(".new-realm-domain").val();
+        var allow_subdomains = widget.find(".new-realm-domain-allow-subdomains").prop("checked");
         var data = {
-            domain: JSON.stringify($("#add-alias-widget .new-alias-domain").val()),
-            allow_subdomains: JSON.stringify($("#add-alias-widget .new-alias-allow-subdomains").prop("checked")),
+            domain: JSON.stringify(domain),
+            allow_subdomains: JSON.stringify(allow_subdomains),
         };
 
         channel.post({
             url: "/json/realm/domains",
             data: data,
             success: function () {
-                $("#add-alias-widget .new-alias-domain").val("");
-                $("#add-alias-widget .new-alias-allow-subdomains").prop("checked", false);
+                $("#add-realm-domain-widget .new-realm-domain").val("");
+                $("#add-realm-domain-widget .new-realm-domain-allow-subdomains").prop("checked", false);
                 $("#id_realm_restricted_to_domain").prop("disabled", false);
-                aliases_info.removeClass("text-error");
-                aliases_info.addClass("text-success");
-                aliases_info.text(i18n.t("Added successfully!"));
+                realm_domains_info.removeClass("text-error");
+                realm_domains_info.addClass("text-success");
+                realm_domains_info.text(i18n.t("Added successfully!"));
             },
             error: function (xhr) {
-                aliases_info.removeClass("text-success");
-                aliases_info.addClass("text-error");
-                aliases_info.text(JSON.parse(xhr.responseText).msg);
+                realm_domains_info.removeClass("text-success");
+                realm_domains_info.addClass("text-error");
+                realm_domains_info.text(JSON.parse(xhr.responseText).msg);
             },
         });
     });
 
-    $("#alias_table").on("change", ".allow-subdomains", function (e) {
+    $("#realm_domains_table").on("change", ".allow-subdomains", function (e) {
         e.stopPropagation();
-        var aliases_info = $("#realm_aliases_modal").find(".aliases_info");
+        var realm_domains_info = $("#realm_domains_modal").find(".realm_domains_info");
         var domain = $(this).parents("tr").find(".domain").text();
         var allow_subdomains = $(this).prop('checked');
         var url = '/json/realm/domains/' + domain;
@@ -1181,20 +1184,20 @@ function _setup_page() {
             url: url,
             data: data,
             success: function () {
-                aliases_info.removeClass("text-error");
-                aliases_info.addClass("text-success");
+                realm_domains_info.removeClass("text-error");
+                realm_domains_info.addClass("text-success");
                 if (allow_subdomains) {
-                    aliases_info.text(i18n.t("Update successful: Subdomains allowed for __domain__",
+                    realm_domains_info.text(i18n.t("Update successful: Subdomains allowed for __domain__",
                                              {domain: domain}));
                 } else {
-                    aliases_info.text(i18n.t("Update successful: Subdomains no longer allowed for __domain__",
+                    realm_domains_info.text(i18n.t("Update successful: Subdomains no longer allowed for __domain__",
                                              {domain: domain}));
                 }
             },
             error: function (xhr) {
-                aliases_info.removeClass("text-success");
-                aliases_info.addClass("text-error");
-                aliases_info.text(JSON.parse(xhr.responseText).msg);
+                realm_domains_info.removeClass("text-success");
+                realm_domains_info.addClass("text-error");
+                realm_domains_info.text(JSON.parse(xhr.responseText).msg);
             },
         });
     });

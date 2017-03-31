@@ -1037,13 +1037,13 @@ input[type=text]#settings_search {
     padding: 10px 15px;
 }
 
-#administration .new-alias-domain {
+#administration .new-realm-domain {
     width: 130px;
     margin-bottom: auto;
     padding: 0px 2px;
 }
 
-#administration #submit-add-alias {
+#administration #submit-add-realm-domain {
     width: 75px;
 }
 
