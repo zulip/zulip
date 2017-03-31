@@ -345,9 +345,9 @@ def get_realm_by_email_domain(email):
     # Search for the longest match. If found return immediately. Since in case of
     # settings.REALMS_HAVE_SUBDOMAINS=True, we have a unique mapping between the
     # realm and domain so don't worry about `allow_subdomains` being True or False.
-    alias = query.filter(domain=domain).first()
-    if alias is not None:
-        return alias.realm
+    realm_domain = query.filter(domain=domain).first()
+    if realm_domain is not None:
+        return realm_domain.realm
     else:
         # Since we have not found any match. We will now try matching the parent domain.
         # Filter out the realm domains with `allow_subdomains=False` so that we don't end
@@ -355,9 +355,9 @@ def get_realm_by_email_domain(email):
         query = query.filter(allow_subdomains=True)
         while len(domain) > 0:
             subdomain, sep, domain = domain.partition('.')
-            alias = query.filter(domain=domain).first()
-            if alias is not None:
-                return alias.realm
+            realm_domain = query.filter(domain=domain).first()
+            if realm_domain is not None:
+                return realm_domain.realm
     return None
 
 # Is a user with the given email address allowed to be in the given realm?
