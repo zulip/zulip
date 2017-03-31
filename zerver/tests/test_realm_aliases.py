@@ -6,7 +6,7 @@ from django.db.utils import IntegrityError
 from typing import Optional, Text
 
 from zerver.lib.actions import do_change_is_admin, \
-    do_change_realm_alias, do_create_realm, \
+    do_change_realm_domain, do_create_realm, \
     do_remove_realm_alias
 from zerver.lib.domains import validate_domain
 from zerver.lib.test_classes import ZulipTestCase
@@ -146,11 +146,11 @@ class RealmDomainTest(ZulipTestCase):
         assert_and_check('user@test2.test2.test1.com', 'testrealm1')
         assert_and_check('user@test1.test3.test2.test1.com', 'testrealm3')
 
-        do_change_realm_alias(alias1, False)
+        do_change_realm_domain(alias1, False)
         assert_and_check('user@test1.test1.com', None)
         assert_and_check('user@test1.com', 'testrealm1')
 
-        do_change_realm_alias(alias2, True)
+        do_change_realm_domain(alias2, True)
         assert_and_check('user@test2.test1.com', 'testrealm2')
         assert_and_check('user@test2.test2.test1.com', 'testrealm2')
 
@@ -172,7 +172,7 @@ class RealmDomainTest(ZulipTestCase):
         self.assertEqual(email_allowed_for_realm('user@test3.test2.test1.com', realm2), True)
         self.assertEqual(email_allowed_for_realm('user@test3.test1.com', realm2), False)
 
-        do_change_realm_alias(alias, True)
+        do_change_realm_domain(alias, True)
         self.assertEqual(email_allowed_for_realm('user@test1.com', realm1), True)
         self.assertEqual(email_allowed_for_realm('user@test2.test1.com', realm1), True)
         self.assertEqual(email_allowed_for_realm('user@test2.com', realm1), False)
