@@ -270,7 +270,7 @@ def get_realm(string_id):
 def completely_open(realm):
     # type: (Realm) -> bool
     # This realm is completely open to everyone on the internet to
-    # join. E-mail addresses do not need to match a realmalias and
+    # join. E-mail addresses do not need to match a realmdomain and
     # an invite from an existing user is not required.
     if not realm:
         return False
@@ -300,7 +300,7 @@ def name_changes_disabled(realm):
         return settings.NAME_CHANGES_DISABLED
     return settings.NAME_CHANGES_DISABLED or realm.name_changes_disabled
 
-class RealmAlias(models.Model):
+class RealmDomain(models.Model):
     realm = models.ForeignKey(Realm) # type: Realm
     # should always be stored lowercase
     domain = models.CharField(max_length=80, db_index=True) # type: Text
@@ -313,7 +313,7 @@ def can_add_alias(domain):
     # type: (Text) -> bool
     if settings.REALMS_HAVE_SUBDOMAINS:
         return True
-    if RealmAlias.objects.filter(domain=domain).exists():
+    if RealmDomain.objects.filter(domain=domain).exists():
         return False
     return True
 
@@ -341,7 +341,7 @@ def get_realm_by_email_domain(email):
         raise GetRealmByDomainException(
             "Cannot get realm from email domain when settings.REALMS_HAVE_SUBDOMAINS = True")
     domain = email_to_domain(email)
-    query = RealmAlias.objects.select_related('realm')
+    query = RealmDomain.objects.select_related('realm')
     # Search for the longest match. If found return immediately. Since in case of
     # settings.REALMS_HAVE_SUBDOMAINS=True, we have a unique mapping between the
     # realm and domain so don't worry about `allow_subdomains` being True or False.
@@ -369,7 +369,7 @@ def email_allowed_for_realm(email, realm):
     if not realm.restricted_to_domain:
         return True
     domain = email_to_domain(email)
-    query = RealmAlias.objects.filter(realm=realm)
+    query = RealmDomain.objects.filter(realm=realm)
     if query.filter(domain=domain).exists():
         return True
     else:
@@ -382,7 +382,7 @@ def email_allowed_for_realm(email, realm):
 
 def list_of_domains_for_realm(realm):
     # type: (Realm) -> List[Dict[str, Union[str, bool]]]
-    return list(RealmAlias.objects.filter(realm=realm).values('domain', 'allow_subdomains'))
+    return list(RealmDomain.objects.filter(realm=realm).values('domain', 'allow_subdomains'))
 
 class RealmEmoji(ModelReprMixin, models.Model):
     author = models.ForeignKey('UserProfile', blank=True, null=True)

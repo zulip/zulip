@@ -20,7 +20,7 @@ from zerver.views.registration import confirmation_key
 from zerver.models import (
     get_realm, get_prereg_user_by_email, get_user_profile_by_email,
     get_unique_open_realm, completely_open,
-    PreregistrationUser, Realm, RealmAlias, Recipient,
+    PreregistrationUser, Realm, RealmDomain, Recipient,
     Referral, ScheduledJob, UserProfile, UserMessage,
     Stream, Subscription, ScheduledJob
 )

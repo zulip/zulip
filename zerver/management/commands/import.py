@@ -9,7 +9,7 @@ from django.db import connection
 from django.conf import settings
 
 from zerver.models import Realm, Stream, UserProfile, Recipient, Subscription, \
-    Message, UserMessage, Huddle, DefaultStream, RealmAlias, RealmFilter, Client
+    Message, UserMessage, Huddle, DefaultStream, RealmDomain, RealmFilter, Client
 from zerver.lib.export import do_import_realm
 
 import os
@@ -59,7 +59,7 @@ Usage: ./manage.py import [--destroy-rebuild-database] [--import-into-nonempty] 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
         models_to_import = [Realm, Stream, UserProfile, Recipient, Subscription,
-                            Client, Message, UserMessage, Huddle, DefaultStream, RealmAlias,
+                            Client, Message, UserMessage, Huddle, DefaultStream, RealmDomain,
                             RealmFilter]
 
         if len(args) == 0:

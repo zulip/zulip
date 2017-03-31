@@ -13,7 +13,7 @@ from zerver.decorator import zulip_login_required, process_client
 from zerver.forms import ToSForm
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
-    Recipient, Realm, UserMessage, DefaultStream, RealmEmoji, RealmAlias, \
+    Recipient, Realm, UserMessage, DefaultStream, RealmEmoji, RealmDomain, \
     RealmFilter, PreregistrationUser, UserActivity, \
     UserPresence, get_recipient, name_changes_disabled, email_to_username, \
     list_of_domains_for_realm

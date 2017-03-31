@@ -20,7 +20,7 @@ from zerver.lib.test_classes import (
 from zerver.lib.test_runner import slow
 
 from zerver.models import UserProfile, Recipient, \
-    Realm, RealmAlias, UserActivity, \
+    Realm, RealmDomain, UserActivity, \
     get_user_profile_by_email, get_realm, get_client, get_stream, \
     Message, get_context_for_message
 
@@ -216,7 +216,7 @@ class AdminCreateUserTest(ZulipTestCase):
         self.assert_json_error(result,
                                "Email 'romeo@not-zulip.com' not allowed for realm 'zulip'")
 
-        RealmAlias.objects.create(realm=get_realm('zulip'), domain='zulip.net')
+        RealmDomain.objects.create(realm=get_realm('zulip'), domain='zulip.net')
 
         # HAPPY PATH STARTS HERE
         valid_params = dict(

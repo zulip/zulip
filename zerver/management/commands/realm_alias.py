@@ -9,7 +9,7 @@ from django.core.management.base import BaseCommand
 from django.db.utils import IntegrityError
 from django.utils.translation import ugettext as _
 from zerver.models import get_realm, can_add_alias, \
-    Realm, RealmAlias
+    Realm, RealmDomain
 from zerver.lib.actions import get_realm_aliases
 from zerver.lib.domains import validate_domain
 import sys
@@ -60,17 +60,17 @@ class Command(BaseCommand):
                 if not can_add_alias(domain):
                     print(_("The domain %(domain)s belongs to another organization.") % {'domain': domain})
                     sys.exit(1)
-                RealmAlias.objects.create(realm=realm, domain=domain,
-                                          allow_subdomains=options["allow_subdomains"])
+                RealmDomain.objects.create(realm=realm, domain=domain,
+                                           allow_subdomains=options["allow_subdomains"])
                 sys.exit(0)
             except IntegrityError:
                 print(_("The domain %(domain)s is already a part of your organization.") % {'domain': domain})
                 sys.exit(1)
         elif options["op"] == "remove":
             try:
-                RealmAlias.objects.get(realm=realm, domain=domain).delete()
+                RealmDomain.objects.get(realm=realm, domain=domain).delete()
                 sys.exit(0)
-            except RealmAlias.DoesNotExist:
+            except RealmDomain.DoesNotExist:
                 print("No such entry found!")
                 sys.exit(1)
         else:

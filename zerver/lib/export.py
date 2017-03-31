@@ -19,7 +19,7 @@ from zerver.lib.avatar_hash import user_avatar_hash
 from zerver.lib.create_user import random_api_key
 from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserMessage, Subscription, Message, RealmEmoji, RealmFilter, \
-    RealmAlias, Recipient, DefaultStream, get_user_profile_by_id, \
+    RealmDomain, Recipient, DefaultStream, get_user_profile_by_id, \
     UserPresence, UserActivity, UserActivityInterval, get_user_profile_by_email, \
     get_display_recipient, Attachment
 from zerver.lib.parallel import run_parallel
@@ -54,7 +54,7 @@ MessageOutput = Dict[str, Any]
 
 realm_tables = [("zerver_defaultstream", DefaultStream),
                 ("zerver_realmemoji", RealmEmoji),
-                ("zerver_realmalias", RealmAlias),
+                ("zerver_realmdomain", RealmDomain),
                 ("zerver_realmfilter", RealmFilter)] # List[Tuple[TableName, Any]]
 
 
@@ -70,7 +70,7 @@ ALL_ZERVER_TABLES = [
     'zerver_preregistrationuser_streams',
     'zerver_pushdevicetoken',
     'zerver_realm',
-    'zerver_realmalias',
+    'zerver_realmdomain',
     'zerver_realmemoji',
     'zerver_realmfilter',
     'zerver_recipient',
@@ -386,8 +386,8 @@ def get_realm_config():
     )
 
     Config(
-        table='zerver_realmalias',
-        model=RealmAlias,
+        table='zerver_realmdomain',
+        model=RealmDomain,
         normal_parent=realm_config,
         parent_key='realm_id__in',
     )

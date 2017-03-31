@@ -12,17 +12,17 @@ from zerver.lib.domains import validate_domain
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import email_allowed_for_realm, get_realm, \
     get_realm_by_email_domain, get_user_profile_by_email, \
-    GetRealmByDomainException, RealmAlias
+    GetRealmByDomainException, RealmDomain
 
 import ujson
 
 
-class RealmAliasTest(ZulipTestCase):
+class RealmDomainTest(ZulipTestCase):
     def test_list_aliases(self):
         # type: () -> None
         self.login("iago@zulip.com")
         realm = get_realm('zulip')
-        RealmAlias.objects.create(realm=realm, domain='acme.com', allow_subdomains=True)
+        RealmDomain.objects.create(realm=realm, domain='acme.com', allow_subdomains=True)
         result = self.client_get("/json/realm/domains")
         self.assert_json_success(result)
         received = ujson.dumps(ujson.loads(result.content)['domains'], sort_keys=True)
@@ -53,8 +53,8 @@ class RealmAliasTest(ZulipTestCase):
         result = self.client_post("/json/realm/domains", info=data)
         self.assert_json_success(result)
         realm = get_realm('zulip')
-        self.assertTrue(RealmAlias.objects.filter(realm=realm, domain='acme.com',
-                                                  allow_subdomains=True).exists())
+        self.assertTrue(RealmDomain.objects.filter(realm=realm, domain='acme.com',
+                                                   allow_subdomains=True).exists())
 
         result = self.client_post("/json/realm/domains", info=data)
         self.assert_json_error(result, 'The domain acme.com is already a part of your organization.')
@@ -73,16 +73,16 @@ class RealmAliasTest(ZulipTestCase):
         # type: () -> None
         self.login("iago@zulip.com")
         realm = get_realm('zulip')
-        RealmAlias.objects.create(realm=realm, domain='acme.com',
-                                  allow_subdomains=False)
+        RealmDomain.objects.create(realm=realm, domain='acme.com',
+                                   allow_subdomains=False)
         data = {
             'allow_subdomains': ujson.dumps(True),
         }
         url = "/json/realm/domains/acme.com"
         result = self.client_patch(url, data)
         self.assert_json_success(result)
-        self.assertTrue(RealmAlias.objects.filter(realm=realm, domain='acme.com',
-                                                  allow_subdomains=True).exists())
+        self.assertTrue(RealmDomain.objects.filter(realm=realm, domain='acme.com',
+                                                   allow_subdomains=True).exists())
 
         url = "/json/realm/domains/non-existent.com"
         result = self.client_patch(url, data)
@@ -93,21 +93,21 @@ class RealmAliasTest(ZulipTestCase):
         # type: () -> None
         self.login("iago@zulip.com")
         realm = get_realm('zulip')
-        RealmAlias.objects.create(realm=realm, domain='acme.com')
+        RealmDomain.objects.create(realm=realm, domain='acme.com')
         result = self.client_delete("/json/realm/domains/non-existent.com")
         self.assertEqual(result.status_code, 400)
         self.assert_json_error(result, 'No entry found for domain non-existent.com.')
 
         result = self.client_delete("/json/realm/domains/acme.com")
         self.assert_json_success(result)
-        self.assertFalse(RealmAlias.objects.filter(domain='acme.com').exists())
+        self.assertFalse(RealmDomain.objects.filter(domain='acme.com').exists())
         self.assertTrue(realm.restricted_to_domain)
 
     def test_delete_all_aliases(self):
         # type: () -> None
         self.login("iago@zulip.com")
         realm = get_realm('zulip')
-        query = RealmAlias.objects.filter(realm=realm)
+        query = RealmDomain.objects.filter(realm=realm)
 
         self.assertTrue(realm.restricted_to_domain)
         for alias in query.all():
@@ -124,9 +124,9 @@ class RealmAliasTest(ZulipTestCase):
         realm2, created = do_create_realm('testrealm2', 'Test Realm 2')
         realm3, created = do_create_realm('testrealm3', 'Test Realm 3')
 
-        alias1 = RealmAlias.objects.create(realm=realm1, domain='test1.com', allow_subdomains=True)
-        alias2 = RealmAlias.objects.create(realm=realm2, domain='test2.test1.com', allow_subdomains=False)
-        RealmAlias.objects.create(realm=realm3, domain='test3.test2.test1.com', allow_subdomains=True)
+        alias1 = RealmDomain.objects.create(realm=realm1, domain='test1.com', allow_subdomains=True)
+        alias2 = RealmDomain.objects.create(realm=realm2, domain='test2.test1.com', allow_subdomains=False)
+        RealmDomain.objects.create(realm=realm3, domain='test3.test2.test1.com', allow_subdomains=True)
 
         def assert_and_check(email, realm_string_id):
             # type: (Text, Optional[Text]) -> None
@@ -163,8 +163,8 @@ class RealmAliasTest(ZulipTestCase):
         realm1, created = do_create_realm('testrealm1', 'Test Realm 1', restricted_to_domain=True)
         realm2, created = do_create_realm('testrealm2', 'Test Realm 2', restricted_to_domain=True)
 
-        alias = RealmAlias.objects.create(realm=realm1, domain='test1.com', allow_subdomains=False)
-        RealmAlias.objects.create(realm=realm2, domain='test2.test1.com', allow_subdomains=True)
+        alias = RealmDomain.objects.create(realm=realm1, domain='test1.com', allow_subdomains=False)
+        RealmDomain.objects.create(realm=realm2, domain='test2.test1.com', allow_subdomains=True)
 
         self.assertEqual(email_allowed_for_realm('user@test1.com', realm1), True)
         self.assertEqual(email_allowed_for_realm('user@test2.test1.com', realm1), False)
@@ -181,7 +181,7 @@ class RealmAliasTest(ZulipTestCase):
         # type: () -> None
         realm = get_realm('zulip')
         with self.settings(REALMS_HAVE_SUBDOMAINS=True), self.assertRaises(IntegrityError):
-            RealmAlias.objects.create(realm=realm, domain='zulip.com', allow_subdomains=True)
+            RealmDomain.objects.create(realm=realm, domain='zulip.com', allow_subdomains=True)
 
     def test_validate_domain(self):
         # type: () -> None
