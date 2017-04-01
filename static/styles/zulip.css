@@ -1871,7 +1871,7 @@ div.floating_recipient {
 .loading_indicator_text {
     /* If you change these, make sure to adjust the constants in
        loading.make_indicator as well */
-    margin-left: 20px;
+    margin-left: 5px;
     font-size: 1.2em;
     font-weight: 300;
     line-height: 38px;
@@ -1891,11 +1891,13 @@ div.floating_recipient {
     line-height: 20px;
     display: inline-block;
     float: none;
+    margin-top: 9px;
 }
 
 .settings-section .loading_indicator_spinner {
-    width: 100%;
-    height: 100%;
+    width: 20%;
+    height: 20px;
+    margin-top: 7px;
     vertical-align: middle;
     display: inline-block;
 }
