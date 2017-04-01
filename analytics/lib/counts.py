@@ -418,8 +418,6 @@ def do_pull_minutes_active(stat, start_time, end_time):
                 (stat.property, (time.time()-timer_start)*1000, len(rows)))
 
 count_stats_ = [
-    CountStat('active_users:is_bot:day', zerver_count_user_by_realm, {'is_active': True},
-              (UserProfile, 'is_bot'), CountStat.DAY, interval=TIMEDELTA_MAX),
     CountStat('messages_sent:is_bot:hour', zerver_count_message_by_user, {},
               (UserProfile, 'is_bot'), CountStat.HOUR),
     CountStat('messages_sent:message_type:day', zerver_count_message_type_by_user, {},
@@ -428,11 +426,15 @@ count_stats_ = [
               (Message, 'sending_client_id'), CountStat.DAY),
     CountStat('messages_in_stream:is_bot:day', zerver_count_message_by_stream, {},
               (UserProfile, 'is_bot'), CountStat.DAY),
+
+    CountStat('active_users:is_bot:day', zerver_count_user_by_realm, {'is_active': True},
+              (UserProfile, 'is_bot'), CountStat.DAY, interval=TIMEDELTA_MAX),
+    LoggingCountStat('active_users_log:is_bot:day', RealmCount, CountStat.DAY),
+
     # The minutes=15 part is due to the 15 minutes added in
     # zerver.lib.actions.do_update_user_activity_interval.
     CountStat('15day_actives::day', zerver_check_useractivityinterval_by_user, {},
               None, CountStat.DAY, interval=timedelta(days=15)-timedelta(minutes=15)),
-    LoggingCountStat('active_users_log:is_bot:day', RealmCount, CountStat.DAY),
     CustomPullCountStat('minutes_active::day', UserCount, CountStat.DAY, do_pull_minutes_active)
 ]
 
