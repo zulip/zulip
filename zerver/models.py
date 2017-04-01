@@ -34,6 +34,7 @@ from django.utils.translation import ugettext_lazy as _
 from zerver.lib import cache
 from zerver.lib.validator import check_int, check_float, check_string, \
     check_short_string
+from django.utils.encoding import force_text
 
 from bitfield import BitField
 from bitfield.types import BitHandler
@@ -635,10 +636,22 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     # https://docs.djangoproject.com/en/1.10/ref/models/fields/#django.db.models.Field.null.
     timezone = models.CharField(max_length=40, default=u'')  # type: Text
 
+    # Emojisets
+    APPLE_EMOJISET      = u'apple'
+    EMOJIONE_EMOJISET   = u'emojione'
+    GOOGLE_EMOJISET     = u'google'
+    TWITTER_EMOJISET    = u'twitter'
+    EMOJISET_CHOICES    = ((APPLE_EMOJISET, _("Apple style")),
+                           (EMOJIONE_EMOJISET, _("Emoji One style")),
+                           (GOOGLE_EMOJISET, _("Google style")),
+                           (TWITTER_EMOJISET, _("Twitter style")))
+    emojiset = models.CharField(default=GOOGLE_EMOJISET, choices=EMOJISET_CHOICES, max_length=20) # type: Text
+
     # Define the types of the various automatically managed properties
     property_types = dict(
         default_language=Text,
         emoji_alt_code=bool,
+        emojiset=Text,
         left_side_userlist=bool,
         timezone=Text,
         twenty_four_hour_time=bool,
@@ -683,6 +696,11 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     def is_incoming_webhook(self):
         # type: () -> bool
         return self.bot_type == UserProfile.INCOMING_WEBHOOK_BOT
+
+    @staticmethod
+    def emojiset_choices():
+        # type: () -> Dict[Text, Text]
+        return {emojiset[0]: force_text(emojiset[1]) for emojiset in UserProfile.EMOJISET_CHOICES}
 
     @staticmethod
     def emails_from_ids(user_ids):
