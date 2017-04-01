@@ -765,6 +765,8 @@ JS_SPECS = {
             'js/blueslip.js',
             'third/bootstrap/js/bootstrap.js',
             'js/common.js',
+            'node_modules/moment/moment.js',
+            'node_modules/moment-timezone/builds/moment-timezone-with-data.js',
         ],
         'output_filename': 'min/common.js'
     },

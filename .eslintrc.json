@@ -14,6 +14,7 @@
         "Dropbox": false,
         "SockJS": false,
         "marked": false,
+        "moment": false,
         "i18n": false,
         "bridge": false,
         "page_params": false,
