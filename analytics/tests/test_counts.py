@@ -160,7 +160,7 @@ class TestProcessCountStat(AnalyticsTestCase):
         dummy_query = """INSERT INTO analytics_realmcount (realm_id, property, end_time, value)
                                 VALUES (1, 'test stat', '%(end_time)s', 22)""" % {'end_time': current_time}
         stat = CountStat('test stat', ZerverCountQuery(Recipient, UserCount, dummy_query),
-                         {}, None, CountStat.HOUR)
+                         None, CountStat.HOUR)
         return stat
 
     def assertFillStateEquals(self, end_time, state=FillState.DONE, property=None):

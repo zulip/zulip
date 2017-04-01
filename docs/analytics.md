@@ -90,14 +90,10 @@ realm.
   "\<english_description\>:\<subgroup_name\>:\<frequency\>". Example:
   "active_users:is_bot:day".
 - zerver_count_query: A ZerverCountQuery object, which contains a
-  - zerver_table: A table in zerver/models.py, to which filter_args are
-    applied.  E.g. UserProfile.
+  - zerver_table: A table in zerver/models.py. E.g. UserProfile.
   - analytics_table: The *Count table where the data is initially
     collected. E.g. RealmCount.
   - query: A parameterized raw SQL string. E.g. count_user_by_realm_query.
-- filter_args: Filters the zerver_table. Example: {'is_active': True}, which
-  restricts the UserProfiles under consideration to those with
-  `UserProfile.is_active = True` .
 - group_by: The (table, field) being used for the
   subgroup. E.g. (UserProfile, is_bot).
 - frequency: How often to run the CountStat. Either 'hour' or
