@@ -37,12 +37,11 @@ class CountStat(object):
     DAY = 'day'
     FREQUENCIES = frozenset([HOUR, DAY])
 
-    def __init__(self, property, zerver_count_query, filter_args, group_by, frequency, interval=None):
-        # type: (str, ZerverCountQuery, Dict[str, bool], Optional[Tuple[models.Model, str]], str, Optional[timedelta]) -> None
+    def __init__(self, property, zerver_count_query, group_by, frequency, interval=None):
+        # type: (str, ZerverCountQuery, Optional[Tuple[models.Model, str]], str, Optional[timedelta]) -> None
         self.property = property
         self.zerver_count_query = zerver_count_query
         # might have to do something different for bitfields
-        self.filter_args = filter_args
         self.group_by = group_by
         if frequency not in self.FREQUENCIES:
             raise AssertionError("Unknown frequency: %s" % (frequency,))
@@ -63,14 +62,14 @@ class CountStat(object):
 class LoggingCountStat(CountStat):
     def __init__(self, property, analytics_table, frequency):
         # type: (str, Type[BaseCount], str) -> None
-        CountStat.__init__(self, property, ZerverCountQuery(None, analytics_table, None), {},
+        CountStat.__init__(self, property, ZerverCountQuery(None, analytics_table, None),
                            None, frequency)
         self.is_logging = True
 
 class CustomPullCountStat(CountStat):
     def __init__(self, property, analytics_table, frequency, custom_pull_function):
         # type: (str, Type[BaseCount], str, Callable[[CountStat, datetime, datetime], None]) -> None
-        CountStat.__init__(self, property, ZerverCountQuery(None, analytics_table, None), {},
+        CountStat.__init__(self, property, ZerverCountQuery(None, analytics_table, None),
                            None, frequency)
         self.custom_pull_function = custom_pull_function
 
@@ -203,8 +202,6 @@ def do_aggregate_to_summary_table(stat, end_time):
 def do_pull_from_zerver(stat, start_time, end_time):
     # type: (CountStat, datetime, datetime) -> None
     zerver_table = stat.zerver_count_query.zerver_table._meta.db_table # type: ignore
-    join_args = ' '.join('AND %s.%s = %s' % (zerver_table, key, value)
-                         for key, value in stat.filter_args.items())
     if stat.group_by is None:
         subgroup = 'NULL'
         group_by_clause  = ''
@@ -212,12 +209,11 @@ def do_pull_from_zerver(stat, start_time, end_time):
         subgroup = '%s.%s' % (stat.group_by[0]._meta.db_table, stat.group_by[1])
         group_by_clause = ', ' + subgroup
 
-    # We do string replacement here because passing join_args as a param
+    # We do string replacement here because passing group_by_clause as a param
     # may result in problems when running cursor.execute; we do
     # the string formatting prior so that cursor.execute runs it as sql
     query_ = stat.zerver_count_query.query % {'zerver_table': zerver_table,
                                               'property': stat.property,
-                                              'join_args': join_args,
                                               'subgroup': subgroup,
                                               'group_by_clause': group_by_clause}
     cursor = connection.cursor()
@@ -284,7 +280,6 @@ count_message_by_user_query = """
         zerver_userprofile.date_joined < %%(time_end)s AND
         zerver_message.pub_date >= %%(time_start)s AND
         zerver_message.pub_date < %%(time_end)s
-        %(join_args)s
     GROUP BY zerver_userprofile.id %(group_by_clause)s
 """
 zerver_count_message_by_user = ZerverCountQuery(Message, UserCount, count_message_by_user_query)
@@ -303,7 +298,6 @@ count_stream_by_realm_query = """
         zerver_realm.date_created < %%(time_end)s AND
         zerver_stream.date_created >= %%(time_start)s AND
         zerver_stream.date_created < %%(time_end)s
-        %(join_args)s
     GROUP BY zerver_realm.id %(group_by_clause)s
 """
 zerver_count_stream_by_realm = ZerverCountQuery(Stream, RealmCount, count_stream_by_realm_query)
@@ -335,7 +329,6 @@ count_message_type_by_user_query = """
             zerver_userprofile.id = zerver_message.sender_id AND
             zerver_message.pub_date >= %%(time_start)s AND
             zerver_message.pub_date < %%(time_end)s
-            %(join_args)s
         JOIN zerver_recipient
         ON
             zerver_message.recipient_id = zerver_recipient.id
@@ -372,7 +365,6 @@ count_message_by_stream_query = """
         zerver_recipient.type = 2 AND
         zerver_message.pub_date >= %%(time_start)s AND
         zerver_message.pub_date < %%(time_end)s
-        %(join_args)s
     GROUP BY zerver_stream.id %(group_by_clause)s
 """
 zerver_count_message_by_stream = ZerverCountQuery(Message, StreamCount, count_message_by_stream_query)
@@ -389,7 +381,6 @@ check_useractivityinterval_by_user_query = """
     WHERE
         zerver_useractivityinterval.end >= %%(time_start)s AND
         zerver_useractivityinterval.start < %%(time_end)s
-        %(join_args)s
     GROUP BY zerver_userprofile.id %(group_by_clause)s
 """
 zerver_check_useractivityinterval_by_user = ZerverCountQuery(
@@ -450,32 +441,32 @@ def do_pull_minutes_active(stat, start_time, end_time):
                 (stat.property, (time.time()-timer_start)*1000, len(rows)))
 
 count_stats_ = [
-    CountStat('messages_sent:is_bot:hour', zerver_count_message_by_user, {},
+    CountStat('messages_sent:is_bot:hour', zerver_count_message_by_user,
               (UserProfile, 'is_bot'), CountStat.HOUR),
-    CountStat('messages_sent:message_type:day', zerver_count_message_type_by_user, {},
+    CountStat('messages_sent:message_type:day', zerver_count_message_type_by_user,
               None, CountStat.DAY),
-    CountStat('messages_sent:client:day', zerver_count_message_by_user, {},
+    CountStat('messages_sent:client:day', zerver_count_message_by_user,
               (Message, 'sending_client_id'), CountStat.DAY),
-    CountStat('messages_in_stream:is_bot:day', zerver_count_message_by_stream, {},
+    CountStat('messages_in_stream:is_bot:day', zerver_count_message_by_stream,
               (UserProfile, 'is_bot'), CountStat.DAY),
 
     # Sanity check on the bottom two stats. Is only an approximation,
     # e.g. if a user is deactivated between the end of the day and when this
     # stat is run, they won't be counted.
-    CountStat('active_users:is_bot:day', zerver_count_user_by_realm, {},
+    CountStat('active_users:is_bot:day', zerver_count_user_by_realm,
               (UserProfile, 'is_bot'), CountStat.DAY, interval=TIMEDELTA_MAX),
     # In RealmCount, 'active_humans_audit::day' should be the partial sum sequence
     # of 'active_users_log:is_bot:day', for any realm that started after the
     # latter stat was introduced.
     # 'active_users_audit:is_bot:day' is the canonical record of which users were
     # active on which days (in the UserProfile.is_active sense).
-    CountStat('active_users_audit:is_bot:day', zerver_check_realmauditlog_by_user, {},
+    CountStat('active_users_audit:is_bot:day', zerver_check_realmauditlog_by_user,
               (UserProfile, 'is_bot'), CountStat.DAY),
     LoggingCountStat('active_users_log:is_bot:day', RealmCount, CountStat.DAY),
 
     # The minutes=15 part is due to the 15 minutes added in
     # zerver.lib.actions.do_update_user_activity_interval.
-    CountStat('15day_actives::day', zerver_check_useractivityinterval_by_user, {},
+    CountStat('15day_actives::day', zerver_check_useractivityinterval_by_user,
               None, CountStat.DAY, interval=timedelta(days=15)-timedelta(minutes=15)),
     CustomPullCountStat('minutes_active::day', UserCount, CountStat.DAY, do_pull_minutes_active)
 ]
