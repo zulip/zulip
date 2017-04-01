@@ -7,7 +7,7 @@ from django.test import TestCase
 from django.utils import timezone
 
 from analytics.lib.counts import CountStat, COUNT_STATS, process_count_stat, \
-    do_fill_count_stat_at_hour, do_increment_logging_stat, ZerverCountQuery, \
+    do_fill_count_stat_at_hour, do_increment_logging_stat, DataCollector, \
     LoggingCountStat, do_aggregate_to_summary_table, \
     do_drop_all_analytics_tables
 from analytics.models import BaseCount, InstallationCount, RealmCount, \
@@ -157,7 +157,7 @@ class TestProcessCountStat(AnalyticsTestCase):
         # type: (datetime) -> CountStat
         dummy_query = """INSERT INTO analytics_realmcount (realm_id, property, end_time, value)
                                 VALUES (1, 'test stat', '%(end_time)s', 22)""" % {'end_time': current_time}
-        stat = CountStat('test stat', ZerverCountQuery(UserCount, dummy_query, None), CountStat.HOUR)
+        stat = CountStat('test stat', DataCollector(UserCount, dummy_query, None), CountStat.HOUR)
         return stat
 
     def assertFillStateEquals(self, end_time, state=FillState.DONE, property=None):
