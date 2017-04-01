@@ -93,8 +93,8 @@ realm.
   - analytics_table: The *Count table where the data is initially
     collected. E.g. RealmCount.
   - query: A parameterized raw SQL string. E.g. count_user_by_realm_query.
-- group_by: The (table, field) being used for the
-  subgroup. E.g. (UserProfile, is_bot).
+  - group_by: The (table, field) being used for the
+    subgroup. E.g. (UserProfile, is_bot).
 - frequency: How often to run the CountStat. Either 'hour' or
   'day'. E.g. 'day'.
 - interval: A timedelta that restricts events to the following time interval:
