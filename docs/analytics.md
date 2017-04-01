@@ -90,7 +90,6 @@ realm.
   "\<english_description\>:\<subgroup_name\>:\<frequency\>". Example:
   "active_users:is_bot:day".
 - zerver_count_query: A ZerverCountQuery object, which contains a
-  - zerver_table: A table in zerver/models.py. E.g. UserProfile.
   - analytics_table: The *Count table where the data is initially
     collected. E.g. RealmCount.
   - query: A parameterized raw SQL string. E.g. count_user_by_realm_query.
