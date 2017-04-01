@@ -16,7 +16,8 @@ from typing import Dict, Text, Union
 from os.path import dirname
 from PIL import Image, ImageDraw, ImageFont
 
-from emoji_setup_utils import generate_emoji_catalog, emoji_names_for_picker
+from emoji_setup_utils import generate_emoji_catalog, emoji_names_for_picker, \
+    EMOJISETS
 
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../')
 sys.path.append(ZULIP_PATH)
@@ -59,7 +60,7 @@ div.emoji,
 span.emoji
 {
     display: inline-block;
-    background-image: url('sheet_google_32.png');
+    background-image: url('sheet_%(emojiset)s_32.png');
     -webkit-background-size: 1025px 1025px;
     -moz-background-size: 1025px 1025px;
     background-size: 1025px 1025px;
@@ -265,8 +266,7 @@ def dump_emojis(cache_path):
             os.path.join(cache_emoji, fn)
         )
 
-    sprite_sheet_google = os.path.join(EMOJI_DATA_PATH, 'sheet_google_32.png')
-    run(['cp', sprite_sheet_google, cache_path], shell=True)
+    # Spritesheet CSS generation code.
     emoji_positions = ""
     for emoji in emoji_data:
         if emoji["has_img_google"]:
@@ -274,10 +274,15 @@ def dump_emojis(cache_path):
                                                           'pos_x': (emoji["sheet_x"] * 100) / 40,
                                                           'pos_y': (emoji["sheet_y"] * 100) / 40,
                                                           }
-    SPRITE_CSS_PATH = os.path.join(cache_path, 'google_sprite.css')
-    sprite_css_file = open(SPRITE_CSS_PATH, 'w')
-    sprite_css_file.write(SPRITE_CSS_FILE_TEMPLATE % {'emoji_positions': emoji_positions, })
-    sprite_css_file.close()
+    for emojiset in EMOJISETS:
+        sprite_sheet = os.path.join(EMOJI_DATA_PATH, 'sheet_%s_32.png' % (emojiset,))
+        run(['cp', sprite_sheet, cache_path], shell=True)
+        SPRITE_CSS_PATH = os.path.join(cache_path, '%s_sprite.css' % (emojiset,))
+        sprite_css_file = open(SPRITE_CSS_PATH, 'w')
+        sprite_css_file.write(SPRITE_CSS_FILE_TEMPLATE % {'emojiset': emojiset,
+                                                          'emoji_positions': emoji_positions,
+                                                          })
+        sprite_css_file.close()
 
     # Add zulip emoji to `emoji_map` so that we can avoid
     # adding unnecessary exceptions to the rendering logic.

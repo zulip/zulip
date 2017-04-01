@@ -15,6 +15,9 @@ import ujson
 from six.moves import range, zip
 from typing import Any, Dict, List, Text
 
+# Emojisets that we currently support.
+EMOJISETS = ['apple', 'emojione', 'google', 'twitter']
+
 # the corresponding code point will be set to exactly these names as a
 # final pass, overriding any other rules.  This is useful for cases
 # where the two names are very different, users might reasonably type
@@ -249,8 +252,7 @@ def generate_emoji_catalog(emoji_data):
 # the emoji sets so that we can switch emoji sets seemlessly.
 def emoji_is_universal(emoji_dict):
     # type: (Dict[Text, Any]) -> bool
-    emoji_sets = ['apple', 'emojione', 'google', 'twitter']
-    for emoji_set in emoji_sets:
+    for emoji_set in EMOJISETS:
         if not emoji_dict['has_img_' + emoji_set]:
             return False
     return True
