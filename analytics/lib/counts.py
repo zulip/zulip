@@ -62,21 +62,20 @@ class CountStat(object):
 class LoggingCountStat(CountStat):
     def __init__(self, property, analytics_table, frequency):
         # type: (str, Type[BaseCount], str) -> None
-        CountStat.__init__(self, property, ZerverCountQuery(None, analytics_table, None),
+        CountStat.__init__(self, property, ZerverCountQuery(analytics_table, None),
                            None, frequency)
         self.is_logging = True
 
 class CustomPullCountStat(CountStat):
     def __init__(self, property, analytics_table, frequency, custom_pull_function):
         # type: (str, Type[BaseCount], str, Callable[[CountStat, datetime, datetime], None]) -> None
-        CountStat.__init__(self, property, ZerverCountQuery(None, analytics_table, None),
+        CountStat.__init__(self, property, ZerverCountQuery(analytics_table, None),
                            None, frequency)
         self.custom_pull_function = custom_pull_function
 
 class ZerverCountQuery(object):
-    def __init__(self, zerver_table, analytics_table, query):
-        # type: (Type[models.Model], Type[BaseCount], Text) -> None
-        self.zerver_table = zerver_table
+    def __init__(self, analytics_table, query):
+        # type: (Type[BaseCount], Text) -> None
         self.analytics_table = analytics_table
         self.query = query
 
@@ -201,7 +200,6 @@ def do_aggregate_to_summary_table(stat, end_time):
 # This is the only method that hits the prod databases directly.
 def do_pull_from_zerver(stat, start_time, end_time):
     # type: (CountStat, datetime, datetime) -> None
-    zerver_table = stat.zerver_count_query.zerver_table._meta.db_table # type: ignore
     if stat.group_by is None:
         subgroup = 'NULL'
         group_by_clause  = ''
@@ -212,8 +210,7 @@ def do_pull_from_zerver(stat, start_time, end_time):
     # We do string replacement here because passing group_by_clause as a param
     # may result in problems when running cursor.execute; we do
     # the string formatting prior so that cursor.execute runs it as sql
-    query_ = stat.zerver_count_query.query % {'zerver_table': zerver_table,
-                                              'property': stat.property,
+    query_ = stat.zerver_count_query.query % {'property': stat.property,
                                               'subgroup': subgroup,
                                               'group_by_clause': group_by_clause}
     cursor = connection.cursor()
@@ -252,7 +249,7 @@ count_user_by_realm_query = """
     INSERT INTO analytics_realmcount
         (realm_id, value, property, subgroup, end_time)
     SELECT
-        zerver_realm.id, count(%(zerver_table)s),'%(property)s', %(subgroup)s, %%(time_end)s
+        zerver_realm.id, count(*),'%(property)s', %(subgroup)s, %%(time_end)s
     FROM zerver_realm
     JOIN zerver_userprofile
     ON
@@ -264,7 +261,7 @@ count_user_by_realm_query = """
         zerver_userprofile.is_active = TRUE
     GROUP BY zerver_realm.id %(group_by_clause)s
 """
-zerver_count_user_by_realm = ZerverCountQuery(UserProfile, RealmCount, count_user_by_realm_query)
+zerver_count_user_by_realm = ZerverCountQuery(RealmCount, count_user_by_realm_query)
 
 # currently .sender_id is only Message specific thing
 count_message_by_user_query = """
@@ -282,7 +279,7 @@ count_message_by_user_query = """
         zerver_message.pub_date < %%(time_end)s
     GROUP BY zerver_userprofile.id %(group_by_clause)s
 """
-zerver_count_message_by_user = ZerverCountQuery(Message, UserCount, count_message_by_user_query)
+zerver_count_message_by_user = ZerverCountQuery(UserCount, count_message_by_user_query)
 
 # Currently unused and untested
 count_stream_by_realm_query = """
@@ -300,7 +297,7 @@ count_stream_by_realm_query = """
         zerver_stream.date_created < %%(time_end)s
     GROUP BY zerver_realm.id %(group_by_clause)s
 """
-zerver_count_stream_by_realm = ZerverCountQuery(Stream, RealmCount, count_stream_by_realm_query)
+zerver_count_stream_by_realm = ZerverCountQuery(RealmCount, count_stream_by_realm_query)
 
 # This query violates the count_X_by_Y_query conventions in several ways. One,
 # the X table is not specified by the query name; MessageType is not a zerver
@@ -339,7 +336,7 @@ count_message_type_by_user_query = """
     ) AS subquery
     GROUP BY realm_id, id, message_type
 """
-zerver_count_message_type_by_user = ZerverCountQuery(Message, UserCount, count_message_type_by_user_query)
+zerver_count_message_type_by_user = ZerverCountQuery(UserCount, count_message_type_by_user_query)
 
 # Note that this query also joins to the UserProfile table, since all
 # current queries that use this also subgroup on UserProfile.is_bot. If in
@@ -367,7 +364,7 @@ count_message_by_stream_query = """
         zerver_message.pub_date < %%(time_end)s
     GROUP BY zerver_stream.id %(group_by_clause)s
 """
-zerver_count_message_by_stream = ZerverCountQuery(Message, StreamCount, count_message_by_stream_query)
+zerver_count_message_by_stream = ZerverCountQuery(StreamCount, count_message_by_stream_query)
 
 check_useractivityinterval_by_user_query = """
     INSERT INTO analytics_usercount
@@ -384,7 +381,7 @@ check_useractivityinterval_by_user_query = """
     GROUP BY zerver_userprofile.id %(group_by_clause)s
 """
 zerver_check_useractivityinterval_by_user = ZerverCountQuery(
-    UserActivityInterval, UserCount, check_useractivityinterval_by_user_query)
+    UserCount, check_useractivityinterval_by_user_query)
 
 # Currently hardcodes the query needed for active_users_audit:is_bot:day.
 # Assumes that a user cannot have two RealmAuditLog entries with the same event_time and
@@ -413,8 +410,7 @@ check_realmauditlog_by_user_query = """
     WHERE
         ral1.event_type in ('user_created', 'user_activated', 'user_reactivated')
 """
-zerver_check_realmauditlog_by_user = ZerverCountQuery(
-    RealmAuditLog, UserCount, check_realmauditlog_by_user_query)
+zerver_check_realmauditlog_by_user = ZerverCountQuery(UserCount, check_realmauditlog_by_user_query)
 
 def do_pull_minutes_active(stat, start_time, end_time):
     # type: (CountStat, datetime, datetime) -> None
