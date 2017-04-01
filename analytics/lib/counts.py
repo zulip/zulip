@@ -6,7 +6,7 @@ from django.utils import timezone
 from analytics.models import InstallationCount, RealmCount, \
     UserCount, StreamCount, BaseCount, FillState, Anomaly, installation_epoch
 from zerver.models import Realm, UserProfile, Message, Stream, \
-    UserActivityInterval, models
+    UserActivityInterval, RealmAuditLog, models
 from zerver.lib.timestamp import floor_to_day, floor_to_hour, ceiling_to_day, \
     ceiling_to_hour
 
@@ -393,6 +393,36 @@ check_useractivityinterval_by_user_query = """
 zerver_check_useractivityinterval_by_user = ZerverCountQuery(
     UserActivityInterval, UserCount, check_useractivityinterval_by_user_query)
 
+# Currently hardcodes the query needed for active_users_audit:is_bot:day.
+# Assumes that a user cannot have two RealmAuditLog entries with the same event_time and
+# event_type in ['user_created', 'user_deactivated', etc].
+# In particular, it's important to ensure that migrations don't cause that to happen.
+check_realmauditlog_by_user_query = """
+    INSERT INTO analytics_usercount
+        (user_id, realm_id, value, property, subgroup, end_time)
+    SELECT
+        ral1.modified_user_id, ral1.realm_id, 1, '%(property)s', %(subgroup)s, %%(time_end)s
+    FROM zerver_realmauditlog ral1
+    JOIN (
+        SELECT modified_user_id, max(event_time) AS max_event_time
+        FROM zerver_realmauditlog
+        WHERE
+            event_type in ('user_created', 'user_deactivated', 'user_activated', 'user_reactivated') AND
+            event_time < %%(time_end)s
+        GROUP BY modified_user_id
+    ) ral2
+    ON
+        ral1.event_time = max_event_time AND
+        ral1.modified_user_id = ral2.modified_user_id
+    JOIN zerver_userprofile
+    ON
+        ral1.modified_user_id = zerver_userprofile.id
+    WHERE
+        ral1.event_type in ('user_created', 'user_activated', 'user_reactivated')
+"""
+zerver_check_realmauditlog_by_user = ZerverCountQuery(
+    RealmAuditLog, UserCount, check_realmauditlog_by_user_query)
+
 def do_pull_minutes_active(stat, start_time, end_time):
     # type: (CountStat, datetime, datetime) -> None
     timer_start = time.time()
@@ -427,8 +457,18 @@ count_stats_ = [
     CountStat('messages_in_stream:is_bot:day', zerver_count_message_by_stream, {},
               (UserProfile, 'is_bot'), CountStat.DAY),
 
+    # Sanity check on the bottom two stats. Is only an approximation,
+    # e.g. if a user is deactivated between the end of the day and when this
+    # stat is run, they won't be counted.
     CountStat('active_users:is_bot:day', zerver_count_user_by_realm, {'is_active': True},
               (UserProfile, 'is_bot'), CountStat.DAY, interval=TIMEDELTA_MAX),
+    # In RealmCount, 'active_humans_audit::day' should be the partial sum sequence
+    # of 'active_users_log:is_bot:day', for any realm that started after the
+    # latter stat was introduced.
+    # 'active_users_audit:is_bot:day' is the canonical record of which users were
+    # active on which days (in the UserProfile.is_active sense).
+    CountStat('active_users_audit:is_bot:day', zerver_check_realmauditlog_by_user, {},
+              (UserProfile, 'is_bot'), CountStat.DAY),
     LoggingCountStat('active_users_log:is_bot:day', RealmCount, CountStat.DAY),
 
     # The minutes=15 part is due to the 15 minutes added in

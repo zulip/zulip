@@ -16,8 +16,10 @@ from analytics.models import BaseCount, InstallationCount, RealmCount, \
     UserCount, StreamCount, FillState, Anomaly, installation_epoch
 from zerver.lib.actions import do_create_user, do_deactivate_user, \
     do_activate_user, do_reactivate_user
+from zerver.lib.timestamp import floor_to_day
 from zerver.models import Realm, UserProfile, Message, Stream, Recipient, \
-    Huddle, Client, UserActivityInterval, get_user_profile_by_email, get_client
+    Huddle, Client, UserActivityInterval, RealmAuditLog, \
+    get_user_profile_by_email, get_client
 
 from datetime import datetime, timedelta
 
@@ -729,3 +731,166 @@ class TestDeleteStats(AnalyticsTestCase):
         do_drop_all_analytics_tables()
         for table in list(analytics.models.values()):
             self.assertFalse(table.objects.exists())
+
+class TestActiveUsersAudit(AnalyticsTestCase):
+    def setUp(self):
+        # type: () -> None
+        super(TestActiveUsersAudit, self).setUp()
+        self.user = self.create_user()
+        self.stat = COUNT_STATS['active_users_audit:is_bot:day']
+        self.current_property = self.stat.property
+
+    def add_event(self, event_type, days_offset, user=None):
+        # type: (str, float, Optional[UserProfile]) -> None
+        hours_offset = int(24*days_offset)
+        if user is None:
+            user = self.user
+        RealmAuditLog.objects.create(
+            realm=user.realm, modified_user=user, event_type=event_type,
+            event_time=self.TIME_ZERO - hours_offset*self.HOUR)
+
+    def test_user_deactivated_in_future(self):
+        # type: () -> None
+        self.add_event('user_created', 1)
+        self.add_event('user_deactivated', 0)
+        do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
+        self.assertTableState(UserCount, ['subgroup'], [['false']])
+
+    def test_user_reactivated_in_future(self):
+        # type: () -> None
+        self.add_event('user_deactivated', 1)
+        self.add_event('user_reactivated', 0)
+        do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
+        self.assertTableState(UserCount, [], [])
+
+    def test_user_active_then_deactivated_same_day(self):
+        # type: () -> None
+        self.add_event('user_created', 1)
+        self.add_event('user_deactivated', .5)
+        do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
+        self.assertTableState(UserCount, [], [])
+
+    def test_user_unactive_then_activated_same_day(self):
+        # type: () -> None
+        self.add_event('user_deactivated', 1)
+        self.add_event('user_reactivated', .5)
+        do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
+        self.assertTableState(UserCount, ['subgroup'], [['false']])
+
+    # Arguably these next two tests are duplicates of the _in_future tests, but are
+    # a guard against future refactorings where they may no longer be duplicates
+    def test_user_active_then_deactivated_with_day_gap(self):
+        # type: () -> None
+        self.add_event('user_created', 2)
+        self.add_event('user_deactivated', 1)
+        process_count_stat(self.stat, self.TIME_ZERO)
+        self.assertTableState(UserCount, ['subgroup', 'end_time'],
+                              [['false', self.TIME_ZERO - self.DAY]])
+
+    def test_user_deactivated_then_reactivated_with_day_gap(self):
+        # type: () -> None
+        self.add_event('user_deactivated', 2)
+        self.add_event('user_reactivated', 1)
+        process_count_stat(self.stat, self.TIME_ZERO)
+        self.assertTableState(UserCount, ['subgroup'], [['false']])
+
+    def test_event_types(self):
+        # type: () -> None
+        self.add_event('user_created', 4)
+        self.add_event('user_deactivated', 3)
+        self.add_event('user_activated', 2)
+        self.add_event('user_reactivated', 1)
+        for i in range(4):
+            do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO - i*self.DAY)
+        self.assertTableState(UserCount, ['subgroup', 'end_time'],
+                              [['false', self.TIME_ZERO - i*self.DAY] for i in [3, 1, 0]])
+
+    # Also tests that aggregation to RealmCount and InstallationCount is
+    # being done, and that we're storing the user correctly in UserCount
+    def test_multiple_users_realms_and_bots(self):
+        # type: () -> None
+        user1 = self.create_user()
+        user2 = self.create_user()
+        second_realm = Realm.objects.create(string_id='moo', name='moo')
+        user3 = self.create_user(realm=second_realm)
+        user4 = self.create_user(realm=second_realm, is_bot=True)
+        for user in [user1, user2, user3, user4]:
+            self.add_event('user_created', 1, user=user)
+        do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
+        self.assertTableState(UserCount, ['subgroup', 'user'],
+                              [['false', user1], ['false', user2], ['false', user3], ['true', user4]])
+        self.assertTableState(RealmCount, ['value', 'subgroup', 'realm'],
+                              [[2, 'false', self.default_realm], [1, 'false', second_realm],
+                               [1, 'true', second_realm]])
+        self.assertTableState(InstallationCount, ['value', 'subgroup'], [[3, 'false'], [1, 'true']])
+        self.assertTableState(StreamCount, [], [])
+
+    # Not that interesting a test if you look at the SQL query at hand, but
+    # almost all other CountStats have a start_date, so guarding against a
+    # refactoring that adds that in.
+    # Also tests the slightly more end-to-end process_count_stat rather than
+    # do_fill_count_stat_at_hour. E.g. if one changes self.stat.frequency to
+    # CountStat.HOUR from CountStat.DAY, this will fail, while many of the
+    # tests above will not.
+    def test_update_from_two_days_ago(self):
+        # type: () -> None
+        self.add_event('user_created', 2)
+        process_count_stat(self.stat, self.TIME_ZERO)
+        self.assertTableState(UserCount, ['subgroup', 'end_time'],
+                              [['false', self.TIME_ZERO], ['false', self.TIME_ZERO-self.DAY]])
+
+    # User with no relevant activity could happen e.g. for a system bot that
+    # doesn't go through do_create_user. Mainly just want to make sure that
+    # that situation doesn't throw an error.
+    def test_empty_realm_or_user_with_no_relevant_activity(self):
+        # type: () -> None
+        self.add_event('unrelated', 1)
+        self.create_user() # also test a user with no RealmAuditLog entries
+        Realm.objects.create(string_id='moo', name='moo')
+        do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
+        self.assertTableState(UserCount, [], [])
+
+    def test_max_audit_entry_is_unrelated(self):
+        # type: () -> None
+        self.add_event('user_created', 1)
+        self.add_event('unrelated', .5)
+        do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
+        self.assertTableState(UserCount, ['subgroup'], [['false']])
+
+    # Simultaneous related audit entries should not be allowed, and so not testing for that.
+    def test_simultaneous_unrelated_audit_entry(self):
+        # type: () -> None
+        self.add_event('user_created', 1)
+        self.add_event('unrelated', 1)
+        do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
+        self.assertTableState(UserCount, ['subgroup'], [['false']])
+
+    def test_simultaneous_max_audit_entries_of_different_users(self):
+        # type: () -> None
+        user1 = self.create_user()
+        user2 = self.create_user()
+        user3 = self.create_user()
+        self.add_event('user_created', .5, user=user1)
+        self.add_event('user_created', .5, user=user2)
+        self.add_event('user_created', 1, user=user3)
+        self.add_event('user_deactivated', .5, user=user3)
+        do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
+        self.assertTableState(UserCount, ['user', 'subgroup'],
+                              [[user1, 'false'], [user2, 'false']])
+
+    def test_end_to_end_with_actions_dot_py(self):
+        # type: () -> None
+        user1 = do_create_user('email1', 'password', self.default_realm, 'full_name', 'short_name')
+        user2 = do_create_user('email2', 'password', self.default_realm, 'full_name', 'short_name')
+        user3 = do_create_user('email3', 'password', self.default_realm, 'full_name', 'short_name')
+        user4 = do_create_user('email4', 'password', self.default_realm, 'full_name', 'short_name')
+        do_deactivate_user(user2)
+        do_activate_user(user3)
+        do_reactivate_user(user4)
+        end_time = floor_to_day(timezone.now()) + self.DAY
+        do_fill_count_stat_at_hour(self.stat, end_time)
+        for user in [user1, user3, user4]:
+            self.assertTrue(UserCount.objects.filter(
+                user=user, property=self.current_property, subgroup='false',
+                end_time=end_time, value=1).exists())
+        self.assertFalse(UserCount.objects.filter(user=user2).exists())
