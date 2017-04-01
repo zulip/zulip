@@ -250,6 +250,8 @@ def do_increment_logging_stat(zerver_object, stat, subgroup, event_time, increme
         row.value = F('value') + increment
         row.save(update_fields=['value'])
 
+# Hardcodes the query needed by active_users:is_bot:day, since that is
+# currently the only stat that uses this.
 count_user_by_realm_query = """
     INSERT INTO analytics_realmcount
         (realm_id, value, property, subgroup, end_time)
@@ -262,8 +264,8 @@ count_user_by_realm_query = """
     WHERE
         zerver_realm.date_created < %%(time_end)s AND
         zerver_userprofile.date_joined >= %%(time_start)s AND
-        zerver_userprofile.date_joined < %%(time_end)s
-        %(join_args)s
+        zerver_userprofile.date_joined < %%(time_end)s AND
+        zerver_userprofile.is_active = TRUE
     GROUP BY zerver_realm.id %(group_by_clause)s
 """
 zerver_count_user_by_realm = ZerverCountQuery(UserProfile, RealmCount, count_user_by_realm_query)
@@ -460,7 +462,7 @@ count_stats_ = [
     # Sanity check on the bottom two stats. Is only an approximation,
     # e.g. if a user is deactivated between the end of the day and when this
     # stat is run, they won't be counted.
-    CountStat('active_users:is_bot:day', zerver_count_user_by_realm, {'is_active': True},
+    CountStat('active_users:is_bot:day', zerver_count_user_by_realm, {},
               (UserProfile, 'is_bot'), CountStat.DAY, interval=TIMEDELTA_MAX),
     # In RealmCount, 'active_humans_audit::day' should be the partial sum sequence
     # of 'active_users_log:is_bot:day', for any realm that started after the
