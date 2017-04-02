@@ -65,7 +65,7 @@ class LoggingCountStat(CountStat):
 
 class DataCollector(object):
     def __init__(self, output_table, pull_function):
-        # type: (Type[BaseCount], Optional[Callable[[CountStat, datetime, datetime], None]]) -> None
+        # type: (Type[BaseCount], Optional[Callable[[str, datetime, datetime], None]]) -> None
         self.output_table = output_table
         self.pull_function = pull_function
 
@@ -115,7 +115,7 @@ def do_fill_count_stat_at_hour(stat, end_time):
 
     start_time = end_time - stat.interval
     if not stat.is_logging:
-        stat.data_collector.pull_function(stat, start_time, end_time)
+        stat.data_collector.pull_function(stat.property, start_time, end_time)
     do_aggregate_to_summary_table(stat, end_time)
 
 def do_delete_counts_at_hour(stat, end_time):
@@ -185,9 +185,8 @@ def do_aggregate_to_summary_table(stat, end_time):
     logger.info("%s InstallationCount aggregation (%dms/%sr)" % (stat.property, (end-start)*1000, cursor.rowcount))
     cursor.close()
 
-# This is the only method that hits the prod databases directly.
-def do_pull_from_zerver(stat, start_time, end_time, query, group_by):
-    # type: (CountStat, datetime, datetime, str, Optional[Tuple[models.Model, str]]) -> None
+def do_pull_from_zerver(property, start_time, end_time, query, group_by):
+    # type: (str, datetime, datetime, str, Optional[Tuple[models.Model, str]]) -> None
     if group_by is None:
         subgroup = 'NULL'
         group_by_clause  = ''
@@ -198,20 +197,20 @@ def do_pull_from_zerver(stat, start_time, end_time, query, group_by):
     # We do string replacement here because passing group_by_clause as a param
     # may result in problems when running cursor.execute; we do
     # the string formatting prior so that cursor.execute runs it as sql
-    query_ = query % {'property': stat.property, 'subgroup': subgroup,
+    query_ = query % {'property': property, 'subgroup': subgroup,
                       'group_by_clause': group_by_clause}
     cursor = connection.cursor()
     start = time.time()
     cursor.execute(query_, {'time_start': start_time, 'time_end': end_time})
     end = time.time()
-    logger.info("%s do_pull_from_zerver (%dms/%sr)" % (stat.property, (end-start)*1000, cursor.rowcount))
+    logger.info("%s do_pull_from_zerver (%dms/%sr)" % (property, (end-start)*1000, cursor.rowcount))
     cursor.close()
 
 def zerver_data_collector(output_table, query, group_by):
     # type: (Type[BaseCount], str, Optional[Tuple[models.Model, str]]) -> DataCollector
-    def pull_function(stat, start_time, end_time):
-        # type: (CountStat, datetime, datetime) -> None
-        do_pull_from_zerver(stat, start_time, end_time, query, group_by)
+    def pull_function(property, start_time, end_time):
+        # type: (str, datetime, datetime) -> None
+        do_pull_from_zerver(property, start_time, end_time, query, group_by)
     return DataCollector(output_table, pull_function)
 
 # called from zerver/lib/actions.py; should not throw any errors
@@ -398,8 +397,8 @@ check_realmauditlog_by_user_query = """
         ral1.event_type in ('user_created', 'user_activated', 'user_reactivated')
 """
 
-def do_pull_minutes_active(stat, start_time, end_time):
-    # type: (CountStat, datetime, datetime) -> None
+def do_pull_minutes_active(property, start_time, end_time):
+    # type: (str, datetime, datetime) -> None
     timer_start = time.time()
     user_activity_intervals = UserActivityInterval.objects.filter(
         end__gt=start_time, start__lt=end_time
@@ -414,13 +413,13 @@ def do_pull_minutes_active(stat, start_time, end_time):
         end = min(end_time, interval_end)
         seconds_active[(user_id, realm_id)] += (end - start).total_seconds()
 
-    rows = [UserCount(user_id=ids[0], realm_id=ids[1], property=stat.property,
+    rows = [UserCount(user_id=ids[0], realm_id=ids[1], property=property,
                       end_time=end_time, value=int(seconds // 60))
             for ids, seconds in seconds_active.items() if seconds >= 60]
     UserCount.objects.bulk_create(rows)
 
     logger.info("%s do_pull_minutes_active (%dms/%sr)" %
-                (stat.property, (time.time()-timer_start)*1000, len(rows)))
+                (property, (time.time()-timer_start)*1000, len(rows)))
 
 count_stats_ = [
     CountStat('messages_sent:is_bot:hour',
