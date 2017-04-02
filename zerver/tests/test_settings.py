@@ -239,6 +239,29 @@ class ChangeSettingsTest(ZulipTestCase):
         user_profile = get_user_profile_by_email(email)
         self.assertNotEqual(user_profile.timezone, invalid_timezone)
 
+    def test_change_emojiset(self):
+        # type: () -> None
+        """
+        Test changing the emojiset.
+        """
+        email = "hamlet@zulip.com"
+        self.login(email)
+        emojiset = 'apple'
+        data = dict(emojiset=ujson.dumps(emojiset))
+        result = self.client_patch("/json/settings/display", data)
+        self.assert_json_success(result)
+        user_profile = get_user_profile_by_email(email)
+        self.assertEqual(user_profile.emojiset, emojiset)
+
+        # Test to make sure invalid emojisets are not accepted
+        # and saved in the db.
+        invalid_emojiset = "invalid_emojiset"
+        data = dict(emojiset=ujson.dumps(invalid_emojiset))
+        result = self.client_patch("/json/settings/display", data)
+        self.assert_json_error(result, "Invalid emojiset '%s'" % (invalid_emojiset,))
+        user_profile = get_user_profile_by_email(email)
+        self.assertNotEqual(user_profile.emojiset, invalid_emojiset)
+
 class UserChangesTest(ZulipTestCase):
     def test_update_api_key(self):
         # type: () -> None
