@@ -226,9 +226,10 @@ def do_pull_from_zerver(property, start_time, end_time, query, group_by):
         subgroup = '%s.%s' % (group_by[0]._meta.db_table, group_by[1])
         group_by_clause = ', ' + subgroup
 
-    # We do string replacement here because passing group_by_clause as a param
-    # may result in problems when running cursor.execute; we do
-    # the string formatting prior so that cursor.execute runs it as sql
+    # We do string replacement here because cursor.execute will reject a
+    # group_by_clause given as a param.
+    # We pass in the datetimes as params so that we don't have to think about
+    # how to convert python datetimes to SQL datetimes.
     query_ = query % {'property': property, 'subgroup': subgroup,
                       'group_by_clause': group_by_clause}
     cursor = connection.cursor()
@@ -269,7 +270,6 @@ def do_pull_minutes_active(property, start_time, end_time):
     logger.info("%s do_pull_minutes_active (%dms/%sr)" %
                 (property, (time.time()-timer_start)*1000, len(rows)))
 
-# currently .sender_id is only Message specific thing
 count_message_by_user_query = """
     INSERT INTO analytics_usercount
         (user_id, realm_id, value, property, subgroup, end_time)
@@ -286,10 +286,7 @@ count_message_by_user_query = """
     GROUP BY zerver_userprofile.id %(group_by_clause)s
 """
 
-# This query violates the count_X_by_Y_query conventions in several ways. One,
-# the X table is not specified by the query name; MessageType is not a zerver
-# table. Two, it ignores the subgroup column in the CountStat object; instead,
-# it uses 'message_type' from the subquery to fill in the subgroup column.
+# Note: ignores the group_by / group_by_clause.
 count_message_type_by_user_query = """
     INSERT INTO analytics_usercount
             (realm_id, user_id, value, property, subgroup, end_time)
@@ -324,10 +321,10 @@ count_message_type_by_user_query = """
     GROUP BY realm_id, id, message_type
 """
 
-# Note that this query also joins to the UserProfile table, since all
-# current queries that use this also subgroup on UserProfile.is_bot. If in
-# the future there is a query that counts messages by stream and doesn't need
-# the UserProfile table, consider writing a new query for efficiency.
+# This query joins to the UserProfile table since all current queries that
+# use this also subgroup on UserProfile.is_bot. If in the future there is a
+# stat that counts messages by stream and doesn't need the UserProfile
+# table, consider writing a new query for efficiency.
 count_message_by_stream_query = """
     INSERT INTO analytics_streamcount
         (stream_id, realm_id, value, property, subgroup, end_time)
