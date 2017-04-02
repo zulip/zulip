@@ -161,8 +161,9 @@ def update_display_settings_backend(request, user_profile,
                                     default_language=REQ(validator=check_string, default=None),
                                     left_side_userlist=REQ(validator=check_bool, default=None),
                                     emoji_alt_code=REQ(validator=check_bool, default=None),
+                                    emojiset=REQ(validator=check_string, default=None),
                                     timezone=REQ(validator=check_string, default=None)):
-    # type: (HttpRequest, UserProfile, Optional[bool], Optional[str], Optional[bool], Optional[bool], Optional[Text]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Optional[bool], Optional[str], Optional[bool], Optional[bool], Optional[Text], Optional[Text]) -> HttpResponse
     if (default_language is not None and
             default_language not in get_available_language_codes()):
         raise JsonableError(_("Invalid language '%s'" % (default_language,)))
@@ -170,6 +171,10 @@ def update_display_settings_backend(request, user_profile,
     if (timezone is not None and
             timezone not in get_all_timezones()):
         raise JsonableError(_("Invalid timezone '%s'" % (timezone,)))
+
+    if (emojiset is not None and
+            emojiset not in UserProfile.emojiset_choices()):
+        raise JsonableError(_("Invalid emojiset '%s'" % (emojiset,)))
 
     result = {} # type: Dict[str, Any]
     if (default_language is not None and
@@ -191,6 +196,10 @@ def update_display_settings_backend(request, user_profile,
             user_profile.emoji_alt_code != emoji_alt_code):
         do_set_user_display_setting(user_profile, "emoji_alt_code", emoji_alt_code)
         result['emoji_alt_code'] = emoji_alt_code
+
+    elif (emojiset is not None and user_profile.emojiset != emojiset):
+        do_set_user_display_setting(user_profile, "emojiset", emojiset)
+        result['emojiset'] = emojiset
 
     elif (timezone is not None and
             user_profile.timezone != timezone):
