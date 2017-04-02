@@ -15,6 +15,8 @@ import os
 import platform
 import time
 import sys
+import subprocess
+import re
 import six.moves.configparser
 
 from zerver.lib.db import TimeTrackingConnection
@@ -93,6 +95,11 @@ if PRODUCTION:
 else:
     from .dev_settings import *
 
+if PRODUCTION and LOCAL_UPLOADS_DIR and 'NGINX_VERSION' not in vars():
+    NGINX_VERSION = re.search(r'([\d.]+)', subprocess.Popen(['nginx', '-v'],
+                                                            stdout=subprocess.PIPE,
+                                                            stderr=subprocess.STDOUT).stdout.read().decode('utf-8')).group(1)
+
 ########################################################################
 # DEFAULT VALUES FOR SETTINGS
 ########################################################################
@@ -138,6 +145,10 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'RATE_LIMITING': True,
                     'REDIS_HOST': '127.0.0.1',
                     'REDIS_PORT': 6379,
+                    'SENDFILE_BACKEND': 'sendfile.backends.nginx',
+                    'SENDFILE_ROOT': '/home/zulip/uploads/files',
+                    'SENDFILE_URL': '/serve_uploads',
+                    'NGINX_VERSION': None,
                     # The following bots only exist in non-VOYAGER installs
                     'ERROR_BOT': None,
                     'NEW_USER_BOT': None,

@@ -186,3 +186,8 @@ ijson==2.3
 # Needed for link preview
 beautifulsoup4==4.5.3
 git+https://github.com/rafaelmartins/pyoembed.git@eb9901917c2a44b49e2887c077ead84a722c50dc#egg=pyoembed
+
+# Needed for serving uploaded files from nginx but perform auth checks in django.
+# We are using a commit from a PR https://github.com/johnsensible/django-sendfile/pull/64
+# in Django-sendfile repo as it might be sometime before it gets merged.
+git+https://github.com/adnrs96/django-sendfile.git@f45fac5fdd83e7d42a8d5275038e33f8c2cdb920#egg=django-sendfile==0.3.12

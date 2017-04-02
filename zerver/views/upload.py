@@ -14,24 +14,19 @@ from zerver.lib.upload import upload_message_image_from_request, get_local_file_
 from zerver.lib.validator import check_bool
 from zerver.models import UserProfile, validate_attachment_request
 from django.conf import settings
+from sendfile import sendfile
 
 def serve_s3(request, url_path):
     # type: (HttpRequest, str) -> HttpResponse
     uri = get_signed_upload_url(url_path)
     return redirect(uri)
 
-# TODO: Rewrite this once we have django-sendfile
 def serve_local(request, path_id):
     # type: (HttpRequest, str) -> HttpResponse
-    import os
-    import mimetypes
     local_path = get_local_file_path(path_id)
     if local_path is None:
         return HttpResponseNotFound('<p>File not found</p>')
-    filename = os.path.basename(local_path)
-    response = FileResponse(open(local_path, 'rb'),
-                            content_type = mimetypes.guess_type(filename))
-    return response
+    return sendfile(request, local_path)
 
 @has_request_variables
 def serve_file_backend(request, user_profile, realm_id_str, filename):

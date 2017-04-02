@@ -24,7 +24,7 @@ from zerver.models import Attachment, Recipient, get_user_profile_by_email, \
 from zerver.lib.actions import do_delete_old_unclaimed_attachments
 from zilencer.models import Deployment
 
-from zerver.views.upload import upload_file_backend
+from zerver.views.upload import upload_file_backend, serve_local
 
 import ujson
 from six.moves import urllib
@@ -43,6 +43,8 @@ import requests
 import base64
 from datetime import timedelta
 from django.utils.timezone import now as timezone_now
+from django.http import HttpRequest
+from sendfile import _get_sendfile
 
 from moto import mock_s3
 
@@ -579,6 +581,21 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             data = b"".join(response.streaming_content)
             self.assertEqual(b"zulip!", data)
             self.logout()
+
+    def test_serve_local(self):
+        # type: () -> None
+        with self.settings(SENDFILE_BACKEND='sendfile.backends.nginx',
+                           NGINX_VERSION='1.4.6'):
+            _get_sendfile.clear()  # To clearout cached version of backend from djangosendfile
+            filename = os.path.join(settings.LOCAL_UPLOADS_DIR, 'files', 'á.jpg')
+            basedir = os.path.dirname(filename)
+            if not os.path.exists(basedir):
+                os.makedirs(basedir)
+            open(filename, 'w').close()
+            responce = serve_local(HttpRequest(), 'á.jpg')
+            _get_sendfile.clear()
+            test_upload_dir = os.path.split(settings.LOCAL_UPLOADS_DIR)[1]
+            self.assertEqual(responce['X-Accel-Redirect'], '/serve_uploads/../../' + test_upload_dir + '/files/á.jpg')
 
     def tearDown(self):
         # type: () -> None
