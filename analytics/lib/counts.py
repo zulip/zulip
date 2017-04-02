@@ -52,7 +52,6 @@ class CountStat(object):
         else: # frequency == CountStat.DAY
             self.interval = timedelta(days=1)
         self.is_logging = False
-        self.custom_pull_function = None # type: Optional[Callable[[CountStat, datetime, datetime], None]]
 
     def __unicode__(self):
         # type: () -> Text
@@ -63,12 +62,6 @@ class LoggingCountStat(CountStat):
         # type: (str, Type[BaseCount], str) -> None
         CountStat.__init__(self, property, DataCollector(output_table, None), frequency)
         self.is_logging = True
-
-class CustomPullCountStat(CountStat):
-    def __init__(self, property, output_table, frequency, custom_pull_function):
-        # type: (str, Type[BaseCount], str, Callable[[CountStat, datetime, datetime], None]) -> None
-        CountStat.__init__(self, property, DataCollector(output_table, None), frequency)
-        self.custom_pull_function = custom_pull_function
 
 class DataCollector(object):
     def __init__(self, output_table, pull_function):
@@ -121,9 +114,7 @@ def do_fill_count_stat_at_hour(stat, end_time):
         return
 
     start_time = end_time - stat.interval
-    if stat.custom_pull_function is not None:
-        stat.custom_pull_function(stat, start_time, end_time)
-    elif not stat.is_logging:
+    if not stat.is_logging:
         stat.data_collector.pull_function(stat, start_time, end_time)
     do_aggregate_to_summary_table(stat, end_time)
 
@@ -465,7 +456,7 @@ count_stats_ = [
     CountStat('15day_actives::day',
               zerver_data_collector(UserCount, check_useractivityinterval_by_user_query, None),
               CountStat.DAY, interval=timedelta(days=15)-timedelta(minutes=15)),
-    CustomPullCountStat('minutes_active::day', UserCount, CountStat.DAY, do_pull_minutes_active)
+    CountStat('minutes_active::day', DataCollector(UserCount, do_pull_minutes_active), CountStat.DAY)
 ]
 
 COUNT_STATS = {stat.property: stat for stat in count_stats_}
