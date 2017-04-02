@@ -64,7 +64,7 @@ There are 3 reasons for this:
 1.  It's guaranteed to correctly do a case-inexact lookup
 2.  It fetches the user object from remote cache, which is faster
 3.  It always fetches a UserProfile object which has been queried using
-    .selected\_related(), and thus will perform well when one later
+    .select\_related(), and thus will perform well when one later
     accesses related models like the Realm.
 
 Similarly we have `get_client` and `get_stream` functions to fetch those
