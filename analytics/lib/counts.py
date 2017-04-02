@@ -59,21 +59,21 @@ class CountStat(object):
         return u"<CountStat: %s>" % (self.property,)
 
 class LoggingCountStat(CountStat):
-    def __init__(self, property, analytics_table, frequency):
+    def __init__(self, property, output_table, frequency):
         # type: (str, Type[BaseCount], str) -> None
-        CountStat.__init__(self, property, DataCollector(analytics_table, None, None), frequency)
+        CountStat.__init__(self, property, DataCollector(output_table, None, None), frequency)
         self.is_logging = True
 
 class CustomPullCountStat(CountStat):
-    def __init__(self, property, analytics_table, frequency, custom_pull_function):
+    def __init__(self, property, output_table, frequency, custom_pull_function):
         # type: (str, Type[BaseCount], str, Callable[[CountStat, datetime, datetime], None]) -> None
-        CountStat.__init__(self, property, DataCollector(analytics_table, None, None), frequency)
+        CountStat.__init__(self, property, DataCollector(output_table, None, None), frequency)
         self.custom_pull_function = custom_pull_function
 
 class DataCollector(object):
-    def __init__(self, analytics_table, query, group_by):
+    def __init__(self, output_table, query, group_by):
         # type: (Type[BaseCount], Text, Optional[Tuple[models.Model, str]]) -> None
-        self.analytics_table = analytics_table
+        self.output_table = output_table
         self.query = query
         self.group_by = group_by
 
@@ -132,7 +132,7 @@ def do_delete_counts_at_hour(stat, end_time):
     # type: (CountStat, datetime) -> None
     if stat.is_logging:
         InstallationCount.objects.filter(property=stat.property, end_time=end_time).delete()
-        if stat.data_collector.analytics_table in [UserCount, StreamCount]:
+        if stat.data_collector.output_table in [UserCount, StreamCount]:
             RealmCount.objects.filter(property=stat.property, end_time=end_time).delete()
     else:
         UserCount.objects.filter(property=stat.property, end_time=end_time).delete()
@@ -154,23 +154,23 @@ def do_aggregate_to_summary_table(stat, end_time):
     cursor = connection.cursor()
 
     # Aggregate into RealmCount
-    analytics_table = stat.data_collector.analytics_table
-    if analytics_table in (UserCount, StreamCount):
+    output_table = stat.data_collector.output_table
+    if output_table in (UserCount, StreamCount):
         realmcount_query = """
             INSERT INTO analytics_realmcount
                 (realm_id, value, property, subgroup, end_time)
             SELECT
-                zerver_realm.id, COALESCE(sum(%(analytics_table)s.value), 0), '%(property)s',
-                %(analytics_table)s.subgroup, %%(end_time)s
+                zerver_realm.id, COALESCE(sum(%(output_table)s.value), 0), '%(property)s',
+                %(output_table)s.subgroup, %%(end_time)s
             FROM zerver_realm
-            JOIN %(analytics_table)s
+            JOIN %(output_table)s
             ON
-                zerver_realm.id = %(analytics_table)s.realm_id
+                zerver_realm.id = %(output_table)s.realm_id
             WHERE
-                %(analytics_table)s.property = '%(property)s' AND
-                %(analytics_table)s.end_time = %%(end_time)s
-            GROUP BY zerver_realm.id, %(analytics_table)s.subgroup
-        """ % {'analytics_table': analytics_table._meta.db_table,
+                %(output_table)s.property = '%(property)s' AND
+                %(output_table)s.end_time = %%(end_time)s
+            GROUP BY zerver_realm.id, %(output_table)s.subgroup
+        """ % {'output_table': output_table._meta.db_table,
                'property': stat.property}
         start = time.time()
         cursor.execute(realmcount_query, {'end_time': end_time})
@@ -222,7 +222,7 @@ def do_pull_from_zerver(stat, start_time, end_time):
 # called from zerver/lib/actions.py; should not throw any errors
 def do_increment_logging_stat(zerver_object, stat, subgroup, event_time, increment=1):
     # type: (Union[Realm, UserProfile, Stream], CountStat, Optional[Union[str, int, bool]], datetime, int) -> None
-    table = stat.data_collector.analytics_table
+    table = stat.data_collector.output_table
     if table == RealmCount:
         id_args = {'realm': zerver_object}
     elif table == UserCount:
