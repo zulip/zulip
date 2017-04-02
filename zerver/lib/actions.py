@@ -362,6 +362,7 @@ def notify_created_user(user_profile):
                              is_admin=user_profile.is_realm_admin,
                              full_name=user_profile.full_name,
                              avatar_url=avatar_url(user_profile),
+                             timezone=user_profile.timezone,
                              is_bot=user_profile.is_bot))
     send_event(event, active_user_ids(user_profile.realm))
 
@@ -2234,6 +2235,14 @@ def do_set_user_display_setting(user_profile, setting_name, setting_value):
              'setting_name': setting_name,
              'setting': setting_value}
     send_event(event, [user_profile.id])
+
+    # Updates to the timezone display setting are sent to all users
+    if setting_name == "timezone":
+        payload = dict(email=user_profile.email,
+                       user_id=user_profile.id,
+                       timezone=user_profile.timezone)
+        send_event(dict(type='realm_user', op='update', person=payload),
+                   active_user_ids(user_profile.realm))
 
 def set_default_streams(realm, stream_dict):
     # type: (Realm, Dict[Text, Dict[Text, Any]]) -> None

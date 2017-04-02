@@ -881,20 +881,35 @@ class EventsRegisterTest(ZulipTestCase):
         else:
             raise AssertionError("Unexpected property type %s" % (property_type,))
 
-        schema_checker = check_dict([
-            ('type', equals('update_display_settings')),
-            ('setting_name', equals(setting_name)),
-            ('user', check_string),
-            ('setting', validator),
-        ])
-
+        num_events = 1
+        if setting_name == "timezone":
+            num_events = 2
         if property_type == bool:
             do_set_user_display_setting(self.user_profile, setting_name, False)
         for value in values_list:
             events = self.do_test(lambda: do_set_user_display_setting(
-                self.user_profile, setting_name, value))
+                self.user_profile, setting_name, value), num_events=num_events)
+
+            schema_checker = check_dict([
+                ('type', equals('update_display_settings')),
+                ('setting_name', equals(setting_name)),
+                ('user', check_string),
+                ('setting', validator),
+            ])
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
+
+            timezone_schema_checker = check_dict([
+                ('type', equals('realm_user')),
+                ('op', equals('update')),
+                ('person', check_dict([
+                    ('email', check_string),
+                    ('user_id', check_int),
+                    ('timezone', check_string),
+                ])),
+            ])
+            if setting_name == "timezone":
+                error = timezone_schema_checker('events[1]', events[1])
 
     def test_change_twenty_four_hour_time(self):
         # type: () -> None
