@@ -94,5 +94,19 @@
         {{t "Display time in 24-hour format (17:00 instead of 5:00 PM)" }}
       </label>
     </div>
+
+    <div class="input-group">
+      <label for="timezone">{{t "Time zone" }}:</label>
+      <select name="timezone" id="user_timezone">
+      {{#unless page_params.timezone}}
+      <option></option>
+      {{/unless}}
+
+      {{#each timezones}}
+      <option value="{{ this }}">{{ this }}</option>
+      {{/each}}
+      </select>
+    </div>
+
   </form>
 </div>

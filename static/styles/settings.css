@@ -1064,3 +1064,7 @@ input[type=text]#settings_search {
 #admin_users_table .last_active {
     width: 15%;
 }
+
+#user_timezone {
+    width: 245px;
+}

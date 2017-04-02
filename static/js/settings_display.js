@@ -5,6 +5,8 @@ var exports = {};
 exports.set_up = function () {
     $("#display-settings-status").hide();
 
+    $("#user_timezone").val(page_params.timezone);
+
     $("#default_language_modal [data-dismiss]").click(function () {
       $("#default_language_modal").fadeOut(300);
     });
@@ -113,6 +115,23 @@ exports.set_up = function () {
             },
             error: function (xhr) {
                 ui_report.error(i18n.t("Error updating time format setting"), xhr, $('#display-settings-status').expectOne());
+            },
+        });
+    });
+
+    $("#user_timezone").change(function () {
+        var data = {};
+        var timezone = this.value;
+        data.timezone = JSON.stringify(timezone);
+
+        channel.patch({
+            url: '/json/settings/display',
+            data: data,
+            success: function () {
+                ui_report.success(i18n.t("Your time zone have been set to " + timezone), $('#display-settings-status').expectOne());
+            },
+            error: function (xhr) {
+                ui_report.error(i18n.t("Error updating time zone"), xhr, $('#display-settings-status').expectOne());
             },
         });
     });

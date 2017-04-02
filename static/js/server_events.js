@@ -293,6 +293,9 @@ function dispatch_normal_event(event) {
             // than requiring a reload or page resize.
             page_params.default_language = event.setting;
         }
+        if (event.setting_name === 'timezone') {
+            page_params.timezone = event.setting;
+        }
         if ($("#settings.tab-pane.active").length) {
             settings_display.update_page();
         }

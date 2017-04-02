@@ -62,6 +62,7 @@ function _setup_page() {
         full_name: people.my_full_name(),
         page_params: page_params,
         zuliprc: 'zuliprc',
+        timezones: moment.tz.names(),
     });
 
     $(".settings-box").html(settings_tab);
