@@ -18,6 +18,7 @@ import logging
 import time
 
 ## Logging setup ##
+
 log_format = '%(asctime)s %(levelname)-8s %(message)s'
 logging.basicConfig(format=log_format)
 
@@ -31,6 +32,8 @@ logger.addHandler(file_handler)
 
 # You can't subtract timedelta.max from a datetime, so use this instead
 TIMEDELTA_MAX = timedelta(days=365*1000)
+
+## Class definitions ##
 
 class CountStat(object):
     HOUR = 'hour'
@@ -69,11 +72,7 @@ class DataCollector(object):
         self.output_table = output_table
         self.pull_function = pull_function
 
-def do_update_fill_state(fill_state, end_time, state):
-    # type: (FillState, datetime, int) -> None
-    fill_state.end_time = end_time
-    fill_state.state = state
-    fill_state.save()
+## CountStat-level operations ##
 
 def process_count_stat(stat, fill_to_time):
     # type: (CountStat, datetime) -> None
@@ -106,6 +105,12 @@ def process_count_stat(stat, fill_to_time):
         currently_filled = currently_filled + timedelta(hours = 1)
         logger.info("DONE %s (%dms)" % (stat.property, (end-start)*1000))
 
+def do_update_fill_state(fill_state, end_time, state):
+    # type: (FillState, datetime, int) -> None
+    fill_state.end_time = end_time
+    fill_state.state = state
+    fill_state.save()
+
 # We assume end_time is on an hour boundary, and is timezone aware.
 # It is the caller's responsibility to enforce this!
 def do_fill_count_stat_at_hour(stat, end_time):
@@ -129,15 +134,6 @@ def do_delete_counts_at_hour(stat, end_time):
         StreamCount.objects.filter(property=stat.property, end_time=end_time).delete()
         RealmCount.objects.filter(property=stat.property, end_time=end_time).delete()
         InstallationCount.objects.filter(property=stat.property, end_time=end_time).delete()
-
-def do_drop_all_analytics_tables():
-    # type: () -> None
-    UserCount.objects.all().delete()
-    StreamCount.objects.all().delete()
-    RealmCount.objects.all().delete()
-    InstallationCount.objects.all().delete()
-    FillState.objects.all().delete()
-    Anomaly.objects.all().delete()
 
 def do_aggregate_to_summary_table(stat, end_time):
     # type: (CountStat, datetime) -> None
@@ -185,6 +181,42 @@ def do_aggregate_to_summary_table(stat, end_time):
     logger.info("%s InstallationCount aggregation (%dms/%sr)" % (stat.property, (end-start)*1000, cursor.rowcount))
     cursor.close()
 
+## Utility functions called from outside counts.py ##
+
+# called from zerver/lib/actions.py; should not throw any errors
+def do_increment_logging_stat(zerver_object, stat, subgroup, event_time, increment=1):
+    # type: (Union[Realm, UserProfile, Stream], CountStat, Optional[Union[str, int, bool]], datetime, int) -> None
+    table = stat.data_collector.output_table
+    if table == RealmCount:
+        id_args = {'realm': zerver_object}
+    elif table == UserCount:
+        id_args = {'realm': zerver_object.realm, 'user': zerver_object}
+    else: # StreamCount
+        id_args = {'realm': zerver_object.realm, 'stream': zerver_object}
+
+    if stat.frequency == CountStat.DAY:
+        end_time = ceiling_to_day(event_time)
+    else: # CountStat.HOUR:
+        end_time = ceiling_to_hour(event_time)
+
+    row, created = table.objects.get_or_create(
+        property=stat.property, subgroup=subgroup, end_time=end_time,
+        defaults={'value': increment}, **id_args)
+    if not created:
+        row.value = F('value') + increment
+        row.save(update_fields=['value'])
+
+def do_drop_all_analytics_tables():
+    # type: () -> None
+    UserCount.objects.all().delete()
+    StreamCount.objects.all().delete()
+    RealmCount.objects.all().delete()
+    InstallationCount.objects.all().delete()
+    FillState.objects.all().delete()
+    Anomaly.objects.all().delete()
+
+## DataCollector-level operations ##
+
 def do_pull_from_zerver(property, start_time, end_time, query, group_by):
     # type: (str, datetime, datetime, str, Optional[Tuple[models.Model, str]]) -> None
     if group_by is None:
@@ -213,47 +245,29 @@ def zerver_data_collector(output_table, query, group_by):
         do_pull_from_zerver(property, start_time, end_time, query, group_by)
     return DataCollector(output_table, pull_function)
 
-# called from zerver/lib/actions.py; should not throw any errors
-def do_increment_logging_stat(zerver_object, stat, subgroup, event_time, increment=1):
-    # type: (Union[Realm, UserProfile, Stream], CountStat, Optional[Union[str, int, bool]], datetime, int) -> None
-    table = stat.data_collector.output_table
-    if table == RealmCount:
-        id_args = {'realm': zerver_object}
-    elif table == UserCount:
-        id_args = {'realm': zerver_object.realm, 'user': zerver_object}
-    else: # StreamCount
-        id_args = {'realm': zerver_object.realm, 'stream': zerver_object}
+def do_pull_minutes_active(property, start_time, end_time):
+    # type: (str, datetime, datetime) -> None
+    timer_start = time.time()
+    user_activity_intervals = UserActivityInterval.objects.filter(
+        end__gt=start_time, start__lt=end_time
+    ).select_related(
+        'user_profile'
+    ).values_list(
+        'user_profile_id', 'user_profile__realm_id', 'start', 'end')
 
-    if stat.frequency == CountStat.DAY:
-        end_time = ceiling_to_day(event_time)
-    else: # CountStat.HOUR:
-        end_time = ceiling_to_hour(event_time)
+    seconds_active = defaultdict(float) # type: Dict[Tuple[int, int], float]
+    for user_id, realm_id, interval_start, interval_end in user_activity_intervals:
+        start = max(start_time, interval_start)
+        end = min(end_time, interval_end)
+        seconds_active[(user_id, realm_id)] += (end - start).total_seconds()
 
-    row, created = table.objects.get_or_create(
-        property=stat.property, subgroup=subgroup, end_time=end_time,
-        defaults={'value': increment}, **id_args)
-    if not created:
-        row.value = F('value') + increment
-        row.save(update_fields=['value'])
+    rows = [UserCount(user_id=ids[0], realm_id=ids[1], property=property,
+                      end_time=end_time, value=int(seconds // 60))
+            for ids, seconds in seconds_active.items() if seconds >= 60]
+    UserCount.objects.bulk_create(rows)
 
-# Hardcodes the query needed by active_users:is_bot:day, since that is
-# currently the only stat that uses this.
-count_user_by_realm_query = """
-    INSERT INTO analytics_realmcount
-        (realm_id, value, property, subgroup, end_time)
-    SELECT
-        zerver_realm.id, count(*),'%(property)s', %(subgroup)s, %%(time_end)s
-    FROM zerver_realm
-    JOIN zerver_userprofile
-    ON
-        zerver_realm.id = zerver_userprofile.realm_id
-    WHERE
-        zerver_realm.date_created < %%(time_end)s AND
-        zerver_userprofile.date_joined >= %%(time_start)s AND
-        zerver_userprofile.date_joined < %%(time_end)s AND
-        zerver_userprofile.is_active = TRUE
-    GROUP BY zerver_realm.id %(group_by_clause)s
-"""
+    logger.info("%s do_pull_minutes_active (%dms/%sr)" %
+                (property, (time.time()-timer_start)*1000, len(rows)))
 
 # currently .sender_id is only Message specific thing
 count_message_by_user_query = """
@@ -270,23 +284,6 @@ count_message_by_user_query = """
         zerver_message.pub_date >= %%(time_start)s AND
         zerver_message.pub_date < %%(time_end)s
     GROUP BY zerver_userprofile.id %(group_by_clause)s
-"""
-
-# Currently unused and untested
-count_stream_by_realm_query = """
-    INSERT INTO analytics_realmcount
-        (realm_id, value, property, subgroup, end_time)
-    SELECT
-        zerver_realm.id, count(*), '%(property)s', %(subgroup)s, %%(time_end)s
-    FROM zerver_realm
-    JOIN zerver_stream
-    ON
-        zerver_realm.id = zerver_stream.realm_id AND
-    WHERE
-        zerver_realm.date_created < %%(time_end)s AND
-        zerver_stream.date_created >= %%(time_start)s AND
-        zerver_stream.date_created < %%(time_end)s
-    GROUP BY zerver_realm.id %(group_by_clause)s
 """
 
 # This query violates the count_X_by_Y_query conventions in several ways. One,
@@ -354,19 +351,23 @@ count_message_by_stream_query = """
     GROUP BY zerver_stream.id %(group_by_clause)s
 """
 
-check_useractivityinterval_by_user_query = """
-    INSERT INTO analytics_usercount
-        (user_id, realm_id, value, property, subgroup, end_time)
+# Hardcodes the query needed by active_users:is_bot:day, since that is
+# currently the only stat that uses this.
+count_user_by_realm_query = """
+    INSERT INTO analytics_realmcount
+        (realm_id, value, property, subgroup, end_time)
     SELECT
-        zerver_userprofile.id, zerver_userprofile.realm_id, 1, '%(property)s', %(subgroup)s, %%(time_end)s
-    FROM zerver_userprofile
-    JOIN zerver_useractivityinterval
+        zerver_realm.id, count(*),'%(property)s', %(subgroup)s, %%(time_end)s
+    FROM zerver_realm
+    JOIN zerver_userprofile
     ON
-        zerver_userprofile.id = zerver_useractivityinterval.user_profile_id
+        zerver_realm.id = zerver_userprofile.realm_id
     WHERE
-        zerver_useractivityinterval.end >= %%(time_start)s AND
-        zerver_useractivityinterval.start < %%(time_end)s
-    GROUP BY zerver_userprofile.id %(group_by_clause)s
+        zerver_realm.date_created < %%(time_end)s AND
+        zerver_userprofile.date_joined >= %%(time_start)s AND
+        zerver_userprofile.date_joined < %%(time_end)s AND
+        zerver_userprofile.is_active = TRUE
+    GROUP BY zerver_realm.id %(group_by_clause)s
 """
 
 # Currently hardcodes the query needed for active_users_audit:is_bot:day.
@@ -397,29 +398,39 @@ check_realmauditlog_by_user_query = """
         ral1.event_type in ('user_created', 'user_activated', 'user_reactivated')
 """
 
-def do_pull_minutes_active(property, start_time, end_time):
-    # type: (str, datetime, datetime) -> None
-    timer_start = time.time()
-    user_activity_intervals = UserActivityInterval.objects.filter(
-        end__gt=start_time, start__lt=end_time
-    ).select_related(
-        'user_profile'
-    ).values_list(
-        'user_profile_id', 'user_profile__realm_id', 'start', 'end')
+check_useractivityinterval_by_user_query = """
+    INSERT INTO analytics_usercount
+        (user_id, realm_id, value, property, subgroup, end_time)
+    SELECT
+        zerver_userprofile.id, zerver_userprofile.realm_id, 1, '%(property)s', %(subgroup)s, %%(time_end)s
+    FROM zerver_userprofile
+    JOIN zerver_useractivityinterval
+    ON
+        zerver_userprofile.id = zerver_useractivityinterval.user_profile_id
+    WHERE
+        zerver_useractivityinterval.end >= %%(time_start)s AND
+        zerver_useractivityinterval.start < %%(time_end)s
+    GROUP BY zerver_userprofile.id %(group_by_clause)s
+"""
 
-    seconds_active = defaultdict(float) # type: Dict[Tuple[int, int], float]
-    for user_id, realm_id, interval_start, interval_end in user_activity_intervals:
-        start = max(start_time, interval_start)
-        end = min(end_time, interval_end)
-        seconds_active[(user_id, realm_id)] += (end - start).total_seconds()
+# Currently unused and untested
+count_stream_by_realm_query = """
+    INSERT INTO analytics_realmcount
+        (realm_id, value, property, subgroup, end_time)
+    SELECT
+        zerver_realm.id, count(*), '%(property)s', %(subgroup)s, %%(time_end)s
+    FROM zerver_realm
+    JOIN zerver_stream
+    ON
+        zerver_realm.id = zerver_stream.realm_id AND
+    WHERE
+        zerver_realm.date_created < %%(time_end)s AND
+        zerver_stream.date_created >= %%(time_start)s AND
+        zerver_stream.date_created < %%(time_end)s
+    GROUP BY zerver_realm.id %(group_by_clause)s
+"""
 
-    rows = [UserCount(user_id=ids[0], realm_id=ids[1], property=property,
-                      end_time=end_time, value=int(seconds // 60))
-            for ids, seconds in seconds_active.items() if seconds >= 60]
-    UserCount.objects.bulk_create(rows)
-
-    logger.info("%s do_pull_minutes_active (%dms/%sr)" %
-                (property, (time.time()-timer_start)*1000, len(rows)))
+## CountStat declarations ##
 
 count_stats_ = [
     CountStat('messages_sent:is_bot:hour',
