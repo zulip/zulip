@@ -180,6 +180,16 @@ exports.reply_to_to_user_ids_string = function (emails_string) {
     return user_ids.join(',');
 };
 
+exports.get_user_time = function (user_id) {
+    var user_timezone = people.get_person_from_user_id(user_id).timezone;
+    if (user_timezone) {
+        if (page_params.twenty_four_hour_time) {
+            return moment().tz(user_timezone).format("HH:mm");
+        }
+        return moment().tz(user_timezone).format("hh:mm A");
+    }
+};
+
 exports.emails_strings_to_user_ids_string = function (emails_string) {
     var emails = emails_string.split(',');
     return exports.email_list_to_user_ids_string(emails);

@@ -74,6 +74,7 @@ function show_message_info_popover(element, id) {
             user_full_name: message.sender_full_name,
             user_email: sender_email,
             user_id: message.sender_id,
+            user_time: people.get_user_time(message.sender_id),
             pm_with_uri: narrow.pm_with_uri(sender_email),
             sent_by_uri: narrow.by_sender_uri(sender_email),
             narrowed: narrow.active(),
@@ -82,7 +83,7 @@ function show_message_info_popover(element, id) {
         };
 
         var ypos = elt.offset().top;
-        var popover_size = 418;
+        var popover_size = 428;
         var placement = "right";
 
         if (!((ypos + (popover_size / 2) < message_viewport.height()) &&
@@ -619,6 +620,7 @@ exports.register_click_handlers = function () {
             user_email: user_email,
             user_full_name: name,
             user_id: user_id,
+            user_time: people.get_user_time(user_id),
             pm_with_uri: narrow.pm_with_uri(user_email),
             sent_by_uri: narrow.by_sender_uri(user_email),
             private_message_class: "compose_private_message",
