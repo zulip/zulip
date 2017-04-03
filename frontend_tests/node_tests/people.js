@@ -240,7 +240,7 @@ people.init();
 
 initialize();
 
-(function test_pm_with_url() {
+(function test_message_methods() {
     var charles = {
         email: 'charles@example.com',
         user_id: 451,
@@ -263,6 +263,8 @@ initialize();
         ],
     };
     assert.equal(people.pm_with_url(message), '#narrow/pm-with/451,452-group');
+    assert.equal(people.pm_reply_to(message),
+        'athens@example.com,charles@example.com');
 
     message = {
         type: 'private',
@@ -272,6 +274,8 @@ initialize();
         ],
     };
     assert.equal(people.pm_with_url(message), '#narrow/pm-with/452-athens');
+    assert.equal(people.pm_reply_to(message),
+        'athens@example.com');
 
     message = {
         type: 'private',
