@@ -13,13 +13,15 @@
             <div class="subscriber-count">
                 <span class="subscriber-count-text">{{subscriber_count}}</span>
                 <i class="icon-vector-user"></i>
-                <div class="stream-msg-count">
-                    {{#if is_old_stream}}
-                        <span class="stream-msg-count-text">{{stream_message_count}} msgs</span>
-                    {{else}}
-                        <span class="stream-msg-count-text">New</span>
-                    {{/if}}
-                </div>
+            </div>
+            <div class="stream-message-count">
+                {{#if is_old_stream}}
+                    <span class="stream-message-count-text">{{stream_message_count}}/wk</span>
+                    <i class="icon-vector-comments"></i>
+                {{else}}
+                    <span class="stream-message-count-text">New</span>
+                {{/if}}
+                <div class="stream-message-hover-content"> Average weekly traffic </div>
             </div>
         </div>
         <div class="description" data-no-description="{{t 'No description.'}}">{{description}}</div>
