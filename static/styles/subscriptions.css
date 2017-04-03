@@ -694,8 +694,8 @@ form#add_new_subscription {
     font-weight: 600;
 }
 
-.stream-row .sub-info-box .top-bar .message-count,
-.stream-row .sub-info-box .top-bar .subscriber-count {
+.stream-row .sub-info-box .top-bar .subscriber-count,
+.stream-row .sub-info-box .top-bar .stream-message-count {
     float: right;
     color: hsl(0, 0%, 66%);
 }
@@ -705,8 +705,24 @@ form#add_new_subscription {
 }
 
 .stream-row .sub-info-box .top-bar .subscriber-count-text,
-.stream-row .sub-info-box .top-bar .subscriber-count-lock {
+.stream-row .sub-info-box .top-bar .subscriber-count-lock,
+.stream-row .sub-info-box .top-bar .stream-message-count-text {
     margin-right: 5px;
+}
+
+.stream-row .sub-info-box .top-bar .stream-message-count:hover .stream-message-hover-content {
+    display: inline-block;
+}
+
+.stream-row .sub-info-box .top-bar .stream-message-count .stream-message-hover-content {
+    display: none;
+    width: 135px;
+    margin-right: 3px;
+    float: left;
+    text-align: center;
+    background-color: #a9a9a9;
+    color: #fff;
+    border-radius: 6px;
 }
 
 .stream-row .sub-info-box .description {
