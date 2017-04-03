@@ -231,6 +231,17 @@ $(function () {
         $(this).tooltip('hide');
     });
 
+    // Refocus the compose area after clicking links
+    $("body").on("focus", '*', function (e) {
+        if (e.target.id === 'new_message_content') {
+            $(".messagebox-content a").off("click.refocus").on("click.refocus", function () {
+                $("#new_message_content").focus();
+            });
+        } else if (e.target.tagName !== 'A') {
+            $(".messagebox-content a").off("click.refocus");
+        }
+    });
+
     if (!page_params.realm_allow_message_editing) {
         $("#edit-message-hotkey-help").hide();
     }
