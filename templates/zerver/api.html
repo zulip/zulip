@@ -48,6 +48,13 @@
 These code snippets are generated using our very own Zulip tool, by
 sending them to myself in a code block, and then using the inspector
 to pull out the resulting HTML :)
+
+Sample steps to do:
+1. Write code in Zulip message box.
+2. Put it in a multiline codeblock and specify a language.
+3. Click on 'preview'.
+4. Inspect and copy the HTML.
+
 #}
 
 <h4>Stream message</h4>
@@ -162,12 +169,12 @@ to pull out the resulting HTML :)
 <span class="p">});</span>
 
 <span class="c1">// Register queue to receive messages for user</span>
-<span class="nx">zulip</span><span class="p">.</span><span class="nx">queues</span><span class="p">.</span><span class="nx">register</span><span class="p">({</span>
+<span class="nx">client</span><span class="p">.</span><span class="nx">queues</span><span class="p">.</span><span class="nx">register</span><span class="p">({</span>
   <span class="nx">event_types</span><span class="o">:</span> <span class="p">[</span><span class="s1">'message'</span><span class="p">]</span>
 <span class="p">}).</span><span class="nx">then</span><span class="p">((</span><span class="nx">res</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
   <span class="c1">// Retrieve events from a queue</span>
   <span class="c1">// Blocking until there is an event (or the request times out)</span>
-  <span class="nx">zulip</span><span class="p">.</span><span class="nx">events</span><span class="p">.</span><span class="nx">retrieve</span><span class="p">({</span>
+  <span class="nx">client</span><span class="p">.</span><span class="nx">events</span><span class="p">.</span><span class="nx">retrieve</span><span class="p">({</span>
     <span class="nx">queue_id</span><span class="o">:</span> <span class="nx">res</span><span class="p">.</span><span class="nx">queue_id</span><span class="p">,</span>
     <span class="nx">last_event_id</span><span class="o">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
     <span class="nx">dont_block</span><span class="o">:</span> <span class="kc">false</span>
