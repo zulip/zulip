@@ -53,7 +53,7 @@ exports.initialize = function () {
             return suggestions.strings;
         },
         fixed: true,
-        items: 30,
+        items: 15,
         helpOnEmptyStrings: true,
         naturalSearch: true,
         highlighter: function (item) {
