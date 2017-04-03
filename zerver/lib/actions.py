@@ -2870,15 +2870,22 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
     send_event(event, list(map(user_info, ums)))
     return len(changed_messages)
 
-def get_stream_message_count(stream_id):
+# Calculate the average weekly traffic of a stream
+def get_stream_message_count(stream_id, date_created):
     count = 0
     stat = COUNT_STATS['messages_in_stream:is_bot:day']
-    d = datetime.date.today() - datetime.timedelta(days=7)
-    queryset = StreamCount.objects.filter(stream_id=stream_id).filter(property=stat.property,
-            end_time__gte=d).values_list('value')
+    d = datetime.date.today() - datetime.timedelta(days=28)
+    queryset = StreamCount.objects.filter(stream_id=stream_id, property=stat.property,
+            end_time__gt=d).values_list('value')
     for val in queryset:
         count += val[0]
-    return count
+    num_days = (datetime.date.today() - date_created.date()).days
+    # Calculates the average over 4 weeks
+    # If duration less than 4 weeks, adjust accordingly
+    if num_days:
+        count = count/4 if num_days >= 28 else count/(num_days/7.0)
+    # count is rounded off to 2 significant figures
+    return int(round(count, 2-len(str(count))))
 
 def encode_email_address(stream):
     # type: (Stream) -> Text
@@ -2999,7 +3006,7 @@ def gather_subscriptions_helper(user_profile, include_subscribers=True):
                        'pin_to_top': sub["pin_to_top"],
                        'stream_id': stream["id"],
                        'description': stream["description"],
-                       'stream_message_count': get_stream_message_count(stream["id"]),
+                       'stream_message_count': get_stream_message_count(stream["id"], stream["date_created"]),
                        'is_old_stream': False if (datetime.date.today() - stream["date_created"].date()).days < 7 else True,
                        'email_address': encode_email_address_helper(stream["name"], stream["email_token"])}
         if subscribers is not None:
@@ -3023,7 +3030,7 @@ def gather_subscriptions_helper(user_profile, include_subscribers=True):
             stream_dict = {'name': stream['name'],
                            'invite_only': stream['invite_only'],
                            'stream_id': stream['id'],
-                           'stream_message_count': get_stream_message_count(stream["id"]),
+                           'stream_message_count': get_stream_message_count(stream["id"], stream["date_created"]),
                            'is_old_stream': False if (datetime.date.today() - stream["date_created"].date()).days < 7 else True,
                            'description': stream['description']}
             subscribers = subscriber_map[stream["id"]]
