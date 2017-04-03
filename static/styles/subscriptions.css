@@ -676,7 +676,7 @@ form#add_new_subscription {
 }
 
 .stream-row .sub-info-box .top-bar .subscriber-count,
-.stream-row .sub-info-box .top-bar .stream-message-count{
+.stream-row .sub-info-box .top-bar .stream-message-count {
     float: right;
     color: #aaa;
     margin-left: 10px;
@@ -687,7 +687,7 @@ form#add_new_subscription {
     margin-right: 5px;
 }
 
-.stream-row .sub-info-box .top-bar .stream-message-count:hover .stream-message-hover-content{
+.stream-row .sub-info-box .top-bar .stream-message-count:hover .stream-message-hover-content {
     display: inline-block;
 }
 

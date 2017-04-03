@@ -61,7 +61,7 @@ class Command(BaseCommand):
             date_created=installation_time)
         shylock = self.create_user('shylock@analytics.ds', 'Shylock', True, installation_time, realm)
         stream = Stream.objects.create(
-                name ='all', realm=realm, date_created=installation_time)
+            name='all', realm=realm, date_created=installation_time)
         Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
 
         def insert_fixture_data(stat, fixture_data, table):
@@ -148,8 +148,7 @@ class Command(BaseCommand):
         realm_data = {'false': self.generate_fixture_data(stat, 30, 5, 6, .6, 4)}
         insert_fixture_data(stat, realm_data, RealmCount)
         stream_data = {'false': self.generate_fixture_data(stat, 10, 7, 5, .6, 4),
-                      'true': self.generate_fixture_data(stat, 5, 3, 2, .4, 2)}
+                       'true': self.generate_fixture_data(stat, 5, 3, 2, .4, 2)}
         insert_fixture_data(stat, stream_data, StreamCount)
         FillState.objects.create(property=stat.property, end_time=last_end_time,
                                  state=FillState.DONE)
-

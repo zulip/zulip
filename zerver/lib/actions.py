@@ -2872,11 +2872,12 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
 
 # Calculate the average weekly traffic of a stream
 def get_stream_message_count(stream_id, date_created):
+    # type: (int, datetime.datetime) -> int
     count = 0
     stat = COUNT_STATS['messages_in_stream:is_bot:day']
     d = datetime.date.today() - datetime.timedelta(days=28)
     queryset = StreamCount.objects.filter(stream_id=stream_id, property=stat.property,
-            end_time__gt=d).values_list('value')
+                                          end_time__gt=d).values_list('value')
     for val in queryset:
         count += val[0]
     num_days = (datetime.date.today() - date_created.date()).days
@@ -2954,7 +2955,7 @@ def gather_subscriptions_helper(user_profile, include_subscribers=True):
     stream_ids = set([sub["recipient__type_id"] for sub in sub_dicts])
     all_streams = get_active_streams(user_profile.realm).select_related(
         "realm").values("id", "name", "invite_only", "realm_id",
-                        "email_token", "description","date_created")
+                        "email_token", "description", "date_created")
 
     stream_dicts = [stream for stream in all_streams if stream['id'] in stream_ids]
     stream_hash = {}
