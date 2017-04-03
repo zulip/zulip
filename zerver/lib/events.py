@@ -390,6 +390,8 @@ def apply_event(state: Dict[str, Any],
                     stream_data = copy.deepcopy(stream)
                     if include_subscribers:
                         stream_data['subscribers'] = []
+                    stream_data['stream_weekly_traffic'] = 0
+                    stream_data['is_old_stream'] = False
                     # Add stream to never_subscribed (if not invite_only)
                     state['never_subscribed'].append(stream_data)
                 state['streams'].append(stream)

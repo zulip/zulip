@@ -1747,7 +1747,7 @@ class SubscriptionAPITest(ZulipTestCase):
                     streams_to_sub,
                     dict(principals=ujson.dumps([user1.email, user2.email])),
                 )
-        self.assert_length(queries, 41)
+        self.assert_length(queries, 42)
 
         self.assert_length(events, 7)
         for ev in [x for x in events if x['event']['type'] not in ('message', 'stream')]:
@@ -1775,7 +1775,7 @@ class SubscriptionAPITest(ZulipTestCase):
                     streams_to_sub,
                     dict(principals=ujson.dumps([self.test_email])),
                 )
-        self.assert_length(queries, 15)
+        self.assert_length(queries, 16)
 
         self.assert_length(events, 2)
         add_event, add_peer_event = events
@@ -2002,7 +2002,7 @@ class SubscriptionAPITest(ZulipTestCase):
                     dict(principals=ujson.dumps([self.test_email])),
                 )
         # Make sure we don't make O(streams) queries
-        self.assert_length(queries, 20)
+        self.assert_length(queries, 21)
 
     def test_subscriptions_add_for_principal(self) -> None:
         """
@@ -2582,7 +2582,7 @@ class GetSubscribersTest(ZulipTestCase):
             if not sub["name"].startswith("stream_"):
                 continue
             self.assertTrue(len(sub["subscribers"]) == len(users_to_subscribe))
-        self.assert_length(queries, 6)
+        self.assert_length(queries, 7)
 
     @slow("common_subscribe_to_streams is slow")
     def test_never_subscribed_streams(self) -> None:
@@ -2636,7 +2636,7 @@ class GetSubscribersTest(ZulipTestCase):
             with queries_captured() as queries:
                 sub_data = gather_subscriptions_helper(self.user_profile)
             never_subscribed = sub_data[2]
-            self.assert_length(queries, 5)
+            self.assert_length(queries, 6)
 
             # Ignore old streams.
             never_subscribed = [
@@ -2702,7 +2702,7 @@ class GetSubscribersTest(ZulipTestCase):
                 self.assertTrue(len(sub["subscribers"]) == len(users_to_subscribe))
             else:
                 self.assertTrue(len(sub["subscribers"]) == 0)
-        self.assert_length(queries, 5)
+        self.assert_length(queries, 6)
 
     def test_nonsubscriber(self) -> None:
         """

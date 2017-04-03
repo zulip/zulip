@@ -5,6 +5,7 @@ from typing import (
 from mypy_extensions import TypedDict
 
 import django.db.utils
+from django.db.models import Count
 from django.contrib.contenttypes.models import ContentType
 from django.utils.html import escape
 from django.utils.translation import ugettext as _
@@ -112,6 +113,8 @@ from zerver.lib.upload import attachment_url_re, attachment_url_to_path_id, \
     claim_attachment, delete_message_image
 from zerver.lib.str_utils import NonBinaryStr, force_str
 from zerver.tornado.event_queue import request_event_queue, send_event
+
+from analytics.models import StreamCount
 
 import DNS
 import ujson
@@ -2170,6 +2173,7 @@ def maybe_get_subscriber_emails(stream: Stream, user_profile: UserProfile) -> Li
 def notify_subscriptions_added(user_profile: UserProfile,
                                sub_pairs: Iterable[Tuple[Subscription, Stream]],
                                stream_user_ids: Callable[[Stream], List[int]],
+                               recent_traffic: QuerySet,
                                no_log: bool=False) -> None:
     if not no_log:
         log_event({'type': 'subscription_added',
@@ -2189,6 +2193,9 @@ def notify_subscriptions_added(user_profile: UserProfile,
                     push_notifications=subscription.push_notifications,
                     description=stream.description,
                     pin_to_top=subscription.pin_to_top,
+                    is_old_stream=is_old_stream(stream.date_created),
+                    stream_weekly_traffic=get_average_weekly_stream_traffic(stream.id, stream.date_created,
+                                                                            recent_traffic),
                     subscribers=stream_user_ids(stream))
                for (subscription, stream) in sub_pairs]
     event = dict(type="subscription", op="add",
@@ -2360,13 +2367,14 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
         if not stream.is_public():
             send_stream_creation_event(stream, [user.id for user in new_users])
 
+    recent_traffic = get_streams_traffic(streams)
     # The second batch is events for the users themselves that they
     # were subscribed to the new streams.
     for user_profile in users:
         if len(sub_tuples_by_user[user_profile.id]) == 0:
             continue
         sub_pairs = sub_tuples_by_user[user_profile.id]
-        notify_subscriptions_added(user_profile, sub_pairs, fetch_stream_subscriber_user_ids)
+        notify_subscriptions_added(user_profile, sub_pairs, fetch_stream_subscriber_user_ids, recent_traffic)
 
     # The second batch is events for other users who are tracking the
     # subscribers lists of streams in their browser; everyone for
@@ -3658,6 +3666,46 @@ def do_delete_message(user_profile: UserProfile, message: Message) -> None:
     move_message_to_archive(message.id)
     send_event(event, ums)
 
+def get_streams_traffic(streams: Optional[Iterable[Stream]]=None) -> Dict[int, int]:
+    stat = COUNT_STATS['messages_in_stream:is_bot:day']
+    traffic_from = timezone_now() - datetime.timedelta(days=28)
+    if streams is not None:
+        traffic_list = StreamCount.objects.filter(property=stat.property, end_time__gt=traffic_from,
+                                                  stream__in=streams). \
+            values('stream_id').annotate(value=Count('value'))
+    else:
+        traffic_list = StreamCount.objects.filter(property=stat.property, end_time__gt=traffic_from). \
+            values('stream_id').annotate(value=Count('value'))
+
+    traffic_dict = {}
+    for traffic in traffic_list:
+        traffic_dict[traffic["stream_id"]] = traffic["value"]
+
+    return traffic_dict
+
+def round_to_2_significant_digits(number: int) -> int:
+    return int(round(number, 2-len(str(number))))
+
+def get_average_weekly_stream_traffic(stream_id: int, stream_date_created: datetime.datetime,
+                                      recent_traffic: QuerySet) -> int:
+    try:
+        stream_traffic = recent_traffic[stream_id]
+    except KeyError:
+        return 0
+
+    stream_age = (timezone_now().date() - stream_date_created.date()).days
+
+    if stream_age >= 28:
+        average_weekly_traffic = int(stream_traffic // 4)
+    elif stream_age >= 7:
+        average_weekly_traffic = int(stream_traffic // (stream_age // 7))
+    else:
+        average_weekly_traffic = stream_traffic
+
+    return round_to_2_significant_digits(average_weekly_traffic)
+
+def is_old_stream(stream_date_created: datetime.datetime) -> bool:
+    return (datetime.date.today() - stream_date_created.date()).days >= 7
 
 def encode_email_address(stream: Stream) -> Text:
     return encode_email_address_helper(stream.name, stream.email_token)
@@ -3730,13 +3778,14 @@ def gather_subscriptions_helper(user_profile: UserProfile,
     stream_recipient.populate_for_recipient_ids(sub_recipient_ids)
 
     stream_ids = set()  # type: Set[int]
+    recent_traffic = get_streams_traffic()
     for sub in sub_dicts:
         sub['stream_id'] = stream_recipient.stream_id_for(sub['recipient_id'])
         stream_ids.add(sub['stream_id'])
 
     all_streams = get_active_streams(user_profile.realm).select_related(
         "realm").values("id", "name", "invite_only", "realm_id",
-                        "email_token", "description")
+                        "email_token", "description", "date_created")
 
     stream_dicts = [stream for stream in all_streams if stream['id'] in stream_ids]
     stream_hash = {}
@@ -3794,6 +3843,10 @@ def gather_subscriptions_helper(user_profile: UserProfile,
                        'pin_to_top': sub["pin_to_top"],
                        'stream_id': stream["id"],
                        'description': stream["description"],
+                       'is_old_stream': is_old_stream(stream["date_created"]),
+                       'stream_weekly_traffic': get_average_weekly_stream_traffic(stream["id"],
+                                                                                  stream["date_created"],
+                                                                                  recent_traffic),
                        'email_address': encode_email_address_helper(stream["name"], stream["email_token"])}
         if subscribers is not None:
             stream_dict['subscribers'] = subscribers
@@ -3817,6 +3870,10 @@ def gather_subscriptions_helper(user_profile: UserProfile,
             stream_dict = {'name': stream['name'],
                            'invite_only': stream['invite_only'],
                            'stream_id': stream['id'],
+                           'is_old_stream': is_old_stream(stream["date_created"]),
+                           'stream_weekly_traffic': get_average_weekly_stream_traffic(stream["id"],
+                                                                                      stream["date_created"],
+                                                                                      recent_traffic),
                            'description': stream['description']}
             if is_public:
                 subscribers = subscriber_map[stream["id"]]
