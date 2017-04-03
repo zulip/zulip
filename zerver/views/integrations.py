@@ -4,6 +4,7 @@ from collections import OrderedDict
 from django.views.generic import TemplateView
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
+from django.template import loader
 from django.shortcuts import render
 
 import os
@@ -49,7 +50,7 @@ class APIView(ApiURLView):
 
 class HelpView(ApiURLView):
     template_name = 'zerver/help/main.html'
-    path_template = os.path.join(settings.DEPLOY_ROOT, 'templates/zerver/help/%s.md')
+    path_template = 'zerver/help/%s.md'
 
     def get_path(self, article):
         # type: (str) -> str
@@ -62,10 +63,12 @@ class HelpView(ApiURLView):
         article = kwargs["article"]
         context = super(HelpView, self).get_context_data()  # type: Dict[str, Any]
         path = self.get_path(article)
-        if os.path.exists(path):
+        try:
+            loader.get_template(path)
             context["article"] = path
-        else:
+        except loader.TemplateDoesNotExist:
             context["article"] = self.get_path("missing")
+
         # For disabling the "Back to home" on the homepage
         context["not_index_page"] = not path.endswith("/index.md")
         return context
@@ -74,7 +77,9 @@ class HelpView(ApiURLView):
         # type: (HttpRequest, str) -> HttpResponse
         path = self.get_path(article)
         result = super(HelpView, self).get(self, article=article)
-        if not os.path.exists(path):
+        try:
+            loader.get_template(path)
+        except loader.TemplateDoesNotExist:
             # Ensure a 404 response code if no such document
             result.status_code = 404
         return result
