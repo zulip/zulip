@@ -51,11 +51,11 @@
     opacity: 0.7;
 }
 
-.alert-box .alert .restart_get_updates_button {
+.alert-box .alert .restart_get_events_button {
     color: #89dcff;
 }
 
-.alert-box .alert .restart_get_updates_button:hover {
+.alert-box .alert .restart_get_events_button:hover {
     color: #89dcff;
 }
 
