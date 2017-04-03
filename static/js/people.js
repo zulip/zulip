@@ -174,10 +174,6 @@ exports.reply_to_to_user_ids_string = function (emails_string) {
     return user_ids.join(',');
 };
 
-exports.get_full_name = function (user_id) {
-    return people_by_user_id_dict.get(user_id).full_name;
-};
-
 exports.emails_strings_to_user_ids_string = function (emails_string) {
     var emails = emails_string.split(',');
     return exports.email_list_to_user_ids_string(emails);
