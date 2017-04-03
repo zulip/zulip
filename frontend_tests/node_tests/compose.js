@@ -79,7 +79,7 @@ people.add(bob);
     };
 
 
-    var message = compose.snapshot_message();
+    var message = compose.create_message_object();
     assert.equal(message.to, 'social');
     assert.equal(message.subject, 'lunch');
     assert.equal(message.content, 'burrito');
@@ -87,9 +87,25 @@ people.add(bob);
     global.compose_state.composing = function () {
         return 'private';
     };
-    message = compose.snapshot_message();
+    message = compose.create_message_object();
     assert.deepEqual(message.to, ['alice@example.com', 'bob@example.com']);
     assert.equal(message.to_user_ids, '31,32');
     assert.equal(message.content, 'burrito');
 
+}());
+
+(function test_get_focus_area() {
+    assert.equal(compose._get_focus_area('private', {}), 'private_message_recipient');
+    assert.equal(compose._get_focus_area('private', {
+        private_message_recipient: 'bob@example.com'}), 'new_message_content');
+    assert.equal(compose._get_focus_area('stream', {}), 'stream');
+    assert.equal(compose._get_focus_area('stream', {stream: 'fun'}),
+                 'subject');
+    assert.equal(compose._get_focus_area('stream', {stream: 'fun',
+                                                    subject: 'more'}),
+                 'new_message_content');
+    assert.equal(compose._get_focus_area('stream', {stream: 'fun',
+                                                    subject: 'more',
+                                                    trigger: 'new topic button'}),
+                 'subject');
 }());

@@ -36,6 +36,13 @@ var list_of_popovers = [];
     }
 }($.fn.popover));
 
+function load_medium_avatar(user_email) {
+    var sender_avatar_medium = new Image();
+    sender_avatar_medium.src= "avatar/" + user_email + "/medium";
+    $(sender_avatar_medium).load(function () {
+        $(".popover-avatar").css("background-image","url("+$(this).attr("src")+")");
+    });
+}
 
 function show_message_info_popover(element, id) {
     var last_popover_elem = current_message_info_popover_elem;
@@ -64,23 +71,63 @@ function show_message_info_popover(element, id) {
         }
 
         var args = {
-            message:  message,
-            sender_email: sender_email,
+            user_full_name: message.sender_full_name,
+            user_email: sender_email,
+            user_id: message.sender_id,
             pm_with_uri: narrow.pm_with_uri(sender_email),
             sent_by_uri: narrow.by_sender_uri(sender_email),
             narrowed: narrow.active(),
+            historical: message.historical,
+            private_message_class: "respond_personal_button",
         };
 
-        var ypos = elt.offset().top - message_viewport.scrollTop();
+        var ypos = elt.offset().top;
+        var popover_size = 418;
+        var placement = "right";
+
+        if (!((ypos + (popover_size / 2) < message_viewport.height()) &&
+            (ypos > (popover_size / 2)))) {
+            if (((ypos + popover_size) < message_viewport.height())) {
+                placement = "bottom";
+            } else if (ypos > popover_size) {
+                placement = "top";
+            }
+        }
+
         elt.popover({
-            placement: (ypos > (message_viewport.height() - 300)) ? 'top' : 'bottom',
-            title:     templates.render('message_info_popover_title',   args),
-            content:   templates.render('message_info_popover_content', args),
+            placement: placement,
+            template:  templates.render('user_info_popover',   {class: "message-info-popover"}),
+            title:     templates.render('user_info_popover_title', {user_avatar: "avatar/" + sender_email}),
+            content:   templates.render('user_info_popover_content', args),
             trigger:   "manual",
         });
         elt.popover("show");
+
+        load_medium_avatar(sender_email);
+
         current_message_info_popover_elem = elt;
     }
+}
+
+function promote_popular(a, b) {
+    function rank(name) {
+        switch (name) {
+            case '+1': return 1;
+            case 'tada': return 2;
+            case 'simple_smile': return 3;
+            case 'laughing': return 4;
+            case '100': return 5;
+            default: return 999;
+        }
+    }
+
+    var diff = rank(a.name) - rank(b.name);
+
+    if (diff !== 0) {
+        return diff;
+    }
+
+    return util.strcmp(a.name, b.name);
 }
 
 exports.toggle_reactions_popover = function (element, id) {
@@ -119,9 +166,24 @@ exports.toggle_reactions_popover = function (element, id) {
             };
         });
 
+        var emoji_recs = _.map(emojis, function (val, emoji_name) {
+            if (val.name) {
+                return val;
+            }
+
+            return {
+                name: emoji_name,
+                css_class: emoji.emoji_name_to_css_class(emoji_name),
+                has_reacted: false,
+                is_realm_emoji: false,
+            };
+        });
+
+        emoji_recs.sort(promote_popular);
+
         var args = {
             message_id: id,
-            emojis: emojis,
+            emojis: emoji_recs,
         };
 
         var approx_popover_height = 400;
@@ -274,9 +336,9 @@ function message_info_popped() {
     return current_message_info_popover_elem !== undefined;
 }
 
-function reaction_popped() {
+exports.reactions_popped = function () {
     return current_message_reactions_popover_elem !== undefined;
-}
+};
 
 exports.hide_message_info_popover = function () {
     if (message_info_popped()) {
@@ -287,7 +349,7 @@ exports.hide_message_info_popover = function () {
 
 exports.hide_reactions_popover = function () {
     $('.has_popover').removeClass('has_popover has_reactions_popover');
-    if (reaction_popped()) {
+    if (exports.reactions_popped()) {
         current_message_reactions_popover_elem.popover("destroy");
         current_message_reactions_popover_elem = undefined;
     }
@@ -358,7 +420,7 @@ function render_emoji_popover() {
             realm_emoji: emoji.realm_emojis,
         });
     }());
-
+    $('.emoji_popover').empty();
     $('.emoji_popover').append(content);
 
     $('.drag').show();
@@ -488,6 +550,7 @@ exports.register_click_handlers = function () {
 
         compose_actions.start('private', {private_message_recipient: email, trigger: 'sidebar user actions'});
         e.stopPropagation();
+        e.preventDefault();
     });
 
     $('body').on('click', '.user_popover .mention_user', function (e) {
@@ -549,16 +612,30 @@ exports.register_click_handlers = function () {
         if (userlist_placement === "right") {
             popovers.show_userlist_sidebar();
         }
-        var template_vars = {user_id: user_id, name: name};
-        var content = templates.render('user_sidebar_actions', template_vars);
+
+        var user_email = people.get_person_from_user_id(user_id).email;
+
+        var args = {
+            user_email: user_email,
+            user_full_name: name,
+            user_id: user_id,
+            pm_with_uri: narrow.pm_with_uri(user_email),
+            sent_by_uri: narrow.by_sender_uri(user_email),
+            private_message_class: "compose_private_message",
+        };
 
         target.popover({
-            content:   content,
-            placement: userlist_placement === "left" ? "right" : "left",
+            template:  templates.render('user_info_popover',   {class: "user_popover"}),
+            title:     templates.render('user_info_popover_title', {user_avatar: "avatar/" + user_email}),
+            content:   templates.render('user_info_popover_content', args),
             trigger:   "manual",
             fixed: true,
+            placement: userlist_placement === "left" ? "right" : "left",
         });
         target.popover("show");
+
+        load_medium_avatar(user_email);
+
         current_user_sidebar_user_id = user_id;
         current_user_sidebar_popover = target.data('popover');
 
@@ -648,7 +725,7 @@ exports.register_click_handlers = function () {
         var stream = $(e.currentTarget).data('msg-stream');
         var topic = $(e.currentTarget).data('msg-topic');
         popovers.hide_actions_popover();
-        stream_popover.topic_ops.mute(stream, topic);
+        muting_ui.mute(stream, topic);
         e.stopPropagation();
         e.preventDefault();
     });
@@ -688,7 +765,7 @@ exports.any_active = function () {
     return popovers.actions_popped() || user_sidebar_popped() ||
         stream_popover.stream_popped() || stream_popover.topic_popped() ||
         message_info_popped() || emoji_map_is_open ||
-        reaction_popped();
+        popovers.reactions_popped();
 };
 
 exports.hide_all = function () {

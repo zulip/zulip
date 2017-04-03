@@ -134,12 +134,21 @@ function populate_users(realm_people_data) {
     });
     bots_table.append(bots_table_html);
 
-    var users_table_html = "";
     _.each(active_users, function (user) {
-        var user_html = templates.render("admin_user_list", {user: user});
-        users_table_html = users_table_html.concat(user_html);
+        var activity_rendered;
+        var row = $(templates.render("admin_user_list", {user: user}));
+        if (people.is_current_user(user.email)) {
+            activity_rendered = timerender.render_date(new XDate());
+        } else if (activity.presence_info[user.user_id]) {
+            // XDate takes number of milliseconds since UTC epoch.
+            var last_active = activity.presence_info[user.user_id].last_active * 1000;
+            activity_rendered = timerender.render_date(new XDate(last_active));
+        } else {
+            activity_rendered = $("<span></span>").text(i18n.t("Never"));
+        }
+        row.find(".last_active").append(activity_rendered);
+        users_table.append(row);
     });
-    users_table.append(users_table_html);
 
     var deactivated_table_html = "";
     _.each(deactivated_users, function (user) {
@@ -374,6 +383,10 @@ exports.populate_auth_methods = function (auth_methods) {
     loading.destroy_indicator($('#admin_page_auth_methods_loading_indicator'));
 };
 
+exports.update_message_retention_days = function () {
+    $("#id_realm_message_retention_days").val(page_params.message_retention_days);
+};
+
 function _setup_page() {
     var options = {
         realm_name: page_params.realm_name,
@@ -381,6 +394,10 @@ function _setup_page() {
         realm_restricted_to_domain: page_params.realm_restricted_to_domain,
         realm_invite_required: page_params.realm_invite_required,
         realm_invite_by_admins_only: page_params.realm_invite_by_admins_only,
+        realm_inline_image_preview: page_params.realm_inline_image_preview,
+        server_inline_image_preview: page_params.server_inline_image_preview,
+        realm_inline_url_embed_preview: page_params.realm_inline_url_embed_preview,
+        server_inline_url_embed_preview: page_params.server_inline_url_embed_preview,
         realm_authentication_methods: page_params.realm_authentication_methods,
         realm_create_stream_by_admins_only: page_params.realm_create_stream_by_admins_only,
         realm_name_changes_disabled: page_params.realm_name_changes_disabled,
@@ -389,6 +406,7 @@ function _setup_page() {
         realm_allow_message_editing: page_params.realm_allow_message_editing,
         realm_message_content_edit_limit_minutes:
             Math.ceil(page_params.realm_message_content_edit_limit_seconds / 60),
+        realm_message_retention_days: page_params.realm_message_retention_days,
         language_list: page_params.language_list,
         realm_default_language: page_params.realm_default_language,
         realm_waiting_period_threshold: page_params.realm_waiting_period_threshold,
@@ -623,6 +641,8 @@ function _setup_page() {
         var restricted_to_domain_status = $("#admin-realm-restricted-to-domain-status").expectOne();
         var invite_required_status = $("#admin-realm-invite-required-status").expectOne();
         var invite_by_admins_only_status = $("#admin-realm-invite-by-admins-only-status").expectOne();
+        var inline_image_preview_status = $("#admin-realm-inline-image-preview-status").expectOne();
+        var inline_url_embed_preview_status = $("#admin-realm-inline-url-embed-preview-status").expectOne();
         var authentication_methods_status = $("#admin-realm-authentication-methods-status").expectOne();
         var create_stream_by_admins_only_status = $("#admin-realm-create-stream-by-admins-only-status").expectOne();
         var name_changes_disabled_status = $("#admin-realm-name-changes-disabled-status").expectOne();
@@ -636,6 +656,8 @@ function _setup_page() {
         restricted_to_domain_status.hide();
         invite_required_status.hide();
         invite_by_admins_only_status.hide();
+        inline_image_preview_status.hide();
+        inline_url_embed_preview_status.hide();
         authentication_methods_status.hide();
         create_stream_by_admins_only_status.hide();
         name_changes_disabled_status.hide();
@@ -653,12 +675,15 @@ function _setup_page() {
         var new_restricted = $("#id_realm_restricted_to_domain").prop("checked");
         var new_invite = $("#id_realm_invite_required").prop("checked");
         var new_invite_by_admins_only = $("#id_realm_invite_by_admins_only").prop("checked");
+        var new_inline_image_preview = $("#id_realm_inline_image_preview").prop("checked");
+        var new_inline_url_embed_preview = $("#id_realm_inline_url_embed_preview").prop("checked");
         var new_create_stream_by_admins_only = $("#id_realm_create_stream_by_admins_only").prop("checked");
         var new_name_changes_disabled = $("#id_realm_name_changes_disabled").prop("checked");
         var new_email_changes_disabled = $("#id_realm_email_changes_disabled").prop("checked");
         var new_add_emoji_by_admins_only = $("#id_realm_add_emoji_by_admins_only").prop("checked");
         var new_allow_message_editing = $("#id_realm_allow_message_editing").prop("checked");
         var new_message_content_edit_limit_minutes = $("#id_realm_message_content_edit_limit_minutes").val();
+        var new_message_retention_days = $("#id_realm_message_retention_days").val();
         var new_default_language = $("#id_realm_default_language").val();
         var new_waiting_period_threshold = $("#id_realm_waiting_period_threshold").val();
         var new_auth_methods = {};
@@ -677,6 +702,10 @@ function _setup_page() {
             new_message_content_edit_limit_minutes = 10;
             }
         }
+        if (parseInt(new_message_retention_days, 10).toString() !==
+            new_message_retention_days && new_message_retention_days !== "") {
+                new_message_retention_days = "";
+        }
 
         var url = "/json/realm";
         var data = {
@@ -685,6 +714,8 @@ function _setup_page() {
             restricted_to_domain: JSON.stringify(new_restricted),
             invite_required: JSON.stringify(new_invite),
             invite_by_admins_only: JSON.stringify(new_invite_by_admins_only),
+            inline_image_preview: JSON.stringify(new_inline_image_preview),
+            inline_url_embed_preview: JSON.stringify(new_inline_url_embed_preview),
             authentication_methods: JSON.stringify(new_auth_methods),
             create_stream_by_admins_only: JSON.stringify(new_create_stream_by_admins_only),
             name_changes_disabled: JSON.stringify(new_name_changes_disabled),
@@ -693,6 +724,7 @@ function _setup_page() {
             allow_message_editing: JSON.stringify(new_allow_message_editing),
             message_content_edit_limit_seconds:
                 JSON.stringify(parseInt(new_message_content_edit_limit_minutes, 10) * 60),
+            message_retention_days: new_message_retention_days !== "" ? JSON.stringify(parseInt(new_message_retention_days, 10)) : null,
             default_language: JSON.stringify(new_default_language),
             waiting_period_threshold: JSON.stringify(parseInt(new_waiting_period_threshold, 10)),
         };
@@ -705,7 +737,7 @@ function _setup_page() {
                     ui_report.success(i18n.t("Name changed!"), name_status);
                 }
                 if (response_data.description !== undefined) {
-                    ui.report_success(i18n.t("Description changed!"), description_status);
+                    ui_report.success(i18n.t("Description changed!"), description_status);
                 }
                 if (response_data.restricted_to_domain !== undefined) {
                     if (response_data.restricted_to_domain) {
@@ -726,6 +758,20 @@ function _setup_page() {
                         ui_report.success(i18n.t("New users must be invited by an admin!"), invite_by_admins_only_status);
                     } else {
                         ui_report.success(i18n.t("Any user may now invite new users!"), invite_by_admins_only_status);
+                    }
+                }
+                if (response_data.inline_image_preview !== undefined) {
+                    if (response_data.inline_image_preview) {
+                        ui_report.success(i18n.t("Previews of uploaded and linked images will be shown!"), inline_image_preview_status);
+                    } else {
+                        ui_report.success(i18n.t("Previews of uploaded and linked images will not be shown!"), inline_image_preview_status);
+                    }
+                }
+                if (response_data.inline_url_embed_preview !== undefined) {
+                    if (response_data.inline_url_embed_preview) {
+                        ui_report.success(i18n.t("Previews for linked websites will be shown!"), inline_url_embed_preview_status);
+                    } else {
+                        ui_report.success(i18n.t("Previews for linked websites will not be shown!"), inline_url_embed_preview_status);
                     }
                 }
                 if (response_data.create_stream_by_admins_only !== undefined) {
@@ -891,15 +937,14 @@ function _setup_page() {
         var owner_select = $(templates.render("bot_owner_select", {users_list: users_list}));
         var admin_status = $('#administration-status').expectOne();
         var person = people.get_person_from_user_id(user_id);
-
         if (!person) {
             return;
+        } else if (person.is_bot) {
+            // Dynamically add the owner select control in order to
+            // avoid performance issues in case of large number of users.
+            owner_select.val(bot_data.get(person.email).owner || "");
+            form_row.find(".edit_bot_owner_container").append(owner_select);
         }
-
-        // Dynamically add the owner select control in order to
-        // avoid performance issues in case of large number of users.
-        owner_select.val(bot_data.get(person.email).owner || "");
-        form_row.find(".edit_bot_owner_container").append(owner_select);
 
         // Show user form.
         user_row.hide();

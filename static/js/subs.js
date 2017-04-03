@@ -26,6 +26,36 @@ function settings_button_for_sub(sub) {
     return $(".subscription_settings[data-stream-id='" + id + "'] .subscribe-button");
 }
 
+function get_row_data(row) {
+    var row_id = row.attr('data-stream-id');
+    if (row_id) {
+        var row_object = stream_data.get_sub_by_id(row_id);
+        return {
+            id: row_id,
+            object: row_object,
+        };
+    }
+}
+
+function get_active_data() {
+    var active_row = $('div.stream-row.active');
+    var valid_active_id = active_row.attr('data-stream-id');
+    var active_tab = $('.subscriptions-container').find('div.ind-tab.selected');
+    return {
+        row: active_row,
+        id: valid_active_id,
+        tab: active_tab,
+    };
+}
+
+function export_hash(hash) {
+    var hash_components = {
+        base: hash.shift(),
+        arguments: hash,
+    };
+    exports.change_state(hash_components);
+}
+
 function selectText(element) {
   var range;
   var sel;
@@ -154,12 +184,13 @@ exports.update_stream_description = function (sub, description) {
 
     // Update stream row
     var sub_row = $('.stream-row[data-stream-id=' + sub.stream_id + ']');
-    sub_row.find(".description").text(description);
+    stream_data.render_stream_description(sub);
+    sub_row.find(".description").html(sub.rendered_description);
 
     // Update stream settings
     var stream_settings = settings_for_sub(sub);
-    stream_settings.find('input.description').val(description);
-    stream_settings.find('.stream-description-editable').text(description);
+    stream_settings.find('input.description').val(sub.description);
+    stream_settings.find('.stream-description-editable').html(sub.rendered_description);
 };
 
 function stream_desktop_notifications_clicked(e) {
@@ -221,6 +252,7 @@ function add_email_hint(row, email_address_hint_content) {
 function add_sub_to_table(sub) {
     sub = stream_data.add_admin_options(sub);
     stream_data.update_subscribers_count(sub);
+    stream_data.render_stream_description(sub);
     var html = templates.render('subscription', sub);
     var settings_html = templates.render('subscription_settings', sub);
     if (meta.stream_created === sub.name) {
@@ -373,8 +405,7 @@ exports.update_settings_for_subscribed = function (sub) {
 
     // Display the swatch and subscription stream_settings
     var sub_row = stream_settings.closest('.stream-row');
-    sub_row.find(".color_swatch").addClass('in');
-    sub_row.find(".regular_subscription_settings").collapse('show');
+    sub_row.find(".regular_subscription_settings").addClass('in');
 };
 
 exports.update_settings_for_unsubscribed = function (sub) {
@@ -393,14 +424,7 @@ exports.update_settings_for_unsubscribed = function (sub) {
 
     // Hide the swatch and subscription settings
     var sub_row = stream_settings.closest('.stream-row');
-    sub_row.find(".color_swatch").removeClass('in');
-    if (sub.render_subscribers) {
-        // TODO: having a completely empty settings div messes
-        // with Bootstrap's collapser.  We currently just ensure
-        // that it's not empty for Zephyr mirror realms, even though it
-        // looks weird
-        sub_row.find(".regular_subscription_settings").collapse('hide');
-    }
+    sub_row.find(".regular_subscription_settings").removeClass('in');
     row_for_stream_id(subs.stream_id).attr("data-temp-view", true);
 };
 
@@ -570,8 +594,8 @@ exports.setup_page = function (callback) {
             name: "stream-filter-toggle",
             selected: 0,
             values: [
-                { label: "Subscribed" },
-                { label: "All streams" },
+                { label: i18n.t("Subscribed") },
+                { label: i18n.t("All streams") },
             ],
             callback: function () {
                 actually_filter_streams();
@@ -668,7 +692,7 @@ exports.change_state = (function () {
         if (hash.arguments.length > 0) {
             // if in #streams/new form.
             if (hash.arguments[0] === "new") {
-                $("#create_stream_button").click();
+                exports.new_stream_clicked();
                 components.toggle.lookup("stream-filter-toggle").goto("All streams");
             } else if (hash.arguments[0] === "all") {
                 components.toggle.lookup("stream-filter-toggle").goto("All streams");
@@ -711,6 +735,63 @@ exports.close = function () {
     hashchange.exit_modal();
     meta.is_open = false;
     subs.remove_miscategorized_streams();
+};
+
+exports.switch_rows = function (event) {
+    var active_data = get_active_data();
+    var switch_row;
+    if (!active_data.id || active_data.row.hasClass('notdisplayed')) {
+        switch_row = $('div.stream-row:not(.notdisplayed):first');
+    } else if (event === 'up_arrow') {
+        switch_row = active_data.row.prev();
+    } else if (event === 'down_arrow') {
+        switch_row = active_data.row.next();
+        if ($('#search_stream_name').is(":focus")) {
+            $('#search_stream_name').blur();
+            return;
+        }
+    }
+
+    var row_data = get_row_data(switch_row);
+    if (row_data && !switch_row.hasClass('notdisplayed')) {
+        var switch_row_name = row_data.object.name;
+        var hash = ['#streams', row_data.id, switch_row_name];
+        export_hash(hash);
+    } else if (event === 'up_arrow' && !row_data) {
+        $('#search_stream_name').focus();
+    }
+};
+
+exports.keyboard_sub = function () {
+    var active_data = get_active_data();
+    var row_data = get_row_data(active_data.row);
+    if (row_data) {
+        subs.sub_or_unsub(row_data.object);
+        if (row_data.object.subscribed && active_data.tab.text() === 'Subscribed') {
+            active_data.row.addClass('notdisplayed');
+            active_data.row.removeClass('active');
+        }
+    }
+};
+
+exports.toggle_view = function (event) {
+    var active_data = get_active_data();
+    var hash;
+    if (event === 'right_arrow' && active_data.tab.text() === 'Subscribed') {
+        hash = ['#streams', 'all'];
+        export_hash(hash);
+    } else if (event === 'left_arrow' && active_data.tab.text() === 'All streams') {
+        hash = ['#streams', 'subscribed'];
+        export_hash(hash);
+    }
+};
+
+exports.view_stream = function () {
+    var active_data = get_active_data();
+    var row_data = get_row_data(active_data.row);
+    if (row_data) {
+        window.location.hash = '#narrow/stream/' + row_data.object.name;
+    }
 };
 
 function ajaxSubscribe(stream) {
@@ -926,6 +1007,46 @@ exports.sub_or_unsub = function (sub) {
     }
 };
 
+exports.new_stream_clicked = function () {
+    var stream = $.trim($("#search_stream_name").val());
+
+    if (!should_list_all_streams()) {
+        // Realms that don't allow listing streams should simply be subscribed to.
+        meta.stream_created = stream;
+        ajaxSubscribe($("#search_stream_name").val());
+        return;
+    }
+
+    // this changes the tab switcher (settings/preview) which isn't necessary
+    // to a add new stream title.
+    $(".display-type #add_new_stream_title").show();
+    $(".display-type #stream_settings_title").hide();
+
+    $(".stream-row.active").removeClass("active");
+
+    $("#stream_settings_title, .subscriptions-container .settings, .nothing-selected").hide();
+    $("#stream-creation, #add_new_stream_title").show();
+
+    $('#create_stream_name').val(stream);
+    show_new_stream_modal();
+
+    // at less than 700px we have a @media query that when you tap the
+    // #create_stream_button, the stream prompt slides in. However, when you
+    // focus  the button on that page, the entire app view jumps over to
+    // the other tab, and the animation breaks.
+    // it is unclear whether this is a browser bug or "feature", however what
+    // is clear is that this shoudn't be touched unless you're also changing
+    // the mobile @media query at 700px.
+    if (window.innerWidth > 700) {
+        $('#create_stream_name').focus();
+    }
+
+    // change the hash to #streams/new to allow for linking and
+    // easy discovery.
+
+    window.location.hash = "#streams/new";
+};
+
 
 $(function () {
 
@@ -941,10 +1062,6 @@ $(function () {
             $(".nothing-selected, #stream_settings_title").show();
             $("#add_new_stream_title, .settings, #stream-creation").hide();
         },
-        stream_creation: function () {
-            $("#stream_settings_title, .subscriptions-container .settings, .nothing-selected").hide();
-            $("#stream-creation, #add_new_stream_title").show();
-        },
         settings: function () {
             $(".settings, #stream_settings_title").show();
             $("#add_new_stream_title, #stream-creation, .nothing-selected").hide();
@@ -953,43 +1070,7 @@ $(function () {
 
     $("#subscriptions_table").on("click", "#create_stream_button", function (e) {
         e.preventDefault();
-
-        var stream = $.trim($("#search_stream_name").val());
-
-        if (!should_list_all_streams()) {
-            // Realms that don't allow listing streams should simply be subscribed to.
-            meta.stream_created = stream;
-            ajaxSubscribe($("#search_stream_name").val());
-            return;
-        }
-
-        // this changes the tab switcher (settings/preview) which isn't necessary
-        // to a add new stream title.
-        $(".display-type #add_new_stream_title").show();
-        $(".display-type #stream_settings_title").hide();
-
-        $(".stream-row.active").removeClass("active");
-
-        show_subs_pane.stream_creation();
-
-        $('#create_stream_name').val(stream);
-        show_new_stream_modal();
-
-        // at less than 700px we have a @media query that when you tap the
-        // #create_stream_button, the stream prompt slides in. However, when you
-        // focus  the button on that page, the entire app view jumps over to
-        // the other tab, and the animation breaks.
-        // it is unclear whether this is a browser bug or "feature", however what
-        // is clear is that this shoudn't be touched unless you're also changing
-        // the mobile @media query at 700px.
-        if (window.innerWidth > 700) {
-            $('#create_stream_name').focus();
-        }
-
-        // change the hash to #streams/new to allow for linking and
-        // easy discovery.
-
-        window.location.hash = "#streams/new";
+        exports.new_stream_clicked();
     });
 
     $('body').on('change', '#user-checkboxes input, #make-invite-only input', update_announce_stream_state);
@@ -1142,9 +1223,42 @@ $(function () {
         selectText(this);
     });
 
+    function setup_subscriptions_stream_hash(sub, stream_id) {
+        exports.change_state.prevent_once();
+        window.location.hash = "#streams" + "/" +
+            stream_id + "/" +
+            hash_util.encodeHashComponent(sub.name);
+    }
+
+    function show_stream_row(node, show_settings) {
+        $(".display-type #add_new_stream_title").hide();
+        $(".display-type #stream_settings_title, .right .settings").show();
+        $(".stream-row.active").removeClass("active");
+        if (show_settings) {
+            show_subs_pane.settings();
+
+            $(node).addClass("active");
+            exports.show_settings_for(get_stream_id(node));
+        } else {
+            show_subs_pane.nothing_selected();
+        }
+    }
+
     $("#subscriptions_table").on("click", ".sub_unsub_button", function (e) {
         var sub = get_sub_for_target(e.target);
+        var stream_row = $(this).parent();
+        var stream_id = stream_row.attr("data-stream-id");
         exports.sub_or_unsub(sub);
+        var sub_settings = settings_for_sub(sub);
+        var regular_sub_settings = sub_settings.find(".regular_subscription_settings");
+        if (!sub.subscribed) {
+            regular_sub_settings.addClass("in");
+            show_stream_row(stream_row, true);
+        } else {
+            regular_sub_settings.removeClass("in");
+        }
+
+        setup_subscriptions_stream_hash(sub, stream_id);
         e.preventDefault();
         e.stopPropagation();
     });
@@ -1244,30 +1358,12 @@ $(function () {
         exports.invite_user_to_stream(principal, sub, invite_success, invite_failure);
     });
 
-    function show_stream_row(node, e) {
-        $(".display-type #add_new_stream_title").hide();
-        $(".display-type #stream_settings_title, .right .settings").show();
-        $(".stream-row.active").removeClass("active");
-        if (e) {
-            show_subs_pane.settings();
-
-            $(node).addClass("active");
-            exports.show_settings_for(get_stream_id(node));
-        } else {
-            show_subs_pane.nothing_selected();
-        }
-    }
-
     $("#subscriptions_table").on("click", ".stream-row", function (e) {
         if ($(e.target).closest(".check, .subscription_settings").length === 0) {
-            show_stream_row(this, e);
-            exports.change_state.prevent_once();
+            show_stream_row(this, true);
             var stream_id = $(this).attr("data-stream-id");
             var sub = stream_data.get_sub_by_id(stream_id);
-
-            window.location.hash = "#streams" + "/" +
-                stream_id + "/" +
-                hash_util.encodeHashComponent(sub.name);
+            setup_subscriptions_stream_hash(sub, stream_id);
         }
     });
 
@@ -1276,7 +1372,7 @@ $(function () {
 
         $("#subscriptions_table").on("click", sel, function (e) {
             if ($(e.target).is(sel)) {
-                show_stream_row(this);
+                show_stream_row(this, false);
             }
         });
     }());
@@ -1346,13 +1442,6 @@ $(function () {
 
     $("#subscriptions_table").on("click", ".close-privacy-modal", function () {
         $("#stream_privacy_modal").remove();
-    });
-
-    $("#subscriptions_table").on("show", ".regular_subscription_settings", function (e) {
-        // We want 'show' events that originate from
-        // 'regular_subscription_settings' divs not to trigger the
-        // handler for the entire subscription_settings div
-        e.stopPropagation();
     });
 
     $("#subscriptions_table").on("hide", ".subscription_settings", function (e) {

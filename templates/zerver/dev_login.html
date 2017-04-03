@@ -1,0 +1,41 @@
+{% extends "zerver/portico.html" %}
+
+{# Login page. #}
+{% block portico_content %}
+<div class="app login-page">
+    <div class="app-main login-page-container">
+        <h4 class="login-page-header">{{ _('Click on a user to log in!') }}</h4>
+        <p class="devlogin_subheader">{{ _('(Or visit the <a href="/login">normal login page</a>)') }}</p>
+        <form name="direct_login_form" id="direct_login_form" method="post" class="login-form"
+            action="{{ url('zerver.views.auth.dev_direct_login') }}">
+            {{ csrf_input }}
+            <div class="control-group">
+                <div class="controls">
+                    <p>{{ _('Administrators') }}</p>
+                    {% for user_email in direct_admins %}
+                    <p><input type="submit" name="direct_email" class="btn-direct btn-admin" value="{{ user_email }}" /></p>
+                    {% endfor %}
+
+                    <p>{{ _('Normal users') }}</p>
+                    {% for user_email in direct_users %}
+                    <p><input type="submit" name="direct_email" class="btn-direct btn-user" value="{{ user_email }}" /></p>
+                    {% endfor %}
+
+                    <p>{{ _('Community users') }}</p>
+                    {% for user_email in community_users %}
+                    <p><input type="submit" name="direct_email" class="btn-direct btn-user" value="{{ user_email }}" /></p>
+                    {% endfor %}
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="footer-padder"></div>
+
+<script type="text/javascript">
+if (window.location.hash.substring(0, 1) === "#") {
+    document.login_form.action += window.location.hash;
+}
+</script>
+{% endblock %}

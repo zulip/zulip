@@ -46,6 +46,22 @@ subprocess.check_call(['./tools/minify-js'] +
                       (['--prev-deploy', prev_deploy] if prev_deploy else []),
                       stdout=fp, stderr=fp)
 
+# Copy the KaTeX files outside node_modules
+subprocess.check_call(['mkdir', '-p',
+                       os.path.join(settings.STATIC_ROOT,
+                                    'node_modules/katex/dist/')],
+                      stdout=fp, stderr=fp)
+
+subprocess.check_call(['cp', 'node_modules/katex/dist/katex.css',
+                       os.path.join(settings.STATIC_ROOT,
+                                    'node_modules/katex/dist/')],
+                      stdout=fp, stderr=fp)
+
+subprocess.check_call(['cp', '-R', 'node_modules/katex/dist/fonts',
+                       os.path.join(settings.STATIC_ROOT,
+                                    'node_modules/katex/dist/fonts')],
+                      stdout=fp, stderr=fp)
+
 # Collect the files that we're going to serve; this creates prod-static/serve.
 subprocess.check_call(['./manage.py', 'collectstatic', '--no-default-ignore',
                        '--noinput', '-i', 'assets', '-i' 'node_modules'],

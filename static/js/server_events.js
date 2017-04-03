@@ -23,6 +23,11 @@ function dispatch_normal_event(event) {
         admin.update_default_streams_table();
         break;
 
+    case 'hotspots':
+        hotspots.show(event.hotspots);
+        page_params.hotspots = event.hotspots;
+        break;
+
     case 'muted_topics':
         muting_ui.handle_updates(event.muted_topics);
         break;
@@ -62,6 +67,10 @@ function dispatch_normal_event(event) {
             page_params.realm_invite_required = event.value;
         } else if (event.op === 'update' && event.property === 'invite_by_admins_only') {
             page_params.realm_invite_by_admins_only = event.value;
+        } else if (event.op === 'update' && event.property === 'inline_image_preview') {
+            page_params.realm_inline_image_preview = event.value;
+        } else if (event.op === 'update' && event.property === 'inline_url_embed_preview') {
+            page_params.realm_inline_url_embed_preview = event.value;
         } else if (event.op === 'update' && event.property === 'create_stream_by_admins_only') {
             page_params.realm_create_stream_by_admins_only = event.value;
             if (!page_params.is_admin) {
@@ -77,6 +86,9 @@ function dispatch_normal_event(event) {
             page_params.add_emoji_by_admins_only = event.value;
         } else if (event.op === 'update' && event.property === 'restricted_to_domain') {
             page_params.realm_restricted_to_domain = event.value;
+        } else if (event.op === 'update' && event.property === 'message_retention_days') {
+            page_params.message_retention_days = event.value;
+            admin.update_message_retention_days();
         } else if (event.op === 'update_dict' && event.property === 'default') {
             $.each(event.data, function (key, value) {
                 page_params['realm_' + key] = value;
@@ -248,9 +260,9 @@ function dispatch_normal_event(event) {
         }
 
         if (event.op === 'start') {
-            typing.display_notification(event);
+            typing_events.display_notification(event);
         } else if (event.op === 'stop') {
-            typing.hide_notification(event);
+            typing_events.hide_notification(event);
         }
         break;
 
@@ -392,7 +404,7 @@ function get_events_success(events) {
     if (messages.length !== 0) {
         try {
             messages = echo.process_from_server(messages);
-            message_store.insert_new_messages(messages);
+            message_events.insert_new_messages(messages);
         } catch (ex2) {
             blueslip.error('Failed to insert new messages\n' +
                            blueslip.exception_msg(ex2),
@@ -414,7 +426,7 @@ function get_events_success(events) {
 
     if (messages_to_update.length !== 0) {
         try {
-            message_store.update_messages(messages_to_update);
+            message_events.update_messages(messages_to_update);
         } catch (ex3) {
             blueslip.error('Failed to update messages\n' +
                            blueslip.exception_msg(ex3),
@@ -467,16 +479,14 @@ function get_events(options) {
         error: function (xhr, error_type) {
             try {
                 get_events_xhr = undefined;
-                // If we are old enough to have messages outside of the
-                // Tornado cache or if we're old enough that our message
-                // queue has been garbage collected, immediately reload.
+                // If we're old enough that our message queue has been
+                // garbage collected, immediately reload.
                 if ((xhr.status === 400) &&
-                    (JSON.parse(xhr.responseText).msg.indexOf("too old") !== -1 ||
-                     JSON.parse(xhr.responseText).msg.indexOf("Bad event queue id") !== -1)) {
+                    (JSON.parse(xhr.responseText).msg.indexOf("Bad event queue id") !== -1)) {
                     page_params.event_queue_expired = true;
                     reload.initiate({immediate: true,
                                      save_pointer: false,
-                                     save_narrow: false,
+                                     save_narrow: true,
                                      save_compose: true});
                 }
 

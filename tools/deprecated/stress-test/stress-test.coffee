@@ -47,7 +47,7 @@ class ZulipSession extends Session
             anchor: @pointer
             num_before: 200
             num_after: 200
-        }, get_old_messages_time.cbTimer cb
+        }, get_messages_time.cbTimer cb
 
     reload: (cb) ->
         @get '/', =>
@@ -105,7 +105,7 @@ class ZulipSession extends Session
         setTimeout(@random_sends, @rand_time())
 
     # TODO: update_message_flags
-    # TODO: get_old_messages
+    # TODO: get_messages
 
     run_message_test: =>
         @login =>
@@ -158,7 +158,7 @@ stats = [
     message_send_time = new Stat("Message Send Time")
     update_status_time = new Stat("/json/update_status_time Time")
     total_reload_time = new Stat("Total reload time")
-    get_old_messages_time = new Stat("/json/get_old_messages Time")
+    get_messages_time = new Stat("/json/get_messages Time")
 ]
 
 # Reset message latency stat after everyone logs in

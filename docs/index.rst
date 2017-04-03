@@ -127,6 +127,7 @@ Contents:
    front-end-build-process
    schema-migrations
    html_css
+   hashchange-system
    emoji
    full-text-search
    analytics

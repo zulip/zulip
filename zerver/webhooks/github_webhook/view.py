@@ -389,17 +389,18 @@ EVENT_FUNCTION_MAPPER = {
 @has_request_variables
 def api_github_webhook(
         request, user_profile, client,
-        payload=REQ(argument_type='body'), stream=REQ(default='github')):
-    # type: (HttpRequest, UserProfile, Client, Dict[str, Any], Text) -> HttpResponse
-    event = get_event(request, payload)
+        payload=REQ(argument_type='body'), stream=REQ(default='github'),
+        branches=REQ(default=None)):
+    # type: (HttpRequest, UserProfile, Client, Dict[str, Any], Text, Text) -> HttpResponse
+    event = get_event(request, payload, branches)
     if event is not None:
         subject = get_subject_based_on_type(payload, event)
         body = get_body_function_based_on_type(event)(payload)
         check_send_message(user_profile, client, 'stream', [stream], subject, body)
     return json_success()
 
-def get_event(request, payload):
-    # type: (HttpRequest, Dict[str, Any]) -> Optional[str]
+def get_event(request, payload, branches):
+    # type: (HttpRequest, Dict[str, Any], Text) -> Optional[str]
     event = request.META['HTTP_X_GITHUB_EVENT']
     if event == 'pull_request':
         action = payload['action']
@@ -409,18 +410,21 @@ def get_event(request, payload):
             return 'assigned_or_unassigned_pull_request'
         if action == 'closed':
             return 'closed_pull_request'
-        if action in ('labeled', 'unlabeled', 'review_requested', 'review_request_removed'):
-            logging.warn('Event pull_request with {} action is unsupported'.format(action))
-            return None
-        raise UnknownEventType(u'Event pull_request with {} action is unsupported'.format(action))
+        logging.warn(u'Event pull_request with {} action is unsupported'.format(action))
+        return None
     if event == 'push':
         if is_commit_push_event(payload):
+            if branches is not None:
+                branch = get_branch_name_from_ref(payload['ref'])
+                if branch not in branches.split(','):
+                    return None
             return "push_commits"
         else:
             return "push_tags"
     elif event in list(EVENT_FUNCTION_MAPPER.keys()) or event == 'ping':
         return event
-    raise UnknownEventType(u'Event {} is unknown and cannot be handled'.format(event))
+    logging.warn(u'Event {} is unknown and cannot be handled'.format(event))
+    return None
 
 def get_body_function_based_on_type(type):
     # type: (str) -> Any

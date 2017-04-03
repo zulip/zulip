@@ -34,7 +34,7 @@ Zulip keyboard shortcuts are divided into four categories:
 * **Scroll down**: `J`, `Spacebar`, or `PgDn` (`Fn` + `↓` on Mac) -
   This shortcut allows the user to scroll down through the messages in
   their view.
-* **Last message**: `End` (`Fn`+`⇾` on Mac) - This shortcut
+* **Last message**: `End` (`Fn`+`⇾` on Mac) or `G` - This shortcut
   allows the user to scroll to the most recent message in their view.
 * **First message in view**: `Home` (`Fn`+`⇽` on Mac) - This shortcut
   allows the user to scroll to the most recent message in their view.
@@ -57,6 +57,8 @@ Zulip keyboard shortcuts are divided into four categories:
   shortcut allows the user to send the message that they've written.
 * **Cancel compose**: `Esc` - This shortcut allows the user to cancel
   and discard their unsent message.
+* **View drafts**: `d` - This shortcut allows the user to open the
+  drafts overlay.
 
 ## Narrowing
 
@@ -93,8 +95,12 @@ Zulip keyboard shortcuts are divided into four categories:
   message.
 * **Show the keyboard shortcuts**: `?` - This shortcut makes a modal
   window with a guide to all possible keyboard shortcuts appear.
+* **Open gear menu**: `g` - This shortcut opens the page's upper-right
+  gear menu.
 * **Open reaction popover menu**: `:` - This shortcut shows the
   reaction popover menu of the selected message (outlined in blue).
 * **React to selected message with +1**: `+` - This shortcut allows
   you to react to the selected message (outlined in blue) with the
   +1 (thumbs up) emoji.
+* **Mute/Unmute topic**: `M` - This shortcut toggles the selected
+  message's (outlined in blue) topic between muted and unmuted.

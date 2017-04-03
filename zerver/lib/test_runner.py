@@ -1,15 +1,20 @@
 from __future__ import print_function
 
+from functools import partial
 from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, \
     Text, Type
 from unittest import loader, runner  # type: ignore  # Mypy cannot pick these up.
 from unittest.result import TestResult
 
+from django.db import connections
 from django.test import TestCase
-from django.test.runner import DiscoverRunner, RemoteTestResult
+from django.test import runner as django_runner
+from django.test.runner import DiscoverRunner
 from django.test.signals import template_rendered
 
+from zerver.lib import test_classes, test_helpers
 from zerver.lib.cache import bounce_key_prefix_for_testing
+from zerver.lib.test_classes import flush_caches_for_testing
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.test_helpers import (
     get_all_templates, write_instrumentation_reports,
@@ -24,7 +29,10 @@ import traceback
 import unittest
 
 if False:
-    from unittest.result import TestResult
+    # Only needed by mypy.
+    from multiprocessing.sharedctypes import Synchronized
+
+_worker_id = 0  # Used to identify the worker process.
 
 def slow(slowness_reason):
     # type: (str) -> Callable[[Callable], Callable]
@@ -104,6 +112,7 @@ def run_test(test, result):
     test_name = full_test_name(test)
 
     bounce_key_prefix_for_testing(test_name)
+    flush_caches_for_testing()
 
     if not hasattr(test, "_pre_setup"):
         # test_name is likely of the form unittest.loader.ModuleImportFailure.zerver.tests.test_upload
@@ -192,6 +201,80 @@ class TextTestResult(runner.TextTestResult):
                                                         reason))
         self.stream.flush()
 
+class RemoteTestResult(django_runner.RemoteTestResult):
+    """
+    The class follows the unpythonic style of function names of the
+    base class.
+    """
+    def addInfo(self, test, msg):
+        # type: (TestCase, Text) -> None
+        self.events.append(('addInfo', self.test_index, msg))
+
+    def addInstrumentation(self, test, data):
+        # type: (TestCase, Dict[str, Any]) -> None
+        # Some elements of data['info'] cannot be serialized.
+        if 'info' in data:
+            del data['info']
+
+        self.events.append(('addInstrumentation', self.test_index, data))
+
+def process_instrumented_calls(func):
+    # type: (Callable) -> None
+    for call in test_helpers.INSTRUMENTED_CALLS:
+        func(call)
+
+def run_subsuite(args):
+    # type: (Tuple[int, Tuple[Type[Iterable[TestCase]], List[str]], bool]) -> Tuple[int, Any]
+    subsuite_index, subsuite, failfast = args
+    runner = RemoteTestRunner(failfast=failfast)
+    result = runner.run(deserialize_suite(subsuite))
+    # Now we send instrumentation related events. This data will be
+    # appended to the data structure in the main thread. For Mypy,
+    # type of Partial is different from Callable. All the methods of
+    # TestResult are passed TestCase as the first argument but
+    # addInstrumentation does not need it.
+    process_instrumented_calls(partial(result.addInstrumentation, None))  # type: ignore
+    return subsuite_index, result.events
+
+def init_worker(counter):
+    # type: (Synchronized) -> None
+    global _worker_id
+    test_classes.API_KEYS = {}
+
+    # Clear the cache
+    from zerver.lib.cache import get_cache_backend
+    cache = get_cache_backend(None)
+    cache.clear()
+
+    # Close all connections
+    connections.close_all()
+
+    with counter.get_lock():
+        counter.value += 1
+        _worker_id = counter.value
+
+    for alias in connections:
+        connection = connections[alias]
+
+        try:
+            connection.creation.destroy_test_db(number=_worker_id)
+        except Exception:
+            # DB doesn't exist. No need to do anything.
+            pass
+
+        connection.creation.clone_test_db(
+            number=_worker_id,
+            keepdb=True,
+        )
+
+        settings_dict = connection.creation.get_test_db_clone_settings(_worker_id)
+        # connection.settings_dict must be updated in place for changes to be
+        # reflected in django.db.connections. If the following line assigned
+        # connection.settings_dict = settings_dict, new threads would connect
+        # to the default database instead of the appropriate clone.
+        connection.settings_dict.update(settings_dict)
+        connection.close()
+
 class TestSuite(unittest.TestSuite):
     def run(self, result, debug=False):
         # type: (TestResult, Optional[bool]) -> TestResult
@@ -234,9 +317,19 @@ class TestSuite(unittest.TestSuite):
 class TestLoader(loader.TestLoader):
     suiteClass = TestSuite
 
+class ParallelTestSuite(django_runner.ParallelTestSuite):
+    run_subsuite = run_subsuite
+    init_worker = init_worker
+
+    def __init__(self, suite, processes, failfast):
+        # type: (TestSuite, int, bool) -> None
+        super(ParallelTestSuite, self).__init__(suite, processes, failfast)
+        self.subsuites = SubSuiteList(self.subsuites)  # type: SubSuiteList
+
 class Runner(DiscoverRunner):
     test_suite = TestSuite
     test_loader = TestLoader()
+    parallel_test_suite = ParallelTestSuite
 
     def __init__(self, *args, **kwargs):
         # type: (*Any, **Any) -> None
@@ -295,3 +388,47 @@ class Runner(DiscoverRunner):
         if not failed:
             write_instrumentation_reports(full_suite=full_suite)
         return failed
+
+def get_test_names(suite):
+    # type: (TestSuite) -> List[str]
+    return [full_test_name(t) for t in get_tests_from_suite(suite)]
+
+def get_tests_from_suite(suite):
+    # type: (TestSuite) -> TestCase
+    for test in suite:  # type: ignore
+        if isinstance(test, TestSuite):
+            for child in get_tests_from_suite(test):
+                yield child
+        else:
+            yield test
+
+def serialize_suite(suite):
+    # type: (TestSuite) -> Tuple[Type[TestSuite], List[str]]
+    return type(suite), get_test_names(suite)
+
+def deserialize_suite(args):
+    # type: (Tuple[Type[Iterable[TestCase]], List[str]]) -> Iterable[TestCase]
+    suite_class, test_names = args
+    suite = suite_class()  # type: ignore  # Gives abstract type error.
+    tests = TestLoader().loadTestsFromNames(test_names)
+    for test in get_tests_from_suite(tests):
+        suite.addTest(test)
+    return suite
+
+class RemoteTestRunner(django_runner.RemoteTestRunner):
+    resultclass = RemoteTestResult
+
+class SubSuiteList(list):
+    """
+    This class allows us to avoid changing the main logic of
+    ParallelTestSuite and still make it serializable.
+    """
+    def __init__(self, suites):
+        # type: (List[TestSuite]) -> None
+        serialized_suites = [serialize_suite(s) for s in suites]
+        super(SubSuiteList, self).__init__(serialized_suites)
+
+    def __getitem__(self, index):
+        # type: (Any) -> Any
+        suite = super(SubSuiteList, self).__getitem__(index)
+        return deserialize_suite(suite)

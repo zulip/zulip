@@ -124,12 +124,12 @@ class Command(BaseCommand):
             # welcome-bot (needed for do_create_realm) hasn't been created yet
             zulip_realm = Realm.objects.create(
                 string_id="zulip", name="Zulip Dev", restricted_to_domain=True,
-                invite_required=False, org_type=Realm.CORPORATE, domain="zulip.com")
+                invite_required=False, org_type=Realm.CORPORATE)
             RealmAlias.objects.create(realm=zulip_realm, domain="zulip.com")
             if options["test_suite"]:
                 mit_realm = Realm.objects.create(
                     string_id="zephyr", name="MIT", restricted_to_domain=True,
-                    invite_required=False, org_type=Realm.CORPORATE, domain="mit.edu")
+                    invite_required=False, org_type=Realm.CORPORATE)
                 RealmAlias.objects.create(realm=mit_realm, domain="mit.edu")
 
             # Create test Users (UserProfiles are automatically created,
@@ -148,6 +148,8 @@ class Command(BaseCommand):
             create_users(zulip_realm, names)
             iago = UserProfile.objects.get(email="iago@zulip.com")
             do_change_is_admin(iago, True)
+            iago.is_staff = True
+            iago.save(update_fields=['is_staff'])
             # Create public streams.
             stream_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome"]
             stream_dict = {
@@ -414,7 +416,7 @@ def create_simple_community_realm():
     # type: () -> None
     simple_realm = Realm.objects.create(
         string_id="simple", name="Simple Realm", restricted_to_domain=False,
-        invite_required=False, org_type=Realm.COMMUNITY, domain="simple.com")
+        invite_required=False, org_type=Realm.COMMUNITY)
 
     names = [
         ("alice", "alice@example.com"),

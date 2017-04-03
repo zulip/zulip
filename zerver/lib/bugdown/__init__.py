@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+import subprocess
 # Zulip's main markdown implementation.  See docs/markdown.md for
 # detailed documentation on our markdown syntax.
 from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Text, Tuple, TypeVar, Union
@@ -40,7 +41,8 @@ from zerver.lib.url_preview import preview as link_preview
 from zerver.models import Message, Realm, UserProfile, get_user_profile_by_email
 import zerver.lib.alert_words as alert_words
 import zerver.lib.mention as mention
-from zerver.lib.str_utils import force_text, force_str
+from zerver.lib.str_utils import force_str, force_text
+from zerver.lib.tex import render_tex
 import six
 from six.moves import range, html_parser
 from typing import Text
@@ -62,6 +64,32 @@ if False:
 
 class BugdownRenderingException(Exception):
     pass
+
+def url_embed_preview_enabled_for_realm(message):
+    # type: (Message) -> bool
+    if message is not None:
+        realm = message.get_realm()
+    else:
+        realm = None
+
+    if not settings.INLINE_URL_EMBED_PREVIEW:
+        return False
+    if realm is None:
+        return True
+    return realm.inline_url_embed_preview
+
+def image_preview_enabled_for_realm():
+    # type: () -> bool
+    global current_message
+    if current_message is not None:
+        realm = current_message.get_realm()
+    else:
+        realm = None
+    if not settings.INLINE_IMAGE_PREVIEW:
+        return False
+    if realm is None:
+        return True
+    return realm.inline_image_preview
 
 def unescape(s):
     # type: (Text) -> (Text)
@@ -327,7 +355,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
     def is_image(self, url):
         # type: (Text) -> bool
-        if not settings.INLINE_IMAGE_PREVIEW:
+        if not image_preview_enabled_for_realm():
             return False
         parsed_url = urllib.parse.urlparse(url)
         # List from http://support.google.com/chromeos/bin/answer.py?hl=en&answer=183093
@@ -384,7 +412,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
     def youtube_id(self, url):
         # type: (Text) -> Optional[Text]
-        if not settings.INLINE_IMAGE_PREVIEW:
+        if not image_preview_enabled_for_realm():
             return None
         # Youtube video id extraction regular expression from http://pastebin.com/KyKAFv1s
         # If it matches, match.group(2) is the video id.
@@ -620,7 +648,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             if db_data and db_data['sent_by_bot']:
                 continue
 
-            if current_message is None or not settings.INLINE_URL_EMBED_PREVIEW:
+            if current_message is None or not url_embed_preview_enabled_for_realm(current_message):
                 continue
             try:
                 extracted_data = link_preview.link_embed_data_from_cache(url)
@@ -735,6 +763,18 @@ class ModalLink(markdown.inlinepatterns.Pattern):
         a_tag.text = text
 
         return a_tag
+
+class Tex(markdown.inlinepatterns.Pattern):
+    def handleMatch(self, match):
+        # type: (Match[Text]) -> Element
+        rendered = render_tex(match.group('body'), is_inline=True)
+        if rendered is not None:
+            return etree.fromstring(rendered.encode('utf-8'))
+        else: # Something went wrong while rendering
+            span = markdown.util.etree.Element('span')
+            span.set('class', 'tex-error')
+            span.text = '$$' + match.group('body') + '$$'
+            return span
 
 upload_title_re = re.compile(u"^(https?://[^/]*)?(/user_uploads/\\d+)(/[^/]*)?/[^/]*/(?P<filename>[^/]*)$")
 def url_filename(url):
@@ -1120,6 +1160,7 @@ class Bugdown(markdown.Extension):
                         \*\*                         # ends by double asterisks
                        """
         md.inlinePatterns.add('stream', StreamPattern(stream_group), '>backtick')
+        md.inlinePatterns.add('tex', Tex(r'\B\$\$(?P<body>[^ _$](\\\$|[^$])*)(?! )\$\$\B'), '>backtick')
         md.inlinePatterns.add('emoji', Emoji(r'(?P<syntax>:[\w\-\+]+:)'), '_end')
         md.inlinePatterns.add('unicodeemoji', UnicodeEmoji(
             u'(?P<syntax>[\U0001F300-\U0001F64F\U0001F680-\U0001F6FF\u2600-\u26FF\u2700-\u27BF])'),

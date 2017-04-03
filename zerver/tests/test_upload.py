@@ -15,7 +15,8 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.test_runner import slow
 from zerver.lib.upload import sanitize_name, S3UploadBackend, \
-    upload_message_image, delete_message_image, LocalUploadBackend
+    upload_message_image, delete_message_image, LocalUploadBackend, \
+    ZulipUploadBackend
 import zerver.lib.upload
 from zerver.models import Attachment, Recipient, get_user_profile_by_email, \
     get_old_unclaimed_attachments, Message, UserProfile, Realm, get_realm
@@ -399,6 +400,26 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         destroy_uploads()
 
 class AvatarTest(UploadSerializeMixin, ZulipTestCase):
+
+    def test_avatar_url(self):
+        # type: () -> None
+        """Verifies URL schemes for avatars and realm icons."""
+        backend = LocalUploadBackend()  # type: ZulipUploadBackend
+        self.assertEqual(backend.get_avatar_url("hash", False),
+                         "/user_avatars/hash.png?x=x")
+        self.assertEqual(backend.get_avatar_url("hash", True),
+                         "/user_avatars/hash-medium.png?x=x")
+        self.assertEqual(backend.get_realm_icon_url(15, 1),
+                         "/user_avatars/15/realm/icon.png?version=1")
+
+        with self.settings(S3_AVATAR_BUCKET="bucket"):
+            backend = S3UploadBackend()
+            self.assertEqual(backend.get_avatar_url("hash", False),
+                             "https://bucket.s3.amazonaws.com/hash?x=x")
+            self.assertEqual(backend.get_avatar_url("hash", True),
+                             "https://bucket.s3.amazonaws.com/hash-medium.png?x=x")
+            self.assertEqual(backend.get_realm_icon_url(15, 1),
+                             "https://bucket.s3.amazonaws.com/15/realm/icon.png?version=1")
 
     def test_multiple_upload_failure(self):
         # type: () -> None

@@ -1,3 +1,4 @@
+// Read https://zulip.readthedocs.io/en/latest/hashchange-system.html
 var reload = (function () {
 
 var exports = {};
@@ -68,7 +69,19 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
     }
     url += "+oldhash=" + encodeURIComponent(oldhash);
 
-    window.location.replace(url);
+    // To protect the browser against CSRF type attacks, the reload
+    // logic uses a random token (to distinct this browser from
+    // others) which is passed via the URL to the browser (post
+    // reloading).  The token is a key into local storage, where we
+    // marshall and store the URL.
+    //
+    // TODO: Remove the now-unnecessary URL-encoding logic above and
+    // just pass the actual data structures through local storage.
+    var token = util.random_int(0, 1024*1024*1024*1024);
+    var ls = localstorage();
+
+    ls.set("reload:" + token, url);
+    window.location.replace("#reload:" + token);
 }
 
 
@@ -76,10 +89,24 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
 // done before the first call to get_events
 exports.initialize = function reload__initialize() {
     var location = window.location.toString();
-    var fragment = location.substring(location.indexOf('#') + 1);
-    if (fragment.search("reload:") !== 0) {
+    var hash_fragment = location.substring(location.indexOf('#') + 1);
+
+    // hash_fragment should be e.g. `reload:12345123412312`
+    if (hash_fragment.search("reload:") !== 0) {
         return;
     }
+
+    // Using the token, recover the saved pre-reload data from local
+    // storage.  Afterwards, we clear the reload entry from local
+    // storage to avoid a local storage space leak.
+    var ls = localstorage();
+    var fragment = ls.get(hash_fragment);
+    if (fragment === undefined) {
+        blueslip.error("Invalid hash change reload token");
+        return;
+    }
+    ls.remove(hash_fragment);
+
     fragment = fragment.replace(/^reload:/, "");
     var keyvals = fragment.split("+");
     var vars = {};
@@ -87,12 +114,6 @@ exports.initialize = function reload__initialize() {
         var pair = str.split("=");
         vars[pair[0]] = decodeURIComponent(pair[1]);
     });
-
-    // Prevent random people on the Internet from constructing links
-    // that make you send a message.
-    if (vars.csrf_token !== csrf_token) {
-        return;
-    }
 
     if (vars.msg !== undefined) {
         var send_now = parseInt(vars.send_after_reload, 10);
@@ -131,52 +152,17 @@ exports.initialize = function reload__initialize() {
     hashchange.changehash(vars.oldhash);
 };
 
-function clear_message_list(msg_list) {
-    if (!msg_list) { return; }
-    msg_list.clear();
-    // Some pending ajax calls may still be processed and they to not expect an
-    // empty msg_list.
-    msg_list._items = [{id: 1}];
-}
-
-function cleanup_before_reload() {
-    try {
-        // Unbind all the jQuery event listeners
-        $('*').off();
-
-        // Abort all pending ajax requests`
-        try {
-            channel.abort_all();
-        } catch (ex) {
-            // This seems to throw exceptions for no apparent reason sometimes
-            blueslip.debug("Error aborting XHR requests on reload; ignoring");
-        }
-
-        // Free all the DOM in the main_div
-        $("#main_div").empty();
-
-        // Now that the DOM is empty our beforeunload callback may
-        // have been removed, so explicitly remove event queue here.
-        server_events.cleanup_event_queue();
-
-        // Empty the large collections
-        clear_message_list(message_list.all);
-        clear_message_list(home_msg_list);
-        clear_message_list(message_list.narrowed);
-        message_store.clear();
-
-    } catch (ex) {
-        blueslip.error('Failed to cleanup before reloading',
-                       undefined, ex.stack);
-    }
-}
-
 function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compose, message) {
     if (reload_in_progress) { return; }
 
     // TODO: we should completely disable the UI here
     if (save_pointer || save_narrow || save_compose) {
-        preserve_state(send_after_reload, save_pointer, save_narrow, save_compose);
+        try {
+            preserve_state(send_after_reload, save_pointer, save_narrow, save_compose);
+        } catch (ex) {
+            blueslip.error('Failed to preserve state',
+                           undefined, ex.stack);
+        }
     }
 
     if (message === undefined) {
@@ -188,8 +174,11 @@ function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compos
     blueslip.log('Starting server requested page reload');
     reload_in_progress = true;
 
-    if (feature_flags.cleanup_before_reload) {
-        cleanup_before_reload();
+    try {
+        server_events.cleanup_event_queue();
+    } catch (ex) {
+        blueslip.error('Failed to cleanup before reloading',
+                       undefined, ex.stack);
     }
 
     window.location.reload(true);

@@ -193,7 +193,10 @@ function insert_local_message(message_request, local_id) {
         });
     }
 
-    message_store.insert_new_messages([message], local_id);
+    // It is a little bit funny to go through the message_events
+    // codepath, but it's sort of the idea behind local echo that
+    // we are simulating server events before they actually arrive.
+    message_events.insert_new_messages([message], local_id);
     return message.local_id;
 }
 
@@ -370,6 +373,14 @@ function handleRealmFilter(pattern, matches) {
     return url;
 }
 
+function handleTex(tex, fullmatch) {
+    try {
+        return katex.renderToString(tex);
+    } catch (ex) {
+        return '<span class="tex-error">' + escape(fullmatch) + '</span>';
+    }
+}
+
 function python_to_js_filter(pattern, url) {
     // Converts a python named-group regex to a javascript-compatible numbered
     // group regex... with a regex!
@@ -440,13 +451,9 @@ $(function () {
     // Configure the marked markdown parser for our usage
     var r = new marked.Renderer();
 
-    // No <code> around our code blocks instead a codehilite <div> and disable class-specific
-    // highlighting. We special-case the 'quote' language and output a blockquote.
-    r.code = function (code, lang) {
-        if (lang === 'quote') {
-            return '<blockquote>\n<p>' + escape(code, true) + '</p>\n</blockquote>\n\n\n';
-        }
-
+    // No <code> around our code blocks instead a codehilite <div> and disable
+    // class-specific highlighting.
+    r.code = function (code) {
         return '<div class="codehilite"><pre>'
           + escape(code, true)
           + '\n</pre></div>\n\n\n';
@@ -455,7 +462,8 @@ $(function () {
     // Our links have title= and target=_blank
     r.link = function (href, title, text) {
         title = title || href;
-        var out = '<a href="' + href + '"' + ' target="_blank" title="' + title + '"' + '>' + text + '</a>';
+        var out = '<a href="' + href + '"' + ' target="_blank" title="' +
+                  title + '"' + '>' + text + '</a>';
         return out;
     };
 
@@ -514,6 +522,7 @@ $(function () {
         unicodeEmojiHandler: handleUnicodeEmoji,
         streamHandler: handleStream,
         realmFilterHandler: handleRealmFilter,
+        texHandler: handleTex,
         renderer: r,
         preprocessors: [preprocess_code_blocks],
     });

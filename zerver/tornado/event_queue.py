@@ -1,7 +1,8 @@
 # See http://zulip.readthedocs.io/en/latest/events-system.html for
 # high-level documentation on how this system works.
 from __future__ import absolute_import
-from typing import cast, AbstractSet, Any, Callable, Dict, List, Mapping, MutableMapping, Optional, Iterable, Sequence, Set, Text, Union
+from typing import cast, AbstractSet, Any, Callable, Dict, List, \
+    Mapping, MutableMapping, Optional, Iterable, Sequence, Set, Text, Union
 
 from django.utils.translation import ugettext as _
 from django.conf import settings

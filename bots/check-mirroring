@@ -21,7 +21,7 @@ parser.add_option('--verbose',
                   action='store_true')
 parser.add_option('--site',
                   dest='site',
-                  default="https://api.zulip.com",
+                  default=None,
                   action='store')
 parser.add_option('--sharded',
                   default=False,
@@ -41,13 +41,10 @@ sys.path[:0] = [os.path.join(options.root_path, "api/"),
                 options.root_path]
 
 mit_user = 'tabbott/extra@ATHENA.MIT.EDU'
-zulip_user = 'tabbott/extra@mit.edu'
 
 sys.path.append(".")
 import zulip
 zulip_client = zulip.Client(
-    email=zulip_user,
-    api_key="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
     verbose=True,
     client="ZulipMonitoring/0.1",
     site=options.site)
@@ -67,7 +64,7 @@ logger.addHandler(file_handler)
 
 # Initialize list of streams to test
 if options.sharded:
-    # NOTE: Streams in this list must be in zulip_user's Zulip
+    # NOTE: Streams in this list must be in the zulip_user's Zulip
     # subscriptions, or we won't receive messages via Zulip.
 
     # The sharded stream list has a bunch of pairs
@@ -254,7 +251,7 @@ for key, (stream, test) in hzkeys.items():
         send_zulip({
             "type": "private",
             "content": str(key),
-            "to": zulip_user,
+            "to": zulip_client.email,
         })
     else:
         send_zulip({

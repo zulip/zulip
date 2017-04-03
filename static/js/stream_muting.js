@@ -21,7 +21,7 @@ exports.update_in_home_view = function (sub, value) {
         home_msg_list.clear({clear_selected_id: false});
 
         // Recreate the home_msg_list with the newly filtered message_list.all
-        message_store.add_messages(message_list.all.all_messages(), home_msg_list);
+        message_util.add_messages(message_list.all.all_messages(), home_msg_list);
 
         // Ensure we're still at the same scroll position
         if (ui_state.home_tab_obscured()) {
@@ -44,7 +44,7 @@ exports.update_in_home_view = function (sub, value) {
         pointer.suppress_scroll_pointer_update = true;
 
         if (! home_msg_list.empty()) {
-            message_store.do_unread_count_updates(home_msg_list.all_messages());
+            message_util.do_unread_count_updates(home_msg_list.all_messages());
         }
     }, 0);
 

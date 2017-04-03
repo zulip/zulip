@@ -40,15 +40,7 @@ autofocus('#id_username');
 
 <div class="app login-page">
   <div class="app-main login-page-container">
-
-    {% if dev_auth_enabled %}
-    <h3 class="login-page-header">{{ _('Development login') }}</h3>
-    {% if not password_auth_enabled %}
-    <h4 class="login-page-subheader">{{ _('Choose a user:') }}</h4>
-    {% endif %}
-    {% else %}
     <h3 class="login-page-header">{{ _('You look familiar.') }}</h3>
-    {% endif %}
 
 {% if only_sso %}
     {# SSO users don't have a password. #}
@@ -112,33 +104,6 @@ autofocus('#id_username');
                     <span class="login-forgot-password">
                       <a href="{{ url('django.contrib.auth.views.password_reset') }}">{{ _('Forgot password?') }}</a>
                     </span>
-                </div>
-            </div>
-        </form>
-        {% endif %}
-        {% if dev_auth_enabled %}
-        <form name="direct_login_form" id="direct_login_form" method="post" class="login-form"
-              action="{{ url('zerver.views.auth.dev_direct_login') }}">
-            {{ csrf_input }}
-            <div class="control-group">
-                {% if password_auth_enabled %}
-                <label for="direct_email" class="direct-label">{{ _('or Choose a user') }}:</label>
-                {% endif %}
-                <div class="controls">
-                    <p>({{ _('Administrators') }})</p>
-                    {% for user_email in direct_admins %}
-                    <p><input type="submit" name="direct_email" class="btn-direct btn-admin" value="{{ user_email }}" /></p>
-                    {% endfor %}
-
-                    <p>({{ _('Normal users') }})</p>
-                    {% for user_email in direct_users %}
-                    <p><input type="submit" name="direct_email" class="btn-direct btn-user" value="{{ user_email }}" /></p>
-                    {% endfor %}
-
-                    <p>({{ _('Community users') }})</p>
-                    {% for user_email in community_users %}
-                    <p><input type="submit" name="direct_email" class="btn-direct btn-user" value="{{ user_email }}" /></p>
-                    {% endfor %}
                 </div>
             </div>
         </form>

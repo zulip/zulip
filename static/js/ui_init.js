@@ -212,6 +212,25 @@ $(function () {
 
     $('.message_failed i[data-toggle="tooltip"]').tooltip();
 
+    $('.copy_message[data-toggle="tooltip"]').tooltip();
+
+    $("body").on("mouseover", "#message_edit_content", function () {
+        $(this).closest(".message_row").find(".copy_message").show();
+    });
+
+    $("body").on("mouseout", "#message_edit_content", function () {
+        $(this).closest(".message_row").find(".copy_message").hide();
+    });
+
+    $("body").on("mouseover", ".copy_message", function () {
+        $(this).show();
+        $(this).tooltip('show');
+    });
+
+    $("body").on("mouseout", ".copy_message", function () {
+        $(this).tooltip('hide');
+    });
+
     if (!page_params.realm_allow_message_editing) {
         $("#edit-message-hotkey-help").hide();
     }
@@ -237,6 +256,7 @@ $(function () {
     unread_ui.initialize();
     activity.initialize();
     emoji.initialize();
+    hotspots.initialize();
 });
 
 

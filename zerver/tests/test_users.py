@@ -26,9 +26,12 @@ from zerver.models import UserProfile, Recipient, \
 
 from zerver.lib.avatar import avatar_url
 from zerver.lib.email_mirror import create_missed_message_address
-from zerver.lib.actions import \
-    get_emails_from_user_ids, do_deactivate_user, do_reactivate_user, \
-    do_change_is_admin, do_set_realm_name, do_deactivate_realm
+from zerver.lib.actions import (
+    get_emails_from_user_ids,
+    do_deactivate_user,
+    do_reactivate_user,
+    do_change_is_admin,
+)
 
 from django.conf import settings
 import os

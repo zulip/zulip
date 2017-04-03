@@ -27,6 +27,7 @@ IGNORED_PHRASES = [
     r"MiB",
     r"Pivotal",
     r'REMOTE_USER',
+    r'Slack',
     r"SSO",
     r'Terms of Service',
     r"URL",
@@ -67,6 +68,7 @@ IGNORED_PHRASES = [
     r"^left$",
     r"was too large; the maximum file size is 25MiB.",
     r"^right$",
+    r"selected message",
 
     # SPECIAL CASES
     # Enter is usually capitalized

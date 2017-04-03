@@ -12,7 +12,12 @@ function send_reaction_ajax(message_id, emoji_name, operation) {
         success: function () {},
         error: function (xhr) {
             var response = channel.xhr_error_message("Error sending reaction", xhr);
-            blueslip.error(response);
+            // Errors are somewhat commmon here, due to race conditions
+            // where the user tries to add/remove the reaction when there is already
+            // an in-flight request.  We eventually want to make this a blueslip
+            // error, rather than a warning, but we need to implement either
+            // #4291 or #4295 first.
+            blueslip.warn(response);
         },
     };
     if (operation === 'add') {
@@ -217,15 +222,24 @@ exports.get_emojis_used_by_user_for_message_id = function (message_id) {
 exports.get_message_reactions = function (message) {
     var message_reactions = new Dict();
     _.each(message.reactions, function (reaction) {
+        var user_id = reaction.user.id;
+        if (!people.is_known_user_id(user_id)) {
+            blueslip.warn('Unknown user_id ' + user_id +
+                          'in reaction for message ' + message.id);
+            return;
+        }
+
         var user_list = message_reactions.setdefault(reaction.emoji_name, []);
-        user_list.push(reaction.user.id);
+        user_list.push(user_id);
     });
     var reactions = message_reactions.items().map(function (item) {
+        var emoji_name = item[0];
+        var user_ids = item[1];
         var reaction = {
-            emoji_name: item[0],
-            emoji_name_css_class: emoji.emoji_name_to_css_class(item[0]),
-            count: item[1].length,
-            title: generate_title(item[0], item[1]),
+            emoji_name: emoji_name,
+            emoji_name_css_class: emoji.emoji_name_to_css_class(emoji_name),
+            count: user_ids.length,
+            title: generate_title(emoji_name, user_ids),
             emoji_alt_code: page_params.emoji_alt_code,
         };
         if (emoji.realm_emojis[reaction.emoji_name]) {

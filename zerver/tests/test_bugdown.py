@@ -2,7 +2,7 @@
 from __future__ import print_function
 from __future__ import absolute_import
 from django.conf import settings
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 from zerver.lib import bugdown
 from zerver.lib.actions import (
@@ -37,6 +37,7 @@ from zerver.models import (
     Recipient,
 )
 
+import copy
 import mock
 import os
 import ujson
@@ -213,9 +214,7 @@ class BugdownTest(TestCase):
         self.assertEqual(converted, '<p>Check out this file <a href="file:///Volumes/myserver/Users/Shared/pi.py" target="_blank" title="file:///Volumes/myserver/Users/Shared/pi.py">file:///Volumes/myserver/Users/Shared/pi.py</a></p>')
 
         with self.settings(ENABLE_FILE_LINKS=False):
-            realm = Realm.objects.create(
-                domain='file_links_test.example.com',
-                string_id='file_links_test')
+            realm = Realm.objects.create(string_id='file_links_test')
             bugdown.make_md_engine(
                 realm.id,
                 {'realm_filters': [[], u'file_links_test.example.com'], 'realm': [u'file_links_test.example.com', 'Realm name']})
@@ -228,6 +227,65 @@ class BugdownTest(TestCase):
         converted = bugdown_convert(msg)
 
         self.assertEqual(converted, '<p>Check out the debate: <a href="http://www.youtube.com/watch?v=hx1mjT73xYE" target="_blank" title="http://www.youtube.com/watch?v=hx1mjT73xYE">http://www.youtube.com/watch?v=hx1mjT73xYE</a></p>\n<div class="youtube-video message_inline_image"><a data-id="hx1mjT73xYE" href="http://www.youtube.com/watch?v=hx1mjT73xYE" target="_blank" title="http://www.youtube.com/watch?v=hx1mjT73xYE"><img src="https://i.ytimg.com/vi/hx1mjT73xYE/default.jpg"></a></div>')
+
+    @override_settings(INLINE_IMAGE_PREVIEW=True)
+    def test_inline_image_preview(self):
+        # type: () -> None
+        with_preview = '<p><a href="http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg" target="_blank" title="http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg">http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg</a></p>\n<div class="message_inline_image"><a href="http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg" target="_blank" title="http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg"><img src="https://external-content.zulipcdn.net/389b5d7148a0cbc7475ed564e1b03ceb476bdacb/687474703a2f2f63646e2e77616c6c70617065727361666172692e636f6d2f31332f362f313665566a782e6a706567"></a></div>'
+        without_preview = '<p><a href="http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg" target="_blank" title="http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg">http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg</a></p>'
+        content = 'http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg'
+
+        sender_user_profile = get_user_profile_by_email("othello@zulip.com")
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        converted = render_markdown(msg, content)
+        self.assertEqual(converted, with_preview)
+
+        realm = msg.get_realm()
+        setattr(realm, 'inline_image_preview', False)
+        realm.save()
+
+        sender_user_profile = get_user_profile_by_email("othello@zulip.com")
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        converted = render_markdown(msg, content)
+        self.assertEqual(converted, without_preview)
+
+    @override_settings(INLINE_IMAGE_PREVIEW=False)
+    def test_image_preview_enabled_for_realm(self):
+        # type: () -> None
+        ret = bugdown.image_preview_enabled_for_realm()
+        self.assertEqual(ret, False)
+
+        settings.INLINE_IMAGE_PREVIEW = True
+
+        sender_user_profile = get_user_profile_by_email("othello@zulip.com")
+        bugdown.current_message = copy.deepcopy(Message(sender=sender_user_profile, sending_client=get_client("test")))
+        realm = bugdown.current_message.get_realm()
+
+        ret = bugdown.image_preview_enabled_for_realm()
+        self.assertEqual(ret, realm.inline_image_preview)
+
+        bugdown.current_message = None
+        ret = bugdown.image_preview_enabled_for_realm()
+        self.assertEqual(ret, True)
+
+    @override_settings(INLINE_URL_EMBED_PREVIEW=False)
+    def test_url_embed_preview_enabled_for_realm(self):
+        # type: () -> None
+        sender_user_profile = get_user_profile_by_email("othello@zulip.com")
+        message = copy.deepcopy(Message(sender=sender_user_profile, sending_client=get_client("test")))
+        realm = message.get_realm()
+
+        ret = bugdown.url_embed_preview_enabled_for_realm(message)
+        self.assertEqual(ret, False)
+
+        settings.INLINE_URL_EMBED_PREVIEW = True
+
+        ret = bugdown.url_embed_preview_enabled_for_realm(message)
+        self.assertEqual(ret, realm.inline_image_preview)
+
+        message = None
+        ret = bugdown.url_embed_preview_enabled_for_realm(message)
+        self.assertEqual(ret, True)
 
     def test_inline_dropbox(self):
         # type: () -> None

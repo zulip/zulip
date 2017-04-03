@@ -151,12 +151,19 @@ $(function () {
         e.stopPropagation();
         popovers.hide_all();
     });
+    $("body").on("click", ".copy_message", function (e) {
+        $(this).attr("data-original-title", "Copied!");
+        $(this).tooltip().tooltip('show');
+        var row = $(this).closest(".message_row");
+        message_edit.end(row);
+        e.preventDefault();
+        e.stopPropagation();
+    });
     $("body").on("click", "a", function () {
         if (document.activeElement === this) {
             ui_util.blur_active_element();
         }
     });
-
 
     // MUTING
 
@@ -165,7 +172,7 @@ $(function () {
         var stream_id = $(e.currentTarget).attr('data-stream-id');
         var topic = $(e.currentTarget).attr('data-topic-name');
         var stream = stream_data.get_sub_by_id(stream_id);
-        stream_popover.topic_ops.mute(stream.name, topic);
+        muting_ui.mute(stream.name, topic);
     });
 
     // RECIPIENT BARS
@@ -423,12 +430,6 @@ $(function () {
     });
     // End Webathena code
 
-    // BANKRUPTCY
-
-    $(".bankruptcy_button").click(function () {
-        unread_ui.enable();
-    });
-
     (function () {
         var map = {
             ".stream-description-editable": subs.change_stream_description,
@@ -457,6 +458,15 @@ $(function () {
 
         $(document).on("keydown", ".editable-section", function (e) {
             e.stopPropagation();
+            // Cancel editing description if Escape key is pressed.
+            if (e.which === 27) {
+                $("[data-finish-editing='.stream-description-editable']").hide();
+                $(this).attr("contenteditable", false);
+                $(this).text($(this).attr("data-prev-text"));
+                $("[data-make-editable]").html("");
+            } else if (e.which === 13) {
+                $(this).siblings(".checkmark").click();
+            }
         });
 
         $(document).on("drop", ".editable-section", function () {
@@ -467,9 +477,11 @@ $(function () {
             // if there are any child nodes, inclusive of <br> which means you
             // have lines in your description or title, you're doing something
             // wrong.
-            if (this.hasChildNodes()) {
-                this.innerText = this.innerText;
-                place_caret_at_end(this);
+            for (var x = 0; x < this.childNodes.length; x += 1) {
+                if (this.childNodes[x].nodeType !== 3) {
+                    this.innerText = this.innerText.replace(/\n/, "");
+                    break;
+                }
             }
         });
 
@@ -501,31 +513,6 @@ $(function () {
                 $(this).parent().find(selector).attr("contenteditable", false);
                 $("[data-make-editable='" + selector + "']").html("");
             }
-        });
-    }());
-
-    $('#yes-bankrupt').click(function () {
-        pointer.fast_forward_pointer();
-        $("#yes-bankrupt").hide();
-        $("#no-bankrupt").hide();
-        $(this).after($("<div>").addClass("alert alert-info settings_committed")
-                      .text(i18n.t("Bringing you to your latest messages…")));
-    });
-
-    (function () {
-        $("#main_div").on("click", ".message_inline_image a", function (e) {
-            var $img = $(this).find("img");
-
-            // prevent the link from opening in a new page.
-            e.preventDefault();
-            // prevent the message compose dialog from happening.
-            e.stopPropagation();
-
-            lightbox.show_from_inline_image($img);
-        });
-
-        $("#lightbox_overlay .download").click(function () {
-          this.blur();
         });
     }());
 

@@ -36,7 +36,7 @@ class DocPageTest(ZulipTestCase):
             self._test('/features/', 'Talk about multiple topics at once')
             self._test('/hello/', 'workplace chat that actually improves your productivity')
             self._test('/integrations/', 'require creating a Zulip bot')
-            self._test('/login/', '(Normal users)')
+            self._test('/devlogin/', 'Normal users')
             self._test('/register/', 'get started')
 
             result = self.client_get('/new-user/')

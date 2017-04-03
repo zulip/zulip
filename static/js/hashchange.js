@@ -1,3 +1,4 @@
+// Read https://zulip.readthedocs.io/en/latest/hashchange-system.html
 var hashchange = (function () {
 
 var exports = {};
@@ -219,7 +220,7 @@ var get_hash_group = (function () {
 }());
 
 function should_ignore(hash) {
-    // Hash changes within this list are overlaws and should not unnarrow (etc.)
+    // Hash changes within this list are overlays and should not unnarrow (etc.)
     var ignore_list = ["streams", "drafts", "settings", "administration", "invite"];
     var main_hash = get_main_hash(hash);
 

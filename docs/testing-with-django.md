@@ -240,9 +240,13 @@ typically simulate their behavior using mocks.
 
 - **Coverage** We have 100% line coverage on several of our backend
 modules.  You can use the `--coverage` option to generate coverage
-reports, and new code should have 100% coverage, which generally requires
-testing not only the "happy path" but also error handling code and
-edge cases.  Note that `test-backend --coverage` will assert that
+reports, and new code should have 100% coverage, which generally
+requires testing not only the "happy path" but also error handling
+code and edge cases.  It will generate a nice HTML report that you can
+view right from your browser (the tool prints the URL where the report
+is exposed in your development environment).
+
+Note that `test-backend --coverage` will assert that
 various specific files in the project have 100% test coverage and
 throw an error if their coverage has fallen.  One of our project goals
 is to expand that checking to ever-larger parts of the codebase.

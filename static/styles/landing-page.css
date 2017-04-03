@@ -219,7 +219,9 @@ nav ul li.active::after {
 
 /* -- generic styles -- */
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
     margin: 10px 0px;
 
     font-weight: 300;
@@ -232,7 +234,9 @@ p {
     line-height: 1.5;
 }
 
-a, a:hover, a:visited {
+a,
+a:hover,
+a:visited {
     color: #4fc0ad;
 }
 
@@ -251,7 +255,7 @@ a.arrow:after {
 
     top: 3px;
 
-    background-image: url(/static/images/landing-page/assets/arrow.png);
+    background-image: url(/static/images/landing-page/arrow.png);
     background-size: 100%;
 
     margin-left: 5px;
@@ -334,7 +338,9 @@ a:not(.no-style):hover:before {
     padding: 0 !important;
 }
 
-.header, .footer, .portico-os-announcement {
+.header,
+.footer,
+.portico-os-announcement {
     display: none;
 }
 
@@ -392,6 +398,308 @@ a:not(.no-style):hover:before {
     font-size: 1rem;
     margin-left: 15px;
     margin-bottom: 0px;
+}
+
+/* -- apps page -- */
+.portico-landing.apps .main,
+.portico-landing.features-app .main {
+    background-color: #fff;
+}
+
+.portico-landing.apps .main {
+    max-width: 1600px;
+    margin-bottom: 50px;
+}
+
+.portico-landing.apps .main .padded-content.headline {
+    padding-bottom: 0px;
+}
+
+.portico-landing.apps .main .headline h3 {
+    font-weight: 400;
+    font-size: 1em;
+    color: #aaa;
+}
+
+.portico-landing.apps .main ul.sidebar {
+    display: inline-block;
+    vertical-align: top;
+    margin: 0 -4px 0 0;
+    list-style: none;
+    font-weight: 500;
+    color: #aaa;
+}
+
+.portico-landing.apps .main ul.sidebar li {
+    position: relative;
+    padding: 20px 15px 20px 0px;
+    margin: 2px 0px;
+    width: 130px;
+    text-align: right;
+    background-color: #fff;
+    cursor: pointer;
+
+    transition: all 0.3s ease;
+}
+
+.portico-landing.apps .main ul.sidebar li:first-of-type {
+    margin-top: 0px;
+}
+
+.portico-landing.apps .main ul.sidebar li.active {
+    color: #444;
+    font-weight: 600;
+
+    transform: translateX(-10px);
+}
+
+/* active arrow that slides in when a tab is .active on */
+.portico-landing.apps .main ul.sidebar li::after {
+    content: ">";
+    position: absolute;
+    right: 0px;
+    top: 21px;
+    opacity: 0;
+    transform: translateX(3px);
+}
+
+.portico-landing.apps .main ul.sidebar li.active::after {
+    transform: translateX(0px);
+    opacity: 1;
+}
+
+.portico-landing.apps .main .details-container {
+    position: relative;
+    display: inline-block;
+    vertical-align: top;
+    height: 500px;
+    width: calc(100% - 155px);
+    background-color: #888;
+}
+
+.portico-landing.apps .main .details-container .details-box {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    pointer-events: none;
+
+    transition: all 0.3s ease;
+    z-index: 1;
+}
+
+.portico-landing.apps .main .details-container .details-box.show {
+    opacity: 1;
+    pointer-events: auto;
+    z-index: 2;
+}
+
+.portico-landing.apps .main .details-container .details-box[data-name="android"] {
+    color: #ebfaf4;
+
+    background: -webkit-radial-gradient(top right, ellipse cover, #b7f7bf 0%, #17849c 100%);
+    background: radial-gradient(ellipse farthest corner at 0px 0px, #b7f7bf 0%, #17849c 100%);
+}
+
+.portico-landing.apps .main .details-container .details-box[data-name="ios"] {
+    color: #ecf4f9;
+
+    background: -webkit-radial-gradient(top right, ellipse cover, #ffdfb0 0%, #1381ab 100%);
+    background: radial-gradient(ellipse farthest corner at 0px 0px, #ffdfb0 0%, #1381ab 100%);
+}
+
+.portico-landing.apps .main .details-container .details-box[data-name="windows"] {
+    color: #eeeeee;
+
+    background: -webkit-radial-gradient(top right, ellipse cover, #a7c6ea 0%, #052c67 100%);
+    background: radial-gradient(ellipse farthest corner at 0px 0px, #a7c6ea 0%, #052c67 100%);
+}
+
+.portico-landing.apps .main .details-container .details-box[data-name="mac"] {
+    color: #ffe8ec;
+
+    background: -webkit-radial-gradient(top right, ellipse cover, #ffebb3 0%, #90163e 100%);
+    background: radial-gradient(ellipse farthest corner at 0px 0px, #ffebb3 0%, #90163e 100%);
+}
+
+.portico-landing.apps .main .details-container .details-box[data-name="linux"] {
+    color: #ffece5;
+
+    background: -webkit-radial-gradient(top right, ellipse cover, #ffb89e 0%, #d01f0d 100%);
+    background: radial-gradient(ellipse farthest corner at 0px 0px, #ffb89e 0%, #d01f0d 100%);
+}
+
+.portico-landing.apps .main .details-container .details-box[data-name="snipe"] {
+    color: #ffe8ec;
+
+    background: -webkit-radial-gradient(top right, ellipse cover, #ffc6bc 0%, #1b0e8a 100%);
+    background: radial-gradient(ellipse farthest corner at 0px 0px, #ffc6bc 0%, #1b0e8a 100%);
+}
+
+.portico-landing.apps .main .details-container .details-box[data-name="plan9"] {
+    color: #ffe8ec;
+
+    background: -webkit-radial-gradient(top right, ellipse cover, #ffc6bc 0%, #8a0e17 100%);
+    background: radial-gradient(ellipse farthest corner at 0px 0px, #ffc6bc 0%, #8a0e17 100%);
+}
+
+.portico-landing.apps .main ul.sidebar li[data-name="android"].active {
+    color: #179c92;
+}
+
+.portico-landing.apps .main ul.sidebar li[data-name="ios"].active {
+    color: #56b0d2;
+}
+
+.portico-landing.apps .main ul.sidebar li[data-name="windows"].active {
+    color: #1e55a9;
+}
+
+.portico-landing.apps .main ul.sidebar li[data-name="mac"].active {
+    color: #c73e6b;
+}
+
+.portico-landing.apps .main ul.sidebar li[data-name="linux"].active {
+    color: #d01f0d;
+}
+
+.portico-landing.apps .main ul.sidebar li[data-name="snipe"].active {
+    color: #1b0e8a;
+}
+
+.portico-landing.apps .main ul.sidebar li[data-name="plan9"].active {
+    color: #8a0e17;
+}
+
+.portico-landing.apps .main .details-container .platform.description {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 300px;
+    padding: 50px;
+}
+
+.portico-landing.apps .main .details-container .platform.image {
+    float: right;
+    width: calc(49.5% - 40px);
+}
+
+.portico-landing.apps .main .details-container {
+    overflow: hidden;
+}
+
+.portico-landing.apps .details-box[data-name="mac"] .platform.image {
+    text-align: center;
+}
+
+.portico-landing.apps .main .details-box .platform.image {
+    opacity: 0;
+    transform: scale(0.2);
+    transition: transform 0.3s ease;
+}
+
+.portico-landing.apps .main .details-box.show .platform.image {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.portico-landing.apps .details-box[data-name="mac"] .platform.image img {
+    width: 450px;
+}
+
+.portico-landing.apps .details-box[data-name="windows"] .platform.image img {
+    width: 450px;
+}
+
+.portico-landing.apps .details-box[data-name="ios"] .platform.image img {
+    width: 175px;
+}
+
+.portico-landing.apps .details-box[data-name="android"] .platform.image img {
+    width: 240px;
+}
+
+.portico-landing.apps .details-box button.grey-transparent {
+    margin-top: 30px;
+}
+
+.portico-landing.apps .details-box[data-name="mac"] button.grey-transparent:active {
+    color: #bd323c;
+}
+
+.portico-landing.apps .details-box[data-name="ios"] button.grey-transparent:active {
+    color: #6b96b5;
+}
+
+.portico-landing.apps .details-box[data-name="windows"] button.grey-transparent:active {
+    color: #2d5187;
+}
+
+.portico-landing.apps .main .details-box > .image {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 35px 0px;
+    height: calc(100% - 70px);
+    background-color: rgba(255,255,255,0.1);
+}
+
+.portico-landing.apps .main .details-container h1 {
+    margin: 20px 0px;
+}
+
+.portico-landing.apps .main .details-container .platform {
+    display: inline-block;
+    vertical-align: top;
+    padding: 20px;
+    text-align: center;
+    width: 50%;
+}
+
+.portico-landing.apps .main .details-container .platform h2 {
+    margin-top: 0px;
+}
+
+.portico-landing.apps .main .details-container pre {
+    display: inline-block;
+    max-width: 400px;
+    border: none;
+    padding: 15px;
+    box-shadow: 0px 0px 30px rgba(255,255,255,0.3);
+    text-align: left;
+    background-color: #ffece5;
+    color: #b5776f;
+}
+
+.portico-landing.apps .main .details-container .instructions {
+    margin: 30px auto 0 auto;
+    text-align: left;
+    font-size: 1.1rem;
+}
+
+.portico-landing.apps .main .details-container .instructions a {
+    color: #fff;
+}
+
+.portico-landing.apps .main .details-container .instructions a:not(.no-style):before {
+    background-color: rgba(255,255,255,0.5);
+    width: 50%;
+    left: 25%;
+}
+
+.portico-landing.apps .main .details-container .instructions a:not(.no-style):hover:before {
+    background-color: #fff;
+    width: 100%;
+    left: 0%;
+}
+
+.portico-landing.apps .main .details-container .instructions img {
+    display: block;
+    margin: -32px auto 0px auto;
+    width: 195px;
 }
 
 /* -- integrations page css -- */
@@ -482,12 +790,58 @@ a:not(.no-style):hover:before {
 }
 
 /* -- media queries -- */
+@media (max-width: 1368px) {
+    .portico-landing.apps .main .details-container {
+        height: auto;
+    }
+
+    .portico-landing.apps .main .details-container .details-box {
+        display: none;
+        position: static;
+        height: auto;
+    }
+
+    .portico-landing.apps .main .details-container .details-box h1 {
+        margin-top: 0px;
+        padding-top: 20px;
+    }
+
+    .portico-landing.apps .main .details-container .details-box.show {
+        display: block;
+    }
+
+    .portico-landing.apps .main .details-box[data-name="linux"] .image {
+        display: block;
+        height: auto;
+    }
+
+    .portico-landing.apps .main .details-box[data-name="linux"] .image .platform,
+    .portico-landing.apps .main .details-box[data-name="linux"] .instructions {
+        text-align: center;
+        width: calc(100% - 40px);
+    }
+}
+
+@media (max-width: 1340px) {
+    .features .feature-box.open-source .text-content {
+        display: block;
+        height: auto;
+        width: 100%;
+        margin-bottom: 20px;
+    }
+
+    .features .feature-box.open-source .contrib-graph {
+        width: 100%;
+        margin: 0;
+        height: calc(50vw * 0.5);
+    }
+}
+
 @media (max-width: 1100px) {
     .feature-block .flex {
         height: 130px;
     }
 }
-
 
 @media (max-width: 1024px) {
     nav {
@@ -522,6 +876,29 @@ a:not(.no-style):hover:before {
     }
 }
 
+@media (max-width: 985px) {
+    .features .feature-box .text-content {
+        width: 100%;
+        height: auto;
+        margin-bottom: 20px;
+    }
+
+    .features .feature-box .image {
+        float: none;
+        width: 100%;
+        margin: 0;
+    }
+
+    .features .text-content .flex {
+        display: block;
+    }
+
+    .portico-landing.apps .main {
+        width: 100%;
+        margin: 0;
+    }
+}
+
 @media (max-width: 768px) {
     nav,
     .features {
@@ -529,20 +906,12 @@ a:not(.no-style):hover:before {
         padding-right: 50px;
     }
 
+    .portico-landing.integrations .main,
     .main {
         width: calc(100% - 100px);
 
         margin-left: 50px;
         margin-right: 50px;
-    }
-
-    .feature-block .flex {
-        height: auto;
-        padding: 10px;
-    }
-
-    .portico-landing.integrations .portico-page-header {
-        padding-top: 20px;
     }
 
     #integration-instruction-block .integration-lozenge {
@@ -566,6 +935,23 @@ a:not(.no-style):hover:before {
     .integration-instructions {
         margin-left: 0px;
     }
+
+    .feature-block .flex {
+        height: auto;
+        padding: 10px;
+    }
+
+    .portico-landing.integrations .portico-page-header {
+        padding-top: 20px;
+    }
+
+    .platform.image {
+        display: none !important;
+    }
+
+    .platform.description {
+        width: 100% !important;
+    }
 }
 
 @media (max-width: 666px) {
@@ -587,6 +973,21 @@ a:not(.no-style):hover:before {
     nav #hamburger {
         display: inline-block;
         float: right;
+    }
+
+    nav ul:before {
+        content: " ";
+        display: block;
+        margin-top: 30px;
+
+        width: 115px;
+        height: 40px;
+
+        background-size: 100% auto;
+        background-image: url(/static/images/landing-page/bad-logo.png);
+        background-position: center;
+
+        -webkit-filter: invert(0.7);
     }
 
     nav ul {
@@ -639,6 +1040,24 @@ a:not(.no-style):hover:before {
     nav ul li.active {
         font-weight: 400;
     }
+
+    .portico-landing.apps .main ul.sidebar {
+        display: block;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+
+    .portico-landing.apps .main ul.sidebar li {
+        display: inline-block;
+        padding: 10px;
+        width: 80px;
+        text-align: center;
+        border-radius: 4px;
+    }
+
+    .portico-landing.apps .main .details-container {
+        width: 100%;
+    }
 }
 
 @media (max-device-width: 450px) {
@@ -647,7 +1066,8 @@ a:not(.no-style):hover:before {
         padding-top: 20px;
     }
 
-    .main, .portico-landing.integrations .main {
+    .main,
+    .portico-landing.integrations .main {
         width: 100%;
         margin: 0;
     }

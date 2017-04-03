@@ -86,7 +86,7 @@ Files: static/audio/zulip.*
 Copyright: 2011 Vidsyn
 License: CC-0-1.0
 
-Files: static/styles/thirdparty-fonts.css
+Files: static/third/thirdparty-fonts.css
 Copyright: 2012-2013 Dave Gandy
 License: Expat
 

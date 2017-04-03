@@ -2,6 +2,7 @@
 import sys
 import os
 import logging
+import optparse
 import time
 import simplejson
 import subprocess
@@ -11,8 +12,6 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'api'))
 import zulip
 
 from typing import Set
-
-zulip_client = zulip.Client(client="ZulipSyncPublicStreamsBot/0.1")
 
 def fetch_public_streams():
     # type: () -> Set[str]
@@ -55,6 +54,12 @@ if __name__ == "__main__":
     file_handler = logging.FileHandler(log_file)
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
+
+    parser = optparse.OptionParser()
+    parser.add_option_group(zulip.generate_option_group(parser))
+    (options, args) = parser.parse_args()
+
+    zulip_client = zulip.Client(client="ZulipSyncPublicStreamsBot/0.1")
 
     while True:
         time.sleep(15)

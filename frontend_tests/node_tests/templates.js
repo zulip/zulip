@@ -640,41 +640,6 @@ function render(template_name, args) {
                 "1468132659\n        Let's go to dinner!\n        Edited by Alice");
 }());
 
-(function message_info_popover_content() {
-    var args = {
-        message: {
-            full_date_str: 'Monday',
-            full_time_str: '12:00',
-            sender_full_name: 'Alice Smith',
-            sender_email: 'alice@zulip.com',
-        },
-        sent_by_uri: '/sent_by/uri',
-        pm_with_uri: '/pm_with/uri',
-    };
-
-    var html = render('message_info_popover_content', args);
-    global.write_handlebars_output("message_info_popover_content", html);
-
-    var a = $(html).find("a.respond_personal_button");
-    assert.equal(a.text().trim(), 'Send private message');
-}());
-
-
-(function message_info_popover_title() {
-    var args = {
-        message: {
-            is_stream: true,
-            stream: 'devel',
-        },
-    };
-
-    var html = render('message_info_popover_title', args);
-    global.write_handlebars_output("message_info_popover_title", html);
-
-    html = '<div>' + html + '</div>';
-    assert($(html).text().trim(), "Message to stream devel");
-}());
-
 (function message_reaction() {
     var args = {
         emoji_name: 'smile',
@@ -738,7 +703,10 @@ function render(template_name, args) {
     var args = {
         search: 'Search',
         message_id: 1,
-        emojis: global.emoji.emojis_name_to_css_class,
+        emojis: [{
+            name: '100',
+            css_class: '100',
+        }],
     };
 
     var html = '<div style="height: 250px">';
@@ -1039,6 +1007,42 @@ function render(template_name, args) {
     global.write_handlebars_output('typing_notifications', html);
     var li = $(html).find('li:first');
     assert.equal(li.text(), 'Hamlet is typing...');
+
+}());
+
+(function user_info_popover() {
+    var html = render('user_info_popover', {class: 'message-info-popover'});
+    global.write_handlebars_output("user_info_popover", html);
+
+    $(html).hasClass('popover message-info-popover');
+}());
+
+(function user_info_popover_content() {
+    var args = {
+        message: {
+            full_date_str: 'Monday',
+            full_time_str: '12:00',
+            user_full_name: 'Alice Smith',
+            user_email: 'alice@zulip.com',
+        },
+        sent_by_uri: '/sent_by/uri',
+        pm_with_uri: '/pm_with/uri',
+        private_message_class: 'compose_private_message',
+    };
+
+    var html = render('user_info_popover_content', args);
+    global.write_handlebars_output("user_info_popover_content", html);
+
+    var a = $(html).find("a.compose_private_message");
+    assert.equal(a.text().trim(), 'Send private message');
+}());
+
+(function user_info_popover_title() {
+    var html = render('user_info_popover_title', {user_avatar: 'avatar/hamlet@zulip.com'});
+    global.write_handlebars_output("user_info_popover_title", html);
+
+    html = '<div>' + html + '</div>';
+    assert($(html).find('.popover-avatar').css('background-image'), "url(avatar/hamlet@zulip.com)");
 }());
 
 (function user_presence_rows() {
@@ -1070,20 +1074,6 @@ function render(template_name, args) {
 
     var a = $(html).find("a:first");
     assert.equal(a.text(), 'King Lear');
-}());
-
-(function user_sidebar_actions() {
-    var args = {
-        email: 'hamlet@zulip.com',
-        name: 'Hamlet',
-    };
-
-    var html = render('user_sidebar_actions', args);
-
-    global.write_handlebars_output("user_sidebar_actions", html);
-
-    var a = $(html).find("a.narrow_to_private_messages");
-    assert.equal(a.text().trim(), 'Narrow to private messages with Hamlet');
 }());
 
 (function muted_topic_ui_row() {

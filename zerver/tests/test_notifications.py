@@ -124,11 +124,10 @@ class TestMissedMessages(ZulipTestCase):
         msg_id = self.send_message("othello@zulip.com", "denmark", Recipient.STREAM,
                                    '@**hamlet** to be deleted')
 
-        othello = get_user_profile_by_email('othello@zulip.com')
         hamlet = get_user_profile_by_email('hamlet@zulip.com')
         self.login("othello@zulip.com")
         result = self.client_patch('/json/messages/' + str(msg_id),
-                                   {'message_id': msg_id, 'content': ' ', 'user_profile': othello})
+                                   {'message_id': msg_id, 'content': ' '})
         self.assert_json_success(result)
         handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id}])
         self.assertEqual(len(mail.outbox), 0)
@@ -142,11 +141,10 @@ class TestMissedMessages(ZulipTestCase):
         msg_id = self.send_message("othello@zulip.com", "hamlet@zulip.com", Recipient.PERSONAL,
                                    'Extremely personal message! to be deleted!')
 
-        othello = get_user_profile_by_email('othello@zulip.com')
         hamlet = get_user_profile_by_email('hamlet@zulip.com')
         self.login("othello@zulip.com")
         result = self.client_patch('/json/messages/' + str(msg_id),
-                                   {'message_id': msg_id, 'content': ' ', 'user_profile': othello})
+                                   {'message_id': msg_id, 'content': ' '})
         self.assert_json_success(result)
         handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id}])
         self.assertEqual(len(mail.outbox), 0)
@@ -160,12 +158,11 @@ class TestMissedMessages(ZulipTestCase):
         msg_id = self.send_message("othello@zulip.com", ["hamlet@zulip.com", "iago@zulip.com"],
                                    Recipient.PERSONAL, 'Group personal message!')
 
-        othello = get_user_profile_by_email('othello@zulip.com')
         hamlet = get_user_profile_by_email('hamlet@zulip.com')
         iago = get_user_profile_by_email('iago@zulip.com')
         self.login("othello@zulip.com")
         result = self.client_patch('/json/messages/' + str(msg_id),
-                                   {'message_id': msg_id, 'content': ' ', 'user_profile': othello})
+                                   {'message_id': msg_id, 'content': ' '})
         self.assert_json_success(result)
         handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id}])
         self.assertEqual(len(mail.outbox), 0)

@@ -21,6 +21,10 @@ run(["apt-get", "-y", "install"] + VENV_DEPENDENCIES)
 
 python_version = sys.version_info[0]
 
+# Set the current working directory to the Zulip checkout, so the api/
+# relative path in requirements/common.txt works.
+os.chdir(ZULIP_PATH)
+
 venv_name = "zulip-venv" if sys.version_info[0] == 2 else "zulip-py3-venv"
 cached_venv_path = setup_virtualenv(
     os.path.join(args.deploy_path, venv_name),

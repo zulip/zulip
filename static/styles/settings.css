@@ -36,7 +36,7 @@ label {
 }
 
 .new-style .grid label {
-    width: 200px;
+    min-width: 200px;
 }
 
 .new-style .grid .warning {
@@ -62,14 +62,16 @@ label {
     width: 214px;
 }
 
-.user-avatar-section, .realm-icon-section {
+.user-avatar-section,
+.realm-icon-section {
     float: right;
     background-color: #fff;
     margin: 20px 0px;
     padding: 20px;
 }
 
-.user-avatar-section .inline-block, .realm-icon-section .inline-block {
+.user-avatar-section .inline-block,
+.realm-icon-section .inline-block {
     display: block;
 }
 
@@ -177,7 +179,8 @@ td .button {
     box-shadow: 0px 0px 4px rgba(56,177,232,1);
 }
 
-.dynamic-input div, .dynamic-input label {
+.dynamic-input div,
+.dynamic-input label {
     display: inline-block;
     margin: 0;
 }
@@ -200,7 +203,8 @@ td .button {
     color: #aaa;
 }
 
-.button, .input-group {
+.button,
+.input-group {
     margin: 20px 0px;
 }
 
@@ -217,7 +221,8 @@ input[type=checkbox] + .inline-block {
     margin-left: 10px;
 }
 
-#user-settings-avatar, #realm-icon-section {
+#user-settings-avatar,
+#realm-icon-section {
     border-radius: 5px;
     box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
 }
@@ -421,6 +426,11 @@ input[type=checkbox].inline-block {
     text-align: right;
 }
 
+.admin-realm-message-retention-days {
+    width: 5ch;
+    text-align: right;
+}
+
 #account-settings-status {
     text-align: center;
     width: 50%;
@@ -450,7 +460,8 @@ input[type=checkbox].inline-block {
     margin-top: 20px;
 }
 
-#admin-filter-pattern-status, #admin-filter-format-status {
+#admin-filter-pattern-status,
+#admin-filter-format-status {
     margin: 20px 0 0 0;
 }
 
@@ -615,18 +626,20 @@ input[type=checkbox].inline-block {
     white-space: pre;
 }
 
-.edit_bot_form .control-label,
 #create_bot_form .control-label,
 #create_alert_word_form .control-label,
+#get_api_key_box .control-label,
 .admin-emoji-form .control-label,
 .admin-filter-form .control-label,
-.default-stream-form .control-label {
+.default-stream-form .control-label,
+.edit_bot_form .control-label {
     width: 10em;
     text-align: right;
     margin-right: 20px;
 }
 
-#upload_avatar_spinner, #upload_icon_spinner {
+#upload_avatar_spinner,
+#upload_icon_spinner {
     font-size: 14px;
     margin: auto;
 }
@@ -647,7 +660,8 @@ input[type=checkbox].inline-block {
     position: inherit;
 }
 
-#alert_words_list, #attachments_list {
+#alert_words_list,
+#attachments_list {
     list-style-type: none;
     margin: auto;
     background-color: #fff;
@@ -658,7 +672,8 @@ input[type=checkbox].inline-block {
     margin-top: 8px;
 }
 
-#alert_words_list .edit-alert-word-buttons, #attachments_list .edit-attachment-buttons {
+#alert_words_list .edit-alert-word-buttons,
+#attachments_list .edit-attachment-buttons {
     position: absolute;
     right: 20px;
     top: 5px;
@@ -978,12 +993,14 @@ input[type=text]#settings_search {
         width: calc(50% - 10px);
     }
 
-    .user-avatar-section, .realm-icon-section {
+    .user-avatar-section,
+    .realm-icon-section {
         float: none;
         display: inline-block;
     }
 
-    .user-avatar-section .inline-block, .realm-icon-section .inline-block {
+    .user-avatar-section .inline-block,
+    .realm-icon-section .inline-block {
         display: inline-block;
         vertical-align: top;
     }
@@ -998,7 +1015,8 @@ input[type=text]#settings_search {
 }
 
 @media (max-width: 856px) {
-    .user-avatar-section .inline-block, .realm-icon-section .inline-block {
+    .user-avatar-section .inline-block,
+    .realm-icon-section .inline-block {
         display: block;
         margin: 0;
     }
@@ -1041,4 +1059,8 @@ input[type=text]#settings_search {
 
 #muted_topics_table tbody {
     border-bottom: none;
+}
+
+#admin_users_table .last_active {
+    width: 15%;
 }

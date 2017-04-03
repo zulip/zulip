@@ -9,10 +9,8 @@ from typing import Any, Dict, List, Text
 
 from zerver.lib.actions import (
     do_change_is_admin,
-    do_set_realm_name,
-    do_set_realm_description,
+    do_set_realm_property,
     do_deactivate_realm,
-    do_set_name_changes_disabled,
 )
 
 from zerver.lib.test_classes import ZulipTestCase
@@ -33,33 +31,55 @@ class RealmTest(ZulipTestCase):
         by checking the cache to ensure that the new value is there."""
         get_user_profile_by_email('hamlet@zulip.com')
         realm = get_realm('zulip')
-        new_name = 'Zed You Elle Eye Pea'
-        do_set_realm_name(realm, new_name)
+        new_name = u'Zed You Elle Eye Pea'
+        do_set_realm_property(realm, 'name', new_name)
         self.assertEqual(get_realm(realm.string_id).name, new_name)
         self.assert_user_profile_cache_gets_new_name('hamlet@zulip.com', new_name)
 
-    def test_do_set_realm_name_events(self):
+    def test_update_realm_name_events(self):
         # type: () -> None
         realm = get_realm('zulip')
-        new_name = 'Puliz'
-        events = [] # type: List[Dict[str, Any]]
+        new_name = u'Puliz'
+        events = []  # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
-            do_set_realm_name(realm, new_name)
+            do_set_realm_property(realm, 'name', new_name)
         event = events[0]['event']
         self.assertEqual(event, dict(
-            type = 'realm',
-            op = 'update',
-            property = 'name',
-            value = new_name,
+            type='realm',
+            op='update',
+            property='name',
+            value=new_name,
         ))
 
-    def test_do_set_realm_description(self):
+    def test_update_realm_description_events(self):
         # type: () -> None
         realm = get_realm('zulip')
-        new_description = 'zulip dev group'
-        events = [] # type: List[Dict[str, Any]]
+        new_description = u'zulip dev group'
+        events = []  # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
-            do_set_realm_description(realm, new_description)
+            do_set_realm_property(realm, 'description', new_description)
+        event = events[0]['event']
+        self.assertEqual(event, dict(
+            type='realm',
+            op='update',
+            property='description',
+            value=new_description,
+        ))
+
+    def test_update_realm_description(self):
+        # type: () -> None
+        email = 'iago@zulip.com'
+        self.login(email)
+        realm = get_realm('zulip')
+        new_description = u'zulip dev group'
+        data = dict(description=ujson.dumps(new_description))
+        events = []  # type: List[Dict[str, Any]]
+        with tornado_redirected_to_list(events):
+            result = self.client_patch('/json/realm', data)
+            self.assert_json_success(result)
+            realm = get_realm('zulip')
+            self.assertEqual(realm.description, new_description)
+
         event = events[0]['event']
         self.assertEqual(event, dict(
             type='realm',
@@ -70,7 +90,7 @@ class RealmTest(ZulipTestCase):
 
     def test_realm_description_length(self):
         # type: () -> None
-        new_description = 'A' * 101
+        new_description = u'A' * 101
         data = dict(description=ujson.dumps(new_description))
 
         # create an admin user
@@ -84,7 +104,7 @@ class RealmTest(ZulipTestCase):
 
     def test_update_realm_api(self):
         # type: () -> None
-        new_name = 'Zulip: Worldwide Exporter of APIs'
+        new_name = u'Zulip: Worldwide Exporter of APIs'
 
         email = 'cordelia@zulip.com'
         self.login(email)
@@ -128,6 +148,20 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(realm.invite_by_admins_only, True)
         realm = update_with_api(invite_by_admins_only=False)
         self.assertEqual(realm.invite_by_admins_only, False)
+
+        # inline_image_preview
+        set_up_db('inline_image_preview', True)
+        realm = update_with_api(inline_image_preview=False)
+        self.assertEqual(realm.inline_image_preview, False)
+        realm = update_with_api(inline_image_preview=True)
+        self.assertEqual(realm.inline_image_preview, True)
+
+        # inline_url_embed_preview
+        set_up_db('inline_url_embed_preview', False)
+        realm = update_with_api(inline_url_embed_preview=True)
+        self.assertEqual(realm.inline_url_embed_preview, True)
+        realm = update_with_api(inline_url_embed_preview=False)
+        self.assertEqual(realm.inline_url_embed_preview, False)
 
         # create_stream_by_admins_only
         set_up_db('create_stream_by_admins_only', False)
@@ -178,6 +212,13 @@ class RealmTest(ZulipTestCase):
         realm = update_with_api(waiting_period_threshold=10)
         self.assertEqual(realm.waiting_period_threshold, 10)
 
+        # retention_period
+        set_up_db('message_retention_days', 10)
+        realm = update_with_api(message_retention_days=20)
+        self.assertEqual(realm.message_retention_days, 20)
+        realm = update_with_api(message_retention_days=10)
+        self.assertEqual(realm.message_retention_days, 10)
+
     def test_admin_restrictions_for_changing_realm_name(self):
         # type: () -> None
         new_name = 'Mice will play while the cat is away'
@@ -197,7 +238,7 @@ class RealmTest(ZulipTestCase):
         email = 'hamlet@zulip.com'
         self.login(email)
         user_profile = get_user_profile_by_email(email)
-        do_set_name_changes_disabled(user_profile.realm, name_changes_disabled=True)
+        do_set_realm_property(user_profile.realm, 'name_changes_disabled', True)
         url = '/json/settings/change'
         result = self.client_post(url, data)
         self.assertEqual(result.status_code, 200)
@@ -217,7 +258,7 @@ class RealmTest(ZulipTestCase):
         user = get_user_profile_by_email('hamlet@zulip.com')
         self.assertTrue(user.realm.deactivated)
 
-    def test_do_set_realm_default_language(self):
+    def test_change_realm_default_language(self):
         # type: () -> None
         new_lang = "de"
         realm = get_realm('zulip')

@@ -1,12 +1,18 @@
+from __future__ import absolute_import
+from __future__ import print_function
+
 from collections import defaultdict
 
-from typing import List, Set, Tuple
+from typing import Callable, DefaultDict, Iterator, List, Set, Tuple
+
+Edge = Tuple[str, str]
+EdgeSet = Set[Edge]
 
 class Graph(object):
-    def __init__(self, *tuples):
-        # type: (Tuple[str, str]) -> None
-        self.children = defaultdict(list) # type: defaultdict[str, List[str]]
-        self.parents = defaultdict(list) # type: defaultdict[str, List[str]]
+    def __init__(self, tuples):
+        # type: (EdgeSet) -> None
+        self.children = defaultdict(list) # type: DefaultDict[str, List[str]]
+        self.parents = defaultdict(list) # type: DefaultDict[str, List[str]]
         self.nodes = set() # type: Set[str]
 
         for parent, child in tuples:
@@ -14,6 +20,28 @@ class Graph(object):
             self.children[parent].append(child)
             self.nodes.add(parent)
             self.nodes.add(child)
+
+    def copy(self):
+        # type: () -> Graph
+        return Graph(self.edges())
+
+    def num_edges(self):
+        # type: () -> int
+        return len(self.edges())
+
+    def minus_edge(self, edge):
+        # type: (Edge) -> Graph
+        edges = self.edges().copy()
+        edges.remove(edge)
+        return Graph(edges)
+
+    def edges(self):
+        # type: () -> EdgeSet
+        s = set()
+        for parent in self.nodes:
+            for child in self.children[parent]:
+                s.add((parent, child))
+        return s
 
     def remove_exterior_nodes(self):
         # type: () -> None
@@ -49,6 +77,39 @@ class Graph(object):
             self.parents[child].remove(node)
         self.nodes.remove(node)
 
+    def report(self):
+        # type: () -> None
+        print('parents/children/module')
+        tups = sorted([
+            (len(self.parents[node]), len(self.children[node]), node)
+            for node in self.nodes])
+        for tup in tups:
+            print(tup)
+
+def best_edge_to_remove(orig_graph, is_exempt):
+    # type: (Graph, Callable[[Edge], bool]) -> Edge
+    # expects an already reduced graph as input
+
+    orig_edges = orig_graph.edges()
+
+    def get_choices():
+        # type: () -> Iterator[Tuple[int, Edge]]
+        for edge in orig_edges:
+            if is_exempt(edge):
+                continue
+            graph = orig_graph.minus_edge(edge)
+            graph.remove_exterior_nodes()
+            size = graph.num_edges()
+            yield (size, edge)
+
+    choices = list(get_choices())
+    if not choices:
+        return None
+    min_size, best_edge = min(choices)
+    if min_size >= orig_graph.num_edges():
+        raise Exception('no edges work here')
+    return best_edge
+
 def make_dot_file(graph):
     # type: (Graph) -> str
     buffer = 'digraph G {\n'
@@ -61,7 +122,7 @@ def make_dot_file(graph):
 
 def test():
     # type: () -> None
-    graph = Graph(
+    graph = Graph(set([
         ('x', 'a'),
         ('a', 'b'),
         ('b', 'c'),
@@ -70,7 +131,7 @@ def test():
         ('d', 'e'),
         ('e', 'f'),
         ('e', 'g'),
-    )
+    ]))
     graph.remove_exterior_nodes()
 
     s = make_dot_file(graph)

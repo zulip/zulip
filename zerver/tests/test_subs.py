@@ -38,8 +38,8 @@ from zerver.models import (
 )
 
 from zerver.lib.actions import (
-    do_add_default_stream, do_change_is_admin, do_set_realm_waiting_period_threshold,
-    do_create_realm, do_remove_default_stream, do_set_realm_create_stream_by_admins_only,
+    do_add_default_stream, do_change_is_admin, do_set_realm_property,
+    do_create_realm, do_remove_default_stream,
     gather_subscriptions_helper, bulk_add_subscriptions, bulk_remove_subscriptions,
     gather_subscriptions, get_default_streams_for_realm, get_realm, get_stream,
     get_user_profile_by_email, set_default_streams, check_stream_name,
@@ -295,8 +295,8 @@ class StreamAdminTest(ZulipTestCase):
         ))
         notified_user_ids = set(events[1]['users'])
 
-        stream_name1_exists = get_stream('stream_name1', realm)
-        self.assertFalse(stream_name1_exists)
+        self.assertRaises(Stream.DoesNotExist, get_stream, 'stream_name1', realm)
+
         stream_name2_exists = get_stream('stream_name2', realm)
         self.assertTrue(stream_name2_exists)
 
@@ -326,8 +326,8 @@ class StreamAdminTest(ZulipTestCase):
                                        {'new_name': ujson.dumps(u'नाम में क्या रक्खा हे'.encode('utf-8'))})
         self.assert_json_success(result)
         # While querying, system can handle unicode strings.
-        stream_name_old_uni_exists = get_stream(u'नया नाम', realm)
-        self.assertFalse(stream_name_old_uni_exists)
+        self.assertRaises(Stream.DoesNotExist, get_stream, u'नया नाम', realm)
+
         stream_name_new_uni_exists = get_stream(u'नाम में क्या रक्खा हे', realm)
         self.assertTrue(stream_name_new_uni_exists)
 
@@ -609,7 +609,7 @@ class StreamAdminTest(ZulipTestCase):
         email = 'hamlet@zulip.com'
         user_profile = get_user_profile_by_email(email)
         self.login(email)
-        do_set_realm_create_stream_by_admins_only(user_profile.realm, True)
+        do_set_realm_property(user_profile.realm, 'create_stream_by_admins_only', True)
 
         stream_name = ['adminsonlysetting']
         result = self.common_subscribe_to_streams(
@@ -629,7 +629,7 @@ class StreamAdminTest(ZulipTestCase):
         self.login(email)
         do_change_is_admin(user_profile, False)
 
-        do_set_realm_waiting_period_threshold(user_profile.realm, 10)
+        do_set_realm_property(user_profile.realm, 'waiting_period_threshold', 10)
 
         stream_name = ['waitingperiodtest']
         result = self.common_subscribe_to_streams(
@@ -638,7 +638,7 @@ class StreamAdminTest(ZulipTestCase):
         )
         self.assert_json_error(result, 'User cannot create streams.')
 
-        do_set_realm_waiting_period_threshold(user_profile.realm, 0)
+        do_set_realm_property(user_profile.realm, 'waiting_period_threshold', 0)
 
         result = self.common_subscribe_to_streams(
             email,
@@ -1183,8 +1183,9 @@ class SubscriptionAPITest(ZulipTestCase):
             self.assertIsInstance(stream['name'], six.string_types)
             self.assertIsInstance(stream['color'], six.string_types)
             self.assertIsInstance(stream['invite_only'], bool)
-            # check that the stream name corresponds to an actual stream
-            self.assertIsNotNone(get_stream(stream['name'], self.realm))
+            # check that the stream name corresponds to an actual
+            # stream; will throw Stream.DoesNotExist if it doesn't
+            get_stream(stream['name'], self.realm)
         list_streams = [stream['name'] for stream in json["subscriptions"]]
         # also check that this matches the list of your subscriptions
         self.assertEqual(sorted(list_streams), sorted(self.streams))
@@ -1498,7 +1499,7 @@ class SubscriptionAPITest(ZulipTestCase):
                     streams_to_sub,
                     dict(principals=ujson.dumps([email1, email2])),
                 )
-        self.assert_max_length(queries, 52)
+        self.assert_length(queries, 52)
 
         self.assert_length(events, 8)
         for ev in [x for x in events if x['event']['type'] not in ('message', 'stream')]:
@@ -1526,7 +1527,7 @@ class SubscriptionAPITest(ZulipTestCase):
                     streams_to_sub,
                     dict(principals=ujson.dumps([self.test_email])),
                 )
-        self.assert_max_length(queries, 13)
+        self.assert_length(queries, 13)
 
         self.assert_length(events, 2)
         add_event, add_peer_event = events
@@ -1744,7 +1745,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # Make sure Zephyr mirroring realms such as MIT do not get
         # any tornado subscription events
         self.assert_length(events, 0)
-        self.assert_max_length(queries, 7)
+        self.assert_length(queries, 8)
 
     def test_bulk_subscribe_many(self):
         # type: () -> None
@@ -1761,7 +1762,7 @@ class SubscriptionAPITest(ZulipTestCase):
                     dict(principals=ujson.dumps([self.test_email])),
                 )
         # Make sure we don't make O(streams) queries
-        self.assert_max_length(queries, 14)
+        self.assert_length(queries, 14)
 
     @slow("common_subscribe_to_streams is slow")
     def test_subscriptions_add_for_principal(self):

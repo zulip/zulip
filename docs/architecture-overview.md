@@ -254,11 +254,15 @@ are welcome!
     topic]", or "Link to this conversation". To avoid visual clutter,
     the chevron only appears in the web UI upon hover.
 
+* **huddle**: What the codebase calls a "group private message".
+
 * **message editing**: If the realm admin allows it, then after a user
     posts a message, the user has a few minutes to click "Edit" and
     change the content of their message. If they do, Zulip adds a
     marker such as "(EDITED)" at the top of the message, visible to
     anyone who can see the message.
+
+* **realm**: What the codebase calls an "organization" in the UI.
 
 * **recipient bar**: A visual indication of the context of a message
     or group of messages, displaying the stream and topic or private
@@ -276,3 +280,11 @@ are welcome!
     constraint. Whether a user has or has not starred a particular
     message is private; other users and realm admins don't know
     whether a message has been starred, or by whom.
+
+* **subject**: What the codebase calls a "topic" in many places.
+
+* **bankruptcy**: When a user has been off Zulip for several days and
+    has hundreds of unread messages, they are prompted for whether
+    they want to mark all their unread messages as read.  This is
+    called "declaring bankruptcy" (in reference to the concept in
+    finance).

@@ -8,7 +8,8 @@ function update_subscription_checkboxes() {
     // checkboxes are saved from invocation to invocation (which is
     // nice if I want to invite a bunch of people at once)
     var streams = [];
-    _.each(stream_data.subscribed_streams(), function (value) {
+
+    _.each(stream_data.invite_streams(), function (value) {
         var is_notifications_stream = value === page_params.notifications_stream;
         if ((stream_data.subscribed_streams().length === 1) ||
             !is_notifications_stream ||
@@ -16,7 +17,13 @@ function update_subscription_checkboxes() {
             // You can't actually elect not to invite someone to the
             // notifications stream. We won't even show it as a choice unless
             // it's the only stream you have, or if you've made it private.
-            streams.push({name: value, invite_only: stream_data.get_invite_only(value)});
+            var default_status = stream_data.get_default_status(value);
+            var invite_status = stream_data.get_invite_only(value);
+            streams.push({name: value, invite_only: invite_status, default_stream: default_status});
+            // Sort by default status.
+            streams.sort(function (a, b) {
+                return b.default_stream - a.default_stream;
+            });
         }
     });
     $('#streams_to_add').html(templates.render('invite_subscription', {streams: streams}));

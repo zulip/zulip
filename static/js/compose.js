@@ -209,22 +209,25 @@ function same_recipient_as_before(msg_type, opts) {
               opts.private_message_recipient === compose_state.recipient()));
 }
 
-function show_box_for_msg_type(msg_type, opts) {
-    var focus_area;
-
+function get_focus_area(msg_type, opts) {
+    // Set focus to "Topic" when narrowed to a stream+topic and "New topic" button clicked.
     if (msg_type === 'stream' && opts.stream && ! opts.subject) {
-        focus_area = 'subject';
+        return 'subject';
     } else if ((msg_type === 'stream' && opts.stream)
                || (msg_type === 'private' && opts.private_message_recipient)) {
-        focus_area = 'new_message_content';
+        if (opts.trigger === "new topic button") {
+            return 'subject';
+        }
+        return 'new_message_content';
     }
 
     if (msg_type === 'stream') {
-        show_box('stream', $("#" + (focus_area || 'stream')), opts);
-    } else {
-        show_box('private', $("#" + (focus_area || 'private_message_recipient')), opts);
+        return 'stream';
     }
+    return 'private_message_recipient';
 }
+// Export for testing
+exports._get_focus_area = get_focus_area;
 
 exports.start = function (msg_type, opts) {
     $("#new_message_content").autosize();
@@ -266,13 +269,9 @@ exports.start = function (msg_type, opts) {
 
     is_composing_message = msg_type;
 
-    // Set focus to "Topic" when narrowed to a stream+topic and "New topic" button clicked.
-    if (opts.trigger === "new topic button") {
-        show_box('stream', $("#subject"), opts);
-    } else {
-        // Show either stream/topic fields or "You and" field.
-        show_box_for_msg_type(msg_type, opts);
-    }
+    // Show either stream/topic fields or "You and" field.
+    var focus_area = get_focus_area(msg_type, opts);
+    show_box(msg_type, $("#" + focus_area), opts);
 
     compose_fade.start_compose(msg_type);
 
@@ -357,17 +356,8 @@ function create_message_object() {
     }
     return message;
 }
-
-exports.snapshot_message = function () {
-    if (!compose_state.composing() || (exports.message_content() === "")) {
-        // If you aren't in the middle of composing the body of a
-        // message, don't try to snapshot.
-        return;
-    }
-
-    // Save what we can.
-    return create_message_object();
-};
+// Export for testing
+exports.create_message_object = create_message_object;
 
 function compose_error(error_text, bad_input) {
     $('#send-status').removeClass(status_classes)
@@ -736,6 +726,26 @@ exports.update_email = function (user_id, new_email) {
     exports.recipient(reply_to);
 };
 
+exports.get_invalid_recipient_emails = function () {
+    var private_recipients = util.extract_pm_recipients(compose_state.recipient());
+    var invalid_recipients = [];
+    _.each(private_recipients, function (email) {
+        // This case occurs when exports.recipient() ends with ','
+        if (email === "") {
+            return;
+        }
+        if (people.realm_get(email) !== undefined) {
+            return;
+        }
+        if (people.is_cross_realm_email(email)) {
+            return;
+        }
+        invalid_recipients.push(email);
+    });
+
+    return invalid_recipients;
+};
+
 // Checks if a stream exists. If not, displays an error and returns
 // false.
 function check_stream_for_send(stream_name, autosubscribe) {
@@ -823,6 +833,7 @@ function validate_stream_message() {
 
     return true;
 }
+
 // The function checks whether the recipients are users of the realm or cross realm users (bots
 // for now)
 function validate_private_message() {
@@ -833,22 +844,10 @@ function validate_private_message() {
         // For Zephyr mirroring realms, the frontend doesn't know which users exist
         return true;
     }
-    var private_recipients = util.extract_pm_recipients(compose_state.recipient());
-    var invalid_recipients = [];
+
+    var invalid_recipients = exports.get_invalid_recipient_emails();
+
     var context = {};
-    _.each(private_recipients, function (email) {
-        // This case occurs when exports.recipient() ends with ','
-        if (email === "") {
-            return;
-        }
-        if (people.realm_get(email) !== undefined) {
-            return;
-        }
-        if (people.is_cross_realm_email(email)) {
-            return;
-        }
-        invalid_recipients.push(email);
-    });
     if (invalid_recipients.length === 1) {
         context = {recipient: invalid_recipients.join()};
         compose_error(i18n.t("The recipient __recipient__ is not valid ", context), $("#private_message_recipient"));

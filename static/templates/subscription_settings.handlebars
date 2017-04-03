@@ -17,11 +17,11 @@
       {{/if}}
     </div>
     <button class="button small white rounded subscribe-button sub_unsub_button {{#unless subscribed }}unsubscribed{{/unless}}" type="button" name="button">
-        {{#if subscribed }}Unsubscribe{{else}}Subscribe{{/if}}</button>
+        {{#if subscribed }}{{#tr oneself }}Unsubscribe{{/tr}}{{else}}{{#tr oneself }}Subscribe{{/tr}}{{/if}}</button>
     <a href="{{preview_url}}" class="button small white rounded" id="preview-stream-button" role="button">{{t "View stream"}}</a>
   </div>
   <div class="stream-description" data-no-description="{{t 'No description.' }}">
-      <span class="stream-description-editable editable-section">{{description}}</span>
+      <span class="stream-description-editable editable-section">{{{rendered_description}}}</span>
       {{#if is_admin}}
         <span class="editable" data-make-editable=".stream-description-editable"></span>
         <span class="checkmark" data-finish-editing=".stream-description-editable">✓</span>
@@ -33,7 +33,7 @@
         {{partial "subscription_type"}}
       </div>
         {{#if is_admin}}
-          <a class="change-stream-privacy" data-is-private="{{#if can_make_public}}true{{else}}false{{/if}}">{{t "[Change]"}}</a>
+          <a class="change-stream-privacy" data-is-private="{{#if can_make_public }}true{{else}}false{{/if}}">[{{t "Change" }}]</a>
         {{/if}}
     </div>
     <div class="subscription-config">
@@ -41,7 +41,7 @@
       <li>
         <div id="sub_setting_not_in_home_view" class="sub_setting_checkbox sub-mute-setting">
           <input id="mutestream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#unless in_home_view}}checked{{/unless}} />
-          <label class="subscription-control-label">Mute stream</label>
+          <label class="subscription-control-label">{{t "Mute stream" }}</label>
           <p class="mute-note {{#if in_home_view}}hide-mute-note{{/if}}">{{t "Muted streams don't show up in your home view or generate notifications unless you are mentioned." }}</p>
         </div>
       </li>
@@ -74,15 +74,15 @@
       </li>
     </ul>
     </div>
+    {{#if email_address}}
+    <div class="stream-email-box">
+      <div class="sub_settings_title">{{t "Email address" }} <i class="icon-vector-question-sign stream-email-hint" id="email-address-hint-{{stream_id}}"></i></div>
+      <div class="stream-email">
+          <span class="email-address">{{email_address}}</span>
+      </div>
+    </div>
+    {{/if}}
   </div>
-  {{#if_and subscribed email_address}}
-  <div class="stream-email-box">
-      <div class="sub_settings_title">Email address <i class="icon-vector-question-sign stream-email-hint" id="email-address-hint-{{stream_id}}"></i></div>
-  <div class="stream-email">
-      <span class="email-address">{{email_address}}</span>
-  </div>
-  </div>
-  {{/if_and}}
 
   {{#render_subscribers}}
   <div class="subscriber_list_settings">

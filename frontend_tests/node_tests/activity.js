@@ -283,11 +283,11 @@ global.compile_template('user_presence_rows');
     activity.set_presence_info(presences, base_time);
 
     assert.deepEqual(activity.presence_info[alice.user_id],
-        { status: 'active', mobile: false}
+        { status: 'active', mobile: false, last_active: 500}
     );
 
     assert.deepEqual(activity.presence_info[fred.user_id],
-        { status: 'idle', mobile: false}
+        { status: 'idle', mobile: false, last_active: 500}
     );
 }());
 

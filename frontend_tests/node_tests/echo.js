@@ -37,6 +37,8 @@ add_dependencies({
     hash_util: 'js/hash_util',
     hashchange: 'js/hashchange',
     fenced_code: 'js/fenced_code.js',
+    katex: 'node_modules/katex/dist/katex.min.js',
+    util: 'js/util.js',
 });
 
 var doc = "";
@@ -183,6 +185,8 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
     {input: '__hello__', expected: '<p>__hello__</p>'},
     {input: '\n```\nfenced code\n```\n\nand then after\n',
      expected: '<div class="codehilite"><pre><span></span>fenced code\n</pre></div>\n\n\n<p>and then after</p>'},
+     {input: '\n```\n    fenced code trailing whitespace            \n```\n\nand then after\n',
+     expected: '<div class="codehilite"><pre><span></span>    fenced code trailing whitespace\n</pre></div>\n\n\n<p>and then after</p>'},
     {input: '* a\n* list \n* here',
      expected: '<ul>\n<li>a</li>\n<li>list </li>\n<li>here</li>\n</ul>'},
     {input: 'Some text first\n* a\n* list \n* here\n\nand then after',

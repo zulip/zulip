@@ -305,8 +305,9 @@ def add_logging_data(view_func):
     def _wrapped_view_func(request, *args, **kwargs):
         # type: (HttpRequest, *Any, **Any) -> HttpResponse
         request._email = request.user.email
+        request._query = view_func.__name__
         process_client(request, request.user, is_json_view=True)
-        return view_func(request, *args, **kwargs)
+        return rate_limit()(view_func)(request, *args, **kwargs)
     return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
 
 # Based on Django 1.8's @login_required
@@ -464,7 +465,7 @@ def authenticate_log_and_execute_json(request, view_func, *args, **kwargs):
 
     process_client(request, user_profile, True)
     request._email = user_profile.email
-    return view_func(request, user_profile, *args, **kwargs)
+    return rate_limit()(view_func)(request, user_profile, *args, **kwargs)
 
 # Checks if the request is a POST request and that the user is logged
 # in.  If not, return an error (the @login_required behavior of
@@ -535,6 +536,14 @@ def to_non_negative_int(s):
     if x < 0:
         raise ValueError("argument is negative")
     return x
+
+
+def to_not_negative_int_or_none(s):
+    # type: (Text) -> Optional[int]
+    if s:
+        return to_non_negative_int(s)
+    return None
+
 
 def flexible_boolean(boolean):
     # type: (Text) -> bool

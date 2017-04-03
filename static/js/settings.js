@@ -995,7 +995,7 @@ function _setup_page() {
             var stream = $row.data("stream");
             var topic = $row.data("topic");
 
-            stream_popover.topic_ops.unmute(stream, topic);
+            muting_ui.unmute(stream, topic);
             $row.remove();
             e.stopImmediatePropagation();
         });

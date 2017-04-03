@@ -64,6 +64,11 @@ import six
 
 API_KEYS = {} # type: Dict[Text, Text]
 
+def flush_caches_for_testing():
+    # type: () -> None
+    global API_KEYS
+    API_KEYS = {}
+
 class UploadSerializeMixin(SerializeMixin):
     """
     We cannot use override_settings to change upload directory because
@@ -84,6 +89,9 @@ class UploadSerializeMixin(SerializeMixin):
         super(UploadSerializeMixin, cls).setUpClass(*args, **kwargs)
 
 class ZulipTestCase(TestCase):
+    # Ensure that the test system just shows us diffs
+    maxDiff = None  # type: int
+
     '''
     WRAPPER_COMMENT:
 
@@ -298,7 +306,7 @@ class ZulipTestCase(TestCase):
             content, forged=False, forged_timestamp=None,
             forwarder_user_profile=sender, realm=sender.realm, **kwargs)
 
-    def get_old_messages(self, anchor=1, num_before=100, num_after=100):
+    def get_messages(self, anchor=1, num_before=100, num_after=100):
         # type: (int, int, int) -> List[Dict[str, Any]]
         post_params = {"anchor": anchor, "num_before": num_before,
                        "num_after": num_after}
@@ -407,11 +415,13 @@ class ZulipTestCase(TestCase):
         # type: (Text, Text, Optional[Realm]) -> Stream
         if realm is None:
             realm = get_realm_by_email_domain(email)
-        stream = get_stream(stream_name, realm)
-        if stream is None:
-            stream, _ = create_stream_if_needed(realm, stream_name)
+        try:
+            stream = get_stream(stream_name, realm)
+            from_creation = False
+        except Stream.DoesNotExist:
+            stream, from_creation = create_stream_if_needed(realm, stream_name)
         user_profile = get_user_profile_by_email(email)
-        bulk_add_subscriptions([stream], [user_profile])
+        bulk_add_subscriptions([stream], [user_profile], from_creation=from_creation)
         return stream
 
     def unsubscribe_from_stream(self, email, stream_name):

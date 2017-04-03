@@ -1,16 +1,19 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+import datetime
+import os
 import ujson
 
 from django.http import HttpResponse
-from mock import patch
+from mock import MagicMock, patch
 from six.moves import urllib
 from typing import Any, Dict
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_runner import slow
 from zerver.models import get_realm, get_stream, get_user_profile_by_email
+from zerver.views.home import home, sent_time_in_epoch_seconds
 
 class HomeTest(ZulipTestCase):
     @slow('big method')
@@ -65,6 +68,7 @@ class HomeTest(ZulipTestCase):
             "furthest_read_time",
             "has_mobile_devices",
             "have_initial_messages",
+            "hotspots",
             "initial_pointer",
             "initial_presences",
             "initial_servertime",
@@ -105,9 +109,12 @@ class HomeTest(ZulipTestCase):
             "realm_filters",
             "realm_icon_source",
             "realm_icon_url",
+            "realm_inline_image_preview",
+            "realm_inline_url_embed_preview",
             "realm_invite_by_admins_only",
             "realm_invite_required",
             "realm_message_content_edit_limit_seconds",
+            "realm_message_retention_days",
             "realm_name",
             "realm_name_changes_disabled",
             "realm_presence_disabled",
@@ -117,6 +124,8 @@ class HomeTest(ZulipTestCase):
             "referrals",
             "save_stacktraces",
             "server_generation",
+            "server_inline_image_preview",
+            "server_inline_url_embed_preview",
             "server_uri",
             "share_the_love",
             "show_digest_email",
@@ -226,6 +235,36 @@ class HomeTest(ZulipTestCase):
 
             html = result.content.decode('utf-8')
             self.assertIn('There are new Terms of Service', html)
+
+    def test_terms_of_service_first_time_template(self):
+        # type: () -> None
+        email = "hamlet@zulip.com"
+        self.login(email)
+
+        user = get_user_profile_by_email(email)
+        user.tos_version = None
+        user.save()
+
+        with \
+                self.settings(FIRST_TIME_TOS_TEMPLATE='hello.html'), \
+                self.settings(TOS_VERSION='99.99'):
+            result = self.client_post('/accounts/accept_terms/')
+            self.assertEqual(result.status_code, 200)
+            self.assert_in_response("I agree to the", result)
+            self.assert_in_response("Finally, workplace chat", result)
+
+    def test_accept_terms_of_service(self):
+        # type: () -> None
+        email = "hamlet@zulip.com"
+        self.login(email)
+
+        result = self.client_post('/accounts/accept_terms/')
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_response("I agree to the", result)
+
+        result = self.client_post('/accounts/accept_terms/', {'terms': True})
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result['Location'], '/')
 
     def test_bad_narrow(self):
         # type: () -> None
@@ -355,3 +394,34 @@ class HomeTest(ZulipTestCase):
         self.login(email)
         result = self.client_get("/api/v1/generate_204")
         self.assertEqual(result.status_code, 204)
+
+    def test_message_sent_time(self):
+        # type: () -> None
+        epoch_seconds = 1490472096
+        pub_date = datetime.datetime.fromtimestamp(epoch_seconds)
+        user_message = MagicMock()
+        user_message.message.pub_date = pub_date
+        self.assertEqual(sent_time_in_epoch_seconds(user_message), epoch_seconds)
+
+    def test_handlebars_compile_error(self):
+        # type: () -> None
+        request = MagicMock()
+        with self.settings(DEVELOPMENT=True):
+            with patch('os.path.exists', return_value=True):
+                result = home(request)
+        self.assertEqual(result.status_code, 500)
+        self.assert_in_response('Error compiling handlebars templates.', result)
+
+    def test_subdomain_homepage(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        self.login(email)
+        with self.settings(SUBDOMAINS_HOMEPAGE=True):
+            with patch('zerver.views.home.get_subdomain', return_value=""):
+                result = self._get_home_page()
+            self.assertEqual(result.status_code, 200)
+            self.assert_in_response('Finally, workplace chat', result)
+
+            with patch('zerver.views.home.get_subdomain', return_value="subdomain"):
+                result = self._get_home_page()
+            self._sanity_check(result)

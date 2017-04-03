@@ -116,6 +116,7 @@ class SocialAuthMixin(ZulipAuthMixin):
 
         email_address = self.get_email_address(*args, **kwargs)
         if not email_address:
+            return_data['invalid_email'] = True
             return None
 
         try:
@@ -145,7 +146,7 @@ class SocialAuthMixin(ZulipAuthMixin):
 
     def process_do_auth(self, user_profile, *args, **kwargs):
         # type: (UserProfile, *Any, **Any) -> Optional[HttpResponse]
-        # This function needs to be imported from here due to the cyclic
+        # These functions need to be imported here to avoid cyclic
         # dependency.
         from zerver.views.auth import (login_or_register_remote_user,
                                        redirect_to_subdomain_login_url)
@@ -156,9 +157,15 @@ class SocialAuthMixin(ZulipAuthMixin):
         inactive_user = return_data.get('inactive_user')
         inactive_realm = return_data.get('inactive_realm')
         invalid_subdomain = return_data.get('invalid_subdomain')
+        invalid_email = return_data.get('invalid_email')
 
-        if inactive_user or inactive_realm:
+        if inactive_user or inactive_realm or invalid_email:
+            # Redirect to login page. We can't send to registration
+            # workflow with these errors.
             return None
+
+        # If user_profile is `None` here, send the user to registration
+        # workflow.
 
         strategy = self.strategy  # type: ignore # This comes from Python Social Auth.
         request = strategy.request
@@ -180,6 +187,10 @@ class SocialAuthMixin(ZulipAuthMixin):
 
     def auth_complete(self, *args, **kwargs):
         # type: (*Any, **Any) -> Optional[HttpResponse]
+        """
+        Returning `None` from this function will redirect the browser
+        to the login page.
+        """
         try:
             # Call the auth_complete method of BaseOAuth2 is Python Social Auth
             return super(SocialAuthMixin, self).auth_complete(*args, **kwargs)  # type: ignore
@@ -197,6 +208,7 @@ class ZulipDummyBackend(ZulipAuthMixin):
     def authenticate(self, username=None, realm_subdomain=None, use_dummy_backend=False,
                      return_data=None):
         # type: (Optional[Text], Optional[Text], bool, Optional[Dict[str, Any]]) -> Optional[UserProfile]
+        assert username is not None
         if use_dummy_backend:
             user_profile = common_get_active_user_by_email(username)
             if user_profile is None:
@@ -254,8 +266,11 @@ class GoogleMobileOauth2Backend(ZulipAuthMixin):
 
     """
 
-    def authenticate(self, google_oauth2_token=None, realm_subdomain=None, return_data={}):
-        # type: (Optional[str], Optional[Text], Dict[str, Any]) -> Optional[UserProfile]
+    def authenticate(self, google_oauth2_token=None, realm_subdomain=None, return_data=None):
+        # type: (Optional[str], Optional[Text], Optional[Dict[str, Any]]) -> Optional[UserProfile]
+        if return_data is None:
+            return_data = {}
+
         try:
             token_payload = googleapiclient.verify_id_token(google_oauth2_token, settings.GOOGLE_CLIENT_ID)
         except AppIdentityError:
@@ -435,6 +450,17 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
 
     def do_auth(self, *args, **kwargs):
         # type: (*Any, **Any) -> Optional[HttpResponse]
+        """
+        This function is called once the OAuth2 workflow is complete. We
+        override this function to:
+            1. Inject `return_data` and `realm_admin` kwargs. These will
+               be used by `authenticate()` function to make the decision.
+            2. Call the proper `do_auth` function depending on whether
+               we are doing individual, team or organization based GitHub
+               authentication.
+        The actual decision on authentication is done in
+        SocialAuthMixin.authenticate().
+        """
         kwargs['return_data'] = {}
 
         request = self.strategy.request

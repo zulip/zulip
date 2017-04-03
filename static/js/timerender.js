@@ -24,9 +24,9 @@ exports.render_now = function (time) {
     var days_old = Math.round(start_of_other_day.diffDays(start_of_today));
 
     if (days_old === 0) {
-        return ["Today", true];
+        return [i18n.t("Today"), true];
     } else if (days_old === 1) {
-        return ["Yesterday", true];
+        return [i18n.t("Yesterday"), true];
     } else if (days_old >= 365) {
         // For long running servers, searching backlog can get ambiguous
         // without a year stamp. Only show year if message is over a year old.

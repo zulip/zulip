@@ -68,7 +68,10 @@ exports.update_property = function (stream_id, property, value) {
     }
 };
 
-exports.mark_subscribed = function (sub, subscribers) {
+// Add yourself to a stream we already know about client-side.
+// It's likely we should be passing in the full sub object from the caller/backend,
+// but for now we just pass in the subscribers and color (things likely to be different).
+exports.mark_subscribed = function (sub, subscribers, color) {
     if (sub === undefined) {
         blueslip.error('Undefined sub passed to mark_subscribed');
         return;
@@ -78,9 +81,17 @@ exports.mark_subscribed = function (sub, subscribers) {
         return;
     }
 
-    // Add yourself to a stream we already know about client-side.
-    var color = get_color();
-    subs.set_color(sub.stream_id, color);
+    // If the backend sent us a color, use that
+    if (color !== undefined) {
+        sub.color = color;
+    } else if (sub.color === undefined) {
+        // If the backend didn't, and we have a color already, send
+        // the backend that color.  It's not clear this code path is
+        // needed.
+        blueslip.warn("Frontend needed to pick a color in mark_subscribed");
+        color = get_color();
+        subs.set_color(sub.stream_id, color);
+    }
     stream_data.subscribe_myself(sub);
     if (subscribers) {
         stream_data.set_subscriber_emails(sub, subscribers);
@@ -94,7 +105,7 @@ exports.mark_subscribed = function (sub, subscribers) {
 
     // Update unread counts as the new stream in sidebar might
     // need its unread counts re-calculated
-    message_store.do_unread_count_updates(message_list.all.all_messages());
+    message_util.do_unread_count_updates(message_list.all.all_messages());
 
     $(document).trigger($.Event('subscription_add_done.zulip', {sub: sub}));
 };

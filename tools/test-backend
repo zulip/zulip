@@ -37,6 +37,7 @@ target_fully_covered = {path for target in [
     'zerver/lib/streams.py',
     'zerver/lib/users.py',
     'zerver/lib/webhooks/*.py',
+    'zerver/logging_handlers.py',
     'zerver/views/*.py',
     'zerver/tests/*.py',
     # Once we have a nice negative tests system, we can add these:
@@ -75,9 +76,7 @@ not_yet_fully_covered = {
     'confirmation/models.py',
     'zerver/decorator.py',
     'zerver/lib/actions.py',
-    'zerver/lib/events.py',
     'zerver/lib/bugdown/__init__.py',
-    'zerver/lib/events.py',
     'zerver/lib/i18n.py',
     'zerver/lib/message.py',
     'zerver/lib/notifications.py',
@@ -87,11 +86,6 @@ not_yet_fully_covered = {
     # Test files should have full coverage; it's a bug in the test if
     # they don't!  There are open issues for all of these.
     'zerver/tests/test_tornado.py',
-    # Getting views file coverage to 100% is a major project goal
-    'zerver/views/auth.py',
-    'zerver/views/home.py',
-    # Getting this to 100% is a major project goal.
-    'zproject/backends.py',
 }
 
 enforce_fully_covered = sorted(target_fully_covered - not_yet_fully_covered)
@@ -130,6 +124,21 @@ if __name__ == "__main__":
     parser.add_option('--verbose-coverage', dest='verbose_coverage',
                       action="store_true",
                       default=False, help='Enable verbose print of coverage report.')
+
+    def allow_positive_int(option, opt_str, value, parser):
+        # type: (optparse.Option, str, int, optparse.OptionParser) -> None
+        if value < 1:
+            raise optparse.OptionValueError(
+                "option {}: Only positive integers are allowed.".format(opt_str))
+        setattr(parser.values, option.dest, value)
+
+    parser.add_option('--processes', dest='processes',
+                      type="int",
+                      callback=allow_positive_int,
+                      action='callback',
+                      default=1,
+                      help='Specify the number of processes to run the '
+                           'tests in. Default is 1.')
     parser.add_option('--profile', dest='profile',
                       action="store_true",
                       default=False, help='Profile test runtime.')
@@ -152,6 +161,10 @@ if __name__ == "__main__":
                       action="store_true",
                       default=False,
                       help="Show which tests are slowest.")
+    parser.add_option('--reverse', dest='reverse',
+                      action="store_true",
+                      default=False,
+                      help="Run tests in reverse order.")
 
     (options, args) = parser.parse_args()
 
@@ -243,7 +256,17 @@ if __name__ == "__main__":
         subprocess.call(generate_fixtures_command)
 
     TestRunner = get_runner(settings)
-    test_runner = TestRunner(failfast=options.fatal_errors, verbosity=2)
+    parallel = options.processes
+
+    if parallel > 1:
+        print("-- Running tests in parallel mode with {} "
+              "processes.".format(parallel))
+    else:
+        print("-- Running tests in serial mode.")
+
+    test_runner = TestRunner(failfast=options.fatal_errors, verbosity=2,
+                             parallel=parallel, reverse=options.reverse,
+                             keepdb=True)
     failures = test_runner.run_tests(suites, full_suite=full_suite)
 
     templates_not_rendered = test_runner.get_shallow_tested_templates()
@@ -263,7 +286,7 @@ if __name__ == "__main__":
             print("Printing coverage data")
             cov.report(show_missing=False)
         cov.html_report(directory='var/coverage')
-        print("HTML report saved to var/coverage")
+        print("HTML report saved; visit at http://127.0.0.1:9991/coverage/index.html")
     if full_suite and not failures and options.coverage:
         # Assert that various files have full coverage
         for path in enforce_fully_covered:

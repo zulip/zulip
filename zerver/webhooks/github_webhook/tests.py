@@ -18,6 +18,14 @@ class GithubWebhookTest(WebhookTestCase):
     EXPECTED_SUBJECT_BRANCH_EVENTS = u"public-repo / changes"
     EXPECTED_SUBJECT_WIKI_EVENTS = u"public-repo / Wiki Pages"
 
+    def build_webhook_url(self, branches=None):
+        # type: (Optional[Text]) -> Text
+        api_key = self.get_api_key(self.TEST_USER_EMAIL)
+        url = self.URL_TEMPLATE.format(stream=self.STREAM_NAME, api_key=api_key)
+        if branches:
+            url = "{}&branches={}".format(url, branches)
+        return url
+
     def test_ping_event(self):
         # type: () -> None
         expected_message = u"GitHub webhook has been successfully configured by TomaszKolek"
@@ -28,8 +36,23 @@ class GithubWebhookTest(WebhookTestCase):
         expected_message = u"baxterthehacker [pushed](https://github.com/baxterthehacker/public-repo/compare/9049f1265b7d...0d1a26e67d8f) to branch changes\n\n* Update README.md ([0d1a26e](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))"
         self.send_and_test_stream_message('push_1_commit', self.EXPECTED_SUBJECT_BRANCH_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='push')
 
+    def test_push_1_commit_filtered_by_branches(self):
+        # type: () -> None
+        self.url = self.build_webhook_url('master,changes')
+        expected_message = u"baxterthehacker [pushed](https://github.com/baxterthehacker/public-repo/compare/9049f1265b7d...0d1a26e67d8f) to branch changes\n\n* Update README.md ([0d1a26e](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))"
+        self.send_and_test_stream_message('push_1_commit', self.EXPECTED_SUBJECT_BRANCH_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='push')
+
     def test_push_50_commits(self):
         # type: () -> None
+        commit_info = "* Update README.md ([0d1a26e](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))\n"
+        expected_message = u"baxterthehacker [pushed](https://github.com/baxterthehacker/public-repo/compare/9049f1265b7d...0d1a26e67d8f) to branch changes\n\n{}[and 30 more commit(s)]".format(
+            commit_info * COMMITS_LIMIT
+        )
+        self.send_and_test_stream_message('push_50_commits', self.EXPECTED_SUBJECT_BRANCH_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='push')
+
+    def test_push_50_commits_filtered_by_branches(self):
+        # type: () -> None
+        self.url = self.build_webhook_url('master,changes')
         commit_info = "* Update README.md ([0d1a26e](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))\n"
         expected_message = u"baxterthehacker [pushed](https://github.com/baxterthehacker/public-repo/compare/9049f1265b7d...0d1a26e67d8f) to branch changes\n\n{}[and 30 more commit(s)]".format(
             commit_info * COMMITS_LIMIT
@@ -208,5 +231,23 @@ class GithubWebhookTest(WebhookTestCase):
         # type: (MagicMock) -> None
         payload = self.get_body('request_review_removed_pull_request')
         result = self.client_post(self.url, payload, HTTP_X_GITHUB_EVENT='pull_request', content_type="application/json")
+        self.assertFalse(check_send_message_mock.called)
+        self.assert_json_success(result)
+
+    @patch('zerver.webhooks.github_webhook.view.check_send_message')
+    def test_push_1_commit_filtered_by_branches_ignore(self, check_send_message_mock):
+        # type: (MagicMock) -> None
+        self.url = self.build_webhook_url('master,development')
+        payload = self.get_body('push_1_commit')
+        result = self.client_post(self.url, payload, HTTP_X_GITHUB_EVENT='push', content_type="application/json")
+        self.assertFalse(check_send_message_mock.called)
+        self.assert_json_success(result)
+
+    @patch('zerver.webhooks.github_webhook.view.check_send_message')
+    def test_push_50_commits_filtered_by_branches_ignore(self, check_send_message_mock):
+        # type: (MagicMock) -> None
+        self.url = self.build_webhook_url('master,development')
+        payload = self.get_body('push_50_commits')
+        result = self.client_post(self.url, payload, HTTP_X_GITHUB_EVENT='push', content_type="application/json")
         self.assertFalse(check_send_message_mock.called)
         self.assert_json_success(result)

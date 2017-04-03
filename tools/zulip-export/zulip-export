@@ -81,7 +81,7 @@ for msg in result['messages']:
     # Remove extraneous metadata
     for k in ['flags', 'edit_history', 'subject_links', 'gravatar_hash',
               'avatar_url', 'recipient_id', 'sender_short_name',
-              'content_type', 'client', 'sender_domain', 'id', 'type']:
+              'content_type', 'client', 'sender_realm_str', 'id', 'type']:
         msg.pop(k, None)
     messages.append(msg)
 

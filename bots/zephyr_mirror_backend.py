@@ -313,7 +313,7 @@ def parse_crypt_table(zephyr_class, instance):
         if line.strip() == "":
             # Ignore blank lines
             continue
-        match = re.match("^crypt-(?P<class>[^:]+):\s+((?P<algorithm>(AES|DES)):\s+)?(?P<keypath>\S+)$", line)
+        match = re.match("^crypt-(?P<class>\S+):\s+((?P<algorithm>(AES|DES)):\s+)?(?P<keypath>\S+)$", line)
         if match is None:
             # Malformed crypt_table line
             logger.debug("Invalid crypt_table line!")
@@ -573,7 +573,7 @@ def zephyr_to_zulip(options):
         process_loop(None)
 
 def send_zephyr(zwrite_args, content):
-    # type: (list, str) -> Tuple[int, str]
+    # type: (List, str) -> Tuple[int, str]
     p = subprocess.Popen(zwrite_args, stdin=subprocess.PIPE,
                          stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = p.communicate(input=content.encode("utf-8"))
@@ -590,11 +590,11 @@ def send_zephyr(zwrite_args, content):
     return (p.returncode, stderr)
 
 def send_authed_zephyr(zwrite_args, content):
-    # type: (list[str], str) -> Tuple[int, str]
+    # type: (List[str], str) -> Tuple[int, str]
     return send_zephyr(zwrite_args, content)
 
 def send_unauthed_zephyr(zwrite_args, content):
-    # type: (list[str], str) -> Tuple[int, str]
+    # type: (List[str], str) -> Tuple[int, str]
     return send_zephyr(zwrite_args + ["-d"], content)
 
 def zcrypt_encrypt_content(zephyr_class, instance, content):

@@ -57,8 +57,7 @@ class Command(BaseCommand):
         installation_time = timezone.now() - timedelta(days=self.DAYS_OF_DATA)
         last_end_time = floor_to_day(timezone.now())
         realm = Realm.objects.create(
-            string_id='analytics', name='Analytics', domain='analytics.ds',
-            date_created=installation_time)
+            string_id='analytics', name='Analytics', date_created=installation_time)
         shylock = self.create_user('shylock@analytics.ds', 'Shylock', True, installation_time, realm)
         stream = Stream.objects.create(
             name='all', realm=realm, date_created=installation_time)
@@ -102,12 +101,14 @@ class Command(BaseCommand):
         stat = COUNT_STATS['messages_sent:message_type:day']
         user_data = {
             'public_stream': self.generate_fixture_data(stat, 1.5, 1, 3, .6, 8),
-            'private_message': self.generate_fixture_data(stat, .5, .3, 1, .6, 8)}
+            'private_message': self.generate_fixture_data(stat, .5, .3, 1, .6, 8),
+            'huddle_message': self.generate_fixture_data(stat, .2, .2, 2, .6, 8)}
         insert_fixture_data(stat, user_data, UserCount)
         realm_data = {
             'public_stream': self.generate_fixture_data(stat, 30, 8, 5, .6, 4),
             'private_stream': self.generate_fixture_data(stat, 7, 7, 5, .6, 4),
-            'private_message': self.generate_fixture_data(stat, 13, 5, 5, .6, 4)}
+            'private_message': self.generate_fixture_data(stat, 13, 5, 5, .6, 4),
+            'huddle_message': self.generate_fixture_data(stat, 6, 3, 3, .6, 4)}
         insert_fixture_data(stat, realm_data, RealmCount)
         FillState.objects.create(property=stat.property, end_time=last_end_time,
                                  state=FillState.DONE)

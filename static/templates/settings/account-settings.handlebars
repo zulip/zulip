@@ -8,7 +8,7 @@
     <form class="email-change-form">
       <p for="change_email" class="inline-block title">
         {{t "Email" }}: <span id='email_value'>{{page_params.email}}</span>
-        <a id="change_email" href="#change_email" {{#if page_params.realm_email_changes_disabled}}style="display:none" {{/if}}title="{{t 'Change email' }}">[Change]</a>
+        <a id="change_email" href="#change_email" {{#if page_params.realm_email_changes_disabled}}style="display:none" {{/if}}title="{{t 'Change email' }}">[{{t "Change" }}]</a>
         <i class="icon-vector-question-sign change_email_tooltip" {{#unless page_params.realm_email_changes_disabled}}style="display:none" {{/unless}} data-toggle="tooltip"
         title="{{t 'Changing email addresses has been disabled by your Zulip organization administrators. Contact an administrator for help.' }}"></i>
       </p>
@@ -84,7 +84,7 @@
 
           <div class="input-group no-border">
             <label for="" class="inline-block"></label>
-            <input type="submit" class="button w-200 sea-green input-size" name="change_settings" value="Save Changes" />
+            <input type="submit" class="button w-200 sea-green input-size" name="change_settings" value="{{t 'Save changes' }}" />
           </div>
           <div class="input-group">
             <label for="" class="inline-block"></label>

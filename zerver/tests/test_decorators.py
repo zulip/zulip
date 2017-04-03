@@ -30,7 +30,7 @@ from zerver.decorator import (
     return_success_on_head_request
 )
 from zerver.lib.validator import (
-    check_string, check_dict, check_bool, check_int, check_list, Validator,
+    check_string, check_dict, check_dict_only, check_bool, check_float, check_int, check_list, Validator,
     check_variable_type, equals, check_none_or,
 )
 from zerver.models import \
@@ -418,6 +418,17 @@ class ValidatorTestCase(TestCase):
         x = [{}]
         self.assertEqual(check_int('x', x), 'x is not an integer')
 
+    def test_check_float(self):
+        # type: () -> None
+        x = 5.5 # type: Any
+        self.assertEqual(check_float('x', x), None)
+
+        x = 5
+        self.assertEqual(check_float('x', x), 'x is not a float')
+
+        x = [{}]
+        self.assertEqual(check_float('x', x), 'x is not a float')
+
     def test_check_list(self):
         # type: () -> None
         x = 999 # type: Any
@@ -470,6 +481,22 @@ class ValidatorTestCase(TestCase):
         }
         error = check_dict(keys)('x', x)
         self.assertEqual(error, 'x["city"] is not a string')
+
+        # test dict_only
+        x = {
+            'names': ['alice', 'bob'],
+            'city': 'Boston',
+        }
+        error = check_dict_only(keys)('x', x)
+        self.assertEqual(error, None)
+
+        x = {
+            'names': ['alice', 'bob'],
+            'city': 'Boston',
+            'state': 'Massachusetts',
+        }
+        error = check_dict_only(keys)('x', x)
+        self.assertEqual(error, 'Unexpected arguments: state')
 
     def test_encapsulation(self):
         # type: () -> None

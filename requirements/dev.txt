@@ -12,15 +12,17 @@ coverage==4.3.4
 # fake for LDAP testing
 git+https://github.com/umairwaheed/fakeldap.git@37bc199e9589c31f4bb5bae1445ad1cd7f84e1ac#egg=fakeldap==0.5.1.0zulip1
 
+# for pep8 linter
+pycodestyle==2.3.1
+
 # Needed to run pyflakes linter
 pyflakes==1.5.0
+
+# Needed to run tests in parallel
+tblib==1.3.0
 
 # Needed to sync translations from transifex
 transifex-client==0.12.4
 
 # Dependency of transifex-client
 urllib3==1.20
-
-# Install the Zulip API bindings into the virtualenv; note that this
-# won't be automatically updated for new versions of api/.
-api/

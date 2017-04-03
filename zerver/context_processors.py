@@ -22,12 +22,13 @@ def common_context(user):
 
 def add_settings(request):
     # type: (HttpRequest) -> Dict[str, Any]
-    realm = None
-    if hasattr(request.user, "realm"):
+    if hasattr(request, "user") and hasattr(request.user, "realm"):
         realm = request.user.realm
     elif settings.REALMS_HAVE_SUBDOMAINS:
         subdomain = get_subdomain(request)
         realm = get_realm(subdomain)
+    else:
+        realm = None
 
     if realm is not None:
         realm_uri = realm.uri

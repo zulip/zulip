@@ -18,11 +18,11 @@ body {
 body,
 #tab_bar_underpadding {
     background-color: #ffffff;
-   -webkit-transition: background-color 200ms linear;
-   -moz-transition: background-color 200ms linear;
-   -o-transition: background-color 200ms linear;
-   -ms-transition: background-color 200ms linear;
-   transition: background-color 200ms linear;
+    -webkit-transition: background-color 200ms linear;
+    -moz-transition: background-color 200ms linear;
+    -o-transition: background-color 200ms linear;
+    -ms-transition: background-color 200ms linear;
+    transition: background-color 200ms linear;
 }
 
 input,
@@ -39,6 +39,14 @@ blockquote p {
 
 a {
     cursor: pointer;
+}
+
+.no-select {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 p.n-margin {
@@ -255,8 +263,7 @@ input[type="email"],
 input[type="url"],
 input[type="search"],
 input[type="tel"],
-input[type="color"]
-{
+input[type="color"] {
     font-size: inherit;
     height: 1.4em;
 }
@@ -271,6 +278,28 @@ li,
     font-size: inherit;
     height: auto;
     line-height: 100%;
+}
+
+.copy_message,
+.copy_message:focus {
+    background-image: url('/static/images/clippy.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-color: white;
+    background-position: center;
+    height: 20px;
+    width: 15px;
+    padding: 5px 10px;
+    border-radius: 2px;
+    position: relative;
+    top: 32px;
+    left: -5px;
+    margin-top: -8px;
+    display: block;
+}
+
+.copy_message:hover {
+    background-color: #dadada;
 }
 
 .btn-large {
@@ -337,7 +366,7 @@ code {
     font-size: 0.857em;
 }
 
-.message_content p code {
+.message_content code {
     white-space: pre-wrap;
     padding: 0px 4px;
     background-color: #fff;
@@ -446,7 +475,7 @@ a:hover code {
 }
 
 #message_edit_tooltip:hover {
-   opacity: 1.0;
+    opacity: 1.0;
 }
 
 .message-edit-tooltip-inner {
@@ -477,8 +506,8 @@ li.actual-dropdown-menu i {
     /* The height of the header and the tabbar plus a small gap */
     margin-top: 100px;
     /* This is needed for the floating recipient bar
-     in Firefox only, for some reason; otherwise it gets
-     a scrollbar */
+       in Firefox only, for some reason; otherwise it gets
+       a scrollbar */
     overflow: visible;
 }
 
@@ -646,35 +675,35 @@ td.pointer {
 }
 
 .stream_label:after {
-   left: 100%;
-   top: 50%;
-   content: " ";
-   height: 0px;
-   width: 0px;
-   position: absolute;
-   pointer-events: none;
-   margin-top: -11px;
-   border-style: solid;
-   border-width: 11px 0 11px 5px;
-   border-color: inherit;
-   z-index: 2;
-   -moz-transform: scale(.9999);
+    left: 100%;
+    top: 50%;
+    content: " ";
+    height: 0px;
+    width: 0px;
+    position: absolute;
+    pointer-events: none;
+    margin-top: -11px;
+    border-style: solid;
+    border-width: 11px 0 11px 5px;
+    border-color: inherit;
+    z-index: 2;
+    -moz-transform: scale(.9999);
 }
 
 .stream_label:before {
-   left: 100%;
-   top: 50%;
-   content: " ";
-   height: 0px;
-   width: 0px;
-   position: absolute;
-   pointer-events: none;
-   margin-top: -14px;
-   border-style: solid;
-   border-width: 14px 0 14px 6px;
-   border-color: rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) #ffffff;
-   z-index: 1;
-   -moz-transform: scale(.9999);
+    left: 100%;
+    top: 50%;
+    content: " ";
+    height: 0px;
+    width: 0px;
+    position: absolute;
+    pointer-events: none;
+    margin-top: -14px;
+    border-style: solid;
+    border-width: 14px 0 14px 6px;
+    border-color: rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) #ffffff;
+    z-index: 1;
+    -moz-transform: scale(.9999);
 }
 
 .stream_topic {
@@ -761,8 +790,8 @@ td.pointer {
 }
 
 /*
-We can't collapse the floating recipient bar yet, so this is
-just a temporary hack.
+   We can't collapse the floating recipient bar yet, so this is
+   just a temporary hack.
 */
 .floating_recipient .messages-collapse {
     display: none;
@@ -779,28 +808,48 @@ just a temporary hack.
 }
 
 @-webkit-keyframes rotate {
-    from { -webkit-transform: rotate(0deg); }
-    to { -webkit-transform: rotate(359deg); }
+    from {
+        -webkit-transform: rotate(0deg);
+    }
+    to {
+        -webkit-transform: rotate(359deg);
+    }
 }
 
 @-moz-keyframes rotate {
-    from { -moz-transform: rotate(0deg); }
-    to { -moz-transform: rotate(359deg); }
+    from {
+        -moz-transform: rotate(0deg);
+    }
+    to {
+        -moz-transform: rotate(359deg);
+    }
 }
 
 @-ms-keyframes rotate {
-    from { -ms-transform: rotate(0deg); }
-    to { -ms-transform: rotate(359deg); }
+    from {
+        -ms-transform: rotate(0deg);
+    }
+    to {
+        -ms-transform: rotate(359deg);
+    }
 }
 
 @-moz-keyframes rotate {
-    from { -o-transform: rotate(0deg); }
-    to { -o-transform: rotate(359deg); }
+    from {
+        -o-transform: rotate(0deg);
+    }
+    to {
+        -o-transform: rotate(359deg);
+    }
 }
 
 @keyframes rotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(359deg); }
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(359deg);
+    }
 }
 
 .messagebox-bottom {
@@ -1141,7 +1190,7 @@ div.focused_table {
 .message_content {
     line-height: 17px;
     font-size: 14px;
-    padding-left: 46px;
+    margin-left: 46px;
     display: block;
     position: relative;
 }
@@ -1381,61 +1430,61 @@ blockquote p {
 }
 
 #tab_list li {
-   white-space: nowrap;
-   list-style-type: none;
-   display: inline-block;
-   position: relative;
-   font-weight: 300;
-   background-color: #f9f9f9;
-   margin: 0px;
-   padding: 0px;
-   text-overflow: ellipsis;
-   height: 40px;
+    white-space: nowrap;
+    list-style-type: none;
+    display: inline-block;
+    position: relative;
+    font-weight: 300;
+    background-color: #f9f9f9;
+    margin: 0px;
+    padding: 0px;
+    text-overflow: ellipsis;
+    height: 40px;
 }
 
 #tab_list li.inactive {
-   border-top-color: rgba(0, 0, 0, 0);
-   border-right-color: rgba(0, 0, 0, 0);
-   border-bottom-color: rgba(0, 0, 0, 0);
-   background-color: #e2e2e2;
-   border-left-color: #e2e2e2;
-   border-width: 0px;
+    border-top-color: rgba(0, 0, 0, 0);
+    border-right-color: rgba(0, 0, 0, 0);
+    border-bottom-color: rgba(0, 0, 0, 0);
+    background-color: #e2e2e2;
+    border-left-color: #e2e2e2;
+    border-width: 0px;
 }
 
 #tab_list li.private_message a {
-   color: #ffffff;
+    color: #ffffff;
 }
 
 #tab_list li.inactive:after {
-   left: 100%;
-   top: 50%;
-   content: " ";
-   height: 0px;
-   width: 0px;
-   position: absolute;
-   pointer-events: none;
-   margin-top: -25px;
-   border-style: solid;
-   border-width: 25px 0 25px 12px;
-   border-color: inherit;
-   z-index: 2;
-   -moz-transform: scale(.9999);
+    left: 100%;
+    top: 50%;
+    content: " ";
+    height: 0px;
+    width: 0px;
+    position: absolute;
+    pointer-events: none;
+    margin-top: -25px;
+    border-style: solid;
+    border-width: 25px 0 25px 12px;
+    border-color: inherit;
+    z-index: 2;
+    -moz-transform: scale(.9999);
 }
 
 #tab_list li.inactive:before {
-   left: 100%;
-   top: 50%;
-   content: " ";
-   height: 0px;
-   width: 0px;
-   position: absolute;
-   pointer-events: none;
-   margin-top: -28px;
-   border-style: solid;
-   border-width: 28px 0 28px 14px;
-   border-color: rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) #ffffff;
-   z-index: 1;
-   -moz-transform: scale(.9999);
+    left: 100%;
+    top: 50%;
+    content: " ";
+    height: 0px;
+    width: 0px;
+    position: absolute;
+    pointer-events: none;
+    margin-top: -28px;
+    border-style: solid;
+    border-width: 28px 0 28px 14px;
+    border-color: rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) #ffffff;
+    z-index: 1;
+    -moz-transform: scale(.9999);
 }
 
 #tab_list a {
@@ -1466,13 +1515,13 @@ blockquote p {
 }
 
 #tab_list li.private_message {
-   border-top-color: rgba(0, 0, 0, 0);
-   border-right-color: rgba(0, 0, 0, 0);
-   border-bottom-color: rgba(0, 0, 0, 0);
-   background-color: #111111;
-   border-left-color: #111111;
-   color: #ffffff;
-   border-width: 0px;
+    border-top-color: rgba(0, 0, 0, 0);
+    border-right-color: rgba(0, 0, 0, 0);
+    border-bottom-color: rgba(0, 0, 0, 0);
+    background-color: #111111;
+    border-left-color: #111111;
+    color: #ffffff;
+    border-width: 0px;
 }
 
 #tab_list .root {
@@ -1691,7 +1740,7 @@ nav a .no-style {
 
 
 #search_query:focus {
-     box-shadow: inset 0px 0px 0px 2px #afbfca;
+    box-shadow: inset 0px 0px 0px 2px #afbfca;
 }
 
 #searchbox .search_button,
@@ -1817,7 +1866,7 @@ div.floating_recipient {
 
 .loading_indicator_spinner {
     /* If you change these, make sure to adjust the constants in
-     * loading.make_indicator as well */
+       loading.make_indicator as well */
     height: 38px;
     width: 38px;
     float: left;
@@ -1825,7 +1874,7 @@ div.floating_recipient {
 
 .loading_indicator_text {
     /* If you change these, make sure to adjust the constants in
-     * loading.make_indicator as well */
+       loading.make_indicator as well */
     margin-left: 20px;
     font-size: 1.2em;
     font-weight: 300;
@@ -1903,35 +1952,13 @@ div.floating_recipient {
     font-weight: bold;
 }
 
-.popover {
-    width: auto;
+.katex-html {
+    line-height: initial;
+    white-space: initial;
 }
 
-.popover-title {
-    overflow-x: hidden;
-    text-overflow: ellipsis;
-    text-align: center;
-
-    font-size: inherit;
-    line-height: inherit;
-}
-
-.popover-title:empty {
-    display: none;
-}
-
-.popover_info {
-    text-align: center;
-}
-
-.popover hr {
-    margin-top: 5px;
-    margin-bottom: 5px;
-}
-
-.popover-left,
-.popover-right {
-    max-width: 200px;
+.tex-error {
+    color: red;
 }
 
 .hotkeys_table {
@@ -1977,8 +2004,8 @@ div.floating_recipient {
     top: -40px;
     z-index: 1;
     -webkit-border-radius: 6px;
-       -moz-border-radius: 6px;
-            border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
 }
 
 #page_loading_indicator {
@@ -2032,34 +2059,6 @@ div.floating_recipient {
     cursor: pointer;
 }
 
-.streams_popover .sp-container {
-    background: white;
-    cursor: pointer;
-    border: none;
-}
-
-.sp-container {
-    z-index: 100;
-}
-
-.streams_popover .sp-palette-container {
-    border-right: none;
-}
-
-.streams_popover .colorpicker-container {
-    display: inline-block;
-    margin-right: 10px;
-}
-
-.streams_popover .popover_sub_unsub_button {
-    margin-top: 0px;
-    float: none;
-}
-
-.streams_popover .popover_sub_unsub_button::after {
-    content: " Unsubscribe";
-}
-
 .stream_sub_unsub_button {
     min-width: 140px;
     margin-top: 9px;
@@ -2098,8 +2097,9 @@ button.topic_edit_cancel {
     overflow: hidden;
     margin-top: 0;
     top: 5%;
-    outline: 0; /* Bootstrap uses tabindex=-1 on modals for focus and ESC handling,
-                   so avoid the outline it causes */
+    /* Bootstrap uses tabindex=-1 on modals for focus and ESC handling,
+       so avoid the outline it causes */
+    outline: 0;
 }
 
 .modal-body {
@@ -2560,11 +2560,4 @@ button.topic_edit_cancel {
         max-width: 100%;
         margin-top: 10px;
     }
-}
-
-ul.sender_info_popover i {
-    display: inline-block;
-    width: 14px;
-    text-align: center;
-    margin-right: 3px;
 }

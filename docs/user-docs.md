@@ -177,10 +177,10 @@ a new line to be formatted this way.
 
 ### Icons
 
-You can refer to features in the Zulip UI by refrencing their names and
-their [FontAwesome](http://fontawesome.io) (version 3.0.2) text icons within
+You can refer to features in the Zulip UI by referencing their names and
+their [FontAwesome](http://fontawesome.io) (version 4.7.0) text icons within
 parentheses. The source for the text icons is located in
-`static/styles/thirdparty-fonts.css`.
+`static/third/thirdparty-fonts.css`.
 
 * cog (<i class="fa fa-cog"></i>) icon — `cog (<i
 class="icon-vector-cog"></i>) icon`
@@ -197,7 +197,7 @@ class="icon-vector-file-text-alt"></i>) icon`
 * menu (<i class="fa fa-bars"></i>) icon — `menu (<i
 class="icon-vector-reorder"></i>) icon`
 * overflow ( <i class="fa fa-ellipsis-v"></i> ) icon —
-`overflow ( <i class="icon-vector-ellipsis-verical"></i> ) icon`
+`overflow ( <i class="icon-vector-ellipsis-vertical"></i> ) icon`
 * paperclip (<i class="fa fa-paperclip"></i>) icon —
 `paperclip (<i class="icon-vector-paperclip"></i>) icon`
 * pencil (<i class="fa fa-pencil"></i>) icon —

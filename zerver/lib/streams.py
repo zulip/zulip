@@ -58,14 +58,18 @@ def access_stream_by_id(user_profile, stream_id):
 def check_stream_name_available(realm, name):
     # type: (Realm, Text) -> None
     check_stream_name(name)
-    if get_stream(name, realm) is not None:
+    try:
+        get_stream(name, realm)
         raise JsonableError(_("Stream name '%s' is already taken") % (name,))
+    except Stream.DoesNotExist:
+        pass
 
 def access_stream_by_name(user_profile, stream_name):
     # type: (UserProfile, Text) -> Tuple[Stream, Recipient, Subscription]
     error = _("Invalid stream name '%s'" % (stream_name,))
-    stream = get_stream(stream_name, user_profile.realm)
-    if stream is None:
+    try:
+        stream = get_stream(stream_name, user_profile.realm)
+    except Stream.DoesNotExist:
         raise JsonableError(error)
 
     (recipient, sub) = access_stream_common(user_profile, stream, error)

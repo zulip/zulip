@@ -3,6 +3,7 @@ from __future__ import absolute_import
 
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
+from typing import Optional, Text
 
 from zerver.lib.actions import do_change_is_admin, \
     do_change_realm_alias, do_create_realm, \
@@ -127,22 +128,31 @@ class RealmAliasTest(ZulipTestCase):
         alias2 = RealmAlias.objects.create(realm=realm2, domain='test2.test1.com', allow_subdomains=False)
         RealmAlias.objects.create(realm=realm3, domain='test3.test2.test1.com', allow_subdomains=True)
 
-        self.assertEqual(get_realm_by_email_domain('user@zulip.com').string_id, 'zulip')
-        self.assertEqual(get_realm_by_email_domain('user@fakedomain.com'), None)
-        self.assertEqual(get_realm_by_email_domain('user@test1.com').string_id, 'testrealm1')
-        self.assertEqual(get_realm_by_email_domain('user@test2.test1.com').string_id, 'testrealm2')
-        self.assertEqual(get_realm_by_email_domain('user@test3.test2.test1.com').string_id, 'testrealm3')
-        self.assertEqual(get_realm_by_email_domain('user@test2.test1.com').string_id, 'testrealm2')
-        self.assertEqual(get_realm_by_email_domain('user@test2.test2.test1.com').string_id, 'testrealm1')
-        self.assertEqual(get_realm_by_email_domain('user@test1.test3.test2.test1.com').string_id, 'testrealm3')
+        def assert_and_check(email, realm_string_id):
+            # type: (Text, Optional[Text]) -> None
+            realm = get_realm_by_email_domain(email)
+            if realm_string_id is None:
+                self.assertIsNone(realm)
+            else:
+                self.assertIsNotNone(realm)
+                self.assertEqual(realm.string_id, realm_string_id)
+
+        assert_and_check('user@zulip.com', 'zulip')
+        assert_and_check('user@fakedomain.com', None)
+        assert_and_check('user@test1.com', 'testrealm1')
+        assert_and_check('user@test2.test1.com', 'testrealm2')
+        assert_and_check('user@test3.test2.test1.com', 'testrealm3')
+        assert_and_check('user@test2.test1.com', 'testrealm2')
+        assert_and_check('user@test2.test2.test1.com', 'testrealm1')
+        assert_and_check('user@test1.test3.test2.test1.com', 'testrealm3')
 
         do_change_realm_alias(alias1, False)
-        self.assertEqual(get_realm_by_email_domain('user@test1.test1.com'), None)
-        self.assertEqual(get_realm_by_email_domain('user@test1.com').string_id, 'testrealm1')
+        assert_and_check('user@test1.test1.com', None)
+        assert_and_check('user@test1.com', 'testrealm1')
 
         do_change_realm_alias(alias2, True)
-        self.assertEqual(get_realm_by_email_domain('user@test2.test1.com').string_id, 'testrealm2')
-        self.assertEqual(get_realm_by_email_domain('user@test2.test2.test1.com').string_id, 'testrealm2')
+        assert_and_check('user@test2.test1.com', 'testrealm2')
+        assert_and_check('user@test2.test2.test1.com', 'testrealm2')
 
         with self.settings(REALMS_HAVE_SUBDOMAINS = True), (
                 self.assertRaises(GetRealmByDomainException)):

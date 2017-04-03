@@ -56,8 +56,8 @@ def deliver_feedback_by_zulip(message):
         content += '\nticket Z%03d (@support please ack)' % (ticket_number,)
         content += '\nsender: %s' % (message['sender_full_name'],)
         content += '\nemail: %s' % (sender_email,)
-        if 'sender_domain' in message:
-            content += '\nrealm: %s' % (message['sender_domain'],)
+        if 'sender_realm_str' in message:
+            content += '\nrealm: %s' % (message['sender_realm_str'],)
         content += '\n~~~'
         content += '\n\n'
 

@@ -38,7 +38,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             {% else %}
                 <input id="id_full_name" class="required" type="text" name="full_name" placeholder='{{ "Wile E. Coyote" }}'
                 value="{% if full_name %}{{ full_name }}{% elif form.full_name.value() %}{{ form.full_name.value() }}{% endif %}"
-                    maxlength="100" />
+                maxlength={{ MAX_NAME_LENGTH}} />
                 {% if form.full_name.errors %}
                     {% for error in form.full_name.errors %}
                         <div class="help-inline text-error">{{ error }}</div>
@@ -56,7 +56,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             <label for="id_password" class="inline-block">{{ _('Password') }}</label>
             <input id="id_password" class="required" type="password" name="password"
                    value="{% if form.password.value() %}{{ form.password.value() }}{% endif %}"
-                   maxlength="100"
+                   maxlength={{ MAX_PASSWORD_LENGTH }}
                    data-min-length="{{password_min_length}}"
                    data-min-quality="{{password_min_quality}}"/>
             {% if full_name %}
@@ -83,7 +83,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             <input id="id_team_name" class="required" type="text"
                 placeholder="Acme"
                 value="{% if form.realm_name.value() %}{{ form.realm_name.value() }}{% endif %}"
-                name="realm_name" maxlength="100" />
+                name="realm_name" maxlength={{ MAX_REALM_NAME_LENGTH }} />
                 {% if form.realm_name.errors %}
                     {% for error in form.realm_name.errors %}
                         <div class="help-inline text-error">{{ error }}</div>
@@ -106,7 +106,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 <input id="id_team_subdomain" class="required" type="text"
                     placeholder="acme"
                     value="{% if form.realm_subdomain.value() %}{{ form.realm_subdomain.value() }}{% endif %}"
-                    name="realm_subdomain" maxlength="40" />
+                    name="realm_subdomain" maxlength={{ MAX_REALM_SUBDOMAIN_LENGTH }} />
                 {% if realms_have_subdomains %}
                 <b> .{{ external_host }}</b>
                 {% endif %}

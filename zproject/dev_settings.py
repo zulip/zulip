@@ -17,10 +17,16 @@ if EXTERNAL_HOST is None:
     else:
         EXTERNAL_HOST = 'localhost:9991'
 ALLOWED_HOSTS = ['*']
-AUTHENTICATION_BACKENDS = ('zproject.backends.DevAuthBackend',)
-# Add some of the below if you're testing other backends
-# AUTHENTICATION_BACKENDS = ('zproject.backends.EmailAuthBackend',
-#                            'zproject.backends.GoogleMobileOauth2Backend',)
+
+# Uncomment extra backends if you want to test with them.  Note that
+# for Google and GitHub auth you'll need to do some pre-setup.
+AUTHENTICATION_BACKENDS = (
+    'zproject.backends.DevAuthBackend',
+    'zproject.backends.EmailAuthBackend',
+    # 'zproject.backends.GitHubAuthBackend',
+    # 'zproject.backends.GoogleMobileOauth2Backend',
+)
+
 EXTERNAL_URI_SCHEME = "http://"
 EMAIL_GATEWAY_PATTERN = "%s@" + EXTERNAL_HOST
 NOTIFICATION_BOT = "notification-bot@zulip.com"
@@ -43,3 +49,7 @@ POST_MIGRATION_CACHE_FLUSHING = True  # type: bool
 # Enable inline open graph preview in development for now
 INLINE_URL_EMBED_PREVIEW = True
 ANALYTICS_LOCK_DIR = "var/analytics-lock-dir"
+
+# Don't require anything about password strength in development
+PASSWORD_MIN_LENGTH = 0
+PASSWORD_MIN_ZXCVBN_QUALITY = 0

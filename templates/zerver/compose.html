@@ -13,14 +13,16 @@
             </span>
             <span class="new_message_button">
               <button type="button" class="button white small rounded compose_stream_button"
-                      id="left_bar_compose_stream_button_big" title="{{ _('New topic (c)') }}">
+                      id="left_bar_compose_stream_button_big"
+                      title="{{ _('New topic') }} (c)">
                 <span class="compose_stream_button_label">{{ _('New topic') }}</span>
               </button>
             </span>
             {% if not embedded %}
             <span class="new_message_button">
               <button type="button" class="button white small rounded compose_private_button"
-                      id="left_bar_compose_private_button_big" title="{{ _('New private message (c)') }}">
+                      id="left_bar_compose_private_button_big"
+                      title="{{ _('New private message') }} (C)">
                 <span class="compose_private_button_label">{{ _('New private message') }}</span>
               </button>
             </span>
@@ -92,8 +94,8 @@
                   <a class="message-control-button icon-vector-paper-clip notdisplayed"
                      id="attach_files" href="#" title="{{ _('Attach files') }}"></a>
                   <a class="message-control-button icon-vector-font" title="{{ _('Formatting') }}" data-overlay-trigger="markdown-help"></a>
-                  <a id="undo_markdown_preview" class="icon-vector-edit" style="display:none;" title="{{ _('Write') }}"></a>
-                  <a id="markdown_preview" class="icon-vector-eye-open" title="{{ _('Preview') }}"></a>
+                  <a id="undo_markdown_preview" class="message-control-button icon-vector-edit" style="display:none;" title="{{ _('Write') }}"></a>
+                  <a id="markdown_preview" class="message-control-button icon-vector-eye-open" title="{{ _('Preview') }}"></a>
                   <a class="drafts-link" href="#drafts">{{ _('Drafts') }}</a>
                   <span id="sending-indicator">{{ _('Sending...') }}</span>
                   <div id="send_controls" class="new-style">

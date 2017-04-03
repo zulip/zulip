@@ -16,7 +16,6 @@ TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 os.chdir(os.path.dirname(TOOLS_DIR))
 
 exclude_common = """
-api/integrations/asana/zulip_asana_config.py
 api/integrations/basecamp/zulip_basecamp_config.py
 api/integrations/codebase/zulip_codebase_config.py
 api/integrations/git/zulip_git_config.py

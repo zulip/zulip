@@ -29,6 +29,14 @@ exports.is_settings_page = function () {
   return (/^#*(settings|administration)/g).test(window.location.hash);
 };
 
+exports.is_lightbox_open = function () {
+    return lightbox.is_open;
+};
+
+exports.is_subs = function () {
+    return subs.is_open;
+};
+
 var actions_dropdown_hotkeys = [
     'down_arrow',
     'up_arrow',
@@ -45,7 +53,6 @@ var keydown_shift_mappings = {
     // these can be triggered by shift + key only
     9: {name: 'shift_tab', message_view_only: false}, // tab
     32: {name: 'shift_spacebar', message_view_only: true},  // space bar
-    187: {name: 'thumbs_up_emoji', message_view_only: true}, // '+'
 };
 
 var keydown_unshift_mappings = {
@@ -57,7 +64,8 @@ var keydown_unshift_mappings = {
     34: {name: 'page_down', message_view_only: true}, // page down
     35: {name: 'end', message_view_only: true}, // end
     36: {name: 'home', message_view_only: true}, // home
-    37: {name: 'left_arrow', message_view_only: true}, // left arrow
+    37: {name: 'left_arrow', message_view_only: false}, // left arrow
+    39: {name: 'right_arrow', message_view_only: false}, // right arrow
     38: {name: 'up_arrow', message_view_only: true}, // up arrow
     40: {name: 'down_arrow', message_view_only: true}, // down arrow
 };
@@ -84,6 +92,7 @@ var keydown_either_mappings = {
 
 var keypress_mappings = {
     42: {name: 'star_message', message_view_only: true}, // '*'
+    43: {name: 'thumbs_up_emoji', message_view_only: true}, // '+'
     47: {name: 'search', message_view_only: false}, // '/'
     58: {name: 'open_reactions', message_view_only: true}, // ':'
     63: {name: 'show_shortcuts', message_view_only: false}, // '?'
@@ -91,15 +100,22 @@ var keypress_mappings = {
     65: {name: 'stream_cycle_backward', message_view_only: true}, // 'A'
     67: {name: 'compose_private_message', message_view_only: true}, // 'C'
     68: {name: 'stream_cycle_forward', message_view_only: true}, // 'D'
+    71: {name: 'G_end', message_view_only: true}, // 'G'
     74: {name: 'vim_page_down', message_view_only: true}, // 'J'
     75: {name: 'vim_page_up', message_view_only: true}, // 'K'
+    77: {name: 'toggle_mute', message_view_only: true}, // 'M'
     80: {name: 'narrow_private', message_view_only: true}, // 'P'
     82: {name: 'respond_to_author', message_view_only: true}, // 'R'
     83: {name: 'narrow_by_subject', message_view_only: true}, //'S'
+    85: {name: 'keyboard_sub', message_view_only: false}, //'U'
+    86: {name: 'view_selected_stream', message_view_only: false}, //'V'
     99: {name: 'compose', message_view_only: true}, // 'c'
+    100: {name: 'open_drafts', message_view_only: false}, // 'd'
+    103: {name: 'gear_menu', message_view_only: true}, // 'g'
     105: {name: 'message_actions', message_view_only: true}, // 'i'
     106: {name: 'vim_down', message_view_only: true}, // 'j'
     107: {name: 'vim_up', message_view_only: true}, // 'k'
+    110: {name: 'new_stream', message_view_only: false}, // 'n'
     113: {name: 'query_users', message_view_only: false}, // 'q'
     114: {name: 'reply_message', message_view_only: true}, // 'r'
     115: {name: 'narrow_by_recipient', message_view_only: true}, // 's'
@@ -182,7 +198,7 @@ exports.process_escape_key = function (e) {
         return false;
     }
 
-    if ($("#lightbox_overlay").hasClass("show")) {
+    if (exports.is_lightbox_open()) {
         modals.close_modal("lightbox");
         return true;
     }
@@ -192,7 +208,7 @@ exports.process_escape_key = function (e) {
         return true;
     }
 
-    if ($("#draft_overlay").hasClass("show")) {
+    if (drafts.drafts_overlay_open()) {
         modals.close_modal("drafts");
         return true;
     }
@@ -249,6 +265,11 @@ exports.process_escape_key = function (e) {
             return true;
         }
 
+        if (popovers.reactions_popped()) {
+            popovers.hide_reactions_popover();
+            return true;
+        }
+
         // We pressed Esc and something was focused, and the composebox
         // wasn't open. In that case, we should blur the input.
         // (this is almost certainly the searchbar)
@@ -272,6 +293,14 @@ exports.process_escape_key = function (e) {
 
 // Returns true if we handled it, false if the browser should.
 exports.process_enter_key = function (e) {
+    if ($(".dropdown.open").length) {
+        // on #gear-menu li a[tabindex] elements, force a click and prevent default.
+        // this is because these links do not have an href and so don't force a
+        // default action.
+        e.target.click();
+        return true;
+    }
+
     if (exports.is_editing_stream_name(e)) {
         $(e.target).parent().find(".checkmark").click();
         return false;
@@ -303,6 +332,21 @@ exports.process_enter_key = function (e) {
         }
 
         return false;
+    }
+
+    // This handles when pressing enter while looking at drafts.
+    // It restores draft that is focused.
+    if (drafts.drafts_overlay_open()) {
+        var draft_list = drafts.draft_model.get();
+        if (document.activeElement.parentElement.hasAttribute("data-draft-id")) {
+             var focused_draft = document.activeElement.parentElement.getAttribute("data-draft-id");
+             drafts.restore_draft(focused_draft);
+        } else {
+            var draft_id_list = Object.getOwnPropertyNames(draft_list);
+            var first_draft = draft_id_list[draft_id_list.length-1];
+            drafts.restore_draft(first_draft);
+        }
+        return true;
     }
 
     // If we're on a button or a link and have pressed enter, let the
@@ -407,7 +451,15 @@ exports.process_hotkey = function (e, hotkey) {
             return exports.process_escape_key(e);
     }
 
+    if (drafts.drafts_overlay_open()) {
+        drafts.drafts_handle_events(e, event_name);
+    }
+
     if (hotkey.message_view_only && ui_state.home_tab_obscured()) {
+        if ((event_name === 'up_arrow' || event_name === 'down_arrow') && exports.is_subs()) {
+            subs.switch_rows(event_name);
+            return true;
+        }
         return false;
     }
 
@@ -475,7 +527,6 @@ exports.process_hotkey = function (e, hotkey) {
         // we handle this in other functions.
 
         if (event_name === 'left_arrow' && focus_in_empty_compose()) {
-            compose_actions.cancel();
             message_edit.edit_last_sent_message();
             return true;
         }
@@ -497,8 +548,26 @@ exports.process_hotkey = function (e, hotkey) {
     }
 
     if (event_name === 'left_arrow') {
+        if (exports.is_lightbox_open()) {
+            lightbox.prev();
+            return true;
+        } else if (exports.is_subs()) {
+            subs.toggle_view(event_name);
+            return true;
+        }
+
         message_edit.edit_last_sent_message();
         return true;
+    }
+
+    if (event_name === 'right_arrow') {
+        if (exports.is_lightbox_open()) {
+            lightbox.next();
+            return true;
+        } else if (exports.is_subs()) {
+            subs.toggle_view(event_name);
+            return true;
+        }
     }
 
     // Shortcuts that don't require a message
@@ -522,6 +591,9 @@ exports.process_hotkey = function (e, hotkey) {
         case 'search':
             search.initiate_search();
             return true;
+        case 'gear_menu':
+            gear_menu.open();
+            return true;
         case 'show_shortcuts': // Show keyboard shortcuts page
             ui.show_info_overlay("keyboard-shortcuts");
             return true;
@@ -530,6 +602,24 @@ exports.process_hotkey = function (e, hotkey) {
             return true;
         case 'stream_cycle_forward':
             navigate.cycle_stream('forward');
+            return true;
+        case 'keyboard_sub':
+            if (exports.is_subs()) {
+                subs.keyboard_sub();
+            }
+            return true;
+        case 'view_selected_stream':
+            if (exports.is_subs()) {
+                subs.view_stream();
+            }
+            return true;
+        case 'new_stream':
+            if (exports.is_subs()) {
+                subs.new_stream_clicked();
+            }
+            return true;
+        case 'open_drafts':
+            drafts.toggle();
             return true;
     }
 
@@ -551,6 +641,7 @@ exports.process_hotkey = function (e, hotkey) {
             navigate.to_home();
             return true;
         case 'end':
+        case 'G_end':
             navigate.to_end();
             return true;
         case 'page_up':
@@ -565,12 +656,13 @@ exports.process_hotkey = function (e, hotkey) {
             return true;
     }
 
+    var msg = current_msg_list.selected_message();
     // Shortcuts that operate on a message
     switch (event_name) {
         case 'message_actions':
             return popovers.open_message_menu();
         case 'star_message':
-            return message_flags.toggle_starred(current_msg_list.selected_message());
+            return message_flags.toggle_starred(msg);
         case 'narrow_by_recipient':
             return do_narrow_action(narrow.by_recipient);
         case 'narrow_by_subject':
@@ -593,7 +685,10 @@ exports.process_hotkey = function (e, hotkey) {
             open_reactions();
             return true;
         case 'thumbs_up_emoji': // '+': reacts with thumbs up emoji on selected message
-            reactions.toggle_reaction(current_msg_list.selected_id(), '+1');
+            reactions.toggle_reaction(msg.id, '+1');
+            return true;
+        case 'toggle_mute':
+            muting_ui.toggle_mute(msg);
             return true;
     }
 

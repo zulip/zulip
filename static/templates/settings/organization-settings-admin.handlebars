@@ -7,6 +7,8 @@
     <div class="alert" id="admin-realm-restricted-to-domain-status"></div>
     <div class="alert" id="admin-realm-invite-required-status"></div>
     <div class="alert" id="admin-realm-invite-by-admins-only-status"></div>
+    <div class="alert" id="admin-realm-inline-image-preview-status"></div>
+    <div class="alert" id="admin-realm-inline-url-embed-preview-status"></div>
     <div class="alert" id="admin-realm-create-stream-by-admins-only-status"></div>
     <div class="alert" id="admin-realm-add-emoji-by-admins-only-status"></div>
     <div class="alert" id="admin-realm-message-editing-status"></div>
@@ -55,6 +57,30 @@
         {{t "Only admins may invite" }}
       </label>
     </div>
+    {{#if server_inline_image_preview}}
+    <div class="input-group">
+      <input type="checkbox" class="inline-block" id="id_realm_inline_image_preview" name="realm_inline_image_preview"
+        {{#if realm_inline_image_preview}}checked="checked"{{/if}} />
+      <label for="id_realm_inline_image_preview"
+        id="id_realm_inline_image_preview_label"
+        title="{{t 'If checked, image previews will be shown.' }}"
+        class="inline-block" style="width:initial">
+        {{t "Show previews of uploaded and linked images" }}
+      </label>
+    </div>
+    {{/if}}
+    {{#if server_inline_url_embed_preview}}
+    <div class="input-group">
+      <input type="checkbox" class="inline-block" id="id_realm_inline_url_embed_preview" name="realm_inline_url_embed_preview"
+        {{#if realm_inline_url_embed_preview}}checked="checked"{{/if}} />
+      <label for="id_realm_inline_url_embed_preview"
+        id="id_realm_inline_url_embed_preview_label"
+        title="{{t 'If checked, previews of linked websites will be shown.' }}"
+        class="inline-block">
+        {{t "Show previews of linked websites" }}
+      </label>
+    </div>
+    {{/if}}
     <div class="input-group">
       <input type="checkbox" class="inline-block" id="id_realm_create_stream_by_admins_only"
              name="realm_create_stream_by_admins_only"
@@ -121,6 +147,19 @@
              value="{{ realm_message_content_edit_limit_minutes }}"
         {{#unless realm_allow_message_editing}}disabled="disabled"{{/unless}} />
     </div>
+    {{#if false}}
+    <div class="input-group">
+      <label for="realm_message_retention_days"
+        id="id_realm_message_retention_days_label"
+        title="{{t 'If empty, messages are not moved to archive.' }}">
+        {{t 'Retention period for messages in days (empty for disable)' }}
+      </label>
+      <input type="text" id="id_realm_message_retention_days"
+        name="realm_message_retention_days"
+        class="admin-realm-message-retention-days"
+        value="{{ realm_message_retention_days }}"/>
+    </div>
+    {{/if}}
     <div class="input-group">
       <label for="realm_default_language">{{t "Default language" }}:</label>
       <select name="realm_default_language" id="id_realm_default_language">

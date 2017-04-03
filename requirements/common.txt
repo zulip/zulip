@@ -182,9 +182,12 @@ git+https://github.com/umairwaheed/virtualenv-clone.git@short-version#egg=virtua
 # Needed for reading json as stream
 ijson==2.3
 
-#for pep8 linter
-pycodestyle==2.3.1
-
 # Needed for link preview
 beautifulsoup4==4.5.3
 git+https://github.com/rafaelmartins/pyoembed.git@eb9901917c2a44b49e2887c077ead84a722c50dc#egg=pyoembed
+
+# Install the Zulip API bindings into the virtualenv; note that this
+# won't be automatically updated for new versions of api/.  This is
+# used in development for some tests and in production for things like
+# Nagios checks.
+api/

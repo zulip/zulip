@@ -1,4 +1,22 @@
+// Important note on these tests:
+//
+// The way the Zulip hotkey tests work is as follows.  First, we set
+// up various contexts by monkey-patching the various hotkeys exports
+// functions (like hotkeys.is_settings_page).  Within that context, to
+// test whether a given key (e.g. `x`) results in a specific function
+// (e.g. `ui.foo()`), we fail to import any modules other than
+// hotkey.js so that accessing them will result in a ReferenceError.
+//
+// Then we create a stub `ui.foo`, and call the hotkey function.  If
+// it calls any external module other than `ui.foo`, it'll crash.
+// Future work includes making sure it actually does call `ui.foo()`.
+
 set_global('activity', {
+});
+
+set_global('drafts', {
+    drafts_handle_events: function () { return; },
+    drafts_overlay_open: function () { return; },
 });
 
 set_global('$', function () {
@@ -101,7 +119,15 @@ function stubbing(func_name_to_stub, test_function) {
         var e = {
             which: s.charCodeAt(0),
         };
-        return hotkey.process_keypress(e);
+        try {
+            return hotkey.process_keypress(e);
+        } catch (err) {
+            // An exception will be thrown here if a different
+            // function is called than the one declared.  Try to
+            // provide a useful error message.
+            // add a newline to seperate from other console output.
+            console.log('\nERROR: Mapping for character "' + e.which + '" does not match tests.');
+        }
     }
 
     function assert_mapping(c, func_name, shiftKey) {
@@ -118,8 +144,8 @@ function stubbing(func_name_to_stub, test_function) {
 
     // Unmapped keys should immediately return false, without
     // calling any functions outside of hotkey.js.
-    assert_unmapped('abdefghlmnoptuxyz');
-    assert_unmapped('BEFGHILMNOQTUVWXYZ');
+    assert_unmapped('abefhlmoptuxyz');
+    assert_unmapped('BEFHILNOQTWXYZ');
 
     // We have to skip some checks due to the way the code is
     // currently organized for mapped keys.
@@ -154,6 +180,12 @@ function stubbing(func_name_to_stub, test_function) {
     hotkey.processing_text = return_false;
     hotkey.is_settings_page = return_false;
 
+    hotkey.is_subs = return_true;
+    assert_mapping('U', 'subs.keyboard_sub');
+    assert_mapping('V', 'subs.view_stream');
+    assert_mapping('n', 'subs.new_stream_clicked');
+    hotkey.is_subs = return_false;
+
     assert_mapping('?', 'ui.show_info_overlay');
     assert_mapping('/', 'search.initiate_search');
     assert_mapping('q', 'activity.initiate_search');
@@ -165,15 +197,28 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('c', 'compose_actions.start');
     assert_mapping('C', 'compose_actions.start');
     assert_mapping('P', 'narrow.by');
+    assert_mapping('g', 'gear_menu.open');
+    assert_mapping('d', 'drafts.toggle');
 
     // Next, test keys that only work on a selected message.
+    var message_view_only_keys = '@*+rRjJkKsSvi:GM';
+
+    // Check that they do nothing without a selected message
     global.current_msg_list.empty = return_true;
-    assert_unmapped('@rRjJkKsSi:');
+    assert_unmapped(message_view_only_keys);
 
     global.current_msg_list.empty = return_false;
 
+    // Check that they do nothing while in the settings overlay
+    hotkey.is_settings_page = return_true;
+    assert_unmapped('@*+rRjJkKsSvi:GM');
+    hotkey.is_settings_page = return_false;
+
+    // TODO: Similar check for being in the subs page
+
     assert_mapping('@', 'compose.reply_with_mention');
     assert_mapping('*', 'message_flags.toggle_starred');
+    assert_mapping('+', 'reactions.toggle_reaction');
     assert_mapping('r', 'compose.respond_to_message');
     assert_mapping('R', 'compose.respond_to_message', true);
     assert_mapping('j', 'navigate.down');
@@ -185,6 +230,8 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('v', 'lightbox.show_from_selected_message');
     assert_mapping('i', 'popovers.open_message_menu');
     assert_mapping(':', 'popovers.toggle_reactions_popover', true);
+    assert_mapping('G', 'navigate.to_end');
+    assert_mapping('M', 'muting_ui.toggle_mute');
 }());
 
 (function test_motion_keys() {
@@ -193,6 +240,7 @@ function stubbing(func_name_to_stub, test_function) {
         end: 35,
         home: 36,
         left_arrow: 37,
+        right_arrow: 39,
         page_up: 33,
         page_down: 34,
         spacebar: 32,
@@ -206,7 +254,16 @@ function stubbing(func_name_to_stub, test_function) {
             shiftKey: shiftKey,
             ctrlKey: ctrlKey,
         };
-        return hotkey.process_keydown(e);
+
+        try {
+            return hotkey.process_keydown(e);
+        } catch (err) {
+            // An exception will be thrown here if a different
+            // function is called than the one declared.  Try to
+            // provide a useful error message.
+            // add a newline to seperate from other console output.
+            console.log('\nERROR: Mapping for character "' + e.which + '" does not match tests.');
+        }
     }
 
     function assert_unmapped(name) {
@@ -222,6 +279,7 @@ function stubbing(func_name_to_stub, test_function) {
     hotkey.tab_up_down = function () { return {flag: false}; };
     global.current_msg_list.empty = return_true;
     hotkey.is_settings_page = return_false;
+    hotkey.is_subs = return_false;
 
     assert_unmapped('down_arrow');
     assert_unmapped('end');
@@ -240,7 +298,16 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('page_down', 'navigate.page_down');
     assert_mapping('spacebar', 'navigate.page_down');
     assert_mapping('up_arrow', 'navigate.up');
-    assert_mapping('+', 'reactions.toggle_reaction', true, false);
+
+    hotkey.is_subs = return_true;
+    global.ui_state.home_tab_obscured = return_true;
+    assert_mapping('up_arrow', 'subs.switch_rows');
+    assert_mapping('down_arrow', 'subs.switch_rows');
+    global.ui_state.home_tab_obscured = return_false;
+
+    hotkey.is_lightbox_open = return_true;
+    assert_mapping('left_arrow', 'lightbox.prev');
+    assert_mapping('right_arrow', 'lightbox.next');
 
     hotkey.is_settings_page = return_true;
     assert_unmapped('end');

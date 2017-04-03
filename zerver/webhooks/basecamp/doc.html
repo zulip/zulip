@@ -1,0 +1,46 @@
+<p>
+    Zulip supports integration with Basecamp and can notify you of
+    events in Basecamp.
+</p>
+
+<p>
+    First, create the stream you'd like to use for Basecamp notifications,
+    and subscribe all interested parties to this stream. We
+    recommend the name <code>basecamp</code>.
+</p>
+
+<p><code>{{ external_api_uri_subdomain }}/v1/external/basecamp?api_key=abcdefgh&amp;stream=basecamp</code></p>
+
+<p>
+    where <code>api_key</code> is the API key of your Zulip bot,
+    and <code>stream</code> is the stream name you want the
+    notifications sent to.
+</p>
+
+<br/>
+<p>
+    Next, go to your project on Basecamp and choose <code>Set up webhooks</code>
+    from the <code>Settings</code> menu that is located in top right corner.
+</p>
+
+<img class="screenshot" src="/static/images/integrations/basecamp/001.png"/>
+
+<br/><br/>
+<p>Click on <code>Add a new webhook</code> button</p>
+<img class="screenshot" src="/static/images/integrations/basecamp/002.png"/>
+
+<br/><br/>
+<p>
+    Paste the URL you created above and choose which events you want to be notified about.
+    Make sure that <code>Enable this webhook?</code> is checked.
+    Click <code>Add this webhook</code>.
+</p>
+<img class="screenshot" src="/static/images/integrations/basecamp/003.png"/>
+
+<br/><br/>
+<p>
+    <b>Congratulations! You're done!</b><br/>
+    When you do things in basecamp action, you'll get a notification like this:
+</p>
+
+<img class="screenshot" src="/static/images/integrations/basecamp/004.png"/>

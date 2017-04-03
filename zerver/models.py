@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from typing import Any, Dict, List, Set, Tuple, TypeVar, Text, \
+from typing import Any, DefaultDict, Dict, List, Set, Tuple, TypeVar, Text, \
     Union, Optional, Sequence, AbstractSet, Pattern, AnyStr
 from typing.re import Match
 from zerver.lib.str_utils import NonBinaryStr
@@ -93,7 +93,6 @@ def get_display_recipient_remote_cache(recipient_id, recipient_type, recipient_t
                                             .select_related()
                                             .order_by('email'))
     return [{'email': user_profile.email,
-             'domain': user_profile.realm.domain,
              'full_name': user_profile.full_name,
              'short_name': user_profile.short_name,
              'id': user_profile.id,
@@ -104,18 +103,17 @@ def get_realm_emoji_cache_key(realm):
     return u'realm_emoji:%s' % (realm.id,)
 
 class Realm(ModelReprMixin, models.Model):
-    # domain is a domain in the Internet sense. It must be structured like a
-    # valid email domain. We use is to restrict access, identify bots, etc.
-    domain = models.CharField(max_length=40, db_index=True, unique=True) # type: Text
-    # name is the user-visible identifier for the realm. It has no required
-    # structure.
+    MAX_REALM_NAME_LENGTH = 40
+    MAX_REALM_SUBDOMAIN_LENGTH = 40
     AUTHENTICATION_FLAGS = [u'Google', u'Email', u'GitHub', u'LDAP', u'Dev', u'RemoteUser']
 
-    name = models.CharField(max_length=40, null=True) # type: Optional[Text]
-    string_id = models.CharField(max_length=40, unique=True) # type: Text
+    name = models.CharField(max_length=MAX_REALM_NAME_LENGTH, null=True) # type: Optional[Text]
+    string_id = models.CharField(max_length=MAX_REALM_SUBDOMAIN_LENGTH, unique=True) # type: Text
     restricted_to_domain = models.BooleanField(default=False) # type: bool
     invite_required = models.BooleanField(default=True) # type: bool
     invite_by_admins_only = models.BooleanField(default=False) # type: bool
+    inline_image_preview = models.BooleanField(default=True) # type: bool
+    inline_url_embed_preview = models.BooleanField(default=True) # type: bool
     create_stream_by_admins_only = models.BooleanField(default=False) # type: bool
     add_emoji_by_admins_only = models.BooleanField(default=False) # type: bool
     mandatory_topics = models.BooleanField(default=False) # type: bool
@@ -141,6 +139,24 @@ class Realm(ModelReprMixin, models.Model):
     authentication_methods = BitField(flags=AUTHENTICATION_FLAGS,
                                       default=2**31 - 1) # type: BitHandler
     waiting_period_threshold = models.PositiveIntegerField(default=0) # type: int
+
+    # Define the types of the various automatically managed properties
+    property_types = dict(
+        add_emoji_by_admins_only=bool,
+        create_stream_by_admins_only=bool,
+        default_language=Text,
+        description=Text,
+        email_changes_disabled=bool,
+        invite_required=bool,
+        invite_by_admins_only=bool,
+        inline_image_preview=bool,
+        inline_url_embed_preview=bool,
+        message_retention_days=int,
+        name=Text,
+        name_changes_disabled=bool,
+        restricted_to_domain=bool,
+        waiting_period_threshold=int,
+    )
 
     ICON_FROM_GRAVATAR = u'G'
     ICON_UPLOADED = u'U'
@@ -428,7 +444,7 @@ def filter_pattern_validator(value):
 
 def filter_format_validator(value):
     # type: (str) -> None
-    regex = re.compile(r'^[\.\/:a-zA-Z0-9_-]+%\(([a-zA-Z0-9_-]+)\)s[a-zA-Z0-9_-]*$')
+    regex = re.compile(r'^[\.\/:a-zA-Z0-9_?=-]+%\(([a-zA-Z0-9_-]+)\)s[a-zA-Z0-9_-]*$')
 
     if not regex.match(value):
         raise ValidationError('URL format string must be in the following format: `https://example.com/%(\w+)s`')
@@ -473,7 +489,7 @@ def realm_filters_for_realm_remote_cache(realm_id):
 
 def all_realm_filters():
     # type: () -> Dict[int, List[Tuple[Text, Text, int]]]
-    filters = defaultdict(list) # type: Dict[int, List[Tuple[Text, Text, int]]]
+    filters = defaultdict(list) # type: DefaultDict[int, List[Tuple[Text, Text, int]]]
     for realm_filter in RealmFilter.objects.all():
         filters[realm_filter.realm_id].append((realm_filter.pattern, realm_filter.url_format_string, realm_filter.id))
 
@@ -858,11 +874,8 @@ def get_active_streams(realm):
     return Stream.objects.filter(realm=realm, deactivated=False)
 
 def get_stream(stream_name, realm):
-    # type: (Text, Realm) -> Optional[Stream]
-    try:
-        return get_stream_backend(stream_name, realm)
-    except Stream.DoesNotExist:
-        return None
+    # type: (Text, Realm) -> Stream
+    return get_stream_backend(stream_name, realm)
 
 def bulk_get_streams(realm, stream_names):
     # type: (Realm, STREAM_NAMES) -> Dict[Text, Any]
@@ -933,7 +946,7 @@ def sew_messages_and_reactions(messages, reactions):
     return list(converted_messages.values())
 
 
-class Message(ModelReprMixin, models.Model):
+class AbstractMessage(ModelReprMixin, models.Model):
     sender = models.ForeignKey(UserProfile) # type: UserProfile
     recipient = models.ForeignKey(Recipient) # type: Recipient
     subject = models.CharField(max_length=MAX_SUBJECT_LENGTH, db_index=True) # type: Text
@@ -947,6 +960,16 @@ class Message(ModelReprMixin, models.Model):
     has_attachment = models.BooleanField(default=False, db_index=True) # type: bool
     has_image = models.BooleanField(default=False, db_index=True) # type: bool
     has_link = models.BooleanField(default=False, db_index=True) # type: bool
+
+    class Meta(object):
+        abstract = True
+
+
+class ArchivedMessage(AbstractMessage):
+    archive_timestamp = models.DateTimeField(default=timezone.now, db_index=True)  # type: datetime.datetime
+
+
+class Message(AbstractMessage):
 
     def topic_name(self):
         # type: () -> Text
@@ -982,7 +1005,7 @@ class Message(ModelReprMixin, models.Model):
             id                = self.id,
             sender_id         = self.sender.id,
             sender_email      = self.sender.email,
-            sender_domain     = self.sender.realm.domain,
+            sender_realm_str  = self.sender.realm.string_id,
             sender_full_name  = self.sender.full_name,
             sender_short_name = self.sender.short_name,
             sending_client    = self.sending_client.name,
@@ -996,7 +1019,7 @@ class Message(ModelReprMixin, models.Model):
     def get_raw_db_rows(needed_ids):
         # type: (List[int]) -> List[Dict[str, Any]]
         # This is a special purpose function optimized for
-        # callers like get_old_messages_backend().
+        # callers like get_messages_backend().
         fields = [
             'id',
             'subject',
@@ -1015,7 +1038,7 @@ class Message(ModelReprMixin, models.Model):
             'sender__full_name',
             'sender__short_name',
             'sender__realm__id',
-            'sender__realm__domain',
+            'sender__realm__string_id',
             'sender__avatar_source',
             'sender__avatar_version',
             'sender__is_mirror_dummy',
@@ -1122,9 +1145,8 @@ class Reaction(ModelReprMixin, models.Model):
 #
 # UserMessage is the largest table in a Zulip installation, even
 # though each row is only 4 integers.
-class UserMessage(ModelReprMixin, models.Model):
+class AbstractUserMessage(ModelReprMixin, models.Model):
     user_profile = models.ForeignKey(UserProfile) # type: UserProfile
-    message = models.ForeignKey(Message) # type: Message
     # We're not using the archived field for now, but create it anyway
     # since this table will be an unpleasant one to do schema changes
     # on later
@@ -1134,16 +1156,27 @@ class UserMessage(ModelReprMixin, models.Model):
     flags = BitField(flags=ALL_FLAGS, default=0) # type: BitHandler
 
     class Meta(object):
+        abstract = True
         unique_together = ("user_profile", "message")
+
+    def flags_list(self):
+        # type: () -> List[str]
+        return [flag for flag in self.flags.keys() if getattr(self.flags, flag).is_set]
+
+
+class ArchivedUserMessage(AbstractUserMessage):
+    message = models.ForeignKey(ArchivedMessage)  # type: Message
+    archive_timestamp = models.DateTimeField(default=timezone.now, db_index=True)  # type: datetime.datetime
+
+
+class UserMessage(AbstractUserMessage):
+    message = models.ForeignKey(Message)  # type: Message
 
     def __unicode__(self):
         # type: () -> Text
         display_recipient = get_display_recipient(self.message.recipient)
         return u"<UserMessage: %s / %s (%s)>" % (display_recipient, self.user_profile.email, self.flags_list())
 
-    def flags_list(self):
-        # type: () -> List[str]
-        return [flag for flag in self.flags.keys() if getattr(self.flags, flag).is_set]
 
 def parse_usermessage_flags(val):
     # type: (int) -> List[str]
@@ -1155,18 +1188,31 @@ def parse_usermessage_flags(val):
         mask <<= 1
     return flags
 
-class Attachment(ModelReprMixin, models.Model):
-    file_name = models.TextField(db_index=True) # type: Text
+
+class AbstractAttachment(ModelReprMixin, models.Model):
+    file_name = models.TextField(db_index=True)  # type: Text
     # path_id is a storage location agnostic representation of the path of the file.
     # If the path of a file is http://localhost:9991/user_uploads/a/b/abc/temp_file.py
     # then its path_id will be a/b/abc/temp_file.py.
-    path_id = models.TextField(db_index=True) # type: Text
-    owner = models.ForeignKey(UserProfile) # type: UserProfile
-    realm = models.ForeignKey(Realm, blank=True, null=True) # type: Realm
-    is_realm_public = models.BooleanField(default=False) # type: bool
-    messages = models.ManyToManyField(Message) # type: Manager
-    create_time = models.DateTimeField(default=timezone.now, db_index=True) # type: datetime.datetime
-    size = models.IntegerField(null=True) # type: int
+    path_id = models.TextField(db_index=True)  # type: Text
+    owner = models.ForeignKey(UserProfile)  # type: UserProfile
+    realm = models.ForeignKey(Realm, blank=True, null=True)  # type: Realm
+    is_realm_public = models.BooleanField(default=False)  # type: bool
+    create_time = models.DateTimeField(default=timezone.now,
+                                       db_index=True)  # type: datetime.datetime
+    size = models.IntegerField(null=True)  # type: int
+
+    class Meta(object):
+        abstract = True
+
+
+class ArchivedAttachment(AbstractAttachment):
+    archive_timestamp = models.DateTimeField(default=timezone.now, db_index=True)  # type: datetime.datetime
+    messages = models.ManyToManyField(ArchivedMessage)  # type: Manager
+
+
+class Attachment(AbstractAttachment):
+    messages = models.ManyToManyField(Message)  # type: Manager
 
     def __unicode__(self):
         # type: () -> Text
@@ -1189,6 +1235,7 @@ class Attachment(ModelReprMixin, models.Model):
                 'name': time.mktime(m.pub_date.timetuple()) * 1000
             } for m in self.messages.all()]
         }
+
 
 def get_old_unclaimed_attachments(weeks_ago):
     # type: (int) -> Sequence[Attachment]
@@ -1365,7 +1412,7 @@ class UserPresence(models.Model):
 
     @staticmethod
     def get_status_dict_by_user(user_profile):
-        # type: (UserProfile) -> defaultdict[Any, Dict[Any, Any]]
+        # type: (UserProfile) -> DefaultDict[Any, Dict[Any, Any]]
         query = UserPresence.objects.filter(user_profile=user_profile).values(
             'client__name',
             'status',
@@ -1385,7 +1432,7 @@ class UserPresence(models.Model):
 
     @staticmethod
     def get_status_dict_by_realm(realm_id):
-        # type: (int) -> defaultdict[Any, Dict[Any, Any]]
+        # type: (int) -> DefaultDict[Any, Dict[Any, Any]]
         query = UserPresence.objects.filter(
             user_profile__realm_id=realm_id,
             user_profile__is_active=True,
@@ -1410,8 +1457,8 @@ class UserPresence(models.Model):
 
     @staticmethod
     def get_status_dicts_for_query(query, mobile_user_ids):
-        # type: (QuerySet, List[int]) -> defaultdict[Any, Dict[Any, Any]]
-        user_statuses = defaultdict(dict) # type: defaultdict[Any, Dict[Any, Any]]
+        # type: (QuerySet, List[int]) -> DefaultDict[Any, Dict[Any, Any]]
+        user_statuses = defaultdict(dict) # type: DefaultDict[Any, Dict[Any, Any]]
         # Order of query is important to get a latest status as aggregated status.
         for row in query.order_by("user_profile__id", "-timestamp"):
             info = UserPresence.to_presence_dict(
@@ -1505,3 +1552,12 @@ class RealmAuditLog(models.Model):
     event_type = models.CharField(max_length=40) # type: Text
     event_time = models.DateTimeField() # type: datetime.datetime
     backfilled = models.BooleanField(default=False) # type: bool
+    extra_data = models.TextField(null=True) # type: Text
+
+class UserHotspot(models.Model):
+    user = models.ForeignKey(UserProfile) # type: UserProfile
+    hotspot = models.CharField(max_length=30) # type: Text
+    timestamp = models.DateTimeField(default=timezone.now) # type: datetime.datetime
+
+    class Meta(object):
+        unique_together = ("user", "hotspot")

@@ -47,6 +47,11 @@ class RealmFilterTest(ZulipTestCase):
         result = self.client_post("/json/realm/filters", info=data)
         self.assert_json_success(result)
 
+        data['pattern'] = 'ZUL2-(?P<id>\d+)'
+        data['url_format_string'] = 'https://realm.com/my_realm_filter/?value=%(id)s'
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_success(result)
+
     def test_not_realm_admin(self):
         # type: () -> None
         self.login("hamlet@zulip.com")

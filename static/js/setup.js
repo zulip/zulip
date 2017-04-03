@@ -2,6 +2,14 @@
 
 var csrf_token;
 $(function () {
+    // if the client is mobile, disable websockets for message sending
+    // (it doesn't work on iOS for some reason).
+    if (util.is_mobile()) {
+        page_params.use_websockets = false;
+    }
+
+    page_params.page_load_time = new Date().getTime();
+
     // Display loading indicator.  This disappears after the first
     // get_events completes.
     if (page_params.have_initial_messages && !page_params.needs_tutorial) {

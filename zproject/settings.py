@@ -152,6 +152,7 @@ DEFAULT_SETTINGS = {'TWITTER_CONSUMER_KEY': '',
                     'CAMO_URI': '',
                     'ENABLE_FEEDBACK': PRODUCTION,
                     'SEND_MISSED_MESSAGE_EMAILS_AS_USER': False,
+                    'SEND_LOGIN_EMAILS': True,
                     'SERVER_EMAIL': None,
                     'FEEDBACK_EMAIL': None,
                     'FEEDBACK_STREAM': None,
@@ -314,8 +315,10 @@ TEMPLATES = [
 ]
 
 MIDDLEWARE_CLASSES = (
-    # Our logging middleware should be the first middleware item.
+    # With the exception of it's dependencies,
+    # our logging middleware should be the top middleware item.
     'zerver.middleware.TagRequests',
+    'zerver.middleware.SetRemoteAddrFromForwardedFor',
     'zerver.middleware.LogRequests',
     'zerver.middleware.JsonErrorHandler',
     'zerver.middleware.RateLimitMiddleware',
@@ -675,7 +678,7 @@ PIPELINE = {
                 'third/zocial/zocial.css',
                 'styles/portico.css',
                 'styles/pygments.css',
-                'styles/thirdparty-fonts.css',
+                'third/thirdparty-fonts.css',
                 'styles/fonts.css',
             ),
             'output_filename': 'min/portico.css'
@@ -691,6 +694,7 @@ PIPELINE = {
             'source_filenames': (
                 'third/bootstrap-notify/css/bootstrap-notify.css',
                 'third/spectrum/spectrum.css',
+                'third/thirdparty-fonts.css',
                 'styles/components.css',
                 'styles/zulip.css',
                 'styles/settings.css',
@@ -702,8 +706,8 @@ PIPELINE = {
                 'styles/left-sidebar.css',
                 'styles/right-sidebar.css',
                 'styles/lightbox.css',
+                'styles/popovers.css',
                 'styles/pygments.css',
-                'styles/thirdparty-fonts.css',
                 'styles/media.css',
                 'styles/typing_notifications.css',
                 # We don't want fonts.css on QtWebKit, so its omitted here
@@ -714,7 +718,9 @@ PIPELINE = {
             'source_filenames': (
                 'third/bootstrap-notify/css/bootstrap-notify.css',
                 'third/spectrum/spectrum.css',
+                'third/thirdparty-fonts.css',
                 'third/jquery-perfect-scrollbar/css/perfect-scrollbar.css',
+                'node_modules/katex/dist/katex.css',
                 'styles/components.css',
                 'styles/zulip.css',
                 'styles/settings.css',
@@ -726,8 +732,8 @@ PIPELINE = {
                 'styles/left-sidebar.css',
                 'styles/right-sidebar.css',
                 'styles/lightbox.css',
+                'styles/popovers.css',
                 'styles/pygments.css',
-                'styles/thirdparty-fonts.css',
                 'styles/fonts.css',
                 'styles/media.css',
                 'styles/typing_notifications.css',
@@ -792,6 +798,7 @@ JS_SPECS = {
             'third/bootstrap-notify/js/bootstrap-notify.js',
             'third/html5-formdata/formdata.js',
             'node_modules/jquery-validation/dist/jquery.validate.js',
+            'node_modules/clipboard/dist/clipboard.js',
             'third/jquery-form/jquery.form.js',
             'third/jquery-filedrop/jquery.filedrop.js',
             'third/jquery-caret/jquery.caret.1.5.2.js',
@@ -878,6 +885,9 @@ JS_SPECS = {
             'js/alert_words_ui.js',
             'js/attachments_ui.js',
             'js/message_store.js',
+            'js/message_util.js',
+            'js/message_events.js',
+            'js/message_fetch.js',
             'js/server_events.js',
             'js/zulip.js',
             'js/activity.js',
@@ -885,6 +895,7 @@ JS_SPECS = {
             'js/colorspace.js',
             'js/timerender.js',
             'js/tutorial.js',
+            'js/hotspots.js',
             'js/templates.js',
             'js/upload_widget.js',
             'js/avatar.js',
@@ -898,6 +909,9 @@ JS_SPECS = {
             'js/bot_data.js',
             'js/reactions.js',
             'js/typing.js',
+            'js/typing_status.js',
+            'js/typing_data.js',
+            'js/typing_events.js',
             'js/ui_init.js',
             'js/shim.js',
             # JS bundled by webpack is also included here if PIPELINE_ENABLED setting is true
@@ -924,6 +938,12 @@ JS_SPECS = {
         'source_filenames': ['third/sockjs/sockjs-0.3.4.js'],
         'output_filename': 'min/sockjs-0.3.4.min.js'
     },
+    'katex': {
+        'source_filenames': [
+            'node_modules/katex/dist/katex.js',
+        ],
+        'output_filename': 'min/katex.js'
+    }
 }
 
 if PIPELINE_ENABLED:
@@ -975,6 +995,8 @@ if IS_WORKER:
     FILE_LOG_PATH = WORKER_LOG_PATH
 else:
     FILE_LOG_PATH = SERVER_LOG_PATH
+# Used for test_logging_handlers
+LOGGING_NOT_DISABLED = True
 
 LOGGING = {
     'version': 1,
@@ -999,6 +1021,9 @@ LOGGING = {
         },
         'nop': {
             '()': 'zerver.lib.logging_util.ReturnTrue',
+        },
+        'require_logging_enabled': {
+            '()': 'zerver.lib.logging_util.ReturnEnabled',
         },
         'require_really_deployed': {
             '()': 'zerver.lib.logging_util.RequireReallyDeployed',
@@ -1041,6 +1066,7 @@ LOGGING = {
     'loggers': {
         '': {
             'handlers': ['console', 'file', 'errors_file'],
+            'filters': ['require_logging_enabled'],
             'level': 'INFO',
             'propagate': False,
         },
@@ -1123,6 +1149,11 @@ else:
     HOME_NOT_LOGGED_IN = '/login'
     ONLY_SSO = False
 AUTHENTICATION_BACKENDS += ('zproject.backends.ZulipDummyBackend',)
+
+# Redirect to /devlogin by default in dev mode
+if DEVELOPMENT:
+    HOME_NOT_LOGGED_IN = '/devlogin'
+    LOGIN_URL = '/devlogin'
 
 POPULATE_PROFILE_VIA_LDAP = bool(AUTH_LDAP_SERVER_URI)
 

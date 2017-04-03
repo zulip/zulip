@@ -34,7 +34,7 @@ from zerver.lib.test_classes import (
 )
 from zerver.views.messages import (
     exclude_muting_conditions,
-    get_old_messages_backend, ok_to_include_history,
+    get_messages_backend, ok_to_include_history,
     NarrowBuilder, BadNarrowOperator, Query,
     LARGER_THAN_MAX_MESSAGE_ID,
 )
@@ -431,7 +431,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         return query_ids
 
-    def test_successful_get_old_messages_reaction(self):
+    def test_successful_get_messages_reaction(self):
         # type: () -> None
         """
         Test old `/json/messages` returns reactions.
@@ -459,7 +459,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(message_to_assert['reactions'][0]['emoji_name'],
                          reaction_name)
 
-    def test_successful_get_old_messages(self):
+    def test_successful_get_messages(self):
         # type: () -> None
         """
         A call to GET /json/messages with valid parameters returns a list of
@@ -474,7 +474,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         self.get_and_check_messages(dict(narrow=ujson.dumps([dict(operator='pm-with', operand='othello@zulip.com')])))
 
-    def test_get_old_messages_with_narrow_pm_with(self):
+    def test_get_messages_with_narrow_pm_with(self):
         # type: () -> None
         """
         A request for old messages with a narrow by pm-with only returns
@@ -504,7 +504,7 @@ class GetOldMessagesTest(ZulipTestCase):
             for message in result["messages"]:
                 self.assertEqual(dr_emails(message['display_recipient']), emails)
 
-    def test_get_old_messages_with_narrow_stream(self):
+    def test_get_messages_with_narrow_stream(self):
         # type: () -> None
         """
         A request for old messages with a narrow by stream only returns
@@ -528,7 +528,7 @@ class GetOldMessagesTest(ZulipTestCase):
             self.assertEqual(message["type"], "stream")
             self.assertEqual(message["recipient_id"], stream_id)
 
-    def test_get_old_messages_with_narrow_stream_mit_unicode_regex(self):
+    def test_get_messages_with_narrow_stream_mit_unicode_regex(self):
         # type: () -> None
         """
         A request for old messages for a user in the mit.edu relam with unicode
@@ -560,7 +560,7 @@ class GetOldMessagesTest(ZulipTestCase):
             stream_id = stream_messages[i].recipient.id
             self.assertEqual(message["recipient_id"], stream_id)
 
-    def test_get_old_messages_with_narrow_stream_mit_unicode_null_regex(self):
+    def test_get_messages_with_narrow_stream_mit_unicode_null_regex(self):
         # type: () -> None
         self.login("starnine@mit.edu")
         null_stream_name = u"foo\000-stream"
@@ -576,7 +576,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(result["messages"][0]["type"], "stream")
         self.assertEqual(result["messages"][0]["recipient_id"], stream_messages[0].recipient.id)
 
-    def test_get_old_messages_with_narrow_topic_mit_unicode_regex(self):
+    def test_get_messages_with_narrow_topic_mit_unicode_regex(self):
         # type: () -> None
         """
         A request for old messages for a user in the mit.edu realm with unicode
@@ -612,7 +612,7 @@ class GetOldMessagesTest(ZulipTestCase):
             stream_id = stream_messages[i].recipient.id
             self.assertEqual(message["recipient_id"], stream_id)
 
-    def test_get_old_messages_with_narrow_topic_mit_personal(self):
+    def test_get_messages_with_narrow_topic_mit_personal(self):
         # type: () -> None
         """
         We handle .d grouping for MIT realm personal messages correctly.
@@ -652,7 +652,7 @@ class GetOldMessagesTest(ZulipTestCase):
             stream_id = stream_messages[i].recipient.id
             self.assertEqual(message["recipient_id"], stream_id)
 
-    def test_get_old_messages_with_narrow_sender(self):
+    def test_get_messages_with_narrow_sender(self):
         # type: () -> None
         """
         A request for old messages with a narrow by sender only returns
@@ -723,7 +723,7 @@ class GetOldMessagesTest(ZulipTestCase):
                          u'<p><span class="highlight">KEYWORDMATCH</span> and should work</p>')
 
     @override_settings(USING_PGROONGA=False)
-    def test_get_old_messages_with_search(self):
+    def test_get_messages_with_search(self):
         # type: () -> None
         self.login("cordelia@zulip.com")
 
@@ -789,7 +789,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(multi_search_result['messages'][0]['match_content'], '<p><span class="highlight">discuss</span> lunch <span class="highlight">after</span> lunch</p>')
 
     @override_settings(USING_PGROONGA=False)
-    def test_get_old_messages_with_search_not_subscribed(self):
+    def test_get_messages_with_search_not_subscribed(self):
         # type: () -> None
         """Verify support for searching a stream you're not subscribed to"""
         self.subscribe_to_stream("hamlet@zulip.com", "newstream")
@@ -819,7 +819,7 @@ class GetOldMessagesTest(ZulipTestCase):
                          '<p>Public <span class="highlight">special</span> content!</p>')
 
     @override_settings(USING_PGROONGA=True)
-    def test_get_old_messages_with_search_pgroonga(self):
+    def test_get_messages_with_search_pgroonga(self):
         # type: () -> None
         self.login("cordelia@zulip.com")
 
@@ -874,9 +874,13 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(
             english_message['match_subject'],
             'english')
-        self.assertEqual(
+        self.assertIn(
             english_message['match_content'],
-            u'<p>I want to go to <span class="highlight">日本</span>!</p>')
+            # NOTE: The whitespace here is off due to a pgroonga bug.
+            # This bug is a pgroonga regression and according to one of
+            # the author, this should be fixed in its next release.
+            [u'<p>I want to go to <span class="highlight">日本</span>!</p>',  # This is correct.
+             u'<p>I want to go to<span class="highlight"> 日本</span>!</p>', ])
 
         # Should not crash when multiple search operands are present
         multi_search_narrow = [
@@ -891,7 +895,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(len(multi_search_result['messages']), 1)
         self.assertEqual(multi_search_result['messages'][0]['match_content'], '<p><span class="highlight">Can</span> you <span class="highlight">speak</span> Japanese?</p>')
 
-    def test_get_old_messages_with_only_searching_anchor(self):
+    def test_get_messages_with_only_searching_anchor(self):
         # type: () -> None
         """
         Test that specifying an anchor but 0 for num_before and num_after
@@ -916,7 +920,7 @@ class GetOldMessagesTest(ZulipTestCase):
         # type: () -> None
         """
         anchor, num_before, and num_after are all required
-        POST parameters for get_old_messages.
+        POST parameters for get_messages.
         """
         self.login("hamlet@zulip.com")
 
@@ -959,7 +963,7 @@ class GetOldMessagesTest(ZulipTestCase):
         """
         self.login("hamlet@zulip.com")
 
-        other_params = [("anchor", 0), ("num_before", 0), ("num_after", 0)] # type: list[Tuple[Text, Union[int, str, bool]]]
+        other_params = [("anchor", 0), ("num_before", 0), ("num_after", 0)] # type: List[Tuple[Text, Union[int, str, bool]]]
 
         bad_types = (False, 0, '', '{malformed json,',
                      '{foo: 3}', '[1,2]', '[["x","y","z"]]') # type: Tuple[Union[int, str, bool], ...]
@@ -1006,7 +1010,7 @@ class GetOldMessagesTest(ZulipTestCase):
     def test_bad_narrow_stream_content(self):
         # type: () -> None
         """
-        If an invalid stream name is requested in get_old_messages, an error is
+        If an invalid stream name is requested in get_messages, an error is
         returned.
         """
         self.login("hamlet@zulip.com")
@@ -1017,7 +1021,7 @@ class GetOldMessagesTest(ZulipTestCase):
     def test_bad_narrow_one_on_one_email_content(self):
         # type: () -> None
         """
-        If an invalid 'pm-with' is requested in get_old_messages, an
+        If an invalid 'pm-with' is requested in get_messages, an
         error is returned.
         """
         self.login("hamlet@zulip.com")
@@ -1047,19 +1051,19 @@ class GetOldMessagesTest(ZulipTestCase):
         d = MessageDict.to_dict_uncached_helper(m, True)
         self.assertEqual(d['content'], '<p>test content</p>')
 
-    def common_check_get_old_messages_query(self, query_params, expected):
+    def common_check_get_messages_query(self, query_params, expected):
         # type: (Dict[str, object], Text) -> None
         user_profile = get_user_profile_by_email("hamlet@zulip.com")
         request = POSTRequestMock(query_params, user_profile)
         with queries_captured() as queries:
-            get_old_messages_backend(request, user_profile)
+            get_messages_backend(request, user_profile)
 
         for query in queries:
-            if "/* get_old_messages */" in query['sql']:
-                sql = str(query['sql']).replace(" /* get_old_messages */", '')
+            if "/* get_messages */" in query['sql']:
+                sql = str(query['sql']).replace(" /* get_messages */", '')
                 self.assertEqual(sql, expected)
                 return
-        raise AssertionError("get_old_messages query not found")
+        raise AssertionError("get_messages query not found")
 
     def test_use_first_unread_anchor_with_some_unread_messages(self):
         # type: () -> None
@@ -1084,10 +1088,10 @@ class GetOldMessagesTest(ZulipTestCase):
         request = POSTRequestMock(query_params, user_profile)
 
         with queries_captured() as all_queries:
-            get_old_messages_backend(request, user_profile)
+            get_messages_backend(request, user_profile)
 
         # Verify the query for old messages looks correct.
-        queries = [q for q in all_queries if '/* get_old_messages */' in q['sql']]
+        queries = [q for q in all_queries if '/* get_messages */' in q['sql']]
         self.assertEqual(len(queries), 1)
         sql = queries[0]['sql']
         self.assertNotIn('AND message_id = %s' % (LARGER_THAN_MAX_MESSAGE_ID,), sql)
@@ -1112,11 +1116,11 @@ class GetOldMessagesTest(ZulipTestCase):
         request = POSTRequestMock(query_params, user_profile)
 
         with queries_captured() as all_queries:
-            get_old_messages_backend(request, user_profile)
+            get_messages_backend(request, user_profile)
 
         # Next, verify the use_first_unread_anchor setting invokes
         # the `message_id = LARGER_THAN_MAX_MESSAGE_ID` hack.
-        queries = [q for q in all_queries if '/* get_old_messages */' in q['sql']]
+        queries = [q for q in all_queries if '/* get_messages */' in q['sql']]
         self.assertEqual(len(queries), 1)
         self.assertIn('AND message_id <= %d' % (LARGER_THAN_MAX_MESSAGE_ID - 1,), queries[0]['sql'])
         # There should not be an after_query in this case, since it'd be useless
@@ -1127,11 +1131,11 @@ class GetOldMessagesTest(ZulipTestCase):
         """
         Test that our logic related to `use_first_unread_anchor`
         invokes the `message_id = LARGER_THAN_MAX_MESSAGE_ID` hack for
-        the `/* get_old_messages */` query when relevant muting
+        the `/* get_messages */` query when relevant muting
         is in effect.
 
         This is a very arcane test on arcane, but very heavily
-        field-tested, logic in get_old_messages_backend().  If
+        field-tested, logic in get_messages_backend().  If
         this test breaks, be absolutely sure you know what you're
         doing.
         """
@@ -1152,7 +1156,7 @@ class GetOldMessagesTest(ZulipTestCase):
         request = POSTRequestMock(query_params, user_profile)
 
         with queries_captured() as all_queries:
-            get_old_messages_backend(request, user_profile)
+            get_messages_backend(request, user_profile)
 
         # Do some tests on the main query, to verify the muting logic
         # runs on this code path.
@@ -1166,7 +1170,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         # Next, verify the use_first_unread_anchor setting invokes
         # the `message_id = LARGER_THAN_MAX_MESSAGE_ID` hack.
-        queries = [q for q in all_queries if '/* get_old_messages */' in q['sql']]
+        queries = [q for q in all_queries if '/* get_messages */' in q['sql']]
         self.assertEqual(len(queries), 1)
         self.assertIn('AND message_id = %d' % (LARGER_THAN_MAX_MESSAGE_ID,),
                       queries[0]['sql'])
@@ -1233,94 +1237,94 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(params['recipient_id_3'], get_recipient_id_for_stream_name(realm, 'web stuff'))
         self.assertEqual(params['upper_2'], 'css')
 
-    def test_get_old_messages_queries(self):
+    def test_get_messages_queries(self):
         # type: () -> None
         query_ids = self.get_query_ids()
 
         sql_template = 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage \nWHERE user_profile_id = {hamlet_id} AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 11) AS anon_1 ORDER BY message_id ASC'
         sql = sql_template.format(**query_ids)
-        self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10}, sql)
+        self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10}, sql)
 
         sql_template = 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage \nWHERE user_profile_id = {hamlet_id} AND message_id <= 100 ORDER BY message_id DESC \n LIMIT 11) AS anon_1 ORDER BY message_id ASC'
         sql = sql_template.format(**query_ids)
-        self.common_check_get_old_messages_query({'anchor': 100, 'num_before': 10, 'num_after': 0}, sql)
+        self.common_check_get_messages_query({'anchor': 100, 'num_before': 10, 'num_after': 0}, sql)
 
         sql_template = 'SELECT anon_1.message_id, anon_1.flags \nFROM ((SELECT message_id, flags \nFROM zerver_usermessage \nWHERE user_profile_id = {hamlet_id} AND message_id <= 99 ORDER BY message_id DESC \n LIMIT 10) UNION ALL (SELECT message_id, flags \nFROM zerver_usermessage \nWHERE user_profile_id = {hamlet_id} AND message_id >= 100 ORDER BY message_id ASC \n LIMIT 11)) AS anon_1 ORDER BY message_id ASC'
         sql = sql_template.format(**query_ids)
-        self.common_check_get_old_messages_query({'anchor': 100, 'num_before': 10, 'num_after': 10}, sql)
+        self.common_check_get_messages_query({'anchor': 100, 'num_before': 10, 'num_after': 10}, sql)
 
-    def test_get_old_messages_with_narrow_queries(self):
+    def test_get_messages_with_narrow_queries(self):
         # type: () -> None
         query_ids = self.get_query_ids()
 
         sql_template = 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (sender_id = {othello_id} AND recipient_id = {hamlet_recipient} OR sender_id = {hamlet_id} AND recipient_id = {othello_recipient}) AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
         sql = sql_template.format(**query_ids)
-        self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
-                                                  'narrow': '[["pm-with", "othello@zulip.com"]]'},
-                                                 sql)
+        self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
+                                              'narrow': '[["pm-with", "othello@zulip.com"]]'},
+                                             sql)
 
         sql_template = 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (flags & 2) != 0 AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
         sql = sql_template.format(**query_ids)
-        self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
-                                                  'narrow': '[["is", "starred"]]'},
-                                                 sql)
+        self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
+                                              'narrow': '[["is", "starred"]]'},
+                                             sql)
 
         sql_template = 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND sender_id = {othello_id} AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
         sql = sql_template.format(**query_ids)
-        self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
-                                                  'narrow': '[["sender", "othello@zulip.com"]]'},
-                                                 sql)
+        self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
+                                              'narrow': '[["sender", "othello@zulip.com"]]'},
+                                             sql)
 
         sql_template = 'SELECT anon_1.message_id \nFROM (SELECT id AS message_id \nFROM zerver_message \nWHERE recipient_id = {scotland_recipient} AND zerver_message.id >= 0 ORDER BY zerver_message.id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
         sql = sql_template.format(**query_ids)
-        self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
-                                                  'narrow': '[["stream", "Scotland"]]'},
-                                                 sql)
+        self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
+                                              'narrow': '[["stream", "Scotland"]]'},
+                                             sql)
 
         sql_template = "SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND upper(subject) = upper('blah') AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
         sql = sql_template.format(**query_ids)
-        self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
-                                                  'narrow': '[["topic", "blah"]]'},
-                                                 sql)
+        self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
+                                              'narrow': '[["topic", "blah"]]'},
+                                             sql)
 
         sql_template = "SELECT anon_1.message_id \nFROM (SELECT id AS message_id \nFROM zerver_message \nWHERE recipient_id = {scotland_recipient} AND upper(subject) = upper('blah') AND zerver_message.id >= 0 ORDER BY zerver_message.id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
         sql = sql_template.format(**query_ids)
-        self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
-                                                  'narrow': '[["stream", "Scotland"], ["topic", "blah"]]'},
-                                                 sql)
+        self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
+                                              'narrow': '[["stream", "Scotland"], ["topic", "blah"]]'},
+                                             sql)
 
         # Narrow to pms with yourself
         sql_template = 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND sender_id = {hamlet_id} AND recipient_id = {hamlet_recipient} AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
         sql = sql_template.format(**query_ids)
-        self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
-                                                  'narrow': '[["pm-with", "hamlet@zulip.com"]]'},
-                                                 sql)
+        self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
+                                              'narrow': '[["pm-with", "hamlet@zulip.com"]]'},
+                                             sql)
 
         sql_template = 'SELECT anon_1.message_id, anon_1.flags \nFROM (SELECT message_id, flags \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND recipient_id = {scotland_recipient} AND (flags & 2) != 0 AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
         sql = sql_template.format(**query_ids)
-        self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
-                                                  'narrow': '[["stream", "Scotland"], ["is", "starred"]]'},
-                                                 sql)
+        self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
+                                              'narrow': '[["stream", "Scotland"], ["is", "starred"]]'},
+                                             sql)
 
     @override_settings(USING_PGROONGA=False)
-    def test_get_old_messages_with_search_queries(self):
+    def test_get_messages_with_search_queries(self):
         # type: () -> None
         query_ids = self.get_query_ids()
 
         sql_template = "SELECT anon_1.message_id, anon_1.flags, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.subject_matches \nFROM (SELECT message_id, flags, subject, rendered_content, ts_match_locs_array('zulip.english_us_search', rendered_content, plainto_tsquery('zulip.english_us_search', 'jumping')) AS content_matches, ts_match_locs_array('zulip.english_us_search', escape_html(subject), plainto_tsquery('zulip.english_us_search', 'jumping')) AS subject_matches \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (search_tsvector @@ plainto_tsquery('zulip.english_us_search', 'jumping')) AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC" # type: Text
         sql = sql_template.format(**query_ids)
-        self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
-                                                  'narrow': '[["search", "jumping"]]'},
-                                                 sql)
+        self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
+                                              'narrow': '[["search", "jumping"]]'},
+                                             sql)
 
         sql_template = "SELECT anon_1.message_id, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.subject_matches \nFROM (SELECT id AS message_id, subject, rendered_content, ts_match_locs_array('zulip.english_us_search', rendered_content, plainto_tsquery('zulip.english_us_search', 'jumping')) AS content_matches, ts_match_locs_array('zulip.english_us_search', escape_html(subject), plainto_tsquery('zulip.english_us_search', 'jumping')) AS subject_matches \nFROM zerver_message \nWHERE recipient_id = {scotland_recipient} AND (search_tsvector @@ plainto_tsquery('zulip.english_us_search', 'jumping')) AND zerver_message.id >= 0 ORDER BY zerver_message.id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"
         sql = sql_template.format(**query_ids)
-        self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
-                                                  'narrow': '[["stream", "Scotland"], ["search", "jumping"]]'},
-                                                 sql)
+        self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
+                                              'narrow': '[["stream", "Scotland"], ["search", "jumping"]]'},
+                                             sql)
 
         sql_template = 'SELECT anon_1.message_id, anon_1.flags, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.subject_matches \nFROM (SELECT message_id, flags, subject, rendered_content, ts_match_locs_array(\'zulip.english_us_search\', rendered_content, plainto_tsquery(\'zulip.english_us_search\', \'"jumping" quickly\')) AS content_matches, ts_match_locs_array(\'zulip.english_us_search\', escape_html(subject), plainto_tsquery(\'zulip.english_us_search\', \'"jumping" quickly\')) AS subject_matches \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (content ILIKE \'%jumping%\' OR subject ILIKE \'%jumping%\') AND (search_tsvector @@ plainto_tsquery(\'zulip.english_us_search\', \'"jumping" quickly\')) AND message_id >= 0 ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC'
         sql = sql_template.format(**query_ids)
-        self.common_check_get_old_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
-                                                  'narrow': '[["search", "\\"jumping\\" quickly"]]'},
-                                                 sql)
+        self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
+                                              'narrow': '[["search", "\\"jumping\\" quickly"]]'},
+                                             sql)

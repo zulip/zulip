@@ -13,7 +13,7 @@ from django.urls import reverse
 from django.utils.timezone import now
 
 from confirmation.models import EmailChangeConfirmation, generate_key
-from zerver.lib.actions import do_start_email_change_process, do_set_email_changes_disabled
+from zerver.lib.actions import do_start_email_change_process, do_set_realm_property
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
@@ -136,7 +136,7 @@ class EmailChangeTestCase(ZulipTestCase):
         email = 'hamlet@zulip.com'
         self.login(email)
         user_profile = get_user_profile_by_email(email)
-        do_set_email_changes_disabled(user_profile.realm, email_changes_disabled=True)
+        do_set_realm_property(user_profile.realm, 'email_changes_disabled', True)
         url = '/json/settings/change'
         result = self.client_post(url, data)
         self.assertEqual(len(mail.outbox), 0)
@@ -163,7 +163,7 @@ class EmailChangeTestCase(ZulipTestCase):
         self.assertIn('We received a request to change the email', body)
 
         user_profile = get_user_profile_by_email(email)
-        do_set_email_changes_disabled(user_profile.realm, email_changes_disabled=True)
+        do_set_realm_property(user_profile.realm, 'email_changes_disabled', True)
 
         activation_url = [s for s in body.split('\n') if s][4]
         response = self.client_get(activation_url)

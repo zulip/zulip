@@ -34,8 +34,7 @@ class AnalyticsTestCase(TestCase):
     def setUp(self):
         # type: () -> None
         self.default_realm = Realm.objects.create(
-            string_id='realmtest', name='Realm Test',
-            domain='test.analytics', date_created=self.TIME_ZERO - 2*self.DAY)
+            string_id='realmtest', name='Realm Test', date_created=self.TIME_ZERO - 2*self.DAY)
         # used to generate unique names in self.create_*
         self.name_counter = 100
         # used as defaults in self.assertCountEquals
@@ -253,7 +252,7 @@ class TestCountStats(AnalyticsTestCase):
         # the queries).
         self.second_realm = Realm.objects.create(
             string_id='second-realm', name='Second Realm',
-            domain='second.analytics', date_created=self.TIME_ZERO-2*self.DAY)
+            date_created=self.TIME_ZERO-2*self.DAY)
         for minutes_ago in [0, 1, 61, 60*24+1]:
             creation_time = self.TIME_ZERO - minutes_ago*self.MINUTE
             user = self.create_user(email='user-%s@second.analytics' % (minutes_ago,),
@@ -269,7 +268,7 @@ class TestCountStats(AnalyticsTestCase):
         # messages_* CountStats
         self.no_message_realm = Realm.objects.create(
             string_id='no-message-realm', name='No Message Realm',
-            domain='no.message', date_created=self.TIME_ZERO-2*self.DAY)
+            date_created=self.TIME_ZERO-2*self.DAY)
         self.create_user(realm=self.no_message_realm)
         self.create_stream_with_recipient(realm=self.no_message_realm)
         # This huddle should not show up anywhere
@@ -375,16 +374,19 @@ class TestCountStats(AnalyticsTestCase):
                                [2, 'private_stream', user2],
                                [2, 'public_stream', user1],
                                [1, 'public_stream', user2],
-                               [2, 'private_message', user1],
-                               [2, 'private_message', user2],
+                               [1, 'private_message', user1],
+                               [1, 'private_message', user2],
                                [1, 'private_message', user3],
+                               [1, 'huddle_message', user1],
+                               [1, 'huddle_message', user2],
                                [1, 'public_stream', self.hourly_user],
                                [1, 'public_stream', self.daily_user]])
         self.assertTableState(RealmCount, ['value', 'subgroup', 'realm'],
-                              [[3, 'private_stream'], [3, 'public_stream'], [5, 'private_message'],
-                               [2, 'public_stream', self.second_realm]])
+                              [[3, 'private_stream'], [3, 'public_stream'], [3, 'private_message'],
+                               [2, 'huddle_message'], [2, 'public_stream', self.second_realm]])
         self.assertTableState(InstallationCount, ['value', 'subgroup'],
-                              [[3, 'private_stream'], [5, 'public_stream'], [5, 'private_message']])
+                              [[3, 'private_stream'], [5, 'public_stream'], [3, 'private_message'],
+                               [2, 'huddle_message']])
         self.assertTableState(StreamCount, [], [])
 
     def test_messages_sent_to_recipients_with_same_id(self):
@@ -403,7 +405,8 @@ class TestCountStats(AnalyticsTestCase):
 
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
 
-        self.assertCountEquals(UserCount, 2, subgroup='private_message')
+        self.assertCountEquals(UserCount, 1, subgroup='private_message')
+        self.assertCountEquals(UserCount, 1, subgroup='huddle_message')
         self.assertCountEquals(UserCount, 1, subgroup='public_stream')
 
     def test_messages_sent_by_client(self):
@@ -500,7 +503,7 @@ class TestDoIncrementLoggingStat(AnalyticsTestCase):
         # the appropriate *Count table, and that using a different zerver_object
         # results in a new row being created
         self.current_property = 'test'
-        second_realm = Realm.objects.create(string_id='moo', name='moo', domain='moo')
+        second_realm = Realm.objects.create(string_id='moo', name='moo')
         stat = LoggingCountStat('test', RealmCount, CountStat.DAY)
         do_increment_logging_stat(self.default_realm, stat, None, self.TIME_ZERO)
         do_increment_logging_stat(second_realm, stat, None, self.TIME_ZERO)

@@ -9,6 +9,8 @@ var stream_info;
 var subs_by_stream_id;
 var recent_topics = new Dict({fold_case: true});
 
+var defaults = {};
+
 exports.clear_subscriptions = function () {
     stream_info = new Dict({fold_case: true});
     subs_by_stream_id = new Dict();
@@ -79,6 +81,12 @@ exports.subscribed_streams = function () {
     return _.pluck(exports.subscribed_subs(), 'name');
 };
 
+exports.invite_streams = function () {
+    var invite_list = exports.subscribed_streams();
+    var default_list = _.pluck(page_params.realm_default_streams, 'name');
+    return _.union(invite_list, default_list);
+};
+
 exports.get_colors = function () {
     return _.pluck(exports.subscribed_subs(), 'color');
 };
@@ -132,6 +140,10 @@ exports.get_invite_only = function (stream_name) {
         return false;
     }
     return sub.invite_only;
+};
+
+exports.get_default_status = function (stream_name) {
+    return defaults.hasOwnProperty(stream_name);
 };
 
 exports.get_name = function (stream_name) {
@@ -331,6 +343,12 @@ exports.process_message_for_recent_topics = function process_message_for_recent_
     recent_topics.set(stream, recents);
 };
 
+exports.render_stream_description = function (sub) {
+    if (sub.description) {
+        sub.rendered_description = marked(sub.description).replace('<p>', '').replace('</p>', '');
+    }
+};
+
 exports.get_streams_for_settings_page = function () {
     // Build up our list of subscribed streams from the data we already have.
     var subscribed_rows = exports.subscribed_subs();
@@ -350,6 +368,7 @@ exports.get_streams_for_settings_page = function () {
         sub = exports.add_admin_options(sub);
         sub.preview_url = narrow.by_stream_uri(sub.name);
         exports.update_subscribers_count(sub);
+        exports.render_stream_description(sub);
         sub_rows.push(sub);
     });
 
@@ -365,6 +384,10 @@ exports.initialize_from_page_params = function () {
             exports.create_sub_from_server_data(stream_name, sub);
         });
     }
+
+    page_params.realm_default_streams.forEach(function (stream) {
+        defaults[stream.name] = true;
+    });
 
     populate_subscriptions(page_params.subbed_info, true);
     populate_subscriptions(page_params.unsubbed_info, false);

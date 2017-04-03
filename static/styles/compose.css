@@ -482,7 +482,6 @@ a#markdown_preview,
 a#undo_markdown_preview {
     text-decoration: none;
     position: relative;
-    top: 3px;
     font-size: 16px;
     color: #777;
 }

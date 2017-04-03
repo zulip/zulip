@@ -6,12 +6,12 @@
   </div>
 
   <div class="bot-settings-form">
-    {{#tr this}}
     <p class="bot-settings-note padded-container">
+    {{#tr this}}
       Looking for our <a href="/integrations" target="_blank">Integrations</a>
       or <a href="{{ server_uri }}/api" target="_blank">API</a> documentation?
-    </p>
     {{/tr}}
+    </p>
 
     <ul class="nav nav-tabs nav-justified" id="bots_lists_navbar">
       <li class="active active-bots-tab"><a>{{t "Active bots" }}</a></li>
@@ -28,7 +28,7 @@
 
     <div class="add-new-bot-box grey-bg">
       <form id="create_bot_form" class="form-horizontal no-padding">
-        <h4 class="new-bot-section-title light no-margin">Add a new bot</h4>
+        <h4 class="new-bot-section-title light no-margin">{{t "Add a new bot" }}</h4>
         <div class="new-bot-form">
           <div class="input-group">
             <label for="create_bot_name">{{t "Full name" }}</label>
@@ -71,21 +71,20 @@
 
     <div class="form-horizontal" id="api_key_button_box">
       <div class="input-group side-padded-container">
+        <p class="api-key-note">
         {{#tr this}}
-        <p class="api-key-note">For most bots using the API, you'll want to give each bot
+          For most bots using the API, you'll want to give each bot
           its own name and API key using the above section.  But if you
           want to write a bot that can access your own private
           messages, you should use your personal API key.
-        </p>
         {{/tr}}
+        </p>
         <button class="button white" id="api_key_button">{{t "Show/change your API key" }}</button>
       </div>
     </div>
     <div id="get_api_key_box" class="side-padded-container">
-      {{#tr this}}
-      <p>Please re-enter your password to confirm your identity.
-        (<a href="/accounts/password/reset/" target="_blank">Forgotten it?</a>)</p>
-      {{/tr}}
+      <p>{{t "Please re-enter your password to confirm your identity." }}
+        <a href="/accounts/password/reset/" target="_blank">{{t "Forgotten it?" }}</a></p>
       <form action="/json/fetch_api_key" method="post" class="form-horizontal">
         <div class="control-group">
           <label for="password" class="control-label">{{t "Current password" }}</label>
