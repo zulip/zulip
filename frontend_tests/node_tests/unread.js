@@ -193,7 +193,7 @@ var zero_counts = {
         subject: 'lunch',
     };
 
-    var num_msgs = 10000;
+    var num_msgs = 500;
     var i;
     for (i = 0; i < num_msgs; i += 1) {
         message.id = i+1;
