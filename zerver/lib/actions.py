@@ -2783,16 +2783,16 @@ def get_stream_message_count(stream_id, date_created):
     # type: (int, datetime.datetime) -> int
     count = 0
     stat = COUNT_STATS['messages_in_stream:is_bot:day']
-    d = datetime.date.today() - datetime.timedelta(days=28)
+    d = timezone.now() - datetime.timedelta(days=28)
     queryset = StreamCount.objects.filter(stream_id=stream_id, property=stat.property,
                                           end_time__gt=d).values_list('value')
     for val in queryset:
         count += val[0]
-    num_days = (datetime.date.today() - date_created.date()).days
+    num_days = (timezone.now().date() - date_created.date()).days
     # Calculates the average over 4 weeks
     # If duration less than 4 weeks, adjust accordingly
-    if num_days:
-        count = count/4 if num_days >= 28 else count/(num_days/7.0)
+    if num_days > 6:
+        count = int(count // 4) if num_days >= 28 else int(count // (num_days // 7))
     # count is rounded off to 2 significant figures
     return int(round(count, 2-len(str(count))))
 
