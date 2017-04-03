@@ -20,10 +20,7 @@ exports.initialize = function () {
         var target_tab = $(e.target).attr('href');
         resize.resize_bottom_whitespace();
         // Hide all our error messages when switching tabs
-        $('.alert-error').hide();
-        $('.alert-success').hide();
-        $('.alert-info').hide();
-        $('.alert').hide();
+        $('.alert').removeClass("show");
 
         // Set the URL bar title to show the sub-page you're currently on.
         var browser_url = target_tab;

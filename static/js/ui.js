@@ -42,7 +42,18 @@ exports.report_message = function (response, status_box, cls, type) {
               .text(response).stop(true).fadeTo(0, 1);
     }
 
-    status_box.show();
+    status_box.addClass("show");
+};
+
+exports.hide_error = function ($target) {
+    $target.addClass("fade-out");
+    setTimeout(function () {
+        $target.removeClass("show fade-out");
+    }, 300);
+};
+
+exports.show_error = function ($target) {
+    $target.addClass("show");
 };
 
 exports.report_error = function (response, xhr, status_box, type) {
