@@ -224,8 +224,13 @@ people.init();
     var user_ids_string = people.emails_strings_to_user_ids_string(emails_string);
     assert.equal(user_ids_string, '401,402');
 
+    user_ids_string = people.reply_to_to_user_ids_string(emails_string);
+    assert.equal(user_ids_string, '401,402');
+
     var slug = people.emails_to_slug(emails_string);
     assert.equal(slug, '401,402-group');
+
+    assert.equal(people.reply_to_to_user_ids_string('invalid@example.com'), undefined);
 }());
 
 initialize();
