@@ -168,13 +168,13 @@ exports.build_stream_list = function () {
     if (unpinned_streams.length > 0) {
         var is_inactive_separated = false;
         var has_active_streams = false;
-        _.each(unpinned_streams, function(stream){
-            if(stream_data.is_active(stream))
+        _.each(unpinned_streams, function (stream) {
+            if (stream_data.is_active(stream))
                 has_active_streams = true;
-            if(sort_recent && !is_inactive_separated && !stream_data.is_active(stream)
-             && has_active_streams){
+            if (sort_recent && !is_inactive_separated && !stream_data.is_active(stream)
+             && has_active_streams) {
                 elems.push($('<hr class="inactive-stream-separate">').get(0));
-                is_inactive_separated = true;   
+                is_inactive_separated = true;  
             }
             add_sidebar_li(stream);
         });
