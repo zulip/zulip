@@ -245,6 +245,7 @@ initialize();
         email: 'charles@example.com',
         user_id: 451,
         full_name: 'Charles Dickens',
+        avatar_url: 'charles.com/foo.png',
     };
     var maria = {
         email: 'athens@example.com',
@@ -261,10 +262,13 @@ initialize();
             {id: me.user_id},
             {user_id: charles.user_id},
         ],
+        sender_id: charles.user_id,
     };
     assert.equal(people.pm_with_url(message), '#narrow/pm-with/451,452-group');
     assert.equal(people.pm_reply_to(message),
         'athens@example.com,charles@example.com');
+    assert.equal(people.small_avatar_url(message),
+        'charles.com/foo.png&s=50');
 
     message = {
         type: 'private',
@@ -272,10 +276,13 @@ initialize();
             {id: maria.user_id},
             {user_id: me.user_id},
         ],
+        avatar_url: 'legacy.png',
     };
     assert.equal(people.pm_with_url(message), '#narrow/pm-with/452-athens');
     assert.equal(people.pm_reply_to(message),
         'athens@example.com');
+    assert.equal(people.small_avatar_url(message),
+        'legacy.png&s=50');
 
     message = {
         type: 'private',
