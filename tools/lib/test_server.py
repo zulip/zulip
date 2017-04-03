@@ -10,14 +10,12 @@ from contextlib import contextmanager
 if False:
     from typing import (Any, Iterator)
 
-try:
-    import django
-    import requests
-except ImportError as e:
-    print("ImportError: {}".format(e))
-    print("You need to run the Zulip tests inside a Zulip dev environment.")
-    print("If you are using Vagrant, you can `vagrant ssh` to enter the Vagrant guest.")
-    sys.exit(1)
+# Verify the Zulip venv is available.
+from tools.lib import sanity_check
+sanity_check.check_venv(__file__)
+
+import django
+import requests
 
 TOOLS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if TOOLS_DIR not in sys.path:
