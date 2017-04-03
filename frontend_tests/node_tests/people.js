@@ -73,6 +73,11 @@ initialize();
     assert.equal(person.full_name, 'Me Myself');
 }());
 
+(function test_get_recipients() {
+    assert.equal(people.get_recipients('30'), 'Me Myself');
+    assert.equal(people.get_recipients('30,32'), 'Isaac Newton');
+}());
+
 (function test_updates() {
     var person = people.get_by_email('me@example.com');
     people.set_full_name(person, 'Me the Third');
