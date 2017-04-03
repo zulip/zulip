@@ -1,5 +1,7 @@
+from typing import Dict, Optional, Any
+
 from django.conf import settings
-from django.template import Library
+from django.template import Library, loader
 from django.utils.safestring import mark_safe
 from django.utils.lru_cache import lru_cache
 
@@ -78,6 +80,7 @@ def render_markdown_path(markdown_file_path):
     md_engine = markdown.Markdown(extensions=md_extensions)
     md_engine.reset()
 
-    markdown_string = force_text(open(markdown_file_path).read())
+    template = loader.get_template(markdown_file_path)
+    markdown_string = template.render()
     html = md_engine.convert(markdown_string)
     return mark_safe(html)
