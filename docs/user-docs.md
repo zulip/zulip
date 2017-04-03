@@ -180,40 +180,43 @@ a new line to be formatted this way.
 You can refer to features in the Zulip UI by referencing their names and
 their [FontAwesome](http://fontawesome.io) (version 4.7.0) text icons within
 parentheses. The source for the text icons is located in
-`static/third/thirdparty-fonts.css`.
+`static/third/thirdparty-fonts.css`. **Note:** It is strongly recommended to use
+the new base class `fa` instead of the older base class `icon-vector` when
+specifying icons. In future we will be removing support for the icons with base
+class `icon-vector`.
 
 * cog (<i class="fa fa-cog"></i>) icon — `cog (<i
-class="icon-vector-cog"></i>) icon`
+class="fa fa-cog"></i>) icon`
 * down chevron (<i class="fa fa-chevron-down"></i>) icon —
-`down chevron (<i class="icon-vector-chevron-down"></i>) icon`
+`down chevron (<i class="fa fa-chevron-down"></i>) icon`
 * eye (<i class="fa fa-eye"></i>) icon — `eye (<i
-class="icon-vector-eye-open"></i>) icon`
+class="fa fa-eye"></i>) icon`
 * file (<i class="fa fa-file-text-o"></i>) icon — `file (<i
-class="icon-vector-file-text-alt"></i>) icon`
+class="fa fa-file-text-o"></i>) icon`
 * filled star (<i class="fa fa-star"></i>) icon —
-`filled star (<i class="icon-vector-star"></i>) icon`
+`filled star (<i class="fa fa-star"></i>) icon`
 * formatting (<i class="fa fa-font"></i>) icon —
-`formatting (<i class="icon-vector-font"></i>) icon`
+`formatting (<i class="fa fa-font"></i>) icon`
 * menu (<i class="fa fa-bars"></i>) icon — `menu (<i
-class="icon-vector-reorder"></i>) icon`
+class="fa fa-bars"></i>) icon`
 * overflow ( <i class="fa fa-ellipsis-v"></i> ) icon —
-`overflow ( <i class="icon-vector-ellipsis-vertical"></i> ) icon`
+`overflow ( <i class="fa fa-ellipsis-v"></i> ) icon`
 * paperclip (<i class="fa fa-paperclip"></i>) icon —
-`paperclip (<i class="icon-vector-paperclip"></i>) icon`
+`paperclip (<i class="fa fa-paperclip"></i>) icon`
 * pencil (<i class="fa fa-pencil"></i>) icon —
-`pencil (<i class="icon-vector-pencil"></i>) icon`
+`pencil (<i class="fa fa-pencil"></i>) icon`
 * pencil and paper (<i class="fa fa-pencil-square-o"></i>) icon —
-`pencil and paper (<i class="icon-vector-edit"></i>) icon`
+`pencil and paper (<i class="fa fa-pencil-square-o"></i>) icon`
 * plus (<i class="fa fa-plus"></i>) icon —
-`plus (<i class="icon-vector-plus"></i>) icon`
+`plus (<i class="fa fa-plus"></i>) icon`
 * smiley face (<i class="fa fa-smile-o"></i>) icon —
-`smiley face (<i class="icon-vector-smile"></i>) icon`
+`smiley face (<i class="fa fa-smile-o"></i>) icon`
 * star (<i class="fa fa-star-o"></i>) icon —
-`star (<i class="icon-vector-star-empty"></i>) icon`
+`star (<i class="fa fa-star-o"></i>) icon`
 * trash (<i class="fa fa-trash-o"></i>) icon —
-`trash (<i class="icon-vector-trash"></i>) icon`
+`trash (<i class="fa fa-trash-o"></i>) icon`
 * x (<i class="fa fa-times"></i>) icon —
-`x (<i class="icon-vector-remove"></i>) icon`
+`x (<i class="fa fa-times"></i>) icon`
 
 ### Macros
 
@@ -314,7 +317,7 @@ macro](#message-actions-message-actions-md-macro).
 
 * **Contents:**
     ```.md
-    down chevron (<i class="icon-vector-chevron-down"></i>) icon to reveal an actions dropdown.
+    down chevron (<i class="fa fa-chevron-down"></i>) icon to reveal an actions dropdown.
     ```
 
 * **Example usage and rendering:**
@@ -325,7 +328,7 @@ macro](#message-actions-message-actions-md-macro).
     ```.md
     1. Hover over a message to replace the message's timestamp with its message
     actions, represented by three icons. From the icons that appear, select the
-    down chevron (<i class="icon-vector-chevron-down"></i>) icon to reveal an actions dropdown.
+    down chevron (<i class="fa fa-chevron-down"></i>) icon to reveal an actions dropdown.
     ```
 
 ### **Go to the** `{!go-to-the.md}` macro
@@ -409,7 +412,7 @@ to click a specific icon, such as the [**Down chevron** macro](#down-chevron-dow
     ```.md
     1. Hover over a message to replace the message's timestamp with its message
     actions, represented by three icons. From the icons that appear, select the
-    down chevron (<i class="icon-vector-chevron-down"></i>) icon to reveal an actions dropdown.
+    down chevron (<i class="fa fa-chevron-down"></i>) icon to reveal an actions dropdown.
     ```
 
 ### **Save changes** `{!save-changes.md!}` macro
@@ -462,7 +465,7 @@ instruction and the [**Down chevron** macro](#down-chevron-down-chevron-md-macro
 * **Contents:**
     ```.md
     1. On the left sidebar in the **Streams** section, hover over a stream to reveal
-    a down chevron (<i class="icon-vector-chevron-down"></i>) icon to the right of
+    a down chevron (<i class="fa fa-chevron-down"></i>) icon to the right of
     the stream name.
     ```
 
@@ -475,10 +478,10 @@ instruction and the [**Down chevron** macro](#down-chevron-down-chevron-md-macro
 
     ```.md
     1. On the left sidebar in the **Streams** section, hover over a stream to reveal
-    a down chevron (<i class="icon-vector-chevron-down"></i>) icon to the right of
+    a down chevron (<i class="fa fa-chevron-down"></i>) icon to the right of
     the stream name.
 
-    2. Click on the down chevron (<i class="icon-vector-chevron-down"></i>)
+    2. Click on the down chevron (<i class="fa fa-chevron-down"></i>)
     icon to reveal an actions dropdown.
     ```
 
@@ -604,7 +607,7 @@ replace this paragraph with an appropriate description of the documentation.
 2. This is the second step of the documentation.
 
     Here's an additional note about the second step. Click on the star (<i
-    class="icon-vector-star-empty"></i>) icon to learn more about it.
+    class="fa fa-star-half-o"></i>) icon to learn more about it.
 
 3. This is the third step of the documentation.
 
