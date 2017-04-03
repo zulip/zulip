@@ -18,7 +18,3 @@ compose_state.has_message_content = compose.has_message_content;
 compose_state.recipient = compose.recipient;
 compose_state.composing = compose.composing;
 
-var ui_report = {};
-ui_report.success = ui.report_success;
-ui_report.error = ui.report_error;
-ui_report.message= ui.report_message;

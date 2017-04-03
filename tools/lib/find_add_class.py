@@ -88,7 +88,7 @@ def find(fns):
                         continue
                     elif fn == 'signup.js' and 'class_to_add' in line:
                         html_classes = ['error', 'success']
-                    elif fn == 'ui.js' and 'status_classes' in line:
+                    elif fn == 'ui_report.js' and 'status_classes' in line:
                         html_classes = ['alert']
 
                 if not html_classes:
