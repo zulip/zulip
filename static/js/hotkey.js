@@ -123,25 +123,6 @@ var keypress_mappings = {
     119: {name: 'query_streams', message_view_only: false}, // 'w'
 };
 
-exports.tab_up_down = (function () {
-    var list = ["#group-pm-list", "#stream_filters", "#global_filters", "#user_presences"];
-
-    return function (e) {
-        var $target = $(e.target);
-        var flag = $target.closest(list.join(", ")).length > 0;
-
-        return {
-            flag: flag,
-            next: function () {
-                return $target.closest("li").next().find("a");
-            },
-            prev: function () {
-                return $target.closest("li").prev().find("a");
-            },
-        };
-    };
-}());
-
 exports.get_keydown_hotkey = function (e) {
     if (e.metaKey || e.altKey) {
         return;
@@ -469,20 +450,16 @@ exports.process_hotkey = function (e, hotkey) {
         return false;
     }
 
-    var tab_list;
-
     if (event_name === "up_arrow") {
-        tab_list = exports.tab_up_down(e);
-        if (tab_list.flag) {
-            tab_list.prev().focus();
+        if (list_util.inside_list(e)) {
+            list_util.go_up(e);
             return true;
         }
     }
 
     if (event_name === "down_arrow") {
-        tab_list = exports.tab_up_down(e);
-        if (tab_list.flag) {
-            tab_list.next().focus();
+        if (list_util.inside_list(e)) {
+            list_util.go_down(e);
             return true;
         }
     }

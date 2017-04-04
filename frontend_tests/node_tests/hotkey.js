@@ -33,6 +33,9 @@ set_global('document', {
 
 var hotkey = require('js/hotkey.js');
 
+set_global('list_util', {
+});
+
 set_global('current_msg_list', {
     selected_id: function () {
         return 42;
@@ -276,7 +279,7 @@ function stubbing(func_name_to_stub, test_function) {
         });
     }
 
-    hotkey.tab_up_down = function () { return {flag: false}; };
+    list_util.inside_list = return_false;
     global.current_msg_list.empty = return_true;
     hotkey.is_settings_page = return_false;
     hotkey.is_subs = return_false;
@@ -288,6 +291,11 @@ function stubbing(func_name_to_stub, test_function) {
     assert_unmapped('page_down');
     assert_unmapped('spacebar');
     assert_unmapped('up_arrow');
+
+    global.list_util.inside_list = return_true;
+    assert_mapping('up_arrow', 'list_util.go_up');
+    assert_mapping('down_arrow', 'list_util.go_down');
+    list_util.inside_list = return_false;
 
     global.current_msg_list.empty = return_false;
     assert_mapping('down_arrow', 'navigate.down');
