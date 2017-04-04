@@ -575,6 +575,7 @@ def build_custom_checkers(by_lang):
             "docs/migration-renumbering.md",
             "docs/readme-symlink.md",
             "README.md",
+            "zerver/webhooks/trello/doc.md",
         }
         for fn in by_lang['md']:
             max_length = None
