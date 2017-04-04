@@ -197,7 +197,7 @@ class TestProcessCountStat(AnalyticsTestCase):
         self.assertFillStateEquals(current_time)
         self.assertEqual(InstallationCount.objects.filter(property=property).count(), 2)
 
-    # This tests the is_logging branch of the code in do_delete_counts_at_hour.
+    # This tests the LoggingCountStat branch of the code in do_delete_counts_at_hour.
     # It is important that do_delete_counts_at_hour not delete any of the collected
     # logging data!
     def test_process_logging_stat(self):

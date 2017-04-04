@@ -54,7 +54,6 @@ class CountStat(object):
             self.interval = timedelta(hours=1)
         else: # frequency == CountStat.DAY
             self.interval = timedelta(days=1)
-        self.is_logging = False
 
     def __unicode__(self):
         # type: () -> Text
@@ -64,7 +63,6 @@ class LoggingCountStat(CountStat):
     def __init__(self, property, output_table, frequency):
         # type: (str, Type[BaseCount], str) -> None
         CountStat.__init__(self, property, DataCollector(output_table, None), frequency)
-        self.is_logging = True
 
 class DataCollector(object):
     def __init__(self, output_table, pull_function):
@@ -119,13 +117,13 @@ def do_fill_count_stat_at_hour(stat, end_time):
         return
 
     start_time = end_time - stat.interval
-    if not stat.is_logging:
+    if not isinstance(stat, LoggingCountStat):
         stat.data_collector.pull_function(stat.property, start_time, end_time)
     do_aggregate_to_summary_table(stat, end_time)
 
 def do_delete_counts_at_hour(stat, end_time):
     # type: (CountStat, datetime) -> None
-    if stat.is_logging:
+    if isinstance(stat, LoggingCountStat):
         InstallationCount.objects.filter(property=stat.property, end_time=end_time).delete()
         if stat.data_collector.output_table in [UserCount, StreamCount]:
             RealmCount.objects.filter(property=stat.property, end_time=end_time).delete()
