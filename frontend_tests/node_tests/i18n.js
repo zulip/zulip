@@ -16,16 +16,12 @@ i18n.init({
     resources: {
         fr: {
             translation: {
-                "Quote and reply": "French",
+                "Quote and reply": "French translation",
                 "You'll receive notifications when a message arrives and Zulip isn't in focus or the message is offscreen.": "Some French text with Zulip",
             },
         },
     },
 });
-
-var jsdom = require("jsdom");
-var window = jsdom.jsdom().defaultView;
-global.$ = require('jquery')(window);
 
 (function test_t_tag() {
     var args = {
@@ -41,12 +37,8 @@ global.$ = require('jquery')(window);
         narrowed: true,
     };
 
-    var html = '<div style="height: 250px">';
-    html += global.render_template('actions_popover_content', args);
-    html += "</div>";
-    var link = $(html).find("a.respond_button");
-    assert.equal(link.text().trim(), 'French');
-    global.write_test_output("actions_popover_content.handlebars", html);
+    var html = global.render_template('actions_popover_content', args);
+    assert(html.indexOf("French translation") > 0);
 }());
 
 (function test_tr_tag() {
@@ -71,7 +63,5 @@ global.$ = require('jquery')(window);
     };
 
     var html = global.render_template('settings_tab', args);
-    var div = $(html).find("div.notification-reminder");
-    assert.equal(div.text().trim(), 'Some French text with Zulip');
-    global.write_test_output("test_tr_tag settings", html);
+    assert(html.indexOf('Some French text with Zulip') > 0);
 }());
