@@ -145,7 +145,7 @@
             "destructuring": "any",
             "ignoreReadBeforeAssign": true
         }],
-        "no-const-assign": "error",
+	"no-const-assign": "error",
         "no-new-object": 2,
         "quote-props": ["error", "as-needed", {
             "keywords": false,
