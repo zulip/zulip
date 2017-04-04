@@ -755,6 +755,7 @@ input[type=checkbox].inline-block {
     /* the width of the settings sidbar this is right of is 250px + 1px border. */
     width: calc(100% - 250px - 1px);
     height: 100%;
+    overflow: hidden;
 }
 
 #settings_page .content-wrapper .settings-header {
