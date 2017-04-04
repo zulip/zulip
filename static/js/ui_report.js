@@ -26,7 +26,7 @@ exports.message = function (response, status_box, cls, type) {
               .text(response).stop(true).fadeTo(0, 1);
     }
 
-    status_box.show();
+    status_box.addClass("show");
 };
 
 exports.error = function (response, xhr, status_box, type) {
@@ -41,6 +41,17 @@ exports.error = function (response, xhr, status_box, type) {
 
 exports.success = function (response, status_box, type) {
     exports.message(response, status_box, 'alert-success', type);
+};
+
+exports.hide_error = function ($target) {
+    $target.addClass("fade-out");
+    setTimeout(function () {
+        $target.removeClass("show fade-out");
+    }, 300);
+};
+
+exports.show_error = function ($target) {
+    $target.addClass("show");
 };
 
 return exports;

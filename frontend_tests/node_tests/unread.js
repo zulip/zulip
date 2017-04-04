@@ -177,6 +177,8 @@ var zero_counts = {
     assert.equal(counts.stream_count.get('social'), 0);
     assert.equal(counts.home_unread_messages, 0);
     assert.equal(unread.num_unread_for_stream('social'), 0);
+
+    assert.equal(unread.num_unread_for_stream('unknown'), 0);
 }());
 
 (function test_num_unread_for_subject() {
@@ -193,7 +195,7 @@ var zero_counts = {
         subject: 'lunch',
     };
 
-    var num_msgs = 10000;
+    var num_msgs = 500;
     var i;
     for (i = 0; i < num_msgs; i += 1) {
         message.id = i+1;
@@ -340,6 +342,8 @@ var zero_counts = {
     };
     unread.process_loaded_messages([message, read_message]);
     assert.equal(unread.num_unread_for_person(alice.user_id), 1);
+
+    assert.equal(unread.num_unread_for_person(''), 0);
 }());
 
 

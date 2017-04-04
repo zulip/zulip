@@ -506,8 +506,8 @@ li.actual-dropdown-menu i {
     /* The height of the header and the tabbar plus a small gap */
     margin-top: 100px;
     /* This is needed for the floating recipient bar
-       in Firefox only, for some reason; otherwise it gets
-       a scrollbar */
+       in Firefox only, for some reason;
+       otherwise it gets a scrollbar */
     overflow: visible;
 }
 
@@ -1343,7 +1343,11 @@ blockquote p {
 }
 
 .messagebox p {
-    margin: 3px 0px 3px 0px;
+    margin: 3px 0px 10px 0px;
+}
+
+.messagebox p:last-of-type {
+    margin-bottom: 3px;
 }
 
 .messagebox blockquote {
@@ -1386,10 +1390,6 @@ blockquote p {
 
 .streamname {
     font-weight: bold;
-}
-
-.alert {
-    display: none;
 }
 
 .home-error-bar .alert {
@@ -1858,10 +1858,6 @@ div.floating_recipient {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-}
-
-#home-error {
-    display: none;
 }
 
 .loading_indicator_spinner {

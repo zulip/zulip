@@ -280,12 +280,14 @@ EVENT_FUNCTION_MAPPER = {
 @has_request_variables
 def api_gitlab_webhook(request, user_profile, client,
                        stream=REQ(default='gitlab'),
-                       payload=REQ(argument_type='body')):
-    # type: (HttpRequest, UserProfile, Client, Text, Dict[str, Any]) -> HttpResponse
-    event = get_event(request, payload)
-    body = get_body_based_on_event(event)(payload)
-    subject = get_subject_based_on_event(event, payload)
-    check_send_message(user_profile, client, 'stream', [stream], subject, body)
+                       payload=REQ(argument_type='body'),
+                       branches=REQ(default=None)):
+    # type: (HttpRequest, UserProfile, Client, Text, Dict[str, Any], Optional[Text]) -> HttpResponse
+    event = get_event(request, payload, branches)
+    if event is not None:
+        body = get_body_based_on_event(event)(payload)
+        subject = get_subject_based_on_event(event, payload)
+        check_send_message(user_profile, client, 'stream', [stream], subject, body)
     return json_success()
 
 def get_body_based_on_event(event):
@@ -340,8 +342,8 @@ def get_subject_based_on_event(event, payload):
         )
     return get_repo_name(payload)
 
-def get_event(request, payload):
-    # type: (HttpRequest,  Dict[str, Any]) -> str
+def get_event(request, payload, branches):
+    # type: (HttpRequest,  Dict[str, Any], Text) -> Optional[str]
     event = request.META['HTTP_X_GITLAB_EVENT']
     if event == 'Issue Hook':
         action = payload.get('object_attributes').get('action')
@@ -355,6 +357,11 @@ def get_event(request, payload):
     elif event == 'Wiki Page Hook':
         action = payload.get('object_attributes').get('action')
         event = "{} {}".format(event, action)
+    elif event == 'Push Hook':
+        if branches is not None:
+            branch = get_branch_name(payload)
+            if branch not in branches.split(','):
+                return None
 
     if event in list(EVENT_FUNCTION_MAPPER.keys()):
         return event

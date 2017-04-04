@@ -298,13 +298,13 @@ class NarrowBuilder(object):
 
     def _by_search_pgroonga(self, query, operand, maybe_negate):
         # type: (Query, str, ConditionTransform) -> Query
-        match_positions_byte = func.pgroonga.match_positions_byte
+        match_positions_character = func.pgroonga.match_positions_character
         query_extract_keywords = func.pgroonga.query_extract_keywords
         keywords = query_extract_keywords(operand)
-        query = query.column(match_positions_byte(column("rendered_content"),
-                                                  keywords).label("content_matches"))
-        query = query.column(match_positions_byte(column("subject"),
-                                                  keywords).label("subject_matches"))
+        query = query.column(match_positions_character(column("rendered_content"),
+                                                       keywords).label("content_matches"))
+        query = query.column(match_positions_character(column("subject"),
+                                                       keywords).label("subject_matches"))
         condition = column("search_pgroonga").op("@@")(operand)
         return query.where(maybe_negate(condition))
 
@@ -338,7 +338,7 @@ class NarrowBuilder(object):
 # Apparently, the offsets we get from tsearch_extras are counted in
 # unicode characters, not in bytes, so we do our processing with text,
 # not bytes.
-def highlight_string_text_offsets(text, locs):
+def highlight_string(text, locs):
     # type: (AnyStr, Iterable[Tuple[int, int]]) -> Text
     string = force_text(text)
     highlight_start = u'<span class="highlight">'
@@ -354,30 +354,6 @@ def highlight_string_text_offsets(text, locs):
         pos = offset + length
     result += string[pos:]
     return result
-
-def highlight_string_bytes_offsets(text, locs):
-    # type: (AnyStr, Iterable[Tuple[int, int]]) -> Text
-    string = force_bytes(text)
-    highlight_start = b'<span class="highlight">'
-    highlight_stop = b'</span>'
-    pos = 0
-    result = b''
-    for loc in locs:
-        (offset, length) = loc
-        result += string[pos:offset]
-        result += highlight_start
-        result += string[offset:offset + length]
-        result += highlight_stop
-        pos = offset + length
-    result += string[pos:]
-    return force_text(result)
-
-def highlight_string(text, locs):
-    # type: (AnyStr, Iterable[Tuple[int, int]]) -> Text
-    if settings.USING_PGROONGA:
-        return highlight_string_bytes_offsets(text, locs)
-    else:
-        return highlight_string_text_offsets(text, locs)
 
 def get_search_fields(rendered_content, subject, content_matches, subject_matches):
     # type: (Text, Text, Iterable[Tuple[int, int]], Iterable[Tuple[int, int]]) -> Dict[str, Text]

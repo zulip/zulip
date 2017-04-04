@@ -73,14 +73,6 @@ var people = global.people;
 
 var activity = require('js/activity.js');
 var compose_fade = require('js/compose_fade.js');
-var jsdom = require('jsdom');
-var window = jsdom.jsdom().defaultView;
-
-global.$ = require('jquery')(window);
-$.fn.expectOne = function () {
-    assert(this.length === 1);
-    return this;
-};
 
 compose_fade.update_faded_users = function () {};
 activity.update_huddles = function () {};
@@ -299,6 +291,13 @@ activity.presence_info[mark.user_id] = { status: activity.IDLE };
 activity.presence_info[norbert.user_id] = { status: activity.ACTIVE };
 
 (function test_presence_list_full_update() {
+    global.$ = function () {
+        return {
+            length: 0,
+            html: function () {},
+        };
+    };
+
     var users = activity.build_user_sidebar();
     assert.deepEqual(users, [{
             name: 'Fred Flintstone',

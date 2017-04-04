@@ -74,6 +74,38 @@ var page_params = {{ page_params }};
 </div>
 
 <div class="app">
+<div class="alert-box">
+    <div class="alert alert_sidebar alert-error home-error-bar" id="connection-error">
+        <div class="exit"></div>
+        {% trans %}<strong class="message">Unable to connect to Zulip.</strong>  Updates may be delayed.{% endtrans %}
+        <div class="faded">{{ _('Retrying soon...') }} <a class="restart_get_events_button">{{ _('Try now.') }}</a></div>
+    </div>
+    <div class="alert alert_sidebar alert-error home-error-bar" id="get_old_messages_error">
+        <div class="exit"></div>
+        {% trans %}<strong class="message">Unable to connect to Zulip.</strong>  Could not fetch messages.{% endtrans %}
+        <div class="faded">{{ _('Retrying soon...') }}</div>
+    </div>
+    <div class="alert alert_sidebar alert-error home-error-bar" id="zephyr-mirror-error">
+        <div class="exit"></div>
+        {# The below isn't tagged for translation
+        intentionally, because the feature is only used at
+        MIT. #}
+        <strong>Your Zephyr mirror is not working.</strong>
+        <span id="normal-zephyr-mirror-error-text">
+            We recommend that
+            you <a class="webathena_login">give Zulip the
+                    ability to mirror the messages for you via
+            WebAthena</a>.  If you'd prefer, you can instead
+            <a href="/zephyr-mirror" target="_blank">run the
+            Zephyr mirror script yourself</a> in a screen
+            session.
+        </span>
+        <span id="desktop-zephyr-mirror-error-text" class="notdisplayed">To fix
+          this, you'll need to use the web interface.</span>
+    </div>
+    <div class="alert alert_sidebar alert-error home-error-bar" id="home-error"></div>
+    <div class="alert alert_sidebar alert-error home-error-bar" id="reloading-application"></div>
+</div>
 <div class="app-main">
     <div class="column-left">
           {% include "zerver/left_sidebar.html" %}

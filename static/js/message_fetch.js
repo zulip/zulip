@@ -14,7 +14,7 @@ exports.reset_load_more_status = function reset_load_more_status() {
 };
 
 function process_result(messages, opts) {
-    $('#get_old_messages_error').hide();
+    $('#get_old_messages_error').removeClass("show");
 
     if ((messages.length === 0) && (current_msg_list === message_list.narrowed) &&
         message_list.narrowed.empty()) {
@@ -120,7 +120,7 @@ exports.load_old_messages = function load_old_messages(opts) {
             }
 
             // We might want to be more clever here
-            $('#get_old_messages_error').show();
+            $('#get_old_messages_error').addClass("show");
             setTimeout(function () {
                 exports.load_old_messages(opts);
             }, 5000);

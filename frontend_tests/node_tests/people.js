@@ -73,6 +73,11 @@ initialize();
     assert.equal(person.full_name, 'Me Myself');
 }());
 
+(function test_get_recipients() {
+    assert.equal(people.get_recipients('30'), 'Me Myself');
+    assert.equal(people.get_recipients('30,32'), 'Isaac Newton');
+}());
+
 (function test_updates() {
     var person = people.get_by_email('me@example.com');
     people.set_full_name(person, 'Me the Third');
@@ -224,17 +229,23 @@ people.init();
     var user_ids_string = people.emails_strings_to_user_ids_string(emails_string);
     assert.equal(user_ids_string, '401,402');
 
+    user_ids_string = people.reply_to_to_user_ids_string(emails_string);
+    assert.equal(user_ids_string, '401,402');
+
     var slug = people.emails_to_slug(emails_string);
     assert.equal(slug, '401,402-group');
+
+    assert.equal(people.reply_to_to_user_ids_string('invalid@example.com'), undefined);
 }());
 
 initialize();
 
-(function test_pm_with_url() {
+(function test_message_methods() {
     var charles = {
         email: 'charles@example.com',
         user_id: 451,
         full_name: 'Charles Dickens',
+        avatar_url: 'charles.com/foo.png',
     };
     var maria = {
         email: 'athens@example.com',
@@ -251,8 +262,13 @@ initialize();
             {id: me.user_id},
             {user_id: charles.user_id},
         ],
+        sender_id: charles.user_id,
     };
     assert.equal(people.pm_with_url(message), '#narrow/pm-with/451,452-group');
+    assert.equal(people.pm_reply_to(message),
+        'athens@example.com,charles@example.com');
+    assert.equal(people.small_avatar_url(message),
+        'charles.com/foo.png&s=50');
 
     message = {
         type: 'private',
@@ -260,8 +276,13 @@ initialize();
             {id: maria.user_id},
             {user_id: me.user_id},
         ],
+        avatar_url: 'legacy.png',
     };
     assert.equal(people.pm_with_url(message), '#narrow/pm-with/452-athens');
+    assert.equal(people.pm_reply_to(message),
+        'athens@example.com');
+    assert.equal(people.small_avatar_url(message),
+        'legacy.png&s=50');
 
     message = {
         type: 'private',

@@ -310,6 +310,15 @@ $(function () {
         server_events.restart_get_events({dont_block: true});
     });
 
+    // this will hide the alerts that you click "x" on.
+    $("body").on("click", ".alert .exit", function () {
+        var $alert = $(this).closest(".alert");
+        $alert.addClass("fade-out");
+        setTimeout(function () {
+            $alert.removeClass("fade-out show");
+        }, 300);
+    });
+
 
     // COMPOSE
 
