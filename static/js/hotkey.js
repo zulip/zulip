@@ -432,8 +432,16 @@ exports.process_hotkey = function (e, hotkey) {
             return exports.process_escape_key(e);
     }
 
-    if (drafts.drafts_overlay_open()) {
-        drafts.drafts_handle_events(e, event_name);
+    switch (event_name) {
+        // TODO: break out specific handlers for up_arrow,
+        //       down_arrow, and backspace
+        case 'up_arrow':
+        case 'down_arrow':
+        case 'backspace':
+            if (drafts.drafts_overlay_open()) {
+                drafts.drafts_handle_events(e, event_name);
+                return true;
+            }
     }
 
     if (exports.is_settings_page()) {

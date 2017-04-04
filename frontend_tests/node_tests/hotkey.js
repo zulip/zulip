@@ -15,8 +15,6 @@ set_global('activity', {
 });
 
 set_global('drafts', {
-    drafts_handle_events: function () { return; },
-    drafts_overlay_open: function () { return; },
 });
 
 set_global('$', function () {
@@ -281,6 +279,7 @@ function stubbing(func_name_to_stub, test_function) {
 
     list_util.inside_list = return_false;
     global.current_msg_list.empty = return_true;
+    global.drafts.drafts_overlay_open = return_false;
     hotkey.is_settings_page = return_false;
     hotkey.is_subs = return_false;
 
@@ -331,4 +330,9 @@ function stubbing(func_name_to_stub, test_function) {
 
     assert_mapping('up_arrow', 'settings.handle_up_arrow');
     assert_mapping('down_arrow', 'settings.handle_down_arrow');
+
+    global.drafts.drafts_overlay_open = return_true;
+    assert_mapping('up_arrow', 'drafts.drafts_handle_events');
+    assert_mapping('down_arrow', 'drafts.drafts_handle_events');
+
 }());
