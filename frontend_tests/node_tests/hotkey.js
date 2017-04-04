@@ -307,16 +307,15 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('up_arrow', 'navigate.up');
 
     hotkey.is_subs = return_true;
-    global.ui_state.home_tab_obscured = return_true;
     assert_mapping('up_arrow', 'subs.switch_rows');
     assert_mapping('down_arrow', 'subs.switch_rows');
-    global.ui_state.home_tab_obscured = return_false;
 
     hotkey.is_lightbox_open = return_true;
     assert_mapping('left_arrow', 'lightbox.prev');
     assert_mapping('right_arrow', 'lightbox.next');
 
     hotkey.is_editing_stream_name = return_true;
+    hotkey.is_subs = return_false;
     assert_unmapped('down_arrow');
     assert_unmapped('up_arrow');
 

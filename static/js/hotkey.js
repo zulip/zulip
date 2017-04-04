@@ -66,8 +66,8 @@ var keydown_unshift_mappings = {
     36: {name: 'home', message_view_only: true}, // home
     37: {name: 'left_arrow', message_view_only: false}, // left arrow
     39: {name: 'right_arrow', message_view_only: false}, // right arrow
-    38: {name: 'up_arrow', message_view_only: true}, // up arrow
-    40: {name: 'down_arrow', message_view_only: true}, // down arrow
+    38: {name: 'up_arrow', message_view_only: false}, // up arrow
+    40: {name: 'down_arrow', message_view_only: false}, // down arrow
 };
 
 var keydown_ctrl_mappings = {
@@ -457,11 +457,12 @@ exports.process_hotkey = function (e, hotkey) {
     }
 
     if (hotkey.message_view_only && ui_state.home_tab_obscured()) {
-        if ((event_name === 'up_arrow' || event_name === 'down_arrow') && exports.is_subs()) {
-            subs.switch_rows(event_name);
-            return true;
-        }
         return false;
+    }
+
+    if ((event_name === 'up_arrow' || event_name === 'down_arrow') && exports.is_subs()) {
+        subs.switch_rows(event_name);
+        return true;
     }
 
     if (exports.is_editing_stream_name(e)) {
