@@ -1,5 +1,8 @@
 var Filter = (function () {
 
+// Needs note for what messages and operands are
+// Also more information about the Filter class
+
 function zephyr_stream_name_match(message, operand) {
     // Zephyr users expect narrowing to "social" to also show messages to /^(un)*social(.d)*$/
     // (unsocial, ununsocial, social.d, etc)
@@ -35,6 +38,13 @@ function zephyr_topic_name_match(message, operand) {
 }
 
 function message_in_home(message) {
+    /*
+    message_in_home
+    Argument:
+        message /TODO
+    Return value:
+        /TODO
+    */
     if (message.type === "private" || message.mentioned ||
         (page_params.narrow_stream !== undefined &&
          message.stream.toLowerCase() === page_params.narrow_stream.toLowerCase())) {
@@ -45,6 +55,27 @@ function message_in_home(message) {
 }
 
 function message_matches_search_term(message, operator, operand) {
+    /*
+    message_matches_search_term
+    Argument:
+        message /TODO
+        operator (string in ['is', 'in', 'near', 'id', 'stream', 'topic',
+            'sender', 'pm-with']
+                'is': return true if message meets the condition in the operand
+                    (private, starred, mentioned or alerted)
+                'in': return true if message is in home view,
+                'near': /TODO
+                'id': return true if message's id matches operand
+                'stream': return true if message is in the stream 
+                    specified by the operand
+                'topic': return true if message's topic matches the operand
+                'sender': /TODO
+                'pm-with': /TODO
+        operand (string): the "search term"
+    Return value:
+        True if /TODO
+        False if /TODO
+    */
     switch (operator) {
     case 'is':
         if (operand === 'private') {
@@ -121,6 +152,9 @@ function message_matches_search_term(message, operator, operand) {
 
 
 function Filter(operators) {
+    /*
+    /TODO
+    */
     if (operators === undefined) {
         this._operators = [];
     } else {
@@ -129,8 +163,20 @@ function Filter(operators) {
 }
 
 var canonical_operators = {from: "sender", subject: "topic"};
+// TODO
 
 Filter.canonicalize_operator = function (operator) {
+    /*
+    canonicalize_operator
+    Argument:
+        operator (string)
+    Return value:
+        If operator is a key in canonical_operators, it
+        is an alias of a canonical operator and the function
+        returns its corresponding canon operator's name
+        Otherwise returns the original operator in all
+        lower case
+    */
     operator = operator.toLowerCase();
     if (canonical_operators.hasOwnProperty(operator)) {
         return canonical_operators[operator];
@@ -138,10 +184,30 @@ Filter.canonicalize_operator = function (operator) {
     return operator;
 };
 
-Filter.canonicalize_term = function (opts) {
-    var negated = opts.negated;
-    var operator = opts.operator;
-    var operand = opts.operand;
+Filter.canonicalize_term = function (term) {
+    /*
+    canonicalize_term
+    standardize the search terms as followed:
+        - canonicalize the operators (toLowerCase and
+        turn aliases into canonical operators)
+        - if the operand refers to a person, substitute the
+        person name with their email address 
+        - toLowerCase the operand
+        - replace curly quotes with standard quotes
+        - for the 'has' operator, make the operand singular
+
+    Argument:
+        term (object): has 3 keys:
+            negated : true | if match to be excluded, false to in included
+            operator : string | the operator
+            operand : string | the operand for this operator
+    Return value:
+        (obj) with 3 keys as in argument, but standardized as outlined above
+
+    */
+    var negated = term.negated;
+    var operator = term.operator;
+    var operand = term.operand;
 
     // Make negated be explictly false for both clarity and
     // simplifying deepEqual checks in the tests.
@@ -198,6 +264,8 @@ Filter.canonicalize_term = function (opts) {
    This is just for the search bar, not for saving the
    narrow in the URL fragment.  There we do use full
    URI encoding to avoid problematic characters. */
+
+// TODO
 function encodeOperand(operand) {
     return operand.replace(/%/g,  '%25')
                   .replace(/\+/g, '%2B')
@@ -213,14 +281,28 @@ function decodeOperand(encoded, operator) {
 
 // Parse a string into a list of operators (see below).
 Filter.parse = function (str) {
+    /*
+    parse
+    Argument:
+        str (string): the full search string as entered by user from the search bar
+    Return value:
+        operators (array[obj]) an array of token objects, where earch objects has
+            the following keys:
+                negated (boolean) : true if searching to exclude, false if searching to include
+                operator (string) : the operator, e.g. 'stream', 'is'
+                operand (string) : the operand to apply on the operator
+                If a token doesn't contain any operator, the token is treated as part of the
+                operand for the search operator
+    */
     var operators   = [];
     var search_term = [];
-    var negated;
+    var negated; // True if the operator is prefixed with '-', to denote exclusion
     var operator;
     var operand;
     var term;
 
-    var matches = str.match(/"[^"]+"|\S+/g);
+    // TODO: what is this for?
+    var matches = str.match(/"[^"]+"|\S+/g); // look at the "fluffy bunny" // "fluffy bunny // what about \"
     if (matches === null) {
         return operators;
     }
@@ -228,11 +310,18 @@ Filter.parse = function (str) {
         var parts;
         var operator;
         parts = token.split(':');
+        // If no ':' (parts.length === 1)
+        // Why token[0] === '"'? Is that to escape a later ':'?
+        // If there are a valid operator with several ':'s, e.g
+        // stream:foo:bar, does it treat the operand as foo:bar?
         if (token[0] === '"' || parts.length === 1) {
             // Looks like a normal search term.
             search_term.push(token);
         } else {
             // Looks like an operator.
+            // Get the first part before ':' and make that the operator
+            // Check if it's negated, set negated = true and correct
+            // the operator if so
             negated = false;
             operator = parts.shift();
             if (operator[0] === '-') {
@@ -273,6 +362,9 @@ Filter.parse = function (str) {
    might need to support multiple operators of the same type.
 */
 Filter.unparse = function (operators) {
+    /*
+    The opposite of parse. What is this used for?
+    */
     var parts = _.map(operators, function (elem) {
 
         if (elem.operator === 'search') {
@@ -291,6 +383,17 @@ Filter.unparse = function (operators) {
 
 Filter.prototype = {
     predicate: function Filter_predicate() {
+        /*
+        predicate
+        Get back a function that takes a message object as input and checks
+        whether that message fits the narrow of this filter.
+        Argument: none
+        Return value:
+            Function (message) => {
+                return true if message fits the critieria of this filter
+                return false otherwise
+            }
+        */
         if (this._predicate === undefined) {
             this._predicate = this._build_predicate();
         }
@@ -319,12 +422,32 @@ Filter.prototype = {
     },
 
     has_operand: function Filter_has_operand(operator, operand) {
+        /*
+        has_operand
+        Check if the search query has a particular operator / operand pair.
+        Arguments:
+            operator (string): the string representing an operator e.g. 'stream'
+            operand (string): the value to search for with that operator
+        Return value:
+            true if the operator / operand pair exists in this search condition
+            and negated is false (search meant to include, not exclude this pair)
+            false otherwise
+        */
         return _.any(this._operators, function (elem) {
             return !elem.negated && (elem.operator === operator && elem.operand === operand);
         });
     },
 
     has_operator: function Filter_has_operator(operator) {
+        /*
+        has_operator
+        Check if the search query has a particular operator.
+        Argument:
+            operator (string): the string representing an operator e.g. 'stream'
+        Return value:
+            true if the search query for this Filter instance contains that operator
+            false otherwise
+        */
         return _.any(this._operators, function (elem) {
             if (elem.negated && (!_.contains(['search', 'has'], elem.operator))) {
                 return false;
@@ -334,14 +457,37 @@ Filter.prototype = {
     },
 
     is_search: function Filter_is_search() {
+        /*
+        is_search
+        Check if 'search' is one of the operators for this search query.
+        Argument: none
+        Return value:
+            true if search is an operator, false otherwise
+        */
         return this.has_operator('search');
     },
 
     can_apply_locally: function Filter_can_apply_locally() {
+        /*
+        can_apply_locally
+        Check if the search can be done without calling the backend.
+        Argument: none
+        return value:
+            true if the search query doesn't include the operators
+            'search' or 'has' (effectively means the filtering can
+            happen exclusively on the front end)
+        */
         return (!this.is_search()) && (!this.has_operator('has'));
     },
 
     _canonicalize_operators: function Filter__canonicalize_operators(operators_mixed_case) {
+        /*
+        _canonicalize_operators
+        Arugment:
+            operators_mixed_case /TODO
+        Return value:
+            /TODO
+        */
         return _.map(operators_mixed_case, function (tuple) {
             return Filter.canonicalize_term(tuple);
         });
@@ -359,6 +505,18 @@ Filter.prototype = {
     },
 
     has_topic: function Filter_has_topic(stream_name, topic) {
+        /*
+        has_topic
+        Check if the search query includes a narrowed search in a particular topic.
+        Argument:
+            stream_name (string) name of the stream that the topic should be in 
+            topic (string) name of the topic
+        Return value:
+            true if the search query includes both a narrowing down to stream_name 
+            by stream, and topic by topic
+            false otherwise
+        // TODO: do we want to tie topic searches to a particular stream? or all streams?
+        */
         return this.has_operand('stream', stream_name) && this.has_operand('topic', topic);
     },
 
@@ -402,6 +560,16 @@ Filter.prototype = {
 };
 
 Filter.operator_to_prefix = function (operator, negated) {
+    /*
+    Filter.operator_to_prefix
+    Translates operators to types of suggestions displayed in the suggestion dropdown
+    when the operator is not 'is'
+    Arguments: 
+        operator(string): can be 'stream', 'near', 'has', 'id', 'subject', 'topic',
+            'from', 'sender', 'pm-with', 'in'
+    Return value:
+        (string): the string to show in the dropdown
+    */
     var verb;
 
     if (operator === 'search') {
@@ -446,17 +614,31 @@ Filter.operator_to_prefix = function (operator, negated) {
 
 // Convert a list of operators to a human-readable description.
 Filter.describe = function (operators) {
+    /*
+    Filter.describe
+    Argument:
+        operators(array[string]): array contains all operators present in
+            a search
+    Return value:
+    */
+    // If the search string is empty, then the description is "Go to Home view"
     if (operators.length === 0) {
         return 'Go to Home view';
     }
 
     var parts = [];
 
+    // If there are more than two operators
     if (operators.length >= 2) {
         var is = function (term, expected) {
+            // TODO ???
             return (term.operator === expected) && !term.negated;
         };
-
+        // If the first operator is "stream" and the second is "topic"
+        // describe the search as 'Narrow to stream > topic'
+        // And then remove the first two terms
+        // TODO: need more consistent nomenclature, term / operator is
+        // confusing
         if (is(operators[0], 'stream') && is(operators[1], 'topic')) {
             var stream = operators[0].operand;
             var topic = operators[1].operand;
@@ -466,9 +648,12 @@ Filter.describe = function (operators) {
         }
     }
 
+    // If there is exaclty one operator
     var more_parts = _.map(operators, function (elem) {
         var operand = elem.operand;
         var canonicalized_operator = Filter.canonicalize_operator(elem.operator);
+        // and that operator is 'is', return the corresponding description
+        // e.g 'Narrow to all private messages'
         if (canonicalized_operator ==='is') {
             var verb = elem.negated ? 'Exclude ' : 'Narrow to ';
             if (operand === 'private') {
@@ -481,14 +666,20 @@ Filter.describe = function (operators) {
                 return verb + 'alerted messages';
             }
         } else {
+            // If it's not 'is', we use prefix_for_operator to look up
+            // the description
             var prefix_for_operator = Filter.operator_to_prefix(canonicalized_operator,
                                                                 elem.negated);
             if (prefix_for_operator !== '') {
                 return prefix_for_operator + ' ' + operand;
             }
         }
+        // if we don't recognize the operator then the description is
+        // 'Narrow to (unknown operator)'
+        // TODO???
         return 'Narrow to (unknown operator)';
     });
+    // Concat all descriptions, separated by coma, to form the final description
     return parts.concat(more_parts).join(', ');
 };
 
