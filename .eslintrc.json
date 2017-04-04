@@ -95,6 +95,7 @@
         "message_fetch": false,
         "favicon": false,
         "condense": false,
+        "list_render": false,
         "floating_recipient_bar": false,
         "tab_bar": false,
         "emoji": false,

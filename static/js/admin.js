@@ -101,14 +101,6 @@ function failed_listing_streams(xhr) {
 }
 
 function populate_users(realm_people_data) {
-    var users_table = $("#admin_users_table");
-    var deactivated_users_table = $("#admin_deactivated_users_table");
-    var bots_table = $("#admin_bots_table");
-    // Clear table rows, but not the table headers
-    users_table.find("tr.user_row").remove();
-    deactivated_users_table.find("tr.user_row").remove();
-    bots_table.find("tr.user_row").remove();
-
     var active_users = [];
     var deactivated_users = [];
     var bots = [];
@@ -127,35 +119,71 @@ function populate_users(realm_people_data) {
     deactivated_users = _.sortBy(deactivated_users, 'full_name');
     bots = _.sortBy(bots, 'full_name');
 
-    var bots_table_html = "";
-    _.each(bots, function (user) {
-        var bot_html = templates.render("admin_user_list", {user: user});
-        bots_table_html = bots_table_html.concat(bot_html);
-    });
-    bots_table.append(bots_table_html);
+    var $bots_table = $("#admin_bots_table");
+    list_render($bots_table, bots, {
+        name: "admin_bot_list",
+        modifier: function (item) {
+            return templates.render("admin_user_list", { user: item });
+        },
+        filter: {
+            element: $bots_table.closest(".settings-section").find(".search"),
+            callback: function (item, value) {
+                return (
+                    item.full_name.toLowerCase().match(value) ||
+                    item.email.toLowerCase().match(value)
+                );
+            },
+        },
+    }).init();
 
-    _.each(active_users, function (user) {
-        var activity_rendered;
-        var row = $(templates.render("admin_user_list", {user: user}));
-        if (people.is_current_user(user.email)) {
-            activity_rendered = timerender.render_date(new XDate());
-        } else if (activity.presence_info[user.user_id]) {
-            // XDate takes number of milliseconds since UTC epoch.
-            var last_active = activity.presence_info[user.user_id].last_active * 1000;
-            activity_rendered = timerender.render_date(new XDate(last_active));
-        } else {
-            activity_rendered = $("<span></span>").text(i18n.t("Never"));
-        }
-        row.find(".last_active").append(activity_rendered);
-        users_table.append(row);
-    });
+    var $users_table = $("#admin_users_table");
+    list_render($users_table, active_users, {
+        name: "users_table_list",
+        modifier: function (item) {
+            var activity_rendered;
+            if (people.is_current_user(item.email)) {
+                activity_rendered = timerender.render_date(new XDate());
+            } else if (activity.presence_info[item.user_id]) {
+                // XDate takes number of milliseconds since UTC epoch.
+                var last_active = activity.presence_info[item.user_id].last_active * 1000;
+                activity_rendered = timerender.render_date(new XDate(last_active));
+            } else {
+                activity_rendered = $("<span></span>").text(i18n.t("Never"));
+            }
 
-    var deactivated_table_html = "";
-    _.each(deactivated_users, function (user) {
-        var user_html = templates.render("admin_user_list", {user: user});
-        deactivated_table_html = deactivated_table_html.concat(user_html);
-    });
-    deactivated_users_table.append(deactivated_table_html);
+            var $row = $(templates.render("admin_user_list", { user: item }));
+            $row.find(".last_active").append(activity_rendered);
+
+            return $row;
+        },
+        filter: {
+            element: $users_table.closest(".settings-section").find(".search"),
+            callback: function (item, value) {
+                return (
+                    item.full_name.toLowerCase().match(value) ||
+                    item.email.toLowerCase().match(value)
+                );
+            },
+        },
+    }).init();
+
+    var $deactivated_users_table = $("#admin_deactivated_users_table");
+    list_render($deactivated_users_table, deactivated_users, {
+        name: "deactivated_users_table_list",
+        modifier: function (item) {
+            return templates.render("admin_user_list", { user: item });
+        },
+        filter: {
+            element: $deactivated_users_table.closest(".settings-section").find(".search"),
+            callback: function (item, value) {
+                return (
+                    item.full_name.toLowerCase().match(value) ||
+                    item.email.toLowerCase().match(value)
+                );
+            },
+        },
+    }).init();
+
     loading.destroy_indicator($('#admin_page_users_loading_indicator'));
     loading.destroy_indicator($('#admin_page_bots_loading_indicator'));
     loading.destroy_indicator($('#admin_page_deactivated_users_loading_indicator'));
@@ -164,10 +192,20 @@ function populate_users(realm_people_data) {
 function populate_streams(streams_data) {
     var streams_table = $("#admin_streams_table").expectOne();
     all_streams = streams_data;
-    streams_table.find("tr.stream_row").remove();
-    _.each(streams_data.streams, function (stream) {
-        streams_table.append(templates.render("admin_streams_list", {stream: stream}));
-    });
+
+    list_render(streams_table, streams_data.streams, {
+        name: "admin_streams_list",
+        modifier: function (item) {
+            return templates.render("admin_streams_list", { stream: item });
+        },
+        filter: {
+            element: streams_table.closest(".settings-section").find(".search"),
+            callback: function (item, value) {
+                return item.name.toLowerCase().match(value);
+            },
+        },
+    }).init();
+
     loading.destroy_indicator($('#admin_page_streams_loading_indicator'));
 }
 
@@ -194,40 +232,29 @@ exports.build_default_stream_table = function (streams_data) {
 
     self.row_dict = new Dict();
 
-    function set_up_remove_click_hander(row, stream_name) {
-        row.on("click", ".remove-default-stream", function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            channel.del({
-                url: '/json/default_streams'+ '?' + $.param({stream_name: stream_name}),
-                error: function (xhr) {
-                    var button = row.find("button");
-                    if (xhr.status.toString().charAt(0) === "4") {
-                        button.closest("td").html(
-                            $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
-                        );
-                    } else {
-                        button.text(i18n.t("Failed!"));
-                    }
-                },
-                success: function () {
-                    row.remove();
-                },
-            });
-        });
-    }
-
-    (function () {
+    var table_list = list_render.get("default_streams_list");
+    if (table_list) {
+        table_list.data(streams_data);
+    } else {
         var table = $("#admin_default_streams_table").expectOne();
-        _.each(streams_data, function (stream) {
-            var row = $(templates.render("admin_default_streams_list", {stream: stream}));
-            set_up_remove_click_hander(row, stream.name);
-            self.row_dict.set(stream.stream_id, row);
-            table.append(row);
-        });
+
+        list_render(table, streams_data, {
+            name: "default_streams_list",
+            modifier: function (item) {
+                var row = $(templates.render("admin_default_streams_list", { stream: item }));
+                self.row_dict.set(item.stream_id, row);
+                return row;
+            },
+            filter: {
+                element: table.closest(".settings-section").find(".search"),
+                callback: function (item, value) {
+                    return item.name.toLowerCase().match(value);
+                },
+            },
+        }).init();
+
         loading.destroy_indicator($('#admin_page_default_streams_loading_indicator'));
-    }());
+    }
 
     self.remove = function (stream_id) {
         if (self.row_dict.has(stream_id)) {
@@ -529,6 +556,31 @@ function _setup_page() {
         updater: function (stream_name) {
             make_stream_default(stream_name);
         },
+    });
+
+    $("#admin-default-streams-list").on("click", ".remove-default-stream", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        var row = $(this).closest(".default_stream_row");
+        var stream_name = row.attr("id");
+
+        channel.del({
+            url: '/json/default_streams'+ '?' + $.param({stream_name: stream_name}),
+            error: function (xhr) {
+                var button = row.find("button");
+                if (xhr.status.toString().charAt(0) === "4") {
+                    button.closest("td").html(
+                        $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
+                    );
+                } else {
+                    button.text(i18n.t("Failed!"));
+                }
+            },
+            success: function () {
+                row.remove();
+            },
+        });
     });
 
     $("#do_deactivate_user_button").expectOne().click(function () {
