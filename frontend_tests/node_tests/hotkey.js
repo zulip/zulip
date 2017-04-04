@@ -317,6 +317,10 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('left_arrow', 'lightbox.prev');
     assert_mapping('right_arrow', 'lightbox.next');
 
+    hotkey.is_editing_stream_name = return_true;
+    assert_unmapped('down_arrow');
+    assert_unmapped('up_arrow');
+
     hotkey.is_settings_page = return_true;
     assert_unmapped('end');
     assert_unmapped('home');
@@ -325,7 +329,6 @@ function stubbing(func_name_to_stub, test_function) {
     assert_unmapped('page_down');
     assert_unmapped('spacebar');
 
-    hotkey.is_editing_stream_name = return_true;
-    assert_unmapped('down_arrow');
-    assert_unmapped('up_arrow');
+    assert_mapping('up_arrow', 'settings.handle_up_arrow');
+    assert_mapping('down_arrow', 'settings.handle_down_arrow');
 }());

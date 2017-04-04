@@ -436,6 +436,18 @@ exports.process_hotkey = function (e, hotkey) {
         drafts.drafts_handle_events(e, event_name);
     }
 
+    if (exports.is_settings_page()) {
+        switch (event_name) {
+            case 'up_arrow':
+                settings.handle_up_arrow(e);
+                return true;
+            case 'down_arrow':
+                settings.handle_down_arrow(e);
+                return true;
+        }
+        return false;
+    }
+
     if (hotkey.message_view_only && ui_state.home_tab_obscured()) {
         if ((event_name === 'up_arrow' || event_name === 'down_arrow') && exports.is_subs()) {
             subs.switch_rows(event_name);
@@ -477,25 +489,6 @@ exports.process_hotkey = function (e, hotkey) {
             // Ignore backspace; don't navigate back a page.
             return true;
         }
-    }
-
-    if (exports.is_settings_page()) {
-        if (event_name === 'up_arrow') {
-            var prev = e.target.previousElementSibling;
-
-            if ($(prev).css("display") !== "none") {
-                $(prev).focus().click();
-            }
-            return true;
-        } else if (event_name === 'down_arrow') {
-            var next = e.target.nextElementSibling;
-
-            if ($(next).css("display") !== "none") {
-                $(next).focus().click();
-            }
-            return true;
-        }
-        return false;
     }
 
     // Process hotkeys specially when in an input, select, textarea, or send button
