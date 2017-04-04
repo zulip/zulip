@@ -1,10 +1,14 @@
 /*global Dict */
 var path = require('path');
 var fs = require('fs');
-var jsdom = require("jsdom");
-var window = jsdom.jsdom().defaultView;
 
 global.stub_out_jquery();
+
+set_global('window', {
+    location: {
+        origin: 'http://zulip.zulipdev.com',
+    },
+});
 
 set_global('page_params', {
     people_list: [],
@@ -57,9 +61,6 @@ set_global('$', function (obj) {
 
 set_global('feature_flags', {local_echo: true});
 
-
-jsdom.changeURL(window, 'http://zulip.zulipdev.com');
-set_global('window', window);
 
 var people = global.people;
 
