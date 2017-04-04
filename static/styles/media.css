@@ -114,6 +114,25 @@
         width: calc(100% - 12px - 2px);
     }
 
+    nav .column-left,
+    nav .column-right {
+        width: calc(140px - 12px - 1px);
+    }
+
+    nav .column-left {
+        text-align: left;
+        margin-left: 40px;
+    }
+
+    nav .column-left a.no-style {
+        position: relative;
+        margin-left: 15px;
+    }
+
+    nav .column-middle {
+        width: calc(100% - 300px);
+    }
+
     .screen-narrow-show {
         display: inline-block !important;
     }
@@ -201,12 +220,34 @@
 }
 
 @media (max-width: 500px) {
+    nav .column-left {
+        display: none;
+    }
+
+    nav .column-middle {
+        width: calc(100% - 140px);
+        margin-left: 40px;
+    }
+
+    nav .column-right {
+        width: calc(110px - 12px - 1px);
+    }
+
     .help-question {
         line-height: 1.4;
     }
 
     .navbar-buttons {
-        margin: 1px 2px;
+        margin: 6px 4px;
+    }
+
+    .navbar-buttons {
+        position: relative;
+        top: 5px;
+    }
+
+    .navbar-buttons.questions {
+        top: 6px;
     }
 
     .header-main .column-right {
@@ -222,7 +263,7 @@
 
     .column-right.expanded .right-sidebar,
     .column-left.expanded .left-sidebar {
-        margin-top: 31px;
+        margin-top: 0px;
     }
 
     .column-left.expanded .left-sidebar {
@@ -260,18 +301,16 @@
     #tab_bar,
     #searchbox,
     #search_query,
-    #tab_list li,
     #tab_list,
     .header {
-        height: 30px;
         line-height: 30px;
     }
 
     #streamlist-toggle-button,
     #userlist-toggle-button {
         height: 30px;
-        padding-top: 0px;
-        padding-bottom: 0px;
+        padding-top: 9px;
+        padding-bottom: 6px;
     }
 
     .navbar-buttons ul.nav .dropdown-toggle,
@@ -290,10 +329,6 @@
     #searchbox .search_button,
     #searchbox .search_button[disabled]:hover {
         top: 2px;
-    }
-
-    #tab_bar_underpadding {
-        top: 30px;
     }
 
     .messagebox-content {
@@ -349,10 +384,6 @@
 
     #tab_bar_underpadding {
         height: 10px;
-    }
-
-    #floating_recipient_bar {
-        top: 40px;
     }
 
     .message_content {

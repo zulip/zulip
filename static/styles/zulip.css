@@ -86,7 +86,7 @@ p.n-margin {
 .top-messages-logo {
     position: absolute;
     left: calc(50% - 12px);
-    top: 57px;
+    top: 22px;
     width: 24px;
     height: 24px;
 }
@@ -164,6 +164,46 @@ p.n-margin {
     cursor: pointer;
 }
 
+nav {
+    text-align: center;
+    z-index: 102;
+    width: 100%;
+    background-color: #fff;
+    border-bottom: 1px solid #eee;
+}
+
+nav .column-left,
+nav .column-right,
+nav .column-middle {
+    display: inline-block;
+    vertical-align: top;
+    position: static;
+    margin: 0px -4px;
+}
+
+nav .column-left,
+nav .column-right {
+    width: calc(250px - 12px - 1px);
+    padding: 2px;
+}
+
+nav .column-left {
+    text-align: center;
+    padding: 7px 2px;
+}
+
+nav .column-middle {
+    height: 44px;
+    width: calc(100% - 500px);
+    max-width: 900px;
+    margin: 0;
+
+    border-left: 1px solid #eee;
+    border-right: 1px solid #eee;
+    box-sizing: border-box;
+
+    overflow: hidden;
+}
 
 nav .avatar-container {
     float: left;
@@ -194,6 +234,35 @@ nav .column-right #navbar_avatar {
     border: 2px solid #fff;
     background-color: #52c2af;
 }
+
+nav .column-left .nav-logo {
+    display: inline-block;
+    vertical-align: top;
+    margin-top: 2px;
+    width: 25px;
+    height: 25px;
+    background-image: url(../images/logo/zulip-icon-512x512.png);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+nav .column-left .company-name {
+    display: inline-block;
+    vertical-align: top;
+    text-transform: uppercase;
+    margin-top: 1px;
+    margin-left: 8px;
+    font-size: 1.8em;
+    font-weight: 600;
+    color: #52c2af;
+    letter-spacing: 0.1em;
+}
+
+nav a .no-style {
+    text-decoration: none;
+}
+
 .header {
     position: fixed;
     z-index: 102; /* Needs to be higher than .alert-bar-container */
@@ -258,7 +327,7 @@ nav .column-right {
 .app-main .column-left .left-sidebar,
 .app-main .column-right .right-sidebar {
     position: fixed;
-    margin-top: 50px;
+    margin-top: 0px;
     z-index: 100;
 }
 
@@ -550,7 +619,6 @@ li.actual-dropdown-menu {
 li.actual-dropdown-menu i {
     /* In gear menu, make icons the same width so labels line up. */
     display: inline-block;
-    width: 14px;
     text-align: center;
     margin-right: 3px;
     width: 18px;
@@ -558,7 +626,7 @@ li.actual-dropdown-menu i {
 
 .message_area_padder {
     /* The height of the header and the tabbar plus a small gap */
-    margin-top: 93px;
+    margin-top: 55px;
     /* This is needed for the floating recipient bar
        in Firefox only, for some reason;
        otherwise it gets a scrollbar */
@@ -1560,17 +1628,24 @@ blockquote p {
 
 #searchbox {
     width: 100%;
-    height: 40px;
+
+    transition: all 0.1s ease;
+}
+
+#searchbox.input-mode {
+    transform: translateY(-44px);
 }
 
 #tab_bar {
+    width: 100%;
+    text-align: left;
     z-index: 2;
     padding-top: 0px;
     overflow: hidden;
     text-overflow: ellipsis;
     float: left;
     letter-spacing: normal;
-    height: 40px;
+    height: 44px;
 }
 
 #tab_list {
@@ -1584,126 +1659,78 @@ blockquote p {
 }
 
 #tab_list li {
+    max-width: 120px;
     white-space: nowrap;
     list-style-type: none;
     display: inline-block;
+    vertical-align: top;
     position: relative;
     font-weight: 300;
-    background-color: hsl(0, 0%, 97%);
     margin: 0px;
     padding: 0px;
     text-overflow: ellipsis;
-    height: 40px;
+    line-height: initial;
+    margin-top: 8px;
+    font-weight: 500;
+    -webkit-font-smoothing: antialiased;
 }
 
-#tab_list li.inactive {
-    border-top-color: hsla(0, 0%, 0%, 0.0);
-    border-right-color: hsla(0, 0%, 0%, 0.0);
-    border-bottom-color: hsla(0, 0%, 0%, 0.0);
-    background-color: hsl(0, 0%, 88%);
-    border-left-color: hsl(0, 0%, 88%);
-    border-width: 0px;
-}
-
-#tab_list li.private_message a {
-    color: #ffffff;
-}
-
-#tab_list li.inactive:after {
-    left: 100%;
-    top: 50%;
-    content: " ";
-    height: 0px;
-    width: 0px;
-    position: absolute;
-    pointer-events: none;
-    margin-top: -25px;
-    border-style: solid;
-    border-width: 25px 0 25px 12px;
-    border-color: inherit;
-    z-index: 2;
-    -moz-transform: scale(.9999);
-}
-
-#tab_list li.inactive:before {
-    left: 100%;
-    top: 50%;
-    content: " ";
-    height: 0px;
-    width: 0px;
-    position: absolute;
-    pointer-events: none;
-    margin-top: -28px;
-    border-style: solid;
-    border-width: 28px 0 28px 14px;
-    border-color: hsla(0, 0%, 0%, 0.0) hsla(0, 0%, 0%, 0.0) hsla(0, 0%, 0%, 0.0) #ffffff;
-    z-index: 1;
-    -moz-transform: scale(.9999);
-}
-
-#tab_list a {
-    text-decoration: none;
-    color: inherit;
-    border-color: inherit;
-    width: 100%;
+#tab_list .buffer {
+    width: 5px;
     display: inline-block;
-    padding: 0px 8px;
-    max-width: 120px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
-#tab_list li.active {
-    padding-left: 17px;
-    padding-right: 10px;
-    background-color: hsl(0, 0%, 88%);
-    max-width: 120px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-#tab_list li.active.root {
-    padding-left: 10px;
+#tab_list li a {
+    color: inherit;
 }
 
 #tab_list li.private_message {
     border-top-color: hsla(0, 0%, 0%, 0.0);
     border-right-color: hsla(0, 0%, 0%, 0.0);
     border-bottom-color: hsla(0, 0%, 0%, 0.0);
-    background-color: hsl(0, 0%, 7%);
-    border-left-color: hsl(0, 0%, 7%);
+    background-color: hsl(0, 0%, 27%);
+    border-left-color: hsl(0, 0%, 27%);
     color: #ffffff;
     border-width: 0px;
 }
 
-#tab_list .root {
-    border-color: hsl(0, 0%, 88%);
-    background-color: hsl(0, 0%, 88%);
-    margin: 0px;
+#tab_list .home-link i {
+    display: inline-block;
+    padding: 6px 5px 0px 5px;
 }
 
-#tab_list li.stream a,
-#tab_list li.private_message a {
-    padding-left: 17px;
-    padding-right: 4px;
+#tab_list li:not(.home-link) {
+    padding: 4px;
 }
 
-#tab_list li.root a {
-    color: hsl(0, 0%, 52%);
-    padding-right: 2px;
+#tab_list li.stream {
+    margin-top: 8px;
+    border-radius: 4px;
+    line-height: initial;
+    height: auto;
+    padding: 4px 6px;
+    color: #fff;
 }
 
+#tab_list li.stream.dark {
+    color: #444;
+}
 
-#tab_list .root a:hover {
-    color: hsl(0, 0%, 0%);
+#tab_list li.stream a {
+    color: inherit;
+    line-height: initial;
+}
+
+#tab_list .private_message {
+    background-color: #aaa;
+    color: #fff;
+    border-radius: 4px;
 }
 
 #tab_bar_underpadding {
     position: absolute;
     width: 100%;
-    top: 40px;
+    top: 0px;
     height: 10px;
     z-index: 99;
 }
@@ -1738,8 +1765,8 @@ blockquote p {
     background-color: hsl(0, 0%, 89%);
     width: 40px;
     height: 19px;
-    padding-top: 12px;
-    padding-bottom: 9px;
+    padding-top: 14px;
+    padding-bottom: 11px;
 }
 
 #streamlist-toggle-unreadcount,
@@ -1793,7 +1820,7 @@ blockquote p {
 }
 
 .questions .nav .dropdown-menu:after {
-    right: 18px;
+    right: 6px;
     left: auto;
 }
 
@@ -1862,11 +1889,12 @@ blockquote p {
 }
 
 #searchbox .input-append .icon-vector-search {
+    color: #fff;
     padding: 0px;
     font-size: 20px;
     position: absolute;
-    left: 10px;
-    top: 10px;
+    right: 10px;
+    top: 13px;
     z-index: 5;
 }
 
@@ -1883,7 +1911,7 @@ nav a.no-style:hover {
 nav .column-left .nav-logo {
     display: inline-block;
     vertical-align: top;
-    margin-top: 8px;
+    margin-top: 3px;
     width: 25px;
     height: 25px;
 
@@ -1893,7 +1921,7 @@ nav .column-left .company-name {
     display: inline-block;
     vertical-align: top;
     text-transform: uppercase;
-    margin-top: 12px;
+    margin-top: 7px;
     margin-left: 8px;
     font-size: 1.2rem;
     font-weight: 600;
@@ -1917,39 +1945,38 @@ nav a .no-style {
 
 #search_query {
     width: 100%;
-    font-size: 18px;
-    height: 40px;
-    padding: 0px;
-    color: hsl(0, 0%, 13%);
-    box-shadow: inset 2px 0px 0px 0px hsl(204, 20%, 74%);
-    padding-left: 35px;
-    padding-right: 20px;
-    background: hsl(0, 0%, 100%); /* Old browsers */
+    font-size: 1.5em;
+    font-weight: 300;
+    padding: 22px 15px 24px 15px;
+    font: menu;
+    font-size: 1rem;
+    font-weight: 500;
     border: none;
     border-radius: 0px;
-    font-family: 'Humbug';
-    font-weight: 300;
+    font-weight: 400;
     line-height: 27px;
+    box-shadow: none;
 }
 
 
 #search_query:focus {
-    box-shadow: inset 0px 0px 0px 2px hsl(204, 20%, 74%);
+    box-shadow: none;
+    -webkit-font-smoothing: antialiased;
 }
 
 #searchbox .search_button,
 #searchbox .search_button[disabled]:hover {
     position: absolute;
-    right: 2px;
-    top: 6px;
+    right: 35px;
+    top: 3px;
     background: none;
     border-radius: 0px;
     border: none;
     height: 30px;
     text-align: center;
     padding: 4px;
-    color: hsl(0, 0%, 80%);
-    font-size: 18px;
+    color: #fff;
+    font-size: 3em;
     box-shadow: none;
     -webkit-box-shadow: none;
     -moz-box-shadow: none;
@@ -1958,7 +1985,7 @@ nav a .no-style {
 }
 
 #searchbox .search_button:hover {
-    color: hsl(0, 0%, 0%);
+    color: #fff;
 }
 
 #searchbox .search_button[disabled] {
@@ -1994,8 +2021,6 @@ nav a .no-style {
 }
 
 #search_arrows {
-    margin-bottom: 5px;
-
     /* Bootstrap wants font-size: 0 to eliminate space between
        the buttons.  We need to inherit the font size, so we
        remove the button gap by adjusting "letter" spacing. */
@@ -2007,6 +2032,8 @@ nav a .no-style {
     /* Chrome and Firefox do this already via default browser stylesheet;
        but Opera needs this to avoid smushed letters in the search box. */
     letter-spacing: normal;
+    background-color: transparent;
+    outline: none;
 }
 
 div.floating_recipient {
@@ -2217,7 +2244,7 @@ div.floating_recipient {
 #page_loading_indicator_box {
     position: relative;
     left: -50%;
-    top: -43px;
+    top: -40px;
     z-index: 1;
     -webkit-border-radius: 6px;
     -moz-border-radius: 6px;

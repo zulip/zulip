@@ -1,4 +1,5 @@
 <ul id="tab_list">
+    <div class="buffer"></div>
     {{#each tabs}}
     <li class="{{active}} {{cls}} {{#if home}}home-link{{/if}}" {{#if data}}data-name="{{data}}"{{/if}}>
         {{#if icon}}
@@ -6,17 +7,15 @@
         {{/if}}
         {{! Most tabs are links, but some are not since we don't have a narrow for them (e.g. Search) }}
         {{#if hash}}
-            {{#if home}}
-            <a href="{{hash}}"><i class="icon-vector-home"></i></a>
-            {{else}}
+            {{#unless home}}
             <a href="{{hash}}">{{title}}</a>
-            {{/if}}
+            {{/unless}}
         {{else}}
             {{#if home}}
             <i class="icon-vector-home"></i>
             {{/if}}
             {{#unless home}}
-            {{title}}
+            {{ title }}
             {{/unless}}
         {{/if}}
     </li>

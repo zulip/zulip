@@ -1,5 +1,4 @@
-<div class="header">
-<nav class="header-main rightside-userlist" id="top_navbar">
+<nav>
   <div class="column-left">
       <a class="no-style brand" href="#">
           <img src="/static/images/logo/zulip-icon-128x128.png" class="nav-logo no-drag"/>
@@ -8,27 +7,25 @@
           </div>
       </a>
   </div>
-  <div class="column-middle" id="navbar-middle">
-    <div class="column-middle-inner">
-          <div id="streamlist-toggle" {%if embedded %} style="visibility: hidden"{% endif %}>
-            <a href="#" id="streamlist-toggle-button" role="button"><i class="icon-vector-reorder"></i>
-              <span id="streamlist-toggle-unreadcount">0</span>
-            </a>
+  <div class="column-middle">
+      <div id="streamlist-toggle" {%if embedded %} style="visibility: hidden"{% endif %}>
+        <a href="#" id="streamlist-toggle-button" role="button"><i class="icon-vector-reorder"></i>
+          <span id="streamlist-toggle-unreadcount">0</span>
+        </a>
+      </div>
+      <div id="searchbox" class="searchbox-rightmargin">
+        <div id="tab_bar" class="notdisplayed">
+        </div>
+        <form id="searchbox_form" class="form-search navbar-search">
+          <div id="search_arrows" class="input-append">
+            <a class="search_icon" href="#search-operators" data-overlay-trigger="search-operators"><i class="icon-vector-search"></i></a>
+            <input class="search-query input-block-level" id="search_query" type="text" placeholder="{{ _('Search') }}"
+                   autocomplete="off" aria-label="{{ _('Search') }}"/>
+            {# Start the button off disabled since there is no active search #}
+            <button class="btn search_button" type="button" id="search_exit" disabled="disabled" aria-label="{{ _('Exit search') }}"><i class="icon-vector-remove"></i></button>
           </div>
-          <div id="searchbox" class="searchbox-rightmargin">
-            <div id="tab_bar" class="notdisplayed">
-            </div>
-            <form id="searchbox_form" class="form-search navbar-search">
-              <div id="search_arrows" class="input-append">
-                <a class="search_icon" href="#search-operators" data-overlay-trigger="search-operators"><i class="icon-vector-search"></i></a>
-                <input class="search-query input-block-level" id="search_query" type="text" placeholder="{{ _('Search') }}"
-                       autocomplete="off" aria-label="{{ _('Search') }}"/>
-                {# Start the button off disabled since there is no active search #}
-                <button class="btn search_button" type="button" id="search_exit" disabled="disabled" aria-label="{{ _('Exit search') }}"><i class="icon-vector-remove"></i></button>
-              </div>
-            </form>
-          </div>{# /searchbox #}
-    </div>
+        </form>
+      </div>{# /searchbox #}
   </div>
   <div class="column-right">
       <div class="navbar-buttons questions" {%if embedded %} style="visibility: hidden"{% endif %}>
@@ -160,4 +157,3 @@
       </div>
   </div>
 </nav>
-</div>

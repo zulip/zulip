@@ -10,8 +10,6 @@ exports.actively_scrolling = function () {
     return actively_scrolling;
 };
 
-// What, if anything, obscures the home tab?
-
 exports.replace_emoji_with_text = function (element) {
     element.find(".emoji").replaceWith(function () {
         return $(this).attr("alt");

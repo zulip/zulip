@@ -75,13 +75,13 @@ function make_tab_data() {
             }
 
         } else if (filter.has_operand("is", "starred")) {
-            tabs.push(make_tab("Starred", hashed));
+            tabs.push(make_tab("Starred", hashed, undefined, 'private_message'));
         } else if (filter.has_operator("near")) {
             tabs.push(make_tab("Near " + filter.operands("near")[0], hashed));
         } else if (filter.has_operator("id")) {
             tabs.push(make_tab("ID " + filter.operands("id")[0], hashed));
         } else if (filter.has_operand("is", "mentioned")) {
-            tabs.push(make_tab("Mentions", hashed));
+            tabs.push(make_tab("Mentions", hashed, undefined, 'private_message'));
         } else if (filter.has_operator("sender")) {
             var sender = filter.operands("sender")[0];
             if (people.get_by_email(sender)) {
@@ -115,8 +115,19 @@ function make_tab_data() {
     return tabs;
 }
 
+function text_should_be_dark(hex) {
+    // TRANSFORM STEPS:
+    // .replace : #f028a0 => f028a0
+    // .match   : f028a0  => ["f0", "28", "a0"]
+    // .reduce  : sum([240, 40, 160])
+    return hex.replace(/^#/, "").match(/.{2}/g).reduce(function (acc, value_hex) {
+        return acc + parseInt(value_hex, 16);
+    }, 0) > (200 * 3);
+}
+
 exports.colorize_tab_bar = function () {
     var stream_tab = $('#tab_list .stream');
+
     if (stream_tab.length > 0) {
         var stream_name = stream_tab.data('name');
         if (stream_name === undefined) {
@@ -131,25 +142,34 @@ exports.colorize_tab_bar = function () {
                            colorspace.getDecimalColor(color_for_stream), 0.2));
 
         if (stream_tab.hasClass("stream")) {
-            stream_tab.css('border-left-color',
-                           color_for_stream).css('background-color',
-                                                 color_for_stream);
+            var searchbox = stream_tab.closest("#searchbox");
+            var stream_pill = searchbox.find("li.stream");
+            if (text_should_be_dark(color_for_stream)) {
+                searchbox.css('color', "#444");
+                stream_pill.addClass("dark");
+            } else {
+                searchbox.css('color', color_for_stream);
+                stream_pill.removeClass("dark");
+            }
+            stream_pill.css("background-color", color_for_stream);
+
             if (stream_tab.hasClass("inactive")) {
               stream_tab.hover (
                 function () {
-                 $(this).css('border-left-color',
-                             stream_light).css('background-color',
-                             stream_light);
+                    $(this).closest("#searchbox").css('color', stream_light);
                 }, function () {
-                 $(this).css('border-left-color',
-                             color_for_stream).css('background-color',
-                                                   color_for_stream);
+                    $(this).closest("#searchbox").css('color', color_for_stream);
                 }
               );
             }
             stream_tab.removeClass(stream_color.color_classes);
             stream_tab.addClass(stream_dark);
         }
+    } else {
+        // this is for the case of not being a stream but for instance being
+        // "Private messages", "Starred messages", and "@-mentions".
+        $("#searchbox").css("color", "inherit");
+        $(".home-link").css("color", "inherit");
     }
 };
 
@@ -174,6 +194,33 @@ $(function () {
     $(document).on('narrow_deactivated.zulip', function () {
         build_tab_bar();
     });
+
+    (function () {
+        var $input = $(".search-query");
+
+        $("#searchbox").on("transitionend", function () {
+            if ($("#searchbox").hasClass("input-mode")) {
+                $input.focus();
+            }
+        });
+
+        $("#tab_bar").click(function (e) {
+            $("#searchbox").addClass("input-mode");
+            e.stopPropagation();
+        });
+
+        $("#search_query").blur(function () {
+            $("#searchbox").removeClass("input-mode");
+        });
+
+        $("*:not(#searchbox), *:not(#searchbox *)").click(function (e) {
+            if ($(this).closest("#searchbox").length === 0) {
+                $("#searchbox").removeClass("input-mode");
+            } else {
+                e.stopPropagation();
+            }
+        });
+    }());
 
     build_tab_bar();
 });
