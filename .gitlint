@@ -1,6 +1,8 @@
 [general]
 ignore=title-trailing-punctuation, body-min-length, body-is-missing
 
+extra-path=tools/lib/gitlint-rules
+
 [title-match-regex]
 regex=^.+\.$
 
