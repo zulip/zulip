@@ -169,7 +169,7 @@ def patch_bot_backend(request, user_profile, email,
         check_change_full_name(bot, full_name)
     if bot_owner is not None:
         owner = get_user_profile_by_email(bot_owner)
-        do_change_bot_owner(bot, owner)
+        do_change_bot_owner(bot, owner, user_profile)
     if default_sending_stream is not None:
         if default_sending_stream == "":
             stream = None  # type: Optional[Stream]
