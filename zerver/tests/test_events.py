@@ -1405,7 +1405,7 @@ class EventsRegisterTest(ZulipTestCase):
         self.user_profile = get_user_profile_by_email('iago@zulip.com')
         owner = get_user_profile_by_email('hamlet@zulip.com')
         bot = self.create_bot('test-bot@zulip.com')
-        action = lambda: do_change_bot_owner(bot, owner)
+        action = lambda: do_change_bot_owner(bot, owner, self.user_profile)
         events = self.do_test(action)
         error = change_bot_owner_checker('events[0]', events[0])
         self.assert_on_error(error)

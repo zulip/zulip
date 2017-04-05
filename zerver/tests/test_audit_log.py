@@ -65,9 +65,10 @@ class TestChangeBotOwner(ZulipTestCase):
     def test_change_bot_owner(self):
         # type: () -> None
         now = timezone.now()
+        admin = get_user_profile_by_email('iago@zulip.com')
         bot = get_user_profile_by_email("notification-bot@zulip.com")
         bot_owner = get_user_profile_by_email("hamlet@zulip.com")
-        do_change_bot_owner(bot, bot_owner)
-        self.assertEqual(RealmAuditLog.objects.filter(event_type='user_change_owner',
+        do_change_bot_owner(bot, bot_owner, admin)
+        self.assertEqual(RealmAuditLog.objects.filter(event_type='bot_owner_changed',
                                                       event_time__gte=now).count(), 1)
         self.assertEqual(bot_owner, bot.bot_owner)
