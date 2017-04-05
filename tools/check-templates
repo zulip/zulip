@@ -185,6 +185,7 @@ def check_html_templates(templates, all_dups):
 
         'templates/zerver/integrations/capistrano.html',
         'templates/zerver/integrations/git.html',
+        'templates/zerver/integrations/google-calendar.html',
     ]
     # TODO: Clean these files
     for fn in templates:

@@ -1,0 +1,86 @@
+<p>
+    Get Google Calendar reminders in Zulip! This is a great way to see your reminders directly in
+    your Zulip feed.
+</p>
+
+<p>
+    First download and install our <a href="/api">Python Bindings and example scripts</a>.
+    This bot should be set up on a trusted machine, because your API key is visible to local users
+    through the command line or config file.
+</p>
+
+<p>
+    Next, follow the instructions for <b>Step 1</b> at
+    <a href="https://developers.google.com/google-apps/calendar/quickstart/python">this link</a>
+    to get a <code>client_secret</code> file. Save this file as <code>client_secret.json</code>
+    to your <code>~/</code> directory.
+</p>
+
+<p>
+    Next, install the latest Google API Client for Python by following the instructions on
+    the <a href="https://developers.google.com/api-client-library/python/start/installation">
+    Google Website</a>.
+</p>
+
+<p>
+    Then go to your <b>Zulip Settings</b> by clicking on the cog in the top right corner,
+    and then clicking on <b>Settings</b>.
+</p>
+
+<p>
+    Click on the tab that's labeled <b>Your bots</b> and click on <b>Show/change your API
+    key</b>. Enter your password if prompted, and download the <code>zuliprc</code> file. Save
+    this file as <code>.zuliprc</code> to your <code>~/</code> directory.
+</p>
+
+<p><img class="screenshot" src="/static/images/integrations/google/calendar/001.png"/></p>
+
+<p>
+    Run the <code>get-google-credentials</code> with this command:
+<pre>python /usr/local/share/zulip/integrations/google/get-google-credentials</pre>
+It should open up a browser and ask you for certain permissions. Give Zulip access, and move
+on to the next step. If it doesn't open a browser, follow the instructions in the terminal
+window.
+</p>
+
+<p>
+    Now, all that's left to do is to run the <code>gcal-bot</code> script, in the same
+    directory as the <code>get-google-credentials</code> script, with the necessary paramaters:
+<pre>python /usr/local/share/zulip/integrations/google/gcal-bot --user foo@zulip.com</pre>
+</p>
+
+<p>
+    The <code>--user</code> flag specifies the user to send the reminder to. <br/>There are
+    two optional flags that you can specify when running this script:
+</p>
+<ol>
+    <li>
+        <code>--calendar</code>: This flag specifies the calendar to watch from the user's
+        Google Account. By default, this flag is set to a user's primary or default calendar.
+        To specify a calendar, you need the calendar ID which can be obtained by going to Google
+        Calendar and clicking on the wedge next to the calendar's name. Click on settings in
+        <b>Calendar settings</b> in the drop down, and look for the <b>Calendar Address</b>
+        section. Copy the <b>Calendar ID</b> from the right side of the page and use that as the
+        value for this flag.
+
+        <p><img class="screenshot" src="/static/images/integrations/google/calendar/002.png"/></p>
+    </li>
+
+    <li>
+        <code>--interval</code>: This flag specifies the interval of time - in minutes - between
+        receiving the reminder, and the actual event. For example, an interval of 30 minutes
+        would mean that you would receive a reminder for an event 30 minutes before it is
+        scheduled to occur.
+    </li>
+</ol>
+
+<p>
+    Don't close the terminal window with the bot running. You will only get reminders if the
+    bot is still running.
+</p>
+
+<p>
+    <b>Congratulations! You're done!</b><br/>You will get a Zulip private message, whenever you
+    have a calendar event scheduled, that looks like this:
+    <img class="screenshot" src="/static/images/integrations/google/calendar/003.png"/>
+</p>
