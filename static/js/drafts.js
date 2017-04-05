@@ -260,10 +260,9 @@ exports.drafts_handle_events = function (e, event_key) {
                 // 55 is the minimum distance from the top that will require extra scrolling.
                 $(".drafts-list")[0].scrollTop = $(".drafts-list")[0].scrollTop - (55 - prev_focus_draft_row.position().top);
             }
-            e.preventDefault();
         }
-        return true;
     }
+
     // This detects down arrow key presses when the draft overlay
     // is open and scrolls through the drafts.
     if (event_key === "down_arrow") {
@@ -292,10 +291,9 @@ exports.drafts_handle_events = function (e, event_key) {
                     $(".drafts-list")[0].scrollTop = $(".drafts-list")[0].scrollTop + 2 - (dist_from_bottom);
                 }
             }
-            e.preventDefault();
         }
-        return true;
     }
+
     // Allows user to delete drafts with backspace
     if (event_key === "backspace") {
         var elt = document.activeElement;
@@ -319,8 +317,6 @@ exports.drafts_handle_events = function (e, event_key) {
             if ($("#drafts_table .draft-row").length === 0) {
                 $('#drafts_table .no-drafts').show();
             }
-            e.preventDefault();
-            return true;
         }
     }
 };

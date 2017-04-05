@@ -877,6 +877,7 @@ JS_SPECS = {
             'js/search.js',
             'js/composebox_typeahead.js',
             'js/navigate.js',
+            'js/list_util.js',
             'js/hotkey.js',
             'js/favicon.js',
             'js/notifications.js',

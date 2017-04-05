@@ -15,8 +15,6 @@ set_global('activity', {
 });
 
 set_global('drafts', {
-    drafts_handle_events: function () { return; },
-    drafts_overlay_open: function () { return; },
 });
 
 set_global('$', function () {
@@ -32,6 +30,9 @@ set_global('document', {
 });
 
 var hotkey = require('js/hotkey.js');
+
+set_global('list_util', {
+});
 
 set_global('current_msg_list', {
     selected_id: function () {
@@ -276,8 +277,9 @@ function stubbing(func_name_to_stub, test_function) {
         });
     }
 
-    hotkey.tab_up_down = function () { return {flag: false}; };
+    list_util.inside_list = return_false;
     global.current_msg_list.empty = return_true;
+    global.drafts.drafts_overlay_open = return_false;
     hotkey.is_settings_page = return_false;
     hotkey.is_subs = return_false;
 
@@ -288,6 +290,11 @@ function stubbing(func_name_to_stub, test_function) {
     assert_unmapped('page_down');
     assert_unmapped('spacebar');
     assert_unmapped('up_arrow');
+
+    global.list_util.inside_list = return_true;
+    assert_mapping('up_arrow', 'list_util.go_up');
+    assert_mapping('down_arrow', 'list_util.go_down');
+    list_util.inside_list = return_false;
 
     global.current_msg_list.empty = return_false;
     assert_mapping('down_arrow', 'navigate.down');
@@ -300,14 +307,17 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('up_arrow', 'navigate.up');
 
     hotkey.is_subs = return_true;
-    global.ui_state.home_tab_obscured = return_true;
     assert_mapping('up_arrow', 'subs.switch_rows');
     assert_mapping('down_arrow', 'subs.switch_rows');
-    global.ui_state.home_tab_obscured = return_false;
 
     hotkey.is_lightbox_open = return_true;
     assert_mapping('left_arrow', 'lightbox.prev');
     assert_mapping('right_arrow', 'lightbox.next');
+
+    hotkey.is_editing_stream_name = return_true;
+    hotkey.is_subs = return_false;
+    assert_unmapped('down_arrow');
+    assert_unmapped('up_arrow');
 
     hotkey.is_settings_page = return_true;
     assert_unmapped('end');
@@ -317,7 +327,11 @@ function stubbing(func_name_to_stub, test_function) {
     assert_unmapped('page_down');
     assert_unmapped('spacebar');
 
-    hotkey.is_editing_stream_name = return_true;
-    assert_unmapped('down_arrow');
-    assert_unmapped('up_arrow');
+    assert_mapping('up_arrow', 'settings.handle_up_arrow');
+    assert_mapping('down_arrow', 'settings.handle_down_arrow');
+
+    global.drafts.drafts_overlay_open = return_true;
+    assert_mapping('up_arrow', 'drafts.drafts_handle_events');
+    assert_mapping('down_arrow', 'drafts.drafts_handle_events');
+
 }());

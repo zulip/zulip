@@ -66,8 +66,8 @@ var keydown_unshift_mappings = {
     36: {name: 'home', message_view_only: true}, // home
     37: {name: 'left_arrow', message_view_only: false}, // left arrow
     39: {name: 'right_arrow', message_view_only: false}, // right arrow
-    38: {name: 'up_arrow', message_view_only: true}, // up arrow
-    40: {name: 'down_arrow', message_view_only: true}, // down arrow
+    38: {name: 'up_arrow', message_view_only: false}, // up arrow
+    40: {name: 'down_arrow', message_view_only: false}, // down arrow
 };
 
 var keydown_ctrl_mappings = {
@@ -122,25 +122,6 @@ var keypress_mappings = {
     118: {name: 'show_lightbox', message_view_only: true}, // 'v'
     119: {name: 'query_streams', message_view_only: false}, // 'w'
 };
-
-exports.tab_up_down = (function () {
-    var list = ["#group-pm-list", "#stream_filters", "#global_filters", "#user_presences"];
-
-    return function (e) {
-        var $target = $(e.target);
-        var flag = $target.closest(list.join(", ")).length > 0;
-
-        return {
-            flag: flag,
-            next: function () {
-                return $target.closest("li").next().find("a");
-            },
-            prev: function () {
-                return $target.closest("li").prev().find("a");
-            },
-        };
-    };
-}());
 
 exports.get_keydown_hotkey = function (e) {
     if (e.metaKey || e.altKey) {
@@ -451,16 +432,37 @@ exports.process_hotkey = function (e, hotkey) {
             return exports.process_escape_key(e);
     }
 
-    if (drafts.drafts_overlay_open()) {
-        drafts.drafts_handle_events(e, event_name);
+    switch (event_name) {
+        // TODO: break out specific handlers for up_arrow,
+        //       down_arrow, and backspace
+        case 'up_arrow':
+        case 'down_arrow':
+        case 'backspace':
+            if (drafts.drafts_overlay_open()) {
+                drafts.drafts_handle_events(e, event_name);
+                return true;
+            }
+    }
+
+    if (exports.is_settings_page()) {
+        switch (event_name) {
+            case 'up_arrow':
+                settings.handle_up_arrow(e);
+                return true;
+            case 'down_arrow':
+                settings.handle_down_arrow(e);
+                return true;
+        }
+        return false;
     }
 
     if (hotkey.message_view_only && ui_state.home_tab_obscured()) {
-        if ((event_name === 'up_arrow' || event_name === 'down_arrow') && exports.is_subs()) {
-            subs.switch_rows(event_name);
-            return true;
-        }
         return false;
+    }
+
+    if ((event_name === 'up_arrow' || event_name === 'down_arrow') && exports.is_subs()) {
+        subs.switch_rows(event_name);
+        return true;
     }
 
     if (exports.is_editing_stream_name(e)) {
@@ -469,20 +471,16 @@ exports.process_hotkey = function (e, hotkey) {
         return false;
     }
 
-    var tab_list;
-
     if (event_name === "up_arrow") {
-        tab_list = exports.tab_up_down(e);
-        if (tab_list.flag) {
-            tab_list.prev().focus();
+        if (list_util.inside_list(e)) {
+            list_util.go_up(e);
             return true;
         }
     }
 
     if (event_name === "down_arrow") {
-        tab_list = exports.tab_up_down(e);
-        if (tab_list.flag) {
-            tab_list.next().focus();
+        if (list_util.inside_list(e)) {
+            list_util.go_down(e);
             return true;
         }
     }
@@ -500,25 +498,6 @@ exports.process_hotkey = function (e, hotkey) {
             // Ignore backspace; don't navigate back a page.
             return true;
         }
-    }
-
-    if (exports.is_settings_page()) {
-        if (event_name === 'up_arrow') {
-            var prev = e.target.previousElementSibling;
-
-            if ($(prev).css("display") !== "none") {
-                $(prev).focus().click();
-            }
-            return true;
-        } else if (event_name === 'down_arrow') {
-            var next = e.target.nextElementSibling;
-
-            if ($(next).css("display") !== "none") {
-                $(next).focus().click();
-            }
-            return true;
-        }
-        return false;
     }
 
     // Process hotkeys specially when in an input, select, textarea, or send button
