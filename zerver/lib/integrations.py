@@ -184,7 +184,7 @@ WEBHOOK_INTEGRATIONS = [
 
 INTEGRATIONS = {
     'asana': Integration('asana', 'asana', doc='zerver/integrations/asana.html'),
-    'capistrano': Integration('capistrano', 'capistrano'),
+    'capistrano': Integration('capistrano', 'capistrano', doc='zerver/integrations/capistrano.html'),
     'codebase': Integration('codebase', 'codebase'),
     'email': EmailIntegration('email', 'email'),
     'git': Integration('git', 'git'),
