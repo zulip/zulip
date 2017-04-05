@@ -8,6 +8,8 @@ from django.utils.module_loading import import_string
 from django.utils.safestring import mark_safe
 from django.template import loader
 
+from zerver.templatetags.app_filters import render_markdown_path
+
 
 """This module declares all of the (documented) integrations available
 in the Zulip server.  The Integration class is used as part of
@@ -66,7 +68,7 @@ class WebhookIntegration(Integration):
     DEFAULT_FUNCTION_PATH = 'zerver.webhooks.{name}.view.api_{name}_webhook'
     DEFAULT_URL = 'api/v1/external/{name}'
     DEFAULT_CLIENT_NAME = 'Zulip{name}Webhook'
-    DEFAULT_DOC_PATH = '{name}/doc.html'
+    DEFAULT_DOC_PATH = '{name}/doc.{ext}'
 
     def __init__(self, name, client_name=None, logo=None, secondary_line_text=None,
                  function=None, url=None, display_name=None, doc=None):
@@ -88,7 +90,13 @@ class WebhookIntegration(Integration):
         self.url = url
 
         if doc is None:
-            doc = self.DEFAULT_DOC_PATH.format(name=name)
+            path = os.path.join(settings.DEPLOY_ROOT, 'zerver', 'webhooks')
+            md_doc = self.DEFAULT_DOC_PATH.format(name=name, ext='md')
+            if os.path.exists(os.path.join(path, md_doc)):
+                doc = md_doc
+            else:
+                doc = self.DEFAULT_DOC_PATH.format(name=name, ext='html')
+
         self.doc = doc
 
     @property
@@ -100,7 +108,12 @@ class WebhookIntegration(Integration):
     def help_content(self):
         # type: () -> Text
         doc_context = self.doc_context or {}
-        return mark_safe(loader.get_template(self.doc).render(doc_context))
+
+        if self.doc.endswith('.md'):
+            return render_markdown_path(self.doc, doc_context)
+        else:
+            template = loader.get_template(self.doc)
+            return mark_safe(template.render(doc_context))
 
 class HubotLozenge(Integration):
     GIT_URL_TEMPLATE = "https://github.com/hubot-scripts/hubot-{}"
