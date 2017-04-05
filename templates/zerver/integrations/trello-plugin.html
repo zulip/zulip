@@ -1,0 +1,30 @@
+<p>
+    This legacy integration for Trello works by running a script
+    that communicates with the Trello API in a cron job. We
+    recommend <a href="#trello">the new Trello webhook
+    integration</a> (which will eventually replace this entirely).
+    Please
+    <a href="https://github.com/zulip/zulip/issues/new">
+        report any issues
+    </a>
+    which cause you to prefer this integration over
+    the webhook integration.
+</p>
+
+<p>
+    First, create the stream you'd like to use for Trello notifications,
+    and subscribe all interested parties to this stream. We recommend the
+    name <code>trello</code>.
+</p>
+
+<p>
+    Next, download a copy
+    of <a href="https://github.com/zulip/trello-to-zulip">trello-to-zulip</a>
+    and follow the instructions in <code>README.md</code>. When you
+    make changes in Trello, they will be reflected in Zulip:
+</p>
+
+<img class="screenshot" src="/static/images/integrations/trello/002.png"/>
+<p>
+    <small>Thanks to Nathan from FoundationDB for submitting this integration!</small>
+</p>

@@ -234,7 +234,8 @@ INTEGRATIONS = {
         'trello-plugin',
         logo='static/images/integrations/logos/trello.svg',
         secondary_line_text='(legacy)',
-        display_name='Trello'
+        display_name='Trello',
+        doc='zerver/integrations/trello-plugin.html'
     ),
     'twitter': Integration('twitter', 'twitter'),
 
