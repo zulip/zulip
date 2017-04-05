@@ -207,7 +207,12 @@ INTEGRATIONS = {
         doc='zerver/integrations/mercurial.html'
     ),
     'nagios': Integration('nagios', 'nagios', doc='zerver/integrations/nagios.html'),
-    'openshift': Integration('openshift', 'openshift', display_name='OpenShift'),
+    'openshift': Integration(
+        'openshift',
+        'openshift',
+        display_name='OpenShift',
+        doc='zerver/integrations/openshift.html'
+    ),
     'perforce': Integration('perforce', 'perforce'),
     'phabricator': Integration('phabricator', 'phabricator'),
     'puppet': Integration('puppet', 'puppet'),
