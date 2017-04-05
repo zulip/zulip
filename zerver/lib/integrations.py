@@ -1,5 +1,6 @@
-from typing import Dict, List, Optional, TypeVar
 import os.path
+
+from typing import Dict, List, Optional, TypeVar, Any
 from django.conf import settings
 from django.conf.urls import url
 from django.core.urlresolvers import LocaleRegexProvider
@@ -32,6 +33,7 @@ class Integration(object):
         self.client_name = client_name
         self.secondary_line_text = secondary_line_text
         self.doc = doc
+        self.doc_context = None  # type: Dict[Any, Any]
 
         if logo is None:
             if os.path.isfile(self.DEFAULT_LOGO_STATIC_PATH_SVG.format(name=name)):
@@ -47,6 +49,10 @@ class Integration(object):
     def is_enabled(self):
         # type: () -> bool
         return True
+
+    def add_doc_context(self, context):
+        # type: (Dict[Any, Any]) -> None
+        self.doc_context = context
 
 class EmailIntegration(Integration):
     def is_enabled(self):

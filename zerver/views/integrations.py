@@ -102,6 +102,12 @@ def add_integrations_context(context):
     context['settings_html'] = settings_html
     context['subscriptions_html'] = subscriptions_html
 
+    for name in alphabetical_sorted_integration:
+        alphabetical_sorted_integration[name].add_doc_context(context)
+
+    for name in alphabetical_sorted_hubot_lozenges:
+        alphabetical_sorted_hubot_lozenges[name].add_doc_context(context)
+
 
 class IntegrationView(ApiURLView):
     template_name = 'zerver/integrations/index.html'
