@@ -179,7 +179,12 @@ INTEGRATIONS = {
     'codebase': Integration('codebase', 'codebase', doc='zerver/integrations/codebase.html'),
     'email': EmailIntegration('email', 'email'),
     'git': Integration('git', 'git', doc='zerver/integrations/git.html'),
-    'google-calendar': Integration('google-calendar', 'google-calendar', display_name='Google Calendar'),
+    'google-calendar': Integration(
+        'google-calendar',
+        'google-calendar',
+        display_name='Google Calendar',
+        doc='zerver/integrations/google-calendar.html'
+    ),
     'hubot': Integration('hubot', 'hubot'),
     'jenkins': Integration('jenkins', 'jenkins', secondary_line_text='(or Hudson)'),
     'jira-plugin': Integration(
