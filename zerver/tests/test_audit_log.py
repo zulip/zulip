@@ -10,7 +10,7 @@ from zerver.models import RealmAuditLog, get_realm, get_user_profile_by_email
 from datetime import timedelta
 from django.contrib.auth.password_validation import validate_password
 
-class TestUserActivation(ZulipTestCase):
+class TestRealmAuditLog(ZulipTestCase):
     def test_user_activation(self):
         # type: () -> None
         realm = get_realm('zulip')
@@ -28,7 +28,6 @@ class TestUserActivation(ZulipTestCase):
         self.assertEqual(event_types, ['user_created', 'user_deactivated', 'user_activated',
                                        'user_deactivated', 'user_reactivated'])
 
-class TestChangePassword(ZulipTestCase):
     def test_change_password(self):
         # type: () -> None
         now = timezone.now()
@@ -39,7 +38,6 @@ class TestChangePassword(ZulipTestCase):
                                                       event_time__gte=now).count(), 1)
         self.assertIsNone(validate_password(password, user))
 
-class TestChangeEmail(ZulipTestCase):
     def test_change_email(self):
         # type: () -> None
         now = timezone.now()
@@ -50,7 +48,6 @@ class TestChangeEmail(ZulipTestCase):
                                                       event_time__gte=now).count(), 1)
         self.assertEqual(email, user.email)
 
-class TestChangeAvatarFields(ZulipTestCase):
     def test_change_avatar_source(self):
         # type: () -> None
         now = timezone.now()
@@ -61,7 +58,6 @@ class TestChangeAvatarFields(ZulipTestCase):
                                                       event_time__gte=now).count(), 1)
         self.assertEqual(avatar_source, user.avatar_source)
 
-class TestChangeBotOwner(ZulipTestCase):
     def test_change_bot_owner(self):
         # type: () -> None
         now = timezone.now()
