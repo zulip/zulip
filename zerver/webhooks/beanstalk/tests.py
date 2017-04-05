@@ -10,17 +10,29 @@ class BeanstalkHookTests(WebhookTestCase):
     def test_git_single(self):
         # type: () -> None
         expected_subject = "work-test / master"
-        expected_message = """Leo Franchi [pushed](http://lfranchi-svn.beanstalkapp.com/work-test) to branch master
+        expected_message = """Leo Franchi [pushed](http://lfranchi-svn.beanstalkapp.com/work-test) 1 commit to branch master. Commits by Leo Franchi(1)
 
 * add some stuff ([e50508d](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/e50508df))"""
         self.send_and_test_stream_message('git_singlecommit', expected_subject, expected_message,
                                           content_type=None,
                                           **self.api_auth(self.TEST_USER_EMAIL))
 
+    def test_git_multiple_committers(self):
+        # type: () -> None
+        expected_subject = "work-test / master"
+        expected_message = """Leo Franchi [pushed](http://lfranchi-svn.beanstalkapp.com/work-test) 3 commits to branch master. Commits by Leo Franchi(2) and Tomasz Kolek(1)
+
+* Added new file ([edf529c](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/edf529c7))
+* Filled in new file with some stuff ([c2a191b](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/c2a191b9))
+* More work to fix some bugs ([2009815](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/20098158))"""
+        self.send_and_test_stream_message('git_multiple_committers', expected_subject, expected_message,
+                                          content_type=None,
+                                          **self.api_auth(self.TEST_USER_EMAIL))
+
     def test_git_multiple(self):
         # type: () -> None
         expected_subject = "work-test / master"
-        expected_message = """Leo Franchi [pushed](http://lfranchi-svn.beanstalkapp.com/work-test) to branch master
+        expected_message = """Leo Franchi [pushed](http://lfranchi-svn.beanstalkapp.com/work-test) 3 commits to branch master. Commits by Leo Franchi(3)
 
 * Added new file ([edf529c](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/edf529c7))
 * Filled in new file with some stuff ([c2a191b](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/c2a191b9))
@@ -33,7 +45,7 @@ class BeanstalkHookTests(WebhookTestCase):
         # type: () -> None
         commits_info = "* add some stuff ([e50508d](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/e50508df))\n"
         expected_subject = "work-test / master"
-        expected_message = """Leo Franchi [pushed](http://lfranchi-svn.beanstalkapp.com/work-test) to branch master
+        expected_message = """Leo Franchi [pushed](http://lfranchi-svn.beanstalkapp.com/work-test) 50 commits to branch master. Commits by Leo Franchi(50)
 
 {}[and {} more commit(s)]""".format((commits_info * COMMITS_LIMIT), 50 - COMMITS_LIMIT)
         self.send_and_test_stream_message('git_morethanlimitcommits', expected_subject, expected_message,

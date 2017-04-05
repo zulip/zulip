@@ -33,6 +33,7 @@ def get_normal_push_event_body(payload):
 
     commits = [
         {
+            'name': commit.get('author').get('name'),
             'sha': commit.get('id'),
             'message': commit.get('message'),
             'url': commit.get('url')

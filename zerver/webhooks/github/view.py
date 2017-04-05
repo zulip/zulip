@@ -296,10 +296,11 @@ def build_message_from_gitlog(user_profile, name, ref, commits, before, after, u
     return subject, content
 
 def _transform_commits_list_to_common_format(commits):
-    # type: (List[Dict[str, str]]) -> List[Dict[str, str]]
+    # type: (List[Dict[str, Any]]) -> List[Dict[str, str]]
     new_commits_list = []
     for commit in commits:
         new_commits_list.append({
+            'name': commit.get('committer').get('username'),
             'sha': commit.get('id'),
             'url': commit.get('url'),
             'message': commit.get('message'),
