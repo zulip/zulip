@@ -237,7 +237,7 @@ INTEGRATIONS = {
         display_name='Trello',
         doc='zerver/integrations/trello-plugin.html'
     ),
-    'twitter': Integration('twitter', 'twitter'),
+    'twitter': Integration('twitter', 'twitter', doc='zerver/integrations/twitter.html'),
 
 }  # type: Dict[str, Integration]
 

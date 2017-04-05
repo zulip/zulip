@@ -135,6 +135,7 @@ def check_html_templates(templates, all_dups):
             'templates/zerver/integrations/openshift.html',
             'templates/zerver/integrations/subversion.html',
             'templates/zerver/integrations/trac.html',
+            'templates/zerver/integrations/twitter.html',
         ]
         validate(fn=fn, check_indent=(fn not in bad_files))
 
