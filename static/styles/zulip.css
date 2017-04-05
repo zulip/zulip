@@ -2010,6 +2010,21 @@ div.floating_recipient {
     margin: 10px auto;
 }
 
+#page_loading_indicator_box_container {
+    position: absolute;
+    left: 50%;
+}
+
+#page_loading_indicator_box {
+    position: relative;
+    left: -50%;
+    top: -40px;
+    z-index: 1;
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+}
+
 .table-striped thead th {
     background-color: #444;
     color: white;

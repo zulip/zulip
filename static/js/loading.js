@@ -29,7 +29,9 @@ exports.make_indicator = function (outer_container, opts) {
         text_elem.text(opts.text);
         container.append(text_elem);
         // See note, below
-        text_width = 20 + text_elem.width();
+        if (!(opts.abs_positioned !== undefined && opts.abs_positioned)) {
+            text_width = 20 + text_elem.width();
+        }
     }
 
     // These width calculations are tied to the spinner width and
