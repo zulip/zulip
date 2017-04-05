@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+from mock import patch, MagicMock
+from typing import Optional, Text
+
 from zerver.lib.test_classes import WebhookTestCase
 
 class Bitbucket2HookTests(WebhookTestCase):
@@ -28,6 +31,27 @@ class Bitbucket2HookTests(WebhookTestCase):
         expected_message = u"""kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) 10 commits to branch master. Commits by Tomasz(4), James(3), Brendon(2) and others(1)\n\n{}* first commit ([84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))""".format(commit_info*9)
         self.send_and_test_stream_message('v2_push_multiple_committers_with_others', self.EXPECTED_SUBJECT_BRANCH_EVENTS, expected_message)
 
+    def test_bitbucket2_on_push_commits_multiple_committers_filtered_by_branches(self):
+        # type: () -> None
+        self.url = self.build_webhook_url(branches='master,development')
+        commit_info = u'* first commit ([84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))\n'
+        expected_message = u"""kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) 3 commits to branch master. Commits by Benjamin(2) and Tomasz(1)\n\n{}* first commit ([84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))""".format(commit_info*2)
+        self.send_and_test_stream_message('v2_push_multiple_committers', self.EXPECTED_SUBJECT_BRANCH_EVENTS, expected_message)
+
+    def test_bitbucket2_on_push_commits_multiple_committers_with_others_filtered_by_branches(self):
+        # type: () -> None
+        self.url = self.build_webhook_url(branches='master,development')
+        commit_info = u'* first commit ([84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))\n'
+        expected_message = u"""kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) 10 commits to branch master. Commits by Tomasz(4), James(3), Brendon(2) and others(1)\n\n{}* first commit ([84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))""".format(commit_info*9)
+        self.send_and_test_stream_message('v2_push_multiple_committers_with_others', self.EXPECTED_SUBJECT_BRANCH_EVENTS, expected_message)
+
+    def test_bitbucket2_on_push_event_filtered_by_branches(self):
+        # type: () -> None
+        self.url = self.build_webhook_url(branches='master,development')
+        commit_info = u'* first commit ([84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))'
+        expected_message = u"kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) 1 commit to branch master. Commits by Tomasz(1)\n\n{}".format(commit_info)
+        self.send_and_test_stream_message('v2_push', self.EXPECTED_SUBJECT_BRANCH_EVENTS, expected_message)
+
     def test_bitbucket2_on_push_commits_above_limit_event(self):
         # type: () -> None
         commit_info = '* a ([6f161a7](https://bitbucket.org/kolaszek/repository-name/commits/6f161a7bced94430ac8947d87dbf45c6deee3fb0))\n'
@@ -36,8 +60,23 @@ class Bitbucket2HookTests(WebhookTestCase):
         )
         self.send_and_test_stream_message('v2_push_commits_above_limit', self.EXPECTED_SUBJECT_BRANCH_EVENTS, expected_message)
 
+    def test_bitbucket2_on_push_commits_above_limit_filtered_by_branches(self):
+        # type: () -> None
+        self.url = self.build_webhook_url(branches='master,development')
+        commit_info = '* a ([6f161a7](https://bitbucket.org/kolaszek/repository-name/commits/6f161a7bced94430ac8947d87dbf45c6deee3fb0))\n'
+        expected_message = u"kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branches/compare/6f161a7bced94430ac8947d87dbf45c6deee3fb0..1221f2fda6f1e3654b09f1f3a08390e4cb25bb48) 5 commits to branch master. Commits by Tomasz(5)\n\n{}[and more commit(s)]".format(
+            (commit_info * 5),
+        )
+        self.send_and_test_stream_message('v2_push_commits_above_limit', self.EXPECTED_SUBJECT_BRANCH_EVENTS, expected_message)
+
     def test_bitbucket2_on_force_push_event(self):
         # type: () -> None
+        expected_message = u"kolaszek [force pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) to branch master. Head is now 25f93d22b719e2d678a7ad5ee0ef0d1fcdf39c12"
+        self.send_and_test_stream_message('v2_force_push', self.EXPECTED_SUBJECT_BRANCH_EVENTS, expected_message)
+
+    def test_bitbucket2_on_force_push_event_filtered_by_branches(self):
+        # type: () -> None
+        self.url = self.build_webhook_url(branches='master,development')
         expected_message = u"kolaszek [force pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) to branch master. Head is now 25f93d22b719e2d678a7ad5ee0ef0d1fcdf39c12"
         self.send_and_test_stream_message('v2_force_push', self.EXPECTED_SUBJECT_BRANCH_EVENTS, expected_message)
 
@@ -190,3 +229,78 @@ class Bitbucket2HookTests(WebhookTestCase):
         msg = self.get_last_message()
         self.do_test_message(msg, 'kolaszek pushed tag [a](https://bitbucket.org/kolaszek/repository-name/commits/tag/a)')
         self.do_test_subject(msg, self.EXPECTED_SUBJECT)
+
+    def test_bitbucket2_on_more_than_one_push_event_filtered_by_branches(self):
+        # type: () -> None
+        self.url = self.build_webhook_url(branches='master,development')
+        kwargs = {
+            "HTTP_X_EVENT_KEY": 'pullrequest:push'
+        }
+        self.send_and_test_stream_message('v2_more_than_one_push_event', **kwargs)
+        msg = self.get_second_to_last_message()
+        self.do_test_message(msg, 'kolaszek [pushed](https://bitbucket.org/kolaszek/repository-name/branch/master) 1 commit to branch master. Commits by Tomasz(1)\n\n* first commit ([84b96ad](https://bitbucket.org/kolaszek/repository-name/commits/84b96adc644a30fd6465b3d196369d880762afed))')
+        self.do_test_subject(msg, self.EXPECTED_SUBJECT_BRANCH_EVENTS)
+        msg = self.get_last_message()
+        self.do_test_message(msg, 'kolaszek pushed tag [a](https://bitbucket.org/kolaszek/repository-name/commits/tag/a)')
+        self.do_test_subject(msg, self.EXPECTED_SUBJECT)
+
+    def test_bitbucket2_on_more_than_one_push_event_filtered_by_branches_ignore(self):
+        # type: () -> None
+        self.url = self.build_webhook_url(branches='changes,development')
+        kwargs = {
+            "HTTP_X_EVENT_KEY": 'pullrequest:push'
+        }
+        expected_message = u"kolaszek pushed tag [a](https://bitbucket.org/kolaszek/repository-name/commits/tag/a)"
+        self.send_and_test_stream_message('v2_more_than_one_push_event',
+                                          self.EXPECTED_SUBJECT,
+                                          expected_message, **kwargs)
+
+    @patch('zerver.webhooks.bitbucket2.view.check_send_message')
+    def test_bitbucket2_on_push_event_filtered_by_branches_ignore(
+            self, check_send_message_mock):
+        # type: (MagicMock) -> None
+        self.url = self.build_webhook_url(branches='changes,devlopment')
+        payload = self.get_body('v2_push')
+        result = self.client_post(self.url, payload, content_type="application/json")
+        self.assertFalse(check_send_message_mock.called)
+        self.assert_json_success(result)
+
+    @patch('zerver.webhooks.bitbucket2.view.check_send_message')
+    def test_bitbucket2_on_push_commits_above_limit_filtered_by_branches_ignore(
+            self, check_send_message_mock):
+        # type: (MagicMock) -> None
+        self.url = self.build_webhook_url(branches='changes,devlopment')
+        payload = self.get_body('v2_push_commits_above_limit')
+        result = self.client_post(self.url, payload, content_type="application/json")
+        self.assertFalse(check_send_message_mock.called)
+        self.assert_json_success(result)
+
+    @patch('zerver.webhooks.bitbucket2.view.check_send_message')
+    def test_bitbucket2_on_force_push_event_filtered_by_branches_ignore(
+            self, check_send_message_mock):
+        # type: (MagicMock) -> None
+        self.url = self.build_webhook_url(branches='changes,devlopment')
+        payload = self.get_body('v2_force_push')
+        result = self.client_post(self.url, payload, content_type="application/json")
+        self.assertFalse(check_send_message_mock.called)
+        self.assert_json_success(result)
+
+    @patch('zerver.webhooks.bitbucket2.view.check_send_message')
+    def test_bitbucket2_on_push_multiple_committers_filtered_by_branches_ignore(
+            self, check_send_message_mock):
+        # type: (MagicMock) -> None
+        self.url = self.build_webhook_url(branches='changes,devlopment')
+        payload = self.get_body('v2_push_multiple_committers')
+        result = self.client_post(self.url, payload, content_type="application/json")
+        self.assertFalse(check_send_message_mock.called)
+        self.assert_json_success(result)
+
+    @patch('zerver.webhooks.bitbucket2.view.check_send_message')
+    def test_bitbucket2_on_push_multiple_committers_with_others_filtered_by_branches_ignore(
+            self, check_send_message_mock):
+        # type: (MagicMock) -> None
+        self.url = self.build_webhook_url(branches='changes,devlopment')
+        payload = self.get_body('v2_push_multiple_committers_with_others')
+        result = self.client_post(self.url, payload, content_type="application/json")
+        self.assertFalse(check_send_message_mock.called)
+        self.assert_json_success(result)
