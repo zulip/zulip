@@ -33,6 +33,35 @@ class WorkerTest(TestCase):
                 callback = self.consumers[queue_name]
                 callback(data)
 
+    def test_mirror_worker(self):
+        # type: () -> None
+        fake_client = self.FakeClient()
+        data = [
+            dict(
+                message=u'\xf3test',
+                time=time.time(),
+                rcpt_to='hamlet@zulip.com',
+            ),
+            dict(
+                message='\xf3test',
+                time=time.time(),
+                rcpt_to='hamlet@zulip.com',
+            ),
+            dict(
+                message='test',
+                time=time.time(),
+                rcpt_to='hamlet@zulip.com',
+            ),
+        ]
+        for element in data:
+            fake_client.queue.append(('email_mirror', element))
+
+        with patch('zerver.worker.queue_processors.mirror_email'):
+            with simulated_queue_client(lambda: fake_client):
+                worker = queue_processors.MirrorWorker()
+                worker.setup()
+                worker.start()
+
     def test_UserActivityWorker(self):
         # type: () -> None
         fake_client = self.FakeClient()
