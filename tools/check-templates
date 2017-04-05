@@ -129,6 +129,7 @@ def check_html_templates(templates, all_dups):
 
             'templates/zerver/integrations/capistrano.html',
             'templates/zerver/integrations/git.html',
+            'templates/zerver/integrations/jira-plugin.html',
         ]
         validate(fn=fn, check_indent=(fn not in bad_files))
 
@@ -186,6 +187,7 @@ def check_html_templates(templates, all_dups):
         'templates/zerver/integrations/capistrano.html',
         'templates/zerver/integrations/git.html',
         'templates/zerver/integrations/google-calendar.html',
+        'templates/zerver/integrations/jira-plugin.html',
     ]
     # TODO: Clean these files
     for fn in templates:

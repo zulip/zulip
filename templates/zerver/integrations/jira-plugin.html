@@ -1,0 +1,63 @@
+<p>
+    <em>If you are running JIRA version 5.2 or greater, or using the
+    hosted JIRA provided by Atlassian, we recommend using the
+    <a href="#jira">web-hook method</a> above instead. This plugin
+    supports older versions of JIRA.</em>
+</p>
+
+<p>
+    First, create the stream you'd like to use for JIRA notifications, and
+    subscribe all interested parties to this stream. We recommend the
+    name <code>jira</code>.
+</p>
+
+<h5>Plugin mechanism</h5>
+Next, download and install our <a href="/api">Python bindings and example scripts</a>.
+<p><b>Plugin Installation</b></p>
+The JIRA integration plugin requires two JIRA plugins. Please install
+the following plugins using the Universal Plugin Manager in your JIRA
+installation:
+<ul>
+    <li><a href="https://marketplace.atlassian.com/plugins/com.onresolve.jira.groovy.groovyrunner">Script Runner
+        Plugin</a></li>
+    <li><a href="https://marketplace.atlassian.com/plugins/com.atlassian.jira.plugin.jirasslplugin">SSL Plugin</a>
+    </li>
+</ul>
+<p><b>SSL Setup</b></p>
+As Zulip is using a StartCOM SSL certificate that is not recognized by default in the Java installation shipped with
+JIRA,
+you will need to tell JIRA about the certificate. Navigate to <code>Administration > System > Configure SSL</code>
+and in
+the <code>Import SSL Certificates</code> field, enter <code>{{ external_api_uri_subdomain }}</code>. After clicking
+<code>Save Certificates</code>,
+follow the on-screen instructions and restart JIRA for it to recognize the proper certificates.
+<p><b>Zulip Integration</b></p>
+Copy the folder <code>integrations/jira/org/</code> (from the tarball you downloaded above) to your JIRA
+<code>classes</code>
+folder.
+For self-contained JIRA installations, this will be <code>atlassian-jira/WEB-INF/classes/</code>, but this may be
+different in your deployment.
+Edit the constants at the top of <code>org/zulip/jira/ZulipListener.groovy</code>
+and fill them with the appropriate values:
+<div class="codehilite"><pre><span class="n">String</span> <span class="n">zulipEmail</span> <span
+    class="o">=</span> <span class="s2">"jira-notifications-bot@example.com"</span>
+<span class="n">String</span> <span class="n">zulipAPIKey</span> <span class="o">=</span> <span class="s2">"0123456789abcdef0123456789abcdef"</span>
+<span class="n">String</span> <span class="n">zulipStream</span> <span class="o">=</span> <span class="s2">"JIRA"</span>
+<span class="n">String</span> <span class="n">issueBaseUrl</span> <span class="o">=</span> <span class="s2">"https://jira.COMPANY.com/browse/"</span>
+</pre>
+</div>
+<p>
+    In the Administrators page, navigate to <code>Plugins > Other > Script Listeners</code>. In the
+    <code>Add Listener</code> section, click on
+    the <code>Custom Listener</code> option. Select the events you wish the Zulip integration to fire for, and the
+    projects you wish Zulip to be notified for.
+    In the <code>Name of groovy class</code> field, enter <code>org.zulip.jira.ZulipListener</code>.
+</p>
+
+<p>Click <code>Add Listener</code>, and JIRA will now notify your Zulip of changes to your issues!</p>
+
+<p>
+    <b>Congratulations! You're done!</b><br/>
+    Updates from JIRA will be sent to the stream you've configured, as below.
+</p>
+<img class="screenshot" src="/static/images/integrations/jira/001.png"/>
