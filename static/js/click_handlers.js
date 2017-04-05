@@ -596,7 +596,7 @@ $(function () {
             name: "settings-toggle",
             values: [
                 { label: "Settings", key: "settings" },
-                { label: "Administration", key: "administration" },
+                { label: "Organization", key: "administration" },
             ],
             callback: function (name, key) {
                 $(".sidebar li").hide();
