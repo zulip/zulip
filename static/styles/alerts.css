@@ -38,9 +38,16 @@
 .alert-box .alert {
     font-size: 1rem;
 
-    box-shadow: 0px 0px 30px rgba(220, 78, 78, 0.3);
     border-radius: 0px;
     border: none;
+
+    background-color: #f9f0c1;
+
+    box-shadow: 0px 0px 30px rgba(214, 192, 115, 0.35);
+}
+
+.alert-box .alert-error {
+    box-shadow: 0px 0px 30px rgba(220, 78, 78, 0.3);
 }
 
 .alert-box .alert a {
@@ -59,33 +66,40 @@
     color: #89dcff;
 }
 
-.alert-box .alert.alert-error::before {
+.alert-box .alert::before {
     position: absolute;
-    top: 15px;
+    top: 10px;
     left: 10px;
 
     font-family: "FontAwesome";
-    font-size: 1.5em;
+    font-size: 1.3em;
     content: "\f071";
 
+    color: #c09853;
+}
+
+.alert-box .alert.alert-error::before {
     color: #fff;
 }
 
-.alert-box .alert.alert-error {
+.alert-box .alert {
     position: relative;
 
     /* gives room for the error icon. */
     padding-left: 50px;
-    padding-top: 15px;
+    padding-top: 10px;
 
+    text-shadow: none;
+}
+
+.alert-box .alert.alert-error {
     background-color: #bd6767;
     color: #fff;
-    text-shadow: none;
 }
 
 .alert-box .alert .exit {
     position: absolute;
-    top: 15px;
+    top: 10px;
     right: 0px;
 
     font-size: 2.5em;
