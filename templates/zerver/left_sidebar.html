@@ -28,7 +28,12 @@
                           </div>
                         </div>
                         <div id="stream-filters-container" class="scrolling_list">
-                            <input class="stream-list-filter notdisplayed" type="text" placeholder="{{ _('Search streams') }}" />
+                            <div class="input-append notdisplayed">
+                              <input class="stream-list-filter" type="text" placeholder="{{ _('Search streams') }}" />
+                              <button type="button" class="btn clear_search_button" id="clear_search_stream_button" disabled="disabled">
+                                <i class="icon-vector-remove"></i>
+                              </button>
+                            </div>
                            <ul id="stream_filters" class="filters"></ul>
                         </div>
                       </div>

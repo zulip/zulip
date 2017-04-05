@@ -303,11 +303,11 @@ un_narrow();
 // Make sure stream search filters the stream list
 casper.then(function () {
     casper.test.info('Search streams using left sidebar');
-    casper.test.assertExists('.stream-list-filter.notdisplayed', 'Stream filter box not visible initially');
+    casper.test.assertExists('.input-append.notdisplayed', 'Stream filter box not visible initially');
     casper.click('#streams_header .sidebar-title');
 });
 
-casper.waitWhileSelector('.stream-list-filter.notdisplayed', function () {
+casper.waitWhileSelector('.input-append.notdisplayed', function () {
     casper.test.assertExists('#stream_filters [data-name="Denmark"]', 'Original stream list contains Denmark');
     casper.test.assertExists('#stream_filters [data-name="Scotland"]', 'Original stream list contains Scotland');
     casper.test.assertExists('#stream_filters [data-name="Verona"]', 'Original stream list contains Verona');
@@ -361,8 +361,8 @@ casper.waitUntilVisible('#stream_filters [data-name="Verona"]', function () {
 
 casper.thenClick('#streams_header .sidebar-title');
 
-casper.waitForSelector('.stream-list-filter.notdisplayed', function () {
-    casper.test.assertExists('.stream-list-filter.notdisplayed', 'Stream filter box not visible after second click');
+casper.waitForSelector('.input-append.notdisplayed', function () {
+    casper.test.assertExists('.input-append.notdisplayed', 'Stream filter box not visible after second click');
 });
 
 un_narrow();
