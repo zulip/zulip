@@ -309,15 +309,17 @@ function stubbing(func_name_to_stub, test_function) {
     hotkey.is_subs = return_true;
     assert_mapping('up_arrow', 'subs.switch_rows');
     assert_mapping('down_arrow', 'subs.switch_rows');
+    hotkey.is_subs = return_false;
 
     hotkey.is_lightbox_open = return_true;
     assert_mapping('left_arrow', 'lightbox.prev');
     assert_mapping('right_arrow', 'lightbox.next');
+    hotkey.is_lightbox_open = return_false;
 
     hotkey.is_editing_stream_name = return_true;
-    hotkey.is_subs = return_false;
     assert_unmapped('down_arrow');
     assert_unmapped('up_arrow');
+    hotkey.is_editing_stream_name = return_false;
 
     hotkey.is_settings_page = return_true;
     assert_unmapped('end');
@@ -329,9 +331,10 @@ function stubbing(func_name_to_stub, test_function) {
 
     assert_mapping('up_arrow', 'settings.handle_up_arrow');
     assert_mapping('down_arrow', 'settings.handle_down_arrow');
+    hotkey.is_settings_page = return_false;
 
     global.drafts.drafts_overlay_open = return_true;
     assert_mapping('up_arrow', 'drafts.drafts_handle_events');
     assert_mapping('down_arrow', 'drafts.drafts_handle_events');
-
+    global.drafts.drafts_overlay_open = return_false;
 }());
