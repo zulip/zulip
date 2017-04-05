@@ -214,7 +214,7 @@ INTEGRATIONS = {
         doc='zerver/integrations/openshift.html'
     ),
     'perforce': Integration('perforce', 'perforce', doc='zerver/integrations/perforce.html'),
-    'phabricator': Integration('phabricator', 'phabricator'),
+    'phabricator': Integration('phabricator', 'phabricator', doc='zerver/integrations/phabricator.html'),
     'puppet': Integration('puppet', 'puppet'),
     'redmine': Integration('redmine', 'redmine'),
     'rss': Integration('rss', 'rss', display_name='RSS'),
