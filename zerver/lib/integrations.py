@@ -1,10 +1,13 @@
 import os.path
 
-from typing import Dict, List, Optional, TypeVar, Any
+from typing import Dict, List, Optional, TypeVar, Any, Text
 from django.conf import settings
 from django.conf.urls import url
 from django.core.urlresolvers import LocaleRegexProvider
 from django.utils.module_loading import import_string
+from django.utils.safestring import mark_safe
+from django.template import loader
+
 
 """This module declares all of the (documented) integrations available
 in the Zulip server.  The Integration class is used as part of
@@ -92,6 +95,12 @@ class WebhookIntegration(Integration):
     def url_object(self):
         # type: () -> LocaleRegexProvider
         return url(self.url, self.function)
+
+    @property
+    def help_content(self):
+        # type: () -> Text
+        doc_context = self.doc_context or {}
+        return mark_safe(loader.get_template(self.doc).render(doc_context))
 
 class HubotLozenge(Integration):
     GIT_URL_TEMPLATE = "https://github.com/hubot-scripts/hubot-{}"
