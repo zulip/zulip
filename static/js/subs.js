@@ -739,8 +739,9 @@ exports.switch_rows = function (event) {
     } else if (event === 'down_arrow') {
         switch_row = active_data.row.next();
         if ($('#search_stream_name').is(":focus")) {
+            // When going from the filter box, go the first row.
             $('#search_stream_name').blur();
-            return true;
+            switch_row = $('div.stream-row:not(.notdisplayed):first');
         }
     }
 
