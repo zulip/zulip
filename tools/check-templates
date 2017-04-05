@@ -128,6 +128,7 @@ def check_html_templates(templates, all_dups):
             'zerver/webhooks/zendesk/doc.html',
 
             'templates/zerver/integrations/capistrano.html',
+            'templates/zerver/integrations/git.html',
         ]
         validate(fn=fn, check_indent=(fn not in bad_files))
 
@@ -183,6 +184,7 @@ def check_html_templates(templates, all_dups):
         'zerver/webhooks/zapier/doc.html',
 
         'templates/zerver/integrations/capistrano.html',
+        'templates/zerver/integrations/git.html',
     ]
     # TODO: Clean these files
     for fn in templates:
