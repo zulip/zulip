@@ -209,7 +209,12 @@ INTEGRATIONS = {
         display_name='JIRA',
         doc='zerver/integrations/jira-plugin.html'
     ),
-    'mercurial': Integration('mercurial', 'mercurial', display_name='Mercurial (hg)'),
+    'mercurial': Integration(
+        'mercurial',
+        'mercurial',
+        display_name='Mercurial (hg)',
+        doc='zerver/integrations/mercurial.html'
+    ),
     'nagios': Integration('nagios', 'nagios'),
     'openshift': Integration('openshift', 'openshift', display_name='OpenShift'),
     'perforce': Integration('perforce', 'perforce'),
