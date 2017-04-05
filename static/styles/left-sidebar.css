@@ -44,6 +44,7 @@
 }
 
 #stream-filters-container {
+    overflow-x: hidden;
     overflow-y: hidden;
     position: relative;
     z-index: 0;
