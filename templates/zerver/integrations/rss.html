@@ -1,0 +1,34 @@
+<h4>RSS</h4>
+
+<p>
+    Get service alerts, news, and new blog posts right in Zulip with our
+    RSS integration!
+</p>
+
+<p>
+    First, create the stream you'd like to use for RSS notifications, and
+    subscribe all interested parties to this stream. We recommend the
+    name <code>rss</code>.
+</p>
+
+<p>Next, on your {{ settings_html|safe }}, create an RSS bot.</p>
+
+<p>
+    Then, download and install our <a href="/api">Python bindings</a> on
+    the server where the RSS bot will live. The RSS integration will be
+    installed to a location
+    like <code>/usr/local/share/zulip/integrations/rss/rss-bot</code>.
+</p>
+
+<p>
+    Follow the instructions in the <code>rss-bot</code> script for
+    configuring the bot, adding your subscriptions, and setting up a cron job
+    to run the bot.
+</p>
+
+<p>
+    <b>Congratulations! You're done!</b><br/> When new items appear in
+    your feeds, the team can see these updates in real time in Zulip:
+</p>
+
+<img class="screenshot" src="/static/images/integrations/rss/001.png"/>
