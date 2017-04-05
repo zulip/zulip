@@ -174,7 +174,7 @@ WEBHOOK_INTEGRATIONS = [
 ]  # type: List[WebhookIntegration]
 
 INTEGRATIONS = {
-    'asana': Integration('asana', 'asana'),
+    'asana': Integration('asana', 'asana', doc='zerver/integrations/asana.html'),
     'capistrano': Integration('capistrano', 'capistrano'),
     'codebase': Integration('codebase', 'codebase'),
     'email': EmailIntegration('email', 'email'),
