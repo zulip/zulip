@@ -112,6 +112,22 @@ os.environ['DJANGO_SETTINGS_MODULE'] = settings_module
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from scripts.lib.zulip_tools import WARNING, ENDC
+from django.conf import settings
+
+if 'zproject.backends.GitHubAuthBackend' in settings.AUTHENTICATION_BACKENDS:
+    if not (settings.SOCIAL_AUTH_GITHUB_KEY and
+            settings.SOCIAL_AUTH_GITHUB_SECRET):
+        print('\n'.join([
+            WARNING,
+            "You are using GitHub backend. Please make sure of the following:",
+            "- You have updated SOCIAL_AUTH_GITHUB_KEY and "
+            "SOCIAL_AUTH_GITHUB_SECRET settings.",
+            "- You have added http://localhost:9991/complete/github/' "
+            "as the callback URL in the OAuth application in GitHub.",
+            "- You can create OAuth apps from "
+            "https://github.com/settings/developers.",
+            ENDC]))
+        sys.exit(1)
 
 proxy_port = base_port
 django_port = base_port + 1

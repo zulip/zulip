@@ -25,6 +25,9 @@ from zerver.lib.users import check_full_name
 from zerver.lib.request import JsonableError
 from zerver.lib.utils import check_subdomain, get_subdomain
 
+from social_django.models import DjangoStorage
+from social_django.strategy import DjangoStrategy
+
 def pad_method_dict(method_dict):
     # type: (Dict[Text, bool]) -> Dict[Text, bool]
     """Pads an authentication methods dict to contain all auth backends
@@ -110,7 +113,43 @@ class SocialAuthMixin(ZulipAuthMixin):
         # type: (*Any, **Any) -> Text
         raise NotImplementedError
 
-    def authenticate(self, *args, **kwargs):
+    def authenticate(self,
+                     realm_subdomain='',  # type: Optional[Text]
+                     storage=None,  # type: Optional[DjangoStorage]
+                     strategy=None,  # type: Optional[DjangoStrategy]
+                     user=None,  # type: Optional[Dict[str, Any]]
+                     return_data=None,  # type: Optional[Dict[str, Any]]
+                     response=None,  # type: Optional[Dict[str, Any]]
+                     backend=None  # type: Optional[GithubOAuth2]
+                     ):
+        # type: (...) -> Optional[UserProfile]
+        """
+        Django decides which `authenticate` to call by inspecting the
+        arguments. So it's better to create `authenticate` function
+        with well defined arguments.
+
+        Keeping this function separate so that it can easily be
+        overridden.
+        """
+        if user is None:
+            user = {}
+
+        if return_data is None:
+            return_data = {}
+
+        if response is None:
+            response = {}
+
+        return self._common_authenticate(self,
+                                         realm_subdomain=realm_subdomain,
+                                         storage=storage,
+                                         strategy=strategy,
+                                         user=user,
+                                         return_data=return_data,
+                                         response=response,
+                                         backend=backend)
+
+    def _common_authenticate(self, *args, **kwargs):
         # type: (*Any, **Any) -> Optional[UserProfile]
         return_data = kwargs.get('return_data', {})
 
@@ -159,13 +198,17 @@ class SocialAuthMixin(ZulipAuthMixin):
         invalid_subdomain = return_data.get('invalid_subdomain')
         invalid_email = return_data.get('invalid_email')
 
-        if inactive_user or inactive_realm or invalid_email:
+        if inactive_user or inactive_realm:
             # Redirect to login page. We can't send to registration
-            # workflow with these errors.
+            # workflow with these errors. We will redirect to login page.
             return None
 
-        # If user_profile is `None` here, send the user to registration
-        # workflow.
+        if invalid_email:
+            # In case of invalid email, we will end up on registration page.
+            # This seems better than redirecting to login page.
+            logging.warning(
+                "{} got invalid email argument.".format(self.auth_backend_name)
+            )
 
         strategy = self.strategy  # type: ignore # This comes from Python Social Auth.
         request = strategy.request
@@ -459,7 +502,7 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
                we are doing individual, team or organization based GitHub
                authentication.
         The actual decision on authentication is done in
-        SocialAuthMixin.authenticate().
+        SocialAuthMixin._common_authenticate().
         """
         kwargs['return_data'] = {}
 

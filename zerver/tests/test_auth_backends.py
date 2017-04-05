@@ -54,45 +54,48 @@ import ujson
 from zerver.lib.test_helpers import MockLDAP
 
 class AuthBackendTest(TestCase):
-    def verify_backend(self, backend, good_args=None,
-                       good_kwargs=None, bad_kwargs=None,
-                       email_to_username=None):
-        # type: (Any, List[Any], Dict[str, Any], Dict[str, Any], Callable[[Text], Text]) -> None
-        if good_args is None:
-            good_args = []
+    email = u"hamlet@zulip.com"
+
+    def get_username(self, email_to_username=None):
+        # type: (Optional[Callable[[Text], Text]]) -> Text
+        username = self.email
+        if email_to_username is not None:
+            username = email_to_username(self.email)
+
+        return username
+
+    def verify_backend(self, backend, good_kwargs=None, bad_kwargs=None):
+        # type: (Any, Optional[Dict[str, Any]], Optional[Dict[str, Any]]) -> None
+
+        user_profile = get_user_profile_by_email(self.email)
+
         if good_kwargs is None:
             good_kwargs = {}
-        email = u"hamlet@zulip.com"
-        user_profile = get_user_profile_by_email(email)
-
-        username = email
-        if email_to_username is not None:
-            username = email_to_username(email)
 
         # If bad_kwargs was specified, verify auth fails in that case
         if bad_kwargs is not None:
-            self.assertIsNone(backend.authenticate(username, **bad_kwargs))
+            self.assertIsNone(backend.authenticate(**bad_kwargs))
 
         # Verify auth works
-        result = backend.authenticate(username, *good_args, **good_kwargs)
+        result = backend.authenticate(**good_kwargs)
         self.assertEqual(user_profile, result)
 
         # Verify auth fails with a deactivated user
         do_deactivate_user(user_profile)
-        self.assertIsNone(backend.authenticate(username, *good_args, **good_kwargs))
+        self.assertIsNone(backend.authenticate(**good_kwargs))
 
         # Reactivate the user and verify auth works again
         do_reactivate_user(user_profile)
-        result = backend.authenticate(username, *good_args, **good_kwargs)
+        result = backend.authenticate(**good_kwargs)
         self.assertEqual(user_profile, result)
 
         # Verify auth fails with a deactivated realm
         do_deactivate_realm(user_profile.realm)
-        self.assertIsNone(backend.authenticate(username, *good_args, **good_kwargs))
+        self.assertIsNone(backend.authenticate(**good_kwargs))
 
         # Verify auth works again after reactivating the realm
         do_reactivate_realm(user_profile.realm)
-        result = backend.authenticate(username, *good_args, **good_kwargs)
+        result = backend.authenticate(**good_kwargs)
         self.assertEqual(user_profile, result)
 
         # ZulipDummyBackend isn't a real backend so the remainder
@@ -102,7 +105,7 @@ class AuthBackendTest(TestCase):
 
         # Verify auth fails if the auth backend is disabled on server
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipDummyBackend',)):
-            self.assertIsNone(backend.authenticate(username, *good_args, **good_kwargs))
+            self.assertIsNone(backend.authenticate(**good_kwargs))
 
         # Verify auth fails if the auth backend is disabled for the realm
         for backend_name in AUTH_BACKEND_NAME_MAP.keys():
@@ -112,15 +115,18 @@ class AuthBackendTest(TestCase):
         index = getattr(user_profile.realm.authentication_methods, backend_name).number
         user_profile.realm.authentication_methods.set_bit(index, False)
         user_profile.realm.save()
-        self.assertIsNone(backend.authenticate(username, *good_args, **good_kwargs))
+        self.assertIsNone(backend.authenticate(**good_kwargs))
         user_profile.realm.authentication_methods.set_bit(index, True)
         user_profile.realm.save()
 
     def test_dummy_backend(self):
         # type: () -> None
+        username = self.get_username()
         self.verify_backend(ZulipDummyBackend(),
-                            good_kwargs=dict(use_dummy_backend=True),
-                            bad_kwargs=dict(use_dummy_backend=False))
+                            good_kwargs=dict(username=username,
+                                             use_dummy_backend=True),
+                            bad_kwargs=dict(username=username,
+                                            use_dummy_backend=False))
 
     def setup_subdomain(self, user_profile):
         # type: (UserProfile) -> None
@@ -130,7 +136,8 @@ class AuthBackendTest(TestCase):
 
     def test_email_auth_backend(self):
         # type: () -> None
-        email = "hamlet@zulip.com"
+        email = self.email
+        username = self.get_username()
         user_profile = get_user_profile_by_email(email)
         password = "testpassword"
         user_profile.set_password(password)
@@ -138,8 +145,10 @@ class AuthBackendTest(TestCase):
         self.setup_subdomain(user_profile)
 
         self.verify_backend(EmailAuthBackend(),
-                            bad_kwargs=dict(password=''),
-                            good_kwargs=dict(password=password))
+                            bad_kwargs=dict(username=username,
+                                            password=''),
+                            good_kwargs=dict(username=username,
+                                             password=password))
 
         with mock.patch('zproject.backends.email_auth_enabled',
                         return_value=False), \
@@ -155,6 +164,7 @@ class AuthBackendTest(TestCase):
         # Subdomain is ignored when feature is not enabled
         self.verify_backend(EmailAuthBackend(),
                             good_kwargs=dict(password=password,
+                                             username=username,
                                              realm_subdomain='acme',
                                              return_data=dict()))
 
@@ -163,16 +173,20 @@ class AuthBackendTest(TestCase):
             # works; using the wrong subdomain doesn't
             self.verify_backend(EmailAuthBackend(),
                                 good_kwargs=dict(password=password,
+                                                 username=username,
                                                  realm_subdomain='zulip',
                                                  return_data=dict()),
                                 bad_kwargs=dict(password=password,
+                                                username=username,
                                                 realm_subdomain='acme',
                                                 return_data=dict()))
             # Things work normally in the event that we're using a
             # non-subdomain login page, even if subdomains are enabled
             self.verify_backend(EmailAuthBackend(),
-                                bad_kwargs=dict(password="wrong"),
-                                good_kwargs=dict(password=password))
+                                bad_kwargs=dict(password="wrong",
+                                                username=username),
+                                good_kwargs=dict(password=password,
+                                                 username=username))
 
     def test_email_auth_backend_disabled_password_auth(self):
         # type: () -> None
@@ -240,6 +254,7 @@ class AuthBackendTest(TestCase):
         user_profile = get_user_profile_by_email(email)
         self.setup_subdomain(user_profile)
 
+        username = self.get_username()
         backend = ZulipLDAPAuthBackend()
 
         # Test LDAP auth fails when LDAP server rejects password
@@ -255,14 +270,17 @@ class AuthBackendTest(TestCase):
             mock.patch('django_auth_ldap.backend._LDAPUser._check_requirements')), (
             mock.patch('django_auth_ldap.backend._LDAPUser._get_user_attrs',
                        return_value=dict(full_name=['Hamlet']))):
-            self.verify_backend(backend, good_kwargs=dict(password=password))
+            self.verify_backend(backend, good_kwargs=dict(username=username,
+                                                          password=password))
 
         with mock.patch('django_auth_ldap.backend._LDAPUser._authenticate_user_dn'), (
             mock.patch('django_auth_ldap.backend._LDAPUser._check_requirements')), (
             mock.patch('django_auth_ldap.backend._LDAPUser._get_user_attrs',
                        return_value=dict(full_name=['Hamlet']))):
-            self.verify_backend(backend, good_kwargs=dict(password=password,
-                                                          realm_subdomain='acme'))
+            self.verify_backend(backend,
+                                good_kwargs=dict(username=username,
+                                                 password=password,
+                                                 realm_subdomain='acme'))
 
         with self.settings(REALMS_HAVE_SUBDOMAINS=True):
             # With subdomains, authenticating with the right subdomain
@@ -272,9 +290,11 @@ class AuthBackendTest(TestCase):
                 mock.patch('django_auth_ldap.backend._LDAPUser._get_user_attrs',
                            return_value=dict(full_name=['Hamlet']))):
                 self.verify_backend(backend,
-                                    bad_kwargs=dict(password=password,
+                                    bad_kwargs=dict(username=username,
+                                                    password=password,
                                                     realm_subdomain='acme'),
-                                    good_kwargs=dict(password=password,
+                                    good_kwargs=dict(username=username,
+                                                     password=password,
                                                      realm_subdomain='zulip'))
 
         with self.settings(REALMS_HAVE_SUBDOMAINS=True):
@@ -293,39 +313,46 @@ class AuthBackendTest(TestCase):
 
     def test_devauth_backend(self):
         # type: () -> None
-        self.verify_backend(DevAuthBackend())
+        self.verify_backend(DevAuthBackend(),
+                            good_kwargs=dict(username=self.get_username()))
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',))
     def test_remote_user_backend(self):
         # type: () -> None
         self.setup_subdomain(get_user_profile_by_email(u'hamlet@zulip.com'))
+        username = self.get_username()
         self.verify_backend(ZulipRemoteUserBackend(),
-                            good_kwargs=dict(realm_subdomain='acme'))
+                            good_kwargs=dict(remote_user=username,
+                                             realm_subdomain='acme'))
 
         with self.settings(REALMS_HAVE_SUBDOMAINS=True):
             # With subdomains, authenticating with the right subdomain
             # works; using the wrong subdomain doesn't
             self.verify_backend(ZulipRemoteUserBackend(),
-                                good_kwargs=dict(realm_subdomain='zulip'),
-                                bad_kwargs=dict(realm_subdomain='acme'))
+                                good_kwargs=dict(remote_user=username,
+                                                 realm_subdomain='zulip'),
+                                bad_kwargs=dict(remote_user=username,
+                                                realm_subdomain='acme'))
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',))
     def test_remote_user_backend_sso_append_domain(self):
         # type: () -> None
         self.setup_subdomain(get_user_profile_by_email(u'hamlet@zulip.com'))
+        username = self.get_username(email_to_username)
         with self.settings(SSO_APPEND_DOMAIN='zulip.com'):
             self.verify_backend(ZulipRemoteUserBackend(),
-                                email_to_username=email_to_username,
-                                good_kwargs=dict(realm_subdomain='acme'))
+                                good_kwargs=dict(remote_user=username,
+                                                 realm_subdomain='acme'))
 
         with self.settings(REALMS_HAVE_SUBDOMAINS=True):
             # With subdomains, authenticating with the right subdomain
             # works; using the wrong subdomain doesn't
             with self.settings(SSO_APPEND_DOMAIN='zulip.com'):
                 self.verify_backend(ZulipRemoteUserBackend(),
-                                    email_to_username=email_to_username,
-                                    good_kwargs=dict(realm_subdomain='zulip'),
-                                    bad_kwargs=dict(realm_subdomain='acme'))
+                                    good_kwargs=dict(remote_user=username,
+                                                     realm_subdomain='zulip'),
+                                    bad_kwargs=dict(remote_user=username,
+                                                    realm_subdomain='acme'))
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.GitHubAuthBackend',))
     def test_github_backend(self):
@@ -377,7 +404,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
     def do_auth(self, *args, **kwargs):
         # type: (*Any, **Any) -> UserProfile
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.GitHubAuthBackend',)):
-            return self.backend.authenticate(*args, **kwargs)
+            return self.backend.authenticate(**kwargs)
 
     def test_github_auth_enabled(self):
         # type: () -> None
@@ -596,11 +623,19 @@ class GitHubAuthBackendTest(ZulipTestCase):
         from social_django import utils
         utils.BACKENDS = ('zproject.backends.GitHubAuthBackend',)
         with mock.patch('zproject.backends.GitHubAuthBackend.get_email_address',
-                        return_value=None), \
-                mock.patch('zproject.backends.logging.exception'):
-            result = self.client_get(reverse('social:complete', args=['github']))
-            self.assertEqual(result.status_code, 302)
-            self.assertIn('login', result.url)
+                        return_value=None) as mock_get_email_address, \
+                mock.patch('social_core.backends.oauth.OAuthAuth.validate_state',
+                           return_value='state'), \
+                mock.patch('social_core.backends.oauth.BaseOAuth2.request_access_token',
+                           return_value={'access_token': 'token'}), \
+                mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
+                           side_effect=self.do_auth), \
+                mock.patch('zproject.backends.logging.warning'):
+            result = self.client_get(reverse('social:complete', args=['github']),
+                                     info={'state': 'state'})
+            self.assertEqual(result.status_code, 200)
+            self.assertIn("Let's get started", result.content.decode('utf8'))
+            self.assertEqual(mock_get_email_address.call_count, 2)
 
         utils.BACKENDS = settings.AUTHENTICATION_BACKENDS
 
