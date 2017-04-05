@@ -1,0 +1,80 @@
+<p>
+    First, create the stream you'd like to use for Nagios notifications,
+    and subscribe all interested parties to this stream. The integration will
+    use the default stream <code>nagios</code> if no stream is supplied in the
+    configuration; you still need to create the stream even if you are using
+    this default.
+</p>
+
+<p>
+    Next, download and install our
+    <a href="/api">Python bindings and example scripts</a>
+    on your Nagios server.
+</p>
+
+<p>
+    Next, open <code>integrations/nagios/zuliprc.example</code>
+    in your favorite editor, and change the following lines to
+    specify the email address and API key for your Nagios bot,
+    saving it to <code>/etc/nagios3/zuliprc</code> on your Nagios
+    server:
+</p>
+
+<div class="codehilite"><pre>[api]
+email = NAGIOS_BOT_EMAIL_ADDRESS
+key = NAGIOS_BOT_API_KEY
+{% if api_site_required %}site = {{ external_api_uri_subdomain }}{% endif %}</pre>
+</div>
+
+<p>
+    Copy <code>integrations/nagios/zulip_nagios.cfg</code>
+    to <code>/etc/nagios3/conf.d</code> on your Nagios server.
+</p>
+
+<p>
+    Finally, add <code>zulip</code> to the <code>members</code>
+    list for one or more of the contact groups in the
+    <code>CONTACT GROUPS</code> section
+    of <code>/etc/nagios3/conf.d/contacts.cfg</code>, doing
+    something like:
+</p>
+
+<div class="codehilite"><pre>define contactgroup {
+    contactgroup_name       admins
+    alias                   Nagios Administrators
+    members                 monitoring<span class="na">, zulip</span>
+}
+</pre>
+</div>
+
+Once you've done that, reload your Nagios configuration
+using <code>/etc/init.d/nagios3 reload</code>.
+
+<p>
+    <b>Congratulations! You're done!</b><br/> When your Nagios
+    system makes an alert, you'll see a message like the following,
+    to the stream <code>nagios</code> (to change this, edit the
+    arguments to <code>nagios-notify-zulip</code>
+    in <code>/etc/nagios3/conf.d/zulip_nagios.cfg</code>) with a
+    topic indicating the service with an issue:
+</p>
+<img class="screenshot" src="/static/images/integrations/nagios/001.png"/>
+
+<p>
+    <b>Testing</b><br/>If you have
+    <a href="http://nagios.sourceforge.net/docs/3_0/extcommands.html">external commands enabled in Nagios</a>,
+    you can generate a test notice from your Nagios instance by visiting using the
+    <code>Send custom service notification</code> command in
+    the <code>Service Commands</code> section of any individual
+    service's page on your Nagios instance.
+</p>
+
+<p>
+    <b>Troubleshooting</b><br/>You can confirm whether you've
+    correctly configured Nagios to run the Zulip plugin by looking
+    for <code>SERVICE NOTIFICATION</code> lines mentioning zulip
+    in <code>/var/log/nagios3/nagios.log</code>. You can confirm
+    whether you've configured the Zulip plugin code correctly by
+    running <code>/usr/local/share/zulip/integrations/nagios/nagios-notify-zulip</code>
+    directly.
+</p>
