@@ -10,6 +10,9 @@ conflicts, I am about to narrate an exercise
 where I bring my development branch called
 showell-topic up to date with master.
 
+**Note:** You can also use the command `./tools/renumber-migrations` to
+automatically perform migration renumbering.
+
 In this example,
 there is a migration on master called
 `0024_realm_allow_message_editing.py`, and
