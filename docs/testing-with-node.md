@@ -60,7 +60,7 @@ to launch the `open` command.)
 You can automatically generate coverage reports for the JavaScript unit
 tests like this:
 
->     tools/test-js-with-node cover
+>     tools/test-js-with-node --coverage
 
 Then open `coverage/lcov-report/js/index.html` in your browser. Modules
 we don't test *at all* aren't listed in the report, so this tends to

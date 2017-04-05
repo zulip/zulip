@@ -1,37 +1,73 @@
-#!/usr/bin/env bash
-set -e
+#!/usr/bin/env python
+from __future__ import print_function
+import optparse
+import os
+import subprocess
+import sys
 
-cd "$(dirname "$0")"/..
+TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.dirname(TOOLS_DIR))
+ROOT_DIR = os.path.dirname(TOOLS_DIR)
 
-export NODE_PATH=static
-export PATH=$PATH:node_modules/.bin
+# check for the venv
+from tools.lib import sanity_check
+sanity_check.check_venv(__file__)
 
-INDEX_JS=frontend_tests/zjsunit/index.js
-ret=0
+USAGE = '''
+    tools/test-js-with-node                      - to run all tests
+    tools/test-js-with-node util.js activity.js  - to run just a couple tests
+    tools/test-js-with-node --coverage           - to generage coverage report
+    '''
 
-if [ "$1" = "cover" ]; then
-  # Run a coverage test with Istanbul.
-  istanbul cover "$INDEX_JS" --dir var/node-coverage || ret=1;
+parser = optparse.OptionParser(USAGE)
+parser.add_option('--coverage', dest='coverage',
+                  action="store_true",
+                  default=False, help='Get coverage report')
+parser.add_option('--force', dest='force',
+                  action="store_true",
+                  default=False, help='Run tests despite possible problems.')
+(options, args) = parser.parse_args()
 
-elif [ "$1" = "-h" -o "$1" = "--help" ]; then
-  echo "Usage:
-`basename $0`                      - to run all tests
-`basename $0` util.js              - to run tests from util.js
-`basename $0` util.js activity.js  - to run tests from util.js and activity.js
-`basename $0` cover                - to run tests and generate code coverage
-"
-  exit 0
+from tools.lib.test_script import get_provisioning_status
 
-else
-  # Normal testing, no coverage analysis.
-  # Run the index.js test runner, which runs all the other tests.
-  node --stack-trace-limit=100 "$INDEX_JS" $@ || ret=1;
-fi
+if not options.force:
+    ok, msg = get_provisioning_status()
+    if not ok:
+        print(msg)
+        print('If you really know what you are doing, use --force to run anyway.')
+        sys.exit(1)
 
-if [ $ret = '0' ]; then
-    echo "Test(s) passed. SUCCESS!"
-else
-    echo "FAIL - Test(s) failed"
-fi
+os.environ['NODE_PATH'] = 'static'
 
-exit $ret
+INDEX_JS = 'frontend_tests/zjsunit/index.js'
+
+# The index.js test runner is the real "driver" here, and we launch
+# with either istanbul or node, depending on whether we want coverage
+# reports.  Running under istanbul is slower and creates funny
+# tracebacks, so you generally want to get coverage reports only
+# after making sure tests will pass.
+if options.coverage:
+    if args:
+        print('BAD ARGS! Coverage reports run against all files.')
+        sys.exit(1)
+
+    istanbul = os.path.join(ROOT_DIR, 'node_modules/.bin/istanbul')
+    command = [istanbul, 'cover', INDEX_JS, '--dir', 'var/node-coverage']
+else:
+    # Normal testing, no coverage analysis.
+    # Run the index.js test runner, which runs all the other tests.
+    command = ['node', '--stack-trace-limit=100', INDEX_JS] + args
+
+# If we got this far, we can run the tests!
+try:
+    ret = subprocess.check_call(command)
+except OSError:
+    print('Bad command: %s' % (command,))
+    raise
+
+if ret == 0:
+    print("Test(s) passed. SUCCESS!")
+else:
+    print("FAIL - Test(s) failed")
+
+sys.exit(ret)
