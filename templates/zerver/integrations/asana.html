@@ -1,0 +1,76 @@
+<p>Get Zulip notifications for your Asana projects via Zapier!</p>
+
+<p>
+    First, create the stream you'd like to use for Asana notifications, and
+    subscribe all interested parties to this stream. We recommend the
+    name <code>asana</code>.
+</p>
+
+<p><code>{{ external_api_uri_subdomain }}/v1/external/zapier?api_key=abcdefgh&amp;stream=asana</code></p>
+
+<p>Start by setting up a <a href="https://zapier.com/">Zapier</a> account.</p>
+
+<p>
+    Next, create a ZAP, picking Asana as the app you'd like
+    to receive notifications from as <code>Trigger (Step 1)</code>:
+</p>
+<img class="screenshot" src="/static/images/integrations/asana/001.png"/>
+
+<p>
+    Next, select the Asana event that you'd like to receive notifications
+    for (<code>Choose Trigger</code>), such as when you add a new Task in
+    an Asana project:
+</p>
+<img class="screenshot" src="/static/images/integrations/asana/002.png"/>
+
+<p>
+    Next, click on <code>Connect a New Account</code> and follow the steps
+    to connect your Asana account to the Zap:
+</p>
+<img class="screenshot" src="/static/images/integrations/asana/003.png"/>
+
+<p>
+    Select the Asana project you'd like to receive notifications for:
+</p>
+<img class="screenshot" src="/static/images/integrations/asana/004.png"/>
+
+<p>
+    In <code>Action (Step 2)</code>, select <code>Webhooks by Zapier</code>
+    as the app:
+</p>
+<img class="screenshot" src="/static/images/integrations/asana/005.png"/>
+
+<p>and <code>POST</code> as the action:</p>
+<img class="screenshot" src="/static/images/integrations/asana/006.png"/>
+
+<p>
+    Configure <code>Set up Webhooks by Zapier POST</code> as follows:
+
+    <ul>
+        <li><code>URL</code> is the URL we created above</li>
+        <li><code>Payload Type</code> set to <code>JSON</code></li>
+    </ul>
+</p>
+
+<p>
+    Finally, configure <code>Data</code>.
+    You have to add 2 fields:
+    <ul>
+        <li><code>subject</code> is field corresponding to a subject of the message</li>
+        <li><code>content</code> is field corresponding to a content of the message</li>
+    </ul>
+    You can format the content of the <code>content</code> and <code>subject</code>
+    fields in a number of ways as per your requirements.
+</p>
+
+<p>Here's an example configuration:</p>
+<img class="screenshot" src="/static/images/integrations/asana/007.png"/>
+
+<p>You're done! Example message:</p>
+<img class="screenshot" src="/static/images/integrations/asana/008.png"/>
+
+<p>
+    You can repeat the above process and create Zaps for different projects
+    and/or different kinds of Asana events that you'd like to receive
+    notifications about.
+</p>
