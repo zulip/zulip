@@ -29,10 +29,12 @@ from zerver.tornado.socket import req_redis_key
 from confirmation.models import Confirmation
 from zerver.lib.db import reset_queries
 from zerver.lib.redis_utils import get_redis_client
+from zerver.lib.str_utils import force_str
 from zerver.context_processors import common_context
 
 import os
 import sys
+import six
 import ujson
 from collections import defaultdict
 import email
@@ -373,7 +375,8 @@ class MirrorWorker(QueueProcessingWorker):
     # management command, not here.
     def consume(self, event):
         # type: (Mapping[str, Any]) -> None
-        mirror_email(email.message_from_string(event["message"]),
+        message = force_str(event["message"])
+        mirror_email(email.message_from_string(message),
                      rcpt_to=event["rcpt_to"], pre_checked=True)
 
 @assign_queue('test', queue_type="test")
