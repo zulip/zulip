@@ -58,8 +58,8 @@ md_extensions = None
 
 @lru_cache(512 if settings.PRODUCTION else 0)
 @register.filter(name='render_markdown_path', is_safe=True)
-def render_markdown_path(markdown_file_path):
-    # type: (str) -> str
+def render_markdown_path(markdown_file_path, context=None):
+    # type: (str, Optional[Dict[Any, Any]]) -> str
     """Given a path to a markdown file, return the rendered html.
 
     Note that this assumes that any HTML in the markdown file is
@@ -80,7 +80,10 @@ def render_markdown_path(markdown_file_path):
     md_engine = markdown.Markdown(extensions=md_extensions)
     md_engine.reset()
 
+    if context is None:
+        context = {}
+
     template = loader.get_template(markdown_file_path)
-    markdown_string = template.render()
+    markdown_string = template.render(context)
     html = md_engine.convert(markdown_string)
     return mark_safe(html)
