@@ -18,11 +18,11 @@ migrations.
 * **Numbering conflicts across branches**: If you've done your schema
   change in a branch, and meanwhile another schema change has taken
   place, Django will now have two migrations with the same number. To
-  fix this, you need to renumber your migration(s), fix up
-  the "dependencies" entries in your migration(s), and rewrite your
-  git history as needed.  There is a tutorial
-  [here](migration-renumbering.html) that walks you though that
-  process.
+  fix this, you can either run `./tools/renumber-migrations` which
+  renumbers your migration(s) and fixes up the "dependencies" entries in your
+  migration(s), and then rewrite your git history as needed, or you can do it
+  manually. There is a tutorial [here](migration-renumbering.html) that
+  walks you though that process.
 
 * **Atomicity**.  By default, each Django migration is run atomically
   inside a transaction.  This can be problematic if one wants to do
