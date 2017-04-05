@@ -186,7 +186,7 @@ INTEGRATIONS = {
     'asana': Integration('asana', 'asana', doc='zerver/integrations/asana.html'),
     'capistrano': Integration('capistrano', 'capistrano', doc='zerver/integrations/capistrano.html'),
     'codebase': Integration('codebase', 'codebase', doc='zerver/integrations/codebase.html'),
-    'email': EmailIntegration('email', 'email'),
+    'email': EmailIntegration('email', 'email', doc='zerver/integrations/email.html'),
     'git': Integration('git', 'git'),
     'google-calendar': Integration('google-calendar', 'google-calendar', display_name='Google Calendar'),
     'hubot': Integration('hubot', 'hubot'),
