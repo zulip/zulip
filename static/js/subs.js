@@ -729,7 +729,10 @@ exports.close = function () {
 exports.switch_rows = function (event) {
     var active_data = get_active_data();
     var switch_row;
-    if (!active_data.id || active_data.row.hasClass('notdisplayed')) {
+    if (window.location.hash === '#streams/new') {
+        // Prevent switching stream rows when creating new stream
+        return;
+    } else if (!active_data.id || active_data.row.hasClass('notdisplayed')) {
         switch_row = $('div.stream-row:not(.notdisplayed):first');
     } else if (event === 'up_arrow') {
         switch_row = active_data.row.prev();
