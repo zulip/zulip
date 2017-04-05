@@ -4,15 +4,16 @@ from django.db.models import F
 from django.utils import timezone
 
 from analytics.models import InstallationCount, RealmCount, \
-    UserCount, StreamCount, BaseCount, FillState, Anomaly, installation_epoch
+    UserCount, StreamCount, BaseCount, FillState, Anomaly, installation_epoch, \
+    last_successful_fill
 from zerver.models import Realm, UserProfile, Message, Stream, \
     UserActivityInterval, RealmAuditLog, models
 from zerver.lib.timestamp import floor_to_day, floor_to_hour, ceiling_to_day, \
     ceiling_to_hour
 
-from typing import Any, Callable, Dict, Optional, Text, Tuple, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Text, Tuple, Type, Union
 
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from datetime import timedelta, datetime
 import logging
 import time
@@ -64,6 +65,12 @@ class LoggingCountStat(CountStat):
         # type: (str, Type[BaseCount], str) -> None
         CountStat.__init__(self, property, DataCollector(output_table, None), frequency)
 
+class DependentCountStat(CountStat):
+    def __init__(self, property, data_collector, frequency, interval=None, dependencies=[]):
+        # type: (str, DataCollector, str, Optional[timedelta], List[str]) -> None
+        CountStat.__init__(self, property, data_collector, frequency, interval=interval)
+        self.dependencies = dependencies
+
 class DataCollector(object):
     def __init__(self, output_table, pull_function):
         # type: (Type[BaseCount], Optional[Callable[[str, datetime, datetime], int]]) -> None
@@ -91,6 +98,15 @@ def process_count_stat(stat, fill_to_time):
         currently_filled = fill_state.end_time
     else:
         raise AssertionError("Unknown value for FillState.state: %s." % (fill_state.state,))
+
+    if isinstance(stat, DependentCountStat):
+        for dependency in stat.dependencies:
+            dependency_fill_time = last_successful_fill(dependency)
+            if dependency_fill_time is None:
+                logger.warning("DependentCountStat %s run before dependency %s." %
+                               (stat.property, dependency))
+                return
+            fill_to_time = min(fill_to_time, dependency_fill_time)
 
     currently_filled = currently_filled + timedelta(hours = 1)
     while currently_filled <= fill_to_time:
@@ -229,8 +245,8 @@ def do_pull_by_sql_query(property, start_time, end_time, query, group_by):
 
     # We do string replacement here because cursor.execute will reject a
     # group_by_clause given as a param.
-    # We pass in the datetimes as params so that we don't have to think about
-    # how to convert python datetimes to SQL datetimes.
+    # We pass in the datetimes as params to cursor.execute so that we don't have to
+    # think about how to convert python datetimes to SQL datetimes.
     query_ = query % {'property': property, 'subgroup': subgroup,
                       'group_by_clause': group_by_clause}
     cursor = connection.cursor()
@@ -407,6 +423,31 @@ check_useractivityinterval_by_user_query = """
     GROUP BY zerver_userprofile.id %(group_by_clause)s
 """
 
+count_realm_active_humans_query = """
+    INSERT INTO analytics_realmcount
+        (realm_id, value, property, subgroup, end_time)
+    SELECT
+        usercount1.realm_id, count(*), '%(property)s', NULL, %%(time_end)s
+    FROM (
+        SELECT realm_id, user_id
+        FROM analytics_usercount
+        WHERE
+            property = 'active_users_audit:is_bot:day' AND
+            subgroup = 'false' AND
+            end_time = %%(time_end)s
+    ) usercount1
+    JOIN (
+        SELECT realm_id, user_id
+        FROM analytics_usercount
+        WHERE
+            property = '15day_actives::day' AND
+            end_time = %%(time_end)s
+    ) usercount2
+    ON
+        usercount1.user_id = usercount2.user_id
+    GROUP BY usercount1.realm_id
+"""
+
 # Currently unused and untested
 count_stream_by_realm_query = """
     INSERT INTO analytics_realmcount
@@ -450,6 +491,7 @@ count_stats_ = [
     # latter stat was introduced.
     # 'active_users_audit:is_bot:day' is the canonical record of which users were
     # active on which days (in the UserProfile.is_active sense).
+    # Important that this stay a daily stat, so that 'realm_active_humans::day' works as expected.
     CountStat('active_users_audit:is_bot:day',
               sql_data_collector(UserCount, check_realmauditlog_by_user_query, (UserProfile, 'is_bot')),
               CountStat.DAY),
@@ -460,7 +502,13 @@ count_stats_ = [
     CountStat('15day_actives::day',
               sql_data_collector(UserCount, check_useractivityinterval_by_user_query, None),
               CountStat.DAY, interval=timedelta(days=15)-timedelta(minutes=15)),
-    CountStat('minutes_active::day', DataCollector(UserCount, do_pull_minutes_active), CountStat.DAY)
+    CountStat('minutes_active::day', DataCollector(UserCount, do_pull_minutes_active), CountStat.DAY),
+
+    # Canonical account of the number of active humans in a realm on each day.
+    DependentCountStat('realm_active_humans::day',
+                       sql_data_collector(RealmCount, count_realm_active_humans_query, None),
+                       CountStat.DAY,
+                       dependencies=['active_users_audit:is_bot:day', '15day_actives::day'])
 ]
 
-COUNT_STATS = {stat.property: stat for stat in count_stats_}
+COUNT_STATS = OrderedDict([(stat.property, stat) for stat in count_stats_])

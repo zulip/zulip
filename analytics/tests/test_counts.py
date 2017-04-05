@@ -9,17 +9,19 @@ from django.utils import timezone
 from analytics.lib.counts import CountStat, COUNT_STATS, process_count_stat, \
     do_fill_count_stat_at_hour, do_increment_logging_stat, DataCollector, \
     sql_data_collector, LoggingCountStat, do_aggregate_to_summary_table, \
-    do_drop_all_analytics_tables
+    do_drop_all_analytics_tables, DependentCountStat
 from analytics.models import BaseCount, InstallationCount, RealmCount, \
-    UserCount, StreamCount, FillState, Anomaly, installation_epoch
+    UserCount, StreamCount, FillState, Anomaly, installation_epoch, \
+    last_successful_fill
 from zerver.lib.actions import do_create_user, do_deactivate_user, \
-    do_activate_user, do_reactivate_user
+    do_activate_user, do_reactivate_user, update_user_activity_interval
 from zerver.lib.timestamp import floor_to_day
 from zerver.models import Realm, UserProfile, Message, Stream, Recipient, \
     Huddle, Client, UserActivityInterval, RealmAuditLog, \
     get_user_profile_by_email, get_client
 
 from datetime import datetime, timedelta
+import ujson
 
 from six.moves import range
 from typing import Any, Dict, List, Optional, Text, Tuple, Type, Union
@@ -237,6 +239,42 @@ class TestProcessCountStat(AnalyticsTestCase):
                               [[user_stat.property, 6], [stream_stat.property, 6], [realm_stat.property, 6]])
         self.assertTableState(InstallationCount, ['property', 'value'],
                               [[user_stat.property, 6], [stream_stat.property, 6], [realm_stat.property, 6]])
+
+    def test_process_dependent_stat(self):
+        # type: () -> None
+        stat1 = self.make_dummy_count_stat('stat1')
+        stat2 = self.make_dummy_count_stat('stat2')
+        query = """INSERT INTO analytics_realmcount (realm_id, value, property, end_time)
+                   VALUES (%s, 1, '%s', %%%%(time_end)s)""" % (self.default_realm.id, 'stat3')
+        stat3 = DependentCountStat('stat3', sql_data_collector(RealmCount, query, None), CountStat.HOUR,
+                                   dependencies=['stat1', 'stat2'])
+        hour = [installation_epoch() + i*self.HOUR for i in range(5)]
+
+        # test when one dependency has been run, and the other hasn't
+        process_count_stat(stat1, hour[2])
+        process_count_stat(stat3, hour[1])
+        self.assertTableState(InstallationCount, ['property', 'end_time'],
+                              [['stat1', hour[1]], ['stat1', hour[2]]])
+        self.assertFillStateEquals(stat3, hour[0])
+
+        # test that we don't fill past the fill_to_time argument, even if
+        # dependencies have later last_successful_fill
+        process_count_stat(stat2, hour[3])
+        process_count_stat(stat3, hour[1])
+        self.assertTableState(InstallationCount, ['property', 'end_time'],
+                              [['stat1', hour[1]], ['stat1', hour[2]],
+                               ['stat2', hour[1]], ['stat2', hour[2]], ['stat2', hour[3]],
+                               ['stat3', hour[1]]])
+        self.assertFillStateEquals(stat3, hour[1])
+
+        # test that we don't fill past the dependency last_successful_fill times,
+        # even if fill_to_time is later
+        process_count_stat(stat3, hour[4])
+        self.assertTableState(InstallationCount, ['property', 'end_time'],
+                              [['stat1', hour[1]], ['stat1', hour[2]],
+                               ['stat2', hour[1]], ['stat2', hour[2]], ['stat2', hour[3]],
+                               ['stat3', hour[1]], ['stat3', hour[2]]])
+        self.assertFillStateEquals(stat3, hour[2])
 
 class TestCountStats(AnalyticsTestCase):
     def setUp(self):
@@ -886,3 +924,104 @@ class TestActiveUsersAudit(AnalyticsTestCase):
                 user=user, property=self.current_property, subgroup='false',
                 end_time=end_time, value=1).exists())
         self.assertFalse(UserCount.objects.filter(user=user2).exists())
+
+class TestRealmActiveHumans(AnalyticsTestCase):
+    def setUp(self):
+        # type: () -> None
+        super(TestRealmActiveHumans, self).setUp()
+        self.stat = COUNT_STATS['realm_active_humans::day']
+        self.current_property = self.stat.property
+
+    def mark_audit_active(self, user, end_time=None):
+        # type: (UserProfile, Optional[datetime]) -> None
+        if end_time is None:
+            end_time = self.TIME_ZERO
+        UserCount.objects.create(
+            user=user, realm=user.realm, property='active_users_audit:is_bot:day',
+            subgroup=ujson.dumps(user.is_bot), end_time=end_time, value=1)
+
+    def mark_15day_active(self, user, end_time=None):
+        # type: (UserProfile, Optional[datetime]) -> None
+        if end_time is None:
+            end_time = self.TIME_ZERO
+        UserCount.objects.create(
+            user=user, realm=user.realm, property='15day_actives::day',
+            end_time=end_time, value=1)
+
+    def test_basic_boolean_logic(self):
+        # type: () -> None
+        user = self.create_user()
+        self.mark_audit_active(user, end_time=self.TIME_ZERO - self.DAY)
+        self.mark_15day_active(user, end_time=self.TIME_ZERO)
+        self.mark_audit_active(user, end_time=self.TIME_ZERO + self.DAY)
+        self.mark_15day_active(user, end_time=self.TIME_ZERO + self.DAY)
+
+        for i in [-1, 0, 1]:
+            do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO + i*self.DAY)
+        self.assertTableState(RealmCount, ['value', 'end_time'], [[1, self.TIME_ZERO + self.DAY]])
+
+    def test_bots_not_counted(self):
+        # type: () -> None
+        bot = self.create_user(is_bot=True)
+        self.mark_audit_active(bot)
+        self.mark_15day_active(bot)
+        do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
+        self.assertTableState(RealmCount, [], [])
+
+    def test_multiple_users_realms_and_times(self):
+        # type: () -> None
+        user1 = self.create_user()
+        user2 = self.create_user()
+        second_realm = Realm.objects.create(string_id='second', name='second')
+        user3 = self.create_user(realm=second_realm)
+        user4 = self.create_user(realm=second_realm)
+        user5 = self.create_user(realm=second_realm)
+
+        for user in [user1, user2, user3, user4, user5]:
+            self.mark_audit_active(user)
+            self.mark_15day_active(user)
+        for user in [user1, user3, user4]:
+            self.mark_audit_active(user, end_time=self.TIME_ZERO - self.DAY)
+            self.mark_15day_active(user, end_time=self.TIME_ZERO - self.DAY)
+
+        for i in [-1, 0, 1]:
+            do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO + i*self.DAY)
+        self.assertTableState(RealmCount, ['value', 'realm', 'end_time'],
+                              [[2, self.default_realm, self.TIME_ZERO],
+                               [3, second_realm, self.TIME_ZERO],
+                               [1, self.default_realm, self.TIME_ZERO - self.DAY],
+                               [2, second_realm, self.TIME_ZERO - self.DAY]])
+
+        # Check that adding spurious entries doesn't make a difference
+        self.mark_audit_active(user1, end_time=self.TIME_ZERO + self.DAY)
+        self.mark_15day_active(user2, end_time=self.TIME_ZERO + self.DAY)
+        self.mark_15day_active(user2, end_time=self.TIME_ZERO - self.DAY)
+        self.create_user()
+        third_realm = Realm.objects.create(string_id='third', name='third')
+        self.create_user(realm=third_realm)
+
+        RealmCount.objects.all().delete()
+        for i in [-1, 0, 1]:
+            do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO + i*self.DAY)
+        self.assertTableState(RealmCount, ['value', 'realm', 'end_time'],
+                              [[2, self.default_realm, self.TIME_ZERO],
+                               [3, second_realm, self.TIME_ZERO],
+                               [1, self.default_realm, self.TIME_ZERO - self.DAY],
+                               [2, second_realm, self.TIME_ZERO - self.DAY]])
+
+    def test_end_to_end(self):
+        # type: () -> None
+        user1 = do_create_user('email1', 'password', self.default_realm, 'full_name', 'short_name')
+        user2 = do_create_user('email2', 'password', self.default_realm, 'full_name', 'short_name')
+        do_create_user('email3', 'password', self.default_realm, 'full_name', 'short_name')
+        time_zero = floor_to_day(timezone.now()) + self.DAY
+        update_user_activity_interval(user1, time_zero)
+        update_user_activity_interval(user2, time_zero)
+        do_deactivate_user(user2)
+        for property in ['active_users_audit:is_bot:day', '15day_actives::day',
+                         'realm_active_humans::day']:
+            FillState.objects.create(property=property, state=FillState.DONE, end_time=time_zero)
+            process_count_stat(COUNT_STATS[property], time_zero+self.DAY)
+        self.assertEqual(RealmCount.objects.filter(
+            property='realm_active_humans::day', end_time=time_zero+self.DAY, value=1).count(), 1)
+        self.assertEqual(RealmCount.objects.filter(property='realm_active_humans::day').count(), 1)
