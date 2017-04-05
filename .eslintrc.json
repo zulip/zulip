@@ -16,6 +16,7 @@
         "marked": false,
         "moment": false,
         "i18n": false,
+        "DynamicText": false,
         "bridge": false,
         "page_params": false,
         "status_classes": false,
