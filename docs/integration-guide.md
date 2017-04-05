@@ -207,7 +207,7 @@ ZulipMobile/0.5.4 (Android; 4.2; maguro)
 
 Every Zulip integration must be documented in
 `zerver/webhooks/mywebhook/doc.html` (or
-`templates/zerver/integrations.html`, for non-webhook integrations).
+`templates/zerver/integrations/<integration_name>.html`, for non-webhook integrations).
 Usually, this involves a few steps:
 
 * Add text explaining all of the steps required to setup the

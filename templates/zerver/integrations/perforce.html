@@ -1,0 +1,52 @@
+<p>
+    Zulip supports integration with Perforce as a
+    <a href="http://www.perforce.com/perforce/doc.current/manuals/p4sag/chapter.scripting.html">trigger</a>
+    that fires once a changelist is submitted and committed. To do this:
+</p>
+
+<ol>
+    <li>
+        Download and install our <a href="/api">Python bindings</a> on the
+        server that hosts your Perforce depot. The Perforce trigger will be
+        installed to a location like
+        <code>/usr/local/share/zulip/integrations/perforce</code>
+    </li>
+
+    <li>
+        Open <code>integrations/perforce/zulip_perforce_config.py</code> in
+        your favorite editor, change the <code>ZULIP_USER</code> and
+        <code>ZULIP_API_KEY</code> variables at the top of the file to the
+        credentials for the bot you'd like to use for this integration.
+    </li>
+
+    <li>You should also change <code>ZULIP_SITE</code> to {{ external_api_path_subdomain }}</li>
+
+    <li>
+        Edit your
+        <a href="http://www.perforce.com/perforce/doc.current/manuals/p4sag/chapter.scripting.html#d0e14583">trigger table</a>
+        with <code>p4 triggers</code> and add an entry something like the
+        following:
+
+        <pre>notify_zulip change-commit //depot/... "/usr/local/share/zulip/integrations/perforce/zulip_change-commit.py %change% %changeroot%"</pre>
+    </li>
+
+    <li>By default, this hook will send to streams of the form
+        <code>depot_subdirectory-commits</code>. So, a changelist that modifies
+        files in <code>//depot/foo/bar/baz</code> will result in a message to
+        stream <code>foo-commits</code>. Messages about changelists that modify
+        files in the depot root or files in multiple direct subdirectories of
+        the depot root will be sent to <code>depot-commits</code>. If you'd
+        prefer different behavior, such as all commits across your depot going
+        to one stream, change it now in <code>zulip_perforce_config.py</code>.
+        Make sure that everyone interested in getting these post-commit Zulips
+        is subscribed to the relevant streams!
+    </li>
+</ol>
+
+<p>
+    <b>Congratulations! You're done!</b><br/> When you commit to your
+    Perforce depot the team can see updates in real time in
+    Zulip:
+</p>
+
+<img class="screenshot" src="/static/images/integrations/perforce/001.png"/>

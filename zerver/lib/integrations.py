@@ -174,40 +174,61 @@ WEBHOOK_INTEGRATIONS = [
 ]  # type: List[WebhookIntegration]
 
 INTEGRATIONS = {
-    'asana': Integration('asana', 'asana'),
-    'basecamp': Integration('basecamp', 'basecamp'),
-    'capistrano': Integration('capistrano', 'capistrano'),
-    'codebase': Integration('codebase', 'codebase'),
+    'asana': Integration('asana', 'asana', doc='zerver/integrations/asana.html'),
+    'capistrano': Integration('capistrano', 'capistrano', doc='zerver/integrations/capistrano.html'),
+    'codebase': Integration('codebase', 'codebase', doc='zerver/integrations/codebase.html'),
     'email': EmailIntegration('email', 'email'),
-    'git': Integration('git', 'git'),
-    'google-calendar': Integration('google-calendar', 'google-calendar', display_name='Google Calendar'),
-    'hubot': Integration('hubot', 'hubot'),
-    'jenkins': Integration('jenkins', 'jenkins', secondary_line_text='(or Hudson)'),
+    'git': Integration('git', 'git', doc='zerver/integrations/git.html'),
+    'google-calendar': Integration(
+        'google-calendar',
+        'google-calendar',
+        display_name='Google Calendar',
+        doc='zerver/integrations/google-calendar.html'
+    ),
+    'hubot': Integration('hubot', 'hubot', doc='zerver/integrations/hubot.html'),
+    'jenkins': Integration(
+        'jenkins',
+        'jenkins',
+        secondary_line_text='(or Hudson)',
+        doc='zerver/integrations/jenkins.html'
+    ),
     'jira-plugin': Integration(
         'jira-plugin',
         'jira-plugin',
         logo='static/images/integrations/logos/jira.png',
         secondary_line_text='(locally installed)',
-        display_name='JIRA'
+        display_name='JIRA',
+        doc='zerver/integrations/jira-plugin.html'
     ),
-    'mercurial': Integration('mercurial', 'mercurial', display_name='Mercurial (hg)'),
-    'nagios': Integration('nagios', 'nagios'),
-    'openshift': Integration('openshift', 'openshift', display_name='OpenShift'),
-    'perforce': Integration('perforce', 'perforce'),
-    'phabricator': Integration('phabricator', 'phabricator'),
-    'puppet': Integration('puppet', 'puppet'),
-    'redmine': Integration('redmine', 'redmine'),
-    'rss': Integration('rss', 'rss', display_name='RSS'),
-    'subversion': Integration('subversion', 'subversion'),
-    'trac': Integration('trac', 'trac'),
+    'mercurial': Integration(
+        'mercurial',
+        'mercurial',
+        display_name='Mercurial (hg)',
+        doc='zerver/integrations/mercurial.html'
+    ),
+    'nagios': Integration('nagios', 'nagios', doc='zerver/integrations/nagios.html'),
+    'openshift': Integration(
+        'openshift',
+        'openshift',
+        display_name='OpenShift',
+        doc='zerver/integrations/openshift.html'
+    ),
+    'perforce': Integration('perforce', 'perforce', doc='zerver/integrations/perforce.html'),
+    'phabricator': Integration('phabricator', 'phabricator', doc='zerver/integrations/phabricator.html'),
+    'puppet': Integration('puppet', 'puppet', doc='zerver/integrations/puppet.html'),
+    'redmine': Integration('redmine', 'redmine', doc='zerver/integrations/redmine.html'),
+    'rss': Integration('rss', 'rss', display_name='RSS', doc='zerver/integrations/rss.html'),
+    'subversion': Integration('subversion', 'subversion', doc='zerver/integrations/subversion.html'),
+    'trac': Integration('trac', 'trac', doc='zerver/integrations/trac.html'),
     'trello-plugin': Integration(
         'trello-plugin',
         'trello-plugin',
         logo='static/images/integrations/logos/trello.png',
         secondary_line_text='(legacy)',
-        display_name='Trello'
+        display_name='Trello',
+        doc='zerver/integrations/trello-plugin.html'
     ),
-    'twitter': Integration('twitter', 'twitter'),
+    'twitter': Integration('twitter', 'twitter', doc='zerver/integrations/twitter.html'),
 
 }  # type: Dict[str, Integration]
 

@@ -1,0 +1,124 @@
+{% extends "zerver/portico.html" %}
+
+{% block customhead %}
+{{ super() }}
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% stylesheet 'portico' %}
+{% stylesheet 'landing-page' %}
+{{ minified_js('landing-page')|safe }}
+
+{% endblock %}
+
+{% block hello_page_container %} hello-main{% endblock %}
+{% block hello_page_footer %} hello-footer{% endblock %}
+
+{% block os_announcement %}
+  {% if show_oss_announcement %}
+  <div class="os-headline-container">
+    <img src="/static/images/logo/zballoon.png" class="os-illustration" alt="Zulip balloon" />
+    <div class="main-headline-text">
+      <span class="tagline os-tagline">
+         {{ _('Zulip has been released as open source software!') }}
+      </span>
+      <span class="footnote os-footnote">
+         {% trans %}Read the <a href="https://blogs.dropbox.com/tech/2015/09/open-sourcing-zulip-a-dropbox-hack-week-project" target="_blank">announcement</a> or go to <a href="https://www.zulip.org" target="_blank">the Zulip open source project website</a>.{% endtrans %}
+      </span>
+    </div>
+  </div>
+  {% endif %}
+{% endblock %}
+
+{% block portico_content %}
+
+{% include 'zerver/landing_nav.html' %}
+
+<div class="portico-landing integrations">
+    <div class="main">
+        <div class="padded-content">
+            <div class="inner-content">
+    <div class="portico-page-header"><a href="#" class="no-style"><i class="icon-vector-gears portico-page-header-icon"></i>Integrations</a></div>
+
+    <div id="integration-main-text">
+      <p>With Zulip integrations, your team
+        can stay up-to-date on code changes, issue tickets, build system
+        results, tweets about your project, and much more.</p>
+
+      <p>Many of these integrations require creating a Zulip bot. You
+        can do so on your {{ settings_html|safe }}. Be
+        sure to note its username and API key.</p>
+
+      <p>If an integration you want isn't available yet, you
+        can <a href="http://zulip.readthedocs.io/en/latest/integration-guide.html">contribute
+        an integration</a>
+        or <a href="https://github.com/zulip/zulip/issues/new">open an
+        issue on GitHub</a> and tag it with the "integrations" label
+        (so you can get notified when that integration becomes
+        available).</p>
+    </div>
+
+    <div id="integration-instruction-block" class="integration-instruction-block">
+       <a href="#" id="integration-list-link"><i class="icon-vector-circle-arrow-left"></i><span>Back to list</span></a>
+    </div>
+
+    <div class="integration-lozenges">
+      {% for integration in integrations_dict.values() %}
+        {% if integration.is_enabled() %}
+          <div class="integration-lozenge integration-{{ integration.name }}">
+             <a class="integration-link integration-{{ integration.name }}" href="#{{ integration.name }}">
+                <img class="integration-logo" src="/{{ integration.logo }}" alt="{{ integration.display_name }} logo" />
+               {% if integration.secondary_line_text %}
+                 <span class="integration-label" style="padding-top: 0px; padding-bottom: 0px;">{{ integration.display_name }}</span>
+                 <span class="integration-label-secondary">{{ integration.secondary_line_text }}</span>
+               {% else %}
+                 <span class="integration-label">{{ integration.display_name}}</span>
+               {% endif %}
+             </a>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    <div class="portico-page-header extra" id="hubot-integrations"><a href="#" class="no-style"><i class="icon-vector-gears portico-page-header-icon"></i>Integrations available via Hubot</a></div>
+    <p class="extra">The official <a class="integration-link integration-hubot" href="#hubot"><span class="integration-label">Hubot</span></a>
+    integration provides an extension point for additional Zulip integrations. </p><p class="extra"> A non-comprehensive list of integrations available through
+    <a class="integration-link integration-hubot" href="#hubot"><span class="integration-label">Hubot</span></a> follows below:</p>
+
+    <div class="integration-lozenges">
+    {% for integration in hubot_lozenges_dict.values() %}
+        <div class="integration-lozenge integration-{{ integration.name }}">
+           <a class="integration-link integration-{{ integration.name }}" href="{{ integration.git_url }}">
+              <img class="integration-logo" src="/{{ integration.logo }}" alt="{{ integration.logo_alt }} logo" />
+               <span class="integration-label">{{ integration.display_name}}</span>
+           </a>
+        </div>
+      {% endfor %}
+    </div>
+
+<div id="integration-instructions-group">
+    {% for integration in integrations_dict.values() %}
+        {% if integration.is_enabled() %}
+            {% if integration.doc %}
+                <div id={{ integration.name }} class="integration-instructions">
+                    {% include integration.doc %}
+                    <p style="font-size:11px; font-style:italic;">
+                        Logos are trademarks of their respective owners.
+                        None of the integrations on this page are created by,
+                        affiliated with, or supported by the companies
+                        represented by the logos.
+                    </p>
+                </div>
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+
+    {% if email_integration_enabled %}
+        {% include 'zerver/integrations/email.html' %}
+    {% endif %}
+</div>
+            </div> <!-- .inner-content -->
+        </div> <!-- .padded-content -->
+    </div> <!-- .main -->
+</div> <!-- .portico-landing -->
+
+{% endblock %}

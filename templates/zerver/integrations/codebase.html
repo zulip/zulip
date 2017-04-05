@@ -1,0 +1,53 @@
+<p>
+    First, create the streams you'd like to use for Codebase notifications. There will be two types of
+    messages: commit-related updates and issue-related updates. After creating these streams (we suggest naming
+    them <code>codebase commits</code> and <code>codebase issues</code>), make sure to subscribe all interested
+    parties.
+</p>
+
+<p>
+    Next, download and install our
+    <a href="/api">Python bindings and example scripts</a> on the computer you'd like to run this mirroring script from.
+</p>
+
+<p>
+    You will need your Codebase API Username. You can find it in the settings page of your account, under
+    <code>API Credentials</code>.
+</p>
+<p>
+    Edit the Codebase and Zulip credentials in <code>integrations/codebase/zulip_codebase_config.py</code> using
+    your favorite editor:
+</p>
+
+
+<div class="codehilite">
+      <pre><span class="n">CODEBASE_API_USERNAME</span> <span class="o">=</span> <span class="s">"zulip-inc/leo-franchi-15"</span>
+<span class="n">CODEBASE_API_KEY</span> <span class="o">=</span> <span class="s">0123456789abcdef0123456789abcdef</span>
+
+<span class="n">ZULIP_USER</span> <span class="o">=</span> <span class="s">"codebase-bot@example.com"</span>
+<span class="n">ZULIP_API_KEY</span> <span class="o">=</span> <span class="s">"0123456789abcdef0123456789abcdef"</span>
+{% if api_site_required %}<span class="n">ZULIP_SITE</span> <span class="o">=</span><span class="s">"{{ external_api_uri_subdomain }}"</span>{% endif %}</pre>
+</div>
+
+<p>
+    Before your first run of the script, you may optionally choose to
+    configure it to mirror some number of hours of prior Codebase activity:
+</p>
+
+<div class="codehilite">
+        <pre><span class="n">CODEBASE_INITIAL_HISTORY_HOURS</span> <span class="o">=</span> <span
+            class="s">10</span></pre>
+</div>
+
+<p>
+    Now, simply run the <code>api/integrations/codebase/zulip_codebase_mirror</code> script.
+    If needed, this script may be restarted, and it will automatically resume from when
+    it was last running.
+</p>
+
+<p>
+    <b>Congratulations! You're done!</b><br/> Whenever you create a new project,
+    commit, issue, deployment, or more, you'll get notifications in your selected streams
+    with the associated information.
+</p>
+<img class="screenshot" src="/static/images/integrations/codebase/001.png"/>
