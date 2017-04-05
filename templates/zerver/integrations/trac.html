@@ -1,0 +1,64 @@
+<p>
+    First, create the stream you'd like to use for Trac notifications, and
+    subscribe all interested parties to this stream. The integration will use
+    the default stream <code>trac</code> if no stream is supplied in the
+    hook; you still need to create the stream even if you are using this
+    default.
+</p>
+
+<p>
+    Next, download and install our
+    <a href="/api">
+        Python bindings and example scripts
+    </a>
+    on your Trac server.
+</p>
+
+<p>
+    Next, open <code>integrations/trac/zulip_trac_config.py</code> in
+    your favorite editor, and change the following lines to specify
+    your bot's email address, API key, and where you'd like your
+    notification messages to go (by default,
+    stream <code>trac</code>):
+</p>
+
+<div class="codehilite"><pre><span class="n">ZULIP_USER</span> <span class="o">=</span> <span class="s">"trac-notifications-bot@example.com"</span>
+<span class="n">ZULIP_API_KEY</span> <span class="o">=</span> <span class="s">"0123456789abcdef0123456789abcdef"</span>
+<span class="n">STREAM_FOR_NOTIFICATIONS</span> <span class="o">=</span> <span class="s">"trac"</span>
+<span class="n">TRAC_BASE_TICKET_URL</span> <span class="o">=</span> <span
+        class="s">"https://trac.example.com/ticket"</span>
+{% if api_site_required %}<span class="n">ZULIP_SITE</span> <span class="o">=</span><span class="s">"{{ external_api_uri_subdomain }}"</span>{% endif %}</pre>
+</div>
+
+<p>
+    Copy <code>integrations/trac/zulip_trac.py</code>
+    and <code>integrations/trac/zulip_trac_config.py</code> into
+    your Trac installation's <code>plugins/</code>
+    subdirectory. Once you've done that, edit your Trac
+    installation's <code>conf/trac.ini</code> to
+    add <code>zulip_trac</code> to the <code>[components]</code>
+    section, as follows:
+</p>
+
+<div class="codehilite"><pre><span class="k">[components]</span>
+<span class="na">zulip_trac</span> <span class="o">=</span> <span class="s">enabled</span></pre>
+</div>
+
+<p>You may then need to restart Trac (or Apache) so that Trac will load our plugin.</p>
+
+<p>
+    <b>Congratulations! You're done!</b><br/> When people open
+    new tickets (or edit existing tickets), you'll see a message
+    like the following, to the stream <code>trac</code> (or whatever
+    you configured above) with a topic that matches the ticket
+    name:
+</p>
+<img class="screenshot" src="/static/images/integrations/trac/001.png"/>
+
+<p>
+    <b>Additional trac configuration</b><br/> After using the plugin
+    for a while, you may want to customize which changes to tickets
+    result in a Zulip notification using
+    the <code>TRAC_NOTIFY_FIELDS</code> setting
+    in <code>zulip_trac_config.py</code>.
+</p>
