@@ -206,7 +206,8 @@ INTEGRATIONS = {
         'jira-plugin',
         logo='static/images/integrations/logos/jira.svg',
         secondary_line_text='(locally installed)',
-        display_name='JIRA'
+        display_name='JIRA',
+        doc='zerver/integrations/jira-plugin.html'
     ),
     'mercurial': Integration('mercurial', 'mercurial', display_name='Mercurial (hg)'),
     'nagios': Integration('nagios', 'nagios'),
