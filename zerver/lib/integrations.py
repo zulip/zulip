@@ -185,7 +185,7 @@ INTEGRATIONS = {
         display_name='Google Calendar',
         doc='zerver/integrations/google-calendar.html'
     ),
-    'hubot': Integration('hubot', 'hubot'),
+    'hubot': Integration('hubot', 'hubot', doc='zerver/integrations/hubot.html'),
     'jenkins': Integration('jenkins', 'jenkins', secondary_line_text='(or Hudson)'),
     'jira-plugin': Integration(
         'jira-plugin',
