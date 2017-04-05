@@ -461,8 +461,7 @@ exports.process_hotkey = function (e, hotkey) {
     }
 
     if ((event_name === 'up_arrow' || event_name === 'down_arrow') && exports.is_subs()) {
-        subs.switch_rows(event_name);
-        return true;
+        return subs.switch_rows(event_name);
     }
 
     if (exports.is_editing_stream_name(e)) {

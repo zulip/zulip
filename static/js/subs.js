@@ -729,7 +729,10 @@ exports.close = function () {
 exports.switch_rows = function (event) {
     var active_data = get_active_data();
     var switch_row;
-    if (!active_data.id || active_data.row.hasClass('notdisplayed')) {
+    if (window.location.hash === '#streams/new') {
+        // Prevent switching stream rows when creating a new stream
+        return false;
+    } else if (!active_data.id || active_data.row.hasClass('notdisplayed')) {
         switch_row = $('div.stream-row:not(.notdisplayed):first');
     } else if (event === 'up_arrow') {
         switch_row = active_data.row.prev();
@@ -737,7 +740,7 @@ exports.switch_rows = function (event) {
         switch_row = active_data.row.next();
         if ($('#search_stream_name').is(":focus")) {
             $('#search_stream_name').blur();
-            return;
+            return true;
         }
     }
 
@@ -749,6 +752,7 @@ exports.switch_rows = function (event) {
     } else if (event === 'up_arrow' && !row_data) {
         $('#search_stream_name').focus();
     }
+    return true;
 };
 
 exports.keyboard_sub = function () {
