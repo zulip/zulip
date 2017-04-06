@@ -45,11 +45,16 @@ var integration_events = function () {
         // the version of the hash without the leading "#".
         var _hash = hash.replace(/^#/, "");
 
+        // clear out the integrations instructions that may exist in the instruction
+        // block from a previous hash.
+        $("#integration-instruction-block .integration-instructions")
+            .appendTo("#integration-instructions-group");
+
         if (hashes.indexOf(_hash) > -1) {
             $lozenge_icon = $(".integration-lozenges .integration-lozenge.integration-" + _hash).clone(true);
             currentblock = $(hash);
             instructionbox.hide().children(".integration-lozenge").replaceWith($lozenge_icon);
-            instructionbox.append($lozenge_icon, currentblock);
+            instructionbox.append($lozenge_icon);
 
             $(".inner-content").removeClass("show");
             setTimeout(function () {
