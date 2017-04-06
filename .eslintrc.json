@@ -33,6 +33,7 @@
         "people": false,
         "navigate": false,
         "settings_account": false,
+        "settings_display": false,
         "settings": false,
         "resize": false,
         "loading": false,

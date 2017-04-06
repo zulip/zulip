@@ -239,12 +239,12 @@ function _setup_page() {
 
     $(".settings-box").html(settings_tab);
     $("#notify-settings-status").hide();
-    $("#display-settings-status").hide();
     $("#ui-settings-status").hide();
 
     alert_words_ui.set_up_alert_words();
     attachments_ui.set_up_attachments();
     settings_account.set_up();
+    settings_display.set_up();
 
     $("#api_key_value").text("");
     $("#get_api_key_box").hide();
@@ -254,7 +254,6 @@ function _setup_page() {
     if (tab) {
         exports.launch_page(tab);
     }
-
 
     $('#api_key_button').click(function () {
         if (page_params.password_auth_enabled !== false) {
@@ -400,117 +399,6 @@ function _setup_page() {
         var notification_checkbox = $("#enable_stream_sounds");
         maybe_bulk_update_stream_notification_setting(notification_checkbox,
                                                       update_audible_notification_setting);
-    });
-
-    $("#left_side_userlist").change(function () {
-        var left_side_userlist = this.checked;
-        var data = {};
-        data.left_side_userlist = JSON.stringify(left_side_userlist);
-        var context = {};
-        if (data.left_side_userlist === "true") {
-            context.side = i18n.t('left');
-        } else {
-            context.side = i18n.t('right');
-        }
-
-        channel.patch({
-            url: '/json/settings/display',
-            data: data,
-            success: function () {
-                ui_report.success(i18n.t("User list will appear on the __side__ hand side! You will need to reload the window for your changes to take effect.", context),
-                                  $('#display-settings-status').expectOne());
-            },
-            error: function (xhr) {
-                ui_report.error(i18n.t("Error updating user list placement setting"), xhr, $('#display-settings-status').expectOne());
-            },
-        });
-    });
-
-    $("#emoji_alt_code").change(function () {
-        var emoji_alt_code = this.checked;
-        var data = {};
-        data.emoji_alt_code = JSON.stringify(emoji_alt_code);
-        var context = {};
-        if (data.emoji_alt_code === "true") {
-            context.text_or_images = i18n.t('text');
-        } else {
-            context.text_or_images = i18n.t('images');
-        }
-
-        channel.patch({
-            url: '/json/settings/display',
-            data: data,
-            success: function () {
-                ui_report.success(i18n.t("Emoji reactions will appear as __text_or_images__!", context),
-                                  $('#display-settings-status').expectOne());
-            },
-            error: function (xhr) {
-                ui_report.error(i18n.t("Error updating emoji appearance setting"), xhr, $('#display-settings-status').expectOne());
-            },
-        });
-    });
-
-    $("#twenty_four_hour_time").change(function () {
-        var data = {};
-        var setting_value = $("#twenty_four_hour_time").is(":checked");
-        data.twenty_four_hour_time = JSON.stringify(setting_value);
-        var context = {};
-        if (data.twenty_four_hour_time === "true") {
-            context.format = '24';
-        } else {
-            context.format = '12';
-        }
-
-        channel.patch({
-            url: '/json/settings/display',
-            data: data,
-            success: function () {
-                ui_report.success(i18n.t("Time will now be displayed in the __format__-hour format!", context),
-                                  $('#display-settings-status').expectOne());
-            },
-            error: function (xhr) {
-                ui_report.error(i18n.t("Error updating time format setting"), xhr, $('#display-settings-status').expectOne());
-            },
-        });
-    });
-
-    $("#default_language_modal [data-dismiss]").click(function () {
-      $("#default_language_modal").fadeOut(300);
-    });
-
-    $("#default_language_modal .language").click(function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        $('#default_language_modal').fadeOut(300);
-
-        var data = {};
-        var $link = $(e.target).closest("a[data-code]");
-        var setting_value = $link.attr('data-code');
-        data.default_language = JSON.stringify(setting_value);
-
-        var new_language = $link.attr('data-name');
-        $('#default_language_name').text(new_language);
-
-        var context = {};
-        context.lang = new_language;
-
-        channel.patch({
-            url: '/json/settings/display',
-            data: data,
-            success: function () {
-                ui_report.success(i18n.t("__lang__ is now the default language!  You will need to reload the window for your changes to take effect", context),
-                                  $('#display-settings-status').expectOne());
-            },
-            error: function (xhr) {
-                ui_report.error(i18n.t("Error updating default language setting"), xhr, $('#display-settings-status').expectOne());
-            },
-        });
-    });
-
-    $('#default_language').on('click', function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        $('#default_language_modal').show().attr('aria-hidden', false);
     });
 
     $("#get_api_key_box").hide();
@@ -831,11 +719,6 @@ function _setup_page() {
 }
 
 function _update_page() {
-    $("#twenty_four_hour_time").prop('checked', page_params.twenty_four_hour_time);
-    $("#left_side_userlist").prop('checked', page_params.left_side_userlist);
-    $("#emoji_alt_code").prop('checked', page_params.emoji_alt_code);
-    $("#default_language_name").text(page_params.default_language_name);
-
     $("#enable_stream_desktop_notifications").prop('checked', page_params.stream_desktop_notifications_enabled);
     $("#enable_stream_sounds").prop('checked', page_params.stream_sounds_enabled);
     $("#enable_desktop_notifications").prop('checked', page_params.desktop_notifications_enabled);

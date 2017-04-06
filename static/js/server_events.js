@@ -294,7 +294,7 @@ function dispatch_normal_event(event) {
             page_params.default_language = event.setting;
         }
         if ($("#settings.tab-pane.active").length) {
-            settings.update_page();
+            settings_display.update_page();
         }
         break;
 

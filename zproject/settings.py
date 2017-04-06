@@ -906,6 +906,7 @@ JS_SPECS = {
             'js/avatar.js',
             'js/realm_icon.js',
             'js/settings_account.js',
+            'js/settings_display.js',
             'js/settings.js',
             'js/admin.js',
             'js/tab_bar.js',
