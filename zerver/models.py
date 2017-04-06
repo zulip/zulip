@@ -507,6 +507,42 @@ def flush_realm_filter(sender, **kwargs):
 post_save.connect(flush_realm_filter, sender=RealmFilter)
 post_delete.connect(flush_realm_filter, sender=RealmFilter)
 
+# some work pending
+def shortener_pattern_validator(value):
+    # type: (Text) -> None
+    regex = re.compile(r'((http[s]?):)(\/\/)([^:\/\s]+)\/(\?P<\w+>\w+)\/(\?P<\w+>\w+)')
+    # change error message
+    error_msg = 'Invalid shortener pattern, you must use the following format OPTIONAL_PREFIX(?P<id>.+)'
+
+    if not regex.match(str(value)):
+        raise ValidationError(error_msg)
+
+    try:
+        re.compile(value)
+    except sre_constants.error:
+        # Regex is invalid
+        raise ValidationError(error_msg)
+
+def shortener_format_validator(value):
+    # type: (str) -> None
+    regex = re.compile(r'^(?:[\w\-#]*)(%([a-zA-Z0-9_-]+))?(%([a-zA-Z0-9_-]+)){1}$')
+
+    if not regex.match(value):
+        raise ValidationError('Format string must be in the following format: `OPTIONAL_PREFIX%(\w+)s%(\w+)s`')
+
+
+class RealmShortener(models.Model):
+    realm = models.ForeignKey(Realm) # type: Realm
+    url_format_string = models.TextField(validators=[URLValidator, shortener_pattern_validator]) # type: Text
+    pattern = models.TextField(validators=[shortener_format_validator]) # type: Text
+
+    class Meta(object):
+        unique_together = ("realm", "url_format_string")
+
+    def __unicode__(self):
+        # type: () -> Text
+        return u"<RealmShortener(%s): %s %s>" % (self.realm.string_id, self.url_format_string, self.pattern,)
+
 class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     DEFAULT_BOT = 1
     """
