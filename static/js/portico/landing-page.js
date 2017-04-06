@@ -19,6 +19,8 @@ var ScrollTo = function () {
 // these are events that are only to run on the integrations page.
 // check if the page location is integrations.
 var integration_events = function () {
+    var scroll_top = 0;
+
     $("a.title")
         .addClass("show-integral")
         .prepend($("<span class='integral'>∫</span>"))
@@ -68,14 +70,16 @@ var integration_events = function () {
 
                 $(".inner-content").addClass("show");
             }, 300);
-            window.scrollTo(0,0);
+
+            $("html, body").animate({ scrollTop: 0 }, 200);
         }
     };
 
     function update_hash() {
-        var hash = document.location.hash;
+        var hash = window.location.hash;
 
         if (hash && hash !== '#hubot-integrations') {
+            scroll_top = $("body").scrollTop();
             show_integration(window.location.hash);
         } else if (currentblock && $lozenge_icon) {
             $(".inner-content").removeClass("show");
@@ -87,7 +91,8 @@ var integration_events = function () {
                 $lozenge_icon.remove();
                 currentblock.appendTo("#integration-instructions-group");
                 $(".inner-content").addClass("show");
-                $('html, body').animate({scrollTop: ($(hash).offset() || { top: 0 }).top}, 'slow');
+
+                $('html, body').animate({ scrollTop: scroll_top }, 0);
             }, 300);
         } else {
             $(".inner-content").addClass("show");
@@ -96,6 +101,16 @@ var integration_events = function () {
 
     window.onhashchange = update_hash;
     update_hash();
+
+    // this needs to happen because when you link to "#" it will scroll to the
+    // top of the page.
+    $("#integration-list-link").click(function (e) {
+        var scroll_height = $("body").scrollTop();
+        window.location.hash = "#";
+        $("body").scrollTop(scroll_height);
+
+        e.preventDefault();
+    });
 };
 
 var events = function () {
