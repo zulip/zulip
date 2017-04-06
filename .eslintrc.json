@@ -32,6 +32,7 @@
         "stream_color": false,
         "people": false,
         "navigate": false,
+        "settings_account": false,
         "settings": false,
         "resize": false,
         "loading": false,

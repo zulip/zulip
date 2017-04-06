@@ -24,7 +24,7 @@ exports.update_person = function update(person) {
         compose.update_email(user_id, new_email);
 
         if (people.is_my_user_id(person.user_id)) {
-            settings.update_email(new_email);
+            settings_account.update_email(new_email);
         }
 
         people.update_email(user_id, new_email);
