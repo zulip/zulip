@@ -1,109 +1,14 @@
 var settings = (function () {
 
 var exports = {};
-var _streams_deferred = $.Deferred();
-var streams = _streams_deferred.promise(); // promise to the full stream list
-
-function build_stream_list($select, extra_names) {
-    if (extra_names === undefined) {
-        extra_names = [];
-    }
-
-    streams.done(function (stream_items) {
-        var build_option = function (value_name) {
-            return $('<option>')
-                .attr('value', value_name[0])
-                .text(value_name[1]);
-        };
-
-        var public_names = _.chain(stream_items)
-            .where({invite_only: false})
-            .pluck('name')
-            .map(function (x) { return [x, x]; })
-            .value();
-        var public_options = _.chain(extra_names.concat(public_names))
-            .map(build_option)
-            .reduce(
-                function ($optgroup, option) { return $optgroup.append(option); },
-                $('<optgroup label="Public"/>')
-            )
-            .value();
-
-        var private_options = _.chain(stream_items)
-            .where({invite_only: true})
-            .pluck('name')
-            .map(function (x) { return [x, x]; })
-            .map(build_option)
-            .reduce(
-                function ($optgroup, option) { return $optgroup.append(option); },
-                $('<optgroup label="Private"/>')
-            )
-            .value();
-
-        $select.empty();
-        $select.append(public_options);
-        $select.append(private_options);
-
-    });
-}
 
 function add_bot_row(info) {
     info.id_suffix = _.uniqueId('_bot_');
     var row = $(templates.render('bot_avatar_row', info));
     if (info.is_active) {
-        var default_sending_stream_select = row.find('select[name=bot_default_sending_stream]');
-        var default_events_register_stream_select = row.find('select[name=bot_default_events_register_stream]');
-
-        if (!feature_flags.new_bot_ui) {
-            row.find('.new-bot-ui').hide();
-        }
-
-        var to_extra_options = [];
-        if (info.default_sending_stream === null) {
-            to_extra_options.push(['', 'No default selected']);
-        }
-        build_stream_list(
-            default_sending_stream_select,
-            to_extra_options
-        );
-        default_sending_stream_select.val(
-            info.default_sending_stream,
-            to_extra_options
-        );
-
-        var events_extra_options = [['__all_public__', 'All public streams']];
-        if (info.default_events_register_stream === null && !info.default_all_public_streams) {
-            events_extra_options.unshift(['', 'No default selected']);
-        }
-        build_stream_list(
-            default_events_register_stream_select,
-            events_extra_options
-        );
-        if (info.default_all_public_streams) {
-            default_events_register_stream_select.val('__all_public__');
-        } else {
-            default_events_register_stream_select.val(info.default_events_register_stream);
-        }
-
         $('#active_bots_list').append(row);
     } else {
         $('#inactive_bots_list').append(row);
-    }
-}
-
-function add_bot_default_streams_to_form(formData, default_sending_stream,
-                                         default_events_register_stream) {
-    if (!feature_flags.new_bot_ui) { return; }
-
-    if (default_sending_stream !== '') {
-        formData.append('default_sending_stream', default_sending_stream);
-    }
-    if (default_events_register_stream === '__all_public__') {
-        formData.append('default_all_public_streams', JSON.stringify(true));
-        formData.append('default_events_register_stream', null);
-    } else if (default_events_register_stream !== '') {
-        formData.append('default_all_public_streams', JSON.stringify(false));
-        formData.append('default_events_register_stream', default_events_register_stream);
     }
 }
 
@@ -124,9 +29,6 @@ function render_bots() {
             api_key: elem.api_key,
             is_active: elem.is_active,
             zuliprc: 'zuliprc', // Most browsers do not allow filename starting with `.`
-            default_sending_stream: elem.default_sending_stream,
-            default_events_register_stream: elem.default_events_register_stream,
-            default_all_public_streams: elem.default_all_public_streams,
         });
     });
 
@@ -197,12 +99,6 @@ $("body").ready(function () {
 
 
 function _setup_page() {
-    // To build the edit bot streams dropdown we need both the bot and stream
-    // API results. To prevent a race streams will be initialized to a promise
-    // at page load. This promise will be resolved with a list of streams after
-    // the first settings page load. build_stream_list then adds a callback to
-    // the promise, which in most cases will already be resolved.
-
     var tab = (function () {
         var tab = false;
         var hash_sequence = window.location.hash.split(/\//);
@@ -212,21 +108,6 @@ function _setup_page() {
         }
         return tab;
     }());
-
-    if (_streams_deferred.state() !== "resolved") {
-        channel.get({
-            url: '/json/streams',
-            success: function (data) {
-                _streams_deferred.resolve(data.streams);
-
-                build_stream_list($('#create_bot_default_sending_stream'));
-                build_stream_list(
-                    $('#create_bot_default_events_register_stream'),
-                    [['__all_public__', 'All public streams']]
-                );
-            },
-        });
-    }
 
     // Most browsers do not allow filenames to start with `.` without the user manually changing it.
     // So we use zuliprc, not .zuliprc.
@@ -268,9 +149,6 @@ function _setup_page() {
 
     if (!page_params.show_digest_email) {
         $("#other_notifications").hide();
-    }
-    if (!feature_flags.new_bot_ui) {
-        $('.new-bot-ui').hide();
     }
 
     $("#get_api_key_box").hide();
@@ -315,15 +193,11 @@ function _setup_page() {
         submitHandler: function () {
             var full_name = $('#create_bot_name').val();
             var short_name = $('#create_bot_short_name').val() || $('#create_bot_short_name').text();
-            var default_sending_stream = $('#create_bot_default_sending_stream').val();
-            var default_events_register_stream = $('#create_bot_default_events_register_stream').val();
             var formData = new FormData();
 
             formData.append('csrfmiddlewaretoken', csrf_token);
             formData.append('full_name', full_name);
             formData.append('short_name', short_name);
-            add_bot_default_streams_to_form(formData, default_sending_stream,
-                                            default_events_register_stream);
             jQuery.each($('#bot_avatar_file_input')[0].files, function (i, file) {
                 formData.append('file-'+i, file);
             });
@@ -446,8 +320,6 @@ function _setup_page() {
                 var full_name = form.find('.edit_bot_name').val();
                 var bot_owner = form.find('.edit-bot-owner select').val();
                 var file_input = $(".edit_bot").find('.edit_bot_avatar_file_input');
-                var default_sending_stream = form.find('.edit_bot_default_sending_stream').val();
-                var default_events_register_stream = form.find('.edit_bot_default_events_register_stream').val();
                 var spinner = form.find('.edit_bot_spinner');
                 var edit_button = form.find('.edit_bot_button');
                 var formData = new FormData();
@@ -455,8 +327,6 @@ function _setup_page() {
                 formData.append('csrfmiddlewaretoken', csrf_token);
                 formData.append('full_name', full_name);
                 formData.append('bot_owner', bot_owner);
-                add_bot_default_streams_to_form(formData, default_sending_stream,
-                                                default_events_register_stream);
                 jQuery.each(file_input[0].files, function (i, file) {
                     formData.append('file-'+i, file);
                 });

@@ -10,9 +10,6 @@ exports.local_echo = true;
 // Experimental modification to support much wider message views.
 exports.full_width = false;
 
-// Beta rewrite of the Bot UI; probably worth finishing and deploying
-exports.new_bot_ui = false;
-
 // The features below have all settled into their final states and can
 // be removed when we get a chance
 exports.mark_read_at_bottom = true;

@@ -105,8 +105,6 @@ casper.then(function create_bot() {
     casper.fill('#create_bot_form',{
         bot_name: 'Bot 1',
         bot_short_name: '1',
-        bot_default_sending_stream: 'Denmark',
-        bot_default_events_register_stream: 'Rome',
     });
 
     casper.test.info('Submitting the create bot form');
