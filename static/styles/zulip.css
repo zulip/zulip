@@ -295,11 +295,12 @@ li,
 }
 
 #clipboard_image {
-    height: inherit;
-    width: inherit;
-    max-width: inherit;
-    margin-top: inherit;
-    margin-left: -7px;
+    margin-top: -5px;
+    margin-left: -8px;
+}
+
+.copy_message:hover svg path {
+    fill: black;
 }
 
 .btn-large {
