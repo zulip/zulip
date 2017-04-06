@@ -36,6 +36,7 @@
         "settings_display": false,
         "settings_notifications": false,
         "settings_muting": false,
+        "settings_lab": false,
         "settings": false,
         "resize": false,
         "loading": false,

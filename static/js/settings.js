@@ -238,7 +238,6 @@ function _setup_page() {
     });
 
     $(".settings-box").html(settings_tab);
-    $("#ui-settings-status").hide();
 
     alert_words_ui.set_up_alert_words();
     attachments_ui.set_up_attachments();
@@ -246,6 +245,7 @@ function _setup_page() {
     settings_display.set_up();
     settings_notifications.set_up();
     settings_muting.set_up();
+    settings_lab.set_up();
 
     $("#api_key_value").text("");
     $("#get_api_key_box").hide();
@@ -544,35 +544,6 @@ function _setup_page() {
         $("#bots_lists_navbar .inactive-bots-tab").addClass("active");
         $("#active_bots_list").hide();
         $("#inactive_bots_list").show();
-    });
-
-    $("#ui-settings").on("click", "input[name='change_settings']", function (e) {
-        e.preventDefault();
-        var labs_updates = {};
-        _.each(["autoscroll_forever", "default_desktop_notifications"],
-            function (setting) {
-                labs_updates[setting] = $("#" + setting).is(":checked");
-        });
-
-        channel.patch({
-            url: '/json/settings/ui',
-            data: labs_updates,
-            success: function (resp, statusText, xhr) {
-                var message = i18n.t("Updated settings!  You will need to reload for these changes to take effect.", page_params);
-                var result = JSON.parse(xhr.responseText);
-                var ui_settings_status = $('#ui-settings-status').expectOne();
-
-                if (result.autoscroll_forever !== undefined) {
-                    page_params.autoscroll_forever = result.autoscroll_forever;
-                    resize.resize_page_components();
-                }
-
-                ui_report.success(message, ui_settings_status);
-            },
-            error: function (xhr) {
-                ui_report.error(i18n.t("Error changing settings"), xhr, $('#ui-settings-status').expectOne());
-            },
-        });
     });
 
 }
