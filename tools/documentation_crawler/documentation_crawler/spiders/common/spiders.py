@@ -12,6 +12,13 @@ from scrapy.utils.url import url_has_any_extension
 
 from typing import Any, Generator, List, Optional, Tuple
 
+EXCLUDED_URLS = [
+    # Google calendar returns 404s on HEAD requests unconditionally
+    'https://calendar.google.com/calendar/embed?src=ktiduof4eoh47lmgcl2qunnc0o@group.calendar.google.com',
+    # Returns 409 errors to HEAD requests frequently
+    'https://medium.freecodecamp.com',
+]
+
 
 class BaseDocumentationSpider(scrapy.Spider):
     name = None  # type: Optional[str]
@@ -82,10 +89,17 @@ class BaseDocumentationSpider(scrapy.Spider):
         request.dont_filter = True
         yield request
 
+    def exclude_error(self, url):
+        if url in EXCLUDED_URLS:
+            return True
+        return False
+
     def error_callback(self, failure):
         # type: (Any) -> Optional[Generator[Any, None, None]]
         if hasattr(failure.value, 'response') and failure.value.response:
             response = failure.value.response
+            if self.exclude_error(response.url):
+                return None
             if response.status == 404:
                 self._set_error_state()
                 raise Exception('Page not found: {}'.format(response))
