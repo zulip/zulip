@@ -171,3 +171,26 @@ set_global('blueslip', {});
     d.del('foo');
     assert.equal(d.num_items(), 1);
 }());
+
+(function test_clear() {
+    var d = new Dict();
+
+    function populate() {
+        d.set('foo', 1);
+        assert.equal(d.get('foo'), 1);
+        d.set('bar', 2);
+        assert.equal(d.get('bar'), 2);
+    }
+
+    populate();
+    assert.equal(d.num_items(), 2);
+
+    d.clear();
+    assert.equal(d.get('foo'), undefined);
+    assert.equal(d.get('bar'), undefined);
+    assert.equal(d.num_items(), 0);
+
+    // make sure it still works after clearing
+    populate();
+    assert.equal(d.num_items(), 2);
+}());

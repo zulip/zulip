@@ -122,6 +122,10 @@ Dict.prototype = {
             f(mapping.v, mapping.k);
         });
     },
+
+    clear: function Dict_clear() {
+        this._items = {};
+    },
 };
 
 }());
