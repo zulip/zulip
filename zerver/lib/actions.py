@@ -665,11 +665,6 @@ def create_mirror_user_if_needed(realm, email, email_to_fullname):
         except IntegrityError:
             return get_user_profile_by_email(email)
 
-def log_message(message):
-    # type: (Message) -> None
-    if not message.sending_client.name.startswith("test:"):
-        log_event(message.to_log_dict())
-
 def render_incoming_message(message, content, message_users, realm):
     # type: (Message, Text, Set[UserProfile], Realm) -> Text
     realm_alert_words = alert_words_in_realm(realm)
@@ -731,16 +726,10 @@ def do_send_messages(messages_maybe_none):
     # to the default args in do_send_message
     for message in messages:
         message['rendered_content'] = message.get('rendered_content', None)
-        message['no_log'] = message.get('no_log', False)
         message['stream'] = message.get('stream', None)
         message['local_id'] = message.get('local_id', None)
         message['sender_queue_id'] = message.get('sender_queue_id', None)
         message['realm'] = message.get('realm', message['message'].sender.realm)
-
-    # Log the message to our message log for populate_db to refill
-    for message in messages:
-        if not message['no_log']:
-            log_message(message['message'])
 
     for message in messages:
         message['recipients'] = get_recipient_user_profiles(message['message'].recipient,
