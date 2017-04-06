@@ -66,7 +66,7 @@ class LoggingCountStat(CountStat):
 
 class DataCollector(object):
     def __init__(self, output_table, pull_function):
-        # type: (Type[BaseCount], Optional[Callable[[str, datetime, datetime], None]]) -> None
+        # type: (Type[BaseCount], Optional[Callable[[str, datetime, datetime], int]]) -> None
         self.output_table = output_table
         self.pull_function = pull_function
 
@@ -118,7 +118,10 @@ def do_fill_count_stat_at_hour(stat, end_time):
 
     start_time = end_time - stat.interval
     if not isinstance(stat, LoggingCountStat):
-        stat.data_collector.pull_function(stat.property, start_time, end_time)
+        timer = time.time()
+        rows_added = stat.data_collector.pull_function(stat.property, start_time, end_time)
+        logger.info("%s run pull_function (%dms/%sr)" %
+                    (stat.property, (time.time()-timer)*1000, rows_added))
     do_aggregate_to_summary_table(stat, end_time)
 
 def do_delete_counts_at_hour(stat, end_time):
@@ -216,7 +219,7 @@ def do_drop_all_analytics_tables():
 ## DataCollector-level operations ##
 
 def do_pull_from_zerver(property, start_time, end_time, query, group_by):
-    # type: (str, datetime, datetime, str, Optional[Tuple[models.Model, str]]) -> None
+    # type: (str, datetime, datetime, str, Optional[Tuple[models.Model, str]]) -> int
     if group_by is None:
         subgroup = 'NULL'
         group_by_clause  = ''
@@ -231,22 +234,20 @@ def do_pull_from_zerver(property, start_time, end_time, query, group_by):
     query_ = query % {'property': property, 'subgroup': subgroup,
                       'group_by_clause': group_by_clause}
     cursor = connection.cursor()
-    start = time.time()
     cursor.execute(query_, {'time_start': start_time, 'time_end': end_time})
-    end = time.time()
-    logger.info("%s do_pull_from_zerver (%dms/%sr)" % (property, (end-start)*1000, cursor.rowcount))
+    rowcount = cursor.rowcount
     cursor.close()
+    return rowcount
 
 def zerver_data_collector(output_table, query, group_by):
     # type: (Type[BaseCount], str, Optional[Tuple[models.Model, str]]) -> DataCollector
     def pull_function(property, start_time, end_time):
-        # type: (str, datetime, datetime) -> None
-        do_pull_from_zerver(property, start_time, end_time, query, group_by)
+        # type: (str, datetime, datetime) -> int
+        return do_pull_from_zerver(property, start_time, end_time, query, group_by)
     return DataCollector(output_table, pull_function)
 
 def do_pull_minutes_active(property, start_time, end_time):
-    # type: (str, datetime, datetime) -> None
-    timer_start = time.time()
+    # type: (str, datetime, datetime) -> int
     user_activity_intervals = UserActivityInterval.objects.filter(
         end__gt=start_time, start__lt=end_time
     ).select_related(
@@ -264,9 +265,7 @@ def do_pull_minutes_active(property, start_time, end_time):
                       end_time=end_time, value=int(seconds // 60))
             for ids, seconds in seconds_active.items() if seconds >= 60]
     UserCount.objects.bulk_create(rows)
-
-    logger.info("%s do_pull_minutes_active (%dms/%sr)" %
-                (property, (time.time()-timer_start)*1000, len(rows)))
+    return len(rows)
 
 count_message_by_user_query = """
     INSERT INTO analytics_usercount
