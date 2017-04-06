@@ -218,7 +218,7 @@ def do_drop_all_analytics_tables():
 
 ## DataCollector-level operations ##
 
-def do_pull_from_zerver(property, start_time, end_time, query, group_by):
+def do_pull_by_sql_query(property, start_time, end_time, query, group_by):
     # type: (str, datetime, datetime, str, Optional[Tuple[models.Model, str]]) -> int
     if group_by is None:
         subgroup = 'NULL'
@@ -239,11 +239,11 @@ def do_pull_from_zerver(property, start_time, end_time, query, group_by):
     cursor.close()
     return rowcount
 
-def zerver_data_collector(output_table, query, group_by):
+def sql_data_collector(output_table, query, group_by):
     # type: (Type[BaseCount], str, Optional[Tuple[models.Model, str]]) -> DataCollector
     def pull_function(property, start_time, end_time):
         # type: (str, datetime, datetime) -> int
-        return do_pull_from_zerver(property, start_time, end_time, query, group_by)
+        return do_pull_by_sql_query(property, start_time, end_time, query, group_by)
     return DataCollector(output_table, pull_function)
 
 def do_pull_minutes_active(property, start_time, end_time):
@@ -428,22 +428,22 @@ count_stream_by_realm_query = """
 
 count_stats_ = [
     CountStat('messages_sent:is_bot:hour',
-              zerver_data_collector(UserCount, count_message_by_user_query, (UserProfile, 'is_bot')),
+              sql_data_collector(UserCount, count_message_by_user_query, (UserProfile, 'is_bot')),
               CountStat.HOUR),
     CountStat('messages_sent:message_type:day',
-              zerver_data_collector(UserCount, count_message_type_by_user_query, None), CountStat.DAY),
+              sql_data_collector(UserCount, count_message_type_by_user_query, None), CountStat.DAY),
     CountStat('messages_sent:client:day',
-              zerver_data_collector(UserCount, count_message_by_user_query, (Message, 'sending_client_id')),
+              sql_data_collector(UserCount, count_message_by_user_query, (Message, 'sending_client_id')),
               CountStat.DAY),
     CountStat('messages_in_stream:is_bot:day',
-              zerver_data_collector(StreamCount, count_message_by_stream_query, (UserProfile, 'is_bot')),
+              sql_data_collector(StreamCount, count_message_by_stream_query, (UserProfile, 'is_bot')),
               CountStat.DAY),
 
     # Sanity check on the bottom two stats. Is only an approximation,
     # e.g. if a user is deactivated between the end of the day and when this
     # stat is run, they won't be counted.
     CountStat('active_users:is_bot:day',
-              zerver_data_collector(RealmCount, count_user_by_realm_query, (UserProfile, 'is_bot')),
+              sql_data_collector(RealmCount, count_user_by_realm_query, (UserProfile, 'is_bot')),
               CountStat.DAY, interval=TIMEDELTA_MAX),
     # In RealmCount, 'active_humans_audit::day' should be the partial sum sequence
     # of 'active_users_log:is_bot:day', for any realm that started after the
@@ -451,14 +451,14 @@ count_stats_ = [
     # 'active_users_audit:is_bot:day' is the canonical record of which users were
     # active on which days (in the UserProfile.is_active sense).
     CountStat('active_users_audit:is_bot:day',
-              zerver_data_collector(UserCount, check_realmauditlog_by_user_query, (UserProfile, 'is_bot')),
+              sql_data_collector(UserCount, check_realmauditlog_by_user_query, (UserProfile, 'is_bot')),
               CountStat.DAY),
     LoggingCountStat('active_users_log:is_bot:day', RealmCount, CountStat.DAY),
 
     # The minutes=15 part is due to the 15 minutes added in
     # zerver.lib.actions.do_update_user_activity_interval.
     CountStat('15day_actives::day',
-              zerver_data_collector(UserCount, check_useractivityinterval_by_user_query, None),
+              sql_data_collector(UserCount, check_useractivityinterval_by_user_query, None),
               CountStat.DAY, interval=timedelta(days=15)-timedelta(minutes=15)),
     CountStat('minutes_active::day', DataCollector(UserCount, do_pull_minutes_active), CountStat.DAY)
 ]
