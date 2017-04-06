@@ -345,12 +345,21 @@ def highlight_string(text, locs):
     highlight_stop = u'</span>'
     pos = 0
     result = u''
+    in_tag = False
     for loc in locs:
         (offset, length) = loc
-        result += string[pos:offset]
-        result += highlight_start
-        result += string[offset:offset + length]
-        result += highlight_stop
+        for character in string[pos:offset + length]:
+            if character == u'<':
+                in_tag = True
+            elif character == u'>':
+                in_tag = False
+        if in_tag:
+            result += string[pos:offset + length]
+        else:
+            result += string[pos:offset]
+            result += highlight_start
+            result += string[offset:offset + length]
+            result += highlight_stop
         pos = offset + length
     result += string[pos:]
     return result
