@@ -223,13 +223,11 @@ $(function () {
     });
 
     $("body").on("mouseenter", ".copy_message", function () {
-        $(this).find('img#clipboard_image').attr("src", "/static/images/clippy_hover.svg");
         $(this).show();
         $(this).tooltip('show');
     });
 
     $("body").on("mouseleave", ".copy_message", function () {
-        $(this).find('img#clipboard_image').attr("src", "/static/images/clippy.svg");
         $(this).tooltip('hide');
     });
 
