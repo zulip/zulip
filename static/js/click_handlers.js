@@ -581,6 +581,7 @@ $(function () {
         }
 
         $(".settings-section, .settings-wrapper").removeClass("show");
+        settings_sections.load_settings_section(section);
         $(".settings-section" + sel + ", .settings-wrapper" + sel).addClass("show");
     });
 

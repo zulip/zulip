@@ -66,14 +66,9 @@ function _setup_page() {
 
     $(".settings-box").html(settings_tab);
 
-    alert_words_ui.set_up_alert_words();
-    attachments_ui.set_up_attachments();
-    settings_account.set_up();
-    settings_display.set_up();
-    settings_notifications.set_up();
-    settings_bots.set_up();
-    settings_muting.set_up();
-    settings_lab.set_up();
+    // Since we just swapped in a whole new settings widget, we need to
+    // tell settings_sections nothing is loaded.
+    settings_sections.reset_sections();
 
     if (tab) {
         exports.launch_page(tab);

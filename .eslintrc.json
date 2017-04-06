@@ -38,6 +38,7 @@
         "settings_muting": false,
         "settings_lab": false,
         "settings_bots": false,
+        "settings_sections": false,
         "settings": false,
         "resize": false,
         "loading": false,
