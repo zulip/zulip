@@ -828,7 +828,7 @@ class GetOldMessagesTest(ZulipTestCase):
             (u'日本語', u'今朝はごはんを食べました。'),
             (u'日本語', u'昨日、日本のお菓子を送りました。'),
             ('english', u'I want to go to 日本!'),
-            ('english', 'Can you speak Japanese?'),
+            ('english', 'Can you speak https://en.wikipedia.org/wiki/Japanese?'),
         ]
 
         for topic, content in messages_to_search:
@@ -886,6 +886,7 @@ class GetOldMessagesTest(ZulipTestCase):
         multi_search_narrow = [
             dict(operator='search', operand='can'),
             dict(operator='search', operand='speak'),
+            dict(operator='search', operand='wiki'),
         ]
         multi_search_result = self.get_and_check_messages(dict(
             narrow=ujson.dumps(multi_search_narrow),
@@ -893,7 +894,8 @@ class GetOldMessagesTest(ZulipTestCase):
             num_after=10,
         )) # type: Dict[str, Dict]
         self.assertEqual(len(multi_search_result['messages']), 1)
-        self.assertEqual(multi_search_result['messages'][0]['match_content'], '<p><span class="highlight">Can</span> you <span class="highlight">speak</span> Japanese?</p>')
+        self.assertEqual(multi_search_result['messages'][0]['match_content'],
+                         '<p><span class="highlight">Can</span> you <span class="highlight">speak</span> <a href="https://en.wikipedia.org/wiki/Japanese" target="_blank" title="https://en.wikipedia.org/wiki/Japanese">https://en.<span class="highlight">wiki</span>pedia.org/<span class="highlight">wiki</span>/Japanese</a>?</p>')
 
     def test_get_messages_with_only_searching_anchor(self):
         # type: () -> None
