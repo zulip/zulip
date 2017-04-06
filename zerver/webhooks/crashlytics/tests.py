@@ -8,13 +8,9 @@ class CrashlyticsHookTests(WebhookTestCase):
 
     def test_crashlytics_verification_message(self):
         # type: () -> None
-        last_message_before_request = self.get_last_message()
-        payload = self.get_body('verification')
-        url = self.build_webhook_url()
-        result = self.client_post(url, payload, content_type="application/json")
-        last_message_after_request = self.get_last_message()
-        self.assert_json_success(result)
-        self.assertEqual(last_message_after_request.pk, last_message_before_request.pk)
+        expected_subject = u"Setup"
+        expected_message = u"Webhook has been successfully configured."
+        self.send_and_test_stream_message('verification', expected_subject, expected_message)
 
     def test_crashlytics_build_in_success_status(self):
         # type: () -> None
