@@ -11,6 +11,9 @@ from typing import Any, Dict, Text
 CRASHLYTICS_SUBJECT_TEMPLATE = '{display_id}: {title}'
 CRASHLYTICS_MESSAGE_TEMPLATE = '[Issue]({url}) impacts at least {impacted_devices_count} device(s).'
 
+CRASHLYTICS_SETUP_SUBJECT_TEMPLATE = "Setup"
+CRASHLYTICS_SETUP_MESSAGE_TEMPLATE = "Webhook has been successfully configured."
+
 VERIFICATION_EVENT = 'verification'
 
 
@@ -22,16 +25,18 @@ def api_crashlytics_webhook(request, user_profile, client, payload=REQ(argument_
     try:
         event = payload['event']
         if event == VERIFICATION_EVENT:
-            return json_success()
-        issue_body = payload['payload']
-        subject = CRASHLYTICS_SUBJECT_TEMPLATE.format(
-            display_id=issue_body['display_id'],
-            title=issue_body['title']
-        )
-        body = CRASHLYTICS_MESSAGE_TEMPLATE.format(
-            impacted_devices_count=issue_body['impacted_devices_count'],
-            url=issue_body['url']
-        )
+            subject = CRASHLYTICS_SETUP_SUBJECT_TEMPLATE
+            body = CRASHLYTICS_SETUP_MESSAGE_TEMPLATE
+        else:
+            issue_body = payload['payload']
+            subject = CRASHLYTICS_SUBJECT_TEMPLATE.format(
+                display_id=issue_body['display_id'],
+                title=issue_body['title']
+            )
+            body = CRASHLYTICS_MESSAGE_TEMPLATE.format(
+                impacted_devices_count=issue_body['impacted_devices_count'],
+                url=issue_body['url']
+            )
     except KeyError as e:
         return json_error(_("Missing key {} in JSON".format(str(e))))
 
