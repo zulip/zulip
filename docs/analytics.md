@@ -208,3 +208,13 @@ Tips and tricks:
   bars in a bar graph) in your browser, since there is an interaction layer
   on top of it. But if you hunt around the document tree you should be able
   to find it.
+
+### /activity page
+
+- There's a somewhat less developed /activity page, for server
+  administrators, showing data on all the realms on a server.  To
+  access it, you need to have the `is_staff` bit set on your
+  UserProfile object.  You can set it using `manage.py shell` and
+  editing the UserProfile object directly.  A great future project is
+  to clean up that page's data sources, and make this a documented
+  interface.
