@@ -20,10 +20,9 @@ from zerver.lib.actions import do_change_password, \
     do_change_enable_offline_push_notifications, do_change_enable_online_push_notifications, \
     do_change_default_desktop_notifications, do_change_autoscroll_forever, \
     do_change_enable_stream_desktop_notifications, do_change_enable_stream_sounds, \
-    do_regenerate_api_key, do_change_avatar_fields, do_change_twenty_four_hour_time, \
-    do_change_left_side_userlist, do_change_emoji_alt_code, do_change_default_language, \
+    do_regenerate_api_key, do_change_avatar_fields, do_set_user_display_setting, \
     do_change_pm_content_in_desktop_notifications, validate_email, \
-    do_change_user_email, do_start_email_change_process, do_change_timezone
+    do_change_user_email, do_start_email_change_process
 from zerver.lib.avatar import avatar_url
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.response import json_success, json_error
@@ -173,27 +172,27 @@ def update_display_settings_backend(request, user_profile,
     result = {} # type: Dict[str, Any]
     if (default_language is not None and
             user_profile.default_language != default_language):
-        do_change_default_language(user_profile, default_language)
+        do_set_user_display_setting(user_profile, "default_language", default_language)
         result['default_language'] = default_language
 
     elif (twenty_four_hour_time is not None and
             user_profile.twenty_four_hour_time != twenty_four_hour_time):
-        do_change_twenty_four_hour_time(user_profile, twenty_four_hour_time)
+        do_set_user_display_setting(user_profile, "twenty_four_hour_time", twenty_four_hour_time)
         result['twenty_four_hour_time'] = twenty_four_hour_time
 
     elif (left_side_userlist is not None and
             user_profile.left_side_userlist != left_side_userlist):
-        do_change_left_side_userlist(user_profile, left_side_userlist)
+        do_set_user_display_setting(user_profile, "left_side_userlist", left_side_userlist)
         result['left_side_userlist'] = left_side_userlist
 
     elif (emoji_alt_code is not None and
             user_profile.emoji_alt_code != emoji_alt_code):
-        do_change_emoji_alt_code(user_profile, emoji_alt_code)
+        do_set_user_display_setting(user_profile, "emoji_alt_code", emoji_alt_code)
         result['emoji_alt_code'] = emoji_alt_code
 
     elif (timezone is not None and
             user_profile.timezone != timezone):
-        do_change_timezone(user_profile, timezone)
+        do_set_user_display_setting(user_profile, "timezone", timezone)
         result['timezone'] = timezone
 
     return json_success(result)

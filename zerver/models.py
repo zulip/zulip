@@ -633,6 +633,15 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     # https://docs.djangoproject.com/en/1.10/ref/models/fields/#django.db.models.Field.null.
     timezone = models.CharField(max_length=40, default=u'')  # type: Text
 
+    # Define the types of the various automatically managed properties
+    property_types = dict(
+        default_language=Text,
+        emoji_alt_code=bool,
+        left_side_userlist=bool,
+        timezone=Text,
+        twenty_four_hour_time=bool,
+    )
+
     def can_admin_user(self, target_user):
         # type: (UserProfile) -> bool
         """Returns whether this user has permission to modify target_user"""

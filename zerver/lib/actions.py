@@ -2219,65 +2219,16 @@ def do_change_default_desktop_notifications(user_profile, default_desktop_notifi
     user_profile.default_desktop_notifications = default_desktop_notifications
     user_profile.save(update_fields=["default_desktop_notifications"])
 
-def do_change_twenty_four_hour_time(user_profile, setting_value, log=True):
-    # type: (UserProfile, bool, bool) -> None
-    user_profile.twenty_four_hour_time = setting_value
-    user_profile.save(update_fields=["twenty_four_hour_time"])
+def do_set_user_display_setting(user_profile, setting_name, setting_value):
+    # type: (UserProfile, str, Union[bool, Text]) -> None
+    property_type = UserProfile.property_types[setting_name]
+    assert isinstance(setting_value, property_type)
+    setattr(user_profile, setting_name, setting_value)
+    user_profile.save(update_fields=[setting_name])
     event = {'type': 'update_display_settings',
              'user': user_profile.email,
-             'setting_name': 'twenty_four_hour_time',
+             'setting_name': setting_name,
              'setting': setting_value}
-    if log:
-        log_event(event)
-    send_event(event, [user_profile.id])
-
-def do_change_left_side_userlist(user_profile, setting_value, log=True):
-    # type: (UserProfile, bool, bool) -> None
-    user_profile.left_side_userlist = setting_value
-    user_profile.save(update_fields=["left_side_userlist"])
-    event = {'type': 'update_display_settings',
-             'user': user_profile.email,
-             'setting_name': 'left_side_userlist',
-             'setting': setting_value}
-    if log:
-        log_event(event)
-    send_event(event, [user_profile.id])
-
-def do_change_emoji_alt_code(user_profile, setting_value, log=True):
-    # type: (UserProfile, bool, bool) -> None
-    user_profile.emoji_alt_code = setting_value
-    user_profile.save(update_fields=["emoji_alt_code"])
-    event = {'type': 'update_display_settings',
-             'user': user_profile.email,
-             'setting_name': 'emoji_alt_code',
-             'setting': setting_value}
-    if log:
-        log_event(event)
-    send_event(event, [user_profile.id])
-
-def do_change_default_language(user_profile, setting_value, log=True):
-    # type: (UserProfile, Text, bool) -> None
-
-    user_profile.default_language = setting_value
-    user_profile.save(update_fields=["default_language"])
-    event = {'type': 'update_display_settings',
-             'user': user_profile.email,
-             'setting_name': 'default_language',
-             'setting': setting_value}
-    if log:
-        log_event(event)
-    send_event(event, [user_profile.id])
-
-def do_change_timezone(user_profile, setting_value, log=True):
-    # type: (UserProfile, Text, bool) -> None
-    user_profile.timezone = setting_value
-    user_profile.save(update_fields=['timezone'])
-    event = {'type': 'update_display_settings',
-             'user': user_profile.email,
-             'setting_name': 'timezone',
-             'setting': setting_value}
-    if log:
-        log_event(event)
     send_event(event, [user_profile.id])
 
 def set_default_streams(realm, stream_dict):

@@ -25,7 +25,6 @@ from zerver.lib.actions import (
     do_add_reaction,
     do_remove_reaction,
     do_change_avatar_fields,
-    do_change_default_language,
     do_change_default_all_public_streams,
     do_change_default_events_register_stream,
     do_change_default_sending_stream,
@@ -34,7 +33,6 @@ from zerver.lib.actions import (
     do_change_is_admin,
     do_change_stream_description,
     do_change_subscription_property,
-    do_change_timezone,
     do_create_user,
     do_deactivate_stream,
     do_deactivate_user,
@@ -58,9 +56,7 @@ from zerver.lib.actions import (
     do_update_muted_topic,
     do_update_pointer,
     do_update_user_presence,
-    do_change_twenty_four_hour_time,
-    do_change_left_side_userlist,
-    do_change_emoji_alt_code,
+    do_set_user_display_setting,
     do_change_enable_stream_desktop_notifications,
     do_change_enable_stream_sounds,
     do_change_enable_desktop_notifications,
@@ -902,73 +898,51 @@ class EventsRegisterTest(ZulipTestCase):
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
-    def test_change_twenty_four_hour_time(self):
-        # type: () -> None
+    def do_set_user_display_settings_test(self, setting_name, values_list):
+        # type: (str, List[Union[bool, Text]]) -> None
+
+        property_type = UserProfile.property_types[setting_name]
+        if property_type is bool:
+            validator = check_bool
+        elif property_type is Text:
+            validator = check_string
+        else:
+            raise AssertionError("Unexpected property type %s" % (property_type,))
+
         schema_checker = check_dict([
             ('type', equals('update_display_settings')),
-            ('setting_name', equals('twenty_four_hour_time')),
+            ('setting_name', equals(setting_name)),
             ('user', check_string),
-            ('setting', check_bool),
+            ('setting', validator),
         ])
-        do_change_twenty_four_hour_time(self.user_profile, False)
-        for setting_value in [True, False]:
-            events = self.do_test(lambda: do_change_twenty_four_hour_time(self.user_profile, setting_value))
+
+        if property_type == bool:
+            do_set_user_display_setting(self.user_profile, setting_name, False)
+        for value in values_list:
+            events = self.do_test(lambda: do_set_user_display_setting(
+                self.user_profile, setting_name, value))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
+
+    def test_change_twenty_four_hour_time(self):
+        # type: () -> None
+        self.do_set_user_display_settings_test("twenty_four_hour_time", [True, False])
 
     def test_change_left_side_userlist(self):
         # type: () -> None
-        schema_checker = check_dict([
-            ('type', equals('update_display_settings')),
-            ('setting_name', equals('left_side_userlist')),
-            ('user', check_string),
-            ('setting', check_bool),
-        ])
-        do_change_left_side_userlist(self.user_profile, False)
-        for setting_value in [True, False]:
-            events = self.do_test(lambda: do_change_left_side_userlist(self.user_profile, setting_value))
-            error = schema_checker('events[0]', events[0])
-            self.assert_on_error(error)
+        self.do_set_user_display_settings_test("left_side_userlist", [True, False])
 
     def test_change_emoji_alt_code(self):
         # type: () -> None
-        schema_checker = check_dict([
-            ('type', equals('update_display_settings')),
-            ('setting_name', equals('emoji_alt_code')),
-            ('user', check_string),
-            ('setting', check_bool),
-        ])
-        do_change_emoji_alt_code(self.user_profile, False)
-        for setting_value in [True, False]:
-            events = self.do_test(lambda: do_change_emoji_alt_code(self.user_profile, setting_value))
-            error = schema_checker('events[0]', events[0])
-            self.assert_on_error(error)
+        self.do_set_user_display_settings_test("emoji_alt_code", [True, False])
 
     def test_change_default_language(self):
         # type: () -> None
-        schema_checker = check_dict([
-            ('type', equals('update_display_settings')),
-            ('setting_name', equals('default_language')),
-            ('user', check_string),
-            ('setting', check_string),
-        ])
-        for setting_value in ['de', 'es', 'en']:
-            events = self.do_test(lambda: do_change_default_language(self.user_profile, setting_value))
-            error = schema_checker('events[0]', events[0])
-            self.assert_on_error(error)
+        self.do_set_user_display_settings_test("default_language", ['de', 'es', 'en'])
 
     def test_change_timezone(self):
         # type: () -> None
-        schema_checker = check_dict([
-            ('type', equals('update_display_settings')),
-            ('setting_name', equals('timezone')),
-            ('user', check_string),
-            ('setting', check_string),
-        ])
-        for setting_value in ['US/Mountain', 'US/Samoa', 'Pacific/Galapagos', '']:
-            events = self.do_test(lambda: do_change_timezone(self.user_profile, setting_value))
-            error = schema_checker('events[0]', events[0])
-            self.assert_on_error(error)
+        self.do_set_user_display_settings_test("timezone", ['US/Mountain', 'US/Samoa', 'Pacific/Galapagos', ''])
 
     def test_change_enable_stream_desktop_notifications(self):
         # type: () -> None
