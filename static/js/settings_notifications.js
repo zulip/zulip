@@ -5,6 +5,10 @@ var exports = {};
 exports.set_up = function () {
     $("#notify-settings-status").hide();
 
+    if (!page_params.show_digest_email) {
+        $("#other_notifications").hide();
+    }
+
     function update_notification_settings_success(resp, statusText, xhr) {
         var result = JSON.parse(xhr.responseText);
         var notify_settings_status = $('#notify-settings-status').expectOne();
