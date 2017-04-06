@@ -223,7 +223,7 @@ def regenerate_bot_api_key(request, user_profile, email):
     if not user_profile.can_admin_user(bot):
         return json_error(_('Insufficient permission'))
 
-    do_regenerate_api_key(bot)
+    do_regenerate_api_key(bot, user_profile)
     json_result = dict(
         api_key = bot.api_key
     )
