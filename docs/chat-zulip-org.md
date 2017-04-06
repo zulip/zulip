@@ -6,9 +6,10 @@ forum for the Zulip community.
 You can go through the simple signup process at that link, and then
 you will soon be talking to core Zulip developers and other users.  To
 get help in real time, you will have the best luck finding core
-developers roughly between 16:00 UTC and 23:59 UTC, but the sun never
-sleeps on the Zulip community.  Most questions get a reply
-within minutes to a few hours, depending on the time of day.
+developers roughly between 16:00 UTC and 23:59 UTC or during [office
+hours and sprints](#office-hours-and-sprints), but the sun never
+sleeps on the Zulip community.  Most questions get a reply within
+minutes to a few hours, depending on the time of day.
 
 ## This is a bleeding edge development server
 
@@ -86,3 +87,26 @@ descriptions for all of them.  Relevant to almost everyone are these:
   project; reviewing other PRs is a great way to develop experience,
   and even just manually testing a proposed new feature and posting
   feedback is super helpful.
+
+## Office hours and sprints
+
+Every few weeks, we hold meetings on chat.zulip.org: office hours or
+sprints. Anyone can schedule one: announce it in
+[#announce](https://chat.zulip.org/#narrow/stream/announce) and on
+[the zulip-devel mailing
+list](https://groups.google.com/forum/#!forum/zulip-devel) a few days
+ahead of time, and ideally, tell
+[Sumana](https://chat.zulip.org/#narrow/sender/18-sh) so she can put
+it on [the public Zulip meetings
+calendar](https://calendar.google.com/calendar/embed?src=ktiduof4eoh47lmgcl2qunnc0o@group.calendar.google.com).
+
+*Office hours* are simply times for us to informally discuss current
+priorities, find out what questions people have, and so on. We set
+them up so people know there'll be more people around at a particular
+time to chat. You don't need to RSVP and you don't need to show up on
+time or stop conversations when the "hour" stops. They start in
+[#general](https://chat.zulip.org/#narrow/stream/general) and
+conversations move into other streams and topics as they come up.
+
+*Sprints* are times when Zulip developers get together in chat, and
+sometimes in person, to work on related issues at the same time.
