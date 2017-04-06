@@ -257,6 +257,7 @@ $(function () {
     activity.initialize();
     emoji.initialize();
     hotspots.initialize();
+    settings_sections.initialize();
 });
 
 
