@@ -42,9 +42,6 @@ assert.equal(bot_data.get('bot0@zulip.com').full_name, 'Bot 0');
     var test_bot = {
         email: 'bot1@zulip.com',
         avatar_url: '',
-        default_all_public_streams: '',
-        default_events_register_stream: '',
-        default_sending_stream: '',
         full_name: 'Bot 1',
         extra: 'Not in data',
     };
