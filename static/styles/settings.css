@@ -472,11 +472,11 @@ input[type=checkbox].inline-block {
 
 .bots_list .image {
     vertical-align: top;
-    width: calc(100% - 85px);
 }
 
 .bots_list .bot-information-box .details {
     display: inline-block;
+    width: calc(100% - 75px);
 }
 
 .bots_list .name {
