@@ -690,6 +690,10 @@ a.bottom-signup-button {
     margin-top: 5px;
 }
 
+.integration-lozenge .square-wrapper {
+    height: 100px;
+}
+
 .integration-lozenge-static:hover {
     box-shadow: none;
     background: #ededed;

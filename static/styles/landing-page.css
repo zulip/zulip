@@ -768,7 +768,7 @@ a:not(.no-style):hover:before {
 }
 
 .portico-landing.integrations .integration-lozenge {
-    height: 180px;
+    height: 170px;
     transition: all 0.3s ease;
 }
 

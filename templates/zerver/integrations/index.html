@@ -67,7 +67,9 @@
         {% if integration.is_enabled() %}
           <div class="integration-lozenge integration-{{ integration.name }}">
              <a class="integration-link integration-{{ integration.name }}" href="#{{ integration.name }}">
-                <img class="integration-logo" src="/{{ integration.logo }}" alt="{{ integration.display_name }} logo" />
+                 <div class="square-wrapper">
+                     <img class="integration-logo" src="/{{ integration.logo }}" alt="{{ integration.display_name }} logo" />
+                 </div>
                {% if integration.secondary_line_text %}
                  <span class="integration-label" style="padding-bottom: 0px;">{{ integration.display_name }}</span>
                  <span class="integration-label-secondary">{{ integration.secondary_line_text }}</span>
@@ -89,7 +91,9 @@
     {% for integration in hubot_lozenges_dict.values() %}
         <div class="integration-lozenge integration-{{ integration.name }}">
            <a class="integration-link integration-{{ integration.name }}" href="{{ integration.git_url }}">
-              <img class="integration-logo" src="/{{ integration.logo }}" alt="{{ integration.logo_alt }} logo" />
+               <div class="square-wrapper">
+                   <img class="integration-logo" src="/{{ integration.logo }}" alt="{{ integration.logo_alt }} logo" />
+               </div>
                <span class="integration-label">{{ integration.display_name}}</span>
            </a>
         </div>
