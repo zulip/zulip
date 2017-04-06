@@ -325,7 +325,7 @@ def zulip_login_required(function=None,
         return actual_decorator(add_logging_data(function))
     return actual_decorator
 
-def zulip_internal(view_func):
+def require_server_admin(view_func):
     # type: (ViewFuncT) -> ViewFuncT
     @zulip_login_required
     @wraps(view_func)
