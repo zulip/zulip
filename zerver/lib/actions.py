@@ -2537,7 +2537,6 @@ def do_update_message_flags(user_profile, operation, flag, messages, all, stream
              'flag': flag,
              'messages': messages,
              'all': all}
-    log_event(event)
     send_event(event, [user_profile.id])
 
     statsd.incr("flags.%s.%s" % (flag, operation), count)
@@ -2638,7 +2637,6 @@ def do_update_embedded_data(user_profile, message, content, rendered_content):
         event["content"] = content
         event["rendered_content"] = rendered_content
 
-    log_event(event)
     message.save(update_fields=["content", "rendered_content"])
 
     event['message_ids'] = update_to_dict_cache(changed_messages)
@@ -2749,7 +2747,6 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
         edit_history = [edit_history_event]
     message.edit_history = ujson.dumps(edit_history)
 
-    log_event(event)
     message.save(update_fields=["subject", "content", "rendered_content",
                                 "rendered_content_version", "last_edit_time",
                                 "edit_history"])
