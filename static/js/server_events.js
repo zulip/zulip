@@ -302,7 +302,7 @@ function dispatch_normal_event(event) {
         notifications.handle_global_notification_updates(event.notification_name,
                                                          event.setting);
         if ($("#settings.tab-pane.active").length) {
-            settings.update_page();
+            settings_notifications.update_page();
         }
         break;
 

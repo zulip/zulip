@@ -159,6 +159,7 @@ def find_edges_to_remove(graph, methods):
         ('message_list', 'message_edit'),
         ('message_edit', 'compose'),
         ('message_store', 'compose'),
+        ('settings_notifications', 'subs'),
         ('settings', 'muting_ui'),
         ('message_fetch', 'tutorial'),
         ('settings', 'subs'),
