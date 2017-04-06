@@ -1203,7 +1203,7 @@ class EventsRegisterTest(ZulipTestCase):
     def test_regenerate_bot_api_key(self):
         # type: () -> None
         bot = self.create_bot('test-bot@zulip.com')
-        action = lambda: do_regenerate_api_key(bot)
+        action = lambda: do_regenerate_api_key(bot, self.user_profile)
         events = self.do_test(action)
         error = self.realm_bot_schema('api_key', check_string)('events[0]', events[0])
         self.assert_on_error(error)

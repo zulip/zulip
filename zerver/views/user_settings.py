@@ -315,7 +315,7 @@ def delete_avatar_backend(request, user_profile):
 @has_request_variables
 def regenerate_api_key(request, user_profile):
     # type: (HttpRequest, UserProfile) -> HttpResponse
-    do_regenerate_api_key(user_profile)
+    do_regenerate_api_key(user_profile, user_profile)
     json_result = dict(
         api_key = user_profile.api_key
     )

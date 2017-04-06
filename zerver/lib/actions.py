@@ -1798,14 +1798,14 @@ def do_change_tos_version(user_profile, tos_version, log=True):
                    'user': user_profile.email,
                    'tos_version': tos_version})
 
-def do_regenerate_api_key(user_profile, log=True):
-    # type: (UserProfile, bool) -> None
+def do_regenerate_api_key(user_profile, acting_user):
+    # type: (UserProfile, UserProfile) -> None
     user_profile.api_key = random_api_key()
     user_profile.save(update_fields=["api_key"])
-
-    if log:
-        log_event({'type': 'user_change_api_key',
-                   'user': user_profile.email})
+    event_time = timezone_now()
+    RealmAuditLog.objects.create(realm=user_profile.realm, acting_user=acting_user,
+                                 modified_user=user_profile, event_type='user_api_key_changed',
+                                 event_time=event_time)
 
     if user_profile.is_bot:
         send_event(dict(type='realm_bot',
