@@ -5,6 +5,15 @@ var exports = {};
 exports.make_indicator = function (outer_container, opts) {
     opts = opts || {};
     var container = outer_container;
+
+    // TODO: We set white-space to 'nowrap' because under some
+    // unknown circumstances (it happens on Keegan's laptop) the text
+    // width calculation, above, returns a result that's a few pixels
+    // too small.  The container's div will be slightly too small,
+    // but that's probably OK for our purposes.
+    outer_container.css({display: 'block',
+                         'white-space': 'nowrap'});
+
     container.empty();
 
     if (opts.abs_positioned !== undefined && opts.abs_positioned) {
@@ -36,17 +45,8 @@ exports.make_indicator = function (outer_container, opts) {
 
     // These width calculations are tied to the spinner width and
     // margins defined via CSS
-    //
-    // TODO: We set white-space to 'nowrap' because under some
-    // unknown circumstances (it happens on Keegan's laptop) the text
-    // width calculation, above, returns a result that's a few pixels
-    // too small.  The container's div will be slightly too small,
-    // but that's probably OK for our purposes.
     container.css({width: 38 + text_width,
                    height: 38});
-    outer_container.css({display: 'block',
-                         'white-space': 'nowrap'});
-
 
     outer_container.data("destroying", false);
 };
