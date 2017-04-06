@@ -78,11 +78,6 @@ function _setup_page() {
     if (tab) {
         exports.launch_page(tab);
     }
-
-    if (!page_params.show_digest_email) {
-        $("#other_notifications").hide();
-    }
-
 }
 
 exports.setup_page = function () {
