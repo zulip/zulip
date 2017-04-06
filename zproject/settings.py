@@ -908,6 +908,7 @@ JS_SPECS = {
             'js/settings_account.js',
             'js/settings_display.js',
             'js/settings_notifications.js',
+            'js/settings_muting.js',
             'js/settings.js',
             'js/admin.js',
             'js/tab_bar.js',

@@ -245,6 +245,7 @@ function _setup_page() {
     settings_account.set_up();
     settings_display.set_up();
     settings_notifications.set_up();
+    settings_muting.set_up();
 
     $("#api_key_value").text("");
     $("#get_api_key_box").hide();
@@ -574,19 +575,6 @@ function _setup_page() {
         });
     });
 
-    $(function () {
-        $('body').on('click', '.settings-unmute-topic', function (e) {
-            var $row = $(this).closest("tr");
-            var stream = $row.data("stream");
-            var topic = $row.data("topic");
-
-            muting_ui.unmute(stream, topic);
-            $row.remove();
-            e.stopImmediatePropagation();
-        });
-
-        muting_ui.set_up_muted_topics_ui(muting.get_muted_topics());
-    });
 }
 
 exports.setup_page = function () {

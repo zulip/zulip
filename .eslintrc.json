@@ -35,6 +35,7 @@
         "settings_account": false,
         "settings_display": false,
         "settings_notifications": false,
+        "settings_muting": false,
         "settings": false,
         "resize": false,
         "loading": false,
