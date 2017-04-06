@@ -90,6 +90,7 @@ class BaseDocumentationSpider(scrapy.Spider):
         yield request
 
     def exclude_error(self, url):
+        # type: (str) -> bool
         if url in EXCLUDED_URLS:
             return True
         return False
