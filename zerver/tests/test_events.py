@@ -938,11 +938,11 @@ class EventsRegisterTest(ZulipTestCase):
 
     def test_change_default_language(self):
         # type: () -> None
-        self.do_set_user_display_settings_test("default_language", ['de', 'es', 'en'])
+        self.do_set_user_display_settings_test("default_language", [u'de', u'es', u'en'])
 
     def test_change_timezone(self):
         # type: () -> None
-        self.do_set_user_display_settings_test("timezone", ['US/Mountain', 'US/Samoa', 'Pacific/Galapagos', ''])
+        self.do_set_user_display_settings_test("timezone", [u'US/Mountain', u'US/Samoa', u'Pacific/Galapagos', u''])
 
     def test_change_enable_stream_desktop_notifications(self):
         # type: () -> None
