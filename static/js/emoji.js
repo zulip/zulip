@@ -28,6 +28,10 @@ exports.emoji_name_to_css_class = function (emoji_name) {
 };
 
 exports.update_emojis = function update_emojis(realm_emojis) {
+    // exports.realm_emojis is emptied before adding the realm-specific emoji to it.
+    // This makes sure that in case of deletion, the deleted realm_emojis don't
+    //  persist in exports.realm_emojis.
+    exports.realm_emojis = {};
     // Copy the default emoji list and add realm-specific emoji to it
     exports.emojis = default_emojis.slice(0);
     _.each(realm_emojis, function (data, name) {
