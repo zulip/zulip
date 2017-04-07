@@ -28,6 +28,6 @@ class Command(BaseCommand):
                     user_profile = get_user_profile_by_email(email)
                     old_name = user_profile.full_name
                     print("%s: %s -> %s" % (email, old_name, new_name))
-                    do_change_full_name(user_profile, new_name)
+                    do_change_full_name(user_profile, new_name, None)
                 except UserProfile.DoesNotExist:
                     print("* E-mail %s doesn't exist in the system, skipping." % (email,))

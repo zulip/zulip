@@ -200,7 +200,7 @@ def accounts_register(request):
             user_profile = existing_user_profile
             do_activate_user(user_profile)
             do_change_password(user_profile, password)
-            do_change_full_name(user_profile, full_name)
+            do_change_full_name(user_profile, full_name, user_profile)
         else:
             user_profile = do_create_user(email, password, realm, full_name, short_name,
                                           prereg_user=prereg_user,

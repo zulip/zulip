@@ -23,5 +23,5 @@ def check_change_full_name(user_profile, full_name_raw):
     full name, which may differ from what was passed in (because this
     function strips whitespace)."""
     new_full_name = check_full_name(full_name_raw)
-    do_change_full_name(user_profile, new_full_name)
+    do_change_full_name(user_profile, new_full_name, None)
     return new_full_name

@@ -1759,15 +1759,14 @@ def do_change_password(user_profile, password, commit=True,
                                  modified_user=user_profile, event_type='user_change_password',
                                  event_time=event_time)
 
-def do_change_full_name(user_profile, full_name, log=True):
-    # type: (UserProfile, Text, bool) -> None
+def do_change_full_name(user_profile, full_name, acting_user):
+    # type: (UserProfile, Text, UserProfile) -> None
     user_profile.full_name = full_name
     user_profile.save(update_fields=["full_name"])
-    if log:
-        log_event({'type': 'user_change_full_name',
-                   'user': user_profile.email,
-                   'full_name': full_name})
-
+    event_time = timezone.now()
+    RealmAuditLog.objects.create(realm=user_profile.realm, acting_user=acting_user,
+                                 modified_user=user_profile, event_type='user_full_name_changed',
+                                 event_time=event_time)
     payload = dict(email=user_profile.email,
                    user_id=user_profile.id,
                    full_name=user_profile.full_name)
@@ -1827,7 +1826,7 @@ def do_change_avatar_fields(user_profile, avatar_source):
     user_profile.save(update_fields=["avatar_source", "avatar_version"])
     event_time = timezone.now()
     RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
-                                 event_type='user_change_avatar_source',
+                                 event_type='user_avatar_source_changed',
                                  extra_data={'avatar_source': avatar_source},
                                  event_time=event_time)
 

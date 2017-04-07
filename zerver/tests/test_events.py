@@ -722,7 +722,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ('full_name', check_string),
             ])),
         ])
-        events = self.do_test(lambda: do_change_full_name(self.user_profile, 'Sir Hamlet'))
+        events = self.do_test(lambda: do_change_full_name(self.user_profile, 'Sir Hamlet', self.user_profile))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
@@ -1194,7 +1194,7 @@ class EventsRegisterTest(ZulipTestCase):
     def test_change_bot_full_name(self):
         # type: () -> None
         bot = self.create_bot('test-bot@zulip.com')
-        action = lambda: do_change_full_name(bot, 'New Bot Name')
+        action = lambda: do_change_full_name(bot, 'New Bot Name', self.user_profile)
         events = self.do_test(action, num_events=2)
         error = self.realm_bot_schema('full_name', check_string)('events[1]', events[1])
         self.assert_on_error(error)
