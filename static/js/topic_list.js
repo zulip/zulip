@@ -173,6 +173,8 @@ exports.zoom_in = function () {
     }
 
     exports.rebuild(active_widget.get_parent(), active_widget.get_stream_name());
+    $('#stream-filters-container').scrollTop(0);
+    $('#stream-filters-container').perfectScrollbar('update');
 };
 
 exports.zoom_out = function (options) {
