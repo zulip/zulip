@@ -35,6 +35,9 @@ set_global('echo', {
     set_realm_filters: noop,
 });
 
+// To support popovers object referenced in server_events.js
+add_dependencies({popovers: 'js/popovers.js'});
+
 // page_params is highly coupled to dispatching now
 set_global('page_params', {test_suite: false});
 var page_params = global.page_params;

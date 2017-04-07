@@ -381,6 +381,10 @@ function user_sidebar_popped() {
     return current_user_sidebar_popover !== undefined;
 }
 
+exports.reset_emoji_popover = function () {
+    emoji_map_is_rendered = false;
+};
+
 exports.hide_emoji_map_popover = function () {
     if (emoji_map_is_open) {
         $('.emoji_popover').css('display', 'none');
@@ -398,6 +402,7 @@ exports.show_emoji_map_popover = function () {
         emoji_map_is_open = true;
     }
 };
+
 exports.hide_user_sidebar_popover = function () {
     if (user_sidebar_popped()) {
         // this hide_* method looks different from all the others since
