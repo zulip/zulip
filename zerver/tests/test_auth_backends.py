@@ -1309,6 +1309,13 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
             self.assertEqual(result.status_code, 302)
             self.assertIs(get_session_dict_user(self.client.session), None)
 
+    def test_login_failure_due_to_invalid_email(self):
+        # type: () -> None
+        email = 'hamlet'
+        with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',)):
+            result = self.client_post('/accounts/login/sso/', REMOTE_USER=email)
+            self.assert_json_error_contains(result, "Enter a valid email address.", 400)
+
     def test_login_failure_due_to_missing_field(self):
         # type: () -> None
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',)):
