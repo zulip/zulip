@@ -407,6 +407,13 @@ def api_dev_fetch_api_key(request, username=REQ()):
     """
     if not dev_auth_enabled() or settings.PRODUCTION:
         return json_error(_("Dev environment not enabled."))
+
+    # Django invokes authenticate methods by matching arguments, and this
+    # authentication flow will not invoke LDAP authentication because of
+    # this condition of Django so no need to check if LDAP backend is
+    # enabled.
+    validate_login_email(username)
+
     return_data = {} # type: Dict[str, bool]
     user_profile = authenticate(username=username,
                                 realm_subdomain=get_subdomain(request),
