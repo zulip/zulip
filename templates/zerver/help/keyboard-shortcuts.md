@@ -55,7 +55,7 @@ Zulip keyboard shortcuts are divided into four categories:
   composing a new private message.
 * **Send message**: `Tab key` then `Enter` (`Return` on Mac) - This
   shortcut allows the user to send the message that they've written.
-* **Cancel compose**: `Esc` - This shortcut allows the user to cancel
+* **Cancel compose**: `Esc` or `Ctrl + [` - This shortcut allows the user to cancel
   and discard their unsent message.
 * **View drafts**: `d` - This shortcut allows the user to open the
   drafts overlay.
@@ -74,7 +74,7 @@ Zulip keyboard shortcuts are divided into four categories:
   according to Stream order in the left sidebar. `A` allows the user
   to navigate to the previous stream narrow, and `D` allows the user
   to navigate to the next stream narrow.
-* **Return to home view**: `Esc` - This shortcut makes the user return
+* **Return to home view**: `Esc` or `Ctrl + [` - This shortcut makes the user return
   to the Home view, showing all messages in the organization.
 
 ## Menus
