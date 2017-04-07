@@ -1264,6 +1264,7 @@ def make_md_engine(key, opts):
     # type: (int, Dict[str, Any]) -> None
     md_engines[key] = markdown.Markdown(
         output_format = 'html',
+        tab_length = 2,
         extensions    = [
             'markdown.extensions.nl2br',
             'markdown.extensions.tables',
