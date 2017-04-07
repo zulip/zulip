@@ -162,17 +162,6 @@ def home_real(request):
         register_ret['pointer'] = register_ret['max_message_id']
         user_profile.last_pointer_updater = request.session.session_key
 
-    if user_profile.pointer == -1:
-        latest_read = None
-    else:
-        try:
-            latest_read = UserMessage.objects.get(user_profile=user_profile,
-                                                  message__id=user_profile.pointer)
-        except UserMessage.DoesNotExist:
-            # Don't completely fail if your saved pointer ID is invalid
-            logging.warning("%s has invalid pointer %s" % (user_profile.email, user_profile.pointer))
-            latest_read = None
-
     desktop_notifications_enabled = user_profile.enable_desktop_notifications
     if narrow_stream is not None:
         desktop_notifications_enabled = False
@@ -189,6 +178,10 @@ def home_real(request):
         translation.activate(default_language)
 
     request.session[translation.LANGUAGE_SESSION_KEY] = default_language
+
+    # Set status dict with last time visit for user
+    status_dict = UserPresence.get_status_dict_by_user(user_profile)
+    latest_visit = status_dict[user_profile.email]["aggregated"]["timestamp"]
 
     # Pass parameters to the client-side JavaScript code.
     # These end up in a global JavaScript Object named 'page_params'.
@@ -271,7 +264,7 @@ def home_real(request):
         notifications_stream  = notifications_stream,
         cross_realm_bots      = list(get_cross_realm_dicts()),
         unread_count          = approximate_unread_count(user_profile),
-        furthest_read_time    = sent_time_in_epoch_seconds(latest_read),
+        furthest_read_time    = sent_time_in_epoch_seconds(latest_visit),
         has_mobile_devices    = num_push_devices_for_user(user_profile) > 0,
     )
 
