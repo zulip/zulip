@@ -103,14 +103,14 @@ your organization.
   usefulness (e.g. for conversational organization) over faithfulness
   to the original.
 
-  The message editing policy can be configured on the realm
-  administration page. There are three configurations provided out of
-  the box: (i) users cannot edit messages at all, (ii) users can edit
-  any message they have sent, and (iii) users can edit the content of
-  any message they have sent in the last N minutes, and the topic of
-  any message they have sent. In (ii) and (iii), topic edits can also
-  be propagated to other messages with the same original topic, even
-  if those messages were sent by other users. The default setting is
+  The message editing policy can be configured on the /#organization
+  page. There are three configurations provided out of the box: (i)
+  users cannot edit messages at all, (ii) users can edit any message
+  they have sent, and (iii) users can edit the content of any message
+  they have sent in the last N minutes, and the topic of any message
+  they have sent. In (ii) and (iii), topic edits can also be
+  propagated to other messages with the same original topic, even if
+  those messages were sent by other users. The default setting is
   (iii), with N = 10.
 
   In addition, and regardless of the configuration above, messages
@@ -156,8 +156,8 @@ your organization.
   suffice to change their password or deactivate their account in the
   SSO system, since neither of those prevents authenticating with the
   user's API key or those of bots the user has created.  Instead, you
-  should deactivate the user's account in the Zulip administration
-  interface (`/#administration`); this will automatically also
+  should deactivate the user's account in the "Organization settings"
+  interface (`/#organization`); this will automatically also
   deactivate any bots the user had created.
 
 * The Zulip mobile apps authenticate to the server by sending the

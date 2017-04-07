@@ -4,7 +4,7 @@
 
 {!follow-steps.md!} change the default language of your organization.
 
-{!go-to-the.md!} [Organization settings](/#administration/organization-settings)
+{!go-to-the.md!} [Organization settings](/#organization/organization-settings)
 {!admin.md!}
 
 2. Find the **Default language** option.

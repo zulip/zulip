@@ -11,7 +11,7 @@ solution where a user's account is managed elsewhere, you can enable a
 setting that prevents them from changing their own email address via
 the Zulip UI.
 
-{!go-to-the.md!} [Organization settings](/#administration/organization-settings)
+{!go-to-the.md!} [Organization settings](/#organization/organization-settings)
 {!admin.md!}
 
 2. Select the **Prevent users from changing their email address** checkbox.

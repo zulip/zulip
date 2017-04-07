@@ -152,8 +152,8 @@ function do_hashchange(from_reload) {
     case "#drafts":
         ui_util.change_tab_to("#drafts");
         break;
-    case "#administration":
-        ui_util.change_tab_to("#administration");
+    case "#organization":
+        ui_util.change_tab_to("#organization");
         break;
     case "#settings":
         ui_util.change_tab_to("#settings");
@@ -200,7 +200,7 @@ function get_hash_components() {
 var get_hash_group = (function () {
     var groups = [
         ["streams"],
-        ["settings", "administration"],
+        ["settings", "organization"],
         ["invite"],
     ];
 
@@ -221,7 +221,7 @@ var get_hash_group = (function () {
 
 function should_ignore(hash) {
     // Hash changes within this list are overlays and should not unnarrow (etc.)
-    var ignore_list = ["streams", "drafts", "settings", "administration", "invite"];
+    var ignore_list = ["streams", "drafts", "settings", "organization", "invite"];
     var main_hash = get_main_hash(hash);
 
     return (ignore_list.indexOf(main_hash) > -1);
@@ -255,7 +255,7 @@ function hashchanged(from_reload, e) {
                 subs.launch(get_hash_components());
             } else if (base === "drafts") {
                 drafts.launch();
-            } else if (/settings|administration/.test(base)) {
+            } else if (/settings|organization/.test(base)) {
                 settings.setup_page();
                 admin.setup_page();
             } else if (base === "invite") {

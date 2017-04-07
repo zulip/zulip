@@ -6,7 +6,7 @@ By default, any user in your Zulip organization can invite new users. You
 can change your organization's settings to only allow administrators to
 invite new users.
 
-{!go-to-the.md!} [Organization settings](/#administration/organization-settings)
+{!go-to-the.md!} [Organization settings](/#organization/organization-settings)
 {!admin.md!}
 
 2. Select the **E-mail invitation required** and **Only admins may invite**

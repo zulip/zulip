@@ -125,7 +125,7 @@ td .button {
     border-top: 5px solid #dfdfdf;
 }
 
-#administration .settings-section {
+#organization .settings-section {
     display: block;
 }
 
@@ -363,7 +363,7 @@ input[type=checkbox].inline-block {
         margin: auto;
     }
 
-    #administration .settings-section .organization-settings .admin-realm-form,
+    #organization .settings-section .organization-settings .admin-realm-form,
     #settings .settings-section .account-settings-form,
     #settings .settings-section .new-bot-form,
     #settings .settings-section .new-alert-word-form,
@@ -375,7 +375,7 @@ input[type=checkbox].inline-block {
         width: 100%;
     }
 
-    #administration .settings-section .admin-realm-form .control-label,
+    #organization .settings-section .admin-realm-form .control-label,
     #settings .settings-section .account-settings-form .control-label,
     #settings .settings-section .new-bot-form .control-label,
     #settings .settings-section .new-alert-word-form .control-label,
@@ -391,7 +391,7 @@ input[type=checkbox].inline-block {
         float: none;
     }
 
-    #administration .settings-section .admin-realm-form .controls,
+    #organization .settings-section .admin-realm-form .controls,
     #settings .settings-section .account-settings-form .controls,
     #settings .settings-section .new-bot-form .controls,
     #settings .settings-section .new-alert-word-form button,
@@ -404,7 +404,7 @@ input[type=checkbox].inline-block {
 
 }
 
-#administration .settings-section .settings-section-icon,
+#organization .settings-section .settings-section-icon,
 #settings .settings-section .settings-section-icon {
     margin-right: 8px;
 }
@@ -1032,22 +1032,22 @@ input[type=text]#settings_search {
     padding-bottom: 20px;
 }
 
-#administration #deactivation_stream_modal h3 {
+#organization #deactivation_stream_modal h3 {
     overflow-wrap: break-word;
 }
 
-#administration .centered-footer {
+#organization .centered-footer {
     text-align: center;
     padding: 10px 15px;
 }
 
-#administration .new-realm-domain {
+#organization .new-realm-domain {
     width: 130px;
     margin-bottom: auto;
     padding: 0px 2px;
 }
 
-#administration #submit-add-realm-domain {
+#organization #submit-add-realm-domain {
     width: 75px;
 }
 

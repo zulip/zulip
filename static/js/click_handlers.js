@@ -575,7 +575,7 @@ $(function () {
         $this.prev().addClass("no-border");
 
         if ($this.hasClass("admin")) {
-            window.location.hash = "administration/" + section;
+            window.location.hash = "organization/" + section;
         } else {
             window.location.hash = "settings/" + section;
         }
@@ -597,12 +597,12 @@ $(function () {
             name: "settings-toggle",
             values: [
                 { label: "Settings", key: "settings" },
-                { label: "Organization", key: "administration" },
+                { label: "Organization", key: "organization" },
             ],
             callback: function (name, key) {
                 $(".sidebar li").hide();
 
-                if (key === "administration") {
+                if (key === "organization") {
                     $("li.admin").show();
                     $("li[data-section='organization-settings']").click();
                 } else {

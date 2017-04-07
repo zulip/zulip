@@ -26,7 +26,7 @@ function open_reactions() {
 }
 
 exports.is_settings_page = function () {
-  return (/^#*(settings|administration)/g).test(window.location.hash);
+  return (/^#*(settings|organization)/g).test(window.location.hash);
 };
 
 exports.is_lightbox_open = function () {

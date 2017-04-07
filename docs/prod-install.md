@@ -148,8 +148,8 @@ log in!
 
 **Congratulations!** You are logged in as an organization
 administrator for your new Zulip organization.  After getting
-oriented, we recommend visiting the special "Administration" tab
-linked to from the upper-right gear menu in the Zulip app to configure
+oriented, we recommend visiting the "Organization settings" UI (linked
+from the upper-right gear menu in the Zulip webapp) to configure
 important policy settings like how users can join your new
 organization. By default, your organization will be configured as
 follows depending on what type of organization you selected:

@@ -230,25 +230,25 @@ The source for macros is the Markdown files under
 multiple instances of particular content in the documentation, you can
 always create a new macro by adding a new file to that folder.
 
-### **Administration** `{!admin.md!}` macro
+### **Organization settings** `{!admin.md!}` macro
 
-* **About:** Links to the **Edit Administrator Settings** documentation.
+* **About:** Links to the **Organization settings** documentation.
 Usually preceded by the [**Go to the** macro](#go-to-the-go-to-the-md-macro)
-and a link to a particular section on the **Administration** page.
+and a link to a particular section on the **Organization settings** page.
 
 * **Contents:**
     ```.md
-    tab of the [Administration](/help/edit-administrator-settings) page.
+    tab of the [Organization settings](/help/edit-administrator-settings) page.
     ```
 
 * **Example usage and rendering:**
     ```.md
-    {!go-to-the.md!} [Organization settings](/#administration/organization-settings)
+    {!go-to-the.md!} [Organization settings](/#organization/organization-settings)
     {!admin.md!}
     ```
     ```.md
-    1. Go to the [Organization settings](/#administration/organization-settings) tab of the
-    [Administration](/help/edit-administrator-settings) page.
+    1. Go to the [Organization settings](/#organization/organization-settings) tab of the
+    [Organization](/help/edit-administrator-settings) page.
     ```
 
 ### **Administrator only feature** `{!admin-only.md!}` macro
@@ -334,7 +334,7 @@ macro](#message-actions-message-actions-md-macro).
 ### **Go to the** `{!go-to-the.md}` macro
 
 * **About:** Usually precedes the [**Settings** macro](#settings-settings-md-macro)
-or the [**Administration** macro](#administration-admin-md-macro). Transforms
+or the [**Organization settings** macro](#organization-settings-admin-md-macro). Transforms
 following content into a step.
 
 * **Contents:**

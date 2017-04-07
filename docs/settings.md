@@ -5,14 +5,14 @@ help you decide how to correctly implement new settings you're adding
 to Zulip.  We have two types of administrative settings in Zulip:
 server settings (which are set via configuration files are apply to
 the whole Zulip installation), and realm settings (which are usually
-set via the /#administration page in the Zulip web application) and
+set via the /#organization page in the Zulip web application) and
 apply to a single Zulip realm/organization (which for most Zulip
 servers is the only realm on the server).
 
 Philosophically, the goals of the settings system are to make it
 convenient for:
 
-* Zulip server administrations to configure
+* Zulip server administrators to configure
 Zulip's featureset for their server without needing to patch Zulip
 * Realm administrators to configure settings for their organization
 independently without needing to talk with the server administrator.
@@ -43,12 +43,12 @@ $ ./scripts/get-django-setting EMAIL_GATEWAY_PATTERN
 Zulip has separated those settings that we expect a system
 administrator to change (with nice documentation) from the ~1000 lines
 of settings needed by the Zulip Django app.  As a result, there are a
-few files involved in the Zulip settings for server administrations.
+few files involved in the Zulip settings for server administrators.
 In a production environment, we have:
 
 * `/etc/zulip/settings.py` (the template is in the Zulip repo at
   `zproject/prod_settings_template.py`) is the main system
-  administration facing settings file for Zulip.  It contains all the
+  administrator-facing settings file for Zulip.  It contains all the
   server-specific settings, such as how to send outgoing email, the
   hostname of the Postgres database, etc., but does not contain any
   secrets (e.g. passwords, secret API keys, cryptographic keys, etc.).

@@ -145,11 +145,11 @@ for writing Casper tests in addition to the debugging notes below:
 - Generally `casper.waitUntilVisible` is preferable to
     e.g. `casper.waitForSelector`, since the former will confirm the
     thing is actually on screen.  E.g. if you're waiting to switch
-    from one panel of the the settings/administration overlay to
-    another by waiting for a particular widget to appear,
-    `casper.waitForSelector` may not actually wait (since the widget
-    is probably in the DOM, just not visible), but
-    casper.waitUntilVisible will wait until it's actually shown.
+    from one panel of the the settings overlay to another by waiting
+    for a particular widget to appear, `casper.waitForSelector` may
+    not actually wait (since the widget is probably in the DOM, just
+    not visible), but casper.waitUntilVisible will wait until it's
+    actually shown.
 
 - The selectors (i.e. things you put inside
     `casper.waitUntilVisible()` and friends) appearing in Casper tests
