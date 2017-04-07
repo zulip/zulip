@@ -18,12 +18,12 @@ def check_full_name(full_name_raw):
         raise JsonableError(_("Invalid characters in name!"))
     return full_name
 
-def check_change_full_name(user_profile, full_name_raw):
-    # type: (UserProfile, Text) -> Text
+def check_change_full_name(user_profile, full_name_raw, acting_user):
+    # type: (UserProfile, Text, UserProfile) -> Text
     """Verifies that the user's proposed full name is valid.  The caller
     is responsible for checking check permissions.  Returns the new
     full name, which may differ from what was passed in (because this
     function strips whitespace)."""
     new_full_name = check_full_name(full_name_raw)
-    do_change_full_name(user_profile, new_full_name)
+    do_change_full_name(user_profile, new_full_name, acting_user)
     return new_full_name

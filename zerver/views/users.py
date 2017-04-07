@@ -107,7 +107,7 @@ def update_user_backend(request, user_profile, email,
             full_name.strip() != ""):
         # We don't respect `name_changes_disabled` here because the request
         # is on behalf of the administrator.
-        check_change_full_name(target, full_name)
+        check_change_full_name(target, full_name, user_profile)
 
     return json_success()
 
@@ -166,7 +166,7 @@ def patch_bot_backend(request, user_profile, email,
         return json_error(_('Insufficient permission'))
 
     if full_name is not None:
-        check_change_full_name(bot, full_name)
+        check_change_full_name(bot, full_name, user_profile)
     if bot_owner is not None:
         owner = get_user_profile_by_email(bot_owner)
         do_change_bot_owner(bot, owner, user_profile)

@@ -4,12 +4,14 @@ from django.utils.timezone import now as timezone_now
 from zerver.lib.actions import do_create_user, do_deactivate_user, \
     do_activate_user, do_reactivate_user, do_change_password, \
     do_change_user_email, do_change_avatar_fields, do_change_bot_owner, \
-    do_regenerate_api_key
+    do_regenerate_api_key, do_change_full_name, do_change_tos_version
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import RealmAuditLog, get_realm
 
 from datetime import timedelta
 from django.contrib.auth.password_validation import validate_password
+
+import ujson
 
 class TestRealmAuditLog(ZulipTestCase):
     def test_user_activation(self):
@@ -58,6 +60,18 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(RealmAuditLog.objects.filter(event_type='user_change_avatar_source',
                                                       event_time__gte=now).count(), 1)
         self.assertEqual(avatar_source, user.avatar_source)
+
+    def test_change_full_name(self):
+        # type: () -> None
+        start = timezone_now()
+        new_name = 'George Hamletovich'
+        self.login(self.example_email("iago"))
+        req = dict(full_name=ujson.dumps(new_name))
+        result = self.client_patch('/json/users/hamlet@zulip.com', req)
+        self.assertTrue(result.status_code == 200)
+        query = RealmAuditLog.objects.filter(event_type='user_full_name_changed',
+                                             event_time__gte=start)
+        self.assertEqual(query.count(), 1)
 
     def test_change_bot_owner(self):
         # type: () -> None

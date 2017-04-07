@@ -140,7 +140,7 @@ def json_change_settings(request, user_profile,
             pass
         else:
             # Note that check_change_full_name strips the passed name automatically
-            result['full_name'] = check_change_full_name(user_profile, full_name)
+            result['full_name'] = check_change_full_name(user_profile, full_name, user_profile)
 
     return json_success(result)
 
