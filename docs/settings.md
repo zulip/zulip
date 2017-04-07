@@ -5,7 +5,7 @@ help you decide how to correctly implement new settings you're adding
 to Zulip.  We have two types of administrative settings in Zulip:
 server settings (which are set via configuration files are apply to
 the whole Zulip installation), and realm settings (which are usually
-set via the /#administration page in the Zulip web application) and
+set via the /#organization page in the Zulip web application) and
 apply to a single Zulip realm/organization (which for most Zulip
 servers is the only realm on the server).
 

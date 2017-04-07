@@ -5,7 +5,7 @@
 {!follow-steps.md!} set the default streams that new users are automatically
 subscribed to.
 
-{!go-to-the.md!} [Default streams](/#administration/default-streams-list)
+{!go-to-the.md!} [Default streams](/#organization/default-streams-list)
 {!admin.md!}
 
 2. To add a new stream to **Default streams**, enter the name of the stream in the

@@ -12,7 +12,7 @@ exports.show_or_hide_menu_item = function () {
         item.show();
     } else {
         item.hide();
-        $(".administration-box [data-name='organization-settings']")
+        $(".organization-box [data-name='organization-settings']")
             .find("input, button, select").attr("disabled", true);
     }
 };
@@ -93,11 +93,11 @@ exports.update_user_data = function (user_id, new_data) {
 
 function failed_listing_users(xhr) {
     loading.destroy_indicator($('#subs_page_loading_indicator'));
-    ui_report.error(i18n.t("Error listing users or bots"), xhr, $("#administration-status"));
+    ui_report.error(i18n.t("Error listing users or bots"), xhr, $("#organization-status"));
 }
 
 function failed_listing_streams(xhr) {
-    ui_report.error(i18n.t("Error listing streams"), xhr, $("#administration-status"));
+    ui_report.error(i18n.t("Error listing streams"), xhr, $("#organization-status"));
 }
 
 function populate_users(realm_people_data) {
@@ -264,7 +264,7 @@ function get_non_default_streams_names(streams_data) {
 }
 
 exports.update_default_streams_table = function () {
-    if (/#*administration/.test(window.location.hash) ||
+    if (/#*organization/.test(window.location.hash) ||
         /#*settings/.test(window.location.hash)) {
         $("#admin_default_streams_table").expectOne().find("tr.default_stream_row").remove();
         default_stream_table = exports.build_default_stream_table(
@@ -417,13 +417,13 @@ function _setup_page() {
     };
 
     var admin_tab = templates.render('admin_tab', options);
-    $("#settings_content .administration-box").html(admin_tab);
+    $("#settings_content .organization-box").html(admin_tab);
     $("#settings_content .alert").removeClass("show");
 
     var tab = (function () {
         var tab = false;
         var hash_sequence = window.location.hash.split(/\//);
-        if (/#*(administration)/.test(hash_sequence[0])) {
+        if (/#*(organization)/.test(hash_sequence[0])) {
             tab = hash_sequence[1];
             return tab || "organization-settings";
         }
@@ -636,7 +636,7 @@ function _setup_page() {
         }
     });
 
-    $(".administration").on("submit", "form.admin-realm-form", function (e) {
+    $(".organization").on("submit", "form.admin-realm-form", function (e) {
         var name_status = $("#admin-realm-name-status").expectOne();
         var description_status = $("#admin-realm-description-status").expectOne();
         var restricted_to_domain_status = $("#admin-realm-restricted-to-domain-status").expectOne();
@@ -936,7 +936,7 @@ function _setup_page() {
         var submit_button = form_row.find(".submit_name_changes");
         var full_name = form_row.find("input[name='full_name']");
         var owner_select = $(templates.render("bot_owner_select", {users_list: users_list}));
-        var admin_status = $('#administration-status').expectOne();
+        var admin_status = $('#organization-status').expectOne();
         var person = people.get_person_from_user_id(user_id);
         if (!person) {
             return;
@@ -1034,7 +1034,7 @@ function _setup_page() {
         });
     });
 
-    $(".administration").on("submit", "form.admin-emoji-form", function (e) {
+    $(".organization").on("submit", "form.admin-emoji-form", function (e) {
         e.preventDefault();
         e.stopPropagation();
         var emoji_status = $('#admin-emoji-status');
@@ -1083,7 +1083,7 @@ function _setup_page() {
         });
     });
 
-    $(".administration").on("submit", "form.admin-filter-form", function (e) {
+    $(".organization").on("submit", "form.admin-filter-form", function (e) {
         e.preventDefault();
         e.stopPropagation();
         var filter_status = $('#admin-filter-status');
@@ -1234,7 +1234,7 @@ exports.launch_page = function (tab) {
     var $active_tab = $("#settings_overlay_container li[data-section='" + tab + "']");
 
     if ($active_tab.hasClass("admin")) {
-        $(".sidebar .ind-tab[data-tab-key='administration']").click();
+        $(".sidebar .ind-tab[data-tab-key='organization']").click();
     }
 
     $("#settings_overlay_container").addClass("show");

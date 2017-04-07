@@ -5,7 +5,7 @@
 You can add custom linkification filters to your organization that
 automatically turn phrases in messages into links to other pages.
 
-{!go-to-the.md!} [Filter settings](/#administration/filter-settings)
+{!go-to-the.md!} [Filter settings](/#organization/filter-settings)
 {!admin.md!}
 
 5. In the green section labeled **Add a new filter**, find the **Regular expression**

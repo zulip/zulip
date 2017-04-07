@@ -243,12 +243,12 @@ and a link to a particular section on the **Administration** page.
 
 * **Example usage and rendering:**
     ```.md
-    {!go-to-the.md!} [Organization settings](/#administration/organization-settings)
+    {!go-to-the.md!} [Organization settings](/#organization/organization-settings)
     {!admin.md!}
     ```
     ```.md
-    1. Go to the [Organization settings](/#administration/organization-settings) tab of the
-    [Administration](/help/edit-administrator-settings) page.
+    1. Go to the [Organization settings](/#organization/organization-settings) tab of the
+    [Organization](/help/edit-administrator-settings) page.
     ```
 
 ### **Administrator only feature** `{!admin-only.md!}` macro

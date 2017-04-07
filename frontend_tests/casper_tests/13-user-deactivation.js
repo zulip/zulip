@@ -6,7 +6,7 @@ casper.then(function () {
     var menu_selector = '#settings-dropdown';
     casper.waitUntilVisible(menu_selector, function () {
         casper.click(menu_selector);
-        casper.click('a[href^="#administration"]');
+        casper.click('a[href^="#organization"]');
     });
 });
 

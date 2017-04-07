@@ -61,7 +61,7 @@ using topics:
 Third, setting default streams for new users is a great way to get new
 users involved in conversations before they've accustomed themselves
 with joining streams on their own.  You can do so on the
-`/administration` page (get there from the gear menu).
+`/organization` page (get there from the gear menu).
 
 ## Notification settings
 

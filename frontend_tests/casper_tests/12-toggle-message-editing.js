@@ -76,7 +76,7 @@ casper.then(function () {
 // go to admin page
 casper.then(function () {
     casper.click('#settings-dropdown');
-    casper.click('a[href^="#administration"]');
+    casper.click('a[href^="#organization"]');
 });
 
 // deactivate "allow message editing"
@@ -140,7 +140,7 @@ casper.then(function () {
 // go back to admin page, and reactivate "allow message editing"
 casper.then(function () {
     casper.click('#settings-dropdown');
-    casper.click('a[href^="#administration"]');
+    casper.click('a[href^="#organization"]');
 });
 casper.waitUntilVisible('input[type="checkbox"][id="id_realm_allow_message_editing"]', function () {
     casper.click('input[type="checkbox"][id="id_realm_allow_message_editing"]');
@@ -190,10 +190,10 @@ casper.waitUntilVisible('input[type="checkbox"][id="id_realm_allow_message_editi
 
 // go to admin page
 casper.then(function () {
-    casper.test.info('Administration page');
-    casper.click('a[href^="#administration"]');
-    casper.test.assertUrlMatch(/^http:\/\/[^\/]+\/#administration/, 'URL suggests we are on administration page');
-    casper.test.assertExists('#settings_overlay_container.show', 'Administration page is active');
+    casper.test.info('Organization page');
+    casper.click('a[href^="#organization"]');
+    casper.test.assertUrlMatch(/^http:\/\/[^\/]+\/#organization/, 'URL suggests we are on organization page');
+    casper.test.assertExists('#settings_overlay_container.show', 'Organization page is active');
 });
 
 casper.waitUntilVisible('form.admin-realm-form input.button');

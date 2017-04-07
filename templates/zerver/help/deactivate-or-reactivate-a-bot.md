@@ -17,7 +17,7 @@ authentication with any API keys the bot has.
 
 Instead, you should deactivate the bot using the Zulip administration interface.
 
-{!go-to-the.md!} [Bots](/#administration/bot-list-admin)
+{!go-to-the.md!} [Bots](/#organization/bot-list-admin)
 {!admin.md!}
 
 4. Click the **Deactivate** button to the right of the bot that you want to
@@ -32,7 +32,7 @@ stricken through, confirming the success of the bot's deactivation.
 Zulip organization administrators can choose to reactivate a deactivated bot by
 following the following steps.
 
-{!go-to-the.md!} [Bots](/#administration/bot-list-admin)
+{!go-to-the.md!} [Bots](/#organization/bot-list-admin)
 {!admin.md!}
 
 4. In the **Bots** section, click the **Reactivate** button to the right of the

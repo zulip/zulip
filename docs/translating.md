@@ -193,7 +193,7 @@ page, in the 'Display settings' section. The URL will be
 `/#settings/display-settings` on your realm.
 
 Organizations can set the default language for new users in their
-organization on the `/#administration` page.
+organization on the `/#organization` page.
 
 ## Translation resource files
 
