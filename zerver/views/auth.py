@@ -106,6 +106,12 @@ def remote_user_sso(request):
     except KeyError:
         raise JsonableError(_("No REMOTE_USER set."))
 
+    # Django invokes authenticate methods by matching arguments, and this
+    # authentication flow will not invoke LDAP authentication because of
+    # this condition of Django so no need to check if LDAP backend is
+    # enabled.
+    validate_login_email(remote_user_to_email(remote_user))
+
     user_profile = authenticate(remote_user=remote_user, realm_subdomain=get_subdomain(request))
     return login_or_register_remote_user(request, remote_user, user_profile)
 
