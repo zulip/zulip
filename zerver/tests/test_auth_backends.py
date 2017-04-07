@@ -995,6 +995,13 @@ class FetchAPIKeyTest(ZulipTestCase):
                                        password=initial_password(self.email)))
         self.assert_json_success(result)
 
+    def test_invalid_email(self):
+        # type: () -> None
+        result = self.client_post("/api/v1/fetch_api_key",
+                                  dict(username='hamlet',
+                                       password=initial_password(self.email)))
+        self.assert_json_error(result, "Enter a valid email address.", 400)
+
     def test_wrong_password(self):
         # type: () -> None
         result = self.client_post("/api/v1/fetch_api_key",

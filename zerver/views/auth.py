@@ -1,6 +1,8 @@
 from __future__ import absolute_import
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from django.contrib.auth import authenticate, login, get_backends
 from django.contrib.auth.views import login as django_login_page, \
     logout_then_login as django_logout_then_login
@@ -23,10 +25,12 @@ from zerver.forms import HomepageForm, OurAuthenticationForm, \
 from zerver.lib.request import REQ, has_request_variables, JsonableError
 from zerver.lib.response import json_success, json_error
 from zerver.lib.utils import get_subdomain, is_subdomain_root_or_alias
+from zerver.lib.validator import validate_login_email
 from zerver.models import PreregistrationUser, UserProfile, remote_user_to_email, Realm
 from zerver.views.registration import create_preregistration_user, get_realm_from_request, \
     redirect_and_log_into_subdomain
-from zproject.backends import password_auth_enabled, dev_auth_enabled, google_auth_enabled
+from zproject.backends import password_auth_enabled, dev_auth_enabled, google_auth_enabled, \
+    ldap_auth_enabled
 from version import ZULIP_VERSION
 
 import hashlib
@@ -430,6 +434,11 @@ def api_fetch_api_key(request, username=REQ(), password=REQ()):
                                     realm_subdomain=get_subdomain(request),
                                     return_data=return_data)
     else:
+        if not ldap_auth_enabled(realm=get_realm_from_request(request)):
+            # In case we don't authenticate against LDAP, check for a valid
+            # email. LDAP backend can authenticate against a non-email.
+            validate_login_email(username)
+
         user_profile = authenticate(username=username,
                                     password=password,
                                     realm_subdomain=get_subdomain(request),
