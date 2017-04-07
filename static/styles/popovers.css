@@ -95,3 +95,11 @@ ul.actions_popover i {
 .message-info-popover .popover-title {
     padding: 0;
 }
+
+.user_popover {
+    padding: 0;
+}
+
+.user_popover .popover-title {
+    padding: 0;
+}
