@@ -12,6 +12,10 @@ link to the file will be in Markdown format: `[link_text](link_URL)`
     If you wish to give your image a caption or title, you may add text before
     or after the generated link in your message.
 
+!!! tip ""
+    The maximum size for uploaded files is 25MB in most Zulip installations.
+    This limit can be changed by the server administrator.
+
 After submitting your message, you will see a clickable thumbnail if
 your file is a common image type (i.e. PNG, JPEG, etc.); all other
 files will simply have a link displayed.
