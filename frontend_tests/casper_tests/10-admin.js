@@ -10,13 +10,13 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.test.info('Administration page');
-    casper.click('a[href^="#administration"]');
+    casper.test.info('Organization page');
+    casper.click('a[href^="#organization"]');
 });
 
 casper.waitForSelector('#settings_overlay_container.show', function () {
-    casper.test.info('Administration page is active');
-    casper.test.assertUrlMatch(/^http:\/\/[^/]+\/#administration/, 'URL suggests we are on administration page');
+    casper.test.info('Organization page is active');
+    casper.test.assertUrlMatch(/^http:\/\/[^/]+\/#organization/, 'URL suggests we are on organization page');
 });
 
 // Test setting limiting stream creation to administrators
@@ -41,7 +41,7 @@ casper.then(function () {
     casper.click('#settings-dropdown');
     casper.click('a[href^="#streams"]');
     casper.click('#settings-dropdown');
-    casper.click('a[href^="#administration"]');
+    casper.click('a[href^="#organization"]');
 });
 
 casper.waitUntilVisible('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]', function () {
@@ -275,7 +275,7 @@ casper.then(function () {
     casper.click('#settings-dropdown');
     casper.click('a[href^="#streams"]');
     casper.click('#settings-dropdown');
-    casper.click('a[href^="#administration"]');
+    casper.click('a[href^="#organization"]');
 
     casper.waitUntilVisible(".method_row[data-method='Email'] input[type='checkbox']", function () {
         // Test Setting was saved

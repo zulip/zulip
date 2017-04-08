@@ -2442,13 +2442,13 @@ button.topic_edit_cancel {
     background-color: #c9fcc1;
 }
 
-#administration h1,
+#organization h1,
 #settings h1 {
     font-size: 25px;
     font-weight: 300;
 }
 
-#administration .administration-icon,
+#organization .organization-icon,
 #settings .settings-icon {
     margin-right: 10px;
     font-size: 20px;

@@ -157,7 +157,7 @@ your organization.
   SSO system, since neither of those prevents authenticating with the
   user's API key or those of bots the user has created.  Instead, you
   should deactivate the user's account in the Zulip administration
-  interface (`/#administration`); this will automatically also
+  interface (`/#organization`); this will automatically also
   deactivate any bots the user had created.
 
 * The Zulip mobile apps authenticate to the server by sending the

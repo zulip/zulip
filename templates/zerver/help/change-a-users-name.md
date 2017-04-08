@@ -6,7 +6,7 @@ Ordinary users can [change their own names](/help/change-your-name), but
 administrators can change users' names when users are
 unavailable. {!follow-steps.md!} change the name of a user.
 
-{!go-to-the.md!} [Users](/#administration/user-list-admin)
+{!go-to-the.md!} [Users](/#organization/user-list-admin)
 {!admin.md!}
 
 2. Click on the pencil (<i class="icon-vector-pencil"></i>) icon next to
