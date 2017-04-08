@@ -571,7 +571,7 @@ with_overrides(function (override) {
     // realm_filters
     var event = event_fixtures.realm_filters;
     page_params.realm_filters = [];
-    override('admin.populate_filters', noop);
+    override('settings_filters.populate_filters', noop);
     dispatch(event);
     assert_same(page_params.realm_filters, event.realm_filters);
 
