@@ -20,7 +20,7 @@ function dispatch_normal_event(event) {
 
     case 'default_streams':
         page_params.realm_default_streams = event.default_streams;
-        admin.update_default_streams_table();
+        settings_streams.update_default_streams_table();
         break;
 
     case 'hotspots':
@@ -181,7 +181,7 @@ function dispatch_normal_event(event) {
                 event.property,
                 event.value
             );
-            admin.update_default_streams_table();
+            settings_streams.update_default_streams_table();
         } else if (event.op === 'create') {
             stream_data.create_streams(event.streams);
         } else if (event.op === 'delete') {
@@ -191,7 +191,7 @@ function dispatch_normal_event(event) {
                 }
                 subs.remove_stream(stream.stream_id);
                 stream_data.delete_sub(stream.stream_id);
-                admin.remove_default_stream(stream.stream_id);
+                settings_streams.remove_default_stream(stream.stream_id);
                 stream_data.remove_default_stream(stream.stream_id);
             });
         }

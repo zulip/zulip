@@ -412,7 +412,7 @@ with_overrides(function () {
 with_overrides(function (override) {
     // default_streams
     var event = event_fixtures.default_streams;
-    override('admin.update_default_streams_table', noop);
+    override('settings_streams.update_default_streams_table', noop);
     dispatch(event);
     assert_same(page_params.realm_default_streams, event.default_streams);
 
@@ -634,7 +634,7 @@ with_overrides(function (override) {
 
     global.with_stub(function (stub) {
         override('stream_events.update_property', stub.f);
-        override('admin.update_default_streams_table', noop);
+        override('settings_streams.update_default_streams_table', noop);
         dispatch(event);
         var args = stub.get_args('stream_id', 'property', 'value');
         assert_same(args.stream_id, event.stream_id);
