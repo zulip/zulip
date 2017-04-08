@@ -913,6 +913,7 @@ JS_SPECS = {
             'js/settings_muting.js',
             'js/settings_lab.js',
             'js/settings_sections.js',
+            'js/settings_emoji.js',
             'js/settings.js',
             'js/admin.js',
             'js/tab_bar.js',

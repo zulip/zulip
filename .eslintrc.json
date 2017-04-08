@@ -39,6 +39,7 @@
         "settings_lab": false,
         "settings_bots": false,
         "settings_sections": false,
+        "settings_emoji": false,
         "settings": false,
         "resize": false,
         "loading": false,
