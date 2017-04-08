@@ -73,6 +73,10 @@ to include lists in your messages.
 
 ![Lists](/static/images/help/lists-screenshot.png)
 
+!!! tip ""
+    You can add nested bullets within lists by adding four spaces before each
+    nested bullet.
+
 ## Emojis
 
 Zulip features a variety of emojis provided by the
