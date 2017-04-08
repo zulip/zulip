@@ -740,6 +740,8 @@ class EventsRegisterTest(ZulipTestCase):
             validator = check_string
         elif property_type is int:
             validator = check_int
+        elif property_type == (int, type(None)):
+            validator = check_int
         else:
             raise AssertionError("Unexpected property type %s" % (property_type,))
 

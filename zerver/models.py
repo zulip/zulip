@@ -151,7 +151,7 @@ class Realm(ModelReprMixin, models.Model):
         invite_by_admins_only=bool,
         inline_image_preview=bool,
         inline_url_embed_preview=bool,
-        message_retention_days=int,
+        message_retention_days=(int, type(None)),
         name=Text,
         name_changes_disabled=bool,
         restricted_to_domain=bool,
