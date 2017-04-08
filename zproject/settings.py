@@ -915,6 +915,7 @@ JS_SPECS = {
             'js/settings_emoji.js',
             'js/settings_org.js',
             'js/settings_users.js',
+            'js/settings_streams.js',
             'js/settings.js',
             'js/admin.js',
             'js/tab_bar.js',
