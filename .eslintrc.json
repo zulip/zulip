@@ -41,6 +41,7 @@
         "settings_sections": false,
         "settings_emoji": false,
         "settings_org": false,
+        "settings_users": false,
         "settings": false,
         "resize": false,
         "loading": false,

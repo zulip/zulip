@@ -513,7 +513,7 @@ with_overrides(function (override) {
     global.with_stub(function (bot_stub) {
         global.with_stub(function (admin_stub) {
             override('bot_data.add', bot_stub.f);
-            override('admin.update_user_data', admin_stub.f);
+            override('settings_users.update_user_data', admin_stub.f);
             dispatch(event);
             var args = bot_stub.get_args('bot');
             assert_same(args.bot, event.bot);
@@ -526,7 +526,7 @@ with_overrides(function (override) {
     global.with_stub(function (bot_stub) {
         global.with_stub(function (admin_stub) {
             override('bot_data.deactivate', bot_stub.f);
-            override('admin.update_user_data', admin_stub.f);
+            override('settings_users.update_user_data', admin_stub.f);
             dispatch(event);
             var args = bot_stub.get_args('email');
             assert_same(args.email, event.bot.email);
@@ -539,7 +539,7 @@ with_overrides(function (override) {
     global.with_stub(function (bot_stub) {
         global.with_stub(function (admin_stub) {
             override('bot_data.update', bot_stub.f);
-            override('admin.update_user_data', admin_stub.f);
+            override('settings_users.update_user_data', admin_stub.f);
 
             dispatch(event);
 

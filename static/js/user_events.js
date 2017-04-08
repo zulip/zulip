@@ -33,7 +33,7 @@ exports.update_person = function update(person) {
     if (_.has(person, 'full_name')) {
         people.set_full_name(person_obj, person.full_name);
 
-        admin.update_user_data(person.user_id, person);
+        settings_users.update_user_data(person.user_id, person);
         activity.redraw();
         message_live_update.update_user_full_name(person.user_id, person.full_name);
         pm_list.update_private_messages();
