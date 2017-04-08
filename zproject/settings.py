@@ -914,6 +914,7 @@ JS_SPECS = {
             'js/settings_lab.js',
             'js/settings_sections.js',
             'js/settings_emoji.js',
+            'js/settings_org.js',
             'js/settings.js',
             'js/admin.js',
             'js/tab_bar.js',
