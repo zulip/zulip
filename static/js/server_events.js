@@ -128,7 +128,7 @@ function dispatch_normal_event(event) {
 
     case 'realm_emoji':
         emoji.update_emojis(event.realm_emoji);
-        admin.populate_emoji(event.realm_emoji);
+        settings_emoji.populate_emoji(event.realm_emoji);
         break;
 
     case 'realm_filters':
