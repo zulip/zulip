@@ -24,6 +24,9 @@ if os.getuid() != 0:
     logging.error("Must be run as root.")
     sys.exit(1)
 
+# make sure we have appropriate file permissions
+os.umask(0o22)
+
 parser = argparse.ArgumentParser()
 parser.add_argument("deploy_path", metavar="deploy_path",
                     help="Path to deployment directory")
