@@ -48,11 +48,11 @@
                     <i class="icon icon-vector-lock"></i>
                     <div class="text">{{ _('Authentication methods') }}</div>
                 </li>
-                {% if is_admin %}
                 <li class="admin" tabindex="1" data-section="user-list-admin">
                     <i class="icon icon-vector-user"></i>
                     <div class="text">{{ _('Users') }}</div>
                 </li>
+                {% if is_admin %}
                 <li class="admin" tabindex="1" data-section="deactivated-users-admin">
                     <i class="icon icon-vector-trash"></i>
                     <div class="text">{{ _('Deactivated users') }}</div>

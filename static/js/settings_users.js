@@ -114,14 +114,14 @@ function populate_users(realm_people_data) {
 
     var bots_table_html = "";
     _.each(bots, function (user) {
-        var bot_html = templates.render("admin_user_list", {user: user});
+        var bot_html = templates.render("admin_user_list", {user: user, can_modify: page_params.is_admin});
         bots_table_html = bots_table_html.concat(bot_html);
     });
     bots_table.append(bots_table_html);
 
     _.each(active_users, function (user) {
         var activity_rendered;
-        var row = $(templates.render("admin_user_list", {user: user}));
+        var row = $(templates.render("admin_user_list", {user: user, can_modify: page_params.is_admin}));
         if (people.is_current_user(user.email)) {
             activity_rendered = timerender.render_date(new XDate());
         } else {
@@ -138,7 +138,7 @@ function populate_users(realm_people_data) {
 
     var deactivated_table_html = "";
     _.each(deactivated_users, function (user) {
-        var user_html = templates.render("admin_user_list", {user: user});
+        var user_html = templates.render("admin_user_list", {user: user, can_modify: page_params.is_admin});
         deactivated_table_html = deactivated_table_html.concat(user_html);
     });
     deactivated_users_table.append(deactivated_table_html);
