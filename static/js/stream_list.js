@@ -76,7 +76,17 @@ exports.stream_sidebar = (function () {
             blueslip.warn('Cannot remove stream id ' + stream_id);
             return;
         }
+
         widget.remove();
+
+        // This <hr> separates pinned streams from unpinned streams,
+        // so when removing a row, we check whether this removed the
+        // last pinned stream, and thus we no longer need the divider.
+        var $pinned_streams_hr = $("#stream_filters hr.pinned-stream-split");
+        if ($pinned_streams_hr.prev().length === 0) {
+            $pinned_streams_hr.remove();
+        }
+
         self.rows.del(stream_id);
     };
 
