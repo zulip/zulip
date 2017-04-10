@@ -9,9 +9,9 @@ var all_streams = [];
 exports.show_or_hide_menu_item = function () {
     var item = $('.admin-menu-item').expectOne();
     if (page_params.is_admin) {
-        item.show();
+        item.find("span").text(i18n.t("Manage organization"));
     } else {
-        item.hide();
+        item.find("span").text(i18n.t("Organization settings"));
         $(".organization-box [data-name='organization-settings']")
             .find("input, button, select").attr("disabled", true);
     }
