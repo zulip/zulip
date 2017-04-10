@@ -115,7 +115,9 @@ class TemplateTestCase(ZulipTestCase):
 
         integrations_regexp = re.compile('zerver/integrations/.*.html')
 
-        skip = covered + defer + logged_out + logged_in + unusual + ['tests/test_markdown.html', 'zerver/terms.html']
+        skip = covered + defer + logged_out + logged_in + unusual + ['tests/test_markdown.html',
+                                                                     'zerver/terms.html',
+                                                                     'zerver/privacy.html']
         templates = [t for t in get_all_templates() if not (t in skip or integrations_regexp.match(t))]
         self.render_templates(templates, self.get_context())
 
@@ -211,3 +213,27 @@ class TemplateTestCase(ZulipTestCase):
         self.assert_in_success_response([u"Thanks for using our products and services (\"Services\"). ",
                                          u"By using our Services, you are agreeing to these terms"],
                                         response)
+
+    def test_custom_terms_of_service_template(self):
+        # type: () -> None
+        not_configured_message = 'This Zulip server does not have a configured ' \
+                                 '<strong>terms of service</strong>'
+        with self.settings(TERMS_OF_SERVICE=None):
+            response = self.client_get('/terms/')
+        self.assert_in_success_response([not_configured_message], response)
+        with self.settings(TERMS_OF_SERVICE='zerver/tests/markdown/test_markdown.md'):
+            response = self.client_get('/terms/')
+        self.assert_in_success_response(['This is some <em>bold text</em>.'], response)
+        self.assert_not_in_success_response([not_configured_message], response)
+
+    def test_custom_privacy_policy_template(self):
+        # type: () -> None
+        not_configured_message = 'This Zulip server does not have a configured ' \
+                                 '<strong>privacy policy</strong>'
+        with self.settings(PRIVACY_POLICY=None):
+            response = self.client_get('/privacy/')
+        self.assert_in_success_response([not_configured_message], response)
+        with self.settings(PRIVACY_POLICY='zerver/tests/markdown/test_markdown.md'):
+            response = self.client_get('/privacy/')
+        self.assert_in_success_response(['This is some <em>bold text</em>.'], response)
+        self.assert_not_in_success_response([not_configured_message], response)

@@ -1,12 +1,13 @@
 # Customize Zulip
 
 Once you've got Zulip setup, you'll likely want to configure it the
-way you like.  There are four big things to focus on:
+way you like.  There are several things to focus on:
 
 1. [Integrations](#integrations)
 2. [Streams and Topics](#streams-and-topics)
 3. [Notification settings](#notification-settings)
 4. [Mobile and desktop apps](#mobile-and-desktop-apps)
+5. [Terms of service and Privacy policy](#terms-of-service-and-privacy-policy)
 
 Lastly, read about Zulip's other [great features](#all-other-features), and
 then [enjoy your Zulip installation](#enjoy-your-zulip-installation)!
@@ -69,6 +70,16 @@ Zulip gives you a great deal of control
 over which messages trigger desktop notifications; you can configure
 these extensively in the `/#settings` page (get there from the gear
 menu).
+
+## Terms of service and Privacy policy
+
+Zulip allows you to configure your server's Terms of Service and
+Privacy Policy pages (`/terms` and `/privacy`, respectively).  You can
+use the `TERMS_OF_SERVICE` and `PRIVACY_POLICY` settings to configure
+the path to your server's policies.  The syntax is Markdown (with
+support for included HTML).  A good approach is to use paths like
+`/etc/zulip/terms.md`, so that it's easy to back up your policy
+configuration along with your other Zulip server configuration.
 
 ## Mobile and desktop apps
 
