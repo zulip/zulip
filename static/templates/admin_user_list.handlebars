@@ -6,45 +6,47 @@
   <td>
     <span class="email">{{email}}</span>
   </td>
-  {{#if is_bot}}
+  {{#if ../can_modify}}
+    {{#if is_bot}}
+      <td>
+        <span class="owner">{{bot_owner}}</span>
+      </td>
+    {{else}}
+      <td class="last_active">
+      </td>
+    {{/if}}
     <td>
-      <span class="owner">{{bot_owner}}</span>
-    </td>
-  {{else}}
-    <td class="last_active">
-    </td>
-  {{/if}}
-  <td>
-    <span class="user-status-settings">
-      {{#if is_active}}
-        <button class="button deactivate btn-danger">
-          {{t "Deactivate" }}
-        </button>
-      {{else}}
-        <button class="button reactivate btn-warning">
-          {{t "Reactivate" }}
-        </button>
-      {{/if}}
-    </span>
-    <span class="user-admin-settings">
-      {{#if is_active_human}}
-        {{#if is_admin}}
-          <button class="button remove-admin btn-danger">
-            {{t "Remove admin" }}
+      <span class="user-status-settings">
+        {{#if is_active}}
+          <button class="button deactivate btn-danger">
+            {{t "Deactivate" }}
           </button>
         {{else}}
-          <button class="button make-admin btn-warning">
-            {{t "Make admin" }}
+          <button class="button reactivate btn-warning">
+            {{t "Reactivate" }}
           </button>
         {{/if}}
-      {{/if}}
-    </span>
-    <button class="button btn-primary open-user-form{{#unless is_active}} display-none{{/unless}}" title="{{t 'Edit user' }}" data-user-id="{{user_id}}">
-        <i class="icon-vector-pencil"></i>
-    </button>
-    <div class='admin-user-status'>
-    </div>
-  </td>
+      </span>
+      <span class="user-admin-settings">
+        {{#if is_active_human}}
+          {{#if is_admin}}
+            <button class="button remove-admin btn-danger">
+              {{t "Remove admin" }}
+            </button>
+          {{else}}
+            <button class="button make-admin btn-warning">
+              {{t "Make admin" }}
+            </button>
+          {{/if}}
+        {{/if}}
+      </span>
+      <button class="button btn-primary open-user-form{{#unless is_active}} display-none{{/unless}}" title="{{t 'Edit user' }}" data-user-id="{{user_id}}">
+          <i class="icon-vector-pencil"></i>
+      </button>
+      <div class='admin-user-status'>
+      </div>
+    </td>
+  {{/if}}
 </tr>
 <tr class="user-name-form display-none" data-user-id="{{user_id}}">
   <td colspan="{{#if is_bot}}4{{else}}3{{/if}}">
