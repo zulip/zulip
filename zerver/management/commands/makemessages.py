@@ -46,6 +46,8 @@ from django.utils.translation import trans_real
 from django.template.base import BLOCK_TAG_START, BLOCK_TAG_END
 from django.conf import settings
 
+from zerver.lib.str_utils import force_text
+
 strip_whitespace_right = re.compile(u"(%s-?\\s*(trans|pluralize).*?-%s)\\s+" % (BLOCK_TAG_START, BLOCK_TAG_END), re.U)
 strip_whitespace_left = re.compile(u"\\s+(%s-\\s*(endtrans|pluralize).*?-?%s)" % (
                                    BLOCK_TAG_START, BLOCK_TAG_END), re.U)
@@ -246,6 +248,10 @@ class Command(makemessages.Command):
             except (IOError, ValueError):
                 old_strings = {}
 
-            new_strings = self.get_new_strings(old_strings, translation_strings)
+            new_strings = {
+                force_text(k): v
+                for k, v in self.get_new_strings(old_strings,
+                                                 translation_strings).items()
+            }
             with open(output_path, 'w') as writer:
                 json.dump(new_strings, writer, indent=2, sort_keys=True)
