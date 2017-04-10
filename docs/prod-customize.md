@@ -7,6 +7,7 @@ way you like.  There are four big things to focus on:
 2. [Streams and Topics](#streams-and-topics)
 3. [Notification settings](#notification-settings)
 4. [Mobile and desktop apps](#mobile-and-desktop-apps)
+5. [Terms of service and Privacy policy](#terms-of-service-and-privacy-policy)
 
 Lastly, read about Zulip's other [great features](#all-other-features), and
 then [enjoy your Zulip installation](#enjoy-your-zulip-installation)!
@@ -69,6 +70,13 @@ Zulip gives you a great deal of control
 over which messages trigger desktop notifications; you can configure
 these extensively in the `/#settings` page (get there from the gear
 menu).
+
+## Terms of service and Privacy policy
+
+Zulip allows you to configure your's own `Terms of service` and `Privacy
+policy` pages templates. To define path to these templates you should use
+`TERMS_OF_SERVICE` and `PRIVACY_POLICY` settings respectively. Templates
+support both HTML and Markdown language.
 
 ## Mobile and desktop apps
 

@@ -1,16 +1,16 @@
 {% extends "zerver/portico.html" %}
 
-{# Terms of service. #}
+{# Privacy policy. #}
 
 {% block portico_content %}
 
 <div class="app terms-page">
     <div class="app-main terms-page-container">
-        {% if terms_of_service %}
-            {{ terms_of_service|render_markdown_path }}
+
+        {% if privacy_policy %}
+            {{ privacy_policy|render_markdown_path }}
         {% else %}
-            {% trans %}
-            This Zulip server does not have a configured <strong>terms of service</strong>.
+            {% trans %}This Zulip server does not have a configured <strong>privacy policy</strong>.
             Contact administrator <a href="mailto:{{ zulip_admin }}">{{ zulip_admin }}</a>
             for information.
             {% endtrans %}
