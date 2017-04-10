@@ -52,4 +52,30 @@
         }
     };
 
+    // garbage collect all old i18n translation maps in localStorage.
+    i18n.remove_old_translations = function () {
+        // this collects all localStorage keys that match the format of:
+        // - dddddddddd:w+ => 1484902202:en
+        // these are all language translation strings.
+        var translations = Object.keys(localStorage).filter(function (key) {
+            return /\d{10}:\w+/.test(key);
+        });
+
+        // by sorting them we get the lowest timestamps at the bottom and the
+        // most recent at the top.
+        translations = translations.sort();
+
+        // remove the latest translation (our current working one) from the list.
+        translations.pop();
+
+        // remove all the old translations.
+        translations.forEach(function (translation_key) {
+            localStorage.removeItem(translation_key);
+        });
+
+        return this;
+    };
+
+    // run gc of old sessions on startup.
+    i18n.remove_old_translations();
 }());
