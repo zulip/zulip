@@ -303,6 +303,11 @@
     letter-spacing: -.3em;
 }
 
+.input-append input[type=text] {
+    border-radius: 5px;
+    box-shadow: none;
+}
+
 .clear_search_button:hover {
     color: #000;
 }
