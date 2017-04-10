@@ -27,8 +27,12 @@ for any particular type of object.
 '''
 from __future__ import absolute_import
 from django.utils.translation import ugettext as _
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 import six
-from typing import Any, Callable, Iterable, Optional, Tuple, TypeVar
+from typing import Any, Callable, Iterable, Optional, Tuple, TypeVar, Text
+
+from zerver.lib.request import JsonableError
 
 Validator = Callable[[str, Any], Optional[str]]
 
@@ -144,3 +148,10 @@ def equals(expected_val):
                      'value': val})
         return None
     return f
+
+def validate_login_email(email):
+    # type: (Text) -> None
+    try:
+        validate_email(email)
+    except ValidationError as err:
+        raise JsonableError(str(err.message))

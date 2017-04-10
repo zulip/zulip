@@ -22,6 +22,8 @@ from zerver.lib.actions import (
     do_reactivate_user,
     do_set_realm_authentication_methods,
 )
+from zerver.lib.validator import validate_login_email
+from zerver.lib.request import JsonableError
 from zerver.lib.initial_password import initial_password
 from zerver.lib.sessions import get_session_dict_user
 from zerver.lib.test_classes import (
@@ -1834,3 +1836,13 @@ class TestAdminSetBackends(ZulipTestCase):
         self.assertFalse(github_auth_enabled(realm))
         self.assertTrue(dev_auth_enabled(realm))
         self.assertFalse(password_auth_enabled(realm))
+
+class LoginEmailValidatorTestCase(TestCase):
+    def test_valid_email(self):
+        # type: () -> None
+        validate_login_email(u'hamlet@zulip.com')
+
+    def test_invalid_email(self):
+        # type: () -> None
+        with self.assertRaises(JsonableError):
+            validate_login_email(u'hamlet')
