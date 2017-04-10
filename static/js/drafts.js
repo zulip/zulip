@@ -81,11 +81,7 @@ exports.snapshot_message = function () {
         message.private_message_recipient = recipient;
     } else {
         message.stream = compose.stream_name();
-        var subject = compose.subject();
-        if (subject === "") {
-          subject = compose.empty_topic_placeholder();
-        }
-        message.subject = subject;
+        message.subject = compose.subject();
     }
     return message;
 };
@@ -173,14 +169,19 @@ exports.setup_page = function (callback) {
                 // single space char for proper rendering of the stream label
                 var space_string = new Handlebars.SafeString("&nbsp;");
                 var stream = (draft.stream.length > 0 ? draft.stream : space_string);
+                var draft_topic = draft.subject.length === 0 ?
+                        compose.empty_topic_placeholder() : draft.subject;
+
                 formatted = {
                     draft_id: id,
                     is_stream: true,
                     stream: stream,
                     stream_color: stream_data.get_color(draft.stream),
-                    topic: draft.subject,
+                    topic: draft_topic,
                     raw_content: draft.content,
+
                 };
+
                 echo.apply_markdown(formatted);
             } else {
                 var emails = util.extract_pm_recipients(draft.private_message_recipient);
