@@ -243,6 +243,37 @@ def run_subsuite(args):
     process_instrumented_calls(partial(result.addInstrumentation, None))  # type: ignore
     return subsuite_index, result.events
 
+def destroy_test_databases(database_id=None):
+    # type: (Optional[int]) -> None
+    """
+    When database_id is None, the name of the databases is picked up
+    by the database settings.
+    """
+    for alias in connections:
+        connection = connections[alias]
+        try:
+            connection.creation.destroy_test_db(number=database_id)
+        except Exception:
+            # DB doesn't exist. No need to do anything.
+            pass
+
+def create_test_databases(database_id):
+    # type: (int) -> None
+    for alias in connections:
+        connection = connections[alias]
+        connection.creation.clone_test_db(
+            number=database_id,
+            keepdb=True,
+        )
+
+        settings_dict = connection.creation.get_test_db_clone_settings(database_id)
+        # connection.settings_dict must be updated in place for changes to be
+        # reflected in django.db.connections. If the following line assigned
+        # connection.settings_dict = settings_dict, new threads would connect
+        # to the default database instead of the appropriate clone.
+        connection.settings_dict.update(settings_dict)
+        connection.close()
+
 def init_worker(counter):
     # type: (Synchronized) -> None
     global _worker_id
@@ -260,27 +291,8 @@ def init_worker(counter):
         counter.value += 1
         _worker_id = counter.value
 
-    for alias in connections:
-        connection = connections[alias]
-
-        try:
-            connection.creation.destroy_test_db(number=_worker_id)
-        except Exception:
-            # DB doesn't exist. No need to do anything.
-            pass
-
-        connection.creation.clone_test_db(
-            number=_worker_id,
-            keepdb=True,
-        )
-
-        settings_dict = connection.creation.get_test_db_clone_settings(_worker_id)
-        # connection.settings_dict must be updated in place for changes to be
-        # reflected in django.db.connections. If the following line assigned
-        # connection.settings_dict = settings_dict, new threads would connect
-        # to the default database instead of the appropriate clone.
-        connection.settings_dict.update(settings_dict)
-        connection.close()
+    destroy_test_databases(_worker_id)
+    create_test_databases(_worker_id)
 
 class TestSuite(unittest.TestSuite):
     def run(self, result, debug=False):
