@@ -6,6 +6,7 @@ class HelloSignHookTests(WebhookTestCase):
     STREAM_NAME = 'hellosign'
     URL_TEMPLATE = "/api/v1/external/hellosign?stream={stream}&api_key={api_key}"
     FIXTURE_DIR_NAME = 'hellosign'
+    OWN_SUBJECT = None
 
     def test_signatures_message(self):
         # type: () -> None
@@ -15,6 +16,24 @@ class HelloSignHookTests(WebhookTestCase):
         self.send_and_test_stream_message('signatures', expected_subject, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
+    def test_signatures_message_with_own_subject(self):
+        # type: () -> None
+        expected_subject = "Our own subject."
+        self.OWN_SUBJECT = expected_subject
+        self.url = self.build_webhook_url()
+        expected_message = ("The NDA with Acme Co. is awaiting the signature of "
+                            "Jack and was just signed by Jill.")
+        self.send_and_test_stream_message('signatures_with_own_subject', expected_subject, expected_message,
+                                          content_type="application/x-www-form-urlencoded", topic=expected_subject)
+        self.OWN_SUBJECT = None
+
     def get_body(self, fixture_name):
         # type: (Text) -> Text
         return self.fixture_data("hellosign", fixture_name, file_type="json")
+
+    def build_webhook_url(self):
+        # type: () -> Text
+        url = super(HelloSignHookTests, self).build_webhook_url()
+        if self.OWN_SUBJECT:
+            url += '&topic={}'.format(self.OWN_SUBJECT)
+        return url
