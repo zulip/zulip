@@ -1,6 +1,8 @@
 from __future__ import print_function
 
 from functools import partial
+import random
+
 from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, \
     Text, Type
 from unittest import loader, runner  # type: ignore  # Mypy cannot pick these up.
@@ -361,6 +363,7 @@ class Runner(DiscoverRunner):
         # in `zerver.tests.test_templates`.
         self.shallow_tested_templates = set()  # type: Set[str]
         template_rendered.connect(self.on_template_rendered)
+        self.database_id = random.randint(1, 10000)
 
     def get_resultclass(self):
         # type: () -> Type[TestResult]
@@ -380,6 +383,19 @@ class Runner(DiscoverRunner):
     def get_shallow_tested_templates(self):
         # type: () -> Set[str]
         return self.shallow_tested_templates
+
+    def setup_test_environment(self, *args, **kwargs):
+        # type: (*Any, **Any) -> Any
+        destroy_test_databases(self.database_id)
+        create_test_databases(self.database_id)
+        return super(Runner, self).setup_test_environment(*args, **kwargs)
+
+    def teardown_test_environment(self, *args, **kwargs):
+        # type: (*Any, **Any) -> Any
+        # No need to pass the database id now. It will be picked up
+        # automatically through settings.
+        destroy_test_databases()
+        return super(Runner, self).teardown_test_environment(*args, **kwargs)
 
     def run_tests(self, test_labels, extra_tests=None,
                   full_suite=False, **kwargs):
