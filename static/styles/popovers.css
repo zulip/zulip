@@ -29,10 +29,6 @@
     max-width: 200px;
 }
 
-.streams_popover .popover_sub_unsub_button::after {
-    content: " Unsubscribe";
-}
-
 .streams_popover .sp-container {
     background: white;
     cursor: pointer;
