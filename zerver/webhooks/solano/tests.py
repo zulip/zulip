@@ -52,6 +52,14 @@ class SolanoHookTests(WebhookTestCase):
         self.send_and_test_stream_message('received', expected_topic, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
+    def test_solano_test_message(self):
+        # type: () -> None
+        expected_topic = u'build update'
+        expected_message = "Solano webhook set up correctly"
+
+        self.send_and_test_stream_message('test', expected_topic, expected_message,
+                                          content_type="application/x-www-form-urlencoded")
+
     def get_body(self, fixture_name):
         # type: (Text) -> Text
         return self.fixture_data(self.FIXTURE_DIR_NAME, fixture_name, file_type="json")
