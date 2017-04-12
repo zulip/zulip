@@ -2,6 +2,11 @@
 set -e
 set -x
 
+if ! git diff-index --quiet HEAD; then
+    set +x
+    echo "There are uncommitted files. Exiting."
+    exit 1
+fi
 request_id="$1"
 remote=${2:-"upstream"}
 git fetch "$remote" "pull/$request_id/head"
