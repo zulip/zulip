@@ -12,7 +12,8 @@ from django.utils import timezone
 
 from zerver.models import (
     get_client, get_realm, get_recipient, get_stream, get_user_profile_by_email,
-    Message, RealmDomain, Recipient, UserMessage, UserPresence, UserProfile
+    Message, RealmDomain, Recipient, UserMessage, UserPresence, UserProfile,
+    Realm,
 )
 
 from zerver.lib.actions import (
@@ -722,18 +723,27 @@ class EventsRegisterTest(ZulipTestCase):
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
-    def test_change_message_retention_days(self):
-        # type: () -> None
-        self.do_set_realm_property_test("message_retention_days", [30])
+    def do_set_realm_property_test(self, name):
+        # type: (str) -> None
+        bool_tests = [True, False, True]  # type: List[bool]
+        test_values = dict(
+            add_emoji_by_admins_only=bool_tests,
+            create_stream_by_admins_only=bool_tests,
+            default_language=[u'es', u'de', u'en'],
+            description=[u'Realm description', u'New description'],
+            email_changes_disabled=bool_tests,
+            invite_required=bool_tests,
+            invite_by_admins_only=bool_tests,
+            inline_image_preview=bool_tests,
+            inline_url_embed_preview=bool_tests,
+            message_retention_days=[10, 20],
+            name=[u'Zulip', u'New Name'],
+            name_changes_disabled=bool_tests,
+            restricted_to_domain=bool_tests,
+            waiting_period_threshold=[10, 20],
+        )  # type: Dict[str, Any]
 
-    def test_change_realm_name(self):
-        # type: () -> None
-        self.do_set_realm_property_test('name', [u'New Realm Name'])
-
-    def do_set_realm_property_test(self, name, values_list):
-        # type: (str, List[Union[int, bool, Text]]) -> None
-
-        property_type = self.user_profile.realm.property_types[name]
+        property_type = Realm.property_types[name]
         if property_type is bool:
             validator = check_bool
         elif property_type is Text:
@@ -752,61 +762,21 @@ class EventsRegisterTest(ZulipTestCase):
             ('value', validator),
         ])
 
-        if property_type == bool:
-            do_set_realm_property(self.user_profile.realm, name, False)
-        for value in values_list:
+        vals = test_values.get(name)
+        if vals is None:
+            raise AssertionError('No test created for %s' % (name))
+        do_set_realm_property(self.user_profile.realm, name, vals[0])
+        for val in vals[1:]:
             events = self.do_test(
-                lambda: do_set_realm_property(self.user_profile.realm, name, value))
+                lambda: do_set_realm_property(self.user_profile.realm, name, val))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
-    def test_change_realm_description(self):
+    def test_change_realm_property(self):
         # type: () -> None
-        self.do_set_realm_property_test('description', [u'New Realm Description'])
 
-    def test_change_realm_waiting_period_threshold(self):
-        # type: () -> None
-        self.do_set_realm_property_test('waiting_period_threshold', [17])
-
-    def test_change_realm_default_language(self):
-        # type: () -> None
-        self.do_set_realm_property_test('default_language', [u'de'])
-
-    def test_change_realm_add_emoji_by_admins_only(self):
-        # type: () -> None
-        self.do_set_realm_property_test('add_emoji_by_admins_only', [True, False])
-
-    def test_change_realm_restricted_to_domain(self):
-        # type: () -> None
-        self.do_set_realm_property_test('restricted_to_domain', [True, False])
-
-    def test_change_realm_invite_required(self):
-        # type: () -> None
-        self.do_set_realm_property_test('invite_required', [True, False])
-
-    def test_change_realm_name_changes_disabled(self):
-        # type: () -> None
-        self.do_set_realm_property_test('name_changes_disabled', [True, False])
-
-    def test_change_realm_email_changes_disabled(self):
-        # type: () -> None
-        self.do_set_realm_property_test('email_changes_disabled', [True, False])
-
-    def test_change_realm_invite_by_admins_only(self):
-        # type: () -> None
-        self.do_set_realm_property_test('invite_by_admins_only', [True, False])
-
-    def test_change_realm_inline_image_preview(self):
-        # type: () -> None
-        self.do_set_realm_property_test('inline_image_preview', [True, False])
-
-    def test_change_realm_inline_url_embed_preview(self):
-        # type: () -> None
-        self.do_set_realm_property_test('inline_url_embed_preview', [True, False])
-
-    def test_change_realm_create_stream_by_admins_only(self):
-        # type: () -> None
-        self.do_set_realm_property_test('create_stream_by_admins_only', [True, False])
+        for prop in Realm.property_types:
+            self.do_set_realm_property_test(prop)
 
     def test_change_realm_authentication_methods(self):
         # type: () -> None
