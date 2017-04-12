@@ -54,30 +54,29 @@ def get_chart_data(request, user_profile, chart_name=REQ(),
     if chart_name == 'number_of_humans':
         stat = COUNT_STATS['active_users:is_bot:day']
         tables = [RealmCount]
-        subgroups = ['false', 'true']
-        labels = ['human', 'bot']
+        subgroup_to_label = {'false': 'human', 'true': 'bot'}
         labels_sort_function = None
         include_empty_subgroups = True
     elif chart_name == 'messages_sent_over_time':
         stat = COUNT_STATS['messages_sent:is_bot:hour']
         tables = [RealmCount, UserCount]
-        subgroups = ['false', 'true']
-        labels = ['human', 'bot']
+        subgroup_to_label = {'false': 'human', 'true': 'bot'}
         labels_sort_function = None
         include_empty_subgroups = True
     elif chart_name == 'messages_sent_by_message_type':
         stat = COUNT_STATS['messages_sent:message_type:day']
         tables = [RealmCount, UserCount]
-        subgroups = ['public_stream', 'private_stream', 'private_message', 'huddle_message']
-        labels = ['Public streams', 'Private streams', 'Private messages', 'Group private messages']
+        subgroup_to_label = {'public_stream': 'Public streams',
+                             'private_stream': 'Private streams',
+                             'private_message': 'Private messages',
+                             'huddle_message': 'Group private messages'}
         labels_sort_function = lambda data: sort_by_totals(data['realm'])
         include_empty_subgroups = True
     elif chart_name == 'messages_sent_by_client':
         stat = COUNT_STATS['messages_sent:client:day']
         tables = [RealmCount, UserCount]
-        subgroups = [str(x) for x in Client.objects.values_list('id', flat=True).order_by('id')]
-        # these are further re-written by client_label_map
-        labels = list(Client.objects.values_list('name', flat=True).order_by('id'))
+        # Note that the labels are further re-written by client_label_map
+        subgroup_to_label = {str(id): name for id, name in Client.objects.values_list('id', 'name')}
         labels_sort_function = sort_client_labels
         include_empty_subgroups = False
     else:
@@ -106,10 +105,10 @@ def get_chart_data(request, user_profile, chart_name=REQ(),
     for table in tables:
         if table == RealmCount:
             data['realm'] = get_time_series_by_subgroup(
-                stat, RealmCount, realm.id, end_times, subgroups, labels, include_empty_subgroups)
+                stat, RealmCount, realm.id, end_times, subgroup_to_label, include_empty_subgroups)
         if table == UserCount:
             data['user'] = get_time_series_by_subgroup(
-                stat, UserCount, user_profile.id, end_times, subgroups, labels, include_empty_subgroups)
+                stat, UserCount, user_profile.id, end_times, subgroup_to_label, include_empty_subgroups)
     if labels_sort_function is not None:
         data['display_order'] = labels_sort_function(data)
     else:
@@ -189,18 +188,15 @@ def rewrite_client_arrays(value_arrays):
             mapped_arrays[mapped_label] = [value_arrays[label][i] for i in range(0, len(array))]
     return mapped_arrays
 
-def get_time_series_by_subgroup(stat, table, key_id, end_times, subgroups, labels, include_empty_subgroups):
-    # type: (CountStat, Type[BaseCount], Optional[int], List[datetime], List[str], List[str], bool) -> Dict[str, List[int]]
-    if len(subgroups) != len(labels):
-        raise AssertionError("subgroups and labels have lengths %s and %s, which are different." %
-                             (len(subgroups), len(labels)))
+def get_time_series_by_subgroup(stat, table, key_id, end_times, subgroup_to_label, include_empty_subgroups):
+    # type: (CountStat, Type[BaseCount], Optional[int], List[datetime], Dict[str, str], bool) -> Dict[str, List[int]]
     queryset = table_filtered_to_id(table, key_id).filter(property=stat.property) \
                                                   .values_list('subgroup', 'end_time', 'value')
     value_dicts = defaultdict(lambda: defaultdict(int)) # type: Dict[Optional[str], Dict[datetime, int]]
     for subgroup, end_time, value in queryset:
         value_dicts[subgroup][end_time] = value
     value_arrays = {}
-    for subgroup, label in zip(subgroups, labels):
+    for subgroup, label in subgroup_to_label.items():
         if (subgroup in value_dicts) or include_empty_subgroups:
             value_arrays[label] = [value_dicts[subgroup][end_time] for end_time in end_times]
 
