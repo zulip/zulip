@@ -20,6 +20,7 @@
     var cacheOptions = {
         enabled: true,
         prefix: 'i18next:' + page_params.server_generation + ':',
+        expirationTime: 2*7*24*60*60*1000,  // 2 weeks
     };
 
     i18n.use(XHR)
