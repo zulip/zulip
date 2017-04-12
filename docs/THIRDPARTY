@@ -38,6 +38,10 @@ Files: confirmation/*
 Copyright: 2008, Jarek Zgoda <jarek.zgoda@gmail.com>
 License: BSD-3-Clause
 
+Files: docs/code-of-conduct.md
+Copyright: 2017, Kandra Labs Inc.
+License: CC-BY-SA-4.0
+
 Files: puppet/apt/*
 Copyright: 2011, Evolving Web Inc.
 License: Expat
