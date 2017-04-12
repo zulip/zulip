@@ -433,10 +433,15 @@ def active_humans_in_realm(realm):
 
 def do_set_realm_property(realm, name, value):
     # type: (Realm, str, Union[Text, bool, int]) -> None
-    """Takes in a realm object, the name of an attribute to update, and the value to update.
+    """Takes in a realm object, the name of an attribute to update, and the
+    value to update.
     """
     property_type = Realm.property_types[name]
-    assert isinstance(value, property_type)
+    if name != 'message_retention_days':
+        assert isinstance(value, property_type), (
+            'Cannot update %s: %s is not an instance of %s' % (
+                name, value, property_type,))
+
     setattr(realm, name, value)
     realm.save(update_fields=[name])
     event = dict(

@@ -5,7 +5,7 @@ import ujson
 
 from django.http import HttpResponse
 from mock import patch
-from typing import Any, Dict, List, Text
+from typing import Any, Dict, List, Text, Union
 
 from zerver.lib.actions import (
     do_change_is_admin,
@@ -102,123 +102,6 @@ class RealmTest(ZulipTestCase):
         realm = get_realm('zulip')
         self.assertNotEqual(realm.description, new_description)
 
-    def test_update_realm_api(self):
-        # type: () -> None
-        new_name = u'Zulip: Worldwide Exporter of APIs'
-
-        email = 'cordelia@zulip.com'
-        self.login(email)
-        user_profile = get_user_profile_by_email(email)
-        do_change_is_admin(user_profile, True)
-
-        def set_up_db(attr, value):
-            # type: (str, Any) -> None
-            realm = get_realm('zulip')
-            setattr(realm, attr, value)
-            realm.save()
-
-        def update_with_api(**kwarg):
-            # type: (**Any) -> Realm
-            params = {k: ujson.dumps(v) for k, v in kwarg.items()}
-            result = self.client_patch('/json/realm', params)
-            self.assert_json_success(result)
-            return get_realm('zulip') # refresh data
-
-        # name
-        realm = update_with_api(name=new_name)
-        self.assertEqual(realm.name, new_name)
-
-        # restricted
-        set_up_db('restricted_to_domain', False)
-        realm = update_with_api(restricted_to_domain=True)
-        self.assertEqual(realm.restricted_to_domain, True)
-        realm = update_with_api(restricted_to_domain=False)
-        self.assertEqual(realm.restricted_to_domain, False)
-
-        # invite_required
-        set_up_db('invite_required', False)
-        realm = update_with_api(invite_required=True)
-        self.assertEqual(realm.invite_required, True)
-        realm = update_with_api(invite_required=False)
-        self.assertEqual(realm.invite_required, False)
-
-        # invite_by_admins_only
-        set_up_db('invite_by_admins_only', False)
-        realm = update_with_api(invite_by_admins_only=True)
-        self.assertEqual(realm.invite_by_admins_only, True)
-        realm = update_with_api(invite_by_admins_only=False)
-        self.assertEqual(realm.invite_by_admins_only, False)
-
-        # inline_image_preview
-        set_up_db('inline_image_preview', True)
-        realm = update_with_api(inline_image_preview=False)
-        self.assertEqual(realm.inline_image_preview, False)
-        realm = update_with_api(inline_image_preview=True)
-        self.assertEqual(realm.inline_image_preview, True)
-
-        # inline_url_embed_preview
-        set_up_db('inline_url_embed_preview', False)
-        realm = update_with_api(inline_url_embed_preview=True)
-        self.assertEqual(realm.inline_url_embed_preview, True)
-        realm = update_with_api(inline_url_embed_preview=False)
-        self.assertEqual(realm.inline_url_embed_preview, False)
-
-        # create_stream_by_admins_only
-        set_up_db('create_stream_by_admins_only', False)
-        realm = update_with_api(create_stream_by_admins_only=True)
-        self.assertEqual(realm.create_stream_by_admins_only, True)
-        realm = update_with_api(create_stream_by_admins_only=False)
-        self.assertEqual(realm.create_stream_by_admins_only, False)
-
-        # email address change disabled
-        set_up_db('name_changes_disabled', False)
-        realm = update_with_api(name_changes_disabled=True)
-        self.assertEqual(realm.name_changes_disabled, True)
-        realm = update_with_api(name_changes_disabled=False)
-        self.assertEqual(realm.name_changes_disabled, False)
-
-        # email address change disabled
-        set_up_db('email_changes_disabled', False)
-        realm = update_with_api(email_changes_disabled=True)
-        self.assertEqual(realm.email_changes_disabled, True)
-        realm = update_with_api(email_changes_disabled=False)
-        self.assertEqual(realm.email_changes_disabled, False)
-
-        # add_emoji_by_admins_only
-        set_up_db('add_emoji_by_admins_only', False)
-        realm = update_with_api(add_emoji_by_admins_only=True)
-        self.assertEqual(realm.add_emoji_by_admins_only, True)
-        realm = update_with_api(add_emoji_by_admins_only=False)
-        self.assertEqual(realm.add_emoji_by_admins_only, False)
-
-        # allow_message_editing
-        set_up_db('allow_message_editing', False)
-        set_up_db('message_content_edit_limit_seconds', 0)
-        realm = update_with_api(allow_message_editing=True,
-                                message_content_edit_limit_seconds=100)
-        self.assertEqual(realm.allow_message_editing, True)
-        self.assertEqual(realm.message_content_edit_limit_seconds, 100)
-        realm = update_with_api(allow_message_editing=False)
-        self.assertEqual(realm.allow_message_editing, False)
-        self.assertEqual(realm.message_content_edit_limit_seconds, 100)
-        realm = update_with_api(message_content_edit_limit_seconds=200)
-        self.assertEqual(realm.allow_message_editing, False)
-        self.assertEqual(realm.message_content_edit_limit_seconds, 200)
-
-        # waiting_period_threshold
-        set_up_db('waiting_period_threshold', 10)
-        realm = update_with_api(waiting_period_threshold=20)
-        self.assertEqual(realm.waiting_period_threshold, 20)
-        realm = update_with_api(waiting_period_threshold=10)
-        self.assertEqual(realm.waiting_period_threshold, 10)
-
-        # retention_period
-        set_up_db('message_retention_days', 10)
-        realm = update_with_api(message_retention_days=20)
-        self.assertEqual(realm.message_retention_days, 20)
-        realm = update_with_api(message_retention_days=10)
-        self.assertEqual(realm.message_retention_days, 10)
-
     def test_admin_restrictions_for_changing_realm_name(self):
         # type: () -> None
         new_name = 'Mice will play while the cat is away'
@@ -282,3 +165,82 @@ class RealmTest(ZulipTestCase):
         self.assert_json_error(result, "Invalid language '%s'" % (invalid_lang,))
         realm = get_realm('zulip')
         self.assertNotEqual(realm.default_language, invalid_lang)
+
+
+class RealmAPITest(ZulipTestCase):
+
+    def setUp(self):
+        # type: () -> None
+        email = 'cordelia@zulip.com'
+        self.login(email)
+        user_profile = get_user_profile_by_email(email)
+        do_change_is_admin(user_profile, True)
+
+    def set_up_db(self, attr, value):
+        # type: (str, Any) -> None
+        realm = get_realm('zulip')
+        setattr(realm, attr, value)
+        realm.save()
+
+    def update_with_api(self, name, value):
+        # type: (str, Union[Text, int, bool]) -> Realm
+        result = self.client_patch('/json/realm', {name: ujson.dumps(value)})
+        self.assert_json_success(result)
+        return get_realm('zulip') # refresh data
+
+    def do_test_realm_update_api(self, name):
+        # type: (str) -> None
+        """Test updating realm properties.
+
+        If new realm properties have been added to the Realm model but the
+        test_values dict below has not been updated, this will raise an
+        assertion error.
+        """
+
+        bool_tests = [False, True] # type: List[bool]
+        test_values = dict(
+            add_emoji_by_admins_only=bool_tests,
+            create_stream_by_admins_only=bool_tests,
+            default_language=[u'de', u'en'],
+            description=[u'Realm description', u'New description'],
+            email_changes_disabled=bool_tests,
+            invite_required=bool_tests,
+            invite_by_admins_only=bool_tests,
+            inline_image_preview=bool_tests,
+            inline_url_embed_preview=bool_tests,
+            message_retention_days=[10, 20],
+            name=[u'Zulip', u'New Name'],
+            name_changes_disabled=bool_tests,
+            restricted_to_domain=bool_tests,
+            waiting_period_threshold=[10, 20],
+        ) # type: Dict[str, Any]
+        vals = test_values.get(name)
+        if vals is None:
+            raise AssertionError('No test created for %s' % (name))
+
+        self.set_up_db(name, vals[0])
+        realm = self.update_with_api(name, vals[1])
+        self.assertEqual(getattr(realm, name), vals[1])
+        realm = self.update_with_api(name, vals[0])
+        self.assertEqual(getattr(realm, name), vals[0])
+
+    def test_update_realm_properties(self):
+        # type: () -> None
+        for prop in Realm.property_types:
+            self.do_test_realm_update_api(prop)
+
+    def test_update_realm_allow_message_editing(self):
+        # type: () -> None
+        """Tests updating the realm property 'allow_message_editing'."""
+        self.set_up_db('allow_message_editing', False)
+        self.set_up_db('message_content_edit_limit_seconds', 0)
+        realm = self.update_with_api('allow_message_editing', True)
+        realm = self.update_with_api('message_content_edit_limit_seconds', 100)
+        self.assertEqual(realm.allow_message_editing, True)
+        self.assertEqual(realm.message_content_edit_limit_seconds, 100)
+        realm = self.update_with_api('allow_message_editing', False)
+        self.assertEqual(realm.allow_message_editing, False)
+        self.assertEqual(realm.message_content_edit_limit_seconds, 100)
+        realm = self.update_with_api('message_content_edit_limit_seconds', 200)
+        self.assertEqual(realm.allow_message_editing, False)
+        self.assertEqual(realm.message_content_edit_limit_seconds, 200)
