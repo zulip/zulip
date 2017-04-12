@@ -19,7 +19,7 @@
 
     var cacheOptions = {
         enabled: true,
-        prefix: page_params.server_generation + ':',
+        prefix: 'i18next:' + page_params.server_generation + ':',
     };
 
     i18n.use(XHR)
