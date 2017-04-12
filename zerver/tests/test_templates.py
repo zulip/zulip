@@ -216,8 +216,8 @@ class TemplateTestCase(ZulipTestCase):
 
     def test_custom_terms_of_service_template(self):
         # type: () -> None
-        not_configured_message = 'This Zulip server does not have a configured ' \
-                                 '<strong>terms of service</strong>'
+        not_configured_message = 'This installation of Zulip does not have a configured ' \
+                                 'terms of service'
         with self.settings(TERMS_OF_SERVICE=None):
             response = self.client_get('/terms/')
         self.assert_in_success_response([not_configured_message], response)
@@ -228,8 +228,8 @@ class TemplateTestCase(ZulipTestCase):
 
     def test_custom_privacy_policy_template(self):
         # type: () -> None
-        not_configured_message = 'This Zulip server does not have a configured ' \
-                                 '<strong>privacy policy</strong>'
+        not_configured_message = 'This installation of Zulip does not have a configured ' \
+                                 'privacy policy'
         with self.settings(PRIVACY_POLICY=None):
             response = self.client_get('/privacy/')
         self.assert_in_success_response([not_configured_message], response)
