@@ -143,6 +143,12 @@ exports.show_info_overlay = function (target) {
     if (target) {
         components.toggle.lookup("info-overlay-toggle").goto(target);
     }
+
+    $(".overlay-modal:not(.hide)").find(".modal-body").focus();
+};
+
+exports.is_info_overlay = function () {
+    return ($(".informational-overlays").hasClass("show"));
 };
 
 var loading_more_messages_indicator_showing = false;
