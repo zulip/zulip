@@ -156,7 +156,7 @@ class Realm(ModelReprMixin, models.Model):
         name_changes_disabled=bool,
         restricted_to_domain=bool,
         waiting_period_threshold=int,
-    )
+    )  # type: Dict[str, Union[type, Tuple[type, ...]]]
 
     ICON_FROM_GRAVATAR = u'G'
     ICON_UPLOADED = u'U'
