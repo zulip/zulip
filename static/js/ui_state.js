@@ -10,6 +10,10 @@ exports.home_tab_obscured = function () {
     return false;
 };
 
+exports.is_info_overlay = function () {
+    return ($(".informational-overlays").hasClass("show"));
+};
+
 return exports;
 
 }());

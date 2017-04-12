@@ -124,6 +124,7 @@ $(document).ready(function () {
         callback: function (name, key) {
             $(".overlay-modal").hide();
             $("#" + key).show();
+            $("#" + key).find(".modal-body").focus();
         },
     }).get();
 
