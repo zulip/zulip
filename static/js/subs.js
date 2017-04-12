@@ -349,7 +349,7 @@ function show_subscription_settings(sub_row) {
                 (item.full_name.toLowerCase().indexOf(query) !== -1);
         },
         sorter: function (matches) {
-            var current_stream = compose.stream_name();
+            var current_stream = compose.stream_name_get();
             return typeahead_helper.sort_recipientbox_typeahead(
                 this.query, matches, current_stream);
         },

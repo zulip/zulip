@@ -359,7 +359,8 @@ exports.initialize_compose_typeahead = function (selector, completions) {
             if (this.completing === 'emoji') {
                 return typeahead_helper.sort_emojis(matches, this.token);
             } else if (this.completing === 'mention') {
-                return typeahead_helper.sort_recipients(matches, this.token, compose.stream_name());
+                var stream_name = compose.stream_name_get();
+                return typeahead_helper.sort_recipients(matches, this.token, stream_name);
             } else if (this.completing === 'stream') {
                 return typeahead_helper.sort_streams(matches, this.token);
             }
@@ -468,7 +469,7 @@ exports.initialize = function () {
             return query_matches_person(current_recipient, item);
         },
         sorter: function (matches) {
-            var current_stream = compose.stream_name();
+            var current_stream = compose.stream_name_get();
             return typeahead_helper.sort_recipientbox_typeahead(
                 this.query, matches, current_stream);
         },

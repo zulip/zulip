@@ -24,7 +24,7 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
     if (save_compose) {
         if (compose_state.composing() === 'stream') {
             url += "+msg_type=stream";
-            url += "+stream=" + encodeURIComponent(compose.stream_name());
+            url += "+stream=" + encodeURIComponent(compose.stream_name_get());
             url += "+subject=" + encodeURIComponent(compose.subject());
         } else if (compose_state.composing() === 'private') {
             url += "+msg_type=private";
