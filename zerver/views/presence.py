@@ -35,7 +35,7 @@ def get_presence_backend(request, user_profile, email):
     if not target.is_active:
         return json_error(_('No such user'))
     if target.is_bot:
-        return json_error(_('No presence for bot users'))
+        return json_error(_('Presence is not supported for bot users.'))
 
     presence_dict = UserPresence.get_status_dict_by_user(target)
     if len(presence_dict) == 0:
