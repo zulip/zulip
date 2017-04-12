@@ -128,13 +128,11 @@ class TestGetChartData(ZulipTestCase):
         # type: () -> None
         stat = COUNT_STATS['messages_sent:client:day']
         client1 = Client.objects.create(name='client 1')
-        _client1 = Client.objects.create(name='_client 1')
         client2 = Client.objects.create(name='client 2')
         client3 = Client.objects.create(name='client 3')
-        _client3 = Client.objects.create(name='_client 3')
         client4 = Client.objects.create(name='client 4')
         self.insert_data(stat, [client4.id, client3.id, client2.id],
-                         [client1.id, _client1.id, client4.id, _client3.id])
+                         [client3.id, client1.id])
         result = self.client_get('/json/analytics/chart_data',
                                  {'chart_name': 'messages_sent_by_client'})
         self.assert_json_success(result)
@@ -146,8 +144,7 @@ class TestGetChartData(ZulipTestCase):
             'interval': CountStat.DAY,
             'realm': {'client 4': self.data(100), 'client 3': self.data(101),
                       'client 2': self.data(102)},
-            'user': {'client 1': self.data(401), 'client 4': self.data(202),
-                     'client 3': self.data(203)},
+            'user': {'client 3': self.data(200), 'client 1': self.data(201)},
             'display_order': ['client 1', 'client 2', 'client 3', 'client 4'],
             'result': 'success',
         })

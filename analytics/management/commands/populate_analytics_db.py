@@ -52,7 +52,6 @@ class Command(BaseCommand):
         do_drop_all_analytics_tables()
         # I believe this also deletes any objects with this realm as a foreign key
         Realm.objects.filter(string_id='analytics').delete()
-        Client.objects.filter(name__startswith='_').delete()
 
         installation_time = timezone.now() - timedelta(days=self.DAYS_OF_DATA)
         last_end_time = floor_to_day(timezone.now())
@@ -107,22 +106,20 @@ class Command(BaseCommand):
         FillState.objects.create(property=stat.property, end_time=last_end_time,
                                  state=FillState.DONE)
 
-        # We use client names that start with _ to make it easy to
-        # drop just these data manually without affecting other data.
-        website = Client.objects.create(name='_Website')
-        old_desktop = Client.objects.create(name='_Old desktop app')
-        android = Client.objects.create(name='_Android app')
-        iOS = Client.objects.create(name='_Old iOS app')
-        react_native = Client.objects.create(name='_New iOS app')
-        API = Client.objects.create(name='_Python API')
-        barnowl = Client.objects.create(name='_Barnowl')
-        unused = Client.objects.create(name='_Unused webhook')
-        long_webhook = Client.objects.create(name='_Webhook with loooooooong name')
+        website, created = Client.objects.get_or_create(name='website')
+        old_desktop, created = Client.objects.get_or_create(name='desktop app Linux 0.3.7')
+        android, created = Client.objects.get_or_create(name='ZulipAndroid')
+        iOS, created = Client.objects.get_or_create(name='ZulipiOS')
+        react_native, created = Client.objects.get_or_create(name='ZulipMobile')
+        API, created = Client.objects.get_or_create(name='API: Python')
+        zephyr_mirror, created = Client.objects.get_or_create(name='zephyr_mirror')
+        unused, created = Client.objects.get_or_create(name='unused')
+        long_webhook, created = Client.objects.get_or_create(name='ZulipLooooooooooongNameWebhook')
 
         stat = COUNT_STATS['messages_sent:client:day']
         user_data = {
             website.id: self.generate_fixture_data(stat, 2, 1, 1.5, .6, 8),
-            barnowl.id: self.generate_fixture_data(stat, 0, .3, 1.5, .6, 8)}
+            zephyr_mirror.id: self.generate_fixture_data(stat, 0, .3, 1.5, .6, 8)}
         insert_fixture_data(stat, user_data, UserCount)
         realm_data = {
             website.id: self.generate_fixture_data(stat, 30, 20, 5, .6, 3),
@@ -131,7 +128,7 @@ class Command(BaseCommand):
             iOS.id: self.generate_fixture_data(stat, 5, 5, 2, .6, 3),
             react_native.id: self.generate_fixture_data(stat, 5, 5, 10, .6, 3),
             API.id: self.generate_fixture_data(stat, 5, 5, 5, .6, 3),
-            barnowl.id: self.generate_fixture_data(stat, 1, 1, 3, .6, 3),
+            zephyr_mirror.id: self.generate_fixture_data(stat, 1, 1, 3, .6, 3),
             unused.id: self.generate_fixture_data(stat, 0, 0, 0, 0, 0),
             long_webhook.id: self.generate_fixture_data(stat, 5, 5, 2, .6, 3)}
         insert_fixture_data(stat, realm_data, RealmCount)
