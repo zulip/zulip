@@ -69,17 +69,14 @@
             <li><a href="{{ server_uri }}/hello">{{ _('About') }}</a></li>
             {% endif %}
 
-            {% if terms_of_service %}
-                {% if about_link_disabled %}
-                {% else %}
-                <li><span class="little-bullet">·</span></li>
-                {% endif %}
-
-                <li><a href="{{ server_uri }}/terms">{{ _('Legal') }}</a></li>
-                <li><span class="little-bullet">·</span></li>
-                <li><a href="{{ server_uri }}/privacy">{{ _('Privacy') }}</a></li>
+            {% if about_link_disabled %}
+            {% else %}
+            <li><span class="little-bullet">·</span></li>
             {% endif %}
 
+            <li><a href="{{ server_uri }}/terms">{{ _('Legal') }}</a></li>
+            <li><span class="little-bullet">·</span></li>
+            <li><a href="{{ server_uri }}/privacy">{{ _('Privacy') }}</a></li>
             <li><span class="little-bullet">·</span></li>
             <li><a href="{{ server_uri }}/features">{{ _('Features') }}</a></li>
             <li><span class="little-bullet">·</span></li>

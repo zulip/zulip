@@ -378,6 +378,13 @@ class ZulipTestCase(TestCase):
         for substring in substrings:
             self.assertIn(substring, decoded)
 
+    def assert_not_in_success_response(self, substrings, response):
+        # type: (List[Text], HttpResponse) -> None
+        self.assertEqual(response.status_code, 200)
+        decoded = response.content.decode('utf-8')
+        for substring in substrings:
+            self.assertNotIn(substring, decoded)
+
     def fixture_data(self, type, action, file_type='json'):
         # type: (Text, Text, Text) -> Text
         return force_text(open(os.path.join(os.path.dirname(__file__),

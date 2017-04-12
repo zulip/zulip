@@ -43,6 +43,7 @@ def add_settings(request):
         'show_oss_announcement': settings.SHOW_OSS_ANNOUNCEMENT,
         'zulip_admin': settings.ZULIP_ADMINISTRATOR,
         'terms_of_service': settings.TERMS_OF_SERVICE,
+        'privacy_policy': settings.PRIVACY_POLICY,
         'login_url': settings.HOME_NOT_LOGGED_IN,
         'only_sso': settings.ONLY_SSO,
         'external_api_path': settings.EXTERNAL_API_PATH,

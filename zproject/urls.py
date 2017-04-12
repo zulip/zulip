@@ -144,12 +144,14 @@ i18n_urls = [
     url(r'^new-user/$', RedirectView.as_view(url='/hello', permanent=True)),
     url(r'^features/$', TemplateView.as_view(template_name='zerver/features.html')),
     url(r'^find_my_team/$', zerver.views.registration.find_my_team, name='zerver.views.registration.find_my_team'),
-    url(r'^authors/$', zerver.views.users.authors_view, name='zerver.views.users.authors_view')
-]
+    url(r'^authors/$', zerver.views.users.authors_view, name='zerver.views.users.authors_view'),
 
-# If a Terms of Service is supplied, add that route
-if settings.TERMS_OF_SERVICE is not None:
-    i18n_urls += [url(r'^terms/$', TemplateView.as_view(template_name='zerver/terms.html'))]
+    # Terms of service page.
+    url(r'^terms/$', TemplateView.as_view(template_name='zerver/terms.html'), name='terms'),
+
+    # Privacy page.
+    url(r'^privacy/$', TemplateView.as_view(template_name='zerver/privacy.html'), name='privacy')
+]
 
 # Make a copy of i18n_urls so that they appear without prefix for english
 urls = list(i18n_urls)
