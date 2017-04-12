@@ -76,7 +76,13 @@ exports.stream_sidebar = (function () {
             blueslip.warn('Cannot remove stream id ' + stream_id);
             return;
         }
+
         widget.remove();
+        var $hr = $("#stream_filters hr");
+
+        if ($hr.prev().length === 0) {
+            $hr.remove();
+        }
         self.rows.del(stream_id);
     };
 
