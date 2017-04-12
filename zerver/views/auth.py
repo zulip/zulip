@@ -19,14 +19,14 @@ from typing import Any, Dict, List, Optional, Tuple, Text
 from confirmation.models import Confirmation
 from zerver.forms import HomepageForm, OurAuthenticationForm, \
     WRONG_SUBDOMAIN_ERROR
-
+from zerver.models import get_user_profile_by_email
 from zerver.lib.request import REQ, has_request_variables, JsonableError
 from zerver.lib.response import json_success, json_error
 from zerver.lib.utils import get_subdomain, is_subdomain_root_or_alias
 from zerver.models import PreregistrationUser, UserProfile, remote_user_to_email, Realm
 from zerver.views.registration import create_preregistration_user, get_realm_from_request, \
     redirect_and_log_into_subdomain
-from zproject.backends import password_auth_enabled, dev_auth_enabled, google_auth_enabled
+from zproject.backends import password_auth_enabled, dev_auth_enabled, google_auth_enabled, github_auth_enabled
 from version import ZULIP_VERSION
 
 import hashlib
@@ -169,7 +169,10 @@ def redirect_to_main_site(request, url):
         settings.EXTERNAL_HOST,
         url,
     ))
-    params = {'subdomain': get_subdomain(request)}
+    params = {
+        'subdomain': get_subdomain(request),
+        'is_mobile_flow': request.GET.get('is_mobile_flow', 0),
+    }
     return redirect(main_site_uri + '?' + urllib.parse.urlencode(params))
 
 def start_social_login(request, backend):
@@ -180,19 +183,22 @@ def start_social_login(request, backend):
 def send_oauth_request_to_google(request):
     # type: (HttpRequest) -> HttpResponse
     subdomain = request.GET.get('subdomain', '')
+    is_mobile_flow = request.GET.get('is_mobile_flow', 0)
+
     if settings.REALMS_HAVE_SUBDOMAINS:
         if not subdomain or not Realm.objects.filter(string_id=subdomain).exists():
             return redirect_to_subdomain_login_url()
 
     google_uri = 'https://accounts.google.com/o/oauth2/auth?'
     cur_time = str(int(time.time()))
-    csrf_state = '{}:{}:{}'.format(
+    csrf_state = '{}:{}:{}:{}'.format(
         cur_time,
         google_oauth2_csrf(request, cur_time + subdomain),
-        subdomain
+        subdomain,
+        is_mobile_flow,
     )
 
-    prams = {
+    params = {
         'response_type': 'code',
         'client_id': settings.GOOGLE_OAUTH2_CLIENT_ID,
         'redirect_uri': ''.join((
@@ -203,7 +209,7 @@ def send_oauth_request_to_google(request):
         'scope': 'profile email',
         'state': csrf_state,
     }
-    return redirect(google_uri + urllib.parse.urlencode(prams))
+    return redirect(google_uri + urllib.parse.urlencode(params))
 
 def finish_google_oauth2(request):
     # type: (HttpRequest) -> HttpResponse
@@ -215,11 +221,11 @@ def finish_google_oauth2(request):
         return HttpResponse(status=400)
 
     csrf_state = request.GET.get('state')
-    if csrf_state is None or len(csrf_state.split(':')) != 3:
+    if csrf_state is None or len(csrf_state.split(':')) != 4:
         logging.warning('Missing Google oauth2 CSRF state')
         return HttpResponse(status=400)
 
-    value, hmac_value, subdomain = csrf_state.split(':')
+    value, hmac_value, subdomain, is_mobile_flow = csrf_state.split(':')
     if hmac_value != google_oauth2_csrf(request, value + subdomain):
         logging.warning('Google oauth2 CSRF error')
         return HttpResponse(status=400)
@@ -273,9 +279,23 @@ def finish_google_oauth2(request):
         return HttpResponse(status=400)
 
     email_address = email['value']
+
+    # For mobile apps, we redirect to a custom URI scheme
+    if is_mobile_flow:
+        user_profile = get_user_profile_by_email(email_address)
+        params = {
+            'realm': user_profile.realm.uri,
+            'api_key': user_profile.api_key,
+            'email': email_address,
+        }
+        response = HttpResponse('', status=302)
+        response['Location'] = 'zulip://login?' + urllib.parse.urlencode(params)
+        return response
+
     if not subdomain:
         # When request was not initiated from subdomain.
         user_profile, return_data = authenticate_remote_user(request, email_address)
+
         invalid_subdomain = bool(return_data.get('invalid_subdomain'))
         return login_or_register_remote_user(request, email_address, user_profile,
                                              full_name, invalid_subdomain)
@@ -479,6 +499,7 @@ def api_get_auth_backends(request):
     return json_success({"password": password_auth_enabled(realm),
                          "dev": dev_auth_enabled(realm),
                          "google": google_auth_enabled(realm),
+                         "github": github_auth_enabled(realm),
                          "zulip_version": ZULIP_VERSION,
                          })
 
