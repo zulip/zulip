@@ -100,6 +100,11 @@ CACHES['database'] = {
 if CASPER_TESTS:
     # Don't auto-restart Tornado server during casper tests
     AUTORELOAD = False
+    LOGGING['loggers']['django.request'] = {
+        'handlers': ['console'],
+        'level': 'INFO',
+        'propagate': False
+    }
 else:
     # Use local memory cache for backend tests.
     CACHES['default'] = {
