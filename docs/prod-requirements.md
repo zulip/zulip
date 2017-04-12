@@ -14,7 +14,7 @@ and an authentication mechanism.  Or, you can check out the
 
 * CPU and Memory: For installations with 100+ users you'll need a
   minimum of **2 CPUs** and **4GB RAM**. For installations with fewer
-  users, 1 CPU and 2GB RAM is sufficient. We strong recommend against
+  users, 1 CPU and 2GB RAM is sufficient. We strongly recommend against
   installing with less than 2GB of RAM, as you will likely experience
   out of memory issues installing dependencies.  We recommend against
   using highly CPU-limited servers like the AWS `t2` style instances
