@@ -99,7 +99,7 @@ exports.mark_subscribed = function (sub, subscribers, color) {
 
     subs.update_settings_for_subscribed(sub);
 
-    if (current_msg_list.narrowed) {
+    if (narrow.is_for_stream_id(sub.stream_id)) {
         current_msg_list.update_trailing_bookend();
     }
 
@@ -124,7 +124,7 @@ exports.mark_unsubscribed = function (sub) {
         return;
     }
 
-    if (current_msg_list.narrowed) {
+    if (narrow.is_for_stream_id(sub.stream_id)) {
         current_msg_list.update_trailing_bookend();
     }
 
