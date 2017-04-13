@@ -229,8 +229,12 @@ function get_focus_area(msg_type, opts) {
 // Export for testing
 exports._get_focus_area = get_focus_area;
 
-exports.start = function (msg_type, opts) {
+exports.autosize_message_content = function () {
     $("#new_message_content").autosize();
+};
+
+exports.start = function (msg_type, opts) {
+    exports.autosize_message_content();
 
     if (reload.is_in_progress()) {
         return;
