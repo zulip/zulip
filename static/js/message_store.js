@@ -71,22 +71,37 @@ exports.process_message_for_recent_private_messages = function (message) {
     exports.insert_recent_private_message(user_ids_string, message.timestamp);
 };
 
-exports.insert_recent_private_message = function (user_ids_string, timestamp) {
-    // If this conversation is already tracked, we'll replace with new timestamp,
-    // so remove it from the current list.
-    exports.recent_private_messages = _.filter(exports.recent_private_messages,
-                                               function (recent_pm) {
-        return recent_pm.user_ids_string !== user_ids_string;
-    });
+exports.insert_recent_private_message = (function () {
+    var recent_timestamps = new Dict({fold_case: true}); // key is user_ids_string
 
-    var new_conversation = {user_ids_string: user_ids_string,
-                            timestamp: timestamp};
+    return function (user_ids_string, timestamp) {
+        var conversation = recent_timestamps.get(user_ids_string);
 
-    exports.recent_private_messages.push(new_conversation);
-    exports.recent_private_messages.sort(function (a, b) {
-        return b.timestamp - a.timestamp;
-    });
-};
+        if (conversation === undefined) {
+            // This is a new user, so create a new object.
+            conversation = {
+                user_ids_string: user_ids_string,
+                timestamp: timestamp,
+            };
+            recent_timestamps.set(user_ids_string, conversation);
+
+            // Optimistically insert the new message at the front, since that
+            // is usually where it belongs, but we'll re-sort.
+            exports.recent_private_messages.unshift(conversation);
+        } else {
+            if (conversation.timestamp >= timestamp) {
+                return; // don't backdate our conversation
+            }
+
+            // update our timestamp
+            conversation.timestamp = timestamp;
+        }
+
+        exports.recent_private_messages.sort(function (a, b) {
+            return b.timestamp - a.timestamp;
+        });
+    };
+}());
 
 exports.set_topic_edit_properties = function (message) {
     message.always_visible_topic_edit = false;
