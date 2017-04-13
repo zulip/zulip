@@ -304,6 +304,45 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         self.assertEqual(Attachment.objects.get(path_id=d1_path_id).messages.count(), 2)
 
+    def test_multiple_claim_attachments_different_owners(self):
+        # type: () -> None
+        """This test tries to claim the same attachment more than once, first
+        with a private stream and then with differnet recipients."""
+        self.login("hamlet@zulip.com")
+        d1 = StringIO("zulip!")
+        d1.name = "dummy_1.txt"
+        result = self.client_post("/json/upload_file", {'file': d1})
+        json = ujson.loads(result.content)
+        uri = json["uri"]
+        d1_path_id = re.sub('/user_uploads/', '', uri)
+
+        self.make_stream("private_stream", invite_only=True)
+        self.subscribe_to_stream("hamlet@zulip.com", "private_stream")
+
+        # First, send the mesasge to the new private stream.
+        body = "First message ...[zulip.txt](http://localhost:9991/user_uploads/" + d1_path_id + ")"
+        self.send_message("hamlet@zulip.com", "private_stream", Recipient.STREAM, body, "test")
+        self.assertFalse(Attachment.objects.get(path_id=d1_path_id).is_realm_public)
+        self.assertEqual(Attachment.objects.get(path_id=d1_path_id).messages.count(), 1)
+
+        # Then, try having a user who didn't receive the message try to publish it, and fail
+        body = "Illegal message ...[zulip.txt](http://localhost:9991/user_uploads/" + d1_path_id + ")"
+        self.send_message("cordelia@zulip.com", "Denmark", Recipient.STREAM, body, "test")
+        self.assertEqual(Attachment.objects.get(path_id=d1_path_id).messages.count(), 1)
+        self.assertFalse(Attachment.objects.get(path_id=d1_path_id).is_realm_public)
+
+        # Then, have the owner PM it to another user, giving that other user access.
+        body = "Second message ...[zulip.txt](http://localhost:9991/user_uploads/" + d1_path_id + ")"
+        self.send_message("hamlet@zulip.com", "othello@zulip.com", Recipient.PERSONAL, body, "test")
+        self.assertEqual(Attachment.objects.get(path_id=d1_path_id).messages.count(), 2)
+        self.assertFalse(Attachment.objects.get(path_id=d1_path_id).is_realm_public)
+
+        # Then, have that new recipient user publish it.
+        body = "Third message ...[zulip.txt](http://localhost:9991/user_uploads/" + d1_path_id + ")"
+        self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, body, "test")
+        self.assertEqual(Attachment.objects.get(path_id=d1_path_id).messages.count(), 3)
+        self.assertTrue(Attachment.objects.get(path_id=d1_path_id).is_realm_public)
+
     def test_check_attachment_reference_update(self):
         # type: () -> None
         f1 = StringIO("file1")

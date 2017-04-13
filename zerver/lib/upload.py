@@ -488,11 +488,7 @@ def claim_attachment(user_profile, path_id, message, is_message_realm_public):
     try:
         attachment = Attachment.objects.get(path_id=path_id)
         attachment.messages.add(message)
-        # Only the owner of the file has the right to elevate the permissions of a file.
-        # This makes sure that a private file is not accidently made public by another user
-        # by sending a message to a public stream that refers the private file.
-        if attachment.owner == user_profile:
-            attachment.is_realm_public = attachment.is_realm_public or is_message_realm_public
+        attachment.is_realm_public = attachment.is_realm_public or is_message_realm_public
         attachment.save()
         return True
     except Attachment.DoesNotExist:

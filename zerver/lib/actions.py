@@ -41,7 +41,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     ScheduledJob, get_owned_bot_dicts, \
     get_old_unclaimed_attachments, get_cross_realm_emails, \
     Reaction, EmailChangeStatus, CustomProfileField, custom_profile_fields_for_realm, \
-    CustomProfileFieldValue
+    CustomProfileFieldValue, validate_attachment_request
 
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import avatar_url
@@ -3272,10 +3272,13 @@ def do_claim_attachments(message):
         if message.recipient.type == Recipient.STREAM:
             is_message_realm_public = Stream.objects.get(id=message.recipient.type_id).is_public()
 
-        if path_id is not None:
-            is_claimed = claim_attachment(user_profile, path_id, message,
-                                          is_message_realm_public)
-            results.append((path_id, is_claimed))
+        if not validate_attachment_request(user_profile, path_id):
+            logging.warning("User %s does not have permission to access upload %s" % (user_profile.id, path_id,))
+            continue
+
+        is_claimed = claim_attachment(user_profile, path_id, message,
+                                      is_message_realm_public)
+        results.append((path_id, is_claimed))
 
     return results
 
