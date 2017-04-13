@@ -821,6 +821,7 @@ MessageListView.prototype = {
         this._maybe_format_me_message(message_container);
 
         var rendered_msg = $(this._get_message_template(message_container));
+        rendered_msg.addClass("fade-in-message");
         this._post_process_dom_messages(rendered_msg.get());
         row.replaceWith(rendered_msg);
 
