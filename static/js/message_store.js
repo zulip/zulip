@@ -57,8 +57,6 @@ exports.get_pm_full_names = function (message) {
 };
 
 exports.process_message_for_recent_private_messages = function (message) {
-    var current_timestamp = 0;
-
     var user_ids = people.pm_with_user_ids(message);
     if (!user_ids) {
         return;
@@ -70,7 +68,10 @@ exports.process_message_for_recent_private_messages = function (message) {
         blueslip.warn('Unknown reply_to in message: ' + user_ids_string);
         return;
     }
+    exports.insert_recent_private_message(user_ids_string, message.timestamp);
+};
 
+exports.insert_recent_private_message = function (user_ids_string, timestamp) {
     // If this conversation is already tracked, we'll replace with new timestamp,
     // so remove it from the current list.
     exports.recent_private_messages = _.filter(exports.recent_private_messages,
@@ -79,7 +80,7 @@ exports.process_message_for_recent_private_messages = function (message) {
     });
 
     var new_conversation = {user_ids_string: user_ids_string,
-                            timestamp: Math.max(message.timestamp, current_timestamp)};
+                            timestamp: timestamp};
 
     exports.recent_private_messages.push(new_conversation);
     exports.recent_private_messages.sort(function (a, b) {
