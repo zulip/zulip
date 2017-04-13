@@ -322,7 +322,7 @@ class S3UploadBackend(ZulipUploadBackend):
         resized_data = resize_avatar(image_data)
         upload_image_to_s3(
             bucket_name,
-            s3_file_name,
+            s3_file_name + ".png",
             'image/png',
             user_profile,
             resized_data,
