@@ -8,6 +8,7 @@ from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, \
 from unittest import loader, runner  # type: ignore  # Mypy cannot pick these up.
 from unittest.result import TestResult
 
+from django.conf import settings
 from django.db import connections
 from django.test import TestCase
 from django.test import runner as django_runner
@@ -386,6 +387,7 @@ class Runner(DiscoverRunner):
 
     def setup_test_environment(self, *args, **kwargs):
         # type: (*Any, **Any) -> Any
+        settings.DATABASES['default']['NAME'] = settings.BACKEND_DATABASE_TEMPLATE
         destroy_test_databases(self.database_id)
         create_test_databases(self.database_id)
         return super(Runner, self).setup_test_environment(*args, **kwargs)

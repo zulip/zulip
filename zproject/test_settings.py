@@ -19,6 +19,9 @@ if os.getenv("EXTERNAL_HOST") is None:
     os.environ["EXTERNAL_HOST"] = "testserver"
 from .settings import *
 
+# Used to clone DBs in backend tests.
+BACKEND_DATABASE_TEMPLATE = 'zulip_test_template'
+
 DATABASES["default"] = {
     "NAME": "zulip_test",
     "USER": "zulip_test",
