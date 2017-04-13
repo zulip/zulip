@@ -48,8 +48,8 @@ exports.autosize_textarea = function () {
 };
 
 // Show the compose box.
-function show_box(tabname, focus_area, opts) {
-    if (tabname === "stream") {
+function show_box(msg_type, opts) {
+    if (msg_type === "stream") {
         $('#private-message').hide();
         $('#stream-message').show();
         $("#stream_toggle").addClass("active");
@@ -64,11 +64,7 @@ function show_box(tabname, focus_area, opts) {
     $('#compose').css({visibility: "visible"});
     $(".new_message_textarea").css("min-height", "3em");
 
-    if (focus_area !== undefined &&
-        (window.getSelection().toString() === "" ||
-         opts.trigger !== "message click")) {
-        focus_area.focus().select();
-    }
+    exports.set_focus(msg_type, opts);
 }
 
 exports.maybe_scroll_up_selected_message = function () {
@@ -231,6 +227,19 @@ function get_focus_area(msg_type, opts) {
 // Export for testing
 exports._get_focus_area = get_focus_area;
 
+exports.set_focus = function (msg_type, opts) {
+    var focus_area = get_focus_area(msg_type, opts);
+    if (focus_area === undefined) {
+        return;
+    }
+
+    if (window.getSelection().toString() === "" ||
+         opts.trigger !== "message click") {
+        var elt = $('#' + focus_area);
+        elt.focus().select();
+    }
+};
+
 exports.autosize_message_content = function () {
     $("#new_message_content").autosize();
 };
@@ -278,8 +287,7 @@ exports.start = function (msg_type, opts) {
     is_composing_message = msg_type;
 
     // Show either stream/topic fields or "You and" field.
-    var focus_area = get_focus_area(msg_type, opts);
-    show_box(msg_type, $("#" + focus_area), opts);
+    show_box(msg_type, opts);
 
     exports.complete_starting_tasks(msg_type, opts);
 };
