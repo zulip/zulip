@@ -233,6 +233,12 @@ exports.autosize_message_content = function () {
     $("#new_message_content").autosize();
 };
 
+exports.expand_compose_box = function () {
+    $("#compose_close").show();
+    $("#compose_controls").hide();
+    $('.message_comp').show();
+};
+
 exports.start = function (msg_type, opts) {
     exports.autosize_message_content();
 
@@ -240,9 +246,7 @@ exports.start = function (msg_type, opts) {
         return;
     }
     notifications.clear_compose_notifications();
-    $("#compose_close").show();
-    $("#compose_controls").hide();
-    $('.message_comp').show();
+    exports.expand_compose_box();
 
     opts = fill_in_opts_from_current_narrowed_view(msg_type, opts);
     // If we are invoked by a compose hotkey (c or C), do not assume that we know
