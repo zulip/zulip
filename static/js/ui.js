@@ -215,6 +215,12 @@ $(function () {
     $('#new_message_content').blur(function () {
         saved_compose_cursor = $(this).caret();
     });
+
+    // on the end of the modified-message fade in, remove the fade-in-message class.
+    var animationEnd = "webkitAnimationEnd oanimationend msAnimationEnd animationend";
+    $("body").on(animationEnd, ".fade-in-message", function () {
+        $(this).removeClass("fade-in-message");
+    });
 });
 
 exports.restore_compose_cursor = function () {

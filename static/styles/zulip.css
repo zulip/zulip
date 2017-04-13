@@ -131,6 +131,18 @@ p.n-margin {
     }
 }
 
+.fade-in-message {
+    animation-name: fadeInMessage;
+    animation-duration: 1s;
+    animation-iteration-count: 1;
+}
+
+.fade-in-message .message_edit_notice {
+    animation-name: fadeInEditNotice;
+    animation-duration: 1s;
+    animation-iteration-count: 1;
+}
+
 #unmute_muted_topic_notification .btn {
     background-color: transparent;
     border: 1px solid #444;
@@ -874,6 +886,60 @@ td.pointer {
     }
     to {
         transform: rotate(359deg);
+    }
+}
+
+@-webkit-keyframes fadeInMessage {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@-moz-keyframes fadeInMessage {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInMessage {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@-webkit-keyframes fadeInEditNotice {
+    0% {
+        transform: translateX(-10px);
+    }
+    100% {
+        transform: translateX(0px);
+    }
+}
+
+@-moz-keyframes fadeInEditNotice {
+    0% {
+        transform: translateX(-10px);
+    }
+    100% {
+        transform: translateX(0px);
+    }
+}
+
+@keyframes fadeInEditNotice {
+    0% {
+        transform: translateX(-10px);
+    }
+    100% {
+        transform: translateX(0px);
     }
 }
 
