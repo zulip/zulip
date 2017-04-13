@@ -282,6 +282,13 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assertTrue(not Attachment.objects.filter(path_id = d2_path_id).exists())
         self.assertTrue(not delete_message_image(d2_path_id))
 
+    def test_attachment_url_without_upload(self):
+        # type: () -> None
+        self.login("hamlet@zulip.com")
+        body = "Test message ...[zulip.txt](http://localhost:9991/user_uploads/1/64/fake_path_id.txt)"
+        self.send_message("hamlet@zulip.com", "Denmark", Recipient.STREAM, body, "test")
+        self.assertFalse(Attachment.objects.filter(path_id = "1/64/fake_path_id.txt").exists())
+
     def test_multiple_claim_attachments(self):
         # type: () -> None
         """

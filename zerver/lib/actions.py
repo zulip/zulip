@@ -3272,7 +3272,17 @@ def do_claim_attachments(message):
             is_message_realm_public = Stream.objects.get(id=message.recipient.type_id).is_public()
 
         if not validate_attachment_request(user_profile, path_id):
-            logging.warning("User %s does not have permission to access upload %s" % (user_profile.id, path_id,))
+            # Technically, there are 2 cases here:
+            # * The user put something in their message that has the form
+            # of an upload, but doesn't correspond to a file that doesn't
+            # exist.  validate_attachment_request will return None.
+            # * The user is trying to send a link to a file they don't have permission to
+            # access themselves.  validate_attachment_request will return False.
+            #
+            # Either case is unusual and suggests a UI bug that got
+            # the user in this situation, so we log in these cases.
+            logging.warning("User %s tried to share upload %s in message %s, but lacks permission" % (
+                user_profile.id, path_id, message.id))
             continue
 
         claim_attachment(user_profile, path_id, message, is_message_realm_public)
