@@ -21,10 +21,16 @@ function set_filter(operators) {
 }
 
 (function test_stream() {
-    set_filter([['stream', 'Foo'], ['topic', 'Bar'], ['search', 'yo']]);
+    var test_stream = {name: 'Test', stream_id: 15};
+    stream_data.add_sub('Test', test_stream);
 
-    assert.equal(narrow.stream(), 'Foo');
+    assert(!narrow.is_for_stream_id(test_stream.stream_id));
+
+    set_filter([['stream', 'Test'], ['topic', 'Bar'], ['search', 'yo']]);
+
+    assert.equal(narrow.stream(), 'Test');
     assert.equal(narrow.topic(), 'Bar');
+    assert(narrow.is_for_stream_id(test_stream.stream_id));
 }());
 
 
