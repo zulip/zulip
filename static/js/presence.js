@@ -33,6 +33,9 @@ exports.is_not_offline = function (user_id) {
 };
 
 exports.get_status = function (user_id) {
+    if (user_id === page_params.user_id) {
+        return "active";
+    }
     return exports.presence_info[user_id].status;
 };
 

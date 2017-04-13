@@ -2,6 +2,7 @@ global.stub_out_jquery();
 
 set_global('page_params', {
     realm_users: [],
+    user_id: 5,
 });
 
 set_global('feature_flags', {});
@@ -92,15 +93,22 @@ activity.update_huddles = function () {};
 global.compile_template('user_presence_row');
 global.compile_template('user_presence_rows');
 
+var presence_info = {};
+presence_info[alice.user_id] = { status: 'inactive' };
+presence_info[fred.user_id] = { status: 'active' };
+presence_info[jill.user_id] = { status: 'active' };
+
+presence.presence_info = presence_info;
+
+(function test_get_status() {
+    assert.equal(presence.get_status(page_params.user_id), "active");
+    assert.equal(presence.get_status(alice.user_id), "inactive");
+    assert.equal(presence.get_status(fred.user_id), "active");
+}());
+
 (function test_sort_users() {
     var user_ids = [alice.user_id, fred.user_id, jill.user_id];
 
-    var presence_info = {};
-    presence_info[alice.user_id] = { status: 'inactive' };
-    presence_info[fred.user_id] = { status: 'active' };
-    presence_info[jill.user_id] = { status: 'active' };
-
-    presence.presence_info = presence_info;
     activity._sort_users(user_ids);
 
     assert.deepEqual(user_ids, [
