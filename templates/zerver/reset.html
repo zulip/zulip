@@ -1,12 +1,15 @@
 {% extends "zerver/portico_signup.html" %}
 {% block portico_content %}
 
-<div class="app-main forgot-password-container">
+<div class="bg-image"></div>
+<div class="app-main forgot-password-container new-style">
     <div class="bg-image"></div>
 
-    <div class="pitch">
-        <h3>{{ _('Reset your password.') }}</h3>
+    <div class="lead">
+        <h3 class="get-started">{{ _('Reset your password.') }}</h3>
     </div>
+
+    <p>Forgot your password? No problem, we'll send a link to reset your password to the email you signed up with.</p>
 
     <form method="post" class="form-horizontal" action="{{ url('django.contrib.auth.views.password_reset') }}">
         {{ csrf_input }}

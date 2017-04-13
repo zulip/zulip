@@ -10,6 +10,7 @@ html {
     height: 100vh;
 
     background-color: #fafafa;
+
     z-index: -1;
 }
 
@@ -99,6 +100,10 @@ html {
     vertical-align: top;
 
     margin: 0px 20px;
+}
+
+.app-main.forgot-password-container {
+    font-weight: 400;
 }
 
 .app-main.find-team-page-container {
@@ -754,5 +759,13 @@ button.login-google-button {
         display: inline-block;
         padding: 20px;
         width: calc(100% - 40px);
+    }
+
+    .forgot-password-container form .input-box {
+        text-align: center;
+    }
+
+    .forgot-password-container form button {
+        width: 328px;
     }
 }
