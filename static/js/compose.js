@@ -273,16 +273,22 @@ exports.start = function (msg_type, opts) {
         compose.message_content(opts.content);
     }
 
-    ui_util.change_tab_to("#home");
-
     is_composing_message = msg_type;
 
     // Show either stream/topic fields or "You and" field.
     var focus_area = get_focus_area(msg_type, opts);
     show_box(msg_type, $("#" + focus_area), opts);
 
-    compose_fade.start_compose(msg_type);
+    exports.complete_starting_tasks(msg_type, opts);
+};
 
+exports.complete_starting_tasks = function (msg_type, opts) {
+    // This is sort of a kitchen sink function, and it's called only
+    // by compose.start() for now.  Having this as a separate function
+    // makes testing a bit easier.
+
+    ui_util.change_tab_to("#home");
+    compose_fade.start_compose(msg_type);
     exports.decorate_stream_bar(opts.stream);
     $(document).trigger($.Event('compose_started.zulip', opts));
     resize.resize_bottom_whitespace();
