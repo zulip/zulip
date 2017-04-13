@@ -69,7 +69,9 @@ function show_box(tabname, focus_area, opts) {
          opts.trigger !== "message click")) {
         focus_area.focus().select();
     }
+}
 
+exports.maybe_scroll_up_selected_message = function () {
     // If the compose box is obscuring the currently selected message,
     // scroll up until the message is no longer occluded.
     if (current_msg_list.selected_id() === -1) {
@@ -84,7 +86,7 @@ function show_box(tabname, focus_area, opts) {
         message_viewport.user_initiated_animate_scroll(cover+5);
     }
 
-}
+};
 
 function show_all_everyone_warnings() {
     var current_stream = stream_data.get_sub(compose.stream_name());
@@ -287,6 +289,7 @@ exports.complete_starting_tasks = function (msg_type, opts) {
     // by compose.start() for now.  Having this as a separate function
     // makes testing a bit easier.
 
+    exports.maybe_scroll_up_selected_message();
     ui_util.change_tab_to("#home");
     compose_fade.start_compose(msg_type);
     exports.decorate_stream_bar(opts.stream);
