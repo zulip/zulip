@@ -56,7 +56,6 @@ def display_list(values, display_limit):
 
 md_extensions = None
 
-@lru_cache(512 if settings.PRODUCTION else 0)
 @register.filter(name='render_markdown_path', is_safe=True)
 def render_markdown_path(markdown_file_path, context=None):
     # type: (str, Optional[Dict[Any, Any]]) -> str
