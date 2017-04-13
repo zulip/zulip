@@ -484,16 +484,11 @@ def upload_message_image(uploaded_file_name, uploaded_file_size,
                                                content_type, file_data, user_profile, target_realm=target_realm)
 
 def claim_attachment(user_profile, path_id, message, is_message_realm_public):
-    # type: (UserProfile, Text, Message, bool) -> bool
-    try:
-        attachment = Attachment.objects.get(path_id=path_id)
-        attachment.messages.add(message)
-        attachment.is_realm_public = attachment.is_realm_public or is_message_realm_public
-        attachment.save()
-        return True
-    except Attachment.DoesNotExist:
-        raise JsonableError(_("The upload was not successful. Please reupload the file again in a new message."))
-    return False
+    # type: (UserProfile, Text, Message, bool) -> None
+    attachment = Attachment.objects.get(path_id=path_id)
+    attachment.messages.add(message)
+    attachment.is_realm_public = attachment.is_realm_public or is_message_realm_public
+    attachment.save()
 
 def create_attachment(file_name, path_id, user_profile, file_size):
     # type: (Text, Text, UserProfile, int) -> bool

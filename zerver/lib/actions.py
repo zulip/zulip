@@ -3261,10 +3261,9 @@ def do_get_streams(user_profile, include_public=True, include_subscribed=True,
     return streams
 
 def do_claim_attachments(message):
-    # type: (Message) -> List[Tuple[Text, bool]]
+    # type: (Message) -> None
     attachment_url_list = attachment_url_re.findall(message.content)
 
-    results = []
     for url in attachment_url_list:
         path_id = attachment_url_to_path_id(url)
         user_profile = message.sender
@@ -3276,11 +3275,7 @@ def do_claim_attachments(message):
             logging.warning("User %s does not have permission to access upload %s" % (user_profile.id, path_id,))
             continue
 
-        is_claimed = claim_attachment(user_profile, path_id, message,
-                                      is_message_realm_public)
-        results.append((path_id, is_claimed))
-
-    return results
+        claim_attachment(user_profile, path_id, message, is_message_realm_public)
 
 def do_delete_old_unclaimed_attachments(weeks_ago):
     # type: (int) -> None
