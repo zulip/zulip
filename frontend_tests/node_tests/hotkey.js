@@ -217,11 +217,11 @@ function stubbing(func_name_to_stub, test_function) {
 
     // TODO: Similar check for being in the subs page
 
-    assert_mapping('@', 'compose.reply_with_mention');
+    assert_mapping('@', 'compose_actions.reply_with_mention');
     assert_mapping('*', 'message_flags.toggle_starred');
     assert_mapping('+', 'reactions.toggle_reaction');
-    assert_mapping('r', 'compose.respond_to_message');
-    assert_mapping('R', 'compose.respond_to_message', true);
+    assert_mapping('r', 'compose_actions.respond_to_message');
+    assert_mapping('R', 'compose_actions.respond_to_message', true);
     assert_mapping('j', 'navigate.down');
     assert_mapping('J', 'navigate.page_down');
     assert_mapping('k', 'navigate.up');

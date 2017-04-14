@@ -57,7 +57,7 @@ $(function () {
             }
 
             current_msg_list.select_id(id);
-            compose.respond_to_message({trigger: 'message click'});
+            compose_actions.respond_to_message({trigger: 'message click'});
             e.stopPropagation();
             popovers.hide_all();
         }

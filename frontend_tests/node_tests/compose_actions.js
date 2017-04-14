@@ -24,10 +24,8 @@ var compose_actions = require('js/compose_actions.js');
 var start = compose_actions.start;
 var cancel = compose_actions.cancel;
 var get_focus_area = compose_actions._get_focus_area;
-var respond_to_message = global.compose.respond_to_message;
-var reply_with_mention = global.compose.reply_with_mention;
-
-set_global('compose_actions', compose_actions); // This is hacky--we'll fix in the next commit.
+var respond_to_message = compose_actions.respond_to_message;
+var reply_with_mention = compose_actions.reply_with_mention;
 
 set_global('reload', {
     is_in_progress: return_false,

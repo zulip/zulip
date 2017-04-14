@@ -583,7 +583,7 @@ exports.register_click_handlers = function () {
     });
 
     $('body').on('click', '.sender_info_popover .mention_user', function (e) {
-        compose.respond_to_message({trigger: 'user sidebar popover'});
+        compose_actions.respond_to_message({trigger: 'user sidebar popover'});
         var user_id = $(e.target).parents('ul').attr('data-user-id');
         var name = people.get_person_from_user_id(user_id).full_name;
         var textarea = $("#new_message_content");
@@ -645,7 +645,7 @@ exports.register_click_handlers = function () {
         var textarea = $("#new_message_content");
         var msgid = $(e.currentTarget).data("message-id");
 
-        compose.respond_to_message({trigger: 'popover respond'});
+        compose_actions.respond_to_message({trigger: 'popover respond'});
         channel.get({
             url: '/json/messages/' + msgid,
             idempotent: true,
@@ -663,7 +663,7 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
     $('body').on('click', '.respond_personal_button', function (e) {
-        compose.respond_to_message({reply_type: 'personal', trigger: 'popover respond pm'});
+        compose_actions.respond_to_message({reply_type: 'personal', trigger: 'popover respond pm'});
         popovers.hide_all();
         e.stopPropagation();
         e.preventDefault();
