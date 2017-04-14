@@ -15,6 +15,7 @@ set_global('$', function () {
 
 add_dependencies({
     compose: 'js/compose',
+    compose_state: 'js/compose_state',
     people: 'js/people',
     util: 'js/util',
 });
@@ -26,6 +27,8 @@ var cancel = compose_actions.cancel;
 var get_focus_area = compose_actions._get_focus_area;
 var respond_to_message = compose_actions.respond_to_message;
 var reply_with_mention = compose_actions.reply_with_mention;
+
+var compose_state = global.compose_state;
 
 set_global('reload', {
     is_in_progress: return_false,
@@ -53,12 +56,6 @@ set_global('narrow_state', {
 
 set_global('unread_ops', {
     mark_message_as_read: noop,
-});
-
-// these are shimmed in shim.js
-set_global('compose_state', {
-    composing: global.compose.composing,
-    recipient: global.compose.recipient,
 });
 
 set_global('status_classes', 'status_classes');
@@ -163,6 +160,12 @@ function assert_hidden(sel) {
     assert(!$(sel).visible());
 }
 
+(function test_initial_state() {
+    assert.equal(compose_state.composing(), false);
+    assert.equal(compose_state.get_message_type(), false);
+    assert.equal(compose_state.has_message_content(), false);
+}());
+
 (function test_start() {
     compose_actions.autosize_message_content = noop;
     compose_actions.expand_compose_box = noop;
@@ -185,6 +188,8 @@ function assert_hidden(sel) {
 
     assert.equal($('#stream').val(), 'stream1');
     assert.equal($('#subject').val(), 'topic1');
+    assert.equal(compose_state.get_message_type(), 'stream');
+    assert(compose_state.composing());
 
     // Start PM
     global.narrow_state.set_compose_defaults = function (opts) {
@@ -201,12 +206,15 @@ function assert_hidden(sel) {
 
     assert.equal($('#private_message_recipient').val(), 'foo@example.com');
     assert.equal($('#new_message_content').val(), 'hello');
+    assert.equal(compose_state.get_message_type(), 'private');
+    assert(compose_state.composing());
 
     // Cancel compose.
     assert_hidden('#compose_controls');
     cancel();
     assert_visible('#compose_controls');
     assert_hidden('#private-message');
+    assert(!compose_state.composing());
 }());
 
 (function test_respond_to_message() {
@@ -263,6 +271,7 @@ function assert_hidden(sel) {
     reply_with_mention(opts);
     assert.equal($('#stream').val(), 'devel');
     assert.equal($('#new_message_content').val(), '@**Bob Roberts** ');
+    assert(compose_state.has_message_content());
 }());
 
 (function test_get_focus_area() {

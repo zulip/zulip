@@ -64,7 +64,7 @@ var draft_model = (function () {
 exports.draft_model = draft_model;
 
 exports.snapshot_message = function () {
-    if (!compose_state.composing() || (compose.message_content() === "")) {
+    if (!compose_state.composing() || (compose_state.message_content() === "")) {
         // If you aren't in the middle of composing the body of a
         // message, don't try to snapshot.
         return;
@@ -73,15 +73,15 @@ exports.snapshot_message = function () {
     // Save what we can.
     var message = {
         type: compose_state.composing(),
-        content: compose.message_content(),
+        content: compose_state.message_content(),
     };
     if (message.type === "private") {
         var recipient = compose_state.recipient();
         message.reply_to = recipient;
         message.private_message_recipient = recipient;
     } else {
-        message.stream = compose.stream_name();
-        message.subject = compose.subject();
+        message.stream = compose_state.stream_name();
+        message.subject = compose_state.subject();
     }
     return message;
 };

@@ -24,15 +24,15 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
     if (save_compose) {
         if (compose_state.composing() === 'stream') {
             url += "+msg_type=stream";
-            url += "+stream=" + encodeURIComponent(compose.stream_name());
-            url += "+subject=" + encodeURIComponent(compose.subject());
+            url += "+stream=" + encodeURIComponent(compose_state.stream_name());
+            url += "+subject=" + encodeURIComponent(compose_state.subject());
         } else if (compose_state.composing() === 'private') {
             url += "+msg_type=private";
             url += "+recipient=" + encodeURIComponent(compose_state.recipient());
         }
 
         if (compose_state.composing()) {
-            url += "+msg=" + encodeURIComponent(compose.message_content());
+            url += "+msg=" + encodeURIComponent(compose_state.message_content());
         }
     }
 

@@ -11,7 +11,7 @@ function do_narrow_action(action) {
 function focus_in_empty_compose() {
     return (
         compose_state.composing() &&
-        compose.message_content() === "" &&
+        compose_state.message_content() === "" &&
         $('#new_message_content').is(':focus'));
 }
 

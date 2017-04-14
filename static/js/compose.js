@@ -1,11 +1,6 @@
 var compose = (function () {
 
 var exports = {};
-var is_composing_message = false;
-
-exports.set_message_type = function (msg_type) {
-    is_composing_message = msg_type;
-};
 
 /* Track the state of the @all warning. The user must acknowledge that they are spamming the entire
    stream before the warning will go away. If they try to send before explicitly dismissing the
@@ -52,7 +47,7 @@ exports.autosize_textarea = function () {
 };
 
 function show_all_everyone_warnings() {
-    var current_stream = stream_data.get_sub(compose.stream_name());
+    var current_stream = stream_data.get_sub(compose_state.stream_name());
     var stream_count = current_stream.subscribers.num_items();
 
     var all_everyone_template = templates.render("compose_all_everyone", {count: stream_count});
@@ -91,12 +86,11 @@ exports.clear_preview_area = function () {
 };
 
 function update_fade() {
-    if (!is_composing_message) {
+    if (!compose_state.composing()) {
         return;
     }
 
-    // Legacy strangeness: is_composing_message can be false, "stream", or "private"
-    var msg_type = is_composing_message;
+    var msg_type = compose_state.get_message_type();
     compose_fade.set_focused_recipient(msg_type);
     compose_fade.update_faded_messages();
 }
@@ -123,12 +117,12 @@ exports.empty_topic_placeholder = function () {
 
 function create_message_object() {
     // Subjects are optional, and we provide a placeholder if one isn't given.
-    var subject = compose.subject();
+    var subject = compose_state.subject();
     if (subject === "") {
         subject = compose.empty_topic_placeholder();
     }
 
-    var content = make_uploads_relative(compose.message_content());
+    var content = make_uploads_relative(compose_state.message_content());
 
     // Changes here must also be kept in sync with echo.try_deliver_locally
     var message = {
@@ -149,7 +143,7 @@ function create_message_object() {
         message.private_message_recipient = recipient;
         message.to_user_ids = people.email_list_to_user_ids_string(emails);
     } else {
-        var stream_name = compose.stream_name();
+        var stream_name = compose_state.stream_name();
         message.to = stream_name;
         message.stream = stream_name;
         var sub = stream_data.get_sub(stream_name);
@@ -437,37 +431,8 @@ $(function () {
     });
 });
 
-exports.composing = function () {
-    return is_composing_message;
-};
-
-function get_or_set(fieldname, keep_leading_whitespace) {
-    // We can't hoist the assignment of 'elem' out of this lambda,
-    // because the DOM element might not exist yet when get_or_set
-    // is called.
-    return function (newval) {
-        var elem = $('#'+fieldname);
-        var oldval = elem.val();
-        if (newval !== undefined) {
-            elem.val(newval);
-        }
-        return keep_leading_whitespace ? util.rtrim(oldval) : $.trim(oldval);
-    };
-}
-
-exports.stream_name     = get_or_set('stream');
-exports.subject         = get_or_set('subject');
-// We can't trim leading whitespace in `new_message_content` because
-// of the indented syntax for multi-line code blocks.
-exports.message_content = get_or_set('new_message_content', true);
-exports.recipient       = get_or_set('private_message_recipient');
-
-exports.has_message_content = function () {
-    return exports.message_content() !== "";
-};
-
 exports.update_email = function (user_id, new_email) {
-    var reply_to = exports.recipient();
+    var reply_to = compose_state.recipient();
 
     if (!reply_to) {
         return;
@@ -475,14 +440,14 @@ exports.update_email = function (user_id, new_email) {
 
     reply_to = people.update_email_in_reply_to(reply_to, user_id, new_email);
 
-    exports.recipient(reply_to);
+    compose_state.recipient(reply_to);
 };
 
 exports.get_invalid_recipient_emails = function () {
     var private_recipients = util.extract_pm_recipients(compose_state.recipient());
     var invalid_recipients = [];
     _.each(private_recipients, function (email) {
-        // This case occurs when exports.recipient() ends with ','
+        // This case occurs when compose_state.recipient() ends with ','
         if (email === "") {
             return;
         }
@@ -517,7 +482,7 @@ function validate_stream_message_mentions(stream_name) {
     var stream_count = current_stream.subscribers.num_items();
 
     // check if @all or @everyone is in the message
-    if (util.is_all_or_everyone_mentioned(exports.message_content()) &&
+    if (util.is_all_or_everyone_mentioned(compose_state.message_content()) &&
         stream_count > compose.all_everyone_warn_threshold) {
         if (user_acknowledged_all_everyone === undefined ||
             user_acknowledged_all_everyone === false) {
@@ -564,14 +529,14 @@ function validate_stream_message_address_info(stream_name) {
 }
 
 function validate_stream_message() {
-    var stream_name = exports.stream_name();
+    var stream_name = compose_state.stream_name();
     if (stream_name === "") {
         compose_error(i18n.t("Please specify a stream"), $("#stream"));
         return false;
     }
 
     if (page_params.mandatory_topics) {
-        var topic = exports.subject();
+        var topic = compose_state.subject();
         if (topic === "") {
             compose_error(i18n.t("Please specify a topic"), $("#subject"));
             return false;
@@ -589,7 +554,7 @@ function validate_stream_message() {
 // The function checks whether the recipients are users of the realm or cross realm users (bots
 // for now)
 function validate_private_message() {
-    if (exports.recipient() === "") {
+    if (compose_state.recipient() === "") {
         compose_error(i18n.t("Please specify at least one recipient"), $("#private_message_recipient"));
         return false;
     } else if (page_params.is_zephyr_mirror_realm) {
@@ -616,7 +581,7 @@ exports.validate = function () {
     $("#compose-send-button").attr('disabled', 'disabled').blur();
     $("#sending-indicator").show();
 
-    if (/^\s*$/.test(exports.message_content())) {
+    if (/^\s*$/.test(compose_state.message_content())) {
         compose_error(i18n.t("You have nothing to send!"), $("#new_message_content"));
         return false;
     }
@@ -626,7 +591,7 @@ exports.validate = function () {
         return false;
     }
 
-    if (exports.composing() === 'private') {
+    if (compose_state.composing() === 'private') {
         return validate_private_message();
     }
     return validate_stream_message();
@@ -687,9 +652,12 @@ $(function () {
 
     // Show a warning if a user @-mentions someone who will not receive this message
     $(document).on('usermention_completed.zulip', function (event, data) {
-        // Legacy strangeness: is_composing_message can be false, "stream", or "private"
+        if (compose_state.get_message_type() !== 'stream') {
+            return;
+        }
+
         // Disable for Zephyr mirroring realms, since we never have subscriber lists there
-        if (is_composing_message !== "stream" || page_params.is_zephyr_mirror_realm) {
+        if (page_params.is_zephyr_mirror_realm) {
             return;
         }
 
@@ -755,7 +723,7 @@ $(function () {
             $(event.target).attr('disabled', true);
         }
 
-        var stream_name = compose.stream_name();
+        var stream_name = compose_state.stream_name();
         var sub = stream_data.get_sub(stream_name);
         if (!sub) {
             // This should only happen if a stream rename occurs
