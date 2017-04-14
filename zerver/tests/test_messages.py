@@ -568,6 +568,7 @@ class MessageDictTest(ZulipTestCase):
         stream_recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
         sending_client = make_client(name="test suite")
 
+        ids = []
         for i in range(300):
             for recipient in [pm_recipient, stream_recipient]:
                 message = Message(
@@ -581,11 +582,11 @@ class MessageDictTest(ZulipTestCase):
                     edit_history='[]'
                 )
                 message.save()
+                ids.append(message.id)
 
                 Reaction.objects.create(user_profile=sender, message=message,
                                         emoji_name='simple_smile')
 
-        ids = [row['id'] for row in Message.objects.all().values('id')]
         num_ids = len(ids)
         self.assertTrue(num_ids >= 600)
 
@@ -600,7 +601,7 @@ class MessageDictTest(ZulipTestCase):
         delay = time.time() - t
         # Make sure we don't take longer than 1ms per message to extract messages.
         self.assertTrue(delay < 0.001 * num_ids)
-        self.assert_length(queries, 10)
+        self.assert_length(queries, 5)
         self.assertEqual(len(rows), num_ids)
 
     def test_applying_markdown(self):
