@@ -9,7 +9,7 @@ from unittest import loader, runner  # type: ignore  # Mypy cannot pick these up
 from unittest.result import TestResult
 
 from django.conf import settings
-from django.db import connections
+from django.db import connections, ProgrammingError
 from django.test import TestCase
 from django.test import runner as django_runner
 from django.test.runner import DiscoverRunner
@@ -246,6 +246,17 @@ def run_subsuite(args):
     process_instrumented_calls(partial(result.addInstrumentation, None))  # type: ignore
     return subsuite_index, result.events
 
+# Monkey-patch database creation to fix unnecessary sleep(1)
+from django.db.backends.postgresql.creation import DatabaseCreation
+def _replacement_destroy_test_db(self, test_database_name, verbosity):
+    # type: (Any, str, Any) -> None
+    """Replacement for Django's _destroy_test_db that removes the
+    unnecessary sleep(1)."""
+    with self.connection._nodb_connection.cursor() as cursor:
+        cursor.execute("DROP DATABASE %s"
+                       % self.connection.ops.quote_name(test_database_name))
+DatabaseCreation._destroy_test_db = _replacement_destroy_test_db
+
 def destroy_test_databases(database_id=None):
     # type: (Optional[int]) -> None
     """
@@ -256,7 +267,7 @@ def destroy_test_databases(database_id=None):
         connection = connections[alias]
         try:
             connection.creation.destroy_test_db(number=database_id)
-        except Exception:
+        except ProgrammingError:
             # DB doesn't exist. No need to do anything.
             pass
 
