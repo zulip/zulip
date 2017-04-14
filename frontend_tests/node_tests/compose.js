@@ -11,16 +11,13 @@ set_global('document', {
 });
 
 add_dependencies({
+    compose_state: 'js/compose_state',
     people: 'js/people',
     stream_data: 'js/stream_data',
     util: 'js/util',
 });
 
 var compose = require('js/compose.js');
-
-set_global('compose_state', {
-    recipient: compose.recipient,
-});
 
 var me = {
     email: 'me@example.com',

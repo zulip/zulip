@@ -171,8 +171,8 @@ function fill_in_opts_from_current_narrowed_view(msg_type, opts) {
 function same_recipient_as_before(msg_type, opts) {
     return (compose_state.composing() === msg_type) &&
             ((msg_type === "stream" &&
-              opts.stream === compose.stream_name() &&
-              opts.subject === compose.subject()) ||
+              opts.stream === compose_state.stream_name() &&
+              opts.subject === compose_state.subject()) ||
              (msg_type === "private" &&
               opts.private_message_recipient === compose_state.recipient()));
 }
@@ -199,8 +199,8 @@ exports.start = function (msg_type, opts) {
         clear_box();
     }
 
-    compose.stream_name(opts.stream);
-    compose.subject(opts.subject);
+    compose_state.stream_name(opts.stream);
+    compose_state.subject(opts.subject);
 
     // Set the recipients with a space after each comma, so it looks nice.
     compose_state.recipient(opts.private_message_recipient.replace(/,\s*/g, ", "));
@@ -208,10 +208,10 @@ exports.start = function (msg_type, opts) {
     // If the user opens the compose box, types some text, and then clicks on a
     // different stream/subject, we want to keep the text in the compose box
     if (opts.content !== undefined) {
-        compose.message_content(opts.content);
+        compose_state.message_content(opts.content);
     }
 
-    compose.set_message_type(msg_type);
+    compose_state.set_message_type(msg_type);
 
     // Show either stream/topic fields or "You and" field.
     show_box(msg_type, opts);
@@ -227,9 +227,9 @@ exports.cancel = function () {
         // at least clear the subject and unfade.
         compose_fade.clear_compose();
         if (page_params.narrow_topic !== undefined) {
-            compose.subject(page_params.narrow_topic);
+            compose_state.subject(page_params.narrow_topic);
         } else {
-            compose.subject("");
+            compose_state.subject("");
         }
         return;
     }
@@ -239,7 +239,7 @@ exports.cancel = function () {
     clear_box();
     notifications.clear_compose_notifications();
     compose.abort_xhr();
-    compose.set_message_type(false);
+    compose_state.set_message_type(false);
     $(document).trigger($.Event('compose_canceled.zulip'));
 };
 

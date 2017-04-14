@@ -102,16 +102,16 @@ var draft_2 = {
         global.compose_state.composing = function () {
             return draft.type;
         };
-        global.compose.message_content = function () {
+        global.compose_state.message_content = function () {
             return draft.content;
         };
         global.compose_state.recipient = function () {
             return draft.private_message_recipient;
         };
-        global.compose.stream_name = function () {
+        global.compose_state.stream_name = function () {
             return draft.stream;
         };
-        global.compose.subject = function () {
+        global.compose_state.subject = function () {
             return draft.subject;
         };
     }
