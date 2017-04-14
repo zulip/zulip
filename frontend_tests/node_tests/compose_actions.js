@@ -15,6 +15,7 @@ set_global('$', function () {
 
 add_dependencies({
     compose: 'js/compose',
+    people: 'js/people',
     util: 'js/util',
 });
 
@@ -23,6 +24,10 @@ var compose_actions = require('js/compose_actions.js');
 var start = compose_actions.start;
 var cancel = compose_actions.cancel;
 var get_focus_area = compose_actions._get_focus_area;
+var respond_to_message = global.compose.respond_to_message;
+var reply_with_mention = global.compose.reply_with_mention;
+
+set_global('compose_actions', compose_actions); // This is hacky--we'll fix in the next commit.
 
 set_global('reload', {
     is_in_progress: return_false,
@@ -36,12 +41,20 @@ set_global('compose_fade', {
     clear_compose: noop,
 });
 
+set_global('drafts', {
+    update_draft: noop,
+});
+
 set_global('resize', {
     resize_bottom_whitespace: noop,
 });
 
 set_global('narrow_state', {
     set_compose_defaults: noop,
+});
+
+set_global('unread_ops', {
+    mark_message_as_read: noop,
 });
 
 // these are shimmed in shim.js
@@ -136,6 +149,14 @@ var fake_jquery = function () {
 set_global('$', fake_jquery());
 var $ = global.$;
 
+function stub_selected_message(msg) {
+    set_global('current_msg_list', {
+        selected_message: function () {
+            return msg;
+        },
+    });
+}
+
 function assert_visible(sel) {
     assert($(sel).visible());
 }
@@ -190,6 +211,61 @@ function assert_hidden(sel) {
     assert_hidden('#private-message');
 }());
 
+(function test_respond_to_message() {
+    // Test PM
+    var person = {
+        user_id: 22,
+        email: 'alice@example.com',
+        full_name: 'Alice',
+    };
+    people.add_in_realm(person);
+
+    var msg = {
+        type: 'private',
+        sender_id: person.user_id,
+    };
+    stub_selected_message(msg);
+
+    var opts = {
+        reply_type: 'personal',
+    };
+
+    respond_to_message(opts);
+    assert.equal($('#private_message_recipient').val(), 'alice@example.com');
+
+    // Test stream
+    msg = {
+        type: 'stream',
+        stream: 'devel',
+        subject: 'python',
+        reply_to: 'bob', // compose.start needs this for dubious reasons
+    };
+    stub_selected_message(msg);
+
+    opts = {
+    };
+
+    respond_to_message(opts);
+    assert.equal($('#stream').val(), 'devel');
+}());
+
+(function test_reply_with_mention() {
+    var msg = {
+        type: 'stream',
+        stream: 'devel',
+        subject: 'python',
+        reply_to: 'bob', // compose.start needs this for dubious reasons
+        sender_full_name: 'Bob Roberts',
+    };
+    stub_selected_message(msg);
+
+    var opts = {
+    };
+
+    reply_with_mention(opts);
+    assert.equal($('#stream').val(), 'devel');
+    assert.equal($('#new_message_content').val(), '@**Bob Roberts** ');
+}());
 
 (function test_get_focus_area() {
     assert.equal(get_focus_area('private', {}), 'private_message_recipient');
