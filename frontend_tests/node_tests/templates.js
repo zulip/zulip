@@ -172,11 +172,14 @@ function render(template_name, args) {
 }());
 
 (function admin_filter_list() {
+
+    // When the logged in user is admin
     var args = {
         filter: {
             pattern: "#(?P<id>[0-9]+)",
             url_format_string: "https://trac.example.com/ticket/%(id)s",
         },
+        can_modify: true,
     };
 
     var html = '';
@@ -184,10 +187,30 @@ function render(template_name, args) {
     html += render('admin_filter_list', args);
     html += '</tbody>';
 
-    global.write_test_output('admin_filter_list', html);
-
     var filter_pattern = $(html).find('tr.filter_row:first span.filter_pattern');
     var filter_format = $(html).find('tr.filter_row:first span.filter_url_format_string');
+
+    assert.equal(filter_pattern.text(), '#(?P<id>[0-9]+)');
+    assert.equal(filter_format.text(), 'https://trac.example.com/ticket/%(id)s');
+
+    // When the logged in user is not admin
+    args = {
+        filter: {
+            pattern: "#(?P<id>[0-9]+)",
+            url_format_string: "https://trac.example.com/ticket/%(id)s",
+        },
+        can_modify: false,
+    };
+
+    html = '';
+    html += '<tbody id="admin_filters_table">';
+    html += render('admin_filter_list', args);
+    html += '</tbody>';
+
+    global.write_test_output('admin_filter_list', html);
+
+    filter_pattern = $(html).find('tr.filter_row:first span.filter_pattern');
+    filter_format = $(html).find('tr.filter_row:first span.filter_url_format_string');
 
     assert.equal(filter_pattern.text(), '#(?P<id>[0-9]+)');
     assert.equal(filter_format.text(), 'https://trac.example.com/ticket/%(id)s');
