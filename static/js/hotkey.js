@@ -318,15 +318,7 @@ exports.process_enter_key = function (e) {
     // This handles when pressing enter while looking at drafts.
     // It restores draft that is focused.
     if (drafts.drafts_overlay_open()) {
-        var draft_list = drafts.draft_model.get();
-        if (document.activeElement.parentElement.hasAttribute("data-draft-id")) {
-             var focused_draft = document.activeElement.parentElement.getAttribute("data-draft-id");
-             drafts.restore_draft(focused_draft);
-        } else {
-            var draft_id_list = Object.getOwnPropertyNames(draft_list);
-            var first_draft = draft_id_list[draft_id_list.length-1];
-            drafts.restore_draft(first_draft);
-        }
+        drafts.drafts_handle_events(e, "enter");
         return true;
     }
 

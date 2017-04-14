@@ -238,6 +238,7 @@ exports.drafts_overlay_open = function () {
 exports.drafts_handle_events = function (e, event_key) {
     var draft_arrow = draft_model.get();
     var draft_id_arrow = Object.getOwnPropertyNames(draft_arrow);
+
     // This detects up arrow key presses when the draft overlay
     // is open and scrolls through the drafts.
     if (event_key === "up_arrow") {
@@ -295,11 +296,11 @@ exports.drafts_handle_events = function (e, event_key) {
         }
     }
 
+    var elt = document.activeElement;
+    var focused_draft = $(elt.parentElement)[0].getAttribute("data-draft-id");
     // Allows user to delete drafts with backspace
     if (event_key === "backspace") {
-        var elt = document.activeElement;
         if (elt.parentElement.hasAttribute("data-draft-id")) {
-            var focused_draft = $(elt.parentElement)[0].getAttribute("data-draft-id");
             var focus_draft_back_row = $(elt)[0].parentElement;
             var backnext_focus_draft_row = $(focus_draft_back_row).next();
             var backprev_focus_draft_row = $(focus_draft_back_row).prev();
@@ -318,6 +319,17 @@ exports.drafts_handle_events = function (e, event_key) {
             if ($("#drafts_table .draft-row").length === 0) {
                 $('#drafts_table .no-drafts').show();
             }
+        }
+    }
+
+    // This handles when pressing enter while looking at drafts.
+    // It restores draft that is focused.
+    if (event_key === "enter") {
+        if (document.activeElement.parentElement.hasAttribute("data-draft-id")) {
+            exports.restore_draft(focused_draft);
+        } else {
+            var first_draft = draft_id_arrow[draft_id_arrow.length-1];
+            exports.restore_draft(first_draft);
         }
     }
 };
