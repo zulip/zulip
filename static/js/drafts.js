@@ -235,21 +235,37 @@ exports.drafts_overlay_open = function () {
     return $("#draft_overlay").hasClass("show");
 };
 
+function drafts_initialize_focus(event_name) {
+    // If a draft is not focused in draft modal, then focus the last draft
+    // if up_arrow is clicked or the first draft if down_arrow is clicked.
+    if (event_name !== "up_arrow" && event_name !== "down_arrow" || $(".draft-info-box:focus")[0]) {
+        return;
+    }
+
+    var draft_arrow = draft_model.get();
+    var draft_id_arrow = Object.getOwnPropertyNames(draft_arrow);
+    if (draft_id_arrow.length === 0) { // empty drafts modal
+        return;
+    }
+
+    var draft_element;
+    if (event_name === "up_arrow") {
+        draft_element = document.querySelectorAll('[data-draft-id="' + draft_id_arrow[draft_id_arrow.length-1] + '"]');
+    } else if (event_name === "down_arrow") {
+        draft_element = document.querySelectorAll('[data-draft-id="' + draft_id_arrow[0] + '"]');
+    }
+    var focus_element = draft_element[0].children[0];
+    focus_element.focus();
+}
+
 exports.drafts_handle_events = function (e, event_key) {
     var draft_arrow = draft_model.get();
     var draft_id_arrow = Object.getOwnPropertyNames(draft_arrow);
+    drafts_initialize_focus(event_key);
 
     // This detects up arrow key presses when the draft overlay
     // is open and scrolls through the drafts.
     if (event_key === "up_arrow") {
-        if ($(".draft-info-box:focus")[0] === undefined) {
-            if (draft_id_arrow.length > 0) {
-                var last_draft = draft_id_arrow[draft_id_arrow.length-1];
-                var last_draft_element = document.querySelectorAll('[data-draft-id="' + last_draft + '"]');
-                var focus_up_element = last_draft_element[0].children[0];
-                focus_up_element.focus();
-            }
-        }
         var focus_draft_up_row = $(".draft-info-box:focus")[0].parentElement;
         var prev_focus_draft_row = $(focus_draft_up_row).prev();
         if ($(".draft-info-box:first")[0].parentElement === prev_focus_draft_row[0]) {
@@ -268,14 +284,6 @@ exports.drafts_handle_events = function (e, event_key) {
     // This detects down arrow key presses when the draft overlay
     // is open and scrolls through the drafts.
     if (event_key === "down_arrow") {
-        if ($(".draft-info-box:focus")[0] === undefined) {
-            if (draft_id_arrow.length > 0) {
-                var first_draft = draft_id_arrow[0];
-                var first_draft_element = document.querySelectorAll('[data-draft-id="' + first_draft + '"]');
-                var focus_down_element = first_draft_element[0].children[0];
-                focus_down_element.focus();
-            }
-        }
         var focus_draft_down_row = $(".draft-info-box:focus")[0].parentElement;
         var next_focus_draft_row = $(focus_draft_down_row).next();
         if ($(".draft-info-box:last")[0].parentElement === next_focus_draft_row[0]) {
