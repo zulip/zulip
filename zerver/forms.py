@@ -136,9 +136,8 @@ class HomepageForm(forms.Form):
 
         if not email_allowed_for_realm(email, realm):
             raise ValidationError(
-                _("The organization you are trying to join, %(string_id)s, only allows users with e-mail "
-                  "addresses within the organization. Please try a different e-mail address."
-                  % {'string_id': realm.string_id}))
+                _("The organization you are trying to join, {string_id}, only allows users with e-mail "
+                  "addresses within the organization. Please try a different e-mail address.").format(string_id=realm.string_id))
 
         if realm.is_zephyr_mirror_realm:
             email_is_not_mit_mailing_list(email)
