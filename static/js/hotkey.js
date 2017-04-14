@@ -355,7 +355,7 @@ exports.process_enter_key = function (e) {
     // view and there is a "current" message, so in that case
     // "enter" is the hotkey to respond to a message.  Note that
     // "r" has same effect, but that is handled in process_hotkey().
-    compose.respond_to_message({trigger: 'hotkey enter'});
+    compose_actions.respond_to_message({trigger: 'hotkey enter'});
     return true;
 };
 
@@ -648,13 +648,13 @@ exports.process_hotkey = function (e, hotkey) {
         case 'reply_message': // 'r': respond to message
             // Note that you can "enter" to respond to messages as well,
             // but that is handled in process_enter_key().
-            compose.respond_to_message({trigger: 'hotkey'});
+            compose_actions.respond_to_message({trigger: 'hotkey'});
             return true;
         case 'respond_to_author': // 'R': respond to author
-            compose.respond_to_message({reply_type: "personal", trigger: 'hotkey pm'});
+            compose_actions.respond_to_message({reply_type: "personal", trigger: 'hotkey pm'});
             return true;
         case 'compose_reply_with_mention': // '@': respond to message with mention to author
-            compose.reply_with_mention({trigger: 'hotkey'});
+            compose_actions.reply_with_mention({trigger: 'hotkey'});
             return true;
         case 'show_lightbox':
             lightbox.show_from_selected_message();

@@ -243,6 +243,58 @@ exports.cancel = function () {
     $(document).trigger($.Event('compose_canceled.zulip'));
 };
 
+exports.respond_to_message = function (opts) {
+    var message;
+    var msg_type;
+    // Before initiating a reply to a message, if there's an
+    // in-progress composition, snapshot it.
+    drafts.update_draft();
+
+    message = current_msg_list.selected_message();
+
+    if (message === undefined) {
+        return;
+    }
+
+    unread_ops.mark_message_as_read(message);
+
+    var stream = '';
+    var subject = '';
+    if (message.type === "stream") {
+        stream = message.stream;
+        subject = message.subject;
+    }
+
+    var pm_recipient = message.reply_to;
+    if (message.type === "private") {
+        if (opts.reply_type === "personal") {
+            // reply_to for private messages is everyone involved, so for
+            // personals replies we need to set the private message
+            // recipient to just the sender
+            pm_recipient = people.get_person_from_user_id(message.sender_id).email;
+        } else {
+            pm_recipient = people.pm_reply_to(message);
+        }
+    }
+    if (opts.reply_type === 'personal' || message.type === 'private') {
+        msg_type = 'private';
+    } else {
+        msg_type = message.type;
+    }
+    exports.start(msg_type, {stream: stream, subject: subject,
+                             private_message_recipient: pm_recipient,
+                             replying_to_message: message,
+                             trigger: opts.trigger});
+
+};
+
+exports.reply_with_mention = function (opts) {
+    exports.respond_to_message(opts);
+    var message = current_msg_list.selected_message();
+    var mention = '@**' + message.sender_full_name + '**';
+    $('#new_message_content').val(mention + ' ');
+};
+
 
 return exports;
 }());

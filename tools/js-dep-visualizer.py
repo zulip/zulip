@@ -171,6 +171,8 @@ def find_edges_to_remove(graph, methods):
         ('activity', 'narrow'),
         ('compose', 'compose_actions'),
         ('compose', 'subs'),
+        ('compose_actions', 'drafts'),
+        ('compose_actions', 'unread_ops'),
         ('drafts', 'compose'),
         ('drafts', 'echo'),
         ('echo', 'compose'),
