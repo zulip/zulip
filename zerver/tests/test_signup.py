@@ -1239,8 +1239,10 @@ class UserSignUpTest(ZulipTestCase):
         with self.settings(REALMS_HAVE_SUBDOMAINS = True):
             request = HostRequestMock(host = realm.host)
             request.session = {} # type: ignore
-            form = HomepageForm({'email': 'user@acme.com'}, realm=realm)
-            self.assertIn("trying to join, zulip, only allows users with e-mail", form.errors['email'][0])
+            email = 'user@acme.com'
+            form = HomepageForm({'email': email}, realm=realm)
+            self.assertIn("Your email address, {}, is not in one of the domains".format(email),
+                          form.errors['email'][0])
 
     def test_failed_signup_due_to_invite_required(self):
         # type: () -> None
@@ -1249,16 +1251,20 @@ class UserSignUpTest(ZulipTestCase):
         realm.save()
         request = HostRequestMock(host = realm.host)
         request.session = {} # type: ignore
-        form = HomepageForm({'email': 'user@zulip.com'}, realm=realm)
-        self.assertIn("Please request an invite from", form.errors['email'][0])
+        email = 'user@zulip.com'
+        form = HomepageForm({'email': email}, realm=realm)
+        self.assertIn("Please request an invite for {} from".format(email),
+                      form.errors['email'][0])
 
     def test_failed_signup_due_to_nonexistent_realm(self):
         # type: () -> None
         with self.settings(REALMS_HAVE_SUBDOMAINS = True):
             request = HostRequestMock(host = 'acme.' + settings.EXTERNAL_HOST)
             request.session = {} # type: ignore
-            form = HomepageForm({'email': 'user@acme.com'}, realm=None)
-            self.assertIn("organization you are trying to join does not exist", form.errors['email'][0])
+            email = 'user@acme.com'
+            form = HomepageForm({'email': email}, realm=None)
+            self.assertIn("organization you are trying to join using {} does "
+                          "not exist".format(email), form.errors['email'][0])
 
     def test_registration_through_ldap(self):
         # type: () -> None

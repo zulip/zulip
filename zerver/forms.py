@@ -127,17 +127,24 @@ class HomepageForm(forms.Form):
 
         if realm is None:
             if settings.REALMS_HAVE_SUBDOMAINS:
-                raise ValidationError(_("The organization you are trying to join does not exist."))
+                raise ValidationError(_("The organization you are trying to "
+                                        "join using {email} does not "
+                                        "exist.").format(email=email))
             else:
-                raise ValidationError(_("Your email address does not correspond to any existing organization."))
+                raise ValidationError(_("Your email address, {email}, does not "
+                                        "correspond to any existing "
+                                        "organization.").format(email=email))
 
         if realm.invite_required:
-            raise ValidationError(_("Please request an invite from the organization administrator."))
+            raise ValidationError(_("Please request an invite for {email} "
+                                    "from the organization "
+                                    "administrator.").format(email=email))
 
         if not email_allowed_for_realm(email, realm):
             raise ValidationError(
-                _("The organization you are trying to join, {string_id}, only allows users with e-mail "
-                  "addresses within the organization. Please try a different e-mail address.").format(string_id=realm.string_id))
+                _("Your email address, {email}, is not in one of the domains "
+                  "that are allowed to register for accounts in this organization."
+                ).format(string_id=realm.string_id, email=email))
 
         if realm.is_zephyr_mirror_realm:
             email_is_not_mit_mailing_list(email)

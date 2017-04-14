@@ -584,11 +584,13 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
         with mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
                         side_effect=do_auth):
-            response = dict(email='nonexisting@phantom.com', name='Ghost')
+            email = 'nonexisting@phantom.com'
+            response = dict(email=email, name='Ghost')
             result = self.backend.do_auth(response=response)
             self.assert_in_response('action="/register/"', result)
-            self.assert_in_response('Your email address does not correspond to any '
-                                    'existing organization.', result)
+            self.assert_in_response('Your email address, {}, does not '
+                                    'correspond to any existing '
+                                    'organization.'.format(email), result)
 
     def test_login_url(self):
         # type: () -> None
