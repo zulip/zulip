@@ -850,6 +850,7 @@ JS_SPECS = {
             'js/fenced_code.js',
             'js/echo.js',
             'js/socket.js',
+            'js/compose_actions.js',
             'js/compose.js',
             'js/stream_color.js',
             'js/stream_data.js',
