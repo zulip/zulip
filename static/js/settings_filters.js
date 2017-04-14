@@ -22,6 +22,7 @@ exports.populate_filters = function (filters_data) {
                         url_format_string: filter[1],
                         id: filter[2],
                     },
+                    can_modify: page_params.is_admin,
                 }
             )
         );
