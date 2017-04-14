@@ -125,13 +125,13 @@ function clear_box() {
     $("#send-status").hide(0);
 }
 
-function clear_preview_area() {
+exports.clear_preview_area = function () {
     $("#new_message_content").show();
     $("#undo_markdown_preview").hide();
     $("#preview_message_area").hide();
     $("#preview_content").empty();
     $("#markdown_preview").show();
-}
+};
 
 exports.blur_textarea = function () {
     $('.message_comp').find('input, textarea, button').blur();
@@ -145,7 +145,7 @@ function hide_box() {
     compose_fade.clear_compose();
     $('.message_comp').hide();
     $("#compose_controls").show();
-    clear_preview_area();
+    exports.clear_preview_area();
 }
 
 function update_lock_icon_for_stream(stream_name) {
@@ -608,7 +608,7 @@ function send_message(request) {
 }
 
 exports.enter_with_preview_open = function () {
-    clear_preview_area();
+    exports.clear_preview_area();
     if (page_params.enter_sends) {
         // If enter_sends is enabled, we just send the message
         send_message();
@@ -704,7 +704,7 @@ exports.finish = function () {
         return false;
     }
     send_message();
-    clear_preview_area();
+    exports.clear_preview_area();
     // TODO: Do we want to fire the event even if the send failed due
     // to a server-side error?
     $(document).trigger($.Event('compose_finished.zulip'));
@@ -1116,7 +1116,7 @@ $(function () {
 
     $("#compose").on("click", "#undo_markdown_preview", function (e) {
         e.preventDefault();
-        clear_preview_area();
+        exports.clear_preview_area();
     });
 
     $("#compose").on("click", "#attach_dropbox_files", function (e) {
