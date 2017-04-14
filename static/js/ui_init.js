@@ -222,12 +222,12 @@ $(function () {
         $(this).closest(".message_row").find(".copy_message").hide();
     });
 
-    $("body").on("mouseover", ".copy_message", function () {
+    $("body").on("mouseenter", ".copy_message", function () {
         $(this).show();
         $(this).tooltip('show');
     });
 
-    $("body").on("mouseout", ".copy_message", function () {
+    $("body").on("mouseleave", ".copy_message", function () {
         $(this).tooltip('hide');
     });
 

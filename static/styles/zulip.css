@@ -282,15 +282,11 @@ li,
 
 .copy_message,
 .copy_message:focus {
-    background-image: url('/static/images/clippy.svg');
-    background-size: contain;
-    background-repeat: no-repeat;
     background-color: white;
-    background-position: center;
     height: 20px;
     width: 15px;
     padding: 5px 10px;
-    border-radius: 2px;
+    border: none;
     position: relative;
     top: 32px;
     left: -5px;
@@ -298,8 +294,13 @@ li,
     display: block;
 }
 
-.copy_message:hover {
-    background-color: #dadada;
+#clipboard_image {
+    margin-top: -5px;
+    margin-left: -8px;
+}
+
+.copy_message:hover svg path {
+    fill: black;
 }
 
 .btn-large {
@@ -582,6 +583,23 @@ td.pointer {
     -moz-transition: background-color 2.7s ease-in, color 2.7s ease-in;
     -o-transition: background-color 2.7s ease-in, color 2.7s ease-in;
     transition: background-color 2.7s ease-in, color 2.7s ease-in;
+}
+
+.alert-copied {
+    position: absolute;
+    right: -110px;
+    font-size: 14px;
+    color: #52c2af;
+    background-color: white;
+    z-index: 999;
+    padding-left: 20px;
+    padding-right: 40px;
+    font-weight: 400;
+    display: none;
+}
+
+.include-sender .alert-copied {
+    top: -3px;
 }
 
 .status-time {
