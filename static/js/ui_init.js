@@ -145,7 +145,7 @@ $(function () {
         $(this).removeClass("active");
     });
 
-    $("#stream").on('blur', function () { compose.decorate_stream_bar(this.value); });
+    $("#stream").on('blur', function () { compose_actions.decorate_stream_bar(this.value); });
 
     $(window).on('blur', function () {
         $(document.body).addClass('window_blurred');

@@ -6,10 +6,6 @@ set_global('document', {
     },
 });
 
-add_dependencies({
-    util: 'js/util',
-});
-
 set_global('page_params', {
     use_websockets: false,
 });
@@ -17,10 +13,16 @@ set_global('page_params', {
 set_global('$', function () {
 });
 
-var compose = require('js/compose.js');
+add_dependencies({
+    compose: 'js/compose',
+    util: 'js/util',
+});
 
-var start = compose.start;
-var cancel = compose.cancel;
+var compose_actions = require('js/compose_actions.js');
+
+var start = compose_actions.start;
+var cancel = compose_actions.cancel;
+var get_focus_area = compose_actions._get_focus_area;
 
 set_global('reload', {
     is_in_progress: return_false,
@@ -44,8 +46,8 @@ set_global('narrow_state', {
 
 // these are shimmed in shim.js
 set_global('compose_state', {
-    composing: compose.composing,
-    recipient: compose.recipient,
+    composing: global.compose.composing,
+    recipient: global.compose.recipient,
 });
 
 set_global('status_classes', 'status_classes');
@@ -143,12 +145,12 @@ function assert_hidden(sel) {
 }
 
 (function test_start() {
-    compose.autosize_message_content = noop;
-    compose.expand_compose_box = noop;
-    compose.set_focus = noop;
-    compose.complete_starting_tasks = noop;
-    compose.blur_textarea = noop;
-    compose.clear_textarea = noop;
+    compose_actions.autosize_message_content = noop;
+    compose_actions.expand_compose_box = noop;
+    compose_actions.set_focus = noop;
+    compose_actions.complete_starting_tasks = noop;
+    compose_actions.blur_textarea = noop;
+    compose_actions.clear_textarea = noop;
 
     // Start stream message
     global.narrow_state.set_compose_defaults = function (opts) {
@@ -186,4 +188,21 @@ function assert_hidden(sel) {
     cancel();
     assert_visible('#compose_controls');
     assert_hidden('#private-message');
+}());
+
+
+(function test_get_focus_area() {
+    assert.equal(get_focus_area('private', {}), 'private_message_recipient');
+    assert.equal(get_focus_area('private', {
+        private_message_recipient: 'bob@example.com'}), 'new_message_content');
+    assert.equal(get_focus_area('stream', {}), 'stream');
+    assert.equal(get_focus_area('stream', {stream: 'fun'}),
+                 'subject');
+    assert.equal(get_focus_area('stream', {stream: 'fun',
+                                           subject: 'more'}),
+                 'new_message_content');
+    assert.equal(get_focus_area('stream', {stream: 'fun',
+                                           subject: 'more',
+                                           trigger: 'new topic button'}),
+                 'subject');
 }());

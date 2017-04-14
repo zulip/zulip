@@ -133,6 +133,8 @@ def find_edges_to_remove(graph, methods):
         ('ui', 'message_fetch'),
         ('ui', 'unread_ops'),
         ('condense', 'message_viewport'),
+        ('compose_actions', 'compose'),
+        ('compose_actions', 'resize'),
     ] # type: List[Edge]
 
     def is_exempt(edge):
@@ -167,6 +169,7 @@ def find_edges_to_remove(graph, methods):
         ('message_fetch', 'tutorial'),
         ('settings', 'subs'),
         ('activity', 'narrow'),
+        ('compose', 'compose_actions'),
         ('compose', 'subs'),
         ('drafts', 'compose'),
         ('drafts', 'echo'),
@@ -209,7 +212,8 @@ def find_edges_to_remove(graph, methods):
     def cut_is_legal(edge):
         # type: (Edge) -> bool
         parent, child = edge
-        if child in ['reload', 'popovers', 'modals', 'notifications', 'server_events']:
+        if child in ['reload', 'popovers', 'modals', 'notifications',
+                     'server_events', 'compose_actions']:
             return True
         return edge in APPROVED_CUTS
 
