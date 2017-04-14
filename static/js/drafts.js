@@ -258,6 +258,41 @@ function drafts_initialize_focus(event_name) {
     focus_element.focus();
 }
 
+function drafts_scroll(next_focus_draft_row) {
+    if (next_focus_draft_row[0] === undefined) {
+        return;
+    }
+    if (next_focus_draft_row[0].children[0] === undefined) {
+        return;
+    }
+    next_focus_draft_row[0].children[0].focus();
+
+    // If focused draft is first draft, scroll to the top.
+    if ($(".draft-info-box:first")[0].parentElement === next_focus_draft_row[0]) {
+        $(".drafts-list")[0].scrollTop = 0;
+    }
+
+    // If focused draft is the last draft, scroll to the bottom.
+    if ($(".draft-info-box:last")[0].parentElement === next_focus_draft_row[0]) {
+        $(".drafts-list")[0].scrollTop = $('.drafts-list')[0].scrollHeight - $('.drafts-list').height();
+    }
+
+    // If focused draft is cut off from the top, scroll up halfway in draft modal.
+    if (next_focus_draft_row.position().top < 55) {
+        // 55 is the minimum distance from the top that will require extra scrolling.
+        $(".drafts-list")[0].scrollTop -= $(".drafts-list")[0].clientHeight / 2;
+    }
+
+    // If focused draft is cut off from the bottom, scroll down halfway in draft modal.
+    var dist_from_top = next_focus_draft_row.position().top;
+    var total_dist = dist_from_top + next_focus_draft_row[0].clientHeight;
+    var dist_from_bottom = $(".drafts-container")[0].clientHeight - total_dist;
+    if (dist_from_bottom < -4) {
+        //-4 is the min dist from the bottom that will require extra scrolling.
+        $(".drafts-list")[0].scrollTop += $(".drafts-list")[0].clientHeight / 2;
+    }
+}
+
 exports.drafts_handle_events = function (e, event_key) {
     var draft_arrow = draft_model.get();
     var draft_id_arrow = Object.getOwnPropertyNames(draft_arrow);
@@ -268,17 +303,7 @@ exports.drafts_handle_events = function (e, event_key) {
     if (event_key === "up_arrow") {
         var focus_draft_up_row = $(".draft-info-box:focus")[0].parentElement;
         var prev_focus_draft_row = $(focus_draft_up_row).prev();
-        if ($(".draft-info-box:first")[0].parentElement === prev_focus_draft_row[0]) {
-            $(".drafts-list")[0].scrollTop = 0;
-        }
-        if (prev_focus_draft_row[0].children[0] !== undefined) {
-            prev_focus_draft_row[0].children[0].focus();
-            // If the next draft is cut off, scroll more.
-            if (prev_focus_draft_row.position().top < 55) {
-                // 55 is the minimum distance from the top that will require extra scrolling.
-                $(".drafts-list")[0].scrollTop = $(".drafts-list")[0].scrollTop - (55 - prev_focus_draft_row.position().top);
-            }
-        }
+        drafts_scroll(prev_focus_draft_row);
     }
 
     // This detects down arrow key presses when the draft overlay
@@ -286,22 +311,7 @@ exports.drafts_handle_events = function (e, event_key) {
     if (event_key === "down_arrow") {
         var focus_draft_down_row = $(".draft-info-box:focus")[0].parentElement;
         var next_focus_draft_row = $(focus_draft_down_row).next();
-        if ($(".draft-info-box:last")[0].parentElement === next_focus_draft_row[0]) {
-            $(".drafts-list")[0].scrollTop = $('.drafts-list')[0].scrollHeight - $('.drafts-list').height();
-        }
-        if (next_focus_draft_row[0] !== undefined) {
-            next_focus_draft_row[0].children[0].focus();
-            // If the next draft is cut off, scroll more.
-            if (next_focus_draft_row.position() !== undefined) {
-                var dist_from_top = next_focus_draft_row.position().top;
-                var total_dist = dist_from_top + next_focus_draft_row[0].clientHeight;
-                var dist_from_bottom = $(".drafts-container")[0].clientHeight - total_dist;
-                if (dist_from_bottom < -4) {
-                    //-4 is the min dist from the bottom that will require extra scrolling.
-                    $(".drafts-list")[0].scrollTop = $(".drafts-list")[0].scrollTop + 2 - (dist_from_bottom);
-                }
-            }
-        }
+        drafts_scroll(next_focus_draft_row);
     }
 
     var elt = document.activeElement;
