@@ -122,12 +122,28 @@ function render(template_name, args) {
 (function admin_default_streams_list() {
     var html = '<table>';
     var streams = ['devel', 'trac', 'zulip'];
+
+    // When the logged in user is admin
     _.each(streams, function (stream) {
-        var args = {stream: {name: stream, invite_only: false}};
+        var args = {stream: {name: stream, invite_only: false},
+                    can_modify: true,
+                    };
         html += render('admin_default_streams_list', args);
     });
     html += "</table>";
     var span = $(html).find(".default_stream_name:first");
+    assert.equal(span.text(), "devel");
+
+    // When the logged in user is not admin
+    html = '<table>';
+    _.each(streams, function (stream) {
+        var args = {stream: {name: stream, invite_only: false},
+                    can_modify: false,
+                    };
+        html += render('admin_default_streams_list', args);
+    });
+    html += "</table>";
+    span = $(html).find(".default_stream_name:first");
     assert.equal(span.text(), "devel");
     global.write_handlebars_output("admin_default_streams_list", html);
 }());

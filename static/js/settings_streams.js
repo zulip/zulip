@@ -54,7 +54,7 @@ exports.build_default_stream_table = function (streams_data) {
     (function () {
         var table = $("#admin_default_streams_table").expectOne();
         _.each(streams_data, function (stream) {
-            var row = $(templates.render("admin_default_streams_list", {stream: stream}));
+            var row = $(templates.render("admin_default_streams_list", {stream: stream, can_modify: page_params.is_admin}));
             set_up_remove_click_hander(row, stream.name);
             self.row_dict.set(stream.stream_id, row);
             table.append(row);
