@@ -313,14 +313,14 @@ exports.complete_starting_tasks = function (msg_type, opts) {
     resize.resize_bottom_whitespace();
 };
 
-function abort_xhr() {
+exports.abort_xhr = function () {
     $("#compose-send-button").removeAttr("disabled");
     var xhr = $("#compose").data("filedrop_xhr");
     if (xhr !== undefined) {
         xhr.abort();
         $("#compose").removeData("filedrop_xhr");
     }
-}
+};
 
 exports.cancel = function () {
     $("#new_message_content").height(40 + "px");
@@ -1141,7 +1141,7 @@ $(function () {
         $("#compose-send-button").attr("disabled", "");
         $("#send-status").addClass("alert-info")
                          .show();
-        $(".send-status-close").one('click', abort_xhr);
+        $(".send-status-close").one('click', exports.abort_xhr);
         $("#error-msg").html(
             $("<p>").text(i18n.t("Uploading…"))
                     .after('<div class="progress progress-striped active">' +
