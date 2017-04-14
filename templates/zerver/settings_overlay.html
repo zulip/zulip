@@ -57,10 +57,12 @@
                     <i class="icon icon-vector-trash"></i>
                     <div class="text">{{ _('Deactivated users') }}</div>
                 </li>
+                {% endif %}
                 <li class="admin" tabindex="1" data-section="bot-list-admin">
                     <i class="icon icon-vector-github"></i>
                     <div class="text">{{ _('Bots') }}</div>
                 </li>
+                {% if is_admin %}
                 <li class="admin" tabindex="1" data-section="streams-list-admin">
                     <i class="icon icon-vector-exchange"></i>
                     <div class="text">{{ _('Delete streams') }}</div>

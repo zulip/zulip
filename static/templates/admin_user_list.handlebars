@@ -6,15 +6,15 @@
   <td>
     <span class="email">{{email}}</span>
   </td>
+  {{#if is_bot}}
+    <td>
+      <span class="owner">{{bot_owner}}</span>
+    </td>
+  {{else if ../can_modify}}
+    <td class="last_active">
+    </td>
+  {{/if}}
   {{#if ../can_modify}}
-    {{#if is_bot}}
-      <td>
-        <span class="owner">{{bot_owner}}</span>
-      </td>
-    {{else}}
-      <td class="last_active">
-      </td>
-    {{/if}}
     <td>
       <span class="user-status-settings">
         {{#if is_active}}
