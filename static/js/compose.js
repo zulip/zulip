@@ -111,11 +111,15 @@ function clear_invites() {
     $("#compose_invite_users").empty();
 }
 
+exports.clear_textarea = function () {
+    $("#compose").find('input[type=text], textarea').val('');
+};
+
 function clear_box() {
     clear_invites();
     clear_all_everyone_warnings();
     user_acknowledged_all_everyone = undefined;
-    $("#compose").find('input[type=text], textarea').val('');
+    exports.clear_textarea();
     $("#new_message_content").removeData("draft-id");
     exports.autosize_textarea();
     $("#send-status").hide(0);
