@@ -133,8 +133,12 @@ function clear_preview_area() {
     $("#markdown_preview").show();
 }
 
-function hide_box() {
+exports.blur_textarea = function () {
     $('.message_comp').find('input, textarea, button').blur();
+};
+
+function hide_box() {
+    exports.blur_textarea();
     $('#stream-message').hide();
     $('#private-message').hide();
     $(".new_message_textarea").css("min-height", "");
