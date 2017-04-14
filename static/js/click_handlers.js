@@ -8,22 +8,40 @@ var exports = {};
 $(function () {
 
     // MOUSE MOVING DETECTION
-    var clicking = false;
-    var mouse_moved = false;
 
-    function mousedown() {
-        mouse_moved = false;
-        clicking = true;
-    }
+    var drag = (function () {
+        var start;
+        var time;
 
-    function mousemove() {
-        if (clicking) {
-            mouse_moved = true;
-        }
-    }
+        return {
+            start: function (e) {
+                start = { x: e.offsetX, y: e.offsetY };
+                time = new Date().getTime();
+            },
 
-    $("#main_div").on("mousedown", ".messagebox", mousedown);
-    $("#main_div").on("mousemove", ".messagebox", mousemove);
+            end: function (e) {
+                var end = { x: e.offsetX, y: e.offsetY };
+
+                // get the linear difference between two coordinates on the screen.
+                var dist = Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2));
+
+                start = undefined;
+
+                this.val = dist;
+                this.time = new Date().getTime() - time;
+
+                return dist;
+            },
+            val: null,
+        };
+    }());
+
+    $("#main_div").on("mousedown", ".messagebox", function (e) {
+        drag.start(e);
+    });
+    $("#main_div").on("mouseup", ".messagebox", function (e) {
+        drag.end(e);
+    });
 
     // MESSAGE CLICKING
 
@@ -46,8 +64,13 @@ $(function () {
             // stopPropagation prevents them from being called.
             return;
         }
-        if (!(clicking && mouse_moved)) {
-            // Was a click (not a click-and-drag).
+
+        // If the linear distance is less than 5px and the duration of the click
+        // is under 150ms then label it as a click.
+        // Also label as a click if the drag length is less than 2px.
+        // otherwise, it is a copy/paste likely and it should not focus the
+        // .messagebox eleemnt.
+        if ((drag.val < 5 && drag.time < 150) || drag.val < 2) {
             var row = $(this).closest(".message_row");
             var id = rows.id(row);
 
@@ -61,8 +84,6 @@ $(function () {
             e.stopPropagation();
             popovers.hide_all();
         }
-        mouse_moved = false;
-        clicking = false;
     });
 
     function toggle_star(message_id) {
