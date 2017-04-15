@@ -39,6 +39,7 @@ secret/embarrassing, etc.
   Mentioning other users is great for timely questions or making sure
   someone who is not online sees your message.
 * Converse informally; there's no need to use titles like "Sir" or "Madam".
+* Use gender-neutral language.
 * Follow the [community code of conduct](code-of-conduct.html).
 * Participate!  Zulip is a friendly and welcoming community, and we
   love meeting new people, hearing about what brought them to Zulip,
