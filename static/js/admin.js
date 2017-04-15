@@ -62,8 +62,6 @@ function _setup_page() {
         exports.launch_page(tab);
     }
 
-    exports.show_or_hide_menu_item();
-
     $("#id_realm_default_language").val(page_params.realm_default_language);
 
     // We set this flag before we're fully loaded so that the populate
@@ -76,6 +74,9 @@ function _setup_page() {
     settings_streams.set_up();
     settings_filters.set_up();
 
+    // Do this after calling the setup_up methods, so that we can
+    // disable any dynamically rendered elements.
+    exports.show_or_hide_menu_item();
 }
 
 exports.launch_page = function (tab) {
