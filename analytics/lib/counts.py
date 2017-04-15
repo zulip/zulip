@@ -467,6 +467,10 @@ count_stream_by_realm_query = """
 ## CountStat declarations ##
 
 count_stats_ = [
+    # Messages Sent stats
+    # Stats that count the number of messages sent in various ways.
+    # These are also the set of stats that read from the Message table.
+
     CountStat('messages_sent:is_bot:hour',
               sql_data_collector(UserCount, count_message_by_user_query, (UserProfile, 'is_bot')),
               CountStat.HOUR),
@@ -479,27 +483,38 @@ count_stats_ = [
               sql_data_collector(StreamCount, count_message_by_stream_query, (UserProfile, 'is_bot')),
               CountStat.DAY),
 
-    # Sanity check on the bottom two stats. Is only an approximation,
-    # e.g. if a user is deactivated between the end of the day and when this
-    # stat is run, they won't be counted.
-    CountStat('active_users:is_bot:day',
-              sql_data_collector(RealmCount, count_user_by_realm_query, (UserProfile, 'is_bot')),
-              CountStat.DAY, interval=TIMEDELTA_MAX),
-    # In RealmCount, 'active_humans_audit::day' should be the partial sum sequence
-    # of 'active_users_log:is_bot:day', for any realm that started after the
-    # latter stat was introduced.
+    # Number of Users stats
+    # Stats that count the number of active users in the UserProfile.is_active sense.
+
     # 'active_users_audit:is_bot:day' is the canonical record of which users were
     # active on which days (in the UserProfile.is_active sense).
     # Important that this stay a daily stat, so that 'realm_active_humans::day' works as expected.
     CountStat('active_users_audit:is_bot:day',
               sql_data_collector(UserCount, check_realmauditlog_by_user_query, (UserProfile, 'is_bot')),
               CountStat.DAY),
+    # Sanity check on 'active_users_audit:is_bot:day', and a archetype for future LoggingCountStats.
+    # In RealmCount, 'active_users_audit:is_bot:day' should be the partial
+    # sum sequence of 'active_users_log:is_bot:day', for any realm that
+    # started after the latter stat was introduced.
     LoggingCountStat('active_users_log:is_bot:day', RealmCount, CountStat.DAY),
+    # Another sanity check on 'active_users_audit:is_bot:day'. Is only an
+    # approximation, e.g. if a user is deactivated between the end of the
+    # day and when this stat is run, they won't be counted. However, is the
+    # simplest of the three to inspect by hand.
+    CountStat('active_users:is_bot:day',
+              sql_data_collector(RealmCount, count_user_by_realm_query, (UserProfile, 'is_bot')),
+              CountStat.DAY, interval=TIMEDELTA_MAX),
+
+    # User Activity stats
+    # Stats that measure user activity in the UserActivityInterval sense.
 
     CountStat('15day_actives::day',
               sql_data_collector(UserCount, check_useractivityinterval_by_user_query, None),
               CountStat.DAY, interval=timedelta(days=15)-UserActivityInterval.MIN_INTERVAL_LENGTH),
     CountStat('minutes_active::day', DataCollector(UserCount, do_pull_minutes_active), CountStat.DAY),
+
+    # Dependent stats
+    # Must come after their dependencies.
 
     # Canonical account of the number of active humans in a realm on each day.
     DependentCountStat('realm_active_humans::day',
