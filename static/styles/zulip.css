@@ -1195,6 +1195,10 @@ div.focused_table {
     position: relative;
 }
 
+.message_content:empty {
+    display: none;
+}
+
 .message_edit_content {
     line-height: 18px;
 }
