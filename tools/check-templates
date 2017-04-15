@@ -230,7 +230,6 @@ def check_handlebar_templates(templates):
         'static/templates/settings/auth-methods-settings-admin.handlebars',
         'static/templates/settings/bot-list-admin.handlebars',
         'static/templates/settings/bot-settings.handlebars',
-        'static/templates/settings/deactivated-users-admin.handlebars',
         'static/templates/settings/deactivation-user-modal.handlebars',
         'static/templates/settings/default-streams-list-admin.handlebars',
         'static/templates/settings/display-settings.handlebars',
