@@ -82,17 +82,26 @@ function add_display_time(group, message_container, prev) {
 }
 
 function populate_group_from_message_container(group, message_container) {
-    group.is_stream = message_container.msg.is_stream;
-    group.is_private = message_container.msg.is_private;
+    var apply_props = function (o1, o2, list) {
+        list.forEach(function (o) {
+            o2[o] = o1[o];
+        });
+
+        return o2;
+    };
+
+    group = apply_props(message_container.msg, group, ["is_stream", "is_private"]);
 
     if (group.is_stream) {
         group.background_color = stream_data.get_color(message_container.msg.stream);
+
+        var payload = stream_color.lighter_stream_colors(group.background_color);
+        group.background_color_light = payload.light;
+        group.background_color_medium = payload.medium;
+
+        group = apply_props(message_container.msg, group, ["subject", "match_subject", "stream_url", "topic_url"]);
         group.color_class = stream_color.get_color_class(group.background_color);
         group.invite_only = stream_data.get_invite_only(message_container.msg.stream);
-        group.subject = message_container.msg.subject;
-        group.match_subject = message_container.msg.match_subject;
-        group.stream_url = message_container.stream_url;
-        group.topic_url = message_container.topic_url;
         var sub = stream_data.get_sub(message_container.msg.stream);
         if (sub === undefined) {
             // Hack to handle unusual cases like the tutorial where
@@ -107,15 +116,13 @@ function populate_group_from_message_container(group, message_container) {
         group.pm_with_url = message_container.pm_with_url;
         group.display_reply_to = message_store.get_pm_full_names(message_container.msg);
     }
-    group.display_recipient = message_container.msg.display_recipient;
-    group.always_visible_topic_edit = message_container.msg.always_visible_topic_edit;
-    group.on_hover_topic_edit = message_container.msg.on_hover_topic_edit;
-    group.subject_links = message_container.msg.subject_links;
 
     var time = new XDate(message_container.msg.timestamp * 1000);
     var date_element = timerender.render_date(time)[0];
 
     group.date = date_element.outerHTML;
+
+    group = apply_props(message_container.msg, group, ["display_recipient", "always_visible_topic_edit", "on_hover_topic_edit", "subject_links", "subject", "match_subject", "stream_url", "topic_url"]);
 }
 
 MessageListView.prototype = {

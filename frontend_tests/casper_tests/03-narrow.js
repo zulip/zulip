@@ -49,7 +49,7 @@ function expect_home() {
     casper.then(function () {
         casper.waitUntilVisible('#zhome', function () {
             common.expected_messages('zhome', [
-                'Verona > frontend test',
+                '# Verona > frontend test',
                 'You and Cordelia Lear, King Hamlet',
                 'You and Cordelia Lear',
             ], [
@@ -65,9 +65,9 @@ function expect_stream() {
     casper.then(function () {
         casper.waitUntilVisible('#zfilt', function () {
             common.expected_messages('zfilt', [
-                'Verona > frontend test',
-                'Verona > other subject',
-                'Verona > frontend test',
+                '# Verona > frontend test',
+                '# Verona > other subject',
+                '# Verona > frontend test',
             ], [
                 '<p>test message A</p>',
                 '<p>test message B</p>',
@@ -82,7 +82,7 @@ function expect_stream_subject() {
     casper.then(function () {
         casper.waitUntilVisible('#zfilt', function () {
             common.expected_messages('zfilt', [
-                'Verona > frontend test',
+                '# Verona > frontend test',
             ], [
                 '<p>test message A</p>',
                 '<p>test message B</p>',
@@ -96,9 +96,9 @@ function expect_subject() {
     casper.then(function () {
         casper.waitUntilVisible('#zfilt', function () {
             common.expected_messages('zfilt', [
-                'Verona > frontend test',
-                'Denmark > frontend test',
-                'Verona > frontend test',
+                '# Verona > frontend test',
+                '# Denmark > frontend test',
+                '# Verona > frontend test',
             ], [
                 '<p>test message A</p>',
                 '<p>test message B</p>',

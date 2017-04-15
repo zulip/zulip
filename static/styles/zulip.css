@@ -12,17 +12,16 @@ html {
 
 body {
     font-family: 'Humbug', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    font-size: 0.88rem;
 }
 
 /* Common background color */
 body,
 #tab_bar_underpadding {
-    background-color: #ffffff;
-    -webkit-transition: background-color 200ms linear;
-    -moz-transition: background-color 200ms linear;
-    -o-transition: background-color 200ms linear;
-    -ms-transition: background-color 200ms linear;
-    transition: background-color 200ms linear;
+    background: -moz-linear-gradient(top,  rgba(255,255,255,1) 40%, rgba(255,255,255,0) 100%);
+    background: -webkit-linear-gradient(top,  rgba(255,255,255,1) 40%,rgba(255,255,255,0) 100%);
+    background: linear-gradient(to bottom,  rgba(255,255,255,1) 40%,rgba(255,255,255,0) 100%);
 }
 
 input,
@@ -37,8 +36,15 @@ blockquote p {
     font-weight: normal;
 }
 
+/* master link color: #65b5de */
 a {
     cursor: pointer;
+    color: #65b5de;
+}
+
+a:hover {
+    color: #0d86c3;
+    text-decoration: none;
 }
 
 .no-select {
@@ -84,7 +90,7 @@ p.n-margin {
 .top-messages-logo {
     position: absolute;
     left: calc(50% - 12px);
-    top: 67px;
+    top: 22px;
     width: 24px;
     height: 24px;
 }
@@ -151,12 +157,14 @@ p.n-margin {
 }
 
 .header {
-    position: fixed;
+    position: relative;
     z-index: 102; /* Needs to be higher than .alert-bar-container */
     width: 100%;
     background: #ffffff;
-    border-bottom: 1px solid #dadada;
+    border-bottom: 1px solid #eee;
     height: 40px;
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
 .app {
@@ -210,12 +218,12 @@ p.n-margin {
 .app-main .column-left .left-sidebar,
 .app-main .column-right .right-sidebar {
     position: fixed;
-    margin-top: 50px;
     z-index: 100;
+    margin-top: 9px; /* it's 41px + 9px to match floating recipient. */
 }
 
 .app-main .column-left .left-sidebar {
-    width: 242px;
+    width: 250px;
     padding-left: 0px;
 }
 
@@ -227,6 +235,8 @@ p.n-margin {
 .app-main .column-middle {
     min-height: 100%;
     background-color: #ffffff;
+    border-left: 1px solid #eee;
+    border-right: 1px solid #eee;
 }
 
 .column-middle {
@@ -387,7 +397,7 @@ code {
 pre {
     /* code block text is a bit smaller than normal text */
     font-size: 0.8em;
-    line-height: 1.4;
+    line-height: 1.5;
     white-space: pre;
     overflow-x: auto;
     word-wrap: normal;
@@ -461,7 +471,8 @@ a:hover code {
 }
 
 .sidebar-title {
-    font-size: 11px;
+    font-size: 1em;
+    color: #aaa;
     font-weight: normal;
     display: inline;
 }
@@ -505,7 +516,7 @@ li.actual-dropdown-menu i {
 
 .message_area_padder {
     /* The height of the header and the tabbar plus a small gap */
-    margin-top: 100px;
+    margin-top: 60px;
     /* This is needed for the floating recipient bar
        in Firefox only, for some reason;
        otherwise it gets a scrollbar */
@@ -565,7 +576,7 @@ td.pointer {
 }
 
 .include-sender .message_time {
-    top: -4px;
+    top: 0px;
 }
 
 .message_time {
@@ -579,10 +590,8 @@ td.pointer {
     right: -105px;
     line-height: 20px;
     text-align: right;
-    -webkit-transition: background-color 2.7s ease-in, color 2.7s ease-in;
-    -moz-transition: background-color 2.7s ease-in, color 2.7s ease-in;
-    -o-transition: background-color 2.7s ease-in, color 2.7s ease-in;
-    transition: background-color 2.7s ease-in, color 2.7s ease-in;
+    opacity: 1;
+    transition: all 0.2s ease;
 }
 
 /* The way this overrides the menus with a background-color and a high
@@ -616,9 +625,12 @@ td.pointer {
 .message_controls {
     display: inline-block;
     position: absolute;
+    right: -60px;
     top: 2px;
     right: -56px;
+    transform: translateX(5px);
     z-index: 1;
+    transition: all 0.3s ease;
 }
 
 .message_controls > div {
@@ -635,10 +647,14 @@ td.pointer {
 
 .message_controls > div {
     padding: 0px 1px;
+
+    opacity: 0;
+    transition: all 0.2s ease;
 }
 
-.include-sender .message_controls {
-    top: -3px;
+.message_hovered .message_controls {
+    transform: translateX(0px);
+    opacity: 1;
 }
 
 .message_data {
@@ -656,33 +672,33 @@ td.pointer {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-weight: 600;
+    font-weight: 500;
     line-height: 14px;
     position: relative;
+    margin: 0px 10px 5px 10px;
     z-index: 0;
 }
 
 .message_list .recipient_row {
-    background: #f1f1f1;
-    border-bottom: 1px solid #e2e2e2;
-    border-top: 1px solid #e2e2e2;
     margin-bottom: 10px;
 }
 
 .stream_label {
     display: inline-block;
     padding: 3px 4px 2px 4px;
-    font-weight: normal;
+    font-weight: 600;
     height: 17px;
     line-height: 17px;
     border-top-color: rgba(0, 0, 0, 0);
     border-right-color: rgba(0, 0, 0, 0);
     border-bottom-color: rgba(0, 0, 0, 0);
-    background-color: #e2e2e2;
-    border-left-color: #e2e2e2;
     border-width: 0px;
     position: relative;
     text-decoration: none;
+    color: #fff !important;
+
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
 }
 
 .stream_label .invite-stream-icon {
@@ -694,49 +710,20 @@ td.pointer {
     margin-left: 0px;
 }
 
-.stream_label:hover {
-    color: inherit !important;
-    text-decoration: none;
-}
-
-.stream_label:after {
-    left: 100%;
-    top: 50%;
-    content: " ";
-    height: 0px;
-    width: 0px;
-    position: absolute;
-    pointer-events: none;
-    margin-top: -11px;
-    border-style: solid;
-    border-width: 11px 0 11px 5px;
-    border-color: inherit;
-    z-index: 2;
-    -moz-transform: scale(.9999);
-}
-
-.stream_label:before {
-    left: 100%;
-    top: 50%;
-    content: " ";
-    height: 0px;
-    width: 0px;
-    position: absolute;
-    pointer-events: none;
-    margin-top: -14px;
-    border-style: solid;
-    border-width: 14px 0 14px 6px;
-    border-color: rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) rgba(0, 0, 0, 0) #ffffff;
-    z-index: 1;
-    -moz-transform: scale(.9999);
-}
-
 .stream_topic {
     display: inline-block;
-    padding: 3px 6px 2px 12px;
+    vertical-align: top;
+    padding: 2px 6px 1px 2px;
     margin-left: -5px;
     height: 17px;
+
     line-height: 17px;
+    font-weight: 600;
+
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+    border: 1px solid #eee;
+    color: #444;
 }
 
 .recipient_row_date {
@@ -745,11 +732,21 @@ td.pointer {
     top: 0;
 
     color: #888;
-    font-size: 12px;
+    background-color: #fff;
+
+    font-size: 0.8em;
     font-weight: 600;
     padding: 3px 11px 2px 10px;
     height: 17px;
     line-height: 17px;
+}
+
+.message-header-contents .buffer {
+    background: white;
+    width: 7px;
+    height: 20px;
+    display: inline-block;
+    margin-left: -2px;
 }
 
 .recipient_row_date.hide-date {
@@ -898,17 +895,22 @@ td.pointer {
 .floating_recipient .message_header_private_message {
     border-bottom: 0px;
     border-left: 0px;
+    border-radius: 4px;
+    width: 100%;
 }
 
 .message_header_private_message .message_label_clickable {
-    background-color: #444444;
+    background-color: #999;
+    color: #fff;
     display: inline-block;
+    vertical-align: top;
     padding: 3px 4px 2px 4px;
-    font-weight: normal;
     font-size: 14px;
+    font-weight: 600;
     height: 17px;
     line-height: 17px;
-    border-left-color: #444;
+    border-radius: 4px;
+    box-shadow: 8px 0px 0px #fff;
 }
 
 /* Base color backgrounds for messageboxes,
@@ -917,11 +919,6 @@ td.pointer {
 .messagebox {
     background-color: #ffffff;
     position: relative;
-}
-
-.private-message .messagebox,
-.message_header_private_message .message-header-contents {
-    background-color: #feffe0;
 }
 
 .floating_recipient .message-header-contents {
@@ -993,11 +990,7 @@ td.pointer {
 }
 
 .selected_message .messagebox-content {
-    box-shadow: inset 0px 0px 0px 2px #4577bc,
-                     -1px -1px 0px 0px #4577bc,
-                      1px 1px 0px 0px #4577bc,
-                     -1px 1px 0px 0px #4577bc,
-                      1px -1px 0px 0px #4577bc;
+    background-color: #f5f5f5;
 }
 
 .message_sender {
@@ -1039,11 +1032,11 @@ td.pointer {
 
 .sender_name_hovered .sender_name,
 .sender_name_hovered .sender_name-in-status {
-    color: #0088CC;
+    color: #65b5de;
 }
 
 .sender_name_hovered .inline_profile_picture {
-    border-color: #0088CC;
+    border-color: #65b5de;
 }
 
 .message_sender .bot-icon {
@@ -1061,7 +1054,7 @@ td.pointer {
 }
 
 .actions_hover:hover {
-    color: #0088CC;
+    color: #65b5de;
 }
 
 .message_failed,
@@ -1077,32 +1070,50 @@ td.pointer {
     position: relative;
 }
 
-a.message_label_clickable:hover {
-    cursor: pointer;
-    color: #08C;
+a.message_label_clickable {
+    color: #444;
 }
 
-.on_hover_topic_edit {
-    opacity: .1;
+.narrows_by_subject {
+    padding-left: 4px;
+}
+
+a.message_label_clickable:hover {
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.on_hover_topic_edit,
+.always_visible_topic_edit,
+.on_hover_topic_mute {
+    transition: all 0.2s ease;
+    background-color: #fff;
+    padding: 0px 7px;
+    margin-left: -3px;
+}
+
+.on_hover_topic_edit,
+.on_hover_topic_mute {
+    color: #eee;
+    transition: all 0.2s ease;
 }
 
 .always_visible_topic_edit {
-    opacity: .7;
+    color: #ccc;
 }
 
-.on_hover_topic_edit:hover,
-.always_visible_topic_edit:hover {
+.message-header-contents:hover .on_hover_topic_edit,
+.message-header-contents:hover .always_visible_topic_edit,
+.message-header-contents:hover .on_hover_topic_mute {
     cursor: pointer;
-    opacity: 1.0;
+    color: #ccc;
 }
 
-.on_hover_topic_mute {
-    opacity: .1;
-}
-
-.on_hover_topic_mute:hover {
+.message-header-contents .on_hover_topic_edit:hover,
+.message-header-contents .always_visible_topic_edit:hover,
+.message-header-contents .on_hover_topic_mute:hover {
     cursor: pointer;
-    opacity: 1.0;
+    color: #aaa;
 }
 
 .edit_content {
@@ -1172,7 +1183,7 @@ a.dark_background:hover,
 
 .actions_hovered .message_time,
 .actions_hovered .info {
-    color: #0088CC;
+    color: #65b5de;
     cursor: pointer;
 }
 
@@ -1196,8 +1207,6 @@ div.message_table {
 
 .message_row {
     position: relative;
-    border-left: 1px solid #e2e2e2;
-    border-right: 1px solid #e2e2e2;
 }
 
 .message_row.selected_message {
@@ -1304,7 +1313,7 @@ div.focused_table {
 .message_length_controller {
     display: none;
     text-align: center;
-    color: #0088CC;
+    color: #65b5de;
 
     /* to match .message_content */
     margin-left: 5px;
@@ -1361,6 +1370,7 @@ blockquote p {
 
 .messagebox-content {
     padding: 4px 115px 1px 10px;
+    border-radius: 4px;
 }
 
 .last_message .messagebox-content {
@@ -1574,7 +1584,7 @@ blockquote p {
 #tab_bar_underpadding {
     position: absolute;
     width: 100%;
-    top: 40px;
+    top: 0px;
     height: 20px;
     z-index: 99;
 }
@@ -1638,9 +1648,28 @@ blockquote p {
     right: 0px;
     top: 30px;
     min-width: 180px;
-    -webkit-box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
-    -moz-box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
-    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+    -webkit-box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2), 0px 0px 25px rgba(0, 0, 0, 0.2);
+    -moz-box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2), 0px 0px 25px rgba(0, 0, 0, 0.2);
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2), 0px 0px 25px rgba(0, 0, 0, 0.2);
+
+    border-radius: 0px;
+    border: none;
+}
+
+.actual-dropdown-menu li > a:hover,
+.dropdown-menu li > a:focus {
+    background-image: none;
+    background-color: #52c2af;
+}
+
+.nav .dropdown-menu a {
+    padding: 3px 10px;
+}
+
+.nav .dropdown-menu a i {
+    display: inline-block;
+    width: 20px;
+    text-align: center;
 }
 
 .nav .dropdown-menu:after {
@@ -1742,7 +1771,7 @@ nav a .no-style {
     width: auto;
     float: none;
     overflow: hidden;
-    border-right: 1px solid #dadada;
+    border-right: 1px solid #eee;
     height: 40px;
 }
 
@@ -1842,6 +1871,8 @@ div.floating_recipient {
     border-collapse: separate;
     width: 100%;
     position: relative;
+    top: 3px;
+    background-color: #fff;
 }
 
 #floating_recipient_bar {
@@ -1849,7 +1880,23 @@ div.floating_recipient {
 }
 
 .message-header-contents {
-    background: #e2e2e2;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.message-header-contents .line {
+    position: relative;
+    top: -11px;
+
+    width: 100%;
+    height: 1px;
+    background-color: #eee;
+
+    z-index: -1;
+}
+
+.message-header-contents:hover .line {
+    background-color: #e2e2e2;
 }
 
 .recipient_row.sticky {
@@ -2024,7 +2071,7 @@ div.floating_recipient {
 #loading_more_messages_indicator_box {
     position: relative;
     left: -50%;
-    top: -40px;
+    top: -45px;
     z-index: 1;
     -webkit-border-radius: 6px;
     -moz-border-radius: 6px;
@@ -2057,6 +2104,10 @@ div.floating_recipient {
 
 .help-table {
     table-layout: fixed;
+}
+
+.administration {
+    padding-left: 15px;
 }
 
 .conversation-partners {
@@ -2290,6 +2341,7 @@ button.topic_edit_cancel {
 }
 
 .empty-star {
+    display: inline-block;
     color: #bbb;
 }
 
@@ -2328,6 +2380,7 @@ button.topic_edit_cancel {
 .date_row .date-direction {
     display: inline-block;
     padding-right: 5px;
+    color: #aaa;
 }
 
 .date_row .date-line {
@@ -2339,19 +2392,18 @@ button.topic_edit_cancel {
     margin: 0px 5px 0px 5px;
 }
 
-.date_row span {
+.date_row > span {
     display: block;
     background: inherit;
     padding: 4px;
     overflow: hidden;
     text-transform: uppercase;
     font-size: 0.8em;
-    color: #bbb;
-    text-shadow: 1px 1px 0px #fff;
+    color: #fff;
 }
 
-.date_row span:before,
-.date_row span:after {
+.date_row > span:before,
+.date_row > span:after {
     display: inline-block;
     position: relative;
     content: " ";
@@ -2362,18 +2414,44 @@ button.topic_edit_cancel {
     border-bottom: 1px solid #fff;
 }
 
-.date_row span:before {
+.date_row > span:before {
     right: 0.5em;
     margin-left: -50%;
 }
 
-.date_row span:after {
+.date_row > span:after {
     left: 0.5em;
     margin-right: -50%;
 }
 
 .include-sender .message_edit {
     margin-top: -14px;
+}
+
+.date_row span span {
+    background-color: #aaa;
+    padding: 2px 5px 0px 5px;
+    border-radius: 8px;
+}
+
+#group-pm-list {
+    display: none;
+}
+
+#userlist-header,
+#group-pm-header {
+    border-top: 1px solid #e2e2e2;
+    margin-top: 5px;
+    margin-right: 10px;
+}
+
+.sidebar-items:first-of-type #userlist-header {
+    border-top: none;
+}
+
+#feedback_section {
+    text-align: left;
+    padding-bottom: 10px;
 }
 
 .message_edit {
@@ -2477,10 +2555,6 @@ button.topic_edit_cancel {
 #settings .settings-icon {
     margin-right: 10px;
     font-size: 20px;
-}
-
-#home {
-    margin-top: 41px;
 }
 
 .message-pane {

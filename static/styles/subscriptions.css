@@ -26,7 +26,6 @@
 }
 
 .subscriptions {
-    margin-top: 55px;
     padding-left: 15px;
     -webkit-font-smoothing: antialiased;
 }
@@ -84,7 +83,6 @@
     right: 300px;
     margin: 0px auto;
     opacity: 0.9 !important;
-    top: 55px;
     max-width: 800px;
 }
 

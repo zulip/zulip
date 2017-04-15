@@ -9,17 +9,20 @@
 
     <div class="subscription_block selectable_sidebar_block" data-name="{{name}}">
 
-      <div id="stream_sidebar_swatch_{{id}}" class="streamlist_swatch{{#if invite_only}} private-stream-swatch{{/if}}"
-       style="background-color: {{color}}">&nbsp;</div>
+       <span id="stream_sidebar_privacy_swatch_{{id}}" class="stream-privacy" style="color: {{color}}">
+           {{! This controls whether the swatchnext to streams in the left sidebar has a lock icon. }}
+           {{#if invite_only}}
+             <i class="icon-vector-lock"></i>
+           {{else}}
+             <span class="hashtag"></span>
+           {{/if}}
+
+       </span>
 
       <a href="{{uri}}" class="stream-name">{{name}}
       </a>
 
       <div class="count"><div class="value"></div></div>
-
-      <span id="stream_sidebar_privacy_swatch_{{id}}" class="stream-privacy" style="color: {{color}}">
-        {{partial "stream_privacy"}}
-      </span>
 
     </div>
     <span class="arrow stream-sidebar-arrow"><i class="icon-vector-chevron-down"></i></span>

@@ -11,11 +11,11 @@
 #streams_filter_icon,
 #join_unsub_stream {
     float: right;
-    color: #000;
+    color: #888;
     font-size: 13px;
     margin-top: 3px;
-    margin-left: 6px;
-    opacity: 0.5;
+    margin-left: 10px;
+    opacity: 0.3;
 }
 
 #streams_inline_cog:hover,
@@ -23,13 +23,24 @@
     opacity: 1.0;
 }
 
-#join_unsub_stream {
+#streams_header #join_unsub_stream {
     margin-top: 1px;
 }
 
-#streams_header a {
+#streams_inline_cog {
+    margin-right: 10px;
+}
+
+#streams_header .sidebar-title a {
     color: inherit;
     text-decoration: none;
+}
+
+.hashtag:empty:after {
+    content: "#";
+    font-size: 1.3rem;
+    font-weight: 800;
+    line-height: 1;
 }
 
 .tooltip {
@@ -41,6 +52,10 @@
     margin: 2px 0px 2px 0px;
     padding: 0;
     font-weight: normal;
+}
+
+#stream_filters li {
+    padding: 1px 0px;
 }
 
 #stream-filters-container {
@@ -63,11 +78,6 @@
     margin-left: 1ex;
 }
 
-#global_filters li:hover,
-#stream_filters li:hover {
-    background-color: #e2e8dd;
-}
-
 #stream_filters li.active-sub-filter:hover {
     background-color: #ccd6cc;
 }
@@ -82,15 +92,18 @@ ul.filters a {
 }
 
 ul.filters hr {
-    margin-top: 10px;
-    margin-bottom: 10px;
+    margin: 10px;
 }
 
 li.active-filter,
 li.active-sub-filter {
     font-weight: 600 !important;
-    background: #ddedf6;
+    background: #eee;
     position: relative;
+}
+
+li.narrow-filter:hover {
+    background-color: #fafafa;
 }
 
 li.hidden-filter {
@@ -112,9 +125,18 @@ li.hidden-filter {
 
 #global_filters .global-filter {
     position: relative;
-    padding: 1px 10px;
-    font-size: 16px;
-    font-weight: 300;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.left-sidebar li a {
+    color: #555
+}
+
+.left-sidebar li {
+    font-size: 1em;
+    padding-top: 2px;
+    padding-bottom: 2px;
 }
 
 #global_filters .global-filter i {
@@ -126,13 +148,14 @@ li.hidden-filter {
     position: absolute;
     right: 20px;
     top: 2px;
-    padding: 2px 3px 1px 3px;
-    background: #80837f;
+    padding: 2px 4px 1px 4px;
+    background: #aaa;
     border-radius: 0px;
     color: #ffffff;
     font-size: 12px;
     font-weight: normal;
     letter-spacing: 0.6px;
+    border-radius: 10px;
 }
 
 #stream_filters .count,
@@ -187,7 +210,7 @@ ul.filters i {
 
 ul.filters .arrow {
     position: absolute;
-    right: 0px;
+    right: 2px;
     top: 2px;
     font-size: 0.8em;
     display: none;
@@ -240,11 +263,9 @@ ul.filters li.out_of_home_view li.muted_topic {
 }
 
 #stream_filters .subscription_block {
-    padding-bottom: 3px;
+    padding: 0 0 0 10px;
     line-height: 12px;
-    padding-top: 4px;
-    margin-right: 15px;
-    padding-left: 33px;
+    margin-right: 18px;
 }
 
 #stream_filters .subscription_block .stream-name {
@@ -255,40 +276,38 @@ ul.filters li.out_of_home_view li.muted_topic {
     margin-right: 38px;
 }
 
-.streamlist_swatch {
-    display: block;
-    width: 11px;
-    height: 11px;
-    vertical-align: middle;
-    float: left;
-    position: absolute;
-    left: 10px;
-    top: 5px;
-    box-shadow: inset 0px 0px 3px -2px #000;
-}
-
-.streamlist_swatch.private-stream-swatch {
-    visibility: hidden;
-}
-
 .stream-privacy {
-    position: absolute;
-    left: 11px;
-    top: 3px;
     font-size: 15px;
+}
+
+.stream-privacy .icon-vector-lock {
+    display: inline-block;
+    width: 9px;
+    margin-right: 3px;
+    position: relative;
+    top: 1px;
+}
+
+.stream-privacy .hashtag {
+    position: relative;
+    top: 2px;
+    margin-right: 5px;
 }
 
 ul.topic-list {
     list-style-type: none;
     font-weight: normal;
     margin-left: 0px;
-    padding-bottom: 2px;
+}
+
+ul.topic-list:not(:empty) {
+    padding-top: 2px;
 }
 
 ul.expanded_private_messages {
     list-style-type: none;
-    font-weight: 300;
-    font-size: 84%;
+    font-weight: 400;
+    font-size: 0.9em;
     margin-left: 0px;
     padding-bottom: 2px;
 }

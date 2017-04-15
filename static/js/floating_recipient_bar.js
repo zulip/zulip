@@ -17,7 +17,8 @@ function replace_floating_recipient_bar(desired_label) {
     var new_label;
     var other_label;
     var header;
-    if (desired_label !== old_label) {
+
+    if (!old_label || !desired_label[0].isSameNode(old_label[0])) {
         if (desired_label.children(".message_header_stream").length !== 0) {
             new_label = $("#current_label_stream");
             other_label = $("#current_label_private_message");
@@ -64,6 +65,7 @@ exports.update = function () {
     if (candidate === undefined) {
         return;
     }
+
     while (true) {
         if (candidate.length === 0) {
             // We're at the top of the page and no labels are above us.

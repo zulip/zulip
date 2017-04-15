@@ -212,6 +212,8 @@ $(function () {
         scroll_finish();
     }));
 
+    message_viewport.message_pane.scroll($.throttle(20, floating_recipient_bar.update));
+
     $('#new_message_content').blur(function () {
         saved_compose_cursor = $(this).caret();
     });
