@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 from django.utils.translation import ugettext as _
-from django.utils import timezone
+from django.utils.timezone import now as timezone_now
 from django.conf import settings
 from django.core import validators
 from django.core.exceptions import ValidationError
@@ -971,7 +971,7 @@ def update_message_backend(request, user_profile,
     edit_limit_buffer = 20
     if content is not None and user_profile.realm.message_content_edit_limit_seconds > 0:
         deadline_seconds = user_profile.realm.message_content_edit_limit_seconds + edit_limit_buffer
-        if (timezone.now() - message.pub_date) > datetime.timedelta(seconds=deadline_seconds):
+        if (timezone_now() - message.pub_date) > datetime.timedelta(seconds=deadline_seconds):
             raise JsonableError(_("The time limit for editing this message has past"))
 
     if subject is None and content is None:

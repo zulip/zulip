@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 from django.contrib.auth.models import UserManager
-from django.utils import timezone
+from django.utils.timezone import now as timezone_now
 from zerver.models import UserProfile, Recipient, Subscription, Realm, Stream
 import base64
 import ujson
@@ -29,7 +29,7 @@ def create_user_profile(realm, email, password, active, bot_type, full_name,
                         tutorial_status=UserProfile.TUTORIAL_WAITING,
                         enter_sends=False):
     # type: (Realm, Text, Optional[Text], bool, Optional[int], Text, Text, Optional[UserProfile], bool, Optional[Text], Optional[Text], bool) -> UserProfile
-    now = timezone.now()
+    now = timezone_now()
     email = UserManager.normalize_email(email)
 
     user_profile = UserProfile(email=email, is_staff=False, is_active=active,

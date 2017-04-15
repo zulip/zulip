@@ -9,11 +9,11 @@ from django.conf import settings
 from django.db import migrations, models
 import django.db.models.deletion
 
-from django.utils import timezone
+from django.utils.timezone import now as timezone_now
 
 def backfill_user_activations_and_deactivations(apps, schema_editor):
     # type: (StateApps, DatabaseSchemaEditor) -> None
-    migration_time = timezone.now()
+    migration_time = timezone_now()
     RealmAuditLog = apps.get_model('zerver', 'RealmAuditLog')
     UserProfile = apps.get_model('zerver', 'UserProfile')
 

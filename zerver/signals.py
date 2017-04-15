@@ -6,6 +6,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.template import loader
 from django.utils import timezone
+from django.utils.timezone import now as timezone_now
 from typing import Any, Dict, Optional
 from zerver.models import UserProfile
 
@@ -67,7 +68,7 @@ def email_on_new_login(sender, user, request, **kwargs):
             if path == "/accounts/register/":
                 return
 
-        login_time = timezone.now().strftime('%A, %B %d, %Y at %I:%M%p ') + \
+        login_time = timezone_now().strftime('%A, %B %d, %Y at %I:%M%p ') + \
             timezone.get_current_timezone_name()
         user_agent = request.META.get('HTTP_USER_AGENT', "").lower()
         device_browser = get_device_browser(user_agent)

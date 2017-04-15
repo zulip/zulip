@@ -49,7 +49,7 @@ from django.db.models import F, Q
 from django.db.models.query import QuerySet
 from django.core.exceptions import ValidationError
 from django.core.mail import EmailMessage
-from django.utils import timezone
+from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation, EmailChangeConfirmation
 import six
@@ -118,7 +118,7 @@ def log_event(event):
 
     template = os.path.join(settings.EVENT_LOG_DIR,
                             '%s.' + platform.node() +
-                            timezone.now().strftime('.%Y-%m-%d'))
+                            timezone_now().strftime('.%Y-%m-%d'))
 
     with lockfile(template % ('lock',)):
         with open(template % ('events',), 'a') as log:
@@ -267,7 +267,7 @@ def add_new_user_history(user_profile, streams):
     """Give you the last 100 messages on your public streams, so you have
     something to look at in your home view once you finish the
     tutorial."""
-    one_week_ago = timezone.now() - datetime.timedelta(weeks=1)
+    one_week_ago = timezone_now() - datetime.timedelta(weeks=1)
     recipients = Recipient.objects.filter(type=Recipient.STREAM,
                                           type_id__in=[stream.id for stream in streams
                                                        if not stream.invite_only])
@@ -349,7 +349,7 @@ def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None)
                     'NAME': user_profile.full_name,
                     'REALM_ID': user_profile.realm_id,
                     'OPTIN_IP': newsletter_data["IP"],
-                    'OPTIN_TIME': datetime.datetime.isoformat(timezone.now().replace(microsecond=0)),
+                    'OPTIN_TIME': datetime.datetime.isoformat(timezone_now().replace(microsecond=0)),
                 },
             },
             lambda event: None)
@@ -517,7 +517,7 @@ def do_deactivate_user(user_profile, _cascade=True):
 
     delete_user_sessions(user_profile)
 
-    event_time = timezone.now()
+    event_time = timezone_now()
     RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
                                  event_type='user_deactivated', event_time=event_time)
     do_increment_logging_stat(user_profile.realm, COUNT_STATS['active_users_log:is_bot:day'],
@@ -597,7 +597,7 @@ def do_change_user_email(user_profile, new_email):
                    new_email=new_email)
     send_event(dict(type='realm_user', op='update', person=payload),
                active_user_ids(user_profile.realm))
-    event_time = timezone.now()
+    event_time = timezone_now()
     RealmAuditLog.objects.create(realm=user_profile.realm, acting_user=user_profile,
                                  modified_user=user_profile, event_type='user_email_changed',
                                  event_time=event_time)
@@ -1119,7 +1119,7 @@ def send_pm_if_empty_stream(sender, stream, stream_name, realm):
     # UserProfile.last_reminder field, which is not used for bots.
     last_reminder = sender.last_reminder
     waitperiod = datetime.timedelta(minutes=UserProfile.BOT_OWNER_STREAM_ALERT_WAITPERIOD)
-    if last_reminder and timezone.now() - last_reminder <= waitperiod:
+    if last_reminder and timezone_now() - last_reminder <= waitperiod:
         return
 
     if stream is None:
@@ -1136,7 +1136,7 @@ def send_pm_if_empty_stream(sender, stream, stream_name, realm):
                                     sender.bot_owner.email, "", content)
     do_send_messages([message])
 
-    sender.last_reminder = timezone.now()
+    sender.last_reminder = timezone_now()
     sender.save(update_fields=['last_reminder'])
 
 # check_message:
@@ -1223,7 +1223,7 @@ def check_message(sender, client, message_type_name, message_to,
         # Forged messages come with a timestamp
         message.pub_date = timestamp_to_datetime(forged_timestamp)
     else:
-        message.pub_date = timezone.now()
+        message.pub_date = timezone_now()
     message.sending_client = client
 
     # We render messages later in the process.
@@ -1707,7 +1707,7 @@ def do_activate_user(user_profile):
     user_profile.is_active = True
     user_profile.is_mirror_dummy = False
     user_profile.set_unusable_password()
-    user_profile.date_joined = timezone.now()
+    user_profile.date_joined = timezone_now()
     user_profile.tos_version = settings.TOS_VERSION
     user_profile.save(update_fields=["is_active", "date_joined", "password",
                                      "is_mirror_dummy", "tos_version"])
@@ -1727,7 +1727,7 @@ def do_reactivate_user(user_profile):
     user_profile.is_active = True
     user_profile.save(update_fields=["is_active"])
 
-    event_time = timezone.now()
+    event_time = timezone_now()
     RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
                                  event_type='user_reactivated', event_time=event_time)
     do_increment_logging_stat(user_profile.realm, COUNT_STATS['active_users_log:is_bot:day'],
@@ -1748,7 +1748,7 @@ def do_change_password(user_profile, password, commit=True,
         user_profile.set_password(password)
     if commit:
         user_profile.save(update_fields=["password"])
-    event_time = timezone.now()
+    event_time = timezone_now()
     RealmAuditLog.objects.create(realm=user_profile.realm, acting_user=user_profile,
                                  modified_user=user_profile, event_type='user_change_password',
                                  event_time=event_time)
@@ -1775,7 +1775,7 @@ def do_change_bot_owner(user_profile, bot_owner, acting_user):
     # type: (UserProfile, UserProfile, UserProfile) -> None
     user_profile.bot_owner = bot_owner
     user_profile.save()
-    event_time = timezone.now()
+    event_time = timezone_now()
     RealmAuditLog.objects.create(realm=user_profile.realm, acting_user=acting_user,
                                  modified_user=user_profile, event_type='bot_owner_changed',
                                  event_time=event_time)
@@ -1819,7 +1819,7 @@ def do_change_avatar_fields(user_profile, avatar_source):
     user_profile.avatar_source = avatar_source
     user_profile.avatar_version += 1
     user_profile.save(update_fields=["avatar_source", "avatar_version"])
-    event_time = timezone.now()
+    event_time = timezone_now()
     RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
                                  event_type='user_change_avatar_source',
                                  extra_data={'avatar_source': avatar_source},
@@ -2684,10 +2684,10 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
             # We only change messages up to 2 days in the past, to avoid hammering our
             # DB by changing an unbounded amount of messages
             if propagate_mode == 'change_all':
-                before_bound = timezone.now() - datetime.timedelta(days=2)
+                before_bound = timezone_now() - datetime.timedelta(days=2)
 
                 propagate_query = (propagate_query & ~Q(id = message.id) &
-                                   Q(pub_date__range=(before_bound, timezone.now())))
+                                   Q(pub_date__range=(before_bound, timezone_now())))
             if propagate_mode == 'change_later':
                 propagate_query = propagate_query & Q(id__gt = message.id)
 
@@ -2704,7 +2704,7 @@ def do_update_message(user_profile, message, subject, propagate_mode, content, r
 
             changed_messages += messages_list
 
-    message.last_edit_time = timezone.now()
+    message.last_edit_time = timezone_now()
     event['edit_timestamp'] = datetime_to_timestamp(message.last_edit_time)
     edit_history_event['timestamp'] = event['edit_timestamp']
     if message.edit_history is not None:

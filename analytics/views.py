@@ -7,7 +7,7 @@ from django.db.models import Sum
 from django.db.models.query import QuerySet
 from django.http import HttpResponseNotFound, HttpRequest, HttpResponse
 from django.template import RequestContext, loader
-from django.utils import timezone
+from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
 from django.shortcuts import render
 from jinja2 import Markup as mark_safe
@@ -993,7 +993,7 @@ def realm_user_summary_table(all_records, admin_emails):
 
     def is_recent(val):
         # type: (Optional[datetime]) -> bool
-        age = timezone.now() - val
+        age = timezone_now() - val
         return age.total_seconds() < 5 * 60
 
     rows = []

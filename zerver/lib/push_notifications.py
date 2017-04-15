@@ -18,7 +18,7 @@ from apns import APNs, Frame, Payload, SENT_BUFFER_QTY
 from gcm import GCM
 
 from django.conf import settings
-from django.utils import timezone
+from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
 
 import base64
@@ -354,7 +354,7 @@ def add_push_device_token(user_profile, token_str, kind, ios_app_id=None):
                                                                kind=kind,
                                                                ios_app_id=ios_app_id))
     if not created:
-        token.last_updated = timezone.now()
+        token.last_updated = timezone_now()
         token.save(update_fields=['last_updated'])
 
 def remove_push_device_token(user_profile, token_str, kind):

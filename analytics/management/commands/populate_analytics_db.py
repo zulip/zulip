@@ -3,7 +3,7 @@ from __future__ import absolute_import, print_function
 from argparse import ArgumentParser
 
 from django.core.management.base import BaseCommand
-from django.utils import timezone
+from django.utils.timezone import now as timezone_now
 
 from analytics.lib.counts import COUNT_STATS, CountStat, do_drop_all_analytics_tables
 from analytics.lib.fixtures import generate_time_series_data
@@ -53,8 +53,8 @@ class Command(BaseCommand):
         # I believe this also deletes any objects with this realm as a foreign key
         Realm.objects.filter(string_id='analytics').delete()
 
-        installation_time = timezone.now() - timedelta(days=self.DAYS_OF_DATA)
-        last_end_time = floor_to_day(timezone.now())
+        installation_time = timezone_now() - timedelta(days=self.DAYS_OF_DATA)
+        last_end_time = floor_to_day(timezone_now())
         realm = Realm.objects.create(
             string_id='analytics', name='Analytics', date_created=installation_time)
         shylock = self.create_user('shylock@analytics.ds', 'Shylock', True, installation_time, realm)

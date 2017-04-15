@@ -7,7 +7,7 @@ from confirmation.models import Confirmation
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template import loader
-from django.utils import timezone
+from django.utils.timezone import now as timezone_now
 from zerver.decorator import statsd_increment, uses_mandrill
 from zerver.lib.queue import queue_json_publish
 from zerver.models import (
@@ -308,7 +308,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
     }
     queue_json_publish("missedmessage_email_senders", email_content, send_missedmessage_email)
 
-    user_profile.last_reminder = timezone.now()
+    user_profile.last_reminder = timezone_now()
     user_profile.save(update_fields=['last_reminder'])
 
 
@@ -438,7 +438,7 @@ def send_future_email(recipients, email_html, email_text, subject,
                             'sender_name': sender['name']}
             ScheduledJob.objects.create(type=ScheduledJob.EMAIL, filter_string=recipient.get('email'),
                                         data=ujson.dumps(email_fields),
-                                        scheduled_timestamp=timezone.now() + delay)
+                                        scheduled_timestamp=timezone_now() + delay)
         return
 
     # Mandrill implementation
@@ -461,7 +461,7 @@ def send_future_email(recipients, email_html, email_text, subject,
     if delay < datetime.timedelta(minutes=1):
         results = mail_client.messages.send(message=message, ip_pool="Main Pool", **{"async": False})
     else:
-        send_time = (timezone.now() + delay).__format__("%Y-%m-%d %H:%M:%S")
+        send_time = (timezone_now() + delay).__format__("%Y-%m-%d %H:%M:%S")
         results = mail_client.messages.send(message=message, ip_pool="Main Pool",
                                             send_at=send_time, **{"async": False})
     problems = [result for result in results if (result['status'] in ('rejected', 'invalid'))]

@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 from django.http import HttpResponse
-from django.utils import timezone
+from django.utils.timezone import now as timezone_now
 from mock import mock
 
 from typing import Any, Dict
@@ -35,7 +35,7 @@ class ActivityTest(ZulipTestCase):
         self.login("hamlet@zulip.com")
         client, _ = Client.objects.get_or_create(name='website')
         query = '/json/users/me/pointer'
-        last_visit = timezone.now()
+        last_visit = timezone_now()
         count = 150
         for user_profile in UserProfile.objects.all():
             UserActivity.objects.get_or_create(
@@ -81,7 +81,7 @@ class UserPresenceModelTests(ZulipTestCase):
         def back_date(num_weeks):
             # type: (int) -> None
             user_presence = UserPresence.objects.filter(user_profile=user_profile)[0]
-            user_presence.timestamp = timezone.now() - datetime.timedelta(weeks=num_weeks)
+            user_presence.timestamp = timezone_now() - datetime.timedelta(weeks=num_weeks)
             user_presence.save()
 
         # Simulate the presence being a week old first.  Nothing should change.
@@ -184,7 +184,7 @@ class UserPresenceTests(ZulipTestCase):
 
     def _simulate_mirror_activity_for_user(self, user_profile):
         # type: (UserProfile) -> None
-        last_visit = timezone.now()
+        last_visit = timezone_now()
         client = make_client('zephyr_mirror')
 
         UserActivity.objects.get_or_create(
@@ -300,7 +300,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
     def test_aggregated_info(self):
         # type: () -> None
         email = "othello@zulip.com"
-        validate_time = timezone.now()
+        validate_time = timezone_now()
         self._send_presence_for_aggregated_tests('othello@zulip.com', 'active', validate_time)
         with mock.patch('django.utils.timezone.now',
                         return_value=validate_time - datetime.timedelta(seconds=1)):
@@ -319,7 +319,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
 
     def test_aggregated_presense_active(self):
         # type: () -> None
-        validate_time = timezone.now()
+        validate_time = timezone_now()
         result_dict = self._send_presence_for_aggregated_tests('othello@zulip.com', 'active',
                                                                validate_time)
         self.assertDictEqual(
@@ -332,7 +332,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
 
     def test_aggregated_presense_idle(self):
         # type: () -> None
-        validate_time = timezone.now()
+        validate_time = timezone_now()
         result_dict = self._send_presence_for_aggregated_tests('othello@zulip.com', 'idle',
                                                                validate_time)
         self.assertDictEqual(
@@ -347,7 +347,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
         # type: () -> None
         email = "othello@zulip.com"
         self.login(email)
-        validate_time = timezone.now()
+        validate_time = timezone_now()
         with mock.patch('django.utils.timezone.now',
                         return_value=validate_time - datetime.timedelta(seconds=3)):
             self.client_post("/api/v1/users/me/presence", {'status': 'active'},
@@ -366,7 +366,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
         # type: () -> None
         email = "othello@zulip.com"
         self.login(email)
-        validate_time = timezone.now()
+        validate_time = timezone_now()
         with self.settings(OFFLINE_THRESHOLD_SECS=1):
             result_dict = self._send_presence_for_aggregated_tests(email, 'idle', validate_time)
         self.assertDictEqual(

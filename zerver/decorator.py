@@ -10,7 +10,7 @@ from zerver.models import UserProfile, get_client, get_user_profile_by_email
 from zerver.lib.response import json_error, json_unauthorized, json_success
 from django.shortcuts import resolve_url
 from django.utils.decorators import available_attrs
-from django.utils import timezone
+from django.utils.timezone import now as timezone_now
 from django.conf import settings
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
@@ -84,7 +84,7 @@ def update_user_activity(request, user_profile):
 
     event = {'query': query,
              'user_profile_id': user_profile.id,
-             'time': datetime_to_timestamp(timezone.now()),
+             'time': datetime_to_timestamp(timezone_now()),
              'client': request.client.name}
     queue_json_publish("user_activity", event, lambda event: None)
 
