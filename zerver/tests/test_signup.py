@@ -6,7 +6,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.http import HttpResponse
 from django.test import TestCase
-from django.utils import timezone
+from django.utils.timezone import now as timezone_now
 
 from mock import patch, MagicMock
 from zerver.lib.test_helpers import MockLDAP
@@ -664,7 +664,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
                 sender={'email': settings.ZULIP_ADMINISTRATOR, 'name': 'Zulip'})
         email_jobs_to_deliver = ScheduledJob.objects.filter(
             type=ScheduledJob.EMAIL,
-            scheduled_timestamp__lte=timezone.now())
+            scheduled_timestamp__lte=timezone_now())
         self.assertEqual(len(email_jobs_to_deliver), 1)
         email_count = len(outbox)
         for job in email_jobs_to_deliver:

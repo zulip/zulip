@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from typing import Any, Dict, Mapping, Optional, Text, Union
 
 from django.conf import settings
-from django.utils import timezone
+from django.utils.timezone import now as timezone_now
 from django.contrib.sessions.models import Session as djSession
 try:
     from django.middleware.csrf import _compare_salted_tokens
@@ -39,7 +39,7 @@ def get_user_profile(session_id):
         return None
 
     try:
-        djsession = djSession.objects.get(expire_date__gt=timezone.now(),
+        djsession = djSession.objects.get(expire_date__gt=timezone_now(),
                                           session_key=session_id)
     except djSession.DoesNotExist:
         return None

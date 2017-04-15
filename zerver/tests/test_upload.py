@@ -42,7 +42,7 @@ import datetime
 import requests
 import base64
 from datetime import timedelta
-from django.utils import timezone
+from django.utils.timezone import now as timezone_now
 
 from moto import mock_s3
 
@@ -263,7 +263,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         uri = json["uri"]
         d2_path_id = re.sub('/user_uploads/', '', uri)
 
-        two_week_ago = timezone.now() - datetime.timedelta(weeks=2)
+        two_week_ago = timezone_now() - datetime.timedelta(weeks=2)
         d1_attachment = Attachment.objects.get(path_id = d1_path_id)
         d1_attachment.create_time = two_week_ago
         d1_attachment.save()

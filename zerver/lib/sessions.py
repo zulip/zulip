@@ -5,7 +5,7 @@ import logging
 from django.conf import settings
 from django.contrib.auth import SESSION_KEY, get_user_model
 from django.contrib.sessions.models import Session
-from django.utils import timezone
+from django.utils.timezone import now as timezone_now
 from importlib import import_module
 from typing import List, Mapping, Optional, Text
 
@@ -44,7 +44,7 @@ def delete_realm_user_sessions(realm):
     # type: (Realm) -> None
     realm_user_ids = [user_profile.id for user_profile in
                       UserProfile.objects.filter(realm=realm)]
-    for session in Session.objects.filter(expire_date__gte=timezone.now()):
+    for session in Session.objects.filter(expire_date__gte=timezone_now()):
         if get_session_user(session) in realm_user_ids:
             delete_session(session)
 

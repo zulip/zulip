@@ -6,7 +6,7 @@ from typing import Any, List
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from django.utils import timezone
+from django.utils.timezone import now as timezone_now
 
 from zerver.lib.queue import queue_json_publish
 from zerver.models import UserActivity, UserProfile, Realm
@@ -43,7 +43,7 @@ def inactive_since(user_profile, cutoff):
 def last_business_day():
     # type: () -> datetime.datetime
     one_day = datetime.timedelta(hours=23)
-    previous_day = timezone.now() - one_day
+    previous_day = timezone_now() - one_day
     while previous_day.weekday() not in VALID_DIGEST_DAYS:
         previous_day -= one_day
     return previous_day
@@ -74,7 +74,7 @@ in a while.
         # To be really conservative while we don't have user timezones or
         # special-casing for companies with non-standard workweeks, only
         # try to send mail on Tuesdays, Wednesdays, and Thursdays.
-        if timezone.now().weekday() not in VALID_DIGEST_DAYS:
+        if timezone_now().weekday() not in VALID_DIGEST_DAYS:
             return
 
         for realm in Realm.objects.filter(deactivated=False, show_digest_email=True):

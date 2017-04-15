@@ -6,7 +6,7 @@ from typing import cast, AbstractSet, Any, Callable, Dict, List, \
 
 from django.utils.translation import ugettext as _
 from django.conf import settings
-from django.utils import timezone
+from django.utils.timezone import now as timezone_now
 from collections import deque
 import datetime
 import os
@@ -678,7 +678,7 @@ def receiver_is_idle(user_profile_id, realm_presences):
     else:
         active_datetime = timestamp_to_datetime(latest_active_timestamp)
         # 140 seconds is consistent with presence.js:OFFLINE_THRESHOLD_SECS
-        idle = timezone.now() - active_datetime > datetime.timedelta(seconds=140)
+        idle = timezone_now() - active_datetime > datetime.timedelta(seconds=140)
 
     return off_zulip or idle
 

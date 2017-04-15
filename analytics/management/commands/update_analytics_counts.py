@@ -9,7 +9,7 @@ from argparse import ArgumentParser
 from datetime import timedelta
 
 from django.core.management.base import BaseCommand
-from django.utils import timezone
+from django.utils.timezone import now as timezone_now
 from django.utils.timezone import utc as timezone_utc
 from django.utils.dateparse import parse_datetime
 from django.conf import settings
@@ -30,7 +30,7 @@ class Command(BaseCommand):
         parser.add_argument('--time', '-t',
                             type=str,
                             help='Update stat tables from current state to --time. Defaults to the current time.',
-                            default=timezone.now().isoformat())
+                            default=timezone_now().isoformat())
         parser.add_argument('--utc',
                             type=bool,
                             help="Interpret --time in UTC.",

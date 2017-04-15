@@ -14,7 +14,7 @@ from django.template import loader, Context
 from django.contrib.sites.models import Site
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
-from django.utils import timezone
+from django.utils.timezone import now as timezone_now
 
 from confirmation.util import get_status_field
 from zerver.lib.utils import generate_random_token
@@ -27,7 +27,7 @@ def check_key_is_valid(creation_key):
     # type: (Text) -> bool
     if not RealmCreationKey.objects.filter(creation_key=creation_key).exists():
         return False
-    days_sofar = (timezone.now() - RealmCreationKey.objects.get(creation_key=creation_key).date_created).days
+    days_sofar = (timezone_now() - RealmCreationKey.objects.get(creation_key=creation_key).date_created).days
     # Realm creation link expires after settings.REALM_CREATION_LINK_VALIDITY_DAYS
     if days_sofar <= settings.REALM_CREATION_LINK_VALIDITY_DAYS:
         return True
@@ -49,7 +49,7 @@ def generate_activation_url(key, host=None):
 def generate_realm_creation_url():
     # type: () -> Text
     key = generate_key()
-    RealmCreationKey.objects.create(creation_key=key, date_created=timezone.now())
+    RealmCreationKey.objects.create(creation_key=key, date_created=timezone_now())
     return u'%s%s%s' % (settings.EXTERNAL_URI_SCHEME,
                         settings.EXTERNAL_HOST,
                         reverse('zerver.views.create_realm',
@@ -66,7 +66,7 @@ class ConfirmationManager(models.Manager):
                 return False
 
             max_days = self.get_link_validity_in_days()
-            time_elapsed = timezone.now() - confirmation.date_sent
+            time_elapsed = timezone_now() - confirmation.date_sent
             if time_elapsed.total_seconds() > max_days * 24 * 3600:
                 return False
 
@@ -80,7 +80,7 @@ class ConfirmationManager(models.Manager):
     def get_link_for_object(self, obj, host=None):
         # type: (Union[ContentType, int], Optional[str]) -> Text
         key = generate_key()
-        self.create(content_object=obj, date_sent=timezone.now(), confirmation_key=key)
+        self.create(content_object=obj, date_sent=timezone_now(), confirmation_key=key)
         return self.get_activation_url(key, host=host)
 
     def get_activation_url(self, confirmation_key, host=None):
@@ -137,7 +137,7 @@ class ConfirmationManager(models.Manager):
         if html_template:
             html_content = html_template.render(context)
         send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [email_address], html_message=html_content)
-        return self.create(content_object=obj, date_sent=timezone.now(), confirmation_key=confirmation_key)
+        return self.create(content_object=obj, date_sent=timezone_now(), confirmation_key=confirmation_key)
 
 class EmailChangeConfirmationManager(ConfirmationManager):
     def get_activation_url(self, key, host=None):
@@ -179,4 +179,4 @@ class EmailChangeConfirmation(Confirmation):
 
 class RealmCreationKey(models.Model):
     creation_key = models.CharField('activation key', max_length=40)
-    date_created = models.DateTimeField('created', default=timezone.now)
+    date_created = models.DateTimeField('created', default=timezone_now)

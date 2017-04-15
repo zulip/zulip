@@ -25,7 +25,7 @@ from zerver.lib.utils import make_safe_digest, generate_random_token
 from zerver.lib.str_utils import ModelReprMixin
 from django.db import transaction
 from zerver.lib.camo import get_camo_url
-from django.utils import timezone
+from django.utils.timezone import now as timezone_now
 from django.contrib.sessions.models import Session
 from zerver.lib.timestamp import datetime_to_timestamp
 from django.db.models.signals import pre_save, post_save, post_delete
@@ -132,7 +132,7 @@ class Realm(ModelReprMixin, models.Model):
     COMMUNITY = 2
     org_type = models.PositiveSmallIntegerField(default=COMMUNITY) # type: int
 
-    date_created = models.DateTimeField(default=timezone.now) # type: datetime.datetime
+    date_created = models.DateTimeField(default=timezone_now) # type: datetime.datetime
     notifications_stream = models.ForeignKey('Stream', related_name='+', null=True, blank=True) # type: Optional[Stream]
     deactivated = models.BooleanField(default=False) # type: bool
     default_language = models.CharField(default=u'en', max_length=MAX_LANGUAGE_ID_LENGTH) # type: Text
@@ -525,7 +525,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     is_bot = models.BooleanField(default=False, db_index=True) # type: bool
     bot_type = models.PositiveSmallIntegerField(null=True, db_index=True) # type: Optional[int]
     is_api_super_user = models.BooleanField(default=False, db_index=True) # type: bool
-    date_joined = models.DateTimeField(default=timezone.now) # type: datetime.datetime
+    date_joined = models.DateTimeField(default=timezone_now) # type: datetime.datetime
     is_mirror_dummy = models.BooleanField(default=False) # type: bool
     bot_owner = models.ForeignKey('self', null=True, on_delete=models.SET_NULL) # type: Optional[UserProfile]
 
@@ -565,7 +565,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
 
     ###
 
-    last_reminder = models.DateTimeField(default=timezone.now, null=True) # type: Optional[datetime.datetime]
+    last_reminder = models.DateTimeField(default=timezone_now, null=True) # type: Optional[datetime.datetime]
     rate_limits = models.CharField(default=u"", max_length=100) # type: Text # comma-separated list of range:max pairs
 
     # Default streams
@@ -669,7 +669,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
 
     def can_create_streams(self):
         # type: () -> bool
-        diff = (timezone.now() - self.date_joined).days
+        diff = (timezone_now() - self.date_joined).days
         if self.is_realm_admin:
             return True
         elif self.realm.create_stream_by_admins_only:
@@ -771,7 +771,7 @@ class Stream(ModelReprMixin, models.Model):
         max_length=32, default=generate_email_token_for_stream) # type: Text
     description = models.CharField(max_length=1024, default=u'') # type: Text
 
-    date_created = models.DateTimeField(default=timezone.now) # type: datetime.datetime
+    date_created = models.DateTimeField(default=timezone_now) # type: datetime.datetime
     deactivated = models.BooleanField(default=False) # type: bool
 
     def __unicode__(self):
@@ -975,7 +975,7 @@ class AbstractMessage(ModelReprMixin, models.Model):
 
 
 class ArchivedMessage(AbstractMessage):
-    archive_timestamp = models.DateTimeField(default=timezone.now, db_index=True)  # type: datetime.datetime
+    archive_timestamp = models.DateTimeField(default=timezone_now, db_index=True)  # type: datetime.datetime
 
 
 class Message(AbstractMessage):
@@ -1175,7 +1175,7 @@ class AbstractUserMessage(ModelReprMixin, models.Model):
 
 class ArchivedUserMessage(AbstractUserMessage):
     message = models.ForeignKey(ArchivedMessage)  # type: Message
-    archive_timestamp = models.DateTimeField(default=timezone.now, db_index=True)  # type: datetime.datetime
+    archive_timestamp = models.DateTimeField(default=timezone_now, db_index=True)  # type: datetime.datetime
 
 
 class UserMessage(AbstractUserMessage):
@@ -1207,7 +1207,7 @@ class AbstractAttachment(ModelReprMixin, models.Model):
     owner = models.ForeignKey(UserProfile)  # type: UserProfile
     realm = models.ForeignKey(Realm, blank=True, null=True)  # type: Realm
     is_realm_public = models.BooleanField(default=False)  # type: bool
-    create_time = models.DateTimeField(default=timezone.now,
+    create_time = models.DateTimeField(default=timezone_now,
                                        db_index=True)  # type: datetime.datetime
     size = models.IntegerField(null=True)  # type: int
 
@@ -1216,7 +1216,7 @@ class AbstractAttachment(ModelReprMixin, models.Model):
 
 
 class ArchivedAttachment(AbstractAttachment):
-    archive_timestamp = models.DateTimeField(default=timezone.now, db_index=True)  # type: datetime.datetime
+    archive_timestamp = models.DateTimeField(default=timezone_now, db_index=True)  # type: datetime.datetime
     messages = models.ManyToManyField(ArchivedMessage)  # type: Manager
 
 
@@ -1269,7 +1269,7 @@ def validate_attachment_request(user_profile, path_id):
 def get_old_unclaimed_attachments(weeks_ago):
     # type: (int) -> Sequence[Attachment]
     # TODO: Change return type to QuerySet[Attachment]
-    delta_weeks_ago = timezone.now() - datetime.timedelta(weeks=weeks_ago)
+    delta_weeks_ago = timezone_now() - datetime.timedelta(weeks=weeks_ago)
     old_attachments = Attachment.objects.filter(messages=None, create_time__lt=delta_weeks_ago)
     return old_attachments
 
@@ -1462,7 +1462,7 @@ class UserPresence(models.Model):
     @staticmethod
     def exclude_old_users(query):
         # type: (QuerySet) -> QuerySet
-        two_weeks_ago = timezone.now() - datetime.timedelta(weeks=2)
+        two_weeks_ago = timezone_now() - datetime.timedelta(weeks=2)
         return query.filter(timestamp__gte=two_weeks_ago)
 
     @staticmethod
@@ -1598,7 +1598,7 @@ class RealmAuditLog(models.Model):
 class UserHotspot(models.Model):
     user = models.ForeignKey(UserProfile) # type: UserProfile
     hotspot = models.CharField(max_length=30) # type: Text
-    timestamp = models.DateTimeField(default=timezone.now) # type: datetime.datetime
+    timestamp = models.DateTimeField(default=timezone_now) # type: datetime.datetime
 
     class Meta(object):
         unique_together = ("user", "hotspot")

@@ -8,7 +8,7 @@ from typing import Any, Callable, Dict, List, Optional, Union, Text
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.test import TestCase
-from django.utils import timezone
+from django.utils.timezone import now as timezone_now
 
 from zerver.models import (
     get_client, get_realm, get_recipient, get_stream, get_user_profile_by_email,
@@ -592,7 +592,7 @@ class EventsRegisterTest(ZulipTestCase):
 
         with self.assertRaises(AssertionError):
             events = self.do_test(lambda: do_update_user_presence(
-                self.user_profile, get_client("website"), timezone.now(), UserPresence.ACTIVE))
+                self.user_profile, get_client("website"), timezone_now(), UserPresence.ACTIVE))
             # Marked as nocoverage since unreachable
             error = schema_checker('events[0]', events[0])  # nocoverage
             self.assert_on_error(error)  # nocoverage

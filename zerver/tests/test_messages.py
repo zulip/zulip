@@ -4,7 +4,7 @@ from django.db.models import Q
 from django.conf import settings
 from django.http import HttpResponse
 from django.test import TestCase, override_settings
-from django.utils import timezone
+from django.utils.timezone import now as timezone_now
 from zerver.lib import bugdown
 from zerver.decorator import JsonableError
 from zerver.lib.test_runner import slow
@@ -77,7 +77,7 @@ class TopicHistoryTest(ZulipTestCase):
                 recipient=recipient,
                 subject=topic,
                 content='whatever',
-                pub_date=timezone.now(),
+                pub_date=timezone_now(),
                 sending_client=get_client('whatever'),
             )
             flags = 0
@@ -576,9 +576,9 @@ class MessageDictTest(ZulipTestCase):
                     recipient=recipient,
                     subject='whatever',
                     content='whatever %d' % i,
-                    pub_date=timezone.now(),
+                    pub_date=timezone_now(),
                     sending_client=sending_client,
-                    last_edit_time=timezone.now(),
+                    last_edit_time=timezone_now(),
                     edit_history='[]'
                 )
                 message.save()
@@ -615,9 +615,9 @@ class MessageDictTest(ZulipTestCase):
             recipient=recipient,
             subject='whatever',
             content='hello **world**',
-            pub_date=timezone.now(),
+            pub_date=timezone_now(),
             sending_client=sending_client,
-            last_edit_time=timezone.now(),
+            last_edit_time=timezone_now(),
             edit_history='[]'
         )
         message.save()
@@ -646,9 +646,9 @@ class MessageDictTest(ZulipTestCase):
             recipient=recipient,
             subject='whatever',
             content='hello **world**',
-            pub_date=timezone.now(),
+            pub_date=timezone_now(),
             sending_client=sending_client,
-            last_edit_time=timezone.now(),
+            last_edit_time=timezone_now(),
             edit_history='[]'
         )
         message.save()
@@ -671,9 +671,9 @@ class MessageDictTest(ZulipTestCase):
             recipient=recipient,
             subject='whatever',
             content='hello **world**',
-            pub_date=timezone.now(),
+            pub_date=timezone_now(),
             sending_client=sending_client,
-            last_edit_time=timezone.now(),
+            last_edit_time=timezone_now(),
             edit_history='[]'
         )
         message.save()
@@ -713,9 +713,9 @@ class SewMessageAndReactionTest(ZulipTestCase):
                     recipient=recipient,
                     subject='whatever',
                     content='whatever %d' % i,
-                    pub_date=timezone.now(),
+                    pub_date=timezone_now(),
                     sending_client=sending_client,
-                    last_edit_time=timezone.now(),
+                    last_edit_time=timezone_now(),
                     edit_history='[]'
                 )
                 message.save()
