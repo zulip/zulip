@@ -22,7 +22,7 @@ from six.moves import urllib
 import xml.etree.cElementTree as etree
 from xml.etree.cElementTree import Element, SubElement
 
-from collections import defaultdict
+from collections import defaultdict, deque
 
 import requests
 
@@ -113,13 +113,13 @@ def list_of_tlds():
 def walk_tree(root, processor, stop_after_first=False):
     # type: (Element, Callable[[Element], Optional[_T]], bool) -> List[_T]
     results = []
-    stack = [root]
+    queue = deque([root])
 
-    while stack:
-        currElement = stack.pop()
+    while queue:
+        currElement = queue.popleft()
         for child in currElement.getchildren():
             if child.getchildren():
-                stack.append(child)
+                queue.append(child)
 
             result = processor(child)
             if result is not None:

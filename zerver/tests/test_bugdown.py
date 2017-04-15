@@ -249,6 +249,24 @@ class BugdownTest(TestCase):
         converted = render_markdown(msg, content)
         self.assertEqual(converted, without_preview)
 
+    @override_settings(INLINE_IMAGE_PREVIEW=True)
+    def test_inline_image_preview_order(self):
+        # type: () -> None
+        content = 'http://imaging.nikon.com/lineup/dslr/df/img/sample/img_01.jpg\nhttp://imaging.nikon.com/lineup/dslr/df/img/sample/img_02.jpg\nhttp://imaging.nikon.com/lineup/dslr/df/img/sample/img_03.jpg'
+        expected = '<p><a href="http://imaging.nikon.com/lineup/dslr/df/img/sample/img_01.jpg" target="_blank" title="http://imaging.nikon.com/lineup/dslr/df/img/sample/img_01.jpg">http://imaging.nikon.com/lineup/dslr/df/img/sample/img_01.jpg</a><br>\n<a href="http://imaging.nikon.com/lineup/dslr/df/img/sample/img_02.jpg" target="_blank" title="http://imaging.nikon.com/lineup/dslr/df/img/sample/img_02.jpg">http://imaging.nikon.com/lineup/dslr/df/img/sample/img_02.jpg</a><br>\n<a href="http://imaging.nikon.com/lineup/dslr/df/img/sample/img_03.jpg" target="_blank" title="http://imaging.nikon.com/lineup/dslr/df/img/sample/img_03.jpg">http://imaging.nikon.com/lineup/dslr/df/img/sample/img_03.jpg</a></p>\n<div class="message_inline_image"><a href="http://imaging.nikon.com/lineup/dslr/df/img/sample/img_01.jpg" target="_blank" title="http://imaging.nikon.com/lineup/dslr/df/img/sample/img_01.jpg"><img src="https://external-content.zulipcdn.net/1081f3eb3d307ff5b578c1f5ce9d4cef8f8953c4/687474703a2f2f696d6167696e672e6e696b6f6e2e636f6d2f6c696e6575702f64736c722f64662f696d672f73616d706c652f696d675f30312e6a7067"></a></div><div class="message_inline_image"><a href="http://imaging.nikon.com/lineup/dslr/df/img/sample/img_02.jpg" target="_blank" title="http://imaging.nikon.com/lineup/dslr/df/img/sample/img_02.jpg"><img src="https://external-content.zulipcdn.net/8a2da7577389c522fab18ba2e6d6947b85458074/687474703a2f2f696d6167696e672e6e696b6f6e2e636f6d2f6c696e6575702f64736c722f64662f696d672f73616d706c652f696d675f30322e6a7067"></a></div><div class="message_inline_image"><a href="http://imaging.nikon.com/lineup/dslr/df/img/sample/img_03.jpg" target="_blank" title="http://imaging.nikon.com/lineup/dslr/df/img/sample/img_03.jpg"><img src="https://external-content.zulipcdn.net/9c389273b239846aa6e07e109216773934e52828/687474703a2f2f696d6167696e672e6e696b6f6e2e636f6d2f6c696e6575702f64736c722f64662f696d672f73616d706c652f696d675f30332e6a7067"></a></div>'
+
+        sender_user_profile = get_user_profile_by_email("othello@zulip.com")
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        converted = render_markdown(msg, content)
+        self.assertEqual(converted, expected)
+
+        content = 'Test 1\n[21136101110_1dde1c1a7e_o.jpg](/user_uploads/1/6d/F1PX6u16JA2P-nK45PyxHIYZ/21136101110_1dde1c1a7e_o.jpg) \n\nNext Image\n[IMG_20161116_023910.jpg](/user_uploads/1/69/sh7L06e7uH7NaX6d5WFfVYQp/IMG_20161116_023910.jpg) \n\nAnother Screenshot\n[Screenshot-from-2016-06-01-16-22-42.png](/user_uploads/1/70/_aZmIEWaN1iUaxwkDjkO7bpj/Screenshot-from-2016-06-01-16-22-42.png)'
+        expected = '<p>Test 1<br>\n<a href="/user_uploads/1/6d/F1PX6u16JA2P-nK45PyxHIYZ/21136101110_1dde1c1a7e_o.jpg" target="_blank" title="21136101110_1dde1c1a7e_o.jpg">21136101110_1dde1c1a7e_o.jpg</a> </p>\n<p>Next Image<br>\n<a href="/user_uploads/1/69/sh7L06e7uH7NaX6d5WFfVYQp/IMG_20161116_023910.jpg" target="_blank" title="IMG_20161116_023910.jpg">IMG_20161116_023910.jpg</a> </p>\n<p>Another Screenshot<br>\n<a href="/user_uploads/1/70/_aZmIEWaN1iUaxwkDjkO7bpj/Screenshot-from-2016-06-01-16-22-42.png" target="_blank" title="Screenshot-from-2016-06-01-16-22-42.png">Screenshot-from-2016-06-01-16-22-42.png</a></p>\n<div class="message_inline_image"><a href="/user_uploads/1/6d/F1PX6u16JA2P-nK45PyxHIYZ/21136101110_1dde1c1a7e_o.jpg" target="_blank" title="21136101110_1dde1c1a7e_o.jpg"><img src="/user_uploads/1/6d/F1PX6u16JA2P-nK45PyxHIYZ/21136101110_1dde1c1a7e_o.jpg"></a></div><div class="message_inline_image"><a href="/user_uploads/1/69/sh7L06e7uH7NaX6d5WFfVYQp/IMG_20161116_023910.jpg" target="_blank" title="IMG_20161116_023910.jpg"><img src="/user_uploads/1/69/sh7L06e7uH7NaX6d5WFfVYQp/IMG_20161116_023910.jpg"></a></div><div class="message_inline_image"><a href="/user_uploads/1/70/_aZmIEWaN1iUaxwkDjkO7bpj/Screenshot-from-2016-06-01-16-22-42.png" target="_blank" title="Screenshot-from-2016-06-01-16-22-42.png"><img src="/user_uploads/1/70/_aZmIEWaN1iUaxwkDjkO7bpj/Screenshot-from-2016-06-01-16-22-42.png"></a></div>'
+
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        converted = render_markdown(msg, content)
+        self.assertEqual(converted, expected)
+
     @override_settings(INLINE_IMAGE_PREVIEW=False)
     def test_image_preview_enabled_for_realm(self):
         # type: () -> None
