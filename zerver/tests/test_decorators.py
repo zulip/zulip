@@ -889,6 +889,16 @@ class TestInternalNotifyView(TestCase):
         self.assertTrue(is_local_addr('::1'))
         self.assertFalse(is_local_addr('42.43.44.45'))
 
+class TestHumanUsersOnlyDecorator(ZulipTestCase):
+    def test_human_only_endpoints(self):
+        # type: () -> None
+        endpoints = [
+            "/api/v1/users/me/presence",
+        ]
+        for endpoint in endpoints:
+            result = self.client_post(endpoint, **self.api_auth('default-bot@zulip.com'))
+            self.assert_json_error(result, "This endpoint does not accept bot requests.")
+
 class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
     def test_authenticated_json_post_view_if_everything_is_correct(self):
         # type: () -> None
