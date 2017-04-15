@@ -72,34 +72,8 @@ Note: In most cases, we do not store rows with value 0. See
 
 CountStats declare what analytics data should be generated and stored. The
 CountStat class definition and instances live in `analytics/lib/counts.py`.
-These declarations, along with any associated database queries, specify at a
-high level which tables should be populated by the system and with what
-data.
-
-The core of a CountStat object is a parameterized raw SQL query, along with
-the respective parameter settings. A CountStat object + an end_time combine
-to give a full SQL query that aggregates data from the production database
-tables and inserts it into a *Count table.
-
-Each CountStat object has the following fields. We'll use the
-`active_users:is_bot:day` CountStat as a running example, which is a stat
-that keeps track of the number of active humans and active bots in each
-realm.
-
-- property: A unique, human-readable description, of the form
-  "\<english_description\>:\<subgroup_name\>:\<frequency\>". Example:
-  "active_users:is_bot:day".
-- zerver_count_query: A ZerverCountQuery object, which contains a
-  - analytics_table: The *Count table where the data is initially
-    collected. E.g. RealmCount.
-  - query: A parameterized raw SQL string. E.g. count_user_by_realm_query.
-  - group_by: The (table, field) being used for the
-    subgroup. E.g. (UserProfile, is_bot).
-- frequency: How often to run the CountStat. Either 'hour' or
-  'day'. E.g. 'day'.
-- interval: A timedelta that restricts events to the following time interval:
-  [end_time - interval, end_time). Example: TIMEDELTA_MAX. We're interested
-  in currently active users that joined any time since the start of time.
+These declarations specify at a high level which tables should be populated
+by the system and with what data.
 
 ## The FillState table
 
