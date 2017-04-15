@@ -496,11 +496,9 @@ count_stats_ = [
               CountStat.DAY),
     LoggingCountStat('active_users_log:is_bot:day', RealmCount, CountStat.DAY),
 
-    # The minutes=15 part is due to the 15 minutes added in
-    # zerver.lib.actions.do_update_user_activity_interval.
     CountStat('15day_actives::day',
               sql_data_collector(UserCount, check_useractivityinterval_by_user_query, None),
-              CountStat.DAY, interval=timedelta(days=15)-timedelta(minutes=15)),
+              CountStat.DAY, interval=timedelta(days=15)-UserActivityInterval.MIN_INTERVAL_LENGTH),
     CountStat('minutes_active::day', DataCollector(UserCount, do_pull_minutes_active), CountStat.DAY),
 
     # Canonical account of the number of active humans in a realm on each day.

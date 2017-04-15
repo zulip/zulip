@@ -2301,9 +2301,7 @@ def streams_to_dicts_sorted(streams):
 
 def do_update_user_activity_interval(user_profile, log_time):
     # type: (UserProfile, datetime.datetime) -> None
-    # Update any stats in analytics.lib.counts.count_stats_ that rely on
-    # this if the 15 minutes is changed to something else.
-    effective_end = log_time + datetime.timedelta(minutes=15)
+    effective_end = log_time + UserActivityInterval.MIN_INTERVAL_LENGTH
     # This code isn't perfect, because with various races we might end
     # up creating two overlapping intervals, but that shouldn't happen
     # often, and can be corrected for in post-processing

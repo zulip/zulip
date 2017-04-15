@@ -528,7 +528,7 @@ class TestCountStats(AnalyticsTestCase):
         stat = COUNT_STATS['15day_actives::day']
         self.current_property = stat.property
 
-        _15day = 15*self.DAY - 15*self.MINUTE
+        _15day = 15*self.DAY - UserActivityInterval.MIN_INTERVAL_LENGTH
 
         # Outside time range, should not appear. Also tests upper boundary.
         user1 = self.create_user()
