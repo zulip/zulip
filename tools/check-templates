@@ -236,7 +236,6 @@ def check_handlebar_templates(templates):
         'static/templates/settings/default-streams-list-admin.handlebars',
         'static/templates/settings/display-settings.handlebars',
         'static/templates/settings/emoji-settings-admin.handlebars',
-        'static/templates/settings/muted-topics-settings.handlebars',
         'static/templates/settings/notification-settings.handlebars',
         'static/templates/settings/organization-settings-admin.handlebars',
         'static/templates/settings/realm-filter-settings-admin.handlebars',
