@@ -1,5 +1,4 @@
 from django.db import models
-from django.utils import timezone
 
 from zerver.models import Realm, UserProfile, Stream, Recipient
 from zerver.lib.str_utils import ModelReprMixin
