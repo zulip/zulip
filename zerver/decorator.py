@@ -310,6 +310,16 @@ def add_logging_data(view_func):
         return rate_limit()(view_func)(request, *args, **kwargs)
     return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
 
+def human_users_only(view_func):
+    # type: (ViewFuncT) -> ViewFuncT
+    @wraps(view_func)
+    def _wrapped_view_func(request, *args, **kwargs):
+        # type: (HttpRequest, *Any, **Any) -> HttpResponse
+        if request.user.is_bot:
+            return json_error(_("This endpoint does not accept bot requests."))
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
+
 # Based on Django 1.8's @login_required
 def zulip_login_required(function=None,
                          redirect_field_name=REDIRECT_FIELD_NAME,

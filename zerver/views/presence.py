@@ -10,7 +10,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils import timezone
 from django.utils.translation import ugettext as _
 
-from zerver.decorator import authenticated_json_post_view
+from zerver.decorator import authenticated_json_post_view, human_users_only
 from zerver.lib.actions import get_status_dict, update_user_presence
 from zerver.lib.request import has_request_variables, REQ, JsonableError
 from zerver.lib.response import json_success, json_error
@@ -52,14 +52,12 @@ def get_presence_backend(request, user_profile, email):
         val.pop('pushable', None)
     return json_success(result)
 
+@human_users_only
 @has_request_variables
 def update_active_status_backend(request, user_profile, status=REQ(),
                                  ping_only=REQ(validator=check_bool, default=False),
                                  new_user_input=REQ(validator=check_bool, default=False)):
     # type: (HttpRequest, UserProfile, str, bool, bool) -> HttpResponse
-    if user_profile.is_bot:
-        return json_error(_('Presence is not supported for bot users.'))
-
     status_val = UserPresence.status_from_string(status)
     if status_val is None:
         raise JsonableError(_("Invalid status: %s") % (status,))
