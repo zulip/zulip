@@ -244,7 +244,6 @@ def check_handlebar_templates(templates):
         'static/templates/settings/organization-settings-admin.handlebars',
         'static/templates/settings/realm-domains-modal.handlebars',
         'static/templates/settings/realm-filter-settings-admin.handlebars',
-        'static/templates/settings/streams-list-admin.handlebars',
         'static/templates/settings/ui-settings.handlebars',
         'static/templates/settings/user-list-admin.handlebars',
     ]
