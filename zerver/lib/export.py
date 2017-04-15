@@ -8,6 +8,7 @@ from django.db import connection
 from django.forms.models import model_to_dict
 from django.utils import timezone
 from django.utils.timezone import utc as timezone_utc
+from django.utils.timezone import is_naive as timezone_is_naive
 from django.db.models.query import QuerySet
 import glob
 import logging
@@ -178,7 +179,7 @@ def floatify_datetime_fields(data, table):
             orig_dt = item[field]
             if orig_dt is None:
                 continue
-            if timezone.is_naive(orig_dt):
+            if timezone_is_naive(orig_dt):
                 logging.warning("Naive datetime:", item)
                 dt = timezone.make_aware(orig_dt)
             else:
