@@ -131,6 +131,55 @@ function generate_title(emoji_name, user_ids) {
     return _.initial(user_names).join(', ') + ' and ' + _.last(user_names) + reacted_with_string;
 }
 
+function check_only_one_reaction(message) {
+    return message.reactions.length === 1;
+}
+
+function show_full_name_single_reaction(message) {
+    // If there is only one reaction, we want to show the full name.
+    // This function finds that reaction and finds the user who reacted
+    // and shows that user's full name instead of the count "1".
+
+    var emoji_name = message.reactions[0].emoji_name;
+    var message_element = $('.message_table').find("[zid='" + message.id + "']");
+    var message_reactions_element = message_element.find('.message_reactions');
+    var matching_reactions = message_reactions_element.find('[data-emoji-name="' + emoji_name + '"]');
+    var count_element = matching_reactions.find('.message_reaction_count');
+    var user_list = get_user_list_for_message_reaction(message.id, emoji_name);
+    count_element.html(people.get_person_from_user_id(user_list[0]).full_name);
+}
+
+function get_emojis_used_for_message_id(message_id) {
+    // This function gets ALL emojis used for a specific message
+    // regardless of which user reacted using that emoji.
+
+    var message = message_store.get(message_id);
+    var duplicates = {};
+    var unique_reactions = message.reactions.filter(function (reaction) {
+        return duplicates.hasOwnProperty(reaction) ? false : (duplicates[reaction] = true);
+    });
+    return unique_reactions.map(function (reaction) {
+        return reaction.emoji_name;
+    });
+}
+
+function reset_counts(message) {
+    // If there are multiple reactions, we want to get rid of the
+    // full name in our original sole reaction.
+
+    var message_element = $('.message_table').find("[zid='" + message.id + "']");
+    var message_reactions_element = message_element.find('.message_reactions');
+    var reactions_used = get_emojis_used_for_message_id(message.id);
+    _.each(reactions_used, function (reaction) {
+        var reaction_element = message_reactions_element.find("[data-emoji-name='" + reaction + "']");
+        var count_element = reaction_element.find('.message_reaction_count');
+        if (typeof(count_element.textContent) !== "number") {
+            var user_list = get_user_list_for_message_reaction(message.id, reaction);
+            count_element.html(user_list.length);
+        }
+    });
+}
+
 exports.add_reaction = function (event) {
     event.emoji_name_css_class = emoji.emoji_name_to_css_class(event.emoji_name);
     event.user.id = event.user.user_id;
@@ -152,6 +201,11 @@ exports.add_reaction = function (event) {
             event.url = emoji.realm_emojis[event.emoji_name].emoji_url;
         }
         event.count = 1;
+        if (check_only_one_reaction(message)) {
+            event.count = event.user.full_name;
+        } else if (message_reactions_element[0].children.length === 2) {
+            reset_counts(message);
+        }
         event.title = new_title;
         event.emoji_alt_code = page_params.emoji_alt_code;
         if (event.user.id === page_params.user_id) {
@@ -203,6 +257,9 @@ exports.remove_reaction = function (event) {
         matching_reactions.removeClass("reacted");
     }
     count_element.html(user_list.length);
+    if (check_only_one_reaction(message)) {
+        show_full_name_single_reaction(message);
+    }
     if (user_list.length === 0) {
         matching_reactions.remove();
     }
@@ -254,6 +311,9 @@ exports.get_message_reactions = function (message) {
         }
         return reaction;
     });
+    if (check_only_one_reaction(message)) {
+        reactions[0].count = message.reactions[0].user.full_name;
+    }
     return reactions;
 };
 
