@@ -195,6 +195,13 @@ class TestProcessCountStat(AnalyticsTestCase):
         self.assertFillStateEquals(stat, current_time)
         self.assertEqual(InstallationCount.objects.filter(property=stat.property).count(), 2)
 
+    def test_off_boundary_fill_to_time(self):
+        # type: () -> None
+        stat = self.make_dummy_count_stat('test stat')
+        process_count_stat(stat, installation_epoch() + 65*self.MINUTE)
+        self.assertFillStateEquals(stat, installation_epoch() + self.HOUR)
+        self.assertEqual(InstallationCount.objects.filter(property=stat.property).count(), 1)
+
     # This tests the LoggingCountStat branch of the code in do_delete_counts_at_hour.
     # It is important that do_delete_counts_at_hour not delete any of the collected
     # logging data!
@@ -276,6 +283,19 @@ class TestProcessCountStat(AnalyticsTestCase):
                                ['stat2', hour[1]], ['stat2', hour[2]], ['stat2', hour[3]],
                                ['stat3', hour[1]], ['stat3', hour[2]]])
         self.assertFillStateEquals(stat3, hour[2])
+
+        # test daily dependent stat with hourly dependencies
+        query = """INSERT INTO analytics_realmcount (realm_id, value, property, end_time)
+                   VALUES (%s, 1, '%s', %%%%(time_end)s)""" % (self.default_realm.id, 'stat4')
+        stat4 = DependentCountStat('stat4', sql_data_collector(RealmCount, query, None), CountStat.DAY,
+                                   dependencies=['stat1', 'stat2'])
+        hour24 = installation_epoch() + 24*self.HOUR
+        hour25 = installation_epoch() + 25*self.HOUR
+        process_count_stat(stat1, hour25)
+        process_count_stat(stat2, hour25)
+        process_count_stat(stat4, hour25)
+        self.assertEqual(InstallationCount.objects.filter(property='stat4').count(), 1)
+        self.assertFillStateEquals(stat4, hour24)
 
 class TestCountStats(AnalyticsTestCase):
     def setUp(self):
