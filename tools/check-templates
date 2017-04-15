@@ -229,7 +229,6 @@ def check_handlebar_templates(templates):
         'static/templates/settings/account-settings.handlebars',
         'static/templates/settings/admin-realm-domains-list.handlebars',
         'static/templates/settings/admin_auth_methods_list.handlebars',
-        'static/templates/settings/alert-word-settings.handlebars',
         'static/templates/settings/attachment-item.handlebars',
         'static/templates/settings/auth-methods-settings-admin.handlebars',
         'static/templates/settings/bot-list-admin.handlebars',
