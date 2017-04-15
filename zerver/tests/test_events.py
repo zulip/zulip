@@ -1332,9 +1332,12 @@ class EventsRegisterTest(ZulipTestCase):
         # type: () -> None
         schema_checker = self.check_events_dict([
             ('type', equals('hotspots')),
-            ('hotspots', check_list(check_string)),
+            ('hotspots', check_list(check_dict_only([
+                ('name', check_string),
+                ('description', check_string),
+            ]))),
         ])
-        events = self.do_test(lambda: do_mark_hotspot_as_read(self.user_profile, 'welcome'))
+        events = self.do_test(lambda: do_mark_hotspot_as_read(self.user_profile, 'click_to_reply'))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
