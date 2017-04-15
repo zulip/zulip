@@ -1,7 +1,6 @@
 from django.conf import settings
 from django.db import connection, models
 from django.db.models import F
-from django.utils import timezone
 
 from analytics.models import InstallationCount, RealmCount, \
     UserCount, StreamCount, BaseCount, FillState, Anomaly, installation_epoch, \
