@@ -1414,9 +1414,12 @@ class UserActivity(models.Model):
         unique_together = ("user_profile", "client", "query")
 
 class UserActivityInterval(models.Model):
+    MIN_INTERVAL_LENGTH = datetime.timedelta(minutes=15)
+
     user_profile = models.ForeignKey(UserProfile) # type: UserProfile
     start = models.DateTimeField('start time', db_index=True) # type: datetime.datetime
     end = models.DateTimeField('end time', db_index=True) # type: datetime.datetime
+
 
 class UserPresence(models.Model):
     user_profile = models.ForeignKey(UserProfile) # type: UserProfile
