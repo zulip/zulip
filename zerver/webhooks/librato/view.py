@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Callable, Tuple, Text
 from six.moves import zip
 
-from django.utils import timezone
+from django.utils.timezone import utc as timezone_utc
 from django.utils.translation import ugettext as _
 from django.http import HttpRequest, HttpResponse
 
@@ -49,7 +49,7 @@ class LibratoWebhookParser(object):
         # type: (Dict[str, Any]) -> Tuple[Text, Text]
         metric_name = violation['metric']
         recorded_at = datetime.fromtimestamp((violation['recorded_at']),
-                                             tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+                                             tz=timezone_utc).strftime('%Y-%m-%d %H:%M:%S')
         return metric_name, recorded_at
 
     def parse_conditions(self):
@@ -106,7 +106,7 @@ class LibratoWebhookHandler(LibratoWebhookParser):
         # type: () -> Text
         alert_clear_template = "Alert [alert_name]({alert_url}) has cleared at {trigger_time} UTC!"
         trigger_time = datetime.fromtimestamp((self.payload['trigger_time']),
-                                              tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+                                              tz=timezone_utc).strftime('%Y-%m-%d %H:%M:%S')
         alert_id, alert_name, alert_url, alert_runbook_url = self.parse_alert()
         content = alert_clear_template.format(alert_name=alert_name, alert_url=alert_url, trigger_time=trigger_time)
         return content

@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 import datetime
 import calendar
-from django.utils import timezone
+from django.utils.timezone import utc as timezone_utc
 
 def floor_to_hour(dt):
     # type: (datetime.datetime) -> datetime.datetime
@@ -30,13 +30,13 @@ def ceiling_to_day(dt):
 
 def timestamp_to_datetime(timestamp):
     # type: (float) -> datetime.datetime
-    return datetime.datetime.fromtimestamp(float(timestamp), tz=timezone.utc)
+    return datetime.datetime.fromtimestamp(float(timestamp), tz=timezone_utc)
 
 class TimezoneNotUTCException(Exception):
     pass
 
 def datetime_to_timestamp(dt):
     # type: (datetime.datetime) -> int
-    if dt.tzinfo is None or dt.tzinfo.utcoffset(dt) != timezone.utc.utcoffset(dt):
+    if dt.tzinfo is None or dt.tzinfo.utcoffset(dt) != timezone_utc.utcoffset(dt):
         raise TimezoneNotUTCException("Datetime %s to be converted does not have a UTC timezone." % (dt,))
     return calendar.timegm(dt.timetuple())
