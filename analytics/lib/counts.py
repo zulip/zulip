@@ -81,6 +81,13 @@ class DataCollector(object):
 
 def process_count_stat(stat, fill_to_time):
     # type: (CountStat, datetime) -> None
+    if stat.frequency == CountStat.HOUR:
+        time_increment = timedelta(hours=1)
+    elif stat.frequency == CountStat.DAY:
+        time_increment = timedelta(days=1)
+    else:
+        raise AssertionError("Unknown frequency: %s" % (stat.frequency,))
+
     fill_state = FillState.objects.filter(property=stat.property).first()
     if fill_state is None:
         currently_filled = installation_epoch()
@@ -91,7 +98,7 @@ def process_count_stat(stat, fill_to_time):
     elif fill_state.state == FillState.STARTED:
         logger.info("UNDO START %s %s" % (stat.property, fill_state.end_time))
         do_delete_counts_at_hour(stat, fill_state.end_time)
-        currently_filled = fill_state.end_time - timedelta(hours = 1)
+        currently_filled = fill_state.end_time - time_increment
         do_update_fill_state(fill_state, currently_filled, FillState.DONE)
         logger.info("UNDO DONE %s" % (stat.property,))
     elif fill_state.state == FillState.DONE:
@@ -108,7 +115,7 @@ def process_count_stat(stat, fill_to_time):
                 return
             fill_to_time = min(fill_to_time, dependency_fill_time)
 
-    currently_filled = currently_filled + timedelta(hours = 1)
+    currently_filled = currently_filled + time_increment
     while currently_filled <= fill_to_time:
         logger.info("START %s %s" % (stat.property, currently_filled))
         start = time.time()
@@ -116,7 +123,7 @@ def process_count_stat(stat, fill_to_time):
         do_fill_count_stat_at_hour(stat, currently_filled)
         do_update_fill_state(fill_state, currently_filled, FillState.DONE)
         end = time.time()
-        currently_filled = currently_filled + timedelta(hours = 1)
+        currently_filled = currently_filled + time_increment
         logger.info("DONE %s (%dms)" % (stat.property, (end-start)*1000))
 
 def do_update_fill_state(fill_state, end_time, state):
@@ -125,13 +132,10 @@ def do_update_fill_state(fill_state, end_time, state):
     fill_state.state = state
     fill_state.save()
 
-# We assume end_time is on an hour boundary, and is timezone aware.
-# It is the caller's responsibility to enforce this!
+# We assume end_time is valid (e.g. is on a day or hour boundary as appropriate)
+# and is timezone aware. It is the caller's responsibility to enforce this!
 def do_fill_count_stat_at_hour(stat, end_time):
     # type: (CountStat, datetime) -> None
-    if stat.frequency == CountStat.DAY and (end_time != floor_to_day(end_time)):
-        return
-
     start_time = end_time - stat.interval
     if not isinstance(stat, LoggingCountStat):
         timer = time.time()
