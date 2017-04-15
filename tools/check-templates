@@ -227,7 +227,6 @@ def check_handlebar_templates(templates):
         'static/templates/subscription_settings.handlebars',
         'static/templates/user_sidebar_actions.handlebars',
         'static/templates/settings/account-settings.handlebars',
-        'static/templates/settings/attachment-item.handlebars',
         'static/templates/settings/auth-methods-settings-admin.handlebars',
         'static/templates/settings/bot-list-admin.handlebars',
         'static/templates/settings/bot-settings.handlebars',

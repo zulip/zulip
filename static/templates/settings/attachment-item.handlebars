@@ -4,9 +4,9 @@
         <div class="file-icon">
             <div class="extension {{#if attachment.large_ext_name }}small{{/if}} {{#unless attachment.extension }}no-extension{{/unless}}">
                 {{#if attachment.extension}}
-                    {{ attachment.extension }}
+                {{ attachment.extension }}
                 {{else}}
-                    <i class="icon icon-vector-file"></i>
+                <i class="icon icon-vector-file"></i>
                 {{/if}}
             </div>
         </div>
@@ -21,16 +21,16 @@
                     <i class="icon-vector-trash"></i>
                 </button>
             </div>
-          {{#if attachment.messages }}
+            {{#if attachment.messages }}
             <div class="attachment-messages">
-              {{#each attachment.messages}}
-              <a class="ind-message" href="/#narrow/id/{{ this.id }}">
-                  <div class="message-id">#{{ this.id }}</div>
-                  <div class="message-date">{{ this.name }}</div>
-              </a>
-              {{/each}}
+                {{#each attachment.messages}}
+                <a class="ind-message" href="/#narrow/id/{{ this.id }}">
+                    <div class="message-id">#{{ this.id }}</div>
+                    <div class="message-date">{{ this.name }}</div>
+                </a>
+                {{/each}}
             </div>
-          {{/if}}
+            {{/if}}
         </div>
     </div>
 </li>
