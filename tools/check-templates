@@ -218,7 +218,6 @@ def check_handlebar_templates(templates):
         'static/templates/actions_popover_content.handlebars',
         'static/templates/admin_user_list.handlebars',
         'static/templates/bot_avatar_row.handlebars',
-        'static/templates/draft.handlebars',
         'static/templates/message_edit_history.handlebars',
         'static/templates/recipient_row.handlebars',
         'static/templates/single_message.handlebars',
