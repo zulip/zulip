@@ -221,7 +221,6 @@ def check_handlebar_templates(templates):
         'static/templates/message_edit_history.handlebars',
         'static/templates/single_message.handlebars',
         'static/templates/stream_privacy.handlebars',
-        'static/templates/stream_sidebar_row.handlebars',
         'static/templates/user_sidebar_actions.handlebars',
         'static/templates/settings/account-settings.handlebars',
         'static/templates/settings/auth-methods-settings-admin.handlebars',
