@@ -5,6 +5,7 @@ from django.db import models
 from django.db.models import Sum
 from django.test import TestCase
 from django.utils import timezone
+from django.utils.timezone import utc as timezone_utc
 
 from analytics.lib.counts import CountStat, COUNT_STATS, process_count_stat, \
     do_fill_count_stat_at_hour, do_increment_logging_stat, DataCollector, \
@@ -30,7 +31,7 @@ class AnalyticsTestCase(TestCase):
     MINUTE = timedelta(seconds = 60)
     HOUR = MINUTE * 60
     DAY = HOUR * 24
-    TIME_ZERO = datetime(1988, 3, 14).replace(tzinfo=timezone.utc)
+    TIME_ZERO = datetime(1988, 3, 14).replace(tzinfo=timezone_utc)
     TIME_LAST_HOUR = TIME_ZERO - HOUR
 
     def setUp(self):

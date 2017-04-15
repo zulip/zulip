@@ -7,6 +7,7 @@ from django.conf import settings
 from django.db import connection
 from django.forms.models import model_to_dict
 from django.utils import timezone
+from django.utils.timezone import utc as timezone_utc
 from django.db.models.query import QuerySet
 import glob
 import logging
@@ -1232,7 +1233,7 @@ def fix_datetime_fields(data, table):
     for item in data[table]:
         for field_name in DATE_FIELDS[table]:
             if item[field_name] is not None:
-                item[field_name] = datetime.datetime.fromtimestamp(item[field_name], tz=timezone.utc)
+                item[field_name] = datetime.datetime.fromtimestamp(item[field_name], tz=timezone_utc)
 
 def convert_to_id_fields(data, table, field_name):
     # type: (TableData, TableName, Field) -> None

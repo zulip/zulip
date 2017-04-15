@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 from django.utils import timezone
+from django.utils.timezone import utc as timezone_utc
 
 import hashlib
 import logging
@@ -12,7 +13,7 @@ from zerver.lib.str_utils import force_bytes
 # Adapted http://djangosnippets.org/snippets/2242/ by user s29 (October 25, 2010)
 
 class _RateLimitFilter(object):
-    last_error = datetime.min.replace(tzinfo=timezone.utc)
+    last_error = datetime.min.replace(tzinfo=timezone_utc)
 
     def filter(self, record):
         # type: (logging.LogRecord) -> bool
