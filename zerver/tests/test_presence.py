@@ -274,7 +274,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
     def _send_presence_for_aggregated_tests(self, email, status, validate_time):
         # type: (str, str, datetime.datetime) -> Dict[str, Dict[str, Any]]
         self.login(email)
-        timezone_util = 'django.utils.timezone.now'
+        timezone_util = 'zerver.views.presence.timezone_now'
         with mock.patch(timezone_util, return_value=validate_time - datetime.timedelta(seconds=5)):
             self.client_post("/json/users/me/presence", {'status': status})
         with mock.patch(timezone_util, return_value=validate_time - datetime.timedelta(seconds=2)):
@@ -302,7 +302,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
         email = "othello@zulip.com"
         validate_time = timezone_now()
         self._send_presence_for_aggregated_tests('othello@zulip.com', 'active', validate_time)
-        with mock.patch('django.utils.timezone.now',
+        with mock.patch('zerver.views.presence.timezone_now',
                         return_value=validate_time - datetime.timedelta(seconds=1)):
             result = self.client_post("/api/v1/users/me/presence", {'status': 'active'},
                                       HTTP_USER_AGENT="ZulipTestDev/1.0",
@@ -348,7 +348,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
         email = "othello@zulip.com"
         self.login(email)
         validate_time = timezone_now()
-        with mock.patch('django.utils.timezone.now',
+        with mock.patch('zerver.views.presence.timezone_now',
                         return_value=validate_time - datetime.timedelta(seconds=3)):
             self.client_post("/api/v1/users/me/presence", {'status': 'active'},
                              HTTP_USER_AGENT="ZulipTestDev/1.0",

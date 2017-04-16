@@ -7,7 +7,7 @@ from django.conf import settings
 from typing import Any, Dict, Text
 
 from django.http import HttpRequest, HttpResponse
-from django.utils import timezone
+from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
 
 from zerver.decorator import authenticated_json_post_view
@@ -44,7 +44,7 @@ def get_presence_backend(request, user_profile, email):
     # For initial version, we just include the status and timestamp keys
     result = dict(presence=presence_dict[target.email])
     aggregated_info = result['presence']['aggregated']
-    aggr_status_duration = datetime_to_timestamp(timezone.now()) - aggregated_info['timestamp']
+    aggr_status_duration = datetime_to_timestamp(timezone_now()) - aggregated_info['timestamp']
     if aggr_status_duration > settings.OFFLINE_THRESHOLD_SECS:
         aggregated_info['status'] = 'offline'
     for val in result['presence'].values():
@@ -64,7 +64,7 @@ def update_active_status_backend(request, user_profile, status=REQ(),
     if status_val is None:
         raise JsonableError(_("Invalid status: %s") % (status,))
     else:
-        update_user_presence(user_profile, request.client, timezone.now(),
+        update_user_presence(user_profile, request.client, timezone_now(),
                              status_val, new_user_input)
 
     if ping_only:
@@ -82,7 +82,7 @@ def update_active_status_backend(request, user_profile, status=REQ(),
                                                 client__name="zephyr_mirror")
 
             ret['zephyr_mirror_active'] = \
-                (activity.last_visit > timezone.now() - datetime.timedelta(minutes=5))
+                (activity.last_visit > timezone_now() - datetime.timedelta(minutes=5))
         except UserActivity.DoesNotExist:
             ret['zephyr_mirror_active'] = False
 
