@@ -295,6 +295,22 @@ exports.reply_with_mention = function (opts) {
     $('#new_message_content').val(mention + ' ');
 };
 
+exports.on_narrow = function () {
+    if (compose_state.has_message_content()) {
+        compose_fade.update_message_list();
+        return;
+    }
+
+    if (narrow.narrowed_by_pm_reply()) {
+        exports.start('private');
+        return;
+    }
+
+    // If we got this far, then we assume the user is now in "reading"
+    // mode, so we close the compose box to make it easier to use navigation
+    // hotkeys and to provide more screen real estate for messages.
+    exports.cancel();
+};
 
 return exports;
 }());

@@ -211,14 +211,6 @@ exports.activate = function (raw_operators, opts) {
                                 trigger: opts ? opts.trigger : undefined,
                                 previous_id: current_msg_list.selected_id()});
 
-    var had_message_content = compose_state.has_message_content();
-
-    if (!had_message_content) {
-        compose_actions.cancel();
-    } else {
-        compose_fade.update_message_list();
-    }
-
     opts = _.defaults({}, opts, {
         then_select_id: home_msg_list.selected_id(),
         select_first_unread: false,
@@ -375,11 +367,7 @@ exports.activate = function (raw_operators, opts) {
     $('#search_query').val(Filter.unparse(operators));
     search.update_button_visibility();
 
-    if (!had_message_content) {
-        if (exports.narrowed_by_pm_reply()) {
-            compose_actions.start('private');
-        }
-    }
+    compose_actions.on_narrow();
 
     $(document).trigger($.Event('narrow_activated.zulip', {msg_list: message_list.narrowed,
                                                             filter: current_filter,
