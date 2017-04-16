@@ -39,6 +39,7 @@ function set_filter(operators) {
     assert(!narrow.narrowed_to_pms());
     assert(!narrow.narrowed_by_reply());
     assert(!narrow.narrowed_by_pm_reply());
+    assert(!narrow.narrowed_by_topic_reply());
     assert(!narrow.narrowed_to_search());
     assert(!narrow.narrowed_to_topic());
 
@@ -46,6 +47,7 @@ function set_filter(operators) {
     assert(!narrow.narrowed_to_pms());
     assert(!narrow.narrowed_by_reply());
     assert(!narrow.narrowed_by_pm_reply());
+    assert(!narrow.narrowed_by_topic_reply());
     assert(!narrow.narrowed_to_search());
     assert(!narrow.narrowed_to_topic());
 
@@ -53,6 +55,7 @@ function set_filter(operators) {
     assert(narrow.narrowed_to_pms());
     assert(narrow.narrowed_by_reply());
     assert(narrow.narrowed_by_pm_reply());
+    assert(!narrow.narrowed_by_topic_reply());
     assert(!narrow.narrowed_to_search());
     assert(!narrow.narrowed_to_topic());
 
@@ -60,6 +63,7 @@ function set_filter(operators) {
     assert(!narrow.narrowed_to_pms());
     assert(narrow.narrowed_by_reply());
     assert(!narrow.narrowed_by_pm_reply());
+    assert(narrow.narrowed_by_topic_reply());
     assert(!narrow.narrowed_to_search());
     assert(narrow.narrowed_to_topic());
 
@@ -67,6 +71,7 @@ function set_filter(operators) {
     assert(!narrow.narrowed_to_pms());
     assert(!narrow.narrowed_by_reply());
     assert(!narrow.narrowed_by_pm_reply());
+    assert(!narrow.narrowed_by_topic_reply());
     assert(narrow.narrowed_to_search());
     assert(!narrow.narrowed_to_topic());
 }());

@@ -670,15 +670,8 @@ exports.narrowed_to_pms = function () {
 // We auto-reply under certain conditions, namely when you're narrowed
 // to a PM (or huddle), and when you're narrowed to some stream/subject pair
 exports.narrowed_by_reply = function () {
-    if (current_filter === undefined) {
-        return false;
-    }
-    var operators = current_filter.operators();
-    return ((operators.length === 1 &&
-             current_filter.operands("pm-with").length === 1) ||
-            (operators.length === 2 &&
-             current_filter.operands("stream").length === 1 &&
-             current_filter.operands("topic").length === 1));
+    return (exports.narrowed_by_pm_reply() ||
+            exports.narrowed_by_topic_reply());
 };
 
 exports.narrowed_by_pm_reply = function () {
@@ -688,6 +681,16 @@ exports.narrowed_by_pm_reply = function () {
     var operators = current_filter.operators();
     return (operators.length === 1 &&
             current_filter.has_operator('pm-with'));
+};
+
+exports.narrowed_by_topic_reply = function () {
+    if (current_filter === undefined) {
+        return false;
+    }
+    var operators = current_filter.operators();
+    return (operators.length === 2 &&
+            current_filter.operands("stream").length === 1 &&
+            current_filter.operands("topic").length === 1);
 };
 
 exports.narrowed_to_topic = function () {
