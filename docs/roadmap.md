@@ -179,9 +179,9 @@ of its size, it takes work to keep it that way.
 
 * [Add support for 2-factor authentication on all
   platforms](https://github.com/zulip/zulip/pull/1747)
-* [Add support for stronger security controls for uploaded files (The
+* <strike>[Add support for stronger security controls for uploaded files (The
   LOCAL_UPLOADS_DIR file uploads backend only supports world-readable
-  uploads)](https://github.com/zulip/zulip/issues/320)
+  uploads)](https://github.com/zulip/zulip/issues/320)</strike>
 * [Fix requirement to set a password when creating account via
   Google](https://github.com/zulip/zulip/issues/1633)
 * [Add a retention policy feature that automatically deletes old
