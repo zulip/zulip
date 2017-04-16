@@ -375,10 +375,8 @@ exports.activate = function (raw_operators, opts) {
     $('#search_query').val(Filter.unparse(operators));
     search.update_button_visibility();
 
-    if (!had_message_content && opts.trigger === 'sidebar' && exports.narrowed_by_reply()) {
-        if (exports.narrowed_to_topic()) {
-            compose_actions.start('stream');
-        } else {
+    if (!had_message_content) {
+        if (exports.narrowed_by_pm_reply() && (opts.trigger === 'sidebar')) {
             compose_actions.start('private');
         }
     }
