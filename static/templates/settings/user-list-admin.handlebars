@@ -5,8 +5,10 @@
   <tbody id="admin_users_table" class="admin_user_table">
     <th class="wrapped-cell">{{t "Name" }}</th>
     <th>{{t "Email" }}</th>
-    <th class="last_active">{{t "Last active" }}</th>
-    <th>{{t "Actions" }}</th>
+    {{#if is_admin}}
+        <th class="last_active">{{t "Last active" }}</th>
+        <th>{{t "Actions" }}</th>
+    {{/if}}
   </tbody>
 </table>
 <div id="admin_page_users_loading_indicator"></div>

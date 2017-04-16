@@ -175,9 +175,11 @@
              class="admin-realm-message-content-edit-limit-minutes"
              value="{{ realm_waiting_period_threshold }}"/>
     </div>
+    {{#if is_admin }}
     <div class="input-group organization-submission">
       <input type="submit" class="button" value="{{t 'Save changes' }}" />
     </div>
+    {{/if}}
     </div>
     <div class="realm-icon-section box-shadow border-radius">
       <div class="inline-block">

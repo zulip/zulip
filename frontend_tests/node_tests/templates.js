@@ -122,12 +122,28 @@ function render(template_name, args) {
 (function admin_default_streams_list() {
     var html = '<table>';
     var streams = ['devel', 'trac', 'zulip'];
+
+    // When the logged in user is admin
     _.each(streams, function (stream) {
-        var args = {stream: {name: stream, invite_only: false}};
+        var args = {stream: {name: stream, invite_only: false},
+                    can_modify: true,
+                    };
         html += render('admin_default_streams_list', args);
     });
     html += "</table>";
     var span = $(html).find(".default_stream_name:first");
+    assert.equal(span.text(), "devel");
+
+    // When the logged in user is not admin
+    html = '<table>';
+    _.each(streams, function (stream) {
+        var args = {stream: {name: stream, invite_only: false},
+                    can_modify: false,
+                    };
+        html += render('admin_default_streams_list', args);
+    });
+    html += "</table>";
+    span = $(html).find(".default_stream_name:first");
     assert.equal(span.text(), "devel");
     global.write_handlebars_output("admin_default_streams_list", html);
 }());
@@ -156,11 +172,14 @@ function render(template_name, args) {
 }());
 
 (function admin_filter_list() {
+
+    // When the logged in user is admin
     var args = {
         filter: {
             pattern: "#(?P<id>[0-9]+)",
             url_format_string: "https://trac.example.com/ticket/%(id)s",
         },
+        can_modify: true,
     };
 
     var html = '';
@@ -168,10 +187,30 @@ function render(template_name, args) {
     html += render('admin_filter_list', args);
     html += '</tbody>';
 
-    global.write_test_output('admin_filter_list', html);
-
     var filter_pattern = $(html).find('tr.filter_row:first span.filter_pattern');
     var filter_format = $(html).find('tr.filter_row:first span.filter_url_format_string');
+
+    assert.equal(filter_pattern.text(), '#(?P<id>[0-9]+)');
+    assert.equal(filter_format.text(), 'https://trac.example.com/ticket/%(id)s');
+
+    // When the logged in user is not admin
+    args = {
+        filter: {
+            pattern: "#(?P<id>[0-9]+)",
+            url_format_string: "https://trac.example.com/ticket/%(id)s",
+        },
+        can_modify: false,
+    };
+
+    html = '';
+    html += '<tbody id="admin_filters_table">';
+    html += render('admin_filter_list', args);
+    html += '</tbody>';
+
+    global.write_test_output('admin_filter_list', html);
+
+    filter_pattern = $(html).find('tr.filter_row:first span.filter_pattern');
+    filter_format = $(html).find('tr.filter_row:first span.filter_url_format_string');
 
     assert.equal(filter_pattern.text(), '#(?P<id>[0-9]+)');
     assert.equal(filter_format.text(), 'https://trac.example.com/ticket/%(id)s');
@@ -207,6 +246,8 @@ function render(template_name, args) {
 (function admin_user_list() {
     var html = '<table>';
     var users = ['alice', 'bob', 'carl'];
+
+    // When the logged in user is admin
     _.each(users, function (user) {
         var args = {
             user: {
@@ -215,6 +256,7 @@ function render(template_name, args) {
                 email: user + '@zulip.com',
                 full_name: user,
             },
+            can_modify: true,
         };
         html += render('admin_user_list', args);
     });
@@ -230,6 +272,25 @@ function render(template_name, args) {
 
     assert.equal($(buttons[2]).attr('title').trim(), "Edit user");
     assert($(buttons[2]).hasClass("open-user-form"));
+
+    // When the logged in user is not admin
+    html = '<table>';
+    _.each(users, function (user) {
+        var args = {
+            user: {
+                is_active: true,
+                is_active_human: true,
+                email: user + '@zulip.com',
+                full_name: user,
+            },
+            can_modify: false,
+        };
+        html += render('admin_user_list', args);
+    });
+    html += "</table>";
+
+    buttons = $(html).find('.button');
+    assert.equal($(buttons).length, 0);
 
     global.write_handlebars_output("admin_user_list", html);
 }());

@@ -15,6 +15,10 @@ exports.show_or_hide_menu_item = function () {
             .find("input, button, select").attr("disabled", true);
         $(".organization-box [data-name='auth-methods']")
             .find("input, button, select, checked").attr("disabled", true);
+        $(".organization-box [data-name='default-streams-list']")
+            .find("input, button, select").attr("disabled", true);
+        $(".organization-box [data-name='filter-settings']")
+            .find("input, button, select").attr("disabled", true);
     }
 };
 

@@ -6,7 +6,9 @@
     <th class="wrapped-cell">{{t "Name" }}</th>
     <th>{{t "Email" }}</th>
     <th>{{t "Owner" }}</th>
-    <th>{{t "Actions" }}</th>
+    {{#if is_admin}}
+        <th>{{t "Actions" }}</th>
+    {{/if}}
   </tbody>
 </table>
 <div id="admin_page_bots_loading_indicator"></div>
