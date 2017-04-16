@@ -376,7 +376,7 @@ exports.activate = function (raw_operators, opts) {
     search.update_button_visibility();
 
     if (!had_message_content) {
-        if (exports.narrowed_by_pm_reply() && (opts.trigger === 'sidebar')) {
+        if (exports.narrowed_by_pm_reply()) {
             compose_actions.start('private');
         }
     }
