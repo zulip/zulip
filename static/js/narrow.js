@@ -683,6 +683,15 @@ exports.narrowed_by_reply = function () {
              current_filter.operands("topic").length === 1));
 };
 
+exports.narrowed_by_pm_reply = function () {
+    if (current_filter === undefined) {
+        return false;
+    }
+    var operators = current_filter.operators();
+    return (operators.length === 1 &&
+            current_filter.has_operator('pm-with'));
+};
+
 exports.narrowed_to_topic = function () {
     if (current_filter === undefined) {
         return false;
