@@ -892,11 +892,20 @@ class TestInternalNotifyView(TestCase):
 class TestHumanUsersOnlyDecorator(ZulipTestCase):
     def test_human_only_endpoints(self):
         # type: () -> None
-        endpoints = [
+        post_endpoints = [
             "/api/v1/users/me/presence",
         ]
-        for endpoint in endpoints:
+        for endpoint in post_endpoints:
             result = self.client_post(endpoint, **self.api_auth('default-bot@zulip.com'))
+            self.assert_json_error(result, "This endpoint does not accept bot requests.")
+
+        patch_endpoints = [
+            "/api/v1/settings/display",
+            "/api/v1/settings/notifications",
+            "/api/v1/settings/ui",
+        ]
+        for endpoint in patch_endpoints:
+            result = self.client_patch(endpoint, **self.api_auth('default-bot@zulip.com'))
             self.assert_json_error(result, "This endpoint does not accept bot requests.")
 
 class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):

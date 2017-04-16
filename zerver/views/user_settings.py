@@ -12,7 +12,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 
 from zerver.decorator import authenticated_json_post_view, has_request_variables, \
-    zulip_login_required, REQ
+    zulip_login_required, REQ, human_users_only
 from zerver.lib.actions import do_change_password, \
     do_change_enable_desktop_notifications, \
     do_change_enter_sends, do_change_enable_sounds, \
@@ -74,6 +74,7 @@ def confirm_email_change(request, confirmation_key):
     }
     return render(request, 'confirmation/confirm_email_change.html', context=ctx)
 
+@human_users_only
 @has_request_variables
 def json_change_ui_settings(request, user_profile,
                             autoscroll_forever=REQ(validator=check_bool,
@@ -153,6 +154,7 @@ def json_change_settings(request, user_profile,
 
     return json_success(result)
 
+@human_users_only
 @has_request_variables
 def update_display_settings_backend(request, user_profile,
                                     twenty_four_hour_time=REQ(validator=check_bool, default=None),
@@ -197,6 +199,7 @@ def update_display_settings_backend(request, user_profile,
 
     return json_success(result)
 
+@human_users_only
 @has_request_variables
 def json_change_notify_settings(request, user_profile,
                                 enable_stream_desktop_notifications=REQ(validator=check_bool,
