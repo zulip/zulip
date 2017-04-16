@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List, Text
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
@@ -37,53 +37,51 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
                  authentication_methods=REQ(validator=check_dict([]), default=None),
                  message_retention_days=REQ(converter=to_not_negative_int_or_none, default=None)):
     # type: (HttpRequest, UserProfile, Optional[str], Optional[str], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[bool], Optional[int], Optional[str], Optional[int], Optional[dict], Optional[int]) -> HttpResponse
-    # Validation for default_language
+    realm = user_profile.realm
+
+    # Additional validation/error checking beyond types go here, so
+    # the entire request can succeed or fail atomically.
     if default_language is not None and default_language not in get_available_language_codes():
         raise JsonableError(_("Invalid language '%s'" % (default_language,)))
-    realm = user_profile.realm
+    if description is not None and len(description) > 100:
+        return json_error(_("Realm description cannot exceed 100 characters."))
+    if authentication_methods is not None and True not in list(authentication_methods.values()):
+        return json_error(_("At least one authentication method must be enabled."),
+                          data={"reason": "no authentication"},
+                          status=403)
+
+    # The user of `locals()` here is a bit of a code smell, but it's
+    # restricted to the elements present in realm.property_types.
+    #
+    # TODO: It should be possible to deduplicate this function up
+    # further by some more advanced usage of the
+    # `REQ/has_request_variables` extraction.
+    req_vars = {k: v for k, v in list(locals().items()) if k in realm.property_types}
     data = {} # type: Dict[str, Any]
-    if name is not None and realm.name != name:
-        do_set_realm_property(realm, 'name', name)
-        data['name'] = 'updated'
-    if description is not None and realm.description != description:
-        if len(description) > 100:
-            return json_error(_("Realm description cannot exceed 100 characters."))
-        do_set_realm_property(realm, 'description', description)
-        data['description'] = 'updated'
-    if restricted_to_domain is not None and realm.restricted_to_domain != restricted_to_domain:
-        do_set_realm_property(realm, 'restricted_to_domain', restricted_to_domain)
-        data['restricted_to_domain'] = restricted_to_domain
-    if invite_required is not None and realm.invite_required != invite_required:
-        do_set_realm_property(realm, 'invite_required', invite_required)
-        data['invite_required'] = invite_required
-    if invite_by_admins_only is not None and realm.invite_by_admins_only != invite_by_admins_only:
-        do_set_realm_property(realm, 'invite_by_admins_only', invite_by_admins_only)
-        data['invite_by_admins_only'] = invite_by_admins_only
-    if name_changes_disabled is not None and realm.name_changes_disabled != name_changes_disabled:
-        do_set_realm_property(realm, 'name_changes_disabled', name_changes_disabled)
-        data['name_changes_disabled'] = name_changes_disabled
-    if email_changes_disabled is not None and realm.email_changes_disabled != email_changes_disabled:
-        do_set_realm_property(realm, 'email_changes_disabled', email_changes_disabled)
-        data['email_changes_disabled'] = email_changes_disabled
-    if inline_image_preview is not None and realm.inline_image_preview != inline_image_preview:
-        do_set_realm_property(realm, 'inline_image_preview', inline_image_preview)
-        data['inline_image_preview'] = inline_image_preview
-    if inline_url_embed_preview is not None and realm.inline_url_embed_preview != inline_url_embed_preview:
-        do_set_realm_property(realm, 'inline_url_embed_preview', inline_url_embed_preview)
-        data['inline_url_embed_preview'] = inline_url_embed_preview
+
+    # list of realm properties that should be handled differently
+    exclude = [
+        # authentication_methods is not supported by the
+        # do_set_realm_property framework because of its bitfield.
+        'authentication_methods',
+        # The message_editing settings are coupled to each other, and
+        # thus don't fit into the do_set_realm_property framework.
+        'allow_message_editing',
+        'message_content_edit_limit_seconds',
+    ] # type: List[str]
+
+    for k, v in list(req_vars.items()):
+        if v is not None and getattr(realm, k) != v and k not in exclude:
+            do_set_realm_property(realm, k, v)
+            if isinstance(v, Text):
+                data[k] = 'updated'
+            else:
+                data[k] = v
+
+    # The following realm properties do not fit the pattern above
     if authentication_methods is not None and realm.authentication_methods_dict() != authentication_methods:
-        if True not in list(authentication_methods.values()):
-            return json_error(_("At least one authentication method must be enabled."),
-                              data={"reason": "no authentication"}, status=403)
-        else:
-            do_set_realm_authentication_methods(realm, authentication_methods)
+        do_set_realm_authentication_methods(realm, authentication_methods)
         data['authentication_methods'] = authentication_methods
-    if create_stream_by_admins_only is not None and realm.create_stream_by_admins_only != create_stream_by_admins_only:
-        do_set_realm_property(realm, 'create_stream_by_admins_only', create_stream_by_admins_only)
-        data['create_stream_by_admins_only'] = create_stream_by_admins_only
-    if add_emoji_by_admins_only is not None and realm.add_emoji_by_admins_only != add_emoji_by_admins_only:
-        do_set_realm_property(realm, 'add_emoji_by_admins_only', add_emoji_by_admins_only)
-        data['add_emoji_by_admins_only'] = add_emoji_by_admins_only
     if (allow_message_editing is not None and realm.allow_message_editing != allow_message_editing) or \
        (message_content_edit_limit_seconds is not None and
             realm.message_content_edit_limit_seconds != message_content_edit_limit_seconds):
@@ -94,13 +92,4 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
         do_set_realm_message_editing(realm, allow_message_editing, message_content_edit_limit_seconds)
         data['allow_message_editing'] = allow_message_editing
         data['message_content_edit_limit_seconds'] = message_content_edit_limit_seconds
-    if default_language is not None and realm.default_language != default_language:
-        do_set_realm_property(realm, 'default_language', default_language)
-        data['default_language'] = default_language
-    if waiting_period_threshold is not None and realm.waiting_period_threshold != waiting_period_threshold:
-        do_set_realm_property(realm, 'waiting_period_threshold', waiting_period_threshold)
-        data['waiting_period_threshold'] = waiting_period_threshold
-    if realm.message_retention_days != message_retention_days:
-        do_set_realm_property(realm, 'message_retention_days', message_retention_days)
-        data['message_retention_days'] = message_retention_days
     return json_success(data)
