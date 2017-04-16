@@ -13,10 +13,12 @@
           </table>
         </div>
         <div id="admin_page_auth_methods_loading_indicator"></div>
+        {{#if is_admin}}
         <div class="input-group">
             <div class="organization-submission">
                 <input type="submit" class="button" value="{{t 'Save changes' }}" />
             </div>
         </div>
+        {{/if}}
   </form>
 </div>
