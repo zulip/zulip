@@ -31,27 +31,18 @@ exports.get_pm_emails = function (message) {
 };
 
 exports.get_pm_full_names = function (message) {
-    function name(recip) {
-        if (recip.id) {
-            var person = people.get_person_from_user_id(recip.id);
-            if (person) {
-                return person.full_name;
-            }
+
+    function name(user_id) {
+        var person = people.get_person_from_user_id(user_id);
+        if (!person) {
+            blueslip.error('Unknown user id ' + user_id);
+            return '?';
         }
-        return recip.full_name;
+        return person.full_name;
     }
 
-    var other_recipients = _.filter(message.display_recipient,
-                                  function (element) {
-                                      return !people.is_current_user(element.email);
-                                  });
-
-    if (other_recipients.length === 0) {
-        // private message with oneself
-        return name(message.display_recipient[0]);
-    }
-
-    var names = _.map(other_recipients, name).sort();
+    var user_ids = people.pm_with_user_ids(message);
+    var names = _.map(user_ids, name).sort();
 
     return names.join(', ');
 };
