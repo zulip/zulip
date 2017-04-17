@@ -82,11 +82,17 @@ svg {
 
 #hover_human {
     font-weight: 400;
-    margin-left: 18px;
+    margin-left: 10px;
     display: none;
 }
 
 #hover_bot {
+    font-weight: 400;
+    margin-left: 8px;
+    display: none;
+}
+
+#hover_me {
     font-weight: 400;
     margin-left: 8px;
     display: none;
