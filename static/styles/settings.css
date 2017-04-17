@@ -163,6 +163,33 @@ td .button {
     border-bottom: none;
 }
 
+.settings-section .table-striped thead th {
+    background-color: inherit;
+    color: inherit;
+    border-top: 1px solid #dddddd !important;
+}
+
+.settings-section input[type=text].search {
+    float: right;
+    margin: 2px 5px 2px 0px;
+    padding: 2px 5px;
+    font-size: 0.9em;
+}
+
+.settings-section .settings-section-title {
+    padding: 4px;
+}
+
+.settings-section .settings-section-title .table-title {
+    display: inline-block;
+    padding: 6px 0px;
+    margin-left: 5px;
+}
+
+.settings-section .settings-section-title .table-title i {
+    margin-right: 5px;
+}
+
 .dynamic-input {
     display: inline-block;
     padding: 5px;
@@ -462,6 +489,11 @@ input[type=checkbox].inline-block {
 #admin-filter-pattern-status,
 #admin-filter-format-status {
     margin: 20px 0 0 0;
+}
+
+.progressive-table-wrapper {
+    max-height: calc(95vh - 200px);
+    overflow: auto;
 }
 
 .bots_list {
