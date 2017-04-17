@@ -830,6 +830,7 @@ JS_SPECS = {
             'js/feature_flags.js',
             'js/loading.js',
             'js/util.js',
+            'js/rtl.js',
             'js/dict.js',
             'js/components.js',
             'js/localstorage.js',
