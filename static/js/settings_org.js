@@ -6,6 +6,10 @@ var meta = {
     loaded: false,
 };
 
+exports.reset = function () {
+    meta.loaded = false;
+};
+
 exports.populate_realm_domains = function (realm_domains) {
     if (!meta.loaded) {
         return;

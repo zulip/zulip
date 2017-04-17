@@ -599,14 +599,22 @@ $(function () {
         $this.addClass("active");
         $this.prev().addClass("no-border");
 
-        if ($this.hasClass("admin")) {
+        var is_org_section = $this.hasClass("admin");
+
+        if (is_org_section) {
             window.location.hash = "organization/" + section;
         } else {
             window.location.hash = "settings/" + section;
         }
 
         $(".settings-section, .settings-wrapper").removeClass("show");
-        settings_sections.load_settings_section(section);
+
+        if (is_org_section) {
+            admin_sections.load_admin_section(section);
+        } else {
+            settings_sections.load_settings_section(section);
+        }
+
         $(".settings-section" + sel + ", .settings-wrapper" + sel).addClass("show");
     });
 

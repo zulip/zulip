@@ -6,6 +6,10 @@ var meta = {
     loaded: false,
 };
 
+exports.reset = function () {
+    meta.loaded = false;
+};
+
 var all_streams = [];
 
 function failed_listing_streams(xhr) {

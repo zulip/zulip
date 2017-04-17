@@ -6,6 +6,10 @@ var meta = {
     loaded: false,
 };
 
+exports.reset = function () {
+    meta.loaded = false;
+};
+
 exports.populate_emoji = function (emoji_data) {
     if (!meta.loaded) {
         return;

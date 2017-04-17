@@ -6,6 +6,10 @@ var meta = {
     loaded: false,
 };
 
+exports.reset = function () {
+    meta.loaded = false;
+};
+
 exports.populate_filters = function (filters_data) {
     if (!meta.loaded) {
         return;
