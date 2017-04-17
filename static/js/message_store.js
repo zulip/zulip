@@ -10,24 +10,20 @@ exports.get = function get(message_id) {
 };
 
 exports.get_pm_emails = function (message) {
-    var recipient;
-    var i;
-    var other_recipients = _.filter(message.display_recipient,
-                                  function (element) {
-                                      return !people.is_current_user(element.email);
-                                  });
-    if (other_recipients.length === 0) {
-        // private message with oneself
-        return message.display_recipient[0].email;
+
+    function email(user_id) {
+        var person = people.get_person_from_user_id(user_id);
+        if (!person) {
+            blueslip.error('Unknown user id ' + user_id);
+            return '?';
+        }
+        return person.email;
     }
 
-    recipient = other_recipients[0].email;
+    var user_ids = people.pm_with_user_ids(message);
+    var emails = _.map(user_ids, email).sort();
 
-    for (i = 1; i < other_recipients.length; i += 1) {
-        var email = other_recipients[i].email;
-        recipient += ', ' + email;
-    }
-    return recipient;
+    return emails.join(', ');
 };
 
 exports.get_pm_full_names = function (message) {
