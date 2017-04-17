@@ -772,6 +772,7 @@ JS_SPECS = {
             'js/common.js',
             'node_modules/moment/moment.js',
             'node_modules/moment-timezone/builds/moment-timezone-with-data.js',
+            'js/rtl.js',
         ],
         'output_filename': 'min/common.js'
     },
