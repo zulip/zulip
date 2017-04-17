@@ -454,6 +454,10 @@ def do_set_realm_property(realm, name, value):
     )
     send_event(event, active_user_ids(realm))
 
+# TODO: point out that there is the `do_set_realm_property` function now that could be added in the docs
+def do_set_realm_should_animate_emoji_on_hover(realm, should_animate_emoji_on_hover):
+    do_set_realm_property(realm, 'should_animate_emoji_on_hover', should_animate_emoji_on_hover)
+    return {}
 
 def do_set_realm_authentication_methods(realm, authentication_methods):
     # type: (Realm, Dict[str, bool]) -> None
