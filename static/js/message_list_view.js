@@ -254,6 +254,17 @@ MessageListView.prototype = {
         return new_message_groups;
     },
 
+    _maybe_format_me_message: function MessageListView___maybe_format_me_message(message_container){
+        if (message_container.msg.is_me_message) {
+            // Slice the '<p>/me ' off the front, and '</p>' off the end
+            message_container.status_message = message_container.msg.content.slice(4 + 3, -4);
+            message_container.include_sender = true;
+        }
+        else {
+            message_container.status_message = false;
+        }
+    },
+
     join_message_groups: function MessageListView__join_message_groups(first_group, second_group) {
         // join_message_groups will combine groups if they have the
         // same_recipient on the same_day and the view supports collapsing
