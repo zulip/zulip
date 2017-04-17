@@ -114,6 +114,8 @@ class TemplateTestCase(ZulipTestCase):
             'zerver/include/change_email/footer.html',
             'zerver/include/change_email/footer.txt',
             'zerver/include/confirm_email/footer.html',
+            'zerver/include/invite_email/footer.html',
+            'zerver/include/invite_email/footer.txt',
         ]
 
         integrations_regexp = re.compile('zerver/integrations/.*.html')
