@@ -76,7 +76,6 @@ function clear_filters() {
 
     var li = stream_list.get_stream_li('social');
     assert.equal(li.attr('data-name'), 'social');
-    assert.equal(li.find('.streamlist_swatch').attr('style'), 'background-color: green');
     assert.equal(li.find('a.stream-name').text().trim(), 'social');
     assert(li.find('.arrow').find("i").hasClass("icon-vector-chevron-down"));
 

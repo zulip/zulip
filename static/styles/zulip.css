@@ -473,7 +473,8 @@ a:hover code {
 }
 
 .sidebar-title {
-    font-size: 11px;
+    font-size: 1em;
+    color: #aaa;
     font-weight: normal;
     display: inline;
 }
@@ -2130,8 +2131,8 @@ div.floating_recipient {
 }
 
 .conversation-partners {
-    display: block;
-    line-height: 1.2em;
+    display: inline-block;
+    line-height: 1.2;
     width: 90%;
     overflow: hidden;
 }

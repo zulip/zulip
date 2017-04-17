@@ -257,7 +257,6 @@ exports.create_sidebar_row = function (sub) {
 exports.redraw_stream_privacy = function (stream_name) {
     var li = exports.get_stream_li(stream_name);
     var div = li.find('.stream-privacy');
-    var swatch = li.find('.streamlist_swatch');
     var sub = stream_data.get_sub(stream_name);
     var color = stream_data.get_color(stream_name);
     var dark_background = stream_color.get_color_class(color);
@@ -266,12 +265,6 @@ exports.redraw_stream_privacy = function (stream_name) {
         invite_only: sub.invite_only,
         dark_background: dark_background,
     };
-
-    if (sub.invite_only) {
-        swatch.addClass("private-stream-swatch");
-    } else {
-        swatch.removeClass("private-stream-swatch");
-    }
 
     var html = templates.render('stream_privacy', args);
     div.html(html);
