@@ -6,6 +6,10 @@ var meta = {
     loaded: false,
 };
 
+exports.reset = function () {
+    meta.loaded = false;
+};
+
 function get_user_info(user_id) {
     var self = {};
     self.user_row = $("tr.user_row[data-user-id='" + user_id + "']");

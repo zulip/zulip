@@ -1,8 +1,5 @@
 var admin = (function () {
 
-var meta = {
-    loaded: false,
-};
 var exports = {};
 
 exports.show_or_hide_menu_item = function () {
@@ -54,6 +51,10 @@ function _setup_page() {
     $("#settings_content .organization-box").html(admin_tab);
     $("#settings_content .alert").removeClass("show");
 
+    // Since we just swapped in a whole new page, we need to
+    // tell admin_sections nothing is loaded.
+    admin_sections.reset_sections();
+
     var tab = (function () {
         var tab = false;
         var hash_sequence = window.location.hash.split(/\//);
@@ -69,16 +70,6 @@ function _setup_page() {
     }
 
     $("#id_realm_default_language").val(page_params.realm_default_language);
-
-    // We set this flag before we're fully loaded so that the populate
-    // methods don't short-circuit.
-    meta.loaded = true;
-
-    settings_org.set_up();
-    settings_emoji.set_up();
-    settings_users.set_up();
-    settings_streams.set_up();
-    settings_filters.set_up();
 
     // Do this after calling the setup_up methods, so that we can
     // disable any dynamically rendered elements.

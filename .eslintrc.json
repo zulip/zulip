@@ -96,6 +96,7 @@
         "stream_popover": false,
         "narrow": false,
         "narrow_state": false,
+        "admin_sections": false,
         "admin": false,
         "stream_data": false,
         "list_util": false,
