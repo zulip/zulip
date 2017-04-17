@@ -1,3 +1,8 @@
+.right-sidebar {
+    -webkit-font-smoothing: antialiased;
+    color: #555;
+}
+
 #group-pms li:hover,
 #user_presences li:hover {
     background-color: #e2e8dd;
@@ -34,6 +39,11 @@
 #user_presences li,
 #group-pms li {
     list-style-type: none;
+}
+
+#group-pm-title {
+    margin: 10px 0px 0px 0px;
+    display: inline-block;
 }
 
 .user-status-indicator,
@@ -75,7 +85,7 @@
 
 #user_presences a,
 #group-pms a {
-    color: #333;
+    color: inherit;
 }
 
 #invite-user-link i {
