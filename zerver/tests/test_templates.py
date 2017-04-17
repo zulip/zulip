@@ -111,6 +111,8 @@ class TemplateTestCase(ZulipTestCase):
             'zerver/base.html',
             'zerver/api_content.json',
             'zerver/handlebars_compilation_failed.html',
+            'zerver/include/change_email/footer.html',
+            'zerver/include/change_email/footer.txt',
         ]
 
         integrations_regexp = re.compile('zerver/integrations/.*.html')

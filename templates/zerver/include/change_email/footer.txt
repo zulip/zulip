@@ -1,0 +1,11 @@
+{% if verbose_support_offers %}
+Feel free to give us a shout at <{{ support_email }}> if you have any
+questions or you did not request this change.
+{% else %}
+If you did not request this change, please contact the administrator
+of this Zulip server at <{{ support_email }}>.
+{% endif %}
+
+Cheers,
+
+The Zulip Team
