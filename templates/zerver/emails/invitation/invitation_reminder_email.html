@@ -28,17 +28,7 @@
                 <br />
                 <a href="{{ activate_url }}" style="color:#08c">{{ activate_url }}</a>
             </p>
-            <p>
-            {% if verbose_support_offers %}
-                We're here for you at <a href="mailto:{{ support_email }}" style="color:#08c">{{ support_email }}</a>, if you have any questions.
-            {% else %}
-                If you are having issues, please contact your Zulip administrator at <a href="mailto:{{ support_email }}" style="color:#08c">{{ support_email }}</a>.
-            {% endif %}
-            </p>
-            <p>
-                Cheers,<br />
-                The Zulip Team
-            </p>
+            {% include "zerver/include/invite_email/footer.html" %}
         </td>
     </tr>
 </table>
