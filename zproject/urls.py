@@ -20,6 +20,7 @@ import zerver.views
 import zerver.views.auth
 import zerver.views.compatibility
 import zerver.views.home
+import zerver.views.email_mirror
 import zerver.views.registration
 import zerver.views.zephyr
 import zerver.views.users
@@ -422,6 +423,12 @@ urls += [
     url(r'^api/v1/fetch_google_client_id$',
         zerver.views.auth.api_fetch_google_client_id,
         name='zerver.views.auth.api_fetch_google_client_id'),
+]
+
+# View for uploading messages from email mirror
+urls += [
+    url(r'^email_mirror_message$', zerver.views.email_mirror.email_mirror_message,
+        name='zerver.views.email_mirror.email_mirror_message'),
 ]
 
 # Include URL configuration files for site-specified extra installed
