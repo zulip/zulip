@@ -9,6 +9,7 @@ add_dependencies({
     narrow: 'js/narrow',
     stream_color: 'js/stream_color',
     stream_data: 'js/stream_data',
+    stream_sort: 'js/stream_sort',
     subs: 'js/subs',
     templates: 'js/templates',
     unread: 'js/unread',
@@ -203,6 +204,17 @@ function clear_filters() {
     );
 
     stream_list.build_stream_list();
+
+    var streams = global.stream_sort.get_streams().slice(0, 6);
+
+    assert.deepEqual(streams, [
+        'devel',
+        'Rome',
+        'test',
+        'Denmark',
+        'social',
+        'announce',
+    ]);
 
     // verify pinned streams are still sorted by lowercase name
     // i.e. not affected by sort_recent set to true
