@@ -40,7 +40,7 @@
   "Allowed domains": "Allowed domains", 
   "Already subscribed to __stream__": "Already subscribed to __stream__", 
   "Always auto-scroll to new messages": "\u0d0e\u0d2a\u0d4d\u0d2a\u0d4b\u0d34\u0d41\u0d02 \u0d2a\u0d41\u0d24\u0d3f\u0d2f \u0d38\u0d28\u0d4d\u0d26\u0d47\u0d36\u0d19\u0d4d\u0d19\u0d33\u0d3f\u0d32\u0d47\u0d15\u0d4d\u0d15\u0d4d \u0d24\u0d28\u0d4d\u0d28\u0d46 \u0d38\u0d4d\u0d15\u0d4d\u0d30\u0d4b\u0d33\u0d3e\u0d15\u0d41\u0d15.", 
-  "An unknown error occured.": "An unknown error occured.", 
+  "An unknown error occurred.": "An unknown error occurred.", 
   "Announce stream": "Announce stream", 
   "Any user may now add new emoji!": "Any user may now add new emoji!", 
   "Any user may now create new streams!": "Any user may now create new streams!", 

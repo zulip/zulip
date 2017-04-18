@@ -2,7 +2,7 @@
 
 Hello, {{ user.full_name | title }}.
 
-This is a notification that a new login to your Zulip account has just occured.
+This is a notification that a new login to your Zulip account has just occurred.
 
 Login details:
 Server: {{ realm_uri }}
