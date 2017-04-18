@@ -746,6 +746,19 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
                 self.assertEqual(result.status_code, 302)
                 self.assertTrue(result['Location'].endswith, '?subdomain=1')
 
+    def test_log_into_subdomain_when_email_is_none(self):
+        # type: () -> None
+        data = {'name': None,
+                'email': None,
+                'subdomain': 'zulip'}
+
+        self.client.cookies = SimpleCookie(self.get_signed_subdomain_cookie(data))
+        with mock.patch('zerver.views.auth.get_subdomain', return_value='zulip'), \
+                mock.patch('logging.warning'):
+            result = self.client_get('/accounts/login/subdomain/')
+            self.assertEqual(result.status_code, 200)
+            self.assertIn("Let's get started", result.content.decode('utf8'))
+
     def test_user_cannot_log_into_nonexisting_realm(self):
         # type: () -> None
         token_response = ResponseMock(200, {'access_token': "unique_token"})

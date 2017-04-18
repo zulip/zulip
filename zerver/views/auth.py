@@ -300,6 +300,15 @@ def finish_google_oauth2(request):
 def authenticate_remote_user(request, email_address):
     # type: (HttpRequest, str) -> Tuple[UserProfile, Dict[str, Any]]
     return_data = {} # type: Dict[str, bool]
+    if email_address is None:
+        # No need to authenticate if email address is None. We already
+        # know that user_profile would be None as well. In fact, if we
+        # call authenticate in this case, we might get an exception from
+        # ZulipDummyBackend which doesn't accept a None as a username.
+        logging.warning("Email address was None while trying to authenticate "
+                        "remote user.")
+        return None, return_data
+
     user_profile = authenticate(username=email_address,
                                 realm_subdomain=get_subdomain(request),
                                 use_dummy_backend=True,
