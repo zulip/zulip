@@ -403,8 +403,8 @@ class Runner(DiscoverRunner):
     def setup_test_environment(self, *args, **kwargs):
         # type: (*Any, **Any) -> Any
         settings.DATABASES['default']['NAME'] = settings.BACKEND_DATABASE_TEMPLATE
-        destroy_test_databases(self.database_id)
-        create_test_databases(self.database_id)
+        # We create/destroy the test databases in run_tests to avoid
+        # duplicate work when running in parallel mode.
         return super(Runner, self).setup_test_environment(*args, **kwargs)
 
     def teardown_test_environment(self, *args, **kwargs):
@@ -430,6 +430,17 @@ class Runner(DiscoverRunner):
             print("    StreamMessagesTest.test_message_to_stream")
             print()
             sys.exit(1)
+
+        if self.parallel == 1:
+            # We are running in serial mode so create the databases here.
+            # For parallel mode, the databases are created in init_worker.
+            # We don't want to create and destroy DB in setup_test_environment
+            # because it will be called for both serial and parallel modes.
+            # However, at this point we know in which mode we would be running
+            # since that decision has already been made in build_suite().
+            destroy_test_databases(self.database_id)
+            create_test_databases(self.database_id)
+
         # We have to do the next line to avoid flaky scenarios where we
         # run a single test and getting an SA connection causes data from
         # a Django connection to be rolled back mid-test.
