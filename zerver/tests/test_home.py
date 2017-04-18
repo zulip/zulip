@@ -11,6 +11,7 @@ from six.moves import urllib
 from typing import Any, Dict
 
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import HostRequestMock
 from zerver.lib.test_runner import slow
 from zerver.models import get_realm, get_stream, get_user_profile_by_email
 from zerver.views.home import home, sent_time_in_epoch_seconds
@@ -405,7 +406,7 @@ class HomeTest(ZulipTestCase):
 
     def test_handlebars_compile_error(self):
         # type: () -> None
-        request = MagicMock()
+        request = HostRequestMock()
         with self.settings(DEVELOPMENT=True):
             with patch('os.path.exists', return_value=True):
                 result = home(request)
