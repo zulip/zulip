@@ -841,6 +841,7 @@ JS_SPECS = {
             'js/unread.js',
             'js/topic_list.js',
             'js/pm_list.js',
+            'js/stream_sort.js',
             'js/stream_list.js',
             'js/filter.js',
             'js/message_list_view.js',

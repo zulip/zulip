@@ -92,6 +92,7 @@
         "notifications": false,
         "message_flags": false,
         "bot_data": false,
+        "stream_sort": false,
         "stream_list": false,
         "stream_popover": false,
         "narrow": false,

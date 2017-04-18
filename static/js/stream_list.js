@@ -3,8 +3,6 @@ var stream_list = (function () {
 var exports = {};
 
 var zoomed_stream = '';
-var previous_sort_order;
-var previous_unpinned_order;
 
 function update_count_in_dom(unread_count_elem, count) {
     var count_span = unread_count_elem.find('.count');
@@ -25,32 +23,6 @@ function update_count_in_dom(unread_count_elem, count) {
         count_span.parent(".subscription_block").addClass("stream-with-count");
     }
     value_span.text(count);
-}
-
-function filter_streams_by_search(streams) {
-    var search_box = $(".stream-list-filter");
-
-    var search_term = search_box.expectOne().val().trim();
-
-    if (search_term === '') {
-        return streams;
-    }
-
-    var search_terms = search_term.toLowerCase().split(",");
-    search_terms = _.map(search_terms, function (s) {
-        return s.trim();
-    });
-
-    var filtered_streams = _.filter(streams, function (stream) {
-        return _.any(search_terms, function (search_term) {
-            var lower_stream_name = stream.toLowerCase().split(" ");
-            return _.any(lower_stream_name, function (name) {
-                return name.indexOf(search_term) === 0;
-            });
-        });
-    });
-
-    return filtered_streams;
 }
 
 exports.stream_sidebar = (function () {
@@ -93,11 +65,21 @@ exports.stream_sidebar = (function () {
     return self;
 }());
 
+function get_search_term() {
+    var search_box = $(".stream-list-filter");
+    var search_term = search_box.expectOne().val().trim();
+    return search_term;
+}
+
 exports.remove_sidebar_row = function (stream_id) {
     exports.stream_sidebar.remove_row(stream_id);
-    // We need to make sure we resort if the removed sub gets added again
-    previous_sort_order = undefined;
-    previous_unpinned_order = undefined;
+
+    // We call sort_groups to update our list of streams,
+    // even though we don't use the result, since we can
+    // just remove the row.  (The list of streams will
+    // be used by things like typeahead and hotkeys to
+    // advance to the next stream.)
+    stream_sort.sort_groups(get_search_term());
 };
 
 exports.create_initial_sidebar_rows = function () {
@@ -121,63 +103,39 @@ exports.build_stream_list = function () {
         return;
     }
 
-    streams = filter_streams_by_search(streams);
+    // The main logic to build the list is in stream_sort.js, and
+    // we get thre lists of streams (pinned/normal/dormant).
+    var stream_groups = stream_sort.sort_groups(get_search_term());
 
-    var sort_recent = (streams.length > 40);
-    var pinned_streams = [];
-    var unpinned_streams = [];
+    if (stream_groups.same_as_before) {
+        return;
+    }
+
     var parent = $('#stream_filters');
     var elems = [];
 
     function add_sidebar_li(stream) {
         var sub = stream_data.get_sub(stream);
         var sidebar_row = exports.stream_sidebar.get_row(sub.stream_id);
-        if (sort_recent) {
+        if (stream_groups.sort_recent) {
             sidebar_row.update_whether_active();
         }
         elems.push(sidebar_row.get_li().get(0));
     }
 
-    _.each(streams, function (stream) {
-        var pinned = stream_data.get_sub(stream).pin_to_top;
-        if (pinned) {
-            pinned_streams.push(stream);
-        } else {
-            unpinned_streams.push(stream);
-        }
-    });
-
-    pinned_streams.sort(util.strcmp);
-
-    unpinned_streams.sort(function (a, b) {
-        if (sort_recent) {
-            if (stream_data.is_active(b) && ! stream_data.is_active(a)) {
-                return 1;
-            } else if (! stream_data.is_active(b) && stream_data.is_active(a)) {
-                return -1;
-            }
-        }
-        return util.strcmp(a, b);
-    });
-
-    streams = pinned_streams.concat(unpinned_streams);
-
-    if (previous_sort_order !== undefined &&
-        util.array_compare(previous_sort_order, streams) &&
-        util.array_compare(previous_unpinned_order, unpinned_streams)) {
-        return;
-    }
-    previous_sort_order = streams;
-    previous_unpinned_order = unpinned_streams;
     parent.empty();
 
-    if (pinned_streams.length > 0) {
-        _.each(pinned_streams, add_sidebar_li);
+    _.each(stream_groups.pinned_streams, add_sidebar_li);
+
+    if (stream_groups.pinned_streams.length > 0) {
         elems.push($('<hr class="pinned-stream-split">').get(0));
     }
-    if (unpinned_streams.length > 0) {
-        _.each(unpinned_streams, add_sidebar_li);
-    }
+
+    _.each(stream_groups.normal_streams, add_sidebar_li);
+
+    // TODO: Add a divider here if there are dormant streams.
+
+    _.each(stream_groups.dormant_streams, add_sidebar_li);
 
     $(elems).appendTo(parent);
 };
