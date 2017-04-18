@@ -43,10 +43,8 @@ exports.sort_groups = function (search_term) {
 
     streams = filter_streams_by_search(streams, search_term);
 
-    var sort_recent = (streams.length > 40);
-
     function is_normal(stream) {
-        return !sort_recent || stream_data.is_active(stream);
+        return stream_data.is_active(stream);
     }
 
     var pinned_streams = [];
@@ -87,7 +85,6 @@ exports.sort_groups = function (search_term) {
         pinned_streams: pinned_streams,
         normal_streams: normal_streams,
         dormant_streams: dormant_streams,
-        sort_recent: sort_recent,
     };
 };
 
