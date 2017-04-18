@@ -223,6 +223,10 @@ class ZulipTestCase(TestCase):
         else:
             self.assertFalse(self.client.login(username=email, password=password))
 
+    def logout(self):
+        # type: () -> None
+        self.client.logout()
+
     def register(self, email, password):
         # type: (Text, Text) -> HttpResponse
         self.client_post('/accounts/home/', {'email': email})

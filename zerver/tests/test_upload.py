@@ -77,7 +77,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(base, uri[:len(base)])
 
         # Download file via API
-        self.client_post('/accounts/logout/')
+        self.logout()
         response = self.client_get(uri, **auth_headers)
         data = b"".join(response.streaming_content)
         self.assertEqual(b"zulip!", data)
@@ -213,7 +213,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         json = ujson.loads(result.content)
         uri = json["uri"]
 
-        self.client_post('/accounts/logout/')
+        self.logout()
         response = self.client_get(uri)
         self.assert_json_error(response, "Not logged in: API authentication or user session required",
                                status_code=401)
@@ -506,7 +506,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(response.status_code, 200)
         data = b"".join(response.streaming_content)
         self.assertEqual(b"zulip!", data)
-        self.client_post('/accounts/logout/')
+        self.logout()
 
         # Confirm other cross-realm users can't read it.
         self.login(user3_email, 'test')
@@ -535,7 +535,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         fp_path_id = re.sub('/user_uploads/', '', uri)
         body = "First message ...[zulip.txt](http://localhost:9991/user_uploads/" + fp_path_id + ")"
         self.send_message("hamlet@zulip.com", "test-subscribe", Recipient.STREAM, body, "test")
-        self.client_post('/accounts/logout/')
+        self.logout()
 
         # Subscribed user should be able to view file
         for user in subscribed_users:
@@ -544,7 +544,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             self.assertEqual(response.status_code, 200)
             data = b"".join(response.streaming_content)
             self.assertEqual(b"zulip!", data)
-            self.client_post('/accounts/logout/')
+            self.logout()
 
         # Unsubscribed user should not be able to view file
         for user in unsubscribed_users:
@@ -552,7 +552,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             response = self.client_get(uri)
             self.assertEqual(response.status_code, 403)
             self.assert_in_response("You are not authorized to view this file.", response)
-            self.client_post('/accounts/logout/')
+            self.logout()
 
     def test_file_download_authorization_public(self):
         # type: () -> None
@@ -570,7 +570,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         fp_path_id = re.sub('/user_uploads/', '', uri)
         body = "First message ...[zulip.txt](http://localhost:9991/user_uploads/" + fp_path_id + ")"
         self.send_message("hamlet@zulip.com", "test-subscribe", Recipient.STREAM, body, "test")
-        self.client_post('/accounts/logout/')
+        self.logout()
 
         # Now all users should be able to access the files
         for user in subscribed_users + unsubscribed_users:
@@ -578,7 +578,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             response = self.client_get(uri)
             data = b"".join(response.streaming_content)
             self.assertEqual(b"zulip!", data)
-            self.client_post('/accounts/logout/')
+            self.logout()
 
     def tearDown(self):
         # type: () -> None
