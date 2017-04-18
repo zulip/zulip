@@ -146,12 +146,6 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('basecamp'),
     WebhookIntegration('bitbucket2', logo='static/images/integrations/logos/bitbucket.svg', display_name='Bitbucket'),
     WebhookIntegration('bitbucket', display_name='Bitbucket', secondary_line_text='(Enterprise)'),
-    WebhookIntegration(
-        'stash',
-        display_name='Bitbucket Server',
-        secondary_line_text='(Stash)',
-        logo='static/images/integrations/logos/bitbucket.svg'
-    ),
     WebhookIntegration('circleci', display_name='CircleCI'),
     WebhookIntegration('codeship'),
     WebhookIntegration('crashlytics'),
