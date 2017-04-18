@@ -43,21 +43,11 @@ exports.stream_sidebar = (function () {
     };
 
     self.remove_row = function (stream_id) {
-        var widget = self.rows.get(stream_id);
-        if (!widget) {
-            blueslip.warn('Cannot remove stream id ' + stream_id);
-            return;
-        }
-
-        widget.remove();
-
-        // This <hr> separates pinned streams from unpinned streams,
-        // so when removing a row, we check whether this removed the
-        // last pinned stream, and thus we no longer need the divider.
-        var $pinned_streams_hr = $("#stream_filters hr.pinned-stream-split");
-        if ($pinned_streams_hr.prev().length === 0) {
-            $pinned_streams_hr.remove();
-        }
+        // This only removes the row from our data structure.
+        // Our caller should use build_stream_list() to re-draw
+        // the sidebar, so that we don't have to deal with edge
+        // cases like removing the last pinned stream (and removing
+        // the divider).
 
         self.rows.del(stream_id);
     };
@@ -73,13 +63,7 @@ function get_search_term() {
 
 exports.remove_sidebar_row = function (stream_id) {
     exports.stream_sidebar.remove_row(stream_id);
-
-    // We call sort_groups to update our list of streams,
-    // even though we don't use the result, since we can
-    // just remove the row.  (The list of streams will
-    // be used by things like typeahead and hotkeys to
-    // advance to the next stream.)
-    stream_sort.sort_groups(get_search_term());
+    exports.build_stream_list();
 };
 
 exports.create_initial_sidebar_rows = function () {
@@ -104,7 +88,7 @@ exports.build_stream_list = function () {
     }
 
     // The main logic to build the list is in stream_sort.js, and
-    // we get thre lists of streams (pinned/normal/dormant).
+    // we get three lists of streams (pinned/normal/dormant).
     var stream_groups = stream_sort.sort_groups(get_search_term());
 
     if (stream_groups.same_as_before) {
@@ -117,9 +101,7 @@ exports.build_stream_list = function () {
     function add_sidebar_li(stream) {
         var sub = stream_data.get_sub(stream);
         var sidebar_row = exports.stream_sidebar.get_row(sub.stream_id);
-        if (stream_groups.sort_recent) {
-            sidebar_row.update_whether_active();
-        }
+        sidebar_row.update_whether_active();
         elems.push(sidebar_row.get_li().get(0));
     }
 
@@ -128,12 +110,15 @@ exports.build_stream_list = function () {
     _.each(stream_groups.pinned_streams, add_sidebar_li);
 
     if (stream_groups.pinned_streams.length > 0) {
-        elems.push($('<hr class="pinned-stream-split">').get(0));
+        elems.push($('<hr class="stream-split">').get(0));
     }
 
     _.each(stream_groups.normal_streams, add_sidebar_li);
 
-    // TODO: Add a divider here if there are dormant streams.
+    if (stream_groups.dormant_streams.length > 0) {
+        elems.push($('<hr class="stream-split">').get(0));
+    }
+
 
     _.each(stream_groups.dormant_streams, add_sidebar_li);
 
@@ -166,7 +151,7 @@ function zoom_in() {
     $(".stream-filters-label").each(function () {
         $(this).hide();
     });
-    $(".pinned-stream-split").each(function () {
+    $(".stream-split").each(function () {
         $(this).hide();
     });
 
@@ -189,7 +174,7 @@ function zoom_out(options) {
     $(".stream-filters-label").each(function () {
         $(this).show();
     });
-    $(".pinned-stream-split").each(function () {
+    $(".stream-split").each(function () {
         $(this).show();
     });
 
