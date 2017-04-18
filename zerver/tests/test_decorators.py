@@ -840,10 +840,10 @@ class TestInternalNotifyView(TestCase):
             self.META = META
             self.method = 'POST'
 
-    def internal_notify(self, req):
-        # type: (HttpRequest) -> HttpResponse
+    def internal_notify(self, is_tornado, req):
+        # type: (bool, HttpRequest) -> HttpResponse
         boring_view = lambda req: self.BORING_RESULT
-        return internal_notify_view(boring_view)(req)
+        return internal_notify_view(is_tornado)(boring_view)(req)
 
     def test_valid_internal_requests(self):
         # type: () -> None
@@ -853,11 +853,22 @@ class TestInternalNotifyView(TestCase):
             META=dict(REMOTE_ADDR='127.0.0.1'),
         )
 
+        with self.settings(SHARED_SECRET=secret):
+            self.assertTrue(authenticate_notify(req))
+            self.assertEqual(self.internal_notify(False, req), self.BORING_RESULT)
+            self.assertEqual(req._email, 'internal')
+
+            with self.assertRaises(RuntimeError):
+                self.internal_notify(True, req)
+
         req._tornado_handler = 'set'
         with self.settings(SHARED_SECRET=secret):
             self.assertTrue(authenticate_notify(req))
-            self.assertEqual(self.internal_notify(req), self.BORING_RESULT)
+            self.assertEqual(self.internal_notify(True, req), self.BORING_RESULT)
             self.assertEqual(req._email, 'internal')
+
+            with self.assertRaises(RuntimeError):
+                self.internal_notify(False, req)
 
     def test_internal_requests_with_broken_secret(self):
         # type: () -> None
@@ -869,7 +880,7 @@ class TestInternalNotifyView(TestCase):
 
         with self.settings(SHARED_SECRET='broken'):
             self.assertFalse(authenticate_notify(req))
-            self.assertEqual(self.internal_notify(req).status_code, 403)
+            self.assertEqual(self.internal_notify(True, req).status_code, 403)
 
     def test_external_requests(self):
         # type: () -> None
@@ -881,7 +892,7 @@ class TestInternalNotifyView(TestCase):
 
         with self.settings(SHARED_SECRET=secret):
             self.assertFalse(authenticate_notify(req))
-            self.assertEqual(self.internal_notify(req).status_code, 403)
+            self.assertEqual(self.internal_notify(True, req).status_code, 403)
 
     def test_is_local_address(self):
         # type: () -> None

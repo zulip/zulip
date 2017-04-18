@@ -19,7 +19,7 @@ from typing import Union, Optional, Iterable, Sequence, List, Text
 import time
 import ujson
 
-@internal_notify_view
+@internal_notify_view(True)
 def notify(request):
     # type: (HttpRequest) -> HttpResponse
     process_notification(ujson.loads(request.POST['data']))

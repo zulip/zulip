@@ -521,22 +521,32 @@ def client_is_exempt_from_rate_limiting(request):
             (is_local_addr(request.META['REMOTE_ADDR']) or
              settings.DEBUG_RATE_LIMITING))
 
-def internal_notify_view(view_func):
-    # type: (ViewFuncT) -> ViewFuncT
-    @csrf_exempt
-    @require_post
-    @wraps(view_func)
-    def _wrapped_view_func(request, *args, **kwargs):
-        # type: (HttpRequest, *Any, **Any) -> HttpResponse
-        if not authenticate_notify(request):
-            return json_error(_('Access denied'), status=403)
-        if not hasattr(request, '_tornado_handler'):
-            # We got called through the non-Tornado server somehow.
-            # This is not a security check; it's an internal assertion
-            # to help us find bugs.
-            raise RuntimeError('notify view called with no Tornado handler')
-        request._email = "internal"
-        return view_func(request, *args, **kwargs)
+def internal_notify_view(is_tornado_view):
+    # type: (bool) ->  Callable[..., HttpResponse]
+    # This function can't be typed perfectly because returning a generic function
+    # isn't supported in mypy - https://github.com/python/mypy/issues/1551.
+    """Used for situations where something running on the Zulip server
+    needs to make a request to the (other) Django/Tornado processes running on
+    the server."""
+    def _wrapped_view_func(view_func):
+        # type: (Callable[..., HttpResponse]) -> Callable[..., HttpResponse]
+        @csrf_exempt
+        @require_post
+        @wraps(view_func)
+        def _wrapped_func_arguments(request, *args, **kwargs):
+            # type: (HttpRequest, *Any, **Any) -> HttpResponse
+            if not authenticate_notify(request):
+                return json_error(_('Access denied'), status=403)
+            is_tornado_request = hasattr(request, '_tornado_handler')
+            # These next 2 are not security checks; they are internal
+            # assertions to help us find bugs.
+            if is_tornado_view and not is_tornado_request:
+                raise RuntimeError('Tornado notify view called with no Tornado handler')
+            if not is_tornado_view and is_tornado_request:
+                raise RuntimeError('Django notify view called with Tornado handler')
+            request._email = "internal"
+            return view_func(request, *args, **kwargs)
+        return _wrapped_func_arguments
     return _wrapped_view_func
 
 # Converter functions for use with has_request_variables
