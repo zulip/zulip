@@ -124,6 +124,7 @@ class Command(BaseCommand):
             # welcome-bot (needed for do_create_realm) hasn't been created yet
             zulip_realm = Realm.objects.create(
                 string_id="zulip", name="Zulip Dev", restricted_to_domain=True,
+                description="The Zulip development environment default organization.  It's great for testing!",
                 invite_required=False, org_type=Realm.CORPORATE)
             RealmDomain.objects.create(realm=zulip_realm, domain="zulip.com")
             if options["test_suite"]:
