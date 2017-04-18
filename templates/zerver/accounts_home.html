@@ -65,12 +65,25 @@ $(function () {
                         {% endfor %}
                     {% endif %}
 
-                    {% if google_auth_enabled %}
+                    {% if any_oauth_backend_enabled %}
                     <div class="or">or</div>
+                    {% endif %}
 
+                    {% if google_auth_enabled %}
                     <div class="register-google">
                         <a href="{{ url('zerver.views.auth.start_google_oauth2') }}">
                             <button class="login-google-button full-width">{{ _('Sign up with Google') }}</button>
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    {% if github_auth_enabled %}
+                    <div class="login-github">
+                        <a href="{{ url('signup-social', args=('github',)) }}"
+                           class="github-wrapper">
+                            <button class="login-github-button github">
+                                <span>{{ _('Sign up with GitHub') }}</span>
+                            </button>
                         </a>
                     </div>
                     {% endif %}

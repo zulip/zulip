@@ -233,6 +233,11 @@ def start_social_login(request, backend):
     backend_url = reverse('social:begin', args=[backend])
     return redirect_to_main_site(request, backend_url)
 
+def start_social_signup(request, backend):
+    # type: (HttpRequest, Text) -> HttpResponse
+    backend_url = reverse('social:begin', args=[backend])
+    return redirect_to_main_site(request, backend_url, is_signup=True)
+
 def send_oauth_request_to_google(request):
     # type: (HttpRequest) -> HttpResponse
     subdomain = request.GET.get('subdomain', '')

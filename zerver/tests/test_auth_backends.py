@@ -677,6 +677,13 @@ class GitHubAuthBackendTest(ZulipTestCase):
         # type: () -> None
         result = self.client_get('/accounts/login/social/github')
         self.assertIn(reverse('social:begin', args=['github']), result.url)
+        self.assertIn('is_signup=0', result.url)
+
+    def test_signup_url(self):
+        # type: () -> None
+        result = self.client_get('/accounts/signup/social/github')
+        self.assertIn(reverse('social:begin', args=['github']), result.url)
+        self.assertIn('is_signup=1', result.url)
 
     def test_github_complete(self):
         # type: () -> None
