@@ -125,7 +125,7 @@ li.hidden-filter {
 #global_filters .count,
 #stream_filters .count {
     position: absolute;
-    right: 20px;
+    right: 25px;
     top: 2px;
     padding: 2px 3px 1px 3px;
     background: #80837f;
@@ -172,7 +172,7 @@ li.hidden-filter {
 }
 
 .topic-unread-count {
-    right: 20px;
+    right: 25px;
 }
 
 .private_message_count {
@@ -190,6 +190,7 @@ ul.filters .arrow {
     position: absolute;
     right: 0px;
     top: 2px;
+    right: 4px;
     font-size: 0.8em;
     display: none;
 }
@@ -245,7 +246,7 @@ ul.filters li.out_of_home_view li.muted_topic {
     line-height: 12px;
     padding-top: 4px;
     margin-right: 15px;
-    padding-left: 33px;
+    padding-left: 28px;
 }
 
 #stream_filters .subscription_block .stream-name {
@@ -297,7 +298,8 @@ ul.expanded_private_messages {
 li.show-more-topics,
 li.topic-list-item {
     position: relative;
-    padding-left: 33px;
+    padding-left: 28px;
+    padding-right: 5px;
 }
 
 li.show-more-private-messages,
