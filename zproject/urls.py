@@ -101,6 +101,9 @@ i18n_urls = [
     url(r'^avatar/(?P<email_or_id>[\S]+)?', zerver.views.users.avatar, name='zerver.views.users.avatar'),
 
     # Registration views, require a confirmation ID.
+    url(r'^accounts/register/social/(\w+)$',
+        zerver.views.auth.start_social_signup,
+        name='signup-social'),
     url(r'^accounts/home/', zerver.views.registration.accounts_home,
         name='zerver.views.registration.accounts_home'),
     url(r'^accounts/send_confirm/(?P<email>[\S]+)?',
