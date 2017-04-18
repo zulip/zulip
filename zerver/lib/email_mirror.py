@@ -12,6 +12,7 @@ from django.conf import settings
 from zerver.lib.actions import decode_email_address, get_email_gateway_message_string_from_address, \
     internal_send_message
 from zerver.lib.notifications import convert_html_to_markdown
+from zerver.lib.queue import queue_json_publish
 from zerver.lib.redis_utils import get_redis_client
 from zerver.lib.upload import upload_message_image
 from zerver.lib.utils import generate_random_token
@@ -349,3 +350,35 @@ def process_message(message, rcpt_to=None, pre_checked=False):
     except ZulipEmailForwardError as e:
         # TODO: notify sender of error, retry if appropriate.
         log_and_report(message, str(e), debug_info)
+
+
+def mirror_email_message(data):
+    # type: (Dict[Text, Text]) -> Dict[str, str]
+    rcpt_to = data['recipient']
+    if is_missed_message_address(rcpt_to):
+        try:
+            mark_missed_message_address_as_used(rcpt_to)
+        except ZulipEmailForwardError:
+            return {
+                "status": "error",
+                "msg": "5.1.1 Bad destination mailbox address: "
+                       "Bad or expired missed message address."
+            }
+    else:
+        try:
+            extract_and_validate(rcpt_to)
+        except ZulipEmailForwardError:
+            return {
+                "status": "error",
+                "msg": "5.1.1 Bad destination mailbox address: "
+                       "Please use the address specified in your Streams page."
+            }
+    queue_json_publish(
+        "email_mirror",
+        {
+            "message": data['msg_text'],
+            "rcpt_to": rcpt_to
+        },
+        lambda x: None
+    )
+    return {"status": "success"}
