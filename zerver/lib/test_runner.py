@@ -290,6 +290,10 @@ def create_test_databases(database_id):
 
 def init_worker(counter):
     # type: (Synchronized) -> None
+    """
+    This function runs only under parallel mode. It initializes the
+    individual processes which are also called workers.
+    """
     global _worker_id
     test_classes.API_KEYS = {}
 
