@@ -524,6 +524,7 @@ $(function () {
             var edit_area = $(this).parent().find(selector);
             if (edit_area.attr("contenteditable") === "true") {
                 $("[data-finish-editing='" + selector + "']").hide();
+                $(".name-change-error").hide();
                 edit_area.attr("contenteditable", false);
                 edit_area.text(edit_area.attr("data-prev-text"));
                 $(this).html("");

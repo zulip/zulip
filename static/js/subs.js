@@ -971,11 +971,13 @@ exports.change_stream_description = function (e) {
 exports.change_stream_name = function (e) {
     e.preventDefault();
     var sub_settings = $(e.target).closest('.subscription_settings');
+    var name_div = $(e.target).closest('.stream-name');
     var stream_id = $(e.target).closest(".subscription_settings").attr("data-stream-id");
     var new_name_box = sub_settings.find('.stream-name-editable');
     var new_name = $.trim(new_name_box.text());
 
     $("#subscriptions-status").hide();
+    $("#name_change_error_" + stream_id).hide();
 
     channel.patch({
         // Stream names might contain unsafe characters so we must encode it first.
@@ -989,6 +991,12 @@ exports.change_stream_name = function (e) {
         error: function (xhr) {
             ui_report.error(i18n.t("Error renaming stream"), xhr,
                             $("#subscriptions-status"), 'subscriptions-status');
+            new_name_box.attr("contenteditable", "true").focus();
+            name_div.find(".checkmark").show();
+            name_div.find(".editable").text("×");
+            ui.report_error(i18n.t("Error renaming stream"), xhr,
+                            $("#name_change_error_" + stream_id));
+            $("#name_change_error_" + stream_id).show();
         },
     });
 };
