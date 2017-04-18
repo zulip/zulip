@@ -897,7 +897,7 @@ $(function () {
                       + " Consider deleting some previously uploaded files.");
             break;
         default:
-            msg = i18n.t("An unknown error occured.");
+            msg = i18n.t("An unknown error occurred.");
             break;
         }
         $("#error-msg").text(msg);
