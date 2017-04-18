@@ -22,6 +22,7 @@ from zerver.lib.actions import (
     do_add_alert_words,
     check_add_realm_emoji,
     check_send_typing_notification,
+    notify_realm_custom_profile_fields,
     do_add_realm_filter,
     do_add_reaction,
     do_remove_reaction,
@@ -571,6 +572,25 @@ class EventsRegisterTest(ZulipTestCase):
         events = self.do_test(
             lambda: check_send_typing_notification(
                 self.user_profile, ["cordelia@zulip.com"], "start"),
+            state_change_expected=False,
+        )
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_custom_profile_fields_events(self):
+        # type: () -> None
+        schema_checker = check_dict([
+            ('type', equals('custom_profile_fields')),
+            ('fields', check_list(check_dict([
+                ('id', check_int),
+                ('type', check_int),
+                ('name', check_string),
+            ]))),
+        ])
+
+        events = self.do_test(
+            lambda: notify_realm_custom_profile_fields(
+                self.user_profile.realm),
             state_change_expected=False,
         )
         error = schema_checker('events[0]', events[0])
