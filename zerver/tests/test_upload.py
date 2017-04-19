@@ -425,8 +425,6 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         user2_email = 'test-og-bot@zulip.com'
         user3_email = 'other-user@uploadtest.example.com'
 
-        settings.CROSS_REALM_BOT_EMAILS.add(user2_email)
-        settings.CROSS_REALM_BOT_EMAILS.add(user3_email)
         dep = Deployment()
         dep.base_api_url = "https://zulip.com/api/"
         dep.base_site_url = "https://zulip.com/"
@@ -454,7 +452,8 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         uri = json["uri"]
         fp_path_id = re.sub('/user_uploads/', '', uri)
         body = "First message ...[zulip.txt](http://localhost:9991/user_uploads/" + fp_path_id + ")"
-        self.send_message(user2_email, user1_email, Recipient.PERSONAL, body)
+        with self.settings(CROSS_REALM_BOT_EMAILS = set((user2_email, user3_email))):
+            self.send_message(user2_email, user1_email, Recipient.PERSONAL, body)
 
         self.login(user1_email, 'test')
         response = self.client_get(uri)
