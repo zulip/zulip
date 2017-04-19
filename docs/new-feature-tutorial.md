@@ -88,12 +88,13 @@ documentation Zulip has, see [Documentation](README.html).
 
 This example describes the process of adding a new setting to Zulip: a
 flag that restricts inviting new users to admins only (the default
-behavior is that any user can invite other users). It is based on an
-actual Zulip feature, and you can review [the original commit in the
-Zulip git
-repo](https://github.com/zulip/zulip/commit/5b7f3466baee565b8e5099bcbd3e1ccdbdb0a408).
-(Note that Zulip has since been upgraded from Django 1.6 to 1.8, so the
-migration format has changed.)
+behavior is that any user can invite other users). This flag is an actual
+Zulip feature. You can review
+[the original commit](https://github.com/zulip/zulip/commit/5b7f3466baee565b8e5099bcbd3e1ccdbdb0a408)
+in the Zulip repo.
+Note that the code involved in adding a realm feature has been refactored
+since this feature was created, and Zulip has since been upgraded from
+Django 1.6 to 1.8.
 
 ### Update the model
 
@@ -101,16 +102,37 @@ First, update the database and model to store the new setting. Add a new
 boolean field, `invite_by_admins_only`, to the Realm model in
 `zerver/models.py`.
 
-``` diff
---- a/zerver/models.py
-+++ b/zerver/models.py
-@@ -139,6 +139,7 @@ class Realm(ModelReprMixin, models.Model):
-     restricted_to_domain = models.BooleanField(default=True) # type: bool
-     invite_required = models.BooleanField(default=False) # type: bool
-+    invite_by_admins_only = models.BooleanField(default=False) # type: bool
-     create_stream_by_admins_only = models.BooleanField(default=False) # type: bool
-     mandatory_topics = models.BooleanField(default=False) # type: bool
-```
+    class Realm(ModelReprMixin, models.Model):
+       # ...
+       invite_by_admins_only = models.BooleanField(default=False) # type: bool
+       # ...
+
+The Realm model also contains an attribute, `property_types`, which other
+functions use to handle realm updates appropriately (more on this
+process below). The attribute is a dictionary, where the key is the
+name of the realm field and the value is the field's type. Add the
+new field to the `property_types` dictionary.
+
+    # Define the types of the various automatically managed properties
+        property_types = dict(
+            # ...
+            invite_by_admins_only=bool,
+            # ...
+
+Note: the majority of realm fields can be included in `property_types`
+and processed in bulk in the code that handles realm property updates.
+However, there are some properties that should be processed separately.
+For example, the realm `authentication_methods` attribute
+is a bitfield and needs additional code for validation and updating.
+The `allow_message_editing` and `message_content_edit_limit_seconds`
+fields depend on one another, so they are also handled separately and
+not included in `property_types`.
+
+When creating a realm property that is not a boolean, Text or
+integer field, or when adding a field that is dependent on other fields,
+handle it separately and do not add the field to the `property_types`
+dictionary. The steps below will point out where to write code explicitly
+for these cases.
 
 ### Create the migration
 
@@ -150,57 +172,91 @@ send some response to the client that made the request.
 Beyond that, we need to orchestrate notifications to *other*
 clients (or other users, if you will) that our setting has changed.
 Clients find out about settings through two closely related code
-paths.  When a client first contacts the server, the server sends
-the client its initial state.  Subsequently, clients subscribe to
+paths. When a client first contacts the server, the server sends
+the client its initial state. Subsequently, clients subscribe to
 "events," which can (among other things) indicate that settings have
-changed.  For the backend piece, we will need our action to make a call to
-`send_event` to send the event to clients that are active.  We will
+changed. For the backend piece, we will need our action to make a call to
+`send_event` to send the event to clients that are active. We will
 also need to modify `fetch_initial_state_data` so that future clients
 see the new changes.
 
 Anyway, getting back to implementation details...
 
-In `zerver/lib/actions.py`, create a new function named
-`do_set_realm_invite_by_admins_only`. This function will update the
-database and trigger an event to notify clients when this setting
-changes. In this case there was an existing `realm|update` event type
-which was used for setting similar flags on the Realm model, so it was
-possible to add a new property to that event rather than creating a new
-one. The property name matches the database field to make it easy to
-understand what it indicates.
+In `zerver/lib/actions.py`, the function `do_set_realm_property` takes
+in the name of a realm property to update and the value with
+which to update it. This function updates the database and triggers
+an event to notify clients when a realm setting changes. It uses the
+field's type, specified in the `Realm.property_types` dictionary,
+to validate the value before updating the property.
 
-The second argument to `send_event` is the list of users whose browser
-sessions should be notified. Depending on the setting, this can be a
-single user (if the setting is a personal one, like time display
-format), only members in a particular stream or all active users in a
-realm. :
+After updating the given realm field, `do_set_realm_property`
+creates an 'update' event with the name of the property and the
+new value. It then calls `send_event`, passing the event as the
+first argument and the list of users whose browser sessions
+should be notified as the second argument. The latter argument can
+be a single user (if the setting is a personal one, like time display
+format), members in a particular stream only or all active users in
+a realm.
 
     # zerver/lib/actions.py
 
-    def do_set_realm_invite_by_admins_only(realm, invite_by_admins_only):
-      realm.invite_by_admins_only = invite_by_admins_only
-      realm.save(update_fields=['invite_by_admins_only'])
+    def do_set_realm_property(realm, name, value):
+      # type: (Realm, str, Union[Text, bool, int]) -> None
+      """Takes in a realm object, the name of an attribute to update, and the
+      value to update.
+      """
+      property_type = Realm.property_types[name]
+      assert isinstance(value, property_type), (
+          'Cannot update %s: %s is not an instance of %s' % (
+              name, value, property_type,))
+
+      setattr(realm, name, value)
+      realm.save(update_fields=[name])
       event = dict(
-        type="realm",
-        op="update",
-        property='invite_by_admins_only',
-        value=invite_by_admins_only,
+          type='realm',
+          op='update',
+          property=name,
+          value=value,
       )
       send_event(event, active_user_ids(realm))
-      return {}
+
+If the new realm property being added does not fit into the
+`do_set_realm_property` framework (such as the `authentication_methods`
+field), create a new function to explicitly update this field and
+send an event.
+
+    # zerver/lib/actions.py
+
+    def do_set_realm_authentication_methods(realm, authentication_methods):
+        # type: (Realm, Dict[str, bool]) -> None
+        for key, value in list(authentication_methods.items()):
+            index = getattr(realm.authentication_methods, key).number
+            realm.authentication_methods.set_bit(index, int(value))
+        realm.save(update_fields=['authentication_methods'])
+        event = dict(
+            type="realm",
+            op="update_dict",
+            property='default',
+            data=dict(authentication_methods=realm.authentication_methods_dict())
+        )
+        send_event(event, active_user_ids(realm))
 
 ### Update application state
 
 You then need to add code that will handle the event and update the
-application state. In `zerver/lib/events.py` update the
-`fetch_initial_state` and `apply_event` functions. :
+application state. The `fetch_initial_state` and `apply_event`
+functions in `zerver/lib/events.py` do this.
+
+    # zerver/lib/events.py
 
     def fetch_initial_state_data(user_profile, event_types, queue_id, include_subscribers=True):
       # ...
-      state['realm_invite_by_admins_only'] = user_profile.realm.invite_by_admins_only`
-
-In this case you don't need to change `apply_event` because there is
-already code that will correctly handle the realm update event type: :
+      if want('realm'):
+        for property_name in Realm.property_types:
+            state['realm_' + property_name] = getattr(user_profile.realm, property_name)
+        state['realm_authentication_methods'] = user_profile.realm.authentication_methods_dict()
+        state['realm_allow_message_editing'] = user_profile.realm.allow_message_editing
+        # ...
 
     def apply_event(state, events, user_profile, include_subscribers):
       for event in events:
@@ -208,44 +264,91 @@ already code that will correctly handle the realm update event type: :
         elif event['type'] == 'realm':
            field = 'realm_' + event['property']
            state[field] = event['value']
+           # ...
+
+If you are adding a realm property that fits the `do_set_realm_property`
+framework, you don't need to change `fetch_initial_state_data` or
+`apply_event` because there is already code to get the initial data and
+the realm update event type. However, if you are adding a property
+that is handled separately, you will need to  explicitly add the property
+to the `state` dictionary in the `fetch_initial_state_data` function.
+Ex, for `authentication_methods`:
+
+    def fetch_initial_state_data(user_profile, event_types, queue_id, include_subscribers=True):
+      # ...
+      if want('realm'):
+          # ...
+          state['realm_authentication_methods'] = user_profile.realm.authentication_methods_dict()
+          # ...
+
+You will not need to change `apply_event`.
 
 ### Add a new view
 
-You then need to add a view for clients to access that will call the
-newly-added `actions.py` code to update the database. This example
-feature adds a new parameter that should be sent to clients when the
-application loads and be accessible via JavaScript, and there is already
-a view that does this for related flags: `update_realm`. So in this
-case, we can add our code to the existing view instead of creating a
-new one. :
+You will need to add a view for clients to access that will call the
+`actions.py` code to update the database. This example feature
+adds a new parameter that should be sent to clients when the
+application loads and should be accessible via JavaScript. There is
+already a view that does this for related flags: `update_realm` in
+`zerver/views/realm.py`. So in this case, we can add our code to the
+existing view instead of creating a new one.
 
-    # zerver/views/home.py
+First, add the new feature to the `page_params_core_fields` list
+in `zerver/views/home.py`.
 
-    def home(request):
+    def home_real(request):
       # ...
-      page_params = dict(
+      page_params_core_fields = [
         # ...
-        realm_invite_by_admins_only = register_ret['realm_invite_by_admins_only'],
+        'realm_icon_url',
+        'realm_invite_by_admins_only',
+        'realm_inline_image_preview',
         # ...
       )
 
-Since this feature also adds a checkbox to the admin page, and adds a
-new property the Realm model that can be modified from there, you also
-need to make changes to the `update_realm` function in the same file: :
+Since this feature also adds a checkbox to the admin page and adds a
+new property the Realm model that can be modified from there, you
+need to make changes to the `update_realm` function in
+`zerver/views/realm.py`. Add a parameter for the new field to the
+`update_realm` function.
+
+    def update_realm(request, user_profile, name=REQ(validator=check_string, default=None),
+                 # ...,
+                 invite_by_admins_only=REQ(validator=check_bool, default=None),
+                 # ...):
+                 # type: (HttpRequest, UserProfile, ..., Optional[bool], ...
+      # ...
+
+If this feature fits the `do_set_realm_property` framework and does
+not require additional validation, this is the only change to make
+to `zerver/views/realm.py`.
+
+Text fields or other realm properties that need additional validation
+can be handled at the beginning of `update_realm`.
+
+    # Additional validation/error checking beyond types go here, so
+    # the entire request can succeed or fail atomically.
+    if default_language is not None and default_language not in get_available_language_codes():
+        raise JsonableError(_("Invalid language '%s'" % (default_language,)))
+    if description is not None and len(description) > 100:
+        return json_error(_("Realm description cannot exceed 100 characters."))
+    # ...
+
+Then, the code in `update_realm` loops through the `property_types` dictionary
+and calls `do_set_realm_property` on any property to be updated from
+the request. However, if the new feature is not in `property_types`,
+you will need to write the code to specifically handle it.
+Ex, for `authentication_methods`:
 
     # zerver/views/realm.py
 
-    def update_realm(request, user_profile, name=REQ(validator=check_string, default=None),
-                     restricted_to_domain=REQ(validator=check_bool, default=None),
-                     invite_required=REQ(validator=check_bool, default=None),
-                     ...more arguments):
+    # ...
+    if authentication_methods is not None and realm.authentication_methods_dict() != authentication_methods:
+            do_set_realm_authentication_methods(realm, authentication_methods)
+            data['authentication_methods'] = authentication_methods
+    # ...
 
-      # ...
-
-      if invite_by_admins_only is not None and
-        realm.invite_by_admins_only != invite_by_admins_only:
-          do_set_realm_invite_by_admins_only(realm, invite_by_admins_only)
-          data['invite_by_admins_only'] = invite_by_admins_only
+### Update the front end
 
 Then make the required front end changes: in this case a checkbox needs
 to be added to the admin page (and its value added to the data sent back
@@ -255,7 +358,7 @@ handled on the client.
 To add the checkbox to the admin page, modify the relevant template,
 `static/templates/admin_tab.handlebars` (omitted here since it is
 relatively straightforward). Then add code to handle changes to the new
-form control in `static/js/admin.js`. :
+form control in `static/js/admin.js`.
 
     var url = "/json/realm";
     var new_invite_by_admins_only =
@@ -277,7 +380,7 @@ form control in `static/js/admin.js`. :
     });
 
 Finally, update `server_events.js` to handle related events coming from
-the server. :
+the server.
 
     # static/js/server_events.js
 
