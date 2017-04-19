@@ -17,6 +17,10 @@ set_global('activity', {
 set_global('drafts', {
 });
 
+set_global('reactions', {
+    reaction_navigate: function () { return; },
+});
+
 set_global('$', function () {
     return {
         // Hack: Used for reactions hotkeys; may want to restructure.
@@ -155,6 +159,7 @@ function stubbing(func_name_to_stub, test_function) {
 
     set_global('popovers', {
         actions_popped: return_false,
+        reactions_popped: return_false,
     });
 
     // All letters should return false if we are composing text.

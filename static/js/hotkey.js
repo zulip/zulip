@@ -453,6 +453,10 @@ exports.process_hotkey = function (e, hotkey) {
         return false;
     }
 
+    if (popovers.reactions_popped()) {
+        return reactions.reaction_navigate(e, event_name);
+    }
+
     if (hotkey.message_view_only && ui_state.home_tab_obscured()) {
         return false;
     }
