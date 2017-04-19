@@ -5,11 +5,16 @@
 set -e
 set -x
 
+RABBITMQ_NODE="${RABBITMQ_NODE:-rabbit@$(hostname)}"
 RABBITMQ_USERNAME=$("$(dirname "$0")/../get-django-setting" RABBITMQ_USERNAME)
 RABBITMQ_PASSWORD=$("$(dirname "$0")/../get-django-setting" RABBITMQ_PASSWORD)
-sudo rabbitmqctl delete_user "$RABBITMQ_USERNAME" || true
-sudo rabbitmqctl delete_user zulip || true
-sudo rabbitmqctl delete_user guest || true
-sudo rabbitmqctl add_user "$RABBITMQ_USERNAME" "$RABBITMQ_PASSWORD"
-sudo rabbitmqctl set_user_tags "$RABBITMQ_USERNAME" administrator
-sudo rabbitmqctl set_permissions -p / "$RABBITMQ_USERNAME" '.*' '.*' '.*'
+
+echo "RabbitMQ deleting user \"guest\" and \"zulip\"."
+sudo rabbitmqctl -n "$RABBITMQ_NODE" delete_user "$RABBITMQ_USERNAME" || true
+sudo rabbitmqctl -n "$RABBITMQ_NODE" delete_user zulip || true
+sudo rabbitmqctl -n "$RABBITMQ_NODE" delete_user guest || true
+echo "RabbitMQ adding user \"$RABBITMQ_USERNAME\"."
+sudo rabbitmqctl -n "$RABBITMQ_NODE" add_user "$RABBITMQ_USERNAME" "$RABBITMQ_PASSWORD"
+echo "RabbitMQ setting user tags and permissions for \"$RABBITMQ_USERNAME\"."
+sudo rabbitmqctl -n "$RABBITMQ_NODE" set_user_tags "$RABBITMQ_USERNAME" administrator
+sudo rabbitmqctl -n "$RABBITMQ_NODE" set_permissions -p / "$RABBITMQ_USERNAME" '.*' '.*' '.*'
