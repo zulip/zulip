@@ -211,7 +211,6 @@ def home_real(request):
 
         # realm data.
         # TODO: Move all of these data to register_ret and pull from there
-        realm_uri             = user_profile.realm.uri,
         password_auth_enabled = password_auth_enabled(user_profile.realm),
         domains               = list_of_domains_for_realm(user_profile.realm),
         name_changes_disabled = name_changes_disabled(user_profile.realm),
@@ -313,6 +312,7 @@ def home_real(request):
         'realm_description',
         'realm_name_changes_disabled',
         'realm_restricted_to_domain',
+        'realm_uri',
         'realm_waiting_period_threshold',
         'referrals',
         'twenty_four_hour_time',
