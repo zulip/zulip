@@ -39,12 +39,13 @@ from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     GoogleMobileOauth2Backend, ZulipRemoteUserBackend, ZulipLDAPAuthBackend, \
     ZulipLDAPUserPopulator, DevAuthBackend, GitHubAuthBackend, ZulipAuthMixin, \
     dev_auth_enabled, password_auth_enabled, github_auth_enabled, \
-    SocialAuthMixin, AUTH_BACKEND_NAME_MAP, SocialAuthStrategy
+    SocialAuthMixin, AUTH_BACKEND_NAME_MAP
 
 from zerver.views.auth import maybe_send_to_registration
 from version import ZULIP_VERSION
 
 from social_core.exceptions import AuthFailed, AuthStateForbidden
+from social_django.strategy import DjangoStrategy
 from social_django.storage import BaseDjangoStorage
 from social_core.backends.github import GithubOrganizationOAuth2, GithubTeamOAuth2, \
     GithubOAuth2
@@ -391,7 +392,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
         self.email = 'hamlet@zulip.com'
         self.name = 'Hamlet'
         self.backend = GitHubAuthBackend()
-        self.backend.strategy = SocialAuthStrategy(storage=BaseDjangoStorage())
+        self.backend.strategy = DjangoStrategy(storage=BaseDjangoStorage())
         self.user_profile = get_user_profile_by_email(self.email)
         self.user_profile.backend = self.backend
 
@@ -405,7 +406,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
     def do_auth(self, *args, **kwargs):
         # type: (*Any, **Any) -> UserProfile
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.GitHubAuthBackend',)):
-            return self.backend.strategy.authenticate(self.backend, **kwargs)
+            return self.backend.authenticate(**kwargs)
 
     def test_github_auth_enabled(self):
         # type: () -> None

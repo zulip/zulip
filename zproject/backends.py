@@ -17,7 +17,6 @@ from zerver.models import UserProfile, Realm, get_user_profile_by_id, \
 
 from apiclient.sample_tools import client as googleapiclient
 from oauth2client.crypt import AppIdentityError
-from social_core.backends.base import BaseAuth
 from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, \
     GithubTeamOAuth2
 from social_core.exceptions import AuthFailed, SocialAuthBaseException
@@ -103,11 +102,6 @@ class ZulipAuthMixin(object):
         except UserProfile.DoesNotExist:
             return None
 
-class SocialAuthStrategy(DjangoStrategy):
-    def authenticate(self, backend, *args, **kwargs):
-        # type: (BaseAuth, *Any, **Any) -> None
-        return backend.authenticate(*args, **kwargs)
-
 class SocialAuthMixin(ZulipAuthMixin):
     auth_backend_name = None # type: Text
 
@@ -122,7 +116,7 @@ class SocialAuthMixin(ZulipAuthMixin):
     def authenticate(self,
                      realm_subdomain='',  # type: Optional[Text]
                      storage=None,  # type: Optional[DjangoStorage]
-                     strategy=None,  # type: Optional[SocialAuthStrategy]
+                     strategy=None,  # type: Optional[DjangoStrategy]
                      user=None,  # type: Optional[Dict[str, Any]]
                      return_data=None,  # type: Optional[Dict[str, Any]]
                      response=None,  # type: Optional[Dict[str, Any]]
