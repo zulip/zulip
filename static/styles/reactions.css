@@ -118,7 +118,7 @@
 
 .reaction-popover {
     display: inline-block;
-    width: 231px;
+    width: 240px;
 }
 
 .reaction-popover-top {
@@ -142,8 +142,8 @@
 .reaction-popover-emoji-map {
     margin: 0;
     padding: 0.5em 0;
+    position: relative;
     overflow: hidden;
-    overflow-y: auto;
     display: inline-block;
     height: 16.5em;
 }

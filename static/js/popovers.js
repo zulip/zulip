@@ -215,6 +215,11 @@ exports.toggle_reactions_popover = function (element, id) {
         elt.popover("show");
         elt.prop('title', 'Add reaction...');
         $('.reaction-popover-filter').focus();
+        $(".reaction-popover-emoji-map").perfectScrollbar({
+            suppressScrollX: true,
+            useKeyboard: false,
+            wheelSpeed: 25,
+        });
         current_message_reactions_popover_elem = elt;
     }
 };
@@ -351,6 +356,7 @@ exports.hide_message_info_popover = function () {
 exports.hide_reactions_popover = function () {
     $('.has_popover').removeClass('has_popover has_reactions_popover');
     if (exports.reactions_popped()) {
+        $(".reaction-popover-emoji-map").perfectScrollbar("destroy");
         current_message_reactions_popover_elem.popover("destroy");
         current_message_reactions_popover_elem = undefined;
     }
