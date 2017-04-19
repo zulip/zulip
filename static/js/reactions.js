@@ -99,16 +99,24 @@ function filter_emojis() {
     exports.render_reaction_show_list();
 }
 
+function get_emoji_at_index(index) {
+    if (index >= 0 && index < reaction_show_list.length) {
+        return reaction_show_list[index];
+    }
+}
+
+function find_index_for_emoji(emoji) {
+    return reaction_show_list.findIndex(function (reaction) {
+        return emoji === reaction;
+    });
+}
+
 function maybe_select_emoji(e) {
-    var reaction_list = $(".reaction-popover-reaction");
-    if (e.keyCode === 13) {
+    if (e.keyCode === 13) { // enter key
         e.preventDefault();
-        var reaction_show_list = reaction_list.filter(function () {
-            return this.style.display === "block";
-        });
-        if (reaction_show_list.length) {
-            $(".reaction-popover-filter").val("");
-            exports.toggle_reaction(current_msg_list.selected_id(), reaction_show_list[0].title);
+        var first_emoji = get_emoji_at_index(0);
+        if (first_emoji) {
+            exports.toggle_reaction(current_msg_list.selected_id(), first_emoji.title);
         }
     }
 }
