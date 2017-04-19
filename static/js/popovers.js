@@ -221,6 +221,7 @@ exports.toggle_reactions_popover = function (element, id) {
             wheelSpeed: 25,
         });
         current_message_reactions_popover_elem = elt;
+        reactions.render_reaction_show_list();
     }
 };
 

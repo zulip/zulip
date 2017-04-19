@@ -73,6 +73,15 @@ exports.toggle_reaction = function (message_id, emoji_name) {
     popovers.hide_reactions_popover();
 };
 
+var reaction_show_list = []; // local reaction_show_list
+
+exports.render_reaction_show_list = function () {
+    var reaction_list = $(".reaction-popover-reaction");
+    reaction_show_list = reaction_list.filter(function () {
+        return this.style.display === "block" || this.style.display === "";
+    }).toArray();
+};
+
 function filter_emojis() {
     var elt = $(".reaction-popover-filter").expectOne();
     var search_term = elt.val().trim();
@@ -87,6 +96,7 @@ function filter_emojis() {
     } else {
         reaction_list.css("display", "block");
     }
+    exports.render_reaction_show_list();
 }
 
 function maybe_select_emoji(e) {
