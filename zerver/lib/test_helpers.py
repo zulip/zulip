@@ -4,6 +4,7 @@ from contextlib import contextmanager
 from typing import (cast, Any, Callable, Dict, Generator, Iterable, Iterator, List, Mapping,
                     Optional, Set, Sized, Tuple, Union, IO)
 
+from django.core import signing
 from django.core.urlresolvers import LocaleRegexURLResolver
 from django.conf import settings
 from django.test import TestCase
@@ -457,3 +458,11 @@ def get_all_templates():
                 process(template_dir, dirpath, fnames)
 
     return templates
+
+def unsign_subdomain_cookie(result):
+    # type: (HttpResponse) -> Dict[str, Any]
+    key = 'subdomain.signature'
+    salt = key + 'zerver.views.auth'
+    cookie = result.cookies.get(key)
+    value = signing.get_cookie_signer(salt=salt).unsign(cookie.value, max_age=15)
+    return ujson.loads(value)

@@ -53,7 +53,7 @@ from social_core.backends.github import GithubOrganizationOAuth2, GithubTeamOAut
 from six.moves import urllib
 from six.moves.http_cookies import SimpleCookie
 import ujson
-from zerver.lib.test_helpers import MockLDAP
+from zerver.lib.test_helpers import MockLDAP, unsign_subdomain_cookie
 
 class AuthBackendTest(TestCase):
     email = u"hamlet@zulip.com"
@@ -690,14 +690,6 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         value = ujson.dumps(data)
         return {key: signing.get_cookie_signer(salt=salt).sign(value)}
 
-    def unsign_subdomain_cookie(self, result):
-        # type: (HttpResponse) -> Dict[str, Any]
-        key = 'subdomain.signature'
-        salt = key + 'zerver.views.auth'
-        cookie = result.cookies.get(key)
-        value = signing.get_cookie_signer(salt=salt).unsign(cookie.value, max_age=15)
-        return ujson.loads(value)
-
     def test_google_oauth2_start(self):
         # type: () -> None
         with mock.patch('zerver.views.auth.get_subdomain', return_value='zulip'):
@@ -717,7 +709,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         with self.settings(REALMS_HAVE_SUBDOMAINS=True):
             result = self.google_oauth2_test(token_response, account_response, 'zulip')
 
-        data = self.unsign_subdomain_cookie(result)
+        data = unsign_subdomain_cookie(result)
         self.assertEqual(data['email'], 'hamlet@zulip.com')
         self.assertEqual(data['name'], 'Full Name')
         self.assertEqual(data['subdomain'], 'zulip')
@@ -812,7 +804,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
             account_response = ResponseMock(200, account_data)
             result = self.google_oauth2_test(token_response, account_response, 'zulip')
 
-            data = self.unsign_subdomain_cookie(result)
+            data = unsign_subdomain_cookie(result)
             self.assertEqual(data['email'], email)
             self.assertEqual(data['name'], 'Full Name')
             self.assertEqual(data['subdomain'], 'zulip')
