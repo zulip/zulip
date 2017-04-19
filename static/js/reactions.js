@@ -138,6 +138,48 @@ $(document).on('click', '.reaction-popover-reaction', function () {
 $(document).on('input', '.reaction-popover-filter', filter_emojis);
 $(document).on('keydown', '.reaction-popover-filter', maybe_select_emoji);
 
+exports.reaction_navigate = function (e, event_name) {
+    var first_emoji = get_emoji_at_index(0);
+    var selected_emoji = get_selected_emoji();
+    var selected_index = find_index_for_emoji(selected_emoji);
+
+    // special cases
+    if (event_name === 'down_arrow') {
+        if ($('.reaction-popover-filter').is(':focus') && first_emoji) { // move down into emoji map
+            $(first_emoji).focus();
+        }
+    } else if (event_name === 'up_arrow') {
+        if (selected_emoji && selected_index < 6) { // move up into reaction filter
+            $('.reaction-popover-filter').focus();
+        }
+    }
+
+    if (selected_emoji === undefined) {
+        return false;
+    }
+    var next_index;
+    switch (event_name) {
+        case 'down_arrow':
+            next_index = selected_index + 6;
+            break;
+        case 'up_arrow':
+            next_index = selected_index - 6;
+            break;
+        case 'left_arrow':
+            next_index = selected_index - 1;
+            break;
+        case 'right_arrow':
+            next_index = selected_index + 1;
+            break;
+    }
+    var next_emoji = get_emoji_at_index(next_index);
+    if (next_emoji) {
+        $(next_emoji).focus();
+        return true;
+    }
+    return false;
+};
+
 function full_name(user_id) {
     if (user_id === page_params.user_id) {
         return 'You (click to remove)';
