@@ -51,7 +51,18 @@ exports.message_reaction_on_click = function (message_id, emoji_name) {
     send_reaction_ajax(message_id, emoji_name, operation);
 };
 
+function get_selected_emoji() {
+    return $(".reaction-popover-reaction").filter(":focus")[0];
+}
+
 exports.toggle_reaction = function (message_id, emoji_name) {
+    var selected_emoji = get_selected_emoji();
+    if (emoji_name === undefined && selected_emoji === undefined) {
+        return;
+    }
+    if (selected_emoji) {
+        emoji_name = selected_emoji.title;
+    }
     var user_list = get_user_list_for_message_reaction(message_id, emoji_name);
     var operation = 'add';
     if (user_list.indexOf(page_params.user_id) !== -1) {

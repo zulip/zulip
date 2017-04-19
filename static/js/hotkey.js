@@ -282,6 +282,11 @@ exports.process_enter_key = function (e) {
         return true;
     }
 
+    if (popovers.reactions_popped()) {
+        reactions.toggle_reaction(current_msg_list.selected_id());
+        return true;
+    }
+
     if (exports.is_editing_stream_name(e)) {
         $(e.target).parent().find(".checkmark").click();
         return false;
