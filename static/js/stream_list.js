@@ -115,7 +115,9 @@ exports.build_stream_list = function () {
 
     _.each(stream_groups.normal_streams, add_sidebar_li);
 
-    // TODO: Add a divider here if there are dormant streams.
+    if (stream_groups.dormant_streams.length > 0) {
+        elems.push($('<hr class="stream-split">').get(0));
+    }
 
     _.each(stream_groups.dormant_streams, add_sidebar_li);
 
