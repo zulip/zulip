@@ -295,7 +295,54 @@ exports.reply_with_mention = function (opts) {
     $('#new_message_content').val(mention + ' ');
 };
 
+exports.on_topic_narrow = function () {
+    if (!compose_state.composing()) {
+        // If our compose box is closed, then just
+        // leave it closed, assuming that the user is
+        // catching up on their feed and not actively
+        // composing.
+        return;
+    }
+
+    if (compose_state.stream_name() !== narrow.stream()) {
+        // If we changed streams, then we only leave the
+        // compose box open if there is content.
+        if (compose_state.has_message_content()) {
+            compose_fade.update_message_list();
+            return;
+        }
+
+        // Otherwise, avoid a mix.
+        exports.cancel();
+        return;
+    }
+
+    if (compose_state.subject()) {
+        // If the user has filled in a subject, we have
+        // a risk of a mix, and we can't reliably guess
+        // whether the old topic is appropriate (otherwise,
+        // why did they narrow?) or the new one is
+        // appropriate (after all, they were starting to
+        // compose on the old topic and may now be looking
+        // for info), so we punt and cancel.
+        exports.cancel();
+        return;
+    }
+
+    // If we got this far, then the compose box has the correct
+    // stream filled in, and we just need to update the topic.
+    // See #3300 for context--a couple users specifically asked
+    // for this convenience.
+    compose_state.subject(narrow.topic());
+    $('#new_message_content').focus().select();
+};
+
 exports.on_narrow = function () {
+    if (narrow.narrowed_by_topic_reply()) {
+        exports.on_topic_narrow();
+        return;
+    }
+
     if (compose_state.has_message_content()) {
         compose_fade.update_message_list();
         return;
