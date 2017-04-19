@@ -101,25 +101,14 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         state['presences'] = get_status_dict(user_profile)
 
     if want('realm'):
-        state['realm_name'] = user_profile.realm.name
-        state['realm_description'] = user_profile.realm.description
-        state['realm_restricted_to_domain'] = user_profile.realm.restricted_to_domain
-        state['realm_invite_required'] = user_profile.realm.invite_required
-        state['realm_invite_by_admins_only'] = user_profile.realm.invite_by_admins_only
-        state['realm_inline_image_preview'] = user_profile.realm.inline_image_preview
-        state['realm_inline_url_embed_preview'] = user_profile.realm.inline_url_embed_preview
+        property_types = user_profile.realm.property_types
+        for prop in property_types:
+            state['realm_'+prop] = getattr(user_profile.realm, prop)
         state['realm_authentication_methods'] = user_profile.realm.authentication_methods_dict()
-        state['realm_create_stream_by_admins_only'] = user_profile.realm.create_stream_by_admins_only
-        state['realm_add_emoji_by_admins_only'] = user_profile.realm.add_emoji_by_admins_only
         state['realm_allow_message_editing'] = user_profile.realm.allow_message_editing
         state['realm_message_content_edit_limit_seconds'] = user_profile.realm.message_content_edit_limit_seconds
-        state['realm_message_retention_days'] = user_profile.realm.message_retention_days
-        state['realm_default_language'] = user_profile.realm.default_language
-        state['realm_waiting_period_threshold'] = user_profile.realm.waiting_period_threshold
         state['realm_icon_url'] = realm_icon_url(user_profile.realm)
         state['realm_icon_source'] = user_profile.realm.icon_source
-        state['realm_name_changes_disabled'] = user_profile.realm.name_changes_disabled
-        state['realm_email_changes_disabled'] = user_profile.realm.email_changes_disabled
         state['max_icon_file_size'] = settings.MAX_ICON_FILE_SIZE
         state['realm_bot_domain'] = user_profile.realm.get_bot_domain()
 

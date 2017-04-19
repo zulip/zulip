@@ -59,19 +59,8 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
     req_vars = {k: v for k, v in list(locals().items()) if k in realm.property_types}
     data = {} # type: Dict[str, Any]
 
-    # list of realm properties that should be handled differently
-    exclude = [
-        # authentication_methods is not supported by the
-        # do_set_realm_property framework because of its bitfield.
-        'authentication_methods',
-        # The message_editing settings are coupled to each other, and
-        # thus don't fit into the do_set_realm_property framework.
-        'allow_message_editing',
-        'message_content_edit_limit_seconds',
-    ] # type: List[str]
-
     for k, v in list(req_vars.items()):
-        if v is not None and getattr(realm, k) != v and k not in exclude:
+        if v is not None and getattr(realm, k) != v:
             do_set_realm_property(realm, k, v)
             if isinstance(v, Text):
                 data[k] = 'updated'
@@ -79,9 +68,13 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
                 data[k] = v
 
     # The following realm properties do not fit the pattern above
+    # authentication_methods is not supported by the do_set_realm_property
+    # framework because of its bitfield.
     if authentication_methods is not None and realm.authentication_methods_dict() != authentication_methods:
         do_set_realm_authentication_methods(realm, authentication_methods)
         data['authentication_methods'] = authentication_methods
+    # The message_editing settings are coupled to each other, and thus don't fit
+    # into the do_set_realm_property framework.
     if (allow_message_editing is not None and realm.allow_message_editing != allow_message_editing) or \
        (message_content_edit_limit_seconds is not None and
             realm.message_content_edit_limit_seconds != message_content_edit_limit_seconds):
