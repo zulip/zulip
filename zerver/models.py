@@ -754,7 +754,7 @@ class EmailChangeStatus(models.Model):
 
     realm = models.ForeignKey(Realm) # type: Realm
 
-class PushDeviceToken(models.Model):
+class AbstractPushDeviceToken(models.Model):
     APNS = 1
     GCM = 2
 
@@ -772,11 +772,15 @@ class PushDeviceToken(models.Model):
     token = models.CharField(max_length=4096, unique=True) # type: bytes
     last_updated = models.DateTimeField(auto_now=True) # type: datetime.datetime
 
-    # The user who's device this is
-    user = models.ForeignKey(UserProfile, db_index=True) # type: UserProfile
-
     # [optional] Contains the app id of the device if it is an iOS device
     ios_app_id = models.TextField(null=True) # type: Optional[Text]
+
+    class Meta(object):
+        abstract = True
+
+class PushDeviceToken(AbstractPushDeviceToken):
+    # The user who's device this is
+    user = models.ForeignKey(UserProfile, db_index=True) # type: UserProfile
 
 def generate_email_token_for_stream():
     # type: () -> Text
