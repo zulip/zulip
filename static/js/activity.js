@@ -503,6 +503,7 @@ function maybe_select_person(e) {
 
         // Prevent a newline from being entered into the soon-to-be-opened composebox
         e.preventDefault();
+        e.stopPropagation();
 
         var topPerson = $('#user_presences li.user_sidebar_entry').first().attr('data-user-id');
         var user_list = $(".user-list-filter");
