@@ -160,7 +160,7 @@ class CustomProfileDataTest(ZulipTestCase):
         })
         self.assert_json_error(
             result,
-            u"value[4] is not an integer".format(age_field.id))
+            u"value[{}] is not an integer".format(age_field.id))
 
     def test_update_invalid_double(self):
         # type: () -> None
