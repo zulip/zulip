@@ -213,7 +213,6 @@ def home_real(request):
         # TODO: Move all of these data to register_ret and pull from there
         password_auth_enabled = password_auth_enabled(user_profile.realm),
         name_changes_disabled = name_changes_disabled(user_profile.realm),
-        is_zephyr_mirror_realm = user_profile.realm.is_zephyr_mirror_realm,
 
         # user_profile data.
         # TODO: Move all of these data to register_ret and pull from there
@@ -303,6 +302,7 @@ def home_real(request):
         'realm_inline_image_preview',
         'realm_inline_url_embed_preview',
         'realm_invite_required',
+        'realm_is_zephyr_mirror_realm',
         'realm_mandatory_topics',
         'realm_message_content_edit_limit_seconds',
         'realm_message_retention_days',
