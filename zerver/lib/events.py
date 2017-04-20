@@ -115,6 +115,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         state['realm_presence_disabled'] = user_profile.realm.presence_disabled
         state['realm_mandatory_topics'] = user_profile.realm.mandatory_topics
         state['realm_show_digest_email'] = user_profile.realm.show_digest_email
+        state['realm_is_zephyr_mirror_realm'] = user_profile.realm.is_zephyr_mirror_realm
         
     if want('realm_domains'):
         state['realm_domains'] = get_realm_domains(user_profile.realm)

@@ -79,7 +79,7 @@ function message_matches_search_term(message, operator, operand) {
         }
 
         operand = operand.toLowerCase();
-        if (page_params.is_zephyr_mirror_realm) {
+        if (page_params.realm_is_zephyr_mirror_realm) {
             return zephyr_stream_name_match(message, operand);
         }
         return (message.stream.toLowerCase() === operand);
@@ -90,7 +90,7 @@ function message_matches_search_term(message, operator, operand) {
         }
 
         operand = operand.toLowerCase();
-        if (page_params.is_zephyr_mirror_realm) {
+        if (page_params.realm_is_zephyr_mirror_realm) {
             return zephyr_topic_name_match(message, operand);
         }
         return (message.subject.toLowerCase() === operand);

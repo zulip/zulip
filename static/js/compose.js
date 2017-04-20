@@ -557,7 +557,7 @@ function validate_private_message() {
     if (compose_state.recipient() === "") {
         compose_error(i18n.t("Please specify at least one recipient"), $("#private_message_recipient"));
         return false;
-    } else if (page_params.is_zephyr_mirror_realm) {
+    } else if (page_params.realm_is_zephyr_mirror_realm) {
         // For Zephyr mirroring realms, the frontend doesn't know which users exist
         return true;
     }
@@ -657,7 +657,7 @@ $(function () {
         }
 
         // Disable for Zephyr mirroring realms, since we never have subscriber lists there
-        if (page_params.is_zephyr_mirror_realm) {
+        if (page_params.realm_is_zephyr_mirror_realm) {
             return;
         }
 

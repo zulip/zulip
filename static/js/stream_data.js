@@ -256,7 +256,7 @@ exports.create_sub_from_server_data = function (stream_name, attrs) {
 
     sub = _.defaults(raw_attrs, {
         name: stream_name,
-        render_subscribers: !page_params.is_zephyr_mirror_realm || attrs.invite_only === true,
+        render_subscribers: !page_params.realm_is_zephyr_mirror_realm || attrs.invite_only === true,
         subscribed: true,
         in_home_view: true,
         invite_only: false,

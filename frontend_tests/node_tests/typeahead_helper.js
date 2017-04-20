@@ -2,7 +2,7 @@ var th = require('js/typeahead_helper.js');
 
 global.stub_out_jquery();
 
-set_global('page_params', {is_zephyr_mirror_realm: false});
+set_global('page_params', {realm_is_zephyr_mirror_realm: false});
 
 add_dependencies({
     stream_data: 'js/stream_data.js',
