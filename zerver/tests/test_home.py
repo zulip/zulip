@@ -85,7 +85,6 @@ class HomeTest(ZulipTestCase):
             "max_message_id",
             "maxfilesize",
             "muted_topics",
-            "name_changes_disabled",
             "narrow",
             "narrow_stream",
             "needs_tutorial",

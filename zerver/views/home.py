@@ -212,7 +212,6 @@ def home_real(request):
         # realm data.
         # TODO: Move all of these data to register_ret and pull from there
         password_auth_enabled = password_auth_enabled(user_profile.realm),
-        name_changes_disabled = name_changes_disabled(user_profile.realm),
 
         # user_profile data.
         # TODO: Move all of these data to register_ret and pull from there
