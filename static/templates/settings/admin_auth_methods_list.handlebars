@@ -4,8 +4,10 @@
         <span class="method">{{method}}</span>
     </td>
     <td>
-        <input type="checkbox"
-          {{#if enabled}}checked="checked"{{/if}} />
+        <label class="checkbox">
+            <input type="checkbox" {{#if enabled}}checked="checked"{{/if}} />
+            <span></span>
+        </label>
     </td>
 </tr>
 {{/with}}
