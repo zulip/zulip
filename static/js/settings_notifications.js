@@ -5,7 +5,7 @@ var exports = {};
 exports.set_up = function () {
     $("#notify-settings-status").hide();
 
-    if (!page_params.show_digest_email) {
+    if (!page_params.realm_show_digest_email) {
         $("#other_notifications").hide();
     }
 

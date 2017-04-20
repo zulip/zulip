@@ -213,7 +213,6 @@ def home_real(request):
         # TODO: Move all of these data to register_ret and pull from there
         password_auth_enabled = password_auth_enabled(user_profile.realm),
         name_changes_disabled = name_changes_disabled(user_profile.realm),
-        show_digest_email     = user_profile.realm.show_digest_email,
         is_zephyr_mirror_realm = user_profile.realm.is_zephyr_mirror_realm,
 
         # user_profile data.
@@ -312,6 +311,7 @@ def home_real(request):
         'realm_name_changes_disabled',
         'realm_presence_disabled',
         'realm_restricted_to_domain',
+        'realm_show_digest_email',
         'realm_uri',
         'realm_waiting_period_threshold',
         'referrals',
