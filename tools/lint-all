@@ -463,6 +463,12 @@ def build_custom_checkers(by_lang):
          'strip': '\n'},
         {'pattern': '{\w',
          'description': "Missing whitespace after '{' in CSS (should be newline)."},
+        {'pattern': ' thin[; ]',
+         'description': "thin CSS attribute is under-specified, please use 1px."},
+        {'pattern': ' medium[; ]',
+         'description': "medium CSS attribute is under-specified, please use pixels."},
+        {'pattern': ' thick[; ]',
+         'description': "thick CSS attribute is under-specified, please use pixels."},
     ]) + whitespace_rules # type: RuleList
     prose_style_rules = [
         {'pattern': '[^\/\#\-\"]([jJ]avascript)', # exclude usage in hrefs/divs

@@ -78,7 +78,7 @@
 }
 
 .message_reactions .message_reaction:hover {
-    border: thin solid #0088CC;
+    border: 1px solid #0088CC;
 }
 
 .message_reactions .reaction_button:only-child {
@@ -93,13 +93,13 @@
     height: 14px;
     border-radius: 4px;
     padding-left: 0.3em;
-    border: thin solid #bbb;
+    border: 1px solid #bbb;
     padding-right: 0.3em;
     float: left;
 }
 
 .message_reactions .reaction_button:hover {
-    border: thin solid #0088CC;
+    border: 1px solid #0088CC;
     background-color: #eef7fa;
     cursor: pointer;
     opacity: 1.0;
@@ -153,7 +153,7 @@
     margin: 0.1em;
     padding: 0.3em;
     cursor: pointer;
-    border: thin solid white;
+    border: 1px solid white;
     border-radius: 0.5em;
 }
 
