@@ -15,11 +15,11 @@ body {
 }
 
 *::-moz-selection {
-    background-color: rgba(69, 191, 168, 0.5);
+    background-color: rgba(240, 155, 66, 0.3);
 }
 
 *::selection {
-    background-color: rgba(69, 191, 168, 0.5);
+    background-color: rgba(240, 155, 66, 0.3);
 }
 
 .center {
@@ -89,7 +89,7 @@ nav {
     color: #fff;
 }
 
-nav #hamburger {
+nav .hamburger {
     display: none;
     fill: #fff;
     cursor: pointer;
@@ -140,6 +140,9 @@ nav .logo {
 }
 
 nav .logo span {
+    position: relative;
+    left: 5px;
+    top: 1px;
     color: #fff;
     font-weight: 600;
     vertical-align: top;
@@ -196,19 +199,26 @@ nav ul li.active::after {
     transform: scaleX(2) scaleY(0.5);
 }
 
+nav.dark-blue {
+    background: rgb(32, 39, 51);
+}
+
 /* -- main panel styling -- */
 .portico-landing {
     position: relative;
 
     transition: all 0.5s ease;
-    margin-top: 200px;
+    margin-top: -80px;
+    -webkit-transform: translateY(120px);
+    transform: translateY(120px);
     opacity: 0;
 
     z-index: 1;
 }
 
 .portico-landing.show {
-    margin-top: -80px;
+    -webkit-transform: translateY(0px);
+    transform: translateY(0px);
     opacity: 1;
 }
 
@@ -303,6 +313,18 @@ a:not(.no-style):hover:before {
     align-items: center;
 }
 
+.float.left {
+    float: left;
+}
+
+.float.right {
+    float: right;
+}
+
+.float.clear {
+    clear: both;
+}
+
 .small {
     font-size: 0.8em;
 }
@@ -392,6 +414,656 @@ a:not(.no-style):hover:before {
     font-size: 1rem;
     margin-left: 15px;
     margin-bottom: 0px;
+}
+
+/* -- hello page -- */
+.portico-landing.hello {
+    background-color: #fff;
+    color: #414e67;
+}
+
+.portico-landing.hello .hero {
+    position: relative;
+    padding: 100px 50px 320px 50px;
+
+    background-color: #262d3a;
+    color: #bac0cc;
+
+    overflow: hidden;
+}
+
+.portico-landing.hello .hero .waves {
+    position: absolute;
+
+    width: 150vw;
+    height: 150vw;
+
+    top: 650px;
+    left: -25vw;
+
+    z-index: 0;
+    opacity: 0.3;
+}
+
+.portico-landing.hello .hero .waves .wave {
+    position: absolute;
+
+    width: 100%;
+    height: 100%;
+
+    background-color: white;
+    border-radius: 35%;
+
+    opacity: 0.3;
+
+    animation-name: waves;
+    animation-duration: 15s;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+}
+
+.portico-landing.hello .hero .waves .wave.dark-blue {
+    background-color: #141d2e;
+}
+
+.portico-landing.hello .hero .waves .wave.light-blue {
+    background-color: rgba(220, 71, 71, 0.9);
+
+    animation-duration: 18s;
+
+}
+
+.portico-landing.hello .hero .waves .wave.light-green {
+    background-color: rgba(129, 241, 255, 0.75);
+
+    animation-name: wavesBackward;
+    animation-duration: 21s;
+}
+
+@keyframes waves {
+    0% {
+        transform: rotate(0);
+    }
+    50% {
+        transform: rotate(180deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes wavesBackward {
+    0% {
+        transform: rotate(0);
+    }
+    50% {
+        transform: rotate(-180deg);
+    }
+    100% {
+        transform: rotate(-360deg);
+    }
+}
+
+.portico-landing.hello .hero .content {
+    position: relative;
+    z-index: 1;
+
+    text-align: center;
+}
+
+.portico-landing.hello .hero header {
+    width: 700px;
+    display: inline-block;
+    text-align: left;
+}
+
+.portico-landing.hello .hero header h1 {
+    font-size: 3em;
+}
+
+.portico-landing.hello .hero header p {
+    margin: 30px 0px;
+
+    font-size: 1.2em;
+    line-height: 1.4;
+}
+
+.portico-landing.hello .hero header button {
+    padding: 8px 15px;
+
+    background-color: #52c2af;
+    border: none;
+
+    font-size: 1em;
+    font-weight: 600;
+    color: #fff;
+
+    box-shadow: 0px 1px 2px rgba(0,0,0,0.2);
+
+    transition: all 0.2s ease;
+}
+
+.portico-landing.hello .hero header button:hover {
+    background-color: #3fcdb6;
+
+    box-shadow: 0px 2px 5px rgba(0,0,0,0.18);
+}
+
+.portico-landing.hello .hero header button:active {
+    background-color: #44a796;
+
+    box-shadow: 0px 1px 1px rgba(0,0,0,0.18);
+}
+
+.portico-landing.hello .hero header .download-button {
+    margin-top: 10px;
+}
+
+.portico-landing.hello .hero header #see_all_apps {
+    display: inline-block;
+    margin-top: 10px;
+
+    font-weight: normal;
+}
+
+.portico-landing.hello .col-2 {
+    width: 60%;
+    margin-right: -4px;
+    display: inline-block;
+    vertical-align: top;
+}
+
+.portico-landing.hello .col-3 {
+    width: 33.3%;
+    margin-right: -4px;
+    display: inline-block;
+    vertical-align: top;
+}
+
+
+.portico-landing.hello .col-4 {
+    width: 20%;
+    margin-right: -4px;
+    display: inline-block;
+    vertical-align: top;
+}
+
+.screen .line {
+    width: 100%;
+    height: 6px;
+    margin: 8px 0px;
+
+    background-color: #eee;
+    border-radius: 3px;
+}
+
+.screen .line.small {
+    width: 60%;
+}
+
+.screen .line.micro {
+    display: inline-block;
+    vertical-align: top;
+
+    width: 15%;
+}
+
+.screen .line.darker {
+    background-color: #bbb;
+}
+
+.screen .line.nano {
+    display: inline-block;
+    vertical-align: top;
+
+    width: 10%;
+}
+
+.screen .line.med {
+    width: 80%;
+}
+
+.screen .col-4 .action-block {
+    margin: 20px;
+}
+
+.screen .col-4 .action-block .sub-block {
+    margin: 0px 10px;
+}
+
+.screen .line.red {
+    background-color: rgb(222, 172, 180);
+}
+
+.screen .line.blue {
+    background-color: rgb(172, 211, 222);
+}
+
+.screen .line.green {
+    background-color: rgb(173, 222, 172);
+}
+
+.screen .line.orange {
+    background-color: rgb(222, 197, 172);
+}
+
+.screen .top .avatar {
+    display: inline-block;
+    vertical-align: top;
+
+    width: 20px;
+    height: 20px;
+    background-color: #bbb;
+    border-radius: 4px;
+}
+
+.screen .top .top-line {
+    display: inline-block;
+    vertical-align: top;
+
+    width: 50px;
+    margin-top: 0px;
+
+    background-color: #bbb;
+}
+
+.screen .navbar {
+    background-color: #52c2af;
+    padding: 10px;
+}
+
+.screen .center-page {
+    height: 100%;
+    position: relative;
+
+    overflow: hidden;
+}
+
+.screen .center-page .message-feed {
+    height: calc(100% - 20px);
+    margin-top: 20px;
+
+    transition: all 0.1s ease;
+}
+
+.screen .message-feed .message .content {
+    margin-left: 24px;
+    position: relative;
+    top: -15px;
+}
+
+.screen .message-feed .stream {
+    padding: 3px 5px 0px 5px;
+    margin: 0px 5px;
+
+    background-color: #fff;
+    border-radius: 4px;
+
+    box-shadow: 0px 0px 15px rgba(0,0,0,0.01);
+}
+
+.portico-landing.hello .screen.hero-screen {
+    padding: 95px 170px;
+    height: 385px;
+
+    background-image: url(/static/images/landing-page/macbook-empty.png);
+    background-size: 100% auto;
+
+    background-color: transparent;
+    box-shadow: none;
+}
+
+.portico-landing.hello .screen.hero-screen::before,
+.portico-landing.hello .screen.hero-screen::after {
+    content: "";
+    display: none;
+}
+
+.portico-landing.hello .screen.hero-screen .main-page {
+    transform: translateY(-12px) translateX(3px);
+    -webkit-transform: translateY(-12px) translateX(3px);
+    -moz-transform: translateY(-12px) translateX(3px);
+    border: 5px solid #000;
+}
+
+.portico-landing.hello .screen {
+    position: relative;
+    margin: -300px auto 0px auto;
+
+    width: 600px;
+    background-color: #fafafa;
+    height: 350px;
+
+    padding: 10px 30px 10px 30px;
+
+    border-radius: 12px;
+    box-shadow: 0px 0px 50px rgba(0,0,0,0.2);
+
+    background-color: #444;
+
+    z-index: 1;
+}
+
+.portico-landing.hello .screen::before {
+    content: " ";
+    position: absolute;
+    top: calc(50% - 5px);
+    left: 20px;
+
+    width: 10px;
+    height: 10px;
+
+    border-radius: 5px;
+    background-color: #222;
+}
+
+.portico-landing.hello .screen::after {
+    content: " ";
+    position: absolute;
+    top: calc(50% - 12.5px);
+    right: 8px;
+
+    width: 25px;
+    height: 25px;
+
+    border-radius: 13px;
+    background-color: #bbb;
+}
+
+.portico-landing.hello .screen .main-page {
+    display: inline-block;
+
+    height: calc(100% - 30px);
+    width: calc(100% - 30px);
+    margin: 10px;
+
+    border: 5px solid #222;
+    border-radius: 4px;
+
+    background-color: #fafafa;
+}
+
+.portico-landing.hello .features {
+    padding: 50px 0px 100px 0px;
+
+    background-color: #fff;
+}
+
+.portico-landing.hello .features .col-3 {
+    text-align: center;
+}
+
+.portico-landing.hello .features .col-3 .il-block {
+    display: inline-block;
+    width: 75%;
+    text-align: left;
+}
+
+.portico-landing.hello .features .col-3 h2 {
+    font-weight: normal;
+}
+
+.portico-landing.hello .testimonials {
+    color: #bac0cc;
+    background-color: #262d3a;
+}
+
+.portico-landing.hello .testimonials .text-header .text-content {
+    float: left;
+}
+
+.portico-landing.hello .testimonials .text-header .action-content {
+    float: right;
+    margin-top: 18px;
+}
+
+.portico-landing.hello .testimonials .quote-container {
+    width: 60%;
+    margin: 30px auto 20px auto;
+
+    font-size: 1.2rem;
+}
+
+.portico-landing.hello .testimonials blockquote::before {
+    content: "“";
+    margin-left: -10px;
+    margin-right: -3px;
+}
+
+.portico-landing.hello .testimonials blockquote::after {
+    content: "”";
+    margin-left: -3px;
+}
+
+.portico-landing.hello .testimonials blockquote + cite {
+    display: block;
+    margin-top: 5px;
+    margin-bottom: 30px;
+
+    color: #797f8c;
+    font-weight: 400;
+}
+
+
+.portico-landing.hello .testimonials blockquote {
+    padding: 0px;
+
+    font-weight: 400;
+    line-height: 1.6;
+    text-align: left;
+    border: none;
+}
+
+.portico-landing.hello .testimonials hr {
+    width: 60%;
+    margin: 0 auto;
+    border: none;
+    border-bottom: 1px solid #555;
+}
+
+.portico-landing.hello .testimonials .company-container {
+    width: 60%;
+    margin: 20px auto;
+    text-align: left;
+}
+
+.portico-landing.hello .testimonials .company-box {
+    margin-top: 20px;
+}
+
+.portico-landing.hello .testimonials .company-container header h2 {
+    font-weight: 400;
+    font-size: 1.5em;
+}
+
+.portico-landing.hello .testimonials .company-container header .arrow {
+    margin-top: 12px;
+    font-weight: normal;
+}
+
+.portico-landing.hello .testimonials .company-box .company {
+    display: inline-block;
+    margin: 10px 20px;
+
+    height: 60px;
+    width: calc(20% - 44px);
+
+    background-color: #aaa;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* -- company logos -- */
+.portico-landing.hello .testimonials .company-box .company.akamai {
+    background-image: url(/static/images/landing-page/logos/akamai.png);
+    background-color: transparent;
+}
+
+.portico-landing.hello .testimonials .company-box .company.doctorondemand {
+    background-image: url(/static/images/landing-page/logos/doctorondemand.png);
+    background-color: transparent;
+}
+
+.portico-landing.hello .testimonials .company-box .company.layershift {
+    background-image: url(/static/images/landing-page/logos/layershift.png);
+    background-color: transparent;
+}
+
+.portico-landing.hello .testimonials .company-box .company.recurse {
+    background-image: url(/static/images/landing-page/logos/recurse.png);
+    background-color: transparent;
+}
+
+.portico-landing.hello .testimonials .company-box .company.solano {
+    background-image: url(/static/images/landing-page/logos/solano.png);
+    background-color: transparent;
+}
+
+.portico-landing.hello .testimonials .company-box .company.veelo {
+    background-image: url(/static/images/landing-page/logos/veelo.png);
+    background-color: transparent;
+}
+
+.portico-landing.hello .testimonials .company-box .company.panjiva {
+    background-image: url(/static/images/landing-page/logos/panjiva.png);
+    background-color: transparent;
+}
+
+.portico-landing.hello .testimonials .company-box .company.cmt {
+    background-image: url(/static/images/landing-page/logos/cambridge-mobile-telematics.png);
+    background-color: transparent;
+}
+
+.portico-landing.hello .testimonials .company-box .company.levelup {
+    background-image: url(/static/images/landing-page/logos/levelup.png);
+    background-color: transparent;
+}
+
+.portico-landing.hello .apps {
+    padding: 80px;
+
+    background: #50C9C3;
+    background: -webkit-linear-gradient(145deg, #25b197, #4bb4cc);
+    background: linear-gradient(145deg, #4bb4cc, #25b197);
+
+    color: #fff;
+}
+
+.portico-landing.hello .apps .arrow {
+    color: #fff;
+    font-weight: 400;
+}
+
+.portico-landing.hello .apps .arrow::before {
+    background-color: #fff;
+}
+
+.portico-landing.hello .apps .left-side,
+.portico-landing.hello .apps .right-side {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.portico-landing.hello .apps .left-side {
+    width: calc(60% - 4px);
+}
+
+.portico-landing.hello .apps .right-side {
+    width: calc(40% - 4px);
+    text-align: center;
+}
+
+.portico-landing.hello .apps .left-side .content {
+    width: 650px;
+    margin: 0 auto 50px auto;
+}
+
+.portico-landing.hello .apps .left-side .platform-icons {
+    text-align: center;
+}
+
+.portico-landing.hello .apps .left-side .platform-icons .group h2 {
+    font-size: 1.5em;
+}
+
+.portico-landing.hello .apps .left-side .platform-icons .group {
+    display: inline-block;
+    vertical-align: top;
+    margin: 0px 30px;
+
+    text-align: center;
+}
+
+.portico-landing.hello .apps .left-side .platform-icons .group a {
+    color: inherit;
+}
+
+.portico-landing.hello .apps .left-side .platform-icons .group i {
+    display: inline-block;
+    width: 80px;
+
+    font-size: 3.5em;
+}
+
+.portico-landing.hello .apps .arrow::after {
+    -webkit-filter: brightness(4) saturate(0);
+    -moz-filter: brightness(4) saturate(0);
+    filter: brightness(4) saturate(0);
+}
+
+.portico-landing.hello .call-to-action-bottom {
+    position: relative;
+    padding: 125px 100px 20px 100px;
+    margin-top: 0px;
+
+    background-color: rgb(32, 39, 51);
+}
+
+.portico-landing.hello .call-to-action-bottom button {
+    display: block;
+    margin: 20px auto 0 auto;
+    padding: 12px 25px 10px 25px;
+
+    font-size: 1.2rem;
+    color: #bac0cc;
+
+    border: 1px solid #bac0cc;
+    background: transparent;
+
+    transition: all 0.2s ease;
+}
+
+.portico-landing.hello .call-to-action-bottom button:hover {
+    border-color: #fff;
+    background: #fff;
+    color: #414e67;
+}
+
+.portico-landing.hello .call-to-action-bottom h1 {
+    color: #fff;
+    text-align: center;
+    margin-top: 20px;
+}
+
+.portico-landing.hello .call-to-action-bottom .zulip-octopus {
+    margin: 130px auto 0 auto;
+    width: 30px;
+    height: 30px;
+    background-image: url(/static/images/landing-page/zulip-octopus.png);
+    background-size: cover;
+}
+
+.footer.hello {
+    display: block;
+}
+
+.footer.hello li a {
+    color: #bac0cc;
+}
+
+.footer.hello li a:hover {
+    color: #fff;
 }
 
 /* -- apps page -- */
@@ -695,6 +1367,83 @@ a:not(.no-style):hover:before {
     width: 195px;
 }
 
+.portico-landing.hello .apps .screen {
+    display: inline-block;
+    margin: 0px 10px;
+    text-align: left;
+}
+
+
+.portico-landing.hello .apps .screen.ios {
+    width: 200px;
+    height: 350px;
+    padding: 30px 0px;
+    border-radius: 20px;
+
+    -webkit-transform: translateY(50px);
+
+    background-color: #fff;
+}
+
+.portico-landing.hello .apps .screen.android {
+    width: 200px;
+    height: 370px;
+    padding: 10px 0px 30px 0px;
+    border-radius: 20px;
+
+    -webkit-transform: translateY(-50px);
+
+    background: linear-gradient(90deg, #444 0%, #555 8%, #555 92%, #444 100%);
+}
+
+.portico-landing.hello .apps .screen .center-page {
+    height: calc(100% - 20px);
+}
+
+.portico-landing.hello .apps .screen .center-page .message-feed {
+    margin-top: 10px;
+}
+
+.portico-landing.hello .apps .screen.ios::before {
+    top: 17px;
+    left: calc(50% - 20px);
+
+    width: 40px;
+    height: 5px;
+    background-color: #ccc;
+}
+
+.portico-landing.hello .apps .screen.ios::after {
+    top: auto;
+    bottom: 7px;
+    left: calc(50% - 12.5px);
+    background-color: #ccc;
+}
+
+.portico-landing.hello .apps .screen.android::before {
+    content: none;
+}
+
+.portico-landing.hello .apps .screen.android::after {
+    top: auto;
+    bottom: 10px;
+    left: calc(50% - 17.5px);
+    background-color: #ccc;
+
+    border-radius: 8px;
+    background-color: #222;
+    width: 35px;
+    height: 20px;
+}
+
+.portico-landing.hello .apps .screen.ios .main-page {
+    border-color: #ddd;
+}
+
+.portico-landing.hello .apps .screen.android .main-page {
+    border-color: #222;
+}
+
 /* -- integrations page css -- */
 .portico-landing.integrations {
     color: #444;
@@ -831,6 +1580,16 @@ a:not(.no-style):hover:before {
     }
 }
 
+@media (max-width: 1295px) {
+    .portico-landing.hello .apps .right-side {
+        display: none;
+    }
+
+    .portico-landing.hello .apps .left-side {
+        width: 100%;
+    }
+}
+
 @media (max-width: 1100px) {
     .feature-block .flex {
         height: 130px;
@@ -891,6 +1650,47 @@ a:not(.no-style):hover:before {
         width: 100%;
         margin: 0;
     }
+
+    .portico-landing.hello .screen.hero-screen {
+        width: 420px;
+        height: 282px;
+        padding: 65px 117px;
+    }
+
+    .portico-landing.hello .screen.hero-screen .main-page {
+        overflow: hidden;
+        transform: translateY(-12px) translateX(2px);
+    }
+
+    .screen.hero-screen .col-4 .action-block {
+        margin: 10px;
+    }
+
+    .screen.hero-screen .line {
+        height: 4px;
+        margin: 4px 0px;
+    }
+
+    .screen .message-feed .message .content {
+        top: -12px;
+    }
+
+    .portico-landing.hello .apps {
+        padding: 80px 50px;
+    }
+
+    .portico-landing.hello .apps .left-side .content {
+        width: 100%;
+    }
+
+    .portico-landing.hello .testimonials .quote-container {
+        width: 100%;
+    }
+
+    .portico-landing.hello .testimonials hr,
+    .portico-landing.hello .testimonials .company-container {
+        width: 100%;
+    }
 }
 
 @media (max-width: 768px) {
@@ -946,6 +1746,24 @@ a:not(.no-style):hover:before {
     .platform.description {
         width: 100% !important;
     }
+
+    .portico-landing.hello .hero header {
+        width: 600px;
+    }
+
+    .portico-landing.hello .apps .left-side .content {
+        width: auto;
+    }
+
+    .portico-landing.hello .screen.hero-screen {
+        width: 300px;
+        height: 201px;
+        padding: 43px 73px;
+    }
+
+    .portico-landing.hello .features .col-3 {
+        width: 100%;
+    }
 }
 
 @media (max-width: 666px) {
@@ -953,6 +1771,22 @@ a:not(.no-style):hover:before {
     .main {
         width: calc(100% - 50px);
         margin: 0 auto;
+    }
+
+    .portico-landing.hello .hero header {
+        width: auto;
+    }
+
+    .portico-landing.hello .screen.hero-screen {
+        display: none;
+    }
+
+    .portico-landing.hello .hero {
+        padding-bottom: 100px;
+    }
+
+    .portico-landing.hello .hero .waves {
+        height: 450px;
     }
 
     nav ul {
@@ -964,7 +1798,7 @@ a:not(.no-style):hover:before {
         display: inline-block;
     }
 
-    nav #hamburger {
+    nav .hamburger {
         display: inline-block;
         float: right;
     }
@@ -1051,6 +1885,11 @@ a:not(.no-style):hover:before {
 
     .portico-landing.apps .main .details-container {
         width: 100%;
+    }
+
+    .portico-landing.hello .testimonials .company-box .company {
+        margin: 10px;
+        width: calc(33% - 24px);
     }
 }
 
