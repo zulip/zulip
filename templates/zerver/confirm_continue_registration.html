@@ -1,0 +1,51 @@
+{% extends "zerver/portico_signup.html" %}
+
+{% block portico_content %}
+<div class="app register-page">
+    <div class="app-main register-page-container">
+        <div class="center-container">
+            <div class="center-block">
+                <div class="register-form">
+                    <p class="lead">
+                        <div class="register-page-header">{{ _("Account not found!") }}</div>
+                    </p>
+                    {% if invalid_email %}
+                    {# If the email address is invalid, we can't send the user #}
+                    {# to the preregistered user code path. #}
+                    <p>
+                        {% trans %}
+                        Please click the following button if you wish to register.
+                        {% endtrans %}
+                    </p>
+                    <a href='/register/' class="button-new sea-green">Register</a>
+                    {% else %}
+                    <p>
+                        {% trans %}
+                        You attempted to login using {{ email }}, but {{ email }} does
+                        not have an account in this organization. If you'd like, you can
+                        try to register a new account with this email address.
+                        {% endtrans %}
+                    </p>
+                    {# TODO: Ideally, this should use whatever auth #}
+                    {# method the user had used to get here, not just #}
+                    {# send an email. #}
+                    <form class="form-inline" id="send_confirm" name="send_confirm"
+                        action="/register/" method="post">
+                        {{ csrf_input }}
+                        <input type="hidden"
+                               id="email"
+                               name="email"
+                               value="{{ email }}" />
+                        <input type="submit"
+                               class="button btn btn-primary btn-large register-button"
+                               value="{{ _("Continue to registration?") }}"/>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="footer-padder"></div>
+</div>
+
+{% endblock %}
