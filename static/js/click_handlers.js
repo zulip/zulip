@@ -323,6 +323,14 @@ $(function () {
         });
     }());
 
+    (function () {
+        var sel = ["#group-pm-list", "#stream_filters", "#global_filters", "#user_presences"].join(", ");
+
+        $(sel).on("click", "a", function () {
+            this.blur();
+        });
+    }());
+
     popovers.register_click_handlers();
     stream_popover.register_click_handlers();
     notifications.register_click_handlers();
