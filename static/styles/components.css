@@ -263,15 +263,11 @@
     display: none;
 }
 
-.new-style label.checkbox + label {
-    width: calc(100% - 40px);
-}
-
 .new-style label.checkbox input[type=checkbox] ~ span {
     display: inline-block;
     vertical-align: middle;
     position: relative;
-    top: 0px;
+    top: -2px;
 
     padding: 1px;
     margin: 0px 5px 0px 0px;

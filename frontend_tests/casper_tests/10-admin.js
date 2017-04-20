@@ -20,8 +20,8 @@ casper.waitForSelector('#settings_overlay_container.show', function () {
 });
 
 // Test setting limiting stream creation to administrators
-casper.waitForSelector('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]', function () {
-    casper.click('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]');
+casper.then(function () {
+    casper.click('#id_realm_create_stream_by_admins_only + span');
     casper.click('form.admin-realm-form button.button');
 });
 
@@ -44,14 +44,15 @@ casper.then(function () {
     casper.click('a[href^="#organization"]');
 });
 
-casper.waitUntilVisible('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]', function () {
+casper.waitUntilVisible('#id_realm_create_stream_by_admins_only + span', function () {
     // Test Setting was saved
     casper.test.assertEval(function () {
-        return document.querySelector('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]').checked;
+        return document.querySelector('#id_realm_create_stream_by_admins_only').checked;
     }, 'Only admins may create streams Setting saved');
 
     // Deactivate setting
-    casper.click('input[type="checkbox"][id="id_realm_create_stream_by_admins_only"]');
+
+    casper.click('#id_realm_create_stream_by_admins_only + span');
     casper.click('form.admin-realm-form button.button');
 });
 
@@ -251,8 +252,8 @@ casper.then(function () {
 // Test authentication methods setting
 casper.then(function () {
     casper.click("li[data-section='auth-methods']");
-    casper.waitUntilVisible(".method_row[data-method='Email'] input[type='checkbox']", function () {
-        casper.click(".method_row[data-method='Email'] input[type='checkbox']");
+    casper.waitUntilVisible(".method_row[data-method='Email'] input[type='checkbox'] + span", function () {
+        casper.click(".method_row[data-method='Email'] input[type='checkbox'] + span");
         casper.click('form.admin-realm-form button.button');
     });
 });
@@ -277,7 +278,7 @@ casper.then(function () {
     casper.click('#settings-dropdown');
     casper.click('a[href^="#organization"]');
 
-    casper.waitUntilVisible(".method_row[data-method='Email'] input[type='checkbox']", function () {
+    casper.waitUntilVisible(".method_row[data-method='Email'] input[type='checkbox'] + span", function () {
         // Test Setting was saved
         casper.test.assertEval(function () {
             return !(document.querySelector(".method_row[data-method='Email'] input[type='checkbox']").checked);
@@ -287,7 +288,7 @@ casper.then(function () {
 
 // Deactivate setting--default is checked
 casper.then(function () {
-    casper.click(".method_row[data-method='Email'] input[type='checkbox']");
+    casper.click(".method_row[data-method='Email'] input[type='checkbox'] + span");
     casper.click('form.admin-realm-form button.button');
     casper.waitUntilVisible('#admin-realm-authentication-methods-status', function () {
         casper.test.assertSelectorHasText('#admin-realm-authentication-methods-status', 'Authentication methods saved!');
