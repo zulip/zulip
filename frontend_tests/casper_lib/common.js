@@ -113,7 +113,7 @@ exports.then_log_out = function () {
         });
 
     });
-    casper.waitUntilVisible(".login-page-header", function () {
+    casper.waitUntilVisible(".login-page-container", function () {
         casper.test.assertUrlMatch(/accounts\/login\/$/);
         casper.test.info("Logged out");
     });

@@ -2,8 +2,10 @@
 
 {# Login page. #}
 {% block portico_content %}
-<div class="app login-page">
-    <div class="app-main login-page-container">
+<div class="app login-page flex full-page">
+    <div class="app-main login-page-container dev-login">
+        <div class="bg-image"></div>
+
         <h4 class="login-page-header">{{ _('Click on a user to log in!') }}</h4>
         <p class="devlogin_subheader">{{ _('(Or visit the <a href="/login">normal login page</a>)') }}</p>
         <form name="direct_login_form" id="direct_login_form" method="post" class="login-form"
@@ -11,20 +13,26 @@
             {{ csrf_input }}
             <div class="control-group">
                 <div class="controls">
-                    <p>{{ _('Administrators') }}</p>
-                    {% for user_email in direct_admins %}
-                    <p><input type="submit" name="direct_email" class="btn-direct btn-admin" value="{{ user_email }}" /></p>
-                    {% endfor %}
+                    <div class="group">
+                        <h2>{{ _('Administrators') }}</h2>
+                        {% for user_email in direct_admins %}
+                        <p><input type="submit" name="direct_email" class="btn-direct btn-admin" value="{{ user_email }}" /></p>
+                        {% endfor %}
+                    </div>
 
-                    <p>{{ _('Normal users') }}</p>
-                    {% for user_email in direct_users %}
-                    <p><input type="submit" name="direct_email" class="btn-direct btn-user" value="{{ user_email }}" /></p>
-                    {% endfor %}
+                    <div class="group">
+                        <h2>{{ _('Normal users') }}</h2>
+                        {% for user_email in direct_users %}
+                        <p><input type="submit" name="direct_email" class="btn-direct btn-user" value="{{ user_email }}" /></p>
+                        {% endfor %}
+                    </div>
 
-                    <p>{{ _('Community users') }}</p>
-                    {% for user_email in community_users %}
-                    <p><input type="submit" name="direct_email" class="btn-direct btn-user" value="{{ user_email }}" /></p>
-                    {% endfor %}
+                    <div class="group">
+                        <h2>{{ _('Community users') }}</h2>
+                        {% for user_email in community_users %}
+                        <p><input type="submit" name="direct_email" class="btn-direct btn-user" value="{{ user_email }}" /></p>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
         </form>

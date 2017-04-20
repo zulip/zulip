@@ -38,6 +38,86 @@ html {
     box-shadow: 0px 0px 100px rgba(0,0,0,0.2);
 }
 
+.find-team-page-container #find_my_team i {
+    font-size: 0.8em;
+}
+
+.login-page-container .group {
+    margin: 0px 20px;
+    display: inline-block;
+}
+
+.app-main .login-page-header {
+    font-size: 1.5em;
+    font-weight: 300;
+    margin: 0px;
+    height: 0px;
+}
+
+.login-page-container.dev-login {
+    margin-top: 20px;
+    border: none;
+}
+
+.login-page-container.dev-login .login-form {
+    width: auto;
+}
+
+.app-main .login-page-header {
+    font-size: 1.5em;
+    font-weight: 300;
+    margin-top: 0px;
+    transform: translateX(-15px) translateY(-60px);
+    text-align: left;
+}
+
+.app-main .login-page-container.dev-login .login-page-header {
+    height: auto;
+    margin-top: 20px;
+    transform: none;
+    text-align: center;
+}
+
+.app-main .login-page-container.dev-login h2 {
+    font-size: 1em;
+    font-weight: 500;
+}
+
+.app-main .login-page-container .group {
+    display: inline-block;
+    vertical-align: top;
+
+    margin: 0px 20px;
+}
+
+.app-main.find-team-page-container {
+    width: 456px;
+    margin-top: calc(50vh - 200px);
+
+    font-weight: 400;
+}
+
+.find-team-page-container h3,
+.forgot-password-container h3 {
+    margin-top: 0px;
+
+    font-weight: 300;
+    font-size: 2em;
+}
+
+.forgot-password-container h3 {
+    margin-bottom: 0px;
+}
+
+.forgot-password-container {
+    width: 503px;
+    margin-top: calc(50vh - 150px);
+}
+
+.forgot-password-container form {
+    margin-bottom: 0px;
+}
+
 .header {
     padding: 15px 0px 15px 0px;
 }
@@ -121,15 +201,21 @@ html {
 }
 
 .new-style .alert {
-    height: 0;
-
     padding: 0;
+    margin-bottom: 0;
+
     font-weight: 500;
     font-size: 0.8em;
+    line-height: 1.2;
     background-color: transparent;
 
     border: none;
     color: rgb(190, 88, 88);
+
+}
+
+.new-style .right-side .alert {
+    max-width: 328px;
 }
 
 .new-style .input-box input[type=text],
@@ -256,9 +342,10 @@ html {
     height: 0px;
     margin: 0px;
 
-    font-size: 1.5em;
+    font-size: 1.5rem;
+    text-align: center;
 
-    transform: translateX(-32px) translateY(-75px);
+    transform: translateY(-70px);
 }
 
 .new-style button {
@@ -466,6 +553,11 @@ button.login-google-button {
     transform: translateX(15px) translateY(13px);
 }
 
+.login-page-container .right-side .actions {
+    margin: 20px 0px 0px;
+    text-align: left;
+}
+
 .split-view .actions a {
     color: #54b8a7;
     text-decoration: none;
@@ -538,7 +630,6 @@ button.login-google-button {
 
 .split-view .left-side {
     width: 500px;
-    min-height: 372px;
     border-right: 1px solid #eee;
 }
 
@@ -558,20 +649,24 @@ button.login-google-button {
     margin-right: 10px;
 }
 
-@media (max-width: 920px) {
+@media (max-width: 950px) {
     .split-view .left-side {
         width: 400px;
     }
 }
 
-@media (max-width: 820px) {
+@media (max-width: 850px) {
     .split-view .left-side {
         width: 350px;
     }
 }
 
 
-@media (max-width: 770px) {
+@media (max-width: 795px) {
+    .register-account #registration {
+        width: 328px;
+    }
+
     .register-page-container,
     .login-page-container {
         width: 400px;
@@ -580,15 +675,39 @@ button.login-google-button {
 
     .split-view.flex {
         display: block;
-        margin: 0 auto;
+        margin: 20px auto 0 auto;
 
         text-align: center;
         height: auto;
     }
 
+    .split-view .org-header .avatar {
+        width: 50px;
+        height: 50px;
+    }
+
+    .split-view .org-header .info-box {
+        margin-top: 0px;
+    }
+
+    .split-view .org-header .info-box .organization-name {
+        font-size: 2em;
+    }
+
+    .split-view .org-header .info-box .organization-path {
+        margin-top: 0px;
+    }
+
     .split-view .left-side,
     .split-view .right-side {
         display: block;
+        margin: 0 auto !important;
+        max-width: 100%;
+    }
+
+    .split-view .left-side + .right-side {
+        border-left: none;
+        padding: 0;
         margin: 0 auto;
     }
 
@@ -597,9 +716,29 @@ button.login-google-button {
         margin-right: 0px;
         min-height: 0px;
         margin-bottom: 20px;
+        width: 324px;
+    }
+
+    .split-view .left-side .description {
+        margin: 20px 0px;
     }
 
     .split-view .right-side {
         width: 324px;
+    }
+
+    .new-style .get-started {
+        transform: translateY(-70px);
+    }
+}
+
+@media (max-width: 500px) {
+    .app-main.register-page-container,
+    .app-main.login-page-container,
+    .app-main.find-team-page-container,
+    .app-main.forgot-password-container {
+        display: inline-block;
+        padding: 20px;
+        width: calc(100% - 40px);
     }
 }
