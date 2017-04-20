@@ -172,14 +172,15 @@ def start_google_oauth2(request):
     url = reverse('zerver.views.auth.send_oauth_request_to_google')
     return redirect_to_main_site(request, url)
 
-def redirect_to_main_site(request, url):
-    # type: (HttpRequest, Text) -> HttpResponse
+def redirect_to_main_site(request, url, is_signup=False):
+    # type: (HttpRequest, Text, bool) -> HttpResponse
     main_site_uri = ''.join((
         settings.EXTERNAL_URI_SCHEME,
         settings.EXTERNAL_HOST,
         url,
     ))
-    params = {'subdomain': get_subdomain(request)}
+    params = {'subdomain': get_subdomain(request),
+              'is_signup': '1' if is_signup else '0'}
     return redirect(main_site_uri + '?' + urllib.parse.urlencode(params))
 
 def start_social_login(request, backend):
