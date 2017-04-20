@@ -7,12 +7,28 @@ set_global('page_params', {is_zephyr_mirror_realm: false});
 add_dependencies({
     stream_data: 'js/stream_data.js',
     people: 'js/people.js',
+    typeahead_helper: 'js/typeahead_helper.js',
 });
+
+var test_streams = [
+    {name: 'Dev', pin_to_top: false},
+    {name: 'Denmark', pin_to_top: true},
+    {name: 'dead', pin_to_top: false},
+];
 
 stream_data.create_streams([
     {name: 'Dev', subscribed: true, color: 'blue', stream_id: 1},
     {name: 'Linux', subscribed: true, color: 'red', stream_id: 2},
 ]);
+
+global.stream_data.is_active = function (stream_name) {
+    return stream_name !== 'dead';
+};
+
+test_streams = typeahead_helper.sort_streams(test_streams, 'd');
+assert.deepEqual(test_streams[0].name, "Denmark"); // Pinned streams first
+assert.deepEqual(test_streams[1].name, "Dev"); // Active streams next
+assert.deepEqual(test_streams[2].name, "dead"); // Inactive streams last
 
 var matches = [
     {

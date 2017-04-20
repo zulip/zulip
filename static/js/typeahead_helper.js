@@ -207,14 +207,26 @@ exports.compare_by_sub_count = function (stream_a, stream_b) {
     return stream_a.subscribers.num_items() < stream_b.subscribers.num_items();
 };
 
+// Gives stream a score from 0 to 3 based on its activity
+function activity_score(stream) {
+    var stream_score = 0;
+    if (stream.pin_to_top) {
+        stream_score += 2;
+    }
+    // Note: A pinned stream may accumulate a 3rd point if it is active
+    if (stream_data.is_active(stream.name)) {
+        stream_score += 1;
+    }
+    return stream_score;
+}
+
 // Find which stream comes first in the sidebar listing order
 exports.compare_by_sidebar = function (stream_a, stream_b) {
-    var a_score = stream_data.is_active(stream_a.name) + stream_a.pin_to_top * 2;
-    var b_score = stream_data.is_active(stream_b.name) + stream_b.pin_to_top * 2;
-    if (a_score === b_score) {
-        return util.strcmp(stream_a.name, stream_b.name);
+    var diff = activity_score(stream_b) - activity_score(stream_a);
+    if (diff !== 0) {
+        return diff;
     }
-    return a_score < b_score;
+    return exports.compare_by_sub_count(stream_a, stream_b);
 };
 
 exports.sort_streams = function (matches, query) {
