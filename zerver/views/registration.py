@@ -40,8 +40,9 @@ import ujson
 
 from six.moves import urllib
 
-def redirect_and_log_into_subdomain(realm, full_name, email_address):
-    # type: (Realm, Text, Text) -> HttpResponse
+def redirect_and_log_into_subdomain(realm, full_name, email_address,
+                                    is_signup=False):
+    # type: (Realm, Text, Text, bool) -> HttpResponse
     subdomain_login_uri = ''.join([
         realm.uri,
         reverse('zerver.views.auth.log_into_subdomain')
@@ -50,7 +51,8 @@ def redirect_and_log_into_subdomain(realm, full_name, email_address):
     domain = '.' + settings.EXTERNAL_HOST.split(':')[0]
     response = redirect(subdomain_login_uri)
 
-    data = {'name': full_name, 'email': email_address, 'subdomain': realm.subdomain}
+    data = {'name': full_name, 'email': email_address, 'subdomain': realm.subdomain,
+            'is_signup': is_signup}
     # Creating a singed cookie so that it cannot be tampered with.
     # Cookie and the signature expire in 15 seconds.
     response.set_signed_cookie('subdomain.signature',

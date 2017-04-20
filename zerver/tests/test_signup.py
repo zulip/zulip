@@ -18,7 +18,8 @@ from zilencer.models import Deployment
 from zerver.forms import HomepageForm, WRONG_SUBDOMAIN_ERROR
 from zerver.lib.actions import do_change_password
 from zerver.views.invite import get_invitee_emails_set
-from zerver.views.registration import confirmation_key
+from zerver.views.registration import (confirmation_key,
+                                       redirect_and_log_into_subdomain)
 from zerver.models import (
     get_realm, get_prereg_user_by_email, get_user_profile_by_email,
     get_unique_open_realm, completely_open,
@@ -44,7 +45,7 @@ from zerver.lib.digest import send_digest_email
 from zerver.lib.notifications import (
     enqueue_welcome_emails, one_click_unsubscribe_link, send_local_email_template_with_delay)
 from zerver.lib.test_helpers import find_pattern_in_email, find_key_by_email, queries_captured, \
-    HostRequestMock
+    HostRequestMock, unsign_subdomain_cookie
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
@@ -61,6 +62,25 @@ from six.moves import urllib
 from six.moves import range
 from typing import Any, Text
 import os
+
+class RedirectAndLogIntoSubdomainTestCase(ZulipTestCase):
+    def test_cookie_data(self):
+        # type: () -> None
+        realm = Realm.objects.all().first()
+        name = 'Hamlet'
+        email = 'hamlet@zulip.com'
+        response = redirect_and_log_into_subdomain(realm, name, email)
+        data = unsign_subdomain_cookie(response)
+        self.assertDictEqual(data, {'name': name, 'email': email,
+                                    'subdomain': realm.subdomain,
+                                    'is_signup': False})
+
+        response = redirect_and_log_into_subdomain(realm, name, email,
+                                                   is_signup=True)
+        data = unsign_subdomain_cookie(response)
+        self.assertDictEqual(data, {'name': name, 'email': email,
+                                    'subdomain': realm.subdomain,
+                                    'is_signup': True})
 
 class AddNewUserHistoryTest(ZulipTestCase):
     def test_add_new_user_history_race(self):
