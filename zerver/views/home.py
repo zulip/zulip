@@ -26,7 +26,6 @@ from zerver.lib.i18n import get_language_list, get_language_name, \
 from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.utils import statsd, get_subdomain
-from zproject.backends import password_auth_enabled
 
 import calendar
 import datetime
@@ -209,10 +208,6 @@ def home_real(request):
         server_inline_image_preview = settings.INLINE_IMAGE_PREVIEW,
         server_inline_url_embed_preview = settings.INLINE_URL_EMBED_PREVIEW,
 
-        # realm data.
-        # TODO: Move all of these data to register_ret and pull from there
-        password_auth_enabled = password_auth_enabled(user_profile.realm),
-
         # user_profile data.
         # TODO: Move all of these data to register_ret and pull from there
         fullname              = user_profile.full_name,
@@ -308,6 +303,7 @@ def home_real(request):
         'realm_name',
         'realm_description',
         'realm_name_changes_disabled',
+        'realm_password_auth_enabled',
         'realm_presence_disabled',
         'realm_restricted_to_domain',
         'realm_show_digest_email',
