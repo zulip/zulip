@@ -561,7 +561,7 @@ function validate_stream_message() {
         return false;
     }
 
-    if (page_params.mandatory_topics) {
+    if (page_params.realm_mandatory_topics) {
         var topic = compose_state.subject();
         if (topic === "") {
             compose_error(i18n.t("Please specify a topic"), $("#subject"));
