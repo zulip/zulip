@@ -758,6 +758,13 @@ def do_send_messages(messages_maybe_none):
         message['message'].rendered_content_version = bugdown_version
         links_for_embed |= message['message'].links_for_preview
 
+        for mentioned_id in message['message'].mentions_user_ids:
+            mentioned_user = get_user_profile_by_id(mentioned_id)
+            if mentioned_user.is_bot and mentioned_user.bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
+                TRIGGER_RE = re.compile(u'(@\*\*.*\*\* )(.*)')
+                command = TRIGGER_RE.search(message['message'].content).group(2)
+                message['message'].outgoing_webhook_bot_triggers.append((mentioned_user.email, command))
+
     for message in messages:
         message['message'].update_calculated_fields()
 
