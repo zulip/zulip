@@ -177,7 +177,7 @@ exports.set_up = function () {
 
     avatar.build_user_avatar_widget(upload_avatar);
 
-    if (page_params.name_changes_disabled) {
+    if (page_params.realm_name_changes_disabled) {
         $(".name_change_container").hide();
     }
 
