@@ -92,11 +92,9 @@ function failed_listing_users(xhr) {
 function populate_users(realm_people_data) {
     var users_table = $("#admin_users_table");
     var deactivated_users_table = $("#admin_deactivated_users_table");
-    var bots_table = $("#admin_bots_table");
     // Clear table rows, but not the table headers
     users_table.find("tr.user_row").remove();
     deactivated_users_table.find("tr.user_row").remove();
-    bots_table.find("tr.user_row").remove();
 
     var active_users = [];
     var deactivated_users = [];
@@ -116,12 +114,22 @@ function populate_users(realm_people_data) {
     deactivated_users = _.sortBy(deactivated_users, 'full_name');
     bots = _.sortBy(bots, 'full_name');
 
-    var bots_table_html = "";
-    _.each(bots, function (user) {
-        var bot_html = templates.render("admin_user_list", {user: user, can_modify: page_params.is_admin});
-        bots_table_html = bots_table_html.concat(bot_html);
-    });
-    bots_table.append(bots_table_html);
+    var $bots_table = $("#admin_bots_table");
+    list_render($bots_table, bots, {
+        name: "admin_bot_list",
+        modifier: function (item) {
+            return templates.render("admin_user_list", { user: item, can_modify: page_params.is_admin });
+        },
+        filter: {
+            element: $bots_table.closest(".settings-section").find(".search"),
+            callback: function (item, value) {
+                return (
+                    item.full_name.toLowerCase().match(value) ||
+                    item.email.toLowerCase().match(value)
+                );
+            },
+        },
+    }).init();
 
     _.each(active_users, function (user) {
         var activity_rendered;
