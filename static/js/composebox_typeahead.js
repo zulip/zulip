@@ -289,6 +289,11 @@ exports.compose_content_begins_typeahead = function (query) {
             return false;
         }
 
+        // Don't autocomplete if there is a space following a '#'
+        if (current_token[0] === " ") {
+            return false;
+        }
+
         this.completing = 'stream';
         this.token = current_token.substring(current_token.indexOf("#")+1);
         return stream_data.subscribed_subs();

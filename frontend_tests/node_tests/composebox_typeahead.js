@@ -59,6 +59,8 @@ global.people.add({
     assert_typeahead_equals("test @", false);
     assert_typeahead_equals("test no@o", false);
     assert_typeahead_equals("test :-P", false);
+    assert_typeahead_equals("test # a", false);
+    assert_typeahead_equals("test #", false);
 
     var all_items = [
         {
