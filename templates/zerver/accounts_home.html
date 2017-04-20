@@ -9,37 +9,62 @@ $(function () {
     autofocus('#email');
 });
 </script>
-<div class="app register-page">
-    <div class="app-main register-page-container">
-        <div class="center-container">
-            <div class="center-block">
-                <div class="register-form">
-                    <p class="lead">
-                        <div class="register-page-header">{{ _("Let's get started") }}…</div>
-                    </p>
-                    <form class="form-inline" id="send_confirm" name="email_form"
-                        action="{{ current_url() }}" method="post">
-                        {{ csrf_input }}
-                        <input type="text" class="email required" placeholder="{{ _("Enter your work email address") }}"
-                               id="email" name="email"/>
-                        <input type="submit" class="button btn btn-primary btn-large register-button" value="{{ _("Sign up") }}"/>
-                    </form>
-                    <div id="errors"></div>
-                    {% if form.email.errors %}
-                        {% for error in form.email.errors %}
-                        <div class="alert alert-error">{{ error }}</div>
-                        {% endfor %}
-                    {% endif %}
+<div class="bg-image"></div>
 
-                    <div class="alert alert-pitch" id="company-email">{% trans %}Please use your
-                        company email address to sign up. Otherwise, we won’t be able to
-                    connect you with your coworkers.{% endtrans %}</div>
-                    {% if google_auth_enabled %}
-                    <div class="register-google">
-                        <a href="{{ url('zerver.views.auth.start_google_oauth2') }}" class="zocial google register-google-button">{{ _("Sign up with Google") }}</a>
+<div class="app register-page split-view flex full-page">
+    <div class="app-main register-page-container">
+        <div class="register-form new-style">
+            <div class="lead">
+                <h1 class="get-started">{{ _("Sign up for Zulip") }}</h1>
+            </div>
+            {% if realm_name %}
+            <div class="left-side">
+                <div class="org-header">
+                    <div class="avatar" style="background-image: url('{{ realm_icon }}')"></div>
+                    <div class="info-box">
+                        <div class="organization-name">{{ realm_name }}</div>
+                        <div class="organization-path">{{ realm_uri }}</div>
                     </div>
-                    {% endif %}
                 </div>
+                <div class="description">
+                    {{ realm_description }}
+                </div>
+            </div>
+            {% endif %}
+            <div class="right-side">
+                <form class="form-inline" id="send_confirm" name="email_form"
+                    action="{{ current_url() }}" method="post">
+                    {{ csrf_input }}
+
+                    <div class="input-box no-validate">
+                        <input type="email" id="email" class="email" name="email" value="" required />
+                        <label>Email</label>
+                        <div class="required"></div>
+                        <img class="valid" src="/static/images/checkbox-valid.svg" />
+                    </div>
+
+                    <button class="full-width" type="submit" name="">{{ _('Sign up') }}</button>
+                </form>
+
+                <div id="errors"></div>
+                {% if form.email.errors %}
+                    {% for error in form.email.errors %}
+                    <div class="alert alert-error">{{ error }}</div>
+                    {% endfor %}
+                {% endif %}
+
+                <div class="alert alert-pitch" id="company-email">{% trans %}Please use your
+                    company email address to sign up. Otherwise, we won’t be able to
+                connect you with your coworkers.{% endtrans %}</div>
+                {% if google_auth_enabled %}
+                <div class="or">or</div>
+
+                <div class="register-google">
+                    <a href="{{ url('zerver.views.auth.start_google_oauth2') }}">
+                        <button class="login-google-button full-width">{{ _('Sign up with Google') }}</button>
+                    </a>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>

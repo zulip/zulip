@@ -10,19 +10,28 @@ $(function () {
 });
 </script>
 
-<div class="app register-page">
-    <div class="app-main register-page-container">
+<div class="app register-page flex">
+    <div class="app-main register-page-container new-style">
+        <div class="bg-image"></div>
 
         <div class="register-form">
-            <p class="lead">
-                <div class="register-page-header">{{ _("Let's get started") }}…</div>
-            </p>
+            <div class="lead">
+                <h1 class="get-started">{{ _("Create your Zulip Organization") }}</h1>
+            </div>
             <form class="form-inline" id="send_confirm" name="email_form"
                 action="{{ current_url() }}" method="post">
                 {{ csrf_input }}
-                <input type="text" class="email required" placeholder="{{ _("Enter your work email address") }}"
-                       id="email" name="email"/>
-                <input type="submit" class="new-organization-button btn btn-primary btn-large register-button" value="{{ _("Create organization") }}"/>
+                <div class="input-box horizontal">
+                    <div class="inline-block relative">
+                        <input type="text" class="email required" placeholder="{{ _("Enter your work email address") }}"
+                               id="email" name="email" required />
+                        <label for="id_username">{{ _('Email') }}</label>
+                        <div class="required"></div>
+                        <img class="valid" src="/static/images/checkbox-valid.svg" />
+                    </div>
+
+                    <button type="submit" class="new-organization-button register-button">{{ _("Create organization") }}</button>
+                </div>
             </form>
             <div id="errors"></div>
             {% if form.email.errors %}

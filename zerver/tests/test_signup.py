@@ -117,7 +117,7 @@ class PasswordResetTest(ZulipTestCase):
 
         # test password reset template
         result = self.client_get('/accounts/password/reset/')
-        self.assert_in_response('Reset your password.', result)
+        self.assert_in_response('Reset your password', result)
 
         # start the password reset process by supplying an email address
         result = self.client_post('/accounts/password/reset/', {'email': email})

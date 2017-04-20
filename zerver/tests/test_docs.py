@@ -37,7 +37,7 @@ class DocPageTest(ZulipTestCase):
             self._test('/hello/', 'workplace chat that actually improves your productivity')
             self._test('/integrations/', 'require creating a Zulip bot')
             self._test('/devlogin/', 'Normal users')
-            self._test('/register/', 'get started')
+            self._test('/register/', 'Sign up for Zulip')
 
             result = self.client_get('/new-user/')
             self.assertEqual(result.status_code, 301)

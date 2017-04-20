@@ -5,8 +5,13 @@ from django.http import HttpRequest
 from django.conf import settings
 
 from zerver.models import UserProfile, get_realm
-from zproject.backends import (password_auth_enabled, dev_auth_enabled,
-                               google_auth_enabled, github_auth_enabled)
+from zproject.backends import (
+    any_oauth_backend_enabled,
+    dev_auth_enabled,
+    github_auth_enabled,
+    google_auth_enabled,
+    password_auth_enabled,
+)
 from zerver.lib.utils import get_subdomain
 from zerver.lib.realm_icon import get_realm_icon_url
 
@@ -71,6 +76,7 @@ def add_settings(request):
         'dev_auth_enabled': dev_auth_enabled(realm),
         'google_auth_enabled': google_auth_enabled(realm),
         'github_auth_enabled': github_auth_enabled(realm),
+        'any_oauth_backend_enabled': any_oauth_backend_enabled(realm),
         'development_environment': settings.DEVELOPMENT,
         'support_email': settings.ZULIP_ADMINISTRATOR,
         'find_team_link_disabled': settings.FIND_TEAM_LINK_DISABLED,

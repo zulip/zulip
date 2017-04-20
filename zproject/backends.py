@@ -77,6 +77,12 @@ def github_auth_enabled(realm=None):
     # type: (Optional[Realm]) -> bool
     return auth_enabled_helper([u'GitHub'], realm)
 
+def any_oauth_backend_enabled(realm=None):
+    # type: (Optional[Realm]) -> bool
+    """Used by the login page process to determine whether to show the
+    'OR' for login with Google"""
+    return auth_enabled_helper([u'GitHub', u'Google'], realm)
+
 def common_get_active_user_by_email(email, return_data=None):
     # type: (Text, Optional[Dict[str, Any]]) -> Optional[UserProfile]
     try:

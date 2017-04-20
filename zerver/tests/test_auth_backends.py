@@ -638,7 +638,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
             result = self.client_get(reverse('social:complete', args=['github']),
                                      info={'state': 'state'})
             self.assertEqual(result.status_code, 200)
-            self.assertIn("Let's get started", result.content.decode('utf8'))
+            self.assertIn("Sign up for Zulip", result.content.decode('utf8'))
             self.assertEqual(mock_get_email_address.call_count, 2)
 
         utils.BACKENDS = settings.AUTHENTICATION_BACKENDS
@@ -752,7 +752,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
                 mock.patch('logging.warning'):
             result = self.client_get('/accounts/login/subdomain/')
             self.assertEqual(result.status_code, 200)
-            self.assertIn("Let's get started", result.content.decode('utf8'))
+            self.assertIn("Sign up for Zulip", result.content.decode('utf8'))
 
     def test_user_cannot_log_into_nonexisting_realm(self):
         # type: () -> None
@@ -1346,7 +1346,7 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
                                           REMOTE_USER=email)
                 self.assertEqual(result.status_code, 200)
                 self.assertIs(get_session_dict_user(self.client.session), None)
-                self.assertIn(b"Let's get started", result.content)
+                self.assertIn(b"Sign up for Zulip", result.content)
 
     def test_login_failure_due_to_empty_subdomain(self):
         # type: () -> None
@@ -1358,7 +1358,7 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
                                           REMOTE_USER=email)
                 self.assertEqual(result.status_code, 200)
                 self.assertIs(get_session_dict_user(self.client.session), None)
-                self.assertIn(b"Let's get started", result.content)
+                self.assertIn(b"Sign up for Zulip", result.content)
 
     def test_login_success_under_subdomains(self):
         # type: () -> None
