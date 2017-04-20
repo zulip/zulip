@@ -17,7 +17,9 @@
                                 {{#if sender_is_bot}}
                                 <img class="bot-icon" title="{{t 'Bot' }}" src="/static/images/bot.svg" />
                                 {{/if}}
-                                {{{ status_message }}}
+                                <span class="status-message">
+                                    {{{ status_message }}}
+                                </span>
                                 {{#if_and last_edit_timestr include_sender}}
                                 <div class="message_edit_notice" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">{{t "EDITED" }}</div>
                                 {{/if_and}}

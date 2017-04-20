@@ -1083,15 +1083,15 @@ td.pointer {
 }
 
 .sender-status {
-    display: block;
-    left: 46px;
-    top: -26px;
-    padding-bottom: 6px;
-    padding-right: 35px;
+    display: inline-block;
+    margin: 8px 0px;
+    /* this normalizes the margin of the emoji reactions with normal messages. */
+    padding-bottom: 5px;
     vertical-align: middle;
     line-height: 18px;
     font-size: 14px;
     position: relative;
+    max-width: calc(100% - 50px);
 }
 
 .message_controls.sender-status-controls {
@@ -1274,7 +1274,7 @@ div.focused_table {
     display: block;
 }
 
-.include-sender .message_content {
+.include-sender .message_content:not(:empty) {
     margin-top: -16px;
 }
 
@@ -1284,6 +1284,10 @@ div.focused_table {
     margin-left: 46px;
     display: block;
     position: relative;
+}
+
+.message_content:empty {
+    display: none;
 }
 
 .message_edit_content {

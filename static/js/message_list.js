@@ -480,7 +480,7 @@ exports.MessageList.prototype = {
     },
 
     hide_edit_message: function MessageList_hide_edit_message(row) {
-        row.find(".message_content").show();
+        row.find(".message_content, .status-message").show();
         row.find(".message_edit").hide();
     },
 
