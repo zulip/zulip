@@ -45,6 +45,7 @@ class zulip::base {
              'missedmessage_email_senders',
              'missedmessage_emails',
              'missedmessage_mobile_notifications',
+             'outgoing_webhooks',
              'signups',
              'slow_queries',
              'user_activity',

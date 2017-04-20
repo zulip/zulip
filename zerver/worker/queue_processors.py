@@ -421,3 +421,11 @@ class FetchLinksEmbedData(QueueProcessingWorker):
                 realm)
             do_update_embedded_data(
                 message.sender, message, message.content, rendered_content)
+
+@assign_queue('outgoing_webhooks')
+class OutgoingWebhookWorker(QueueProcessingWorker):
+    def consume(self, event):
+        # type: (Mapping[str, Any]) -> None
+
+        # TODO: Implement this worker.
+        pass
