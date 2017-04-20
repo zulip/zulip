@@ -1084,7 +1084,7 @@ td.pointer {
 
 .sender-status {
     display: inline-block;
-    margin: 8px 0px;
+    margin: 8px 0px 8px -3px;
     /* this normalizes the margin of the emoji reactions with normal messages. */
     padding-bottom: 5px;
     vertical-align: middle;
