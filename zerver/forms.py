@@ -143,8 +143,8 @@ class HomepageForm(forms.Form):
         if not email_allowed_for_realm(email, realm):
             raise ValidationError(
                 _("Your email address, {email}, is not in one of the domains "
-                  "that are allowed to register for accounts in this organization."
-                ).format(string_id=realm.string_id, email=email))
+                  "that are allowed to register for accounts in this organization.").format(
+                      string_id=realm.string_id, email=email))
 
         if realm.is_zephyr_mirror_realm:
             email_is_not_mit_mailing_list(email)
