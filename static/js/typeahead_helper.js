@@ -207,17 +207,27 @@ exports.compare_by_sub_count = function (stream_a, stream_b) {
     return stream_a.subscribers.num_items() < stream_b.subscribers.num_items();
 };
 
+// Find which stream comes first in the sidebar listing order
+exports.compare_by_sidebar = function (stream_a, stream_b) {
+    var a_score = stream_data.is_active(stream_a.name) + stream_a.pin_to_top * 2;
+    var b_score = stream_data.is_active(stream_b.name) + stream_b.pin_to_top * 2;
+    if (a_score === b_score) {
+        return util.strcmp(stream_a.name, stream_b.name);
+    }
+    return a_score < b_score;
+};
+
 exports.sort_streams = function (matches, query) {
     var name_results = prefix_sort(query, matches, function (x) { return x.name; });
     var desc_results
         = prefix_sort(query, name_results.rest, function (x) { return x.description; });
 
     // Streams that start with the query.
-    name_results.matches = name_results.matches.sort(exports.compare_by_sub_count);
+    name_results.matches = name_results.matches.sort(exports.compare_by_sidebar);
     // Streams with descriptions that start with the query.
-    desc_results.matches = desc_results.matches.sort(exports.compare_by_sub_count);
+    desc_results.matches = desc_results.matches.sort(exports.compare_by_sidebar);
     // Streams with names and descriptions that don't start with the query.
-    desc_results.rest = desc_results.rest.sort(exports.compare_by_sub_count);
+    desc_results.rest = desc_results.rest.sort(exports.compare_by_sidebar);
 
     return name_results.matches.concat(desc_results.matches.concat(desc_results.rest));
 };
