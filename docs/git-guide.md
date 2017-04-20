@@ -690,6 +690,23 @@ To git@github.com:christi3k/zulip.git
  * [new branch]      issue-demo -> issue-demo
 ```
 
+Another way to push the current branch is with this command:
+
+```
+git push -f origin `git rev-parse --abbrev-ref HEAD`
+```
+
+The above command determines your current branch by using `git rev-parse`.
+Also, the command has the `-f` flag, which does a "force" push.  If you
+have done a rebase in your local environment, the "force" option will allow
+you to push your branch despite the fact that you are re-writing history, so
+to speak, on the server.  If you are using a Unix shell (or something similar),
+you won't need to remember the admittedly complex command; you can usually
+retrieve it from your history by doing `<ctl-r>push` and maybe hitting
+the up arrow once or twice.  The advantage of this approach is that you will
+always push the current branch, rather than mistakenly pushing a branch
+that you're not currently working on.
+
 If you want to see what git will do without actually performing the push, add
 the `-n` (dry-run) option: `git push -n origin <branch-name>`. If everything
 looks good, re-run the push command without `-n`.
