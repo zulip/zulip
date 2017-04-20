@@ -211,9 +211,7 @@ def home_real(request):
 
         # realm data.
         # TODO: Move all of these data to register_ret and pull from there
-        #realm_uri             = user_profile.realm.uri,
         password_auth_enabled = password_auth_enabled(user_profile.realm),
-        domains               = list_of_domains_for_realm(user_profile.realm),
         name_changes_disabled = name_changes_disabled(user_profile.realm),
         mandatory_topics      = user_profile.realm.mandatory_topics,
         show_digest_email     = user_profile.realm.show_digest_email,
@@ -298,6 +296,7 @@ def home_real(request):
         'realm_create_stream_by_admins_only',
         'realm_default_language',
         'realm_default_streams',
+        'realm_domains',
         'realm_email_changes_disabled',
         'realm_emoji',
         'realm_filters',
