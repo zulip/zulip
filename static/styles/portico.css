@@ -187,7 +187,7 @@ body {
 
     color: #444;
 
-    border-width: order: 1px solid #CCC;
+    border: 1px solid #ddd;
     border-radius: 4px;
     background-color: #FAFAFA;
 }
@@ -276,6 +276,12 @@ img.screenshot {
 #pw_strength {
     /* Same width as a Bootstrap default text <input> with padding */
     width: 220px;
+}
+
+#registration #pw_strength {
+    width: 325px;
+    height: 8px;
+    margin: -5px 0 0 0;
 }
 
 .def:before {
@@ -568,6 +574,11 @@ a.bottom-signup-button {
     margin-bottom: -54px;
 }
 
+.portico-page {
+    /* height of the white portico navbar */
+    min-height: calc(100% - 59px);
+}
+
 .signup-signature {
     margin-top: 20px;
     padding-bottom: 50px;
@@ -592,8 +603,7 @@ a.bottom-signup-button {
     padding-top: 50px !important;
 }
 
-.portico-page-container,
-.register-page-container {
+.portico-page-container {
     padding-top: 0px !important;
 }
 
@@ -927,7 +937,7 @@ input.new-organization-button {
     min-width: 300px;
     margin: auto;
     text-align: center;
-    margin-top: 30px;
+    margin-top: 20px;
 }
 
 .login-google-button,

@@ -8,7 +8,7 @@ from typing import Set
 LOCAL_UPLOADS_DIR = 'var/uploads'
 # Default to subdomains disabled in development until we can update
 # the development documentation to make sense with subdomains.
-REALMS_HAVE_SUBDOMAINS = False
+REALMS_HAVE_SUBDOMAINS = True
 # Check if test_settings.py set EXTERNAL_HOST.
 EXTERNAL_HOST = os.getenv('EXTERNAL_HOST')
 if EXTERNAL_HOST is None:
