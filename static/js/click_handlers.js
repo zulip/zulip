@@ -424,7 +424,6 @@ $(function () {
 
     });
 
-
     // WEBATHENA
 
     $('#right-sidebar, #top_navbar').on('click', '.webathena_login', function (e) {
