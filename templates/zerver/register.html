@@ -14,6 +14,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
 {% block portico_content %}
 <div class="center-container register-account">
     <div class="bg-image"></div>
+  <div class="center-block new-style" style="padding: 20px 0px">
     <div class="pitch">
         {% trans %}
         <h1>You're almost there.</h1>
@@ -29,36 +30,44 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             <input type='hidden' name='key' value='{{ key }}' />
             <input id="id_email" type='text' disabled="true" placeholder="{{ email }}" required />
             <label for="id_email" class="inline-block label-title">{{ _('Email') }}</label>
+            <div class="required"></div>
+            <img class="valid" src="/static/images/checkbox-valid.svg" />
         </div>
 
-        <div class="input-group grid">
-            <label for="id_full_name" class="inline-block label-title">{{ _('Full name') }}</label>
+        <div class="input-box">
             {% if lock_name %}
                 <p class="fakecontrol">{{ full_name }}</p>
             {% else %}
-                <input id="id_full_name" class="required" type="text" name="full_name" placeholder='{{ "Wile E. Coyote" }}'
+                <input id="id_full_name" class="required" type="text" name="full_name"
                 value="{% if full_name %}{{ full_name }}{% elif form.full_name.value() %}{{ form.full_name.value() }}{% endif %}"
-                maxlength={{ MAX_NAME_LENGTH}} />
+                maxlength={{ MAX_NAME_LENGTH }} required />
                 {% if form.full_name.errors %}
                     {% for error in form.full_name.errors %}
                         <div class="help-inline text-error">{{ error }}</div>
                     {% endfor %}
                 {% endif %}
             {% endif %}
+            <label for="id_full_name" class="inline-block label-title">{{ _('Full name') }}</label>
+            <div class="required"></div>
+            <img class="valid" src="/static/images/checkbox-valid.svg" />
+        </div>
+
+        <div class="input-box full-width">
             <div class="help-box">
                 {{ _('Zulip has full unicode support, so you can spell your name exactly how you want it to appear.') }}
             </div>
         </div>
 
-
         {% if password_auth_enabled %}
-        <div class="input-group grid">
-            <label for="id_password" class="inline-block">{{ _('Password') }}</label>
+        <div class="input-box">
             <input id="id_password" class="required" type="password" name="password"
                    value="{% if form.password.value() %}{{ form.password.value() }}{% endif %}"
                    maxlength={{ MAX_PASSWORD_LENGTH }}
                    data-min-length="{{password_min_length}}"
-                   data-min-quality="{{password_min_quality}}"/>
+                   data-min-quality="{{password_min_quality}}" required />
+            <label for="id_password" class="inline-block">{{ _('Password') }}</label>
+            <div class="required"></div>
+            <img class="valid" src="/static/images/checkbox-valid.svg" />
             {% if full_name %}
             <span class="help-inline">
               {{ _('This is used for mobile applications and other tools that require a password.') }}
@@ -70,7 +79,6 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             {% endfor %}
             {% endif %}
             <br />
-            <label class="inline-block"></label>
             <div class="progress" id="pw_strength" title="{{ _('Password strength') }}">
                 <div class="bar bar-danger" style="width: 10%;"></div>
             </div>
@@ -78,23 +86,28 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
         {% endif %}
 
         {% if creating_new_team %}
-        <div class="input-group grid">
+        <div class="input-box">
+            <div class="inline-block relative">
+                <input id="id_team_name" class="required" type="text"
+                    placeholder="Acme"
+                    value="{% if form.realm_name.value() %}{{ form.realm_name.value() }}{% endif %}"
+                    name="realm_name" maxlength={{ MAX_REALM_NAME_LENGTH }} required />
+                    {% if form.realm_name.errors %}
+                        {% for error in form.realm_name.errors %}
+                            <div class="help-inline text-error">{{ error }}</div>
+                        {% endfor %}
+                    {% endif %}
+                <div class="required"></div>
+                <img class="valid" src="/static/images/checkbox-valid.svg" />
+            </div>
             <label for="id_team_name" class="inline-block label-title">{{ _('Organization name') }}</label>
-            <input id="id_team_name" class="required" type="text"
-                placeholder="Acme"
-                value="{% if form.realm_name.value() %}{{ form.realm_name.value() }}{% endif %}"
-                name="realm_name" maxlength={{ MAX_REALM_NAME_LENGTH }} />
-                {% if form.realm_name.errors %}
-                    {% for error in form.realm_name.errors %}
-                        <div class="help-inline text-error">{{ error }}</div>
-                    {% endfor %}
-                {% endif %}
-            <div class="help-box">
+
+            <div class="help-box margin-top">
                 {{ _('This can be changed later on the settings page.') }}
             </div>
         </div>
 
-        <div class="input-group grid">
+        <div class="input-box">
             <label for="id_team_subdomain" class="inline-block label-title">
                 {% if realms_have_subdomains %}
                     {{ _('Subdomain') }}
@@ -103,12 +116,16 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 {% endif %}
             </label>
             <div class="breakpoint">
-                <input id="id_team_subdomain" class="required" type="text"
-                    placeholder="acme"
-                    value="{% if form.realm_subdomain.value() %}{{ form.realm_subdomain.value() }}{% endif %}"
-                    name="realm_subdomain" maxlength={{ MAX_REALM_SUBDOMAIN_LENGTH }} />
+                <div class="inline-block relative">
+                    <input id="id_team_subdomain" class="required" type="text"
+                        placeholder="acme"
+                        value="{% if form.realm_subdomain.value() %}{{ form.realm_subdomain.value() }}{% endif %}"
+                        name="realm_subdomain" maxlength={{ MAX_REALM_SUBDOMAIN_LENGTH }} required />
+                    <div class="required"></div>
+                    <img class="valid" src="/static/images/checkbox-valid.svg" />
+                </div>
                 {% if realms_have_subdomains %}
-                <b> .{{ external_host }}</b>
+                <div class="inline-block external-host"> .{{ external_host }}</div>
                 {% endif %}
                     {% if form.realm_subdomain.errors %}
                         {% for error in form.realm_subdomain.errors %}
@@ -116,7 +133,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                         {% endfor %}
                     {% endif %}
             </div>
-            <div class="help-box">
+            <div class="help-box margin-top">
                 {% if realms_have_subdomains %}
                     {{ _("The address you'll use to sign in to your organization.") }}
                 {% else %}
@@ -125,7 +142,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             </div>
         </div>
 
-        <div class="m-v-20">
+        <div class="input-group m-10 inline-block">
           <label for="id_org_type" class="label-title">{{ _('Organization type') }}</label>
 
           {% for org_type_value, org_type_text in form.realm_org_type.field.choices %}
@@ -137,7 +154,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
           </div>
           {% endfor %}
         </div>
-        <div class="m-v-20">
+        <div class="m-10">
           <div class="help-box">
             <div id="org_type_blob_1" class="blob display-none">
               {% trans %}
@@ -163,9 +180,9 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
         </div>
         {% endif %}
 
-        <div class="input-group margin">
+        <div class="input-group margin terms-of-service">
             {% if terms_of_service %}
-            <div class="float-left">
+            <div class="input-group">
                 {#
                 This is somewhat subtle.
                 Checkboxes have a name and value, and when the checkbox is ticked, the form posts
@@ -186,9 +203,8 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 {% endif %}
             </div>
             {% endif %}
-            <div class="submit-button-box float-right">
-                <input type="submit" class="button-new sea-green"
-                       value="{{ _('Register') }}" /><br />
+            <div class="submit-button-box m-10">
+                <button type="submit">{{ _('Register') }}</button>
                 <input type="hidden" name="next" value="{{ next }}" />
             </div>
         </div>

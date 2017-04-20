@@ -16,9 +16,13 @@ html {
 .flex {
     display: flex;
     height: calc(100vh - 100px);
-    min-height: 350px;
     align-items: center;
     justify-content: center;
+}
+
+.flex.full-page {
+    min-height: calc(100vh - 170px);
+    height: auto;
 }
 
 .m-10 {
@@ -63,6 +67,13 @@ html {
     width: auto;
 }
 
+.new-style .login-page-container .alert {
+    margin: 0;
+    text-align: left;
+    font-size: 0.7em;
+    font-weight: 600;
+}
+
 .app-main .login-page-header {
     font-size: 1.5em;
     font-weight: 300;
@@ -92,8 +103,6 @@ html {
 
 .app-main.find-team-page-container {
     width: 456px;
-    margin-top: calc(50vh - 200px);
-
     font-weight: 400;
 }
 
@@ -336,16 +345,19 @@ html {
     left: -4px;
     color: #d26666;
     font-size: 0.7em;
+    font-weight: 600;
+    padding-left: 0px;
 }
 
 .new-style .get-started {
     height: 0px;
     margin: 0px;
 
-    font-size: 1.5rem;
+    font-size: 2.5rem;
     text-align: center;
+    color: #666;
 
-    transform: translateY(-70px);
+    transform: translateY(-90px);
 }
 
 .new-style button {
@@ -465,7 +477,8 @@ html {
 }
 
 .register-page-container .lead,
-.login-page-container .lead {
+.login-page-container .lead,
+.forgot-password-container .lead {
     margin: 0;
     text-align: left;
 }
@@ -664,21 +677,14 @@ button.login-google-button {
 
 @media (max-width: 795px) {
     .register-account #registration {
-        width: 328px;
+        padding: 10px;
+        width: calc(350px);
     }
 
     .register-page-container,
     .login-page-container {
         width: 400px;
         margin-top: 50px;
-    }
-
-    .split-view.flex {
-        display: block;
-        margin: 20px auto 0 auto;
-
-        text-align: center;
-        height: auto;
     }
 
     .split-view .org-header .avatar {
@@ -733,6 +739,14 @@ button.login-google-button {
 }
 
 @media (max-width: 500px) {
+    .flex.full-page {
+        margin: 20px 0px;
+    }
+
+    .new-style .get-started {
+        font-size: 1.6em;
+    }
+
     .app-main.register-page-container,
     .app-main.login-page-container,
     .app-main.find-team-page-container,
