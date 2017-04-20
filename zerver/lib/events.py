@@ -112,7 +112,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         state['realm_bot_domain'] = user_profile.realm.get_bot_domain()
         state['realm_uri'] = user_profile.realm.uri
         state['realm_domains'] = get_realm_domains(user_profile.realm)
-        
+        state['realm_presence_disabled'] = user_profile.realm.presence_disabled
     if want('realm_domains'):
         state['realm_domains'] = get_realm_domains(user_profile.realm)
 

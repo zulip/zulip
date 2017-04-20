@@ -215,7 +215,6 @@ def home_real(request):
         name_changes_disabled = name_changes_disabled(user_profile.realm),
         mandatory_topics      = user_profile.realm.mandatory_topics,
         show_digest_email     = user_profile.realm.show_digest_email,
-        realm_presence_disabled = user_profile.realm.presence_disabled,
         is_zephyr_mirror_realm = user_profile.realm.is_zephyr_mirror_realm,
 
         # user_profile data.
@@ -311,6 +310,7 @@ def home_real(request):
         'realm_name',
         'realm_description',
         'realm_name_changes_disabled',
+        'realm_presence_disabled',
         'realm_restricted_to_domain',
         'realm_uri',
         'realm_waiting_period_threshold',
