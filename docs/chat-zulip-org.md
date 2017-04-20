@@ -88,6 +88,8 @@ descriptions for all of them.  Relevant to almost everyone are these:
   project; reviewing other PRs is a great way to develop experience,
   and even just manually testing a proposed new feature and posting
   feedback is super helpful.
+* [#learning](https://chat.zulip.org/#narrow/stream/learning) is for
+  posting great learning resources one comes across.
 
 ## Office hours and sprints
 
