@@ -17,9 +17,11 @@ from zilencer.models import Deployment
 
 from zerver.forms import HomepageForm, WRONG_SUBDOMAIN_ERROR
 from zerver.lib.actions import do_change_password
+from zerver.views.auth import login_or_register_remote_user
 from zerver.views.invite import get_invitee_emails_set
 from zerver.views.registration import confirmation_key, \
     redirect_and_log_into_subdomain, send_registration_completion_email
+
 from zerver.models import (
     get_realm, get_prereg_user_by_email, get_user_profile_by_email,
     get_unique_open_realm, completely_open,
@@ -45,7 +47,7 @@ from zerver.lib.mobile_auth_otp import xor_hex_strings, ascii_to_hex, \
 from zerver.lib.notifications import enqueue_welcome_emails, \
     one_click_unsubscribe_link
 from zerver.lib.test_helpers import find_pattern_in_email, find_key_by_email, queries_captured, \
-    HostRequestMock, unsign_subdomain_cookie
+    HostRequestMock, unsign_subdomain_cookie, POSTRequestMock
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
@@ -1160,6 +1162,39 @@ class UserSignUpTest(ZulipTestCase):
              'from_confirmation': '1'})
         self.assert_in_success_response(["You're almost there."], result)
 
+    def test_signup_with_full_name(self):
+        # type: () -> None
+        """
+        Check if signing up without a full name redirects to a registration
+        form.
+        """
+        email = "newguy@zulip.com"
+        password = "newpassword"
+
+        result = self.client_post('/accounts/home/', {'email': email})
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(
+            "/accounts/send_confirm/%s" % (email,)))
+        result = self.client_get(result["Location"])
+        self.assert_in_response("Check your email so we can get started.", result)
+
+        # Visit the confirmation link.
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        result = self.client_get(confirmation_url)
+        self.assertEqual(result.status_code, 200)
+
+        result = self.client_post(
+            '/accounts/register/',
+            {'password': password,
+             'realm_name': 'Zulip Test',
+             'realm_subdomain': 'zuliptest',
+             'key': find_key_by_email(email),
+             'realm_org_type': Realm.COMMUNITY,
+             'terms': True,
+             'full_name': "New Guy",
+             'from_confirmation': '1'})
+        self.assert_in_success_response(["You're almost there."], result)
+
     def test_signup_invalid_subdomain(self):
         # type: () -> None
         """
@@ -1765,3 +1800,96 @@ class MobileAuthOTPTest(ZulipTestCase):
 
         decryped = otp_decrypt_api_key(result, otp)
         self.assertEqual(decryped, hamlet.api_key)
+
+class LoginOrAskForRegistrationTestCase(ZulipTestCase):
+    def test_confirm(self):
+        # type: () -> None
+        request = POSTRequestMock({}, None)
+        email = 'new@zulip.com'
+        user_profile = None  # type: Optional[UserProfile]
+        full_name = 'New User'
+        invalid_subdomain = False
+        response = login_or_register_remote_user(
+            request,
+            email,
+            user_profile,
+            full_name=full_name,
+            invalid_subdomain=invalid_subdomain)
+        self.assert_in_response('You attempted to login using new@zulip.com, '
+                                'but new@zulip.com does',
+                                response)
+
+    def test_invalid_subdomain(self):
+        # type: () -> None
+        request = POSTRequestMock({}, None)
+        email = 'new@zulip.com'
+        user_profile = None  # type: Optional[UserProfile]
+        full_name = 'New User'
+        invalid_subdomain = True
+        response = login_or_register_remote_user(
+            request,
+            email,
+            user_profile,
+            full_name=full_name,
+            invalid_subdomain=invalid_subdomain)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('/accounts/login/?subdomain=1', response.url)
+
+    def test_invalid_email(self):
+        # type: () -> None
+        request = POSTRequestMock({}, None)
+        email = None  # type: Optional[Text]
+        user_profile = None  # type: Optional[UserProfile]
+        full_name = 'New User'
+        invalid_subdomain = False
+        response = login_or_register_remote_user(
+            request,
+            email,
+            user_profile,
+            full_name=full_name,
+            invalid_subdomain=invalid_subdomain)
+        self.assert_in_response('Please click the following button if '
+                                'you wish to register', response)
+
+    def test_login_under_subdomains(self):
+        # type: () -> None
+        request = POSTRequestMock({}, None)
+        setattr(request, 'session', self.client.session)
+        email = 'hamlet@zulip.com'
+        user_profile = get_user_profile_by_email(email)
+        user_profile.backend = 'zproject.backends.GitHubAuthBackend'
+        full_name = 'Hamlet'
+        invalid_subdomain = False
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True):
+            response = login_or_register_remote_user(
+                request,
+                email,
+                user_profile,
+                full_name=full_name,
+                invalid_subdomain=invalid_subdomain)
+            user_id = get_session_dict_user(getattr(request, 'session'))
+            self.assertEqual(user_id, user_profile.id)
+            self.assertEqual(response.status_code, 302)
+            self.assertIn('http://zulip.testserver', response.url)
+
+    def test_login_without_subdomains(self):
+        # type: () -> None
+        request = POSTRequestMock({}, None)
+        setattr(request, 'session', self.client.session)
+        setattr(request, 'get_host', lambda: 'localhost')
+        email = 'hamlet@zulip.com'
+        user_profile = get_user_profile_by_email(email)
+        user_profile.backend = 'zproject.backends.GitHubAuthBackend'
+        full_name = 'Hamlet'
+        invalid_subdomain = False
+        with self.settings(REALMS_HAVE_SUBDOMAINS=False):
+            response = login_or_register_remote_user(
+                request,
+                email,
+                user_profile,
+                full_name=full_name,
+                invalid_subdomain=invalid_subdomain)
+            user_id = get_session_dict_user(getattr(request, 'session'))
+            self.assertEqual(user_id, user_profile.id)
+            self.assertEqual(response.status_code, 302)
+            self.assertIn('http://localhost', response.url)
