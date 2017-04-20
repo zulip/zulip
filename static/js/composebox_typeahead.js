@@ -181,6 +181,11 @@ function autocomplete_checks(q, char) {
         return false;  // char doesn't appear, or too far back
     }
 
+    // Don't autocomplete if there is a space following a '#'
+    if (char === "#" && q.charAt(last_at + 1) === " ") {
+        return false;
+    }
+
     // Only match if the char follows a space, various punctuation,
     // or is at the beginning of the string.
     if (last_at > 0 && "\n\t \"'(){}[]".indexOf(q[last_at - 1]) === -1) {
