@@ -63,7 +63,7 @@ exports.set_up = function () {
     $("#api_key_button_box").show();
 
     $('#api_key_button').click(function () {
-        if (page_params.password_auth_enabled !== false) {
+        if (page_params.realm_password_auth_enabled !== false) {
             $("#get_api_key_box").show();
         } else {
             // Skip the password prompt step

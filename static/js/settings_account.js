@@ -40,7 +40,7 @@ exports.set_up = function () {
         e.preventDefault();
         $('#pw_change_link').hide();
         $('#pw_change_controls').show();
-        if (page_params.password_auth_enabled !== false) {
+        if (page_params.realm_password_auth_enabled !== false) {
             // zxcvbn.js is pretty big, and is only needed on password
             // change, so load it asynchronously.
             var zxcvbn_path = '/static/min/zxcvbn.js';
@@ -63,7 +63,7 @@ exports.set_up = function () {
     $("form.your-account-settings").ajaxForm({
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
         beforeSubmit: function () {
-            if (page_params.password_auth_enabled !== false) {
+            if (page_params.realm_password_auth_enabled !== false) {
                 // FIXME: Check that the two password fields match
                 // FIXME: Use the same jQuery validation plugin as the signup form?
                 var field = $('#new_password');

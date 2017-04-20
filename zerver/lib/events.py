@@ -33,6 +33,7 @@ from zerver.models import Client, Message, Realm, UserPresence, UserProfile, \
     get_user_profile_by_email, get_user_profile_by_id, \
     get_active_user_dicts_in_realm, realm_filters_for_realm, \
     get_owned_bot_dicts, custom_profile_fields_for_realm, get_realm_domains
+from zproject.backends import password_auth_enabled
 from version import ZULIP_VERSION
 
 
@@ -115,6 +116,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         state['realm_mandatory_topics'] = user_profile.realm.mandatory_topics
         state['realm_show_digest_email'] = user_profile.realm.show_digest_email
         state['realm_is_zephyr_mirror_realm'] = user_profile.realm.is_zephyr_mirror_realm
+        state['realm_password_auth_enabled'] = password_auth_enabled(user_profile.realm)
 
     if want('realm_domains'):
         state['realm_domains'] = get_realm_domains(user_profile.realm)
@@ -292,6 +294,11 @@ def apply_event(state, event, user_profile, include_subscribers):
         elif event['op'] == "update_dict":
             for key, value in event['data'].items():
                 state['realm_' + key] = value
+                # It's a bit messy, but this is where we need to
+                # update the state for whether password authentication
+                # is enabled on this server.
+                if key == 'authentication_methods':
+                    state['realm_password_auth_enabled'] = (value['Email'] or value['LDAP'])
     elif event['type'] == "subscription":
         if not include_subscribers and event['op'] in ['peer_add', 'peer_remove']:
             return
