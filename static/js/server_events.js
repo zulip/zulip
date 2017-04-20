@@ -141,23 +141,24 @@ function dispatch_normal_event(event) {
     case 'realm_domains':
         var i;
         if (event.op === 'add') {
-            page_params.domains.push(event.realm_domain);
+            page_params.realm_domains.push(event.realm_domain);
         } else if (event.op === 'change') {
-            for (i = 0; i < page_params.domains.length; i += 1) {
-                if (page_params.domains[i].domain === event.realm_domain.domain) {
-                    page_params.domains[i].allow_subdomains = event.realm_domain.allow_subdomains;
+            for (i = 0; i < page_params.realm_domains.length; i += 1) {
+                if (page_params.realm_domains[i].domain === event.realm_domain.domain) {
+                    page_params.realm_domains[i].allow_subdomains =
+                        event.realm_domain.allow_subdomains;
                     break;
                 }
             }
         } else if (event.op === 'remove') {
-            for (i = 0; i < page_params.domains.length; i += 1) {
-                if (page_params.domains[i].domain === event.domain) {
-                    page_params.domains.splice(i, 1);
+            for (i = 0; i < page_params.realm_domains.length; i += 1) {
+                if (page_params.realm_domains[i].domain === event.domain) {
+                    page_params.realm_domains.splice(i, 1);
                     break;
                 }
             }
         }
-        settings_org.populate_realm_domains(page_params.domains);
+        settings_org.populate_realm_domains(page_params.realm_domains);
         break;
 
     case 'realm_user':
