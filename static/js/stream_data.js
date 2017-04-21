@@ -389,12 +389,12 @@ exports.initialize_from_page_params = function () {
     });
 
     populate_subscriptions(page_params.subscriptions, true);
-    populate_subscriptions(page_params.unsubbed_info, false);
+    populate_subscriptions(page_params.unsubscribed, false);
     populate_subscriptions(page_params.neversubbed_info, false);
 
     // Garbage collect data structures that were only used for initialization.
     delete page_params.subscriptions;
-    delete page_params.unsubbed_info;
+    delete page_params.unsubscribed;
     delete page_params.neversubbed_info;
 };
 
