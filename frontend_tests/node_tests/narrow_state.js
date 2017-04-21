@@ -61,6 +61,7 @@ function set_filter(operators) {
     assert(!narrow_state.narrowed_by_topic_reply());
     assert(!narrow_state.narrowed_to_search());
     assert(!narrow_state.narrowed_to_topic());
+    assert(!narrow_state.narrowed_by_stream_reply());
 
     set_filter([['stream', 'Foo']]);
     assert(!narrow_state.narrowed_to_pms());
@@ -69,6 +70,7 @@ function set_filter(operators) {
     assert(!narrow_state.narrowed_by_topic_reply());
     assert(!narrow_state.narrowed_to_search());
     assert(!narrow_state.narrowed_to_topic());
+    assert(narrow_state.narrowed_by_stream_reply());
 
     set_filter([['pm-with', 'steve@zulip.com']]);
     assert(narrow_state.narrowed_to_pms());
@@ -77,6 +79,7 @@ function set_filter(operators) {
     assert(!narrow_state.narrowed_by_topic_reply());
     assert(!narrow_state.narrowed_to_search());
     assert(!narrow_state.narrowed_to_topic());
+    assert(!narrow_state.narrowed_by_stream_reply());
 
     set_filter([['stream', 'Foo'], ['topic', 'bar']]);
     assert(!narrow_state.narrowed_to_pms());
@@ -85,6 +88,7 @@ function set_filter(operators) {
     assert(narrow_state.narrowed_by_topic_reply());
     assert(!narrow_state.narrowed_to_search());
     assert(narrow_state.narrowed_to_topic());
+    assert(!narrow_state.narrowed_by_stream_reply());
 
     set_filter([['search', 'grail']]);
     assert(!narrow_state.narrowed_to_pms());
@@ -93,6 +97,7 @@ function set_filter(operators) {
     assert(!narrow_state.narrowed_by_topic_reply());
     assert(narrow_state.narrowed_to_search());
     assert(!narrow_state.narrowed_to_topic());
+    assert(!narrow_state.narrowed_by_stream_reply());
 }());
 
 (function test_operators() {
