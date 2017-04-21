@@ -1,0 +1,106 @@
+{
+    "event": "stop",
+    "timestamp": "2017-01-02T18:48:14Z",
+    "session": 3317799,
+    "profile_name": "default",
+    "url": "https:\/\/ci.solanolabs.com:443\/reports\/3317799",
+    "commit_id": "191d34f9da8ff7279b051cd68e44223253e18408",
+    "committers": [
+        "solano-ci[bot]@users.noreply.github.com"
+    ],
+    "status": "passed",
+    "counts": {
+        "notstarted": 0,
+        "started": 0,
+        "aborted": 0,
+        "passed": 3,
+        "failed": 0,
+        "pending": 0,
+        "skipped": 0,
+        "error": 0
+    },
+    "workers": 4,
+    "timing": {
+        "ci_received_at": 1483381355.5993,
+        "queue_first_seen_at": "1483381361.4792805",
+        "queue_first_allowed_at": "1483381361.596519",
+        "workers_assigned_at": "1483381361.8122952",
+        "setup": {
+            "timestamp": 1483381374,
+            "has_failure": false
+        },
+        "setup_cache": {
+            "timestamp": 1483381387,
+            "has_failure": false
+        },
+        "package_setup": {
+            "timestamp": 1483381387,
+            "has_failure": false
+        },
+        "services_setup": {
+            "timestamp": 1483381392,
+            "has_failure": false
+        },
+        "setup_hooks": {
+            "timestamp": 1483381393,
+            "has_failure": false
+        },
+        "worker_hooks": {
+            "timestamp": 1483381596,
+            "has_failure": false
+        },
+        "setup_post_hooks": {
+            "timestamp": 1483381596,
+            "has_failure": false
+        },
+        "exec": {
+            "timestamp": 1483381598,
+            "has_failure": false
+        },
+        "post_build": {
+            "timestamp": 1483382858,
+            "has_failure": false
+        },
+        "worker_rendezvous": {
+            "timestamp": 1483382858,
+            "has_failure": false
+        },
+        "post_build_hook": {
+            "timestamp": 1483382869,
+            "has_failure": false
+        },
+        "artifact_collect": {
+            "timestamp": 1483382869,
+            "has_failure": false
+        },
+        "capture_cache": {
+            "timestamp": 1483382870,
+            "has_failure": false
+        },
+        "done": {
+            "timestamp": 1483382870,
+            "has_failure": false
+        },
+        "snapshot_creation": {
+            "timestamp": 1483382870,
+            "has_failure": false
+        },
+        "upload_snapshot": {
+            "timestamp": 1483382888,
+            "has_failure": false
+        },
+        "upload_snapshot_done": {
+            "timestamp": 1483382888,
+            "has_failure": false
+        }
+    },
+    "branch": "master",
+    "ref": "refs\/heads\/master",
+    "repository": {
+        "name": "scipy",
+        "url": "ssh:\/\/git@github.com\/anirudhjain75\/scipy",
+        "org_name": "anirudhjain75"
+    },
+    "gen": 1,
+    "xid": "29d55b798"
+}
