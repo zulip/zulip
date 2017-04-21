@@ -390,12 +390,12 @@ exports.initialize_from_page_params = function () {
 
     populate_subscriptions(page_params.subscriptions, true);
     populate_subscriptions(page_params.unsubscribed, false);
-    populate_subscriptions(page_params.neversubbed_info, false);
+    populate_subscriptions(page_params.never_subscribed, false);
 
     // Garbage collect data structures that were only used for initialization.
     delete page_params.subscriptions;
     delete page_params.unsubscribed;
-    delete page_params.neversubbed_info;
+    delete page_params.never_subscribed;
 };
 
 exports.get_recent_topics = function (stream_name) {
