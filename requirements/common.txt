@@ -33,7 +33,7 @@ boto==2.46.1
 certifi==2017.4.17
 
 # Used for scrapy as well as argon2
-cffi==1.9.1
+cffi==1.10.0
 
 chardet==2.3.0
 
