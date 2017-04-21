@@ -35,7 +35,7 @@ certifi==2017.4.17
 # Used for scrapy as well as argon2
 cffi==1.10.0
 
-chardet==2.3.0
+chardet==3.0.2
 
 # Needed for integrations
 defusedxml==0.5.0
