@@ -139,7 +139,7 @@ class HomeTest(ZulipTestCase):
             "timezone",
             "twenty_four_hour_time",
             "unread_count",
-            "unsubbed_info",
+            "unsubscribed",
             "use_websockets",
             "user_id",
             "zulip_version",
