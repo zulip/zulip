@@ -1,0 +1,29 @@
+{
+  "event_type": "survey_response.updated",
+  "event_id": "bc1d419dcea4b874cf29db3df5c31281a49590a4e7e1fa37ae41596f90d24b79",
+  "event_data": {
+    "id": "3538123",
+    "person": {
+      "id": "24253563",
+      "name": "Jade Green",
+      "email": "jadeg@mason.info",
+      "created_at": 1412757732
+    },
+    "score": 9,
+    "comment": "Jumped on your last sale and went a bit nuts, but I don’t regret it at all. Everything I got is even better than I expected.",
+    "permalink": "https://delighted.com/r/b2I6YkW4SMtnAeg3sYPcYPev5zM4lsg2",
+    "created_at": 1412757912,
+    "updated_at": 1412757912,
+    "person_properties": {
+      "collection": "Women’s",
+      "purchase_experience": "Website"
+    },
+    "notes": [
+
+    ],
+    "tags": [
+
+    ]
+  },
+  "test": true
+}
