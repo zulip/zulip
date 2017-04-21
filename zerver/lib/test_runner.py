@@ -295,6 +295,15 @@ def init_worker(counter):
     individual processes which are also called workers.
     """
     global _worker_id
+
+    with counter.get_lock():
+        counter.value += 1
+        _worker_id = counter.value
+
+    """
+    You can now use _worker_id.
+    """
+
     test_classes.API_KEYS = {}
 
     # Clear the cache
@@ -304,10 +313,6 @@ def init_worker(counter):
 
     # Close all connections
     connections.close_all()
-
-    with counter.get_lock():
-        counter.value += 1
-        _worker_id = counter.value
 
     destroy_test_databases(_worker_id)
     create_test_databases(_worker_id)
