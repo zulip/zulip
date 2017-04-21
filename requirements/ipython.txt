@@ -2,7 +2,7 @@ ipython==5.3.0
 
 # Dependencies of ipython
 decorator==4.0.11
-ipython-genutils==0.1.0
+ipython-genutils==0.2.0
 pathlib2==2.2.1
 pexpect==4.2.1
 pickleshare==0.7.4
