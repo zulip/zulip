@@ -379,6 +379,27 @@ exports.activate = function (raw_operators, opts) {
     }, 0);
 };
 
+exports.stream_topic = function () {
+    // This function returns the stream/topic that we most
+    // specifically care about, according (mostly) to the
+    // currently selected message.
+    var msg = current_msg_list.selected_message();
+
+    if (msg) {
+        return {
+            stream: msg.stream || undefined,
+            topic: msg.subject || undefined,
+        };
+    }
+
+    // We may be in an empty narrow.  In that case we use
+    // our narrow parameters to return the stream/topic.
+    return {
+        stream: exports.stream(),
+        topic: exports.topic(),
+    };
+};
+
 // Activate narrowing with a single operator.
 // This is just for syntactic convenience.
 exports.by = function (operator, operand, opts) {

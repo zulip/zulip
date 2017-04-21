@@ -90,6 +90,37 @@ function set_filter(operators) {
     assert.equal(result[2].operand, 'yo');
 }());
 
+(function test_stream_topic() {
+    set_filter([['stream', 'Foo'], ['topic', 'Bar'], ['search', 'Yo']]);
+
+    set_global('current_msg_list', {
+    });
+
+    global.current_msg_list.selected_message = function () {};
+
+    var stream_topic = narrow.stream_topic();
+
+    assert.deepEqual(stream_topic, {
+        stream: 'Foo',
+        topic: 'Bar',
+    });
+
+    global.current_msg_list.selected_message = function () {
+        return {
+            stream: 'Stream1',
+            subject: 'Topic1',
+        };
+    };
+
+    stream_topic = narrow.stream_topic();
+
+    assert.deepEqual(stream_topic, {
+        stream: 'Stream1',
+        topic: 'Topic1',
+    });
+
+}());
+
 (function test_muting_enabled() {
     set_filter([['stream', 'devel']]);
     assert(narrow.muting_enabled());
