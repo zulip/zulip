@@ -325,16 +325,16 @@ function process_notification(notification) {
                                    " other people";
             }
 
-            title += " (to you and " + other_recipients + ")";
+            title += " (to you and " + other_recipients + ") in " + page_params.realm_name;
         } else {
-            title += " (to you)";
+            title += " (to you) in " + page_params.realm_name;
         }
 
         raw_operators = [{operand: message.reply_to, operator: "pm-with"}];
     }
 
     if (message.type === "stream") {
-        title += " (to " + message.stream + " > " + message.subject + ")";
+        title += " (to " + message.stream + " > " + message.subject + ") in " + page_params.realm_name;
         raw_operators = [{operator: "stream", operand: message.stream},
                          {operator: "topic", operand: message.subject}];
     }

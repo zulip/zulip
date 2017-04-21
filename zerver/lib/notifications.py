@@ -246,7 +246,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
             'All missed_messages must have the same recipient and subject %r' %
             recipients
         )
-
+    realm_name = user_profile.realm.name
     unsubscribe_link = one_click_unsubscribe_link(user_profile, "missed_messages")
     template_payload = common_context(user_profile)
     template_payload.update({
@@ -255,6 +255,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
         'message_count': message_count,
         'mention': missed_messages[0].recipient.type == Recipient.STREAM,
         'unsubscribe_link': unsubscribe_link,
+        'realm_name': realm_name,
     })
 
     # If this setting (email mirroring integration) is enabled, only then
@@ -280,7 +281,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
     sender_str = ", ".join(senders)
     plural_messages = 's' if len(missed_messages) > 1 else ''
 
-    subject = "Missed Zulip%s from %s" % (plural_messages, sender_str)
+    subject = "Missed Zulip%s in %s from %s" % (plural_messages, realm_name, sender_str)
     from_email = 'Zulip <%s>' % (settings.NOREPLY_EMAIL_ADDRESS,)
     if len(senders) == 1 and settings.SEND_MISSED_MESSAGE_EMAILS_AS_USER:
         # If this setting is enabled, you can reply to the Zulip

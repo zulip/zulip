@@ -213,6 +213,7 @@ def handle_digest_email(user_profile_id, cutoff):
         user_profile, cutoff_date)
     template_payload["new_users"] = new_users
 
+    template_payload["realm_name"] = user_profile.realm.name
     subject = loader.render_to_string('zerver/emails/digest/digest_email.subject').strip()
     text_content = loader.render_to_string(
         'zerver/emails/digest/digest_email.txt', template_payload)
