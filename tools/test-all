@@ -33,7 +33,7 @@ function run {
 run ./tools/check-provision $FORCEARG
 run ./tools/clean-repo
 run ./tools/test-tools
-run ./tools/lint-all --pep8 $FORCEARG
+run ./tools/lint --pep8 $FORCEARG
 run ./tools/test-migrations
 run ./tools/test-js-with-node
 run ./tools/run-mypy

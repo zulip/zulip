@@ -288,21 +288,21 @@ def build_custom_checkers(by_lang):
         {'pattern': '[.]text\(["\'][a-zA-Z]',
          'description': 'Strings passed to $().text should be wrapped in i18n.t() for internationalization'},
         {'pattern': 'compose_error\(["\']',
-         'exclude': set(['tools/lint-all']),
+         'exclude': set(['tools/lint']),
          'description': 'Argument to compose_error should be a literal string enclosed '
                         'by i18n.t()'},
         {'pattern': 'ui.report_success\(',
-         'exclude': set(['tools/lint-all']),
+         'exclude': set(['tools/lint']),
          'description': 'Deprecated function, use ui_report.success.'},
         {'pattern': 'report.success\(["\']',
-         'exclude': set(['tools/lint-all']),
+         'exclude': set(['tools/lint']),
          'description': 'Argument to report_success should be a literal string enclosed '
                         'by i18n.t()'},
         {'pattern': 'ui.report_error\(',
-         'exclude': set(['tools/lint-all']),
+         'exclude': set(['tools/lint']),
          'description': 'Deprecated function, use ui_report.error.'},
         {'pattern': 'report.error\(["\']',
-         'exclude': set(['tools/lint-all']),
+         'exclude': set(['tools/lint']),
          'description': 'Argument to report_error should be a literal string enclosed '
                         'by i18n.t()'},
     ]) + whitespace_rules
@@ -312,7 +312,7 @@ def build_custom_checkers(by_lang):
         {'pattern': '".*"%\([a-z_].*\)?$',
          'description': 'Missing space around "%"'},
         {'pattern': "'.*'%\([a-z_].*\)?$",
-         'exclude': set(['tools/lint-all',
+         'exclude': set(['tools/lint',
                          'analytics/lib/counts.py',
                          'analytics/tests/test_counts.py',
                          ]),
@@ -336,14 +336,14 @@ def build_custom_checkers(by_lang):
         {'pattern': "assertEquals[(]",
          'description': 'Use assertEqual, not assertEquals (which is deprecated).'},
         {'pattern': "== None",
-         'exclude': 'tools/lint-all',
+         'exclude': 'tools/lint',
          'description': 'Use `is None` to check whether something is None'},
         {'pattern': "type:[(]",
          'description': 'Missing whitespace after ":" in type annotation'},
         {'pattern': "# type [(]",
          'description': 'Missing : after type in type annotation'},
         {'pattern': "#type",
-         'exclude': 'tools/lint-all',
+         'exclude': 'tools/lint',
          'description': 'Missing whitespace after "#" in type annotation'},
         {'pattern': 'if[(]',
          'description': 'Missing space between if and ('},
@@ -368,10 +368,10 @@ def build_custom_checkers(by_lang):
          'description': 'Use json_success() to return nothing'},
         # To avoid json_error(_variable) and json_error(_(variable))
         {'pattern': '\Wjson_error\(_\(?\w+\)',
-         'exclude': set(['tools/lint-all', 'zerver/tests']),
+         'exclude': set(['tools/lint', 'zerver/tests']),
          'description': 'Argument to json_error should be a literal string enclosed by _()'},
         {'pattern': '\Wjson_error\([\'"].+[),]$',
-         'exclude': set(['tools/lint-all', 'zerver/tests']),
+         'exclude': set(['tools/lint', 'zerver/tests']),
          'exclude_line': set([
              # We don't want this string tagged for translation.
              ('zerver/views/compatibility.py', 'return json_error("Client is too old")'),
@@ -379,10 +379,10 @@ def build_custom_checkers(by_lang):
          'description': 'Argument to json_error should a literal string enclosed by _()'},
         # To avoid JsonableError(_variable) and JsonableError(_(variable))
         {'pattern': '\WJsonableError\(_\(?\w.+\)',
-         'exclude': set(['tools/lint-all', 'zerver/tests']),
+         'exclude': set(['tools/lint', 'zerver/tests']),
          'description': 'Argument to JsonableError should be a literal string enclosed by _()'},
         {'pattern': '\WJsonableError\(["\'].+\)',
-         'exclude': set(['tools/lint-all', 'zerver/tests']),
+         'exclude': set(['tools/lint', 'zerver/tests']),
          'description': 'Argument to JsonableError should be a literal string enclosed by _()'},
         {'pattern': '([a-zA-Z0-9_]+)=REQ\([\'"]\\1[\'"]',
          'description': 'REQ\'s first argument already defaults to parameter name'},
@@ -434,7 +434,7 @@ def build_custom_checkers(by_lang):
          },
         {'pattern': 'render_to_response\(',
          'description': "Use render() instead of render_to_response().",
-         'exclude': set(['tools/lint-all']),
+         'exclude': set(['tools/lint']),
          },
         # This rule might give false positives in virtualenv setup files which should be excluded,
         # and comments which should be rewritten to avoid use of "python2", "python3", etc.
@@ -442,7 +442,7 @@ def build_custom_checkers(by_lang):
          'exclude': set(['tools/lib/provision.py',
                          'tools/setup/setup_venvs.py',
                          'scripts/lib/setup_venv.py',
-                         'tools/lint-all']),
+                         'tools/lint']),
          'description': 'Explicit python invocations should not include a version'}
     ]) + whitespace_rules
     bash_rules = [

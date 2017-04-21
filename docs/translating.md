@@ -254,7 +254,7 @@ JsonableError(_('English Text'))
 ```
 
 To ensure we always internationalize our JSON errors messages, the
-Zulip linter (`tools/lint-all`) checks for correct usage.
+Zulip linter (`tools/lint`) checks for correct usage.
 
 ## Frontend translations
 

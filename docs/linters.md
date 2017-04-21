@@ -35,7 +35,7 @@ one small exception: it does not run mypy against scripts).
 
 You can also run them individually:
 
-    ./tools/lint-all
+    ./tools/lint
     ./tools/run-mypy
     ./tools/run-mypy --scripts-only
 
@@ -49,7 +49,7 @@ Our linting tools generally support the ability to lint files
 individually--with some caveats--and those options will be described
 later in this document.
 
-We may eventually bundle `run-mypy` into `lint-all`, but mypy is pretty
+We may eventually bundle `run-mypy` into `lint`, but mypy is pretty
 resource intensive compared to the rest of the linters, because it does
 static code analysis.  So we keep mypy separate to allow folks to quickly run
 the other lint checks.
@@ -59,7 +59,7 @@ the other lint checks.
 Once you have read the [Zulip coding guidelines](code-style.html), you can
 be pretty confident that 99% of the code that you write will pass through
 the linters fine, as long as you are thorough about keeping your code clean.
-And, of course, for minor oversights, `lint-all` is your friend, not your foe.
+And, of course, for minor oversights, `lint` is your friend, not your foe.
 
 Occasionally, our linters will complain about things that are more of
 an artifact of the linter limitations than any actual problem with your
@@ -81,7 +81,7 @@ describes our test system in detail.
 
 ## Lint checks
 
-Most of our lint checks get performed by `./tools/lint-all`.  These include the
+Most of our lint checks get performed by `./tools/lint`.  These include the
 following checks:
 
 - Check Python code with pyflakes.
@@ -99,25 +99,25 @@ code analysis of Python type annotations throughout our Python codebase.
 
 Our [documentation on using mypy](mypy.html) covers mypy in more detail.
 
-The rest of this document pertains to the checks that occur in `./tools/lint-all`.
+The rest of this document pertains to the checks that occur in `./tools/lint`.
 
-## lint-all
+## lint
 
-Zulip has a script called `lint-all` that lives in our "tools" directory.
+Zulip has a script called `lint` that lives in our "tools" directory.
 It is the workhorse of our linting system, although in some cases it
 dispatches the heavy lifting to other components such as pyflakes,
 eslint, and other home grown tools.
 
-You can find the source code [here](https://github.com/zulip/zulip/blob/master/tools/lint-all).
+You can find the source code [here](https://github.com/zulip/zulip/blob/master/tools/lint).
 
-In order for our entire lint suite to run in a timely fashion, the `lint-all`
+In order for our entire lint suite to run in a timely fashion, the `lint`
 script performs several lint checks in parallel by forking out subprocesses.  This mechanism
 is still evolving, but you can look at the method `run_parallel` to get the
 gist of how it works.
 
 ### Special options
 
-You can use the `-h` option for `lint-all` to see its usage.  One particular
+You can use the `-h` option for `lint` to see its usage.  One particular
 flag to take note of is the `--modified` flag, which enables you to only run
 lint checks against files that are modified in your git repo.  Most of the
 "sub-linters" respect this flag, but some will continue to process all the files.
@@ -156,7 +156,7 @@ unused imports--because of the way mypy type annotations work in Python 2,
 it would be inconvenient to enforce this too strictly.)
 
 Zulip also has custom regex-based rules that it applies to Python code.
-Look for `python_rules` in the source code for `lint-all`.  Note that we
+Look for `python_rules` in the source code for `lint`.  Note that we
 provide a mechanism to exclude certain lines of codes from these checks.
 Often, it is simply the case that our regex approach is too crude to
 correctly exonerate certain valid constructs.  In other cases, the code

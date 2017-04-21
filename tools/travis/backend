@@ -5,7 +5,7 @@ source tools/travis/activate-venv
 set -e
 set -x
 
-./tools/lint-all --pep8 # Include the slow and thus non-default pep8 linter check
+./tools/lint --pep8 # Include the slow and thus non-default pep8 linter check
 ./tools/test-tools
 ./tools/test-backend --coverage
 ./tools/test-migrations
