@@ -87,7 +87,7 @@ markdown-include==0.5.1
 mock==2.0.0
 
 oauth2client==4.0.0
-oauthlib==2.0.1
+oauthlib==2.0.2
 
 # Required for Pillow==4.0.0
 olefile==0.44
