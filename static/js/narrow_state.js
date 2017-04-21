@@ -153,6 +153,15 @@ exports.narrowed_by_reply = function () {
             exports.narrowed_by_topic_reply());
 };
 
+exports.narrowed_by_stream_reply = function () {
+    if (current_filter === undefined) {
+        return false;
+    }
+    var operators = current_filter.operators();
+    return (operators.length === 1 &&
+            current_filter.operands("stream").length === 1);
+};
+
 exports.narrowed_to_topic = function () {
     if (current_filter === undefined) {
         return false;
