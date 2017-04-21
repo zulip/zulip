@@ -57,7 +57,7 @@ git+https://github.com/umairwaheed/django-guardian.git@a81edc9f8ef8268f3edb73dea
 django-statsd-mozilla==0.3.16
 
 docopt==0.6.2
-fonttools==3.7.2
+fonttools==3.10.0
 
 # Needed for mock 2.0.0
 funcsigs==1.0.2
