@@ -134,7 +134,7 @@ class HomeTest(ZulipTestCase):
             "sounds_enabled",
             "stream_desktop_notifications_enabled",
             "stream_sounds_enabled",
-            "subbed_info",
+            "subscriptions",
             "test_suite",
             "timezone",
             "twenty_four_hour_time",
