@@ -1301,12 +1301,14 @@ pre-commit -> ../../tools/pre-commit
 `tools/reset-to-pull-request` is a short-cut for [checking out a pull request
 locally][self-fetch-pr]. It works slightly differently from the method
 described above in that it does not create a branch for the pull request
-checkout. You should run this script only while in the master branch.
+checkout.
 
-**This script will discard any uncommitted changes. Use with caution.**
+**This tool checks for uncommitted changes, but it will move the
+  current branch using `git reset --hard`.  Use with caution.**
 
-First, make sure you are working in branch `master`. Then run the script with
-the ID number of the pull request as the first argument.
+First, make sure you are working in a branch you want to move (in this
+example, we'll use the local `master` branch). Then run the script
+with the ID number of the pull request as the first argument.
 
 ```
 $ git checkout master
