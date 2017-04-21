@@ -300,9 +300,9 @@ li,
     padding: 5px 10px;
     border: none;
     position: relative;
-    top: 32px;
+    top: 28px;
     left: -5px;
-    margin-top: -8px;
+    margin-top: -24px;
     display: block;
 }
 
@@ -1218,7 +1218,12 @@ a.dark_background:hover,
 }
 
 .message_top_line {
+    pointer-events: none;
     position: relative;
+}
+
+.message_top_line * {
+    pointer-events: auto;
 }
 
 .include-sender .message_top_line {
@@ -2458,12 +2463,6 @@ button.topic_edit_cancel {
 /* Reduce some of the heavy padding from Bootstrap. */
 #message_edit_form {
     margin-bottom: 10px;
-}
-#message_edit_form .edit-control-label {
-    vertical-align: top;
-    padding-top: 0px;
-    margin-right: 10px;
-    font-size: 80%;
 }
 #message_edit_form .edit-controls {
     margin-left: 0px;
