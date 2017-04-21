@@ -109,7 +109,7 @@ pycrypto==2.6.1
 pycparser==2.17
 
 # Needed for memcached usage
-pylibmc==1.5.1
+pylibmc==1.5.2
 
 # Needed for timezone work
 pytz==2016.10
