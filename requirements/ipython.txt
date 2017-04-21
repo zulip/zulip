@@ -6,7 +6,7 @@ ipython-genutils==0.2.0
 pathlib2==2.2.1
 pexpect==4.2.1
 pickleshare==0.7.4
-prompt_toolkit==1.0.13
+prompt_toolkit==1.0.14
 ptyprocess==0.5.1
 simplegeneric==0.8.1
 traitlets==4.3.2
