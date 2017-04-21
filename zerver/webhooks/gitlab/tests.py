@@ -7,16 +7,8 @@ from zerver.lib.test_classes import WebhookTestCase
 
 class GitlabHookTests(WebhookTestCase):
     STREAM_NAME = 'gitlab'
-    URL_TEMPLATE = "/api/v1/external/gitlab?&api_key={api_key}"
+    URL_TEMPLATE = "/api/v1/external/gitlab?&api_key={api_key}&stream={stream}"
     FIXTURE_DIR_NAME = 'gitlab'
-
-    def build_webhook_url(self, branches=None):
-        # type: (Optional[Text]) -> Text
-        api_key = self.get_api_key(self.TEST_USER_EMAIL)
-        url = self.URL_TEMPLATE.format(api_key=api_key)
-        if branches is not None:
-            url = "{}&branches={}".format(url, branches)
-        return url
 
     def test_push_event_message(self):
         # type: () -> None
@@ -26,7 +18,7 @@ class GitlabHookTests(WebhookTestCase):
 
     def test_push_event_message_filtered_by_branches(self):
         # type: () -> None
-        self.url = self.build_webhook_url('master,tomek')
+        self.url = self.build_webhook_url(branches='master,tomek')
         expected_subject = u"my-awesome-project / tomek"
         expected_message = u"Tomasz Kolek [pushed](https://gitlab.com/tomaszkolek0/my-awesome-project/compare/5fcdd5551fc3085df79bece2c32b1400802ac407...eb6ae1e591e0819dc5bf187c6bfe18ec065a80e9) 2 commits to branch tomek. Commits by Tomasz Kolek(2)\n\n* b ([66abd2d](https://gitlab.com/tomaszkolek0/my-awesome-project/commit/66abd2da28809ffa128ed0447965cf11d7f863a7))\n* c ([eb6ae1e](https://gitlab.com/tomaszkolek0/my-awesome-project/commit/eb6ae1e591e0819dc5bf187c6bfe18ec065a80e9))"
         self.send_and_test_stream_message('push', expected_subject, expected_message, HTTP_X_GITLAB_EVENT="Push Hook")
@@ -56,7 +48,7 @@ class GitlabHookTests(WebhookTestCase):
 
     def test_push_commits_more_than_limit_message_filtered_by_branches(self):
         # type: () -> None
-        self.url = self.build_webhook_url('master,tomek')
+        self.url = self.build_webhook_url(branches='master,tomek')
         expected_subject = u"my-awesome-project / tomek"
         commits_info = u'* b ([66abd2d](https://gitlab.com/tomaszkolek0/my-awesome-project/commit/66abd2da28809ffa128ed0447965cf11d7f863a7))\n'
         expected_message = u"Tomasz Kolek [pushed](https://gitlab.com/tomaszkolek0/my-awesome-project/compare/5fcdd5551fc3085df79bece2c32b1400802ac407...eb6ae1e591e0819dc5bf187c6bfe18ec065a80e9) 50 commits to branch tomek. Commits by Tomasz Kolek(50)\n\n{}[and {} more commit(s)]".format(
@@ -373,7 +365,7 @@ class GitlabHookTests(WebhookTestCase):
     def test_push_event_message_filtered_by_branches_ignore(
             self, check_send_message_mock):
         # type: (MagicMock) -> None
-        self.url = self.build_webhook_url('master,development')
+        self.url = self.build_webhook_url(branches='master,development')
         payload = self.get_body('push')
         result = self.client_post(self.url, payload, HTTP_X_GITLAB_EVENT='Push Hook', content_type="application/json")
         self.assertFalse(check_send_message_mock.called)
@@ -383,7 +375,7 @@ class GitlabHookTests(WebhookTestCase):
     def test_push_commits_more_than_limit_message_filtered_by_branches_ignore(
             self, check_send_message_mock):
         # type: (MagicMock) -> None
-        self.url = self.build_webhook_url('master,development')
+        self.url = self.build_webhook_url(branches='master,development')
         payload = self.get_body('push_commits_more_than_limit')
         result = self.client_post(self.url, payload, HTTP_X_GITLAB_EVENT='Push Hook', content_type="application/json")
         self.assertFalse(check_send_message_mock.called)
