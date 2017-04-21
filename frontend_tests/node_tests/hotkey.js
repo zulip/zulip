@@ -215,7 +215,7 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('d', 'drafts.toggle');
 
     // Next, test keys that only work on a selected message.
-    var message_view_only_keys = '@*+rRjJkKsSuvi:GM';
+    var message_view_only_keys = '@*+RjJkKsSuvi:GM';
 
     // Check that they do nothing without a selected message
     global.current_msg_list.empty = return_true;

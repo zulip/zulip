@@ -321,14 +321,9 @@ exports.process_enter_key = function (e) {
         return true;
     }
 
-    if (current_msg_list.empty()) {
-        return false;
-    }
-
     // If we got this far, then we're presumably in the message
-    // view and there is a "current" message, so in that case
-    // "enter" is the hotkey to respond to a message.  Note that
-    // "r" has same effect, but that is handled in process_hotkey().
+    // view, so in that case "enter" is the hotkey to respond to a message.
+    // Note that "r" has same effect, but that is handled in process_hotkey().
     compose_actions.respond_to_message({trigger: 'hotkey enter'});
     return true;
 };
@@ -589,6 +584,11 @@ exports.process_hotkey = function (e, hotkey) {
         case 'open_drafts':
             drafts.toggle();
             return true;
+        case 'reply_message': // 'r': respond to message
+            // Note that you can "enter" to respond to messages as well,
+            // but that is handled in process_enter_key().
+            compose_actions.respond_to_message({trigger: 'hotkey'});
+            return true;
     }
 
     if (current_msg_list.empty()) {
@@ -640,11 +640,6 @@ exports.process_hotkey = function (e, hotkey) {
             return do_narrow_action(narrow.by_recipient);
         case 'narrow_by_subject':
             return do_narrow_action(narrow.by_subject);
-        case 'reply_message': // 'r': respond to message
-            // Note that you can "enter" to respond to messages as well,
-            // but that is handled in process_enter_key().
-            compose_actions.respond_to_message({trigger: 'hotkey'});
-            return true;
         case 'respond_to_author': // 'R': respond to author
             compose_actions.respond_to_message({reply_type: "personal", trigger: 'hotkey pm'});
             return true;

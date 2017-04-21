@@ -252,7 +252,21 @@ exports.respond_to_message = function (opts) {
 
     message = current_msg_list.selected_message();
 
-    if (message === undefined) {
+    if (message === undefined) { // empty narrow implementation
+        if (!narrow_state.narrowed_by_pm_reply() &&
+            !narrow_state.narrowed_by_stream_reply() &&
+            !narrow_state.narrowed_by_topic_reply()) {
+            return;
+        }
+
+        msg_type = 'stream'; // Set msg_type to stream by default
+                                 // in the case of an empty home view.
+        if (narrow_state.narrowed_by_pm_reply()) {
+            msg_type = 'private';
+        }
+
+        var new_opts = fill_in_opts_from_current_narrowed_view(msg_type, opts);
+        exports.start(new_opts.message_type, new_opts);
         return;
     }
 
