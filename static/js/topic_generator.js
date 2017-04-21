@@ -110,6 +110,18 @@ exports.filter = function (gen, filter_func) {
     };
 };
 
+exports.map = function (gen, map_func) {
+    return {
+        next: function () {
+            var val = gen.next();
+            if (val === undefined) {
+                return;
+            }
+            return map_func(val);
+        },
+    };
+};
+
 exports.next_topic = function (streams, get_topics, has_unread_messages, curr_stream, curr_topic) {
     var stream_gen = exports.wrap(streams, curr_stream);
 

@@ -61,6 +61,13 @@ function is_odd(i) { return i % 2 === 1; }
     assert.equal(gen.next(), undefined);
     assert.equal(gen.next(), undefined);
 
+    ints = tg.list_generator([10, 20, 30]);
+
+    function mult10(x) { return x * 10; }
+
+    gen = tg.map(ints, mult10);
+    assert.equal(gen.next(), 100);
+    assert.equal(gen.next(), 200);
 }());
 
 (function test_fchain() {
