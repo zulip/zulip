@@ -8,13 +8,11 @@ It requires implementation of 'get_app' method to initialize tornado application
 from __future__ import absolute_import
 from __future__ import print_function
 
-
 import time
 
 import ujson
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
-from tornado.gen import Return
 from tornado.httpclient import HTTPRequest
 
 from zerver.lib.test_helpers import POSTRequestMock
@@ -37,7 +35,6 @@ from typing import Any, Callable, Dict, Generator, Optional
 
 
 class WebSocketBaseTestCase(AsyncHTTPTestCase, ZulipTestCase):
-
     def setUp(self):
         # type: () -> None
         settings.RUNNING_INSIDE_TORNADO = True
@@ -49,8 +46,12 @@ class WebSocketBaseTestCase(AsyncHTTPTestCase, ZulipTestCase):
         settings.RUNNING_INSIDE_TORNADO = False
 
     @gen.coroutine
-    def ws_connect(self, path, cookie_header, compression_options=None):
-        # type: (str, str, Optional[Any]) -> Generator[Any, Callable[[HTTPRequest, Optional[Any]], Any], None]
+    def ws_connect(self,
+                   path,  # type: str
+                   cookie_header=None,  # type: Optional[str]
+                   compression_options=None  # type: Optional[str]
+                   ):
+        # type: (...) -> Generator[Any, Callable[[HTTPRequest, Optional[Any]], Any], None]
         request = HTTPRequest(url='ws://127.0.0.1:%d%s' % (self.get_http_port(), path))
         request.headers.add('Cookie', cookie_header)
         ws = yield websocket_connect(
@@ -77,8 +78,12 @@ class TornadoTestCase(WebSocketBaseTestCase):
         return create_tornado_application()
 
     @staticmethod
-    def tornado_call(view_func, user_profile, post_data):
-        # type: (Callable[[HttpRequest, UserProfile], HttpResponse], UserProfile, Dict[str, Any]) -> HttpResponse
+    def tornado_call(
+            view_func,  # type: Callable[[HttpRequest, UserProfile], HttpResponse]
+            user_profile,  # type: UserProfile
+            post_data  # type: Dict[str, Any]
+    ):
+        # type: (...) -> HttpResponse
         request = POSTRequestMock(post_data, user_profile)
         return view_func(request, user_profile)
 
@@ -143,17 +148,21 @@ class TornadoTestCase(WebSocketBaseTestCase):
         result = fetch_events(events_query)
         return result
 
-    def _check_message_sending(self, request_id, ack_resp, msg_resp, profile, queue_events_data):
-        # type: (str, str, str, UserProfile, Dict[str, Dict[str, str]]) -> None
-        self.assertEqual(ack_resp[0], 'a')
+    def _check_ack_response(self, ack_response, request_id):
+        # type: (str, str) -> None
+        self.assertEqual(ack_response[0], 'a')
         self.assertEqual(
-            ujson.loads(ack_resp[1:]),
+            ujson.loads(ack_response[1:]),
             [
                 {
                     "type": "ack",
                     "req_id": request_id
                 }
             ])
+
+    def _check_message_sending(self, request_id, ack_resp, msg_resp, profile, queue_events_data):
+        # type: (str, str, str, UserProfile, Dict[str, Dict[str, str]]) -> None
+        self._check_ack_response(ack_resp, request_id)
         self.assertEqual(msg_resp[0], 'a')
         result = self.tornado_call(get_events_backend, profile,
                                    {"queue_id": queue_events_data['response']['queue_id'],
@@ -179,6 +188,36 @@ class TornadoTestCase(WebSocketBaseTestCase):
                 }
             ])
 
+    def _check_auth_response(self, response, request_id):
+        # type: (str, str) -> None
+        self._check_ack_response(response[0], request_id)
+        self.assertEqual(response[1][0], 'a')
+        self.assertEqual(
+            ujson.loads(response[1][1:]),
+            [
+                {"req_id": request_id,
+                 "response": {
+                     "result": "success",
+                     "status_inquiries": {},
+                     "msg": ""
+                 },
+                 "type": "response"}
+            ])
+
+    def _check_auth_response_error(self, response, request_id, error_message):
+        # type: (str, str, str) -> None
+        self.assertEqual(response[1][0], 'a')
+        self.assertEqual(
+            ujson.loads(response[1][1:]),
+            [
+                {"req_id": request_id,
+                 "response": {
+                     "msg": error_message,
+                     "result": "error"
+                 },
+                 "type": "response"}
+            ])
+
     @gen_test
     def test_tornado_connect(self):
         # type: () -> Generator[str, Any, None]
@@ -201,27 +240,7 @@ class TornadoTestCase(WebSocketBaseTestCase):
         queue_events_data = self._get_queue_events_data(user_profile.email)
         request_id = ':'.join((queue_events_data['response']['queue_id'], '0'))
         response = yield self._websocket_auth(ws, queue_events_data, cookies)
-        self.assertEqual(response[0][0], 'a')
-        self.assertEqual(
-            ujson.loads(response[0][1:]),
-            [
-                {
-                    "type": "ack",
-                    "req_id": request_id
-                }
-            ])
-        self.assertEqual(response[1][0], 'a')
-        self.assertEqual(
-            ujson.loads(response[1][1:]),
-            [
-                {"req_id": request_id,
-                 "response": {
-                     "result": "success",
-                     "status_inquiries": {},
-                     "msg": ""
-                 },
-                 "type": "response"}
-            ])
+        self._check_auth_response(response, request_id)
         self.close(ws)
 
     @gen_test
