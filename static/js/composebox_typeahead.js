@@ -234,6 +234,34 @@ exports.compose_content_begins_typeahead = function (query) {
         return false;
     }
 
+    var element = this.$element;
+    // Wait for completions to be computed (to account for menu width change)
+    setTimeout(function () {
+        var typeahead_menu = element.data().typeahead.$menu;
+
+        var mirror_cursor = $('<span>.</span>');
+        var mirror = $('<div></div>').text(q.slice(0, -current_token.length)).append(mirror_cursor);
+        // Transfer most important properties over, to linewrap correctly
+        mirror.css(element.css([
+            'direction',
+            'box-sizing',
+            'width', 'height', 'max-width', 'max-height', 'overflow-x', 'overflow-y',
+            'border-top-width', 'border-right-width', 'border-bottom-width', 'border-left-width', 'border-style',
+            'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
+            'font-style', 'font-variant', 'font-weight', 'font-stretch', 'font-size', 'font-size-adjust', 'line-height', 'font-family', 'text-align',
+            'text-transform', 'text-indent', 'text-decoration', 'letter-spacing', 'word-spacing', 'tab-size', 'white-space', 'line-break', 'word-break', 'word-wrap'
+        ]));
+        $(document.body).append(mirror);
+
+        var left_offset = mirror_cursor.offset().left- mirror.offset().left - element.scrollLeft();
+        left_offset  = Math.min(left_offset, element.outerWidth() - typeahead_menu.outerWidth());
+
+        typeahead_menu.css('margin-left', left_offset);
+        typeahead_menu.css('margin-top', mirror_cursor.offset().top - mirror.offset().top - element.scrollTop());
+
+        mirror.remove();
+    }, 1);
+
     // Only start the emoji autocompleter if : is directly after one
     // of the whitespace or punctuation chars we split on.
     if (this.options.completions.emoji && current_token[0] === ':') {
