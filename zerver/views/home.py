@@ -240,7 +240,6 @@ def home_real(request):
 
         # Realm foreign key data from register_ret.
         # TODO: Rename these to match register_ret values.
-        subbed_info           = register_ret['subscriptions'],
         unsubbed_info         = register_ret['unsubscribed'],
         neversubbed_info      = register_ret['never_subscribed'],
         people_list           = register_ret['realm_users'],
@@ -310,6 +309,7 @@ def home_real(request):
         'realm_uri',
         'realm_waiting_period_threshold',
         'referrals',
+        'subscriptions',
         'twenty_four_hour_time',
         'zulip_version',
     ]
