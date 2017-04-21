@@ -1303,7 +1303,7 @@ locally][self-fetch-pr]. It works slightly differently from the method
 described above in that it does not create a branch for the pull request
 checkout. You should run this script only while in the master branch.
 
-**This script will discard any uncommitted changes. Use with caution.**
+**This script will discard and override any committed changes. Use with caution.**
 
 First, make sure you are working in branch `master`. Then run the script with
 the ID number of the pull request as the first argument.
