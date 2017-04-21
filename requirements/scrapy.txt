@@ -1,4 +1,4 @@
-Scrapy==1.3.2
+Scrapy==1.3.3
 cryptography==1.8.1
 parsel==1.1.0
 pyOpenSSL==17.0.0
