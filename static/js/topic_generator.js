@@ -155,6 +155,26 @@ exports.next_topic = function (streams, get_topics, has_unread_messages, curr_st
     return outer_gen.next();
 };
 
+exports.get_next_topic = function (curr_stream, curr_topic) {
+    var my_streams = stream_sort.get_streams();
+
+    function get_topics(stream) {
+        var topics = stream_data.get_recent_topics(stream) || [];
+        return _.map(topics, function (obj) { return obj.subject; });
+    }
+
+    function has_unread_messages(stream, topic) {
+        return unread.topic_has_any_unread(stream, topic);
+    }
+
+    return exports.next_topic(
+        my_streams,
+        get_topics,
+        has_unread_messages,
+        curr_stream,
+        curr_topic
+    );
+};
 
 return exports;
 }());

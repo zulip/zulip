@@ -1,3 +1,9 @@
+add_dependencies({
+    stream_data: 'js/stream_data',
+    stream_sort: 'js/stream_sort',
+    unread: 'js/unread',
+});
+
 var tg = require('js/topic_generator.js');
 
 function is_even(i) { return i % 2 === 0; }
@@ -143,4 +149,33 @@ function is_odd(i) { return i % 2 === 1; }
                      {stream: 1, topic: '1a'});
     assert.deepEqual(next_topic(undefined, undefined),
                      {stream: 1, topic: '1a'});
+
+
+    // Now test the deeper function that is wired up to
+    // real functions stream_data/stream_sort/unread.
+    var curr_stream = 'announce';
+    var curr_topic = 'whatever';
+
+    global.stream_sort.get_streams = function () {
+        return ['announce', 'devel', 'test here'];
+    };
+
+    global.stream_data.get_recent_topics = function (stream) {
+        if (stream === 'devel') {
+            return [
+                {subject: 'javascript'},
+                {subject: 'python'},
+            ];
+        }
+    };
+
+    global.unread.topic_has_any_unread = function (stream, topic) {
+        return (stream === 'devel' && topic === 'python');
+    };
+
+    var next_item = tg.get_next_topic(curr_stream, curr_topic);
+    assert.deepEqual(next_item, {
+        stream: 'devel',
+        topic: 'python',
+    });
 }());
