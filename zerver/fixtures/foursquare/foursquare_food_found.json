@@ -1,0 +1,396 @@
+{
+	"meta": {
+		"code": 200,
+		"requestId": "5851f0361ed219046d4d6949"
+	},
+	"notifications": [{
+		"type": "notificationTray",
+		"item": {
+			"unreadCount": 0
+		}
+	}],
+	"response": {
+		"suggestedFilters": {
+			"header": "Tap to show:",
+			"filters": [{
+				"name": "$-$$$$",
+				"key": "price"
+			}, {
+				"name": "Open now",
+				"key": "openNow"
+			}]
+		},
+		"geocode": {
+			"what": "",
+			"where": "chicago il",
+			"center": {
+				"lat": 41.85003,
+				"lng": -87.65005
+			},
+			"displayString": "Chicago, IL, United States",
+			"cc": "US",
+			"geometry": {
+				"bounds": {
+					"ne": {
+						"lat": 42.023134999999996,
+						"lng": -87.52366099999999
+					},
+					"sw": {
+						"lat": 41.644286,
+						"lng": -87.940101
+					}
+				}
+			},
+			"slug": "chicago-illinois",
+			"longId": "72057594042815334"
+		},
+		"warning": {
+			"text": "There aren't a lot of results near you. Try something more general, reset your filters, or expand the search area."
+		},
+		"headerLocation": "Chicago",
+		"headerFullLocation": "Chicago",
+		"headerLocationGranularity": "city",
+		"totalResults": 241,
+		"suggestedBounds": {
+			"ne": {
+				"lat": 41.90544207845615,
+				"lng": -87.6236515444034
+			},
+			"sw": {
+				"lat": 41.88183783676364,
+				"lng": -87.6278348838259
+			}
+		},
+		"groups": [{
+			"type": "Recommended Places",
+			"name": "recommended",
+			"items": [{
+				"reasons": {
+					"count": 0,
+					"items": [{
+						"summary": "This spot is popular",
+						"type": "general",
+						"reasonName": "globalInteractionReason"
+					}]
+				},
+				"venue": {
+					"id": "42b75880f964a52090251fe3",
+					"name": "Millennium Park",
+					"contact": {
+						"phone": "+13127421168",
+						"formattedPhone": "+1 312-742-1168",
+						"twitter": "millennium_park",
+						"facebook": "107993661288",
+						"facebookName": "Millennium Park"
+					},
+					"location": {
+						"address": "201 E Randolph St",
+						"crossStreet": "btwn Columbus Dr & Michigan Ave",
+						"lat": 41.88291075684057,
+						"lng": -87.62384169619533,
+						"postalCode": "60601",
+						"cc": "US",
+						"city": "Chicago",
+						"state": "IL",
+						"country": "United States",
+						"formattedAddress": ["201 E Randolph St (btwn Columbus Dr & Michigan Ave)", "Chicago, IL 60601", "United States"]
+					},
+					"categories": [{
+						"id": "4bf58dd8d48988d163941735",
+						"name": "Park",
+						"pluralName": "Parks",
+						"shortName": "Park",
+						"icon": {
+							"prefix": "https:\/\/ss3.4sqi.net\/img\/categories_v2\/parks_outdoors\/park_",
+							"suffix": ".png"
+						},
+						"primary": true
+					}],
+					"verified": false,
+					"stats": {
+						"checkinsCount": 123407,
+						"usersCount": 83766,
+						"tipCount": 517
+					},
+					"url": "http:\/\/www.millenniumpark.org",
+					"rating": 9.7,
+					"ratingColor": "00B551",
+					"ratingSignals": 3630,
+					"beenHere": {
+						"count": 0,
+						"marked": false,
+						"lastCheckinExpiredAt": 0
+					},
+					"hours": {
+						"status": "Open until 11:00 PM",
+						"isOpen": true,
+						"isLocalHoliday": false
+					},
+					"photos": {
+						"count": 0,
+						"groups": []
+					},
+					"hereNow": {
+						"count": 3,
+						"summary": "3 people are here",
+						"groups": [{
+							"type": "others",
+							"name": "Other people here",
+							"count": 3,
+							"items": []
+						}]
+					}
+				},
+				"tips": [{
+					"id": "4b6796c970c603bbf35291b4",
+					"createdAt": 1265080009,
+					"text": "This 24.5-acre park features the work of world-renowned architects, planners, artists and designers.",
+					"type": "user",
+					"url": "http:\/\/millenniumpark.org\/",
+					"canonicalUrl": "https:\/\/foursquare.com\/item\/4b6796c970c603bbf35291b4",
+					"likes": {
+						"count": 111,
+						"groups": [],
+						"summary": "111 likes"
+					},
+					"logView": true,
+					"agreeCount": 110,
+					"disagreeCount": 0,
+					"todo": {
+						"count": 1
+					},
+					"user": {
+						"id": "238086",
+						"firstName": "Explore Chicago",
+						"gender": "none",
+						"photo": {
+							"prefix": "https:\/\/irs0.4sqi.net\/img\/user\/",
+							"suffix": "\/JEBEI3ZWJ53R2G2W.jpg"
+						},
+						"type": "page"
+					}
+				}],
+				"referralId": "e-0-42b75880f964a52090251fe3-0"
+			}, {
+				"reasons": {
+					"count": 0,
+					"items": [{
+						"summary": "This spot is popular",
+						"type": "general",
+						"reasonName": "globalInteractionReason"
+					}]
+				},
+				"venue": {
+					"id": "4b9d15c5f964a520478e36e3",
+					"name": "Chicago Riverwalk",
+					"contact": {},
+					"location": {
+						"address": "Chicago River",
+						"lat": 41.88788326499458,
+						"lng": -87.62764473203397,
+						"labeledLatLngs": [{
+							"label": "display",
+							"lat": 41.88788326499458,
+							"lng": -87.62764473203397
+						}],
+						"postalCode": "60601",
+						"cc": "US",
+						"city": "Chicago",
+						"state": "IL",
+						"country": "United States",
+						"formattedAddress": ["Chicago River", "Chicago, IL 60601", "United States"]
+					},
+					"categories": [{
+						"id": "4bf58dd8d48988d159941735",
+						"name": "Trail",
+						"pluralName": "Trails",
+						"shortName": "Trail",
+						"icon": {
+							"prefix": "https:\/\/ss3.4sqi.net\/img\/categories_v2\/parks_outdoors\/hikingtrail_",
+							"suffix": ".png"
+						},
+						"primary": true
+					}],
+					"verified": false,
+					"stats": {
+						"checkinsCount": 19702,
+						"usersCount": 11381,
+						"tipCount": 96
+					},
+					"url": "http:\/\/www.chicagoriverwalk.us",
+					"rating": 9.7,
+					"ratingColor": "00B551",
+					"ratingSignals": 876,
+					"beenHere": {
+						"count": 0,
+						"marked": false,
+						"lastCheckinExpiredAt": 0
+					},
+					"hours": {
+						"status": "Likely open",
+						"isOpen": true,
+						"isLocalHoliday": false
+					},
+					"photos": {
+						"count": 0,
+						"groups": []
+					},
+					"hereNow": {
+						"count": 0,
+						"summary": "Nobody here",
+						"groups": []
+					}
+				},
+				"tips": [{
+					"id": "51828226498ee62ddc9c6b6f",
+					"createdAt": 1367507494,
+					"text": "Urban Kayaks are open for the season! Located at 270 E. Riverwalk South. Mon - Fri 10 a.m. - 6 p.m. and Sat - Sun 9 a.m. - 5 p.m. (312) 965-0035 http:\/\/urbankayaks.com\/",
+					"entities": [{
+						"indices": [145, 168],
+						"type": "url",
+						"object": {
+							"url": "http:\/\/urbankayaks.com\/"
+						}
+					}],
+					"type": "user",
+					"canonicalUrl": "https:\/\/foursquare.com\/item\/51828226498ee62ddc9c6b6f",
+					"photo": {
+						"id": "5182822850190c4a1b123101",
+						"createdAt": 1367507496,
+						"source": {
+							"name": "Foursquare Web",
+							"url": "https:\/\/foursquare.com"
+						},
+						"prefix": "https:\/\/irs0.4sqi.net\/img\/general\/",
+						"suffix": "\/14923118_aCe0MurL1KJ3lXKdd_jGyrJpahKMgOxFJFgRvpZvBlc.jpg",
+						"width": 959,
+						"height": 639,
+						"visibility": "public"
+					},
+					"photourl": "https:\/\/irs0.4sqi.net\/img\/general\/original\/14923118_aCe0MurL1KJ3lXKdd_jGyrJpahKMgOxFJFgRvpZvBlc.jpg",
+					"likes": {
+						"count": 18,
+						"groups": [],
+						"summary": "18 likes"
+					},
+					"logView": true,
+					"agreeCount": 18,
+					"disagreeCount": 0,
+					"todo": {
+						"count": 7
+					},
+					"user": {
+						"id": "14923118",
+						"firstName": "Chicago Park District",
+						"gender": "none",
+						"photo": {
+							"prefix": "https:\/\/irs2.4sqi.net\/img\/user\/",
+							"suffix": "\/TCCM0SNSYKZPLOBQ.jpg"
+						},
+						"type": "chain"
+					}
+				}],
+				"referralId": "e-0-4b9d15c5f964a520478e36e3-1"
+			}, {
+				"reasons": {
+					"count": 0,
+					"items": [{
+						"summary": "This spot is popular",
+						"type": "general",
+						"reasonName": "globalInteractionReason"
+					}]
+				},
+				"venue": {
+					"id": "4b9511c7f964a520f38d34e3",
+					"name": "Chicago Lakefront Trail",
+					"contact": {},
+					"location": {
+						"address": "Lake Michigan Lakefront",
+						"crossStreet": "at N Lakeshore Dr",
+						"lat": 41.90436915837922,
+						"lng": -87.6240348815918,
+						"postalCode": "60611",
+						"cc": "US",
+						"city": "Chicago",
+						"state": "IL",
+						"country": "United States",
+						"formattedAddress": ["Lake Michigan Lakefront (at N Lakeshore Dr)", "Chicago, IL 60611", "United States"]
+					},
+					"categories": [{
+						"id": "4bf58dd8d48988d159941735",
+						"name": "Trail",
+						"pluralName": "Trails",
+						"shortName": "Trail",
+						"icon": {
+							"prefix": "https:\/\/ss3.4sqi.net\/img\/categories_v2\/parks_outdoors\/hikingtrail_",
+							"suffix": ".png"
+						},
+						"primary": true
+					}],
+					"verified": false,
+					"stats": {
+						"checkinsCount": 42135,
+						"usersCount": 11471,
+						"tipCount": 115
+					},
+					"rating": 9.6,
+					"ratingColor": "00B551",
+					"ratingSignals": 683,
+					"allowMenuUrlEdit": true,
+					"beenHere": {
+						"count": 0,
+						"marked": false,
+						"lastCheckinExpiredAt": 0
+					},
+					"hours": {
+						"isOpen": false,
+						"isLocalHoliday": false
+					},
+					"photos": {
+						"count": 0,
+						"groups": []
+					},
+					"hereNow": {
+						"count": 1,
+						"summary": "One other person is here",
+						"groups": [{
+							"type": "others",
+							"name": "Other people here",
+							"count": 1,
+							"items": []
+						}]
+					}
+				},
+				"tips": [{
+					"id": "4f6e1e7ce4b06892a02b44a4",
+					"createdAt": 1332616828,
+					"text": "Water clears your mind, body and soul",
+					"type": "user",
+					"canonicalUrl": "https:\/\/foursquare.com\/item\/4f6e1e7ce4b06892a02b44a4",
+					"likes": {
+						"count": 15,
+						"groups": [],
+						"summary": "15 likes"
+					},
+					"logView": true,
+					"agreeCount": 15,
+					"disagreeCount": 0,
+					"todo": {
+						"count": 2
+					},
+					"user": {
+						"id": "24565590",
+						"firstName": "Dorothy",
+						"lastName": "Crawley",
+						"gender": "female",
+						"photo": {
+							"prefix": "https:\/\/irs0.4sqi.net\/img\/user\/",
+							"suffix": "\/41RVDENSK1VUXI1M.jpg"
+						}
+					}
+				}],
+				"referralId": "e-0-4b9511c7f964a520f38d34e3-2"
+			}]
+		}]
+	}
+}

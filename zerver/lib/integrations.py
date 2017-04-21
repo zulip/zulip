@@ -157,6 +157,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('crashlytics'),
     WebhookIntegration('delighted', display_name='Delighted'),
     WebhookIntegration('deskdotcom', logo='static/images/integrations/logos/deskcom.png', display_name='Desk.com'),
+    WebhookIntegration('foursquare', display_name='FourSquare'),
     WebhookIntegration('freshdesk'),
     GithubIntegration(
         'github',
