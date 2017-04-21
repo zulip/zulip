@@ -111,6 +111,7 @@ exports.update_messages = function update_messages(events) {
     var msgs_to_rerender = [];
     var topic_edited = false;
     var changed_narrow = false;
+    var message_content_edited = false;
 
     _.each(events, function (event) {
         var msg = message_store.get(event.message_id);
@@ -213,6 +214,7 @@ exports.update_messages = function update_messages(events) {
                 msg.edit_history = [];
             }
             msg.edit_history = [edit_history_entry].concat(msg.edit_history);
+            message_content_edited = true;
         }
 
         msg.last_edit_timestamp = event.edit_timestamp;
@@ -233,9 +235,10 @@ exports.update_messages = function update_messages(events) {
             message_list.narrowed.rerender();
         }
     } else {
-        home_msg_list.view.rerender_messages(msgs_to_rerender);
+        // If the content of the message was edited, we do a special animation.
+        current_msg_list.view.rerender_messages(msgs_to_rerender, message_content_edited);
         if (current_msg_list === message_list.narrowed) {
-            message_list.narrowed.view.rerender_messages(msgs_to_rerender);
+            home_msg_list.view.rerender_messages(msgs_to_rerender);
         }
     }
     unread_ui.update_unread_counts();

@@ -812,7 +812,8 @@ MessageListView.prototype = {
         header.replaceWith(rendered_recipient_row);
     },
 
-    _rerender_message: function MessageListView___rerender_message(message_container) {
+    _rerender_message: function MessageListView___rerender_message(message_container,
+                                                                   message_content_edited) {
         var row = this.get_row(message_container.msg.id);
         var was_selected = this.list.selected_message() === message_container.msg;
 
@@ -821,7 +822,9 @@ MessageListView.prototype = {
         this._maybe_format_me_message(message_container);
 
         var rendered_msg = $(this._get_message_template(message_container));
-        rendered_msg.addClass("fade-in-message");
+        if (message_content_edited) {
+            rendered_msg.addClass("fade-in-message");
+        }
         this._post_process_dom_messages(rendered_msg.get());
         row.replaceWith(rendered_msg);
 
@@ -830,7 +833,8 @@ MessageListView.prototype = {
         }
     },
 
-    rerender_messages: function MessageListView__rerender_messages(messages) {
+    rerender_messages: function MessageListView__rerender_messages(messages,
+                                                                   message_content_edited) {
         var self = this;
 
         // Convert messages to list messages
@@ -852,13 +856,13 @@ MessageListView.prototype = {
                 message_groups.push(current_group);
                 current_group = [];
             }
-            self._rerender_message(message_container);
+            self._rerender_message(message_container, message_content_edited);
         });
         if (current_group.length !== 0) {
             message_groups.push(current_group);
         }
         _.each(message_groups, function (messages_in_group) {
-            self._rerender_header(messages_in_group);
+            self._rerender_header(messages_in_group, message_content_edited);
         });
     },
 
