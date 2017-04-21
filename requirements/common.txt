@@ -3,7 +3,7 @@
 Django==1.10.5
 
 # Needed for rendering backend templates
-Jinja2==2.9.5
+Jinja2==2.9.6
 
 # Needed for markdown processing
 Markdown==2.6.8
