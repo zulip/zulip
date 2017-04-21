@@ -848,6 +848,7 @@ JS_SPECS = {
             'js/topic_list.js',
             'js/pm_list.js',
             'js/stream_sort.js',
+            'js/topic_generator.js',
             'js/stream_list.js',
             'js/filter.js',
             'js/message_list_view.js',

@@ -67,6 +67,7 @@
         "composebox_typeahead": false,
         "search": false,
         "topic_list": false,
+        "topic_generator": false,
         "gear_menu": false,
         "hashchange": false,
         "hash_util": false,
