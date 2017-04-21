@@ -130,8 +130,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
 
     if want('realm_user'):
         state['realm_users'] = get_realm_user_dicts(user_profile)
-        state['realm_fullname'] = user_profile.full_name
-        
+
     if want('realm_bot'):
         state['realm_bots'] = get_owned_bot_dicts(user_profile)
 
