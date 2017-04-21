@@ -21,6 +21,7 @@ def api_bitbucket_webhook(request, user_profile, payload=REQ(validator=check_dic
 
     commits = [
         {
+            'name': payload.get('user'),
             'sha': commit.get('raw_node'),
             'message': commit.get('message'),
             'url': u'{}{}commits/{}'.format(

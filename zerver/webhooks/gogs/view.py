@@ -18,6 +18,7 @@ def format_push_event(payload):
 
     for commit in payload['commits']:
         commit['sha'] = commit['id']
+        commit['name'] = commit['author']['name'].split()[0]
 
     data = {
         'user_name': payload['sender']['username'],

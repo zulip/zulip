@@ -169,6 +169,7 @@ def get_force_push_body(payload, change):
 def get_normal_push_body(payload, change):
     # type: (Dict[str, Any], Dict[str, Any]) -> Text
     commits_data = [{
+        'name': commit.get('author').get('raw').split()[0],
         'sha': commit.get('hash'),
         'url': commit.get('links').get('html').get('href'),
         'message': commit.get('message'),
