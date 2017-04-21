@@ -400,6 +400,31 @@ exports.stream_topic = function () {
     };
 };
 
+exports.narrow_to_next_topic = function () {
+    var curr_info = exports.stream_topic();
+
+    if (!curr_info || !curr_info.stream) {
+        return;
+    }
+
+    var next_narrow = topic_generator.get_next_topic(
+        curr_info.stream,
+        curr_info.topic
+    );
+
+    if (!next_narrow) {
+        return;
+    }
+
+    var filter_expr = [
+        {operator: 'stream', operand: next_narrow.stream},
+        {operator: 'topic', operand: next_narrow.topic},
+    ];
+
+    narrow.activate(filter_expr);
+};
+
+
 // Activate narrowing with a single operator.
 // This is just for syntactic convenience.
 exports.by = function (operator, operand, opts) {
