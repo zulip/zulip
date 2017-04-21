@@ -4,7 +4,7 @@
 
 # Needed to build RTD docs
 sphinx==1.5.5
-sphinx-rtd-theme==0.1.9
+sphinx-rtd-theme==0.2.4
 
 # Needed to build markdown docs
 recommonmark==0.4.0
