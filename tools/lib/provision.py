@@ -119,7 +119,7 @@ UBUNTU_COMMON_APT_DEPENDENCIES = [
     "yui-compressor",
     "wget",
     "ca-certificates",      # Explicit dependency in case e.g. wget is already installed
-    "puppet",               # Used by lint-all
+    "puppet",               # Used by lint
     "gettext",              # Used by makemessages i18n
     "curl",                 # Used for fetching PhantomJS as wget occasionally fails on redirects
     "netcat",               # Used for flushing memcached

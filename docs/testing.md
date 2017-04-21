@@ -32,13 +32,13 @@ Then, to run the full Zulip test suite, do this:
 ./tools/test-all
 ```
 
-This runs the linter (`tools/lint-all`) plus all of our test suites;
+This runs the linter (`tools/lint`) plus all of our test suites;
 they can all be run separately (just read `tools/test-all` to see
 them).  You can also run individual tests which can save you a lot of
 time debugging a test failure, e.g.:
 
 ```
-./tools/lint-all # Runs all the linters in parallel
+./tools/lint # Runs all the linters in parallel
 ./tools/test-backend zerver.tests.test_bugdown.BugdownTest.test_inline_youtube
 ./tools/test-backend BugdownTest # Run `test-backend --help` for more options
 ./tools/test-js-with-casper 09-navigation.js

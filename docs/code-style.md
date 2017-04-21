@@ -13,7 +13,7 @@ question.
 
 You can run them all at once with
 
-    ./tools/lint-all
+    ./tools/lint
 
 You can set this up as a local Git commit hook with
 
@@ -21,7 +21,7 @@ You can set this up as a local Git commit hook with
 
 The Vagrant setup process runs this for you.
 
-`lint-all` runs many lint checks in parallel, including
+`lint` runs many lint checks in parallel, including
 
 -   JavaScript ([ESLint](http://eslint.org/))
 -   Python ([Pyflakes](http://pypi.python.org/pypi/pyflakes))
