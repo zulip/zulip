@@ -190,7 +190,9 @@ def get_all_committers(commits_data):
     for commit in commits_data:
         committers[commit['name']] += 1
 
-    committers_items = sorted(list(committers.items()), key=lambda item: item[1], reverse=True)  # type: List[Tuple[str, int]]
+    # Sort by commit count, breaking ties alphabetically.
+    committers_items = sorted(list(committers.items()),
+                              key=lambda item: (-item[1], item[0]))  # type: List[Tuple[str, int]]
     committers_values = [c_i[1] for c_i in committers_items]  # type: List[int]
 
     if len(committers) > PUSH_COMMITTERS_LIMIT_INFO:
