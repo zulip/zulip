@@ -7,7 +7,7 @@ Jinja2==2.9.6
 
 # Needed for markdown processing
 Markdown==2.6.8
-MarkupSafe==0.23
+MarkupSafe==1.0
 
 # Needed for Image Processing
 Pillow==4.0.0
