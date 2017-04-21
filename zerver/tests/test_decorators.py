@@ -24,7 +24,7 @@ from zerver.lib.request import \
 from zerver.decorator import (
     api_key_only_webhook_view,
     authenticated_json_post_view, authenticated_json_view,
-    authenticate_notify,
+    authenticated_json_patch_view, authenticate_notify,
     get_client_name, internal_notify_view, is_local_addr,
     rate_limit, validate_api_key, logged_in_and_active,
     return_success_on_head_request
@@ -986,6 +986,72 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
 
     def _login(self, user_email, password=None):
         # type: (str, str) -> None
+        if password:
+            user_profile = get_user_profile_by_email(user_email)
+            user_profile.set_password(password)
+            user_profile.save()
+        self.login(user_email, password)
+
+class TestAuthenticatedJsonPatchViewDecorator(ZulipTestCase):
+    def test_authenticated_json_patch_view_if_everything_is_correct(self):
+        user_email = 'hamlet@zulip.com'
+        self._login(user_email)
+        response = self._do_test(user_email)
+        self.assertEqual(response.status_code, 200)
+
+    def test_authenticated_json_patch_view_if_subdomain_is_invalid(self):
+        user_email = 'hamlet@zulip.com'
+        self._login(user_email)
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True):
+            with mock.patch('logging.warning') as mock_warning, \
+                    mock.patch('zerver.decorator.get_subdomain', return_value=''):
+                self.assert_json_error_contains(self._do_test(user_email),
+                                                "Account is not associated with this "
+                                                "subdomain")
+                mock_warning.assert_called_with(
+                    "User {} attempted to access JSON API on wrong "
+                    "subdomain {}".format(user_email, ''))
+
+            with mock.patch('logging.warning') as mock_warning, \
+                    mock.patch('zerver.decorator.get_subdomain', return_value='acme'):
+                self.assert_json_error_contains(self._do_test(user_email),
+                                                "Account is not associated with this "
+                                                "subdomain")
+                mock_warning.assert_called_with(
+                    "User {} attempted to access JSON API on wrong "
+                    "subdomain {}".format(user_email, 'acme'))
+
+    def test_authenticated_json_patch_view_if_user_is_incoming_webhook(self):
+        user_email = 'webhook-bot@zulip.com'
+        self._login(user_email, password="test")  # we set a password because user is a bot
+        self.assert_json_error_contains(self._do_test(user_email), "Webhook bots can only access webhooks")
+
+    def test_authenticated_json_patch_view_if_user_is_not_active(self):
+        user_email = 'hamlet@zulip.com'
+        self._login(user_email, password="test")
+        # Get user_profile after _login so that we have the latest data.
+        user_profile = get_user_profile_by_email(user_email)
+        # we deactivate user manually because do_deactivate_user removes user session
+        user_profile.is_active = False
+        user_profile.save()
+        self.assert_json_error_contains(self._do_test(user_email), "Account not active")
+        do_reactivate_user(user_profile)
+
+    def test_authenticated_json_patch_view_if_user_realm_is_deactivated(self):
+        user_email = 'hamlet@zulip.com'
+        user_profile = get_user_profile_by_email(user_email)
+        self._login(user_email)
+        # we deactivate user's realm manually because do_deactivate_user removes user session
+        user_profile.realm.deactivated = True
+        user_profile.realm.save()
+        self.assert_json_error_contains(self._do_test(user_email), "Realm for account has been deactivated")
+        do_reactivate_realm(user_profile.realm)
+
+    def _do_test(self, user_email):
+        data = {"status": '"started"'}
+        return self.client_patch(r'/json/tutorial_status', data)
+
+    def _login(self, user_email, password=None):
         if password:
             user_profile = get_user_profile_by_email(user_email)
             user_profile.set_password(password)

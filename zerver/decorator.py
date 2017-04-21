@@ -105,6 +105,25 @@ def require_post(func):
         return func(request, *args, **kwargs)
     return wrapper # type: ignore # https://github.com/python/mypy/issues/1927
 
+# Based on django.views.decorators.http.require_http_methods
+def require_patch(func):
+    # type: (ViewFuncT) -> ViewFuncT
+    @wraps(func)
+    def wrapper(request, *args, **kwargs):
+        # type: (HttpRequest, *Any, **Any) -> HttpResponse
+        if (request.method != "PATCH"
+            and not (request.method == "SOCKET"
+                     and request.META['zulip.emulated_method'] == "PATCH")):
+            if request.method == "SOCKET":
+                err_method = "SOCKET/%s" % (request.META['zulip.emulated_method'],)
+            else:
+                err_method = request.method
+            logging.warning('Method Not Allowed (%s): %s', err_method, request.path,
+                            extra={'status_code': 405, 'request': request})
+            return HttpResponseNotAllowed(["PATCH"])
+        return func(request, *args, **kwargs)
+    return wrapper # type: ignore # https://github.com/python/mypy/issues/1927
+
 def require_realm_admin(func):
     # type: (ViewFuncT) -> ViewFuncT
     @wraps(func)
@@ -491,6 +510,17 @@ def authenticate_log_and_execute_json(request, view_func, *args, **kwargs):
 def authenticated_json_post_view(view_func):
     # type: (ViewFuncT) -> ViewFuncT
     @require_post
+    @has_request_variables
+    @wraps(view_func)
+    def _wrapped_view_func(request,
+                           *args, **kwargs):
+        # type: (HttpRequest, *Any, **Any) -> HttpResponse
+        return authenticate_log_and_execute_json(request, view_func, *args, **kwargs)
+    return _wrapped_view_func # type: ignore # https://github.com/python/mypy/issues/1927
+
+def authenticated_json_patch_view(view_func):
+    # type: (ViewFuncT) -> ViewFuncT
+    @require_patch
     @has_request_variables
     @wraps(view_func)
     def _wrapped_view_func(request,
