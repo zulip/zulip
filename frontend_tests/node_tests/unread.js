@@ -104,6 +104,7 @@ var zero_counts = {
 
     count = unread.num_unread_for_subject('Social', 'lunch');
     assert.equal(count, 2);
+    assert(unread.topic_has_any_unread('Social', 'lunch'));
 
     var event = {
         subject: 'dinner',
@@ -125,9 +126,11 @@ var zero_counts = {
 
     count = unread.num_unread_for_subject('social', 'lunch');
     assert.equal(count, 0);
+    assert(!unread.topic_has_any_unread('social', 'lunch'));
 
     count = unread.num_unread_for_subject('social', 'snack');
     assert.equal(count, 1);
+    assert(unread.topic_has_any_unread('social', 'snack'));
 
     // Test defensive code.  Trying to update a message we don't know
     // about should be a no-op.

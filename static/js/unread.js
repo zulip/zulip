@@ -121,6 +121,21 @@ exports.unread_topic_counter = (function () {
         return num_unread;
     };
 
+    self.topic_has_any_unread = function (stream, topic) {
+        var stream_dct = unread_topics.get(stream);
+
+        if (!stream_dct) {
+            return false;
+        }
+
+        var topic_dct = stream_dct.get(topic);
+        if (!topic_dct) {
+            return false;
+        }
+
+        return !topic_dct.is_empty();
+    };
+
     return self;
 }());
 
@@ -251,6 +266,10 @@ exports.num_unread_for_stream = function (stream) {
 
 exports.num_unread_for_subject = function (stream, subject) {
     return exports.unread_topic_counter.get(stream, subject);
+};
+
+exports.topic_has_any_unread = function (stream, topic) {
+    return exports.unread_topic_counter.topic_has_any_unread(stream, topic);
 };
 
 exports.num_unread_for_person = function (user_ids_string) {
