@@ -6,10 +6,13 @@ set_global('blueslip', {});
 (function test_basic() {
     var d = new Dict();
 
+    assert(d.is_empty());
+
     assert.deepEqual(d.keys(), []);
 
     d.set('foo', 'bar');
     assert.equal(d.get('foo'), 'bar');
+    assert(!d.is_empty());
 
     d.set('foo', 'baz');
     assert.equal(d.get('foo'), 'baz');
@@ -162,10 +165,16 @@ set_global('blueslip', {});
 (function test_num_items() {
     var d = new Dict();
     assert.equal(d.num_items(), 0);
+    assert(d.is_empty());
+
     d.set('foo', 1);
     assert.equal(d.num_items(), 1);
+    assert(!d.is_empty());
+
     d.set('foo', 2);
     assert.equal(d.num_items(), 1);
+    assert(!d.is_empty());
+
     d.set('bar', 1);
     assert.equal(d.num_items(), 2);
     d.del('foo');
@@ -184,11 +193,13 @@ set_global('blueslip', {});
 
     populate();
     assert.equal(d.num_items(), 2);
+    assert(!d.is_empty());
 
     d.clear();
     assert.equal(d.get('foo'), undefined);
     assert.equal(d.get('bar'), undefined);
     assert.equal(d.num_items(), 0);
+    assert(d.is_empty());
 
     // make sure it still works after clearing
     populate();
