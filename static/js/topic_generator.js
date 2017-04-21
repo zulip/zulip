@@ -133,11 +133,22 @@ exports.next_topic = function (streams, get_topics, has_unread_messages, curr_st
         } else {
             gen = exports.list_generator(get_topics(which_stream));
         }
-        var has_unread = function (topic) {
-            return has_unread_messages(which_stream, topic);
-        };
 
-        return exports.filter(gen, has_unread);
+        function has_unread(topic) {
+            return has_unread_messages(which_stream, topic);
+        }
+
+        function make_object(topic) {
+            return {
+                stream: which_stream,
+                topic: topic,
+            };
+        }
+
+        gen = exports.filter(gen, has_unread);
+        gen = exports.map(gen, make_object);
+
+        return gen;
     }
 
     var outer_gen = exports.fchain(stream_gen, get_topic_gen);

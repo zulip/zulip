@@ -131,10 +131,16 @@ function is_odd(i) { return i % 2 === 1; }
             curr_topic);
     }
 
-    assert.equal(next_topic(1, '1a'), '1b');
-    assert.equal(next_topic(1, undefined), '1a');
-    assert.equal(next_topic(2, 'bogus'), '3a');
-    assert.equal(next_topic(3, '3b'), '3a');
-    assert.equal(next_topic(4, '4a'), '1a');
-    assert.equal(next_topic(undefined, undefined), '1a');
+    assert.deepEqual(next_topic(1, '1a'),
+                     {stream: 1, topic: '1b'});
+    assert.deepEqual(next_topic(1, undefined),
+                     {stream: 1, topic: '1a'});
+    assert.deepEqual(next_topic(2, 'bogus'),
+                     {stream: 3, topic: '3a'});
+    assert.deepEqual(next_topic(3, '3b'),
+                     {stream: 3, topic: '3a'});
+    assert.deepEqual(next_topic(4, '4a'),
+                     {stream: 1, topic: '1a'});
+    assert.deepEqual(next_topic(undefined, undefined),
+                     {stream: 1, topic: '1a'});
 }());
