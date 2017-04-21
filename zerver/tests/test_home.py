@@ -46,7 +46,6 @@ class HomeTest(ZulipTestCase):
             "avatar_source",
             "avatar_url",
             "avatar_url_medium",
-            "bot_list",
             "can_create_streams",
             "cross_realm_bots",
             "debug_mode",
@@ -98,6 +97,7 @@ class HomeTest(ZulipTestCase):
             "realm_allow_message_editing",
             "realm_authentication_methods",
             "realm_bot_domain",
+            "realm_bots",
             "realm_create_stream_by_admins_only",
             "realm_default_language",
             "realm_default_streams",
@@ -153,7 +153,7 @@ class HomeTest(ZulipTestCase):
 
         self.login(email)
 
-        # Create bot for bot_list testing. Must be done before fetching home_page.
+        # Create bot for realm_bots testing. Must be done before fetching home_page.
         bot_info = {
             'full_name': 'The Bot of Hamlet',
             'short_name': 'hambot',
@@ -176,7 +176,7 @@ class HomeTest(ZulipTestCase):
 
         # TODO: Inspect the page_params data further.
         # print(ujson.dumps(page_params, indent=2))
-        bot_list_expected_keys = [
+        realm_bots_expected_keys = [
             'api_key',
             'avatar_url',
             'default_all_public_streams',
@@ -189,8 +189,8 @@ class HomeTest(ZulipTestCase):
             'user_id',
         ]
 
-        bot_list_actual_keys = sorted([str(key) for key in page_params['bot_list'][0].keys()])
-        self.assertEqual(bot_list_actual_keys, bot_list_expected_keys)
+        realm_bots_actual_keys = sorted([str(key) for key in page_params['realm_bots'][0].keys()])
+        self.assertEqual(realm_bots_actual_keys, realm_bots_expected_keys)
 
     def _get_home_page(self, **kwargs):
         # type: (**Any) -> HttpResponse
@@ -316,7 +316,7 @@ class HomeTest(ZulipTestCase):
         self.login(email)
         result = self._get_home_page()
         page_params = self._get_page_params(result)
-        for params in ['people_list', 'bot_list']:
+        for params in ['people_list', 'realm_bots']:
             users = page_params['people_list']
             self.assertTrue(len(users) >= 3)
             for user in users:

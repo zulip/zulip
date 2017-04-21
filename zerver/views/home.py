@@ -241,7 +241,6 @@ def home_real(request):
         # Realm foreign key data from register_ret.
         # TODO: Rename these to match register_ret values.
         people_list           = register_ret['realm_users'],
-        bot_list              = register_ret['realm_bots'],
         initial_pointer       = register_ret['pointer'],
         initial_presences     = register_ret['presences'],
         event_queue_id        = register_ret['queue_id'],
@@ -281,6 +280,7 @@ def home_real(request):
         'realm_allow_message_editing',
         'realm_authentication_methods',
         'realm_bot_domain',
+        'realm_bots',
         'realm_create_stream_by_admins_only',
         'realm_default_language',
         'realm_default_streams',
