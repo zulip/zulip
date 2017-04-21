@@ -167,8 +167,14 @@ msg_to_send = str(random.getrandbits(64))
 time_start = time.time()
 
 if options.websocket:
-    client = WebsocketClient(host_url=options.site, sockjs_url='/sockjs/366/v8nw22qe/websocket',
-                             run_on_start=send_message_via_websocket, sender_email=sender.email,
+    try:
+        sender_res = zulip_sender.register(event_types=["message"])
+        if 'error' in sender_res.get('result'):
+            report("CRITICAL", "Error subscribing to Zulips: %s" % (sender_res['msg']))
+    except Exception:
+        report("CRITICAL", "Error subscribing to Zulips:\n%s" % (traceback.format_exc()))
+    client = WebsocketClient(host_url=options.site, queue_id=sender_res['queue_id'],
+                             run_on_start=send_message_via_websocket, auth_email=sender.email,
                              recepient_email=recipient.email, content=msg_to_send,
                              validate_ssl=not options.insecure)
     client.run()
