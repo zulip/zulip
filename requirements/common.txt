@@ -75,7 +75,7 @@ html2text==2016.9.19
 httplib2==0.10.3
 
 # Needed for JWT-based auth
-PyJWT==1.4.2
+PyJWT==1.5.0
 
 # Needed for USING_MANDRILL option for outgoing email
 mandrill==1.0.57
