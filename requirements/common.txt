@@ -44,7 +44,7 @@ defusedxml==0.5.0
 diff-match-patch==20121119
 
 # Needed for LDAP support
-django-auth-ldap==1.2.9
+django-auth-ldap==1.2.10
 
 # Django extension providing bitfield support
 git+https://github.com/disqus/django-bitfield.git#egg=django-bitfield==1.9.1
