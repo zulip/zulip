@@ -14,24 +14,26 @@ except ImportError:
         return token1 == token2
 
 import sockjs.tornado
-from sockjs.tornado.session import ConnectionInfo
 import tornado.ioloop
 import ujson
 import logging
 import time
 
+from sockjs.tornado.session import ConnectionInfo, Session
+
 from zerver.models import UserProfile, get_user_profile_by_id, get_client
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.actions import check_send_message, extract_recipients
 from zerver.decorator import JsonableError
-from zerver.lib.utils import statsd
 from zerver.middleware import record_request_start_data, record_request_stop_data, \
     record_request_restart_data, write_log_line, format_timedelta
 from zerver.lib.redis_utils import get_redis_client
 from zerver.lib.sessions import get_session_user
 from zerver.tornado.event_queue import get_client_descriptor
 
+
 logger = logging.getLogger('zulip.socket')
+
 
 def get_user_profile(session_id):
     # type: (Optional[Text]) -> Optional[UserProfile]
@@ -88,17 +90,23 @@ class CloseErrorInfo(object):
 class SocketConnection(sockjs.tornado.SockJSConnection):
     client_id = None # type: Optional[Union[int, str]]
 
+    def __init__(self, session):
+        # type: (Session) -> None
+        super(SocketConnection, self).__init__(session)
+        self.authenticated = False
+        self.session.user_profile = None
+        self.close_info = None  # type: CloseErrorInfo
+        self.did_close = False
+        self.browser_session_id = None  # type: str
+        self.csrf_token = None  # type: str
+        self.timeout_handle = None  # type: tornado.ioloop._Timeout
+
     def on_open(self, info):
         # type: (ConnectionInfo) -> None
         log_data = dict(extra='[transport=%s]' % (self.session.transport_name,))
         record_request_start_data(log_data)
 
         ioloop = tornado.ioloop.IOLoop.instance()
-
-        self.authenticated = False
-        self.session.user_profile = None
-        self.close_info = None # type: CloseErrorInfo
-        self.did_close = False
 
         try:
             self.browser_session_id = info.get_cookie(settings.SESSION_COOKIE_NAME).value
