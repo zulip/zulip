@@ -691,7 +691,7 @@ def run():
         external_linter('urls', ['tools/check-urls'])
 
         if not options.no_gitlint:
-            external_linter('commit_messages', ['tools/lint-commits'])
+            external_linter('commit_messages', ['tools/commit-message-lint'])
 
         @lint
         def custom_py():
