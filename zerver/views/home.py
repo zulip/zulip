@@ -210,7 +210,6 @@ def home_real(request):
 
         # user_profile data.
         # TODO: Move all of these data to register_ret and pull from there
-        fullname              = user_profile.full_name,
         email                 = user_profile.email,
         enter_sends           = user_profile.enter_sends,
         user_id               = user_profile.id,
@@ -290,6 +289,7 @@ def home_real(request):
         'realm_email_changes_disabled',
         'realm_emoji',
         'realm_filters',
+        'realm_fullname',
         'realm_icon_source',
         'realm_icon_url',
         'realm_invite_by_admins_only',
