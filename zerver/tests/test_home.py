@@ -88,7 +88,7 @@ class HomeTest(ZulipTestCase):
             "narrow",
             "narrow_stream",
             "needs_tutorial",
-            "neversubbed_info",
+            "never_subscribed",
             "notifications_stream",
             "people_list",
             "pm_content_in_desktop_notifications",

@@ -240,7 +240,6 @@ def home_real(request):
 
         # Realm foreign key data from register_ret.
         # TODO: Rename these to match register_ret values.
-        neversubbed_info      = register_ret['never_subscribed'],
         people_list           = register_ret['realm_users'],
         bot_list              = register_ret['realm_bots'],
         initial_pointer       = register_ret['pointer'],
@@ -277,6 +276,7 @@ def home_real(request):
         'max_icon_file_size',
         'max_message_id',
         'muted_topics',
+        'never_subscribed',
         'realm_add_emoji_by_admins_only',
         'realm_allow_message_editing',
         'realm_authentication_methods',
