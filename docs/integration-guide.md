@@ -221,10 +221,17 @@ Usually, this involves a few steps:
 
 * Make sure you've added your integration to
   `zerver/lib/integrations.py`; this results in your integration
-  appearing on the `/integrations` page.  You'll need to add a logo
-  image for your integration under the
-  `static/images/integrations/logos/<name>.png`, where `<name>` is the
-  name of the integration, all in lower case.
+  appearing on the `/integrations` page.
+
+* You'll need to add a SVG graphic
+  of your integration's logo under the
+  `static/images/integrations/logos/<name>.svg`, where `<name>` is the
+  name of the integration, all in lower case; you can usually find them in the
+  product branding or press page. Make sure to optimize the SVG graphic by
+  running `svgo -f path-to-file`.
+
+  If you cannot find a SVG graphic of the logo, please find and include a PNG
+  image of the logo instead.
 
 * Finally, generate a message sent by the integration and take a
   screenshot of the message to provide an example message in the
