@@ -57,6 +57,7 @@
         "compose_state": false,
         "compose_fade": false,
         "modals": false,
+        "stream_create": false,
         "subs": false,
         "stream_muting": false,
         "stream_events": false,
