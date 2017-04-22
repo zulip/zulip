@@ -867,6 +867,7 @@ JS_SPECS = {
             'js/stream_data.js',
             'js/stream_muting.js',
             'js/stream_events.js',
+            'js/stream_create.js',
             'js/subs.js',
             'js/message_edit.js',
             'js/condense.js',
