@@ -18,10 +18,10 @@ fi
 if [ "$CURRENT_COMMIT" == "$COMMIT" ]; then
     echo "Already at latest version of iamcal's dataset."
 else
-    echo "$COMMIT" > "$COMMIT_FILE_PATH"
     wget "https://raw.githubusercontent.com/iamcal/emoji-data/$COMMIT/emoji_pretty.json" -O "$OUTPUT_PATH/emoji.json"
     wget "https://raw.githubusercontent.com/iamcal/emoji-data/$COMMIT/sheet_apple_32.png" -O "$OUTPUT_PATH/sheet_apple_32.png"
     wget "https://raw.githubusercontent.com/iamcal/emoji-data/$COMMIT/sheet_emojione_32.png" -O "$OUTPUT_PATH/sheet_emojione_32.png"
     wget "https://raw.githubusercontent.com/iamcal/emoji-data/$COMMIT/sheet_google_32.png" -O "$OUTPUT_PATH/sheet_google_32.png"
     wget "https://raw.githubusercontent.com/iamcal/emoji-data/$COMMIT/sheet_twitter_32.png" -O "$OUTPUT_PATH/sheet_twitter_32.png"
+    echo "$COMMIT" > "$COMMIT_FILE_PATH"
 fi
