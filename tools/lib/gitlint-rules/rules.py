@@ -67,16 +67,16 @@ WORD_SET = {
     'uses', 'using', 'used'
 }
 
-imperative_forms = [
+imperative_forms = sorted([
     'add', 'allow', 'amend', 'bump', 'calculate', 'change', 'clean', 'commit',
     'correct', 'create', 'darken', 'disable', 'dry', 'end', 'enforce',
-    'enqueue', 'extract', 'finish', 'fix', 'format', 'guard', 'handle',
-    'hide', 'increase', 'ignore', 'implement', 'improve', 'keep', 'kill',
-    'make', 'merge', 'move', 'permit', 'prevent', 'push', 'rebase',
-    'refactor', 'remove', 'rename', 'reorder', 'require', 'restore', 'send',
-    'set', 'separate', 'show', 'skip', 'sort', 'speed', 'start', 'support',
-    'take', 'test', 'truncate', 'update', 'use'
-]
+    'enqueue', 'extract', 'finish', 'fix', 'format', 'guard', 'handle', 'hide',
+    'ignore', 'implement', 'improve', 'increase', 'keep', 'kill', 'make',
+    'merge', 'move', 'permit', 'prevent', 'push', 'rebase', 'refactor',
+    'remove', 'rename', 'reorder', 'require', 'restore', 'send', 'separate',
+    'set', 'show', 'skip', 'sort', 'speed', 'start', 'support', 'take', 'test',
+    'truncate', 'update', 'use',
+])
 
 
 def head_binary_search(key, words):
@@ -84,7 +84,7 @@ def head_binary_search(key, words):
     """ Find the imperative mood version of `word` by looking at the first
     3 characters. """
 
-    # Edge case: disable and display have the same 4 starting letters.
+    # Edge case: 'disable' and 'display' have the same 3 starting letters.
     if key in ['displays', 'displaying', 'displayed']:
         return 'display'
 
