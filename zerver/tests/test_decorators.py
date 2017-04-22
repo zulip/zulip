@@ -1040,8 +1040,8 @@ class TestZulipLoginRequiredDecorator(ZulipTestCase):
                 result = self.client_get('/accounts/accept_terms/')
                 self.assertEqual(result.status_code, 302)
 
-class TestZulipInternalDecorator(ZulipTestCase):
-    def test_zulip_internal_decorator(self):
+class TestRequireServerAdminDecorator(ZulipTestCase):
+    def test_require_server_admin_decorator(self):
         # type: () -> None
         user_email = 'hamlet@zulip.com'
         self.login(user_email)

@@ -208,3 +208,6 @@ Tips and tricks:
   bars in a bar graph) in your browser, since there is an interaction layer
   on top of it. But if you hunt around the document tree you should be able
   to find it.
+- For accessing ./activity page you have to be admin of current realm or
+  server admin can provide you permission via ./manage.py knight. For more
+  information read in ./manage.py knight --help.

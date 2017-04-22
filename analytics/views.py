@@ -17,7 +17,7 @@ from analytics.lib.time_utils import time_range
 from analytics.models import BaseCount, InstallationCount, RealmCount, \
     UserCount, StreamCount, last_successful_fill
 
-from zerver.decorator import has_request_variables, REQ, zulip_internal, \
+from zerver.decorator import has_request_variables, REQ, require_server_admin, \
     zulip_login_required, to_non_negative_int, to_utc_datetime
 from zerver.lib.request import JsonableError
 from zerver.lib.response import json_success
@@ -743,7 +743,7 @@ def ad_hoc_queries():
 
     return pages
 
-@zulip_internal
+@require_server_admin
 @has_request_variables
 def get_activity(request):
     # type: (HttpRequest) -> HttpResponse
@@ -1037,7 +1037,7 @@ def realm_user_summary_table(all_records, admin_emails):
     content = make_table(title, cols, rows, has_row_class=True)
     return user_records, content
 
-@zulip_internal
+@require_server_admin
 def get_realm_activity(request, realm_str):
     # type: (HttpRequest, str) -> HttpResponse
     data = [] # type: List[Tuple[str, str]]
@@ -1076,7 +1076,7 @@ def get_realm_activity(request, realm_str):
         context=dict(data=data, realm_link=realm_link, title=title),
     )
 
-@zulip_internal
+@require_server_admin
 def get_user_activity(request, email):
     # type: (HttpRequest, str) -> HttpResponse
     records = get_user_activity_records_for_email(email)
