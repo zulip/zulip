@@ -242,6 +242,7 @@ class LoginTest(ZulipTestCase):
     def test_logout(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
+        # We are Intentionally using logout API endpoint here to test it.
         self.client_post('/accounts/logout/')
         self.assertIsNone(get_session_dict_user(self.client.session))
 
@@ -257,11 +258,11 @@ class LoginTest(ZulipTestCase):
         self.register("test@zulip.com", password)
         user_profile = get_user_profile_by_email(email)
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
-        self.client_post('/accounts/logout/')
+        self.logout()
         self.assertIsNone(get_session_dict_user(self.client.session))
 
         # Logging in succeeds.
-        self.client_post('/accounts/logout/')
+        self.logout()
         self.login(email, password)
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 

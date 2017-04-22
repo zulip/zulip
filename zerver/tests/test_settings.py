@@ -78,7 +78,7 @@ class ChangeSettingsTest(ZulipTestCase):
         self.check_well_formed_change_settings_response(result)
         self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").
                          full_name, "Foo Bar")
-        self.client_post('/accounts/logout/')
+        self.logout()
         self.login("hamlet@zulip.com", "foobar1")
         user_profile = get_user_profile_by_email('hamlet@zulip.com')
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)

@@ -199,7 +199,7 @@ class UserPresenceTests(ZulipTestCase):
         # type: () -> None
         self.login("espuser@mit.edu")
         self.client_post("/json/users/me/presence", {'status': 'idle'})
-        result = self.client_post("/accounts/logout/")
+        self.logout()
 
         # Ensure we don't see hamlet@zulip.com information leakage
         self.login("hamlet@zulip.com")
