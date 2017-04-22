@@ -13,7 +13,7 @@ from functools import wraps
 
 from zerver.webhooks.github.view import build_message_from_gitlog
 
-from typing import Any, Callable, Dict, TypeVar
+from typing import Any, Callable, Dict, TypeVar, Optional, Text
 from zerver.lib.str_utils import force_str, force_bytes
 
 ViewFuncT = TypeVar('ViewFuncT', bound=Callable[..., HttpResponse])
@@ -45,13 +45,16 @@ def beanstalk_decoder(view_func):
 @authenticated_rest_api_view(is_webhook=True)
 @has_request_variables
 def api_beanstalk_webhook(request, user_profile,
-                          payload=REQ(validator=check_dict([]))):
-    # type: (HttpRequest, UserProfile, Dict[str, Any]) -> HttpResponse
+                          payload=REQ(validator=check_dict([])),
+                          branches=REQ(default=None)):
+    # type: (HttpRequest, UserProfile, Dict[str, Any], Optional[Text]) -> HttpResponse
     # Beanstalk supports both SVN and git repositories
     # We distinguish between the two by checking for a
     # 'uri' key that is only present for git repos
     git_repo = 'uri' in payload
     if git_repo:
+        if branches is not None and branches.find(payload['branch']) == -1:
+            return json_success()
         # To get a linkable url,
         for commit in payload['commits']:
             commit['committer'] = {'username': commit['author']['name']}
