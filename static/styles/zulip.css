@@ -1293,6 +1293,7 @@ div.focused_table {
 
 .message_edit_content {
     line-height: 18px;
+    resize: vertical!important;
 }
 
 .message_edit_countdown_timer {

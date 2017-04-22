@@ -220,6 +220,7 @@ function edit_message(row, raw_content) {
         initClipboard(copy_message[0]);
     } else if (editability === editability_types.FULL) {
         copy_message.remove();
+        resize.watch_manual_resize("#message_edit_content");
         composebox_typeahead.initialize_compose_typeahead("#message_edit_content", {emoji: true, stream: true});
     }
 

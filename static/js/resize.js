@@ -165,6 +165,38 @@ function left_userlist_get_new_heights() {
     return res;
 }
 
+exports.watch_manual_resize = function (element) {
+    (function on_box_resize(cb) {
+        var meta = {
+            box: document.querySelector(element),
+            height: null,
+            mousedown: false,
+        };
+
+        meta.box.addEventListener("mousedown", function () {
+            meta.mousedown = true;
+            meta.height = meta.box.clientHeight;
+        });
+
+        // If the user resizes the textarea manually, we use the
+        // callback to stop autosize from adjusting the height.
+        document.body.addEventListener("mouseup", function () {
+            if (meta.mousedown === true) {
+                meta.mousedown = false;
+                if (meta.height !== meta.box.clientHeight) {
+                    meta.height = meta.box.clientHeight;
+                    cb.call(meta.box, meta.height);
+                }
+            }
+        });
+    }(function (height) {
+        // This callback disables autosize on the textarea.  It
+        // will be re-enabled when this component is next opened.
+        $(element).trigger("autosize.destroy")
+            .height(height + "px");
+    }));
+};
+
 exports.resize_bottom_whitespace = function (h) {
     if (page_params.autoscroll_forever) {
         $("#bottom_whitespace").height($("#compose-container")[0].offsetHeight);
