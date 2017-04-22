@@ -42,8 +42,8 @@ class UnknownTriggerType(Exception):
 @api_key_only_webhook_view('Bitbucket2')
 @has_request_variables
 def api_bitbucket2_webhook(request, user_profile, client, payload=REQ(argument_type='body'),
-                           stream=REQ(default='bitbucket')):
-    # type: (HttpRequest, UserProfile, Client, Dict[str, Any], str) -> HttpResponse
+                           stream=REQ(default='bitbucket'), branches=REQ(default=None)):
+    # type: (HttpRequest, UserProfile, Client, Dict[str, Any], str, Optional[Text]) -> HttpResponse
     try:
         type = get_type(request, payload)
         if type != 'push':
@@ -51,6 +51,10 @@ def api_bitbucket2_webhook(request, user_profile, client, payload=REQ(argument_t
             body = get_body_based_on_type(type)(payload)
             check_send_message(user_profile, client, 'stream', [stream], subject, body)
         else:
+            branch = get_branch_name_for_push_event(payload)
+            if branch and branches:
+                if branches.find(branch) == -1:
+                    return json_success()
             subjects = get_push_subjects(payload)
             bodies_list = get_push_bodies(payload)
             for body, subject in zip(bodies_list, subjects):
@@ -339,12 +343,13 @@ def get_user_username(payload):
     return payload['actor']['username']
 
 def get_branch_name_for_push_event(payload):
-    # type: (Dict[str, Any]) -> str
+    # type: (Dict[str, Any]) -> Optional[str]
     change = payload['push']['changes'][-1]
-    if change.get('new'):
-        return change['new']['name']
+    potential_tag = (change['new'] or change['old'] or {}).get('type')
+    if potential_tag == 'tag':
+        return None
     else:
-        return change['old']['name']
+        return (change['new'] or change['old']).get('name')
 
 GET_SINGLE_MESSAGE_BODY_DEPENDING_ON_TYPE_MAPPER = {
     'fork': get_fork_body,
