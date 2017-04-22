@@ -1,12 +1,14 @@
 #!/bin/bash
 
-# Lints all commit messages that are newer than upstream/master.
+# Lint all commit messages that are newer than upstream/master if running
+# locally or the commits in the push or PR if in TravisCI.
+
 # The rules can be found in /.gitlint
 
-# If this script is running on TravisCI, $UPSTREAM_MASTER would be set to the
-# latest HEAD in travis.yml
-if [ ! $TRAVIS ]; then
-    UPSTREAM_MASTER=upstream/master
+if [ $TRAVIS ]; then
+    range=$TRAVIS_COMMIT_RANGE
+else
+    range="upstream/master...HEAD"
 fi
 
-gitlint --commits $UPSTREAM_MASTER...HEAD
+gitlint --commits $range

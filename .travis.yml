@@ -20,7 +20,6 @@ env:
     - COVERALLS_SERVICE_NAME=travis-pro
     - COVERALLS_REPO_TOKEN=hnXUEBKsORKHc8xIENGs9JjktlTb2HKlG
     - BOTO_CONFIG=/tmp/nowhere
-    - UPSTREAM_MASTER=$(git ls-remote git://github.com/zulip/zulip.git refs/heads/master | cut -f 1)
 language: python
 matrix:
   include:
