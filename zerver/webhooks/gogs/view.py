@@ -64,18 +64,22 @@ def format_pull_request_event(payload):
 @has_request_variables
 def api_gogs_webhook(request, user_profile, client,
                      payload=REQ(argument_type='body'),
-                     stream=REQ(default='commits')):
-    # type: (HttpRequest, UserProfile, Client, Dict[str, Any], Text) -> HttpResponse
+                     stream=REQ(default='commits'),
+                     branches=REQ(default=None)):
+    # type: (HttpRequest, UserProfile, Client, Dict[str, Any], Text, Optional[Text]) -> HttpResponse
 
     repo = payload['repository']['name']
     event = request.META['HTTP_X_GOGS_EVENT']
 
     try:
         if event == 'push':
+            branch = payload['ref'].replace('refs/heads/', '')
+            if branches is not None and branches.find(branch) == -1:
+                return json_success()
             body = format_push_event(payload)
             topic = SUBJECT_WITH_BRANCH_TEMPLATE.format(
                 repo=repo,
-                branch=payload['ref'].replace('refs/heads/', '')
+                branch=branch
             )
         elif event == 'create':
             body = format_new_branch_event(payload)

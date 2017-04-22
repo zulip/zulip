@@ -17,6 +17,12 @@
     In the URL field, enter
     <code>{{ external_uri_scheme }}bot_email:bot_api_key@{{ external_api_path_subdomain }}/v1/external/beanstalk</code>:
 </p>
+<p>
+    You can also limit the Git notifications you receive to specific
+    branches by specifying them in a comma-separated list at the end
+    of the URL, like so:
+</p>
+<p><code>{{ external_uri_scheme }}bot_email:bot_api_key@{{ external_api_path_subdomain }}/v1/external/beanstalk?branches=master,development</code></p>
 <img class="screenshot" src="/static/images/integrations/beanstalk/001.png"/>
 
 <p>

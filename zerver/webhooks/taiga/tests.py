@@ -5,13 +5,12 @@ from zerver.lib.test_classes import WebhookTestCase
 class TaigaHookTests(WebhookTestCase):
     STREAM_NAME = 'taiga'
     TOPIC = "subject"
-    URL_TEMPLATE = u"/api/v1/external/taiga?stream={stream}&api_key={api_key}&topic={topic}"
+    URL_TEMPLATE = u"/api/v1/external/taiga?stream={stream}&api_key={api_key}"
     FIXTURE_DIR_NAME = 'taiga'
 
-    def build_webhook_url(self):
-        # type: () -> Text
-        api_key = self.get_api_key(self.TEST_USER_EMAIL)
-        return self.URL_TEMPLATE.format(stream=self.STREAM_NAME, api_key=api_key, topic=self.TOPIC)
+    def setUp(self):
+        # type: () -> None
+        self.url = self.build_webhook_url(topic=self.TOPIC)
 
     def test_taiga_userstory_deleted(self):
         # type: () -> None

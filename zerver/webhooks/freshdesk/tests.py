@@ -85,10 +85,6 @@ Priority: **High** => **Low**"""
                                           content_type="application/x-www-form-urlencoded",
                                           **self.api_auth(self.TEST_USER_EMAIL))
 
-    def build_webhook_url(self):
-        # type: () -> Text
-        return self.URL_TEMPLATE.format(stream=self.STREAM_NAME)
-
     def get_body(self, fixture_name):
         # type: (Text) -> Text
         return self.fixture_data("freshdesk", fixture_name, file_type="json")

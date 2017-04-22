@@ -536,10 +536,29 @@ class WebhookTestCase(ZulipTestCase):
 
         return msg
 
-    def build_webhook_url(self):
-        # type: () -> Text
-        api_key = self.get_api_key(self.TEST_USER_EMAIL)
-        return self.URL_TEMPLATE.format(stream=self.STREAM_NAME, api_key=api_key)
+    def build_webhook_url(self, *args, **kwargs):
+        # type: (*Any, **Any) -> Text
+        url = self.URL_TEMPLATE
+        if url.find("api_key") >= 0:
+            api_key = self.get_api_key(self.TEST_USER_EMAIL)
+            url = self.URL_TEMPLATE.format(api_key=api_key,
+                                           stream=self.STREAM_NAME)
+        else:
+            url = self.URL_TEMPLATE.format(stream=self.STREAM_NAME)
+
+        has_arguments = kwargs or args
+        if has_arguments and url.find('?') == -1:
+            url = "{}?".format(url)
+        else:
+            url = "{}&".format(url)
+
+        for key, value in kwargs.items():
+            url = "{}{}={}&".format(url, key, value)
+
+        for arg in args:
+            url = "{}{}&".format(url, arg)
+
+        return url[:-1] if has_arguments else url
 
     def get_body(self, fixture_name):
         # type: (Text) -> Union[Text, Dict[str, Text]]

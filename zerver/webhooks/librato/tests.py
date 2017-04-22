@@ -5,7 +5,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 class LibratoHookTests(WebhookTestCase):
     STREAM_NAME = 'librato'
-    URL_TEMPLATE = u"/api/v1/external/librato?api_key={api_key}&stream=librato"
+    URL_TEMPLATE = u"/api/v1/external/librato?api_key={api_key}&stream={stream}"
     FIXTURE_DIR_NAME = 'librato'
     IS_ATTACHMENT = False
 
@@ -14,14 +14,6 @@ class LibratoHookTests(WebhookTestCase):
         if self.IS_ATTACHMENT:
             return self.fixture_data("librato", fixture_name, file_type='json')
         return urllib.parse.urlencode({'payload': self.fixture_data("librato", fixture_name, file_type='json')})
-
-    def build_webhook_url(self, topic=None):
-        # type: (Optional[Text]) -> Text
-        api_key = self.get_api_key(self.TEST_USER_EMAIL)
-        url = self.URL_TEMPLATE.format(stream=self.STREAM_NAME, api_key=api_key)
-        if topic:
-            url = u"{}&topic={}".format(url, topic)
-        return url
 
     def test_alert_message_with_default_topic(self):
         # type: () -> None
@@ -32,7 +24,7 @@ class LibratoHookTests(WebhookTestCase):
     def test_alert_message_with_custom_topic(self):
         # type: () -> None
         custom_topic = 'custom_name'
-        self.url = self.build_webhook_url(custom_topic)
+        self.url = self.build_webhook_url(topic=custom_topic)
         expected_message = "Alert [alert_name](https://metrics.librato.com/alerts#/6294535) has triggered! [Reaction steps](http://www.google.pl)\n>Metric `librato.cpu.percent.idle`, sum was below 44 by 300s, recorded at 2016-03-31 09:11:42 UTC\n>Metric `librato.swap.swap.cached`, average was absent  by 300s, recorded at 2016-03-31 09:11:42 UTC\n>Metric `librato.swap.swap.cached`, derivative was above 9 by 300s, recorded at 2016-03-31 09:11:42 UTC"
         self.send_and_test_stream_message('alert', custom_topic, expected_message, content_type="application/x-www-form-urlencoded")
 
