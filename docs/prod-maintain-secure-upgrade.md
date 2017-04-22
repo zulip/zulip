@@ -31,6 +31,8 @@ directly](#upgrading-from-a-git-repository).
 Next, run as root:
 
 ```
+rm -rf /root/zulip && mkdir /root/zulip
+tar -xf zulip-server-VERSION.tar.gz --directory=/root/zulip --strip-components=1
 /home/zulip/deployments/current/scripts/upgrade-zulip zulip-server-VERSION.tar.gz
 ```
 
