@@ -961,7 +961,7 @@ MessageListView.prototype = {
     _maybe_format_me_message: function MessageListView__maybe_format_me_message(message_container) {
         if (message_container.msg.is_me_message) {
             // Slice the '<p>/me ' off the front, and '</p>' off the end
-            message_container.status_message = message_container.msg.content.slice(4 + 3, -4);
+            message_container.status_message = message_container.msg.content.slice(4 + 2, -4);
             message_container.include_sender = true;
         } else {
             message_container.status_message = false;
