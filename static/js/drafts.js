@@ -134,7 +134,7 @@ exports.restore_draft = function (draft_id) {
         draft_copy.subject = "";
     }
     compose_actions.start(draft_copy.type, draft_copy);
-    compose.autosize_textarea();
+    compose_ui.autosize_textarea();
     $("#new_message_content").data("draft-id", draft_id);
 };
 

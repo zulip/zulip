@@ -382,7 +382,7 @@ exports.content_typeahead_selected = function (item) {
     setTimeout(function () {
         $('#new_message_content').caret(beginning.length, beginning.length);
         // Also, trigger autosize to check if compose box needs to be resized.
-        compose.autosize_textarea();
+        compose_ui.autosize_textarea();
     }, 0);
     return beginning + rest;
 };

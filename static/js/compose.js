@@ -42,10 +42,6 @@ function clear_out_file_list(jq_file_list) {
     //    $("#file_input").val("");
 }
 
-exports.autosize_textarea = function () {
-    $("#new_message_content").trigger("autosize.resize");
-};
-
 function show_all_everyone_warnings() {
     var current_stream = stream_data.get_sub(compose_state.stream_name());
     var stream_count = current_stream.subscribers.num_items();
@@ -292,7 +288,7 @@ function process_send_time(message_id, start_time, locally_echoed) {
 function clear_compose_box() {
     $("#new_message_content").val('').focus();
     drafts.delete_draft_after_send();
-    exports.autosize_textarea();
+    compose_ui.autosize_textarea();
     $("#send-status").hide(0);
     $("#compose-send-button").removeAttr('disabled');
     $("#sending-indicator").hide();
@@ -891,7 +887,7 @@ $(function () {
             // This is a dropped file, so make the filename a link to the image
             textbox.val(textbox.val() + "[" + filename + "](" + uri + ")" + " ");
         }
-        exports.autosize_textarea();
+        compose_ui.autosize_textarea();
         $("#compose-send-button").removeAttr("disabled");
         $("#send-status").removeClass("alert-info")
                          .hide();
@@ -933,7 +929,7 @@ $(function () {
                 compose_actions.start('stream');
             }
             textbox.val(textbox.val() + contents);
-            exports.autosize_textarea();
+            compose_ui.autosize_textarea();
         },
     });
 
