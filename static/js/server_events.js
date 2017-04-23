@@ -297,6 +297,20 @@ function dispatch_normal_event(event) {
         if (event.setting_name === 'timezone') {
             page_params.timezone = event.setting;
         }
+        if (event.setting_name === 'emojiset') {
+            page_params.emojiset = event.setting;
+            var sprite = new Image();
+            sprite.onload = function () {
+                $("#emoji-spritesheet").attr('href', "/static/generated/emoji/" + page_params.emojiset + "_sprite.css");
+                if ($("#display-settings-status").length) {
+                    loading.destroy_indicator($("#emojiset_spinner"));
+                    $("#emojiset_select").val(page_params.emojiset);
+                    ui_report.success(i18n.t("Emojiset changed successfully!!"),
+                                      $('#display-settings-status').expectOne());
+                }
+            };
+            sprite.src = "/static/generated/emoji/sheet_" + page_params.emojiset + "_32.png";
+        }
         if ($("#settings.tab-pane.active").length) {
             settings_display.update_page();
         }

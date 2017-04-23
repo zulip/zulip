@@ -108,5 +108,16 @@
       </select>
     </div>
 
+    {{#if false}}
+    <div class="input-group">
+      <label for="emojiset_select">{{t "Emoji style" }}:</label>
+      <select name="emojiset_select" id="emojiset_select">
+        {{#each page_params.emojiset_choices}}
+        <option value={{@key}}>{{this}}</option>
+        {{/each}}
+      </select>
+      <div id="emojiset_spinner"></div>
+    </div>
+    {{/if}}
   </form>
 </div>
