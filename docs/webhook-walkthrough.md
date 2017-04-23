@@ -476,32 +476,24 @@ http://myhost/api/v1/external/querytest?api_key=abcdefgh&stream=alerts&topic=que
 It provides values for `stream` and `topic`, and the webhook can get those
 using `REQ` without any special handling. How does this work in a test?
 
-The new attribute `TOPIC` exists only in our class, so the default version of
-`build_webhook_url` from `WebhookTestCase` doesn't know how to use it to
-construct the URL. Instead, we provide a custom `build_webhook_url` to
-override the default one:
+The new attribute `TOPIC` exists only in our class so far. In order to
+construct a URL with a query parameter for `topic`, you can pass the
+attribute `TOPIC` as a keyword argument to `build_webhook_url`, like so:
 
 ```
 class QuerytestHookTests(WebhookTestCase):
 
     STREAM_NAME = 'querytest'
     TOPIC = "Default Topic"
-    URL_TEMPLATE = "/api/v1/external/querytest?api_key={api_key}&stream={stream}&topic={topic}"
+    URL_TEMPLATE = "/api/v1/external/querytest?api_key={api_key}&stream={stream}"
     FIXTURE_DIR_NAME = 'querytest'
-
-    # override the base class behavior so we can include TOPIC
-    def build_webhook_url(self):
-        # type: () -> Text
-
-        api_key = self.get_api_key(self.TEST_USER_EMAIL)
-        return self.URL_TEMPLATE.format(stream=self.STREAM_NAME, api_key=api_key, topic=self.TOPIC)
 
     def test_querytest_test_one(self):
         # type: () -> None
 
         # construct the URL used for this test
         self.TOPIC = u"Query Test"
-        self.url = self.build_webhook_url()
+        self.url = self.build_webhook_url(topic=self.TOPIC)
 
         # define the expected message contents
         expected_subject = u"Query Test"
