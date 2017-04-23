@@ -6,6 +6,7 @@ exports.set_up = function () {
     $("#display-settings-status").hide();
 
     $("#user_timezone").val(page_params.timezone);
+    $("#emojiset_select").val(page_params.emojiset);
 
     $("#default_language_modal [data-dismiss]").click(function () {
       $("#default_language_modal").fadeOut(300);
@@ -132,6 +133,24 @@ exports.set_up = function () {
             },
             error: function (xhr) {
                 ui_report.error(i18n.t("Error updating time zone"), xhr, $('#display-settings-status').expectOne());
+            },
+        });
+    });
+
+    $("#emojiset_select").change(function () {
+        var emojiset = $(this).val();
+        var data = {};
+        data.emojiset = JSON.stringify(emojiset);
+
+        channel.patch({
+            url: '/json/settings/display',
+            data: data,
+            success: function () {
+                var spinner = $("#emojiset_spinner").expectOne();
+                loading.make_indicator(spinner, {text: 'Changing emojiset.'});
+            },
+            error: function (xhr) {
+                ui_report.error(i18n.t("Error changing emojiset."), xhr, $('#display-settings-status').expectOne());
             },
         });
     });
