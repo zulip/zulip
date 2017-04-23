@@ -18,6 +18,7 @@ add_dependencies({
     compose_state: 'js/compose_state',
     people: 'js/people',
     util: 'js/util',
+    compose_ui: 'js/compose_ui',
 });
 
 var compose_actions = require('js/compose_actions.js');

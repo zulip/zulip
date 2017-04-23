@@ -144,7 +144,8 @@
         "katex": false,
         "Clipboard": false,
         "emoji_picker": false,
-        "hotspots": false
+        "hotspots": false,
+        "compose_ui": false
     },
     "rules": {
         "no-restricted-syntax": 0,
