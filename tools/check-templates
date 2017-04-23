@@ -101,7 +101,6 @@ def check_html_templates(templates, all_dups):
             'templates/500.html',
             'templates/confirmation/confirm.html',
             'templates/corporate/mit.html',
-            'templates/corporate/privacy.html',
             'templates/corporate/zephyr-mirror.html',
             'templates/corporate/zephyr.html',
             'templates/zerver/accounts_home.html',
