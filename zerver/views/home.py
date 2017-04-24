@@ -242,7 +242,6 @@ def home_real(request):
         # TODO: Rename these to match register_ret values.
         people_list           = register_ret['realm_users'],
         initial_pointer       = register_ret['pointer'],
-        initial_presences     = register_ret['presences'],
         event_queue_id        = register_ret['queue_id'],
 
         # Misc. extra data.
@@ -276,6 +275,7 @@ def home_real(request):
         'max_message_id',
         'muted_topics',
         'never_subscribed',
+        'presences',
         'realm_add_emoji_by_admins_only',
         'realm_allow_message_editing',
         'realm_authentication_methods',
