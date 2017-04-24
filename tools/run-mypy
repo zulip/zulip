@@ -19,7 +19,6 @@ exclude_common = """
 api/integrations/basecamp/zulip_basecamp_config.py
 api/integrations/codebase/zulip_codebase_config.py
 api/integrations/git/zulip_git_config.py
-api/integrations/perforce/git_p4.py
 api/integrations/perforce/zulip_perforce_config.py
 api/integrations/svn/zulip_svn_config.py
 api/integrations/trac/zulip_trac_config.py
