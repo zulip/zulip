@@ -129,7 +129,7 @@ function create_message_object() {
         type: compose_state.get_message_type(),
         content: content,
         sender_id: page_params.user_id,
-        queue_id: page_params.event_queue_id,
+        queue_id: page_params.queue_id,
         stream: '',
         subject: '',
     };

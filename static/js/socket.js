@@ -88,7 +88,7 @@ Socket.prototype = {
     },
 
     _get_next_req_id: function Socket__get_next_req_id() {
-        var req_id = page_params.event_queue_id + ':' + this._next_req_id_counter;
+        var req_id = page_params.queue_id + ':' + this._next_req_id_counter;
         this._next_req_id_counter += 1;
         return req_id;
     },
@@ -214,7 +214,7 @@ Socket.prototype = {
             $(function () {
                 var request = that._make_request('auth');
                 request.msg = {csrf_token: csrf_token,
-                               queue_id: page_params.event_queue_id,
+                               queue_id: page_params.queue_id,
                                status_inquiries: _.keys(that._requests)};
                 request.success = function (resp) {
                   that._is_authenticated = true;

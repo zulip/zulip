@@ -241,7 +241,6 @@ def home_real(request):
         # Realm foreign key data from register_ret.
         # TODO: Rename these to match register_ret values.
         people_list           = register_ret['realm_users'],
-        event_queue_id        = register_ret['queue_id'],
 
         # Misc. extra data.
         have_initial_messages = user_has_messages,
@@ -276,6 +275,7 @@ def home_real(request):
         'never_subscribed',
         'pointer',
         'presences',
+        'queue_id',
         'realm_add_emoji_by_admins_only',
         'realm_allow_message_editing',
         'realm_authentication_methods',
