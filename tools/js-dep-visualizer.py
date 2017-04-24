@@ -136,6 +136,7 @@ def find_edges_to_remove(graph, methods):
         ('compose_actions', 'compose'),
         ('compose_actions', 'resize'),
         ('settings_streams', 'stream_data'),
+        ('drafts', 'hashchange'),
     ] # type: List[Edge]
 
     def is_exempt(edge):
