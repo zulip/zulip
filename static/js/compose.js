@@ -734,7 +734,7 @@ $(function () {
             return;
         }
 
-        subs.invite_user_to_stream(email, sub, success, failure);
+        stream_edit.invite_user_to_stream(email, sub, success, failure);
     });
 
     $("#compose_invite_users").on('click', '.compose_invite_close', function (event) {
