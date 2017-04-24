@@ -175,8 +175,8 @@ if options.websocket:
         report("CRITICAL", "Error subscribing to Zulips:\n%s" % (traceback.format_exc()))
     client = WebsocketClient(host_url=options.site, queue_id=sender_res['queue_id'],
                              run_on_start=send_message_via_websocket, auth_email=sender.email,
-                             recepient_email=recipient.email, content=msg_to_send,
-                             validate_ssl=not options.insecure)
+                             recepient_email=recipient.email, api_key=sender.api_key,
+                             content=msg_to_send, validate_ssl=not options.insecure)
     client.run()
 else:
     send_zulip(zulip_sender, {

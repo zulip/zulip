@@ -49,11 +49,17 @@ class WebSocketBaseTestCase(AsyncHTTPTestCase, ZulipTestCase):
     def ws_connect(self,
                    path,  # type: str
                    cookie_header=None,  # type: Optional[str]
+                   api_key=None,  # type: Optional[str]
+                   email=None,  # type: Optional[str]
                    compression_options=None  # type: Optional[str]
                    ):
         # type: (...) -> Generator[Any, Callable[[HTTPRequest, Optional[Any]], Any], None]
         request = HTTPRequest(url='ws://127.0.0.1:%d%s' % (self.get_http_port(), path))
-        request.headers.add('Cookie', cookie_header)
+        if cookie_header:
+            request.headers.add('Cookie', cookie_header)
+        elif api_key and email:
+            request.auth_username = email
+            request.auth_password = api_key
         ws = yield websocket_connect(
             request,
             compression_options=compression_options)
@@ -63,7 +69,6 @@ class WebSocketBaseTestCase(AsyncHTTPTestCase, ZulipTestCase):
     def close(self, ws):
         # type: (Any) -> None
         """Close a websocket connection and wait for the server side.
-
         If we don't wait here, there are sometimes leak warnings in the
         tests.
         """
@@ -99,14 +104,14 @@ class TornadoTestCase(WebSocketBaseTestCase):
         return resp.cookies
 
     @gen.coroutine
-    def _websocket_auth(self, ws, queue_events_data, cookies):
+    def _websocket_auth(self, ws, queue_events_data, cookies=None):
         # type: (Any, Dict[str, Dict[str, str]], SimpleCookie) -> Generator[str, str, None]
         auth_queue_id = ':'.join((queue_events_data['response']['queue_id'], '0'))
         message = {
             "req_id": auth_queue_id,
             "type": "auth",
             "request": {
-                "csrf_token": cookies.get('csrftoken').coded_value,
+                "csrf_token": cookies.get('csrftoken').coded_value if cookies else None,
                 "queue_id": queue_events_data['response']['queue_id'],
                 "status_inquiries": []
             }
@@ -311,4 +316,109 @@ class TornadoTestCase(WebSocketBaseTestCase):
         ack_resp = yield ws.read_message()
         msg_resp = yield ws.read_message()
         self._check_message_sending(request_id, ack_resp, msg_resp, user_profile, queue_events_data)
+        self.close(ws)
+
+    @gen_test
+    def test_websocket_api_auth(self):
+        # type: () -> Generator[str, TornadoTestCase, None]
+        user_profile = UserProfile.objects.filter(email='hamlet@zulip.com').first()
+        ws = yield self.ws_connect('/sockjs/366/v8nw22qe/websocket', api_key=user_profile.api_key,
+                                   email=user_profile.email)
+        yield ws.read_message()
+        queue_events_data = self._get_queue_events_data(user_profile.email)
+        request_id = ':'.join((queue_events_data['response']['queue_id'], '0'))
+        response = yield self._websocket_auth(ws, queue_events_data)
+        self._check_auth_response(response, request_id)
+        self.close(ws)
+
+    @gen_test
+    def test_websocket_api_auth_wrong_api_key_lenght(self):
+        # type: () -> Generator[str, TornadoTestCase, None]
+        user_profile = UserProfile.objects.filter(email='hamlet@zulip.com').first()
+        ws = yield self.ws_connect('/sockjs/366/v8nw22qe/websocket', api_key='wrong_api_key_not_32',
+                                   email=user_profile.email)
+        yield ws.read_message()
+        queue_events_data = self._get_queue_events_data(user_profile.email)
+        request_id = ':'.join((queue_events_data['response']['queue_id'], '0'))
+        response = yield self._websocket_auth(ws, queue_events_data)
+        self._check_ack_response(response[0], request_id)
+        self._check_auth_response_error(
+            response, request_id,
+            "Incorrect API key length (keys should be 32 characters long) "
+            "for role '{}'".format(user_profile.email))
+        self.close(ws)
+
+    @gen_test
+    def test_websocket_api_auth_wrong_api_key(self):
+        # type: () -> Generator[str, TornadoTestCase, None]
+        user_profile = UserProfile.objects.filter(email='hamlet@zulip.com').first()
+        ws = yield self.ws_connect('/sockjs/366/v8nw22qe/websocket',
+                                   api_key=user_profile.api_key.replace(user_profile.api_key[-5:],
+                                                                        'wrong'),
+                                   email=user_profile.email)
+        yield ws.read_message()
+        queue_events_data = self._get_queue_events_data(user_profile.email)
+        request_id = ':'.join((queue_events_data['response']['queue_id'], '0'))
+        response = yield self._websocket_auth(ws, queue_events_data)
+        self._check_ack_response(response[0], request_id)
+        self._check_auth_response_error(
+            response, request_id,
+            "Invalid API key for role '{}'".format(user_profile.email))
+        self.close(ws)
+
+    @gen_test
+    def test_websocket_api_auth_invalid_role(self):
+        # type: () -> Generator[str, TornadoTestCase, None]
+        user_profile = UserProfile.objects.filter(email='hamlet@zulip.com').first()
+        ws = yield self.ws_connect('/sockjs/366/v8nw22qe/websocket',
+                                   api_key=user_profile.api_key,
+                                   email='wrong_email@zulip.com')
+        yield ws.read_message()
+        queue_events_data = self._get_queue_events_data(user_profile.email)
+        request_id = ':'.join((queue_events_data['response']['queue_id'], '0'))
+        response = yield self._websocket_auth(ws, queue_events_data)
+        self._check_ack_response(response[0], request_id)
+        self._check_auth_response_error(
+            response, request_id,
+            "Invalid role: 'wrong_email@zulip.com'")
+        self.close(ws)
+
+    @gen_test
+    def test_websocket_api_auth_inactive_user(self):
+        # type: () -> Generator[str, TornadoTestCase, None]
+        user_profile = UserProfile.objects.filter(email='hamlet@zulip.com').first()
+        user_profile.is_active = False
+        user_profile.save()
+        ws = yield self.ws_connect('/sockjs/366/v8nw22qe/websocket',
+                                   api_key=user_profile.api_key,
+                                   email=user_profile.email)
+        yield ws.read_message()
+        queue_events_data = self._get_queue_events_data(user_profile.email)
+        request_id = ':'.join((queue_events_data['response']['queue_id'], '0'))
+        response = yield self._websocket_auth(ws, queue_events_data)
+        self._check_ack_response(response[0], request_id)
+        self._check_auth_response_error(
+            response, request_id,
+            "Account not active")
+        user_profile.realm.deactivated = True
+        user_profile.realm.save()
+        self.close(ws)
+
+    @gen_test
+    def test_websocket_api_auth_deactivated_realm(self):
+        # type: () -> Generator[str, TornadoTestCase, None]
+        user_profile = UserProfile.objects.filter(email='hamlet@zulip.com').first()
+        user_profile.realm.deactivated = True
+        user_profile.realm.save()
+        ws = yield self.ws_connect('/sockjs/366/v8nw22qe/websocket',
+                                   api_key=user_profile.api_key,
+                                   email=user_profile.email)
+        yield ws.read_message()
+        queue_events_data = self._get_queue_events_data(user_profile.email)
+        request_id = ':'.join((queue_events_data['response']['queue_id'], '0'))
+        response = yield self._websocket_auth(ws, queue_events_data)
+        self._check_ack_response(response[0], request_id)
+        self._check_auth_response_error(
+            response, request_id,
+            "Realm for account has been deactivated")
         self.close(ws)

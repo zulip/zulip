@@ -4,9 +4,6 @@ import string
 import ujson
 
 from django.conf import settings
-from django.contrib.auth import SESSION_KEY, BACKEND_SESSION_KEY, HASH_SESSION_KEY
-from django.middleware.csrf import _get_new_csrf_token
-from importlib import import_module
 from tornado.ioloop import IOLoop
 from tornado import gen
 from tornado.httpclient import HTTPRequest
@@ -14,21 +11,23 @@ from tornado.websocket import websocket_connect, WebSocketClientConnection
 from six.moves.urllib.parse import urlparse
 from six.moves import range
 
-
 from zerver.models import UserProfile
 
 from typing import Any, Callable, Dict, Generator, Iterable, Optional
 
 
 class WebsocketClient(object):
-    def __init__(self, host_url, auth_email, queue_id, run_on_start, validate_ssl=True,
-                 **run_kwargs):
-        # type: (str, str, str, Callable, bool, **Any) -> None
+    def __init__(self, host_url, auth_email, queue_id, run_on_start, websocket_auth_data=None,
+                 api_key=None, validate_ssl=True, **run_kwargs):
+        # type: (str, str, str, Callable, Dict[str, str], Optional[str], bool, **Any) -> None
         """
         :param host_url: Websocket connection host url.
         :param auth_email: User email for websocket authentication.
         :param queue_id: Queue ID.
         :param run_on_start:  Method to launch after websocket connection start.
+        :param websocket_auth_data: Alternative websocket authentication by sessionid and csrf token
+            headers.
+        :param api_key: API key for Basic Http websocket authentication.
         :param validate_ssl: SSL certificate validation.
         :param run_kwargs: Arguments for 'run_on_start' method.
         """
@@ -36,30 +35,14 @@ class WebsocketClient(object):
         self.user_profile = UserProfile.objects.filter(email=auth_email).first()
         self.request_id_number = 0
         self.parsed_host_url = urlparse(host_url)
-        self.websocket_auth_data = self._login()
+        self.websocket_auth_data = websocket_auth_data or {}
         self.ioloop_instance = IOLoop.instance()
         self.run_on_start = run_on_start
         self.run_kwargs = run_kwargs
         self.scheme_dict = {'http': 'ws', 'https': 'wss'}
         self.ws = None  # type: Optional[WebSocketClientConnection]
+        self.api_key = api_key
         self.queue_id = queue_id
-
-    def _login(self):
-        # type: () -> Dict[str,str]
-
-        # Ideally, we'd migrate this to use API auth instead of
-        # stealing cookies, but this works for now.
-        auth_backend = settings.AUTHENTICATION_BACKENDS[0]
-        session_auth_hash = self.user_profile.get_session_auth_hash()
-        engine = import_module(settings.SESSION_ENGINE)
-        session = engine.SessionStore() # type: ignore # import_module
-        session[SESSION_KEY] = self.user_profile._meta.pk.value_to_string(self.user_profile)
-        session[BACKEND_SESSION_KEY] = auth_backend
-        session[HASH_SESSION_KEY] = session_auth_hash
-        session.save()
-        return {
-            settings.SESSION_COOKIE_NAME: session.session_key,
-            settings.CSRF_COOKIE_NAME: _get_new_csrf_token()}
 
     @property
     def _cookie_header(self):
@@ -98,7 +81,11 @@ class WebsocketClient(object):
         # type: () -> Generator[str, WebSocketClientConnection, None]
         try:
             request = HTTPRequest(url=self._get_websocket_url(), validate_cert=self.validate_ssl)
-            request.headers.add('Cookie', self._cookie_header)
+            if not self.websocket_auth_data:
+                request.auth_username = self.user_profile.email
+                request.auth_password = self.api_key
+            else:
+                request.headers.add('Cookie', self._cookie_header)
             self.ws = yield websocket_connect(request)
             yield self.ws.read_message()
             yield self._websocket_auth()
