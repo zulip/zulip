@@ -241,7 +241,6 @@ def home_real(request):
         # Realm foreign key data from register_ret.
         # TODO: Rename these to match register_ret values.
         people_list           = register_ret['realm_users'],
-        initial_pointer       = register_ret['pointer'],
         event_queue_id        = register_ret['queue_id'],
 
         # Misc. extra data.
@@ -275,6 +274,7 @@ def home_real(request):
         'max_message_id',
         'muted_topics',
         'never_subscribed',
+        'pointer',
         'presences',
         'realm_add_emoji_by_admins_only',
         'realm_allow_message_editing',
@@ -329,7 +329,7 @@ def home_real(request):
             page_params["narrow_topic"] = narrow_topic
         page_params["narrow"] = [dict(operator=term[0], operand=term[1]) for term in narrow]
         page_params["max_message_id"] = initial_pointer
-        page_params["initial_pointer"] = initial_pointer
+        page_params["pointer"] = initial_pointer
         page_params["have_initial_messages"] = (initial_pointer != -1)
 
     statsd.incr('views.home')
