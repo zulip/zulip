@@ -417,7 +417,7 @@ exports.initialize = function () {
                 onActive: focus_gained,
                 keepTracking: true});
 
-    presence.set_info(page_params.initial_presences,
+    presence.set_info(page_params.presences,
                                page_params.initial_servertime);
     exports.build_user_sidebar();
     exports.update_huddles();
