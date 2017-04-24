@@ -169,7 +169,7 @@ function fill_in_opts_from_current_narrowed_view(msg_type, opts) {
 }
 
 function same_recipient_as_before(msg_type, opts) {
-    return (compose_state.composing() === msg_type) &&
+    return (compose_state.get_message_type() === msg_type) &&
             ((msg_type === "stream" &&
               opts.stream === compose_state.stream_name() &&
               opts.subject === compose_state.subject()) ||

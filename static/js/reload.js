@@ -22,16 +22,17 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
     url += "+csrf_token=" + encodeURIComponent(csrf_token);
 
     if (save_compose) {
-        if (compose_state.composing() === 'stream') {
+        var msg_type = compose_state.get_message_type();
+        if (msg_type === 'stream') {
             url += "+msg_type=stream";
             url += "+stream=" + encodeURIComponent(compose_state.stream_name());
             url += "+subject=" + encodeURIComponent(compose_state.subject());
-        } else if (compose_state.composing() === 'private') {
+        } else if (msg_type === 'private') {
             url += "+msg_type=private";
             url += "+recipient=" + encodeURIComponent(compose_state.recipient());
         }
 
-        if (compose_state.composing()) {
+        if (msg_type) {
             url += "+msg=" + encodeURIComponent(compose_state.message_content());
         }
     }

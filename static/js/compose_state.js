@@ -13,14 +13,9 @@ exports.get_message_type = function () {
 };
 
 exports.composing = function () {
-    // For legacy reasons, this is the same as get_message_type.
-    // Most callers use this in a boolean context, but there are
-    // some stragglers that inspect the string value.
-    //
-    // TODO: Fix callers who care about stream/private to use
-    //       get_message_type(), and then convert this to return
-    //       `!!message_type` or something like that.
-    return message_type;
+    // This is very similar to get_message_type(), but it returns
+    // a boolean.
+    return !!message_type;
 };
 
 function get_or_set(fieldname, keep_leading_whitespace) {

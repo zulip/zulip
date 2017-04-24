@@ -67,7 +67,7 @@ people.add(bob);
         };
     };
 
-    global.compose_state.composing = function () {
+    global.compose_state.get_message_type = function () {
         return 'stream';
     };
 
@@ -81,7 +81,7 @@ people.add(bob);
     assert.equal(message.subject, 'lunch');
     assert.equal(message.content, 'burrito');
 
-    global.compose_state.composing = function () {
+    global.compose_state.get_message_type = function () {
         return 'private';
     };
     message = compose.create_message_object();
