@@ -103,12 +103,12 @@ exports.set_up = function () {
 
     function update_desktop_notification_setting(new_setting) {
         update_global_stream_setting("enable_stream_desktop_notifications", new_setting);
-        subs.set_all_stream_desktop_notifications_to(new_setting);
+        stream_edit.set_all_stream_desktop_notifications_to(new_setting);
     }
 
     function update_audible_notification_setting(new_setting) {
         update_global_stream_setting("enable_stream_sounds", new_setting);
-        subs.set_all_stream_audible_notifications_to(new_setting);
+        stream_edit.set_all_stream_audible_notifications_to(new_setting);
     }
 
     function maybe_bulk_update_stream_notification_setting(notification_checkbox,

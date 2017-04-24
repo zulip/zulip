@@ -466,8 +466,8 @@ $(function () {
 
     (function () {
         var map = {
-            ".stream-description-editable": subs.change_stream_description,
-            ".stream-name-editable": subs.change_stream_name,
+            ".stream-description-editable": stream_edit.change_stream_description,
+            ".stream-name-editable": stream_edit.change_stream_name,
         };
 
         // http://stackoverflow.com/questions/4233265/contenteditable-set-caret-at-the-end-of-the-text-cross-browser

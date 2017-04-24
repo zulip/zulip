@@ -137,6 +137,9 @@ def find_edges_to_remove(graph, methods):
         ('compose_actions', 'resize'),
         ('settings_streams', 'stream_data'),
         ('drafts', 'hashchange'),
+        ('settings_notifications', 'stream_edit'),
+        ('compose', 'stream_edit'),
+        ('subs', 'stream_edit'),
     ] # type: List[Edge]
 
     def is_exempt(edge):
@@ -152,6 +155,7 @@ def find_edges_to_remove(graph, methods):
         return edge in EXEMPT_EDGES
 
     APPROVED_CUTS = [
+        ('stream_edit', 'stream_events'),
         ('unread_ui', 'pointer'),
         ('typing_events', 'narrow'),
         ('echo', 'message_events'),
@@ -199,6 +203,7 @@ def find_edges_to_remove(graph, methods):
         ('muting_ui', 'stream_popover'),
         ('popovers', 'stream_popover'),
         ('topic_list', 'stream_popover'),
+        ('stream_edit', 'subs'),
         ('topic_list', 'narrow'),
         ('stream_list', 'narrow'),
         ('stream_list', 'pm_list'),
