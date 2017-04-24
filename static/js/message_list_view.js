@@ -70,9 +70,11 @@ function add_display_time(group, message_container, prev) {
         var prev_time = new XDate(prev.msg.timestamp * 1000);
         if (time.toDateString() !== prev_time.toDateString()) {
             // NB: show_date is HTML, inserted into the document without escaping.
+            message_container.show_date = (timerender.render_date(time, prev_time))[0].outerHTML;
             group.show_date = (timerender.render_date(time, prev_time))[0].outerHTML;
         }
     } else {
+        message_container.show_date = (timerender.render_date(time))[0].outerHTML;
         group.show_date = (timerender.render_date(time))[0].outerHTML;
     }
 
