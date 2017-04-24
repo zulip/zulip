@@ -464,7 +464,7 @@ function get_events(options) {
 
     get_events_params.dont_block = options.dont_block || get_events_failures > 0;
     if (get_events_params.queue_id === undefined) {
-        get_events_params.queue_id = page_params.event_queue_id;
+        get_events_params.queue_id = page_params.queue_id;
         get_events_params.last_event_id = page_params.last_event_id;
     }
 
@@ -591,7 +591,7 @@ exports.cleanup_event_queue = function cleanup_event_queue() {
     page_params.event_queue_expired = true;
     channel.del({
         url:      '/json/events',
-        data:     {queue_id: page_params.event_queue_id},
+        data:     {queue_id: page_params.queue_id},
     });
 };
 
