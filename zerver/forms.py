@@ -25,7 +25,7 @@ import logging
 import re
 import DNS
 
-from typing import Any, Callable, List, Optional, Text
+from typing import Any, Callable, List, Optional, Text, Dict
 
 MIT_VALIDATION_ERROR = u'That user does not exist at MIT or is a ' + \
                        u'<a href="https://ist.mit.edu/email-lists">mailing list</a>. ' + \
@@ -184,6 +184,47 @@ class ZulipPasswordResetForm(PasswordResetForm):
         if len(result) == 0:
             logging.info("Password reset attempted for %s; no active account." % (email,))
         return result
+
+    def send_mail(self, subject_template_name, email_template_name,
+                  context, from_email, to_email, html_email_template_name=None):
+        # type: (str, str, Dict[str, Any], str, str, str) -> None
+        """
+        Currently we don't support accounts in multiple subdomains using
+        a single email addresss. We override this function so that we do
+        not send a reset link to an email address if the reset attempt is
+        done on the subdomain which does not match user.realm.subdomain.
+
+        Once we start supporting accounts in multiple subdomains, we can
+        delete this function.
+        """
+        user_realm = get_user_profile_by_email(to_email).realm
+        attempted_subdomain = get_subdomain(getattr(self, 'request'))
+        context['attempted_realm'] = False
+        if not check_subdomain(user_realm.subdomain, attempted_subdomain):
+            context['attempted_realm'] = get_realm(attempted_subdomain)
+
+        super(ZulipPasswordResetForm, self).send_mail(
+            subject_template_name,
+            email_template_name,
+            context,
+            from_email,
+            to_email,
+            html_email_template_name=html_email_template_name
+        )
+
+    def save(self, *args, **kwargs):
+        # type: (*Any, **Any) -> None
+        """
+        Currently we don't support accounts in multiple subdomains using
+        a single email addresss. We override this function so that we can
+        inject request parameter in context. This parameter will be used
+        by send_mail function.
+
+        Once we start supporting accounts in multiple subdomains, we can
+        delete this function.
+        """
+        setattr(self, 'request', kwargs.get('request'))
+        super(ZulipPasswordResetForm, self).save(*args, **kwargs)
 
 class CreateUserForm(forms.Form):
     full_name = forms.CharField(max_length=100)
