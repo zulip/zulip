@@ -138,14 +138,14 @@ var list_render = (function () {
         if (opts.filter.element) {
             opts.filter.element.on(opts.filter.event || "input", function () {
                 var self = this;
-                var value = self.value.toLowerCase();
+                var value = self.value.toLocaleLowerCase();
 
                 meta.filtered_list = meta.list.filter(function (item) {
                     if (opts.filter.callback) {
                         return opts.filter.callback(item, value);
                     }
 
-                    return !!item.toLowerCase().match(value);
+                    return !!item.toLocaleLowerCase().match(value);
                 });
 
                 // clear and re-initialize the list with the newly filtered subset
