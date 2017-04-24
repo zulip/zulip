@@ -39,7 +39,7 @@ function is_valid_conversation(recipient) {
         return false;
     }
 
-    if (compose_state.composing() !== 'private') {
+    if (compose_state.get_message_type() !== 'private') {
         // We only use typing indicators in PMs for now.
         // There was originally some support for having
         // typing indicators related to stream conversations,

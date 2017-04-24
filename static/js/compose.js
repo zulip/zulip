@@ -126,7 +126,7 @@ function create_message_object() {
 
     // Changes here must also be kept in sync with echo.try_deliver_locally
     var message = {
-        type: compose_state.composing(),
+        type: compose_state.get_message_type(),
         content: content,
         sender_id: page_params.user_id,
         queue_id: page_params.event_queue_id,
@@ -591,7 +591,7 @@ exports.validate = function () {
         return false;
     }
 
-    if (compose_state.composing() === 'private') {
+    if (compose_state.get_message_type() === 'private') {
         return validate_private_message();
     }
     return validate_stream_message();

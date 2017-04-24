@@ -72,7 +72,7 @@ exports.snapshot_message = function () {
 
     // Save what we can.
     var message = {
-        type: compose_state.composing(),
+        type: compose_state.get_message_type(),
         content: compose_state.message_content(),
     };
     if (message.type === "private") {

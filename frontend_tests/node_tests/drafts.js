@@ -99,8 +99,11 @@ var draft_2 = {
 
 (function test_snapshot_message() {
     function stub_draft(draft) {
-        global.compose_state.composing = function () {
+        global.compose_state.get_message_type = function () {
             return draft.type;
+        };
+        global.compose_state.composing = function () {
+            return !!draft.type;
         };
         global.compose_state.message_content = function () {
             return draft.content;
