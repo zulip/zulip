@@ -238,10 +238,6 @@ def home_real(request):
         enable_online_push_notifications = user_profile.enable_online_push_notifications,
         enable_digest_emails  = user_profile.enable_digest_emails,
 
-        # Realm foreign key data from register_ret.
-        # TODO: Rename these to match register_ret values.
-        people_list           = register_ret['realm_users'],
-
         # Misc. extra data.
         have_initial_messages = user_has_messages,
         initial_servertime    = time.time(), # Used for calculating relative presence age
@@ -306,6 +302,7 @@ def home_real(request):
         'realm_restricted_to_domain',
         'realm_show_digest_email',
         'realm_uri',
+        'realm_users',
         'realm_waiting_period_threshold',
         'referrals',
         'subscriptions',

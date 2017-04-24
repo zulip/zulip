@@ -2,7 +2,7 @@ global.stub_out_jquery();
 
 set_global('page_params', {
     is_admin: false,
-    people_list: [],
+    realm_users: [],
 });
 
 add_dependencies({
