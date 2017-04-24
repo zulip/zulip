@@ -32,7 +32,8 @@ from zerver.management.commands.deliver_email import send_email_job
 from zerver.lib.actions import (
     set_default_streams,
     do_change_is_admin,
-    get_stream
+    get_stream,
+    do_create_realm,
 )
 
 from zerver.lib.initial_password import initial_password
@@ -150,6 +151,63 @@ class PasswordResetTest(ZulipTestCase):
 
         # make sure old password no longer works
         self.login(email, password=old_password, fails=True)
+
+    def test_invalid_subdomain(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        string_id = 'hamlet'
+        name = 'Hamlet'
+        do_create_realm(
+            string_id,
+            name,
+            restricted_to_domain=False,
+            invite_required=False
+        )
+
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True):
+            with patch('zerver.forms.get_subdomain', return_value=string_id):
+                # start the password reset process by supplying an email address
+                result = self.client_post(
+                    '/accounts/password/reset/', {'email': email})
+
+        # check the redirect link telling you to check mail for password reset link
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(
+            "/accounts/password/reset/done/"))
+        result = self.client_get(result["Location"])
+
+        self.assert_in_response("Check your email to finish the process.", result)
+
+        from django.core.mail import outbox
+        self.assertEqual(len(outbox), 1)
+        message = outbox.pop()
+        self.assertIn("hamlet@zulip.com does not\nhave an active account in http://",
+                      message.body)
+
+    def test_correct_subdomain(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        string_id = 'zulip'
+
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True):
+            with patch('zerver.forms.get_subdomain', return_value=string_id):
+                # start the password reset process by supplying an email address
+                result = self.client_post(
+                    '/accounts/password/reset/', {'email': email})
+
+        # check the redirect link telling you to check mail for password reset link
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(
+            "/accounts/password/reset/done/"))
+        result = self.client_get(result["Location"])
+
+        self.assert_in_response("Check your email to finish the process.", result)
+
+        from django.core.mail import outbox
+        self.assertEqual(len(outbox), 1)
+        message = outbox.pop()
+        self.assertIn("Psst. Word on the street is that you forgot your password,",
+                      message.body)
 
     def test_redirect_endpoints(self):
         # type: () -> None
