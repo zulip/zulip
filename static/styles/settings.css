@@ -772,6 +772,15 @@ input[type=checkbox].inline-block {
     overflow-y: auto;
 }
 
+#settings_page .table-striped thead th {
+    background-color: inherit;
+    color: inherit;
+}
+
+#settings_page input.search {
+    font-size: 0.9rem;
+}
+
 #settings_page .form-sidebar {
     position: absolute;
     top: 45px;
