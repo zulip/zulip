@@ -87,7 +87,6 @@ class HomeTest(ZulipTestCase):
             "needs_tutorial",
             "never_subscribed",
             "notifications_stream",
-            "people_list",
             "pm_content_in_desktop_notifications",
             "poll_timeout",
             "presences",
@@ -123,6 +122,7 @@ class HomeTest(ZulipTestCase):
             "realm_restricted_to_domain",
             "realm_show_digest_email",
             "realm_uri",
+            "realm_users",
             "realm_waiting_period_threshold",
             "referrals",
             "save_stacktraces",
@@ -316,8 +316,8 @@ class HomeTest(ZulipTestCase):
         self.login(email)
         result = self._get_home_page()
         page_params = self._get_page_params(result)
-        for params in ['people_list', 'realm_bots']:
-            users = page_params['people_list']
+        for params in ['realm_users', 'realm_bots']:
+            users = page_params['realm_users']
             self.assertTrue(len(users) >= 3)
             for user in users:
                 self.assertEqual(user['user_id'],

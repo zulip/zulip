@@ -240,7 +240,6 @@ def home_real(request):
 
         # Realm foreign key data from register_ret.
         # TODO: Rename these to match register_ret values.
-        people_list           = register_ret['realm_users'],
         initial_pointer       = register_ret['pointer'],
 
         # Misc. extra data.
@@ -306,6 +305,7 @@ def home_real(request):
         'realm_restricted_to_domain',
         'realm_show_digest_email',
         'realm_uri',
+        'realm_users',
         'realm_waiting_period_threshold',
         'referrals',
         'subscriptions',
