@@ -204,10 +204,6 @@ def home_real(request):
         server_inline_image_preview = settings.INLINE_IMAGE_PREVIEW,
         server_inline_url_embed_preview = settings.INLINE_URL_EMBED_PREVIEW,
 
-        # Realm foreign key data from register_ret.
-        # TODO: Rename these to match register_ret values.
-        initial_pointer       = register_ret['pointer'],
-
         # Misc. extra data.
         have_initial_messages = user_has_messages,
         initial_servertime    = time.time(), # Used for calculating relative presence age
@@ -260,6 +256,7 @@ def home_real(request):
         'muted_topics',
         'never_subscribed',
         'pm_content_in_desktop_notifications',
+        'pointer',
         'presences',
         'queue_id',
         'realm_add_emoji_by_admins_only',
@@ -318,7 +315,7 @@ def home_real(request):
             page_params["narrow_topic"] = narrow_topic
         page_params["narrow"] = [dict(operator=term[0], operand=term[1]) for term in narrow]
         page_params["max_message_id"] = initial_pointer
-        page_params["initial_pointer"] = initial_pointer
+        page_params["pointer"] = initial_pointer
         page_params["have_initial_messages"] = (initial_pointer != -1)
         page_params["enable_desktop_notifications"] = False
 

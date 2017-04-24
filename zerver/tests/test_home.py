@@ -72,7 +72,6 @@ class HomeTest(ZulipTestCase):
             "has_mobile_devices",
             "have_initial_messages",
             "hotspots",
-            "initial_pointer",
             "initial_servertime",
             "is_admin",
             "language_list",
@@ -91,6 +90,7 @@ class HomeTest(ZulipTestCase):
             "never_subscribed",
             "notifications_stream",
             "pm_content_in_desktop_notifications",
+            "pointer",
             "poll_timeout",
             "presences",
             "prompt_for_invites",
@@ -353,7 +353,7 @@ class HomeTest(ZulipTestCase):
         page_params = self._get_page_params(result)
         self.assertEqual(page_params['narrow_stream'], stream_name)
         self.assertEqual(page_params['narrow'], [dict(operator='stream', operand=stream_name)])
-        self.assertEqual(page_params['initial_pointer'], -1)
+        self.assertEqual(page_params['pointer'], -1)
         self.assertEqual(page_params['max_message_id'], -1)
         self.assertEqual(page_params['have_initial_messages'], False)
 

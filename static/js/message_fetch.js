@@ -138,7 +138,7 @@ exports.load_more_messages = function load_more_messages(msg_list) {
     ui.show_loading_more_messages_indicator();
     load_more_enabled = false;
     if (msg_list.first() === undefined) {
-        oldest_message_id = page_params.initial_pointer;
+        oldest_message_id = page_params.pointer;
     } else {
         oldest_message_id = msg_list.first().id;
     }
@@ -166,7 +166,7 @@ util.execute_early(function () {
         // We fall back to the closest selected id, as the user may have removed
         // a stream from the home before already
         if (home_msg_list.selected_id() === -1 && !home_msg_list.empty()) {
-            home_msg_list.select_id(page_params.initial_pointer,
+            home_msg_list.select_id(page_params.pointer,
                                     {then_scroll: true, use_closest: true,
                                      target_scroll_offset: page_params.initial_offset});
         }
@@ -204,7 +204,7 @@ util.execute_early(function () {
 
     if (page_params.have_initial_messages) {
         exports.load_old_messages({
-            anchor: page_params.initial_pointer,
+            anchor: page_params.pointer,
             num_before: 200,
             num_after: 200,
             msg_list: home_msg_list,

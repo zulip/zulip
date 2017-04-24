@@ -75,7 +75,7 @@ exports.fast_forward_pointer = function () {
 };
 
 exports.initialize = function initialize() {
-    pointer.server_furthest_read = page_params.initial_pointer;
+    pointer.server_furthest_read = page_params.pointer;
     if (page_params.orig_initial_pointer !== undefined &&
         page_params.orig_initial_pointer > pointer.server_furthest_read) {
         pointer.server_furthest_read = page_params.orig_initial_pointer;
