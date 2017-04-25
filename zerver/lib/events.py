@@ -29,7 +29,7 @@ from zerver.lib.actions import validate_user_access_to_subscribers_helper, \
     gather_subscriptions_helper, get_realm_domains, \
     get_status_dict, streams_to_dicts_sorted
 from zerver.tornado.event_queue import request_event_queue, get_user_events
-from zerver.models import Client, Message, Realm, UserProfile, \
+from zerver.models import Client, Message, Realm, UserPresence, UserProfile, \
     get_user_profile_by_email, get_user_profile_by_id, \
     get_active_user_dicts_in_realm, realm_filters_for_realm, \
     get_owned_bot_dicts, custom_profile_fields_for_realm
@@ -349,7 +349,9 @@ def apply_event(state, event, user_profile, include_subscribers):
                         user_id in sub['subscribers']):
                     sub['subscribers'].remove(user_id)
     elif event['type'] == "presence":
-        state['presences'][event['email']] = event['presence']
+        # TODO: Add user_id to presence update events / state format!
+        presence_user_profile = get_user_profile_by_email(event['email'])
+        state['presences'][event['email']] = UserPresence.get_status_dict_by_user(presence_user_profile)[event['email']]
     elif event['type'] == "update_message":
         # The client will get the updated message directly
         pass

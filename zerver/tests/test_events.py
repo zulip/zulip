@@ -603,23 +603,47 @@ class EventsRegisterTest(ZulipTestCase):
     def test_presence_events(self):
         # type: () -> None
         schema_checker = self.check_events_dict([
-            ('type', equals('pointer')),
+            ('type', equals('presence')),
             ('email', check_string),
-            ('timestamp', check_float),
+            ('server_timestamp', check_float),
             ('presence', check_dict_only([
-                # TODO: Add more here once the test below works
+                ('website', check_dict_only([
+                    ('status', equals('active')),
+                    ('timestamp', check_int),
+                    ('client', check_string),
+                    ('pushable', check_bool),
+                ])),
             ])),
         ])
-        # BUG: Marked as failing for now because this is a failing
-        # test, due to the `aggregated` feature not being supported by
-        # our events code.
+        events = self.do_test(lambda: do_update_user_presence(
+            self.user_profile, get_client("website"), timezone_now(), UserPresence.ACTIVE))
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
 
-        with self.assertRaises(AssertionError):
-            events = self.do_test(lambda: do_update_user_presence(
-                self.user_profile, get_client("website"), timezone_now(), UserPresence.ACTIVE))
-            # Marked as nocoverage since unreachable
-            error = schema_checker('events[0]', events[0])  # nocoverage
-            self.assert_on_error(error)  # nocoverage
+    def test_presence_events_multiple_clients(self):
+        # type: () -> None
+        schema_checker_android = self.check_events_dict([
+            ('type', equals('presence')),
+            ('email', check_string),
+            ('server_timestamp', check_float),
+            ('presence', check_dict_only([
+                ('ZulipAndroid/1.0', check_dict_only([
+                    ('status', equals('idle')),
+                    ('timestamp', check_int),
+                    ('client', check_string),
+                    ('pushable', check_bool),
+                ])),
+            ])),
+        ])
+        self.client_post("/api/v1/users/me/presence", {'status': 'idle'},
+                         HTTP_USER_AGENT="ZulipAndroid/1.0",
+                         **self.api_auth(self.user_profile.email))
+        self.do_test(lambda: do_update_user_presence(
+            self.user_profile, get_client("website"), timezone_now(), UserPresence.ACTIVE))
+        events = self.do_test(lambda: do_update_user_presence(
+            self.user_profile, get_client("ZulipAndroid/1.0"), timezone_now(), UserPresence.IDLE))
+        error = schema_checker_android('events[0]', events[0])
+        self.assert_on_error(error)
 
     def test_pointer_events(self):
         # type: () -> None
