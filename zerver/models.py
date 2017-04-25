@@ -1567,8 +1567,8 @@ class UserPresence(models.Model):
         return user_statuses
 
     @staticmethod
-    def to_presence_dict(client_name, status, dt, push_enabled=None,
-                         has_push_devices=None, is_mirror_dummy=None):
+    def to_presence_dict(client_name, status, dt, push_enabled=False,
+                         has_push_devices=False, is_mirror_dummy=None):
         # type: (Text, int, datetime.datetime, Optional[bool], Optional[bool], Optional[bool]) -> Dict[str, Any]
         presence_val = UserPresence.status_to_string(status)
 

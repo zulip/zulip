@@ -2344,7 +2344,7 @@ def send_presence_changed(user_profile, presence):
     presence_dict = presence.to_dict()
     event = dict(type="presence", email=user_profile.email,
                  server_timestamp=time.time(),
-                 presence={presence_dict['client']: presence.to_dict()})
+                 presence={presence_dict['client']: presence_dict})
     send_event(event, active_user_ids(user_profile.realm))
 
 def consolidate_client(client):
