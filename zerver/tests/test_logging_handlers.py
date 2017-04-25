@@ -118,6 +118,7 @@ class AdminZulipHandlerTest(ZulipTestCase):
             # Check anonymous user is handled correctly
             record.request.user = AnonymousUser()
             report = self.run_handler(record)
+            self.assertIn("host", report)
             self.assertIn("user_email", report)
             self.assertIn("message", report)
             self.assertIn("stack_trace", report)
@@ -130,6 +131,7 @@ class AdminZulipHandlerTest(ZulipTestCase):
             record.request.get_host = get_host_error
             report = self.run_handler(record)
             record.request.get_host = orig_get_host
+            self.assertIn("host", report)
             self.assertIn("user_email", report)
             self.assertIn("message", report)
             self.assertIn("stack_trace", report)
@@ -140,6 +142,7 @@ class AdminZulipHandlerTest(ZulipTestCase):
                 record.request.method = "POST"
                 report = self.run_handler(record)
                 record.request.method = "GET"
+            self.assertIn("host", report)
             self.assertIn("user_email", report)
             self.assertIn("message", report)
             self.assertIn("stack_trace", report)
@@ -158,6 +161,7 @@ class AdminZulipHandlerTest(ZulipTestCase):
             # Test no exc_info
             record.exc_info = None
             report = self.run_handler(record)
+            self.assertIn("host", report)
             self.assertIn("user_email", report)
             self.assertIn("message", report)
             self.assertEqual(report["stack_trace"], None)
@@ -166,6 +170,7 @@ class AdminZulipHandlerTest(ZulipTestCase):
             record.request.user = None
             with patch("zerver.logging_handlers.traceback.print_exc"):
                 report = self.run_handler(record)
+            self.assertIn("host", report)
             self.assertIn("user_email", report)
             self.assertIn("message", report)
             self.assertIn("stack_trace", report)

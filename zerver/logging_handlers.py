@@ -77,6 +77,7 @@ class AdminZulipHandler(logging.Handler):
 
             report = dict(
                 node = platform.node(),
+                host = platform.node(),
                 message = message,
                 stack_trace = stack_trace,
             )
