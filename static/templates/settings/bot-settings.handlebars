@@ -48,13 +48,15 @@
                     <div class="input-group">
                         <div id="bot_avatar_file"></div>
                         <input type="file" name="bot_avatar_file_input" class="notvisible" id="bot_avatar_file_input" value="{{t 'Upload avatar' }}" />
-                        <button class="btn btn-default display-none" id="bot_avatar_clear_button">{{t "Clear avatar" }}</button>
-                        <button class="button white" id="bot_avatar_upload_button">{{t "Customize avatar" }}</button> ({{t "Optional" }})
+                        <button class="button white rounded small btn-danger display-none" id="bot_avatar_clear_button">{{t "Clear avatar" }}</button>
+                        <button class="button white rounded" id="bot_avatar_upload_button">{{t "Customize avatar" }}</button> ({{t "Optional" }})
                     </div>
                     <p>
                         <div id="bot_avatar_file_input_error" class="text-error"></div>
                     </p>
-                    <input type="submit" class="button sea-green" id="create_bot_button" value="{{t 'Create bot' }}" />
+                    <button type="submit" class="button white rounded sea-green" id="create_bot_button" value="{{t 'Create bot' }}">
+                        <i class="icon-vector-android button-icon" aria-hidden="true"></i> {{t 'Create bot' }}
+                    </button>
                 </div>
             </form>
         </div>
@@ -71,7 +73,7 @@
                     messages, you should use your personal API key.
                     {{/tr}}
                 </p>
-                <button class="button white" id="api_key_button">{{t "Show/change your API key" }}</button>
+                <button class="button white rounded" id="api_key_button">{{t "Show/change your API key" }}</button>
             </div>
         </div>
         <div id="get_api_key_box" class="side-padded-container">

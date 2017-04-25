@@ -47,7 +47,7 @@ casper.then(function () {
                 new_password: "qwertyuiop",
                 confirm_password: "qwertyuiop",
             });
-            casper.click('input[name="change_settings"]');
+            casper.click('button[name="change_settings"]');
         });
     });
 });
@@ -79,7 +79,7 @@ casper.then(function () {
             new_password: test_credentials.default_user.password,
             confirm_password: test_credentials.default_user.password,
         });
-        casper.click('input[name="change_settings"]');
+        casper.click('button[name="change_settings"]');
     });
 });
 
