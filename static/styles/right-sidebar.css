@@ -137,15 +137,17 @@
 .user_sidebar_entry .count,
 .group-pms-sidebar-entry .count {
     position: absolute;
-    right: 20px;
+    right: 25px;
     top: 4px;
-    padding: 2px 3px 1px 3px;
+    padding: 2px 4px 1px 4px;
     background: #80837f;
     border-radius: 0px;
     color: #ffffff;
     font-size: 12px;
     font-weight: normal;
     letter-spacing: 0.6px;
+
+    border-radius: 4px;
 }
 
 .group-pms-sidebar-entry .count {
