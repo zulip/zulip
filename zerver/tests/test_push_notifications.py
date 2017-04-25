@@ -422,14 +422,14 @@ class GCMTest(PushNotificationTest):
         return data
 
 class GCMNotSetTest(GCMTest):
-    @mock.patch('logging.error')
-    def test_gcm_is_none(self, mock_error):
+    @mock.patch('logging.warning')
+    def test_gcm_is_none(self, mock_warning):
         # type: (mock.MagicMock) -> None
         apn.gcm = None
         apn.send_android_push_notification_to_user(self.user_profile, {})
-        mock_error.assert_called_with("Attempting to send a GCM push "
-                                      "notification, but no API key was "
-                                      "configured")
+        mock_warning.assert_called_with("Attempting to send a GCM push "
+                                        "notification, but no API key was "
+                                        "configured")
 
 class GCMSuccessTest(GCMTest):
     @mock.patch('logging.warning')

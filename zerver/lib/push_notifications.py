@@ -166,8 +166,8 @@ def send_apple_push_notification_to_user(user, alert, **extra_data):
 def send_apple_push_notification(user_id, devices, **extra_data):
     # type: (int, List[PushDeviceToken], **Any) -> None
     if not connection and not dbx_connection:
-        logging.error("Attempting to send push notification, but no connection was found. "
-                      "This may be because we could not find the APNS Certificate file.")
+        logging.warning("Attempting to send push notification, but no connection was found. "
+                        "This may be because we could not find the APNS Certificate file.")
         return
 
     # Plain b64 token kept for debugging purposes
@@ -223,7 +223,7 @@ def send_android_push_notification_to_user(user_profile, data):
 def send_android_push_notification(devices, data):
     # type: (List[PushDeviceToken], Dict[str, Any]) -> None
     if not gcm:
-        logging.error("Attempting to send a GCM push notification, but no API key was configured")
+        logging.warning("Attempting to send a GCM push notification, but no API key was configured")
         return
     reg_ids = [device.token for device in devices]
 
