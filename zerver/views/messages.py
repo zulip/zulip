@@ -153,9 +153,7 @@ class NarrowBuilder(object):
         s = list(pattern)
         for i, c in enumerate(s):
             if c not in self._alphanum:
-                if c == '\000':
-                    s[i] = '\0'
-                elif ord(c) >= 128:
+                if ord(c) >= 128:
                     # convert the character to hex postgres regex will take
                     # \uXXXX
                     s[i] = '\\u{:0>4x}'.format(ord(c))

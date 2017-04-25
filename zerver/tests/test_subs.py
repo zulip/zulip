@@ -1139,6 +1139,23 @@ class SubscriptionRestApiTest(ZulipTestCase):
         self.assert_json_error(result,
                                "Stream name too long (limit: 60 characters)")
 
+    def test_stream_name_contains_null(self):
+        # type: () -> None
+        email = 'hamlet@zulip.com'
+        self.login(email)
+
+        stream_name = "abc\000"
+        request = {
+            'delete': ujson.dumps([stream_name])
+        }
+        result = self.client_patch(
+            "/api/v1/users/me/subscriptions",
+            request,
+            **self.api_auth(email)
+        )
+        self.assert_json_error(result,
+                               "Stream name '%s' contains NULL (0x00) characters." % (stream_name))
+
     def test_compose_views_rollback(self):
         # type: () -> None
         '''
@@ -1444,6 +1461,17 @@ class SubscriptionAPITest(ZulipTestCase):
         result = self.common_subscribe_to_streams(self.test_email, [long_stream_name])
         self.assert_json_error(result,
                                "Stream name too long (limit: 60 characters)")
+
+    def test_subscriptions_add_stream_with_null(self):
+        # type: () -> None
+        """
+        Calling POST /json/users/me/subscriptions on a stream whose name contains
+        null characters should return a JSON error.
+        """
+        stream_name = "abc\000"
+        result = self.common_subscribe_to_streams(self.test_email, [stream_name])
+        self.assert_json_error(result,
+                               "Stream name '%s' contains NULL (0x00) characters." % (stream_name))
 
     def test_user_settings_for_adding_streams(self):
         # type: () -> None

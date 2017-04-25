@@ -1118,6 +1118,9 @@ def check_stream_name(stream_name):
         raise JsonableError(_("Invalid stream name '%s'" % (stream_name)))
     if len(stream_name) > Stream.MAX_NAME_LENGTH:
         raise JsonableError(_("Stream name too long (limit: %s characters)" % (Stream.MAX_NAME_LENGTH)))
+    for i in stream_name:
+        if ord(i) == 0:
+            raise JsonableError(_("Stream name '%s' contains NULL (0x00) characters." % (stream_name)))
 
 def send_pm_if_empty_stream(sender, stream, stream_name, realm):
     # type: (UserProfile, Optional[Stream], Text, Realm) -> None
