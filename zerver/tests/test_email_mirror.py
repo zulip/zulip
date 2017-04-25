@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
+import subprocess
+
+from django.http import HttpResponse
 from django.test import TestCase
 
 from zerver.lib.test_helpers import (
     most_recent_message,
     most_recent_usermessage,
-)
+    POSTRequestMock)
 
 from zerver.lib.test_classes import (
     ZulipTestCase,
@@ -351,11 +354,13 @@ class TestReplyExtraction(ZulipTestCase):
 
 MAILS_DIR = os.path.join(dirname(dirname(abspath(__file__))), "fixtures", "email")
 
-class TestCommandMTA(TestCase):
 
-    @mock.patch('zerver.management.commands.email_mirror.queue_json_publish')
-    def test_success(self, mock_queue_json_publish):
-        # type: (mock.Mock) -> None
+class TestScriptMTA(TestCase):
+
+    def test_success(self):
+        # type: () -> None
+        script = os.path.join(os.path.dirname(__file__),
+                              '../../scripts/email-mirror-postfix')
 
         sender = "hamlet@zulip.com"
         stream = get_stream("Denmark", get_realm("zulip"))
@@ -365,19 +370,124 @@ class TestCommandMTA(TestCase):
         with open(template_path) as template_file:
             mail_template = template_file.read()
         mail = mail_template.format(stream_to_address=stream_to_address, sender=sender)
+        read_pipe, write_pipe = os.pipe()
+        os.write(write_pipe, mail.encode())
+        os.close(write_pipe)
+        subprocess.check_call(
+            [script, '-r', force_str(stream_to_address), '-s', settings.SHARED_SECRET, '-t'],
+            stdin=read_pipe)
+
+    def test_error_no_recipient(self):
+        # type: () -> None
+        script = os.path.join(os.path.dirname(__file__),
+                              '../../scripts/email-mirror-postfix')
+
+        sender = "hamlet@zulip.com"
+        stream = get_stream("Denmark", get_realm("zulip"))
+        stream_to_address = encode_email_address(stream)
+        template_path = os.path.join(MAILS_DIR, "simple.txt")
+        with open(template_path) as template_file:
+            mail_template = template_file.read()
+        mail = mail_template.format(stream_to_address=stream_to_address, sender=sender)
+        read_pipe, write_pipe = os.pipe()
+        os.write(write_pipe, mail.encode())
+        os.close(write_pipe)
+        success_call = True
+        try:
+            subprocess.check_output([script, '-s', settings.SHARED_SECRET, '-t'],
+                                    stdin=read_pipe)
+        except subprocess.CalledProcessError as e:
+            self.assertEqual(
+                e.output,
+                b'5.1.1 Bad destination mailbox address: No missed message email address.\n'
+            )
+            self.assertEqual(e.returncode, 67)
+            success_call = False
+        self.assertFalse(success_call)
+
+
+class TestEmailMirrorTornadoView(ZulipTestCase):
+
+    def send_private_message(self):
+        # type: () -> Text
+        self.login("othello@zulip.com")
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "private",
+                "content": "test_receive_missed_message_email_messages",
+                "client": "test suite",
+                "to": ujson.dumps(["cordelia@zulip.com", "iago@zulip.com"])
+            })
+        self.assert_json_success(result)
+
+        user_profile = get_user_profile_by_email("cordelia@zulip.com")
+        user_message = most_recent_usermessage(user_profile)
+        return create_missed_message_address(user_profile, user_message.message)
+
+    @mock.patch('zerver.lib.email_mirror.queue_json_publish')
+    def send_offline_message(self, to_address, sender, mock_queue_json_publish):
+        # type: (str, str, mock.Mock) -> HttpResponse
+        template_path = os.path.join(MAILS_DIR, "simple.txt")
+        with open(template_path) as template_file:
+            mail_template = template_file.read()
+        mail = mail_template.format(stream_to_address=to_address, sender=sender)
 
         def check_queue_json_publish(queue_name, event, processor):
             # type: (str, Union[Mapping[str, Any], str], Callable[[Any], None]) -> None
             self.assertEqual(queue_name, "email_mirror")
-            self.assertEqual(event, {"rcpt_to": stream_to_address, "message": mail})
+            self.assertEqual(event, {"rcpt_to": to_address, "message": mail})
+
         mock_queue_json_publish.side_effect = check_queue_json_publish
+        request_data = {
+            "recipient": to_address,
+            "msg_text": mail
+        }
+        post_data = dict(
+            data=ujson.dumps(request_data),
+            secret=settings.SHARED_SECRET
+        )
+        return self.client_post('/email_mirror_message', post_data)
 
-        original_stdin = sys.stdin
-        try:
-            sys.stdin = StringIO(mail)
+    def test_success_stream(self):
+        # type: () -> None
+        stream = get_stream("Denmark", get_realm("zulip"))
+        stream_to_address = encode_email_address(stream)
+        result = self.send_offline_message(stream_to_address, "hamlet@zulip.com")
+        self.assert_json_success(result)
 
-            command = email_mirror.Command()
-            command.handle(recipient=force_str(stream_to_address))
-        finally:
-            sys.stdin = original_stdin
-        mock_queue_json_publish.assert_called_once()
+    def test_error_to_stream_with_wrong_address(self):
+        # type: () -> None
+        stream = get_stream("Denmark", get_realm("zulip"))
+        stream_to_address = encode_email_address(stream)
+        stream_to_address = stream_to_address.replace("Denmark", "Wrong_stream")
+
+        result = self.send_offline_message(stream_to_address, "hamlet@zulip.com")
+        self.assert_json_error(
+            result,
+            "5.1.1 Bad destination mailbox address: "
+            "Please use the address specified in your Streams page.")
+
+    def test_success_to_private(self):
+        # type: () -> None
+        mm_address = self.send_private_message()
+        result = self.send_offline_message(mm_address, "cordelia@zulip.com")
+        self.assert_json_success(result)
+
+    def test_using_mm_address_twice(self):
+        # type: () -> None
+        mm_address = self.send_private_message()
+        self.send_offline_message(mm_address, "cordelia@zulip.com")
+        result = self.send_offline_message(mm_address, "cordelia@zulip.com")
+        self.assert_json_error(
+            result,
+            "5.1.1 Bad destination mailbox address: Bad or expired missed message address.")
+
+    def test_wrong_missed_email_private_message(self):
+        # type: () -> None
+        self.send_private_message()
+        mm_address = 'mm' + ('x' * 32) + '@testserver'
+        result = self.send_offline_message(mm_address, "cordelia@zulip.com")
+        self.assert_json_error(
+            result,
+            "5.1.1 Bad destination mailbox address: Bad or expired missed message address.")
