@@ -52,9 +52,9 @@ def get_chart_data(request, user_profile, chart_name=REQ(),
                    end=REQ(converter=to_utc_datetime, default=None)):
     # type: (HttpRequest, UserProfile, Text, Optional[int], Optional[datetime], Optional[datetime]) -> HttpResponse
     if chart_name == 'number_of_humans':
-        stat = COUNT_STATS['active_users:is_bot:day']
+        stat = COUNT_STATS['realm_active_humans::day']
         tables = [RealmCount]
-        subgroup_to_label = {'false': 'human', 'true': 'bot'}
+        subgroup_to_label = {None: 'human'} # type: Dict[Optional[str], str]
         labels_sort_function = None
         include_empty_subgroups = True
     elif chart_name == 'messages_sent_over_time':
@@ -185,7 +185,7 @@ def rewrite_client_arrays(value_arrays):
     return mapped_arrays
 
 def get_time_series_by_subgroup(stat, table, key_id, end_times, subgroup_to_label, include_empty_subgroups):
-    # type: (CountStat, Type[BaseCount], Optional[int], List[datetime], Dict[str, str], bool) -> Dict[str, List[int]]
+    # type: (CountStat, Type[BaseCount], Optional[int], List[datetime], Dict[Optional[str], str], bool) -> Dict[str, List[int]]
     queryset = table_filtered_to_id(table, key_id).filter(property=stat.property) \
                                                   .values_list('subgroup', 'end_time', 'value')
     value_dicts = defaultdict(lambda: defaultdict(int)) # type: Dict[Optional[str], Dict[datetime, int]]
