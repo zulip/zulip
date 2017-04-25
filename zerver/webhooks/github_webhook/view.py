@@ -180,7 +180,7 @@ def get_push_tags_body(payload):
 def get_push_commits_body(payload):
     # type: (Dict[str, Any]) -> Text
     commits_data = [{
-        'name': commit['committer']['username'],
+        'name': commit['author']['username'],
         'sha': commit['id'],
         'url': commit['url'],
         'message': commit['message']
