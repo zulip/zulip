@@ -236,6 +236,8 @@ def process_instrumented_calls(func):
 
 def run_subsuite(args):
     # type: (Tuple[int, Tuple[Type[Iterable[TestCase]], List[str]], bool]) -> Tuple[int, Any]
+    # Reset the accumulated INSTRUMENTED_CALLS before running this subsuite.
+    test_helpers.INSTRUMENTED_CALLS = []
     subsuite_index, subsuite, failfast = args
     runner = RemoteTestRunner(failfast=failfast)
     result = runner.run(deserialize_suite(subsuite))
