@@ -108,3 +108,14 @@ use the product.  The algorithm is as follows:
 These two simple rules, combined with the pointer logic above, end up
 matching user expectations well for whether the product should treat
 them as having read a set of messages (or not).
+
+## Testing and development
+
+In a Zulip development environment, you can use `manage.py
+mark_all_messages_unread` to set every user's pointer to 0 and all
+messages as unread, for convenience in testing unread count related
+logic.
+
+It can be useful to combine this with `manage.py populate_db -n 3000`
+(which rebuilds the database with 3000 initial messages) to ensure a
+large number of messages are present.
