@@ -58,6 +58,8 @@ class HomeTest(ZulipTestCase):
             "domains",
             "email",
             "emoji_alt_code",
+            "emojiset",
+            "emojiset_choices",
             "enable_digest_emails",
             "enable_offline_email_notifications",
             "enable_offline_push_notifications",

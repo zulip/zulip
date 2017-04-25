@@ -151,6 +151,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         state['twenty_four_hour_time'] = user_profile.twenty_four_hour_time
         state['left_side_userlist'] = user_profile.left_side_userlist
         state['emoji_alt_code'] = user_profile.emoji_alt_code
+        state['emojiset'] = user_profile.emojiset
         state['timezone'] = user_profile.timezone
         state['default_language'] = user_profile.default_language
 
@@ -388,6 +389,8 @@ def apply_event(state, event, user_profile, include_subscribers):
             state['left_side_userlist'] = event["setting"]
         if event['setting_name'] == 'emoji_alt_code':
             state['emoji_alt_code'] = event["setting"]
+        if event['setting_name'] == 'emojiset':
+            state['emojiset'] = event["setting"]
         if event['setting_name'] == 'default_language':
             state['default_language'] = event["setting"]
         if event['setting_name'] == 'timezone':

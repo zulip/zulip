@@ -957,6 +957,10 @@ class EventsRegisterTest(ZulipTestCase):
         # type: () -> None
         self.do_set_user_display_settings_test("emoji_alt_code", [True, False])
 
+    def test_change_emojiset(self):
+        # type: () -> None
+        self.do_set_user_display_settings_test("emojiset", [u'apple', u'twitter'])
+
     def test_change_default_language(self):
         # type: () -> None
         self.do_set_user_display_settings_test("default_language", [u'de', u'es', u'en'])
