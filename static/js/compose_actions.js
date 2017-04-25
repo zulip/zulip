@@ -304,7 +304,7 @@ exports.on_topic_narrow = function () {
         return;
     }
 
-    if (compose_state.stream_name() !== narrow.stream()) {
+    if (compose_state.stream_name() !== narrow_state.stream()) {
         // If we changed streams, then we only leave the
         // compose box open if there is content.
         if (compose_state.has_message_content()) {
@@ -333,12 +333,12 @@ exports.on_topic_narrow = function () {
     // stream filled in, and we just need to update the topic.
     // See #3300 for context--a couple users specifically asked
     // for this convenience.
-    compose_state.subject(narrow.topic());
+    compose_state.subject(narrow_state.topic());
     $('#new_message_content').focus().select();
 };
 
 exports.on_narrow = function () {
-    if (narrow.narrowed_by_topic_reply()) {
+    if (narrow_state.narrowed_by_topic_reply()) {
         exports.on_topic_narrow();
         return;
     }
@@ -348,7 +348,7 @@ exports.on_narrow = function () {
         return;
     }
 
-    if (narrow.narrowed_by_pm_reply()) {
+    if (narrow_state.narrowed_by_pm_reply()) {
         exports.start('private');
         return;
     }

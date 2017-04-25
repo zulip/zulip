@@ -644,7 +644,7 @@ $(function () {
         e.preventDefault();
 
         $('#subscription-status').hide();
-        var stream_name = narrow.stream();
+        var stream_name = narrow_state.stream();
         if (stream_name === undefined) {
             return;
         }
@@ -709,7 +709,7 @@ $(function () {
 });
 
 function focus_on_narrowed_stream() {
-    var stream_name = narrow.stream();
+    var stream_name = narrow_state.stream();
     if (stream_name === undefined) {
         return;
     }

@@ -157,7 +157,7 @@ exports.build_widget = function (parent_elem, stream, active_topic, max_topics) 
 exports.rebuild = function (stream_li, stream) {
     var max_topics = 5;
 
-    var active_topic = narrow.topic();
+    var active_topic = narrow_state.topic();
     exports.remove_expanded_topics();
     active_widget = exports.build_widget(stream_li, stream, active_topic, max_topics);
 };

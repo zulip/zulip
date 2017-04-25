@@ -82,8 +82,8 @@ exports.load_old_messages = function load_old_messages(opts) {
                 num_before: opts.num_before,
                 num_after: opts.num_after};
 
-    if (opts.msg_list.narrowed && narrow.active()) {
-        var operators = narrow.public_operators();
+    if (opts.msg_list.narrowed && narrow_state.active()) {
+        var operators = narrow_state.public_operators();
         if (page_params.narrow !== undefined) {
             operators = operators.concat(page_params.narrow);
         }

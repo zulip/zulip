@@ -144,7 +144,7 @@ function zoom_in() {
     popovers.hide_all();
     topic_list.zoom_in();
     $("#streams_list").expectOne().removeClass("zoom-out").addClass("zoom-in");
-    zoomed_stream = narrow.stream();
+    zoomed_stream = narrow_state.stream();
 
     // Hide stream list titles and pinned stream splitter
     $(".stream-filters-label").each(function () {
@@ -296,11 +296,11 @@ function rebuild_recent_topics(stream) {
 exports.update_streams_sidebar = function () {
     exports.build_stream_list();
 
-    if (! narrow.active()) {
+    if (! narrow_state.active()) {
         return;
     }
 
-    var op_stream = narrow.filter().operands('stream');
+    var op_stream = narrow_state.filter().operands('stream');
     if (op_stream.length !== 0) {
         if (stream_data.is_subscribed(op_stream[0])) {
             rebuild_recent_topics(op_stream[0]);
@@ -369,7 +369,7 @@ $(function () {
 
     $(document).on('narrow_activated.zulip', function (event) {
         deselect_top_left_corner_items();
-        reset_to_unnarrowed(narrow.stream() === zoomed_stream);
+        reset_to_unnarrowed(narrow_state.stream() === zoomed_stream);
 
         // TODO: handle confused filters like "in:all stream:foo"
         var op_in = event.filter.operands('in');

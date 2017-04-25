@@ -211,7 +211,7 @@ exports.try_deliver_locally = function try_deliver_locally(message_request) {
         return undefined;
     }
 
-    if (narrow.active() && !narrow.filter().can_apply_locally()) {
+    if (narrow_state.active() && !narrow_state.filter().can_apply_locally()) {
         return undefined;
     }
 

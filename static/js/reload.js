@@ -46,7 +46,7 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
 
     if (save_narrow) {
         var row = home_msg_list.selected_row();
-        if (!narrow.active()) {
+        if (!narrow_state.active()) {
             if (row.length > 0) {
                 url += "+offset=" + row.offset().top;
             }

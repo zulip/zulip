@@ -251,7 +251,7 @@ exports.get_counts = function () {
     res.private_message_count = pm_count;
     res.home_unread_messages += pm_count;
 
-    if (narrow.active()) {
+    if (narrow_state.active()) {
         res.unread_in_current_view = exports.num_unread_current_messages();
     } else {
         res.unread_in_current_view = res.home_unread_messages;

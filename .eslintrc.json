@@ -98,6 +98,7 @@
         "stream_sort": false,
         "stream_list": false,
         "stream_popover": false,
+        "narrow_state": false,
         "narrow": false,
         "narrow_state": false,
         "admin_sections": false,

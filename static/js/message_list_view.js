@@ -577,7 +577,7 @@ MessageListView.prototype = {
                 _.last(last_message_group.message_containers).msg.historical;
         }
 
-        var stream_name = narrow.stream();
+        var stream_name = narrow_state.stream();
         if (stream_name !== undefined) {
             // If user narrows to a stream, doesn't update
             // trailing bookend if user is subscribed.

@@ -12,7 +12,7 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new, local
         url:      '/json/messages_in_narrow',
         idempotent: true,
         data:     {msg_ids: JSON.stringify(ids),
-                   narrow:  JSON.stringify(narrow.public_operators())},
+                   narrow:  JSON.stringify(narrow_state.public_operators())},
         timeout:  5000,
         success: function (data) {
             if (msg_list !== current_msg_list) {
@@ -63,8 +63,8 @@ exports.insert_new_messages = function insert_new_messages(messages, local_id) {
     message_util.add_messages(messages, home_msg_list, {messages_are_new: true});
     message_util.add_messages(messages, message_list.all, {messages_are_new: true});
 
-    if (narrow.active()) {
-        if (narrow.filter().can_apply_locally()) {
+    if (narrow_state.active()) {
+        if (narrow_state.filter().can_apply_locally()) {
             message_util.add_messages(messages, message_list.narrowed, {messages_are_new: true});
             notifications.possibly_notify_new_messages_outside_viewport(messages, local_id);
         } else {
@@ -78,7 +78,7 @@ exports.insert_new_messages = function insert_new_messages(messages, local_id) {
     activity.process_loaded_messages(messages);
     message_util.do_unread_count_updates(messages);
 
-    if (narrow.narrowed_by_reply()) {
+    if (narrow_state.narrowed_by_reply()) {
         // If you send a message when narrowed to a recipient, move the
         // pointer to it.
 
@@ -159,7 +159,7 @@ exports.update_messages = function update_messages(events) {
                 var selection_changed_topic = _.indexOf(event.message_ids, current_id) >= 0;
 
                 if (selection_changed_topic) {
-                    var current_filter = narrow.filter();
+                    var current_filter = narrow_state.filter();
                     if (current_filter && stream_name) {
                         if (current_filter.has_topic(stream_name, event.orig_subject)) {
                             var new_filter = current_filter.filter_with_new_topic(event.subject);

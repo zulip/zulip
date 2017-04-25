@@ -77,7 +77,7 @@ function show_message_info_popover(element, id) {
             user_time: people.get_user_time(message.sender_id),
             pm_with_uri: narrow.pm_with_uri(sender_email),
             sent_by_uri: narrow.by_sender_uri(sender_email),
-            narrowed: narrow.active(),
+            narrowed: narrow_state.active(),
             historical: message.historical,
             private_message_class: "respond_personal_button",
         };
@@ -275,7 +275,7 @@ exports.toggle_actions_popover = function (element, id) {
             should_display_add_reaction_option: message.sent_by_me,
             should_display_edit_history_option: should_display_edit_history_option,
             conversation_time_uri: narrow.by_conversation_and_time_uri(message),
-            narrowed: narrow.active(),
+            narrowed: narrow_state.active(),
         };
 
         var ypos = elt.offset().top;

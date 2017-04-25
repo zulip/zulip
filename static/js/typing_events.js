@@ -15,13 +15,15 @@ var TYPING_STARTED_EXPIRY_PERIOD = 15000; // 15s
 // that make typing indicators work.
 
 function get_users_typing_for_narrow() {
-    if (!narrow.narrowed_to_pms()) {
+    if (!narrow_state.narrowed_to_pms()) {
         // Narrow is neither pm-with nor is: private
         return [];
     }
-    if (narrow.operators()[0].operator === 'pm-with') {
+
+    var first_term = narrow_state.operators()[0];
+    if (first_term.operator === 'pm-with') {
         // Get list of users typing in this conversation
-        var narrow_emails_string = narrow.operators()[0].operand;
+        var narrow_emails_string = first_term.operand;
         // TODO: Create people.emails_strings_to_user_ids.
         var narrow_user_ids_string = people.emails_strings_to_user_ids_string(narrow_emails_string);
         var narrow_user_ids = narrow_user_ids_string.split(',').map(function (user_id_string) {
