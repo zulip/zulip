@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='userprofile',
             name='emojiset',
-            field=models.CharField(choices=[('apple', 'Apple color emoji'), ('emojione', 'Emojione'), ('google', 'Notoemoji'), ('twitter', 'Twemoji')], default='google', max_length=20),
+            field=models.CharField(choices=[('apple', 'Apple style'), ('emojione', 'Emoji One style'), ('google', 'Google style'), ('twitter', 'Twitter style')], default='google', max_length=20),
         ),
     ]
