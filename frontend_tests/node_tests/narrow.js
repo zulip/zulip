@@ -3,12 +3,16 @@ global.stub_out_jquery();
 add_dependencies({
     hash_util: 'js/hash_util.js',
     hashchange: 'js/hashchange.js',
+    narrow_state: 'js/narrow_state.js',
     people: 'js/people.js',
     stream_data: 'js/stream_data.js',
     Filter: 'js/filter.js',
 });
 
 var narrow = require('js/narrow.js');
+
+var narrow_state = global.narrow_state;
+
 var Filter = global.Filter;
 var stream_data = global.stream_data;
 var _ = global._;
@@ -17,68 +21,68 @@ function set_filter(operators) {
     operators = _.map(operators, function (op) {
         return {operator: op[0], operand: op[1]};
     });
-    narrow._set_current_filter(new Filter(operators));
+    narrow_state.set_current_filter(new Filter(operators));
 }
 
 (function test_stream() {
     var test_stream = {name: 'Test', stream_id: 15};
     stream_data.add_sub('Test', test_stream);
 
-    assert(!narrow.is_for_stream_id(test_stream.stream_id));
+    assert(!narrow_state.is_for_stream_id(test_stream.stream_id));
 
     set_filter([['stream', 'Test'], ['topic', 'Bar'], ['search', 'yo']]);
 
-    assert.equal(narrow.stream(), 'Test');
-    assert.equal(narrow.topic(), 'Bar');
-    assert(narrow.is_for_stream_id(test_stream.stream_id));
+    assert.equal(narrow_state.stream(), 'Test');
+    assert.equal(narrow_state.topic(), 'Bar');
+    assert(narrow_state.is_for_stream_id(test_stream.stream_id));
 }());
 
 
 (function test_narrowed() {
-    narrow._set_current_filter(undefined); // not narrowed, basically
-    assert(!narrow.narrowed_to_pms());
-    assert(!narrow.narrowed_by_reply());
-    assert(!narrow.narrowed_by_pm_reply());
-    assert(!narrow.narrowed_by_topic_reply());
-    assert(!narrow.narrowed_to_search());
-    assert(!narrow.narrowed_to_topic());
+    narrow_state.reset_current_filter(); // not narrowed, basically
+    assert(!narrow_state.narrowed_to_pms());
+    assert(!narrow_state.narrowed_by_reply());
+    assert(!narrow_state.narrowed_by_pm_reply());
+    assert(!narrow_state.narrowed_by_topic_reply());
+    assert(!narrow_state.narrowed_to_search());
+    assert(!narrow_state.narrowed_to_topic());
 
     set_filter([['stream', 'Foo']]);
-    assert(!narrow.narrowed_to_pms());
-    assert(!narrow.narrowed_by_reply());
-    assert(!narrow.narrowed_by_pm_reply());
-    assert(!narrow.narrowed_by_topic_reply());
-    assert(!narrow.narrowed_to_search());
-    assert(!narrow.narrowed_to_topic());
+    assert(!narrow_state.narrowed_to_pms());
+    assert(!narrow_state.narrowed_by_reply());
+    assert(!narrow_state.narrowed_by_pm_reply());
+    assert(!narrow_state.narrowed_by_topic_reply());
+    assert(!narrow_state.narrowed_to_search());
+    assert(!narrow_state.narrowed_to_topic());
 
     set_filter([['pm-with', 'steve@zulip.com']]);
-    assert(narrow.narrowed_to_pms());
-    assert(narrow.narrowed_by_reply());
-    assert(narrow.narrowed_by_pm_reply());
-    assert(!narrow.narrowed_by_topic_reply());
-    assert(!narrow.narrowed_to_search());
-    assert(!narrow.narrowed_to_topic());
+    assert(narrow_state.narrowed_to_pms());
+    assert(narrow_state.narrowed_by_reply());
+    assert(narrow_state.narrowed_by_pm_reply());
+    assert(!narrow_state.narrowed_by_topic_reply());
+    assert(!narrow_state.narrowed_to_search());
+    assert(!narrow_state.narrowed_to_topic());
 
     set_filter([['stream', 'Foo'], ['topic', 'bar']]);
-    assert(!narrow.narrowed_to_pms());
-    assert(narrow.narrowed_by_reply());
-    assert(!narrow.narrowed_by_pm_reply());
-    assert(narrow.narrowed_by_topic_reply());
-    assert(!narrow.narrowed_to_search());
-    assert(narrow.narrowed_to_topic());
+    assert(!narrow_state.narrowed_to_pms());
+    assert(narrow_state.narrowed_by_reply());
+    assert(!narrow_state.narrowed_by_pm_reply());
+    assert(narrow_state.narrowed_by_topic_reply());
+    assert(!narrow_state.narrowed_to_search());
+    assert(narrow_state.narrowed_to_topic());
 
     set_filter([['search', 'grail']]);
-    assert(!narrow.narrowed_to_pms());
-    assert(!narrow.narrowed_by_reply());
-    assert(!narrow.narrowed_by_pm_reply());
-    assert(!narrow.narrowed_by_topic_reply());
-    assert(narrow.narrowed_to_search());
-    assert(!narrow.narrowed_to_topic());
+    assert(!narrow_state.narrowed_to_pms());
+    assert(!narrow_state.narrowed_by_reply());
+    assert(!narrow_state.narrowed_by_pm_reply());
+    assert(!narrow_state.narrowed_by_topic_reply());
+    assert(narrow_state.narrowed_to_search());
+    assert(!narrow_state.narrowed_to_topic());
 }());
 
 (function test_operators() {
     set_filter([['stream', 'Foo'], ['topic', 'Bar'], ['search', 'Yo']]);
-    var result = narrow.operators();
+    var result = narrow_state.operators();
     assert.equal(result.length, 3);
     assert.equal(result[0].operator, 'stream');
     assert.equal(result[0].operand, 'Foo');
@@ -123,19 +127,19 @@ function set_filter(operators) {
 
 (function test_muting_enabled() {
     set_filter([['stream', 'devel']]);
-    assert(narrow.muting_enabled());
+    assert(narrow_state.muting_enabled());
 
-    narrow._set_current_filter(undefined); // not narrowed, basically
-    assert(narrow.muting_enabled());
+    narrow_state.reset_current_filter(); // not narrowed, basically
+    assert(narrow_state.muting_enabled());
 
     set_filter([['stream', 'devel'], ['topic', 'mac']]);
-    assert(!narrow.muting_enabled());
+    assert(!narrow_state.muting_enabled());
 
     set_filter([['search', 'whatever']]);
-    assert(!narrow.muting_enabled());
+    assert(!narrow_state.muting_enabled());
 
     set_filter([['is', 'private']]);
-    assert(!narrow.muting_enabled());
+    assert(!narrow_state.muting_enabled());
 
 }());
 
@@ -143,7 +147,7 @@ function set_filter(operators) {
     set_filter([['stream', 'Foo'], ['topic', 'Bar']]);
 
     var opts = {};
-    narrow.set_compose_defaults(opts);
+    narrow_state.set_compose_defaults(opts);
     assert.equal(opts.stream, 'Foo');
     assert.equal(opts.subject, 'Bar');
 
@@ -151,7 +155,7 @@ function set_filter(operators) {
     set_filter([['stream', 'rome']]);
 
     opts = {};
-    narrow.set_compose_defaults(opts);
+    narrow_state.set_compose_defaults(opts);
     assert.equal(opts.stream, 'ROME');
 }());
 
@@ -191,7 +195,7 @@ function set_filter(operators) {
       return {hide: function () {hide_id = id;}, show: function () {show_id = id;}};
     };
 
-    narrow._set_current_filter(undefined);
+    narrow_state.reset_current_filter();
     narrow.show_empty_narrow_message();
     assert.equal(hide_id,'.empty_feed_notice');
     assert.equal(show_id, '#empty_narrow_message');
@@ -262,8 +266,8 @@ function set_filter(operators) {
         ['sender', 'steve@foo.com'],
         ['stream', 'steve@foo.com'], // try to be tricky
     ]);
-    narrow.update_email(steve.user_id, 'showell@foo.com');
-    var filter = narrow.filter();
+    narrow_state.update_email(steve.user_id, 'showell@foo.com');
+    var filter = narrow_state.filter();
     assert.deepEqual(filter.operands('pm-with'), ['showell@foo.com']);
     assert.deepEqual(filter.operands('sender'), ['showell@foo.com']);
     assert.deepEqual(filter.operands('stream'), ['steve@foo.com']);

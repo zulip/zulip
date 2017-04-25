@@ -402,7 +402,7 @@ $(function () {
         e.preventDefault();
         e.stopPropagation();
 
-        var stream_name = narrow.stream();
+        var stream_name = narrow_state.stream();
         if (stream_name === undefined) {
             return;
         }

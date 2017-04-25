@@ -362,7 +362,7 @@ exports.MessageList.prototype = {
         if (!this.narrowed) {
             return;
         }
-        var stream = narrow.stream();
+        var stream = narrow_state.stream();
         if (stream === undefined) {
             return;
         }

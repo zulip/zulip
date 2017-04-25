@@ -152,12 +152,12 @@ exports.rebuild_recent = function (active_conversation) {
 exports.update_private_messages = function () {
     exports._build_private_messages_list();
 
-    if (! narrow.active()) {
+    if (! narrow_state.active()) {
         return;
     }
 
-    var is_pm_filter = _.contains(narrow.filter().operands('is'), "private");
-    var conversation = narrow.filter().operands('pm-with');
+    var is_pm_filter = _.contains(narrow_state.filter().operands('is'), "private");
+    var conversation = narrow_state.filter().operands('pm-with');
     if (conversation.length === 1) {
         exports.rebuild_recent(conversation[0]);
     } else if (conversation.length !== 0) {

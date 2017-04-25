@@ -854,6 +854,7 @@ JS_SPECS = {
             'js/message_list_view.js',
             'js/message_list.js',
             'js/message_live_update.js',
+            'js/narrow_state.js',
             'js/narrow.js',
             'js/reload.js',
             'js/compose_fade.js',
@@ -947,7 +948,6 @@ JS_SPECS = {
             'js/typing_data.js',
             'js/typing_events.js',
             'js/ui_init.js',
-            'js/shim.js',
             # JS bundled by webpack is also included here if PIPELINE_ENABLED setting is true
         ],
         'output_filename': 'min/app.js'

@@ -20,7 +20,7 @@ exports.update_person = function update(person) {
         var user_id = person.user_id;
         var new_email = person.new_email;
 
-        narrow.update_email(user_id, new_email);
+        narrow_state.update_email(user_id, new_email);
         compose.update_email(user_id, new_email);
 
         if (people.is_my_user_id(person.user_id)) {

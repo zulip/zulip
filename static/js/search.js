@@ -25,7 +25,7 @@ function update_buttons_with_focus(focused) {
     // or we are narrowed.
     if (focused
         || search_query.val()
-        || narrow.active()) {
+        || narrow_state.active()) {
         $('.search_button').removeAttr('disabled');
     } else {
         $('.search_button').attr('disabled', 'disabled');
@@ -121,7 +121,7 @@ exports.initialize = function () {
         // really it would be OK if they did).
 
         setTimeout(function () {
-            var search_string = narrow.search_string();
+            var search_string = narrow_state.search_string();
             query.val(search_string);
             exports.update_button_visibility();
         }, 100);

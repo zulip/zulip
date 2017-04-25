@@ -311,7 +311,7 @@ function get_topic_suggestions(query_operators) {
         if (filter.has_operator('stream')) {
             stream = filter.operands('stream')[0];
         } else {
-            stream = narrow.stream();
+            stream = narrow_state.stream();
             query_operators.push({operator: 'stream', operand: stream});
         }
         break;

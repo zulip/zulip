@@ -14,7 +14,7 @@ add_dependencies({
     typeahead_helper: 'js/typeahead_helper.js',
     people: 'js/people.js',
     stream_data: 'js/stream_data.js',
-    narrow: 'js/narrow.js',
+    narrow_state: 'js/narrow_state.js',
 });
 
 var people = global.people;
@@ -46,7 +46,7 @@ global.stream_data.populate_stream_topics_for_tests({});
         return [];
     };
 
-    global.narrow.stream = function () {
+    global.narrow_state.stream = function () {
         return 'office';
     };
 
@@ -65,7 +65,7 @@ global.stream_data.populate_stream_topics_for_tests({});
         return [];
     };
 
-    global.narrow.stream = function () {
+    global.narrow_state.stream = function () {
         return undefined;
     };
 
@@ -85,7 +85,7 @@ global.stream_data.populate_stream_topics_for_tests({});
         return [];
     };
 
-    global.narrow.stream = function () {
+    global.narrow_state.stream = function () {
         return undefined;
     };
 
@@ -220,7 +220,7 @@ global.stream_data.populate_stream_topics_for_tests({});
         return [];
     };
 
-    global.narrow.stream = function () {
+    global.narrow_state.stream = function () {
         return undefined;
     };
 
@@ -332,7 +332,7 @@ init();
         return ['devel', 'office'];
     };
 
-    global.narrow.stream = function () {
+    global.narrow_state.stream = function () {
         return undefined;
     };
 
@@ -369,7 +369,7 @@ init();
         return [];
     };
 
-    global.narrow.stream = function () {
+    global.narrow_state.stream = function () {
         return undefined;
     };
 
@@ -428,7 +428,7 @@ init();
         return ['office'];
     };
 
-    global.narrow.stream = function () {
+    global.narrow_state.stream = function () {
         return 'office';
     };
 
@@ -496,7 +496,7 @@ init();
         return ['office'];
     };
 
-    global.narrow.stream = function () {
+    global.narrow_state.stream = function () {
         return;
     };
 
@@ -518,7 +518,7 @@ init();
         return ['office'];
     };
 
-    global.narrow.stream = function () {
+    global.narrow_state.stream = function () {
         return;
     };
 
@@ -541,7 +541,7 @@ init();
         return [];
     };
 
-    global.narrow.stream = function () {
+    global.narrow_state.stream = function () {
         return;
     };
 

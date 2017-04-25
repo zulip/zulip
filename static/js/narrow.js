@@ -2,138 +2,7 @@ var narrow = (function () {
 
 var exports = {};
 
-var current_filter;
 var unnarrow_times;
-
-// A small concession to unit testing follows:
-exports._set_current_filter = function (filter) {
-    current_filter = filter;
-};
-
-exports.active = function () {
-    return current_filter !== undefined;
-};
-
-exports.filter = function () {
-    return current_filter;
-};
-
-exports.predicate = function () {
-    if (current_filter === undefined) {
-        return function () { return true; };
-    }
-    return current_filter.predicate();
-};
-
-exports.operators = function () {
-    if (current_filter === undefined) {
-        return new Filter(page_params.narrow).operators();
-    }
-    return current_filter.operators();
-};
-
-exports.update_email = function (user_id, new_email) {
-    if (current_filter !== undefined) {
-        current_filter.update_email(user_id, new_email);
-    }
-};
-
-
-/* Operators we should send to the server. */
-exports.public_operators = function () {
-    if (current_filter === undefined) {
-        return undefined;
-    }
-    return current_filter.public_operators();
-};
-
-exports.search_string = function () {
-    return Filter.unparse(exports.operators());
-};
-
-// Collect operators which appear only once into an object,
-// and discard those which appear more than once.
-function collect_single(operators) {
-    var seen   = new Dict();
-    var result = new Dict();
-    _.each(operators, function (elem) {
-        var key = elem.operator;
-        if (seen.has(key)) {
-            result.del(key);
-        } else {
-            result.set(key, elem.operand);
-            seen.set(key, true);
-        }
-    });
-    return result;
-}
-
-// Modify default compose parameters (stream etc.) based on
-// the current narrowed view.
-//
-// This logic is here and not in the 'compose' module because
-// it will get more complicated as we add things to the narrow
-// operator language.
-exports.set_compose_defaults = function (opts) {
-    var single = collect_single(exports.operators());
-
-    // Set the stream, subject, and/or PM recipient if they are
-    // uniquely specified in the narrow view.
-
-    if (single.has('stream')) {
-        opts.stream = stream_data.get_name(single.get('stream'));
-    }
-
-    if (single.has('topic')) {
-        opts.subject = single.get('topic');
-    }
-
-    if (single.has('pm-with')) {
-        opts.private_message_recipient = single.get('pm-with');
-    }
-};
-
-exports.stream = function () {
-    if (current_filter === undefined) {
-        return undefined;
-    }
-    var stream_operands = current_filter.operands("stream");
-    if (stream_operands.length === 1) {
-        return stream_operands[0];
-    }
-    return undefined;
-};
-
-exports.is_for_stream_id = function (stream_id) {
-    // This is not perfect, since we still track narrows by
-    // name, not id, but at least the interface is good going
-    // forward.
-    var sub = stream_data.get_sub_by_id(stream_id);
-
-    if (sub === undefined) {
-        blueslip.error('Bad stream id ' + stream_id);
-        return false;
-    }
-
-    var narrow_stream_name = exports.stream();
-
-    if (narrow_stream_name === undefined) {
-        return false;
-    }
-
-    return (sub.name === narrow_stream_name);
-};
-
-exports.topic = function () {
-    if (current_filter === undefined) {
-        return undefined;
-    }
-    var operands = current_filter.operands("topic");
-    if (operands.length === 1) {
-        return operands[0];
-    }
-    return undefined;
-};
 
 function report_narrow_time(initial_core_time, initial_free_time, network_time) {
     channel.post({
@@ -178,7 +47,7 @@ function report_unnarrow_time() {
 exports.narrow_title = "home";
 exports.activate = function (raw_operators, opts) {
     var start_time = new Date();
-    var was_narrowed_already = exports.active();
+    var was_narrowed_already = narrow_state.active();
     // most users aren't going to send a bunch of a out-of-narrow messages
     // and expect to visit a list of narrows, so let's get these out of the way.
     notifications.clear_compose_notifications();
@@ -248,8 +117,8 @@ exports.activate = function (raw_operators, opts) {
 
     // For legacy reasons, we need to set current_filter before calling
     // muting_enabled.
-    current_filter = filter;
-    var muting_enabled = exports.muting_enabled();
+    narrow_state.set_current_filter(filter);
+    var muting_enabled = narrow_state.muting_enabled();
 
     // Save how far from the pointer the top of the message list was.
     if (current_msg_list.selected_id() !== -1) {
@@ -274,10 +143,17 @@ exports.activate = function (raw_operators, opts) {
         home_msg_list.pre_narrow_offset = page_params.initial_offset;
     }
 
-    var msg_list = new message_list.MessageList('zfilt', current_filter, {
-        collapse_messages: ! current_filter.is_search(),
+    var msg_list_opts = {
+        collapse_messages: ! narrow_state.get_current_filter().is_search(),
         muting_enabled: muting_enabled,
-    });
+    };
+
+    var msg_list = new message_list.MessageList(
+        'zfilt',
+        narrow_state.get_current_filter(),
+        msg_list_opts
+    );
+
     msg_list.start_time = start_time;
 
     // Show the new set of messages.  It is important to set current_msg_list to
@@ -326,9 +202,11 @@ exports.activate = function (raw_operators, opts) {
     // Don't bother populating a message list when it won't contain
     // the message we want anyway or if the filter can't be applied
     // locally.
-    if (message_list.all.get(then_select_id) !== undefined && current_filter.can_apply_locally()) {
-        message_util.add_messages(message_list.all.all_messages(), message_list.narrowed,
-                                   {delay_render: true});
+    if (message_list.all.get(then_select_id) !== undefined) {
+        if (narrow_state.get_current_filter().can_apply_locally()) {
+            message_util.add_messages(message_list.all.all_messages(), message_list.narrowed,
+                                       {delay_render: true});
+        }
     }
 
     var defer_selecting_closest = message_list.narrowed.empty();
@@ -369,6 +247,7 @@ exports.activate = function (raw_operators, opts) {
 
     compose_actions.on_narrow();
 
+    var current_filter = narrow_state.get_current_filter();
     $(document).trigger($.Event('narrow_activated.zulip', {msg_list: message_list.narrowed,
                                                             filter: current_filter,
                                                             trigger: opts.trigger}));
@@ -395,8 +274,8 @@ exports.stream_topic = function () {
     // We may be in an empty narrow.  In that case we use
     // our narrow parameters to return the stream/topic.
     return {
-        stream: exports.stream(),
-        topic: exports.topic(),
+        stream: narrow_state.stream(),
+        topic: narrow_state.topic(),
     };
 };
 
@@ -491,7 +370,7 @@ exports.by_conversation_and_time = function (target_id, opts) {
 };
 
 exports.deactivate = function () {
-    if (current_filter === undefined) {
+    if (narrow_state.get_current_filter() === undefined) {
         return;
     }
     unnarrow_times = {start_time: new Date()};
@@ -509,7 +388,7 @@ exports.deactivate = function () {
         compose_actions.cancel();
     }
 
-    current_filter = undefined;
+    narrow_state.reset_current_filter();
 
     exports.hide_empty_narrow_message();
 
@@ -590,6 +469,9 @@ exports.restore_home_state = function () {
 
 function pick_empty_narrow_banner() {
     var default_banner = $('#empty_narrow_message');
+
+    var current_filter = narrow_state.get_current_filter();
+
     if (current_filter === undefined) {
         return default_banner;
     }
@@ -614,7 +496,7 @@ function pick_empty_narrow_banner() {
         }
     } else if ((first_operator === "stream") && !stream_data.is_subscribed(first_operand)) {
         // You are narrowed to a stream to which you aren't subscribed.
-        if (!stream_data.get_sub(narrow.stream())) {
+        if (!stream_data.get_sub(narrow_state.stream())) {
             return $("#nonsubbed_private_nonexistent_stream_narrow_message");
         }
         return $("#nonsubbed_stream_narrow_message");
@@ -690,58 +572,6 @@ exports.by_conversation_and_time_uri = function (message) {
     }
     return "#narrow/pm-with/" + hash_util.encodeHashComponent(message.reply_to) +
         "/near/" + hash_util.encodeHashComponent(message.id);
-};
-
-// Are we narrowed to PMs: all PMs or PMs with particular people.
-exports.narrowed_to_pms = function () {
-    if (current_filter === undefined) {
-        return false;
-    }
-    return (current_filter.has_operator("pm-with") ||
-            current_filter.has_operand("is", "private"));
-};
-
-// We auto-reply under certain conditions, namely when you're narrowed
-// to a PM (or huddle), and when you're narrowed to some stream/subject pair
-exports.narrowed_by_reply = function () {
-    return (exports.narrowed_by_pm_reply() ||
-            exports.narrowed_by_topic_reply());
-};
-
-exports.narrowed_by_pm_reply = function () {
-    if (current_filter === undefined) {
-        return false;
-    }
-    var operators = current_filter.operators();
-    return (operators.length === 1 &&
-            current_filter.has_operator('pm-with'));
-};
-
-exports.narrowed_by_topic_reply = function () {
-    if (current_filter === undefined) {
-        return false;
-    }
-    var operators = current_filter.operators();
-    return (operators.length === 2 &&
-            current_filter.operands("stream").length === 1 &&
-            current_filter.operands("topic").length === 1);
-};
-
-exports.narrowed_to_topic = function () {
-    if (current_filter === undefined) {
-        return false;
-    }
-    return (current_filter.has_operator("stream") &&
-            current_filter.has_operator("topic"));
-};
-
-exports.narrowed_to_search = function () {
-    return (current_filter !== undefined) && current_filter.is_search();
-};
-
-exports.muting_enabled = function () {
-    return (!exports.narrowed_to_topic() && !exports.narrowed_to_search() &&
-            !exports.narrowed_to_pms());
 };
 
 return exports;

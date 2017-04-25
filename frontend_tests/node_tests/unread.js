@@ -1,6 +1,6 @@
 // Unit test the unread.js module, which depends on these global variables:
 //
-//   _, narrow, current_msg_list, home_msg_list, subs
+//   _, narrow_state, current_msg_list, home_msg_list, subs
 //
 // These tests are framework-free and run sequentially; they are invoked
 // immediately after being defined.  The contract here is that tests should
@@ -29,8 +29,8 @@ var people = global.people;
 
 var unread = require('js/unread.js');
 
-var narrow = {};
-global.narrow = narrow;
+var narrow_state = {};
+global.narrow_state = narrow_state;
 
 var current_msg_list = {};
 global.current_msg_list = current_msg_list;
@@ -57,7 +57,7 @@ var zero_counts = {
 };
 
 (function test_empty_counts_while_narrowed() {
-    narrow.active = function () {
+    narrow_state.active = function () {
         return true;
     };
     current_msg_list.all_messages = function () {
@@ -69,7 +69,7 @@ var zero_counts = {
 }());
 
 (function test_empty_counts_while_home() {
-    narrow.active = function () {
+    narrow_state.active = function () {
         return false;
     };
     current_msg_list.all_messages = function () {
@@ -219,7 +219,7 @@ var zero_counts = {
 
 
 (function test_home_messages() {
-    narrow.active = function () {
+    narrow_state.active = function () {
         return false;
     };
     stream_data.is_subscribed = function () {
@@ -279,7 +279,7 @@ var zero_counts = {
 }());
 
 (function test_private_messages() {
-    narrow.active = function () {
+    narrow_state.active = function () {
         return false;
     };
     stream_data.is_subscribed = function () {
@@ -351,7 +351,7 @@ var zero_counts = {
 
 
 (function test_mentions() {
-    narrow.active = function () {
+    narrow_state.active = function () {
         return false;
     };
     stream_data.is_subscribed = function () {
