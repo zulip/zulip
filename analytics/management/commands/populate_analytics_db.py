@@ -37,15 +37,15 @@ class Command(BaseCommand):
         return user
 
     def generate_fixture_data(self, stat, business_hours_base, non_business_hours_base,
-                              growth, autocorrelation, spikiness, holiday_rate=0):
-        # type: (CountStat, float, float, float, float, float, float) -> List[int]
+                              growth, autocorrelation, spikiness, holiday_rate=0,
+                              partial_sum=False):
+        # type: (CountStat, float, float, float, float, float, float, bool) -> List[int]
         self.random_seed += 1
         return generate_time_series_data(
             days=self.DAYS_OF_DATA, business_hours_base=business_hours_base,
             non_business_hours_base=non_business_hours_base, growth=growth,
             autocorrelation=autocorrelation, spikiness=spikiness, holiday_rate=holiday_rate,
-            frequency=stat.frequency, partial_sum=(stat.interval > timedelta(days=1000)),
-            random_seed=self.random_seed)
+            frequency=stat.frequency, partial_sum=partial_sum, random_seed=self.random_seed)
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
@@ -73,10 +73,9 @@ class Command(BaseCommand):
                           value=value, **id_args)
                     for end_time, value in zip(end_times, values) if value != 0])
 
-        stat = COUNT_STATS['active_users:is_bot:day']
+        stat = COUNT_STATS['realm_active_humans::day']
         realm_data = {
-            'false': self.generate_fixture_data(stat, .1, .03, 3, .5, 3),
-            'true': self.generate_fixture_data(stat, .01, 0, 1, 0, 1)
+            None: self.generate_fixture_data(stat, .1, .03, 3, .5, 3, partial_sum=True),
         } # type: Dict[Optional[str], List[int]]
         insert_fixture_data(stat, realm_data, RealmCount)
         FillState.objects.create(property=stat.property, end_time=last_end_time,
