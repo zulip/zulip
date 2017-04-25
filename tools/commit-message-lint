@@ -6,6 +6,17 @@
 # The rules can be found in /.gitlint
 
 if [ $TRAVIS ]; then
+    echo "------------------------------------"
+    echo "In Travis, running commit msg linter"
+    echo "\$TRAVIS_COMMIT_RANGE: $TRAVIS_COMMIT_RANGE"
+    echo "Running: git rev-list --max-count=-1 $TRAVIS_COMMIT_RANGE"
+    {
+        git rev-list --max-count=-1 $TRAVIS_COMMIT_RANGE
+    } || {
+        echo "rev-list failed"
+    }
+    echo "Debug end"
+
     range=$TRAVIS_COMMIT_RANGE
 else
     range="upstream/master...HEAD"
