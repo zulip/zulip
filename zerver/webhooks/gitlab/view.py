@@ -361,7 +361,7 @@ def get_event(request, payload, branches):
     elif event == 'Push Hook':
         if branches is not None:
             branch = get_branch_name(payload)
-            if branch not in branches.split(','):
+            if branches.find(branch) == -1:
                 return None
 
     if event in list(EVENT_FUNCTION_MAPPER.keys()):
