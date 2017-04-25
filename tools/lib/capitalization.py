@@ -40,6 +40,7 @@ IGNORED_PHRASES = [
     r"Zephyr",
     r"Zulip",
     r"iPhone",
+    r"Emoji One",
     # Code things
     r".zuliprc",
     r"__\w+\.\w+__",
