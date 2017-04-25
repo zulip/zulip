@@ -10,6 +10,7 @@ from unittest.result import TestResult
 
 from django.conf import settings
 from django.db import connections, ProgrammingError
+from django.urls.resolvers import RegexURLPattern
 from django.test import TestCase
 from django.test import runner as django_runner
 from django.test.runner import DiscoverRunner
@@ -316,6 +317,29 @@ def init_worker(counter):
 
     destroy_test_databases(_worker_id)
     create_test_databases(_worker_id)
+
+    # Every process should upload to a separate directory so that
+    # race conditions can be avoided.
+    settings.LOCAL_UPLOADS_DIR = '{}_{}'.format(settings.LOCAL_UPLOADS_DIR,
+                                                _worker_id)
+
+    def is_upload_avatar_url(url):
+        # type: (RegexURLPattern) -> bool
+        if url.regex.pattern == r'^user_avatars/(?P<path>.*)$':
+            return True
+        return False
+
+    # We manually update the upload directory path in the url regex.
+    from zproject import dev_urls
+    found = False
+    for url in dev_urls.urls:
+        if is_upload_avatar_url(url):
+            found = True
+            new_root = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars")
+            url.default_args['document_root'] = new_root
+
+    if not found:
+        print("*** Upload directory not found.")
 
 class TestSuite(unittest.TestSuite):
     def run(self, result, debug=False):
