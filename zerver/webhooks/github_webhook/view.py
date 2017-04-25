@@ -417,7 +417,7 @@ def get_event(request, payload, branches):
         if is_commit_push_event(payload):
             if branches is not None:
                 branch = get_branch_name_from_ref(payload['ref'])
-                if branch not in branches.split(','):
+                if branches.find(branch) == -1:
                     return None
             return "push_commits"
         else:
