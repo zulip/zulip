@@ -12,7 +12,7 @@ COMMIT_OR_COMMITS = u"commit{}"
 
 PUSH_PUSHED_TEXT_WITH_URL = u"[pushed]({compare_url}) {number_of_commits} {commit_or_commits}"
 PUSH_PUSHED_TEXT_WITHOUT_URL = u"pushed {number_of_commits} {commit_or_commits}"
-PUSH_COMMITS_MESSAGE_TEMPLATE = u"""{user_name} {pushed_text} to branch {branch_name}. {committers_details}
+PUSH_COMMITS_MESSAGE_TEMPLATE = u"""{user_name} {pushed_text} to branch {branch_name}. {committers_details}.
 
 {commits_data}
 """
@@ -42,13 +42,13 @@ TAG_WITHOUT_URL_TEMPLATE = u"{tag_name}"
 def get_push_commits_event_message(user_name, compare_url, branch_name, commits_data, is_truncated=False):
     # type: (Text, Optional[Text], Text, List[Dict[str, Any]], Optional[bool]) -> Text
     committers_items = get_all_committers(commits_data)  # type: List[Tuple[str, int]]
-    committers_details = "{}({})".format(*committers_items[0])
+    committers_details = "{} ({})".format(*committers_items[0])
 
     for name, number_of_commits in committers_items[1:-1]:
-        committers_details = "{}, {}({})".format(committers_details, name, number_of_commits)
+        committers_details = "{}, {} ({})".format(committers_details, name, number_of_commits)
 
     if len(committers_items) > 1:
-        committers_details = "{} and {}({})".format(committers_details, *committers_items[-1])
+        committers_details = "{} and {} ({})".format(committers_details, *committers_items[-1])
 
     pushed_message_template = PUSH_PUSHED_TEXT_WITH_URL if compare_url else PUSH_PUSHED_TEXT_WITHOUT_URL
 

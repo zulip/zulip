@@ -14,7 +14,7 @@ class GogsHookTests(WebhookTestCase):
     def test_push(self):
         # type: () -> None
         expected_subject = u"try-git / master"
-        expected_message = u"""john [pushed](http://localhost:3000/john/try-git/compare/479e6b772b7fba19412457483f50b201286d0103...d8fce16c72a2ff56a5afc8a08645a6ce45491794) 1 commit to branch master. Commits by John(1)
+        expected_message = u"""john [pushed](http://localhost:3000/john/try-git/compare/479e6b772b7fba19412457483f50b201286d0103...d8fce16c72a2ff56a5afc8a08645a6ce45491794) 1 commit to branch master. Commits by John (1).
 
 * Webhook Test ([d8fce16](http://localhost:3000/john/try-git/commit/d8fce16c72a2ff56a5afc8a08645a6ce45491794))"""
         self.send_and_test_stream_message('push', expected_subject, expected_message, HTTP_X_GOGS_EVENT='push')
@@ -23,7 +23,7 @@ class GogsHookTests(WebhookTestCase):
         # type: () -> None
         commit_info = u'* Webhook Test ([d8fce16](http://localhost:3000/john/try-git/commit/d8fce16c72a2ff56a5afc8a08645a6ce45491794))\n'
         expected_subject = u"try-git / master"
-        expected_message = u"""john [pushed](http://localhost:3000/john/try-git/compare/479e6b772b7fba19412457483f50b201286d0103...d8fce16c72a2ff56a5afc8a08645a6ce45491794) 2 commits to branch master. Commits by Benjamin(1) and John(1)\n\n{}* Webhook Test ([d8fce16](http://localhost:3000/john/try-git/commit/d8fce16c72a2ff56a5afc8a08645a6ce45491794))""".format(commit_info)
+        expected_message = u"""john [pushed](http://localhost:3000/john/try-git/compare/479e6b772b7fba19412457483f50b201286d0103...d8fce16c72a2ff56a5afc8a08645a6ce45491794) 2 commits to branch master. Commits by Benjamin (1) and John (1).\n\n{}* Webhook Test ([d8fce16](http://localhost:3000/john/try-git/commit/d8fce16c72a2ff56a5afc8a08645a6ce45491794))""".format(commit_info)
         self.send_and_test_stream_message('push_commits_multiple_committers', expected_subject, expected_message, HTTP_X_GOGS_EVENT='push')
 
     def test_push_multiple_committers_filtered_by_branches(self):
@@ -31,14 +31,14 @@ class GogsHookTests(WebhookTestCase):
         self.url = self.build_webhook_url(branches='master,development')
         commit_info = u'* Webhook Test ([d8fce16](http://localhost:3000/john/try-git/commit/d8fce16c72a2ff56a5afc8a08645a6ce45491794))\n'
         expected_subject = u"try-git / master"
-        expected_message = u"""john [pushed](http://localhost:3000/john/try-git/compare/479e6b772b7fba19412457483f50b201286d0103...d8fce16c72a2ff56a5afc8a08645a6ce45491794) 2 commits to branch master. Commits by Benjamin(1) and John(1)\n\n{}* Webhook Test ([d8fce16](http://localhost:3000/john/try-git/commit/d8fce16c72a2ff56a5afc8a08645a6ce45491794))""".format(commit_info)
+        expected_message = u"""john [pushed](http://localhost:3000/john/try-git/compare/479e6b772b7fba19412457483f50b201286d0103...d8fce16c72a2ff56a5afc8a08645a6ce45491794) 2 commits to branch master. Commits by Benjamin (1) and John (1).\n\n{}* Webhook Test ([d8fce16](http://localhost:3000/john/try-git/commit/d8fce16c72a2ff56a5afc8a08645a6ce45491794))""".format(commit_info)
         self.send_and_test_stream_message('push_commits_multiple_committers', expected_subject, expected_message, HTTP_X_GOGS_EVENT='push')
 
     def test_push_filtered_by_branches(self):
         # type: () -> None
         self.url = self.build_webhook_url(branches='master,development')
         expected_subject = u"try-git / master"
-        expected_message = u"""john [pushed](http://localhost:3000/john/try-git/compare/479e6b772b7fba19412457483f50b201286d0103...d8fce16c72a2ff56a5afc8a08645a6ce45491794) 1 commit to branch master. Commits by John(1)
+        expected_message = u"""john [pushed](http://localhost:3000/john/try-git/compare/479e6b772b7fba19412457483f50b201286d0103...d8fce16c72a2ff56a5afc8a08645a6ce45491794) 1 commit to branch master. Commits by John (1).
 
 * Webhook Test ([d8fce16](http://localhost:3000/john/try-git/commit/d8fce16c72a2ff56a5afc8a08645a6ce45491794))"""
         self.send_and_test_stream_message('push', expected_subject, expected_message, HTTP_X_GOGS_EVENT='push')
@@ -47,7 +47,7 @@ class GogsHookTests(WebhookTestCase):
         # type: () -> None
         expected_subject = u"try-git / master"
         commits_info = "* Webhook Test ([d8fce16](http://localhost:3000/john/try-git/commit/d8fce16c72a2ff56a5afc8a08645a6ce45491794))\n"
-        expected_message = u"john [pushed](http://localhost:3000/john/try-git/compare/479e6b772b7fba19412457483f50b201286d0103...d8fce16c72a2ff56a5afc8a08645a6ce45491794) 30 commits to branch master. Commits by John(30)\n\n{}[and {} more commit(s)]".format(
+        expected_message = u"john [pushed](http://localhost:3000/john/try-git/compare/479e6b772b7fba19412457483f50b201286d0103...d8fce16c72a2ff56a5afc8a08645a6ce45491794) 30 commits to branch master. Commits by John (30).\n\n{}[and {} more commit(s)]".format(
             commits_info * COMMITS_LIMIT,
             30 - COMMITS_LIMIT
         )
@@ -58,7 +58,7 @@ class GogsHookTests(WebhookTestCase):
         self.url = self.build_webhook_url(branches='master,development')
         expected_subject = u"try-git / master"
         commits_info = "* Webhook Test ([d8fce16](http://localhost:3000/john/try-git/commit/d8fce16c72a2ff56a5afc8a08645a6ce45491794))\n"
-        expected_message = u"john [pushed](http://localhost:3000/john/try-git/compare/479e6b772b7fba19412457483f50b201286d0103...d8fce16c72a2ff56a5afc8a08645a6ce45491794) 30 commits to branch master. Commits by John(30)\n\n{}[and {} more commit(s)]".format(
+        expected_message = u"john [pushed](http://localhost:3000/john/try-git/compare/479e6b772b7fba19412457483f50b201286d0103...d8fce16c72a2ff56a5afc8a08645a6ce45491794) 30 commits to branch master. Commits by John (30).\n\n{}[and {} more commit(s)]".format(
             commits_info * COMMITS_LIMIT,
             30 - COMMITS_LIMIT
         )
