@@ -367,7 +367,7 @@ To use them, you will want to be logged in as the `zulip` user and for
 the purposes of this documentation, we assume the current working
 directory is `/home/zulip/deployments/current`.
 
-Below, we should several useful examples, but there are more than 100
+Below, we show several useful examples, but there are more than 100
 in total.  We recommend skimming the usage docs (or if there are none,
 the code) of a management command before using it, since they are
 generally less polished and more designed for expert use than the rest
