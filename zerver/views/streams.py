@@ -16,7 +16,8 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
     bulk_add_subscriptions, do_send_messages, get_subscriber_emails, do_rename_stream, \
     do_deactivate_stream, do_change_stream_invite_only, do_add_default_stream, \
     do_change_stream_description, do_get_streams, \
-    do_remove_default_stream, get_topic_history_for_stream
+    do_remove_default_stream, get_topic_history_for_stream, \
+    prep_stream_welcome_message
 from zerver.lib.response import json_success, json_error, json_response
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, \
     check_stream_name, check_stream_name_available, filter_stream_authorization, \
@@ -299,6 +300,10 @@ def add_subscriptions_backend(request, user_profile,
                     user_profile.realm, settings.NOTIFICATION_BOT,
                     "private",
                     realm_user_dict['email'], "", msg))
+
+    if not user_profile.realm.is_zephyr_mirror_realm:
+        for stream in created_streams:
+            notifications.append(prep_stream_welcome_message(stream))
 
     if len(notifications) > 0:
         do_send_messages(notifications)

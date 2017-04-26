@@ -949,6 +949,36 @@ def check_typing_notification(sender, notification_to, operator):
         raise ValueError('Forbidden recipient type')
     return {'sender': sender, 'recipient': recipient, 'op': operator}
 
+def stream_welcome_message(stream):
+    # type: (Stream) -> Text
+    content = _('Welcome to #**%s**.') % (stream.name,)
+
+    if stream.description:
+        content += '\n\n**' + _('Description') + '**: '
+        content += stream.description
+
+    return content
+
+def prep_stream_welcome_message(stream):
+    # type: (Stream) -> Optional[Dict[str, Any]]
+    realm = stream.realm
+    sender_email = settings.WELCOME_BOT
+    recipient_type_name = 'stream'
+    recipients = stream.name
+    subject = _('hello')
+
+    content = stream_welcome_message(stream)
+
+    message = internal_prep_message(
+        realm=realm,
+        sender_email=sender_email,
+        recipient_type_name=recipient_type_name,
+        recipients=recipients,
+        subject=subject,
+        content=content)
+
+    return message
+
 def create_stream_if_needed(realm, stream_name, invite_only=False, stream_description = ""):
     # type: (Realm, Text, bool, Text) -> Tuple[Stream, bool]
     (stream, created) = Stream.objects.get_or_create(
@@ -1198,6 +1228,9 @@ def check_message(sender, client, message_type_name, message_to,
             pass
         elif sender.is_bot and subscribed_to_stream(sender.bot_owner, stream):
             # Or you're a bot and your owner is subscribed.
+            pass
+        elif sender.email == settings.WELCOME_BOT:
+            # The welcome bot welcomes folks to the stream.
             pass
         else:
             # All other cases are an error.

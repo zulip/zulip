@@ -81,6 +81,8 @@ IGNORED_PHRASES = [
     r"more conversations",
     # We should probably just delete this string from translations
     r'activation key',
+    # this is used as a topic
+    r'^hello$',
 
     # TO CLEAN UP
     # Just want to avoid churning login.html right now

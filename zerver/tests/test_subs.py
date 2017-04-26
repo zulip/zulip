@@ -3,6 +3,7 @@ from __future__ import absolute_import
 
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Set, Text
 
+from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 
 from zerver.lib import cache
@@ -45,6 +46,7 @@ from zerver.lib.actions import (
     get_user_profile_by_email, set_default_streams, check_stream_name,
     create_stream_if_needed, create_streams_if_needed, active_user_ids,
     do_deactivate_stream,
+    stream_welcome_message,
 )
 
 from zerver.views.streams import (
@@ -98,6 +100,33 @@ class TestCreateStreams(ZulipTestCase):
         self.assertEqual(actual_stream_descriptions, set(stream_descriptions))
         for stream in existing_streams:
             self.assertTrue(stream.invite_only)
+
+    def test_welcome_message(self):
+        # type: () -> None
+        realm = get_realm('zulip')
+        name = u'New Stream'
+
+        new_stream, _ = create_stream_if_needed(
+            realm=realm,
+            stream_name=name
+        )
+        welcome_message = stream_welcome_message(new_stream)
+
+        self.assertEqual(
+            welcome_message,
+            u'Welcome to #**New Stream**.'
+        )
+
+        new_stream.description = 'Talk about **stuff**.'
+
+        welcome_message = stream_welcome_message(new_stream)
+
+        self.assertEqual(
+            welcome_message,
+            'Welcome to #**New Stream**.'
+            '\n\n'
+            '**Description**: Talk about **stuff**.'
+        )
 
 class RecipientTest(ZulipTestCase):
     def test_recipient(self):
@@ -1233,7 +1262,7 @@ class SubscriptionAPITest(ZulipTestCase):
         with tornado_redirected_to_list(events):
             self.helper_check_subs_before_and_after_add(self.streams + add_streams, {},
                                                         add_streams, self.streams, self.test_email, self.streams + add_streams)
-        self.assert_length(events, 6)
+        self.assert_length(events, 8)
 
     def test_successful_subscriptions_add_with_announce(self):
         # type: () -> None
@@ -1261,7 +1290,7 @@ class SubscriptionAPITest(ZulipTestCase):
         with tornado_redirected_to_list(events):
             self.helper_check_subs_before_and_after_add(self.streams + add_streams, other_params,
                                                         add_streams, self.streams, self.test_email, self.streams + add_streams)
-        self.assertEqual(len(events), 7)
+        self.assertEqual(len(events), 9)
 
     def test_successful_subscriptions_notifies_pm(self):
         # type: () -> None
@@ -1283,7 +1312,7 @@ class SubscriptionAPITest(ZulipTestCase):
         )
         self.assert_json_success(result)
 
-        msg = self.get_last_message()
+        msg = self.get_second_to_last_message()
         self.assertEqual(msg.recipient.type, Recipient.PERSONAL)
         self.assertEqual(msg.sender_id,
                          get_user_profile_by_email('notification-bot@zulip.com').id)
@@ -1319,7 +1348,7 @@ class SubscriptionAPITest(ZulipTestCase):
         )
         self.assert_json_success(result)
 
-        msg = self.get_last_message()
+        msg = self.get_second_to_last_message()
         self.assertEqual(msg.recipient.type, Recipient.STREAM)
         self.assertEqual(msg.sender_id,
                          get_user_profile_by_email('notification-bot@zulip.com').id)
@@ -1357,7 +1386,7 @@ class SubscriptionAPITest(ZulipTestCase):
         )
         self.assert_json_success(result)
 
-        msg = self.get_last_message()
+        msg = self.get_second_to_last_message()
         self.assertEqual(msg.recipient.type, Recipient.STREAM)
         self.assertEqual(msg.sender_id,
                          get_user_profile_by_email('notification-bot@zulip.com').id)
@@ -1390,7 +1419,7 @@ class SubscriptionAPITest(ZulipTestCase):
         )
         self.assert_json_success(result)
 
-        msg = self.get_last_message()
+        msg = self.get_second_to_last_message()
         self.assertEqual(msg.sender_id,
                          get_user_profile_by_email('notification-bot@zulip.com').id)
         expected_msg = "%s just created a new stream #**%s**." % (invitee_full_name, invite_streams[0])
@@ -1462,8 +1491,16 @@ class SubscriptionAPITest(ZulipTestCase):
         self.helper_check_subs_before_and_after_add(streams_to_sub,
                                                     {"principals": ujson.dumps([invitee])}, streams[:1], current_streams,
                                                     invitee, streams_to_sub, invite_only=invite_only)
-        # verify that the user was sent a message informing them about the subscription
+
+        # verify that a welcome message was sent to the stream
         msg = self.get_last_message()
+        self.assertEqual(msg.recipient.type, msg.recipient.STREAM)
+        self.assertEqual(msg.subject, u'hello')
+        self.assertEqual(msg.sender.email, settings.WELCOME_BOT)
+        self.assertIn('Welcome to #**', msg.content)
+
+        # verify that the user was sent a message informing them about the subscription
+        msg = self.get_second_to_last_message()
         self.assertEqual(msg.recipient.type, msg.recipient.PERSONAL)
         self.assertEqual(msg.sender_id,
                          get_user_profile_by_email("notification-bot@zulip.com").id)
@@ -1499,9 +1536,9 @@ class SubscriptionAPITest(ZulipTestCase):
                     streams_to_sub,
                     dict(principals=ujson.dumps([email1, email2])),
                 )
-        self.assert_length(queries, 52)
+        self.assert_length(queries, 67)
 
-        self.assert_length(events, 8)
+        self.assert_length(events, 9)
         for ev in [x for x in events if x['event']['type'] not in ('message', 'stream')]:
             if isinstance(ev['event']['subscriptions'][0], dict):
                 self.assertEqual(ev['event']['op'], 'add')
