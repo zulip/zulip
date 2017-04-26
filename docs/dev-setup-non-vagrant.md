@@ -321,6 +321,7 @@ Now run these commands:
 ```
 ./tools/install-mypy
 ./tools/setup/emoji/build_emoji
+./tools/setup/build_pygments_data.py
 ./scripts/setup/generate_secrets.py --development
 if [ $(uname) = "OpenBSD" ]; then
     sudo cp ./puppet/zulip/files/postgresql/zulip_english.stop /var/postgresql/tsearch_data/
@@ -461,4 +462,3 @@ the results in your browser.
 Currently, the Docker workflow is substantially less convenient than
 the Vagrant workflow and less documented; please contribute to this
 guide and the Docker tooling if you are using Docker to develop Zulip!
-

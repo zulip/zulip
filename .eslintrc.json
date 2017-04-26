@@ -23,6 +23,7 @@
         "attachments_ui": false,
         "csrf_token": false,
         "typeahead_helper": false,
+        "pygments_data": false,
         "popovers": false,
         "server_events": false,
         "ui": false,

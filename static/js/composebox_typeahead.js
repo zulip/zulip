@@ -48,6 +48,11 @@ function composebox_typeahead_highlighter(item) {
     return typeahead_helper.highlight_with_escaping(this.query, item);
 }
 
+function query_matches_language(query, lang) {
+    query = query.toLowerCase();
+    return lang.indexOf(query) !== -1;
+}
+
 function query_matches_person(query, person) {
     // Case-insensitive.
     query = query.toLowerCase();
@@ -212,6 +217,15 @@ exports.tokenize_compose_str = function (s) {
     while (i > min_i) {
         i -= 1;
         switch (s[i]) {
+            case '`':
+            case '~':
+                // Code block must start on a new line
+                if (i === 2) {
+                    return s.slice(0);
+                } else if (i > 2 && s[i-3] === "\n") {
+                    return s.slice(i-2);
+                }
+                break;
             case '#':
             case '@':
             case ':':
@@ -232,6 +246,29 @@ exports.compose_content_begins_typeahead = function (query) {
     var current_token = exports.tokenize_compose_str(q);
     if (current_token === '') {
         return false;
+    }
+
+    // Start syntax highlighting autocompleter if the first three characters are ```
+    var syntax_token = current_token.substring(0,3);
+    if (this.options.completions.syntax && (syntax_token === '```' || syntax_token === "~~~")) {
+        // Only autocomplete if user starts typing a language after ```
+        if (current_token.length === 3) {
+            return false;
+        }
+
+        // If the only input is a space, don't autocomplete
+        current_token = current_token.substring(3);
+        if (current_token === " ") {
+            return false;
+        }
+
+        // Trim the first whitespace if it is there
+        if (current_token[0] === " ") {
+            current_token = current_token.substring(1);
+        }
+        this.completing = 'syntax';
+        this.token = current_token;
+        return Object.keys(pygments_data.langs);
     }
 
     // Only start the emoji autocompleter if : is directly after one
@@ -309,6 +346,8 @@ exports.content_highlighter = function (item) {
         return typeahead_helper.highlight_with_escaping(this.token, item_formatted);
     } else if (this.completing === 'stream') {
         return typeahead_helper.render_stream(this.token, item);
+    } else if (this.completing === 'syntax') {
+        return typeahead_helper.highlight_with_escaping(this.token, item);
     }
 };
 
@@ -332,18 +371,25 @@ exports.content_typeahead_selected = function (item) {
         beginning = (beginning.substring(0, beginning.length - this.token.length-1)
                 + '#**' + item.name + '** ');
         $(document).trigger('streamname_completed.zulip', {stream: item});
+    } else if (this.completing === 'syntax') {
+        rest = "\n" + beginning.substring(beginning.length - this.token.length - 4,
+                beginning.length - this.token.length).trim() + rest;
+        beginning = beginning.substring(0, beginning.length - this.token.length) + item + "\n";
     }
 
     // Keep the cursor after the newly inserted text, as Bootstrap will call textbox.change() to
     // overwrite the text in the textbox.
     setTimeout(function () {
         $('#new_message_content').caret(beginning.length, beginning.length);
+        // Also, trigger autosize to check if compose box needs to be resized.
+        compose.autosize_textarea();
     }, 0);
     return beginning + rest;
 };
 
 exports.initialize_compose_typeahead = function (selector, completions) {
-    completions = $.extend({mention: false, emoji: false, stream: false}, completions);
+    completions = $.extend(
+        {mention: false, emoji: false, stream: false, syntax: false}, completions);
 
     $(selector).typeahead({
         items: 5,
@@ -358,6 +404,8 @@ exports.initialize_compose_typeahead = function (selector, completions) {
                 return query_matches_person(this.token, item);
             } else if (this.completing === 'stream') {
                 return query_matches_stream(this.token, item);
+            } else if (this.completing === 'syntax') {
+                return query_matches_language(this.token, item);
             }
         },
         sorter: function (matches) {
@@ -368,6 +416,8 @@ exports.initialize_compose_typeahead = function (selector, completions) {
                                                         compose_state.stream_name());
             } else if (this.completing === 'stream') {
                 return typeahead_helper.sort_streams(matches, this.token);
+            } else if (this.completing === 'syntax') {
+                return typeahead_helper.sort_languages(matches, this.token);
             }
         },
         updater: exports.content_typeahead_selected,
@@ -493,7 +543,7 @@ exports.initialize = function () {
         stopAdvance: true, // Do not advance to the next field on a tab or enter
     });
 
-    exports.initialize_compose_typeahead("#new_message_content", {mention: true, emoji: true, stream: true});
+    exports.initialize_compose_typeahead("#new_message_content", {mention: true, emoji: true, stream: true, syntax: true});
 
     $( "#private_message_recipient" ).blur(function () {
         var val = $(this).val();
