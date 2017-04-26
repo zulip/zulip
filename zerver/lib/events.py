@@ -142,6 +142,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         state['is_admin'] = user_profile.is_realm_admin
         state['user_id'] = user_profile.id
         state['enter_sends'] = user_profile.enter_sends
+        state['email'] = user_profile.email
 
     if want('realm_bot'):
         state['realm_bots'] = get_owned_bot_dicts(user_profile)

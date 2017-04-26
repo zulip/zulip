@@ -211,7 +211,6 @@ def home_real(request):
         # user_profile data.
         # TODO: Move all of these data to register_ret and pull from there
         fullname              = user_profile.full_name,
-        email                 = user_profile.email,
 
         # Stream message notification settings:
         stream_desktop_notifications_enabled = user_profile.enable_stream_desktop_notifications,
@@ -255,6 +254,7 @@ def home_real(request):
         'can_create_streams',
         'default_desktop_notifications',
         'default_language',
+        'email',
         'emoji_alt_code',
         'emojiset',
         'emojiset_choices',
