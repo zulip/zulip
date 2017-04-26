@@ -211,7 +211,6 @@ def home_real(request):
         enter_sends           = user_profile.enter_sends,
         user_id               = user_profile.id,
         is_admin              = user_profile.is_realm_admin,
-        can_create_streams    = user_profile.can_create_streams(),
 
         # Realm foreign key data from register_ret.
         # TODO: Rename these to match register_ret values.
@@ -243,6 +242,7 @@ def home_real(request):
         'avatar_source',
         'avatar_url',
         'avatar_url_medium',
+        'can_create_streams',
         'default_desktop_notifications',
         'default_language',
         'emoji_alt_code',

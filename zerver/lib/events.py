@@ -132,6 +132,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         state['avatar_source'] = user_profile.avatar_source
         state['avatar_url_medium'] = avatar_url(user_profile, medium=True)
         state['avatar_url'] = avatar_url(user_profile)
+        state['can_create_streams'] = user_profile.can_create_streams()
 
     if want('realm_bot'):
         state['realm_bots'] = get_owned_bot_dicts(user_profile)
@@ -309,6 +310,10 @@ def apply_event(state, event, user_profile, include_subscribers):
         if event['op'] == "update":
             field = 'realm_' + event['property']
             state[field] = event['value']
+
+            # Tricky interaction: Whether we can create streams can get changed here.
+            if field == 'realm_create_stream_by_admins_only' and 'can_create_streams' in state:
+                state['can_create_streams'] = user_profile.can_create_streams()
         elif event['op'] == "update_dict":
             for key, value in event['data'].items():
                 state['realm_' + key] = value
