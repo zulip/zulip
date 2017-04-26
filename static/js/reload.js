@@ -70,6 +70,10 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
     }
     url += "+oldhash=" + encodeURIComponent(oldhash);
 
+    var ls = localstorage();
+    // Delete all the previous preserved states.
+    ls.removeRegex('reload:\\d+');
+
     // To protect the browser against CSRF type attacks, the reload
     // logic uses a random token (to distinct this browser from
     // others) which is passed via the URL to the browser (post
@@ -79,7 +83,6 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
     // TODO: Remove the now-unnecessary URL-encoding logic above and
     // just pass the actual data structures through local storage.
     var token = util.random_int(0, 1024*1024*1024*1024);
-    var ls = localstorage();
 
     ls.set("reload:" + token, url);
     window.location.replace("#reload:" + token);
