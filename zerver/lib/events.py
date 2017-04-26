@@ -170,9 +170,20 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
 
     return state
 
-def apply_events(state, events, user_profile, include_subscribers=True):
-    # type: (Dict[str, Any], Iterable[Dict[str, Any]], UserProfile, bool) -> None
+def apply_events(state, events, user_profile, include_subscribers=True,
+                 fetch_event_types=None):
+    # type: (Dict[str, Any], Iterable[Dict[str, Any]], UserProfile, bool, Optional[Iterable[str]]) -> None
     for event in events:
+        if fetch_event_types is not None and event['type'] not in fetch_event_types:
+            # TODO: continuing here is not, most precisely, correct.
+            # In theory, an event of one type, e.g. `realm_user`,
+            # could modify state that doesn't come from that
+            # `fetch_event_types` value, e.g. the `our_person` part of
+            # that code path.  But it should be extremely rare, and
+            # fixing that will require a nontrivial refactor of
+            # `apply_event`.  For now, be careful in your choice of
+            # `fetch_event_types`.
+            continue
         apply_event(state, event, user_profile, include_subscribers)
 
 def apply_event(state, event, user_profile, include_subscribers):
@@ -419,20 +430,27 @@ def apply_event(state, event, user_profile, include_subscribers):
 
 def do_events_register(user_profile, user_client, apply_markdown=True,
                        event_types=None, queue_lifespan_secs=0, all_public_streams=False,
-                       include_subscribers=True, narrow=[]):
-    # type: (UserProfile, Client, bool, Optional[Iterable[str]], int, bool, bool, Iterable[Sequence[Text]]) -> Dict[str, Any]
+                       include_subscribers=True, narrow=[], fetch_event_types=None):
+    # type: (UserProfile, Client, bool, Optional[Iterable[str]], int, bool, bool, Iterable[Sequence[Text]], Optional[Iterable[str]]) -> Dict[str, Any]
+
     # Technically we don't need to check this here because
     # build_narrow_filter will check it, but it's nicer from an error
     # handling perspective to do it before contacting Tornado
     check_supported_events_narrow_filter(narrow)
+
+    # Note that we pass event_types, not fetch_event_types here, since
+    # that's what controls which future events are sent.
     queue_id = request_event_queue(user_profile, user_client, apply_markdown,
                                    queue_lifespan_secs, event_types, all_public_streams,
                                    narrow=narrow)
 
     if queue_id is None:
         raise JsonableError(_("Could not allocate event queue"))
-    if event_types is not None:
-        event_types_set = set(event_types) # type: Optional[Set[str]]
+
+    if fetch_event_types is not None:
+        event_types_set = set(fetch_event_types)  # type: Optional[Set[str]]
+    elif event_types is not None:
+        event_types_set = set(event_types)
     else:
         event_types_set = None
 
@@ -441,7 +459,8 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
 
     # Apply events that came in while we were fetching initial data
     events = get_user_events(user_profile, queue_id, -1)
-    apply_events(ret, events, user_profile, include_subscribers=include_subscribers)
+    apply_events(ret, events, user_profile, include_subscribers=include_subscribers,
+                 fetch_event_types=fetch_event_types)
     if len(events) > 0:
         ret['last_event_id'] = events[-1]['id']
     else:

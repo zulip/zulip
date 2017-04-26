@@ -138,6 +138,51 @@ class EventsEndpointTest(ZulipTestCase):
         self.assertEqual(result_dict['pointer'], 15)
         self.assertEqual(result_dict['queue_id'], '15:12')
 
+        # Now test with `fetch_event_types` not matching the event
+        with mock.patch('zerver.lib.events.request_event_queue', return_value='15:13'):
+            with mock.patch('zerver.lib.events.get_user_events',
+                            return_value=[{
+                                'id': 6,
+                                'type': 'pointer',
+                                'pointer': 15,
+                            }]):
+                result = self.client_post('/json/register',
+                                          dict(event_types=ujson.dumps(['pointer']),
+                                               fetch_event_types=ujson.dumps(['message'])),
+                                          **self.api_auth(email))
+        self.assert_json_success(result)
+        result_dict = ujson.loads(result.content)
+        self.assertEqual(result_dict['last_event_id'], 6)
+        # Check that the message event types data is in there
+        self.assertIn('max_message_id', result_dict)
+        # Check that the pointer event types data is not in there
+        self.assertNotIn('pointer', result_dict)
+        self.assertEqual(result_dict['queue_id'], '15:13')
+
+        # Now test with `fetch_event_types` matching the event
+        with mock.patch('zerver.lib.events.request_event_queue', return_value='15:13'):
+            with mock.patch('zerver.lib.events.get_user_events',
+                            return_value=[{
+                                'id': 6,
+                                'type': 'pointer',
+                                'pointer': 15,
+                            }]):
+                result = self.client_post('/json/register',
+                                          dict(fetch_event_types=ujson.dumps(['pointer']),
+                                               event_types=ujson.dumps(['message'])),
+                                          **self.api_auth(email))
+        self.assert_json_success(result)
+        result_dict = ujson.loads(result.content)
+        self.assertEqual(result_dict['last_event_id'], 6)
+        # Check that we didn't fetch the messages data
+        self.assertNotIn('max_message_id', result_dict)
+        # Check that the pointer data is in there, and is correctly
+        # updated (presering our atomicity guaranteed), though of
+        # course any future pointer events won't be distributed
+        self.assertIn('pointer', result_dict)
+        self.assertEqual(result_dict['pointer'], 15)
+        self.assertEqual(result_dict['queue_id'], '15:13')
+
     def test_tornado_endpoint(self):
         # type: () -> None
 
