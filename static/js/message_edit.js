@@ -220,7 +220,8 @@ function edit_message(row, raw_content) {
         initClipboard(copy_message[0]);
     } else if (editability === editability_types.FULL) {
         copy_message.remove();
-        resize.watch_manual_resize("#message_edit_content");
+        var listeners = resize.watch_manual_resize("#message_edit_content");
+        currently_editing_messages[rows.id(row)].listeners = listeners;
         composebox_typeahead.initialize_compose_typeahead("#message_edit_content", {emoji: true, stream: true});
     }
 
@@ -360,6 +361,13 @@ exports.end = function (row) {
         currently_editing_messages[message.id] !== undefined) {
         var scroll_by = currently_editing_messages[message.id].scrolled_by;
         message_viewport.scrollTop(message_viewport.scrollTop() - scroll_by);
+
+        // Clean up resize event listeners
+        var listeners = currently_editing_messages[message.id].listeners;
+        var edit_box = document.querySelector("#message_edit_content");
+        edit_box.removeEventListener("mousedown", listeners[0]);
+        document.body.removeEventListener("mouseup", listeners[1]);
+
         delete currently_editing_messages[message.id];
         current_msg_list.hide_edit_message(row);
     }
