@@ -223,7 +223,6 @@ def check_handlebar_templates(templates):
         'static/templates/settings/bot-list-admin.handlebars',
         'static/templates/settings/default-streams-list-admin.handlebars',
         'static/templates/settings/organization-settings-admin.handlebars',
-        'static/templates/settings/ui-settings.handlebars',
         'static/templates/settings/user-list-admin.handlebars',
     ]
     # TODO: Clean these files
