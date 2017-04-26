@@ -213,7 +213,6 @@ def home_real(request):
         is_admin              = user_profile.is_realm_admin,
         can_create_streams    = user_profile.can_create_streams(),
         autoscroll_forever = user_profile.autoscroll_forever,
-        default_desktop_notifications = user_profile.default_desktop_notifications,
 
         # Realm foreign key data from register_ret.
         # TODO: Rename these to match register_ret values.
@@ -244,6 +243,7 @@ def home_real(request):
         'avatar_source',
         'avatar_url',
         'avatar_url_medium',
+        'default_desktop_notifications',
         'default_language',
         'emoji_alt_code',
         'emojiset',

@@ -167,6 +167,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         state['default_language'] = user_profile.default_language
 
     if want('update_global_notifications'):
+        state['default_desktop_notifications'] = user_profile.default_desktop_notifications
         state['enable_stream_desktop_notifications'] = user_profile.enable_stream_desktop_notifications
         state['enable_stream_sounds'] = user_profile.enable_stream_sounds
         state['enable_desktop_notifications'] = user_profile.enable_desktop_notifications
