@@ -442,7 +442,11 @@ class Runner(DiscoverRunner):
         # type: (*Any, **Any) -> Any
         # No need to pass the database id now. It will be picked up
         # automatically through settings.
-        destroy_test_databases()
+        if self.parallel == 1:
+            # In parallel mode (parallel > 1), destroy_test_databases will
+            # destroy settings.BACKEND_DATABASE_TEMPLATE; we don't want that.
+            # So run this only in serial mode.
+            destroy_test_databases()
         return super(Runner, self).teardown_test_environment(*args, **kwargs)
 
     def run_tests(self, test_labels, extra_tests=None,
