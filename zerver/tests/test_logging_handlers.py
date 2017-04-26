@@ -51,6 +51,11 @@ class AdminZulipHandlerTest(ZulipTestCase):
         # You may want to disable this when debugging tests
         settings.LOGGING_NOT_DISABLED = False
 
+        global captured_exc_info
+        global captured_request
+        captured_request = None
+        captured_exc_info = None
+
     def tearDown(self):
         # type: () -> None
         settings.LOGGING_NOT_DISABLED = True
@@ -85,6 +90,31 @@ class AdminZulipHandlerTest(ZulipTestCase):
             event = patched_publish.call_args[0][1]
             self.assertIn("report", event)
             return event["report"]
+
+    def test_long_exception_request(self):
+        # type: () -> None
+        """A request with with no stack where report.getMessage() has newlines
+        in it is handled properly"""
+        self.login("hamlet@zulip.com")
+        with patch("zerver.decorator.rate_limit") as rate_limit_patch:
+            rate_limit_patch.side_effect = capture_and_throw
+            result = self.client_get("/json/users")
+            self.assert_json_error(result, "Internal server error", status_code=500)
+            rate_limit_patch.assert_called_once()
+
+            global captured_request
+            global captured_exc_info
+            record = self.logger.makeRecord('name', logging.ERROR, 'function', 15,
+                                            'message\nmoremesssage\nmore', None,
+                                            None)  # type: ignore # https://github.com/python/typeshed/pull/1100
+            record.request = captured_request
+
+            report = self.run_handler(record)
+            self.assertIn("user_email", report)
+            self.assertIn("message", report)
+            self.assertIn("stack_trace", report)
+            self.assertEqual(report['stack_trace'], 'message\nmoremesssage\nmore')
+            self.assertEqual(report['message'], 'message')
 
     def test_request(self):
         # type: () -> None
