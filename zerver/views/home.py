@@ -219,7 +219,6 @@ def home_real(request):
         autoscroll_forever = user_profile.autoscroll_forever,
         default_desktop_notifications = user_profile.default_desktop_notifications,
         avatar_url            = avatar_url(user_profile),
-        avatar_url_medium     = avatar_url(user_profile, medium=True),
 
         # Stream message notification settings:
         stream_desktop_notifications_enabled = user_profile.enable_stream_desktop_notifications,
@@ -257,6 +256,7 @@ def home_real(request):
         'alert_words',
         'attachments',
         'avatar_source',
+        'avatar_url_medium',
         'default_language',
         'emoji_alt_code',
         'emojiset',

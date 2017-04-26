@@ -19,7 +19,7 @@ session_engine = import_module(settings.SESSION_ENGINE)
 
 from zerver.lib.alert_words import user_alert_words
 from zerver.lib.attachments import user_attachments
-from zerver.lib.avatar import get_avatar_url
+from zerver.lib.avatar import avatar_url, get_avatar_url
 from zerver.lib.hotspots import get_next_hotspots
 from zerver.lib.narrow import check_supported_events_narrow_filter
 from zerver.lib.realm_icon import realm_icon_url
@@ -134,6 +134,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         state['emojiset'] = user_profile.emojiset
         state['timezone'] = user_profile.timezone
         state['avatar_source'] = user_profile.avatar_source
+        state['avatar_url_medium'] = avatar_url(user_profile, medium=True)
 
     if want('realm_bot'):
         state['realm_bots'] = get_owned_bot_dicts(user_profile)
