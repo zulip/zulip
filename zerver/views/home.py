@@ -214,7 +214,6 @@ def home_real(request):
         email                 = user_profile.email,
         enter_sends           = user_profile.enter_sends,
         user_id               = user_profile.id,
-        is_admin              = user_profile.is_realm_admin,
 
         # Stream message notification settings:
         stream_desktop_notifications_enabled = user_profile.enable_stream_desktop_notifications,
@@ -262,6 +261,7 @@ def home_real(request):
         'emojiset',
         'emojiset_choices',
         'hotspots',
+        'is_admin',
         'last_event_id',
         'left_side_userlist',
         'max_icon_file_size',
