@@ -222,7 +222,6 @@ def home_real(request):
         avatar_url_medium     = avatar_url(user_profile, medium=True),
         avatar_source         = user_profile.avatar_source,
         timezone              = user_profile.timezone,
-        emojiset              = user_profile.emojiset,
 
         # Stream message notification settings:
         stream_desktop_notifications_enabled = user_profile.enable_stream_desktop_notifications,
@@ -265,6 +264,7 @@ def home_real(request):
         'attachments',
         'default_language',
         'emoji_alt_code',
+        'emojiset',
         'emojiset_choices',
         'hotspots',
         'last_event_id',
