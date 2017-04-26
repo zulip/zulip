@@ -40,7 +40,7 @@
     content: "#";
     font-size: 1.3rem;
     font-weight: 800;
-    line-height: 1;
+    line-height: 0;
 }
 
 .tooltip {
@@ -160,10 +160,25 @@ li.hidden-filter {
     font-size: 14px;
 }
 
+#global_filters .global-filter i.icon-vector-home {
+    position: relative;
+    top: 1px;
+
+    font-size: 16px;
+}
+
+#global_filters .global-filter i.icon-vector-envelope {
+    position: relative;
+    left: 1px;
+
+    font-size: 13px;
+}
+
 #global_filters .count,
 #stream_filters .count {
     float: right;
     margin-top: 3px;
+    line-height: 12px;
     background: #80837f;
     padding: 2px 4px 1px 4px;
     border-radius: 0px;
@@ -288,10 +303,15 @@ ul.filters li.out_of_home_view li.muted_topic {
 
 #stream_filters .subscription_block {
     padding: 0 0 0 10px;
-    line-height: 12px;
     padding: 2px 0px;
     margin-right: 18px;
     margin-left: 10px;
+}
+
+#stream_filters .subscription_block::after {
+    content: "";
+    display: block;
+    clear: both;
 }
 
 #stream_filters .subscription_block .stream-name {
