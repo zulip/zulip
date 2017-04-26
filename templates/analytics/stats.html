@@ -12,9 +12,10 @@
 
 <div class="page-content">
   <div id="id_stats_errors" class="alert alert-error"></div>
+  <div class="container">
   <h1 class="analytics-page-header">Zulip Analytics for {{ realm_name }}</h1>
-  <div class="center-container">
-    <div class="center-block">
+  <div class="center-container row">
+    <div class="center-block chart-tile">
       <p class="graph-title" id="messages_timescale_anchor">Messages Sent Over Time</p>
       <div id="graph_container">
         <div id="button_container">
@@ -37,8 +38,8 @@
       </div>
     </div>
   </div>
-  <div id="pie_container">
-    <div id="pie_messages_sent_by_client">
+  <div class="pie_container row">
+    <div id="pie_messages_sent_by_client" class="chart-tile">
       <p class="graph-title" id="messages_by_client_anchor">Messages Sent by Client</p>
       <div id="id_messages_sent_by_client"></div>
       <button class="pie-button" type="button" id='messages_by_client_user_button'> Me </button>
@@ -48,7 +49,9 @@
       <button class="pie-button" type="button" id='messages_by_client_last_year_button'> Last Year </button>
       <button class="pie-button" type="button" id='messages_by_client_cumulative_button'> All Time </button>
     </div>
-    <div id="pie_messages_sent_by_type">
+  </div>
+  <div class="pie_container row">
+    <div id="pie_messages_sent_by_type" class="chart-tile">
       <p class="graph-title" id="messages_by_type_anchor">Messages Sent by Recipient Type</p>
       <div id="id_messages_sent_by_message_type"></div>
       <div id="pie_messages_sent_by_type_total"> </div>
@@ -60,8 +63,8 @@
       <button class="pie-button" type="button" id='messages_by_type_cumulative_button'> All Time </button>
     </div>
   </div>
-  <div class="center-container">
-    <div class="center-block">
+  <div class="center-container row">
+    <div class="center-block chart-tile">
       <p class="graph-title" id="users_anchor">Number of Users</p>
       <div id="id_number_of_users"></div>
       <div id="users_hover_info">
@@ -84,6 +87,7 @@
         </span>
       </p>
     </div>
+  </div>
   </div>
 </div>
 

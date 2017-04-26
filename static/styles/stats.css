@@ -6,6 +6,7 @@
 
 body {
     font-family: 'Humbug', 'Helvetica Neue', sans-serif !important;
+    background: #EBEBEB;
 }
 
 p {
@@ -32,6 +33,11 @@ svg {
     overflow: auto;
     display: inline-block;
     vertical-align: top;
+}
+
+.chart-tile {
+    background: white;
+    padding: 20px;
 }
 
 .center-container {
@@ -220,7 +226,7 @@ svg {
     margin-left: 50px;
 }
 
-#pie_container {
+.pie_container {
     text-align: center;
 }
 
@@ -233,7 +239,7 @@ svg {
 #pie_messages_sent_by_type {
     display: inline-block;
     vertical-align: top;
-    margin: 100px 0px 0px 0px;
+    margin: 50px 0px 50px 0px;
 }
 
 #pie_messages_sent_by_client_total {
