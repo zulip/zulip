@@ -208,7 +208,6 @@ def home_real(request):
         # TODO: Move all of these data to register_ret and pull from there
         fullname              = user_profile.full_name,
         email                 = user_profile.email,
-        enter_sends           = user_profile.enter_sends,
 
         # Realm foreign key data from register_ret.
         # TODO: Rename these to match register_ret values.
@@ -254,6 +253,7 @@ def home_real(request):
         'enable_sounds',
         'enable_stream_desktop_notifications',
         'enable_stream_sounds',
+        'enter_sends',
         'hotspots',
         'is_admin',
         'last_event_id',
