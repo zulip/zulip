@@ -208,10 +208,6 @@ def home_real(request):
         server_inline_image_preview = settings.INLINE_IMAGE_PREVIEW,
         server_inline_url_embed_preview = settings.INLINE_URL_EMBED_PREVIEW,
 
-        # user_profile data.
-        # TODO: Move all of these data to register_ret and pull from there
-        fullname              = user_profile.full_name,
-
         # Stream message notification settings:
         stream_desktop_notifications_enabled = user_profile.enable_stream_desktop_notifications,
         stream_sounds_enabled = user_profile.enable_stream_sounds,
@@ -259,6 +255,7 @@ def home_real(request):
         'emojiset',
         'emojiset_choices',
         'enter_sends',
+        'fullname',
         'hotspots',
         'is_admin',
         'last_event_id',
