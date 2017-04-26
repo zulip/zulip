@@ -183,6 +183,7 @@ function edit_message(row, raw_content) {
     var form = $(templates.render(
         'message_edit_form',
         {is_stream: (message.type === 'stream'),
+         message_id: message.id,
          is_editable: is_editable,
          has_been_editable: (editability !== editability_types.NO),
          topic: message.subject,
@@ -220,9 +221,10 @@ function edit_message(row, raw_content) {
         initClipboard(copy_message[0]);
     } else if (editability === editability_types.FULL) {
         copy_message.remove();
-        var listeners = resize.watch_manual_resize("#message_edit_content");
+        var edit_id = "#message_edit_content_" + rows.id(row);
+        var listeners = resize.watch_manual_resize(edit_id);
         currently_editing_messages[rows.id(row)].listeners = listeners;
-        composebox_typeahead.initialize_compose_typeahead("#message_edit_content", {emoji: true, stream: true});
+        composebox_typeahead.initialize_compose_typeahead(edit_id, {emoji: true, stream: true});
     }
 
     // Add tooltip
@@ -364,7 +366,7 @@ exports.end = function (row) {
 
         // Clean up resize event listeners
         var listeners = currently_editing_messages[message.id].listeners;
-        var edit_box = document.querySelector("#message_edit_content");
+        var edit_box = document.querySelector("#message_edit_content_" + message.id);
         edit_box.removeEventListener("mousedown", listeners[0]);
         document.body.removeEventListener("mouseup", listeners[1]);
 

@@ -94,8 +94,8 @@ casper.then(function () {
     casper.test.assertNotVisible('form.message_edit_form', 'Message edit box not visible');
 
     common.keypress(37);
-    casper.waitUntilVisible("#message_edit_content", function () {
-        var fieldVal = common.get_form_field_value('#message_edit_content');
+    casper.waitUntilVisible(".message_edit_content", function () {
+        var fieldVal = common.get_form_field_value('.message_edit_content');
         casper.test.assertEquals(fieldVal, "test edited pm", "Opened editing last own message");
         casper.click('.message_edit_cancel');
     });

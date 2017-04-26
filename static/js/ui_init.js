@@ -214,11 +214,11 @@ $(function () {
 
     $('.copy_message[data-toggle="tooltip"]').tooltip();
 
-    $("body").on("mouseover", "#message_edit_content", function () {
+    $("body").on("mouseover", ".message_edit_content", function () {
         $(this).closest(".message_row").find(".copy_message").show();
     });
 
-    $("body").on("mouseout", "#message_edit_content", function () {
+    $("body").on("mouseout", ".message_edit_content", function () {
         $(this).closest(".message_row").find(".copy_message").hide();
     });
 
