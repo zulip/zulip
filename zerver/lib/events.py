@@ -134,6 +134,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         state['avatar_url'] = avatar_url(user_profile)
         state['can_create_streams'] = user_profile.can_create_streams()
         state['is_admin'] = user_profile.is_realm_admin
+        state['user_id'] = user_profile.id
 
     if want('realm_bot'):
         state['realm_bots'] = get_owned_bot_dicts(user_profile)

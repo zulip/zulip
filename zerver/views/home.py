@@ -209,7 +209,6 @@ def home_real(request):
         fullname              = user_profile.full_name,
         email                 = user_profile.email,
         enter_sends           = user_profile.enter_sends,
-        user_id               = user_profile.id,
 
         # Realm foreign key data from register_ret.
         # TODO: Rename these to match register_ret values.
@@ -303,6 +302,7 @@ def home_real(request):
         'unsubscribed',
         'timezone',
         'twenty_four_hour_time',
+        'user_id',
         'zulip_version',
     ]
 
