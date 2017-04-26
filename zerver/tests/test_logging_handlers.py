@@ -104,9 +104,9 @@ class AdminZulipHandlerTest(ZulipTestCase):
 
             global captured_request
             global captured_exc_info
-            record = self.logger.makeRecord('name', logging.ERROR, 'function', 15,
+            record = self.logger.makeRecord('name', logging.ERROR, 'function', 15,  # type: ignore # https://github.com/python/typeshed/pull/1100
                                             'message\nmoremesssage\nmore', None,
-                                            None)  # type: ignore # https://github.com/python/typeshed/pull/1100
+                                            None)
             record.request = captured_request
 
             report = self.run_handler(record)
