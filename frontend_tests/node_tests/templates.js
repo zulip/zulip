@@ -787,7 +787,7 @@ function render(template_name, args) {
         autoscroll_forever: true, default_desktop_notifications: true,
     };
     var page_params = $.extend(page_param_checkbox_options, {
-        fullname: "Alyssa P. Hacker", password_auth_enabled: true,
+        full_name: "Alyssa P. Hacker", password_auth_enabled: true,
         avatar_url: "https://google.com",
     });
 

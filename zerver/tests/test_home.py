@@ -67,7 +67,7 @@ class HomeTest(ZulipTestCase):
             "enable_stream_sounds",
             "enter_sends",
             "first_in_realm",
-            "fullname",
+            "full_name",
             "furthest_read_time",
             "has_mobile_devices",
             "have_initial_messages",

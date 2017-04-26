@@ -44,7 +44,7 @@ i18n.init({
 (function test_tr_tag() {
     var args = {
         page_params: {
-            fullname: "John Doe",
+            full_name: "John Doe",
             password_auth_enabled: false,
             avatar_url: "http://example.com",
             left_side_userlist: false,

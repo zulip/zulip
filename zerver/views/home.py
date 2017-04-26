@@ -204,10 +204,6 @@ def home_real(request):
         server_inline_image_preview = settings.INLINE_IMAGE_PREVIEW,
         server_inline_url_embed_preview = settings.INLINE_URL_EMBED_PREVIEW,
 
-        # user_profile data.
-        # TODO: Move all of these data to register_ret and pull from there
-        fullname              = user_profile.full_name,
-
         # Realm foreign key data from register_ret.
         # TODO: Rename these to match register_ret values.
         initial_pointer       = register_ret['pointer'],
@@ -254,6 +250,7 @@ def home_real(request):
         'enable_stream_desktop_notifications',
         'enable_stream_sounds',
         'enter_sends',
+        'full_name',
         'hotspots',
         'is_admin',
         'last_event_id',
