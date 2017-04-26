@@ -107,10 +107,16 @@ First, update the database and model to store the new setting. Add a new
 boolean field, `invite_by_admins_only`, to the Realm model in
 `zerver/models.py`.
 
-    class Realm(ModelReprMixin, models.Model):
-       # ...
-       invite_by_admins_only = models.BooleanField(default=False) # type: bool
-       # ...
+``` diff
+--- a/zerver/models.py
++++ b/zerver/models.py
+@@ -108,6 +108,7 @@ class Realm(ModelReprMixin, models.Model):
+     restricted_to_domain = models.BooleanField(default=True) # type: bool
+     invite_required = models.BooleanField(default=False) # type: bool
++    invite_by_admins_only = models.BooleanField(default=False) # type: bool
+     create_stream_by_admins_only = models.BooleanField(default=False) # type: bool
+     mandatory_topics = models.BooleanField(default=False) # type: bool
+```
 
 The Realm model also contains an attribute, `property_types`, which
 other functions use to handle most realm settings without any custom
@@ -139,8 +145,8 @@ not included in `property_types`.
 When creating a realm property that is not a boolean, Text or
 integer field, or when adding a field that is dependent on other fields,
 handle it separately and do not add the field to the `property_types`
-dictionary. The steps below will point out where to write code explicitly
-for these cases.
+dictionary. The steps below will point out where to write code for these
+cases.
 
 ### Create the migration
 
@@ -299,7 +305,7 @@ function are needed.
 
 You will need to add a view for clients to access that will call the
 `actions.py` code to update the database. This example feature
-adds a new parameter that should be sent to clients when the
+adds a new parameter that will be sent to clients when the
 application loads and should be accessible via JavaScript. There is
 already a view that does this for related flags: `update_realm` in
 `zerver/views/realm.py`. So in this case, we can add our code to the
@@ -318,11 +324,10 @@ in `zerver/views/home.py`.
         # ...
       )
 
-Since this feature also adds a checkbox to the admin page and adds a
-new property the Realm model that can be modified from there, you
-need to make changes to the `update_realm` function in
-`zerver/views/realm.py`. Add a parameter for the new field to the
-`update_realm` function.
+Since this feature adds a checkbox to the admin page and a new property
+to the Realm model that can be modified from there, you need to add a
+parameter for the new field to the `update_realm` function in
+`zerver/views/realm.py`.
 
     def update_realm(request, user_profile, name=REQ(validator=check_string, default=None),
                  # ...,
