@@ -213,7 +213,6 @@ def home_real(request):
         fullname              = user_profile.full_name,
         email                 = user_profile.email,
         enter_sends           = user_profile.enter_sends,
-        user_id               = user_profile.id,
 
         # Stream message notification settings:
         stream_desktop_notifications_enabled = user_profile.enable_stream_desktop_notifications,
@@ -308,6 +307,7 @@ def home_real(request):
         'unsubscribed',
         'timezone',
         'twenty_four_hour_time',
+        'user_id',
         'zulip_version',
     ]
 
