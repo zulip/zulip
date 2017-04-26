@@ -215,7 +215,6 @@ def home_real(request):
         enter_sends           = user_profile.enter_sends,
         user_id               = user_profile.id,
         is_admin              = user_profile.is_realm_admin,
-        can_create_streams    = user_profile.can_create_streams(),
 
         # Stream message notification settings:
         stream_desktop_notifications_enabled = user_profile.enable_stream_desktop_notifications,
@@ -256,6 +255,7 @@ def home_real(request):
         'avatar_source',
         'avatar_url',
         'avatar_url_medium',
+        'can_create_streams',
         'default_desktop_notifications',
         'default_language',
         'emoji_alt_code',
