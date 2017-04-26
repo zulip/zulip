@@ -135,7 +135,7 @@ function do_hashchange(from_reload) {
             change_hash:    false,  // already set
             trigger: 'hash change',
         };
-        if (from_reload !== undefined && page_params.initial_narrow_pointer !== undefined) {
+        if (from_reload && page_params.initial_narrow_pointer !== undefined) {
             narrow_opts.from_reload = true;
             narrow_opts.first_unread_from_server = true;
         }
