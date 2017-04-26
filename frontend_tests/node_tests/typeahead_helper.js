@@ -8,12 +8,23 @@ add_dependencies({
     stream_data: 'js/stream_data.js',
     people: 'js/people.js',
     typeahead_helper: 'js/typeahead_helper.js',
+    util: 'js/util.js',
 });
 
+var popular = {num_items: function () {
+    return 10;
+}};
+
+var unpopular = {num_items: function () {
+    return 2;
+}};
+
 var test_streams = [
-    {name: 'Dev', pin_to_top: false},
-    {name: 'Denmark', pin_to_top: true},
-    {name: 'dead', pin_to_top: false},
+    {name: 'Dev', pin_to_top: false, subscribers: unpopular},
+    {name: 'Docs', pin_to_top: false, subscribers: popular},
+    {name: 'Derp', pin_to_top: false, subscribers: unpopular},
+    {name: 'Denmark', pin_to_top: true, subscribers: popular},
+    {name: 'dead', pin_to_top: false, subscribers: unpopular},
 ];
 
 stream_data.create_streams([
@@ -27,8 +38,10 @@ global.stream_data.is_active = function (stream_name) {
 
 test_streams = typeahead_helper.sort_streams(test_streams, 'd');
 assert.deepEqual(test_streams[0].name, "Denmark"); // Pinned streams first
-assert.deepEqual(test_streams[1].name, "Dev"); // Active streams next
-assert.deepEqual(test_streams[2].name, "dead"); // Inactive streams last
+assert.deepEqual(test_streams[1].name, "Docs"); // Active streams next
+assert.deepEqual(test_streams[2].name, "Derp"); // Less subscribers
+assert.deepEqual(test_streams[3].name, "Dev"); // Alphabetically last
+assert.deepEqual(test_streams[4].name, "dead"); // Inactive streams last
 
 var matches = [
     {

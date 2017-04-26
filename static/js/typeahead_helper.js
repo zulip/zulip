@@ -223,7 +223,11 @@ exports.compare_by_activity = function (stream_a, stream_b) {
     if (diff !== 0) {
         return diff;
     }
-    return stream_a.subscribers.num_items() < stream_b.subscribers.num_items();
+    diff = stream_b.subscribers.num_items() - stream_a.subscribers.num_items();
+    if (diff !== 0) {
+        return diff;
+    }
+    return util.strcmp(stream_a.name, stream_b.name);
 };
 
 exports.sort_streams = function (matches, query) {
