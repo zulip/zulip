@@ -162,6 +162,9 @@ exports.on_load_success = function (streams_data) {
         if (e.which === 13) {
             e.preventDefault();
             e.stopPropagation();
+            var default_stream_input = $(".create_default_stream");
+            make_stream_default(default_stream_input.val());
+            default_stream_input[0].value = "";
         }
     });
 
