@@ -170,10 +170,16 @@ def get_force_push_body(payload, change):
         change['new']['target']['hash']
     )
 
+def get_commit_author_name(commit):
+    # type: (Dict[str, Any]) -> Text
+    if commit.get('author').get('user'):
+        return commit.get('author').get('user').get('username')
+    return commit.get('author').get('raw').split()[0]
+
 def get_normal_push_body(payload, change):
     # type: (Dict[str, Any], Dict[str, Any]) -> Text
     commits_data = [{
-        'name': commit.get('author').get('raw').split()[0],
+        'name': get_commit_author_name(commit),
         'sha': commit.get('hash'),
         'url': commit.get('links').get('html').get('href'),
         'message': commit.get('message'),

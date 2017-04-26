@@ -300,7 +300,7 @@ def _transform_commits_list_to_common_format(commits):
     new_commits_list = []
     for commit in commits:
         new_commits_list.append({
-            'name': commit.get('committer').get('username'),
+            'name': commit.get('author').get('username'),
             'sha': commit.get('id'),
             'url': commit.get('url'),
             'message': commit.get('message'),

@@ -57,7 +57,7 @@ def api_beanstalk_webhook(request, user_profile,
             return json_success()
         # To get a linkable url,
         for commit in payload['commits']:
-            commit['committer'] = {'username': commit['author']['name']}
+            commit['author'] = {'username': commit['author']['name']}
 
         subject, content = build_message_from_gitlog(user_profile, payload['repository']['name'],
                                                      payload['ref'], payload['commits'],
