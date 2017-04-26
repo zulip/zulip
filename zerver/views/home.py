@@ -207,7 +207,6 @@ def home_real(request):
         # user_profile data.
         # TODO: Move all of these data to register_ret and pull from there
         fullname              = user_profile.full_name,
-        email                 = user_profile.email,
 
         # Realm foreign key data from register_ret.
         # TODO: Rename these to match register_ret values.
@@ -242,6 +241,7 @@ def home_real(request):
         'can_create_streams',
         'default_desktop_notifications',
         'default_language',
+        'email',
         'emoji_alt_code',
         'emojiset',
         'emojiset_choices',
