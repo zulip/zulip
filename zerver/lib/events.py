@@ -137,6 +137,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         state['avatar_url_medium'] = avatar_url(user_profile, medium=True)
         state['avatar_url'] = avatar_url(user_profile)
         state['default_desktop_notifications'] = user_profile.default_desktop_notifications
+        state['autoscroll_forever'] = user_profile.autoscroll_forever
 
     if want('realm_bot'):
         state['realm_bots'] = get_owned_bot_dicts(user_profile)

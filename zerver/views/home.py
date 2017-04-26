@@ -216,7 +216,6 @@ def home_real(request):
         user_id               = user_profile.id,
         is_admin              = user_profile.is_realm_admin,
         can_create_streams    = user_profile.can_create_streams(),
-        autoscroll_forever = user_profile.autoscroll_forever,
 
         # Stream message notification settings:
         stream_desktop_notifications_enabled = user_profile.enable_stream_desktop_notifications,
@@ -253,6 +252,7 @@ def home_real(request):
     page_params_core_fields = [
         'alert_words',
         'attachments',
+        'autoscroll_forever',
         'avatar_source',
         'avatar_url',
         'avatar_url_medium',
