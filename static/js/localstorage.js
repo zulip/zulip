@@ -61,6 +61,18 @@ var ls = {
         localStorage.removeItem(key);
     },
 
+    // Remove keys which match a regex.
+    removeDataRegex: function (version, regex) {
+        var key_regex = new RegExp(this.formGetter(version, regex));
+        var keys = Object.keys(localStorage).filter(function (key) {
+            return key_regex.test(key);
+        });
+
+        keys.forEach(function (key) {
+            localStorage.removeItem(key);
+        });
+    },
+
     // migrate from an older version of a data src to a newer one with a
     // specified callback function.
     migrate: function (name, v1, v2, callback) {
@@ -123,6 +135,11 @@ var exports = function () {
         // remove a key with a given version.
         remove: function (name) {
             ls.removeData(_data.VERSION, name);
+        },
+
+        // Remove keys which match the pattern given by name.
+        removeRegex: function (name) {
+            ls.removeDataRegex(_data.VERSION, name);
         },
 
         migrate: function (name, v1, v2, callback) {
