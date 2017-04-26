@@ -243,7 +243,13 @@ exports.toggle_actions_popover = function (element, id) {
         var editability = message_edit.get_editability(message);
         var use_edit_icon;
         var editability_menu_item;
-        if (editability === message_edit.editability_types.FULL) {
+        var cancel_editability_icon = false;
+        var row = current_msg_list.get_row(id);
+        if ($(row[0]).find('.message_content').css('display') === 'none') {
+            use_edit_icon = false;
+            cancel_editability_icon = true;
+            editability_menu_item = i18n.t("Back to Message");
+        } else if (editability === message_edit.editability_types.FULL) {
             use_edit_icon = true;
             editability_menu_item = i18n.t("Edit");
         } else if (editability === message_edit.editability_types.TOPIC_ONLY) {
@@ -270,6 +276,7 @@ exports.toggle_actions_popover = function (element, id) {
             message: message,
             use_edit_icon: use_edit_icon,
             editability_menu_item: editability_menu_item,
+            cancel_editability_icon: cancel_editability_icon,
             can_mute_topic: can_mute_topic,
             can_unmute_topic: can_unmute_topic,
             should_display_add_reaction_option: message.sent_by_me,
@@ -723,8 +730,13 @@ exports.register_click_handlers = function () {
     $('body').on('click', '.popover_edit_message', function (e) {
         var msgid = $(e.currentTarget).data('message-id');
         var row = current_msg_list.get_row(msgid);
-        popovers.hide_actions_popover();
-        message_edit.start(row);
+        // To close message source/edit if it is open, else open it.
+        if ($(row[0]).find('.message_content').css('display') === 'none') {
+            message_edit.end(row);
+        } else {
+            message_edit.start(row);
+            popovers.hide_actions_popover();
+        }
         e.stopPropagation();
         e.preventDefault();
     });
