@@ -53,8 +53,10 @@ exports.update_person = function update(person) {
         person_obj.avatar_url = url;
 
         if (people.is_my_user_id(person.user_id)) {
-          page_params.avatar_url = url;
-          $("#user-settings-avatar").attr("src", url);
+            page_params.avatar_source = person.avatar_source;
+            page_params.avatar_url = url;
+            page_params.avatar_url_medium = person.avatar_url_medium;
+            $("#user-settings-avatar").attr("src", url);
         }
 
         message_live_update.update_avatar(person_obj.user_id, person.avatar_url);
