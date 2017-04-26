@@ -159,6 +159,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         state['left_side_userlist'] = user_profile.left_side_userlist
         state['emoji_alt_code'] = user_profile.emoji_alt_code
         state['emojiset'] = user_profile.emojiset
+        state['emojiset_choices'] = user_profile.emojiset_choices()
         state['timezone'] = user_profile.timezone
         state['default_language'] = user_profile.default_language
 
