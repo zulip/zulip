@@ -182,6 +182,24 @@ exports.sort_for_at_mentioning = function (objs, current_stream) {
     return subs_sorted.concat(non_subs_sorted);
 };
 
+exports.compare_by_popularity = function (lang_a, lang_b) {
+    var diff = pygments_data.langs[lang_b] - pygments_data.langs[lang_a];
+    if (diff !== 0) {
+        return diff;
+    }
+    return util.strcmp(lang_a, lang_b);
+};
+
+exports.sort_languages = function (matches, query) {
+    var results = prefix_sort(query, matches, function (x) { return x; });
+
+    // Languages that start with the query
+    results.matches = results.matches.sort(exports.compare_by_popularity);
+    // Languages that have the query somewhere in their name
+    results.rest = results.rest.sort(exports.compare_by_popularity);
+    return results.matches.concat(results.rest);
+};
+
 exports.sort_recipients = function (matches, query, current_stream) {
     var name_results =  prefix_sort(query, matches, function (x) { return x.full_name; });
     var email_results = prefix_sort(query, name_results.rest, function (x) { return x.email; });

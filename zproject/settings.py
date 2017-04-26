@@ -827,6 +827,7 @@ JS_SPECS = {
             'node_modules/handlebars/dist/handlebars.runtime.js',
             'third/marked/lib/marked.js',
             'generated/emoji/emoji_codes.js',
+            'generated/pygments_data.js',
             'templates/compiled.js',
             'js/feature_flags.js',
             'js/loading.js',

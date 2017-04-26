@@ -45,6 +45,10 @@ subprocess.check_call(['./tools/setup/emoji/download-emoji-data'],
 subprocess.check_call(['./tools/setup/emoji/build_emoji'],
                       stdout=fp, stderr=fp)
 
+# Build pygment data
+subprocess.check_call(['./tools/setup/build_pygments_data.py'],
+                      stdout=fp, stderr=fp)
+
 # Compile Handlebars templates and minify JavaScript.
 subprocess.check_call(['./tools/minify-js'] +
                       (['--prev-deploy', prev_deploy] if prev_deploy else []),

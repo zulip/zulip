@@ -18,6 +18,7 @@ coverage/
 /zproject/dev-secrets.conf
 static/js/bundle.js
 static/generated/emoji
+static/generated/pygments_data.js
 static/generated/github-contributors.json
 static/locale/language_options.json
 static/third/emoji-data

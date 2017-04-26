@@ -43,6 +43,16 @@ assert.deepEqual(test_streams[2].name, "Derp"); // Less subscribers
 assert.deepEqual(test_streams[3].name, "Dev"); // Alphabetically last
 assert.deepEqual(test_streams[4].name, "dead"); // Inactive streams last
 
+set_global('pygments_data', {langs:
+    {python: 40, javscript: 50, php: 38, pascal: 29, perl: 22, css: 0},
+});
+
+var test_langs = ["pascal", "perl", "php", "python", "javascript"];
+test_langs = typeahead_helper.sort_languages(test_langs, "p");
+
+// Sort languages by matching first letter, and then by popularity
+assert.deepEqual(test_langs, ["python", "php", "pascal", "perl", "javascript"]);
+
 var matches = [
     {
         email: "a_bot@zulip.com",
