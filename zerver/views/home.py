@@ -212,7 +212,6 @@ def home_real(request):
         # TODO: Move all of these data to register_ret and pull from there
         fullname              = user_profile.full_name,
         email                 = user_profile.email,
-        enter_sends           = user_profile.enter_sends,
 
         # Stream message notification settings:
         stream_desktop_notifications_enabled = user_profile.enable_stream_desktop_notifications,
@@ -259,6 +258,7 @@ def home_real(request):
         'emoji_alt_code',
         'emojiset',
         'emojiset_choices',
+        'enter_sends',
         'hotspots',
         'is_admin',
         'last_event_id',
