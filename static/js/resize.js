@@ -166,21 +166,22 @@ function left_userlist_get_new_heights() {
 }
 
 exports.watch_manual_resize = function (element) {
-    (function on_box_resize(cb) {
+    return (function on_box_resize(cb) {
         var meta = {
             box: document.querySelector(element),
             height: null,
             mousedown: false,
         };
 
-        meta.box.addEventListener("mousedown", function () {
+        var box_handler = function () {
             meta.mousedown = true;
             meta.height = meta.box.clientHeight;
-        });
+        };
+        meta.box.addEventListener("mousedown", box_handler);
 
         // If the user resizes the textarea manually, we use the
         // callback to stop autosize from adjusting the height.
-        document.body.addEventListener("mouseup", function () {
+        var body_handler = function () {
             if (meta.mousedown === true) {
                 meta.mousedown = false;
                 if (meta.height !== meta.box.clientHeight) {
@@ -188,7 +189,10 @@ exports.watch_manual_resize = function (element) {
                     cb.call(meta.box, meta.height);
                 }
             }
-        });
+        };
+        document.body.addEventListener("mouseup", body_handler);
+
+        return [box_handler, body_handler];
     }(function (height) {
         // This callback disables autosize on the textarea.  It
         // will be re-enabled when this component is next opened.
