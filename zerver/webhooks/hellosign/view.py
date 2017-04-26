@@ -8,13 +8,12 @@ from zerver.models import Client, UserProfile
 
 from django.http import HttpRequest, HttpResponse
 from six import text_type
-from six.moves import range
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List
 
 def format_body(signatories, model_payload):
     # type: (List[Dict[str, Any]], Dict[str, Any]) -> str
-    def append_separator(i, len_sig):
-        # type: (int, int) -> None
+    def append_separator(i):
+        # type: (int) -> None
         if i + 1 == len(signatories):
             result.append('.')
         elif i + 2 == len(signatories):
@@ -31,9 +30,8 @@ def format_body(signatories, model_payload):
             status = model_payload['status_{}'.format(i)]
             result.append(" was just {} by {}".format(status, name))
 
-        append_separator(i, len(signatories))
-    result = ''.join(result)
-    return result
+        append_separator(i)
+    return ''.join(result)
 
 def ready_payload(signatories, payload):
     # type: (List[Dict[str, Any]], Dict[str, Dict[str, Any]]) -> Dict[str, Any]
@@ -57,7 +55,7 @@ def api_hellosign_webhook(request, user_profile, client,
         return json_error(_("Missing key {} in JSON").format(str(e)))
 
     body = format_body(payload['signature_request']['signatures'], model_payload)
-    topic = model_payload['contract_title']
+    topic = topic or model_payload['contract_title']
     check_send_message(user_profile, client, 'stream', [stream],
                        topic, body)
     return json_success()
