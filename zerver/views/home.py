@@ -220,7 +220,6 @@ def home_real(request):
         default_desktop_notifications = user_profile.default_desktop_notifications,
         avatar_url            = avatar_url(user_profile),
         avatar_url_medium     = avatar_url(user_profile, medium=True),
-        avatar_source         = user_profile.avatar_source,
 
         # Stream message notification settings:
         stream_desktop_notifications_enabled = user_profile.enable_stream_desktop_notifications,
@@ -257,6 +256,7 @@ def home_real(request):
     page_params_core_fields = [
         'alert_words',
         'attachments',
+        'avatar_source',
         'default_language',
         'emoji_alt_code',
         'emojiset',

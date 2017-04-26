@@ -133,6 +133,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         state['emojiset_choices'] = user_profile.emojiset_choices()
         state['emojiset'] = user_profile.emojiset
         state['timezone'] = user_profile.timezone
+        state['avatar_source'] = user_profile.avatar_source
 
     if want('realm_bot'):
         state['realm_bots'] = get_owned_bot_dicts(user_profile)
