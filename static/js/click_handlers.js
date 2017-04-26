@@ -22,8 +22,17 @@ $(function () {
             end: function (e) {
                 var end = { x: e.offsetX, y: e.offsetY };
 
-                // get the linear difference between two coordinates on the screen.
-                var dist = Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2));
+                var dist;
+                if (start) {
+                    // get the linear difference between two coordinates on the screen.
+                    dist = Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2));
+                } else {
+                    // this usually happens if someone started dragging from outside of
+                    // a message and finishes their drag inside the message. The intent
+                    // in that case is clearly to select an area, not click a message;
+                    // setting dist to Infinity here will ensure that.
+                    dist = Infinity;
+                }
 
                 this.val = dist;
                 this.time = new Date().getTime() - time;
