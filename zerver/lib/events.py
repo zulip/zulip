@@ -133,6 +133,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         state['avatar_url_medium'] = avatar_url(user_profile, medium=True)
         state['avatar_url'] = avatar_url(user_profile)
         state['can_create_streams'] = user_profile.can_create_streams()
+        state['is_admin'] = user_profile.is_realm_admin
 
     if want('realm_bot'):
         state['realm_bots'] = get_owned_bot_dicts(user_profile)
@@ -233,6 +234,10 @@ def apply_event(state, event, user_profile, include_subscribers):
                 # later; they're only used in the above lines
                 del person['avatar_source']
                 del person['avatar_url_medium']
+
+            for field in ['is_admin']:
+                if person['user_id'] == user_profile.id and field in person and field in state:
+                    state[field] = person[field]
 
             for p in state['realm_users']:
                 if our_person(p):
