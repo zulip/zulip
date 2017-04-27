@@ -307,6 +307,18 @@
       "bugdown_matches_marked": true
     },
     {
+      "name": "unicode_emoji_without_space",
+      "input": "Extra\ud83d\udc7dTerrestrial",
+      "expected_output":"<p>Extra<img alt=\"\ud83d\udc7d\" class=\"emoji\" src=\"\/static\/third\/gemoji\/images\/emoji\/unicode\/1f47d.png\" title=\"\ud83d\udc7d\">Terrestrial<\/p>",
+      "bugdown_matches_marked": true
+    },
+    {
+      "name": "unicode_emojis_new_line",
+      "input": "\ud83d\udc7d\n\ud83d\udc7d",
+      "expected_output":"<p><img alt=\"\ud83d\udc7d\" class=\"emoji\" src=\"\/static\/third\/gemoji\/images\/emoji\/unicode\/1f47d.png\" title=\"\ud83d\udc7d\"><br>\n<img alt=\"\ud83d\udc7d\" class=\"emoji\" src=\"\/static\/third\/gemoji\/images\/emoji\/unicode\/1f47d.png\" title=\"\ud83d\udc7d\"><\/p>",
+      "bugdown_matches_marked": true
+    },
+    {
       "name": "emoji_alongside_punctuation",
       "input": ":smile:, :smile:; :smile:",
       "expected_output": "<p><img alt=\":smile:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/unicode/1f604.png\" title=\":smile:\">, <img alt=\":smile:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/unicode/1f604.png\" title=\":smile:\">; <img alt=\":smile:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/unicode/1f604.png\" title=\":smile:\"></p>",
