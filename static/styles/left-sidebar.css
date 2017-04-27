@@ -160,6 +160,10 @@ li.hidden-filter {
     font-size: 14px;
 }
 
+#global_filters .global-filter a {
+    display: block;
+}
+
 #global_filters .global-filter i.icon-vector-home {
     position: relative;
     top: 1px;
