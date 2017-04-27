@@ -40,7 +40,10 @@ target_fully_covered = {path for target in [
     'zerver/lib/users.py',
     'zerver/lib/webhooks/*.py',
     'zerver/logging_handlers.py',
+    # As a project, we require 100% test coverage in the views files.
     'zerver/views/*.py',
+    # Test files should have 100% coverage; test code that isn't run
+    # is likely a bug in the test.
     'zerver/tests/*.py',
     # Once we have a nice negative tests system, we can add these:
     # 'zerver/webhooks/*/*.py',
@@ -85,9 +88,6 @@ not_yet_fully_covered = {
     'zerver/lib/push_notifications.py',
     'zerver/lib/upload.py',
     'zerver/models.py',
-    # Test files should have full coverage; it's a bug in the test if
-    # they don't!  There are open issues for all of these.
-    'zerver/tests/test_tornado.py',
 }
 
 enforce_fully_covered = sorted(target_fully_covered - not_yet_fully_covered)

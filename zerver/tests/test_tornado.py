@@ -40,7 +40,6 @@ class WebSocketBaseTestCase(AsyncHTTPTestCase, ZulipTestCase):
 
     def setUp(self):
         # type: () -> None
-        #
         settings.RUNNING_INSIDE_TORNADO = True
         super(WebSocketBaseTestCase, self).setUp()
 
@@ -61,15 +60,14 @@ class WebSocketBaseTestCase(AsyncHTTPTestCase, ZulipTestCase):
 
     @gen.coroutine
     def close(self, ws):
-        # type: (Any) -> Generator[None, Any, None]
+        # type: (Any) -> None
         """Close a websocket connection and wait for the server side.
 
         If we don't wait here, there are sometimes leak warnings in the
         tests.
         """
         ws.close()
-        yield self.close_future
-
+        self.wait()
 
 class TornadoTestCase(WebSocketBaseTestCase):
     def get_app(self):
@@ -190,6 +188,7 @@ class TornadoTestCase(WebSocketBaseTestCase):
         ws = yield self.ws_connect('/sockjs/366/v8nw22qe/websocket', cookie_header=cookie_header)
         response = yield ws.read_message()
         self.assertEqual(response, 'o')
+        self.close(ws)
 
     @gen_test
     def test_tornado_auth(self):
@@ -223,6 +222,7 @@ class TornadoTestCase(WebSocketBaseTestCase):
                  },
                  "type": "response"}
             ])
+        self.close(ws)
 
     @gen_test
     def test_sending_private_message(self):
@@ -257,6 +257,7 @@ class TornadoTestCase(WebSocketBaseTestCase):
         ack_resp = yield ws.read_message()
         msg_resp = yield ws.read_message()
         self._check_message_sending(request_id, ack_resp, msg_resp, user_profile, queue_events_data)
+        self.close(ws)
 
     @gen_test
     def test_sending_stream_message(self):
@@ -291,3 +292,4 @@ class TornadoTestCase(WebSocketBaseTestCase):
         ack_resp = yield ws.read_message()
         msg_resp = yield ws.read_message()
         self._check_message_sending(request_id, ack_resp, msg_resp, user_profile, queue_events_data)
+        self.close(ws)
