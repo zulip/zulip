@@ -663,8 +663,11 @@ class GoogleOAuthTest(ZulipTestCase):
     def google_oauth2_test(self, token_response, account_response, subdomain=None):
         # type: (ResponseMock, ResponseMock, Optional[str]) -> HttpResponse
         url = "/accounts/login/google/send/"
+        params = {}
         if subdomain is not None:
-            url += "?subdomain=" + subdomain
+            params['subdomain'] = subdomain
+        if len(params) > 0:
+            url += "?%s" % (urllib.parse.urlencode(params))
 
         result = self.client_get(url)
         self.assertEqual(result.status_code, 302)
