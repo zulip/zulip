@@ -534,6 +534,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = 'email'
     MAX_NAME_LENGTH = 100
+    API_KEY_LENGTH = 32
     NAME_INVALID_CHARS = ['*', '`', '>', '"', '@']
 
     # Our custom site-specific fields
@@ -543,7 +544,7 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     pointer = models.IntegerField() # type: int
     last_pointer_updater = models.CharField(max_length=64) # type: Text
     realm = models.ForeignKey(Realm) # type: Realm
-    api_key = models.CharField(max_length=32) # type: Text
+    api_key = models.CharField(max_length=API_KEY_LENGTH) # type: Text
     tos_version = models.CharField(null=True, max_length=10) # type: Text
 
     ### Notifications settings. ###
