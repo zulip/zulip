@@ -410,7 +410,7 @@ class ZulipTestCase(TestCase):
     def fixture_data(self, type, action, file_type='json'):
         # type: (Text, Text, Text) -> Text
         return force_text(open(os.path.join(os.path.dirname(__file__),
-                                            "../fixtures/%s/%s_%s.%s" % (type, type, action, file_type))).read())
+                                            "../webhooks/%s/fixtures/%s_%s.%s" % (type, type, action, file_type))).read())
 
     def make_stream(self, stream_name, realm=None, invite_only=False):
         # type: (Text, Optional[Realm], Optional[bool]) -> Stream
