@@ -36,6 +36,7 @@ set_global('echo', {
 });
 
 // To support popovers object referenced in server_events.js
+add_dependencies({emoji_picker: 'js/emoji_picker.js'});
 add_dependencies({popovers: 'js/popovers.js'});
 
 // page_params is highly coupled to dispatching now

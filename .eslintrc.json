@@ -143,6 +143,7 @@
         "drafts": false,
         "katex": false,
         "Clipboard": false,
+        "emoji_picker": false,
         "hotspots": false
     },
     "rules": {

@@ -159,8 +159,11 @@ function stubbing(func_name_to_stub, test_function) {
 
     set_global('popovers', {
         actions_popped: return_false,
+    });
+    set_global('emoji_picker', {
         reactions_popped: return_false,
     });
+
 
     // All letters should return false if we are composing text.
     hotkey.processing_text = return_true;
@@ -235,7 +238,7 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('S', 'narrow.by_subject');
     assert_mapping('v', 'lightbox.show_from_selected_message');
     assert_mapping('i', 'popovers.open_message_menu');
-    assert_mapping(':', 'popovers.toggle_reactions_popover', true);
+    assert_mapping(':', 'emoji_picker.toggle_reactions_popover', true);
     assert_mapping('G', 'navigate.to_end');
     assert_mapping('M', 'muting_ui.toggle_mute');
 }());

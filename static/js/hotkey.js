@@ -21,7 +21,7 @@ function open_reactions() {
     if (!message.sent_by_me) {
         target = $(current_msg_list.selected_row()).find(".icon-vector-smile")[0];
     }
-    popovers.toggle_reactions_popover(target, current_msg_list.selected_id());
+    emoji_picker.toggle_reactions_popover(target, current_msg_list.selected_id());
     return true;
 }
 
@@ -211,7 +211,7 @@ exports.process_escape_key = function (e) {
 
     // emoji window should trap escape before it is able to close the compose box
     if ($('.emoji_popover').css('display') === 'inline-block') {
-        popovers.hide_emoji_map_popover();
+        emoji_picker.hide_emoji_map_popover();
         return true;
     }
 
@@ -246,8 +246,8 @@ exports.process_escape_key = function (e) {
             return true;
         }
 
-        if (popovers.reactions_popped()) {
-            popovers.hide_reactions_popover();
+        if (emoji_picker.reactions_popped()) {
+            emoji_picker.hide_reactions_popover();
             return true;
         }
 
@@ -282,7 +282,7 @@ exports.process_enter_key = function (e) {
         return true;
     }
 
-    if (popovers.reactions_popped()) {
+    if (emoji_picker.reactions_popped()) {
         reactions.toggle_reaction(current_msg_list.selected_id());
         return true;
     }
@@ -453,7 +453,7 @@ exports.process_hotkey = function (e, hotkey) {
         return false;
     }
 
-    if (popovers.reactions_popped()) {
+    if (emoji_picker.reactions_popped()) {
         return reactions.reaction_navigate(e, event_name);
     }
 
