@@ -29,8 +29,8 @@ from zerver.lib.validator import validate_login_email
 from zerver.models import PreregistrationUser, UserProfile, remote_user_to_email, Realm
 from zerver.views.registration import create_preregistration_user, get_realm_from_request, \
     redirect_and_log_into_subdomain
-from zproject.backends import password_auth_enabled, dev_auth_enabled, google_auth_enabled, \
-    ldap_auth_enabled
+from zproject.backends import password_auth_enabled, dev_auth_enabled, \
+    github_auth_enabled, google_auth_enabled, ldap_auth_enabled
 from version import ZULIP_VERSION
 
 import hashlib
@@ -510,6 +510,7 @@ def api_get_auth_backends(request):
         realm = None
     return json_success({"password": password_auth_enabled(realm),
                          "dev": dev_auth_enabled(realm),
+                         "github": github_auth_enabled(realm),
                          "google": google_auth_enabled(realm),
                          "zulip_version": ZULIP_VERSION,
                          })

@@ -1178,7 +1178,7 @@ class FetchAuthBackends(ZulipTestCase):
         self.assert_json_success(result)
         data = ujson.loads(result.content)
         self.assertEqual(set(data.keys()),
-                         {'msg', 'password', 'google', 'dev', 'result', 'zulip_version'})
+                         {'msg', 'password', 'github', 'google', 'dev', 'result', 'zulip_version'})
         for backend in set(data.keys()) - {'msg', 'result', 'zulip_version'}:
             self.assertTrue(isinstance(data[backend], bool))
 
@@ -1192,6 +1192,7 @@ class FetchAuthBackends(ZulipTestCase):
             self.assertEqual(data, {
                 'msg': '',
                 'password': False,
+                'github': False,
                 'google': True,
                 'dev': True,
                 'result': 'success',
@@ -1207,6 +1208,7 @@ class FetchAuthBackends(ZulipTestCase):
                 self.assertEqual(data, {
                     'msg': '',
                     'password': False,
+                    'github': False,
                     'google': True,
                     'dev': True,
                     'result': 'success',
@@ -1229,6 +1231,7 @@ class FetchAuthBackends(ZulipTestCase):
                 self.assertEqual(data, {
                     'msg': '',
                     'password': False,
+                    'github': False,
                     'google': False,
                     'dev': True,
                     'result': 'success',
@@ -1249,6 +1252,7 @@ class FetchAuthBackends(ZulipTestCase):
                 self.assertEqual(data, {
                     'msg': '',
                     'password': False,
+                    'github': False,
                     'google': False,
                     'dev': True,
                     'result': 'success',
