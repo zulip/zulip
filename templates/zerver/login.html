@@ -71,6 +71,11 @@ autofocus('#id_username');
         {% endif %}
 
         <div class="right-side">
+            {% if no_auth_enabled %}
+            <div class="alert">
+                No authentication backends are enabled on this server yet, so it is impossible to login! Please read the <a href="http://zulip.readthedocs.io/en/latest/prod-install.html#step-3-configure-zulip">help documents</a> on configuring authentication backends.
+            </div>
+            {% else %}
             {% if password_auth_enabled %}
             <form name="login_form" id="login_form" method="post" class="login-form"
                   action="{{ url('django.contrib.auth.views.login') }}?next={{ next }}">
@@ -146,6 +151,7 @@ autofocus('#id_username');
                 <a class="register-link float-right" href="/register/">Register</a>
                 {% endif %}
             </div>
+            {% endif %}
         </div>
         {% endif %}
     </div>

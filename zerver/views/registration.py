@@ -30,7 +30,8 @@ from zerver.decorator import require_post, has_request_variables, \
     JsonableError, get_user_profile_by_email, REQ
 from zerver.lib.response import json_success
 from zerver.lib.utils import get_subdomain
-from zproject.backends import password_auth_enabled
+from zproject.backends import password_auth_enabled, \
+    auth_enabled_helper, AUTH_BACKEND_NAME_MAP
 
 from confirmation.models import Confirmation, RealmCreationKey, check_key_is_valid
 
@@ -350,6 +351,7 @@ def get_realm_from_request(request):
 def accounts_home(request):
     # type: (HttpRequest) -> HttpResponse
     realm = get_realm_from_request(request)
+
     if request.method == 'POST':
         form = HomepageForm(request.POST, realm=realm)
         if form.is_valid():
@@ -364,9 +366,16 @@ def accounts_home(request):
             return redirect_to_email_login_url(email)
     else:
         form = HomepageForm(realm=realm)
+
+    context = {'form': form, 'current_url': request.get_full_path}
+    # If no authentication method is enabled, show error.
+    is_auth_possible = auth_enabled_helper(list(AUTH_BACKEND_NAME_MAP.keys()), realm)
+    if not is_auth_possible:
+        context['no_auth_enabled'] = True
+
     return render(request,
                   'zerver/accounts_home.html',
-                  context={'form': form, 'current_url': request.get_full_path},
+                  context=context,
                   )
 
 def generate_204(request):

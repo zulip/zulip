@@ -56,7 +56,7 @@ from six.moves.http_cookies import SimpleCookie
 import ujson
 from zerver.lib.test_helpers import MockLDAP, unsign_subdomain_cookie
 
-class AuthBackendTest(TestCase):
+class AuthBackendTest(ZulipTestCase):
     email = u"hamlet@zulip.com"
 
     def get_username(self, email_to_username=None):
@@ -201,6 +201,26 @@ class AuthBackendTest(TestCase):
         # Verify if a realm has password auth disabled, correct password is rejected
         with mock.patch('zproject.backends.password_auth_enabled', return_value=False):
             self.assertIsNone(EmailAuthBackend().authenticate(email, password))
+
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipDummyBackend',))
+    def test_no_backend_enabled(self):
+        # type: () -> None
+        result = self.client_get('/login/')
+        self.assert_in_success_response(["No authentication backends are enabled"], result)
+
+        result = self.client_get('/register/')
+        self.assert_in_success_response(["No authentication backends are enabled"], result)
+
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.GoogleMobileOauth2Backend',))
+    def test_any_backend_enabled(self):
+        # type: () -> None
+
+        # testing to avoid false error messages.
+        result = self.client_get('/login/')
+        self.assert_not_in_success_response(["No Authentication Backend is enabled."], result)
+
+        result = self.client_get('/register/')
+        self.assert_not_in_success_response(["No Authentication Backend is enabled."], result)
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.GoogleMobileOauth2Backend',))
     def test_google_backend(self):
