@@ -70,7 +70,7 @@ exports.toggle_reaction = function (message_id, emoji_name) {
         operation = 'remove';
     }
     send_reaction_ajax(message_id, emoji_name, operation);
-    popovers.hide_reactions_popover();
+    emoji_picker.hide_reactions_popover();
 };
 
 var reaction_show_list = []; // local reaction_show_list
