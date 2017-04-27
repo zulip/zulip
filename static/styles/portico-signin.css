@@ -1,0 +1,771 @@
+html {
+    min-height: 500px;
+}
+
+.app-main .bg-image {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 100vw;
+    height: 100vh;
+
+    background-color: #fafafa;
+
+    z-index: -1;
+}
+
+.flex {
+    display: flex;
+    height: calc(100vh - 100px);
+    align-items: center;
+    justify-content: center;
+}
+
+.flex.full-page {
+    min-height: calc(100vh - 170px);
+    height: auto;
+}
+
+.m-10 {
+    margin: 10px;
+}
+
+.login-page-container,
+.register-page-container,
+.find-team-page-container,
+.forgot-password-container,
+#registration {
+    position: relative;
+    padding: 30px;
+    min-width: 0px;
+
+    background-color: #fff;
+    box-shadow: 0px 0px 100px rgba(0,0,0,0.2);
+}
+
+.find-team-page-container #find_my_team i {
+    font-size: 0.8em;
+}
+
+.login-page-container .group {
+    margin: 0px 20px;
+    display: inline-block;
+}
+
+.app-main .login-page-header {
+    font-size: 1.5em;
+    font-weight: 300;
+    margin: 0px;
+    height: 0px;
+}
+
+.login-page-container.dev-login {
+    margin-top: 20px;
+    border: none;
+}
+
+.login-page-container.dev-login .login-form {
+    width: auto;
+}
+
+.new-style .login-page-container .alert {
+    margin: 0;
+    text-align: left;
+    font-size: 0.7em;
+    font-weight: 600;
+}
+
+.app-main .login-page-header {
+    font-size: 1.5em;
+    font-weight: 300;
+    margin-top: 0px;
+    transform: translateX(-15px) translateY(-60px);
+    text-align: left;
+}
+
+.app-main .login-page-container.dev-login .login-page-header {
+    height: auto;
+    margin-top: 20px;
+    transform: none;
+    text-align: center;
+}
+
+.app-main .login-page-container.dev-login h2 {
+    font-size: 1em;
+    font-weight: 500;
+}
+
+.app-main .login-page-container .group {
+    display: inline-block;
+    vertical-align: top;
+
+    margin: 0px 20px;
+}
+
+.app-main.forgot-password-container {
+    font-weight: 400;
+}
+
+.app-main.find-team-page-container {
+    width: 456px;
+    font-weight: 400;
+}
+
+.find-team-page-container h3,
+.forgot-password-container h3 {
+    margin-top: 0px;
+
+    font-weight: 300;
+    font-size: 2em;
+}
+
+.forgot-password-container h3 {
+    margin-bottom: 0px;
+}
+
+.forgot-password-container {
+    width: 503px;
+    margin-top: calc(50vh - 150px);
+}
+
+.forgot-password-container form {
+    margin-bottom: 0px;
+}
+
+.header {
+    padding: 15px 0px 15px 0px;
+}
+
+.header,
+.header .stripes,
+.header .darker {
+    background: #fff;
+
+    color: #444;
+}
+
+.header .top-links a,
+.header .header-main .logo span {
+    color: #444;
+}
+
+.header .header-main .logo .brand-logo circle {
+    fill: #444 !important;
+}
+
+.header .header-main .logo .brand-logo path {
+    fill: #fff !important;
+    stroke: #fff !important;
+}
+
+
+.new-style {
+    -webkit-font-smoothing: antialiased;
+}
+
+.register-form.new-style {
+    text-align: left;
+}
+
+.register-form #errors {
+    font-size: 0.8em;
+    font-weight: 500;
+    margin-bottom: 20px;
+    margin-top: 10px;
+}
+
+.register-form #errors:empty {
+    margin-top: 0px;
+}
+
+.register-account .terms-of-service .input-group {
+    margin: 0px 0px 10px 10px;
+}
+
+.register-account .terms-of-service .submit-button-box button {
+    margin-top: 0px;
+}
+
+.relative {
+    position: relative;
+}
+
+.new-style .input-box {
+    position: relative;
+    display: inline-block;
+    vertical-align: top;
+}
+
+.new-style .form-inline {
+    margin: 0px;
+}
+
+.new-style button {
+    display: inline-block;
+    vertical-align: top;
+    margin-top: 20px;
+}
+
+.new-style button.full-width {
+    width: 100%;
+}
+
+.register-form button {
+    margin-top: 25px;
+}
+
+.new-style .alert {
+    padding: 0;
+    margin-bottom: 0;
+
+    font-weight: 500;
+    font-size: 0.8em;
+    line-height: 1.2;
+    background-color: transparent;
+
+    border: none;
+    color: rgb(190, 88, 88);
+
+}
+
+.new-style .right-side .alert {
+    max-width: 328px;
+}
+
+.new-style .input-box input[type=text],
+.new-style .input-box input[type=email],
+.new-style .input-box input[type=password] {
+    padding: 13px 32px 11px 12px;
+    margin-top: 25px;
+
+    font-family: "Humbug";
+    font-size: 1.2rem;
+
+    width: 280px;
+
+    border: 2px solid #ddd;
+    box-shadow: none;
+    border-radius: 0px;
+
+    transition: border 0.3s ease;
+}
+
+.new-style .input-box label {
+    position: absolute;
+    top: 0px;
+    left: 0%;
+
+    margin-top: 5px;
+
+    transition: all 0.3s ease;
+}
+
+.new-style .input-box.moving-label input[type=text]:invalid + label,
+.new-style .input-box.moving-label input[type=email]:invalid + label,
+.new-style .input-box.moving-label input[type=password]:invalid + label {
+    left: 50%;
+    transform: translateY(35px) translateX(-50%);
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: #aaa;
+
+    pointer-events: none;
+}
+
+.new-style .input-box input[type=text]:focus:invalid,
+.new-style .input-box input[type=email]:focus:invalid,
+.new-style .input-box input[type=password]:focus:invalid {
+    box-shadow: none;
+    color: #444;
+}
+
+.new-style .input-box input[type=text]:focus,
+.new-style .input-box input[type=email]:focus,
+.new-style .input-box input[type=password]:focus {
+    border: 2px solid #888;
+}
+
+.new-style .input-box input[required] ~ .required:after {
+    /* content: "*"; */
+    position: absolute;
+    top: 25px;
+    right: 5px;
+    transform: translateY(8px);
+
+    color: #d66a6a;
+    font-size: 2em;
+    font-weight: 300;
+    transition: all 0.3s ease;
+}
+
+.new-style .input-box.no-validation input[required] ~ .required:after {
+    visibility: hidden;
+}
+
+.new-style .input-box.horizontal button {
+    margin-top: 25px;
+}
+
+.new-style .input-box input[required]:valid ~ .required:after {
+    transform: translateY(0px);
+    opacity: 0;
+}
+
+.new-style .input-box input[required] ~ .valid {
+    position: absolute;
+    top: 42px;
+    right: 15px;
+    width: 15px;
+    transform: translateX(10px);
+    opacity: 0;
+
+    transition: all 0.3s ease;
+}
+
+.new-style .input-box input[required]:valid ~ .valid {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.new-style .input-box label,
+.new-style .input-box input[type=text]:focus + label,
+.new-style .input-box input[type=email]:focus + label,
+.new-style .input-box input[type=password]:focus + label,
+.new-style .input-box input[type=text]:valid + label,
+.new-style .input-box input[type=email]:valid + label,
+.new-style .input-box input[type=password]:valid + label {
+    left: 0px;
+    transform: translateY(-0px) translateX(0px);
+    pointer-events: auto;
+
+    font-size: 1rem;
+    font-weight: 600;
+    color: #444;
+}
+
+.new-style .input-box .text-error {
+    display: block;
+
+    top: 66px;
+    left: -4px;
+    color: #d26666;
+    font-size: 0.7em;
+    font-weight: 600;
+    padding-left: 0px;
+}
+
+.new-style .get-started {
+    height: 0px;
+    margin: 0px;
+
+    font-size: 2.5rem;
+    text-align: center;
+    color: #666;
+
+    transform: translateY(-90px);
+}
+
+.new-style button {
+    display: inline-block;
+    vertical-align: top;
+    padding: 15px 22px 13px 22px;
+
+    font-family: "Humbug";
+
+    font-size: 1.2rem;
+    font-weight: 400;
+    box-sizing: border-box;
+    outline: none;
+    color: #fff;
+    background-color: #313e4e;
+
+    border: none;
+
+    transition: all 0.3s ease;
+}
+
+.new-style button:hover {
+    background-color: #354c69;
+}
+
+.new-style button:active {
+    background-color: #1d2734;
+}
+
+/* -- /accounts/register/ page -- */
+.portico-page .pitch h1 {
+    margin-bottom: 0px;
+}
+
+.portico-page .pitch p {
+    font-weight: 400;
+    color: #aaa;
+}
+
+.register-account .pitch {
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+.login-page-container input[type=submit] {
+    color: #aaa;
+    border: 2px solid #ddd;
+    border-radius: 0px;
+    background: transparent;
+
+    transition: color 0.3s ease, border 0.3s ease;
+}
+
+.login-page-container input[type=submit]:hover {
+    border-color: #888;
+    color: #444;
+}
+
+.login-page-container input[type=submit].btn-admin {
+    border-color: #54b8a7;
+    color: #54b8a7;
+}
+
+.login-page-container input[type=submit].btn-admin:hover {
+    color: #60daaa;
+    border-color: #60daaa;
+}
+
+.split-view .org-header {
+    text-align: left;
+}
+
+.split-view .right-side .form-inline {
+    width: 328px;
+}
+
+
+.split-view .org-header .avatar,
+.register-page-container .org-header .avatar {
+    display: inline-block;
+    vertical-align: top;
+
+    width: 100px;
+    height: 100px;
+    background-color: #444;
+    box-shadow: 0px 0px 5px rgba(0,0,0,0.15);
+}
+
+.split-view .org-header .info-box {
+    display: inline-block;
+    position: relative;
+    margin: 15px 0px 0px 20px;
+    width: calc(100% - 125px);
+
+    /* full width minus the avatar + padding + borders */
+    text-align: left;
+}
+
+.split-view .info-box .organization-name,
+.split-view .info-box .organization-path {
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.split-view .info-box .organization-name {
+    font-size: 2.5em;
+    font-weight: 300;
+    line-height: 1;
+}
+
+.split-view .info-box .organization-path {
+    font-weight: 500;
+    color: #aaa;
+    margin-top: 10px;
+}
+
+.register-page-container .lead,
+.login-page-container .lead,
+.forgot-password-container .lead {
+    margin: 0;
+    text-align: left;
+}
+
+.portico-page .or {
+    width: 328px;
+    display: block;
+    margin: 0 auto;
+    color: #bbb;
+    font-weight: 600;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.portico-page .or::before,
+.portico-page .or::after {
+    content: " ";
+
+    display: inline-block;
+    position: relative;
+    width: calc(149px);
+    top: -3px;
+
+    border-bottom: 2px solid #ddd;
+
+}
+
+.portico-page .or::before {
+    left: -5px;
+}
+
+.portico-page .or::after {
+    left: 5px;
+}
+
+.login-google {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+button.login-google-button,
+button.login-github-button {
+    width: 328px;
+    padding-left: 35px;
+
+    background-size: auto 60%;
+    background-repeat: no-repeat;
+    background-position: 13px 50%;
+    margin-left: 0px;
+    margin-top: 0px;
+
+    color: #fff;
+}
+
+button.login-google-button,
+button.login-github-button {
+    background-color: #fff;
+    box-shadow: 0px 1px 3px rgba(0,0,0,0.3), 0px 0px 5px rgba(0,0,0,0.1);
+    color: #888;
+}
+
+button.login-google-button:hover,
+button.login-github-button:hover {
+    background-color: #fafafa;
+    box-shadow: 1px 2px 5px rgba(0,0,0,0.2);
+}
+
+button.login-google-button:active,
+button.login-github-button:active {
+    background-color: #eee;
+    box-shadow: 0px 1px 1px rgba(0,0,0,0.3);
+}
+
+button.login-google-button {
+    background-image: url(/static/images/landing-page/logos/google-icon.png);
+}
+
+.github-wrapper:before {
+    content: "\f09b";
+    position: absolute;
+
+    font-family: "FontAwesome";
+    font-size: 2rem;
+    color: #333;
+    transform: translateX(15px) translateY(13px);
+}
+
+.login-page-container .right-side .actions {
+    margin: 20px 0px 0px;
+    text-align: left;
+}
+
+.split-view .actions a {
+    color: #54b8a7;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.8em;
+    line-height: 1.5;
+    vertical-align: top;
+
+    transition: color 0.2s ease;
+}
+
+.split-view .actions a:hover {
+    color: #60daaa;
+}
+
+#registration .input-box {
+    margin: 10px;
+}
+
+#registration {
+    width: 700px;
+}
+
+#registration .input-box.full-width {
+    width: calc(100% - 20px);
+}
+
+#registration .help-box {
+    width: calc(100% - 20px);
+    max-width: none;
+    margin: 0px;
+}
+
+#registration .help-box.margin-top {
+    margin-top: 20px;
+}
+
+#registration .external-host {
+    margin: 25px 0px 0px -3px;
+    padding: 11.5px 10px;
+
+    font-weight: 400;
+    font-size: 1.2rem;
+
+    background-color: #ddd;
+}
+
+#registration .center-block .pitch {
+    margin-bottom: 0px;
+}
+
+#registration .input-group label {
+    font-size: 1rem;
+}
+
+#registration .input-group.radio {
+    margin: 0;
+    padding: 0;
+}
+
+#registration .input-group label.inline-block {
+    margin-top: -1px;
+}
+
+.split-view .right-side,
+.split-view .left-side {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.split-view .left-side {
+    width: 500px;
+    border-right: 1px solid #eee;
+}
+
+.split-view .left-side + .right-side {
+    border-left: 1px solid #eee;
+    /* this is to make sure the borders of the left and right side overlap
+       each other. */
+    padding-left: 15px;
+    margin-left: -5px;
+}
+
+.split-view .left-side .description {
+    text-align: left;
+    font-weight: normal;
+
+    margin-top: 20px;
+    margin-right: 10px;
+}
+
+@media (max-width: 950px) {
+    .split-view .left-side {
+        width: 400px;
+    }
+}
+
+@media (max-width: 850px) {
+    .split-view .left-side {
+        width: 350px;
+    }
+}
+
+
+@media (max-width: 795px) {
+    .register-account #registration {
+        padding: 10px;
+        width: calc(350px);
+    }
+
+    .register-page-container,
+    .login-page-container {
+        width: 400px;
+        margin-top: 50px;
+    }
+
+    .split-view .org-header .avatar {
+        width: 50px;
+        height: 50px;
+    }
+
+    .split-view .org-header .info-box {
+        margin-top: 0px;
+    }
+
+    .split-view .org-header .info-box .organization-name {
+        font-size: 2em;
+    }
+
+    .split-view .org-header .info-box .organization-path {
+        margin-top: 0px;
+    }
+
+    .split-view .left-side,
+    .split-view .right-side {
+        display: block;
+        margin: 0 auto !important;
+        max-width: 100%;
+    }
+
+    .split-view .left-side + .right-side {
+        border-left: none;
+        padding: 0;
+        margin: 0 auto;
+    }
+
+    .split-view .left-side {
+        border: none;
+        margin-right: 0px;
+        min-height: 0px;
+        margin-bottom: 20px;
+        width: 324px;
+    }
+
+    .split-view .left-side .description {
+        margin: 20px 0px;
+    }
+
+    .split-view .right-side {
+        width: 324px;
+    }
+
+    .new-style .get-started {
+        transform: translateY(-70px);
+    }
+}
+
+@media (max-width: 500px) {
+    .flex.full-page {
+        margin: 20px 0px;
+    }
+
+    .new-style .get-started {
+        font-size: 1.6em;
+    }
+
+    .app-main.register-page-container,
+    .app-main.login-page-container,
+    .app-main.find-team-page-container,
+    .app-main.forgot-password-container {
+        display: inline-block;
+        padding: 20px;
+        width: calc(100% - 40px);
+    }
+
+    .forgot-password-container form .input-box {
+        text-align: center;
+    }
+
+    .forgot-password-container form button {
+        width: 328px;
+    }
+}

@@ -187,7 +187,7 @@ body {
 
     color: #444;
 
-    border-width: order: 1px solid #CCC;
+    border: 1px solid #ddd;
     border-radius: 4px;
     background-color: #FAFAFA;
 }
@@ -276,6 +276,12 @@ img.screenshot {
 #pw_strength {
     /* Same width as a Bootstrap default text <input> with padding */
     width: 220px;
+}
+
+#registration #pw_strength {
+    width: 325px;
+    height: 8px;
+    margin: -5px 0 0 0;
 }
 
 .def:before {
@@ -568,32 +574,34 @@ a.bottom-signup-button {
     margin-bottom: -54px;
 }
 
+.portico-page {
+    /* height of the white portico navbar */
+    min-height: calc(100% - 59px);
+}
+
 .signup-signature {
     margin-top: 20px;
     padding-bottom: 50px;
 }
 
 .devlogin_subheader {
-    margin-top: -30px;
+    margin-top: 10px;
     margin-bottom: 20px;
     padding-top: 0px;
     text-align: center;
     font-size: 16px;
 }
 
-.login-page-container,
 .terms-page-container,
 .feature-page-container,
 .apps-page-container,
 .integrations-page-container,
-.register-page-container,
 .portico-page-container,
 .api-page-container {
     padding-top: 50px !important;
 }
 
-.portico-page-container,
-.register-page-container {
+.portico-page-container {
     padding-top: 0px !important;
 }
 
@@ -737,7 +745,6 @@ a.bottom-signup-button {
 .authors-page-header,
 .feature-page-header,
 .integrations-page-header,
-.login-page-header,
 .register-page-header {
     font-weight: 300;
     font-size: 40px;
@@ -858,6 +865,10 @@ a.bottom-signup-button {
     width: auto;
 }
 
+.login-page {
+    text-align: center;
+}
+
 .login-page .alert {
     width: 320px;
     margin: auto;
@@ -868,7 +879,9 @@ a.bottom-signup-button {
 
 .login-form {
     margin: auto;
-    width: 300px;
+    /* plus input padding. */
+    width: calc(300px + 28px);
+    margin-bottom: 10px;
 }
 
 .register-form {
@@ -901,11 +914,6 @@ input.new-organization-button {
     margin-bottom: 6px;
 }
 
-.login-form #id_username,
-.login-form #id_password {
-    width: 100%;
-}
-
 .login-form .control-group,
 .register-form .control-group {
     margin-right: 10px;
@@ -927,7 +935,7 @@ input.new-organization-button {
     min-width: 300px;
     margin: auto;
     text-align: center;
-    margin-top: 30px;
+    margin-top: 20px;
 }
 
 .login-google-button,
