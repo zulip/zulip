@@ -68,7 +68,8 @@ html {
     width: auto;
 }
 
-.new-style .login-page-container .alert {
+.new-style .login-page-container .alert,
+.register-page-container .new-style .alert {
     margin: 0;
     text-align: left;
     font-size: 0.7em;

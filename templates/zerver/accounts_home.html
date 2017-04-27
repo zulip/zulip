@@ -32,6 +32,17 @@ $(function () {
             </div>
             {% endif %}
             <div class="right-side">
+                {% if no_auth_enabled %}
+                <div class="alert">
+                    <p>No authentication backends are enabled on this
+                    server yet, so it is impossible to register!</p>
+
+                    <p>See
+                    the <a href="http://zulip.readthedocs.io/en/latest/prod-install.html#step-3-configure-zulip">Zulip
+                    authentication documentation</a> to learn how to
+                    configure authentication backends.</p>
+                </div>
+                {% else %}
                 <form class="form-inline" id="send_confirm" name="email_form"
                     action="{{ current_url() }}" method="post">
                     {{ csrf_input }}
@@ -65,6 +76,8 @@ $(function () {
                     </a>
                 </div>
                 {% endif %}
+                {% endif %}
+
             </div>
         </div>
     </div>
