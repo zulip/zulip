@@ -197,11 +197,10 @@ def send_oauth_request_to_google(request):
 
     google_uri = 'https://accounts.google.com/o/oauth2/auth?'
     cur_time = str(int(time.time()))
-    csrf_state = '{}:{}:{}'.format(
-        cur_time,
-        google_oauth2_csrf(request, cur_time + subdomain),
-        subdomain
-    )
+    csrf_state = '%s:%s' % (cur_time, subdomain)
+
+    # Now compute the CSRF hash with the other parameters as an input
+    csrf_state += ":%s" % (google_oauth2_csrf(request, csrf_state),)
 
     prams = {
         'response_type': 'code',
@@ -230,10 +229,11 @@ def finish_google_oauth2(request):
         logging.warning('Missing Google oauth2 CSRF state')
         return HttpResponse(status=400)
 
-    value, hmac_value, subdomain = csrf_state.split(':')
-    if hmac_value != google_oauth2_csrf(request, value + subdomain):
+    (csrf_data, hmac_value) = csrf_state.rsplit(':', 1)
+    if hmac_value != google_oauth2_csrf(request, csrf_data):
         logging.warning('Google oauth2 CSRF error')
         return HttpResponse(status=400)
+    cur_time, subdomain = csrf_data.split(':')
 
     resp = requests.post(
         'https://www.googleapis.com/oauth2/v3/token',
