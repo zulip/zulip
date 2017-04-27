@@ -12,6 +12,7 @@ from zerver.decorator import authenticated_json_post_view, \
     get_user_profile_by_email, require_realm_admin, to_non_negative_int
 from zerver.lib.actions import bulk_remove_subscriptions, \
     do_change_subscription_property, internal_prep_message, \
+    internal_prep_stream_message, \
     gather_subscriptions, subscribed_to_stream, \
     bulk_add_subscriptions, do_send_messages, get_subscriber_emails, do_rename_stream, \
     do_deactivate_stream, do_change_stream_invite_only, do_add_default_stream, \
@@ -284,10 +285,19 @@ def add_subscriptions_backend(request, user_profile,
             else:
                 stream_msg = "a new stream #**%s**." % created_streams[0].name
             msg = ("%s just created %s" % (user_profile.full_name, stream_msg))
+
+            sender = get_user_profile_by_email(settings.NOTIFICATION_BOT)
+            stream_name = notifications_stream.name
+            topic = 'Streams'
+
             notifications.append(
-                internal_prep_message(user_profile.realm, settings.NOTIFICATION_BOT,
-                                      "stream",
-                                      notifications_stream.name, "Streams", msg))
+                internal_prep_stream_message(
+                    realm=user_profile.realm,
+                    sender=sender,
+                    stream_name=stream_name,
+                    topic=topic,
+                    content=msg))
+
         else:
             msg = ("Hi there!  %s just created a new stream #**%s**."
                    % (user_profile.full_name, created_streams[0].name))

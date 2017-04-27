@@ -962,19 +962,15 @@ def stream_welcome_message(stream):
 def prep_stream_welcome_message(stream):
     # type: (Stream) -> Optional[Dict[str, Any]]
     realm = stream.realm
-    sender_email = settings.WELCOME_BOT
-    recipient_type_name = 'stream'
-    recipients = stream.name
-    subject = _('hello')
-
+    sender = get_user_profile_by_email(settings.WELCOME_BOT)
+    topic = _('hello')
     content = stream_welcome_message(stream)
 
-    message = internal_prep_message(
+    message = internal_prep_stream_message(
         realm=realm,
-        sender_email=sender_email,
-        recipient_type_name=recipient_type_name,
-        recipients=recipients,
-        subject=subject,
+        sender=sender,
+        stream_name=stream.name,
+        topic=topic,
         content=content)
 
     return message
@@ -1313,6 +1309,22 @@ def internal_prep_message(realm, sender_email, recipient_type_name, recipients,
         recipient_type_name=recipient_type_name,
         parsed_recipients=parsed_recipients,
         subject=subject,
+        content=content,
+    )
+
+def internal_prep_stream_message(realm, sender, stream_name, topic, content):
+    # type: (Realm, UserProfile, Text, Text, Text) -> Optional[Dict[str, Any]]
+    """
+    See _internal_prep_message for details of how this works.
+    """
+    parsed_recipients = [stream_name]
+
+    return _internal_prep_message(
+        realm=realm,
+        sender=sender,
+        recipient_type_name='stream',
+        parsed_recipients=parsed_recipients,
+        subject=topic,
         content=content,
     )
 
@@ -2116,13 +2128,20 @@ def do_create_realm(string_id, name, restricted_to_domain=None,
         realm.save(update_fields=['notifications_stream'])
 
         # Include a welcome message in this notifications stream
+        stream_name = notifications_stream.name
+        sender = get_user_profile_by_email(settings.WELCOME_BOT)
+        topic = "welcome"
         content = """Hello, and welcome to Zulip!
 
 This is a message on stream `%s` with the topic `welcome`. We'll use this stream for
-system-generated notifications.""" % (notifications_stream.name,)
-        msg = internal_prep_message(realm, settings.WELCOME_BOT, 'stream',
-                                    notifications_stream.name, "welcome",
-                                    content)
+system-generated notifications.""" % (stream_name,)
+
+        msg = internal_prep_stream_message(
+            realm=realm,
+            sender=sender,
+            stream_name=stream_name,
+            topic=topic,
+            content=content)
         do_send_messages([msg])
 
         # Log the event
