@@ -280,14 +280,17 @@ class ZulipTestCase(TestCase):
 
         return API_KEYS[server_uuid]
 
-    def api_auth(self, email):
+    def api_auth(self, identifier):
         # type: (Text) -> Dict[str, Text]
-        if "@" not in email:
-            api_key = self.get_server_api_key(email)
+        """
+        identifier: Can be an email or a remote server uuid.
+        """
+        if "@" not in identifier:
+            api_key = self.get_server_api_key(identifier)
         else:
-            api_key = self.get_api_key(email)
+            api_key = self.get_api_key(identifier)
 
-        credentials = u"%s:%s" % (email, api_key)
+        credentials = u"%s:%s" % (identifier, api_key)
         return {
             'HTTP_AUTHORIZATION': u'Basic ' + base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
         }
