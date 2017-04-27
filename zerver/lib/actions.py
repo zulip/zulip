@@ -1239,9 +1239,9 @@ def check_message(sender, client, message_type_name, message_to,
     return {'message': message, 'stream': stream, 'local_id': local_id,
             'sender_queue_id': sender_queue_id, 'realm': realm}
 
-def internal_prep_message(realm, sender_email, recipient_type_name, recipients,
-                          subject, content):
-    # type: (Realm, Text, str, Text, Text, Text) -> Optional[Dict[str, Any]]
+def _internal_prep_message(realm, sender, recipient_type_name, parsed_recipients,
+                           subject, content):
+    # type: (Realm, UserProfile, str, List[Text], Text, Text) -> Optional[Dict[str, Any]]
     """
     Create a message object and checks it, but doesn't send it or save it to the database.
     The internal function that calls this can therefore batch send a bunch of created
@@ -1251,10 +1251,9 @@ def internal_prep_message(realm, sender_email, recipient_type_name, recipients,
     if len(content) > MAX_MESSAGE_LENGTH:
         content = content[0:3900] + "\n\n[message was too long and has been truncated]"
 
-    sender = get_user_profile_by_email(sender_email)
     if realm is None:
         raise RuntimeError("None is not a valid realm for internal_prep_message!")
-    parsed_recipients = extract_recipients(recipients)
+
     if recipient_type_name == "stream":
         stream, _ = create_stream_if_needed(realm, parsed_recipients[0])
 
@@ -1262,9 +1261,27 @@ def internal_prep_message(realm, sender_email, recipient_type_name, recipients,
         return check_message(sender, get_client("Internal"), recipient_type_name,
                              parsed_recipients, subject, content, realm=realm)
     except JsonableError as e:
-        logging.error("Error queueing internal message by %s: %s" % (sender_email, str(e)))
+        logging.error("Error queueing internal message by %s: %s" % (sender.email, str(e)))
 
     return None
+
+def internal_prep_message(realm, sender_email, recipient_type_name, recipients,
+                          subject, content):
+    # type: (Realm, Text, str, Text, Text, Text) -> Optional[Dict[str, Any]]
+    """
+    See _internal_prep_message for details of how this works.
+    """
+    sender = get_user_profile_by_email(sender_email)
+    parsed_recipients = extract_recipients(recipients)
+
+    return _internal_prep_message(
+        realm=realm,
+        sender=sender,
+        recipient_type_name=recipient_type_name,
+        parsed_recipients=parsed_recipients,
+        subject=subject,
+        content=content,
+    )
 
 def internal_send_message(realm, sender_email, recipient_type_name, recipients,
                           subject, content):
