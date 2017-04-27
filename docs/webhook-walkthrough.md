@@ -26,7 +26,7 @@ Fixtures enable the testing of webhook integration code without the need to
 actually contact the service being integrated.
 
 Because `Hello World` is a very simple webhook that does one thing, it requires
-only one fixture, `zerver/fixtures/helloworld/helloworld_hello.json`:
+only one fixture, `zerver/webhooks/helloworld/fixtures/helloworld_hello.json`:
 
 ```
 {
@@ -187,7 +187,7 @@ Using `manage.py` from within the Zulip development environment:
 ```
 (zulip-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$
 ./manage.py send_webhook_fixture_message \
-> --fixture=zerver/fixtures/helloworld/helloworld_hello.json \
+> --fixture=zerver/webhooks/helloworld/fixtures/helloworld_hello.json \
 > '--url=http://localhost:9991/api/v1/external/helloworld?api_key=<api_key>'
 ```
 After which you should see something similar to:
@@ -283,7 +283,7 @@ class called something like `test_goodbye_message`:
 ```
 
 As well as a new fixture `helloworld_goodbye.json` in
-`zerver/fixtures/helloworld/`:
+`zerver/webhooks/helloworld/fixtures/`:
 
 ```
 {
@@ -355,7 +355,7 @@ Second, you need to write the actual documentation content in
 <div class="codehilite">
       <pre>(zulip-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$
 ./manage.py send_webhook_fixture_message \
-> --fixture=zerver/fixtures/helloworld/helloworld_hello.json \
+> --fixture=zerver/webhooks/helloworld/fixtures/helloworld_hello.json \
 > '--url=http://localhost:9991/api/v1/external/helloworld?api_key=&lt;api_key&gt;'
       </pre>
 </div>
