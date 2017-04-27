@@ -12,6 +12,8 @@ from zerver.lib.cache import get_stream_cache_key, cache_delete
 from zerver.lib.str_utils import force_text
 from zilencer.models import Deployment
 
+from zerver.lib.addressee import Addressee
+
 from zerver.lib.message import (
     MessageDict,
     message_to_dict,
@@ -2050,13 +2052,10 @@ class CheckMessageTest(ZulipTestCase):
         client = make_client(name="test suite")
         stream_name = u'España y Francia'
         self.make_stream(stream_name)
-        message_type_name = 'stream'
-        message_to = None
-        message_to = [stream_name]
         subject_name = 'issue'
         message_content = 'whatever'
-        ret = check_message(sender, client, message_type_name, message_to,
-                            subject_name, message_content)
+        addressee = Addressee.for_stream(stream_name, subject_name)
+        ret = check_message(sender, client, addressee, message_content)
         self.assertEqual(ret['message'].sender.email, self.example_email("othello"))
 
     def test_bot_pm_feature(self):
@@ -2079,18 +2078,16 @@ class CheckMessageTest(ZulipTestCase):
         sender = bot
         client = make_client(name="test suite")
         stream_name = u'Россия'
-        message_type_name = 'stream'
-        message_to = None
-        message_to = [stream_name]
         subject_name = 'issue'
+        addressee = Addressee.for_stream(stream_name, subject_name)
         message_content = 'whatever'
         old_count = message_stream_count(parent)
 
         # Try sending to stream that doesn't exist sends a reminder to
         # the sender
         with self.assertRaises(JsonableError):
-            check_message(sender, client, message_type_name, message_to,
-                          subject_name, message_content)
+            check_message(sender, client, addressee, message_content)
+
         new_count = message_stream_count(parent)
         self.assertEqual(new_count, old_count + 1)
         self.assertIn("that stream does not yet exist.", most_recent_message(parent).content)
@@ -2098,8 +2095,7 @@ class CheckMessageTest(ZulipTestCase):
         # Try sending to stream that exists with no subscribers soon
         # after; due to rate-limiting, this should send nothing.
         self.make_stream(stream_name)
-        ret = check_message(sender, client, message_type_name, message_to,
-                            subject_name, message_content)
+        ret = check_message(sender, client, addressee, message_content)
         new_count = message_stream_count(parent)
         self.assertEqual(new_count, old_count + 1)
 
@@ -2109,8 +2105,8 @@ class CheckMessageTest(ZulipTestCase):
         assert(sender.last_reminder is not None)
         sender.last_reminder = sender.last_reminder - datetime.timedelta(hours=1)
         sender.save(update_fields=["last_reminder"])
-        ret = check_message(sender, client, message_type_name, message_to,
-                            subject_name, message_content)
+        ret = check_message(sender, client, addressee, message_content)
+
         new_count = message_stream_count(parent)
         self.assertEqual(new_count, old_count + 2)
         self.assertEqual(ret['message'].sender.email, 'othello-bot@zulip.com')
