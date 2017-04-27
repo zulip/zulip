@@ -11,7 +11,7 @@ from zerver.decorator import authenticated_json_post_view, \
     authenticated_json_view, \
     get_user_profile_by_email, require_realm_admin, to_non_negative_int
 from zerver.lib.actions import bulk_remove_subscriptions, \
-    do_change_subscription_property, internal_prep_message, \
+    do_change_subscription_property, internal_prep_private_message, \
     internal_prep_stream_message, \
     gather_subscriptions, subscribed_to_stream, \
     bulk_add_subscriptions, do_send_messages, get_subscriber_emails, do_rename_stream, \
@@ -273,9 +273,14 @@ def add_subscriptions_backend(request, user_profile,
 
             if len([s for s in subscriptions if not private_streams[s]]) > 0:
                 msg += "\nYou can see historical content on a non-invite-only stream by narrowing to it."
-            notifications.append(internal_prep_message(
-                user_profile.realm, settings.NOTIFICATION_BOT,
-                "private", email, "", msg))
+
+            sender = get_user_profile_by_email(settings.NOTIFICATION_BOT)
+            notifications.append(
+                internal_prep_private_message(
+                    realm=user_profile.realm,
+                    sender=sender,
+                    recipient_email=email,
+                    content=msg))
 
     if announce and len(created_streams) > 0:
         notifications_stream = user_profile.realm.notifications_stream  # type: Optional[Stream]
@@ -301,15 +306,22 @@ def add_subscriptions_backend(request, user_profile,
         else:
             msg = ("Hi there!  %s just created a new stream #**%s**."
                    % (user_profile.full_name, created_streams[0].name))
+
+            sender = get_user_profile_by_email(settings.NOTIFICATION_BOT)
             for realm_user_dict in get_active_user_dicts_in_realm(user_profile.realm):
                 # Don't announce to yourself or to people you explicitly added
                 # (who will get the notification above instead).
                 if realm_user_dict['email'] in principals or realm_user_dict['email'] == user_profile.email:
                     continue
-                notifications.append(internal_prep_message(
-                    user_profile.realm, settings.NOTIFICATION_BOT,
-                    "private",
-                    realm_user_dict['email'], "", msg))
+
+                recipient_email = realm_user_dict['email']
+
+                notifications.append(
+                    internal_prep_private_message(
+                        realm=user_profile.realm,
+                        sender=sender,
+                        recipient_email=recipient_email,
+                        content=msg))
 
     if not user_profile.realm.is_zephyr_mirror_realm:
         for stream in created_streams:
