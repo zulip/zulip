@@ -202,7 +202,7 @@ def send_oauth_request_to_google(request):
     # Now compute the CSRF hash with the other parameters as an input
     csrf_state += ":%s" % (google_oauth2_csrf(request, csrf_state),)
 
-    prams = {
+    params = {
         'response_type': 'code',
         'client_id': settings.GOOGLE_OAUTH2_CLIENT_ID,
         'redirect_uri': ''.join((
@@ -213,7 +213,7 @@ def send_oauth_request_to_google(request):
         'scope': 'profile email',
         'state': csrf_state,
     }
-    return redirect(google_uri + urllib.parse.urlencode(prams))
+    return redirect(google_uri + urllib.parse.urlencode(params))
 
 def finish_google_oauth2(request):
     # type: (HttpRequest) -> HttpResponse
