@@ -43,6 +43,8 @@ from zerver.lib.actions import (
     add_new_user_history,
 )
 from zerver.lib.digest import send_digest_email
+from zerver.lib.mobile_auth_otp import xor_hex_strings, ascii_to_hex, \
+    otp_encrypt_api_key, is_valid_otp, hex_to_ascii, otp_decrypt_api_key
 from zerver.lib.notifications import (
     enqueue_welcome_emails, one_click_unsubscribe_link, send_local_email_template_with_delay)
 from zerver.lib.test_helpers import find_pattern_in_email, find_key_by_email, queries_captured, \
@@ -1706,3 +1708,32 @@ class ConfirmationKeyTest(ZulipTestCase):
         result = confirmation_key(request)
         self.assert_json_success(result)
         self.assert_in_response('xyzzy', result)
+
+class MobileAuthOTPTest(ZulipTestCase):
+    def test_xor_hex_strings(self):
+        # type: () -> None
+        self.assertEqual(xor_hex_strings('1237c81ab', '18989fd12'), '0aaf57cb9')
+        with self.assertRaises(AssertionError):
+            xor_hex_strings('1', '31')
+
+    def test_is_valid_otp(self):
+        # type: () -> None
+        self.assertEqual(is_valid_otp('1234'), False)
+        self.assertEqual(is_valid_otp('1234abcd' * 8), True)
+        self.assertEqual(is_valid_otp('1234abcZ' * 8), False)
+
+    def test_ascii_to_hex(self):
+        # type: () -> None
+        self.assertEqual(ascii_to_hex('ZcdR1234'), '5a63645231323334')
+        self.assertEqual(hex_to_ascii('5a63645231323334'), 'ZcdR1234')
+
+    def test_otp_encrypt_api_key(self):
+        # type: () -> None
+        hamlet = get_user_profile_by_email("hamlet@zulip.com")
+        hamlet.api_key = '12ac' * 8
+        otp = '7be38894' * 8
+        result = otp_encrypt_api_key(hamlet, otp)
+        self.assertEqual(result, '4ad1e9f7' * 8)
+
+        decryped = otp_decrypt_api_key(result, otp)
+        self.assertEqual(decryped, hamlet.api_key)
