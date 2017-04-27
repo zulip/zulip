@@ -107,7 +107,7 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
         with self.settings(OPEN_REALM_CREATION=False):
             # Check realm creation page is accessible
             result = self.client_get(generated_link)
-            self.assert_in_success_response([u"Create your Zulip Organization"], result)
+            self.assert_in_success_response([u"Create a new Zulip organization"], result)
 
             # Create Realm with generated link
             self.assertIsNone(get_realm('test'))
