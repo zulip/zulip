@@ -662,14 +662,21 @@ class ResponseMock(object):
 class GoogleOAuthTest(ZulipTestCase):
     def google_oauth2_test(self, token_response, account_response, subdomain=None):
         # type: (ResponseMock, ResponseMock, Optional[str]) -> HttpResponse
-        url = "/accounts/login/google/send/"
+        url = "/accounts/login/google/"
         params = {}
+        headers = {}
         if subdomain is not None:
-            params['subdomain'] = subdomain
+            headers['HTTP_HOST'] = subdomain + ".testserver"
         if len(params) > 0:
             url += "?%s" % (urllib.parse.urlencode(params))
 
-        result = self.client_get(url)
+        result = self.client_get(url, **headers)
+        self.assertEqual(result.status_code, 302)
+        if '/accounts/login/google/send/' not in result.url:
+            return result
+
+        # Now do the /google/send/ request
+        result = self.client_get(result.url)
         self.assertEqual(result.status_code, 302)
         if 'google' not in result.url:
             return result
