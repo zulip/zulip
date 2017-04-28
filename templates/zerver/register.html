@@ -75,6 +75,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             {% endif %}
             {% if form.password.errors %}
             {% for error in form.password.errors %}
+            <br />
             <div class="help-inline text-error">{{ error }}</div>
             {% endfor %}
             {% endif %}
