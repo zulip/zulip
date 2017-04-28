@@ -437,7 +437,7 @@ $(function () {
     // WEBATHENA
 
     $('#right-sidebar, #top_navbar').on('click', '.webathena_login', function (e) {
-        $("#zephyr-mirror-error").hide();
+        $("#zephyr-mirror-error").removeClass("show");
         var principal = ["zephyr", "zephyr"];
         WinChan.open({
             url: "https://webathena.mit.edu/#!request_ticket_v1",
@@ -460,10 +460,10 @@ $(function () {
                 url:      "/accounts/webathena_kerberos_login/",
                 data:     {cred: JSON.stringify(r.session)},
                 success: function () {
-                    $("#zephyr-mirror-error").hide();
+                    $("#zephyr-mirror-error").removeClass("show");
                 },
                 error: function () {
-                    $("#zephyr-mirror-error").show();
+                    $("#zephyr-mirror-error").addClass("show");
                 },
             });
         });

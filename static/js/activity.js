@@ -387,9 +387,9 @@ function focus_ping(want_redraw) {
 
             // Update Zephyr mirror activity warning
             if (data.zephyr_mirror_active === false) {
-                $('#zephyr-mirror-error').show();
+                $('#zephyr-mirror-error').addClass("show");
             } else {
-                $('#zephyr-mirror-error').hide();
+                $('#zephyr-mirror-error').removeClass("show");
             }
 
             exports.new_user_input = false;
