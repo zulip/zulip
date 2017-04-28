@@ -159,37 +159,6 @@ exports.new_stream_clicked = function (stream) {
     window.location.hash = "#streams/new";
 };
 
-// *Synchronously* check if a stream exists.
-// This is deprecated and we hope to remove it.
-exports.check_stream_existence = function (stream_name, autosubscribe) {
-    var result = "error";
-    var request = {stream: stream_name};
-    if (autosubscribe) {
-        request.autosubscribe = true;
-    }
-    channel.post({
-        url: "/json/subscriptions/exists",
-        data: request,
-        async: false,
-        success: function (data) {
-            if (data.subscribed) {
-                result = "subscribed";
-            } else {
-                result = "not-subscribed";
-            }
-        },
-        error: function (xhr) {
-            if (xhr.status === 404) {
-                result = "does-not-exist";
-            } else {
-                result = "error";
-            }
-        },
-    });
-    return result;
-};
-
-
 exports.show_new_stream_modal = function () {
     $("#stream-creation").removeClass("hide");
     $(".right .settings").hide();
