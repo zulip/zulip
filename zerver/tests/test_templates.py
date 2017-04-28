@@ -90,7 +90,7 @@ class TemplateTestCase(ZulipTestCase):
             'confirmation/emailchangestatus_confirmation_email.subject',
             'confirmation/emailchangestatus_confirmation_email.html',
             'confirmation/emailchangestatus_confirmation_email.txt',
-            'confirmation/notify_change_in_email_subject.txt',
+            'confirmation/notify_change_in_email.subject',
             'corporate/mit.html',
             'corporate/zephyr.html',
             'corporate/zephyr-mirror.html',
