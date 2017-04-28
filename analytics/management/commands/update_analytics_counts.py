@@ -7,6 +7,7 @@ from scripts.lib.zulip_tools import ENDC, WARNING
 
 from argparse import ArgumentParser
 from datetime import timedelta
+import time
 
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now as timezone_now
@@ -39,9 +40,10 @@ class Command(BaseCommand):
         parser.add_argument('--stat', '-s',
                             type=str,
                             help="CountStat to process. If omitted, all stats are processed.")
-        parser.add_argument('--quiet', '-q',
-                            type=str,
-                            help="Suppress output to stdout.")
+        parser.add_argument('--verbose',
+                            action='store_true',
+                            help="Print timing information to stdout.",
+                            default=False)
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
@@ -67,12 +69,23 @@ class Command(BaseCommand):
 
         fill_to_time = floor_to_hour(fill_to_time.astimezone(timezone_utc))
 
-        logger.info("Starting updating analytics counts through %s" % (fill_to_time,))
-
         if options['stat'] is not None:
-            process_count_stat(COUNT_STATS[options['stat']], fill_to_time)
+            stats = [COUNT_STATS[options['stat']]]
         else:
-            for stat in COUNT_STATS.values():
-                process_count_stat(stat, fill_to_time)
+            stats = list(COUNT_STATS.values())
 
+        logger.info("Starting updating analytics counts through %s" % (fill_to_time,))
+        if options['verbose']:
+            start = time.time()
+            last = start
+
+        for stat in stats:
+            process_count_stat(stat, fill_to_time)
+            if options['verbose']:
+                print("Updated %s in %.3fs" % (stat.property, time.time() - last))
+                last = time.time()
+
+        if options['verbose']:
+            print("Finished updating analytics counts through %s in %.3fs" %
+                  (fill_to_time, time.time() - start))
         logger.info("Finished updating analytics counts through %s" % (fill_to_time,))
