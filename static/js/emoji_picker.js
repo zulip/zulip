@@ -152,12 +152,14 @@ exports.hide_reactions_popover = function () {
 };
 
 exports.register_click_handlers = function () {
-    $(".emoji_popover").on("click", ".emoji", function (e) {
-        var emoji_choice = $(e.target).attr("title");
+    $(document).on('click', '.reaction-popover-reaction.composition', function (e) {
+        var emoji_text = ':' + this.title + ':';
         var textarea = $("#new_message_content");
-        textarea.caret(emoji_choice);
+        textarea.caret(emoji_text);
         textarea.focus();
         e.stopPropagation();
+
+        emoji_picker.hide_reactions_popover();
     });
 
     $("#compose").on("click", "#emoji_map", function (e) {

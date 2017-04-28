@@ -121,7 +121,7 @@ function maybe_select_emoji(e) {
     }
 }
 
-$(document).on('click', '.reaction-popover-reaction', function () {
+$(document).on('click', '.reaction-popover-reaction.reaction', function () {
     // When an emoji is clicked in the popover,
     // if the user has reacted to this message with this emoji
     // the reaction is removed
