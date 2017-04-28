@@ -195,12 +195,13 @@ class TestProcessCountStat(AnalyticsTestCase):
         self.assertFillStateEquals(stat, current_time)
         self.assertEqual(InstallationCount.objects.filter(property=stat.property).count(), 2)
 
-    def test_off_boundary_fill_to_time(self):
+    def test_bad_fill_to_time(self):
         # type: () -> None
         stat = self.make_dummy_count_stat('test stat')
-        process_count_stat(stat, installation_epoch() + 65*self.MINUTE)
-        self.assertFillStateEquals(stat, installation_epoch() + self.HOUR)
-        self.assertEqual(InstallationCount.objects.filter(property=stat.property).count(), 1)
+        with self.assertRaises(ValueError):
+            process_count_stat(stat, installation_epoch() + 65*self.MINUTE)
+        with self.assertRaises(ValueError):
+            process_count_stat(stat, installation_epoch().replace(tzinfo=None) + self.HOUR)
 
     # This tests the LoggingCountStat branch of the code in do_delete_counts_at_hour.
     # It is important that do_delete_counts_at_hour not delete any of the collected
