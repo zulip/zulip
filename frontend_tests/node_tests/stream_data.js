@@ -300,7 +300,7 @@ var people = global.people;
 
 (function test_admin_options() {
     function make_sub() {
-        return {
+        var sub = {
             subscribed: false,
             color: 'blue',
             name: 'stream_to_admin',
@@ -308,12 +308,14 @@ var people = global.people;
             in_home_view: false,
             invite_only: false,
         };
+        stream_data.add_sub(sub.name, sub);
+        return sub;
     }
 
     // non-admins can't do anything
     global.page_params.is_admin = false;
     var sub = make_sub();
-    stream_data.add_admin_options(sub);
+    stream_data.update_calculated_fields(sub);
     assert(!sub.is_admin);
     assert(!sub.can_make_public);
     assert(!sub.can_make_private);
@@ -326,7 +328,7 @@ var people = global.people;
 
     // admins can make public streams become private
     sub = make_sub();
-    stream_data.add_admin_options(sub);
+    stream_data.update_calculated_fields(sub);
     assert(sub.is_admin);
     assert(!sub.can_make_public);
     assert(sub.can_make_private);
@@ -336,7 +338,7 @@ var people = global.people;
     sub = make_sub();
     sub.invite_only = true;
     sub.subscribed = false;
-    stream_data.add_admin_options(sub);
+    stream_data.update_calculated_fields(sub);
     assert(sub.is_admin);
     assert(!sub.can_make_public);
     assert(!sub.can_make_private);
@@ -344,7 +346,7 @@ var people = global.people;
     sub = make_sub();
     sub.invite_only = true;
     sub.subscribed = true;
-    stream_data.add_admin_options(sub);
+    stream_data.update_calculated_fields(sub);
     assert(sub.is_admin);
     assert(sub.can_make_public);
     assert(!sub.can_make_private);
