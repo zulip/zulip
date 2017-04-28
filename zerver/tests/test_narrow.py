@@ -1410,7 +1410,7 @@ class GetOldMessagesTest(ZulipTestCase):
             narrow=ujson.dumps(narrow),
             anchor=0,
             num_after=10,
-        )) # type: Dict[str, Dict]
+        ))
         self.assertEqual(len(result['messages']), 1)
         messages = result['messages']
 
