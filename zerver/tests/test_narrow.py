@@ -1369,3 +1369,56 @@ class GetOldMessagesTest(ZulipTestCase):
         self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 10,
                                               'narrow': '[["search", "\\"jumping\\" quickly"]]'},
                                              sql)
+
+    @override_settings(USING_PGROONGA=False)
+    def test_get_messages_with_search_using_email(self):
+        # type: () -> None
+        self.login("cordelia@zulip.com")
+
+        messages_to_search = [
+            ('say hello', 'How are you doing, @**Othello, the Moor of Venice**?'),
+            ('lunch plans', 'I am hungry!'),
+        ]
+
+        for topic, content in messages_to_search:
+            self.send_message(
+                sender_name="cordelia@zulip.com",
+                raw_recipients="Verona",
+                message_type=Recipient.STREAM,
+                content=content,
+                subject=topic,
+            )
+
+        self._update_tsvector_index()
+
+        narrow = [
+            dict(operator='sender', operand='cordelia@zulip.com'),
+            dict(operator='search', operand='othello@zulip.com'),
+        ]
+        result = self.get_and_check_messages(dict(
+            narrow=ujson.dumps(narrow),
+            anchor=0,
+            num_after=10,
+        )) # type: Dict[str, Dict]
+        self.assertEqual(len(result['messages']), 0)
+
+        narrow = [
+            dict(operator='sender', operand='cordelia@zulip.com'),
+            dict(operator='search', operand='othello'),
+        ]
+        result = self.get_and_check_messages(dict(
+            narrow=ujson.dumps(narrow),
+            anchor=0,
+            num_after=10,
+        )) # type: Dict[str, Dict]
+        self.assertEqual(len(result['messages']), 1)
+        messages = result['messages']
+
+        meeting_message = [m for m in messages if m['subject'] == 'say hello'][0]
+        self.assertEqual(
+            meeting_message['match_subject'],
+            'say hello')
+        self.assertEqual(
+            meeting_message['match_content'],
+            '<p>How are you doing, <span class="user-mention" data-user-email="othello@zulip.com" data-user-id="6">' +
+            '@<span class="highlight">Othello</span>, the Moor of Venice</span>?</p>')
