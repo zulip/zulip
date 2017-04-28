@@ -786,10 +786,6 @@ function populate_number_of_users(data) {
         document.getElementById('users_hover_humans').style.display = 'inline';
         document.getElementById('users_hover_humans_value').innerText = data.points[0].y;
     });
-
-    var value_today = data.realm.human[data.realm.human.length - 1];
-    document.getElementById('number_of_users_today').innerText =
-        value_today.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
 $.get({

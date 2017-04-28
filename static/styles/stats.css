@@ -269,28 +269,6 @@ svg {
     display: none;
 }
 
-#users_total {
-    position: relative;
-    top: -65px;
-    height: 0;
-    width: 400px;
-    z-index: 1;
-    font-size: 13px;
-    margin-left: 320px;
-}
-
-#number_of_users {
-    font-weight: 400;
-    margin-left: 20px;
-}
-
-#number_of_users_today {
-    top: -65px;
-    font-size: 13px;
-    text-align: left;
-    margin: 0px 0px 8px 0px;
-}
-
 .last-update {
     display: none;
     color: #aaa;
