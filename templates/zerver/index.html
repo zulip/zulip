@@ -77,13 +77,13 @@ var page_params = {{ page_params }};
 <div class="alert-box">
     <div class="alert alert_sidebar alert-error home-error-bar" id="connection-error">
         <div class="exit"></div>
-        {% trans %}<strong class="message">Unable to connect to Zulip.</strong>  Updates may be delayed.{% endtrans %}
-        <div class="faded">{{ _('Retrying soon...') }} <a class="restart_get_events_button">{{ _('Try now.') }}</a></div>
+        {% trans %}<strong class="message">Unable to connect to
+        Zulip.</strong>  Updates may be delayed.{% endtrans %} {{ _('Retrying soon...') }} <a class="restart_get_events_button">{{ _('Try now.') }}</a>
     </div>
     <div class="alert alert_sidebar alert-error home-error-bar" id="get_old_messages_error">
         <div class="exit"></div>
-        {% trans %}<strong class="message">Unable to connect to Zulip.</strong>  Could not fetch messages.{% endtrans %}
-        <div class="faded">{{ _('Retrying soon...') }}</div>
+        {% trans %}<strong class="message">Unable to connect to
+        Zulip.</strong>  Could not fetch messages.{% endtrans %} {{ _('Retrying soon...') }}
     </div>
     <div class="alert alert_sidebar alert-error home-error-bar" id="zephyr-mirror-error">
         <div class="exit"></div>
