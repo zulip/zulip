@@ -132,7 +132,6 @@ li.hidden-filter {
     display: inline-block;
     width: 18px;
     text-align: center;
-    margin-right: 5px;
 }
 
 .stream-pin-icon {
@@ -147,11 +146,11 @@ li.hidden-filter {
 }
 
 .left-sidebar li a {
-    color: #555;
+    color: inherit;
 }
 
 .left-sidebar li {
-    font-size: 1.05em;
+    font-size: 0.95rem;
     padding-top: 2px;
     padding-bottom: 2px;
 }
@@ -359,7 +358,6 @@ ul.expanded_private_messages {
     font-weight: 400;
     margin-left: 0px;
     padding-bottom: 2px;
-    margin-top: 3px;
 }
 
 li.show-more-topics,
@@ -371,13 +369,13 @@ li.topic-list-item {
 li.show-more-private-messages,
 li.expanded_private_message {
     position: relative;
-    padding-left: 24px;
+    padding-left: 21px;
     padding-bottom: 1px;
     padding-top: 2px;
 }
 
 li.expanded_private_message a {
-    margin-top: 3px;
+    margin: 2px 0px 1px 0px;
 }
 
 .show-all-streams a {
