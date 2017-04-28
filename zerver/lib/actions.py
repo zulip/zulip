@@ -3066,8 +3066,8 @@ def do_send_confirmation_email(invitee, referrer, body):
                'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS}
 
     if referrer.realm.is_zephyr_mirror_realm:
-        subject_template_path = 'confirmation/mituser_invite_email_subject.txt'
-        body_template_path = 'confirmation/mituser_invite_email_body.txt'
+        subject_template_path = 'confirmation/mituser_invite_email.subject'
+        body_template_path = 'confirmation/mituser_invite_email.txt'
         html_body_template_path = None
 
     Confirmation.objects.send_confirmation(

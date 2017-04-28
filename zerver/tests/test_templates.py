@@ -85,8 +85,8 @@ class TemplateTestCase(ZulipTestCase):
         unusual = [
             'confirmation/mituser_confirmation_email.txt',
             'confirmation/mituser_confirmation_email.subject',
-            'confirmation/mituser_invite_email_body.txt',
-            'confirmation/mituser_invite_email_subject.txt',
+            'confirmation/mituser_invite_email.txt',
+            'confirmation/mituser_invite_email.subject',
             'confirmation/emailchangestatus_confirmation_email.subject',
             'confirmation/emailchangestatus_confirmation_email.html',
             'confirmation/emailchangestatus_confirmation_email.txt',
