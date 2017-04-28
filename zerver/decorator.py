@@ -14,7 +14,8 @@ from django.utils.timezone import now as timezone_now
 from django.conf import settings
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
-from zerver.lib.utils import statsd, get_subdomain, check_subdomain
+from zerver.lib.utils import statsd, get_subdomain, check_subdomain, \
+    is_remote_server
 from zerver.exceptions import RateLimited
 from zerver.lib.rate_limiter import incr_ratelimit, is_ratelimited, \
     api_calls_left
@@ -167,7 +168,7 @@ def validate_api_key(request, role, api_key, is_webhook=False):
     # Remove whitespace to protect users from trivial errors.
     role, api_key = role.strip(), api_key.strip()
 
-    if "@" in role:
+    if not is_remote_server(role):
         try:
             profile = get_user_profile_by_email(role) # type: Union[UserProfile, RemoteZulipServer]
         except UserProfile.DoesNotExist:
