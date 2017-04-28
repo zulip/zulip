@@ -98,6 +98,21 @@ exports.update_subscribers_count = function (sub) {
     sub.subscriber_count = count;
 };
 
+exports.render_stream_description = function (sub) {
+    if (sub.description) {
+        sub.rendered_description = marked(sub.description).replace('<p>', '').replace('</p>', '');
+    }
+};
+
+exports.update_calculated_fields = function (sub) {
+    sub.is_admin = page_params.is_admin;
+    sub.can_make_public = page_params.is_admin && sub.invite_only && sub.subscribed;
+    sub.can_make_private = page_params.is_admin && !sub.invite_only;
+    sub.preview_url = narrow.by_stream_uri(sub.name);
+    exports.render_stream_description(sub);
+    exports.update_subscribers_count(sub);
+};
+
 exports.all_subscribed_streams_are_in_home_view = function () {
     return _.every(exports.subscribed_subs(), function (sub) {
         return sub.in_home_view;
@@ -296,14 +311,6 @@ exports.receives_audible_notifications = function (stream_name) {
     return sub.audible_notifications;
 };
 
-exports.add_admin_options = function (sub) {
-    return _.extend(sub, {
-        is_admin: page_params.is_admin,
-        can_make_public: page_params.is_admin && sub.invite_only && sub.subscribed,
-        can_make_private: page_params.is_admin && !sub.invite_only,
-    });
-};
-
 exports.process_message_for_recent_topics = function process_message_for_recent_topics(
                                                 message, remove_message) {
     var current_timestamp = 0;
@@ -346,12 +353,6 @@ exports.process_message_for_recent_topics = function process_message_for_recent_
     recent_topics.set(stream, recents);
 };
 
-exports.render_stream_description = function (sub) {
-    if (sub.description) {
-        sub.rendered_description = marked(sub.description).replace('<p>', '').replace('</p>', '');
-    }
-};
-
 exports.get_streams_for_settings_page = function () {
     // Build up our list of subscribed streams from the data we already have.
     var subscribed_rows = exports.subscribed_subs();
@@ -366,16 +367,11 @@ exports.get_streams_for_settings_page = function () {
     var all_subs = unsubscribed_rows.concat(subscribed_rows);
 
     // Add in admin options and stream counts.
-    var sub_rows = [];
     _.each(all_subs, function (sub) {
-        sub = exports.add_admin_options(sub);
-        sub.preview_url = narrow.by_stream_uri(sub.name);
-        exports.update_subscribers_count(sub);
-        exports.render_stream_description(sub);
-        sub_rows.push(sub);
+        exports.update_calculated_fields(sub);
     });
 
-    return sub_rows;
+    return all_subs;
 };
 
 exports.initialize_from_page_params = function () {

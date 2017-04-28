@@ -158,9 +158,7 @@ function add_email_hint(row, email_address_hint_content) {
 // this request.  These should be appended to the top of the list so
 // they are more visible.
 function add_sub_to_table(sub) {
-    sub = stream_data.add_admin_options(sub);
-    stream_data.update_subscribers_count(sub);
-    stream_data.render_stream_description(sub);
+    stream_data.update_calculated_fields(sub);
     var html = templates.render('subscription', sub);
     var settings_html = templates.render('subscription_settings', sub);
     if (stream_create.get_name() === sub.name) {
