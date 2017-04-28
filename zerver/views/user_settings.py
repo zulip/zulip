@@ -140,8 +140,7 @@ def json_change_settings(request, user_profile,
             return json_error(error or skipped)
 
         do_start_email_change_process(user_profile, new_email)
-        result['account_email'] = _('We have sent you an email on your '
-                                    'new email address for confirmation.')
+        result['account_email'] = _("Check your email for a confirmation link.")
 
     if user_profile.full_name != full_name and full_name.strip() != "":
         if name_changes_disabled(user_profile.realm):

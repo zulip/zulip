@@ -115,7 +115,7 @@ class EmailChangeTestCase(ZulipTestCase):
         self.assertEqual(len(mail.outbox), 0)
         result = self.client_post(url, data)
         self.assertEqual(len(mail.outbox), 1)
-        self.assert_in_success_response(['We have sent you an email'], result)
+        self.assert_in_success_response(['Check your email for a confirmation link.'], result)
         email_message = mail.outbox[0]
         self.assertEqual(
             email_message.subject,
@@ -153,7 +153,7 @@ class EmailChangeTestCase(ZulipTestCase):
         self.assertEqual(len(mail.outbox), 0)
         result = self.client_post(url, data)
         self.assertEqual(len(mail.outbox), 1)
-        self.assert_in_success_response(['We have sent you an email'], result)
+        self.assert_in_success_response(['Check your email for a confirmation link.'], result)
         email_message = mail.outbox[0]
         self.assertEqual(
             email_message.subject,
