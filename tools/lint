@@ -690,8 +690,9 @@ def run():
         external_linter('templates', ['tools/check-templates'], ['handlebars', 'html'])
         external_linter('urls', ['tools/check-urls'])
 
-        if not options.no_gitlint:
-            external_linter('commit_messages', ['tools/commit-message-lint'])
+        # gitlint disabled until we can stabilize it more
+#        if not options.no_gitlint:
+#            external_linter('commit_messages', ['tools/commit-message-lint'])
 
         @lint
         def custom_py():
