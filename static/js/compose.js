@@ -463,10 +463,40 @@ exports.get_invalid_recipient_emails = function () {
     return invalid_recipients;
 };
 
+// *Synchronously* check if a stream exists.
+// This is deprecated and we hope to remove it.
+exports.check_stream_existence = function (stream_name, autosubscribe) {
+    var result = "error";
+    var request = {stream: stream_name};
+    if (autosubscribe) {
+        request.autosubscribe = true;
+    }
+    channel.post({
+        url: "/json/subscriptions/exists",
+        data: request,
+        async: false,
+        success: function (data) {
+            if (data.subscribed) {
+                result = "subscribed";
+            } else {
+                result = "not-subscribed";
+            }
+        },
+        error: function (xhr) {
+            if (xhr.status === 404) {
+                result = "does-not-exist";
+            } else {
+                result = "error";
+            }
+        },
+    });
+    return result;
+};
+
 // Checks if a stream exists. If not, displays an error and returns
 // false.
 function check_stream_for_send(stream_name, autosubscribe) {
-    var result = subs.check_stream_existence(stream_name, autosubscribe);
+    var result = exports.check_stream_existence(stream_name, autosubscribe);
 
     if (result === "error") {
         compose_error(i18n.t("Error checking subscription"), $("#stream"));
