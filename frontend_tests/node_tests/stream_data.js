@@ -298,6 +298,35 @@ var people = global.people;
     ]);
 }());
 
+(function test_is_active() {
+    stream_data.clear_subscriptions();
+
+    var sub = {name: 'pets', subscribed: false, stream_id: 1};
+    stream_data.add_sub('pets', sub);
+
+    assert(!stream_data.is_active(sub));
+
+    stream_data.subscribe_myself(sub);
+    assert(stream_data.is_active(sub));
+
+    stream_data.unsubscribe_myself(sub);
+    assert(!stream_data.is_active(sub));
+
+    sub = {name: 'lunch', subscribed: false, stream_id: 1};
+    stream_data.add_sub('lunch', sub);
+
+    assert(!stream_data.is_active(sub));
+
+    var message = {
+        stream: 'lunch',
+        timestamp: 108,
+        subject: 'topic2',
+    };
+    stream_data.process_message_for_recent_topics(message);
+
+    assert(stream_data.is_active(sub));
+}());
+
 (function test_admin_options() {
     function make_sub() {
         return {

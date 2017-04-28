@@ -19,7 +19,7 @@ exports.clear_subscriptions = function () {
 exports.clear_subscriptions();
 
 exports.is_active = function (sub) {
-    return recent_topics.has(sub.name);
+    return recent_topics.has(sub.name) || sub.newly_subscribed;
 };
 
 exports.rename_sub = function (sub, new_name) {
@@ -33,6 +33,7 @@ exports.subscribe_myself = function (sub) {
     var user_id = people.my_current_user_id();
     exports.add_subscriber(sub.name, user_id);
     sub.subscribed = true;
+    sub.newly_subscribed = true;
 };
 
 exports.unsubscribe_myself = function (sub) {
@@ -40,6 +41,7 @@ exports.unsubscribe_myself = function (sub) {
     var user_id = people.my_current_user_id();
     exports.remove_subscriber(sub.name, user_id);
     sub.subscribed = false;
+    sub.newly_subscribed = false;
 };
 
 exports.add_sub = function (stream_name, sub) {
@@ -258,6 +260,7 @@ exports.create_sub_from_server_data = function (stream_name, attrs) {
         name: stream_name,
         render_subscribers: !page_params.is_zephyr_mirror_realm || attrs.invite_only === true,
         subscribed: true,
+        newly_subscribed: false,
         in_home_view: true,
         invite_only: false,
         desktop_notifications: page_params.stream_desktop_notifications_enabled,
