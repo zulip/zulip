@@ -43,8 +43,8 @@ exports.sort_groups = function (search_term) {
 
     streams = filter_streams_by_search(streams, search_term);
 
-    function is_normal(stream) {
-        return stream_data.is_active(stream);
+    function is_normal(sub) {
+        return stream_data.is_active(sub);
     }
 
     var pinned_streams = [];
@@ -52,10 +52,11 @@ exports.sort_groups = function (search_term) {
     var dormant_streams = [];
 
     _.each(streams, function (stream) {
-        var pinned = stream_data.get_sub(stream).pin_to_top;
+        var sub = stream_data.get_sub(stream);
+        var pinned = sub.pin_to_top;
         if (pinned) {
             pinned_streams.push(stream);
-        } else if (is_normal(stream)) {
+        } else if (is_normal(sub)) {
             normal_streams.push(stream);
         } else {
             dormant_streams.push(stream);

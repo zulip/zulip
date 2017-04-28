@@ -32,8 +32,8 @@ stream_data.create_streams([
     {name: 'Linux', subscribed: true, color: 'red', stream_id: 2},
 ]);
 
-global.stream_data.is_active = function (stream_name) {
-    return stream_name !== 'dead';
+global.stream_data.is_active = function (sub) {
+    return sub.name !== 'dead';
 };
 
 test_streams = typeahead_helper.sort_streams(test_streams, 'd');

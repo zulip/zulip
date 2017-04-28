@@ -219,7 +219,7 @@ function build_stream_sidebar_row(sub) {
     var stream_name = sub.name;
 
     self.update_whether_active = function () {
-        if (stream_data.is_active(stream_name)) {
+        if (stream_data.is_active(sub)) {
             list_item.removeClass('inactive_stream');
         } else {
             list_item.addClass('inactive_stream');

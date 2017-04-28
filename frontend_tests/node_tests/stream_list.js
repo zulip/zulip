@@ -165,8 +165,8 @@ function clear_filters() {
     global.stream_data.add_sub('cars', carSub);
 
 
-    global.stream_data.is_active = function (stream_name) {
-        return stream_name !== 'cars';
+    global.stream_data.is_active = function (sub) {
+        return sub.name !== 'cars';
     };
 
     stream_list.build_stream_list();

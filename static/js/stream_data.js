@@ -18,8 +18,8 @@ exports.clear_subscriptions = function () {
 
 exports.clear_subscriptions();
 
-exports.is_active = function (stream_name) {
-    return recent_topics.has(stream_name);
+exports.is_active = function (sub) {
+    return recent_topics.has(sub.name);
 };
 
 exports.rename_sub = function (sub, new_name) {

@@ -204,13 +204,13 @@ exports.sort_emojis = function (matches, query) {
 };
 
 // Gives stream a score from 0 to 3 based on its activity
-function activity_score(stream) {
+function activity_score(sub) {
     var stream_score = 0;
-    if (stream.pin_to_top) {
+    if (sub.pin_to_top) {
         stream_score += 2;
     }
     // Note: A pinned stream may accumulate a 3rd point if it is active
-    if (stream_data.is_active(stream.name)) {
+    if (stream_data.is_active(sub)) {
         stream_score += 1;
     }
     return stream_score;
