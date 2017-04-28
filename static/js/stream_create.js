@@ -16,6 +16,66 @@ exports.get_name = function () {
     return created_stream;
 };
 
+var stream_name_error = (function () {
+    var self = {};
+
+    self.report_already_exists = function () {
+        $("#stream_name_error").text(i18n.t("A stream with this name already exists"));
+        $("#stream_name_error").show();
+    };
+
+    self.clear_errors = function () {
+        $("#stream_name_error").hide();
+    };
+
+    self.report_empty_stream = function () {
+        $("#stream_name_error").text(i18n.t("A stream needs to have a name"));
+        $("#stream_name_error").show();
+    };
+
+    self.select = function () {
+        $("#create_stream_name").focus().select();
+    };
+
+    self.pre_validate = function (stream_name) {
+        // Don't worry about empty strings...we just want to call this
+        // to warn users early before they start doing too much work
+        // after they make the effort to type in a stream name.  (The
+        // use case here is that I go to create a stream, only to find
+        // out it already exists, and I was just too lazy to look at
+        // the public streams that I'm not subscribed to yet.  Once I
+        // realize the stream already exists, I may want to cancel.)
+        if (stream_name && stream_data.get_sub(stream_name)) {
+            self.report_already_exists();
+            return;
+        }
+
+        self.clear_errors();
+    };
+
+    self.validate_for_submit = function (stream_name) {
+        if (!stream_name) {
+            self.report_empty_stream();
+            self.select();
+            return false;
+        }
+
+        if (stream_data.get_sub(stream_name)) {
+            self.report_already_exists();
+            self.select();
+            return false;
+        }
+
+        // If we got this far, then we think we have a new unique stream
+        // name, so we'll submit to the server.  (It's still plausible,
+        // however, that there's some invite-only stream that we don't
+        // know about locally that will cause a name collision.)
+        return true;
+    };
+
+    return self;
+}());
+
 function ajaxSubscribeForCreation(stream, description, principals, invite_only, announce) {
     // Subscribe yourself and possible other people to a new stream.
     return channel.post({
@@ -32,6 +92,15 @@ function ajaxSubscribeForCreation(stream, description, principals, invite_only, 
             // The rest of the work is done via the subscribe event we will get
         },
         error: function (xhr) {
+            var msg = JSON.parse(xhr.responseText).msg;
+            if (msg.indexOf('access') >= 0) {
+                // If we can't access the stream, we can safely assume it's
+                // a duplicate stream that we are not invited to.
+                stream_name_error.report_already_exists(stream);
+                stream_name_error.select();
+            }
+
+            // TODO: This next line does nothing.  See #4647.
             ui_report.error(i18n.t("Error creating stream"), xhr,
                             $("#subscriptions-status"), 'subscriptions-status');
         },
@@ -135,7 +204,7 @@ exports.show_new_stream_modal = function () {
     $('#announce-new-stream input').prop('disabled', false);
     $('#announce-new-stream input').prop('checked', true);
 
-    $("#stream_name_error").hide();
+    stream_name_error.clear_errors();
 
     $("#stream-checkboxes label.checkbox").on('change', function (e) {
         var elem = $(this);
@@ -232,43 +301,38 @@ $(function () {
         e.preventDefault();
         var stream = $.trim($("#create_stream_name").val());
         var description = $.trim($("#create_stream_description").val());
-        if (!$("#stream_name_error").is(":visible")) {
-            var principals = _.map(
-                $("#stream_creation_form input:checkbox[name=user]:checked"),
-                function (elem) {
-                    return $(elem).val();
-                }
-            );
 
-            // You are always subscribed to streams you create.
-            principals.push(people.my_current_email());
+        var name_ok = stream_name_error.validate_for_submit(stream);
 
-            created_stream = stream;
-
-            ajaxSubscribeForCreation(stream,
-                description,
-                principals,
-                $('#stream_creation_form input[name=privacy]:checked').val() === "invite-only",
-                $('#announce-new-stream input').prop('checked')
-            );
+        if (!name_ok) {
+            return;
         }
+
+        var principals = _.map(
+            $("#stream_creation_form input:checkbox[name=user]:checked"),
+            function (elem) {
+                return $(elem).val();
+            }
+        );
+
+        // You are always subscribed to streams you create.
+        principals.push(people.my_current_email());
+
+        created_stream = stream;
+
+        ajaxSubscribeForCreation(stream,
+            description,
+            principals,
+            $('#stream_creation_form input[name=privacy]:checked').val() === "invite-only",
+            $('#announce-new-stream input').prop('checked')
+        );
     });
 
-    $(".subscriptions").on("focusout", "#create_stream_name", function () {
+    $(".subscriptions").on("input", "#create_stream_name", function () {
         var stream = $.trim($("#create_stream_name").val());
-        if (stream.length !== 0) {
-            var stream_status = exports.check_stream_existence(stream);
 
-            if (stream_status !== "does-not-exist") {
-                $("#stream_name_error").text(i18n.t("A stream with this name already exists"));
-                $("#stream_name_error").show();
-            } else {
-                $("#stream_name_error").hide();
-            }
-        } else {
-            $("#stream_name_error").text(i18n.t("A stream needs to have a name"));
-            $("#stream_name_error").show();
-        }
+        // This is an inexpensive check.
+        stream_name_error.pre_validate(stream);
     });
 
     $("body").on("mouseover", "#announce-stream-docs", function (e) {
