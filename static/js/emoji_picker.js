@@ -2,10 +2,10 @@ var emoji_picker = (function () {
 
 var exports = {};
 
-// We handle both the reactions emoji popover and the
-// compose emoji picker with the emoji picker widget
-// implemented in this module.
-var current_message_reactions_popover_elem;
+// The functionalities for reacting to a message with an emoji
+// and composing a message with an emoji share a single widget,
+// implemented as the emoji_popover.
+var current_message_emoji_popover_elem;
 
 function promote_popular(a, b) {
     function rank(name) {
@@ -94,13 +94,13 @@ function generate_emoji_picker_content(id) {
         emojis: emoji_recs.sort(promote_popular),
     };
 
-    return templates.render('reaction_popover_content', args);
+    return templates.render('emoji_popover_content', args);
 }
 
-exports.toggle_reactions_popover = function (element, id) {
-    var last_popover_elem = current_message_reactions_popover_elem;
+exports.toggle_emoji_popover = function (element, id) {
+    var last_popover_elem = current_message_emoji_popover_elem;
     popovers.hide_all();
-    $(element).closest('.message_row').toggleClass('has_popover has_reactions_popover');
+    $(element).closest('.message_row').toggleClass('has_popover has_emoji_popover');
     if (last_popover_elem !== undefined
         && last_popover_elem.get()[0] === element) {
         // We want it to be the case that a user can dismiss a popover
@@ -123,51 +123,50 @@ exports.toggle_reactions_popover = function (element, id) {
         });
         elt.popover("show");
         elt.prop('title', 'Add reaction...');
-        $('.reaction-popover-filter').focus();
-        $(".reaction-popover-emoji-map").perfectScrollbar({
+        $('.emoji-popover-filter').focus();
+        $(".emoji-popover-emoji-map").perfectScrollbar({
             suppressScrollX: true,
             useKeyboard: false,
             wheelSpeed: 25,
         });
-        current_message_reactions_popover_elem = elt;
+        current_message_emoji_popover_elem = elt;
         reactions.render_reaction_show_list();
     }
 };
 
 exports.reactions_popped = function () {
-    return current_message_reactions_popover_elem !== undefined;
+    return current_message_emoji_popover_elem !== undefined;
 };
 
-exports.hide_reactions_popover = function () {
-    $('.has_popover').removeClass('has_popover has_reactions_popover');
+exports.hide_emoji_popover = function () {
+    $('.has_popover').removeClass('has_popover has_emoji_popover');
     if (exports.reactions_popped()) {
-        $(".reaction-popover-emoji-map").perfectScrollbar("destroy");
-        current_message_reactions_popover_elem.popover("destroy");
-        current_message_reactions_popover_elem = undefined;
+        $(".emoji-popover-emoji-map").perfectScrollbar("destroy");
+        current_message_emoji_popover_elem.popover("destroy");
+        current_message_emoji_popover_elem = undefined;
     }
 };
 
 exports.register_click_handlers = function () {
-    $(document).on('click', '.reaction-popover-reaction.composition', function (e) {
+    $(document).on('click', '.emoji-popover-emoji.composition', function (e) {
         var emoji_text = ':' + this.title + ':';
         var textarea = $("#new_message_content");
         textarea.caret(emoji_text);
         textarea.focus();
         e.stopPropagation();
-
-        emoji_picker.hide_reactions_popover();
+        emoji_picker.hide_emoji_popover();
     });
 
     $("#compose").on("click", "#emoji_map", function (e) {
         e.preventDefault();
         e.stopPropagation();
-        emoji_picker.toggle_reactions_popover(this);
+        emoji_picker.toggle_emoji_popover(this);
     });
 
     $("#main_div").on("click", ".reactions_hover, .reaction_button", function (e) {
         var row = $(this).closest(".message_row");
         e.stopPropagation();
-        emoji_picker.toggle_reactions_popover(this, rows.id(row));
+        emoji_picker.toggle_emoji_popover(this, rows.id(row));
     });
 
     $("body").on("click", ".actions_popover .reaction_button", function (e) {
@@ -179,7 +178,7 @@ exports.register_click_handlers = function () {
         // message wasn't sent by us and thus the .reaction_hover
         // element is not present, we use the message's
         // .icon-vector-chevron-down element as the base for the popover.
-        emoji_picker.toggle_reactions_popover($(".selected_message .icon-vector-chevron-down")[0], msgid);
+        emoji_picker.toggle_emoji_popover($(".selected_message .icon-vector-chevron-down")[0], msgid);
     });
 };
 

@@ -1,13 +1,12 @@
-{{! Contents of the "reaction emoji map" popup }}
-<div class="reaction-popover">
-    <div class="reaction-popover-top">
-        <input class="reaction-popover-filter" type="text" autofocus placeholder={{t 'Search' }} />
+<div class="emoji-popover">
+    <div class="emoji-popover-top">
+        <input class="emoji-popover-filter" type="text" autofocus placeholder={{t 'Search' }} />
         <i class="icon-vector-search"></i>
     </div>
-    {{#if message_id}} {{! message_id -> message reaction, no message_id -> compose }}
-    <div class="reaction-popover-emoji-map" data-message-id="{{message_id}}">
+    {{#if message_id}} {{! message_id -> message reaction, no message_id -> message composition }}
+    <div class="emoji-popover-emoji-map" data-message-id="{{message_id}}">
         {{#each emojis}}
-        <div class="reaction-popover-reaction {{#if has_reacted}} reacted {{/if}} reaction" title={{name}} tabindex="0">
+        <div class="emoji-popover-emoji {{#if has_reacted}} reacted {{/if}} reaction" title={{name}} tabindex="0">
             {{#if is_realm_emoji}}
             <img src="{{url}}" class="emoji" title= ":{{name}}:" />
             {{else}}
@@ -17,9 +16,9 @@
         {{/each}}
     </div>
     {{else}}
-    <div class="reaction-popover-emoji-map">
+    <div class="emoji-popover-emoji-map">
         {{#each emojis}}
-        <div class="reaction-popover-reaction composition" title={{name}} tabindex="0">
+        <div class="emoji-popover-emoji composition" title={{name}} tabindex="0">
             {{#if is_realm_emoji}}
             <img src="{{url}}" class="emoji" title= ":{{name}}:" />
             {{else}}

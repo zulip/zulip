@@ -528,10 +528,10 @@ exports.any_active = function () {
 };
 
 exports.hide_all = function () {
-    $('.has_popover').removeClass('has_popover has_actions_popover has_reactions_popover');
+    $('.has_popover').removeClass('has_popover has_actions_popover has_emoji_popover');
     popovers.hide_actions_popover();
     popovers.hide_message_info_popover();
-    emoji_picker.hide_reactions_popover();
+    emoji_picker.hide_emoji_popover();
     stream_popover.hide_stream_popover();
     stream_popover.hide_topic_popover();
     popovers.hide_user_sidebar_popover();

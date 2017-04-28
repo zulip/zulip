@@ -21,7 +21,7 @@ function open_reactions() {
     if (!message.sent_by_me) {
         target = $(current_msg_list.selected_row()).find(".icon-vector-smile")[0];
     }
-    emoji_picker.toggle_reactions_popover(target, current_msg_list.selected_id());
+    emoji_picker.toggle_emoji_popover(target, current_msg_list.selected_id());
     return true;
 }
 
@@ -241,7 +241,7 @@ exports.process_escape_key = function (e) {
         }
 
         if (emoji_picker.reactions_popped()) {
-            emoji_picker.hide_reactions_popover();
+            emoji_picker.hide_emoji_popover();
             return true;
         }
 
