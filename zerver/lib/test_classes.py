@@ -18,6 +18,7 @@ from django.db.utils import IntegrityError
 from zerver.lib.initial_password import initial_password
 from zerver.lib.db import TimeTrackingCursor
 from zerver.lib.str_utils import force_text
+from zerver.lib.utils import is_remote_server
 from zerver.lib import cache
 from zerver.tornado.handlers import allocate_handler_id
 from zerver.worker import queue_processors
@@ -305,7 +306,7 @@ class ZulipTestCase(TestCase):
         """
         identifier: Can be an email or a remote server uuid.
         """
-        if "@" not in identifier:
+        if is_remote_server(identifier):
             api_key = self.get_server_api_key(identifier)
         else:
             api_key = self.get_api_key(identifier)
