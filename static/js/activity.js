@@ -419,6 +419,7 @@ exports.initialize = function () {
 
     presence.set_info(page_params.presences,
                       page_params.initial_servertime);
+    delete page_params.presences;
 
     exports.build_user_sidebar();
     exports.update_huddles();
