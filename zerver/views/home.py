@@ -172,10 +172,6 @@ def home_real(request):
             logging.warning("%s has invalid pointer %s" % (user_profile.email, user_profile.pointer))
             latest_read = None
 
-    desktop_notifications_enabled = user_profile.enable_desktop_notifications
-    if narrow_stream is not None:
-        desktop_notifications_enabled = False
-
     if user_profile.realm.notifications_stream:
         notifications_stream = user_profile.realm.notifications_stream.name
     else:
@@ -219,9 +215,6 @@ def home_real(request):
         autoscroll_forever = user_profile.autoscroll_forever,
         default_desktop_notifications = user_profile.default_desktop_notifications,
 
-        # Private message and @-mention notification settings:
-        desktop_notifications_enabled = desktop_notifications_enabled,
-
         # Realm foreign key data from register_ret.
         # TODO: Rename these to match register_ret values.
         initial_pointer       = register_ret['pointer'],
@@ -255,6 +248,7 @@ def home_real(request):
         'emoji_alt_code',
         'emojiset',
         'emojiset_choices',
+        'enable_desktop_notifications',
         'enable_digest_emails',
         'enable_offline_email_notifications',
         'enable_offline_push_notifications',
@@ -329,6 +323,7 @@ def home_real(request):
         page_params["max_message_id"] = initial_pointer
         page_params["initial_pointer"] = initial_pointer
         page_params["have_initial_messages"] = (initial_pointer != -1)
+        page_params["enable_desktop_notifications"] = False
 
     statsd.incr('views.home')
     show_invites = True

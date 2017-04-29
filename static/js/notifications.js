@@ -100,7 +100,7 @@ exports.initialize = function () {
 
     if (notifications_api) {
         $(document).click(function () {
-            if (!page_params.desktop_notifications_enabled || asked_permission_already) {
+            if (!page_params.enable_desktop_notifications || asked_permission_already) {
                 return;
             }
             if (notifications_api.checkPermission() !== 0) { // 0 is PERMISSION_ALLOWED
@@ -441,19 +441,19 @@ function should_send_desktop_notification(message) {
     // For PMs and @-mentions, send if desktop notifications are
     // enabled.
     if ((message.type === "private") &&
-        page_params.desktop_notifications_enabled) {
+        page_params.enable_desktop_notifications) {
         return true;
     }
 
     // For alert words and @-mentions, send if desktop notifications
     // are enabled.
     if (alert_words.notifies(message) &&
-        page_params.desktop_notifications_enabled) {
+        page_params.enable_desktop_notifications) {
         return true;
     }
 
     if (exports.speaking_at_me(message) &&
-        page_params.desktop_notifications_enabled) {
+        page_params.enable_desktop_notifications) {
         return true;
     }
 
@@ -640,7 +640,7 @@ exports.handle_global_notification_updates = function (notification_name, settin
     } else if (notification_name === "enable_stream_sounds") {
         page_params.enable_stream_sounds = setting;
     } else if (notification_name === "enable_desktop_notifications") {
-        page_params.desktop_notifications_enabled = setting;
+        page_params.enable_desktop_notifications = setting;
     } else if (notification_name === "enable_sounds") {
         page_params.enable_sounds = setting;
     } else if (notification_name === "enable_offline_email_notifications") {

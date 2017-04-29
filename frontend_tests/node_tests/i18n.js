@@ -51,7 +51,7 @@ i18n.init({
             twenty_four_hour_time: false,
             enable_stream_desktop_notifications: false,
             enable_stream_sounds: false,
-            desktop_notifications_enabled: false,
+            enable_desktop_notifications: false,
             enable_sounds: false,
             enable_offline_email_notifications: false,
             enable_offline_push_notifications: false,
