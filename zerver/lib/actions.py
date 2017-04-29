@@ -623,7 +623,7 @@ def do_start_email_change_process(user_profile, new_email):
                                                realm=user_profile.realm)
 
         EmailChangeConfirmation.objects.send_confirmation(
-            obj, new_email,
+            obj, 'confirmation/emailchangestatus_confirmation_email', new_email,
             additional_context=context,
             host=user_profile.realm.host,
         )
@@ -3057,24 +3057,17 @@ def do_send_confirmation_email(invitee, referrer, body):
     `invitee` is a PreregistrationUser.
     `referrer` is a UserProfile.
     """
-    subject_template_path = 'confirmation/invite_email.subject'
-    body_template_path = 'confirmation/invite_email.txt'
-    html_body_template_path = 'confirmation/invite_email.html'  # type: Optional[str]
-
     context = {'referrer': referrer,
                'support_email': settings.ZULIP_ADMINISTRATOR,
                'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS}
 
     if referrer.realm.is_zephyr_mirror_realm:
-        subject_template_path = 'confirmation/mituser_invite_email.subject'
-        body_template_path = 'confirmation/mituser_invite_email.txt'
-        html_body_template_path = None
+        template_prefix = 'confirmation/mituser_invite_email'
+    else:
+        template_prefix = 'confirmation/invite_email'
 
     Confirmation.objects.send_confirmation(
-        invitee, invitee.email, additional_context=context,
-        subject_template_path=subject_template_path,
-        body_template_path=body_template_path,
-        html_body_template_path=html_body_template_path,
+        invitee, template_prefix, invitee.email, additional_context=context,
         host=referrer.realm.host, custom_body=body)
 
 def is_inactive(email):

@@ -10,7 +10,7 @@ from django.db import models
 from django.core.urlresolvers import reverse
 from django.core.mail import send_mail
 from django.conf import settings
-from django.template import loader, Context
+from django.template import loader, Context, TemplateDoesNotExist
 from django.contrib.sites.models import Site
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -91,10 +91,9 @@ class ConfirmationManager(models.Manager):
         # type: () -> int
         return getattr(settings, 'EMAIL_CONFIRMATION_DAYS', 10)
 
-    def send_confirmation(self, obj, email_address, additional_context=None,
-                          subject_template_path=None, body_template_path=None, html_body_template_path=None,
+    def send_confirmation(self, obj, template_prefix, email_address, additional_context=None,
                           host=None, custom_body=None):
-        # type: (ContentType, Text, Optional[Dict[str, Any]], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str]) -> Confirmation
+        # type: (ContentType, str, Text, Optional[Dict[str, Any]], Optional[str], Optional[str]) -> Confirmation
         confirmation_key = generate_key()
         current_site = Site.objects.get_current()
         activate_url = self.get_activation_url(confirmation_key, host=host)
@@ -108,26 +107,14 @@ class ConfirmationManager(models.Manager):
         })
         if additional_context is not None:
             context.update(additional_context)
-        if obj.realm is not None and obj.realm.is_zephyr_mirror_realm:
-            template_name = "mituser"
-        else:
-            template_name = obj._meta.model_name
-        if subject_template_path:
-            template = loader.get_template(subject_template_path)
-        else:
-            template = loader.select_template('confirmation/%s_confirmation_email.subject' % (template_name,))
-        subject = template.render(context).strip().replace(u'\n', u' ') # no newlines, please
-        if body_template_path:
-            template = loader.get_template(body_template_path)
-        else:
-            template = loader.select_template('confirmation/%s_confirmation_email.txt' % (template_name,))
-        if html_body_template_path:
-            html_template = loader.get_template(html_body_template_path)
-        else:
-            html_template = loader.get_template('confirmation/%s_confirmation_email.html' % (template_name,))
-        body = template.render(context)
-        if html_template:
-            html_content = html_template.render(context)
+
+        subject = loader.get_template(template_prefix + '.subject').render(context).strip().replace(u'\n', u' ') # no newlines, please
+        body = loader.get_template(template_prefix + '.txt').render(context)
+        try:
+            html_content = loader.get_template(template_prefix + '.html').render(context)
+        except TemplateDoesNotExist:
+            html_content = None
+
         send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [email_address], html_message=html_content)
         return self.create(content_object=obj, date_sent=timezone_now(), confirmation_key=confirmation_key)
 
