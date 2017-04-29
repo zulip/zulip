@@ -6,30 +6,6 @@ var exports = {};
 // compose emoji picker with the emoji picker widget
 // implemented in this module.
 var current_message_reactions_popover_elem;
-var emoji_map_is_open = false;
-var emoji_map_is_rendered = false;
-
-function render_emoji_popover() {
-    var content = (function () {
-        var map = {};
-        for (var x in emoji.emojis_name_to_css_class) {
-            if (!emoji.realm_emojis[x]) {
-                map[x] = {
-                    name: x,
-                    css_name: emoji.emojis_name_to_css_class[x],
-                    url: emoji.emojis_by_name[x],
-                };
-            }
-        }
-
-        return templates.render('emoji_popover_content', {
-            emoji_list: map,
-            realm_emoji: emoji.realm_emojis,
-        });
-    }());
-    $('.emoji_popover').empty();
-    $('.emoji_popover').append(content);
-}
 
 function promote_popular(a, b) {
     function rank(name) {
@@ -159,33 +135,7 @@ exports.hide_reactions_popover = function () {
     }
 };
 
-exports.reset_emoji_popover = function () {
-    emoji_map_is_rendered = false;
-};
-
-exports.hide_emoji_map_popover = function () {
-    if (emoji_map_is_open) {
-        $('.emoji_popover').css('display', 'none');
-        $('.drag').css('display', 'none');
-        $("#new_message_content").focus();
-        emoji_map_is_open = false;
-    }
-};
-exports.show_emoji_map_popover = function () {
-    if (!emoji_map_is_open) {
-        $('.emoji_popover').css('display', 'inline-block');
-        $('.emoji_popover').scrollTop(0);
-        $('.drag').show();
-        $("#new_message_content").focus();
-        emoji_map_is_open = true;
-    }
-};
-
 exports.register_click_handlers = function () {
-    $("body").on("click", ".emoji_popover", function (e) {
-        e.stopPropagation();
-    });
-
     $(".emoji_popover").on("click", ".emoji", function (e) {
         var emoji_choice = $(e.target).attr("title");
         var textarea = $("#new_message_content");
@@ -197,17 +147,6 @@ exports.register_click_handlers = function () {
     $("#compose").on("click", "#emoji_map", function (e) {
         e.preventDefault();
         e.stopPropagation();
-        if (emoji_map_is_open) {
-            // If the popover is already shown, clicking again should toggle it.
-            emoji_picker.hide_emoji_map_popover();
-        } else {
-            // If the emoji_map is not rendered before then, a call to render_emoji_popover is made.
-            if (!emoji_map_is_rendered) {
-                render_emoji_popover();
-                emoji_map_is_rendered = true;
-            }
-            emoji_picker.show_emoji_map_popover();
-        }
     });
 
     $("#main_div").on("click", ".reactions_hover, .reaction_button", function (e) {

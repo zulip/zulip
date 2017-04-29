@@ -522,34 +522,6 @@ function render(template_name, args) {
     assert.equal(li.text(), 'The email will be forwarded to this stream');
 }());
 
-(function emoji_popover_content() {
-    var args = (function () {
-        var map = {};
-        for (var x in global.emoji.emojis_name_to_css_class) {
-            if (!global.emoji.realm_emojis[x]) {
-                map[x] = {
-                    name: x,
-                    css_name: global.emoji.emojis_name_to_css_class[x],
-                    url: global.emoji.emojis_by_name[x],
-                };
-            }
-        }
-
-        return {
-            emoji_list: map,
-            realm_emoji: global.emoji.realm_emojis,
-        };
-    }());
-
-    var html = '<div style="height: 250px">';
-    html += render('emoji_popover_content', args);
-    html += "</div>";
-    // test to make sure the first emoji is present in the popover
-    var emoji_key = $(html).find(".emoji-100").attr('title');
-    assert.equal(emoji_key, ':100:');
-    global.write_handlebars_output("emoji_popover_content", html);
-}());
-
 (function group_pms() {
     var args = {
         group_pms: [

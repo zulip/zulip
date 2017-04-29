@@ -284,44 +284,6 @@ exports.register_click_handlers = function () {
         show_message_info_popover(this, rows.id(row));
     });
 
-    (function () {
-        // create locally scoped variables for drag tracking.
-        var meta = {
-          drag: false,
-          c: {
-            y: null,
-          },
-          $popover: $(".emoji_popover"),
-          MIN_HEIGHT: 25,
-          MAX_HEIGHT: 300,
-        };
-
-        // drag must start within the .drag zone.
-        $(".drag").on("mousedown", function (e) {
-            meta.drag = true;
-            meta.c.y = e.screenY;
-        });
-
-        // mouse move that originated in .drag zone can go anywhere.
-        $("body").on("mousemove", function (e) {
-            if (meta.drag) {
-                var diff = e.screenY - meta.c.y;
-                var resolved_height = meta.$popover.height() - diff;
-
-                if (resolved_height > meta.MIN_HEIGHT && resolved_height < meta.MAX_HEIGHT) {
-                  meta.$popover.height(resolved_height);
-                }
-                meta.c.y = e.screenY;
-            }
-        });
-
-        // drag ends on mouseup. This cancels all drag events without interfering
-        // with any other events.
-        $("body").on("mouseup", function () {
-            meta.drag = false;
-        });
-    }());
-
     $('body').on('click', '.user_popover .narrow_to_private_messages', function (e) {
         var user_id = $(e.target).parents('ul').attr('data-user-id');
         var email = people.get_person_from_user_id(user_id).email;
@@ -562,8 +524,7 @@ exports.any_active = function () {
     // True if any popover (that this module manages) is currently shown.
     return popovers.actions_popped() || user_sidebar_popped() ||
         stream_popover.stream_popped() || stream_popover.topic_popped() ||
-        message_info_popped() || emoji_picker.emoji_map_is_open ||
-        emoji_picker.reactions_popped();
+        message_info_popped() || emoji_picker.reactions_popped();
 };
 
 exports.hide_all = function () {
@@ -576,7 +537,6 @@ exports.hide_all = function () {
     popovers.hide_user_sidebar_popover();
     popovers.hide_userlist_sidebar();
     stream_popover.restore_stream_list_size();
-    emoji_picker.hide_emoji_map_popover();
 
     // look through all the popovers that have been added and removed.
     list_of_popovers.forEach(function ($o) {

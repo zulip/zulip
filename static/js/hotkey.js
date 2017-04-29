@@ -209,12 +209,6 @@ exports.process_escape_key = function (e) {
         return true;
     }
 
-    // emoji window should trap escape before it is able to close the compose box
-    if ($('.emoji_popover').css('display') === 'inline-block') {
-        emoji_picker.hide_emoji_map_popover();
-        return true;
-    }
-
     if (exports.processing_text()) {
         if ($(".message_edit_content").filter(":focus").length > 0) {
             row = $(".message_edit_content").filter(":focus").closest(".message_row");
