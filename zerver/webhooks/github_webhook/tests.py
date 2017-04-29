@@ -28,6 +28,11 @@ class GithubWebhookTest(WebhookTestCase):
         expected_message = u"baxterthehacker [pushed](https://github.com/baxterthehacker/public-repo/compare/9049f1265b7d...0d1a26e67d8f) 1 commit to branch changes.\n\n* Update README.md ([0d1a26e](https://github.com/baxterthehacker/public-repo/commit/0d1a26e67d8f5eaf1f6ba5c57fc3c7d91ac0fd1c))"
         self.send_and_test_stream_message('push_1_commit', self.EXPECTED_SUBJECT_BRANCH_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='push')
 
+    def test_push_1_commit_without_username(self):
+        # type: () -> None
+        expected_message = u"eeshangarg [pushed](https://github.com/eeshangarg/public-repo/compare/0383613da871...2e8cf535fb38) 1 commit to branch changes. Commits by John Snow (1).\n\n* Update the README ([2e8cf53](https://github.com/eeshangarg/public-repo/commit/2e8cf535fb38a3dab2476cdf856efda904ad4c94))"
+        self.send_and_test_stream_message('push_1_commit_without_username', self.EXPECTED_SUBJECT_BRANCH_EVENTS, expected_message, HTTP_X_GITHUB_EVENT='push')
+
     def test_push_1_commit_filtered_by_branches(self):
         # type: () -> None
         self.url = self.build_webhook_url('master,changes')
