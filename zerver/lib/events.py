@@ -172,6 +172,7 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         state['enable_offline_push_notifications'] = user_profile.enable_offline_push_notifications
         state['enable_online_push_notifications'] = user_profile.enable_online_push_notifications
         state['enable_digest_emails'] = user_profile.enable_digest_emails
+        state['pm_content_in_desktop_notifications'] = user_profile.pm_content_in_desktop_notifications
 
     if want('zulip_version'):
         state['zulip_version'] = ZULIP_VERSION
@@ -438,6 +439,8 @@ def apply_event(state, event, user_profile, include_subscribers):
             state['enable_online_push_notifications'] = event['setting']
         elif event['notification_name'] == "enable_digest_emails":
             state['enable_digest_emails'] = event['setting']
+        elif event['notification_name'] == "pm_content_in_desktop_notifications":
+            state['pm_content_in_desktop_notifications'] = event['setting']
     else:
         raise AssertionError("Unexpected event type %s" % (event['type'],))
 

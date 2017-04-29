@@ -224,7 +224,6 @@ def home_real(request):
 
         # Private message and @-mention notification settings:
         desktop_notifications_enabled = desktop_notifications_enabled,
-        pm_content_in_desktop_notifications = user_profile.pm_content_in_desktop_notifications,
 
         # Realm foreign key data from register_ret.
         # TODO: Rename these to match register_ret values.
@@ -270,6 +269,7 @@ def home_real(request):
         'max_message_id',
         'muted_topics',
         'never_subscribed',
+        'pm_content_in_desktop_notifications',
         'presences',
         'queue_id',
         'realm_add_emoji_by_admins_only',

@@ -1151,7 +1151,6 @@ class EventsRegisterTest(ZulipTestCase):
                 lambda: do_change_pm_content_in_desktop_notifications(self.user_profile,
                                                                       setting_value,
                                                                       log=False),
-                state_change_expected=False,
             )
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
