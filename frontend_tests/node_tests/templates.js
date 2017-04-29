@@ -779,7 +779,7 @@ function render(template_name, args) {
 
 (function settings_tab() {
     var page_param_checkbox_options = {
-        stream_desktop_notifications_enabled: true,
+        enable_stream_desktop_notifications: true,
         enable_stream_sounds: true, desktop_notifications_enabled: true,
         enable_sounds: true, enable_offline_email_notifications: true,
         enable_offline_push_notifications: true, enable_online_push_notifications: true,

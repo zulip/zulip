@@ -222,9 +222,6 @@ def home_real(request):
         avatar_url_medium     = avatar_url(user_profile, medium=True),
         avatar_source         = user_profile.avatar_source,
 
-        # Stream message notification settings:
-        stream_desktop_notifications_enabled = user_profile.enable_stream_desktop_notifications,
-
         # Private message and @-mention notification settings:
         desktop_notifications_enabled = desktop_notifications_enabled,
         pm_content_in_desktop_notifications = user_profile.pm_content_in_desktop_notifications,
@@ -264,6 +261,7 @@ def home_real(request):
         'enable_offline_push_notifications',
         'enable_online_push_notifications',
         'enable_sounds',
+        'enable_stream_desktop_notifications',
         'enable_stream_sounds',
         'hotspots',
         'last_event_id',

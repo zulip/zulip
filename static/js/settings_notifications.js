@@ -16,7 +16,7 @@ exports.set_up = function () {
         // Stream notification settings.
 
         if (result.enable_stream_desktop_notifications !== undefined) {
-            page_params.stream_desktop_notifications_enabled =
+            page_params.enable_stream_desktop_notifications =
                 result.enable_stream_desktop_notifications;
         }
         if (result.enable_stream_sounds !== undefined) {
@@ -142,7 +142,7 @@ exports.set_up = function () {
 };
 
 function _update_page() {
-    $("#enable_stream_desktop_notifications").prop('checked', page_params.stream_desktop_notifications_enabled);
+    $("#enable_stream_desktop_notifications").prop('checked', page_params.enable_stream_desktop_notifications);
     $("#enable_stream_sounds").prop('checked', page_params.enable_stream_sounds);
     $("#enable_desktop_notifications").prop('checked', page_params.desktop_notifications_enabled);
     $("#enable_sounds").prop('checked', page_params.enable_sounds);

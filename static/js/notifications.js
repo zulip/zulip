@@ -636,7 +636,7 @@ exports.handle_global_notification_updates = function (notification_name, settin
     // for a given message. These settings do not affect whether or not a
     // particular stream should receive notifications.
     if (notification_name === "enable_stream_desktop_notifications") {
-        page_params.stream_desktop_notifications_enabled = setting;
+        page_params.enable_stream_desktop_notifications = setting;
     } else if (notification_name === "enable_stream_sounds") {
         page_params.enable_stream_sounds = setting;
     } else if (notification_name === "enable_desktop_notifications") {
