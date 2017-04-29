@@ -383,9 +383,9 @@ def email_allowed_for_realm(email, realm):
                 return True
     return False
 
-def list_of_domains_for_realm(realm):
-    # type: (Realm) -> List[Dict[str, Union[str, bool]]]
-    return list(RealmDomain.objects.filter(realm=realm).values('domain', 'allow_subdomains'))
+def get_realm_domains(realm):
+    # type: (Realm) -> List[Dict[str, Text]]
+    return list(realm.realmdomain_set.values('domain', 'allow_subdomains'))
 
 class RealmEmoji(ModelReprMixin, models.Model):
     author = models.ForeignKey('UserProfile', blank=True, null=True)

@@ -9,8 +9,7 @@ from django.core.management.base import BaseCommand
 from django.db.utils import IntegrityError
 from django.utils.translation import ugettext as _
 from zerver.models import get_realm, can_add_realm_domain, \
-    Realm, RealmDomain
-from zerver.lib.actions import get_realm_domains
+    Realm, RealmDomain, get_realm_domains
 from zerver.lib.domains import validate_domain
 import sys
 

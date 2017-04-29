@@ -6,11 +6,12 @@ from django.utils.translation import ugettext as _
 
 from zerver.decorator import has_request_variables, require_realm_admin, REQ
 from zerver.lib.actions import do_add_realm_domain, do_change_realm_domain, \
-    do_remove_realm_domain, get_realm_domains
+    do_remove_realm_domain
 from zerver.lib.domains import validate_domain
 from zerver.lib.response import json_error, json_success
 from zerver.lib.validator import check_bool, check_string
-from zerver.models import can_add_realm_domain, RealmDomain, UserProfile
+from zerver.models import can_add_realm_domain, RealmDomain, UserProfile, \
+    get_realm_domains
 
 from typing import Text
 

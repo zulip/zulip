@@ -3186,10 +3186,6 @@ def get_emails_from_user_ids(user_ids):
     # We may eventually use memcached to speed this up, but the DB is fast.
     return UserProfile.emails_from_ids(user_ids)
 
-def get_realm_domains(realm):
-    # type: (Realm) -> List[Dict[str, Text]]
-    return list(realm.realmdomain_set.values('domain', 'allow_subdomains'))
-
 def do_add_realm_domain(realm, domain, allow_subdomains):
     # type: (Realm, Text, bool) -> (RealmDomain)
     realm_domain = RealmDomain.objects.create(realm=realm, domain=domain,

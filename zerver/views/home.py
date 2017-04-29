@@ -16,7 +16,7 @@ from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
     Recipient, Realm, UserMessage, DefaultStream, RealmEmoji, RealmDomain, \
     RealmFilter, PreregistrationUser, UserActivity, \
     UserPresence, get_recipient, name_changes_disabled, email_to_username, \
-    list_of_domains_for_realm
+    get_realm_domains
 from zerver.lib.events import do_events_register
 from zerver.lib.actions import update_user_presence, do_change_tos_version, \
     do_update_pointer, get_cross_realm_dicts, realm_user_count
@@ -212,7 +212,7 @@ def home_real(request):
         # realm data.
         # TODO: Move all of these data to register_ret and pull from there
         password_auth_enabled = password_auth_enabled(user_profile.realm),
-        domains               = list_of_domains_for_realm(user_profile.realm),
+        domains               = get_realm_domains(user_profile.realm),
         name_changes_disabled = name_changes_disabled(user_profile.realm),
         mandatory_topics      = user_profile.realm.mandatory_topics,
         show_digest_email     = user_profile.realm.show_digest_email,
