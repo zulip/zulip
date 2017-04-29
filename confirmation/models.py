@@ -112,23 +112,15 @@ class ConfirmationManager(models.Manager):
             template_name = "mituser"
         else:
             template_name = obj._meta.model_name
-        templates = [
-            'confirmation/%s_confirmation_email.subject' % (template_name,),
-            'confirmation/confirmation_email.subject',
-        ]
         if subject_template_path:
             template = loader.get_template(subject_template_path)
         else:
-            template = loader.select_template(templates)
+            template = loader.select_template('confirmation/%s_confirmation_email.subject' % (template_name,))
         subject = template.render(context).strip().replace(u'\n', u' ') # no newlines, please
-        templates = [
-            'confirmation/%s_confirmation_email.txt' % (template_name,),
-            'confirmation/confirmation_email.txt',
-        ]
         if body_template_path:
             template = loader.get_template(body_template_path)
         else:
-            template = loader.select_template(templates)
+            template = loader.select_template('confirmation/%s_confirmation_email.txt' % (template_name,))
         if html_body_template_path:
             html_template = loader.get_template(html_body_template_path)
         else:
