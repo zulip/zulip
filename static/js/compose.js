@@ -497,13 +497,6 @@ exports.check_stream_existence = function (stream_name, autosubscribe) {
 // false.
 function check_stream_for_send(stream_name, autosubscribe) {
     var result = exports.check_stream_existence(stream_name, autosubscribe);
-
-    if (result === "error") {
-        compose_error(i18n.t("Error checking subscription"), $("#stream"));
-        $("#compose-send-button").removeAttr('disabled');
-        $("#sending-indicator").hide();
-    }
-
     return result;
 }
 
@@ -545,6 +538,7 @@ function validate_stream_message_address_info(stream_name) {
             compose_error(response, $('#stream'));
             return false;
         case "error":
+            compose_error(i18n.t("Error checking subscription"), $("#stream"));
             return false;
         case "not-subscribed":
             response = "<p>You're not subscribed to the stream <b>" +
