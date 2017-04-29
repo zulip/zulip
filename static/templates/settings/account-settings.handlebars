@@ -99,11 +99,7 @@
 
             <div class="user-avatar-section box-shadow border-radius">
                 <div class="inline-block">
-                    {{#if page_params.avatar_url_medium }}
                     <img id="user-settings-avatar" src="{{ page_params.avatar_url_medium }}" />
-                    {{else}}
-                    <img id="user-settings-avatar" src="{{ page_params.avatar_url }}" />
-                    {{/if}}
                     <div id="user_avatar_file_input_error" class="text-error"></div>
                     <input type="file" name="user_avatar_file_input" class="notvisible" id="user_avatar_file_input" value="{{t 'Upload avatar' }}" />
                     <div id="upload_avatar_spinner"></div>
