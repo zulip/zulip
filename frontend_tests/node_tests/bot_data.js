@@ -15,7 +15,7 @@ set_global('$', function (f) {
 set_global('document', null);
 
 var page_params = {
-    bot_list: [{email: 'bot0@zulip.com', full_name: 'Bot 0'}],
+    realm_bots: [{email: 'bot0@zulip.com', full_name: 'Bot 0'}],
     is_admin: false,
 };
 set_global('page_params', page_params);

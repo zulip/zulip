@@ -56,7 +56,7 @@ var bot_data = (function () {
     };
 
     $(function init() {
-        _.each(page_params.bot_list, function (bot) {
+        _.each(page_params.realm_bots, function (bot) {
             exports.add(bot);
         });
     });

@@ -105,7 +105,7 @@ exports.set_up = function () {
     loading.make_indicator($('#admin_page_auth_methods_loading_indicator'));
 
     // Populate realm domains
-    exports.populate_realm_domains(page_params.domains);
+    exports.populate_realm_domains(page_params.realm_domains);
 
     // Populate authentication methods table
     exports.populate_auth_methods(page_params.realm_authentication_methods);

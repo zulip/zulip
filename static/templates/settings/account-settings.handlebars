@@ -39,7 +39,7 @@
                 <div class="user-name-section inline-block">
                     <div class="input-group" id="name_change_container">
                         <label for="full_name" class="inline-block title">{{t "Full name" }}</label>
-                        <input type="text" name="full_name" id="full_name" class="w-200 inline-block" value="{{ page_params.fullname }}" {{#if page_params.realm_name_changes_disabled}}disabled="disabled" {{/if}}/>
+                        <input type="text" name="full_name" id="full_name" class="w-200 inline-block" value="{{ page_params.realm_fullname }}" {{#if page_params.realm_name_changes_disabled}}disabled="disabled" {{/if}}/>
                         <i class="icon-vector-question-sign change_name_tooltip" data-toggle="tooltip"
                         {{#unless page_params.realm_name_changes_disabled}}style="display:none" {{/unless}}
                         title="{{t 'Changing your name has been disabled by your Zulip organization administrators. Contact an administrator for help.' }}"/>
@@ -50,7 +50,7 @@
                     </div>
 
                     <!-- password start -->
-                    {{#if page_params.password_auth_enabled}}
+                    {{#if page_params.realm_password_auth_enabled}}
                     <div class="input-group" id="pw_change_link">
                         <label for="change_password_button" class="inline-block title">{{t "Password" }}</label>
                         <button class="change_password_button button white rounded inline-block input-size" data-dismiss="modal" aria-hidden="true">{{t "Change password" }}</button>

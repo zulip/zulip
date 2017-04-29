@@ -273,7 +273,7 @@ exports.create_sub_from_server_data = function (stream_name, attrs) {
 
     sub = _.defaults(raw_attrs, {
         name: stream_name,
-        render_subscribers: !page_params.is_zephyr_mirror_realm || attrs.invite_only === true,
+        render_subscribers: !page_params.realm_is_zephyr_mirror_realm || attrs.invite_only === true,
         subscribed: true,
         newly_subscribed: false,
         in_home_view: true,
@@ -388,14 +388,14 @@ exports.initialize_from_page_params = function () {
         defaults[stream.name] = true;
     });
 
-    populate_subscriptions(page_params.subbed_info, true);
-    populate_subscriptions(page_params.unsubbed_info, false);
-    populate_subscriptions(page_params.neversubbed_info, false);
+    populate_subscriptions(page_params.subscriptions, true);
+    populate_subscriptions(page_params.unsubscribed, false);
+    populate_subscriptions(page_params.never_subscribed, false);
 
     // Garbage collect data structures that were only used for initialization.
-    delete page_params.subbed_info;
-    delete page_params.unsubbed_info;
-    delete page_params.neversubbed_info;
+    delete page_params.subscriptions;
+    delete page_params.unsubscribed;
+    delete page_params.never_subscribed;
 };
 
 exports.get_recent_topics = function (stream_name) {

@@ -19,7 +19,7 @@ session_engine = import_module(settings.SESSION_ENGINE)
 
 from zerver.lib.alert_words import user_alert_words
 from zerver.lib.attachments import user_attachments
-from zerver.lib.avatar import get_avatar_url
+from zerver.lib.avatar import avatar_url, get_avatar_url
 from zerver.lib.hotspots import get_next_hotspots
 from zerver.lib.narrow import check_supported_events_narrow_filter
 from zerver.lib.realm_icon import realm_icon_url
@@ -33,6 +33,7 @@ from zerver.models import Client, Message, Realm, UserPresence, UserProfile, \
     get_user_profile_by_email, get_user_profile_by_id, \
     get_active_user_dicts_in_realm, realm_filters_for_realm, \
     get_owned_bot_dicts, custom_profile_fields_for_realm
+from zproject.backends import password_auth_enabled
 from version import ZULIP_VERSION
 
 
@@ -110,7 +111,14 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
         state['realm_icon_source'] = user_profile.realm.icon_source
         state['max_icon_file_size'] = settings.MAX_ICON_FILE_SIZE
         state['realm_bot_domain'] = user_profile.realm.get_bot_domain()
-
+        state['realm_uri'] = user_profile.realm.uri
+        state['realm_domains'] = get_realm_domains(user_profile.realm)
+        state['realm_presence_disabled'] = user_profile.realm.presence_disabled
+        state['realm_mandatory_topics'] = user_profile.realm.mandatory_topics
+        state['realm_show_digest_email'] = user_profile.realm.show_digest_email
+        state['realm_is_zephyr_mirror_realm'] = user_profile.realm.is_zephyr_mirror_realm
+        state['realm_password_auth_enabled'] = password_auth_enabled(user_profile.realm)
+        
     if want('realm_domains'):
         state['realm_domains'] = get_realm_domains(user_profile.realm)
 
@@ -122,6 +130,20 @@ def fetch_initial_state_data(user_profile, event_types, queue_id,
 
     if want('realm_user'):
         state['realm_users'] = get_realm_user_dicts(user_profile)
+        state['emojiset_choices'] = user_profile.emojiset_choices()
+        state['emojiset'] = user_profile.emojiset
+        state['timezone'] = user_profile.timezone
+        state['avatar_source'] = user_profile.avatar_source
+        state['avatar_url_medium'] = avatar_url(user_profile, medium=True)
+        state['avatar_url'] = avatar_url(user_profile)
+        state['default_desktop_notifications'] = user_profile.default_desktop_notifications
+        state['autoscroll_forever'] = user_profile.autoscroll_forever
+        state['can_create_streams'] = user_profile.can_create_streams()
+        state['is_admin'] = user_profile.is_realm_admin
+        state['user_id'] = user_profile.id
+        state['enter_sends'] = user_profile.enter_sends
+        state['email'] = user_profile.email
+        state['fullname'] = user_profile.full_name
 
     if want('realm_bot'):
         state['realm_bots'] = get_owned_bot_dicts(user_profile)

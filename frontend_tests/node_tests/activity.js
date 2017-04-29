@@ -1,7 +1,7 @@
 global.stub_out_jquery();
 
 set_global('page_params', {
-    people_list: [],
+    realm_users: [],
 });
 
 set_global('feature_flags', {});

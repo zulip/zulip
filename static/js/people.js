@@ -680,7 +680,7 @@ exports.is_my_user_id = function (user_id) {
 };
 
 $(function () {
-    _.each(page_params.people_list, function (person) {
+    _.each(page_params.realm_users, function (person) {
         exports.add_in_realm(person);
     });
 
@@ -693,7 +693,7 @@ $(function () {
 
     exports.initialize_current_user(page_params.user_id);
 
-    delete page_params.people_list; // We are the only consumer of this.
+    delete page_params.realm_users; // We are the only consumer of this.
     delete page_params.cross_realm_bots;
 });
 

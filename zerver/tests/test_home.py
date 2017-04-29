@@ -46,7 +46,6 @@ class HomeTest(ZulipTestCase):
             "avatar_source",
             "avatar_url",
             "avatar_url_medium",
-            "bot_list",
             "can_create_streams",
             "cross_realm_bots",
             "debug_mode",
@@ -55,7 +54,6 @@ class HomeTest(ZulipTestCase):
             "default_language_name",
             "desktop_notifications_enabled",
             "development_environment",
-            "domains",
             "email",
             "emoji_alt_code",
             "emojiset",
@@ -65,48 +63,45 @@ class HomeTest(ZulipTestCase):
             "enable_offline_push_notifications",
             "enable_online_push_notifications",
             "enter_sends",
-            "event_queue_id",
             "first_in_realm",
             "fullname",
             "furthest_read_time",
             "has_mobile_devices",
             "have_initial_messages",
             "hotspots",
-            "initial_pointer",
-            "initial_presences",
             "initial_servertime",
             "is_admin",
-            "is_zephyr_mirror_realm",
             "language_list",
             "language_list_dbl_col",
             "last_event_id",
             "left_side_userlist",
             "login_page",
-            "mandatory_topics",
             "max_avatar_file_size",
             "max_icon_file_size",
             "max_message_id",
             "maxfilesize",
             "muted_topics",
-            "name_changes_disabled",
             "narrow",
             "narrow_stream",
             "needs_tutorial",
-            "neversubbed_info",
+            "never_subscribed",
             "notifications_stream",
-            "password_auth_enabled",
-            "people_list",
             "pm_content_in_desktop_notifications",
+            "pointer",
             "poll_timeout",
+            "presences",
             "prompt_for_invites",
+            "queue_id",
             "realm_add_emoji_by_admins_only",
             "realm_allow_message_editing",
             "realm_authentication_methods",
             "realm_bot_domain",
+            "realm_bots",
             "realm_create_stream_by_admins_only",
             "realm_default_language",
             "realm_default_streams",
             "realm_description",
+            "realm_domains",
             "realm_email_changes_disabled",
             "realm_emoji",
             "realm_filters",
@@ -116,13 +111,18 @@ class HomeTest(ZulipTestCase):
             "realm_inline_url_embed_preview",
             "realm_invite_by_admins_only",
             "realm_invite_required",
+            "realm_is_zephyr_mirror_realm",
+            "realm_mandatory_topics",
             "realm_message_content_edit_limit_seconds",
             "realm_message_retention_days",
             "realm_name",
             "realm_name_changes_disabled",
+            "realm_password_auth_enabled",
             "realm_presence_disabled",
             "realm_restricted_to_domain",
+            "realm_show_digest_email",
             "realm_uri",
+            "realm_users",
             "realm_waiting_period_threshold",
             "referrals",
             "save_stacktraces",
@@ -131,16 +131,15 @@ class HomeTest(ZulipTestCase):
             "server_inline_url_embed_preview",
             "server_uri",
             "share_the_love",
-            "show_digest_email",
             "sounds_enabled",
             "stream_desktop_notifications_enabled",
             "stream_sounds_enabled",
-            "subbed_info",
+            "subscriptions",
             "test_suite",
             "timezone",
             "twenty_four_hour_time",
             "unread_count",
-            "unsubbed_info",
+            "unsubscribed",
             "use_websockets",
             "user_id",
             "zulip_version",
@@ -154,7 +153,7 @@ class HomeTest(ZulipTestCase):
 
         self.login(email)
 
-        # Create bot for bot_list testing. Must be done before fetching home_page.
+        # Create bot for realm_bots testing. Must be done before fetching home_page.
         bot_info = {
             'full_name': 'The Bot of Hamlet',
             'short_name': 'hambot',
@@ -177,7 +176,7 @@ class HomeTest(ZulipTestCase):
 
         # TODO: Inspect the page_params data further.
         # print(ujson.dumps(page_params, indent=2))
-        bot_list_expected_keys = [
+        realm_bots_expected_keys = [
             'api_key',
             'avatar_url',
             'default_all_public_streams',
@@ -190,8 +189,8 @@ class HomeTest(ZulipTestCase):
             'user_id',
         ]
 
-        bot_list_actual_keys = sorted([str(key) for key in page_params['bot_list'][0].keys()])
-        self.assertEqual(bot_list_actual_keys, bot_list_expected_keys)
+        realm_bots_actual_keys = sorted([str(key) for key in page_params['realm_bots'][0].keys()])
+        self.assertEqual(realm_bots_actual_keys, realm_bots_expected_keys)
 
     def _get_home_page(self, **kwargs):
         # type: (**Any) -> HttpResponse
@@ -317,8 +316,8 @@ class HomeTest(ZulipTestCase):
         self.login(email)
         result = self._get_home_page()
         page_params = self._get_page_params(result)
-        for params in ['people_list', 'bot_list']:
-            users = page_params['people_list']
+        for params in ['realm_users', 'realm_bots']:
+            users = page_params['realm_users']
             self.assertTrue(len(users) >= 3)
             for user in users:
                 self.assertEqual(user['user_id'],
@@ -354,7 +353,7 @@ class HomeTest(ZulipTestCase):
         page_params = self._get_page_params(result)
         self.assertEqual(page_params['narrow_stream'], stream_name)
         self.assertEqual(page_params['narrow'], [dict(operator='stream', operand=stream_name)])
-        self.assertEqual(page_params['initial_pointer'], -1)
+        self.assertEqual(page_params['pointer'], -1)
         self.assertEqual(page_params['max_message_id'], -1)
         self.assertEqual(page_params['have_initial_messages'], False)
 

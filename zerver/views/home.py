@@ -26,7 +26,6 @@ from zerver.lib.i18n import get_language_list, get_language_name, \
 from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.utils import statsd, get_subdomain
-from zproject.backends import password_auth_enabled
 
 import calendar
 import datetime
@@ -209,34 +208,6 @@ def home_real(request):
         server_inline_image_preview = settings.INLINE_IMAGE_PREVIEW,
         server_inline_url_embed_preview = settings.INLINE_URL_EMBED_PREVIEW,
 
-        # realm data.
-        # TODO: Move all of these data to register_ret and pull from there
-        realm_uri             = user_profile.realm.uri,
-        password_auth_enabled = password_auth_enabled(user_profile.realm),
-        domains               = list_of_domains_for_realm(user_profile.realm),
-        name_changes_disabled = name_changes_disabled(user_profile.realm),
-        mandatory_topics      = user_profile.realm.mandatory_topics,
-        show_digest_email     = user_profile.realm.show_digest_email,
-        realm_presence_disabled = user_profile.realm.presence_disabled,
-        is_zephyr_mirror_realm = user_profile.realm.is_zephyr_mirror_realm,
-
-        # user_profile data.
-        # TODO: Move all of these data to register_ret and pull from there
-        fullname              = user_profile.full_name,
-        email                 = user_profile.email,
-        enter_sends           = user_profile.enter_sends,
-        user_id               = user_profile.id,
-        is_admin              = user_profile.is_realm_admin,
-        can_create_streams    = user_profile.can_create_streams(),
-        autoscroll_forever = user_profile.autoscroll_forever,
-        default_desktop_notifications = user_profile.default_desktop_notifications,
-        avatar_url            = avatar_url(user_profile),
-        avatar_url_medium     = avatar_url(user_profile, medium=True),
-        avatar_source         = user_profile.avatar_source,
-        timezone              = user_profile.timezone,
-        emojiset              = user_profile.emojiset,
-        emojiset_choices      = user_profile.emojiset_choices(),
-
         # Stream message notification settings:
         stream_desktop_notifications_enabled = user_profile.enable_stream_desktop_notifications,
         stream_sounds_enabled = user_profile.enable_stream_sounds,
@@ -249,17 +220,6 @@ def home_real(request):
         enable_offline_push_notifications = user_profile.enable_offline_push_notifications,
         enable_online_push_notifications = user_profile.enable_online_push_notifications,
         enable_digest_emails  = user_profile.enable_digest_emails,
-
-        # Realm foreign key data from register_ret.
-        # TODO: Rename these to match register_ret values.
-        subbed_info           = register_ret['subscriptions'],
-        unsubbed_info         = register_ret['unsubscribed'],
-        neversubbed_info      = register_ret['never_subscribed'],
-        people_list           = register_ret['realm_users'],
-        bot_list              = register_ret['realm_bots'],
-        initial_pointer       = register_ret['pointer'],
-        initial_presences     = register_ret['presences'],
-        event_queue_id        = register_ret['queue_id'],
 
         # Misc. extra data.
         have_initial_messages = user_has_messages,
@@ -283,21 +243,39 @@ def home_real(request):
     page_params_core_fields = [
         'alert_words',
         'attachments',
+        'autoscroll_forever',
+        'avatar_source',
+        'avatar_url',
+        'avatar_url_medium',
+        'can_create_streams',
+        'default_desktop_notifications',
         'default_language',
+        'email',
         'emoji_alt_code',
+        'emojiset',
+        'emojiset_choices',
+        'enter_sends',
+        'fullname',
         'hotspots',
+        'is_admin',
         'last_event_id',
         'left_side_userlist',
         'max_icon_file_size',
         'max_message_id',
         'muted_topics',
+        'never_subscribed',
+        'pointer',
+        'presences',
+        'queue_id',
         'realm_add_emoji_by_admins_only',
         'realm_allow_message_editing',
         'realm_authentication_methods',
         'realm_bot_domain',
+        'realm_bots',
         'realm_create_stream_by_admins_only',
         'realm_default_language',
         'realm_default_streams',
+        'realm_domains',
         'realm_email_changes_disabled',
         'realm_emoji',
         'realm_filters',
@@ -307,15 +285,26 @@ def home_real(request):
         'realm_inline_image_preview',
         'realm_inline_url_embed_preview',
         'realm_invite_required',
+        'realm_is_zephyr_mirror_realm',
+        'realm_mandatory_topics',
         'realm_message_content_edit_limit_seconds',
         'realm_message_retention_days',
         'realm_name',
         'realm_description',
         'realm_name_changes_disabled',
+        'realm_password_auth_enabled',
+        'realm_presence_disabled',
         'realm_restricted_to_domain',
+        'realm_show_digest_email',
+        'realm_uri',
+        'realm_users',
         'realm_waiting_period_threshold',
         'referrals',
+        'subscriptions',
+        'unsubscribed',
+        'timezone',
         'twenty_four_hour_time',
+        'user_id',
         'zulip_version',
     ]
 
@@ -334,7 +323,7 @@ def home_real(request):
             page_params["narrow_topic"] = narrow_topic
         page_params["narrow"] = [dict(operator=term[0], operand=term[1]) for term in narrow]
         page_params["max_message_id"] = initial_pointer
-        page_params["initial_pointer"] = initial_pointer
+        page_params["pointer"] = initial_pointer
         page_params["have_initial_messages"] = (initial_pointer != -1)
 
     statsd.incr('views.home')

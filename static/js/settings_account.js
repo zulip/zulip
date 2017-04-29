@@ -63,7 +63,7 @@ exports.set_up = function () {
     $("form.your-account-settings").ajaxForm({
         dataType: 'json', // This seems to be ignored. We still get back an xhr.
         beforeSubmit: function () {
-            if (page_params.password_auth_enabled !== false) {
+            if (page_params.realm_password_auth_enabled !== false) {
                 // FIXME: Check that the two password fields match
                 // FIXME: Use the same jQuery validation plugin as the signup form?
                 var field = $('#new_password');
@@ -177,7 +177,7 @@ exports.set_up = function () {
 
     avatar.build_user_avatar_widget(upload_avatar);
 
-    if (page_params.name_changes_disabled) {
+    if (page_params.realm_name_changes_disabled) {
         $(".name_change_container").hide();
     }
 

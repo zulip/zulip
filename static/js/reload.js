@@ -135,8 +135,8 @@ exports.initialize = function reload__initialize() {
     var pointer = parseInt(vars.pointer, 10);
 
     if (pointer) {
-        page_params.orig_initial_pointer = page_params.initial_pointer;
-        page_params.initial_pointer = pointer;
+        page_params.orig_initial_pointer = page_params.pointer;
+        page_params.pointer = pointer;
     }
     var offset = parseInt(vars.offset, 10);
     if (offset) {

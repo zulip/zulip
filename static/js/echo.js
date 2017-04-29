@@ -70,7 +70,7 @@ function resend_message(message, row) {
     retry_spinner.toggleClass('rotating', true);
     // Always re-set queue_id if we've gotten a new one
     // since the time when the message object was initially created
-    message.queue_id = page_params.event_queue_id;
+    message.queue_id = page_params.queue_id;
     var start_time = new Date();
     compose.transmit_message(message, function success(data) {
         retry_spinner.toggleClass('rotating', false);
@@ -567,7 +567,7 @@ $(document).on('socket_loaded_requests.zulip', function (event, data) {
             return;
         }
         msg.local_id = next_local_id;
-        msg.queue_id = page_params.event_queue_id;
+        msg.queue_id = page_params.queue_id;
 
         next_local_id = truncate_precision(next_local_id + 0.01);
         msgs_to_insert.push(msg);

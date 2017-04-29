@@ -79,7 +79,7 @@ function selectText(element) {
 }
 
 function should_list_all_streams() {
-    return !page_params.is_zephyr_mirror_realm;
+    return !page_params.realm_is_zephyr_mirror_realm;
 }
 
 exports.toggle_home = function (sub) {
