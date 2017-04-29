@@ -231,7 +231,6 @@ def home_real(request):
         sounds_enabled = user_profile.enable_sounds,
         enable_offline_email_notifications = user_profile.enable_offline_email_notifications,
         pm_content_in_desktop_notifications = user_profile.pm_content_in_desktop_notifications,
-        enable_online_push_notifications = user_profile.enable_online_push_notifications,
 
         # Realm foreign key data from register_ret.
         # TODO: Rename these to match register_ret values.
@@ -265,6 +264,7 @@ def home_real(request):
         'emojiset_choices',
         'enable_digest_emails',
         'enable_offline_push_notifications',
+        'enable_online_push_notifications',
         'hotspots',
         'last_event_id',
         'left_side_userlist',
