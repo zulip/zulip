@@ -99,7 +99,7 @@ pbr==3.0.0
 pika==0.10.0
 
 # Needed to access our database
-psycopg2==2.6.2
+psycopg2==2.7.1
 
 pyasn1==0.2.3
 pyasn1-modules==0.0.8
