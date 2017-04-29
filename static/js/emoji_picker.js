@@ -6,84 +6,29 @@ var exports = {};
 // compose emoji picker with the emoji picker widget
 // implemented in this module.
 var current_message_reactions_popover_elem;
-
-function promote_popular(a, b) {
-    function rank(name) {
-        switch (name) {
-            case '+1': return 1;
-            case 'tada': return 2;
-            case 'simple_smile': return 3;
-            case 'laughing': return 4;
-            case '100': return 5;
-            default: return 999;
-        }
-    }
-
-    var diff = rank(a.name) - rank(b.name);
-
-    if (diff !== 0) {
-        return diff;
-    }
-
-    return util.strcmp(a.name, b.name);
-}
-
 exports.toggle_reactions_popover = function (element, id) {
-    var last_popover_elem = current_message_reactions_popover_elem;
-    popovers.hide_all();
-    $(element).closest('.message_row').toggleClass('has_popover has_reactions_popover');
-    if (last_popover_elem !== undefined
-        && last_popover_elem.get()[0] === element) {
-        // We want it to be the case that a user can dismiss a popover
-        // by clicking on the same element that caused the popover.
-        return;
+    function promote_popular(a, b) {
+        function rank(name) {
+            switch (name) {
+                case '+1': return 1;
+                case 'tada': return 2;
+                case 'simple_smile': return 3;
+                case 'laughing': return 4;
+                case '100': return 5;
+                default: return 999;
+            }
+        }
+
+        var diff = rank(a.name) - rank(b.name);
+
+        if (diff !== 0) {
+            return diff;
+        }
+
+        return util.strcmp(a.name, b.name);
     }
 
-    current_msg_list.select_id(id);
-    var elt = $(element);
-    if (elt.data('popover') === undefined) {
-        var emojis = _.clone(emoji.emojis_name_to_css_class);
-        var emojis_used = reactions.get_emojis_used_by_user_for_message_id(id);
-        var realm_emojis = emoji.realm_emojis;
-        _.each(realm_emojis, function (realm_emoji, realm_emoji_name) {
-            emojis[realm_emoji_name] = {
-                name: realm_emoji_name,
-                is_realm_emoji: true,
-                url: realm_emoji.emoji_url,
-            };
-        });
-        _.each(emojis_used, function (emoji_name) {
-            var is_realm_emoji = emojis[emoji_name].is_realm_emoji;
-            var url = emojis[emoji_name].url;
-            emojis[emoji_name] = {
-                name: emoji_name,
-                has_reacted: true,
-                css_class: emoji.emoji_name_to_css_class(emoji_name),
-                is_realm_emoji: is_realm_emoji,
-                url: url,
-            };
-        });
-
-        var emoji_recs = _.map(emojis, function (val, emoji_name) {
-            if (val.name) {
-                return val;
-            }
-
-            return {
-                name: emoji_name,
-                css_class: emoji.emoji_name_to_css_class(emoji_name),
-                has_reacted: false,
-                is_realm_emoji: false,
-            };
-        });
-
-        emoji_recs.sort(promote_popular);
-
-        var args = {
-            message_id: id,
-            emojis: emoji_recs,
-        };
-
+    function compute_placement(elt) {
         var approx_popover_height = 400;
         var approx_popover_width = 400;
         var distance_from_bottom = message_viewport.height() - elt.offset().top;
@@ -102,11 +47,81 @@ exports.toggle_reactions_popover = function (element, id) {
         if (will_extend_beyond_left_of_viewport && !will_extend_beyond_right_of_viewport) {
             placement = 'right';
         }
+
+        return placement;
+    }
+
+    function generate_content() {
+        function generate_emojis() {
+            var emojis = _.clone(emoji.emojis_name_to_css_class);
+
+            var realm_emojis = emoji.realm_emojis;
+            _.each(realm_emojis, function (realm_emoji, realm_emoji_name) {
+                emojis[realm_emoji_name] = {
+                    name: realm_emoji_name,
+                    is_realm_emoji: true,
+                    url: realm_emoji.emoji_url,
+                };
+            });
+
+            // Reacting to a message
+            if (id !== undefined) {
+                current_msg_list.select_id(id);
+                var emojis_used = reactions.get_emojis_used_by_user_for_message_id(id);
+
+                _.each(emojis_used, function (emoji_name) {
+                    emojis[emoji_name] = {
+                        name: emoji_name,
+                        has_reacted: true,
+                        css_class: emoji.emoji_name_to_css_class(emoji_name),
+                        is_realm_emoji: emojis[emoji_name].is_realm_emoji,
+                        url: emojis[emoji_name].url,
+                    };
+                });
+            }
+
+            var emoji_recs = _.map(emojis, function (val, emoji_name) {
+                if (val.name) {
+                    return val;
+                }
+
+                return {
+                    name: emoji_name,
+                    css_class: emoji.emoji_name_to_css_class(emoji_name),
+                    has_reacted: false,
+                    is_realm_emoji: false,
+                };
+            });
+
+            return emoji_recs.sort(promote_popular);
+        }
+
+        var args = {
+            message_id: id,
+            emojis: generate_emojis,
+        };
+
+        return templates.render('reaction_popover_content', args);
+    }
+
+    var last_popover_elem = current_message_reactions_popover_elem;
+    popovers.hide_all();
+    $(element).closest('.message_row').toggleClass('has_popover has_reactions_popover');
+    if (last_popover_elem !== undefined
+        && last_popover_elem.get()[0] === element) {
+        // We want it to be the case that a user can dismiss a popover
+        // by clicking on the same element that caused the popover.
+        return;
+    }
+
+    var elt = $(element);
+
+    if (elt.data('popover') === undefined) {
         elt.prop('title', '');
         elt.popover({
-            placement: placement,
+            placement: compute_placement(elt),
             title:     "",
-            content:   templates.render('reaction_popover_content', args),
+            content:   generate_content(),
             trigger:   "manual",
         });
         elt.popover("show");
@@ -121,6 +136,7 @@ exports.toggle_reactions_popover = function (element, id) {
         reactions.render_reaction_show_list();
     }
 };
+
 
 exports.reactions_popped = function () {
     return current_message_reactions_popover_elem !== undefined;
@@ -147,6 +163,7 @@ exports.register_click_handlers = function () {
     $("#compose").on("click", "#emoji_map", function (e) {
         e.preventDefault();
         e.stopPropagation();
+        emoji_picker.toggle_reactions_popover(this);
     });
 
     $("#main_div").on("click", ".reactions_hover, .reaction_button", function (e) {
