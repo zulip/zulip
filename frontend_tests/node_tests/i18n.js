@@ -52,7 +52,7 @@ i18n.init({
             stream_desktop_notifications_enabled: false,
             stream_sounds_enabled: false,
             desktop_notifications_enabled: false,
-            sounds_enabled: false,
+            enable_sounds: false,
             enable_offline_email_notifications: false,
             enable_offline_push_notifications: false,
             enable_online_push_notifications: false,

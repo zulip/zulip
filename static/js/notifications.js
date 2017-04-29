@@ -468,16 +468,16 @@ function should_send_audible_notification(message) {
     }
 
     // For PMs and @-mentions, ding if sounds are enabled.
-    if ((message.type === "private") && page_params.sounds_enabled) {
+    if ((message.type === "private") && page_params.enable_sounds) {
         return true;
     }
 
     // For alert words and @-mentions, ding if sounds are enabled.
-    if (alert_words.notifies(message) && page_params.sounds_enabled) {
+    if (alert_words.notifies(message) && page_params.enable_sounds) {
         return true;
     }
 
-    if (exports.speaking_at_me(message) && page_params.sounds_enabled) {
+    if (exports.speaking_at_me(message) && page_params.enable_sounds) {
         return true;
     }
 
@@ -642,7 +642,7 @@ exports.handle_global_notification_updates = function (notification_name, settin
     } else if (notification_name === "enable_desktop_notifications") {
         page_params.desktop_notifications_enabled = setting;
     } else if (notification_name === "enable_sounds") {
-        page_params.sounds_enabled = setting;
+        page_params.enable_sounds = setting;
     } else if (notification_name === "enable_offline_email_notifications") {
         page_params.enable_offline_email_notifications = setting;
     } else if (notification_name === "enable_offline_push_notifications") {

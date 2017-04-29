@@ -781,7 +781,7 @@ function render(template_name, args) {
     var page_param_checkbox_options = {
         stream_desktop_notifications_enabled: true,
         stream_sounds_enabled: true, desktop_notifications_enabled: true,
-        sounds_enabled: true, enable_offline_email_notifications: true,
+        enable_sounds: true, enable_offline_email_notifications: true,
         enable_offline_push_notifications: true, enable_online_push_notifications: true,
         enable_digest_emails: true,
         autoscroll_forever: true, default_desktop_notifications: true,

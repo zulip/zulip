@@ -228,7 +228,6 @@ def home_real(request):
 
         # Private message and @-mention notification settings:
         desktop_notifications_enabled = desktop_notifications_enabled,
-        sounds_enabled = user_profile.enable_sounds,
         pm_content_in_desktop_notifications = user_profile.pm_content_in_desktop_notifications,
 
         # Realm foreign key data from register_ret.
@@ -265,6 +264,7 @@ def home_real(request):
         'enable_offline_email_notifications',
         'enable_offline_push_notifications',
         'enable_online_push_notifications',
+        'enable_sounds',
         'hotspots',
         'last_event_id',
         'left_side_userlist',
