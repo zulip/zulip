@@ -224,7 +224,6 @@ def home_real(request):
 
         # Stream message notification settings:
         stream_desktop_notifications_enabled = user_profile.enable_stream_desktop_notifications,
-        stream_sounds_enabled = user_profile.enable_stream_sounds,
 
         # Private message and @-mention notification settings:
         desktop_notifications_enabled = desktop_notifications_enabled,
@@ -265,6 +264,7 @@ def home_real(request):
         'enable_offline_push_notifications',
         'enable_online_push_notifications',
         'enable_sounds',
+        'enable_stream_sounds',
         'hotspots',
         'last_event_id',
         'left_side_userlist',

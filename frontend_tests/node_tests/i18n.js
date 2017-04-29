@@ -50,7 +50,7 @@ i18n.init({
             left_side_userlist: false,
             twenty_four_hour_time: false,
             stream_desktop_notifications_enabled: false,
-            stream_sounds_enabled: false,
+            enable_stream_sounds: false,
             desktop_notifications_enabled: false,
             enable_sounds: false,
             enable_offline_email_notifications: false,

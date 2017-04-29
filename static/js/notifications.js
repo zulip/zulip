@@ -638,7 +638,7 @@ exports.handle_global_notification_updates = function (notification_name, settin
     if (notification_name === "enable_stream_desktop_notifications") {
         page_params.stream_desktop_notifications_enabled = setting;
     } else if (notification_name === "enable_stream_sounds") {
-        page_params.stream_sounds_enabled = setting;
+        page_params.enable_stream_sounds = setting;
     } else if (notification_name === "enable_desktop_notifications") {
         page_params.desktop_notifications_enabled = setting;
     } else if (notification_name === "enable_sounds") {
