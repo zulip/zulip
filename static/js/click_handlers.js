@@ -386,7 +386,7 @@ $(function () {
 
     function handle_compose_click(e) {
         // Emoji clicks should be handled by their own click handler in emoji_picker.js
-        if ($(e.target).is("#emoji_map, .emoji_popover, .emoji_popover.inner, img.emoji, .drag")) {
+        if ($(e.target).is("#emoji_map, img.emoji, .drag")) {
             return;
         }
         // Don't let clicks in the compose area count as
@@ -580,7 +580,7 @@ $(function () {
         if (compose_state.composing() && !$(e.target).is("a") &&
             ($(e.target).closest(".modal").length === 0) &&
             window.getSelection().toString() === "" &&
-            ($(e.target).closest('#emoji_map').length === 0)) {
+            ($(e.target).closest('.popover-content').length === 0)) {
             compose_actions.cancel();
         }
     });

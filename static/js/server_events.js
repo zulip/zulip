@@ -129,7 +129,6 @@ function dispatch_normal_event(event) {
     case 'realm_emoji':
         emoji.update_emojis(event.realm_emoji);
         settings_emoji.populate_emoji(event.realm_emoji);
-        emoji_picker.reset_emoji_popover();
         break;
 
     case 'realm_filters':
