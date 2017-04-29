@@ -233,7 +233,6 @@ def home_real(request):
         pm_content_in_desktop_notifications = user_profile.pm_content_in_desktop_notifications,
         enable_offline_push_notifications = user_profile.enable_offline_push_notifications,
         enable_online_push_notifications = user_profile.enable_online_push_notifications,
-        enable_digest_emails  = user_profile.enable_digest_emails,
 
         # Realm foreign key data from register_ret.
         # TODO: Rename these to match register_ret values.
@@ -265,6 +264,7 @@ def home_real(request):
         'emoji_alt_code',
         'emojiset',
         'emojiset_choices',
+        'enable_digest_emails',
         'hotspots',
         'last_event_id',
         'left_side_userlist',
