@@ -695,13 +695,18 @@ def make_emoji(src, display_string):
     elt.set("title", display_string)
     return elt
 
+def unicode_emoji_to_codepoint(unicode_emoji):
+    # type: (Text) -> Text
+    codepoint = hex(ord(unicode_emoji))[2:]
+    return codepoint
+
 class UnicodeEmoji(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match):
         # type: (Match[Text]) -> Optional[Element]
         orig_syntax = match.group('syntax')
-        name = hex(ord(orig_syntax))[2:]
-        if name in unicode_emoji_list:
-            src = '/static/generated/emoji/images/emoji/unicode/%s.png' % (name,)
+        codepoint = unicode_emoji_to_codepoint(orig_syntax)
+        if codepoint in unicode_emoji_list:
+            src = '/static/generated/emoji/images/emoji/unicode/%s.png' % (codepoint,)
             return make_emoji(src, orig_syntax)
         else:
             return None
