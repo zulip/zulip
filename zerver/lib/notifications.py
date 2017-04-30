@@ -296,8 +296,8 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
             'reply_to_zulip': False,
         })
 
-    text_content = loader.render_to_string('zerver/missed_message_email.txt', template_payload)
-    html_content = loader.render_to_string('zerver/missed_message_email.html', template_payload)
+    text_content = loader.render_to_string('zerver/emails/missed_message.txt', template_payload)
+    html_content = loader.render_to_string('zerver/emails/missed_message.html', template_payload)
     email_content = {
         'subject': subject,
         'text_content': text_content,
