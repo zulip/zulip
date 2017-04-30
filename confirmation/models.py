@@ -108,7 +108,7 @@ class ConfirmationManager(models.Manager):
         if additional_context is not None:
             context.update(additional_context)
 
-        subject = loader.get_template(template_prefix + '.subject').render(context).strip().replace(u'\n', u' ') # no newlines, please
+        subject = loader.get_template(template_prefix + '.subject').render(context).strip()
         body = loader.get_template(template_prefix + '.txt').render(context)
         try:
             html_content = loader.get_template(template_prefix + '.html').render(context)
