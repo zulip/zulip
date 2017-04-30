@@ -52,6 +52,28 @@ function promote_popular(a, b) {
     return util.strcmp(a.name, b.name);
 }
 
+function compute_placement(elt) {
+    var approx_popover_height = 400;
+    var approx_popover_width = 400;
+    var distance_from_bottom = message_viewport.height() - elt.offset().top;
+    var distance_from_right = message_viewport.width() - elt.offset().left;
+    var will_extend_beyond_bottom_of_viewport = distance_from_bottom < approx_popover_height;
+    var will_extend_beyond_top_of_viewport = elt.offset().top < approx_popover_height;
+    var will_extend_beyond_left_of_viewport = elt.offset().left < (approx_popover_width / 2);
+    var will_extend_beyond_right_of_viewport = distance_from_right < (approx_popover_width / 2);
+    var placement = 'bottom';
+    if (will_extend_beyond_bottom_of_viewport && !will_extend_beyond_top_of_viewport) {
+        placement = 'top';
+    }
+    if (will_extend_beyond_right_of_viewport && !will_extend_beyond_left_of_viewport) {
+        placement = 'left';
+    }
+    if (will_extend_beyond_left_of_viewport && !will_extend_beyond_right_of_viewport) {
+        placement = 'right';
+    }
+    return placement;
+}
+
 exports.toggle_reactions_popover = function (element, id) {
     var last_popover_elem = current_message_reactions_popover_elem;
     popovers.hide_all();
@@ -108,27 +130,9 @@ exports.toggle_reactions_popover = function (element, id) {
             emojis: emoji_recs,
         };
 
-        var approx_popover_height = 400;
-        var approx_popover_width = 400;
-        var distance_from_bottom = message_viewport.height() - elt.offset().top;
-        var distance_from_right = message_viewport.width() - elt.offset().left;
-        var will_extend_beyond_bottom_of_viewport = distance_from_bottom < approx_popover_height;
-        var will_extend_beyond_top_of_viewport = elt.offset().top < approx_popover_height;
-        var will_extend_beyond_left_of_viewport = elt.offset().left < (approx_popover_width / 2);
-        var will_extend_beyond_right_of_viewport = distance_from_right < (approx_popover_width / 2);
-        var placement = 'bottom';
-        if (will_extend_beyond_bottom_of_viewport && !will_extend_beyond_top_of_viewport) {
-            placement = 'top';
-        }
-        if (will_extend_beyond_right_of_viewport && !will_extend_beyond_left_of_viewport) {
-            placement = 'left';
-        }
-        if (will_extend_beyond_left_of_viewport && !will_extend_beyond_right_of_viewport) {
-            placement = 'right';
-        }
         elt.prop('title', '');
         elt.popover({
-            placement: placement,
+            placement: compute_placement(elt),
             title:     "",
             content:   templates.render('reaction_popover_content', args),
             trigger:   "manual",
