@@ -234,14 +234,15 @@ exports.process_escape_key = function (e) {
             return true;
         }
 
-        if (compose_state.composing()) {
-            // If the user hit the escape key, cancel the current compose
-            compose_actions.cancel();
+        // Emoji picker goes before compose so compose emoji picker is closed properly.
+        if (emoji_picker.reactions_popped()) {
+            emoji_picker.hide_emoji_popover();
             return true;
         }
 
-        if (emoji_picker.reactions_popped()) {
-            emoji_picker.hide_emoji_popover();
+        if (compose_state.composing()) {
+            // If the user hit the escape key, cancel the current compose
+            compose_actions.cancel();
             return true;
         }
 
