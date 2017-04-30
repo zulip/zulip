@@ -678,13 +678,9 @@ class Avatar(markdown.inlinepatterns.Pattern):
         img.set('alt', email)
         return img
 
-emoji_tree = os.path.join(settings.STATIC_ROOT, "generated", "emoji", "images", "emoji")
-path_to_emoji = os.path.join(emoji_tree, '*.png')
-path_to_unicode_emoji = os.path.join(emoji_tree, 'unicode', '*.png')
 path_to_name_to_codepoint = os.path.join(settings.STATIC_ROOT, "generated", "emoji", "name_to_codepoint.json")
-
-unicode_emoji_list = [os.path.splitext(os.path.basename(fn))[0] for fn in glob.glob(path_to_unicode_emoji)]
 name_to_codepoint = ujson.load(open(path_to_name_to_codepoint))
+unicode_emoji_list = set([name_to_codepoint[name] for name in name_to_codepoint])
 
 def make_emoji(codepoint, display_string):
     # type: (Text, Text) -> Element
