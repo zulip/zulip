@@ -456,7 +456,7 @@ class GetOldMessagesTest(ZulipTestCase):
         message_id = messages['messages'][0]['id']
 
         self.login("othello@zulip.com")
-        reaction_name = 'simple_smile'
+        reaction_name = 'slightly_smiling_face'
 
         url = '/json/messages/{}/emoji_reactions/{}'.format(message_id, reaction_name)
         payload = self.client_put(url)
