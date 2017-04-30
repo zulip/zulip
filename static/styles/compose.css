@@ -421,37 +421,6 @@ input.recipient_box {
     cursor: ns-resize;
 }
 
-.emoji_popover {
-    display: none;
-    position: relative;
-    margin-top: 10px;
-    bottom: 0px;
-    z-index: 1010;
-    /* take away 2px of borders and 2px of padding. */
-    width: calc(100% - 2px - 2px);
-    height: 140px;
-    padding: 1px;
-    text-align: center;
-    background-color: #ffffff;
-    border: 1px solid #ddd;
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    border-radius: 4px;
-    overflow: hidden;
-    overflow-y: scroll;
-}
-
-.emoji_popover .emoji {
-    margin: 2px;
-    box-sizing: border-box;
-    cursor: pointer;
-    display: inline-block;
-}
-
-.emoji_popover .emoji:active {
-    border-radius: 5px;
-    border: 2px white solid;
-}
-
 #enter_sends {
     margin-top: 0px;
     margin-right: 5px;

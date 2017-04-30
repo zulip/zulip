@@ -523,23 +523,14 @@ function render(template_name, args) {
 }());
 
 (function emoji_popover_content() {
-    var args = (function () {
-        var map = {};
-        for (var x in global.emoji.emojis_name_to_css_class) {
-            if (!global.emoji.realm_emojis[x]) {
-                map[x] = {
-                    name: x,
-                    css_name: global.emoji.emojis_name_to_css_class[x],
-                    url: global.emoji.emojis_by_name[x],
-                };
-            }
-        }
-
-        return {
-            emoji_list: map,
-            realm_emoji: global.emoji.realm_emojis,
-        };
-    }());
+    var args = {
+        search: 'Search',
+        message_id: 1,
+        emojis: [{
+            name: '100',
+            css_class: '100',
+        }],
+    };
 
     var html = '<div style="height: 250px">';
     html += render('emoji_popover_content', args);
@@ -756,25 +747,6 @@ function render(template_name, args) {
     var button_area = $(html).find(".propagate-notifications-controls");
     assert.equal(button_area.find(".yes_propagate_notifications").text().trim(), 'Yes');
     assert.equal(button_area.find(".no_propagate_notifications").text().trim(), 'No');
-}());
-
-(function reaction_popover_content() {
-    var args = {
-        search: 'Search',
-        message_id: 1,
-        emojis: [{
-            name: '100',
-            css_class: '100',
-        }],
-    };
-
-    var html = '<div style="height: 250px">';
-    html += render('reaction_popover_content', args);
-    html += "</div>";
-    // test to make sure the first emoji is present in the popover
-    var emoji_key = $(html).find(".emoji-100").attr('title');
-    assert.equal(emoji_key, ':100:');
-    global.write_handlebars_output("reaction_popover_content", html);
 }());
 
 (function settings_tab() {

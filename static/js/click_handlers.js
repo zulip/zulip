@@ -333,6 +333,7 @@ $(function () {
     }());
 
     popovers.register_click_handlers();
+    emoji_picker.register_click_handlers();
     stream_popover.register_click_handlers();
     notifications.register_click_handlers();
 
@@ -384,8 +385,8 @@ $(function () {
     });
 
     function handle_compose_click(e) {
-        // Emoji clicks should be handled by their own click handler in popover.js
-        if ($(e.target).is("#emoji_map, .emoji_popover, .emoji_popover.inner, img.emoji, .drag")) {
+        // Emoji clicks should be handled by their own click handler in emoji_picker.js
+        if ($(e.target).is("#emoji_map, img.emoji, .drag")) {
             return;
         }
         // Don't let clicks in the compose area count as

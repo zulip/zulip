@@ -52,7 +52,7 @@ exports.message_reaction_on_click = function (message_id, emoji_name) {
 };
 
 function get_selected_emoji() {
-    return $(".reaction-popover-reaction").filter(":focus")[0];
+    return $(".emoji-popover-emoji").filter(":focus")[0];
 }
 
 exports.toggle_reaction = function (message_id, emoji_name) {
@@ -70,22 +70,22 @@ exports.toggle_reaction = function (message_id, emoji_name) {
         operation = 'remove';
     }
     send_reaction_ajax(message_id, emoji_name, operation);
-    popovers.hide_reactions_popover();
+    emoji_picker.hide_emoji_popover();
 };
 
 var reaction_show_list = []; // local reaction_show_list
 
 exports.render_reaction_show_list = function () {
-    var reaction_list = $(".reaction-popover-reaction");
+    var reaction_list = $(".emoji-popover-emoji");
     reaction_show_list = reaction_list.filter(function () {
         return this.style.display === "block" || this.style.display === "";
     }).toArray();
 };
 
 function filter_emojis() {
-    var elt = $(".reaction-popover-filter").expectOne();
+    var elt = $(".emoji-popover-filter").expectOne();
     var search_term = elt.val().trim();
-    var reaction_list = $(".reaction-popover-reaction");
+    var reaction_list = $(".emoji-popover-emoji");
     if (search_term !== '') {
         reaction_list.filter(function () {
             return this.title.indexOf(search_term) === -1;
@@ -121,7 +121,7 @@ function maybe_select_emoji(e) {
     }
 }
 
-$(document).on('click', '.reaction-popover-reaction', function () {
+$(document).on('click', '.emoji-popover-emoji.reaction', function () {
     // When an emoji is clicked in the popover,
     // if the user has reacted to this message with this emoji
     // the reaction is removed
@@ -135,8 +135,8 @@ $(document).on('click', '.reaction-popover-reaction', function () {
     exports.toggle_reaction(message_id, emoji_name);
 });
 
-$(document).on('input', '.reaction-popover-filter', filter_emojis);
-$(document).on('keydown', '.reaction-popover-filter', maybe_select_emoji);
+$(document).on('input', '.emoji-popover-filter', filter_emojis);
+$(document).on('keydown', '.emoji-popover-filter', maybe_select_emoji);
 
 exports.reaction_navigate = function (e, event_name) {
     var first_emoji = get_emoji_at_index(0);
@@ -145,12 +145,12 @@ exports.reaction_navigate = function (e, event_name) {
 
     // special cases
     if (event_name === 'down_arrow') {
-        if ($('.reaction-popover-filter').is(':focus') && first_emoji) { // move down into emoji map
+        if ($('.emoji-popover-filter').is(':focus') && first_emoji) { // move down into emoji map
             $(first_emoji).focus();
         }
     } else if (event_name === 'up_arrow') {
         if (selected_emoji && selected_index < 6) { // move up into reaction filter
-            $('.reaction-popover-filter').focus();
+            $('.emoji-popover-filter').focus();
         }
     }
 

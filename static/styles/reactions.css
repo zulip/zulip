@@ -116,16 +116,16 @@
     color: #0088CC;
 }
 
-.reaction-popover {
+.emoji-popover {
     display: inline-block;
     width: 240px;
 }
 
-.reaction-popover-top {
+.emoji-popover-top {
     padding-bottom: 0;
 }
 
-.reaction-popover-top .icon-vector-search {
+.emoji-popover-top .icon-vector-search {
     display: inline-block;
     vertical-align: top;
     padding: 8px;
@@ -133,13 +133,13 @@
     cursor: pointer;
 }
 
-.reaction-popover-filter {
+.emoji-popover-filter {
     width: calc(100% - 48px);
     margin: auto;
     padding-left: 3em;
 }
 
-.reaction-popover-emoji-map {
+.emoji-popover-emoji-map {
     margin: 0;
     padding: 0.5em 0;
     position: relative;
@@ -148,7 +148,7 @@
     height: 16.5em;
 }
 
-.reaction-popover-reaction {
+.emoji-popover-emoji {
     float: left;
     margin: 0.1em;
     padding: 0.3em;
@@ -157,7 +157,7 @@
     border-radius: 0.5em;
 }
 
-.reaction-popover .reacted {
+.emoji-popover .reacted {
     background-color: #eef7fa;
     border-color: #add8e6;
 }
