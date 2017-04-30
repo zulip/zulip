@@ -41,24 +41,20 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import os
+import ssl
 import sys
 
 from optparse import OptionParser
-from os.path import dirname, abspath
-
-BASE_DIR = dirname(dirname(dirname(abspath(__file__))))
-sys.path.append(BASE_DIR)
-import scripts.lib.setup_path_on_import
 
 import posix
-import requests
-import ujson
+import json
 
-from six.moves import urllib
-from six.moves import configparser
-from typing import Text
+from six.moves.urllib.parse import urljoin, urlencode
+from six.moves.urllib.request import Request, urlopen # type: ignore # six.moves.urllib.request
+from six.moves.urllib.error import HTTPError
+from six.moves.configparser import RawConfigParser
+from six import text_type
 
-from zerver.lib.str_utils import force_text
 
 parser = OptionParser()
 
@@ -85,8 +81,21 @@ parser.add_option('-t', '--test', dest="test", action='store_true', default=Fals
 
 MAX_ALLOWED_PAYLOAD = 25 * 1024 * 1024
 
+
+def process_response_error(e):
+    # type: (HTTPError) -> None
+    if e.code == 400:
+        response_content = e.read()
+        response_data = json.loads(response_content.decode('utf8'))
+        print(response_data['msg'])
+        exit(posix.EX_NOUSER)  # type: ignore # There are no stubs for posix in python 3
+    else:
+        print("4.4.2 Connection dropped: Internal server error.")
+        exit(1)
+
+
 def send_email_mirror(rcpt_to, shared_secret, host, url, test, verify_ssl):
-    # type: (Text, Text, Text, Text, bool, bool) -> None
+    # type: (text_type, text_type, text_type, text_type, bool, bool) -> None
     if not rcpt_to:
         print("5.1.1 Bad destination mailbox address: No missed message email address.")
         exit(posix.EX_NOUSER) # type: ignore # There are no stubs for posix in python 3
@@ -96,7 +105,7 @@ def send_email_mirror(rcpt_to, shared_secret, host, url, test, verify_ssl):
         print("5.3.4 Message too big for system: Max size is 25MiB")
         exit(posix.EX_DATAERR)  # type: ignore # There are no stubs for posix in python 3
 
-    secrets_file = configparser.RawConfigParser()
+    secrets_file = RawConfigParser()
     secrets_file.read("/etc/zulip/zulip-secrets.conf")
     if not shared_secret:
         shared_secret = secrets_file.get('secrets', 'shared_secret')
@@ -112,19 +121,23 @@ def send_email_mirror(rcpt_to, shared_secret, host, url, test, verify_ssl):
         # Don't try to verify SSL when posting to 127.0.0.1; it won't
         # work, and connections to 127.0.0.1 are secure without SSL.
         verify_ssl = False
-    response = requests.post(urllib.parse.urljoin(host, url),
-                             data={"data": ujson.dumps(request_data),
-                                   "secret": shared_secret},
-                             verify=verify_ssl)
-    if response.status_code == 400:
-        response_data = ujson.loads(response.content)
-        print(response_data['msg'])
-        exit(posix.EX_NOUSER)  # type: ignore # There are no stubs for posix in python 3
-    elif response.status_code != 200:
-        print("4.4.2 Connection dropped: Internal server error.")
-        exit(1)
+
+    request_context = {}
+    if not verify_ssl and sys.version_info > (2, 7, 9):
+        # Python version below 2.7.9 doesn't support request context
+        # and doesn't check ssl certificates.
+        request_context['context'] = ssl.create_default_context()
+        request_context['context'].check_hostname = False
+        request_context['context'].verify_mode = ssl.CERT_NONE
+    data = {"data": json.dumps(request_data),
+            "secret": shared_secret}
+    req = Request(url=urljoin(host, url), data=urlencode(data).encode('utf8'))
+    try:
+        urlopen(req, **request_context)
+    except HTTPError as err:
+        process_response_error(err)
 
 
-recipient = force_text(os.environ.get("ORIGINAL_RECIPIENT", options.recipient))
+recipient = str(os.environ.get("ORIGINAL_RECIPIENT", options.recipient))
 send_email_mirror(recipient, options.shared_secret, options.host, options.url, options.test,
                   options.verify_ssl)
