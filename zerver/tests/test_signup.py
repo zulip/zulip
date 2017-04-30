@@ -18,8 +18,8 @@ from zilencer.models import Deployment
 from zerver.forms import HomepageForm, WRONG_SUBDOMAIN_ERROR
 from zerver.lib.actions import do_change_password
 from zerver.views.invite import get_invitee_emails_set
-from zerver.views.registration import (confirmation_key,
-                                       redirect_and_log_into_subdomain)
+from zerver.views.registration import confirmation_key, \
+    redirect_and_log_into_subdomain, send_registration_completion_email
 from zerver.models import (
     get_realm, get_prereg_user_by_email, get_user_profile_by_email,
     get_unique_open_realm, completely_open,
@@ -1462,6 +1462,32 @@ class UserSignUpTest(ZulipTestCase):
 
         mock_ldap.reset()
         mock_initialize.stop()
+
+    def test_registration_email_for_mirror_dummy_user(self):
+        # type: () -> None
+        email = 'sipbtest@mit.edu'
+
+        user_profile = get_user_profile_by_email(email)
+        user_profile.is_mirror_dummy = True
+        user_profile.is_active = False
+        user_profile.save()
+
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True):
+            with patch('zerver.forms.get_subdomain', return_value='zephyr'):
+                with patch('zerver.views.registration.get_subdomain', return_value='zephyr'):
+                    result = self.client_post('/accounts/home/', {'email': email})
+                    self.assertEqual(result.status_code, 302)
+
+        from django.core.mail import outbox
+        for message in reversed(outbox):
+            if email in message.to:
+                # The main difference between the zephyr registation email
+                # and the normal one is this string
+                index = message.body.find('https://zephyr.zulipchat.com/zephyr')
+                if index >= 0:
+                    return
+        else:
+            raise AssertionError("Couldn't find the right confirmation email.")
 
     @patch('DNS.dnslookup', return_value=[['sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh']])
     def test_registration_of_mirror_dummy_user(self, ignored):

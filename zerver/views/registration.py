@@ -287,8 +287,14 @@ def send_registration_completion_email(email, request, realm_creation=False):
     can complete their registration.
     """
     template_prefix = 'confirmation/preregistrationuser_confirmation_email'
-    if prereg_user.realm and prereg_user.realm.is_zephyr_mirror_realm: # nocoverage, see next commit
-        template_prefix = 'confirmation/mituser_confirmation_email' # nocoverage, see next commit
+    # Note: to make the following work in the non-subdomains case, you'll
+    # need to copy the logic from the beginning of accounts_register to
+    # figure out which realm the user is trying to sign up for, and then
+    # check if it is a zephyr mirror realm.
+    if settings.REALMS_HAVE_SUBDOMAINS:
+        realm = get_realm(get_subdomain(request))
+        if realm and realm.is_zephyr_mirror_realm:
+            template_prefix = 'confirmation/mituser_confirmation_email'
 
     prereg_user = create_preregistration_user(email, request, realm_creation)
     context = {'support_email': settings.ZULIP_ADMINISTRATOR,
