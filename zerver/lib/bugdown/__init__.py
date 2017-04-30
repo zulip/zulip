@@ -686,9 +686,8 @@ path_to_name_to_codepoint = os.path.join(settings.STATIC_ROOT, "generated", "emo
 unicode_emoji_list = [os.path.splitext(os.path.basename(fn))[0] for fn in glob.glob(path_to_unicode_emoji)]
 name_to_codepoint = ujson.load(open(path_to_name_to_codepoint))
 
-
-def make_emoji(emoji_name, src, display_string):
-    # type: (Text, Text, Text) -> Element
+def make_emoji(src, display_string):
+    # type: (Text, Text) -> Element
     elt = markdown.util.etree.Element('img')
     elt.set('src', src)
     elt.set('class', 'emoji')
@@ -703,7 +702,7 @@ class UnicodeEmoji(markdown.inlinepatterns.Pattern):
         name = hex(ord(orig_syntax))[2:]
         if name in unicode_emoji_list:
             src = '/static/generated/emoji/images/emoji/unicode/%s.png' % (name,)
-            return make_emoji(name, src, orig_syntax)
+            return make_emoji(src, orig_syntax)
         else:
             return None
 
@@ -718,12 +717,12 @@ class Emoji(markdown.inlinepatterns.Pattern):
             realm_emoji = db_data['emoji']
 
         if current_message and name in realm_emoji:
-            return make_emoji(name, realm_emoji[name]['display_url'], orig_syntax)
+            return make_emoji(realm_emoji[name]['display_url'], orig_syntax)
         elif name == 'zulip':
-            return make_emoji("zulip", '/static/generated/emoji/images/emoji/unicode/zulip.png', orig_syntax)
+            return make_emoji('/static/generated/emoji/images/emoji/unicode/zulip.png', orig_syntax)
         elif name in name_to_codepoint:
             src = '/static/generated/emoji/images/emoji/unicode/%s.png' % (name_to_codepoint[name],)
-            return make_emoji(name, src, orig_syntax)
+            return make_emoji(src, orig_syntax)
         else:
             return None
 
