@@ -284,10 +284,6 @@ def dump_emojis(cache_path):
                                                           })
         sprite_css_file.close()
 
-    # Add zulip emoji to `emoji_map` so that we can avoid
-    # adding unnecessary exceptions to the rendering logic.
-    emoji_map['zulip'] = 'zulip'
-
     EMOJI_CODES_PATH = os.path.join(cache_path, 'emoji_codes.js')
     emoji_codes_file = open(EMOJI_CODES_PATH, 'w')
 

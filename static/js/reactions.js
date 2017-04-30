@@ -2,7 +2,7 @@ var reactions = (function () {
 var exports = {};
 
 function send_reaction_ajax(message_id, emoji_name, operation) {
-    if (!emoji.emojis_by_name[emoji_name]) {
+    if (!emoji.emojis_by_name[emoji_name] && !emoji.realm_emojis[emoji_name]) {
         // Emoji doesn't exist
         return;
     }

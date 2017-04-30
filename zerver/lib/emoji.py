@@ -15,6 +15,8 @@ def check_valid_emoji(realm, emoji_name):
         return
     if emoji_name in name_to_codepoint:
         return
+    if emoji_name == 'zulip':
+        return
     raise JsonableError(_("Emoji '%s' does not exist" % (emoji_name,)))
 
 def check_emoji_admin(user_profile):
