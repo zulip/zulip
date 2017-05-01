@@ -394,6 +394,7 @@ $(function () {
             }
             rebuild_recent_topics(op_stream[0]);
             unread_ops.process_visible();
+            exports.scroll_to_active_stream(stream_li);
         }
     });
 
@@ -526,6 +527,51 @@ $(function () {
     $("#streams_header").expectOne()
         .on('click', toggle_filter_displayed);
 });
+
+exports.scroll_to_active_stream = function (stream_li) {
+    var container = $('#stream-filters-container');
+
+    if (stream_li.length !== 1) {
+        blueslip.error('Invalid stream_li was passed in');
+        return;
+    }
+
+    exports.scroll_element_into_container(stream_li, container);
+};
+
+exports.scroll_element_into_container = function (active_elem, container) {
+    // This is a generic function to make active_elem visible in
+    // container by scrolling container appropriately.  We may want to
+    // eventually move this into another module, but I couldn't find
+    // an ideal landing space for this.  I considered a few modules, but
+    // some are already kind of bloated (ui.js), some may be deprecated
+    // (scroll_bar.js), and some just aren't exact fits (resize.js).
+    //
+    // This does the minimum amount of scrolling that is needed to make
+    // the element visible.  It doesn't try to center the element, so
+    // this will be non-intrusive to users when they already have
+    // the element visible.
+
+    var active_top = active_elem.position().top;
+    var delta = 0;
+
+    if (active_top < 0) {
+        delta = active_top;
+    } else {
+        var active_bottom = active_top + active_elem.height();
+        var container_height = container.height();
+
+        if (active_bottom > container_height) {
+            delta = active_bottom - container_height;
+        }
+    }
+
+    if (delta === 0) {
+        return;
+    }
+
+    container.scrollTop(container.scrollTop() + delta);
+};
 
 return exports;
 }());
