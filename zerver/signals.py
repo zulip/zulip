@@ -85,12 +85,10 @@ def email_on_new_login(sender, user, request, **kwargs):
         context['zulip_support'] = settings.ZULIP_ADMINISTRATOR
         context['user'] = user
 
-        text_template = 'zerver/emails/new_login/new_login_alert.txt'
-        html_template = 'zerver/emails/new_login/new_login_alert.html'
-        text_content = loader.render_to_string(text_template, context)
-        html_content = loader.render_to_string(html_template, context)
+        text_content = loader.render_to_string('zerver/emails/notify_new_login.txt', context)
+        html_content = loader.render_to_string('zerver/emails/notify_new_login.html', context)
 
         sender = settings.NOREPLY_EMAIL_ADDRESS
         recipients = [user.email]
-        subject = loader.render_to_string('zerver/emails/new_login/new_login_alert.subject').strip()
+        subject = loader.render_to_string('zerver/emails/notify_new_login.subject').strip()
         send_mail(subject, text_content, sender, recipients, html_message=html_content)
