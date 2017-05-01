@@ -13,6 +13,7 @@ from zerver.lib.actions import (
 )
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.camo import get_camo_url
+from zerver.lib.emoji import get_emoji_url
 from zerver.lib.message import render_markdown
 from zerver.lib.request import (
     JsonableError,
@@ -478,18 +479,18 @@ class BugdownTest(TestCase):
 
     def test_realm_emoji(self):
         # type: () -> None
-        def emoji_img(name, url):
-            # type: (Text, Text) -> Text
-            return '<img alt="%s" class="emoji" src="%s" title="%s">' % (name, get_camo_url(url), name)
+        def emoji_img(name, file_name, realm_id):
+            # type: (Text, Text, int) -> Text
+            return '<img alt="%s" class="emoji" src="%s" title="%s">' % (
+                name, get_emoji_url(file_name, realm_id), name)
 
         realm = get_realm('zulip')
-        url = "https://zulip.com/test_realm_emoji.png"
-        check_add_realm_emoji(realm, "test", url)
+        check_add_realm_emoji(realm, "test", 'test.png')
 
         # Needs to mock an actual message because that's how bugdown obtains the realm
         msg = Message(sender=get_user_profile_by_email("hamlet@zulip.com"))
         converted = bugdown.convert(":test:", message_realm=realm, message=msg)
-        self.assertEqual(converted, '<p>%s</p>' % (emoji_img(':test:', url)))
+        self.assertEqual(converted, '<p>%s</p>' % (emoji_img(':test:', 'test.png', realm.id)))
 
         do_remove_realm_emoji(realm, 'test')
         converted = bugdown.convert(":test:", message_realm=realm, message=msg)

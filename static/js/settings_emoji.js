@@ -21,7 +21,7 @@ exports.populate_emoji = function (emoji_data) {
         emoji_table.append(templates.render('admin_emoji_list', {
             emoji: {
                 name: name, source_url: data.source_url,
-                display_url: data.display_url,
+                display_url: data.source_url,
                 author: data.author,
                 is_admin: page_params.is_admin,
             },
@@ -61,28 +61,38 @@ exports.set_up = function () {
         });
     });
 
+    var emoji_widget = emoji.build_emoji_upload_widget();
+
     $(".organization").on("submit", "form.admin-emoji-form", function (e) {
         e.preventDefault();
         e.stopPropagation();
         var emoji_status = $('#admin-emoji-status');
         var emoji = {};
+        var formData = new FormData();
         _.each($(this).serializeArray(), function (obj) {
             emoji[obj.name] = obj.value;
         });
-
+        $.each($('#emoji_file_input')[0].files, function (i, file) {
+            formData.append('file-' + i, file);
+        });
         channel.put({
             url: "/json/realm/emoji/" + encodeURIComponent(emoji.name),
-            data: $(this).serialize(),
+            data: formData,
+            cache: false,
+            processData: false,
+            contentType: false,
             success: function () {
                 $('#admin-emoji-status').hide();
                 ui_report.success(i18n.t("Custom emoji added!"), emoji_status);
                 $("form.admin-emoji-form input[type='text']").val("");
+                emoji_widget.clear();
             },
             error: function (xhr) {
                 $('#admin-emoji-status').hide();
                 var errors = JSON.parse(xhr.responseText).msg;
                 xhr.responseText = JSON.stringify({msg: errors});
                 ui_report.error(i18n.t("Failed!"), xhr, emoji_status);
+                emoji_widget.clear();
             },
         });
     });

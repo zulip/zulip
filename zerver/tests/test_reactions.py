@@ -5,7 +5,8 @@ import ujson
 from typing import Any, Dict, List
 from six import string_types
 
-from zerver.lib.test_helpers import tornado_redirected_to_list, get_display_recipient
+from zerver.lib.test_helpers import tornado_redirected_to_list, get_display_recipient, \
+    get_test_image_file
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import get_realm, get_user_profile_by_email, Recipient, UserMessage
 
@@ -97,9 +98,10 @@ class ReactionEmojiTest(ZulipTestCase):
         """
         sender = 'hamlet@zulip.com'
         emoji_name = 'my_emoji'
-        emoji_data = {'url': 'https://example.com/my_emoji'}
-        result = self.client_put('/json/realm/emoji/my_emoji', info=emoji_data,
-                                 **self.api_auth(sender))
+        with get_test_image_file('img.png') as fp1:
+            emoji_data = {'f1': fp1}
+            result = self.client_put_multipart('/json/realm/emoji/my_emoji', info=emoji_data,
+                                               **self.api_auth(sender))
         self.assert_json_success(result)
         self.assertEqual(200, result.status_code)
 

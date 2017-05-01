@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from typing import Any, DefaultDict, Dict, List, Set, Tuple, TypeVar, Text, \
-    Union, Optional, Sequence, AbstractSet, Pattern, AnyStr, Callable
+    Union, Optional, Sequence, AbstractSet, Pattern, AnyStr, Callable, Iterable
 from typing.re import Match
 from zerver.lib.str_utils import NonBinaryStr
 
@@ -25,7 +25,6 @@ from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
 from zerver.lib.utils import make_safe_digest, generate_random_token
 from zerver.lib.str_utils import ModelReprMixin
 from django.db import transaction
-from zerver.lib.camo import get_camo_url
 from django.utils.timezone import now as timezone_now
 from django.contrib.sessions.models import Session
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -197,7 +196,7 @@ class Realm(ModelReprMixin, models.Model):
 
     @cache_with_key(get_realm_emoji_cache_key, timeout=3600*24*7)
     def get_emoji(self):
-        # type: () -> Dict[Text, Optional[Dict[str, Text]]]
+        # type: () -> Dict[Text, Optional[Dict[str, Iterable[Text]]]]
         return get_realm_emoji_uncached(self)
 
     def get_admin_users(self):
@@ -394,20 +393,21 @@ class RealmEmoji(ModelReprMixin, models.Model):
     name = models.TextField(validators=[MinLengthValidator(1),
                                         RegexValidator(regex=r'^[0-9a-zA-Z.\-_]+(?<![.\-_])$',
                                                        message=_("Invalid characters in emoji name"))]) # type: Text
-    # URLs start having browser compatibility problem below 2000
-    # characters, so 1000 seems like a safe limit.
-    img_url = models.URLField(max_length=1000) # type: Text
+    file_name = models.TextField(db_index=True, null=True) # type: Text
+
+    PATH_ID_TEMPLATE = "{realm_id}/emoji/{emoji_file_name}"
 
     class Meta(object):
         unique_together = ("realm", "name")
 
     def __unicode__(self):
         # type: () -> Text
-        return u"<RealmEmoji(%s): %s %s>" % (self.realm.string_id, self.name, self.img_url)
+        return u"<RealmEmoji(%s): %s %s>" % (self.realm.string_id, self.name, self.file_name)
 
 def get_realm_emoji_uncached(realm):
-    # type: (Realm) -> Dict[Text, Optional[Dict[str, Text]]]
+    # type: (Realm) -> Dict[Text, Optional[Dict[str, Iterable[Text]]]]
     d = {}
+    from zerver.lib.emoji import get_emoji_url
     for row in RealmEmoji.objects.filter(realm=realm).select_related('author'):
         if row.author:
             author = {
@@ -416,8 +416,7 @@ def get_realm_emoji_uncached(realm):
                 'full_name': row.author.full_name}
         else:
             author = None
-        d[row.name] = dict(source_url=row.img_url,
-                           display_url=get_camo_url(row.img_url),
+        d[row.name] = dict(source_url=get_emoji_url(row.file_name, row.realm_id),
                            author=author)
     return d
 

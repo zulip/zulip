@@ -41,8 +41,8 @@ exports.update_emojis = function update_emojis(realm_emojis) {
     // Copy the default emoji list and add realm-specific emoji to it
     exports.emojis = default_emojis.slice(0);
     _.each(realm_emojis, function (data, name) {
-        exports.emojis.push({emoji_name: name, emoji_url: data.display_url, is_realm_emoji: true});
-        exports.realm_emojis[name] = {emoji_name: name, emoji_url: data.display_url};
+        exports.emojis.push({emoji_name: name, emoji_url: data.source_url, is_realm_emoji: true});
+        exports.realm_emojis[name] = {emoji_name: name, emoji_url: data.source_url};
     });
     // Add the Zulip emoji to the realm emojis list
     exports.emojis.push(zulip_emoji);
@@ -69,6 +69,26 @@ exports.initialize = function initialize() {
 };
 
 exports.update_emojis(page_params.realm_emoji);
+
+exports.build_emoji_upload_widget = function () {
+
+    var get_file_input = function () {
+        return $('#emoji_file_input');
+    };
+
+    var file_name_field = $('#emoji-file-name');
+    var input_error = $('#emoji_file_input_error');
+    var clear_button = $('#emoji_image_clear_button');
+    var upload_button = $('#emoji_upload_button');
+
+    return upload_widget.build_widget(
+        get_file_input,
+        file_name_field,
+        input_error,
+        clear_button,
+        upload_button
+    );
+};
 
 return exports;
 }());

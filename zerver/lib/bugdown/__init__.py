@@ -727,7 +727,7 @@ class Emoji(markdown.inlinepatterns.Pattern):
             realm_emoji = db_data['emoji']
 
         if current_message and name in realm_emoji:
-            return make_realm_emoji(realm_emoji[name]['display_url'], orig_syntax)
+            return make_realm_emoji(realm_emoji[name]['source_url'], orig_syntax)
         elif name == 'zulip':
             return make_realm_emoji('/static/generated/emoji/images/emoji/unicode/zulip.png', orig_syntax)
         elif name in name_to_codepoint:
