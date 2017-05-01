@@ -437,7 +437,7 @@ $(function () {
 
     // WEBATHENA
 
-    $('#right-sidebar, #top_navbar').on('click', '.webathena_login', function (e) {
+    $('body').on('click', '.webathena_login', function (e) {
         $("#zephyr-mirror-error").removeClass("show");
         var principal = ["zephyr", "zephyr"];
         WinChan.open({
