@@ -251,6 +251,8 @@ class ReactionDict(object):
     def build_dict_from_raw_db_row(row):
         # type: (Dict[str, Any]) -> Dict[str, Any]
         return {'emoji_name': row['emoji_name'],
+                'emoji_code': row['emoji_code'],
+                'reaction_type': row['reaction_type'],
                 'user': {'email': row['user_profile__email'],
                          'id': row['user_profile__id'],
                          'full_name': row['user_profile__full_name']}}

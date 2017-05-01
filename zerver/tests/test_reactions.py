@@ -5,6 +5,8 @@ import ujson
 from typing import Any, Mapping, List
 from six import string_types
 
+from zerver.lib.emoji import emoji_name_to_emoji_code
+from zerver.lib.request import JsonableError
 from zerver.lib.test_helpers import tornado_redirected_to_list, get_display_recipient, \
     get_test_image_file
 from zerver.lib.test_classes import ZulipTestCase
@@ -115,6 +117,62 @@ class ReactionEmojiTest(ZulipTestCase):
         result = self.client_put('/api/v1/messages/1/emoji_reactions/%s' % (emoji_name,),
                                  **self.api_auth(sender))
         self.assert_json_success(result)
+
+    def test_emoji_name_to_emoji_code(self):
+        # type: () -> None
+        """
+        An emoji name is mapped canonically to emoji code.
+        """
+        realm = get_realm('zulip')
+
+        # Test active realm emoji.
+        emoji_code, reaction_type = emoji_name_to_emoji_code(realm, 'green_tick')
+        self.assertEqual(emoji_code, 'green_tick')
+        self.assertEqual(reaction_type, 'realm_emoji')
+
+        # Test deactivated realm emoji.
+        emoji = RealmEmoji.objects.get(name="green_tick")
+        emoji.deactivated = True
+        emoji.save(update_fields=['deactivated'])
+        with self.assertRaises(JsonableError) as exc:
+            emoji_name_to_emoji_code(realm, 'green_tick')
+        self.assertEqual(str(exc.exception), "Emoji 'green_tick' does not exist")
+
+        # Test ':zulip:' emoji.
+        emoji_code, reaction_type = emoji_name_to_emoji_code(realm, 'zulip')
+        self.assertEqual(emoji_code, 'zulip')
+        self.assertEqual(reaction_type, 'zulip_extra_emoji')
+
+        # Test unicode emoji.
+        emoji_code, reaction_type = emoji_name_to_emoji_code(realm, 'astonished')
+        self.assertEqual(emoji_code, '1f632')
+        self.assertEqual(reaction_type, 'unicode_emoji')
+
+        # Test override unicode emoji.
+        overriding_emoji = RealmEmoji.objects.create(
+            name='astonished', realm=realm, file_name='astonished')
+        emoji_code, reaction_type = emoji_name_to_emoji_code(realm, 'astonished')
+        self.assertEqual(emoji_code, 'astonished')
+        self.assertEqual(reaction_type, 'realm_emoji')
+
+        # Test deactivate over-ridding realm emoji.
+        overriding_emoji.deactivated = True
+        overriding_emoji.save(update_fields=['deactivated'])
+        emoji_code, reaction_type = emoji_name_to_emoji_code(realm, 'astonished')
+        self.assertEqual(emoji_code, '1f632')
+        self.assertEqual(reaction_type, 'unicode_emoji')
+
+        # Test override `:zulip:` emoji.
+        overriding_emoji = RealmEmoji.objects.create(
+            name='zulip', realm=realm, file_name='zulip')
+        emoji_code, reaction_type = emoji_name_to_emoji_code(realm, 'zulip')
+        self.assertEqual(emoji_code, 'zulip')
+        self.assertEqual(reaction_type, 'realm_emoji')
+
+        # Test non-existent emoji.
+        with self.assertRaises(JsonableError) as exc:
+            emoji_name_to_emoji_code(realm, 'invalid_emoji')
+        self.assertEqual(str(exc.exception), "Emoji 'invalid_emoji' does not exist")
 
 class ReactionMessageIDTest(ZulipTestCase):
     def test_missing_message_id(self):

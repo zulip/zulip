@@ -21,6 +21,7 @@ from zerver.lib.cache import (
     to_dict_cache_key_id,
 )
 from zerver.lib.context_managers import lockfile
+from zerver.lib.emoji import emoji_name_to_emoji_code
 from zerver.lib.hotspots import get_next_hotspots
 from zerver.lib.message import (
     access_message,
@@ -953,8 +954,8 @@ def do_send_messages(messages_maybe_none):
     # intermingle sending zephyr messages with other messages.
     return already_sent_ids + [message['message'].id for message in messages]
 
-def notify_reaction_update(user_profile, message, emoji_name, op):
-    # type: (UserProfile, Message, Text, Text) -> None
+def notify_reaction_update(user_profile, message, reaction, op):
+    # type: (UserProfile, Message, Reaction, Text) -> None
     user_dict = {'user_id': user_profile.id,
                  'email': user_profile.email,
                  'full_name': user_profile.full_name}
@@ -963,7 +964,9 @@ def notify_reaction_update(user_profile, message, emoji_name, op):
              'op': op,
              'user': user_dict,
              'message_id': message.id,
-             'emoji_name': emoji_name}  # type: Dict[str, Any]
+             'emoji_name': reaction.emoji_name,
+             'emoji_code': reaction.emoji_code,
+             'reaction_type': reaction.reaction_type}  # type: Dict[str, Any]
 
     # Update the cached message since new reaction is added.
     update_to_dict_cache([message])
@@ -984,16 +987,20 @@ def notify_reaction_update(user_profile, message, emoji_name, op):
 
 def do_add_reaction(user_profile, message, emoji_name):
     # type: (UserProfile, Message, Text) -> None
-    reaction = Reaction(user_profile=user_profile, message=message, emoji_name=emoji_name)
+    (emoji_code, reaction_type) = emoji_name_to_emoji_code(user_profile.realm, emoji_name)
+    reaction = Reaction(user_profile=user_profile, message=message,
+                        emoji_name=emoji_name, emoji_code=emoji_code,
+                        reaction_type=reaction_type)
     reaction.save()
-    notify_reaction_update(user_profile, message, emoji_name, "add")
+    notify_reaction_update(user_profile, message, reaction, "add")
 
 def do_remove_reaction(user_profile, message, emoji_name):
     # type: (UserProfile, Message, Text) -> None
-    Reaction.objects.filter(user_profile=user_profile,
-                            message=message,
-                            emoji_name=emoji_name).delete()
-    notify_reaction_update(user_profile, message, emoji_name, "remove")
+    reaction = Reaction.objects.filter(user_profile=user_profile,
+                                       message=message,
+                                       emoji_name=emoji_name).get()
+    reaction.delete()
+    notify_reaction_update(user_profile, message, reaction, "remove")
 
 def do_send_typing_notification(notification):
     # type: (Dict[str, Any]) -> None

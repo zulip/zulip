@@ -658,6 +658,8 @@ class EventsRegisterTest(ZulipTestCase):
             ('op', equals('add')),
             ('message_id', check_int),
             ('emoji_name', check_string),
+            ('emoji_code', check_string),
+            ('reaction_type', check_string),
             ('user', check_dict_only([
                 ('email', check_string),
                 ('full_name', check_string),
@@ -682,6 +684,8 @@ class EventsRegisterTest(ZulipTestCase):
             ('op', equals('remove')),
             ('message_id', check_int),
             ('emoji_name', check_string),
+            ('emoji_code', check_string),
+            ('reaction_type', check_string),
             ('user', check_dict_only([
                 ('email', check_string),
                 ('full_name', check_string),
@@ -691,6 +695,7 @@ class EventsRegisterTest(ZulipTestCase):
 
         message_id = self.send_message(self.example_email("hamlet"), "Verona", Recipient.STREAM, "hello")
         message = Message.objects.get(id=message_id)
+        do_add_reaction(self.user_profile, message, "tada")
         events = self.do_test(
             lambda: do_remove_reaction(
                 self.user_profile, message, "tada"),
