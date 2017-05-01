@@ -8,7 +8,7 @@ from zerver.models import get_client, get_user_profile_by_email
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
-from zerver.models import UserProfile, Client
+from zerver.models import UserProfile
 import ujson
 
 from typing import Any, Dict
@@ -16,10 +16,10 @@ from typing import Any, Dict
 
 @api_key_only_webhook_view('Semaphore')
 @has_request_variables
-def api_semaphore_webhook(request, user_profile, client,
+def api_semaphore_webhook(request, user_profile,
                           payload=REQ(argument_type='body'),
                           stream=REQ(default='builds')):
-    # type: (HttpRequest, UserProfile, Client, Dict[str, Any], str) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Dict[str, Any], str) -> HttpResponse
 
     # semaphore only gives the last commit, even if there were multiple commits
     # since the last build
@@ -62,6 +62,6 @@ def api_semaphore_webhook(request, user_profile, client,
                                                commit_url, message)
     subject = u"%s/%s" % (project_name, branch_name)
 
-    check_send_message(user_profile, client, "stream",
+    check_send_message(user_profile, request.client, "stream",
                        [stream], subject, content)
     return json_success()

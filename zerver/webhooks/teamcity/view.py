@@ -5,7 +5,7 @@ from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
 from typing import Any, Dict, List, Optional
 
-from zerver.models import Client, UserProfile, Realm
+from zerver.models import UserProfile, Realm
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
@@ -39,9 +39,9 @@ def get_teamcity_property_value(property_list, name):
 
 @api_key_only_webhook_view('Teamcity')
 @has_request_variables
-def api_teamcity_webhook(request, user_profile, client, payload=REQ(argument_type='body'),
+def api_teamcity_webhook(request, user_profile, payload=REQ(argument_type='body'),
                          stream=REQ(default='teamcity')):
-    # type: (HttpRequest, UserProfile, Client, Dict[str, Any], str) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Dict[str, Any], str) -> HttpResponse
     message = payload['build']
 
     build_name = message['buildFullName']
@@ -94,8 +94,8 @@ def api_teamcity_webhook(request, user_profile, client, payload=REQ(argument_typ
             return json_success()
 
         body = "Your personal build of " + body
-        check_send_message(user_profile, client, 'private', [teamcity_user.email], topic, body)
+        check_send_message(user_profile, request.client, 'private', [teamcity_user.email], topic, body)
         return json_success()
 
-    check_send_message(user_profile, client, 'stream', [stream], topic, body)
+    check_send_message(user_profile, request.client, 'stream', [stream], topic, body)
     return json_success()

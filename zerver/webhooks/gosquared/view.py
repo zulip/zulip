@@ -4,7 +4,7 @@ from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
 
-from zerver.models import Client, UserProfile
+from zerver.models import UserProfile
 
 from django.http import HttpRequest, HttpResponse
 from typing import Text
@@ -14,11 +14,11 @@ BODY_TEMPLATE = '[{website_name}]({website_url}) has {user_num} visitors online.
 
 @api_key_only_webhook_view('GoSquared')
 @has_request_variables
-def api_gosquared_webhook(request, user_profile, client,
+def api_gosquared_webhook(request, user_profile,
                           payload=REQ(argument_type='body'),
                           stream=REQ(default='gosquared'),
                           topic=REQ(default=None)):
-    # type: (HttpRequest, UserProfile, Client, Dict[str, Dict[str, Any]], Text, Text) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Dict[str, Dict[str, Any]], Text, Text) -> HttpResponse
     try:
         domain_name = payload['siteDetails']['domain']
         user_num = payload['concurrents']
@@ -32,6 +32,6 @@ def api_gosquared_webhook(request, user_profile, client,
     if topic is None:
         topic = 'GoSquared - {website_name}'.format(website_name=domain_name)
 
-    check_send_message(user_profile, client, 'stream', [stream],
+    check_send_message(user_profile, request.client, 'stream', [stream],
                        topic, body)
     return json_success()

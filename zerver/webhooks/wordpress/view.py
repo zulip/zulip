@@ -2,7 +2,7 @@
 from __future__ import absolute_import
 from django.utils.translation import ugettext as _
 from django.http import HttpRequest, HttpResponse
-from zerver.models import Client, get_client, UserProfile
+from zerver.models import get_client, UserProfile
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
@@ -15,7 +15,7 @@ WP_LOGIN_TEMPLATE = 'User {name} logged in.'
 
 @api_key_only_webhook_view("Wordpress")
 @has_request_variables
-def api_wordpress_webhook(request, user_profile, client,
+def api_wordpress_webhook(request, user_profile,
                           stream=REQ(default="wordpress"),
                           topic=REQ(default="WordPress Notification"),
                           hook=REQ(default="WordPress Action"),
@@ -25,7 +25,7 @@ def api_wordpress_webhook(request, user_profile, client,
                           display_name=REQ(default="New User Name"),
                           user_email=REQ(default="New User Email"),
                           user_login=REQ(default="Logged in User")):
-    # type: (HttpRequest, UserProfile, Client, text_type, text_type, text_type, text_type, text_type, text_type, text_type, text_type, text_type) -> HttpResponse
+    # type: (HttpRequest, UserProfile, text_type, text_type, text_type, text_type, text_type, text_type, text_type, text_type, text_type) -> HttpResponse
 
     # remove trailing whitespace (issue for some test fixtures)
     hook = hook.rstrip()

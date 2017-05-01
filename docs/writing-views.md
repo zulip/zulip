@@ -355,15 +355,15 @@ target server for the webhook, and an API key.
 
 If the webhook does not have an option to provide a bot email, use the
 `api_key_only_webhook_view` decorator, to fill in the `user_profile` and
-`client` fields of a request:
+`request.client` fields of a request:
 
 ``` py
 @api_key_only_webhook_view('PagerDuty')
 @has_request_variables
-def api_pagerduty_webhook(request, user_profile, client,
+def api_pagerduty_webhook(request, user_profile,
                           payload=REQ(argument_type='body'),
                           stream=REQ(default='pagerduty'),
                           topic=REQ(default=None)):
 ```
-The `client` will be the result of `get_client("ZulipPagerDutyWebhook")`
-in this example.
+`request.client` will be the result of `get_client("ZulipPagerDutyWebhook")`
+in this example and it will be passed to `check_send_message`.

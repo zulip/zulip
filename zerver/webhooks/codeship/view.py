@@ -8,7 +8,7 @@ from typing import Any, Dict
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
-from zerver.models import UserProfile, Client
+from zerver.models import UserProfile
 
 import ujson
 
@@ -26,9 +26,9 @@ CODESHIP_STATUS_MAPPER = {
 
 @api_key_only_webhook_view('Codeship')
 @has_request_variables
-def api_codeship_webhook(request, user_profile, client, payload=REQ(argument_type='body'),
+def api_codeship_webhook(request, user_profile, payload=REQ(argument_type='body'),
                          stream=REQ(default='codeship')):
-    # type: (HttpRequest, UserProfile, Client, Dict[str, Any], str) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Dict[str, Any], str) -> HttpResponse
     try:
         payload = payload['build']
         subject = get_subject_for_http_request(payload)
@@ -36,7 +36,7 @@ def api_codeship_webhook(request, user_profile, client, payload=REQ(argument_typ
     except KeyError as e:
         return json_error(_("Missing key {} in JSON").format(str(e)))
 
-    check_send_message(user_profile, client, 'stream', [stream], subject, body)
+    check_send_message(user_profile, request.client, 'stream', [stream], subject, body)
     return json_success()
 
 

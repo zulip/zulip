@@ -208,8 +208,8 @@ class DecoratorTestCase(TestCase):
     def test_api_key_only_webhook_view(self):
         # type: () -> None
         @api_key_only_webhook_view('ClientName')
-        def my_webhook(request, user_profile, client):
-            # type: (HttpRequest, UserProfile, Client) -> Text
+        def my_webhook(request, user_profile):
+            # type: (HttpRequest, UserProfile) -> Text
             return user_profile.email
 
         class Request(HostRequestMock):

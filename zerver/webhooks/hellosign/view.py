@@ -4,7 +4,7 @@ from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
 
-from zerver.models import Client, UserProfile
+from zerver.models import UserProfile
 
 from django.http import HttpRequest, HttpResponse
 from six import text_type
@@ -45,11 +45,11 @@ def ready_payload(signatories, payload):
 
 @api_key_only_webhook_view('HelloSign')
 @has_request_variables
-def api_hellosign_webhook(request, user_profile, client,
+def api_hellosign_webhook(request, user_profile,
                           payload=REQ(argument_type='body'),
                           stream=REQ(default='hellosign'),
                           topic=REQ(default=None)):
-    # type: (HttpRequest, UserProfile, Client, Dict[str, Dict[str, Any]], text_type, text_type) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Dict[str, Dict[str, Any]], text_type, text_type) -> HttpResponse
     try:
         model_payload = ready_payload(payload['signature_request']['signatures'],
                                       payload)
@@ -58,6 +58,6 @@ def api_hellosign_webhook(request, user_profile, client,
 
     body = format_body(payload['signature_request']['signatures'], model_payload)
     topic = model_payload['contract_title']
-    check_send_message(user_profile, client, 'stream', [stream],
+    check_send_message(user_profile, request.client, 'stream', [stream],
                        topic, body)
     return json_success()
