@@ -3062,7 +3062,7 @@ def do_send_confirmation_email(invitee, referrer, body):
                'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS}
 
     if referrer.realm.is_zephyr_mirror_realm:
-        template_prefix = 'confirmation/mituser_invite_email'
+        template_prefix = 'zerver/emails/invitation_mit'
     else:
         template_prefix = 'zerver/emails/invitation'
 
