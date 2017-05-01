@@ -166,7 +166,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
         })
         send_local_email_template_with_delay(
             [{'email': data["email"], 'name': ""}],
-            "zerver/emails/invitation/invitation_reminder_email",
+            "zerver/emails/invitation_reminder",
             context,
             datetime.timedelta(days=2),
             tags=["invitation-reminders"],
