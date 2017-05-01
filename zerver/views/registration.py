@@ -294,7 +294,7 @@ def send_registration_completion_email(email, request, realm_creation=False):
     if settings.REALMS_HAVE_SUBDOMAINS:
         realm = get_realm(get_subdomain(request))
         if realm and realm.is_zephyr_mirror_realm:
-            template_prefix = 'confirmation/mituser_confirmation_email'
+            template_prefix = 'zerver/emails/confirm_registration_mit'
 
     prereg_user = create_preregistration_user(email, request, realm_creation)
     context = {'support_email': settings.ZULIP_ADMINISTRATOR,
