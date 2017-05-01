@@ -3064,7 +3064,7 @@ def do_send_confirmation_email(invitee, referrer, body):
     if referrer.realm.is_zephyr_mirror_realm:
         template_prefix = 'confirmation/mituser_invite_email'
     else:
-        template_prefix = 'confirmation/invite_email'
+        template_prefix = 'zerver/emails/invitation'
 
     Confirmation.objects.send_confirmation(
         invitee, template_prefix, invitee.email, additional_context=context,
