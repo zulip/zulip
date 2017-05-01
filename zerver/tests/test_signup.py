@@ -739,7 +739,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         with self.settings(EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'):
             send_local_email_template_with_delay(
                 [{'email': data["email"], 'name': ""}],
-                "zerver/emails/invitation/invitation_reminder_email",
+                "zerver/emails/invitation_reminder",
                 context,
                 datetime.timedelta(days=0),
                 tags=["invitation-reminders"],
