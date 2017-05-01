@@ -313,7 +313,7 @@ TEMPLATES = [
                 'pipeline.jinja2.PipelineExtension',
             ],
             'context_processors': [
-                'zerver.context_processors.add_settings',
+                'zerver.context_processors.zulip_default_context',
                 'zerver.context_processors.add_metrics',
                 'django.template.context_processors.i18n',
             ],

@@ -19,6 +19,9 @@ from version import ZULIP_VERSION
 
 def common_context(user):
     # type: (UserProfile) -> Dict[str, Any]
+    """Common context used for things like outgoing emails that don't
+    have a request.
+    """
     return {
         'realm_uri': user.realm.uri,
         'server_uri': settings.SERVER_URI,
@@ -26,8 +29,17 @@ def common_context(user):
         'external_host': settings.EXTERNAL_HOST,
     }
 
-def add_settings(request):
+def zulip_default_context(request):
     # type: (HttpRequest) -> Dict[str, Any]
+    """Context available to all Zulip Jinja2 templates that have a request
+    passed in.  Designed to provide the long list of variables at the
+    bottom of this function in a wide range of situations: logged-in
+    or logged-out, subdomains or not, etc.
+
+    The main variable in the below is whether we know the realm, which
+    is the case if there is only one realm, or we're on a
+    REALMS_HAVE_SUBDOMAINS subdomain, or the user is logged in.
+    """
     if hasattr(request, "user") and hasattr(request.user, "realm"):
         realm = request.user.realm
     elif settings.REALMS_HAVE_SUBDOMAINS:
