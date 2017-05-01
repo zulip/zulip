@@ -367,8 +367,11 @@ exports.end = function (row) {
         // Clean up resize event listeners
         var listeners = currently_editing_messages[message.id].listeners;
         var edit_box = document.querySelector("#message_edit_content_" + message.id);
-        edit_box.removeEventListener("mousedown", listeners[0]);
-        document.body.removeEventListener("mouseup", listeners[1]);
+        if (listeners !== undefined) {
+            // Event listeners to cleanup are only set in some edit types
+            edit_box.removeEventListener("mousedown", listeners[0]);
+            document.body.removeEventListener("mouseup", listeners[1]);
+        }
 
         delete currently_editing_messages[message.id];
         current_msg_list.hide_edit_message(row);
