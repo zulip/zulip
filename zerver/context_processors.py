@@ -11,6 +11,8 @@ from zproject.backends import (
     github_auth_enabled,
     google_auth_enabled,
     password_auth_enabled,
+    auth_enabled_helper,
+    AUTH_BACKEND_NAME_MAP
 )
 from zerver.lib.utils import get_subdomain
 from zerver.lib.realm_icon import get_realm_icon_url
@@ -90,6 +92,7 @@ def zulip_default_context(request):
         'google_auth_enabled': google_auth_enabled(realm),
         'github_auth_enabled': github_auth_enabled(realm),
         'any_oauth_backend_enabled': any_oauth_backend_enabled(realm),
+        'no_auth_enabled': not auth_enabled_helper(list(AUTH_BACKEND_NAME_MAP.keys()), realm),
         'development_environment': settings.DEVELOPMENT,
         'support_email': settings.ZULIP_ADMINISTRATOR,
         'find_team_link_disabled': settings.FIND_TEAM_LINK_DISABLED,

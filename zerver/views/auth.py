@@ -30,8 +30,7 @@ from zerver.models import PreregistrationUser, UserProfile, remote_user_to_email
 from zerver.views.registration import create_preregistration_user, get_realm_from_request, \
     redirect_and_log_into_subdomain
 from zproject.backends import password_auth_enabled, dev_auth_enabled, \
-    github_auth_enabled, google_auth_enabled, ldap_auth_enabled, auth_enabled_helper, \
-    AUTH_BACKEND_NAME_MAP
+    github_auth_enabled, google_auth_enabled, ldap_auth_enabled
 from version import ZULIP_VERSION
 
 import hashlib
@@ -391,7 +390,6 @@ def get_dev_users(extra_users_count=10):
 
 def login_page(request, **kwargs):
     # type: (HttpRequest, **Any) -> HttpResponse
-
     if request.user.is_authenticated():
         return HttpResponseRedirect("/")
     if is_subdomain_root_or_alias(request) and settings.REALMS_HAVE_SUBDOMAINS:
@@ -408,12 +406,6 @@ def login_page(request, **kwargs):
         extra_context['community_users'] = [
             u.email for u in users
             if u.realm.string_id != 'zulip']
-
-    # If no authentication method is enabled, show error.
-    is_auth_possible = auth_enabled_helper(list(AUTH_BACKEND_NAME_MAP.keys()), realm=None)
-    if not is_auth_possible:
-        extra_context['no_auth_enabled'] = True
-
     template_response = django_login_page(
         request, authentication_form=OurAuthenticationForm,
         extra_context=extra_context, **kwargs)
