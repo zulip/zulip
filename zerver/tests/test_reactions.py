@@ -51,6 +51,17 @@ class ReactionEmojiTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(200, result.status_code)
 
+    def test_zulip_emoji(self):
+        # type: () -> None
+        """
+        Reacting with zulip emoji succeeds
+        """
+        sender = 'hamlet@zulip.com'
+        result = self.client_put('/api/v1/messages/1/emoji_reactions/zulip',
+                                 **self.api_auth(sender))
+        self.assert_json_success(result)
+        self.assertEqual(200, result.status_code)
+
     def test_valid_emoji_react_historical(self):
         # type: () -> None
         """
