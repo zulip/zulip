@@ -286,7 +286,7 @@ def send_registration_completion_email(email, request, realm_creation=False):
     Send an email with a confirmation link to the provided e-mail so the user
     can complete their registration.
     """
-    template_prefix = 'confirmation/preregistrationuser_confirmation_email'
+    template_prefix = 'zerver/emails/confirm_registration'
     # Note: to make the following work in the non-subdomains case, you'll
     # need to copy the logic from the beginning of accounts_register to
     # figure out which realm the user is trying to sign up for, and then
