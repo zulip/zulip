@@ -355,9 +355,9 @@ exports.set_up = function () {
             error: function (xhr) {
                 var reason = $.parseJSON(xhr.responseText).reason;
                 if (reason === "no authentication") {
-                    ui_report.error(i18n.t("Failed!"), xhr, authentication_methods_status);
+                    ui_report.error(i18n.t("Failed"), xhr, authentication_methods_status);
                 } else {
-                    ui_report.error(i18n.t("Failed!"), xhr, name_status);
+                    ui_report.error(i18n.t("Failed"), xhr, name_status);
                 }
             },
         });

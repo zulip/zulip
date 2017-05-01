@@ -298,7 +298,7 @@ exports.on_load_success = function (realm_people_data) {
             },
             error: function (xhr) {
                 var status = row.find(".admin-user-status");
-                ui_report.error(i18n.t("Failed!"), xhr, status);
+                ui_report.error(i18n.t("Failed"), xhr, status);
             },
         });
     });
@@ -329,7 +329,7 @@ exports.on_load_success = function (realm_people_data) {
             },
             error: function (xhr) {
                 var status = row.find(".admin-user-status");
-                ui_report.error(i18n.t("Failed!"), xhr, status);
+                ui_report.error(i18n.t("Failed"), xhr, status);
             },
         });
     });
@@ -387,7 +387,7 @@ exports.on_load_success = function (realm_people_data) {
                     ui_report.success(i18n.t('Updated successfully!'), admin_status);
                 },
                 error: function () {
-                    ui_report.error(i18n.t('Update failed!'), admin_status);
+                    ui_report.error(i18n.t('Failed'), admin_status);
                 },
             });
         });

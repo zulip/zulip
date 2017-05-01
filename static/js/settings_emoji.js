@@ -91,7 +91,7 @@ exports.set_up = function () {
                 $('#admin-emoji-status').hide();
                 var errors = JSON.parse(xhr.responseText).msg;
                 xhr.responseText = JSON.stringify({msg: errors});
-                ui_report.error(i18n.t("Failed!"), xhr, emoji_status);
+                ui_report.error(i18n.t("Failed"), xhr, emoji_status);
                 emoji_widget.clear();
             },
         });
