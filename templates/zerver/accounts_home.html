@@ -11,70 +11,71 @@ $(function () {
 </script>
 <div class="bg-image"></div>
 
-<div class="app register-page split-view flex full-page">
-    <div class="app-main register-page-container">
-        <div class="register-form new-style">
-            <div class="lead">
-                <h1 class="get-started">{{ _("Sign up for Zulip") }}</h1>
-            </div>
-            {% if realm_name %}
-            <div class="left-side">
-                <div class="org-header">
-                    <div class="avatar" style="background-image: url('{{ realm_icon }}')"></div>
-                    <div class="info-box">
-                        <div class="organization-name">{{ realm_name }}</div>
-                        <div class="organization-path">{{ realm_uri }}</div>
+<div class="app register-page split-view flex full-page new-style">
+    <div class="inline-block">
+        <div class="lead">
+            <h1 class="get-started">{{ _("Sign up for Zulip") }}</h1>
+        </div>
+        <div class="app-main register-page-container">
+            <div class="register-form new-style">
+                {% if realm_name %}
+                <div class="left-side">
+                    <div class="org-header">
+                        <div class="avatar" style="background-image: url('{{ realm_icon }}')"></div>
+                        <div class="info-box">
+                            <div class="organization-name">{{ realm_name }}</div>
+                            <div class="organization-path">{{ realm_uri }}</div>
+                        </div>
+                    </div>
+                    <div class="description">
+                        {{ realm_description }}
                     </div>
                 </div>
-                <div class="description">
-                    {{ realm_description }}
-                </div>
-            </div>
-            {% endif %}
-            <div class="right-side">
-                {% if no_auth_enabled %}
-                <div class="alert">
-                    <p>No authentication backends are enabled on this
-                    server yet, so it is impossible to register!</p>
+                {% endif %}
+                <div class="right-side">
+                    {% if no_auth_enabled %}
+                    <div class="alert">
+                        <p>No authentication backends are enabled on this
+                        server yet, so it is impossible to register!</p>
 
-                    <p>See
-                    the <a href="http://zulip.readthedocs.io/en/latest/prod-install.html#step-3-configure-zulip">Zulip
-                    authentication documentation</a> to learn how to
-                    configure authentication backends.</p>
-                </div>
-                {% else %}
-                <form class="form-inline" id="send_confirm" name="email_form"
-                    action="{{ current_url() }}" method="post">
-                    {{ csrf_input }}
-
-                    <div class="input-box no-validate">
-                        <input type="email" id="email" class="email" name="email" value="" required />
-                        <label>Email</label>
-                        <div class="required"></div>
-                        <img class="valid" src="/static/images/checkbox-valid.svg" />
+                        <p>See
+                        the <a href="http://zulip.readthedocs.io/en/latest/prod-install.html#step-3-configure-zulip">Zulip
+                        authentication documentation</a> to learn how to
+                        configure authentication backends.</p>
                     </div>
+                    {% else %}
+                    <form class="form-inline" id="send_confirm" name="email_form"
+                        action="{{ current_url() }}" method="post">
+                        {{ csrf_input }}
 
-                    <button class="full-width" type="submit" name="">{{ _('Sign up') }}</button>
-                </form>
+                        <div class="input-box no-validate">
+                            <input type="email" id="email" class="email" name="email" value="" required />
+                            <label>Email</label>
+                            <div class="required"></div>
+                            <img class="valid" src="/static/images/checkbox-valid.svg" />
+                        </div>
 
-                <div id="errors"></div>
-                {% if form.email.errors %}
-                    {% for error in form.email.errors %}
-                    <div class="alert alert-error">{{ error }}</div>
-                    {% endfor %}
-                {% endif %}
+                        <button class="full-width" type="submit" name="">{{ _('Sign up') }}</button>
+                    </form>
 
-                {% if google_auth_enabled %}
-                <div class="or">or</div>
+                    <div id="errors"></div>
+                    {% if form.email.errors %}
+                        {% for error in form.email.errors %}
+                        <div class="alert alert-error">{{ error }}</div>
+                        {% endfor %}
+                    {% endif %}
 
-                <div class="register-google">
-                    <a href="{{ url('zerver.views.auth.start_google_oauth2') }}">
-                        <button class="login-google-button full-width">{{ _('Sign up with Google') }}</button>
-                    </a>
+                    {% if google_auth_enabled %}
+                    <div class="or">or</div>
+
+                    <div class="register-google">
+                        <a href="{{ url('zerver.views.auth.start_google_oauth2') }}">
+                            <button class="login-google-button full-width">{{ _('Sign up with Google') }}</button>
+                        </a>
+                    </div>
+                    {% endif %}
+                    {% endif %}
                 </div>
-                {% endif %}
-                {% endif %}
-
             </div>
         </div>
     </div>

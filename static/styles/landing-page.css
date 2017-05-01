@@ -868,7 +868,7 @@ a:not(.no-style):hover:before {
     }
 
     .features-app .main {
-        margin: 0px auto 20px;
+        margin: 0px auto;
         width: calc(100% - 40px);
     }
 

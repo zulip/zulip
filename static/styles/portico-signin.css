@@ -126,7 +126,6 @@ html {
 
 .forgot-password-container {
     width: 503px;
-    margin-top: calc(50vh - 150px);
 }
 
 .forgot-password-container form {
@@ -348,7 +347,20 @@ html {
     color: #444;
 }
 
-.new-style .input-box .text-error {
+.new-style .input-box p.text-error {
+    display: block;
+    padding: 0px;
+
+    color: #d26666;
+    font-size: 0.7em;
+    font-weight: 600;
+    height: 0;
+
+    position: relative;
+    top: -4px;
+}
+
+.new-style .input-box label.text-error {
     display: block;
 
     top: 66px;
@@ -360,14 +372,9 @@ html {
 }
 
 .new-style .get-started {
-    height: 0px;
-    margin: 0px;
-
     font-size: 2.5rem;
     text-align: center;
     color: #666;
-
-    transform: translateY(-90px);
 }
 
 .new-style button {
@@ -654,6 +661,8 @@ button.login-google-button {
 .split-view .left-side {
     width: 500px;
     border-right: 1px solid #eee;
+    position: relative;
+    left: -1px;
 }
 
 .split-view .left-side + .right-side {
@@ -741,10 +750,6 @@ button.login-google-button {
 
     .split-view .right-side {
         width: 324px;
-    }
-
-    .new-style .get-started {
-        transform: translateY(-70px);
     }
 }
 

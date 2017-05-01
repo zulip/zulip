@@ -276,8 +276,7 @@ img.screenshot {
 
 #registration #pw_strength {
     width: 325px;
-    height: 8px;
-    margin: -5px 0 0 0;
+    margin-top: 20px;
 }
 
 .def:before {
@@ -1233,7 +1232,7 @@ input.new-organization-button {
 
 .markdown {
     max-width: 800px;
-    margin: 20px auto;
+    margin: 20px auto 0px auto;
     padding: 20px;
 
     font-weight: 400;
