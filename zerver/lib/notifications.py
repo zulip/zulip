@@ -523,14 +523,14 @@ def enqueue_welcome_emails(email, name):
 
     # Send day 1 email
     send_local_email_template_with_delay([{'email': email, 'name': name}],
-                                         "zerver/emails/followup/day1",
+                                         "zerver/emails/followup_day1",
                                          template_payload,
                                          datetime.timedelta(hours=1),
                                          tags=["followup-emails"],
                                          sender=sender)
     # Send day 2 email
     send_local_email_template_with_delay([{'email': email, 'name': name}],
-                                         "zerver/emails/followup/day2",
+                                         "zerver/emails/followup_day2",
                                          template_payload,
                                          datetime.timedelta(days=1),
                                          tags=["followup-emails"],
