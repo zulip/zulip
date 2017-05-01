@@ -12,11 +12,11 @@ from django.template import RequestContext, loader
 from django.utils.timezone import now
 from django.core.exceptions import ValidationError
 from django.core import validators
-from django.core.mail import send_mail
 from zerver.models import UserProfile, Realm, PreregistrationUser, \
     name_changes_disabled, email_to_username, \
     completely_open, get_unique_open_realm, email_allowed_for_realm, \
     get_realm, get_realm_by_email_domain
+from zerver.lib.send_email import send_email_to_user
 from zerver.lib.events import do_events_register
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
     do_activate_user, do_create_user, do_create_realm, set_default_streams, \
@@ -390,17 +390,6 @@ def generate_204(request):
     # type: (HttpRequest) -> HttpResponse
     return HttpResponse(content=None, status=204)
 
-def send_find_my_team_emails(user_profile):
-    # type: (UserProfile) -> None
-    context = {'user_profile': user_profile}
-    text_content = loader.render_to_string('zerver/emails/find_team.txt', context)
-    html_content = loader.render_to_string('zerver/emails/find_team.html', context)
-    sender = settings.NOREPLY_EMAIL_ADDRESS
-    recipients = [user_profile.email]
-    subject = loader.render_to_string('zerver/emails/find_team.subject').strip()
-
-    send_mail(subject, text_content, sender, recipients, html_message=html_content)
-
 def find_my_team(request):
     # type: (HttpRequest) -> HttpResponse
     url = reverse('zerver.views.registration.find_my_team')
@@ -411,7 +400,8 @@ def find_my_team(request):
         if form.is_valid():
             emails = form.cleaned_data['emails']
             for user_profile in UserProfile.objects.filter(email__in=emails):
-                send_find_my_team_emails(user_profile)
+                send_email_to_user('zerver/emails/find_team', user_profile,
+                                   context={'user_profile': user_profile})
 
             # Note: Show all the emails in the result otherwise this
             # feature can be used to ascertain which email addresses
