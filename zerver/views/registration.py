@@ -385,14 +385,12 @@ def generate_204(request):
 
 def send_find_my_team_emails(user_profile):
     # type: (UserProfile) -> None
-    text_template = 'zerver/emails/find_team/find_team_email.txt'
-    html_template = 'zerver/emails/find_team/find_team_email.html'
     context = {'user_profile': user_profile}
-    text_content = loader.render_to_string(text_template, context)
-    html_content = loader.render_to_string(html_template, context)
+    text_content = loader.render_to_string('zerver/emails/find_team.txt', context)
+    html_content = loader.render_to_string('zerver/emails/find_team.html', context)
     sender = settings.NOREPLY_EMAIL_ADDRESS
     recipients = [user_profile.email]
-    subject = loader.render_to_string('zerver/emails/find_team/find_team_email.subject').strip()
+    subject = loader.render_to_string('zerver/emails/find_team.subject').strip()
 
     send_mail(subject, text_content, sender, recipients, html_message=html_content)
 
