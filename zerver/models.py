@@ -1238,6 +1238,16 @@ class Reaction(ModelReprMixin, models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
     message = models.ForeignKey(Message, on_delete=CASCADE)  # type: Message
     emoji_name = models.TextField()  # type: Text
+    emoji_code = models.TextField()  # type: Text
+
+    UNICODE_EMOJI       = u'unicode_emoji'
+    REALM_EMOJI         = u'realm_emoji'
+    ZULIP_EXTRA_EMOJI   = u'zulip_extra_emoji'
+    REACTION_TYPES      = ((UNICODE_EMOJI, _("Unicode emoji")),
+                           (REALM_EMOJI, _("Realm emoji")),
+                           (ZULIP_EXTRA_EMOJI, _("Zulip extra emoji")))
+
+    reaction_type = models.CharField(default=UNICODE_EMOJI, choices=REACTION_TYPES, max_length=30)  # type: Text
 
     class Meta(object):
         unique_together = ("user_profile", "message", "emoji_name")
@@ -1245,8 +1255,8 @@ class Reaction(ModelReprMixin, models.Model):
     @staticmethod
     def get_raw_db_rows(needed_ids):
         # type: (List[int]) -> List[Dict[str, Any]]
-        fields = ['message_id', 'emoji_name', 'user_profile__email',
-                  'user_profile__id', 'user_profile__full_name']
+        fields = ['message_id', 'emoji_name', 'emoji_code', 'reaction_type',
+                  'user_profile__email', 'user_profile__id', 'user_profile__full_name']
         return Reaction.objects.filter(message_id__in=needed_ids).values(*fields)
 
 # Whenever a message is sent, for each user subscribed to the

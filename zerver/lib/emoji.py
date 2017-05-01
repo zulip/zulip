@@ -2,24 +2,38 @@ from __future__ import absolute_import
 
 import os
 import re
+import ujson
 
 from django.utils.translation import ugettext as _
-from typing import Optional, Text
-from zerver.lib.bugdown import name_to_codepoint
+from typing import Optional, Text, Tuple
+
 from zerver.lib.request import JsonableError
 from zerver.lib.upload import upload_backend
-from zerver.models import Realm, RealmEmoji, UserProfile
+from zerver.models import Reaction, Realm, RealmEmoji, UserProfile
+
+# Until migration to iamcal dataset is complete use the unified
+# reactions file to convert a reaction emoji name to codepoint.
+# Once the migration is complete this will be switched to use
+# name_to_codepoint map.
+ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+UNIFIED_REACTIONS_FILE_PATH = os.path.join(ZULIP_PATH, 'zerver', 'management', 'data', 'unified_reactions.json')
+with open(UNIFIED_REACTIONS_FILE_PATH) as fp:
+    unified_reactions = ujson.load(fp)
+
+def emoji_name_to_emoji_code(realm, emoji_name):
+    # type: (Realm, Text) -> Tuple[Text, Text]
+    realm_emojis = realm.get_emoji()
+    if emoji_name in realm_emojis and not realm_emojis[emoji_name]['deactivated']:
+        return emoji_name, Reaction.REALM_EMOJI
+    if emoji_name == 'zulip':
+        return emoji_name, Reaction.ZULIP_EXTRA_EMOJI
+    if emoji_name in unified_reactions:
+        return unified_reactions[emoji_name], Reaction.UNICODE_EMOJI
+    raise JsonableError(_("Emoji '%s' does not exist" % (emoji_name,)))
 
 def check_valid_emoji(realm, emoji_name):
     # type: (Realm, Text) -> None
-    realm_emojis = realm.get_emoji()
-    if emoji_name in realm_emojis and not realm_emojis[emoji_name]['deactivated']:
-        return
-    if emoji_name in name_to_codepoint:
-        return
-    if emoji_name == 'zulip':
-        return
-    raise JsonableError(_("Emoji '%s' does not exist" % (emoji_name,)))
+    emoji_name_to_emoji_code(realm, emoji_name)
 
 def check_emoji_admin(user_profile, emoji_name=None):
     # type: (UserProfile, Optional[Text]) -> None

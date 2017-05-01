@@ -66,13 +66,13 @@ people.add_in_realm(cali);
 var message = {
     id: 1001,
     reactions: [
-        {emoji_name: 'smile', user: {id: 5}},
-        {emoji_name: 'smile', user: {id: 6}},
-        {emoji_name: 'frown', user: {id: 7}},
+        {emoji_name: 'smile', user: {id: 5}, reaction_type: 'unicode_emoji', emoji_code: '1'},
+        {emoji_name: 'smile', user: {id: 6}, reaction_type: 'unicode_emoji', emoji_code: '1'},
+        {emoji_name: 'frown', user: {id: 7}, reaction_type: 'unicode_emoji', emoji_code: '2'},
 
         // add some bogus user_ids
-        {emoji_name: 'octopus', user: {id: 8888}},
-        {emoji_name: 'frown', user: {id: 9999}},
+        {emoji_name: 'octopus', user: {id: 8888}, reaction_type: 'unicode_emoji', emoji_code: '3'},
+        {emoji_name: 'frown', user: {id: 9999}, reaction_type: 'unicode_emoji', emoji_code: '2'},
     ],
 };
 
@@ -94,16 +94,22 @@ set_global('message_store', {
     var expected_result = [
       {
          emoji_name: 'frown',
-         emoji_name_css_class: 'frown-css',
+         reaction_type: 'unicode_emoji',
+         emoji_code: '2',
+         emoji_name_css_class: '2',
          count: 1,
+         user_ids: [ 7 ],
          title: 'Cali reacted with :frown:',
          emoji_alt_code: undefined,
          class: 'message_reaction',
       },
       {
          emoji_name: 'smile',
-         emoji_name_css_class: 'smile-css',
+         reaction_type: 'unicode_emoji',
+         emoji_code: '1',
+         emoji_name_css_class: '1',
          count: 2,
+         user_ids: [ 5, 6 ],
          title: 'You (click to remove) and Bob van Roberts reacted with :smile:',
          emoji_alt_code: undefined,
          class: 'message_reaction reacted',
