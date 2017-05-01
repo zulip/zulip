@@ -60,9 +60,9 @@ def confirm_email_change(request, confirmation_key):
                    'new_email': new_email,
                    }
         subject = render_to_string(
-            'confirmation/notify_change_in_email.subject', context)
+            'zerver/emails/notify_change_in_email.subject', context)
         body = render_to_string(
-            'confirmation/notify_change_in_email.txt', context)
+            'zerver/emails/notify_change_in_email.txt', context)
         send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [old_email])
 
     ctx = {

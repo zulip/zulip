@@ -90,7 +90,7 @@ class TemplateTestCase(ZulipTestCase):
             'zerver/emails/confirm_new_email.subject',
             'zerver/emails/confirm_new_email.html',
             'zerver/emails/confirm_new_email.txt',
-            'confirmation/notify_change_in_email.subject',
+            'zerver/emails/notify_change_in_email.subject',
             'corporate/mit.html',
             'corporate/zephyr.html',
             'corporate/zephyr-mirror.html',
