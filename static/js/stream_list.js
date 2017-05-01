@@ -343,6 +343,14 @@ exports.refresh_pinned_or_unpinned_stream = function (sub) {
     // We use kind of brute force now, which is probably fine.
     build_stream_sidebar_row(sub);
     exports.update_streams_sidebar();
+
+    // Only scroll pinned topics into view.  If we're unpinning
+    // a topic, we may be literally trying to get it out of
+    // our sight.
+    if (sub.pin_to_top) {
+        var stream_li = exports.get_stream_li(sub.name);
+        exports.scroll_to_active_stream(stream_li);
+    }
 };
 
 function deselect_top_left_corner_items() {
