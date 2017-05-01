@@ -162,7 +162,7 @@ def check_html_templates(templates, all_dups):
         'templates/zerver/apps.html',
         'templates/zerver/accounts_home.html',
         'templates/zerver/compose.html',
-        'templates/zerver/emails/digest/digest_email.html',
+        'templates/zerver/emails/digest.html',
         'templates/zerver/emails/find_team/find_team_email.html',
         'templates/zerver/emails/followup/day1.html',
         'templates/zerver/emails/followup/day2.html',

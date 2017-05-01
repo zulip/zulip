@@ -213,11 +213,11 @@ def handle_digest_email(user_profile_id, cutoff):
         user_profile, cutoff_date)
     template_payload["new_users"] = new_users
 
-    subject = loader.render_to_string('zerver/emails/digest/digest_email.subject').strip()
+    subject = loader.render_to_string('zerver/emails/digest.subject').strip()
     text_content = loader.render_to_string(
-        'zerver/emails/digest/digest_email.txt', template_payload)
+        'zerver/emails/digest.txt', template_payload)
     html_content = loader.render_to_string(
-        'zerver/emails/digest/digest_email.html', template_payload)
+        'zerver/emails/digest.html', template_payload)
 
     # We don't want to send emails containing almost no information.
     if enough_traffic(template_payload["unread_pms"],
