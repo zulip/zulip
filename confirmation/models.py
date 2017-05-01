@@ -108,10 +108,10 @@ class ConfirmationManager(models.Manager):
         if additional_context is not None:
             context.update(additional_context)
 
-        subject = loader.get_template(template_prefix + '.subject').render(context).strip()
-        body = loader.get_template(template_prefix + '.txt').render(context)
+        subject = loader.render_to_string(template_prefix + '.subject', context).strip()
+        body = loader.render_to_string(template_prefix + '.txt', context)
         try:
-            html_content = loader.get_template(template_prefix + '.html').render(context)
+            html_content = loader.render_to_string(template_prefix + '.html', context)
         except TemplateDoesNotExist:
             html_content = None
 
