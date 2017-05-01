@@ -4,7 +4,7 @@ from django.utils.translation import ugettext as _
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
-from zerver.models import Client, UserProfile
+from zerver.models import UserProfile
 from django.http import HttpRequest, HttpResponse
 from typing import Any, Dict, Text
 
@@ -19,9 +19,9 @@ VERIFICATION_EVENT = 'verification'
 
 @api_key_only_webhook_view('Crashlytics')
 @has_request_variables
-def api_crashlytics_webhook(request, user_profile, client, payload=REQ(argument_type='body'),
+def api_crashlytics_webhook(request, user_profile, payload=REQ(argument_type='body'),
                             stream=REQ(default='crashlytics')):
-    # type: (HttpRequest, UserProfile, Client, Dict[str, Any], Text) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Dict[str, Any], Text) -> HttpResponse
     try:
         event = payload['event']
         if event == VERIFICATION_EVENT:
@@ -40,6 +40,6 @@ def api_crashlytics_webhook(request, user_profile, client, payload=REQ(argument_
     except KeyError as e:
         return json_error(_("Missing key {} in JSON".format(str(e))))
 
-    check_send_message(user_profile, client, 'stream', [stream],
+    check_send_message(user_profile, request.client, 'stream', [stream],
                        subject, body)
     return json_success()

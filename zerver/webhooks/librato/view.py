@@ -11,7 +11,7 @@ from django.http import HttpRequest, HttpResponse
 from zerver.decorator import api_key_only_webhook_view, REQ, has_request_variables
 from zerver.lib.response import json_success, json_error
 from zerver.lib.actions import check_send_message
-from zerver.models import Client, UserProfile
+from zerver.models import UserProfile
 
 import ujson
 
@@ -160,9 +160,9 @@ class LibratoWebhookHandler(LibratoWebhookParser):
 
 @api_key_only_webhook_view('Librato')
 @has_request_variables
-def api_librato_webhook(request, user_profile, client, payload=REQ(converter=ujson.loads, default={}),
+def api_librato_webhook(request, user_profile, payload=REQ(converter=ujson.loads, default={}),
                         stream=REQ(default='librato'), topic=REQ(default=None)):
-    # type: (HttpRequest, UserProfile, Client, Dict[str, Any], Text, Text) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Dict[str, Any], Text, Text) -> HttpResponse
     try:
         attachments = ujson.loads(request.body).get('attachments', [])
     except ValueError:
@@ -181,5 +181,5 @@ def api_librato_webhook(request, user_profile, client, payload=REQ(converter=ujs
     except Exception as e:
         return json_error(_(str(e)))
 
-    check_send_message(user_profile, client, "stream", [stream], topic, content)
+    check_send_message(user_profile, request.client, "stream", [stream], topic, content)
     return json_success()

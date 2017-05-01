@@ -14,14 +14,14 @@ from typing import Any, Dict
 
 @api_key_only_webhook_view('SolanoLabs')
 @has_request_variables
-def api_solano_webhook(request, user_profile, client,
+def api_solano_webhook(request, user_profile,
                        stream=REQ(default='solano labs'),
                        topic=REQ(default='build update'),
                        payload=REQ(argument_type='body')):
-    # type: (HttpRequest, UserProfile, Client, str, str, Dict[str, Any]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, str, str, Dict[str, Any]) -> HttpResponse
     event = payload.get('event')
     if event == 'test':
-        return handle_test_event(user_profile, client, stream, topic)
+        return handle_test_event(user_profile, request.client, stream, topic)
     try:
         try:
             author = payload['committers'][0]
@@ -65,7 +65,7 @@ def api_solano_webhook(request, user_profile, client,
 
     body = template.format(author, commit_id, commit_url, status, emoji, build_log)
 
-    check_send_message(user_profile, client, 'stream', [stream], topic, body)
+    check_send_message(user_profile, request.client, 'stream', [stream], topic, body)
     return json_success()
 
 def handle_test_event(user_profile, client, stream, topic):

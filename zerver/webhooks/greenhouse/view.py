@@ -7,7 +7,7 @@ from typing import Any, Dict, List
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
-from zerver.models import UserProfile, Client
+from zerver.models import UserProfile
 
 import ujson
 
@@ -36,10 +36,10 @@ def message_creator(action, application):
 
 @api_key_only_webhook_view('Greenhouse')
 @has_request_variables
-def api_greenhouse_webhook(request, user_profile, client,
+def api_greenhouse_webhook(request, user_profile,
                            payload=REQ(argument_type='body'),
                            stream=REQ(default='greenhouse'), topic=REQ(default=None)):
-    # type: (HttpRequest, UserProfile, Client, Dict[str, Any], str, str) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Dict[str, Any], str, str) -> HttpResponse
     try:
         if payload['action'] == 'update_candidate':
             candidate = payload['payload']['candidate']
@@ -60,5 +60,5 @@ def api_greenhouse_webhook(request, user_profile, client,
     except KeyError as e:
         return json_error(_("Missing key {} in JSON").format(str(e)))
 
-    check_send_message(user_profile, client, 'stream', [stream], topic, body)
+    check_send_message(user_profile, request.client, 'stream', [stream], topic, body)
     return json_success()
