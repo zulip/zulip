@@ -2,37 +2,42 @@
 {% block portico_content %}
 
 <div class="bg-image"></div>
-<div class="app-main forgot-password-container new-style">
-    <div class="bg-image"></div>
 
-    <div class="lead">
-        <h3 class="get-started">{{ _('Reset your password') }}</h3>
-    </div>
-
-    <p>Forgot your password? No problem, we'll send a link to reset your password to the email you signed up with.</p>
-
-    <form method="post" class="form-horizontal" action="{{ url('django.contrib.auth.views.password_reset') }}">
-        {{ csrf_input }}
-        <div class="new-style">
-            <div class="input-box horizontal moving-label">
-                <div class="inline-block relative">
-                    <input id="id_email" class="required" type="text" name="email"
-                           value="{% if form.email.value() %}{{ form.email.value() }}{% endif %}"
-                           maxlength="100" required />
-                    <label for="id_email" class="">{{ _('Email') }}</label>
-                    <div class="required"></div>
-                    <img class="valid" src="/static/images/checkbox-valid.svg" />
-                    {% if form.email.errors %}
-                        {% for error in form.email.errors %}
-                        <div class="alert alert-error">{{ error }}</div>
-                        {% endfor %}
-                    {% endif %}
-                </div>
-                <button type="submit">{{ _('Reset password') }}</button>
-
-            </div>
+<div class="flex new-style app portico-page">
+    <div class="inline-block">
+        <div class="lead">
+            <h1 class="get-started">{{ _('Reset your password') }}</h1>
         </div>
-    </form>
+
+        <div class="app-main forgot-password-container new-style">
+            <div class="bg-image"></div>
+
+            <p>Forgot your password? No problem, we'll send a link to reset your password to the email you signed up with.</p>
+
+            <form method="post" class="form-horizontal" action="{{ url('django.contrib.auth.views.password_reset') }}">
+                {{ csrf_input }}
+                <div class="new-style">
+                    <div class="input-box horizontal moving-label">
+                        <div class="inline-block relative">
+                            <input id="id_email" class="required" type="text" name="email"
+                                   value="{% if form.email.value() %}{{ form.email.value() }}{% endif %}"
+                                   maxlength="100" required />
+                            <label for="id_email" class="">{{ _('Email') }}</label>
+                            <div class="required"></div>
+                            <img class="valid" src="/static/images/checkbox-valid.svg" />
+                            {% if form.email.errors %}
+                                {% for error in form.email.errors %}
+                                <div class="alert alert-error">{{ error }}</div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                        <button type="submit">{{ _('Reset password') }}</button>
+
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 <script type="text/javascript">
