@@ -8,15 +8,14 @@ import re
 
 from django.db import models
 from django.core.urlresolvers import reverse
-from django.core.mail import send_mail
 from django.conf import settings
-from django.template import loader, Context, TemplateDoesNotExist
 from django.contrib.sites.models import Site
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.utils.timezone import now as timezone_now
 
 from confirmation.util import get_status_field
+from zerver.lib.send_email import send_email
 from zerver.lib.utils import generate_random_token
 from zerver.models import PreregistrationUser, EmailChangeStatus
 from typing import Any, Dict, Optional, Text, Union
@@ -91,31 +90,24 @@ class ConfirmationManager(models.Manager):
         # type: () -> int
         return getattr(settings, 'EMAIL_CONFIRMATION_DAYS', 10)
 
-    def send_confirmation(self, obj, template_prefix, email_address, additional_context=None,
+    def send_confirmation(self, obj, template_prefix, to_email, additional_context=None,
                           host=None, custom_body=None):
         # type: (ContentType, str, Text, Optional[Dict[str, Any]], Optional[str], Optional[str]) -> Confirmation
         confirmation_key = generate_key()
         current_site = Site.objects.get_current()
         activate_url = self.get_activation_url(confirmation_key, host=host)
-        context = Context({
+        context = {
             'activate_url': activate_url,
             'current_site': current_site,
             'confirmation_key': confirmation_key,
             'target': obj,
             'days': getattr(settings, 'EMAIL_CONFIRMATION_DAYS', 10),
             'custom_body': custom_body,
-        })
+        }
         if additional_context is not None:
             context.update(additional_context)
 
-        subject = loader.render_to_string(template_prefix + '.subject', context).strip()
-        body = loader.render_to_string(template_prefix + '.txt', context)
-        try:
-            html_content = loader.render_to_string(template_prefix + '.html', context)
-        except TemplateDoesNotExist:
-            html_content = None
-
-        send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [email_address], html_message=html_content)
+        send_email(template_prefix, to_email, from_email=settings.DEFAULT_FROM_EMAIL, context=context)
         return self.create(content_object=obj, date_sent=timezone_now(), confirmation_key=confirmation_key)
 
 class EmailChangeConfirmationManager(ConfirmationManager):

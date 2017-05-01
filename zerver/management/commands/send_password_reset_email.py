@@ -65,6 +65,9 @@ class Command(BaseCommand):
             }
 
             logging.warning("Sending %s email to %s" % (email_template_name, user_profile.email,))
+            # Our password reset flow is basically a patch of Django's password
+            # reset flow, so this is aligned with Django code rather than using
+            # zerver.lib.send_email.send_email.
             self.send_email(subject_template_name, email_template_name,
                             context, from_email, user_profile.email,
                             html_email_template_name=html_email_template_name)
