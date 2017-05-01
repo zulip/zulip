@@ -623,7 +623,7 @@ def do_start_email_change_process(user_profile, new_email):
                                                realm=user_profile.realm)
 
         EmailChangeConfirmation.objects.send_confirmation(
-            obj, 'confirmation/emailchangestatus_confirmation_email', new_email,
+            obj, 'zerver/emails/confirm_new_email', new_email,
             additional_context=context,
             host=user_profile.realm.host,
         )

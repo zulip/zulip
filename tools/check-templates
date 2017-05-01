@@ -153,7 +153,7 @@ def check_html_templates(templates, all_dups):
         'templates/analytics/stats.html',
         'templates/confirmation/confirm.html',
         'templates/confirmation/confirm_email_change.html',
-        'templates/confirmation/emailchangestatus_confirmation_email.html',
+        'templates/zerver/emails/confirm_new_email.html',
         'templates/confirmation/invite_email.html',
         'templates/confirmation/preregistrationuser_confirmation_email.html',
         'templates/corporate/zephyr-mirror.html',
