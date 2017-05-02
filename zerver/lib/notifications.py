@@ -398,10 +398,9 @@ def log_digest_event(msg):
     logging.info(msg)
 
 @uses_mandrill
-def send_future_email(recipients, email_html, email_text, subject,
-                      delay=datetime.timedelta(0), sender=None,
-                      tags=[], mail_client=None):
-    # type: (List[Dict[str, Any]], Text, Text, Text, datetime.timedelta, Optional[Dict[str, Text]], Iterable[Text], Optional[mandrill.Mandrill]) -> None
+def send_future_email(template_prefix, recipients, sender=None, context={},
+                      delay=datetime.timedelta(0), tags=[], mail_client=None):
+    # type: (str, List[Dict[str, Any]], Optional[Dict[str, Text]], Dict[str, Any], datetime.timedelta, Iterable[Text], Optional[mandrill.Mandrill]) -> None
     """
     Sends email via Mandrill, with optional delay
 
@@ -416,12 +415,9 @@ def send_future_email(recipients, email_html, email_text, subject,
             if get_user_profile_by_email(email).realm.string_id != "zulip":
                 raise ValueError("digest: refusing to send emails to non-zulip.com users.")
 
-    # message = {"from_email": "othello@zulip.com",
-    #            "from_name": "Othello",
-    #            "html": "<p>hello</p> there",
-    #            "tags": ["signup-reminders"],
-    #            "to": [{'email':"acrefoot@zulip.com", 'name': "thingamajig"}]
-    #            }
+    subject = loader.render_to_string(template_prefix + '.subject', context).strip()
+    email_text = loader.render_to_string(template_prefix + '.txt', context)
+    email_html = loader.render_to_string(template_prefix + '.html', context)
 
     # SMTP mail delivery implementation
     if not mail_client:
@@ -493,17 +489,8 @@ def send_local_email_template_with_delay(recipients, template_prefix,
                                          template_payload, delay,
                                          tags=[], sender={'email': settings.NOREPLY_EMAIL_ADDRESS, 'name': 'Zulip'}):
     # type: (List[Dict[str, Any]], Text, Dict[str, Text], datetime.timedelta, Iterable[Text], Dict[str, Text]) -> None
-    html_content = loader.render_to_string(template_prefix + ".html", template_payload)
-    text_content = loader.render_to_string(template_prefix + ".txt", template_payload)
-    subject = loader.render_to_string(template_prefix + ".subject", template_payload).strip()
-
-    send_future_email(recipients,
-                      html_content,
-                      text_content,
-                      subject,
-                      delay=delay,
-                      sender=sender,
-                      tags=tags)
+    send_future_email(template_prefix, recipients, sender=sender, context=template_payload,
+                      delay=delay, tags=tags)
 
 def enqueue_welcome_emails(email, name):
     # type: (Text, Text) -> None

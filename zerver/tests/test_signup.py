@@ -56,10 +56,11 @@ from zerver.lib.test_runner import slow
 from zerver.lib.sessions import get_session_dict_user
 from zerver.context_processors import common_context
 
+from collections import defaultdict
 import re
 import ujson
 
-from typing import Dict, List, Set, Optional
+from typing import Any, Dict, List, Optional, Set
 
 from six.moves import urllib
 from six.moves import range
@@ -856,10 +857,11 @@ class EmailUnsubscribeTests(ZulipTestCase):
         self.assertTrue(user_profile.enable_digest_emails)
 
         # Enqueue a fake digest email.
-        send_future_email([{'email': email, 'name': user_profile.name}], "", "", "",
-                          delay=datetime.timedelta(0),
+        context = defaultdict(str) # type: Dict[str, Any]
+        context['new_streams'] = defaultdict(str)
+        send_future_email('zerver/emails/digest', [{'email': email, 'name': user_profile.full_name}],
                           sender={'email': settings.NOREPLY_EMAIL_ADDRESS, 'name': 'Zulip'},
-                          tags=["digest-emails"])
+                          context=context, tags=["digest-emails"])
 
         self.assertEqual(1, len(ScheduledJob.objects.filter(
             type=ScheduledJob.EMAIL, filter_string__iexact=email)))
