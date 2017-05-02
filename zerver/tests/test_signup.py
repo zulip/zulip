@@ -42,11 +42,11 @@ from zerver.lib.actions import (
     do_set_realm_property,
     add_new_user_history,
 )
-from zerver.lib.digest import send_digest_email
 from zerver.lib.mobile_auth_otp import xor_hex_strings, ascii_to_hex, \
     otp_encrypt_api_key, is_valid_otp, hex_to_ascii, otp_decrypt_api_key
-from zerver.lib.notifications import (
-    enqueue_welcome_emails, one_click_unsubscribe_link, send_local_email_template_with_delay)
+from zerver.lib.notifications import enqueue_welcome_emails, \
+    one_click_unsubscribe_link, send_local_email_template_with_delay, \
+    send_future_email
 from zerver.lib.test_helpers import find_pattern_in_email, find_key_by_email, queries_captured, \
     HostRequestMock, unsign_subdomain_cookie
 from zerver.lib.test_classes import (
@@ -856,7 +856,11 @@ class EmailUnsubscribeTests(ZulipTestCase):
         self.assertTrue(user_profile.enable_digest_emails)
 
         # Enqueue a fake digest email.
-        send_digest_email(user_profile, "", "", "")
+        send_future_email([{'email': email, 'name': user_profile.name}], "", "", "",
+                          delay=datetime.timedelta(0),
+                          sender={'email': settings.NOREPLY_EMAIL_ADDRESS, 'name': 'Zulip'},
+                          tags=["digest-emails"])
+
         self.assertEqual(1, len(ScheduledJob.objects.filter(
             type=ScheduledJob.EMAIL, filter_string__iexact=email)))
 
