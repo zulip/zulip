@@ -5,17 +5,17 @@ from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
 from zerver.lib.validator import check_dict, check_string
 
-from zerver.models import Client, UserProfile
+from zerver.models import UserProfile
 
 from django.http import HttpRequest, HttpResponse
 from typing import Dict, Any, Iterable, Optional, Text
 
 @api_key_only_webhook_view('HomeAssistant')
 @has_request_variables
-def api_homeassistant_webhook(request, user_profile, client,
+def api_homeassistant_webhook(request, user_profile,
                               payload=REQ(argument_type='body'),
                               stream=REQ(default="homeassistant")):
-    # type: (HttpRequest, UserProfile, Client, Dict[str, str], Text) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Dict[str, str], Text) -> HttpResponse
 
     # construct the body of the message
     try:
@@ -30,7 +30,7 @@ def api_homeassistant_webhook(request, user_profile, client,
         topic = "homeassistant"
 
     # send the message
-    check_send_message(user_profile, client, 'stream', [stream], topic, body)
+    check_send_message(user_profile, request.client, 'stream', [stream], topic, body)
 
     # return json result
     return json_success()

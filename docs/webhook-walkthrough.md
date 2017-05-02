@@ -72,11 +72,11 @@ from typing import Dict, Any, Iterable, Optional, Text
 
 @api_key_only_webhook_view('HelloWorld')
 @has_request_variables
-def api_helloworld_webhook(request, user_profile, client,
+def api_helloworld_webhook(request, user_profile,
                            payload=REQ(argument_type='body'),
                            stream=REQ(default='test'),
                            topic=REQ(default='Hello World')):
-    # type: (HttpRequest, UserProfile, Client, Dict[str, Iterable[Dict[str, Any]]], Text, Optional[Text]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Dict[str, Iterable[Dict[str, Any]]], Text, Optional[Text]) -> HttpResponse
 
   # construct the body of the message
   body = 'Hello! I am happy to be here! :smile:'
@@ -90,7 +90,8 @@ def api_helloworld_webhook(request, user_profile, client,
       return json_error(_("Missing key {} in JSON").format(str(e)))
 
   # send the message
-  check_send_message(user_profile, client, 'stream', [stream], topic, body)
+  check_send_message(user_profile, request.client, 'stream',
+                     [stream], topic, body)
 
   # return json result
   return json_success()
@@ -104,10 +105,11 @@ access request variables with `REQ()`. You can find more about `REQ` and request
 variables in [Writing views](writing-views.html#request-variables).
 
 You must pass the name of your webhook to the `api_key_only_webhook_view`
-decorator so your webhook can access the `user_profile` and `client` fields
-from the request. Here we have used `HelloWorld`. To be consistent with Zulip code
-style, use the name of the product you are integrating in camel case, spelled
-as the product spells its own name (except always first letter upper-case).
+decorator so your webhook can access the `user_profile` and `request.client`
+(Zulip's analogue of UserAgent) fields from the request. Here we have used
+`HelloWorld`. To be consistent with Zulip code style, use the name of the
+product you are integrating in camel case, spelled as the product spells
+its own name (except always first letter upper-case).
 
 The `api_key_only_webhook_view` decorator indicates that the 3rd party service will
 send the authorization as an API key in the query parameters. If your service uses
@@ -119,9 +121,8 @@ You should name your webhook function as such `api_webhookname_webhook` where
 
 At minimum, the webhook function must accept `request` (Django
 [HttpRequest](https://docs.djangoproject.com/en/1.8/ref/request-response/#django.http.HttpRequest)
-object), `user_profile` (Zulip's user object), and `client` (Zulip's analogue
-of UserAgent). You may also want to define additional parameters using the
-`REQ` object.
+object), and `user_profile` (Zulip's user object). You may also want to
+define additional parameters using the `REQ` object.
 
 In the example above, we have defined `payload` which is populated
 from the body of the http request, `stream` with a default of `test`

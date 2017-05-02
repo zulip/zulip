@@ -6,23 +6,24 @@ from django.utils.translation import ugettext as _
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
-from zerver.models import Client, UserProfile
+from zerver.models import UserProfile
 
 AIRBRAKE_SUBJECT_TEMPLATE = '{project_name}'
 AIRBRAKE_MESSAGE_TEMPLATE = '[{error_class}]({error_url}): "{error_message}" occurred.'
 
 @api_key_only_webhook_view('Airbrake')
 @has_request_variables
-def api_airbrake_webhook(request, user_profile, client, payload=REQ(argument_type='body'),
+def api_airbrake_webhook(request, user_profile,
+                         payload=REQ(argument_type='body'),
                          stream=REQ(default='airbrake')):
-    # type: (HttpRequest, UserProfile, Client, Dict[str, Any], Text) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Dict[str, Any], Text) -> HttpResponse
     try:
         subject = get_subject(payload)
         body = get_body(payload)
     except KeyError as e:
         return json_error(_("Missing key {} in JSON").format(str(e)))
 
-    check_send_message(user_profile, client, 'stream', [stream], subject, body)
+    check_send_message(user_profile, request.client, 'stream', [stream], subject, body)
     return json_success()
 
 def get_subject(payload):

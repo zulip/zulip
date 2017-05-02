@@ -5,7 +5,7 @@ from django.utils.translation import ugettext as _
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
-from zerver.models import Client, UserProfile
+from zerver.models import UserProfile
 from zerver.lib.webhooks.git import get_push_commits_event_message, \
     get_pull_request_event_message, get_create_branch_event_message, \
     SUBJECT_WITH_BRANCH_TEMPLATE, SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE
@@ -63,11 +63,11 @@ def format_pull_request_event(payload):
 
 @api_key_only_webhook_view('Gogs')
 @has_request_variables
-def api_gogs_webhook(request, user_profile, client,
+def api_gogs_webhook(request, user_profile,
                      payload=REQ(argument_type='body'),
                      stream=REQ(default='commits'),
                      branches=REQ(default=None)):
-    # type: (HttpRequest, UserProfile, Client, Dict[str, Any], Text, Optional[Text]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Dict[str, Any], Text, Optional[Text]) -> HttpResponse
 
     repo = payload['repository']['name']
     event = request.META['HTTP_X_GOGS_EVENT']
@@ -101,5 +101,5 @@ def api_gogs_webhook(request, user_profile, client,
     except KeyError as e:
         return json_error(_('Missing key {} in JSON').format(str(e)))
 
-    check_send_message(user_profile, client, 'stream', [stream], topic, body)
+    check_send_message(user_profile, request.client, 'stream', [stream], topic, body)
     return json_success()

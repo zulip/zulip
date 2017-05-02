@@ -7,7 +7,7 @@ from zerver.lib.webhooks.git import get_push_commits_event_message, EMPTY_SHA,\
     get_remove_branch_event_message, get_pull_request_event_message,\
     get_issue_event_message, SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE,\
     get_commits_comment_action_message, get_push_tag_event_message
-from zerver.models import Client, UserProfile
+from zerver.models import UserProfile
 
 from django.http import HttpRequest, HttpResponse
 from typing import Dict, Any, Iterable, Optional, Text
@@ -279,16 +279,16 @@ EVENT_FUNCTION_MAPPER = {
 
 @api_key_only_webhook_view("Gitlab")
 @has_request_variables
-def api_gitlab_webhook(request, user_profile, client,
+def api_gitlab_webhook(request, user_profile,
                        stream=REQ(default='gitlab'),
                        payload=REQ(argument_type='body'),
                        branches=REQ(default=None)):
-    # type: (HttpRequest, UserProfile, Client, Text, Dict[str, Any], Optional[Text]) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Text, Dict[str, Any], Optional[Text]) -> HttpResponse
     event = get_event(request, payload, branches)
     if event is not None:
         body = get_body_based_on_event(event)(payload)
         subject = get_subject_based_on_event(event, payload)
-        check_send_message(user_profile, client, 'stream', [stream], subject, body)
+        check_send_message(user_profile, request.client, 'stream', [stream], subject, body)
     return json_success()
 
 def get_body_based_on_event(event):

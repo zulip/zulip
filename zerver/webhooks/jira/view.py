@@ -7,7 +7,7 @@ from django.db.models import Q
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 
-from zerver.models import Client, UserProfile, get_user_profile_by_email, Realm
+from zerver.models import UserProfile, get_user_profile_by_email, Realm
 from zerver.lib.actions import check_send_message
 from zerver.lib.response import json_success, json_error
 from zerver.decorator import api_key_only_webhook_view, has_request_variables, REQ
@@ -239,10 +239,10 @@ def handle_deleted_issue_event(payload):
 
 @api_key_only_webhook_view("JIRA")
 @has_request_variables
-def api_jira_webhook(request, user_profile, client,
+def api_jira_webhook(request, user_profile,
                      payload=REQ(argument_type='body'),
                      stream=REQ(default='jira')):
-    # type: (HttpRequest, UserProfile, Client, Dict[str, Any], Text) -> HttpResponse
+    # type: (HttpRequest, UserProfile, Dict[str, Any], Text) -> HttpResponse
 
     event = get_event_type(payload)
     if event == 'jira:issue_created':
@@ -267,5 +267,5 @@ def api_jira_webhook(request, user_profile, client,
                 logging.warning("Got JIRA event type we don't support: {}".format(event))
             return json_success()
 
-    check_send_message(user_profile, client, "stream", [stream], subject, content)
+    check_send_message(user_profile, request.client, "stream", [stream], subject, content)
     return json_success()

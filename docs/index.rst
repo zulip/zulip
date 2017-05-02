@@ -136,3 +136,4 @@ Contents:
    release-checklist
    README
    user-docs
+   client

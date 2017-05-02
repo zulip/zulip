@@ -245,7 +245,7 @@ def api_key_only_webhook_view(client_name):
             process_client(request, user_profile, client_name=webhook_client_name)
             if settings.RATE_LIMITING:
                 rate_limit_user(request, user_profile, domain='all')
-            return view_func(request, user_profile, request.client, *args, **kwargs)
+            return view_func(request, user_profile, *args, **kwargs)
         return _wrapped_func_arguments
     return _wrapped_view_func
 
