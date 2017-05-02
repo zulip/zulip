@@ -311,6 +311,7 @@ def render_markdown(message, content, realm=None, realm_alert_words=None, messag
         message.mentions_user_ids = set()
         message.alert_words = set()
         message.links_for_preview = set()
+        message.outgoing_webhook_bot_triggers = []
 
         if realm is None:
             realm = message.get_realm()

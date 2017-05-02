@@ -758,6 +758,13 @@ def do_send_messages(messages_maybe_none):
         message['message'].rendered_content_version = bugdown_version
         links_for_embed |= message['message'].links_for_preview
 
+        for mentioned_id in message['message'].mentions_user_ids:
+            mentioned_user = get_user_profile_by_id(mentioned_id)
+            if mentioned_user.is_bot and mentioned_user.bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
+                TRIGGER_RE = re.compile(u'(@\*\*.*\*\* )(.*)')
+                command = TRIGGER_RE.search(message['message'].content).group(2)
+                message['message'].outgoing_webhook_bot_triggers.append((mentioned_user.email, command))
+
     for message in messages:
         message['message'].update_calculated_fields()
 
@@ -810,6 +817,28 @@ def do_send_messages(messages_maybe_none):
         for user_profile in message['active_recipients']:
             if user_profile.email in user_presences:
                 presences[user_profile.id] = user_presences[user_profile.email]
+
+        if message['message'].recipient.type != Recipient.STREAM:
+            # PM triggers for personal and huddle messsages
+            if not message['message'].sender.is_bot or \
+                    message['message'].sender.bot_type != UserProfile.OUTGOING_WEBHOOK_BOT:
+                # to prevent triggers for messages sent by bots
+                for recipient in message['recipients']:
+                    if recipient.is_bot and recipient.bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
+                        trigger_event = {"bot_email": recipient.email,
+                                         "command": message['message'].content,
+                                         "retry": 0,
+                                         "service_name": None,
+                                         "message": message['message'].to_log_dict()}
+                        queue_json_publish("outgoing_webhooks", trigger_event, lambda x: None)
+
+        for bot_email, command in message['message'].outgoing_webhook_bot_triggers:
+            trigger_event = {"bot_email": bot_email,
+                             "command": command,
+                             "retry": 0,
+                             "service_name": None,
+                             "message": message['message'].to_log_dict()}
+            queue_json_publish("outgoing_webhooks", trigger_event, lambda x: None)
 
         event = dict(
             type         = 'message',

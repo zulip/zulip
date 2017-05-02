@@ -92,6 +92,10 @@ oauthlib==2.0.2
 # Required for Pillow==4.0.0
 olefile==0.44
 
+# Enhanced HTTPS support for httplib and urllib2 using PyOpenSSL
+# Needed by requests to send https request to some sites.
+ndg-httpsclient==0.4.1
+
 # Needed for mock>1.1.2
 pbr==3.0.0
 
