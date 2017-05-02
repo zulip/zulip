@@ -144,7 +144,7 @@
     padding: 0.5em 0;
     position: relative;
     overflow: hidden;
-    display: inline-block;
+    display: block;
     height: 16.5em;
 }
 
