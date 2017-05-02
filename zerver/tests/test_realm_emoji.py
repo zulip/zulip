@@ -78,6 +78,14 @@ class RealmEmojiTest(ZulipTestCase):
             result = self.client_put_multipart('/json/realm/emoji/my_em*oji', info=emoji_data)
         self.assert_json_error(result, 'Invalid characters in emoji name')
 
+    def test_upload_uppercase_exception(self):
+        # type: () -> None
+        self.login("iago@zulip.com")
+        with get_test_image_file('img.png') as fp1:
+            emoji_data = {'f1': fp1}
+            result = self.client_put_multipart('/json/realm/emoji/my_EMoji', info=emoji_data)
+        self.assert_json_error(result, 'Invalid characters in emoji name')
+
     def test_upload_admins_only(self):
         # type: () -> None
         self.login('othello@zulip.com')
