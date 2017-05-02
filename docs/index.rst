@@ -132,6 +132,7 @@ Contents:
    full-text-search
    analytics
    translating
+   client
    logging
    release-checklist
    README
