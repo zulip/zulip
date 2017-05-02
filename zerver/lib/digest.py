@@ -146,16 +146,6 @@ def enough_traffic(unread_pms, hot_conversations, new_streams, new_users):
         return True
     return False
 
-def send_digest_email(user_profile, subject, html_content, text_content):
-    # type: (UserProfile, Text, Text, Text) -> None
-    recipients = [{'email': user_profile.email, 'name': user_profile.full_name}]
-    sender = {'email': settings.NOREPLY_EMAIL_ADDRESS, 'name': 'Zulip'}
-
-    # Send now, through Mandrill.
-    send_future_email(recipients, html_content, text_content, subject,
-                      delay=datetime.timedelta(0), sender=sender,
-                      tags=["digest-emails"])
-
 def handle_digest_email(user_profile_id, cutoff):
     # type: (int, float) -> None
     user_profile = UserProfile.objects.get(id=user_profile_id)
@@ -218,10 +208,15 @@ def handle_digest_email(user_profile_id, cutoff):
         'zerver/emails/digest.txt', template_payload)
     html_content = loader.render_to_string(
         'zerver/emails/digest.html', template_payload)
+    recipients = [{'email': user_profile.email, 'name': user_profile.full_name}]
+    sender = {'email': settings.NOREPLY_EMAIL_ADDRESS, 'name': 'Zulip'}
 
     # We don't want to send emails containing almost no information.
     if enough_traffic(template_payload["unread_pms"],
                       template_payload["hot_conversations"],
                       new_streams_count, new_users_count):
         logger.info("Sending digest email for %s" % (user_profile.email,))
-        send_digest_email(user_profile, subject, html_content, text_content)
+        # Send now, through Mandrill
+        send_future_email(recipients, html_content, text_content, subject,
+                          delay=datetime.timedelta(0), sender=sender,
+                          tags=["digest-emails"])
