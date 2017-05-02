@@ -203,11 +203,6 @@ def handle_digest_email(user_profile_id, cutoff):
         user_profile, cutoff_date)
     template_payload["new_users"] = new_users
 
-    subject = loader.render_to_string('zerver/emails/digest.subject').strip()
-    text_content = loader.render_to_string(
-        'zerver/emails/digest.txt', template_payload)
-    html_content = loader.render_to_string(
-        'zerver/emails/digest.html', template_payload)
     recipients = [{'email': user_profile.email, 'name': user_profile.full_name}]
     sender = {'email': settings.NOREPLY_EMAIL_ADDRESS, 'name': 'Zulip'}
 
@@ -217,6 +212,5 @@ def handle_digest_email(user_profile_id, cutoff):
                       new_streams_count, new_users_count):
         logger.info("Sending digest email for %s" % (user_profile.email,))
         # Send now, through Mandrill
-        send_future_email(recipients, html_content, text_content, subject,
-                          delay=datetime.timedelta(0), sender=sender,
-                          tags=["digest-emails"])
+        send_future_email('zerver/emails/digest', recipients, sender=sender,
+                          context=template_payload, tags=["digest-emails"])

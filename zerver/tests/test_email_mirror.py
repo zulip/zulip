@@ -273,7 +273,7 @@ class TestDigestEmailMessages(ZulipTestCase):
 
         handle_digest_email(user_profile.id, cutoff)
         self.assertEqual(mock_send_future_email.call_count, 1)
-        self.assertEqual(mock_send_future_email.call_args[0][0][0]['email'],
+        self.assertEqual(mock_send_future_email.call_args[0][1][0]['email'],
                          u'othello@zulip.com')
 
 class TestReplyExtraction(ZulipTestCase):
