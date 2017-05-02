@@ -706,6 +706,8 @@ def get_recipient_user_profiles(recipient, sender_id):
             'user_profile__email',
             'user_profile__enable_online_push_notifications',
             'user_profile__is_active',
+            'user_profile__is_bot',
+            'user_profile__bot_type',
         ]
         query = Subscription.objects.select_related("user_profile").only(*fields).filter(
             recipient=recipient, active=True)
