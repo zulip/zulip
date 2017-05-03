@@ -4,6 +4,8 @@ from __future__ import unicode_literals
 
 import django.core.validators
 from django.db import migrations, models
+from django.db.backends.postgresql_psycopg2.schema import DatabaseSchemaEditor
+from django.db.migrations.state import StateApps
 
 
 class Migration(migrations.Migration):
