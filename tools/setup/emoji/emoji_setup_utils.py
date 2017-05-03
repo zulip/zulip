@@ -238,7 +238,7 @@ def generate_emoji_catalog(emoji_data):
         if not emoji_is_universal(emoji):
             continue
         category = str(emoji["category"])
-        codepoint = str(emoji["unified"])
+        codepoint = str(emoji["unified"]).lower()
         sort_order[codepoint] = emoji["sort_order"]
         if category in emoji_catalog:
             emoji_catalog[category].append(codepoint)
