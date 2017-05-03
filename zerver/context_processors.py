@@ -1,10 +1,10 @@
 from __future__ import absolute_import
 
-from typing import Dict, Any
+from typing import Any, Dict, Optional
 from django.http import HttpRequest
 from django.conf import settings
 
-from zerver.models import UserProfile, get_realm, get_unique_open_realm
+from zerver.models import UserProfile, get_realm, get_unique_open_realm, Realm
 from zproject.backends import (
     any_oauth_backend_enabled,
     dev_auth_enabled,
@@ -31,6 +31,16 @@ def common_context(user):
         'external_host': settings.EXTERNAL_HOST,
     }
 
+def get_realm_from_request(request):
+    # type: (HttpRequest) -> Optional[Realm]
+    if hasattr(request, "user") and hasattr(request.user, "realm"):
+        return request.user.realm
+    elif settings.REALMS_HAVE_SUBDOMAINS:
+        subdomain = get_subdomain(request)
+        return get_realm(subdomain)
+    # This will return None if there is no unique, open realm.
+    return get_unique_open_realm()
+
 def zulip_default_context(request):
     # type: (HttpRequest) -> Dict[str, Any]
     """Context available to all Zulip Jinja2 templates that have a request
@@ -42,14 +52,7 @@ def zulip_default_context(request):
     is the case if there is only one realm, or we're on a
     REALMS_HAVE_SUBDOMAINS subdomain, or the user is logged in.
     """
-    if hasattr(request, "user") and hasattr(request.user, "realm"):
-        realm = request.user.realm
-    elif settings.REALMS_HAVE_SUBDOMAINS:
-        subdomain = get_subdomain(request)
-        realm = get_realm(subdomain)
-    else:
-        # This will return None if there is no unique, open realm.
-        realm = get_unique_open_realm()
+    realm = get_realm_from_request(request)
 
     if realm is not None:
         realm_uri = realm.uri
