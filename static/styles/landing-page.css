@@ -339,19 +339,13 @@ a:not(.no-style):hover:before {
 }
 
 .header,
-.footer,
 .portico-os-announcement {
-    display: none;
-}
-
-.footer-padder {
     display: none;
 }
 
 /* -- features page css -- */
 .features-app .main {
     background-color: #fff;
-    margin: 0px auto 50px;
 }
 
 .features-app p {
@@ -408,7 +402,6 @@ a:not(.no-style):hover:before {
 
 .portico-landing.apps .main {
     max-width: 1600px;
-    margin-bottom: 50px;
 }
 
 .portico-landing.apps .main .padded-content.headline {

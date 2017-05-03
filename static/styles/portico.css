@@ -380,9 +380,11 @@ input.text-error {
 }
 
 .footer {
-    margin: 30px 0px 10px 0px;
-    height: 54px;
     background-color: transparent;
+}
+
+.footer .footer-navigation {
+    margin-left: 0px;
 }
 
 .header-main .logo {
@@ -571,7 +573,7 @@ a.bottom-signup-button {
 
 .portico-page {
     /* height of the white portico navbar */
-    min-height: calc(100% - 59px);
+    min-height: calc(100% - 87px);
 }
 
 .signup-signature {
@@ -1046,10 +1048,6 @@ input.new-organization-button {
     padding: 0 !important;
 }
 
-.footer-padder {
-    height: 54px;
-}
-
 .footer-navigation {
     list-style: none;
     padding-top: 16px;
@@ -1365,6 +1363,13 @@ input.new-organization-button {
 
 .markdown ul li {
     margin: 5px 0px;
+}
+
+@media (max-height: 678px) {
+    .portico-page {
+        /* the footer becomes two lines */
+        min-height: calc(100% - 96px);
+    }
 }
 
 @media (max-height: 600px) {

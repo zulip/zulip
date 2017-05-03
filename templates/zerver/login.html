@@ -46,7 +46,7 @@ autofocus('#id_username');
             <h1 class="get-started">{{ _("Sign in to Zulip") }}</h1>
         </div>
 
-        <div class="app-main login-page-container inline-block">
+        <div class="app-main login-page-container white-box inline-block">
             {% if only_sso %}
             {# SSO users don't have a password. #}
 
@@ -164,7 +164,6 @@ autofocus('#id_username');
             {% endif %}
         </div>
     </div>
-    <div class="footer-padder"></div>
 </div>
 <script type="text/javascript">
 if (window.location.hash.substring(0, 1) === "#") {
