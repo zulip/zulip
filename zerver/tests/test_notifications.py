@@ -29,7 +29,7 @@ class TestMissedMessages(ZulipTestCase):
         # type: () -> List[str]
         return [str(random.getrandbits(32)) for _ in range(30)]
 
-    def _test_cases(self, tokens, msg_id, body, send_as_user):
+    def _test_cases(self, tokens, msg_id, body, subject, send_as_user):
         # type: (List[str], int, str, bool) -> None
         othello = get_user_profile_by_email('othello@zulip.com')
         hamlet = get_user_profile_by_email('hamlet@zulip.com')
@@ -39,7 +39,7 @@ class TestMissedMessages(ZulipTestCase):
         else:
             reply_to_addresses = ["noreply@example.com"]
         msg = mail.outbox[0]
-        sender = 'Zulip <{}>'.format(settings.NOREPLY_EMAIL_ADDRESS)
+        sender = 'Zulip Missed Messages <{}>'.format(settings.NOREPLY_EMAIL_ADDRESS)
         from_email = sender
         self.assertEqual(len(mail.outbox), 1)
         if send_as_user:
@@ -49,6 +49,7 @@ class TestMissedMessages(ZulipTestCase):
             self.assertNotIn("Sender", msg.extra_headers)
         self.assertEqual(msg.from_email, from_email)
         self.assertIn(msg.extra_headers['Reply-To'], reply_to_addresses)
+        self.assertEqual(msg.subject, subject)
         self.assertIn(body, self.normalize_string(msg.body))
 
     @patch('zerver.lib.email_mirror.generate_random_token')
@@ -62,7 +63,8 @@ class TestMissedMessages(ZulipTestCase):
         self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '11', subject='test2')
         msg_id = self.send_message("othello@zulip.com", "denmark", Recipient.STREAM, '@**hamlet**')
         body = 'Denmark > test Othello, the Moor of Venice 1 2 3 4 5 6 7 8 9 10 @**hamlet**'
-        self._test_cases(tokens, msg_id, body, send_as_user)
+        subject = 'Othello, the Moor of Venice @-mentioned you in zulip'
+        self._test_cases(tokens, msg_id, body, subject, send_as_user)
 
     @patch('zerver.lib.email_mirror.generate_random_token')
     def _extra_context_in_personal_missed_stream_messages(self, send_as_user, mock_random_token):
@@ -74,7 +76,8 @@ class TestMissedMessages(ZulipTestCase):
                                    Recipient.PERSONAL,
                                    'Extremely personal message!')
         body = 'You and Othello, the Moor of Venice Extremely personal message!'
-        self._test_cases(tokens, msg_id, body, send_as_user)
+        subject = 'Othello, the Moor of Venice sent you a message in zulip'
+        self._test_cases(tokens, msg_id, body, subject, send_as_user)
 
     @patch('zerver.lib.email_mirror.generate_random_token')
     def _reply_to_email_in_personal_missed_stream_messages(self, send_as_user, mock_random_token):
@@ -86,7 +89,8 @@ class TestMissedMessages(ZulipTestCase):
                                    Recipient.PERSONAL,
                                    'Extremely personal message!')
         body = 'Or just reply to this email.'
-        self._test_cases(tokens, msg_id, body, send_as_user)
+        subject = 'Othello, the Moor of Venice sent you a message in zulip'
+        self._test_cases(tokens, msg_id, body, subject, send_as_user)
 
     @patch('zerver.lib.email_mirror.generate_random_token')
     def _reply_warning_in_personal_missed_stream_messages(self, send_as_user, mock_random_token):
@@ -98,22 +102,56 @@ class TestMissedMessages(ZulipTestCase):
                                    Recipient.PERSONAL,
                                    'Extremely personal message!')
         body = 'Please do not reply to this automated message.'
-        self._test_cases(tokens, msg_id, body, send_as_user)
+        subject = 'Othello, the Moor of Venice sent you a message in zulip'
+        self._test_cases(tokens, msg_id, body, subject, send_as_user)
 
     @patch('zerver.lib.email_mirror.generate_random_token')
-    def _extra_context_in_huddle_missed_stream_messages(self, send_as_user, mock_random_token):
+    def _extra_context_in_huddle_missed_stream_messages_three_members(self, send_as_user, mock_random_token):
         # type: (bool, MagicMock) -> None
         tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
 
         msg_id = self.send_message("othello@zulip.com",
                                    ["hamlet@zulip.com", "iago@zulip.com"],
-                                   Recipient.PERSONAL,
+                                   Recipient.HUDDLE,
                                    'Group personal message!')
 
         body = ('You and Iago, Othello, the Moor of Venice Othello,'
                 ' the Moor of Venice Group personal message')
-        self._test_cases(tokens, msg_id, body, send_as_user)
+        subject = 'Group PM with Iago and Othello, the Moor of Venice in zulip'
+        self._test_cases(tokens, msg_id, body, subject, send_as_user)
+
+    @patch('zerver.lib.email_mirror.generate_random_token')
+    def _extra_context_in_huddle_missed_stream_messages_four_members(self, send_as_user, mock_random_token):
+        # type: (bool, MagicMock) -> None
+        tokens = self._get_tokens()
+        mock_random_token.side_effect = tokens
+
+        msg_id = self.send_message("othello@zulip.com",
+                                   ["hamlet@zulip.com", "iago@zulip.com", "cordelia@zulip.com"],
+                                   Recipient.HUDDLE,
+                                   'Group personal message!')
+
+        body = ('You and Cordelia Lear, Iago, Othello, the Moor of Venice Othello,'
+                ' the Moor of Venice Group personal message')
+        subject = 'Group PM with Cordelia Lear, Iago, and Othello, the Moor of Venice in zulip'
+        self._test_cases(tokens, msg_id, body, subject, send_as_user)
+
+    @patch('zerver.lib.email_mirror.generate_random_token')
+    def _extra_context_in_huddle_missed_stream_messages_five_members(self, send_as_user, mock_random_token):
+        # type: (bool, MagicMock) -> None
+        tokens = self._get_tokens()
+        mock_random_token.side_effect = tokens
+
+        msg_id = self.send_message("othello@zulip.com",
+                                   ["hamlet@zulip.com", "iago@zulip.com", "cordelia@zulip.com", "prospero@zulip.com"],
+                                   Recipient.HUDDLE,
+                                   'Group personal message!')
+
+        body = ('You and Cordelia Lear, Iago, Othello, the Moor of Venice, Prospero from The Tempest'
+                ' Othello, the Moor of Venice Group personal message')
+        subject = 'Group PM with Cordelia Lear, Iago, and others in zulip'
+        self._test_cases(tokens, msg_id, body, subject, send_as_user)
 
     @patch('zerver.lib.email_mirror.generate_random_token')
     def _deleted_message_in_missed_stream_messages(self, send_as_user, mock_random_token):
@@ -197,13 +235,31 @@ class TestMissedMessages(ZulipTestCase):
         self._extra_context_in_personal_missed_stream_messages(False)
 
     @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
-    def test_extra_context_in_huddle_missed_stream_messages_as_user(self):
+    def test_extra_context_in_huddle_missed_stream_messages_three_members_as_user(self):
         # type: () -> None
-        self._extra_context_in_huddle_missed_stream_messages(True)
+        self._extra_context_in_huddle_missed_stream_messages_three_members(True)
 
-    def test_extra_context_in_huddle_missed_stream_messages(self):
+    def test_extra_context_in_huddle_missed_stream_messages_three_members(self):
         # type: () -> None
-        self._extra_context_in_huddle_missed_stream_messages(False)
+        self._extra_context_in_huddle_missed_stream_messages_three_members(False)
+
+    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
+    def test_extra_context_in_huddle_missed_stream_messages_four_members_as_user(self):
+        # type: () -> None
+        self._extra_context_in_huddle_missed_stream_messages_four_members(True)
+
+    def test_extra_context_in_huddle_missed_stream_messages_four_members(self):
+        # type: () -> None
+        self._extra_context_in_huddle_missed_stream_messages_four_members(False)
+
+    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
+    def test_extra_context_in_huddle_missed_stream_messages_five_members_as_user(self):
+        # type: () -> None
+        self._extra_context_in_huddle_missed_stream_messages_five_members(True)
+
+    def test_extra_context_in_huddle_missed_stream_messages_five_members(self):
+        # type: () -> None
+        self._extra_context_in_huddle_missed_stream_messages_five_members(False)
 
     @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
     def test_deleted_message_in_missed_stream_messages_as_user(self):
