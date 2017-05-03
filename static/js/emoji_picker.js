@@ -66,11 +66,12 @@ function generate_emoji_picker_content(id) {
     if (id !== undefined) {
         var emojis_used = reactions.get_emojis_used_by_user_for_message_id(id);
         _.each(emojis_used, function (emoji_name) {
+            var is_realm_emoji = emojis[emoji_name].is_realm_emoji;
             emojis[emoji_name] = {
                 name: emoji_name,
                 has_reacted: true,
                 css_class: emoji.emojis_name_to_css_class[emoji_name],
-                is_realm_emoji: emojis[emoji_name].is_realm_emoji,
+                is_realm_emoji: is_realm_emoji,
                 url: emojis[emoji_name].url,
             };
         });

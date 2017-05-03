@@ -18,16 +18,12 @@ var zulip_emoji = {
 };
 
 _.each(emoji_codes.names, function (value) {
-    var base_name = emoji_codes.name_to_codepoint[value];
-    default_emojis.push({emoji_name: value,
-                         codepoint: emoji_codes.name_to_codepoint[value],
-                         emoji_url: "/static/generated/emoji/images/emoji/unicode/" + base_name + ".png"});
+    var codepoint = emoji_codes.name_to_codepoint[value];
+    default_emojis.push({emoji_name: value, codepoint: codepoint});
 });
 
 _.each(emoji_codes.codepoints, function (value) {
-    default_unicode_emojis.push({emoji_name: value,
-                                 codepoint: value,
-                                 emoji_url: "/static/generated/emoji/images/emoji/unicode/" + value + ".png"});
+    default_unicode_emojis.push({emoji_name: value, codepoint: value});
 });
 
 exports.update_emojis = function update_emojis(realm_emojis) {
@@ -50,7 +46,7 @@ exports.update_emojis = function update_emojis(realm_emojis) {
     _.each(default_emojis, function (emoji) {
         var css_class = emoji_codes.name_to_codepoint[emoji.emoji_name];
         exports.emojis_name_to_css_class[emoji.emoji_name] = css_class;
-        exports.emojis_by_name[emoji.emoji_name] = emoji.emoji_url;
+        exports.emojis_by_name[emoji.emoji_name] = emoji.codepoint;
     });
     // Code for patching CSS classes for flag emojis so that they render
     // properly in emoji picker. Remove after migration to iamcal dataset
@@ -60,7 +56,7 @@ exports.update_emojis = function update_emojis(realm_emojis) {
     });
     exports.emojis_by_unicode = {};
     _.each(default_unicode_emojis, function (emoji) {
-        exports.emojis_by_unicode[emoji.emoji_name] = emoji.emoji_url;
+        exports.emojis_by_unicode[emoji.emoji_name] = emoji.codepoint;
     });
 };
 
