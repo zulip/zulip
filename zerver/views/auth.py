@@ -20,6 +20,7 @@ from six.moves import urllib
 from typing import Any, Dict, List, Optional, Tuple, Text
 
 from confirmation.models import Confirmation
+from zerver.context_processors import zulip_default_context
 from zerver.forms import HomepageForm, OurAuthenticationForm, \
     WRONG_SUBDOMAIN_ERROR
 from zerver.lib.mobile_auth_otp import is_valid_otp, otp_encrypt_api_key
@@ -550,9 +551,29 @@ def get_auth_backends_data(request):
 @csrf_exempt
 def api_get_auth_backends(request):
     # type: (HttpRequest) -> HttpResponse
+    """Deprecated route; this is to be replaced by api_get_server_settings"""
     auth_backends = get_auth_backends_data(request)
     auth_backends['zulip_version'] = ZULIP_VERSION
     return json_success(auth_backends)
+
+@require_GET
+@csrf_exempt
+def api_get_server_settings(request):
+    # type: (HttpRequest) -> HttpResponse
+    result = dict(
+        authentication_methods=get_auth_backends_data(request),
+        zulip_version=ZULIP_VERSION,
+    )
+    context = zulip_default_context(request)
+    # IMPORTANT NOTE:
+    # realm_name, realm_icon, etc. are not guaranteed to appear in the response.
+    # * If they do, that means the server URL has only one realm on it
+    # * If they don't, the server has multiple realms, and it's not clear which is
+    #   the requested realm, so we can't send back these data.
+    for settings_item in ["realm_uri", "realm_name", "realm_icon", "realm_description"]:
+        if context[settings_item] is not None:
+            result[settings_item] = context[settings_item]
+    return json_success(result)
 
 @authenticated_json_post_view
 @has_request_variables

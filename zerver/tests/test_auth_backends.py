@@ -23,7 +23,8 @@ from zerver.lib.actions import (
     do_set_realm_authentication_methods,
 )
 from zerver.lib.mobile_auth_otp import otp_decrypt_api_key
-from zerver.lib.validator import validate_login_email
+from zerver.lib.validator import validate_login_email, \
+    check_bool, check_dict_only, check_string
 from zerver.lib.request import JsonableError
 from zerver.lib.initial_password import initial_password
 from zerver.lib.sessions import get_session_dict_user
@@ -1226,6 +1227,53 @@ class DevGetEmailsTest(ZulipTestCase):
             self.assert_json_error_contains(result, "Dev environment not enabled.", 400)
 
 class FetchAuthBackends(ZulipTestCase):
+    def assert_on_error(self, error):
+        # type: (Optional[str]) -> None
+        if error:
+            raise AssertionError(error)
+
+    def test_get_server_settings(self):
+        # type: () -> None
+        result = self.client_get("/api/v1/server_settings")
+        self.assert_json_success(result)
+        data = ujson.loads(result.content)
+        schema_checker = check_dict_only([
+            ('authentication_methods', check_dict_only([
+                ('google', check_bool),
+                ('github', check_bool),
+                ('dev', check_bool),
+                ('password', check_bool),
+            ])),
+            ('realm_uri', check_string),
+            ('zulip_version', check_string),
+            ('msg', check_string),
+            ('result', check_string),
+        ])
+        self.assert_on_error(schema_checker("data", data))
+
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True,
+                           SUBDOMAINS_HOMEPAGE=False):
+            result = self.client_get("/api/v1/server_settings",
+                                     HTTP_HOST="zulip.testserver")
+        self.assert_json_success(result)
+        data = ujson.loads(result.content)
+        with_realm_schema_checker = check_dict_only([
+            ('zulip_version', check_string),
+            ('realm_uri', check_string),
+            ('realm_name', check_string),
+            ('realm_description', check_string),
+            ('realm_icon', check_string),
+            ('authentication_methods', check_dict_only([
+                ('google', check_bool),
+                ('github', check_bool),
+                ('dev', check_bool),
+                ('password', check_bool),
+            ])),
+            ('msg', check_string),
+            ('result', check_string),
+        ])
+        self.assert_on_error(with_realm_schema_checker("data", data))
+
     def test_fetch_auth_backend_format(self):
         # type: () -> None
         result = self.client_get("/api/v1/get_auth_backends")

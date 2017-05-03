@@ -403,8 +403,11 @@ urls.append(url(r'^api/v1/external/github', github_dispatcher.api_github_webhook
 
 # Mobile-specific authentication URLs
 urls += [
-    # This json format view used by the mobile apps lists which authentication
-    # backends the server allows, to display the proper UI and check for server existence
+    # This json format view used by the mobile apps lists which
+    # authentication backends the server allows as well as details
+    # like the requested subdomains'd realm icon (if known).
+    url(r'^api/v1/server_settings', zerver.views.auth.api_get_server_settings),
+    # This is a deprecated old version of api/v1/server_settings that only returns auth backends.
     url(r'^api/v1/get_auth_backends', zerver.views.auth.api_get_auth_backends, name='zerver.views.auth.api_get_auth_backends'),
 
     # used by mobile apps to check if they are compatible with the server
