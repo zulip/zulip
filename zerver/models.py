@@ -391,7 +391,7 @@ class RealmEmoji(ModelReprMixin, models.Model):
     realm = models.ForeignKey(Realm) # type: Realm
     # Second part of the regex (negative lookbehind) disallows names ending with one of the punctuation characters
     name = models.TextField(validators=[MinLengthValidator(1),
-                                        RegexValidator(regex=r'^[0-9a-zA-Z.\-_]+(?<![.\-_])$',
+                                        RegexValidator(regex=r'^[0-9a-z.\-_]+(?<![.\-_])$',
                                                        message=_("Invalid characters in emoji name"))]) # type: Text
     file_name = models.TextField(db_index=True, null=True) # type: Text
 
