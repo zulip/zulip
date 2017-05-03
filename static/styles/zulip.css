@@ -2337,6 +2337,16 @@ button.topic_edit_cancel {
     margin-top: -7px;
 }
 
+div.emoji {
+    /* This is needed when using the sprite sheets */
+    top: 6px;
+}
+
+img.emoji {
+    /* This is the right offset for <img> style emoji */
+    top: 3px;
+}
+
 .emoji.realm-emoji {
     background-size: contain;
     background-position: center;
