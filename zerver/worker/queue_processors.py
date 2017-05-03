@@ -14,8 +14,7 @@ from zerver.lib.feedback import handle_feedback
 from zerver.lib.queue import SimpleQueueClient, queue_json_publish
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.notifications import handle_missedmessage_emails, enqueue_welcome_emails, \
-    clear_followup_emails_queue, send_local_email_template_with_delay, \
-    send_missedmessage_email
+    clear_followup_emails_queue, send_future_email, send_missedmessage_email
 from zerver.lib.push_notifications import handle_push_notification
 from zerver.lib.actions import do_send_confirmation_email, \
     do_update_user_activity, do_update_user_activity_interval, do_update_user_presence, \
@@ -164,13 +163,13 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
             'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS,
             'support_email': settings.ZULIP_ADMINISTRATOR
         })
-        send_local_email_template_with_delay(
-            [{'email': data["email"], 'name': ""}],
+        send_future_email(
             "zerver/emails/invitation_reminder",
-            context,
-            datetime.timedelta(days=2),
-            tags=["invitation-reminders"],
-            sender={'email': settings.ZULIP_ADMINISTRATOR, 'name': 'Zulip'})
+            [{'email': data["email"], 'name': ""}],
+            sender={'email': settings.ZULIP_ADMINISTRATOR, 'name': 'Zulip'},
+            context=context,
+            delay=datetime.timedelta(days=2),
+            tags=["invitation-reminders"])
 
 @assign_queue('user_activity')
 class UserActivityWorker(QueueProcessingWorker):
