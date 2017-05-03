@@ -13,6 +13,7 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, \
 from django.middleware.csrf import get_token
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET
 from django.utils.translation import ugettext as _
 from django.core import signing
 from six.moves import urllib
@@ -517,9 +518,8 @@ def api_fetch_api_key(request, username=REQ(), password=REQ()):
                           data={"reason": "incorrect_creds"}, status=403)
     return json_success({"api_key": user_profile.api_key, "email": user_profile.email})
 
-@csrf_exempt
-def api_get_auth_backends(request):
-    # type: (HttpRequest) -> HttpResponse
+def get_auth_backends_data(request):
+    # type: (HttpRequest) -> Dict[str, Any]
     """Returns which authentication methods are enabled on the server"""
     if settings.REALMS_HAVE_SUBDOMAINS:
         subdomain = get_subdomain(request)
@@ -528,25 +528,31 @@ def api_get_auth_backends(request):
         except Realm.DoesNotExist:
             # If not the root subdomain, this is an error
             if subdomain != "":
-                return json_error(_("Invalid subdomain"))
+                raise JsonableError(_("Invalid subdomain"))
             # With the root subdomain, it's an error or not depending
             # whether SUBDOMAINS_HOMEPAGE (which indicates whether
             # there are some realms without subdomains on this server)
             # is set.
             if settings.SUBDOMAINS_HOMEPAGE:
-                return json_error(_("Subdomain required"))
+                raise JsonableError(_("Subdomain required"))
             else:
                 realm = None
     else:
         # Without subdomains, we just have to report what the server
         # supports, since we don't know the realm.
         realm = None
-    return json_success({"password": password_auth_enabled(realm),
-                         "dev": dev_auth_enabled(realm),
-                         "github": github_auth_enabled(realm),
-                         "google": google_auth_enabled(realm),
-                         "zulip_version": ZULIP_VERSION,
-                         })
+    return {"password": password_auth_enabled(realm),
+            "dev": dev_auth_enabled(realm),
+            "github": github_auth_enabled(realm),
+            "google": google_auth_enabled(realm)}
+
+@require_GET
+@csrf_exempt
+def api_get_auth_backends(request):
+    # type: (HttpRequest) -> HttpResponse
+    auth_backends = get_auth_backends_data(request)
+    auth_backends['zulip_version'] = ZULIP_VERSION
+    return json_success(auth_backends)
 
 @authenticated_json_post_view
 @has_request_variables
