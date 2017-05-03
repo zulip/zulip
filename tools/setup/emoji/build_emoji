@@ -60,9 +60,9 @@ span.emoji
 {
     display: inline-block;
     background-image: url('sheet_%(emojiset)s_32.png');
-    -webkit-background-size: 1025px 1025px;
-    -moz-background-size: 1025px 1025px;
-    background-size: 1025px 1025px;
+    -webkit-background-size: 4100%%;
+    -moz-background-size: 4100%%;
+    background-size: 4100%%;
     background-repeat: no-repeat;
 
     /* Hide the text. */

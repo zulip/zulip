@@ -24,16 +24,15 @@
     background-color: #eef7fa !important;
 }
 
-.message_reactions .message_reaction .emoji {
+.message_reaction div.emoji {
     display: inline-block;
     vertical-align: top;
-    top: -3px;
-    margin: 0px;
+    top: 0px;
+    margin: 1px 3px;
 
-    transform: scale(0.70);
-    transform-origin: 50% 50%;
-    -moz-transform: scale(0.70);
-    -moz-transform-origin: 50% 50%;
+    height: 17px;
+    width: 17px;
+    position: relative;
 }
 
 .message_reactions .message_reaction_count {
