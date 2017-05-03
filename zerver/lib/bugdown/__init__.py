@@ -704,13 +704,11 @@ unicode_emoji_list = set([name_to_codepoint[name] for name in name_to_codepoint]
 
 def make_emoji(codepoint, display_string):
     # type: (Text, Text) -> Element
-    src = '/static/generated/emoji/images/emoji/unicode/%s.png' % (codepoint,)
-    elt = markdown.util.etree.Element('img')
-    elt.set('src', src)
-    elt.set('class', 'emoji')
-    elt.set("alt", display_string)
-    elt.set("title", display_string)
-    return elt
+    span = markdown.util.etree.Element('span')
+    span.set('class', 'emoji emoji-%s' % (codepoint,))
+    span.set('title', display_string)
+    span.text = display_string
+    return span
 
 def make_realm_emoji(src, display_string):
     # type: (Text, Text) -> Element
@@ -723,8 +721,10 @@ def make_realm_emoji(src, display_string):
 
 def unicode_emoji_to_codepoint(unicode_emoji):
     # type: (Text) -> Text
-    codepoint = hex(ord(unicode_emoji))[2:]
-    return codepoint
+    # A unicode emoji may be a combination of multiple codepoints.
+    codepoints = [hex(ord(codepoint))[2:] for codepoint in six.text_type(unicode_emoji)]
+    unified = '-'.join(codepoints)
+    return unified
 
 class UnicodeEmoji(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match):
