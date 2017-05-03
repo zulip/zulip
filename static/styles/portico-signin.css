@@ -30,11 +30,11 @@ html {
     margin: 10px;
 }
 
-.login-page-container,
-.register-page-container,
-.find-team-page-container,
-.forgot-password-container,
-#registration {
+.footer {
+    padding: 20px 0px 10px 0px;
+}
+
+.white-box {
     position: relative;
     padding: 30px;
     min-width: 0px;
@@ -777,5 +777,8 @@ button.login-google-button {
 
     .forgot-password-container form button {
         width: 328px;
+    }
+    .white-box {
+        box-shadow: none;
     }
 }

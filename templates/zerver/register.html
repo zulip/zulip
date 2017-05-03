@@ -12,8 +12,8 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
 {% endblock %}
 
 {% block portico_content %}
-<div class="center-container register-account">
-    <div class="bg-image"></div>
+<div class="register-account flex full-page">
+  <div class="bg-image"></div>
   <div class="center-block new-style" style="padding: 20px 0px">
     <div class="pitch">
         {% trans %}
@@ -24,7 +24,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
         {% endtrans %}
     </div>
 
-    <form method="post" class="form-horizontal" id="registration" action="{{ url('zerver.views.registration.accounts_register') }}">
+    <form method="post" class="form-horizontal white-box" id="registration" action="{{ url('zerver.views.registration.accounts_register') }}">
     {{ csrf_input }}
         <div class="input-box no-validation">
             <input type='hidden' name='key' value='{{ key }}' />
