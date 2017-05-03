@@ -45,8 +45,7 @@ from zerver.lib.actions import (
 from zerver.lib.mobile_auth_otp import xor_hex_strings, ascii_to_hex, \
     otp_encrypt_api_key, is_valid_otp, hex_to_ascii, otp_decrypt_api_key
 from zerver.lib.notifications import enqueue_welcome_emails, \
-    one_click_unsubscribe_link, send_local_email_template_with_delay, \
-    send_future_email
+    one_click_unsubscribe_link, send_future_email
 from zerver.lib.test_helpers import find_pattern_in_email, find_key_by_email, queries_captured, \
     HostRequestMock, unsign_subdomain_cookie
 from zerver.lib.test_classes import (
@@ -738,13 +737,10 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             'support_email': settings.ZULIP_ADMINISTRATOR
         })
         with self.settings(EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'):
-            send_local_email_template_with_delay(
-                [{'email': data["email"], 'name': ""}],
-                "zerver/emails/invitation_reminder",
-                context,
-                datetime.timedelta(days=0),
-                tags=["invitation-reminders"],
-                sender={'email': settings.ZULIP_ADMINISTRATOR, 'name': 'Zulip'})
+            send_future_email(
+                "zerver/emails/invitation_reminder", [{'email': data["email"], 'name': ""}],
+                sender={'email': settings.ZULIP_ADMINISTRATOR, 'name': 'Zulip'},
+                context=context, tags=["invitation-reminders"])
         email_jobs_to_deliver = ScheduledJob.objects.filter(
             type=ScheduledJob.EMAIL,
             scheduled_timestamp__lte=timezone_now())

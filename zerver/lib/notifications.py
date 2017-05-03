@@ -485,13 +485,6 @@ def send_future_email(template_prefix, recipients, sender=None, context={},
                 % (subject, problems))
     return
 
-def send_local_email_template_with_delay(recipients, template_prefix,
-                                         template_payload, delay,
-                                         tags=[], sender={'email': settings.NOREPLY_EMAIL_ADDRESS, 'name': 'Zulip'}):
-    # type: (List[Dict[str, Any]], Text, Dict[str, Text], datetime.timedelta, Iterable[Text], Dict[str, Text]) -> None
-    send_future_email(template_prefix, recipients, sender=sender, context=template_payload,
-                      delay=delay, tags=tags)
-
 def enqueue_welcome_emails(email, name):
     # type: (Text, Text) -> None
     from zerver.context_processors import common_context
@@ -502,26 +495,19 @@ def enqueue_welcome_emails(email, name):
 
     user_profile = get_user_profile_by_email(email)
     unsubscribe_link = one_click_unsubscribe_link(user_profile, "welcome")
-    template_payload = common_context(user_profile)
-    template_payload.update({
+    context = common_context(user_profile)
+    context.update({
         'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS,
         'unsubscribe_link': unsubscribe_link
     })
-
-    # Send day 1 email
-    send_local_email_template_with_delay([{'email': email, 'name': name}],
-                                         "zerver/emails/followup_day1",
-                                         template_payload,
-                                         datetime.timedelta(hours=1),
-                                         tags=["followup-emails"],
-                                         sender=sender)
-    # Send day 2 email
-    send_local_email_template_with_delay([{'email': email, 'name': name}],
-                                         "zerver/emails/followup_day2",
-                                         template_payload,
-                                         datetime.timedelta(days=1),
-                                         tags=["followup-emails"],
-                                         sender=sender)
+    send_future_email(
+        "zerver/emails/followup_day1", [{'email': email, 'name': name}],
+        sender=sender, context=context, delay=datetime.timedelta(hours=1),
+        tags=["followup-emails"])
+    send_future_email(
+        "zerver/emails/followup_day2", [{'email': email, 'name': name}],
+        sender=sender, context=context, delay=datetime.timedelta(days=1),
+        tags=["followup-emails"])
 
 def convert_html_to_markdown(html):
     # type: (Text) -> Text
