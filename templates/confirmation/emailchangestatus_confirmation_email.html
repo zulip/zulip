@@ -19,22 +19,7 @@
           <a href="{{ activate_url }}" style="color:#08c">{{ activate_url }}</a>
           </p>
 
-          <p>
-          {% if verbose_support_offers %}
-          Feel free to give us a shout at
-          <a href="mailto:{{ support_email }}" style="color:#08c">{{ support_email }}</a>
-          if you have any questions or you did not request this change.
-          {% else %}
-          If you did not request this change, please contact the administrator
-          of this Zulip server at
-          <a href="mailto:{{ support_email }}" style="color:#08c">{{ support_email }}</a>.
-          {% endif %}
-          </p>
-
-          <p>
-          Cheers,<br />
-          The Zulip Team
-          </p>
+          {% include "zerver/include/change_email/footer.html" %}
         </td>
       </tr>
     </table>
