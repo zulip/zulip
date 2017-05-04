@@ -547,7 +547,6 @@ def get_auth_backends_data(request):
             "github": github_auth_enabled(realm),
             "google": google_auth_enabled(realm)}
 
-@require_GET
 @csrf_exempt
 def api_get_auth_backends(request):
     # type: (HttpRequest) -> HttpResponse
