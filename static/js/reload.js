@@ -106,7 +106,12 @@ exports.initialize = function reload__initialize() {
     var ls = localstorage();
     var fragment = ls.get(hash_fragment);
     if (fragment === undefined) {
-        blueslip.error("Invalid hash change reload token");
+        // Since this can happen sometimes with hand-reloading, it's
+        // not really worth throwing an exception if these don't
+        // exist, but be log it so that it's available for future
+        // debugging if an exception happens later.
+        blueslip.info("Invalid hash change reload token");
+        hashchange.changehash("");
         return;
     }
     ls.remove(hash_fragment);
