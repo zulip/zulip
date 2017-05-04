@@ -272,6 +272,7 @@ img.screenshot {
 #pw_strength {
     /* Same width as a Bootstrap default text <input> with padding */
     width: 220px;
+    height: 8px;
 }
 
 #registration #pw_strength {
@@ -1115,18 +1116,26 @@ input.new-organization-button {
 }
 
 /* -- password reset container -- */
-.password-container {
-    text-align: center;
-    margin-top: calc(50vh - 290px);
-}
-
 .password-reset {
     display: inline-block;
     text-align: left;
 }
 
+.password-reset form {
+    margin: 0px;
+}
+
+.password-reset #pw_strength {
+    width: 328px;
+    margin-top: 20px;
+}
+
 .password-reset .control-group .control-label {
     display: block;
+}
+
+.password-reset {
+    width: 328px;
 }
 
 .password-reset .pitch {
