@@ -37,20 +37,13 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 logger.addHandler(file_handler)
 
-
-def get_recipient_as_string(dictionary):
-    # type: (Dict[str, str]) -> str
-    if not dictionary["recipient_name"]:
-        return dictionary["recipient_email"]
-    return format_html(u"\"{0}\" <{1}>", dictionary["recipient_name"], dictionary["recipient_email"])
-
 def send_email_job(job):
     # type: (ScheduledJob) -> bool
     data = loads(job.data)
     subject = data["email_subject"]
     message = data["email_text"]
     from_email = data["from_email"]
-    to_email = get_recipient_as_string(data)
+    to_email = data["to_email"]
 
     if data["email_html"]:
         html_message = data["email_html"]

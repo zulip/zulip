@@ -10,9 +10,9 @@ from django.db.models import Q, QuerySet
 from django.template import loader
 from django.conf import settings
 
-from zerver.lib.send_email import send_future_email
 from zerver.lib.notifications import build_message_list, hash_util_encode, \
     one_click_unsubscribe_link
+from zerver.lib.send_email import display_email, send_future_email
 from zerver.models import UserProfile, UserMessage, Recipient, Stream, \
     Subscription, get_active_streams
 from zerver.context_processors import common_context
@@ -204,13 +204,11 @@ def handle_digest_email(user_profile_id, cutoff):
         user_profile, cutoff_date)
     template_payload["new_users"] = new_users
 
-    recipients = [{'email': user_profile.email, 'name': user_profile.full_name}]
-
     # We don't want to send emails containing almost no information.
     if enough_traffic(template_payload["unread_pms"],
                       template_payload["hot_conversations"],
                       new_streams_count, new_users_count):
         logger.info("Sending digest email for %s" % (user_profile.email,))
         # Send now, as a ScheduledJob
-        send_future_email('zerver/emails/digest', recipients,
+        send_future_email('zerver/emails/digest', display_email(user_profile),
                           context=template_payload, tags=["digest-emails"])
