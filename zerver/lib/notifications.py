@@ -4,11 +4,11 @@ from typing import cast, Any, Dict, Iterable, List, Mapping, Optional, Sequence,
 
 from confirmation.models import Confirmation
 from django.conf import settings
-from django.core.mail import EmailMultiAlternatives
 from django.template import loader
 from django.utils.timezone import now as timezone_now
 from zerver.decorator import statsd_increment
-from zerver.lib.send_email import send_future_email
+from zerver.lib.send_email import send_future_email, display_email, \
+    send_email_from_dict
 from zerver.lib.queue import queue_json_publish
 from zerver.models import (
     Recipient,
@@ -271,23 +271,22 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
             'reply_to_zulip': False,
         })
 
-    headers = {}
     from zerver.lib.email_mirror import create_missed_message_address
     address = create_missed_message_address(user_profile, missed_messages[0])
-    headers['Reply-To'] = address
 
     senders = set(m.sender.full_name for m in missed_messages)
     sender_str = ", ".join(senders)
+    context.update({
+        'sender_str': sender_str,
+    })
 
-    subject = "Missed Zulips from %s" % (sender_str,)
-    from_email = 'Zulip <%s>' % (settings.NOREPLY_EMAIL_ADDRESS,)
+    from_email = None
     if len(senders) == 1 and settings.SEND_MISSED_MESSAGE_EMAILS_AS_USER:
         # If this setting is enabled, you can reply to the Zulip
         # missed message emails directly back to the original sender.
         # However, one must ensure the Zulip server is in the SPF
         # record for the domain, or there will be spam/deliverability
         # problems.
-        headers['Sender'] = from_email
         sender = missed_messages[0].sender
         from_email = '"%s" <%s>' % (sender_str, sender.email)
         context.update({
@@ -295,33 +294,16 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
             'reply_to_zulip': False,
         })
 
-    text_content = loader.render_to_string('zerver/emails/missed_message.txt', context)
-    html_content = loader.render_to_string('zerver/emails/missed_message.html', context)
-    email_content = {
-        'subject': subject,
-        'text_content': text_content,
-        'html_content': html_content,
+    email_dict = {
+        'template_prefix': 'zerver/emails/missed_message',
+        'to_email': display_email(user_profile),
         'from_email': from_email,
-        'to': [user_profile.email],
-        'headers': headers
-    }
-    queue_json_publish("missedmessage_email_senders", email_content, send_missedmessage_email)
+        'reply_to_email': address,
+        'context': context}
+    queue_json_publish("missedmessage_email_senders", email_dict, send_email_from_dict)
 
     user_profile.last_reminder = timezone_now()
     user_profile.save(update_fields=['last_reminder'])
-
-
-def send_missedmessage_email(data):
-    # type: (Mapping[str, Any]) -> None
-    msg = EmailMultiAlternatives(
-        data.get('subject'),
-        data.get('text_content'),
-        data.get('from_email'),
-        data.get('to'),
-        headers=data.get('headers'))
-    msg.attach_alternative(data.get('html_content'), "text/html")
-    msg.send()
-
 
 def handle_missedmessage_emails(user_profile_id, missed_email_events):
     # type: (int, Iterable[Dict[str, Any]]) -> None

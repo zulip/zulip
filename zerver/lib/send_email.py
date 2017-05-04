@@ -8,7 +8,7 @@ import datetime
 from email.utils import parseaddr
 import ujson
 
-from typing import Any, Dict, Iterable, List, Optional, Text
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Text
 
 def display_email(user):
     # type: (UserProfile) -> Text
@@ -39,6 +39,12 @@ def send_email(template_prefix, to_email, from_email=None, reply_to_email=None, 
 def send_email_to_user(template_prefix, user, from_email=None, context={}):
     # type: (str, UserProfile, Optional[Text], Dict[str, Text]) -> bool
     return send_email(template_prefix, display_email(user), from_email=from_email, context=context)
+
+# Returns None instead of bool so that the type signature matches the third
+# argument of zerver.lib.queue.queue_json_publish
+def send_email_from_dict(email_dict):
+    # type: (Mapping[str, Any]) -> None
+    send_email(**dict(email_dict))
 
 def send_future_email(template_prefix, to_email, from_email=None, context={},
                       delay=datetime.timedelta(0)):
