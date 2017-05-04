@@ -402,15 +402,15 @@ def notify_created_bot(user_profile):
 
 def do_create_user(email, password, realm, full_name, short_name,
                    active=True, bot_type=None, bot_owner=None, tos_version=None,
-                   avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
+                   timezone=u"", avatar_source=UserProfile.AVATAR_FROM_GRAVATAR,
                    default_sending_stream=None, default_events_register_stream=None,
                    default_all_public_streams=None, prereg_user=None,
                    newsletter_data=None):
-    # type: (Text, Text, Realm, Text, Text, bool, Optional[int], Optional[UserProfile], Optional[Text], Text, Optional[Stream], Optional[Stream], bool, Optional[PreregistrationUser], Optional[Dict[str, str]]) -> UserProfile
+    # type: (Text, Text, Realm, Text, Text, bool, Optional[int], Optional[UserProfile], Optional[Text], Text, Text, Optional[Stream], Optional[Stream], bool, Optional[PreregistrationUser], Optional[Dict[str, str]]) -> UserProfile
     user_profile = create_user(email=email, password=password, realm=realm,
                                full_name=full_name, short_name=short_name,
                                active=active, bot_type=bot_type, bot_owner=bot_owner,
-                               tos_version=tos_version, avatar_source=avatar_source,
+                               tos_version=tos_version, timezone=timezone, avatar_source=avatar_source,
                                default_sending_stream=default_sending_stream,
                                default_events_register_stream=default_events_register_stream,
                                default_all_public_streams=default_all_public_streams)
