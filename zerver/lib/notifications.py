@@ -378,25 +378,22 @@ def log_digest_event(msg):
     logging.basicConfig(filename=settings.DIGEST_LOG_PATH, level=logging.INFO)
     logging.info(msg)
 
-def send_future_email(template_prefix, recipients, sender=None, context={},
+def send_future_email(template_prefix, recipients, from_email=None, context={},
                       delay=datetime.timedelta(0), tags=[]):
-    # type: (str, List[Dict[str, Any]], Optional[Dict[str, Text]], Dict[str, Any], datetime.timedelta, Iterable[Text]) -> None
+    # type: (str, List[Dict[str, Any]], Optional[Text], Dict[str, Any], datetime.timedelta, Iterable[Text]) -> None
     subject = loader.render_to_string(template_prefix + '.subject', context).strip()
     email_text = loader.render_to_string(template_prefix + '.txt', context)
     email_html = loader.render_to_string(template_prefix + '.html', context)
 
-    # SMTP mail delivery implementation
-    if sender is None:
-        # This may likely overridden by settings.DEFAULT_FROM_EMAIL
-        sender = {'email': settings.NOREPLY_EMAIL_ADDRESS, 'name': 'Zulip'}
+    if from_email is None:
+        from_email = settings.NOREPLY_EMAIL_ADDRESS
     for recipient in recipients:
         email_fields = {'email_html': email_html,
                         'email_subject': subject,
                         'email_text': email_text,
                         'recipient_email': recipient.get('email'),
                         'recipient_name': recipient.get('name'),
-                        'sender_email': sender['email'],
-                        'sender_name': sender['name']}
+                        'from_email': from_email}
         ScheduledJob.objects.create(type=ScheduledJob.EMAIL, filter_string=recipient.get('email'),
                                     data=ujson.dumps(email_fields),
                                     scheduled_timestamp=timezone_now() + delay)
@@ -405,9 +402,11 @@ def enqueue_welcome_emails(email, name):
     # type: (Text, Text) -> None
     from zerver.context_processors import common_context
     if settings.WELCOME_EMAIL_SENDER is not None:
-        sender = settings.WELCOME_EMAIL_SENDER # type: Dict[str, Text]
+        # line break to avoid triggering lint rule
+        from_email = '%(name)s <%(email)s>' % \
+                     settings.WELCOME_EMAIL_SENDER
     else:
-        sender = {'email': settings.ZULIP_ADMINISTRATOR, 'name': 'Zulip'}
+        from_email = settings.ZULIP_ADMINISTRATOR
 
     user_profile = get_user_profile_by_email(email)
     unsubscribe_link = one_click_unsubscribe_link(user_profile, "welcome")
@@ -418,11 +417,11 @@ def enqueue_welcome_emails(email, name):
     })
     send_future_email(
         "zerver/emails/followup_day1", [{'email': email, 'name': name}],
-        sender=sender, context=context, delay=datetime.timedelta(hours=1),
+        from_email=from_email, context=context, delay=datetime.timedelta(hours=1),
         tags=["followup-emails"])
     send_future_email(
         "zerver/emails/followup_day2", [{'email': email, 'name': name}],
-        sender=sender, context=context, delay=datetime.timedelta(days=1),
+        from_email=from_email, context=context, delay=datetime.timedelta(days=1),
         tags=["followup-emails"])
 
 def convert_html_to_markdown(html):
