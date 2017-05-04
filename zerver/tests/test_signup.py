@@ -35,7 +35,7 @@ from zerver.lib.actions import (
     get_stream,
     do_create_realm,
 )
-from zerver.lib.send_email import display_email, send_future_email
+from zerver.lib.send_email import display_email, send_email, send_future_email
 from zerver.lib.initial_password import initial_password
 from zerver.lib.actions import (
     do_deactivate_realm,
@@ -732,7 +732,9 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         context = common_context(referrer)
         context.update({
             'activate_url': link,
-            'referrer': referrer,
+            'referrer_name': referrer.full_name,
+            'referrer_email': referrer.email,
+            'referrer_realm_name': referrer.realm.name,
             'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS,
             'support_email': settings.ZULIP_ADMINISTRATOR
         })
