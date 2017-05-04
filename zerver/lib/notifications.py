@@ -289,8 +289,10 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
             subject = u"Group PM%s with %s, %s, and %s" % (plural_messages, other_recipients[0], other_recipients[1], other_recipients[2])
         else:
             subject = u"Group PM%s with %s, and others" % (plural_messages, ', '.join(other_recipients[:2]))
+    elif(missed_messages[0].recipient.type == Recipient.PERSONAL):
+        subject = "%s sent you a message in %s" % (sender_str, missed_messages[0].get_realm().string_id)
     else:
-        subject = "Missed Zulip%s from %s" % (plural_messages, sender_str)
+        subject = "%s @-mentioned you in %s" % (sender_str, missed_messages[0].get_realm().string_id)
 
     from_email = 'Zulip <%s>' % (settings.NOREPLY_EMAIL_ADDRESS,)
     if len(senders) == 1 and settings.SEND_MISSED_MESSAGE_EMAILS_AS_USER:

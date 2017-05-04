@@ -63,7 +63,7 @@ class TestMissedMessages(ZulipTestCase):
         self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '11', subject='test2')
         msg_id = self.send_message("othello@zulip.com", "denmark", Recipient.STREAM, '@**hamlet**')
         body = 'Denmark > test Othello, the Moor of Venice 1 2 3 4 5 6 7 8 9 10 @**hamlet**'
-        subject = 'Missed Zulips from Othello, the Moor of Venice'
+        subject = 'Othello, the Moor of Venice @-mentioned you in zulip'
         self._test_cases(tokens, msg_id, body, subject, send_as_user)
 
     @patch('zerver.lib.email_mirror.generate_random_token')
@@ -76,7 +76,7 @@ class TestMissedMessages(ZulipTestCase):
                                    Recipient.PERSONAL,
                                    'Extremely personal message!')
         body = 'You and Othello, the Moor of Venice Extremely personal message!'
-        subject = 'Missed Zulip from Othello, the Moor of Venice'
+        subject = 'Othello, the Moor of Venice sent you a message in zulip'
         self._test_cases(tokens, msg_id, body, subject, send_as_user)
 
     @patch('zerver.lib.email_mirror.generate_random_token')
@@ -89,7 +89,7 @@ class TestMissedMessages(ZulipTestCase):
                                    Recipient.PERSONAL,
                                    'Extremely personal message!')
         body = 'Or just reply to this email.'
-        subject = 'Missed Zulip from Othello, the Moor of Venice'
+        subject = 'Othello, the Moor of Venice sent you a message in zulip'
         self._test_cases(tokens, msg_id, body, subject, send_as_user)
 
     @patch('zerver.lib.email_mirror.generate_random_token')
@@ -102,7 +102,7 @@ class TestMissedMessages(ZulipTestCase):
                                    Recipient.PERSONAL,
                                    'Extremely personal message!')
         body = 'Please do not reply to this automated message.'
-        subject = 'Missed Zulip from Othello, the Moor of Venice'
+        subject = 'Othello, the Moor of Venice sent you a message in zulip'
         self._test_cases(tokens, msg_id, body, subject, send_as_user)
 
     @patch('zerver.lib.email_mirror.generate_random_token')
