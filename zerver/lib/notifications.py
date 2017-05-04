@@ -295,7 +295,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
     else:
         subject = "%s @-mentioned you in %s" % (sender_str, realm_str)
 
-    from_email = 'Zulip <%s>' % (settings.NOREPLY_EMAIL_ADDRESS,)
+    from_email = 'Zulip Missed Messages <%s>' % (settings.NOREPLY_EMAIL_ADDRESS,)
     if len(senders) == 1 and settings.SEND_MISSED_MESSAGE_EMAILS_AS_USER:
         # If this setting is enabled, you can reply to the Zulip
         # missed message emails directly back to the original sender.
