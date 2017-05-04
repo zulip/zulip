@@ -248,8 +248,8 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
         )
 
     unsubscribe_link = one_click_unsubscribe_link(user_profile, "missed_messages")
-    template_payload = common_context(user_profile)
-    template_payload.update({
+    context = common_context(user_profile)
+    context.update({
         'name': user_profile.full_name,
         'messages': build_message_list(user_profile, missed_messages),
         'message_count': message_count,
@@ -261,12 +261,12 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
     # can users reply to email to send message to Zulip. Thus, one must
     # ensure to display warning in the template.
     if settings.EMAIL_GATEWAY_PATTERN:
-        template_payload.update({
+        context.update({
             'reply_warning': False,
             'reply_to_zulip': True,
         })
     else:
-        template_payload.update({
+        context.update({
             'reply_warning': True,
             'reply_to_zulip': False,
         })
@@ -291,13 +291,13 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
         headers['Sender'] = from_email
         sender = missed_messages[0].sender
         from_email = '"%s" <%s>' % (sender_str, sender.email)
-        template_payload.update({
+        context.update({
             'reply_warning': False,
             'reply_to_zulip': False,
         })
 
-    text_content = loader.render_to_string('zerver/emails/missed_message.txt', template_payload)
-    html_content = loader.render_to_string('zerver/emails/missed_message.html', template_payload)
+    text_content = loader.render_to_string('zerver/emails/missed_message.txt', context)
+    html_content = loader.render_to_string('zerver/emails/missed_message.html', context)
     email_content = {
         'subject': subject,
         'text_content': text_content,

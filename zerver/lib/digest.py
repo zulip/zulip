@@ -157,10 +157,10 @@ def handle_digest_email(user_profile_id, cutoff):
         user_profile=user_profile,
         message__pub_date__gt=cutoff_date).order_by("message__pub_date")
 
-    template_payload = common_context(user_profile)
+    context = common_context(user_profile)
 
     # Start building email template data.
-    template_payload.update({
+    context.update({
         'name': user_profile.full_name,
         'unsubscribe_link': one_click_unsubscribe_link(user_profile, "digest")
     })
@@ -175,9 +175,9 @@ def handle_digest_email(user_profile_id, cutoff):
     # Show up to 4 missed PMs.
     pms_limit = 4
 
-    template_payload['unread_pms'] = build_message_list(
+    context['unread_pms'] = build_message_list(
         user_profile, [pm.message for pm in pms[:pms_limit]])
-    template_payload['remaining_unread_pms_count'] = min(0, len(pms) - pms_limit)
+    context['remaining_unread_pms_count'] = min(0, len(pms) - pms_limit)
 
     home_view_recipients = [sub.recipient for sub in
                             Subscription.objects.filter(
@@ -190,25 +190,23 @@ def handle_digest_email(user_profile_id, cutoff):
         message__recipient__in=home_view_recipients)
 
     # Gather hot conversations.
-    template_payload["hot_conversations"] = gather_hot_conversations(
+    context["hot_conversations"] = gather_hot_conversations(
         user_profile, stream_messages)
 
     # Gather new streams.
     new_streams_count, new_streams = gather_new_streams(
         user_profile, cutoff_date)
-    template_payload["new_streams"] = new_streams
-    template_payload["new_streams_count"] = new_streams_count
+    context["new_streams"] = new_streams
+    context["new_streams_count"] = new_streams_count
 
     # Gather users who signed up recently.
     new_users_count, new_users = gather_new_users(
         user_profile, cutoff_date)
-    template_payload["new_users"] = new_users
+    context["new_users"] = new_users
 
     # We don't want to send emails containing almost no information.
-    if enough_traffic(template_payload["unread_pms"],
-                      template_payload["hot_conversations"],
+    if enough_traffic(context["unread_pms"], context["hot_conversations"],
                       new_streams_count, new_users_count):
         logger.info("Sending digest email for %s" % (user_profile.email,))
         # Send now, as a ScheduledJob
-        send_future_email('zerver/emails/digest', display_email(user_profile),
-                          context=template_payload)
+        send_future_email('zerver/emails/digest', display_email(user_profile), context=context)
