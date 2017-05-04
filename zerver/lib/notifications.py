@@ -398,12 +398,10 @@ def enqueue_welcome_emails(email, name):
     })
     send_future_email(
         "zerver/emails/followup_day1", '%s <%s>' % (name, email),
-        from_email=from_email, context=context, delay=datetime.timedelta(hours=1),
-        tags=["followup-emails"])
+        from_email=from_email, context=context, delay=datetime.timedelta(hours=1))
     send_future_email(
         "zerver/emails/followup_day2", '%s <%s>' % (name, email),
-        from_email=from_email, context=context, delay=datetime.timedelta(days=1),
-        tags=["followup-emails"])
+        from_email=from_email, context=context, delay=datetime.timedelta(days=1))
 
 def convert_html_to_markdown(html):
     # type: (Text) -> Text

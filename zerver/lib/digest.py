@@ -211,4 +211,4 @@ def handle_digest_email(user_profile_id, cutoff):
         logger.info("Sending digest email for %s" % (user_profile.email,))
         # Send now, as a ScheduledJob
         send_future_email('zerver/emails/digest', display_email(user_profile),
-                          context=template_payload, tags=["digest-emails"])
+                          context=template_payload)

@@ -34,8 +34,8 @@ def send_email_to_user(template_prefix, user, from_email=None, context={}):
     return send_email(template_prefix, display_email(user), from_email=from_email, context=context)
 
 def send_future_email(template_prefix, to_email, from_email=None, context={},
-                      delay=datetime.timedelta(0), tags=[]):
-    # type: (str, Text, Optional[Text], Dict[str, Any], datetime.timedelta, Iterable[Text]) -> None
+                      delay=datetime.timedelta(0)):
+    # type: (str, Text, Optional[Text], Dict[str, Any], datetime.timedelta) -> None
     email_fields = {'template_prefix': template_prefix, 'to_email': to_email, 'from_email': from_email,
                     'context': context}
     ScheduledJob.objects.create(type=ScheduledJob.EMAIL, filter_string=parseaddr(to_email)[1],
