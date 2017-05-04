@@ -397,11 +397,11 @@ def enqueue_welcome_emails(email, name):
         'unsubscribe_link': unsubscribe_link
     })
     send_future_email(
-        "zerver/emails/followup_day1", [{'email': email, 'name': name}],
+        "zerver/emails/followup_day1", '%s <%s>' % (name, email),
         from_email=from_email, context=context, delay=datetime.timedelta(hours=1),
         tags=["followup-emails"])
     send_future_email(
-        "zerver/emails/followup_day2", [{'email': email, 'name': name}],
+        "zerver/emails/followup_day2", '%s <%s>' % (name, email),
         from_email=from_email, context=context, delay=datetime.timedelta(days=1),
         tags=["followup-emails"])
 

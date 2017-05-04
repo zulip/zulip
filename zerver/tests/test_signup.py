@@ -35,7 +35,7 @@ from zerver.lib.actions import (
     get_stream,
     do_create_realm,
 )
-from zerver.lib.send_email import send_future_email
+from zerver.lib.send_email import display_email, send_future_email
 from zerver.lib.initial_password import initial_password
 from zerver.lib.actions import (
     do_deactivate_realm,
@@ -738,7 +738,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         })
         with self.settings(EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'):
             send_future_email(
-                "zerver/emails/invitation_reminder", [{'email': data["email"], 'name': ""}],
+                "zerver/emails/invitation_reminder", data["email"],
                 from_email=settings.ZULIP_ADMINISTRATOR,
                 context=context, tags=["invitation-reminders"])
         email_jobs_to_deliver = ScheduledJob.objects.filter(
@@ -855,7 +855,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
         # Enqueue a fake digest email.
         context = defaultdict(str) # type: Dict[str, Any]
         context['new_streams'] = defaultdict(str)
-        send_future_email('zerver/emails/digest', [{'email': email, 'name': user_profile.full_name}],
+        send_future_email('zerver/emails/digest', display_email(user_profile),
                           context=context, tags=["digest-emails"])
 
         self.assertEqual(1, len(ScheduledJob.objects.filter(

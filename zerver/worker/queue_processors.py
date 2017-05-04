@@ -166,7 +166,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
         })
         send_future_email(
             "zerver/emails/invitation_reminder",
-            [{'email': data["email"], 'name': ""}],
+            data["email"],
             from_email=settings.ZULIP_ADMINISTRATOR,
             context=context,
             delay=datetime.timedelta(days=2),
