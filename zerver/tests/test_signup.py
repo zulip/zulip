@@ -27,8 +27,6 @@ from zerver.models import (
     Referral, ScheduledJob, UserProfile, UserMessage,
     Stream, Subscription, ScheduledJob, flush_per_request_caches
 )
-from zerver.management.commands.deliver_email import send_email_job
-
 from zerver.lib.actions import (
     set_default_streams,
     do_change_is_admin,
@@ -749,7 +747,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.assertEqual(len(email_jobs_to_deliver), 1)
         email_count = len(outbox)
         for job in email_jobs_to_deliver:
-            self.assertTrue(send_email_job(job))
+            self.assertTrue(send_email(**ujson.loads(job.data)))
         self.assertEqual(len(outbox), email_count + 1)
 
 class InviteeEmailsParserTests(TestCase):
@@ -855,8 +853,8 @@ class EmailUnsubscribeTests(ZulipTestCase):
         self.assertTrue(user_profile.enable_digest_emails)
 
         # Enqueue a fake digest email.
-        context = defaultdict(str) # type: Dict[str, Any]
-        context['new_streams'] = defaultdict(str)
+        context = {'name': '', 'realm_uri': '', 'unread_pms': [], 'hot_conversations': [],
+                   'new_users': [], 'new_streams': {'plain': []}, 'unsubscribe_link': ''}
         send_future_email('zerver/emails/digest', display_email(user_profile),
                           context=context, tags=["digest-emails"])
 

@@ -12,12 +12,12 @@ from __future__ import absolute_import
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from django.core.mail import get_connection, send_mail
 from django.utils.timezone import now as timezone_now
 from django.utils.html import format_html
 
 from zerver.models import ScheduledJob
 from zerver.lib.context_managers import lockfile
+from zerver.lib.send_email import send_email
 
 import time
 import logging
@@ -36,19 +36,6 @@ file_handler.setFormatter(formatter)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 logger.addHandler(file_handler)
-
-def send_email_job(job):
-    # type: (ScheduledJob) -> bool
-    data = loads(job.data)
-    subject = data["email_subject"]
-    message = data["email_text"]
-    from_email = data["from_email"]
-    to_email = data["to_email"]
-
-    if data["email_html"]:
-        html_message = data["email_html"]
-        return send_mail(subject, message, from_email, [to_email], html_message=html_message) > 0
-    return send_mail(subject, message, from_email, [to_email]) > 0
 
 class Command(BaseCommand):
     help = """Deliver emails queued by various parts of Zulip
@@ -75,7 +62,7 @@ Usage: ./manage.py deliver_email
                                                                     scheduled_timestamp__lte=timezone_now())
                 if email_jobs_to_deliver:
                     for job in email_jobs_to_deliver:
-                        if not send_email_job(job):
+                        if not send_email(**loads(job.data)):
                             logger.warn("No exception raised, but %r sent as 0 bytes" % (job,))
                         else:
                             job.delete()
