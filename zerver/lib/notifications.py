@@ -8,6 +8,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.template import loader
 from django.utils.timezone import now as timezone_now
 from zerver.decorator import statsd_increment
+from zerver.lib.send_email import send_future_email
 from zerver.lib.queue import queue_json_publish
 from zerver.models import (
     Recipient,
@@ -377,26 +378,6 @@ def log_digest_event(msg):
     import logging
     logging.basicConfig(filename=settings.DIGEST_LOG_PATH, level=logging.INFO)
     logging.info(msg)
-
-def send_future_email(template_prefix, recipients, from_email=None, context={},
-                      delay=datetime.timedelta(0), tags=[]):
-    # type: (str, List[Dict[str, Any]], Optional[Text], Dict[str, Any], datetime.timedelta, Iterable[Text]) -> None
-    subject = loader.render_to_string(template_prefix + '.subject', context).strip()
-    email_text = loader.render_to_string(template_prefix + '.txt', context)
-    email_html = loader.render_to_string(template_prefix + '.html', context)
-
-    if from_email is None:
-        from_email = settings.NOREPLY_EMAIL_ADDRESS
-    for recipient in recipients:
-        email_fields = {'email_html': email_html,
-                        'email_subject': subject,
-                        'email_text': email_text,
-                        'recipient_email': recipient.get('email'),
-                        'recipient_name': recipient.get('name'),
-                        'from_email': from_email}
-        ScheduledJob.objects.create(type=ScheduledJob.EMAIL, filter_string=recipient.get('email'),
-                                    data=ujson.dumps(email_fields),
-                                    scheduled_timestamp=timezone_now() + delay)
 
 def enqueue_welcome_emails(email, name):
     # type: (Text, Text) -> None

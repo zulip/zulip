@@ -35,7 +35,7 @@ from zerver.lib.actions import (
     get_stream,
     do_create_realm,
 )
-
+from zerver.lib.send_email import send_future_email
 from zerver.lib.initial_password import initial_password
 from zerver.lib.actions import (
     do_deactivate_realm,
@@ -45,7 +45,7 @@ from zerver.lib.actions import (
 from zerver.lib.mobile_auth_otp import xor_hex_strings, ascii_to_hex, \
     otp_encrypt_api_key, is_valid_otp, hex_to_ascii, otp_decrypt_api_key
 from zerver.lib.notifications import enqueue_welcome_emails, \
-    one_click_unsubscribe_link, send_future_email
+    one_click_unsubscribe_link
 from zerver.lib.test_helpers import find_pattern_in_email, find_key_by_email, queries_captured, \
     HostRequestMock, unsign_subdomain_cookie
 from zerver.lib.test_classes import (
