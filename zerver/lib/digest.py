@@ -211,6 +211,6 @@ def handle_digest_email(user_profile_id, cutoff):
                       template_payload["hot_conversations"],
                       new_streams_count, new_users_count):
         logger.info("Sending digest email for %s" % (user_profile.email,))
-        # Send now, through Mandrill
+        # Send now, as a ScheduledJob
         send_future_email('zerver/emails/digest', recipients, sender=sender,
                           context=template_payload, tags=["digest-emails"])

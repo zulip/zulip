@@ -69,7 +69,7 @@ class Command(BaseCommand):
     help = """Deliver emails queued by various parts of Zulip
 (either for immediate sending or sending at a specified time).
 
-Run this command under supervisor. We use Mandrill for zulip.com; this is for SMTP email delivery.
+Run this command under supervisor. This is for SMTP email delivery.
 
 Usage: ./manage.py deliver_email
 """

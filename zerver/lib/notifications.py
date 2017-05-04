@@ -2,13 +2,12 @@ from __future__ import print_function
 
 from typing import cast, Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Text
 
-import mandrill
 from confirmation.models import Confirmation
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template import loader
 from django.utils.timezone import now as timezone_now
-from zerver.decorator import statsd_increment, uses_mandrill
+from zerver.decorator import statsd_increment
 from zerver.lib.queue import queue_json_publish
 from zerver.models import (
     Recipient,
@@ -365,31 +364,13 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
             message_count_by_recipient_subject[recipient_subject],
         )
 
-@uses_mandrill
-def clear_followup_emails_queue(email, mail_client=None):
-    # type: (Text, Optional[mandrill.Mandrill]) -> None
+def clear_followup_emails_queue(email):
+    # type: (Text) -> None
     """
-    Clear out queued emails (from Mandrill's queue) that would otherwise
-    be sent to a specific email address. Optionally specify which sender
-    to filter by (useful when there are more Zulip subsystems using our
-    mandrill account).
-
-    `email` is a string representing the recipient email
-    `from_email` is a string representing the email account used
-    to send the email (E.g. support@example.com).
+    Clear out queued emails that would otherwise be sent to a specific email address.
     """
-    # SMTP mail delivery implementation
-    if not mail_client:
-        items = ScheduledJob.objects.filter(type=ScheduledJob.EMAIL, filter_string__iexact = email)
-        items.delete()
-        return
-
-    # Mandrill implementation
-    for email_message in mail_client.messages.list_scheduled(to=email):
-        result = mail_client.messages.cancel_scheduled(id=email_message["_id"])
-        if result.get("status") == "error":
-            print(result.get("name"), result.get("error"))
-    return
+    items = ScheduledJob.objects.filter(type=ScheduledJob.EMAIL, filter_string__iexact = email)
+    items.delete()
 
 def log_digest_event(msg):
     # type: (Text) -> None
@@ -397,93 +378,28 @@ def log_digest_event(msg):
     logging.basicConfig(filename=settings.DIGEST_LOG_PATH, level=logging.INFO)
     logging.info(msg)
 
-@uses_mandrill
 def send_future_email(template_prefix, recipients, sender=None, context={},
-                      delay=datetime.timedelta(0), tags=[], mail_client=None):
-    # type: (str, List[Dict[str, Any]], Optional[Dict[str, Text]], Dict[str, Any], datetime.timedelta, Iterable[Text], Optional[mandrill.Mandrill]) -> None
-    """
-    Sends email via Mandrill, with optional delay
-
-    'mail_client' is filled in by the decorator
-    """
-    # When sending real emails while testing locally, don't accidentally send
-    # emails to non-zulip.com users.
-    if settings.DEVELOPMENT and \
-       settings.EMAIL_BACKEND != 'django.core.mail.backends.console.EmailBackend':
-        for recipient in recipients:
-            email = recipient.get("email")
-            if get_user_profile_by_email(email).realm.string_id != "zulip":
-                raise ValueError("digest: refusing to send emails to non-zulip.com users.")
-
+                      delay=datetime.timedelta(0), tags=[]):
+    # type: (str, List[Dict[str, Any]], Optional[Dict[str, Text]], Dict[str, Any], datetime.timedelta, Iterable[Text]) -> None
     subject = loader.render_to_string(template_prefix + '.subject', context).strip()
     email_text = loader.render_to_string(template_prefix + '.txt', context)
     email_html = loader.render_to_string(template_prefix + '.html', context)
 
     # SMTP mail delivery implementation
-    if not mail_client:
-        if sender is None:
-            # This may likely overridden by settings.DEFAULT_FROM_EMAIL
-            sender = {'email': settings.NOREPLY_EMAIL_ADDRESS, 'name': 'Zulip'}
-        for recipient in recipients:
-            email_fields = {'email_html': email_html,
-                            'email_subject': subject,
-                            'email_text': email_text,
-                            'recipient_email': recipient.get('email'),
-                            'recipient_name': recipient.get('name'),
-                            'sender_email': sender['email'],
-                            'sender_name': sender['name']}
-            ScheduledJob.objects.create(type=ScheduledJob.EMAIL, filter_string=recipient.get('email'),
-                                        data=ujson.dumps(email_fields),
-                                        scheduled_timestamp=timezone_now() + delay)
-        return
-
-    # Mandrill implementation
     if sender is None:
+        # This may likely overridden by settings.DEFAULT_FROM_EMAIL
         sender = {'email': settings.NOREPLY_EMAIL_ADDRESS, 'name': 'Zulip'}
-
-    message = {'from_email': sender['email'],
-               'from_name': sender['name'],
-               'to': recipients,
-               'subject': subject,
-               'html': email_html,
-               'text': email_text,
-               'tags': tags,
-               }
-    # ignore any delays smaller than 1-minute because it's cheaper just to sent them immediately
-    if not isinstance(delay, datetime.timedelta):
-        raise TypeError("specified delay is of the wrong type: %s" % (type(delay),))
-    # Note: In the next section we hackishly use **{"async": False} to
-    # work around https://github.com/python/mypy/issues/2959 "# type: ignore" doesn't work
-    if delay < datetime.timedelta(minutes=1):
-        results = mail_client.messages.send(message=message, ip_pool="Main Pool", **{"async": False})
-    else:
-        send_time = (timezone_now() + delay).__format__("%Y-%m-%d %H:%M:%S")
-        results = mail_client.messages.send(message=message, ip_pool="Main Pool",
-                                            send_at=send_time, **{"async": False})
-    problems = [result for result in results if (result['status'] in ('rejected', 'invalid'))]
-
-    if problems:
-        for problem in problems:
-            if problem["status"] == "rejected":
-                if problem["reject_reason"] == "hard-bounce":
-                    # A hard bounce means the address doesn't exist or the
-                    # recipient mail server is completely blocking
-                    # delivery. Don't try to send further emails.
-                    if "digest-emails" in tags:
-                        from zerver.lib.actions import do_change_enable_digest_emails
-                        bounce_email = problem["email"]
-                        user_profile = get_user_profile_by_email(bounce_email)
-                        do_change_enable_digest_emails(user_profile, False)
-                        log_digest_event("%s\nTurned off digest emails for %s" % (
-                            str(problems), bounce_email))
-                        continue
-                elif problem["reject_reason"] == "soft-bounce":
-                    # A soft bounce is temporary; let it try to resolve itself.
-                    continue
-            raise Exception(
-                "While sending email (%s), encountered problems with these recipients: %r"
-                % (subject, problems))
-    return
+    for recipient in recipients:
+        email_fields = {'email_html': email_html,
+                        'email_subject': subject,
+                        'email_text': email_text,
+                        'recipient_email': recipient.get('email'),
+                        'recipient_name': recipient.get('name'),
+                        'sender_email': sender['email'],
+                        'sender_name': sender['name']}
+        ScheduledJob.objects.create(type=ScheduledJob.EMAIL, filter_string=recipient.get('email'),
+                                    data=ujson.dumps(email_fields),
+                                    scheduled_timestamp=timezone_now() + delay)
 
 def enqueue_welcome_emails(email, name):
     # type: (Text, Text) -> None
