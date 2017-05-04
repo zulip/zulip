@@ -557,8 +557,9 @@ exports.home_view_loaded = function home_view_loaded() {
     $(document).trigger("home_view_loaded.zulip");
 };
 
+
 var watchdog_time = $.now();
-setInterval(function () {
+exports.check_for_unsuspend = function () {
     var new_time = $.now();
     if ((new_time - watchdog_time) > 20000) { // 20 seconds.
         // Defensively reset watchdog_time here in case there's an
@@ -569,7 +570,8 @@ setInterval(function () {
         $(document).trigger($.Event('unsuspend'));
     }
     watchdog_time = new_time;
-}, 5000);
+};
+setInterval(exports.check_for_unsuspend, 5000);
 
 util.execute_early(function () {
     $(document).on('unsuspend', function () {
