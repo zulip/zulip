@@ -1025,7 +1025,7 @@ class RealmCreationTest(ZulipTestCase):
 
 class UserSignUpTest(ZulipTestCase):
 
-    def test_user_default_language(self):
+    def test_user_default_language_and_timezone(self):
         # type: () -> None
         """
         Check if the default language of new user is the default language
@@ -1033,6 +1033,7 @@ class UserSignUpTest(ZulipTestCase):
         """
         email = "newguy@zulip.com"
         password = "newpassword"
+        timezone = "US/Mountain"
         realm = get_realm('zulip')
         do_set_realm_property(realm, 'default_language', u"de")
 
@@ -1049,11 +1050,12 @@ class UserSignUpTest(ZulipTestCase):
         self.assertEqual(result.status_code, 200)
 
         # Pick a password and agree to the ToS.
-        result = self.submit_reg_form_for_user(email, password)
+        result = self.submit_reg_form_for_user(email, password, timezone=timezone)
         self.assertEqual(result.status_code, 302)
 
         user_profile = get_user_profile_by_email(email)
         self.assertEqual(user_profile.default_language, realm.default_language)
+        self.assertEqual(user_profile.timezone, timezone)
         from django.core.mail import outbox
         outbox.pop()
 
