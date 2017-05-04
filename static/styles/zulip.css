@@ -615,7 +615,7 @@ td.pointer {
 }
 
 .private-message .alert-copied {
-    background-color: #feffe0;
+    background-color: #f0f4f5;
 }
 
 .include-sender .alert-copied {
@@ -988,7 +988,7 @@ td.pointer {
 
 .private-message .messagebox,
 .message_header_private_message .message-header-contents {
-    background-color: #feffe0;
+    background-color: #f0f4f5;
 }
 
 .floating_recipient .message-header-contents {
