@@ -280,17 +280,18 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
     sender_str = ", ".join(senders)
     plural_messages = 's' if len(missed_messages) > 1 else ''
     realm_str = missed_messages[0].get_realm().string_id
-    if(missed_messages[0].recipient.type == Recipient.HUDDLE):
+    if (missed_messages[0].recipient.type == Recipient.HUDDLE):
         disp_recipient = get_display_recipient(missed_messages[0].recipient)
         other_recipients = [r['full_name'] for r in disp_recipient
                                 if r['email'] != user_profile.email]
         if len(other_recipients) == 2:
             subject = u"Group PM%s with %s in %s" % (plural_messages, " and ".join(other_recipients), realm_str)
         elif len(other_recipients) == 3:
-            subject = u"Group PM%s with %s, %s, and %s in %s" % (plural_messages, other_recipients[0], other_recipients[1], other_recipients[2], realm_str)
+            subject = u"Group PM%s with %s, %s, and %s in %s" % (plural_messages, other_recipients[0], other_recipients[1], 
+                other_recipients[2], realm_str)
         else:
             subject = u"Group PM%s with %s, and others in %s" % (plural_messages, ', '.join(other_recipients[:2]), realm_str)
-    elif(missed_messages[0].recipient.type == Recipient.PERSONAL):
+    elif (missed_messages[0].recipient.type == Recipient.PERSONAL):
         subject = "%s sent you a message in %s" % (sender_str, realm_str)
     else:
         subject = "%s @-mentioned you in %s" % (sender_str, realm_str)
