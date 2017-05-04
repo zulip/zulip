@@ -484,6 +484,8 @@ html {
     height: 100px;
     background-color: #444;
     box-shadow: 0px 0px 5px rgba(0,0,0,0.15);
+
+    background-size: 100% auto;
 }
 
 .split-view .org-header .info-box {
