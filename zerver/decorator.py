@@ -27,7 +27,6 @@ import datetime
 import logging
 import cProfile
 from io import BytesIO
-from zerver.lib.mandrill_client import get_mandrill_client
 from six.moves import zip, urllib
 
 from typing import Union, Any, Callable, Sequence, Dict, Optional, TypeVar, Text, cast
@@ -692,19 +691,6 @@ def profiled(func):
         retval = prof.runcall(func, *args, **kwargs) # type: Any
         prof.dump_stats(fn)
         return retval
-    return wrapped_func # type: ignore # https://github.com/python/mypy/issues/1927
-
-def uses_mandrill(func):
-    # type: (FuncT) -> FuncT
-    """
-    This decorator takes a function with keyword argument "mail_client" and
-    fills it in with the mail_client for the Mandrill account.
-    """
-    @wraps(func)
-    def wrapped_func(*args, **kwargs):
-        # type: (*Any, **Any) -> Any
-        kwargs['mail_client'] = get_mandrill_client()
-        return func(*args, **kwargs)
     return wrapped_func # type: ignore # https://github.com/python/mypy/issues/1927
 
 def return_success_on_head_request(view_func):

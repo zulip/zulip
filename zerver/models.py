@@ -1621,9 +1621,6 @@ class Referral(models.Model):
     email = models.EmailField(blank=False, null=False) # type: Text
     timestamp = models.DateTimeField(auto_now_add=True, null=False) # type: datetime.datetime
 
-# This table only gets used on Zulip Voyager instances
-# For reasons of deliverability (and sending from multiple email addresses),
-# we will still send from mandrill when we send things from the (staging.)zulip.com install
 class ScheduledJob(models.Model):
     scheduled_timestamp = models.DateTimeField(auto_now_add=False, null=False) # type: datetime.datetime
     type = models.PositiveSmallIntegerField() # type: int
