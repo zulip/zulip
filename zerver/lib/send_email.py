@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
 from django.template import loader, TemplateDoesNotExist
 from django.utils.timezone import now as timezone_now
 from zerver.models import UserProfile, ScheduledJob, get_user_profile_by_email
@@ -16,8 +16,8 @@ def display_email(user):
     # https://github.com/zulip/zulip/issues/4676 is resolved
     return user.email
 
-def send_email(template_prefix, to_email, from_email=None, context={}):
-    # type: (str, Text, Optional[Text], Dict[str, Any]) -> bool
+def send_email(template_prefix, to_email, from_email=None, reply_to_email=None, context={}):
+    # type: (str, Text, Optional[Text], Optional[Text], Dict[str, Any]) -> bool
     subject = loader.render_to_string(template_prefix + '.subject', context).strip()
     message = loader.render_to_string(template_prefix + '.txt', context)
     # Remove try/expect once https://github.com/zulip/zulip/issues/4691 is resolved.
@@ -27,7 +27,14 @@ def send_email(template_prefix, to_email, from_email=None, context={}):
         html_message = None
     if from_email is None:
         from_email = settings.NOREPLY_EMAIL_ADDRESS
-    return send_mail(subject, message, from_email, [to_email], html_message=html_message) > 0
+    reply_to = None
+    if reply_to_email is not None:
+        reply_to = [reply_to_email]
+
+    mail = EmailMultiAlternatives(subject, message, from_email, [to_email], reply_to=reply_to)
+    if html_message is not None:
+        mail.attach_alternative(html_message, 'text/html')
+    return mail.send() > 0
 
 def send_email_to_user(template_prefix, user, from_email=None, context={}):
     # type: (str, UserProfile, Optional[Text], Dict[str, Text]) -> bool
