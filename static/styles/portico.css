@@ -272,12 +272,12 @@ img.screenshot {
 #pw_strength {
     /* Same width as a Bootstrap default text <input> with padding */
     width: 220px;
+    height: 8px;
 }
 
 #registration #pw_strength {
     width: 325px;
-    height: 8px;
-    margin: -5px 0 0 0;
+    margin-top: 20px;
 }
 
 .def:before {
@@ -381,9 +381,11 @@ input.text-error {
 }
 
 .footer {
-    margin: 30px 0px 10px 0px;
-    height: 54px;
     background-color: transparent;
+}
+
+.footer .footer-navigation {
+    margin-left: 0px;
 }
 
 .header-main .logo {
@@ -567,12 +569,11 @@ a.bottom-signup-button {
 .api-page {
     min-height: 100%;
     height: auto;
-    margin-bottom: -54px;
 }
 
 .portico-page {
     /* height of the white portico navbar */
-    min-height: calc(100% - 59px);
+    min-height: calc(100% - 87px);
 }
 
 .signup-signature {
@@ -1119,18 +1120,26 @@ input.new-organization-button {
 }
 
 /* -- password reset container -- */
-.password-container {
-    text-align: center;
-    margin-top: calc(50vh - 290px);
-}
-
 .password-reset {
     display: inline-block;
     text-align: left;
 }
 
+.password-reset form {
+    margin: 0px;
+}
+
+.password-reset #pw_strength {
+    width: 328px;
+    margin-top: 20px;
+}
+
 .password-reset .control-group .control-label {
     display: block;
+}
+
+.password-reset {
+    width: 328px;
 }
 
 .password-reset .pitch {
@@ -1366,6 +1375,13 @@ input.new-organization-button {
 
 .markdown ul li {
     margin: 5px 0px;
+}
+
+@media (max-height: 678px) {
+    .portico-page {
+        /* the footer becomes two lines */
+        min-height: calc(100% - 96px);
+    }
 }
 
 @media (max-height: 600px) {
