@@ -36,17 +36,8 @@ def send_email_to_user(template_prefix, user, from_email=None, context={}):
 def send_future_email(template_prefix, to_email, from_email=None, context={},
                       delay=datetime.timedelta(0), tags=[]):
     # type: (str, Text, Optional[Text], Dict[str, Any], datetime.timedelta, Iterable[Text]) -> None
-    subject = loader.render_to_string(template_prefix + '.subject', context).strip()
-    email_text = loader.render_to_string(template_prefix + '.txt', context)
-    email_html = loader.render_to_string(template_prefix + '.html', context)
-
-    if from_email is None:
-        from_email = settings.NOREPLY_EMAIL_ADDRESS
-    email_fields = {'email_html': email_html,
-                    'email_subject': subject,
-                    'email_text': email_text,
-                    'to_email': to_email,
-                    'from_email': from_email}
+    email_fields = {'template_prefix': template_prefix, 'to_email': to_email, 'from_email': from_email,
+                    'context': context}
     ScheduledJob.objects.create(type=ScheduledJob.EMAIL, filter_string=parseaddr(to_email)[1],
                                 data=ujson.dumps(email_fields),
                                 scheduled_timestamp=timezone_now() + delay)
