@@ -739,7 +739,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         with self.settings(EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'):
             send_future_email(
                 "zerver/emails/invitation_reminder", [{'email': data["email"], 'name': ""}],
-                sender={'email': settings.ZULIP_ADMINISTRATOR, 'name': 'Zulip'},
+                from_email=settings.ZULIP_ADMINISTRATOR,
                 context=context, tags=["invitation-reminders"])
         email_jobs_to_deliver = ScheduledJob.objects.filter(
             type=ScheduledJob.EMAIL,
@@ -856,7 +856,6 @@ class EmailUnsubscribeTests(ZulipTestCase):
         context = defaultdict(str) # type: Dict[str, Any]
         context['new_streams'] = defaultdict(str)
         send_future_email('zerver/emails/digest', [{'email': email, 'name': user_profile.full_name}],
-                          sender={'email': settings.NOREPLY_EMAIL_ADDRESS, 'name': 'Zulip'},
                           context=context, tags=["digest-emails"])
 
         self.assertEqual(1, len(ScheduledJob.objects.filter(

@@ -204,7 +204,6 @@ def handle_digest_email(user_profile_id, cutoff):
     template_payload["new_users"] = new_users
 
     recipients = [{'email': user_profile.email, 'name': user_profile.full_name}]
-    sender = {'email': settings.NOREPLY_EMAIL_ADDRESS, 'name': 'Zulip'}
 
     # We don't want to send emails containing almost no information.
     if enough_traffic(template_payload["unread_pms"],
@@ -212,5 +211,5 @@ def handle_digest_email(user_profile_id, cutoff):
                       new_streams_count, new_users_count):
         logger.info("Sending digest email for %s" % (user_profile.email,))
         # Send now, as a ScheduledJob
-        send_future_email('zerver/emails/digest', recipients, sender=sender,
+        send_future_email('zerver/emails/digest', recipients,
                           context=template_payload, tags=["digest-emails"])
