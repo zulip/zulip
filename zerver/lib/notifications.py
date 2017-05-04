@@ -278,9 +278,8 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
 
     senders = set(m.sender.full_name for m in missed_messages)
     sender_str = ", ".join(senders)
-    plural_messages = 's' if len(missed_messages) > 1 else ''
 
-    subject = "Missed Zulip%s from %s" % (plural_messages, sender_str)
+    subject = "Missed Zulips from %s" % (sender_str,)
     from_email = 'Zulip <%s>' % (settings.NOREPLY_EMAIL_ADDRESS,)
     if len(senders) == 1 and settings.SEND_MISSED_MESSAGE_EMAILS_AS_USER:
         # If this setting is enabled, you can reply to the Zulip
