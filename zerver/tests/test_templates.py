@@ -92,7 +92,6 @@ class TemplateTestCase(ZulipTestCase):
             'confirmation/emailchangestatus_confirmation_email.txt',
             'confirmation/notify_change_in_email_subject.txt',
             'corporate/mit.html',
-            'corporate/privacy.html',
             'corporate/zephyr.html',
             'corporate/zephyr-mirror.html',
             'pipeline/css.jinja',
