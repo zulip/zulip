@@ -171,8 +171,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
             data["email"],
             from_email=settings.ZULIP_ADMINISTRATOR,
             context=context,
-            delay=datetime.timedelta(days=2),
-            tags=["invitation-reminders"])
+            delay=datetime.timedelta(days=2))
 
 @assign_queue('user_activity')
 class UserActivityWorker(QueueProcessingWorker):
