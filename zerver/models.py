@@ -94,7 +94,7 @@ def get_display_recipient_remote_cache(recipient_id, recipient_type, recipient_t
     # We don't really care what the ordering is, just that it's deterministic.
     user_profile_list = (UserProfile.objects.filter(subscription__recipient_id=recipient_id)
                                             .select_related()
-                                            .order_by('email'))
+                                            .order_by('id'))
     return [{'email': user_profile.email,
              'full_name': user_profile.full_name,
              'short_name': user_profile.short_name,
