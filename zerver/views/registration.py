@@ -24,12 +24,13 @@ from zerver.lib.actions import do_change_password, do_change_full_name, do_chang
     compute_mit_user_fullname
 from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, \
     CreateUserForm, FindMyTeamForm
-from zerver.lib.actions import is_inactive
+from zerver.lib.actions import is_inactive, do_set_user_display_setting
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from zerver.decorator import require_post, has_request_variables, \
     JsonableError, get_user_profile_by_email, REQ
 from zerver.lib.response import json_success
 from zerver.lib.utils import get_subdomain
+from zerver.lib.timezone import get_all_timezones
 from zproject.backends import password_auth_enabled
 
 from confirmation.models import Confirmation, RealmCreationKey, check_key_is_valid
@@ -197,16 +198,22 @@ def accounts_register(request):
         short_name = email_to_username(email)
         first_in_realm = len(UserProfile.objects.filter(realm=realm, is_bot=False)) == 0
 
+        timezone = u""
+        if 'timezone' in request.POST and request.POST['timezone'] in get_all_timezones():
+            timezone = request.POST['timezone']
+
         # FIXME: sanitize email addresses and fullname
         if existing_user_profile is not None and existing_user_profile.is_mirror_dummy:
             user_profile = existing_user_profile
             do_activate_user(user_profile)
             do_change_password(user_profile, password)
             do_change_full_name(user_profile, full_name)
+            do_set_user_display_setting(user_profile, 'timezone', timezone)
         else:
             user_profile = do_create_user(email, password, realm, full_name, short_name,
                                           prereg_user=prereg_user,
                                           tos_version=settings.TOS_VERSION,
+                                          timezone=timezone,
                                           newsletter_data={"IP": request.META['REMOTE_ADDR']})
 
         if first_in_realm:
