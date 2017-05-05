@@ -177,8 +177,15 @@ exports.reaction_navigate = function (e, event_name) {
             $(first_emoji).focus();
         }
     } else if (event_name === 'up_arrow') {
-        if (selected_emoji && selected_index < 6) { // move up into reaction filter
-            $('.emoji-popover-filter').focus();
+        if (selected_emoji && selected_index < 6) {
+            // In this case, we're move up into the reaction filter
+            // rows.  Here, we override the default browser behavior,
+            // which in Firefox is good (preserving the cursor
+            // position) and in Chrome is bad (cursor goes to
+            // beginning) with something reasonable and consistent
+            // (cursor goes to the end of the filter string).
+            $('.emoji-popover-filter').focus().caret(Infinity);
+            return true;
         }
     }
 
