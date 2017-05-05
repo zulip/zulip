@@ -362,6 +362,14 @@ exports.toggle = function () {
 
 exports.launch = function () {
     exports.setup_page(function () {
+        modals.open_overlay({
+            name: 'drafts',
+            overlay: $('#draft_overlay'),
+            on_close: function () {
+                hashchange.exit_modal();
+            },
+        });
+
         $("#draft_overlay").addClass("show");
         var draft_list = drafts.draft_model.get();
         var draft_id_list = Object.getOwnPropertyNames(draft_list);
@@ -376,11 +384,6 @@ exports.launch = function () {
 };
 
 $(function () {
-
-    function drafts_close_modal() {
-        hashchange.exit_modal();
-    }
-    modals.set_close_handler("drafts", drafts_close_modal);
 
     window.addEventListener("beforeunload", function () {
         exports.update_draft();
