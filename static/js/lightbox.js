@@ -101,7 +101,18 @@ exports.open = function (image) {
         }
     }
 
-    $("#lightbox_overlay").addClass("show");
+    function lightbox_close_modal() {
+        $(".player-container iframe").remove();
+        lightbox.is_open = false;
+        document.activeElement.blur();
+    }
+
+    modals.open_overlay({
+        name: 'lightbox',
+        overlay: $("#lightbox_overlay"),
+        on_close: lightbox_close_modal,
+    });
+
     popovers.hide_all();
     lightbox.is_open = true;
 };
@@ -183,14 +194,6 @@ $(function () {
             lightbox[direction]();
         }
     });
-
-    function lightbox_close_modal() {
-        $(".player-container iframe").remove();
-        lightbox.is_open = false;
-        document.activeElement.blur();
-    }
-
-    modals.set_close_handler("lightbox", lightbox_close_modal);
 
 });
 
