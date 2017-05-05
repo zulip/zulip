@@ -150,7 +150,9 @@ exports.reaction_navigate = function (e, event_name) {
         }
     } else if (event_name === 'up_arrow') {
         if (selected_emoji && selected_index < 6) { // move up into reaction filter
-            $('.emoji-popover-filter').focus();
+            // cursor always goes to the end of the search String.
+            $('.emoji-popover-filter').focus().caret(Infinity);
+            return true;
         }
     }
 
