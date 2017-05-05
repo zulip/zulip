@@ -107,12 +107,6 @@ exports.show_failed_message_success = function (message_id) {
 
 $(document).ready(function () {
 
-    function info_overlay_close_modal() {
-        $(".informational-overlays").removeClass("show");
-    }
-
-    modals.set_close_handler("informationalOverlays", info_overlay_close_modal);
-
     var info_overlay_toggle = components.toggle({
         name: "info-overlay-toggle",
         selected: 0,
@@ -133,12 +127,14 @@ $(document).ready(function () {
 });
 
 exports.show_info_overlay = function (target) {
-    var el = {
-        overlay: $(".informational-overlays"),
-    };
+    var overlay = $(".informational-overlays");
 
-    if (!el.overlay.hasClass("show")) {
-        $(el.overlay).addClass("show");
+    if (!overlay.hasClass("show")) {
+        modals.open_overlay({
+            name:  'informationalOverlays',
+            overlay: overlay,
+            on_close: function () {},
+        });
     }
 
     if (target) {
