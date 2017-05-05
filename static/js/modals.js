@@ -26,10 +26,6 @@ exports.open_overlay = function (opts) {
     };
 };
 
-exports.set_close_handler = function (name, handler) {
-    exports.close[name] = handler;
-};
-
 exports.close_modal = function (name) {
     $("[data-overlay='" + name + "']").removeClass("show");
 
