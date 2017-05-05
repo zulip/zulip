@@ -391,10 +391,12 @@ def log_into_subdomain(request):
 
     email_address = data['email']
     full_name = data['name']
+    is_signup = data['is_signup']
     user_profile, return_data = authenticate_remote_user(request, email_address)
     invalid_subdomain = bool(return_data.get('invalid_subdomain'))
     return login_or_register_remote_user(request, email_address, user_profile,
-                                         full_name, invalid_subdomain)
+                                         full_name, invalid_subdomain=invalid_subdomain,
+                                         is_signup=is_signup)
 
 def get_dev_users(extra_users_count=10):
     # type: (int) -> List[UserProfile]
