@@ -965,7 +965,7 @@ def bulk_get_streams(realm, stream_names):
 
 def get_recipient_cache_key(type, type_id):
     # type: (int, int) -> Text
-    return u"get_recipient:%s:%s" % (type, type_id,)
+    return u"%s:get_recipient:%s:%s" % (cache.KEY_PREFIX, type, type_id,)
 
 @cache_with_key(get_recipient_cache_key, timeout=3600*24*7)
 def get_recipient(type, type_id):
