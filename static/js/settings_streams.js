@@ -113,17 +113,19 @@ function make_stream_default(stream_name) {
     var data = {
         stream_name: stream_name,
     };
+    var default_stream_status = $("#admin-default-stream-status");
+    default_stream_status.hide();
 
     channel.post({
         url: '/json/default_streams',
         data: data,
         error: function (xhr) {
             if (xhr.status.toString().charAt(0) === "4") {
-                $(".active_stream_row button").closest("td").html(
-                    $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg));
+                ui_report.error(i18n.t("Failed!"), xhr, default_stream_status);
             } else {
-                $(".active_stream_row button").text(i18n.t("Failed!"));
+                ui_report.error(i18n.t("Failed!"), default_stream_status);
             }
+            default_stream_status.show();
         },
     });
 }
@@ -166,6 +168,9 @@ exports.on_load_success = function (streams_data) {
         if (e.which === 13) {
             e.preventDefault();
             e.stopPropagation();
+            var default_stream_input = $(".create_default_stream");
+            make_stream_default(default_stream_input.val());
+            default_stream_input[0].value = "";
         }
     });
 
@@ -179,6 +184,15 @@ exports.on_load_success = function (streams_data) {
         updater: function (stream_name) {
             make_stream_default(stream_name);
         },
+    });
+
+    $(".default-stream-form").on("click", "#do_submit_stream", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var default_stream_input = $(".create_default_stream");
+        make_stream_default(default_stream_input.val());
+        // Clear value inside input box
+        default_stream_input[0].value = "";
     });
 
     $("#do_deactivate_stream_button").click(function () {
