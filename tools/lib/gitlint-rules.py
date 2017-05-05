@@ -21,6 +21,7 @@ WORD_SET = {
     'darkens', 'darkening', 'darkened',
     'disables', 'disabling', 'disabled',
     'displays', 'displaying', 'displayed',
+    'documents', 'documenting', 'documented',
     'drys', 'drying', 'dryed',
     'ends', 'ending', 'ended',
     'enforces', 'enforcing', 'enforced',
@@ -49,12 +50,14 @@ WORD_SET = {
     'removes', 'removing', 'removed',
     'renames', 'renaming', 'renamed',
     'reorders', 'reordering', 'reordered',
+    'replaces', 'replacing', 'replaced',
     'requires', 'requiring', 'required',
     'restores', 'restoring', 'restored',
     'sends', 'sending', 'sent',
     'sets', 'setting',
     'separates', 'separating', 'separated',
     'shows', 'showing', 'showed',
+    'simplifies', 'simplifying', 'simplified',
     'skips', 'skipping', 'skipped',
     'sorts', 'sorting',
     'speeds', 'speeding', 'sped',
@@ -69,13 +72,13 @@ WORD_SET = {
 
 imperative_forms = sorted([
     'add', 'allow', 'amend', 'bump', 'calculate', 'change', 'clean', 'commit',
-    'correct', 'create', 'darken', 'disable', 'dry', 'end', 'enforce',
-    'enqueue', 'extract', 'finish', 'fix', 'format', 'guard', 'handle', 'hide',
-    'ignore', 'implement', 'improve', 'increase', 'keep', 'kill', 'make',
-    'merge', 'move', 'permit', 'prevent', 'push', 'rebase', 'refactor',
-    'remove', 'rename', 'reorder', 'require', 'restore', 'send', 'separate',
-    'set', 'show', 'skip', 'sort', 'speed', 'start', 'support', 'take', 'test',
-    'truncate', 'update', 'use',
+    'correct', 'create', 'darken', 'disable', 'display', 'document', 'dry',
+    'end', 'enforce', 'enqueue', 'extract', 'finish', 'fix', 'format', 'guard',
+    'handle', 'hide', 'ignore', 'implement', 'improve', 'increase', 'keep',
+    'kill', 'make', 'merge', 'move', 'permit', 'prevent', 'push', 'rebase',
+    'refactor', 'remove', 'rename', 'reorder', 'replace', 'require', 'restore',
+    'send', 'separate', 'set', 'show', 'simplify', 'skip', 'sort', 'speed',
+    'start', 'support', 'take', 'test', 'truncate', 'update', 'use',
 ])
 
 
@@ -109,29 +112,32 @@ def head_binary_search(key, words):
 
 class ImperativeMood(LineRule):
     """ This rule will enforce that the commit message title uses imperative
-    mood. """
+    mood. This is done by checking if the first word is in `WORD_SET`, if so
+    show the word in the correct mood. """
 
     name = "title-imperative-mood"
     id = "Z1"
     target = CommitMessageTitle
 
-    error_msg = ('Title contains non imperative mood '
+    error_msg = ('The first word in commit title should be in imperative mood '
                  '("{word}" -> "{imperative}"): "{title}"')
 
     def validate(self, line, commit):
         # type: (Text, gitlint.commit) -> List[RuleViolation]
         violations = []
-        words = line.lower().split(" ")
 
-        for word in words:
-            if word in WORD_SET:
-                imperative = head_binary_search(word, imperative_forms)
-                violation = RuleViolation(self.id, self.error_msg.format(
-                    word=word,
-                    imperative=imperative,
-                    title=commit.message.title
-                ))
+        # Ignore the section tag (ie `<section tag>: <message body>.`)
+        words = line.split(': ', 1)[-1].split()
+        first_word = words[0].lower()
 
-                violations.append(violation)
+        if first_word in WORD_SET:
+            imperative = head_binary_search(first_word, imperative_forms)
+            violation = RuleViolation(self.id, self.error_msg.format(
+                word=first_word,
+                imperative=imperative,
+                title=commit.message.title
+            ))
+
+            violations.append(violation)
 
         return violations
