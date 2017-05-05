@@ -41,11 +41,6 @@ $("body").ready(function () {
     });
 
     $("body").on("click", "[data-sidebar-form-close]", close_sidebar);
-
-    function settings_close_modal() {
-        hashchange.exit_modal();
-    }
-    modals.set_close_handler("settings", settings_close_modal);
 });
 
 
@@ -92,7 +87,8 @@ exports.launch_page = function (tab) {
         $(".sidebar .ind-tab[data-tab-key='settings']").click();
     }
 
-    $("#settings_overlay_container").addClass("show");
+    modals.open_settings();
+
     $active_tab.click();
 };
 
