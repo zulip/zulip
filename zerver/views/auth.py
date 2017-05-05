@@ -89,30 +89,30 @@ def login_or_register_remote_user(request, remote_username, user_profile, full_n
         # Show login page with an error message
         return redirect_to_subdomain_login_url()
 
-    elif user_profile is None or user_profile.is_mirror_dummy:
+    if user_profile is None or user_profile.is_mirror_dummy:
         # Since execution has reached here, the client specified a remote user
         # but no associated user account exists. Send them over to the
         # PreregistrationUser flow.
         return maybe_send_to_registration(request, remote_user_to_email(remote_username), full_name)
-    else:
+
+    if mobile_flow_otp is not None:
         # For the mobile Oauth flow, we send the API key and other
         # necessary details in a redirect to a zulip:// URI scheme.
-        if mobile_flow_otp is not None:
-            params = {
-                'otp_encrypted_api_key': otp_encrypt_api_key(user_profile, mobile_flow_otp),
-                'email': remote_username,
-                'realm': user_profile.realm.uri,
-            }
-            # We can't use HttpResponseRedirect, since it only allows HTTP(S) URLs
-            response = HttpResponse(status=302)
-            response['Location'] = 'zulip://login?' + urllib.parse.urlencode(params)
-            return response
+        params = {
+            'otp_encrypted_api_key': otp_encrypt_api_key(user_profile, mobile_flow_otp),
+            'email': remote_username,
+            'realm': user_profile.realm.uri,
+        }
+        # We can't use HttpResponseRedirect, since it only allows HTTP(S) URLs
+        response = HttpResponse(status=302)
+        response['Location'] = 'zulip://login?' + urllib.parse.urlencode(params)
+        return response
 
-        login(request, user_profile)
-        if settings.REALMS_HAVE_SUBDOMAINS and user_profile.realm.subdomain is not None:
-            return HttpResponseRedirect(user_profile.realm.uri)
-        return HttpResponseRedirect("%s%s" % (settings.EXTERNAL_URI_SCHEME,
-                                              request.get_host()))
+    login(request, user_profile)
+    if settings.REALMS_HAVE_SUBDOMAINS and user_profile.realm.subdomain is not None:
+        return HttpResponseRedirect(user_profile.realm.uri)
+    return HttpResponseRedirect("%s%s" % (settings.EXTERNAL_URI_SCHEME,
+                                          request.get_host()))
 
 def remote_user_sso(request):
     # type: (HttpRequest) -> HttpResponse
