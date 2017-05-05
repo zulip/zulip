@@ -4,6 +4,28 @@ var exports = {};
 
 exports.close = {};
 
+exports.open_overlay = function (opts) {
+    if (!opts.name || !opts.overlay || !opts.on_close) {
+        blueslip.error('Programming error in open_modal');
+        return;
+    }
+
+    // Our overlays are kind of crufty...we have an HTML id
+    // attribute for them and then a data-overlay attribute for
+    // them.  Make sure they match.
+    if (opts.overlay.attr('data-overlay') !== opts.name) {
+        blueslip.error('Bad overlay setup for ' + opts.name);
+        return;
+    }
+
+    opts.overlay.addClass('show');
+
+    exports.close[opts.name] = function () {
+        opts.on_close();
+        exports.close[opts.name] = undefined;
+    };
+};
+
 exports.set_close_handler = function (name, handler) {
     exports.close[name] = handler;
 };
