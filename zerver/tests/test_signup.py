@@ -1463,8 +1463,9 @@ class UserSignUpTest(ZulipTestCase):
         mock_ldap.reset()
         mock_initialize.stop()
 
-    def test_registration_email_for_mirror_dummy_user(self):
-        # type: () -> None
+    @patch('DNS.dnslookup', return_value=[['sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh']])
+    def test_registration_email_for_mirror_dummy_user(self, ignored):
+        # type: (Any) -> None
         email = 'sipbtest@mit.edu'
 
         user_profile = get_user_profile_by_email(email)
