@@ -209,12 +209,15 @@ To restore from backups, the process is basically the reverse of the above:
   to run the `initialize-database` second stage which puts default
   data into the database.
 
-* Unpack to `/etc/zulip` the `settings.py` and `secrets.conf` files
+* Unpack to `/etc/zulip` the `settings.py` and `zulip-secrets.conf` files
   from your backups.
 
 * Restore your database from the backup using `wal-e`; if you ran
   `initialize-database` anyway above, you'll want to first
   `scripts/setup/postgres-init-db` to drop the initial database first.
+
+* Reconfigure rabbitmq to use the password from `secrets.conf`
+  by running, as root, `scripts/setup/configure-rabbitmq`.
 
 * If you're using local file uploads, restore those files to the path
   specified by `settings.LOCAL_UPLOADS_DIR` and (if appropriate) any
