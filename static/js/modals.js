@@ -1,55 +1,55 @@
 var modals = (function () {
-    "use strict";
 
-    var exports = {
-        close : {},
+var exports = {};
 
-        set_close_handler : function (name, handler) {
-            exports.close[name] = handler;
-        },
+exports.close = {};
 
-        close_modal: function (name) {
-            $("[data-overlay='" + name + "']").removeClass("show");
+exports.set_close_handler = function (name, handler) {
+    exports.close[name] = handler;
+};
 
-            if (exports.close[name]) {
-                exports.close[name]();
-            } else {
-                blueslip.error("Modal close handler for " + name + " not properly setup." );
-            }
-        },
-    };
+exports.close_modal = function (name) {
+    $("[data-overlay='" + name + "']").removeClass("show");
 
-    $(function () {
-        $("body").on("click", ".overlay, .overlay .exit", function (e) {
-            var $target = $(e.target);
+    if (exports.close[name]) {
+        exports.close[name]();
+    } else {
+        blueslip.error("Modal close handler for " + name + " not properly setup." );
+    }
+};
 
-            // if the target is not the .overlay element, search up the node tree
-            // until it is found.
-            if ($target.is(".exit, .exit-sign, .overlay-content")) {
-                $target = $target.closest("[data-overlay]");
-            } else if (!$target.is(".overlay")) {
-                // not a valid click target then.
-                return;
-            }
+$(function () {
+    $("body").on("click", ".overlay, .overlay .exit", function (e) {
+        var $target = $(e.target);
 
-            var target_name = $target.attr("data-overlay");
+        // if the target is not the .overlay element, search up the node tree
+        // until it is found.
+        if ($target.is(".exit, .exit-sign, .overlay-content")) {
+            $target = $target.closest("[data-overlay]");
+        } else if (!$target.is(".overlay")) {
+            // not a valid click target then.
+            return;
+        }
 
-            $target.removeClass("show");
+        var target_name = $target.attr("data-overlay");
 
-            // if an appropriate clearing/closing function for a modal exists,
-            // execute it.
-            if (exports.close[target_name]) {
-                exports.close[target_name]();
-            } else {
-                blueslip.error("Tried to close unknown modal " + target_name);
-            }
+        $target.removeClass("show");
 
-            e.preventDefault();
-            e.stopPropagation();
-        });
+        // if an appropriate clearing/closing function for a modal exists,
+        // execute it.
+        if (exports.close[target_name]) {
+            exports.close[target_name]();
+        } else {
+            blueslip.error("Tried to close unknown modal " + target_name);
+        }
+
+        e.preventDefault();
+        e.stopPropagation();
     });
+});
 
-    return exports;
+return exports;
+
 }());
 
 if (typeof module !== 'undefined') {
