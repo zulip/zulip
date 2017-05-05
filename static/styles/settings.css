@@ -795,6 +795,18 @@ input[type=checkbox].inline-block {
     border-bottom: 1px solid #ddd;
 }
 
+#settings_page .settings-header.mobile {
+    display: none;
+    border-bottom: 1px solid #ddd;
+}
+
+.settings-header.mobile .icon-vector-chevron-left {
+    float: left;
+    position: relative;
+    top: 14px;
+    left: 10px;
+}
+
 #settings_page .content-wrapper #settings_content {
     position: relative;
     width: 100%;
@@ -802,6 +814,7 @@ input[type=checkbox].inline-block {
 
     float: left;
     overflow-y: auto;
+    overflow-x: hidden;
 }
 
 #settings_page .table-striped thead th {
@@ -1061,6 +1074,24 @@ input[type=text]#settings_search {
     .realm-icon-section .inline-block {
         display: block;
         margin: 0;
+    }
+}
+
+@media (max-width: 700px) {
+    #settings_page .settings-header.mobile {
+        display: block;
+    }
+
+    #settings_page .content-wrapper .settings-header {
+        display: none;
+    }
+
+    #settings_page .content-wrapper #settings_content {
+        height: 100%;
+    }
+
+    #settings_page .content-wrapper.right {
+        top: 47px;
     }
 }
 
