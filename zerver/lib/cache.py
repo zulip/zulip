@@ -107,6 +107,9 @@ def bounce_key_prefix_for_testing(test_name):
     # type: (Text) -> None
     global KEY_PREFIX
     KEY_PREFIX = test_name + u':' + Text(os.getpid()) + u':'
+    # We are taking the hash of the KEY_PREFIX to decrease the size of the key.
+    # Memcached keys should have a length of less than 256.
+    KEY_PREFIX = hashlib.sha1(KEY_PREFIX.encode('utf-8')).hexdigest()
 
 def get_cache_backend(cache_name):
     # type: (Optional[str]) -> BaseCache
