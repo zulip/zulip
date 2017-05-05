@@ -40,6 +40,16 @@ exports.close_modal = function (name) {
     }
 };
 
+exports.open_settings = function () {
+    modals.open_overlay({
+        name: 'settings',
+        overlay: $("#settings_overlay_container"),
+        on_close: function () {
+            hashchange.exit_modal();
+        },
+    });
+};
+
 $(function () {
     $("body").on("click", ".overlay, .overlay .exit", function (e) {
         var $target = $(e.target);

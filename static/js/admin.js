@@ -83,7 +83,7 @@ exports.launch_page = function (tab) {
         $(".sidebar .ind-tab[data-tab-key='organization']").click();
     }
 
-    $("#settings_overlay_container").addClass("show");
+    modals.open_settings();
     $active_tab.click();
 };
 
