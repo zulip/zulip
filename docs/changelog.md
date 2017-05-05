@@ -4,6 +4,99 @@ All notable changes to the Zulip server are documented in this file.
 
 ### Unreleased
 
+Highlights:
+
+* Completely redesigned the Zulip settings interfaces to look a lot
+  nicer and be easier to navigate.
+* Completely redesigned the logged-out pages, including
+  login, registration, integrations, etc.  Now organization admins can
+  configure an icon, name, and description for their organization that
+  is displayed on the login/registration pages.
+* Redesigned the numerous UI elements, including the keyboard
+  shortcuts, emoji picker, user profile popovers, sidebars, compose, etc.
+* Massive performance improvements to presence and settings pages,
+  especially for very large organizations (1000+ users).
+* Added typing notifications for private message threads.
+* Added a dozen useful new keyboard shortcuts, from editing messages
+  to emoji reactions to drafts and managing streams.
+* Mobile web now works much better, especially on iOS.
+* Apps documentation now recommends Electron and React Native mobile apps.
+* Added support for users changing their own email address.
+* Added a new saved drafts feature, backed by local storage.
+
+Full feature Changelog:
+
+* Added Basecamp, Gogs, Greenhouse, Home Assistant, Slack, Splunk, and
+  WordPress webhook integrations.
+* Added LaTeX support to the markdown processor.
+* Added support for filtering branches to all Git integrations.
+* Added read-only access to organization-level settings for all users.
+* Added UI for managing muted topics and uploaded files.
+* Added UI for displaying message edit history.
+* Added support for various features needed by new mobile app.
+* Added deep links for settings/subscriptions interfaces.
+* Added an animation when messages are edited.
+* Added support for registration with GitHub auth (not just login).
+* Added tracking of uploaded file quotas.
+* Added option to display emoji as their alt codes.
+* Added new audit log table, to eventually support an auditing UI.
+* Added several new permissions-related organization settings.
+* Added new endpoint for fetching presence data, useful in employee directories.
+* Added typeahead for language for syntax highlighting in code blocks.
+* Added support for basic markdown in stream descriptions.
+* Added email notifications on new Zulip logins.
+* Added security hardening before serving uploaded files.
+* Added new PRIVACY_POLICY setting to provide a Markdown privacy policy.
+* Added an icon to distinguish bot users as message senders.
+* Added a command-line Slack importer tool using the API.
+* Redesigned bots UI.  Now can changing owners and reactivate bots.
+* Redesigned the visuals of code blocks to be prettier.
+* Changed right sidebar presence UI to only show recently active users.
+* Converted realm emoji to be uploaded, not links, for better robustness.
+* Switched the default password hasher for new passwords to Argon2.
+* Increased the paragraph spacing, making multi-paragraph.
+* Improved formatting of all Git integrations.
+* Improved the UI of the /stats analytics pages.
+* Improved search typeahead to support group private messages.
+* Improved logic for when the compose box should open/close.
+* Improved lightbox to support scrolling through images.
+* Improved markdown support for bulleted lists.
+* Improved copy-to-clipboard support in various places.
+* Improved subject lines of missed message emails.
+* Significantly improved UI of off-the-Internet errors.
+* Parallelized the backend test suite; now runs 1600 tests in <30s.
+* Fixed various bugs and performance issues with stream management.
+* Fixed an issue with the fake emails assigned to bot users.
+* Fixed a subtle interaction between click-to-reply and copy-paste.
+* Fixed various formatting issues with /me messages.
+* Fixed numerous real-time sync issues involving users changing their
+  name, avatar, or email address and streams being renamed.
+* Fixed numerous performance issues across the project.
+* Fixed various left sidebar ordering and live-updated bugs.
+* Fixed numerous bugs with the message editing widget.
+* Fixed missing logging / rate limiting on browser endpoints.
+* Fixed regressions in Zulip's browser state preservation on reload logic.
+* Fixed support for unicode characters in the email mirror system.
+* Fixed load spikes when email mirror is receiving a lot of traffic.
+* Fixed the ugly grey flicker when scrolling fast on Macs.
+* Fixed previews of GitHub image URLs.
+* Eliminated the idea of a realm having a canonical domain; now
+  there's simply the list of allowed domains for new users.
+* Migrated avatars to a user-id-based storage setup (not email-based).
+* Trailing whitespace is now stripped in code blocks, avoiding
+  unnecessary scrollbars.
+* Most API payloads now refer to users primarily by user ID, with
+  email available for backwards-compatibility.  In the future, we may
+  remove email support.
+* Cleaned up Zulip's supervisord configuration.  A side effect is the
+  log files names have changed for all the queue workers.
+* Refactored various endpoints to use a single code path for security
+  hardening.
+* Removed support for the MANDRILL_CLIENT setting.  It hadn't been
+  used in years.
+* Changed NOREPLY_EMAIL_ADDRESS setting to `Name <user@example.com>` format.
+* Backend test coverage is now 92%, with 100% in views code.
+
 ### 1.5.1 -- 2017-02-07
 
 - Fix exception trying to copy node_modules during upgrade process.
