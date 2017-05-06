@@ -2,11 +2,25 @@ var modals = (function () {
 
 var exports = {};
 
-exports.close = {};
+var active_overlay;
+var close_handler;
+var open_modal_name;
+
+function reset_state() {
+    active_overlay = undefined;
+    close_handler = undefined;
+    open_modal_name = undefined;
+}
 
 exports.open_overlay = function (opts) {
     if (!opts.name || !opts.overlay || !opts.on_close) {
         blueslip.error('Programming error in open_modal');
+        return;
+    }
+
+    if (active_overlay || open_modal_name || close_handler) {
+        blueslip.error('Programming error--trying to open ' + opts.name +
+            ' before closing ' + open_modal_name);
         return;
     }
 
@@ -18,22 +32,30 @@ exports.open_overlay = function (opts) {
         return;
     }
 
+    open_modal_name = opts.name;
+    active_overlay = opts.overlay;
     opts.overlay.addClass('show');
 
-    exports.close[opts.name] = function () {
+    close_handler = function () {
         opts.on_close();
-        exports.close[opts.name] = undefined;
+        reset_state();
     };
 };
 
 exports.close_modal = function (name) {
-    $("[data-overlay='" + name + "']").removeClass("show");
-
-    if (exports.close[name]) {
-        exports.close[name]();
-    } else {
+    if ((name !== open_modal_name) || !close_handler) {
         blueslip.error("Modal close handler for " + name + " not properly setup." );
+        return;
     }
+
+    active_overlay.removeClass("show");
+
+    close_handler();
+};
+
+exports.close_for_hash_change = function () {
+    $(".overlay.show").removeClass("show");
+    reset_state();
 };
 
 exports.open_settings = function () {
@@ -61,15 +83,7 @@ $(function () {
 
         var target_name = $target.attr("data-overlay");
 
-        $target.removeClass("show");
-
-        // if an appropriate clearing/closing function for a modal exists,
-        // execute it.
-        if (exports.close[target_name]) {
-            exports.close[target_name]();
-        } else {
-            blueslip.error("Tried to close unknown modal " + target_name);
-        }
+        exports.close_modal(target_name);
 
         e.preventDefault();
         e.stopPropagation();
