@@ -177,11 +177,11 @@ function stubbing(func_name_to_stub, test_function) {
     }
 
     _.each([return_true, return_false], function (is_settings_page) {
-        _.each([return_true, return_false], function (home_tab_obscured) {
+        _.each([return_true, return_false], function (is_active) {
             _.each([return_true, return_false], function (is_info_overlay) {
                 hotkey.is_settings_page = is_settings_page;
-                set_global('ui_state', {home_tab_obscured: home_tab_obscured,
-                                        is_info_overlay: is_info_overlay});
+                set_global('modals', {is_active: is_active});
+                set_global('ui_state', {is_info_overlay: is_info_overlay});
 
                 test_normal_typing();
             });

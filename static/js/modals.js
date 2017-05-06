@@ -12,6 +12,10 @@ function reset_state() {
     open_modal_name = undefined;
 }
 
+exports.is_active = function () {
+    return !!open_modal_name;
+};
+
 exports.open_overlay = function (opts) {
     if (!opts.name || !opts.overlay || !opts.on_close) {
         blueslip.error('Programming error in open_modal');

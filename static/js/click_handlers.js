@@ -313,7 +313,7 @@ $(function () {
     });
 
     $(".brand").on('click', function (e) {
-        if (ui_state.home_tab_obscured()) {
+        if (modals.is_active()) {
             ui_util.change_tab_to('#home');
         } else {
             narrow.restore_home_state();
