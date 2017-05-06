@@ -188,7 +188,7 @@ function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compos
     }
 
     if (message === undefined) {
-        message = "Reloading";
+        message = "Reloading ...";
     }
 
     // TODO: We need a better API for showing messages.
