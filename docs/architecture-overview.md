@@ -154,8 +154,8 @@ We use [supervisord](http://supervisord.org/) to start server processes,
 restart them automatically if they crash, and direct logging.
 
 The config file is
-`zulip/puppet/zulip/files/supervisor/conf.d/zulip.conf`. This is where
-Tornado and Django are set up, as well as a number of background
+`zulip/puppet/zulip/templates/supervisor/zulip.conf.template.erb`. This
+is where Tornado and Django are set up, as well as a number of background
 processes that process event queues. We use event queues for the kinds
 of tasks that are best run in the background because they are
 expensive (in terms of performance) and don't have to be synchronous
