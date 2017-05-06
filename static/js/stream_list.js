@@ -427,7 +427,7 @@ $(function () {
         if (e.metaKey || e.ctrlKey) {
             return;
         }
-        if (ui_state.home_tab_obscured()) {
+        if (modals.is_active()) {
             ui_util.change_tab_to('#home');
         }
         var stream = $(e.target).parents('li').attr('data-name');
@@ -500,7 +500,7 @@ function maybe_select_stream(e) {
         var topStream = $('#stream_filters li.narrow-filter').first().data('name');
         if (topStream !== undefined) {
             // undefined if there are no results
-            if (ui_state.home_tab_obscured()) {
+            if (modals.is_active()) {
                 ui_util.change_tab_to('#home');
             }
             exports.clear_and_hide_search();
