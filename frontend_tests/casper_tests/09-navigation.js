@@ -32,7 +32,7 @@ function then_navigate_to_settings() {
                 casper.click('a[href^="#settings"]');
                 casper.waitUntilVisible('#settings_page', function () {
                     casper.test.assertExists('#settings_page', "Settings page is active");
-                    casper.click("#settings_page .exit");
+                    casper.click('#settings_page .exit');
                 });
             });
         });
@@ -49,6 +49,7 @@ function then_navigate_to_subscriptions() {
             casper.click('a[href^="#streams"]');
             casper.waitUntilVisible("#subscription_overlay", function () {
                 casper.test.assertExists('#subscriptions_table', "#subscriptions page is active");
+                casper.click('#subscription_overlay .exit');
             });
         });
     });
