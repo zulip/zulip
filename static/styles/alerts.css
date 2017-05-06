@@ -37,49 +37,28 @@
 
 .alert-box .alert {
     font-size: 1rem;
-
-    border-radius: 0px;
-    border: none;
-
-    background-color: #f9f0c1;
-
-    box-shadow: 0px 0px 30px rgba(214, 192, 115, 0.35);
-}
-
-.alert-box .alert-error {
-    box-shadow: 0px 0px 30px rgba(220, 78, 78, 0.3);
-}
-
-.alert-box .alert a {
-    color: #90deff;
+    border-radius: 4px;
+    background-color: #fff;
 }
 
 .alert-box .alert .faded {
     opacity: 0.7;
 }
 
-.alert-box .alert .restart_get_events_button {
-    color: #89dcff;
-}
-
-.alert-box .alert .restart_get_events_button:hover {
-    color: #89dcff;
-}
-
 .alert-box .alert::before {
     position: absolute;
     top: 10px;
-    left: 10px;
+    left: 12px;
 
     font-family: "FontAwesome";
     font-size: 1.3em;
     content: "\f071";
 
-    color: #c09853;
+    color: hsl(16, 60%, 55%);
 }
 
 .alert-box .alert.alert-error::before {
-    color: #fff;
+    color: hsl(0, 80%, 40%);
 }
 
 .alert-box .alert {
@@ -91,11 +70,16 @@
     padding-bottom: 10px;
 
     text-shadow: none;
+
+    color: hsl(16, 60%, 45%);
+    border: 1px solid hsl(16, 60%, 45%);
+    box-shadow: 0 0 2px hsl(16, 60%, 45%);
 }
 
 .alert-box .alert.alert-error {
-    background-color: #bd6767;
-    color: #fff;
+    color: hsl(0, 80%, 40%);
+    border: 1px solid hsl(0, 80%, 40%);
+    box-shadow: 0 0 2px hsl(0, 80%, 40%);
 }
 
 .alert-box .alert .exit {
