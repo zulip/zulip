@@ -117,11 +117,9 @@ def get_chart_data(request, user_profile, chart_name=REQ(),
 
 def sort_by_totals(value_arrays):
     # type: (Dict[str, List[int]]) -> List[str]
-    totals = []
-    for label, values in value_arrays.items():
-        totals.append((label, sum(values)))
-    totals.sort(key=lambda label_total: "%s:%s" % (label_total[1], label_total[0]), reverse=True)
-    return [label for label, total in totals]
+    totals = [(sum(values), label) for label, values in value_arrays.items()]
+    totals.sort(reverse=True)
+    return [label for total, label in totals]
 
 # For any given user, we want to show a fixed set of clients in the chart,
 # regardless of the time aggregation or whether we're looking at realm or
