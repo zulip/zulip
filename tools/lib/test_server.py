@@ -60,7 +60,7 @@ def test_server_running(force=False, external_host='testserver',
         else:
             log = open(log_file, 'w')
     else:
-        log = sys.stdout # type: ignore # BinaryIO vs. IO[str]
+        log = sys.stdout  # type: ignore # BinaryIO vs. IO[str]
 
     set_up_django(external_host)
 
