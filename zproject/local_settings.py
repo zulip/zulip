@@ -47,10 +47,9 @@ EMAIL_HOST_USER = 'zulip@zulip.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-# We use mandrill, so this doesn't actually get used on our hosted deployment
 DEFAULT_FROM_EMAIL = "Zulip <zulip@zulip.com>"
 # The noreply address to be used as Reply-To for certain generated emails.
-NOREPLY_EMAIL_ADDRESS = "noreply@zulip.com"
+NOREPLY_EMAIL_ADDRESS = "Zulip <noreply@zulip.com>"
 WELCOME_EMAIL_SENDER = {'email': 'wdaher@zulip.com', 'name': 'Waseem Daher'}
 
 SESSION_SERIALIZER = "django.contrib.sessions.serializers.PickleSerializer"

@@ -1,0 +1,4 @@
+{% if group_pm %} Group PMs with {{ huddle_display_name }} in {{ realm_str }}
+{% elif at_mention %} {{ sender_str }} @-mentioned you in {{ realm_str }}
+{% elif private_message %} {{ sender_str }} sent you a message in {{ realm_str }}
+{% endif %}

@@ -430,9 +430,8 @@ form#add_new_subscription {
     border-bottom: 1px solid #ddd;
 }
 
-.subscriptions-header .icon-vector-chevron-left {
-    display: none;
-
+.subscriptions-header .icon-vector-chevron-left,
+#settings_overlay_container .settings-header.mobile .icon-vector-chevron-left {
     position: relative;
     transform: translate(-50px, 0px);
     opacity: 0;
@@ -446,7 +445,8 @@ form#add_new_subscription {
     transition: all 0.3s ease;
 }
 
-.subscriptions-header.slide-left .icon-vector-chevron-left {
+.subscriptions-header.slide-left .icon-vector-chevron-left,
+#settings_overlay_container .settings-header.mobile.slide-left .icon-vector-chevron-left {
     transform: translate(-0px, 0px);
     opacity: 1;
 }
@@ -956,7 +956,9 @@ form#add_new_subscription {
     }
 
     #subscription_overlay .left,
-    #subscription_overlay .right {
+    #subscription_overlay .right,
+    #settings_page .left,
+    #settings_page .right {
         position: absolute;
         display: block;
         margin: 0;
@@ -974,7 +976,8 @@ form#add_new_subscription {
         text-align: left;
     }
 
-    #subscription_overlay .right {
+    #subscription_overlay .right,
+    #settings_page .right {
         position: absolute;
         left: 101%;
 
@@ -987,7 +990,8 @@ form#add_new_subscription {
         z-index: 10;
     }
 
-    #subscription_overlay .right.show {
+    #subscription_overlay .right.show,
+    #settings_page .right.show {
         left: 0%;
     }
 

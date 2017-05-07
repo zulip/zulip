@@ -18,8 +18,8 @@ from zilencer.models import Deployment
 from zerver.forms import HomepageForm, WRONG_SUBDOMAIN_ERROR
 from zerver.lib.actions import do_change_password
 from zerver.views.invite import get_invitee_emails_set
-from zerver.views.registration import (confirmation_key,
-                                       redirect_and_log_into_subdomain)
+from zerver.views.registration import confirmation_key, \
+    redirect_and_log_into_subdomain, send_registration_completion_email
 from zerver.models import (
     get_realm, get_prereg_user_by_email, get_user_profile_by_email,
     get_unique_open_realm, completely_open,
@@ -27,26 +27,23 @@ from zerver.models import (
     Referral, ScheduledJob, UserProfile, UserMessage,
     Stream, Subscription, ScheduledJob, flush_per_request_caches
 )
-from zerver.management.commands.deliver_email import send_email_job
-
 from zerver.lib.actions import (
     set_default_streams,
     do_change_is_admin,
     get_stream,
     do_create_realm,
 )
-
+from zerver.lib.send_email import display_email, send_email, send_future_email
 from zerver.lib.initial_password import initial_password
 from zerver.lib.actions import (
     do_deactivate_realm,
     do_set_realm_property,
     add_new_user_history,
 )
-from zerver.lib.digest import send_digest_email
 from zerver.lib.mobile_auth_otp import xor_hex_strings, ascii_to_hex, \
     otp_encrypt_api_key, is_valid_otp, hex_to_ascii, otp_decrypt_api_key
-from zerver.lib.notifications import (
-    enqueue_welcome_emails, one_click_unsubscribe_link, send_local_email_template_with_delay)
+from zerver.lib.notifications import enqueue_welcome_emails, \
+    one_click_unsubscribe_link
 from zerver.lib.test_helpers import find_pattern_in_email, find_key_by_email, queries_captured, \
     HostRequestMock, unsign_subdomain_cookie
 from zerver.lib.test_classes import (
@@ -56,10 +53,11 @@ from zerver.lib.test_runner import slow
 from zerver.lib.sessions import get_session_dict_user
 from zerver.context_processors import common_context
 
+from collections import defaultdict
 import re
 import ujson
 
-from typing import Dict, List, Set, Optional
+from typing import Any, Dict, List, Optional, Set
 
 from six.moves import urllib
 from six.moves import range
@@ -732,25 +730,23 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         context = common_context(referrer)
         context.update({
             'activate_url': link,
-            'referrer': referrer,
+            'referrer_name': referrer.full_name,
+            'referrer_email': referrer.email,
+            'referrer_realm_name': referrer.realm.name,
             'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS,
             'support_email': settings.ZULIP_ADMINISTRATOR
         })
         with self.settings(EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'):
-            send_local_email_template_with_delay(
-                [{'email': data["email"], 'name': ""}],
-                "zerver/emails/invitation/invitation_reminder_email",
-                context,
-                datetime.timedelta(days=0),
-                tags=["invitation-reminders"],
-                sender={'email': settings.ZULIP_ADMINISTRATOR, 'name': 'Zulip'})
+            send_future_email(
+                "zerver/emails/invitation_reminder", data["email"],
+                from_email=settings.ZULIP_ADMINISTRATOR, context=context)
         email_jobs_to_deliver = ScheduledJob.objects.filter(
             type=ScheduledJob.EMAIL,
             scheduled_timestamp__lte=timezone_now())
         self.assertEqual(len(email_jobs_to_deliver), 1)
         email_count = len(outbox)
         for job in email_jobs_to_deliver:
-            self.assertTrue(send_email_job(job))
+            self.assertTrue(send_email(**ujson.loads(job.data)))
         self.assertEqual(len(outbox), email_count + 1)
 
 class InviteeEmailsParserTests(TestCase):
@@ -856,7 +852,10 @@ class EmailUnsubscribeTests(ZulipTestCase):
         self.assertTrue(user_profile.enable_digest_emails)
 
         # Enqueue a fake digest email.
-        send_digest_email(user_profile, "", "", "")
+        context = {'name': '', 'realm_uri': '', 'unread_pms': [], 'hot_conversations': [],
+                   'new_users': [], 'new_streams': {'plain': []}, 'unsubscribe_link': ''}
+        send_future_email('zerver/emails/digest', display_email(user_profile), context=context)
+
         self.assertEqual(1, len(ScheduledJob.objects.filter(
             type=ScheduledJob.EMAIL, filter_string__iexact=email)))
 
@@ -1025,7 +1024,7 @@ class RealmCreationTest(ZulipTestCase):
 
 class UserSignUpTest(ZulipTestCase):
 
-    def test_user_default_language(self):
+    def test_user_default_language_and_timezone(self):
         # type: () -> None
         """
         Check if the default language of new user is the default language
@@ -1033,6 +1032,7 @@ class UserSignUpTest(ZulipTestCase):
         """
         email = "newguy@zulip.com"
         password = "newpassword"
+        timezone = "US/Mountain"
         realm = get_realm('zulip')
         do_set_realm_property(realm, 'default_language', u"de")
 
@@ -1049,11 +1049,12 @@ class UserSignUpTest(ZulipTestCase):
         self.assertEqual(result.status_code, 200)
 
         # Pick a password and agree to the ToS.
-        result = self.submit_reg_form_for_user(email, password)
+        result = self.submit_reg_form_for_user(email, password, timezone=timezone)
         self.assertEqual(result.status_code, 302)
 
         user_profile = get_user_profile_by_email(email)
         self.assertEqual(user_profile.default_language, realm.default_language)
+        self.assertEqual(user_profile.timezone, timezone)
         from django.core.mail import outbox
         outbox.pop()
 
@@ -1462,6 +1463,33 @@ class UserSignUpTest(ZulipTestCase):
 
         mock_ldap.reset()
         mock_initialize.stop()
+
+    @patch('DNS.dnslookup', return_value=[['sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh']])
+    def test_registration_email_for_mirror_dummy_user(self, ignored):
+        # type: (Any) -> None
+        email = 'sipbtest@mit.edu'
+
+        user_profile = get_user_profile_by_email(email)
+        user_profile.is_mirror_dummy = True
+        user_profile.is_active = False
+        user_profile.save()
+
+        with self.settings(REALMS_HAVE_SUBDOMAINS=True):
+            with patch('zerver.forms.get_subdomain', return_value='zephyr'):
+                with patch('zerver.views.registration.get_subdomain', return_value='zephyr'):
+                    result = self.client_post('/accounts/home/', {'email': email})
+                    self.assertEqual(result.status_code, 302)
+
+        from django.core.mail import outbox
+        for message in reversed(outbox):
+            if email in message.to:
+                # The main difference between the zephyr registation email
+                # and the normal one is this string
+                index = message.body.find('https://zephyr.zulipchat.com/zephyr')
+                if index >= 0:
+                    return
+        else:
+            raise AssertionError("Couldn't find the right confirmation email.")
 
     @patch('DNS.dnslookup', return_value=[['sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh']])
     def test_registration_of_mirror_dummy_user(self, ignored):

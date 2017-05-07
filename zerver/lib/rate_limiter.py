@@ -1,5 +1,7 @@
 from __future__ import absolute_import
 
+import os
+
 from typing import Any, Iterator, List, Tuple, Text
 
 from django.conf import settings
@@ -27,10 +29,17 @@ def _rules_for_user(user):
         return result
     return rules
 
+KEY_PREFIX = u''
+
+def bounce_redis_key_prefix_for_testing(test_name):
+    # type: (Text) -> None
+    global KEY_PREFIX
+    KEY_PREFIX = test_name + u':' + Text(os.getpid()) + u':'
+
 def redis_key(user, domain):
     # type: (UserProfile, Text) -> List[Text]
     """Return the redis keys for this user"""
-    return ["ratelimit:%s:%s:%s:%s" % (type(user), user.id, domain, keytype) for keytype in ['list', 'zset', 'block']]
+    return ["%sratelimit:%s:%s:%s:%s" % (KEY_PREFIX, type(user), user.id, domain, keytype) for keytype in ['list', 'zset', 'block']]
 
 def max_api_calls(user):
     # type: (UserProfile) -> int

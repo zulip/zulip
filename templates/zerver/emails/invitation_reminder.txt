@@ -1,6 +1,6 @@
 Hi again,
 
-This is a friendly reminder that {{ referrer.full_name }} ({{ referrer.email }}) wants you to join them on Zulip, a workplace chat tool that actually makes you more productive.
+This is a friendly reminder that {{ referrer_name }} ({{ referrer_email }}) wants you to join them on Zulip, a workplace chat tool that actually makes you more productive.
 
 To get started, visit the link below:
     <{{ activate_url }}>

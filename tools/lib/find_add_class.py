@@ -14,21 +14,22 @@ GENERIC_KEYWORDS = [
     'disabled',
     'error',
     'expanded',
+    'fade-out',
+    'first',
     'hide',
     'in',
     'show',
     'notdisplayed',
     'popover',
     'no-border',
+    'second',
+    'selected',
+    'slide-left',
     'success',
     'text-error',
     'warning',
     'zoom-in',  # TODO: clean these up, they are confusing
     'zoom-out',
-    'first',
-    'second',
-    'selected',
-    'fade-out',
 ]
 
 def raise_error(fn, i, line):

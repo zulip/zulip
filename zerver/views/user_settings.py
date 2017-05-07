@@ -5,10 +5,8 @@ from typing import Dict, Text
 from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.contrib.auth import authenticate, update_session_auth_hash
-from django.core.mail import send_mail
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
-from django.template.loader import render_to_string
 from django.urls import reverse
 
 from zerver.decorator import authenticated_json_post_view, has_request_variables, \
@@ -24,6 +22,7 @@ from zerver.lib.actions import do_change_password, \
     do_change_pm_content_in_desktop_notifications, validate_email, \
     do_change_user_email, do_start_email_change_process
 from zerver.lib.avatar import avatar_url
+from zerver.lib.send_email import send_email, display_email
 from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.response import json_success, json_error
 from zerver.lib.upload import upload_avatar_image
@@ -59,11 +58,8 @@ def confirm_email_change(request, confirmation_key):
                    'realm': obj.realm,
                    'new_email': new_email,
                    }
-        subject = render_to_string(
-            'confirmation/notify_change_in_email_subject.txt', context)
-        body = render_to_string(
-            'confirmation/notify_change_in_email_body.txt', context)
-        send_mail(subject, body, settings.DEFAULT_FROM_EMAIL, [old_email])
+        send_email('zerver/emails/notify_change_in_email', old_email,
+                   from_email=settings.DEFAULT_FROM_EMAIL, context=context)
 
     ctx = {
         'confirmed': confirmed,
@@ -140,8 +136,7 @@ def json_change_settings(request, user_profile,
             return json_error(error or skipped)
 
         do_start_email_change_process(user_profile, new_email)
-        result['account_email'] = _('We have sent you an email on your '
-                                    'new email address for confirmation.')
+        result['account_email'] = _("Check your email for a confirmation link.")
 
     if user_profile.full_name != full_name and full_name.strip() != "":
         if name_changes_disabled(user_profile.realm):

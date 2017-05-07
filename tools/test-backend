@@ -144,7 +144,8 @@ if __name__ == "__main__":
                       dest="fatal_errors", help="Continue past test failures to run all tests")
     parser.add_option('--coverage', dest='coverage',
                       action="store_true",
-                      default=False, help='Compute test coverage.')
+                      default=False,
+                      help='Compute test coverage. Enforces processes=1.')
     parser.add_option('--verbose-coverage', dest='verbose_coverage',
                       action="store_true",
                       default=False, help='Enable verbose print of coverage report.')
@@ -160,9 +161,9 @@ if __name__ == "__main__":
                       type="int",
                       callback=allow_positive_int,
                       action='callback',
-                      default=1,
+                      default=4,
                       help='Specify the number of processes to run the '
-                           'tests in. Default is 1.')
+                           'tests in. Default is 4.')
     parser.add_option('--profile', dest='profile',
                       action="store_true",
                       default=False, help='Profile test runtime.')
@@ -195,6 +196,11 @@ if __name__ == "__main__":
                             "test-backend was run.  Implies --nonfatal-errors."))
 
     (options, args) = parser.parse_args()
+    if options.coverage:
+        # Currently coverage doesn't work with parallel mode, so when
+        # coverage parameter is supplied we enfore serial mode.
+        print("Disabling parallel mode because coverage isn't supported.")
+        options.processes = 1
 
     zerver_test_dir = 'zerver/tests/'
 

@@ -20,11 +20,6 @@
     overflow-y: auto;
 }
 
-#user_presences .user_sidebar_entry:hover,
-#group-pms .group-pms-sidebar-entry:hover {
-    cursor: pointer;
-}
-
 #user_presences li {
     overflow: hidden;
     white-space: nowrap;
@@ -132,6 +127,10 @@
 
 .group-pms-sidebar-entry.group-with-count .selectable_sidebar_block {
     width: 170px;
+}
+
+.selectable_sidebar_block {
+    cursor: pointer;
 }
 
 .user_sidebar_entry .count,

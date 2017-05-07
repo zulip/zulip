@@ -234,7 +234,7 @@ REQUIRED_SETTINGS = [("EXTERNAL_HOST", "zulip.example.com"),
                      # case, it seems worth having in this list
                      ("SECRET_KEY", ""),
                      ("AUTHENTICATION_BACKENDS", ()),
-                     ("NOREPLY_EMAIL_ADDRESS", "noreply@example.com"),
+                     ("NOREPLY_EMAIL_ADDRESS", "Zulip <noreply@example.com>"),
                      ("DEFAULT_FROM_EMAIL", "Zulip <zulip@example.com>"),
                      ]
 
@@ -536,9 +536,6 @@ GOOGLE_OAUTH2_CLIENT_SECRET = get_secret('google_oauth2_client_secret')
 DROPBOX_APP_KEY = get_secret("dropbox_app_key")
 
 MAILCHIMP_API_KEY = get_secret("mailchimp_api_key")
-
-# This comes from our mandrill accounts page
-MANDRILL_API_KEY = get_secret("mandrill_api_key")
 
 # Twitter API credentials
 # Secrecy not required because its only used for R/O requests.

@@ -1,20 +1,21 @@
 # Writing bots
 **This feature is still experimental.**
 
-The contrib_bots system is a new part of Zulip that allows
-bot developers to write a large class of bots by simply reacting to messages.
+The contrib_bots system is a new part of Zulip that allows bot
+developers to write a large class of interactive bots that react to
+messages.
 
-With bots, you *can*
+With the contrib_bots API, you *can* easily
 
-* intercept and view messages sent by users on Zulip
-* send out new messages
+* intercept, view, and process messages sent by users on Zulip
+* send out new messages as replies to the processed messages
 
-With bots, you *cannot*
+With this API, you *cannot*
 
 * modify an intercepted message (you have to send a new message)
-* send messages on behalf of other users
-* intercept private messages (except for PMs that are sent to the bot)
-
+* send messages on behalf of or impersonate other users
+* intercept private messages (except for PMs that with the bot as an
+explicit recipient)
 
 On this page you'll find:
 
@@ -31,44 +32,58 @@ that help with writing bots, please visit
 issue, or submit a pull request to share your ideas!
 
 ## How to deploy a bot
-This guide will show you how to deploy a bot on your running Zulip server.
-It presumes that you already have a fully implemented `<my-bot>.py` bot and now want to try it out.
 
-1. Copy your bot `<my-bot>.py` to `~/zulip/contrib_bots/bots/<my-bot>/<my-bot>.py`.
+This guide will show you how to deploy a bot on a running Zulip
+server.  It assumes you want to use one of the existing `contrib_bots`
+bots in your Zulip organization.  If you want to write a new one, you
+just need to write the `<my-bot>.py` script.
 
-    * This is the place where all Zulip bots are stored.
+You need:
 
-    * You can also test out bots that already exist in this directory.
+* An account in an organization on a Zulip server
+  (e.g. [chat.zulip.org](https://chat.zulip.org) or
+  yourSubdomain.zulipchat.com, or your own development server).
+  Within that Zulip organization, users will be able to interact with
+  your bot.
+* A computer where you're running the bot from, with a clone of the
+  [Zulip repository](https://github.com/zulip/zulip), which contains
+  the bot library code in its `contrib_bots` subdirectory. This is
+  required to run your bot. The following instructions assume this
+  repository to be located in `~/zulip/`.
 
-2. Run your Zulip server. Bots can only be deployed on running systems.
+**Note: Please be considerate when testing experimental bots on
+  public servers such as chat.zulip.org.**
 
-3. Register a new bot on your Zulip server's web interface.
+1. Register a new bot user on the Zulip server's web interface.
 
+    * Log in to the Zulip server.
     * Navigate to *Settings* -> *Your bots* -> *Add a new bot*, fill
       out the form and click on *Create bot*.
-    * A new bot should appear in the *Your bots* panel.
+    * A new bot user should appear in the *Your bots* panel.
 
-4. Add the bot's configuration file on your Zulip server.
+2. Download the bot's `.zuliprc` configuration file to your computer.
 
     * In the *Your bots* panel, click on the green icon to download
       its configuration file *.zuliprc* (the structure of this file is
       explained [here](#configuration-file).
-    * Copy the file to a destination of your choice on your Zulip server, e.g. to `~/.zuliprc` or `~/zuliprc-test`.
+    * Copy the file to a destination of your choice, e.g. to `~/.zuliprc` or `~/zuliprc-test`.
 
-5. Subscribe the bot to the streams that the bot needs to read messages from or write messages to.
+3. Subscribe the bot to the streams that the bot needs to interact with.
 
     * To subscribe your bot to streams, navigate to *Manage
       Streams*. Select a stream and add your bot by its email address
       (the address you assigned in step 3).
-    * Now, the bot will do its job on the streams you subscribed it to.
+    * Now, the bot do its job on the streams you subscribed it to.
+    * (In future versions of the API, this step may not be required).
 
-6. Run the bot.
+4. Run the bot.
 
-    * On your Zulip server (and outside the Vagrant environment), navigate to `~/zulip/contrib_bots/`
-    * Run `python run.py ~/zulip/contrib_bots/bots/<my-bot>/<my-bot>.py
-      --config-file ~/.zuliprc`. The `~/` before `.zuliprc` should
-      point to the directory containing the file (in this case, it is
-      the home directory).
+    * In your Zulip repository, navigate to `~/zulip/contrib_bots/`
+    * Run
+      ```
+      python run.py ~/zulip/contrib_bots/bots/<my-bot>/<my-bot>.py --config-file ~/.zuliprc`
+      ```
+      (using the path to the `.zuliprc` file from step 2).
     * Check the output of the command. It should start with the text
       the `usage` function returns, followed by logging output similar
       to this:
@@ -86,13 +101,14 @@ It presumes that you already have a fully implemented `<my-bot>.py` bot and now 
 2. Create the *followup* stream.
 3. Subscribe the bot to the newly created *followup* stream and a
    stream you want to use it from, e.g. *social*.
-4. Send a message to the stream you've subscribed the bot to (other
-   than *followup*). If everything works, a copy of the message should
-   now pop up in the *followup* stream.
+4. Send a message mentioning your new bot to the stream you've
+   subscribed the bot to (other than *followup*). If everything works,
+   a copy of the message should now pop up in the *followup* stream.
 
 ## How to develop a bot
 
-The tutorial below explains the structure of a bot `<my-bot>.py`. You
+The tutorial below explains the structure of a bot `<my-bot>.py`,
+which is the only file you need to create to develop a new bot. You
 can use this as boilerplate code for developing your own bot.
 
 Every bot is built upon this structure:
@@ -214,6 +230,21 @@ None.
 * My bot won't start
     * Ensure that your API config file is correct (download the config file from the server).
     * Ensure that you bot script is located in zulip/contrib_bots/bots/<my-bot>/
+    * Are you using your own Zulip development server? Ensure that you run your bot outside
+      the Vagrant environment.
 
 * My bot works only on some streams.
     * Subscribe your bot to other streams, as described [here](#how-to-deploy-a-bot).
+
+## Future direction
+
+The long-term plan for this bot system is to allow the same
+`BotHandler` code to eventually be usable in several contexts:
+
+* Run directly using the Zulip `call_on_each_message` API, which is
+  how the implementation above works.  This is great for quick
+  development with minimal setup.
+* Run in a simple Python webserver server, processing messages
+  received from Zulip's outgoing webhooks integration.
+* For bots merged into the mainline Zulip codebase, enabled via a
+  button in the Zulip web UI, with no code deployment effort required.

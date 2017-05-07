@@ -14,8 +14,7 @@ from zerver.lib.feedback import handle_feedback
 from zerver.lib.queue import SimpleQueueClient, queue_json_publish
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.notifications import handle_missedmessage_emails, enqueue_welcome_emails, \
-    clear_followup_emails_queue, send_local_email_template_with_delay, \
-    send_missedmessage_email
+    clear_followup_emails_queue
 from zerver.lib.push_notifications import handle_push_notification
 from zerver.lib.actions import do_send_confirmation_email, \
     do_update_user_activity, do_update_user_activity_interval, do_update_user_presence, \
@@ -23,6 +22,7 @@ from zerver.lib.actions import do_send_confirmation_email, \
     render_incoming_message, do_update_embedded_data
 from zerver.lib.url_preview import preview as url_preview
 from zerver.lib.digest import handle_digest_email
+from zerver.lib.send_email import send_future_email, send_email_from_dict
 from zerver.lib.email_mirror import process_message as mirror_email
 from zerver.decorator import JsonableError
 from zerver.tornado.socket import req_redis_key
@@ -160,17 +160,18 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
         context = common_context(referrer)
         context.update({
             'activate_url': link,
-            'referrer': referrer,
+            'referrer_name': referrer.name,
+            'referrer_email': referrer.email,
+            'referrer_realm_name': referrer.realm.name,
             'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS,
             'support_email': settings.ZULIP_ADMINISTRATOR
         })
-        send_local_email_template_with_delay(
-            [{'email': data["email"], 'name': ""}],
-            "zerver/emails/invitation/invitation_reminder_email",
-            context,
-            datetime.timedelta(days=2),
-            tags=["invitation-reminders"],
-            sender={'email': settings.ZULIP_ADMINISTRATOR, 'name': 'Zulip'})
+        send_future_email(
+            "zerver/emails/invitation_reminder",
+            data["email"],
+            from_email=settings.ZULIP_ADMINISTRATOR,
+            context=context,
+            delay=datetime.timedelta(days=2))
 
 @assign_queue('user_activity')
 class UserActivityWorker(QueueProcessingWorker):
@@ -225,7 +226,7 @@ class MissedMessageWorker(QueueProcessingWorker):
 class MissedMessageSendingWorker(QueueProcessingWorker):
     def consume(self, data):
         # type: (Mapping[str, Any]) -> None
-        send_missedmessage_email(data)
+        send_email_from_dict(data)
 
 @assign_queue('missedmessage_mobile_notifications')
 class PushNotificationsWorker(QueueProcessingWorker):

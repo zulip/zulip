@@ -415,6 +415,28 @@ $(function () {
         window.location.hash = "streams/all";
     });
 
+    $("body").on("click", ".default_stream_row .remove-default-stream", function () {
+        var row = $(this).closest(".default_stream_row");
+        var stream_name = row.attr("id");
+
+        channel.del({
+            url: "/json/default_streams" + "?" + $.param({ stream_name: stream_name }),
+            error: function (xhr) {
+                var button = row.find("button");
+                if (xhr.status.toString().charAt(0) === "4") {
+                    button.closest("td").html(
+                        $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
+                    );
+                } else {
+                    button.text(i18n.t("Failed!"));
+                }
+            },
+            success: function () {
+                row.remove();
+            },
+        });
+    });
+
     // FEEDBACK
 
     // Keep these 2 feedback bot triggers separate because they have to
@@ -596,8 +618,16 @@ $(function () {
         var $this = $(this);
 
         $("#settings_overlay_container .sidebar li").removeClass("active no-border");
-            $this.addClass("active");
-        $this.prev().addClass("no-border");
+        $this.addClass("active").prev().addClass("no-border");
+
+        var $settings_overlay_container = $("#settings_overlay_container");
+        $settings_overlay_container.find(".right").addClass("show");
+        $settings_overlay_container.find(".settings-header.mobile").addClass("slide-left");
+    });
+
+    $(".settings-header.mobile .icon-vector-chevron-left").on("click", function () {
+        $("#settings_page").find(".right").removeClass("show");
+        $(this).parent().removeClass("slide-left");
     });
 
     $("#settings_overlay_container .sidebar").on("click", "li[data-section]", function () {
