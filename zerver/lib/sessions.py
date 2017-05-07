@@ -32,7 +32,7 @@ def user_sessions(user_profile):
 
 def delete_session(session):
     # type: (Session) -> None
-    session_engine.SessionStore(session.session_key).delete() # type: ignore # import_module
+    session_engine.SessionStore(session.session_key).delete()  # type: ignore # import_module
 
 def delete_user_sessions(user_profile):
     # type: (UserProfile) -> None
