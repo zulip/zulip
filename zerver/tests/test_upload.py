@@ -96,7 +96,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         and does so in a way that preserves 100% test coverage for Python 3.
         """
 
-        user_profile = get_user_profile_by_email('hamlet@zulip.com')
+        user_profile = self.example_user('hamlet')
 
         mock_file = mock.Mock()
         mock_file._get_size = mock.Mock(return_value=1024)
@@ -638,7 +638,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
     def test_get_gravatar_avatar(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
-        cordelia = get_user_profile_by_email('cordelia@zulip.com')
+        cordelia = self.example_user('cordelia')
 
         cordelia.avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
         cordelia.save()
@@ -655,7 +655,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
     def test_get_user_avatar(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
-        cordelia = get_user_profile_by_email('cordelia@zulip.com')
+        cordelia = self.example_user('cordelia')
 
         cordelia.avatar_source = UserProfile.AVATAR_FROM_USER
         cordelia.save()
@@ -670,7 +670,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
     def test_get_user_avatar_medium(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
-        cordelia = get_user_profile_by_email('cordelia@zulip.com')
+        cordelia = self.example_user('cordelia')
 
         cordelia.avatar_source = UserProfile.AVATAR_FROM_USER
         cordelia.save()
@@ -720,7 +720,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
                 self.assertEqual(Image.open(io.BytesIO(data)).size, (100, 100))
 
             # Verify that the medium-size avatar was created
-            user_profile = get_user_profile_by_email('hamlet@zulip.com')
+            user_profile = self.example_user('hamlet')
             medium_avatar_disk_path = avatar_disk_path(user_profile, medium=True)
             self.assertTrue(os.path.exists(medium_avatar_disk_path))
 
@@ -747,7 +747,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
                 result = self.client_put_multipart("/json/users/me/avatar", {'file': fp})
 
             self.assert_json_error(result, "Could not decode image; did you upload an image file?")
-            user_profile = get_user_profile_by_email("hamlet@zulip.com")
+            user_profile = self.example_user('hamlet')
             self.assertEqual(user_profile.avatar_version, 1)
 
     def test_delete_avatar(self):
@@ -756,12 +756,12 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         A DELETE request to /json/users/me/avatar should delete the user avatar and return gravatar URL
         """
         self.login("hamlet@zulip.com")
-        hamlet = get_user_profile_by_email("hamlet@zulip.com")
+        hamlet = self.example_user('hamlet')
         hamlet.avatar_source = UserProfile.AVATAR_FROM_USER
         hamlet.save()
 
         result = self.client_delete("/json/users/me/avatar")
-        user_profile = get_user_profile_by_email('hamlet@zulip.com')
+        user_profile = self.example_user('hamlet')
 
         self.assert_json_success(result)
         json = ujson.loads(result.content)

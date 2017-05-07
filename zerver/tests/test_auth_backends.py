@@ -781,7 +781,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         self.assertEqual(query_params["realm"], ['http://zulip.testserver'])
         self.assertEqual(query_params["email"], ['hamlet@zulip.com'])
         encrypted_api_key = query_params["otp_encrypted_api_key"][0]
-        self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").api_key,
+        self.assertEqual(self.example_user('hamlet').api_key,
                          otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp))
 
     def test_log_into_subdomain(self):
@@ -794,7 +794,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         with mock.patch('zerver.views.auth.get_subdomain', return_value='zulip'):
             result = self.client_get('/accounts/login/subdomain/')
             self.assertEqual(result.status_code, 302)
-            user_profile = get_user_profile_by_email('hamlet@zulip.com')
+            user_profile = self.example_user('hamlet')
             self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
             # If authenticate_remote_user detects a subdomain mismatch, then
@@ -910,7 +910,7 @@ class GoogleLoginTest(GoogleOAuthTest):
         account_response = ResponseMock(200, account_data)
         self.google_oauth2_test(token_response, account_response)
 
-        user_profile = get_user_profile_by_email('hamlet@zulip.com')
+        user_profile = self.example_user('hamlet')
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
     def test_google_oauth2_registration(self):
@@ -1001,7 +1001,7 @@ class GoogleLoginTest(GoogleOAuthTest):
         account_response = ResponseMock(200, account_data)
         self.google_oauth2_test(token_response, account_response)
 
-        user_profile = get_user_profile_by_email('hamlet@zulip.com')
+        user_profile = self.example_user('hamlet')
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
     def test_google_oauth2_account_response_no_email(self):

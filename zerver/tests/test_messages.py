@@ -71,7 +71,7 @@ class TopicHistoryTest(ZulipTestCase):
         def create_test_message(topic, read, starred=False):
             # type: (str, bool, bool) -> None
 
-            hamlet = get_user_profile_by_email('hamlet@zulip.com')
+            hamlet = self.example_user('hamlet')
             message = Message.objects.create(
                 sender=hamlet,
                 recipient=recipient,
@@ -469,7 +469,7 @@ class StreamMessagesTest(ZulipTestCase):
 
     def test_stream_message_dict(self):
         # type: () -> None
-        user_profile = get_user_profile_by_email("iago@zulip.com")
+        user_profile = self.example_user('iago')
         self.subscribe_to_stream(user_profile.email, "Denmark")
         self.send_message("hamlet@zulip.com", "Denmark", Recipient.STREAM,
                           content="whatever", subject="my topic")
@@ -483,7 +483,7 @@ class StreamMessagesTest(ZulipTestCase):
 
     def test_stream_message_unicode(self):
         # type: () -> None
-        user_profile = get_user_profile_by_email("iago@zulip.com")
+        user_profile = self.example_user('iago')
         self.subscribe_to_stream(user_profile.email, "Denmark")
         self.send_message("hamlet@zulip.com", "Denmark", Recipient.STREAM,
                           content="whatever", subject="my topic")
@@ -494,7 +494,7 @@ class StreamMessagesTest(ZulipTestCase):
 
     def test_message_mentions(self):
         # type: () -> None
-        user_profile = get_user_profile_by_email("iago@zulip.com")
+        user_profile = self.example_user('iago')
         self.subscribe_to_stream(user_profile.email, "Denmark")
         self.send_message("hamlet@zulip.com", "Denmark", Recipient.STREAM,
                           content="test @**Iago** rules")
@@ -560,8 +560,8 @@ class MessageDictTest(ZulipTestCase):
     @slow('builds lots of messages')
     def test_bulk_message_fetching(self):
         # type: () -> None
-        sender = get_user_profile_by_email('othello@zulip.com')
-        receiver = get_user_profile_by_email('hamlet@zulip.com')
+        sender = self.example_user('othello')
+        receiver = self.example_user('hamlet')
         pm_recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
         stream_name = u'Çiğdem'
         stream = self.make_stream(stream_name)
@@ -606,8 +606,8 @@ class MessageDictTest(ZulipTestCase):
 
     def test_applying_markdown(self):
         # type: () -> None
-        sender = get_user_profile_by_email('othello@zulip.com')
-        receiver = get_user_profile_by_email('hamlet@zulip.com')
+        sender = self.example_user('othello')
+        receiver = self.example_user('hamlet')
         recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
         sending_client = make_client(name="test suite")
         message = Message(
@@ -637,8 +637,8 @@ class MessageDictTest(ZulipTestCase):
         # type: (Any) -> None
         # pretend the converter returned an invalid message without raising an exception
         convert_mock.return_value = None
-        sender = get_user_profile_by_email('othello@zulip.com')
-        receiver = get_user_profile_by_email('hamlet@zulip.com')
+        sender = self.example_user('othello')
+        receiver = self.example_user('hamlet')
         recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
         sending_client = make_client(name="test suite")
         message = Message(
@@ -662,8 +662,8 @@ class MessageDictTest(ZulipTestCase):
 
     def test_reaction(self):
         # type: () -> None
-        sender = get_user_profile_by_email('othello@zulip.com')
-        receiver = get_user_profile_by_email('hamlet@zulip.com')
+        sender = self.example_user('othello')
+        receiver = self.example_user('hamlet')
         recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
         sending_client = make_client(name="test suite")
         message = Message(
@@ -697,8 +697,8 @@ class MessageDictTest(ZulipTestCase):
 class SewMessageAndReactionTest(ZulipTestCase):
     def test_sew_messages_and_reaction(self):
         # type: () -> None
-        sender = get_user_profile_by_email('othello@zulip.com')
-        receiver = get_user_profile_by_email('hamlet@zulip.com')
+        sender = self.example_user('othello')
+        receiver = self.example_user('hamlet')
         pm_recipient = Recipient.objects.get(type_id=receiver.id, type=Recipient.PERSONAL)
         stream_name = u'Çiğdem'
         stream = self.make_stream(stream_name)
@@ -1246,7 +1246,7 @@ class EditMessageTest(ZulipTestCase):
         """This test verifies the accuracy of construction of Zulip's edit
         history data structures."""
         self.login("hamlet@zulip.com")
-        hamlet = get_user_profile_by_email("hamlet@zulip.com")
+        hamlet = self.example_user('hamlet')
         msg_id = self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM,
                                    subject="subject 1", content="content 1")
         result = self.client_patch("/json/messages/" + str(msg_id), {
@@ -1302,7 +1302,7 @@ class EditMessageTest(ZulipTestCase):
         self.assert_json_success(result)
         history = ujson.loads(Message.objects.get(id=msg_id).edit_history)
         self.assertEqual(history[0]['prev_subject'], 'subject 3')
-        self.assertEqual(history[0]['user_id'], get_user_profile_by_email("iago@zulip.com").id)
+        self.assertEqual(history[0]['user_id'], self.example_user('iago').id)
 
         history = ujson.loads(Message.objects.get(id=msg_id).edit_history)
         self.assertEqual(history[0]['prev_subject'], 'subject 3')
@@ -1480,13 +1480,13 @@ class EditMessageTest(ZulipTestCase):
         self.check_message(id5, subject="edited")
         self.check_message(id6, subject="topic3")
 
-class MirroredMessageUsersTest(TestCase):
+class MirroredMessageUsersTest(ZulipTestCase):
     class Request(object):
         pass
 
     def test_invalid_sender(self):
         # type: () -> None
-        user = get_user_profile_by_email('hamlet@zulip.com')
+        user = self.example_user('hamlet')
         recipients = [] # type: List[Text]
         request = self.Request()
         request.POST = dict() # no sender
@@ -1501,7 +1501,7 @@ class MirroredMessageUsersTest(TestCase):
         # type: () -> None
         client = get_client(name='banned_mirror') # Invalid!!!
 
-        user = get_user_profile_by_email('hamlet@zulip.com')
+        user = self.example_user('hamlet')
         sender = user
 
         recipients = [] # type: List[Text]
@@ -1603,7 +1603,7 @@ class MirroredMessageUsersTest(TestCase):
         # type: () -> None
         client = get_client(name='irc_mirror')
 
-        sender = get_user_profile_by_email('hamlet@zulip.com')
+        sender = self.example_user('hamlet')
         user = sender
 
         recipients = ['alice@zulip.com', 'bob@irc.zulip.com', 'cordelia@zulip.com']
@@ -1633,7 +1633,7 @@ class MirroredMessageUsersTest(TestCase):
         # type: () -> None
         client = get_client(name='jabber_mirror')
 
-        sender = get_user_profile_by_email('hamlet@zulip.com')
+        sender = self.example_user('hamlet')
         user = sender
 
         recipients = ['alice@zulip.com', 'bob@zulip.com', 'cordelia@zulip.com']
@@ -1886,7 +1886,7 @@ class LogDictTest(ZulipTestCase):
 class CheckMessageTest(ZulipTestCase):
     def test_basic_check_message_call(self):
         # type: () -> None
-        sender = get_user_profile_by_email('othello@zulip.com')
+        sender = self.example_user('othello')
         client = make_client(name="test suite")
         stream_name = u'España y Francia'
         self.make_stream(stream_name)
@@ -1903,7 +1903,7 @@ class CheckMessageTest(ZulipTestCase):
         # type: () -> None
         """We send a PM to a bot's owner if their bot sends a message to
         an unsubscribed stream"""
-        parent = get_user_profile_by_email('othello@zulip.com')
+        parent = self.example_user('othello')
         bot = do_create_user(
             email='othello-bot@zulip.com',
             password='',

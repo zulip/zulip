@@ -31,8 +31,8 @@ class TestMissedMessages(ZulipTestCase):
 
     def _test_cases(self, tokens, msg_id, body, send_as_user):
         # type: (List[str], int, str, bool) -> None
-        othello = get_user_profile_by_email('othello@zulip.com')
-        hamlet = get_user_profile_by_email('hamlet@zulip.com')
+        othello = self.example_user('othello')
+        hamlet = self.example_user('hamlet')
         handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id}])
         if settings.EMAIL_GATEWAY_PATTERN != "":
             reply_to_addresses = [settings.EMAIL_GATEWAY_PATTERN % (u'mm' + t) for t in tokens]
@@ -122,7 +122,7 @@ class TestMissedMessages(ZulipTestCase):
         msg_id = self.send_message("othello@zulip.com", "denmark", Recipient.STREAM,
                                    '@**hamlet** to be deleted')
 
-        hamlet = get_user_profile_by_email('hamlet@zulip.com')
+        hamlet = self.example_user('hamlet')
         self.login("othello@zulip.com")
         result = self.client_patch('/json/messages/' + str(msg_id),
                                    {'message_id': msg_id, 'content': ' '})
@@ -139,7 +139,7 @@ class TestMissedMessages(ZulipTestCase):
         msg_id = self.send_message("othello@zulip.com", "hamlet@zulip.com", Recipient.PERSONAL,
                                    'Extremely personal message! to be deleted!')
 
-        hamlet = get_user_profile_by_email('hamlet@zulip.com')
+        hamlet = self.example_user('hamlet')
         self.login("othello@zulip.com")
         result = self.client_patch('/json/messages/' + str(msg_id),
                                    {'message_id': msg_id, 'content': ' '})
@@ -156,8 +156,8 @@ class TestMissedMessages(ZulipTestCase):
         msg_id = self.send_message("othello@zulip.com", ["hamlet@zulip.com", "iago@zulip.com"],
                                    Recipient.PERSONAL, 'Group personal message!')
 
-        hamlet = get_user_profile_by_email('hamlet@zulip.com')
-        iago = get_user_profile_by_email('iago@zulip.com')
+        hamlet = self.example_user('hamlet')
+        iago = self.example_user('iago')
         self.login("othello@zulip.com")
         result = self.client_patch('/json/messages/' + str(msg_id),
                                    {'message_id': msg_id, 'content': ' '})

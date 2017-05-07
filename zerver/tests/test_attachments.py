@@ -16,7 +16,7 @@ from zerver.models import Attachment
 class AttachmentsTests(ZulipTestCase):
     def setUp(self):
         # type: () -> None
-        user = get_user_profile_by_email("cordelia@zulip.com")
+        user = self.example_user('cordelia')
         self.attachment = Attachment.objects.create(
             file_name='test.txt', path_id='foo/bar/test.txt', owner=user)
 
@@ -25,7 +25,7 @@ class AttachmentsTests(ZulipTestCase):
         self.login("cordelia@zulip.com")
         result = self.client_get('/json/attachments')
         self.assert_json_success(result)
-        user = get_user_profile_by_email("cordelia@zulip.com")
+        user = self.example_user('cordelia')
         attachments = user_attachments(user)
         data = ujson.loads(result.content)
         self.assertEqual(data['attachments'], attachments)
@@ -36,7 +36,7 @@ class AttachmentsTests(ZulipTestCase):
         self.login("cordelia@zulip.com")
         result = self.client_delete('/json/attachments/{pk}'.format(pk=self.attachment.pk))
         self.assert_json_success(result)
-        user = get_user_profile_by_email("cordelia@zulip.com")
+        user = self.example_user('cordelia')
         attachments = user_attachments(user)
         self.assertEqual(attachments, [])
 
@@ -53,7 +53,7 @@ class AttachmentsTests(ZulipTestCase):
         self.login("iago@zulip.com")
         result = self.client_delete('/json/attachments/{pk}'.format(pk=self.attachment.pk))
         self.assert_json_error(result, 'Invalid attachment')
-        user = get_user_profile_by_email("cordelia@zulip.com")
+        user = self.example_user('cordelia')
         attachments = user_attachments(user)
         self.assertEqual(attachments, [self.attachment.to_dict()])
 

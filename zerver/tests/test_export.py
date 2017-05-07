@@ -60,8 +60,8 @@ class QueryUtilTest(ZulipTestCase):
         # type: () -> None
         self._create_messages()
 
-        cordelia = get_user_profile_by_email('cordelia@zulip.com')
-        hamlet = get_user_profile_by_email('hamlet@zulip.com')
+        cordelia = self.example_user('cordelia')
+        hamlet = self.example_user('hamlet')
 
         def get_queries():
             # type: () -> List[Any]
@@ -177,7 +177,7 @@ class QueryUtilTest(ZulipTestCase):
         self.assertEqual(actual_msg.sender_id, expected_msg.sender_id)
 
 
-class ExportTest(TestCase):
+class ExportTest(ZulipTestCase):
 
     def setUp(self):
         # type: () -> None
@@ -289,8 +289,8 @@ class ExportTest(TestCase):
         # TODO, extract get_set/find_by_id, so we can split this test up
 
         # Now, restrict users
-        cordelia = get_user_profile_by_email('cordelia@zulip.com')
-        hamlet = get_user_profile_by_email('hamlet@zulip.com')
+        cordelia = self.example_user('cordelia')
+        hamlet = self.example_user('hamlet')
         user_ids = set([cordelia.id, hamlet.id])
 
         full_data = self._export_realm(realm, exportable_user_ids=user_ids)

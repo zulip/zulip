@@ -176,7 +176,7 @@ class AlertWordTests(ZulipTestCase):
     def test_alert_flags(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
-        user_profile_hamlet = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile_hamlet = self.example_user('hamlet')
 
         result = self.client_put('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
         self.assert_json_success(result)

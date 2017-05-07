@@ -102,7 +102,7 @@ class EmailChangeTestCase(ZulipTestCase):
 
     def test_start_email_change_process(self):
         # type: () -> None
-        user_profile = get_user_profile_by_email('hamlet@zulip.com')
+        user_profile = self.example_user('hamlet')
         do_start_email_change_process(user_profile, 'hamlet-new@zulip.com')
         self.assertEqual(EmailChangeStatus.objects.count(), 1)
 

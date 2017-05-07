@@ -22,11 +22,11 @@ class PointerTest(ZulipTestCase):
         the pointer we store for your UserProfile.
         """
         self.login("hamlet@zulip.com")
-        self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, -1)
+        self.assertEqual(self.example_user('hamlet').pointer, -1)
         msg_id = self.send_message("othello@zulip.com", "Verona", Recipient.STREAM)
         result = self.client_post("/json/users/me/pointer", {"pointer": msg_id})
         self.assert_json_success(result)
-        self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, msg_id)
+        self.assertEqual(self.example_user('hamlet').pointer, msg_id)
 
     def test_api_update_pointer(self):
         # type: () -> None
@@ -48,10 +48,10 @@ class PointerTest(ZulipTestCase):
         returns a 400 and error message.
         """
         self.login("hamlet@zulip.com")
-        self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, -1)
+        self.assertEqual(self.example_user('hamlet').pointer, -1)
         result = self.client_post("/json/users/me/pointer", {"foo": 1})
         self.assert_json_error(result, "Missing 'pointer' argument")
-        self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, -1)
+        self.assertEqual(self.example_user('hamlet').pointer, -1)
 
     def test_invalid_pointer(self):
         # type: () -> None
@@ -60,10 +60,10 @@ class PointerTest(ZulipTestCase):
         message.
         """
         self.login("hamlet@zulip.com")
-        self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, -1)
+        self.assertEqual(self.example_user('hamlet').pointer, -1)
         result = self.client_post("/json/users/me/pointer", {"pointer": "foo"})
         self.assert_json_error(result, "Bad value for 'pointer': foo")
-        self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, -1)
+        self.assertEqual(self.example_user('hamlet').pointer, -1)
 
     def test_pointer_out_of_range(self):
         # type: () -> None
@@ -72,10 +72,10 @@ class PointerTest(ZulipTestCase):
         and error message.
         """
         self.login("hamlet@zulip.com")
-        self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, -1)
+        self.assertEqual(self.example_user('hamlet').pointer, -1)
         result = self.client_post("/json/users/me/pointer", {"pointer": -2})
         self.assert_json_error(result, "Bad value for 'pointer': -2")
-        self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, -1)
+        self.assertEqual(self.example_user('hamlet').pointer, -1)
 
     def test_use_first_unread_anchor_interaction_with_pointer(self):
         # type: () -> None
@@ -86,7 +86,7 @@ class PointerTest(ZulipTestCase):
         """
         self.login("hamlet@zulip.com")
         # Ensure the pointer is not set (-1)
-        self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer, -1)
+        self.assertEqual(self.example_user('hamlet').pointer, -1)
         # Mark all existing messages as read
         result = self.client_post("/json/messages/flags", {"messages": ujson.dumps([]),
                                                            "op": "add",
@@ -115,7 +115,7 @@ class PointerTest(ZulipTestCase):
         # Verify the message is marked as read
         user_message = UserMessage.objects.get(
             message_id=old_message_id,
-            user_profile=get_user_profile_by_email("hamlet@zulip.com"))
+            user_profile=self.example_user('hamlet'))
         self.assertTrue(user_message.flags.read)
 
         # Let's set this old message to be unread
@@ -127,7 +127,7 @@ class PointerTest(ZulipTestCase):
         # Verify it's now marked as unread
         user_message = UserMessage.objects.get(
             message_id=old_message_id,
-            user_profile=get_user_profile_by_email("hamlet@zulip.com"))
+            user_profile=self.example_user('hamlet'))
         self.assert_json_success(result)
         self.assertFalse(user_message.flags.read)
 
@@ -142,13 +142,13 @@ class PointerTest(ZulipTestCase):
         result = self.client_post("/json/users/me/pointer",
                                   {"pointer": next_old_message_id})
         self.assert_json_success(result)
-        self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").pointer,
+        self.assertEqual(self.example_user('hamlet').pointer,
                          next_old_message_id)
 
         # Verify that moving the pointer didn't mark our message as read.
         user_message = UserMessage.objects.get(
             message_id=old_message_id,
-            user_profile=get_user_profile_by_email("hamlet@zulip.com"))
+            user_profile=self.example_user('hamlet'))
         self.assertFalse(user_message.flags.read)
 
         # Now if we call get_messages with use_first_unread_anchor=True,
@@ -236,7 +236,7 @@ class UnreadCountTests(ZulipTestCase):
     def test_mark_all_in_stream_read(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
         self.subscribe_to_stream(user_profile.email, "test_stream", user_profile.realm)
         self.subscribe_to_stream("cordelia@zulip.com", "test_stream", user_profile.realm)
 
@@ -288,7 +288,7 @@ class UnreadCountTests(ZulipTestCase):
     def test_mark_all_in_stream_topic_read(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
         self.subscribe_to_stream(user_profile.email, "test_stream", user_profile.realm)
 
         message_id = self.send_message("hamlet@zulip.com", "test_stream", Recipient.STREAM, "hello", "test_topic")

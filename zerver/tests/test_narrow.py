@@ -72,7 +72,7 @@ class NarrowBuilderTest(ZulipTestCase):
     def setUp(self):
         # type: () -> None
         self.realm = get_realm('zulip')
-        self.user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        self.user_profile = self.example_user('hamlet')
         self.builder = NarrowBuilder(self.user_profile, column('id'))
         self.raw_query = select([column("id")], None, table("zerver_message"))
 
@@ -420,8 +420,8 @@ class GetOldMessagesTest(ZulipTestCase):
 
     def get_query_ids(self):
         # type: () -> Dict[Text, int]
-        hamlet_user = get_user_profile_by_email('hamlet@zulip.com')
-        othello_user = get_user_profile_by_email('othello@zulip.com')
+        hamlet_user = self.example_user('hamlet')
+        othello_user = self.example_user('othello')
 
         query_ids = {} # type: Dict[Text, int]
 
@@ -543,7 +543,7 @@ class GetOldMessagesTest(ZulipTestCase):
         # narrow view.
         self.subscribe_to_stream("hamlet@zulip.com", 'Scotland')
         self.send_message("hamlet@zulip.com", "Scotland", Recipient.STREAM)
-        messages = get_user_messages(get_user_profile_by_email("hamlet@zulip.com"))
+        messages = get_user_messages(self.example_user('hamlet'))
         stream_messages = [msg for msg in messages if msg.recipient.type == Recipient.STREAM]
         stream_name = get_display_recipient(stream_messages[0].recipient)
         stream_id = stream_messages[0].recipient.id
@@ -1066,7 +1066,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
     def common_check_get_messages_query(self, query_params, expected):
         # type: (Dict[str, object], Text) -> None
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
         request = POSTRequestMock(query_params, user_profile)
         with queries_captured() as queries:
             get_messages_backend(request, user_profile)
@@ -1080,7 +1080,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
     def test_use_first_unread_anchor_with_some_unread_messages(self):
         # type: () -> None
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
 
         # Have Othello send messages to Hamlet that he hasn't read.
         self.send_message("othello@zulip.com", "Scotland", Recipient.STREAM)
@@ -1117,7 +1117,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
     def test_use_first_unread_anchor_with_no_unread_messages(self):
         # type: () -> None
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
 
         query_params = dict(
             use_first_unread_anchor='true',
@@ -1155,7 +1155,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
         realm = get_realm('zulip')
         self.make_stream('web stuff')
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
         user_profile.muted_topics = ujson.dumps([['Scotland', 'golf'], ['web stuff', 'css'], ['bogus', 'bogus']])
         user_profile.save()
 
@@ -1192,7 +1192,7 @@ class GetOldMessagesTest(ZulipTestCase):
         # type: () -> None
         realm = get_realm('zulip')
         self.make_stream('web stuff')
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
 
         # Test the do-nothing case first.
         user_profile.muted_topics = ujson.dumps([['irrelevant_stream', 'irrelevant_topic']])
