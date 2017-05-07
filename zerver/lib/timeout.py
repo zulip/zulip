@@ -41,8 +41,8 @@ def timeout(timeout, func, *args, **kwargs):
         def __init__(self):
             # type: () -> None
             threading.Thread.__init__(self)
-            self.result = None # type: Optional[ResultT]
-            self.exc_info = None # type: Optional[Tuple[Type[BaseException], BaseException, TracebackType]]
+            self.result = None  # type: Optional[ResultT]
+            self.exc_info = None  # type: Optional[Tuple[Type[BaseException], BaseException, TracebackType]]
 
             # Don't block the whole program from exiting
             # if this is the only thread left.
