@@ -27,7 +27,7 @@ class IRCBot(irc.bot.SingleServerIRCBot):
     def __init__(self, channel, nickname, server, port=6667):
         # type: (irc.bot.Channel, str, str, int) -> None
         irc.bot.SingleServerIRCBot.__init__(self, [(server, port)], nickname, nickname)
-        self.channel = channel # type: irc.bot.Channel
+        self.channel = channel  # type: irc.bot.Channel
 
     def on_nicknameinuse(self, c, e):
         # type: (ServerConnection, Event) -> None
