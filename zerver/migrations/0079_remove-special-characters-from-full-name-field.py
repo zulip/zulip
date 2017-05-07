@@ -3,14 +3,15 @@
 from __future__ import unicode_literals
 
 from django.db import migrations
+from zerver.models import UserProfile
 import re
 
 def remove_special_characters(apps, schema_editor):
     # type: (StateApps, DatabaseSchemaEditor) -> None
     user_profile_model = apps.get_model('zerver', 'UserProfile')
-    for user_profile in user_profile_model.objects.filter(full_name__regex=r'([^a-zA-Z ])'):
+    for user_profile in user_profile_model.objects.filter(full_name__regex=UserProfile.INVALID_FULL_NAME_RE):
         full_name = user_profile.full_name.strip(' \t\r\n')
-        user_profile.full_name = re.sub(r'([^a-zA-Z ])', '', full_name)
+        user_profile.full_name = re.sub(UserProfile.INVALID_FULL_NAME_RE, '', full_name)
 
 class Migration(migrations.Migration):
 
