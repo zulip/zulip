@@ -79,7 +79,7 @@ class QueryUtilTest(ZulipTestCase):
 
         queries = get_queries()
 
-        all_msg_ids = set() # type: Set[int]
+        all_msg_ids = set()  # type: Set[int]
         chunker = query_chunker(
             queries=queries,
             id_collector=all_msg_ids,
@@ -104,9 +104,9 @@ class QueryUtilTest(ZulipTestCase):
         chunker = query_chunker(
             queries=queries,
             id_collector=all_msg_ids,
-            chunk_size=7, # use a different size
+            chunk_size=7,  # use a different size
         )
-        list(chunker) # exhaust the iterator
+        list(chunker)  # exhaust the iterator
         self.assertEqual(
             len(all_msg_ids),
             len(Message.objects.filter(sender_id__in=[cordelia.id, hamlet.id]))
@@ -120,9 +120,9 @@ class QueryUtilTest(ZulipTestCase):
         chunker = query_chunker(
             queries=queries,
             id_collector=all_msg_ids,
-            chunk_size=11, # use a different size each time
+            chunk_size=11,  # use a different size each time
         )
-        list(chunker) # exhaust the iterator
+        list(chunker)  # exhaust the iterator
         self.assertEqual(
             len(all_msg_ids),
             len(Message.objects.exclude(sender_id=cordelia.id))
@@ -138,10 +138,10 @@ class QueryUtilTest(ZulipTestCase):
         chunker = query_chunker(
             queries=queries,
             id_collector=all_msg_ids,
-            chunk_size=13, # use a different size each time
+            chunk_size=13,  # use a different size each time
         )
         with self.assertRaises(AssertionError):
-            list(chunker) # exercise the iterator
+            list(chunker)  # exercise the iterator
 
         # Try to confuse things with ids part of the query...
         queries = [
@@ -152,10 +152,10 @@ class QueryUtilTest(ZulipTestCase):
         chunker = query_chunker(
             queries=queries,
             id_collector=all_msg_ids,
-            chunk_size=11, # use a different size each time
+            chunk_size=11,  # use a different size each time
         )
-        self.assertEqual(len(all_msg_ids), 0) # until we actually use the iterator
-        list(chunker) # exhaust the iterator
+        self.assertEqual(len(all_msg_ids), 0)  # until we actually use the iterator
+        list(chunker)  # exhaust the iterator
         self.assertEqual(len(all_msg_ids), len(Message.objects.all()))
 
         # Verify that we can just get the first chunk with a next() call.
@@ -166,9 +166,9 @@ class QueryUtilTest(ZulipTestCase):
         chunker = query_chunker(
             queries=queries,
             id_collector=all_msg_ids,
-            chunk_size=10, # use a different size each time
+            chunk_size=10,  # use a different size each time
         )
-        first_chunk = next(chunker) # type: ignore
+        first_chunk = next(chunker)  # type: ignore
         self.assertEqual(len(first_chunk), 10)
         self.assertEqual(len(all_msg_ids), 10)
         expected_msg = Message.objects.all()[0:10][5]
