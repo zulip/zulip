@@ -73,8 +73,8 @@ class ReactionEmojiTest(ZulipTestCase):
         self.subscribe_to_stream("cordelia@zulip.com", stream_name, realm=realm)
         message_id = self.send_message("cordelia@zulip.com", stream_name, Recipient.STREAM)
 
-        sender = 'hamlet@zulip.com'
-        user_profile = get_user_profile_by_email(sender)
+        user_profile = self.example_user('hamlet')
+        sender = user_profile.email
 
         # Verify that hamlet did not receive the message.
         self.assertFalse(UserMessage.objects.filter(user_profile=user_profile,

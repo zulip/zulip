@@ -85,9 +85,9 @@ class ChangeSettingsTest(ZulipTestCase):
 
     def test_illegal_name_changes(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
+        user = self.example_user('hamlet')
+        email = user.email
         self.login(email)
-        user = get_user_profile_by_email(email)
         full_name = user.full_name
 
         with self.settings(NAME_CHANGES_DISABLED=True):
@@ -265,9 +265,9 @@ class ChangeSettingsTest(ZulipTestCase):
 class UserChangesTest(ZulipTestCase):
     def test_update_api_key(self):
         # type: () -> None
-        email = "hamlet@zulip.com"
+        user = self.example_user('hamlet')
+        email = user.email
         self.login(email)
-        user = get_user_profile_by_email(email)
         old_api_key = user.api_key
         result = self.client_post('/json/users/me/api_key/regenerate')
         self.assert_json_success(result)

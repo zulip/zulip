@@ -93,13 +93,11 @@ class AlertWordTests(ZulipTestCase):
         alert_words_in_realm. Alerts added for one user do not impact other
         users.
         """
-        email = "cordelia@zulip.com"
-        user1 = get_user_profile_by_email(email)
+        user1 = self.example_user('cordelia')
 
         add_user_alert_words(user1, self.interesting_alert_word_list)
 
-        email = "othello@zulip.com"
-        user2 = get_user_profile_by_email(email)
+        user2 = self.example_user('othello')
         add_user_alert_words(user2, ['another'])
 
         realm_words = alert_words_in_realm(user2.realm)
@@ -202,8 +200,8 @@ class AlertWordTests(ZulipTestCase):
 
     def test_update_alert_words(self):
         # type: () -> None
-        me_email = 'hamlet@zulip.com'
-        user_profile = get_user_profile_by_email(me_email)
+        user_profile = self.example_user('hamlet')
+        me_email = user_profile.email
 
         self.login(me_email)
         result = self.client_put('/json/users/me/alert_words', {'alert_words': ujson.dumps(['ALERT'])})

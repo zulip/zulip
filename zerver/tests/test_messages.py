@@ -446,8 +446,7 @@ class StreamMessagesTest(ZulipTestCase):
         for email in recipient_list:
             self.subscribe_to_stream(email, "Denmark")
 
-        sender_email = 'hamlet@zulip.com'
-        sender = get_user_profile_by_email(sender_email)
+        sender = self.example_user('hamlet')
         message_type_name = "stream"
         sending_client = make_client(name="test suite")
         stream = 'Denmark'
@@ -1829,8 +1828,8 @@ class AttachmentTest(ZulipTestCase):
         # type: () -> None
 
         # Create dummy DB entry
-        sender_email = "hamlet@zulip.com"
-        user_profile = get_user_profile_by_email(sender_email)
+        user_profile = self.example_user('hamlet')
+        sender_email = user_profile.email
         sample_size = 10
         dummy_files = [
             ('zulip.txt', '1/31/4CBjtTLYZhk66pZrF8hnYGwc/zulip.txt', sample_size),

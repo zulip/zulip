@@ -559,8 +559,8 @@ class StreamAdminTest(ZulipTestCase):
         self.make_stream(stream_name, invite_only=invite_only)
 
         # Set up the principal to be unsubscribed.
-        other_email = "cordelia@zulip.com"
-        other_user_profile = get_user_profile_by_email(other_email)
+        other_user_profile = self.example_user('cordelia')
+        other_email = other_user_profile.email
 
         # Subscribe the admin and/or principal as specified in the flags.
         if is_subbed:
@@ -693,9 +693,9 @@ class StreamAdminTest(ZulipTestCase):
         """
         Trying to unsubscribe an invalid user from a stream fails gracefully.
         """
-        admin_email = "hamlet@zulip.com"
+        user_profile = self.example_user('hamlet')
+        admin_email = user_profile.email
         self.login(admin_email)
-        user_profile = get_user_profile_by_email(admin_email)
         do_change_is_admin(user_profile, True)
 
         stream_name = u"hümbüǵ"
@@ -904,10 +904,10 @@ class SubscriptionPropertiesTest(ZulipTestCase):
         A POST request to /json/subscriptions/property with stream_name and
         pin_to_top data pins the stream.
         """
-        test_email = "hamlet@zulip.com"
+        user_profile = self.example_user('hamlet')
+        test_email = user_profile.email
         self.login(test_email)
 
-        user_profile = get_user_profile_by_email(test_email)
         old_subs, _ = gather_subscriptions(user_profile)
         sub = old_subs[0]
         stream_name = sub['name']
@@ -1194,9 +1194,9 @@ class SubscriptionAPITest(ZulipTestCase):
         All tests will be logged in as hamlet. Also save various useful values
         as attributes that tests can access.
         """
-        self.test_email = "hamlet@zulip.com"
+        self.user_profile = self.example_user('hamlet')
+        self.test_email = self.user_profile.email
         self.login(self.test_email)
-        self.user_profile = get_user_profile_by_email(self.test_email)
         self.realm = self.user_profile.realm
         self.streams = self.get_streams(self.test_email)
 
@@ -1614,8 +1614,8 @@ class SubscriptionAPITest(ZulipTestCase):
 
         # Finally, add othello.
         events = []
-        email3 = 'othello@zulip.com'
-        user_profile = get_user_profile_by_email(email3)
+        user_profile = self.example_user('othello')
+        email3 = user_profile.email
         stream = get_stream('multi_user_stream', realm)
         with tornado_redirected_to_list(events):
             bulk_add_subscriptions([stream], [user_profile])
@@ -1646,8 +1646,7 @@ class SubscriptionAPITest(ZulipTestCase):
         stream_name = "private"
         (stream, _) = create_stream_if_needed(realm, stream_name, invite_only=True)
 
-        existing_email = "hamlet@zulip.com"
-        existing_user_profile = get_user_profile_by_email(existing_email)
+        existing_user_profile = self.example_user('hamlet')
         bulk_add_subscriptions([stream], [existing_user_profile])
 
         # Now subscribe Cordelia to the stream, capturing events
@@ -2083,8 +2082,8 @@ class SubscriptionAPITest(ZulipTestCase):
         settings for that stream are derived from the global notification
         settings.
         """
-        invitee = "iago@zulip.com"
-        user_profile = get_user_profile_by_email(invitee)
+        user_profile = self.example_user('iago')
+        invitee = user_profile.email
         user_profile.enable_stream_desktop_notifications = True
         user_profile.enable_stream_sounds = True
         user_profile.save()
@@ -2108,8 +2107,8 @@ class SubscriptionAPITest(ZulipTestCase):
         settings for that stream are derived from the global notification
         settings.
         """
-        invitee = "iago@zulip.com"
-        user_profile = get_user_profile_by_email(invitee)
+        user_profile = self.example_user('iago')
+        invitee = user_profile.email
         user_profile.enable_stream_desktop_notifications = False
         user_profile.enable_stream_sounds = False
         user_profile.save()
@@ -2168,8 +2167,8 @@ class GetPublicStreamsTest(ZulipTestCase):
 class StreamIdTest(ZulipTestCase):
     def setUp(self):
         # type: () -> None
-        self.email = "hamlet@zulip.com"
-        self.user_profile = get_user_profile_by_email(self.email)
+        self.user_profile = self.example_user('hamlet')
+        self.email = self.user_profile.email
         self.login(self.email)
 
     def test_get_stream_id(self):
@@ -2284,8 +2283,8 @@ class GetSubscribersTest(ZulipTestCase):
 
     def setUp(self):
         # type: () -> None
-        self.email = "hamlet@zulip.com"
-        self.user_profile = get_user_profile_by_email(self.email)
+        self.user_profile = self.example_user('hamlet')
+        self.email = self.user_profile.email
         self.login(self.email)
 
     def check_well_formed_result(self, result, stream_name, realm):
@@ -2305,7 +2304,7 @@ class GetSubscribersTest(ZulipTestCase):
         self.assertEqual(sorted(result["subscribers"]), sorted(true_subscribers))
 
     def make_subscriber_request(self, stream_id, email=None):
-        # type: (int, Optional[str]) -> HttpResponse
+        # type: (int, Optional[Text]) -> HttpResponse
         if email is None:
             email = self.email
         return self.client_get("/api/v1/streams/%d/members" % (stream_id,),
@@ -2486,8 +2485,8 @@ class GetSubscribersTest(ZulipTestCase):
         stream_name = "NewStream"
         self.common_subscribe_to_streams(self.email, [stream_name],
                                          invite_only=True)
-        other_email = "othello@zulip.com"
-        user_profile = get_user_profile_by_email(other_email)
+        user_profile = self.example_user('othello')
+        other_email = user_profile.email
 
         # Try to fetch the subscriber list as a non-member.
         stream_id = get_stream(stream_name, user_profile.realm).id
@@ -2501,8 +2500,8 @@ class AccessStreamTest(ZulipTestCase):
         A comprehensive security test for the access_stream_by_* API functions.
         """
         # Create a private stream for which Hamlet is the only subscriber.
-        hamlet_email = "hamlet@zulip.com"
-        hamlet = get_user_profile_by_email(hamlet_email)
+        hamlet = self.example_user('hamlet')
+        hamlet_email = hamlet.email
 
         stream_name = "new_private_stream"
         self.login(hamlet_email)
@@ -2510,8 +2509,7 @@ class AccessStreamTest(ZulipTestCase):
                                          invite_only=True)
         stream = get_stream(stream_name, hamlet.realm)
 
-        othello_email = "othello@zulip.com"
-        othello = get_user_profile_by_email(othello_email)
+        othello = self.example_user('othello')
 
         # Nobody can access a stream that doesn't exist
         with self.assertRaisesRegex(JsonableError, "Invalid stream id"):

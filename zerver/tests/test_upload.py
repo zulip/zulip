@@ -933,8 +933,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_file_upload_local(self):
         # type: () -> None
-        sender_email = "hamlet@zulip.com"
-        user_profile = get_user_profile_by_email(sender_email)
+        user_profile = self.example_user('hamlet')
         uri = upload_message_image(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
 
         base = '/user_uploads/'
@@ -985,8 +984,7 @@ class S3Test(ZulipTestCase):
         conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
         bucket = conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
 
-        sender_email = "hamlet@zulip.com"
-        user_profile = get_user_profile_by_email(sender_email)
+        user_profile = self.example_user('hamlet')
         uri = upload_message_image(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
 
         base = '/user_uploads/'
@@ -1009,8 +1007,7 @@ class S3Test(ZulipTestCase):
         conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
         conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
 
-        sender_email = "hamlet@zulip.com"
-        user_profile = get_user_profile_by_email(sender_email)
+        user_profile = self.example_user('hamlet')
         uri = upload_message_image(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
 
         path_id = re.sub('/user_uploads/', '', uri)
