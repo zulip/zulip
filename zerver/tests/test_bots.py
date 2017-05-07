@@ -73,7 +73,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         # type: () -> None
         self.login("hamlet@zulip.com")
         self.assert_num_bots_equal(0)
-        events = [] # type: List[Dict[str, Any]]
+        events = []  # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
             result = self.create_bot()
         self.assert_num_bots_equal(1)
@@ -191,13 +191,13 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         request_data = {
             'principals': '["iago@zulip.com"]'
         }
-        events = [] # type: List[Dict[str, Any]]
+        events = []  # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
             result = self.common_subscribe_to_streams("hamlet@zulip.com", ['Rome'], request_data)
             self.assert_json_success(result)
 
         msg_event = [e for e in events if e['event']['type'] == 'message']
-        self.assert_length(msg_event, 1) # Notification message event is sent.
+        self.assert_length(msg_event, 1)  # Notification message event is sent.
 
         # Create a bot.
         self.assert_num_bots_equal(0)
@@ -208,7 +208,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         bot_request_data = {
             'principals': '["hambot-bot@zulip.testserver"]'
         }
-        events_bot = [] # type: List[Dict[str, Any]]
+        events_bot = []  # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events_bot):
             result = self.common_subscribe_to_streams("hamlet@zulip.com", ['Rome'], bot_request_data)
             self.assert_json_success(result)
@@ -230,7 +230,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         do_change_stream_invite_only(stream, True)
 
         self.assert_num_bots_equal(0)
-        events = [] # type: List[Dict[str, Any]]
+        events = []  # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
             result = self.create_bot(default_sending_stream='Denmark')
         self.assert_num_bots_equal(1)
@@ -294,7 +294,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         do_change_stream_invite_only(stream, True)
 
         self.assert_num_bots_equal(0)
-        events = [] # type: List[Dict[str, Any]]
+        events = []  # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
             result = self.create_bot(default_events_register_stream='Denmark')
         self.assert_num_bots_equal(1)
