@@ -10,12 +10,12 @@ def get_remote_server_by_uuid(uuid):
     return RemoteZulipServer.objects.get(uuid=uuid)
 
 class RemoteZulipServer(models.Model):
-    uuid = models.CharField(max_length=36, unique=True) # type: Text
-    api_key = models.CharField(max_length=64) # type: Text
+    uuid = models.CharField(max_length=36, unique=True)  # type: Text
+    api_key = models.CharField(max_length=64)  # type: Text
 
-    hostname = models.CharField(max_length=128, unique=True) # type: Text
-    contact_email = models.EmailField(blank=True, null=False) # type: Text
-    last_updated = models.DateTimeField('last updated') # type: datetime.datetime
+    hostname = models.CharField(max_length=128, unique=True)  # type: Text
+    contact_email = models.EmailField(blank=True, null=False)  # type: Text
+    last_updated = models.DateTimeField('last updated')  # type: datetime.datetime
 
 # Variant of PushDeviceToken for a remote server.
 class RemotePushDeviceToken(zerver.models.AbstractPushDeviceToken):
@@ -25,15 +25,15 @@ class RemotePushDeviceToken(zerver.models.AbstractPushDeviceToken):
 
 class Deployment(models.Model):
     realms = models.ManyToManyField(zerver.models.Realm,
-                                    related_name="_deployments") # type: Manager
-    is_active = models.BooleanField(default=True) # type: bool
+                                    related_name="_deployments")  # type: Manager
+    is_active = models.BooleanField(default=True)  # type: bool
 
     # TODO: This should really become the public portion of a keypair, and
     # it should be settable only with an initial bearer "activation key"
-    api_key = models.CharField(max_length=32, null=True) # type: Text
+    api_key = models.CharField(max_length=32, null=True)  # type: Text
 
-    base_api_url = models.CharField(max_length=128) # type: Text
-    base_site_url = models.CharField(max_length=128) # type: Text
+    base_api_url = models.CharField(max_length=128)  # type: Text
+    base_site_url = models.CharField(max_length=128)  # type: Text
 
     @property
     def endpoints(self):
