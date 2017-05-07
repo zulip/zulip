@@ -155,8 +155,8 @@ class DecoratorTestCase(TestCase):
             return sum(numbers)
 
         class Request(object):
-            GET = {} # type: Dict[str, str]
-            POST = {} # type: Dict[str, str]
+            GET = {}  # type: Dict[str, str]
+            POST = {}  # type: Dict[str, str]
 
         request = Request()
 
@@ -185,7 +185,7 @@ class DecoratorTestCase(TestCase):
             return payload
 
         class MockRequest(object):
-            body = {} # type: Any
+            body = {}  # type: Any
 
         request = MockRequest()
 
@@ -213,9 +213,9 @@ class DecoratorTestCase(TestCase):
             return user_profile.email
 
         class Request(HostRequestMock):
-            GET = {} # type: Dict[str, str]
-            POST = {} # type: Dict[str, str]
-            COOKIES = {} # type: Dict[str, str]
+            GET = {}  # type: Dict[str, str]
+            POST = {}  # type: Dict[str, str]
+            COOKIES = {}  # type: Dict[str, str]
             META = {'PATH_INFO': ''}
 
         webhook_bot_email = 'webhook-bot@zulip.com'
@@ -351,7 +351,7 @@ class RateLimitTestCase(TestCase):
         class Request(object):
             client = Client()
             META = {'REMOTE_ADDR': '3.3.3.3'}
-            user = 'stub' # any non-None value here exercises the correct code path
+            user = 'stub'  # any non-None value here exercises the correct code path
 
         req = Request()
 
@@ -376,7 +376,7 @@ class RateLimitTestCase(TestCase):
         class Request(object):
             client = Client()
             META = {'REMOTE_ADDR': '3.3.3.3'}
-            user = 'stub' # any non-None value here exercises the correct code path
+            user = 'stub'  # any non-None value here exercises the correct code path
 
         req = Request()
 
@@ -396,7 +396,7 @@ class RateLimitTestCase(TestCase):
 class ValidatorTestCase(TestCase):
     def test_check_string(self):
         # type: () -> None
-        x = "hello" # type: Any
+        x = "hello"  # type: Any
         self.assertEqual(check_string('x', x), None)
 
         x = 4
@@ -404,7 +404,7 @@ class ValidatorTestCase(TestCase):
 
     def test_check_bool(self):
         # type: () -> None
-        x = True # type: Any
+        x = True  # type: Any
         self.assertEqual(check_bool('x', x), None)
 
         x = 4
@@ -412,7 +412,7 @@ class ValidatorTestCase(TestCase):
 
     def test_check_int(self):
         # type: () -> None
-        x = 5 # type: Any
+        x = 5  # type: Any
         self.assertEqual(check_int('x', x), None)
 
         x = [{}]
@@ -420,7 +420,7 @@ class ValidatorTestCase(TestCase):
 
     def test_check_float(self):
         # type: () -> None
-        x = 5.5 # type: Any
+        x = 5.5  # type: Any
         self.assertEqual(check_float('x', x), None)
 
         x = 5
@@ -431,7 +431,7 @@ class ValidatorTestCase(TestCase):
 
     def test_check_list(self):
         # type: () -> None
-        x = 999 # type: Any
+        x = 999  # type: Any
         error = check_list(check_string)('x', x)
         self.assertEqual(error, 'x is not a list')
 
@@ -452,12 +452,12 @@ class ValidatorTestCase(TestCase):
         keys = [
             ('names', check_list(check_string)),
             ('city', check_string),
-        ] # type: List[Tuple[str, Validator]]
+        ]  # type: List[Tuple[str, Validator]]
 
         x = {
             'names': ['alice', 'bob'],
             'city': 'Boston',
-        } # type: Any
+        }  # type: Any
         error = check_dict(keys)('x', x)
         self.assertEqual(error, None)
 
@@ -521,7 +521,7 @@ class ValidatorTestCase(TestCase):
 
     def test_check_variable_type(self):
         # type: () -> None
-        x = 5 # type: Any
+        x = 5  # type: Any
         self.assertEqual(check_variable_type([check_string, check_int])('x', x), None)
 
         x = 'x'
@@ -532,13 +532,13 @@ class ValidatorTestCase(TestCase):
 
     def test_equals(self):
         # type: () -> None
-        x = 5 # type: Any
+        x = 5  # type: Any
         self.assertEqual(equals(5)('x', x), None)
         self.assertEqual(equals(6)('x', x), 'x != 6 (5 is wrong)')
 
     def test_check_none_or(self):
         # type: () -> None
-        x = 5 # type: Any
+        x = 5  # type: Any
         self.assertEqual(check_none_or(check_int)('x', x), None)
         x = None
         self.assertEqual(check_none_or(check_int)('x', x), None)
