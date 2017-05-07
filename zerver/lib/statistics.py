@@ -83,7 +83,7 @@ def users_active_nosend_during_day(day):
     active_users = active_users_to_measure()
     today_senders = users_who_sent_between(begin_day, end_day)
 
-    today_users = [] # type: List[UserProfile]
+    today_users = []  # type: List[UserProfile]
     for user_profile in active_users:
         intervals = UserActivityInterval.objects.filter(user_profile=user_profile,
                                                         end__gte=begin_day,
