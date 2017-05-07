@@ -31,7 +31,7 @@ if False:
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = [] # type: List[str]
+extensions = []  # type: List[str]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -61,7 +61,7 @@ release = '1.4.0'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None # type: Optional[str]
+language = None  # type: Optional[str]
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
@@ -210,7 +210,7 @@ def setup(app):
     # type: (Any) -> None
 
     # overrides for wide tables in RTD theme
-    app.add_stylesheet('theme_overrides.css')   # path relative to _static
+    app.add_stylesheet('theme_overrides.css')  # path relative to _static
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -226,7 +226,7 @@ latex_elements = {
 
     # Latex figure (float) alignment
     #'figure_align': 'htbp',
-} # type: Dict[str, str]
+}  # type: Dict[str, str]
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
