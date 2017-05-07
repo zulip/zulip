@@ -257,7 +257,7 @@ class Client(object):
         self.client_name = client
 
         if insecure:
-            self.tls_verification = False # type: Union[bool, str]
+            self.tls_verification = False  # type: Union[bool, str]
         elif cert_bundle is not None:
             if not os.path.isfile(cert_bundle):
                 raise RuntimeError("tls bundle '%s' does not exist"
@@ -271,7 +271,7 @@ class Client(object):
             if client_cert_key is not None:
                 raise RuntimeError("client cert key '%s' specified, but no client cert public part provided"
                                    % (client_cert_key,))
-        else: # we have a client cert
+        else:  # we have a client cert
             if not os.path.isfile(client_cert):
                 raise RuntimeError("client cert '%s' does not exist"
                                    % (client_cert,))
@@ -328,7 +328,7 @@ class Client(object):
             'had_error_retry': False,
             'request': request,
             'failures': 0,
-        } # type: Dict[str, Any]
+        }  # type: Dict[str, Any]
 
         def error_retry(error_string):
             # type: (str) -> bool
@@ -369,7 +369,7 @@ class Client(object):
 
                 # Build a client cert object for requests
                 if self.client_cert_key is not None:
-                    client_cert = (self.client_cert, self.client_cert_key) # type: Union[str, Tuple[str, str]]
+                    client_cert = (self.client_cert, self.client_cert_key)  # type: Union[str, Tuple[str, str]]
                 else:
                     client_cert = self.client_cert
 
