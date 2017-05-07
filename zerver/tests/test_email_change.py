@@ -133,9 +133,9 @@ class EmailChangeTestCase(ZulipTestCase):
     def test_unauthorized_email_change(self):
         # type: () -> None
         data = {'email': 'hamlet-new@zulip.com'}
-        email = 'hamlet@zulip.com'
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
         self.login(email)
-        user_profile = get_user_profile_by_email(email)
         do_set_realm_property(user_profile.realm, 'email_changes_disabled', True)
         url = '/json/settings/change'
         result = self.client_post(url, data)
@@ -147,7 +147,8 @@ class EmailChangeTestCase(ZulipTestCase):
     def test_unauthorized_email_change_from_email_confirmation_link(self):
         # type: () -> None
         data = {'email': 'hamlet-new@zulip.com'}
-        email = 'hamlet@zulip.com'
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
         self.login(email)
         url = '/json/settings/change'
         self.assertEqual(len(mail.outbox), 0)
@@ -162,7 +163,6 @@ class EmailChangeTestCase(ZulipTestCase):
         body = email_message.body
         self.assertIn('We received a request to change the email', body)
 
-        user_profile = get_user_profile_by_email(email)
         do_set_realm_property(user_profile.realm, 'email_changes_disabled', True)
 
         activation_url = [s for s in body.split('\n') if s][4]

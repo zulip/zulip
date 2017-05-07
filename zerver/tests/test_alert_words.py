@@ -50,11 +50,8 @@ class AlertWordTests(ZulipTestCase):
         """
         Users start out with no alert words.
         """
-        email = "cordelia@zulip.com"
-        user = get_user_profile_by_email(email)
-
+        user = self.example_user('cordelia')
         words = user_alert_words(user)
-
         self.assertEqual(words, [])
 
     def test_add_word(self):
@@ -62,8 +59,7 @@ class AlertWordTests(ZulipTestCase):
         """
         add_user_alert_words can add multiple alert words at once.
         """
-        email = "cordelia@zulip.com"
-        user = get_user_profile_by_email(email)
+        user = self.example_user('cordelia')
 
         # Add several words, including multi-word and non-ascii words.
         add_user_alert_words(user, self.interesting_alert_word_list)
@@ -77,8 +73,7 @@ class AlertWordTests(ZulipTestCase):
         Removing alert words works via remove_user_alert_words, even
         for multi-word and non-ascii words.
         """
-        email = "cordelia@zulip.com"
-        user = get_user_profile_by_email(email)
+        user = self.example_user('cordelia')
 
         add_user_alert_words(user, self.interesting_alert_word_list)
 

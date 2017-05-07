@@ -164,8 +164,8 @@ class TemplateTestCase(ZulipTestCase):
             context.
 
         """
-        email = "hamlet@zulip.com"
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
 
         context = dict(
             article="zerver/help/index.md",

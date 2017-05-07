@@ -149,8 +149,8 @@ class PushBouncerNotificationTest(ZulipTestCase):
         push notification bouncer flow
         """
         mock.side_effect = self.bounce_request
-        email = "cordelia@zulip.com"
-        user = get_user_profile_by_email(email)
+        user = self.example_user('cordelia')
+        email = user.email
         self.login(email)
         server = RemoteZulipServer.objects.get(uuid=self.server_uuid)
 
@@ -295,8 +295,8 @@ class ResponseListenerTest(PushNotificationTest):
 class TestPushApi(ZulipTestCase):
     def test_push_api(self):
         # type: () -> None
-        email = "cordelia@zulip.com"
-        user = get_user_profile_by_email(email)
+        user = self.example_user('cordelia')
+        email = user.email
         self.login(email)
 
         endpoints = [

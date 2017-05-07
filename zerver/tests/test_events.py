@@ -218,9 +218,9 @@ class GetEventsTest(ZulipTestCase):
 
     def test_get_events(self):
         # type: () -> None
-        email = "hamlet@zulip.com"
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
         recipient_email = "othello@zulip.com"
-        user_profile = get_user_profile_by_email(email)
         recipient_user_profile = get_user_profile_by_email(recipient_email)
         self.login(email)
 
@@ -308,8 +308,8 @@ class GetEventsTest(ZulipTestCase):
 
     def test_get_events_narrow(self):
         # type: () -> None
-        email = "hamlet@zulip.com"
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
         self.login(email)
 
         result = self.tornado_call(get_events_backend, user_profile,
@@ -1608,8 +1608,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
     # Non-admin users don't have access to all bots
     def test_realm_bots_non_admin(self):
         # type: () -> None
-        email = 'cordelia@zulip.com'
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.example_user('cordelia')
         self.assertFalse(user_profile.is_realm_admin)
         result = fetch_initial_state_data(user_profile, None, "")
         self.assert_length(result['realm_bots'], 0)
@@ -1621,8 +1620,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
     # Admin users have access to all bots in the realm_bots field
     def test_realm_bots_admin(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.example_user('hamlet')
         do_change_is_admin(user_profile, True)
         self.assertTrue(user_profile.is_realm_admin)
         result = fetch_initial_state_data(user_profile, None, "")
