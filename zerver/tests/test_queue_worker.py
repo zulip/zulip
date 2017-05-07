@@ -20,8 +20,8 @@ class WorkerTest(TestCase):
     class FakeClient(object):
         def __init__(self):
             # type: () -> None
-            self.consumers = {} # type: Dict[str, Callable]
-            self.queue = [] # type: List[Tuple[str, Dict[str, Any]]]
+            self.consumers = {}  # type: Dict[str, Callable]
+            self.queue = []  # type: List[Tuple[str, Dict[str, Any]]]
 
         def register_json_consumer(self, queue_name, callback):
             # type: (str, Callable) -> None
