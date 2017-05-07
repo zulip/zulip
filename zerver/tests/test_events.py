@@ -220,8 +220,8 @@ class GetEventsTest(ZulipTestCase):
         # type: () -> None
         user_profile = self.example_user('hamlet')
         email = user_profile.email
-        recipient_email = "othello@zulip.com"
-        recipient_user_profile = get_user_profile_by_email(recipient_email)
+        recipient_user_profile = self.example_user('othello')
+        recipient_email = recipient_user_profile.email
         self.login(email)
 
         result = self.tornado_call(get_events_backend, user_profile,
@@ -1769,11 +1769,11 @@ class EventQueueTest(TestCase):
                            'type': 'unknown',
                            "timestamp": "1"}])
 
-class TestEventsRegisterAllPublicStreamsDefaults(TestCase):
+class TestEventsRegisterAllPublicStreamsDefaults(ZulipTestCase):
     def setUp(self):
         # type: () -> None
-        self.email = 'hamlet@zulip.com'
-        self.user_profile = get_user_profile_by_email(self.email)
+        self.user_profile = self.example_user('hamlet')
+        self.email = self.user_profile.email
 
     def test_use_passed_all_public_true_default_false(self):
         # type: () -> None
@@ -1817,11 +1817,11 @@ class TestEventsRegisterAllPublicStreamsDefaults(TestCase):
         result = _default_all_public_streams(self.user_profile, None)
         self.assertFalse(result)
 
-class TestEventsRegisterNarrowDefaults(TestCase):
+class TestEventsRegisterNarrowDefaults(ZulipTestCase):
     def setUp(self):
         # type: () -> None
-        self.email = 'hamlet@zulip.com'
-        self.user_profile = get_user_profile_by_email(self.email)
+        self.user_profile = self.example_user('hamlet')
+        self.email = self.user_profile.email
         self.stream = get_stream('Verona', self.user_profile.realm)
 
     def test_use_passed_narrow_no_default(self):

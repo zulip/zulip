@@ -58,10 +58,10 @@ class EmailChangeTestCase(ZulipTestCase):
 
     def test_confirm_email_change_when_time_exceeded(self):
         # type: () -> None
-        old_email = 'hamlet@zulip.com'
+        user_profile = self.example_user('hamlet')
+        old_email = user_profile.email
         new_email = 'hamlet-new@zulip.com'
         self.login('hamlet@zulip.com')
-        user_profile = get_user_profile_by_email(old_email)
         obj = EmailChangeStatus.objects.create(new_email=new_email,
                                                old_email=old_email,
                                                user_profile=user_profile,
@@ -77,10 +77,10 @@ class EmailChangeTestCase(ZulipTestCase):
 
     def test_confirm_email_change(self):
         # type: () -> None
-        old_email = 'hamlet@zulip.com'
+        user_profile = self.example_user('hamlet')
+        old_email = user_profile.email
         new_email = 'hamlet-new@zulip.com'
         self.login('hamlet@zulip.com')
-        user_profile = get_user_profile_by_email(old_email)
         obj = EmailChangeStatus.objects.create(new_email=new_email,
                                                old_email=old_email,
                                                user_profile=user_profile,

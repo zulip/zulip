@@ -173,9 +173,9 @@ class AdminCreateUserTest(ZulipTestCase):
         # conditions, and it also does a basic test of the success
         # path.
 
-        admin_email = 'hamlet@zulip.com'
+        admin = self.example_user('hamlet')
+        admin_email = admin.email
         self.login(admin_email)
-        admin = get_user_profile_by_email(admin_email)
         do_change_is_admin(admin, True)
 
         result = self.client_post("/json/users", dict())

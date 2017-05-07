@@ -411,11 +411,11 @@ class SocialAuthMixinTest(ZulipTestCase):
 class GitHubAuthBackendTest(ZulipTestCase):
     def setUp(self):
         # type: () -> None
-        self.email = 'hamlet@zulip.com'
+        self.user_profile = self.example_user('hamlet')
+        self.email = self.user_profile.email
         self.name = 'Hamlet'
         self.backend = GitHubAuthBackend()
         self.backend.strategy = DjangoStrategy(storage=BaseDjangoStorage())
-        self.user_profile = get_user_profile_by_email(self.email)
         self.user_profile.backend = self.backend
 
         rf = RequestFactory()
@@ -1057,8 +1057,8 @@ class GoogleLoginTest(GoogleOAuthTest):
 class FetchAPIKeyTest(ZulipTestCase):
     def setUp(self):
         # type: () -> None
-        self.email = "hamlet@zulip.com"
-        self.user_profile = get_user_profile_by_email(self.email)
+        self.user_profile = self.example_user('hamlet')
+        self.email = self.user_profile.email
 
     def test_success(self):
         # type: () -> None
@@ -1172,8 +1172,8 @@ class FetchAPIKeyTest(ZulipTestCase):
 class DevFetchAPIKeyTest(ZulipTestCase):
     def setUp(self):
         # type: () -> None
-        self.email = "hamlet@zulip.com"
-        self.user_profile = get_user_profile_by_email(self.email)
+        self.user_profile = self.example_user('hamlet')
+        self.email = self.user_profile.email
 
     def test_success(self):
         # type: () -> None

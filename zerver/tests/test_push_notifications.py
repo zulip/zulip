@@ -215,14 +215,13 @@ class PushBouncerNotificationTest(ZulipTestCase):
         # Auth on this user
         return self.api_auth(self.server_uuid)
 
-class PushNotificationTest(TestCase):
+class PushNotificationTest(ZulipTestCase):
     def setUp(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
+        self.user_profile = self.example_user('hamlet')
         apn.connection = apn.get_connection('fake-cert', 'fake-key')
         self.redis_client = apn.redis_client = MockRedis()  # type: ignore
         apn.dbx_connection = apn.get_connection('fake-cert', 'fake-key')
-        self.user_profile = get_user_profile_by_email(email)
         self.tokens = [u'aaaa', u'bbbb']
         for token in self.tokens:
             PushDeviceToken.objects.create(
@@ -560,8 +559,7 @@ class GCMFailureTest(GCMTest):
 class TestReceivesNotificationsFunctions(ZulipTestCase):
     def setUp(self):
         # type: () -> None
-        email = "cordelia@zulip.com"
-        self.user = get_user_profile_by_email(email)
+        self.user = self.example_user('cordelia')
 
     def test_receivers_online_notifications_when_user_is_a_bot(self):
         # type: () -> None
