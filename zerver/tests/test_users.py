@@ -88,7 +88,7 @@ class PermissionTest(ZulipTestCase):
         # Giveth
         req = dict(is_admin=ujson.dumps(True))
 
-        events = [] # type: List[Dict[str, Any]]
+        events = []  # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
             result = self.client_patch('/json/users/othello@zulip.com', req)
         self.assert_json_success(result)
@@ -419,7 +419,7 @@ class GetProfileTest(ZulipTestCase):
 
         self.common_update_pointer("hamlet@zulip.com", id1)
         json = self.common_get_profile("hamlet@zulip.com")
-        self.assertEqual(json["pointer"], id2) # pointer does not move backwards
+        self.assertEqual(json["pointer"], id2)  # pointer does not move backwards
 
         result = self.client_post("/json/users/me/pointer", {"pointer": 99999999})
         self.assert_json_error(result, "Invalid message ID")
