@@ -24,7 +24,7 @@ from zerver.tornado.descriptors import get_descriptor_by_handler_id
 from typing import Any, Callable, Dict, List
 
 current_handler_id = 0
-handlers = {} # type: Dict[int, AsyncDjangoHandler]
+handlers = {}  # type: Dict[int, AsyncDjangoHandler]
 
 def get_handler_by_id(handler_id):
     # type: (int) -> AsyncDjangoHandler
