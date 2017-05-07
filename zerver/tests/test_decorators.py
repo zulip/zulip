@@ -588,9 +588,9 @@ class DeactivatedRealmTest(ZulipTestCase):
 
         """
         realm = get_realm("zulip")
-        email = "hamlet@zulip.com"
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
         test_password = "abcd1234"
-        user_profile = get_user_profile_by_email(email)
         user_profile.set_password(test_password)
 
         self.login(email)
@@ -630,8 +630,8 @@ class LoginRequiredTest(ZulipTestCase):
         """
         Verifies the zulip_login_required decorator blocks deactivated users.
         """
-        email = "hamlet@zulip.com"
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
 
         # Verify fails if logged-out
         result = self.client_get('/accounts/accept_terms/')
@@ -684,8 +684,8 @@ class InactiveUserTest(ZulipTestCase):
         rest_dispatch rejects requests from deactivated users, both /json and api
 
         """
-        email = "hamlet@zulip.com"
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
         self.login(email)
         do_deactivate_user(user_profile)
 
@@ -720,8 +720,8 @@ class InactiveUserTest(ZulipTestCase):
         authenticated_json_view views fail with a deactivated user
 
         """
-        email = "hamlet@zulip.com"
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
         test_password = "abcd1234"
         user_profile.set_password(test_password)
         user_profile.save()
@@ -738,8 +738,7 @@ class InactiveUserTest(ZulipTestCase):
         logging in fails with an inactive user
 
         """
-        email = "hamlet@zulip.com"
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.example_user('hamlet')
         do_deactivate_user(user_profile)
 
         result = self.login_with_return("hamlet@zulip.com")
@@ -751,8 +750,8 @@ class InactiveUserTest(ZulipTestCase):
         Deactivated users can't use webhooks
 
         """
-        email = "hamlet@zulip.com"
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
         do_deactivate_user(user_profile)
 
         api_key = self.get_api_key(email)

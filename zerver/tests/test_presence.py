@@ -65,8 +65,8 @@ class UserPresenceModelTests(ZulipTestCase):
         # type: () -> None
         UserPresence.objects.all().delete()
 
-        email = "hamlet@zulip.com"
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
         presence_dct = UserPresence.get_status_dict_by_realm(user_profile.realm_id)
         self.assertEqual(len(presence_dct), 0)
 

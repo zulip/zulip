@@ -221,11 +221,11 @@ class HomeTest(ZulipTestCase):
 
     def test_terms_of_service(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
+        user = self.example_user('hamlet')
+        email = user.email
         self.login(email)
 
         for user_tos_version in [None, '1.1', '2.0.3.4']:
-            user = get_user_profile_by_email(email)
             user.tos_version = user_tos_version
             user.save()
 
@@ -240,10 +240,10 @@ class HomeTest(ZulipTestCase):
 
     def test_terms_of_service_first_time_template(self):
         # type: () -> None
-        email = "hamlet@zulip.com"
+        user = self.example_user('hamlet')
+        email = user.email
         self.login(email)
 
-        user = get_user_profile_by_email(email)
         user.tos_version = None
         user.save()
 
@@ -279,8 +279,8 @@ class HomeTest(ZulipTestCase):
 
     def test_bad_pointer(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
         user_profile.pointer = 999999
         user_profile.save()
 
@@ -359,8 +359,8 @@ class HomeTest(ZulipTestCase):
 
     def test_invites_by_admins_only(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
 
         realm = user_profile.realm
         realm.invite_by_admins_only = True

@@ -60,11 +60,11 @@ class TopicHistoryTest(ZulipTestCase):
     def test_topics_history(self):
         # type: () -> None
         # verified: int(UserMessage.flags.read) == 1
-        email = 'iago@zulip.com'
+        user_profile = self.example_user('iago')
+        email = user_profile.email
         stream_name = 'Verona'
         self.login(email)
 
-        user_profile = get_user_profile_by_email(email)
         stream = get_stream(stream_name, user_profile.realm)
         recipient = get_recipient(Recipient.STREAM, stream.id)
 
@@ -504,8 +504,8 @@ class StreamMessagesTest(ZulipTestCase):
     def test_stream_message_mirroring(self):
         # type: () -> None
         from zerver.lib.actions import do_change_is_admin
-        email = "iago@zulip.com"
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.example_user('iago')
+        email = user_profile.email
 
         do_change_is_admin(user_profile, True, 'api_super_user')
         result = self.client_post("/api/v1/messages", {"type": "stream",
@@ -772,8 +772,8 @@ class MessagePOSTTest(ZulipTestCase):
         Sending messages without a to field should be sent to the default
         stream for the user_profile.
         """
-        email = "hamlet@zulip.com"
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
         user_profile.default_sending_stream = get_stream('Verona', user_profile.realm)
         user_profile.save()
         result = self.client_post("/api/v1/messages", {"type": "stream",

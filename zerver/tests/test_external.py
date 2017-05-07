@@ -78,8 +78,8 @@ class RateLimitTests(ZulipTestCase):
 
     def test_headers(self):
         # type: () -> None
-        email = "hamlet@zulip.com"
-        user = get_user_profile_by_email(email)
+        user = self.example_user('hamlet')
+        email = user.email
         clear_user_history(user)
 
         result = self.send_api_message(email, "some stuff")
@@ -89,8 +89,8 @@ class RateLimitTests(ZulipTestCase):
 
     def test_ratelimit_decrease(self):
         # type: () -> None
-        email = "hamlet@zulip.com"
-        user = get_user_profile_by_email(email)
+        user = self.example_user('hamlet')
+        email = user.email
         clear_user_history(user)
         result = self.send_api_message(email, "some stuff")
         limit = int(result['X-RateLimit-Remaining'])
@@ -101,8 +101,8 @@ class RateLimitTests(ZulipTestCase):
 
     def test_hit_ratelimits(self):
         # type: () -> None
-        email = "cordelia@zulip.com"
-        user = get_user_profile_by_email(email)
+        user = self.example_user('cordelia')
+        email = user.email
         clear_user_history(user)
 
         start_time = time.time()

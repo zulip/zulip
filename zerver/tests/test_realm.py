@@ -106,9 +106,9 @@ class RealmTest(ZulipTestCase):
         # type: () -> None
         new_name = 'Mice will play while the cat is away'
 
-        email = 'othello@zulip.com'
+        user_profile = self.example_user('othello')
+        email = user_profile.email
         self.login(email)
-        user_profile = get_user_profile_by_email(email)
         do_change_is_admin(user_profile, False)
 
         req = dict(name=ujson.dumps(new_name))
@@ -118,9 +118,9 @@ class RealmTest(ZulipTestCase):
     def test_unauthorized_name_change(self):
         # type: () -> None
         data = {'full_name': 'Sir Hamlet'}
-        email = 'hamlet@zulip.com'
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
         self.login(email)
-        user_profile = get_user_profile_by_email(email)
         do_set_realm_property(user_profile.realm, 'name_changes_disabled', True)
         url = '/json/settings/change'
         result = self.client_post(url, data)
@@ -171,9 +171,9 @@ class RealmAPITest(ZulipTestCase):
 
     def setUp(self):
         # type: () -> None
-        email = 'cordelia@zulip.com'
+        user_profile = self.example_user('cordelia')
+        email = user_profile.email
         self.login(email)
-        user_profile = get_user_profile_by_email(email)
         do_change_is_admin(user_profile, True)
 
     def set_up_db(self, attr, value):
