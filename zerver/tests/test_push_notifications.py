@@ -136,7 +136,7 @@ class PushBouncerNotificationTest(ZulipTestCase):
             self.assertEqual(len(remote_tokens), token_count)
 
             # Try adding/removing tokens that are too big...
-            broken_token = "x" * 5000 # too big
+            broken_token = "x" * 5000  # too big
             payload['token'] = broken_token
             result = self.client_post(endpoint, payload, **self.get_auth())
             self.assert_json_error(result, 'Empty or invalid length token')
@@ -162,7 +162,7 @@ class PushBouncerNotificationTest(ZulipTestCase):
         # Test error handling
         for endpoint, _ in endpoints:
             # Try adding/removing tokens that are too big...
-            broken_token = "x" * 5000 # too big
+            broken_token = "x" * 5000  # too big
             result = self.client_post(endpoint, {'token': broken_token})
             self.assert_json_error(result, 'Empty or invalid length token')
 
@@ -307,7 +307,7 @@ class TestPushApi(ZulipTestCase):
         # Test error handling
         for endpoint, _ in endpoints:
             # Try adding/removing tokens that are too big...
-            broken_token = "x" * 5000 # too big
+            broken_token = "x" * 5000  # too big
             result = self.client_post(endpoint, {'token': broken_token})
             self.assert_json_error(result, 'Empty or invalid length token')
 
