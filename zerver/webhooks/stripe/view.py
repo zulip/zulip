@@ -78,8 +78,8 @@ def api_stripe_webhook(request, user_profile,
                     body_template = "The customer subscription with id **[{id}]({link})** was deleted."
                     body = body_template.format(id=object_id, link=link)
 
-                else: # customer.subscription.trial_will_end
-                    DAY = 60 * 60 * 24 # seconds in a day
+                else:  # customer.subscription.trial_will_end
+                    DAY = 60 * 60 * 24  # seconds in a day
                     # days_left should always be three according to
                     # https://stripe.com/docs/api/python#event_types, but do the
                     # computation just to be safe.
