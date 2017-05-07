@@ -134,13 +134,13 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
         markdown.preprocessors.Preprocessor.__init__(self, md)
 
         self.checked_for_codehilite = False
-        self.codehilite_conf = {} # type: Dict[str, List[Any]]
+        self.codehilite_conf = {}  # type: Dict[str, List[Any]]
 
     def run(self, lines):
         # type: (Iterable[Text]) -> List[Text]
         """ Match and store Fenced Code Blocks in the HtmlStash. """
 
-        output = [] # type: List[Text]
+        output = []  # type: List[Text]
 
         class BaseHandler(object):
             def handle_line(self, line):
@@ -152,7 +152,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
                 raise NotImplementedError()
 
         processor = self
-        handlers = [] # type: List[BaseHandler]
+        handlers = []  # type: List[BaseHandler]
 
         def push(handler):
             # type: (BaseHandler) -> None
@@ -201,7 +201,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
                 self.output = output
                 self.fence = fence
                 self.lang = lang
-                self.lines = [] # type: List[Text]
+                self.lines = []  # type: List[Text]
 
             def handle_line(self, line):
                 # type: (Text) -> None
@@ -226,7 +226,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
                 # type: (MutableSequence[Text], Text) -> None
                 self.output = output
                 self.fence = fence
-                self.lines = [] # type: List[Text]
+                self.lines = []  # type: List[Text]
 
             def handle_line(self, line):
                 # type: (Text) -> None
@@ -250,7 +250,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
                 # type: (MutableSequence[Text], Text) -> None
                 self.output = output
                 self.fence = fence
-                self.lines = [] # type: List[Text]
+                self.lines = []  # type: List[Text]
 
             def handle_line(self, line):
                 # type: (Text) -> None
