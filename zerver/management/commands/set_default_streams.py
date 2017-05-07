@@ -57,6 +57,6 @@ set of streams (which can be empty, with `--streams=`).", file=sys.stderr)
         stream_dict = {
             stream.strip(): {"description": stream.strip(), "invite_only": False}
             for stream in options["streams"].split(",")
-        } # type: Dict[Text, Dict[Text, Any]]
+        }  # type: Dict[Text, Dict[Text, Any]]
         realm = get_realm(options["string_id"])
         set_default_streams(realm, stream_dict)
