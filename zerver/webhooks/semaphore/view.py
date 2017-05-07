@@ -55,7 +55,7 @@ def api_semaphore_webhook(request, user_profile,
         content = u"[deploy %s](%s) of [build %s](%s) on server %s: %s\n" % \
                   (deploy_number, deploy_url, build_number, build_url, server_name, result)
 
-    else: # should never get here
+    else:  # should never get here
         content = u"%s: %s\n" % (event, result)
 
     content += "!avatar(%s) [`%s`](%s): %s" % (author_email, commit_id[:7],
