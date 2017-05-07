@@ -11,9 +11,9 @@ EdgeSet = Set[Edge]
 class Graph(object):
     def __init__(self, tuples):
         # type: (EdgeSet) -> None
-        self.children = defaultdict(list) # type: DefaultDict[str, List[str]]
-        self.parents = defaultdict(list) # type: DefaultDict[str, List[str]]
-        self.nodes = set() # type: Set[str]
+        self.children = defaultdict(list)  # type: DefaultDict[str, List[str]]
+        self.parents = defaultdict(list)  # type: DefaultDict[str, List[str]]
+        self.nodes = set()  # type: Set[str]
 
         for parent, child in tuples:
             self.parents[child].append(parent)
@@ -47,7 +47,7 @@ class Graph(object):
         # type: () -> None
         still_work_to_do = True
         while still_work_to_do:
-            still_work_to_do = False # for now
+            still_work_to_do = False  # for now
             for node in self.nodes:
                 if self.is_exterior_node(node):
                     self.remove(node)
