@@ -55,13 +55,13 @@ def generate_support_stats():
     narrow = 'stream:support'
     count = 2000
     msgs = get_recent_messages(client, narrow, count)
-    msgs_by_topic = collections.defaultdict(list) # type: Dict[str, List[Dict[str, Any]]]
+    msgs_by_topic = collections.defaultdict(list)  # type: Dict[str, List[Dict[str, Any]]]
     for msg in msgs:
         topic = msg['subject']
         msgs_by_topic[topic].append(msg)
 
-    word_count = collections.defaultdict(int) # type: Dict[str, int]
-    email_count = collections.defaultdict(int) # type: Dict[str, int]
+    word_count = collections.defaultdict(int)  # type: Dict[str, int]
+    email_count = collections.defaultdict(int)  # type: Dict[str, int]
 
     if False:
         for topic in msgs_by_topic:
