@@ -28,7 +28,7 @@ class ParserTest(unittest.TestCase):
 
     def _assert_validate_error(self, error, fn=None, text=None, check_indent=True):
         # type: (str, Optional[str], Optional[str], bool) -> None
-        with self.assertRaisesRegex(TemplateParserException, error): # type: ignore # See https://github.com/python/typeshed/issues/372
+        with self.assertRaisesRegex(TemplateParserException, error):  # type: ignore # See https://github.com/python/typeshed/issues/372
             validate(fn=fn, text=text, check_indent=check_indent)
 
     def test_is_django_block_tag(self):
