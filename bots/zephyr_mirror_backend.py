@@ -30,7 +30,7 @@ from six.moves import range
 try:
     import simplejson
 except ImportError:
-    import json as simplejson # type: ignore
+    import json as simplejson  # type: ignore
 import re
 import time
 import subprocess
@@ -51,7 +51,7 @@ class States(object):
     Startup, ZulipToZephyr, ZephyrToZulip, ChildSending = list(range(4))
 CURRENT_STATE = States.Startup
 
-logger = None # type: logging.Logger
+logger = None  # type: logging.Logger
 
 def to_zulip_username(zephyr_username):
     # type: (str) -> str
@@ -1076,7 +1076,7 @@ if __name__ == "__main__":
     # The properties available on 'options' are dynamically
     # determined, so we have to treat it as an Any for type
     # annotations.
-    (options, args) = parse_args() # type: Any, List[str]
+    (options, args) = parse_args()  # type: Any, List[str]
 
     logger = open_logger()
     configure_logger(logger, "parent")
@@ -1164,7 +1164,7 @@ or specify the --api-key-file option.""" % (options.api_key_file,))))
         options.session_path = "/var/tmp/%s" % (options.user,)
 
     if options.forward_from_zulip:
-        child_pid = os.fork() # type: int
+        child_pid = os.fork()  # type: int
         if child_pid == 0:
             CURRENT_STATE = States.ZulipToZephyr
             # Run the zulip => zephyr mirror in the child
