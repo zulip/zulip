@@ -101,7 +101,7 @@ def get_or_create_key_prefix():
 
     return prefix
 
-KEY_PREFIX = get_or_create_key_prefix() # type: Text
+KEY_PREFIX = get_or_create_key_prefix()  # type: Text
 
 def bounce_key_prefix_for_testing(test_name):
     # type: (Text) -> None
@@ -247,18 +247,18 @@ def cache_delete_many(items, cache_name=None):
 #   value for cache (in case the values that we're caching are some
 #   function of the objects, not the objects themselves)
 ObjKT = TypeVar('ObjKT', int, Text)
-ItemT = Any # https://github.com/python/mypy/issues/1721
-CompressedItemT = Any # https://github.com/python/mypy/issues/1721
-def generic_bulk_cached_fetch(cache_key_function, # type: Callable[[ObjKT], Text]
-                              query_function, # type: Callable[[List[ObjKT]], Iterable[Any]]
-                              object_ids, # type: Iterable[ObjKT]
-                              extractor=lambda obj: obj, # type: Callable[[CompressedItemT], ItemT]
-                              setter=lambda obj: obj, # type: Callable[[ItemT], CompressedItemT]
-                              id_fetcher=lambda obj: obj.id, # type: Callable[[Any], ObjKT]
-                              cache_transformer=lambda obj: obj # type: Callable[[Any], ItemT]
+ItemT = Any  # https://github.com/python/mypy/issues/1721
+CompressedItemT = Any  # https://github.com/python/mypy/issues/1721
+def generic_bulk_cached_fetch(cache_key_function,  # type: Callable[[ObjKT], Text]
+                              query_function,  # type: Callable[[List[ObjKT]], Iterable[Any]]
+                              object_ids,  # type: Iterable[ObjKT]
+                              extractor=lambda obj: obj,  # type: Callable[[CompressedItemT], ItemT]
+                              setter=lambda obj: obj,  # type: Callable[[ItemT], CompressedItemT]
+                              id_fetcher=lambda obj: obj.id,  # type: Callable[[Any], ObjKT]
+                              cache_transformer=lambda obj: obj  # type: Callable[[Any], ItemT]
                               ):
     # type: (...) -> Dict[ObjKT, Any]
-    cache_keys = {} # type: Dict[ObjKT, Text]
+    cache_keys = {}  # type: Dict[ObjKT, Text]
     for object_id in object_ids:
         cache_keys[object_id] = cache_key_function(object_id)
     cached_objects = cache_get_many([cache_keys[object_id]
@@ -269,7 +269,7 @@ def generic_bulk_cached_fetch(cache_key_function, # type: Callable[[ObjKT], Text
                   cache_keys[object_id] not in cached_objects]
     db_objects = query_function(needed_ids)
 
-    items_for_remote_cache = {} # type: Dict[Text, Any]
+    items_for_remote_cache = {}  # type: Dict[Text, Any]
     for obj in db_objects:
         key = cache_keys[id_fetcher(obj)]
         item = cache_transformer(obj)
@@ -287,7 +287,7 @@ def cache(func):
        Uses a key based on the function's name, filename, and
        the repr() of its arguments."""
 
-    func_uniqifier = '%s-%s' % (func.__code__.co_filename, func.__name__) # type: ignore # https://github.com/python/mypy/issues/1923
+    func_uniqifier = '%s-%s' % (func.__code__.co_filename, func.__name__)  # type: ignore # https://github.com/python/mypy/issues/1923
 
     @wraps(func)
     def keyfunc(*args, **kwargs):
@@ -319,7 +319,7 @@ def user_profile_by_id_cache_key(user_profile_id):
 active_user_dict_fields = [
     'id', 'full_name', 'short_name', 'email',
     'avatar_source', 'avatar_version',
-    'is_realm_admin', 'is_bot', 'timezone'] # type: List[str]
+    'is_realm_admin', 'is_bot', 'timezone']  # type: List[str]
 
 def active_user_dicts_in_realm_cache_key(realm):
     # type: (Realm) -> Text
@@ -330,7 +330,7 @@ bot_dict_fields = ['id', 'full_name', 'short_name', 'email',
                    'default_events_register_stream__name',
                    'default_all_public_streams', 'api_key',
                    'bot_owner__email', 'avatar_source',
-                   'avatar_version'] # type: List[str]
+                   'avatar_version']  # type: List[str]
 
 def bot_dicts_in_realm_cache_key(realm):
     # type: (Realm) -> Text
