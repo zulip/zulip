@@ -51,7 +51,7 @@ def find_dict(lst, k, v):
 class PermissionTest(ZulipTestCase):
     def test_get_admin_users(self):
         # type: () -> None
-        user_profile = get_user_profile_by_email('hamlet@zulip.com')
+        user_profile = self.example_user('hamlet')
         do_change_is_admin(user_profile, False)
         admin_users = user_profile.realm.get_admin_users()
         self.assertFalse(user_profile in admin_users)
@@ -62,7 +62,7 @@ class PermissionTest(ZulipTestCase):
     def test_updating_non_existent_user(self):
         # type: () -> None
         self.login('hamlet@zulip.com')
-        admin = get_user_profile_by_email('hamlet@zulip.com')
+        admin = self.example_user('hamlet')
         do_change_is_admin(admin, True)
 
         result = self.client_patch('/json/users/nonexistentuser@zulip.com', {})
@@ -71,8 +71,8 @@ class PermissionTest(ZulipTestCase):
     def test_admin_api(self):
         # type: () -> None
         self.login('hamlet@zulip.com')
-        admin = get_user_profile_by_email('hamlet@zulip.com')
-        user = get_user_profile_by_email('othello@zulip.com')
+        admin = self.example_user('hamlet')
+        user = self.example_user('othello')
         realm = admin.realm
         do_change_is_admin(admin, True)
 
@@ -138,7 +138,7 @@ class PermissionTest(ZulipTestCase):
         req = dict(full_name=ujson.dumps(new_name))
         result = self.client_patch('/json/users/hamlet@zulip.com', req)
         self.assertTrue(result.status_code == 200)
-        hamlet = get_user_profile_by_email('hamlet@zulip.com')
+        hamlet = self.example_user('hamlet')
         self.assertEqual(hamlet.full_name, new_name)
 
     def test_non_admin_cannot_change_full_name(self):
@@ -238,11 +238,11 @@ class AdminCreateUserTest(ZulipTestCase):
         self.assert_json_error(result,
                                "Email 'romeo@zulip.net' already in use")
 
-class UserProfileTest(TestCase):
+class UserProfileTest(ZulipTestCase):
     def test_get_emails_from_user_ids(self):
         # type: () -> None
-        hamlet = get_user_profile_by_email('hamlet@zulip.com')
-        othello = get_user_profile_by_email('othello@zulip.com')
+        hamlet = self.example_user('hamlet')
+        othello = self.example_user('othello')
         dct = get_emails_from_user_ids([hamlet.id, othello.id])
         self.assertEqual(dct[hamlet.id], 'hamlet@zulip.com')
         self.assertEqual(dct[othello.id], 'othello@zulip.com')
@@ -250,7 +250,7 @@ class UserProfileTest(TestCase):
 class ActivateTest(ZulipTestCase):
     def test_basics(self):
         # type: () -> None
-        user = get_user_profile_by_email('hamlet@zulip.com')
+        user = self.example_user('hamlet')
         do_deactivate_user(user)
         self.assertFalse(user.is_active)
         do_reactivate_user(user)
@@ -258,21 +258,21 @@ class ActivateTest(ZulipTestCase):
 
     def test_api(self):
         # type: () -> None
-        admin = get_user_profile_by_email('othello@zulip.com')
+        admin = self.example_user('othello')
         do_change_is_admin(admin, True)
         self.login('othello@zulip.com')
 
-        user = get_user_profile_by_email('hamlet@zulip.com')
+        user = self.example_user('hamlet')
         self.assertTrue(user.is_active)
 
         result = self.client_delete('/json/users/hamlet@zulip.com')
         self.assert_json_success(result)
-        user = get_user_profile_by_email('hamlet@zulip.com')
+        user = self.example_user('hamlet')
         self.assertFalse(user.is_active)
 
         result = self.client_post('/json/users/hamlet@zulip.com/reactivate')
         self.assert_json_success(result)
-        user = get_user_profile_by_email('hamlet@zulip.com')
+        user = self.example_user('hamlet')
         self.assertTrue(user.is_active)
 
     def test_api_me_user(self):
@@ -294,7 +294,7 @@ class ActivateTest(ZulipTestCase):
 
     def test_api_with_nonexistent_user(self):
         # type: () -> None
-        admin = get_user_profile_by_email('othello@zulip.com')
+        admin = self.example_user('othello')
         do_change_is_admin(admin, True)
         self.login('othello@zulip.com')
 
@@ -318,7 +318,7 @@ class ActivateTest(ZulipTestCase):
 
     def test_api_with_insufficient_permissions(self):
         # type: () -> None
-        non_admin = get_user_profile_by_email('othello@zulip.com')
+        non_admin = self.example_user('othello')
         do_change_is_admin(non_admin, False)
         self.login('othello@zulip.com')
 
@@ -370,7 +370,7 @@ class GetProfileTest(ZulipTestCase):
         # type: () -> None
         with queries_captured() as queries:
             with simulated_empty_cache() as cache_queries:
-                user_profile = get_user_profile_by_email('hamlet@zulip.com')
+                user_profile = self.example_user('hamlet')
 
         self.assert_length(queries, 1)
         self.assert_length(cache_queries, 1)
@@ -426,7 +426,7 @@ class GetProfileTest(ZulipTestCase):
 
     def test_get_all_profiles_avatar_urls(self):
         # type: () -> None
-        user_profile = get_user_profile_by_email('hamlet@zulip.com')
+        user_profile = self.example_user('hamlet')
         result = self.client_get("/api/v1/users", **self.api_auth('hamlet@zulip.com'))
         self.assert_json_success(result)
         json = ujson.loads(result.content)

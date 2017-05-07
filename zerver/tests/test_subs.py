@@ -260,8 +260,8 @@ class StreamAdminTest(ZulipTestCase):
         # Should be just a description change event
         self.assert_length(events, 1)
 
-        cordelia = get_user_profile_by_email('cordelia@zulip.com')
-        prospero = get_user_profile_by_email('prospero@zulip.com')
+        cordelia = self.example_user('cordelia')
+        prospero = self.example_user('prospero')
 
         notified_user_ids = set(events[-1]['users'])
         self.assertIn(user_profile.id, notified_user_ids)
@@ -332,7 +332,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assertEqual(notified_user_ids, set(active_user_ids(realm)))
         self.assertIn(user_profile.id,
                       notified_user_ids)
-        self.assertIn(get_user_profile_by_email('prospero@zulip.com').id,
+        self.assertIn(self.example_user('prospero').id,
                       notified_user_ids)
 
         # Test case to handle unicode stream name change
@@ -421,7 +421,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assertEqual(notified_user_ids, set(active_user_ids(realm)))
         self.assertIn(user_profile.id,
                       notified_user_ids)
-        self.assertIn(get_user_profile_by_email('prospero@zulip.com').id,
+        self.assertIn(self.example_user('prospero').id,
                       notified_user_ids)
 
         self.assertEqual('Test description', stream.description)
@@ -780,7 +780,7 @@ class DefaultStreamTest(ZulipTestCase):
     def test_api_calls(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
-        user_profile = get_user_profile_by_email('hamlet@zulip.com')
+        user_profile = self.example_user('hamlet')
         do_change_is_admin(user_profile, True)
         stream_name = 'stream ADDED via api'
         (stream, _) = create_stream_if_needed(user_profile.realm, stream_name)
@@ -1166,7 +1166,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
         here with a simple scenario to avoid false positives related to
         subscription complications.
         '''
-        user_profile = get_user_profile_by_email('hamlet@zulip.com')
+        user_profile = self.example_user('hamlet')
         user_profile.full_name = 'Hamlet'
         user_profile.save()
 
@@ -1183,7 +1183,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
         with self.assertRaises(JsonableError):
             compose_views(None, user_profile, [(method1, {}), (method2, {})])
 
-        user_profile = get_user_profile_by_email('hamlet@zulip.com')
+        user_profile = self.example_user('hamlet')
         self.assertEqual(user_profile.full_name, 'Hamlet')
 
 class SubscriptionAPITest(ZulipTestCase):
@@ -1386,7 +1386,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         invite_streams = ["cross_stream"]
 
-        user = get_user_profile_by_email("AARON@zulip.com")
+        user = self.example_user('AARON')
         user.realm = realm
         user.save()
 

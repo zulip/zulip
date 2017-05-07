@@ -16,7 +16,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import get_client, get_user_profile_by_email, UserActivity
 from zerver.worker import queue_processors
 
-class WorkerTest(TestCase):
+class WorkerTest(ZulipTestCase):
     class FakeClient(object):
         def __init__(self):
             # type: () -> None
@@ -66,7 +66,7 @@ class WorkerTest(TestCase):
         # type: () -> None
         fake_client = self.FakeClient()
 
-        user = get_user_profile_by_email('hamlet@zulip.com')
+        user = self.example_user('hamlet')
         UserActivity.objects.filter(
             user_profile = user.id,
             client = get_client('ios')

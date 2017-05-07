@@ -29,7 +29,7 @@ class RealmTest(ZulipTestCase):
         """The main complicated thing about setting realm names is fighting the
         cache, and we start by populating the cache for Hamlet, and we end
         by checking the cache to ensure that the new value is there."""
-        get_user_profile_by_email('hamlet@zulip.com')
+        self.example_user('hamlet')
         realm = get_realm('zulip')
         new_name = u'Zed You Elle Eye Pea'
         do_set_realm_property(realm, 'name', new_name)
@@ -135,10 +135,10 @@ class RealmTest(ZulipTestCase):
         Hamlet, and we end by checking the cache to ensure that his
         realm appears to be deactivated.  You can make this test fail
         by disabling cache.flush_realm()."""
-        get_user_profile_by_email('hamlet@zulip.com')
+        self.example_user('hamlet')
         realm = get_realm('zulip')
         do_deactivate_realm(realm)
-        user = get_user_profile_by_email('hamlet@zulip.com')
+        user = self.example_user('hamlet')
         self.assertTrue(user.realm.deactivated)
 
     def test_change_realm_default_language(self):

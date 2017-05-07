@@ -224,7 +224,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_add_bot_with_default_sending_stream_private_allowed(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
         stream = get_stream("Denmark", user_profile.realm)
         self.subscribe_to_stream(user_profile.email, stream.name)
         do_change_stream_invite_only(stream, True)
@@ -262,7 +262,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_add_bot_with_default_sending_stream_private_denied(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
         stream = get_stream("Denmark", user_profile.realm)
         self.unsubscribe_from_stream("hamlet@zulip.com", "Denmark")
         do_change_stream_invite_only(stream, True)
@@ -289,7 +289,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_add_bot_with_default_events_register_stream_private_allowed(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
         stream = self.subscribe_to_stream(user_profile.email, 'Denmark')
         do_change_stream_invite_only(stream, True)
 
@@ -326,7 +326,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_add_bot_with_default_events_register_stream_private_denied(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
         stream = get_stream("Denmark", user_profile.realm)
         self.unsubscribe_from_stream("hamlet@zulip.com", "Denmark")
         do_change_stream_invite_only(stream, True)
@@ -597,7 +597,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_patch_bot_to_stream_private_allowed(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
         stream = self.subscribe_to_stream(user_profile.email, "Denmark")
         do_change_stream_invite_only(stream, True)
 
@@ -623,7 +623,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_patch_bot_to_stream_private_denied(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
         stream = get_stream("Denmark", user_profile.realm)
         self.unsubscribe_from_stream("hamlet@zulip.com", "Denmark")
         do_change_stream_invite_only(stream, True)
@@ -680,7 +680,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_patch_bot_events_register_stream_allowed(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
         stream = self.subscribe_to_stream(user_profile.email, "Denmark")
         do_change_stream_invite_only(stream, True)
 
@@ -705,7 +705,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_patch_bot_events_register_stream_denied(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
         stream = get_stream("Denmark", user_profile.realm)
         self.unsubscribe_from_stream("hamlet@zulip.com", "Denmark")
         do_change_stream_invite_only(stream, True)

@@ -195,7 +195,7 @@ class EventsEndpointTest(ZulipTestCase):
                     event=dict(
                         type='other'
                     ),
-                    users=[get_user_profile_by_email('hamlet@zulip.com').id],
+                    users=[self.example_user('hamlet').id],
                 ),
             ),
         )
@@ -348,7 +348,7 @@ class GetEventsTest(ZulipTestCase):
         self.assertEqual(events[0]["message"]["display_recipient"], "Denmark")
 
 class EventsRegisterTest(ZulipTestCase):
-    user_profile = get_user_profile_by_email("hamlet@zulip.com")
+    user_profile = get_user_profile_by_email('hamlet@zulip.com')
     maxDiff = None # type: Optional[int]
 
     def create_bot(self, email):
@@ -534,7 +534,7 @@ class EventsRegisterTest(ZulipTestCase):
         ])
 
         message = self.send_message("cordelia@zulip.com", "hamlet@zulip.com", Recipient.PERSONAL, "hello")
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
         events = self.do_test(
             lambda: do_update_message_flags(user_profile, 'add', 'starred',
                                             [message], False, None, None),
@@ -1351,8 +1351,8 @@ class EventsRegisterTest(ZulipTestCase):
                 ('owner_id', check_int),
             ])),
         ])
-        self.user_profile = get_user_profile_by_email('iago@zulip.com')
-        owner = get_user_profile_by_email('hamlet@zulip.com')
+        self.user_profile = self.example_user('iago')
+        owner = self.example_user('hamlet')
         bot = self.create_bot('test-bot@zulip.com')
         action = lambda: do_change_bot_owner(bot, owner, self.user_profile)
         events = self.do_test(action)
@@ -1561,7 +1561,7 @@ class EventsRegisterTest(ZulipTestCase):
 
         # Now remove the first user, to test the normal unsubscribe flow
         action = lambda: bulk_remove_subscriptions(
-            [get_user_profile_by_email("othello@zulip.com")],
+            [self.example_user('othello')],
             [stream])
         events = self.do_test(action,
                               include_subscribers=include_subscribers,
@@ -1572,7 +1572,7 @@ class EventsRegisterTest(ZulipTestCase):
 
         # Now remove the second user, to test the 'vacate' event flow
         action = lambda: bulk_remove_subscriptions(
-            [get_user_profile_by_email("hamlet@zulip.com")],
+            [self.example_user('hamlet')],
             [stream])
         events = self.do_test(action,
                               include_subscribers=include_subscribers,
@@ -1596,7 +1596,7 @@ class EventsRegisterTest(ZulipTestCase):
 
         # Subscribe to a totally new invite-only stream, so it's just Hamlet on it
         stream = self.make_stream("private", get_realm("zulip"), invite_only=True)
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
         action = lambda: bulk_add_subscriptions([stream], [user_profile])
         events = self.do_test(action, include_subscribers=include_subscribers,
                               num_events=2)

@@ -248,7 +248,7 @@ class CustomProfileDataTest(ZulipTestCase):
 
     def test_delete(self):
         # type: () -> None
-        user_profile = get_user_profile_by_email('iago@zulip.com')
+        user_profile = self.example_user('iago')
         realm = user_profile.realm
         field = try_add_realm_custom_profile_field(
             realm,
