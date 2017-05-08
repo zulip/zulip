@@ -381,8 +381,9 @@ class AuthBackendTest(ZulipTestCase):
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.GitHubAuthBackend',))
     def test_github_backend(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
-        self.setup_subdomain(get_user_profile_by_email(email))
+        user = self.example_user('hamlet')
+        email = user.email
+        self.setup_subdomain(user)
         good_kwargs = dict(response=dict(email=email), return_data=dict(),
                            realm_subdomain='acme')
         self.verify_backend(GitHubAuthBackend(),

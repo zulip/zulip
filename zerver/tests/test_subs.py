@@ -800,10 +800,11 @@ class SubscriptionPropertiesTest(ZulipTestCase):
         A POST request to /json/subscriptions/property with stream_name and
         color data sets the stream color, and for that stream only.
         """
-        test_email = "hamlet@zulip.com"
+        test_user = self.example_user('hamlet')
+        test_email = test_user.email
         self.login(test_email)
 
-        old_subs, _ = gather_subscriptions(get_user_profile_by_email(test_email))
+        old_subs, _ = gather_subscriptions(test_user)
         sub = old_subs[0]
         stream_name = sub['name']
         new_color = "#ffffff" # TODO: ensure that this is different from old_color
@@ -871,9 +872,10 @@ class SubscriptionPropertiesTest(ZulipTestCase):
         Called by invalid request method. No other request method other than
         'post' is allowed in this case.
         """
-        test_email = "hamlet@zulip.com"
+        test_user = self.example_user('hamlet')
+        test_email = test_user.email
         self.login(test_email)
-        subs = gather_subscriptions(get_user_profile_by_email(test_email))[0]
+        subs = gather_subscriptions(test_user)[0]
 
         result = self.client_get(
             "/json/subscriptions/property",
@@ -887,9 +889,10 @@ class SubscriptionPropertiesTest(ZulipTestCase):
         """
         Updating the color property requires a color.
         """
-        test_email = "hamlet@zulip.com"
+        test_user = self.example_user('hamlet')
+        test_email = test_user.email
         self.login(test_email)
-        subs = gather_subscriptions(get_user_profile_by_email(test_email))[0]
+        subs = gather_subscriptions(test_user)[0]
         result = self.client_post(
             "/json/subscriptions/property",
             {"subscription_data": ujson.dumps([{"property": "color",
@@ -930,9 +933,10 @@ class SubscriptionPropertiesTest(ZulipTestCase):
         """
         Trying to set a property incorrectly returns a JSON error.
         """
-        test_email = "hamlet@zulip.com"
+        test_user = self.example_user('hamlet')
+        test_email = test_user.email
         self.login(test_email)
-        subs = gather_subscriptions(get_user_profile_by_email(test_email))[0]
+        subs = gather_subscriptions(test_user)[0]
 
         property_name = "in_home_view"
         result = self.client_post(
@@ -993,9 +997,10 @@ class SubscriptionPropertiesTest(ZulipTestCase):
         """
         Trying to set an invalid property returns a JSON error.
         """
-        test_email = "hamlet@zulip.com"
+        test_user = self.example_user('hamlet')
+        test_email = test_user.email
         self.login(test_email)
-        subs = gather_subscriptions(get_user_profile_by_email(test_email))[0]
+        subs = gather_subscriptions(test_user)[0]
         result = self.client_post(
             "/json/subscriptions/property",
             {"subscription_data": ujson.dumps([{"property": "bad",

@@ -122,9 +122,10 @@ class TypingStartedNotificationTest(ZulipTestCase):
         Sending typing notification to yourself
         is successful.
         """
-        email = 'hamlet@zulip.com'
+        user = self.example_user('hamlet')
+        email = user.email
         expected_recipient_emails = set([email])
-        expected_recipient_ids = set([get_user_profile_by_email(email).id])
+        expected_recipient_ids = set([user.id])
         events = []  # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
             result = self.client_post('/api/v1/typing', {'to': email,
@@ -183,9 +184,10 @@ class StoppedTypingNotificationTest(ZulipTestCase):
         Sending stopped typing notification to yourself
         is successful.
         """
-        email = 'hamlet@zulip.com'
+        user = self.example_user('hamlet')
+        email = user.email
         expected_recipient_emails = set([email])
-        expected_recipient_ids = set([get_user_profile_by_email(email).id])
+        expected_recipient_ids = set([user.id])
 
         events = []  # type: List[Dict[str, Any]]
         with tornado_redirected_to_list(events):
