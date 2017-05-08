@@ -36,7 +36,6 @@ from zerver.lib.test_classes import (
 from zerver.lib.test_runner import slow
 
 from zerver.models import (
-    get_user_profile_by_email,
     Message,
     Realm,
     Recipient,

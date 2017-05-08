@@ -16,8 +16,10 @@ from zerver.lib.test_classes import (
 )
 
 from zerver.models import (
-    get_display_recipient, get_stream, get_user_profile_by_email,
-    Recipient, get_realm,
+    get_display_recipient,
+    get_realm,
+    get_stream,
+    Recipient
 )
 
 from zerver.lib.actions import (

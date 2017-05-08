@@ -14,8 +14,10 @@ from django.conf import settings
 from django.http import HttpResponse
 
 from zerver.models import PushDeviceToken, UserProfile, Message
-from zerver.models import get_user_profile_by_email, receives_online_notifications, \
-    receives_offline_notifications
+from zerver.models import (
+    receives_offline_notifications,
+    receives_online_notifications,
+)
 from zerver.lib import push_notifications as apn
 from zerver.lib.response import json_success
 from zerver.lib.test_classes import (

@@ -8,7 +8,6 @@ import ujson
 from typing import Any
 
 from zerver.lib.attachments import user_attachments
-from zerver.lib.test_helpers import get_user_profile_by_email
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import Attachment
 

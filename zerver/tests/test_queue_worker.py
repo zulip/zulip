@@ -13,7 +13,7 @@ from typing import Any, Callable, Dict, List, Mapping, Tuple
 
 from zerver.lib.test_helpers import simulated_queue_client
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import get_client, get_user_profile_by_email, UserActivity
+from zerver.models import get_client, UserActivity
 from zerver.worker import queue_processors
 
 class WorkerTest(ZulipTestCase):
