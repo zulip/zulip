@@ -148,6 +148,7 @@ class Realm(ModelReprMixin, models.Model):
     # Define the types of the various automatically managed properties
     property_types = dict(
         add_emoji_by_admins_only=bool,
+        should_animate_emoji_on_hover=bool,
         create_stream_by_admins_only=bool,
         default_language=Text,
         description=Text,
