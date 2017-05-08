@@ -20,7 +20,7 @@ from zerver.lib.send_email import send_email_to_user
 from zerver.lib.events import do_events_register
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
     do_activate_user, do_create_user, do_create_realm, set_default_streams, \
-    user_email_is_unique, \
+    user_email_is_unique, create_streams_with_welcome_messages, \
     compute_mit_user_fullname
 from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, \
     CreateUserForm, FindMyTeamForm
@@ -192,7 +192,10 @@ def accounts_register(request):
             org_type = int(form.cleaned_data['realm_org_type'])
             realm = do_create_realm(string_id, realm_name, org_type=org_type)[0]
 
-            set_default_streams(realm, settings.DEFAULT_NEW_REALM_STREAMS)
+            stream_info = settings.DEFAULT_NEW_REALM_STREAMS
+
+            create_streams_with_welcome_messages(realm, stream_info)
+            set_default_streams(realm, stream_info)
 
         full_name = form.cleaned_data['full_name']
         short_name = email_to_username(email)
