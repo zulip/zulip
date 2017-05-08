@@ -200,6 +200,7 @@ class RealmAPITest(ZulipTestCase):
         bool_tests = [False, True] # type: List[bool]
         test_values = dict(
             add_emoji_by_admins_only=bool_tests,
+            should_animate_emoji_on_hover=bool_tests,
             create_stream_by_admins_only=bool_tests,
             default_language=[u'de', u'en'],
             description=[u'Realm description', u'New description'],
