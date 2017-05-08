@@ -2380,6 +2380,29 @@ def do_set_user_display_setting(user_profile, setting_name, setting_value):
         send_event(dict(type='realm_user', op='update', person=payload),
                    active_user_ids(user_profile.realm))
 
+def create_streams_with_welcome_messages(realm, stream_dict):
+    # type: (Realm, Dict[Text, Dict[Text, Any]]) -> None
+
+    # Generally, we call this method as part of creating a realm,
+    # and we seed our default streams with a welcome message (but
+    # not the announce stream, which gets seeded elsewhere).
+    messages = []
+
+    for name, options in stream_dict.items():
+        stream, created = create_stream_if_needed(
+            realm,
+            name,
+            invite_only = options["invite_only"],
+            stream_description = options["description"],
+        )
+
+        if created:
+            message = prep_stream_welcome_message(stream)
+            messages.append(message)
+
+    if messages:
+        do_send_messages(messages)
+
 def set_default_streams(realm, stream_dict):
     # type: (Realm, Dict[Text, Dict[Text, Any]]) -> None
     DefaultStream.objects.filter(realm=realm).delete()

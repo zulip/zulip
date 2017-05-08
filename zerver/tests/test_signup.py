@@ -22,8 +22,8 @@ from zerver.views.registration import confirmation_key, \
     redirect_and_log_into_subdomain, send_registration_completion_email
 from zerver.models import (
     get_realm, get_prereg_user_by_email, get_user_profile_by_email,
-    get_unique_open_realm, completely_open,
-    PreregistrationUser, Realm, RealmDomain, Recipient,
+    get_unique_open_realm, completely_open, get_recipient,
+    PreregistrationUser, Realm, RealmDomain, Recipient, Message,
     Referral, ScheduledJob, UserProfile, UserMessage,
     Stream, Subscription, ScheduledJob, flush_per_request_caches
 )
@@ -912,6 +912,14 @@ class RealmCreationTest(ZulipTestCase):
             self.assertEqual(realm.invite_required, True)
 
             self.assertTrue(result["Location"].endswith("/"))
+
+            # Check welcome messages
+            for stream_name in ['general', 'social', 'zulip']:
+                stream = get_stream(stream_name, realm)
+                recipient = get_recipient(Recipient.STREAM, stream.id)
+                messages = Message.objects.filter(recipient=recipient)
+                self.assertEqual(len(messages), 1)
+                self.assertIn('Welcome to', messages[0].content)
 
     def test_create_realm_existing_email(self):
         # type: () -> None
