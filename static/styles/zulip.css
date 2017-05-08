@@ -2357,6 +2357,7 @@ img.emoji {
     border: 1px solid #ddd;
     padding: .5em .75em;
     margin-bottom: 0.25em;
+    word-break: break-word;
 }
 
 .twitter-avatar {
