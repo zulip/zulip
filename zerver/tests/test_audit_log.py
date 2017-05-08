@@ -63,7 +63,7 @@ class TestRealmAuditLog(ZulipTestCase):
         # type: () -> None
         now = timezone_now()
         admin = self.example_user('iago')
-        bot = get_user_profile_by_email("notification-bot@zulip.com")
+        bot = self.notification_bot()
         bot_owner = self.example_user('hamlet')
         do_change_bot_owner(bot, bot_owner, admin)
         self.assertEqual(RealmAuditLog.objects.filter(event_type='bot_owner_changed',

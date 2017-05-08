@@ -1614,7 +1614,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         self.assert_length(result['realm_bots'], 0)
 
         # additionally the API key for a random bot is not present in the data
-        api_key = get_user_profile_by_email('notification-bot@zulip.com').api_key
+        api_key = self.notification_bot().api_key
         self.assertNotIn(api_key, str(result))
 
     # Admin users have access to all bots in the realm_bots field

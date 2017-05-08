@@ -222,6 +222,10 @@ class ZulipTestCase(TestCase):
         email = self.example_user_map[name]
         return get_user_profile_by_email(email)
 
+    def notification_bot(self):
+        # type: () -> UserProfile
+        return get_user_profile_by_email('notification-bot@zulip.com')
+
     def login_with_return(self, email, password=None):
         # type: (Text, Optional[Text]) -> HttpResponse
         if password is None:
