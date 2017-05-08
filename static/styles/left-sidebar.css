@@ -1,6 +1,8 @@
 #left-sidebar {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+
+    font-size: 0.89rem;
 }
 
 #left-sidebar .brand {
@@ -128,11 +130,11 @@ li.hidden-filter {
     display: none;
 }
 
-.filter-icon {
+#left-sidebar .filter-icon {
     display: inline-block;
     width: 18px;
     text-align: center;
-    margin-right: 5px;
+    margin-right: 3px;
 }
 
 .stream-pin-icon {
@@ -151,7 +153,6 @@ li.hidden-filter {
 }
 
 .left-sidebar li {
-    font-size: 1.05em;
     padding-top: 2px;
     padding-bottom: 2px;
 }
