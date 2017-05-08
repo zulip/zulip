@@ -272,6 +272,21 @@ def send_android_push_notification(devices, data):
     # python-gcm handles retrying of the unsent messages.
     # Ref: https://github.com/geeknam/python-gcm/blob/master/gcm/gcm.py#L497
 
+def get_alert_from_message(message):
+    # type: (Message) -> Text
+    """
+    Determine what alert string to display based on the missed messages.
+    """
+    sender_str = message.sender.full_name
+    if message.recipient.type == Recipient.HUDDLE:
+        return "New private group message from %s" % (sender_str,)
+    elif message.recipient.type == Recipient.PERSONAL:
+        return "New private message from %s" % (sender_str,)
+    elif message.recipient.type == Recipient.STREAM:
+        return "New mention from %s" % (sender_str,)
+    else:
+        return "New Zulip mentions and private messages from %s" % (sender_str,)
+
 @statsd_increment("push_notifications")
 def handle_push_notification(user_profile_id, missed_message):
     # type: (int, Dict[str, Any]) -> None
@@ -285,7 +300,6 @@ def handle_push_notification(user_profile_id, missed_message):
         message = umessage.message
         if umessage.flags.read:
             return
-        sender_str = message.sender.full_name
 
         android_devices = [device for device in
                            PushDeviceToken.objects.filter(user=user_profile,
@@ -294,17 +308,8 @@ def handle_push_notification(user_profile_id, missed_message):
                                                             kind=PushDeviceToken.APNS))
 
         if apple_devices or android_devices:
+            alert = get_alert_from_message(message)
             # TODO: set badge count in a better way
-            # Determine what alert string to display based on the missed messages
-            if message.recipient.type == Recipient.HUDDLE:
-                alert = "New private group message from %s" % (sender_str,)
-            elif message.recipient.type == Recipient.PERSONAL:
-                alert = "New private message from %s" % (sender_str,)
-            elif message.recipient.type == Recipient.STREAM:
-                alert = "New mention from %s" % (sender_str,)
-            else:
-                alert = "New Zulip mentions and private messages from %s" % (sender_str,)
-
             if apple_devices:
                 apple_extra_data = {
                     'alert': alert,
