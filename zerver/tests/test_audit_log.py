@@ -6,7 +6,7 @@ from zerver.lib.actions import do_create_user, do_deactivate_user, \
     do_change_user_email, do_change_avatar_fields, do_change_bot_owner, \
     do_regenerate_api_key
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import RealmAuditLog, get_realm, get_user_profile_by_email
+from zerver.models import RealmAuditLog, get_realm
 
 from datetime import timedelta
 from django.contrib.auth.password_validation import validate_password

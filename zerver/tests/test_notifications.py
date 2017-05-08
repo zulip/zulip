@@ -17,7 +17,11 @@ from zerver.lib.notifications import handle_missedmessage_emails
 from zerver.lib.actions import render_incoming_message, do_update_message
 from zerver.lib.message import access_message
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import get_user_profile_by_email, Recipient, UserMessage, UserProfile
+from zerver.models import (
+    Recipient,
+    UserMessage,
+    UserProfile,
+)
 
 class TestMissedMessages(ZulipTestCase):
     def normalize_string(self, s):
