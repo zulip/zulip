@@ -71,3 +71,12 @@ def remote_server_unregister_push(request, entity, token=REQ(),
         return json_error(_("Token does not exist"))
 
     return json_success()
+
+@has_request_variables
+def remote_server_notify_push(request,  # type: HttpRequest
+                              entity,  # type: Union[UserProfile, RemoteZulipServer]
+                              payload=REQ(argument_type='body')  # type: Dict[str, Any]
+                              ):
+    # type: (...) -> HttpResponse
+    validate_entity(entity)
+    return json_success()

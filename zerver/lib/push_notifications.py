@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 import random
 import requests
-from typing import Any, Dict, List, Optional, SupportsInt, Text
+from typing import Any, Dict, List, Optional, SupportsInt, Text, Union
 
 from version import ZULIP_VERSION
 from zerver.models import PushDeviceToken, Message, Recipient, UserProfile, \
@@ -341,14 +341,20 @@ def handle_push_notification(user_profile_id, missed_message):
         if umessage.flags.read:
             return
 
-        android_devices = [device for device in
-                           PushDeviceToken.objects.filter(user=user_profile,
-                                                          kind=PushDeviceToken.GCM)]
-        apple_devices = list(PushDeviceToken.objects.filter(user=user_profile,
-                                                            kind=PushDeviceToken.APNS))
-
         apns_payload = get_apns_payload(message)
         gcm_payload = get_gcm_payload(user_profile, message)
+
+        if uses_notification_bouncer():
+            send_notifications_to_bouncer(user_profile_id,
+                                          apns_payload,
+                                          gcm_payload)
+            return
+
+        android_devices = list(PushDeviceToken.objects.filter(user=user_profile,
+                                                              kind=PushDeviceToken.GCM))
+
+        apple_devices = list(PushDeviceToken.objects.filter(user=user_profile,
+                                                            kind=PushDeviceToken.APNS))
 
         if apple_devices or android_devices:
             # TODO: set badge count in a better way
@@ -361,6 +367,15 @@ def handle_push_notification(user_profile_id, missed_message):
 
     except UserMessage.DoesNotExist:
         logging.error("Could not find UserMessage with message_id %s" % (missed_message['message_id'],))
+
+def send_notifications_to_bouncer(user_profile_id, apns_payload, gcm_payload):
+    # type: (int, Dict[str, Any], Dict[str, Any]) -> None
+    post_data = {
+        'user_id': user_profile_id,
+        'apns_payload': apns_payload,
+        'gcm_payload': gcm_payload,
+    }
+    send_json_to_push_bouncer('POST', 'notify', post_data)
 
 def add_push_device_token(user_profile, token_str, kind, ios_app_id=None):
     # type: (UserProfile, str, int, Optional[str]) -> None
@@ -417,21 +432,33 @@ def remove_push_device_token(user_profile, token_str, kind):
     except PushDeviceToken.DoesNotExist:
         raise JsonableError(_("Token does not exist"))
 
-
-def send_to_push_bouncer(method, endpoint, post_data):
+def send_json_to_push_bouncer(method, endpoint, post_data):
     # type: (str, str, Dict[str, Any]) -> None
+    send_to_push_bouncer(
+        method,
+        endpoint,
+        ujson.dumps(post_data),
+        extra_headers={"Content-type": "application/json"},
+    )
+
+def send_to_push_bouncer(method, endpoint, post_data, extra_headers=None):
+    # type: (str, str, Union[Text, Dict[str, Any]], Optional[Dict[str, Any]]) -> None
     url = urllib.parse.urljoin(settings.PUSH_NOTIFICATION_BOUNCER_URL,
                                '/api/v1/remotes/push/' + endpoint)
     api_auth = requests.auth.HTTPBasicAuth(settings.ZULIP_ORG_ID,
                                            settings.ZULIP_ORG_KEY)
 
+    headers = {"User-agent": "ZulipServer/%s" % (ZULIP_VERSION,)}
+    if extra_headers is not None:
+        headers.update(extra_headers)
+
     res = requests.request(method,
                            url,
-                           data=ujson.dumps(post_data),
+                           data=post_data,
                            auth=api_auth,
                            timeout=30,
                            verify=True,
-                           headers={"User-agent": "ZulipServer/%s" % (ZULIP_VERSION,)})
+                           headers=headers)
 
     # TODO: Think more carefully about how this error hanlding should work.
     if res.status_code >= 500:
