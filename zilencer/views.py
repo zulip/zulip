@@ -10,11 +10,23 @@ from zerver.decorator import has_request_variables, REQ
 from zerver.lib.error_notify import do_report_error
 from zerver.lib.push_notifications import send_android_push_notification, \
     send_apple_push_notification
+from zerver.lib.request import JsonableError
 from zerver.lib.response import json_error, json_success
 from zerver.lib.validator import check_dict
 from zerver.models import UserProfile, PushDeviceToken, Realm
 
 from typing import Any, Dict, Optional, Union, Text, cast
+
+def validate_entity(entity):
+    # type: (Union[UserProfile, RemoteZulipServer]) -> None
+    if not isinstance(entity, RemoteZulipServer):
+        raise JsonableError(_("Must validate with valid Zulip server API key"))
+
+def validate_bouncer_token_request(entity, token):
+    # type: (Union[UserProfile, RemoteZulipServer], Text) -> None
+    validate_entity(entity)
+    if token == '' or len(token) > 4096:
+        raise JsonableError(_("Empty or invalid length token"))
 
 @has_request_variables
 def report_error(request, deployment, type=REQ(), report=REQ(validator=check_dict([]))):
@@ -25,11 +37,7 @@ def report_error(request, deployment, type=REQ(), report=REQ(validator=check_dic
 def remote_server_register_push(request, entity, user_id=REQ(),
                                 token=REQ(), token_kind=REQ(), ios_app_id=None):
     # type: (HttpRequest, Union[UserProfile, RemoteZulipServer], int, Text, int, Optional[Text]) -> HttpResponse
-    if not isinstance(entity, RemoteZulipServer):
-        return json_error(_("Must validate with valid Zulip server API key"))
-    if token == '' or len(token) > 4096:
-        return json_error(_("Empty or invalid length token"))
-
+    validate_bouncer_token_request(entity, token)
     server = cast(RemoteZulipServer, entity)
 
     # If a user logged out on a device and failed to unregister,
@@ -54,11 +62,7 @@ def remote_server_register_push(request, entity, user_id=REQ(),
 def remote_server_unregister_push(request, entity, token=REQ(),
                                   token_kind=REQ(), ios_app_id=None):
     # type: (HttpRequest, Union[UserProfile, RemoteZulipServer], Text, int, Optional[Text]) -> HttpResponse
-    if not isinstance(entity, RemoteZulipServer):
-        return json_error(_("Must validate with valid Zulip server API key"))
-    if token == '' or len(token) > 4096:
-        return json_error(_("Empty or invalid length token"))
-
+    validate_bouncer_token_request(entity, token)
     server = cast(RemoteZulipServer, entity)
     deleted = RemotePushDeviceToken.objects.filter(token=token,
                                                    kind=token_kind,
