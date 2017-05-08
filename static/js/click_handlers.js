@@ -57,7 +57,8 @@ $(function () {
     function is_clickable_message_element(target) {
         return target.is("a") || target.is("img.message_inline_image") || target.is("img.twitter-avatar") ||
             target.is("div.message_length_controller") || target.is("textarea") || target.is("input") ||
-            target.is("i.edit_content_button");
+            target.is("i.edit_content_button") ||
+            (target.is(".highlight") && target.parent().is("a"));
     }
 
     $("#main_div").on("click", ".messagebox", function (e) {
