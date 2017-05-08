@@ -107,15 +107,11 @@ exports.abort_xhr = function () {
     }
 };
 
-exports.empty_topic_placeholder = function () {
-    return i18n.t("(no topic)");
-};
-
 function create_message_object() {
     // Subjects are optional, and we provide a placeholder if one isn't given.
     var subject = compose_state.subject();
     if (subject === "") {
-        subject = compose.empty_topic_placeholder();
+        subject = compose_ui.empty_topic_placeholder();
     }
 
     var content = make_uploads_relative(compose_state.message_content());

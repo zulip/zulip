@@ -281,7 +281,7 @@ function edit_message(row, raw_content) {
 
     if (!is_editable) {
         row.find(".message_edit_close").focus();
-    } else if (message.type === 'stream' && message.subject === compose.empty_topic_placeholder()) {
+    } else if (message.type === 'stream' && message.subject === compose_ui.empty_topic_placeholder()) {
         message_edit_topic.val('');
         message_edit_topic.focus();
     } else if (editability === editability_types.TOPIC_ONLY) {
@@ -347,7 +347,7 @@ exports.start_topic_edit = function (recipient_row) {
     var msg_id = rows.id_for_recipient_row(recipient_row);
     var message = current_msg_list.get(msg_id);
     var topic = message.subject;
-    if (topic === compose.empty_topic_placeholder()) {
+    if (topic === compose_ui.empty_topic_placeholder()) {
         topic = '';
     }
     form.find(".inline_topic_edit").val(topic).select().focus();
