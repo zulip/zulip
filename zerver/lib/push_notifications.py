@@ -59,6 +59,10 @@ dbx_connection = None
 # `APNS_SANDBOX` should be a bool
 assert isinstance(settings.APNS_SANDBOX, bool)
 
+def uses_notification_bouncer():
+    # type: () -> bool
+    return settings.PUSH_NOTIFICATION_BOUNCER_URL is not None
+
 def get_apns_key(identifer):
     # type: (SupportsInt) -> str
     return 'apns:' + str(identifer)
@@ -363,7 +367,7 @@ def add_push_device_token(user_profile, token_str, kind, ios_app_id=None):
 
     # If we're sending things to the push notification bouncer
     # register this user with them here
-    if settings.PUSH_NOTIFICATION_BOUNCER_URL is not None:
+    if uses_notification_bouncer():
         post_data = {
             'server_uuid': settings.ZULIP_ORG_ID,
             'user_id': user_profile.id,
@@ -396,7 +400,7 @@ def remove_push_device_token(user_profile, token_str, kind):
 
     # If we're sending things to the push notification bouncer
     # register this user with them here
-    if settings.PUSH_NOTIFICATION_BOUNCER_URL is not None:
+    if uses_notification_bouncer():
         # TODO: Make this a remove item
         post_data = {
             'server_uuid': settings.ZULIP_ORG_ID,
