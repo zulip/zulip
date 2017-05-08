@@ -294,6 +294,35 @@ def get_apns_payload(message):
         'message_ids': [message.id],
     }
 
+def get_gcm_payload(user_profile, message):
+    # type: (UserProfile, Message) -> Dict[str, Any]
+    content = message.content
+    content_truncated = (len(content) > 200)
+    if content_truncated:
+        content = content[:200] + "..."
+
+    android_data = {
+        'user': user_profile.email,
+        'event': 'message',
+        'alert': get_alert_from_message(message),
+        'zulip_message_id': message.id, # message_id is reserved for CCS
+        'time': datetime_to_timestamp(message.pub_date),
+        'content': content,
+        'content_truncated': content_truncated,
+        'sender_email': message.sender.email,
+        'sender_full_name': message.sender.full_name,
+        'sender_avatar_url': avatar_url(message.sender),
+    }
+
+    if message.recipient.type == Recipient.STREAM:
+        android_data['recipient_type'] = "stream"
+        android_data['stream'] = get_display_recipient(message.recipient)
+        android_data['topic'] = message.subject
+    elif message.recipient.type in (Recipient.HUDDLE, Recipient.PERSONAL):
+        android_data['recipient_type'] = "private"
+
+    return android_data
+
 @statsd_increment("push_notifications")
 def handle_push_notification(user_profile_id, missed_message):
     # type: (int, Dict[str, Any]) -> None
@@ -315,6 +344,7 @@ def handle_push_notification(user_profile_id, missed_message):
                                                             kind=PushDeviceToken.APNS))
 
         apns_payload = get_apns_payload(message)
+        gcm_payload = get_gcm_payload(user_profile, message)
 
         if apple_devices or android_devices:
             alert = get_alert_from_message(message)
@@ -324,32 +354,7 @@ def handle_push_notification(user_profile_id, missed_message):
                                              badge=1, zulip=apns_payload)
 
             if android_devices:
-                content = message.content
-                content_truncated = (len(content) > 200)
-                if content_truncated:
-                    content = content[:200] + "..."
-
-                android_data = {
-                    'user': user_profile.email,
-                    'event': 'message',
-                    'alert': alert,
-                    'zulip_message_id': message.id,  # message_id is reserved for CCS
-                    'time': datetime_to_timestamp(message.pub_date),
-                    'content': content,
-                    'content_truncated': content_truncated,
-                    'sender_email': message.sender.email,
-                    'sender_full_name': message.sender.full_name,
-                    'sender_avatar_url': avatar_url(message.sender),
-                }
-
-                if message.recipient.type == Recipient.STREAM:
-                    android_data['recipient_type'] = "stream"
-                    android_data['stream'] = get_display_recipient(message.recipient)
-                    android_data['topic'] = message.subject
-                elif message.recipient.type in (Recipient.HUDDLE, Recipient.PERSONAL):
-                    android_data['recipient_type'] = "private"
-
-                send_android_push_notification(android_devices, android_data)
+                send_android_push_notification(android_devices, gcm_payload)
 
     except UserMessage.DoesNotExist:
         logging.error("Could not find UserMessage with message_id %s" % (missed_message['message_id'],))
