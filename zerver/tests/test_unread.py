@@ -33,8 +33,9 @@ class PointerTest(ZulipTestCase):
         """
         Same as above, but for the API view
         """
-        email = "hamlet@zulip.com"
-        self.assertEqual(get_user_profile_by_email(email).pointer, -1)
+        user = self.example_user('hamlet')
+        email = user.email
+        self.assertEqual(user.pointer, -1)
         msg_id = self.send_message("othello@zulip.com", "Verona", Recipient.STREAM)
         result = self.client_post("/api/v1/users/me/pointer", {"pointer": msg_id},
                                   **self.api_auth(email))
