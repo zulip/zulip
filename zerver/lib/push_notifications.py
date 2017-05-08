@@ -287,6 +287,13 @@ def get_alert_from_message(message):
     else:
         return "New Zulip mentions and private messages from %s" % (sender_str,)
 
+def get_apns_payload(message):
+    # type: (Message) -> Dict[str, Any]
+    return {
+        'alert': get_alert_from_message(message),
+        'message_ids': [message.id],
+    }
+
 @statsd_increment("push_notifications")
 def handle_push_notification(user_profile_id, missed_message):
     # type: (int, Dict[str, Any]) -> None
@@ -307,16 +314,14 @@ def handle_push_notification(user_profile_id, missed_message):
         apple_devices = list(PushDeviceToken.objects.filter(user=user_profile,
                                                             kind=PushDeviceToken.APNS))
 
+        apns_payload = get_apns_payload(message)
+
         if apple_devices or android_devices:
             alert = get_alert_from_message(message)
             # TODO: set badge count in a better way
             if apple_devices:
-                apple_extra_data = {
-                    'alert': alert,
-                    'message_ids': [message.id],
-                }
                 send_apple_push_notification(user_profile.id, apple_devices,
-                                             badge=1, zulip=apple_extra_data)
+                                             badge=1, zulip=apns_payload)
 
             if android_devices:
                 content = message.content
