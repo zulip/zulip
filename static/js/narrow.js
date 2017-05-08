@@ -48,6 +48,8 @@ exports.narrow_title = "home";
 exports.activate = function (raw_operators, opts) {
     var start_time = new Date();
     var was_narrowed_already = narrow_state.active();
+    var following_alias = false;
+
     // most users aren't going to send a bunch of a out-of-narrow messages
     // and expect to visit a list of narrows, so let's get these out of the way.
     notifications.clear_compose_notifications();
@@ -56,6 +58,19 @@ exports.activate = function (raw_operators, opts) {
         return exports.deactivate();
     }
     var filter = new Filter(raw_operators);
+    var old_stream_name = filter.operands("stream")[0];
+    if (old_stream_name && !stream_data.get_sub(old_stream_name)) {
+        var stream_name = stream_data.new_name_for_stream(old_stream_name);
+        if (stream_name) {
+            filter = filter.filter_with_new_stream(stream_name);
+
+            // Even if the caller thinks we shouldn't change the hash
+            // right now, we want to make sure the hash gets updated
+            // (see call to `hashchange.save_narrow` change below)
+            following_alias = true;
+        }
+    }
+
     var operators = filter.operators();
 
     // Take the most detailed part of the narrow to use as the title.
@@ -234,11 +249,18 @@ exports.activate = function (raw_operators, opts) {
         ui.show_loading_more_messages_indicator();
     }
 
-    // Put the narrow operators in the URL fragment.
-    // Disabled when the URL fragment was the source
-    // of this narrow.
+    // Put the narrow operators in the URL fragment. Disabled when the URL
+    // fragment was the initiating source of this narrow.
     if (opts.change_hash) {
         hashchange.save_narrow(operators);
+    } else if (following_alias) {
+        // We want this to update the hash on page load if someone followed
+        // a link to a renamed stream. Since hashchange will refuse us right now
+        // (it's already tracking a page load), we process on a future tick.
+        // We set the "replace_state" parameter true to avoid polluting history.
+        setTimeout(function () {
+            hashchange.save_narrow(operators, true);
+        });
     }
 
     // Put the narrow operators in the search bar.

@@ -433,3 +433,26 @@ var people = global.people;
     assert(!stream_data.get_sub('Canada'));
     assert(!stream_data.get_sub_by_id(canada.stream_id));
 }());
+
+(function test_rename_sub() {
+    stream_data.clear_subscriptions();
+    var id = 42;
+    var sub = {
+        name: 'Denmark',
+        subscribed: true,
+        color: 'red',
+        stream_id: id,
+    };
+    stream_data.add_sub('Denmark', sub);
+    stream_data.rename_sub(sub, 'Sweden');
+    sub = stream_data.get_sub('Sweden');
+    assert.deepEqual(sub.old_names, ['Denmark']);
+
+    var new_name = stream_data.new_name_for_stream('Denmark');
+    assert.equal(new_name, 'Sweden');
+
+    new_name = stream_data.new_name_for_stream('DENMARK');
+    assert.equal(new_name, 'Sweden');
+}());
+
+

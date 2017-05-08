@@ -1609,7 +1609,7 @@ class SubscriptionAPITest(ZulipTestCase):
                     streams_to_sub,
                     dict(principals=ujson.dumps([email1, email2])),
                 )
-        self.assert_length(queries, 67)
+        self.assert_length(queries, 68)
 
         self.assert_length(events, 9)
         for ev in [x for x in events if x['event']['type'] not in ('message', 'stream')]:
@@ -2375,7 +2375,7 @@ class GetSubscribersTest(ZulipTestCase):
     def test_gather_subscriptions(self):
         # type: () -> None
         """
-        gather_subscriptions returns correct results with only 3 queries
+        gather_subscriptions returns correct results with only 5 queries
         """
         streams = ["stream_%s" % i for i in range(10)]
         for stream_name in streams:
@@ -2401,7 +2401,7 @@ class GetSubscribersTest(ZulipTestCase):
             if not sub["name"].startswith("stream_"):
                 continue
             self.assertTrue(len(sub["subscribers"]) == len(users_to_subscribe))
-        self.assert_length(queries, 4)
+        self.assert_length(queries, 5)
 
     @slow("common_subscribe_to_streams is slow")
     def test_never_subscribed_streams(self):
@@ -2434,7 +2434,7 @@ class GetSubscribersTest(ZulipTestCase):
             if stream_dict["name"].startswith("stream_"):
                 self.assertFalse(stream_dict['name'] == "stream_invite_only_1")
                 self.assertTrue(len(stream_dict["subscribers"]) == len(users_to_subscribe))
-        self.assert_length(queries, 3)
+        self.assert_length(queries, 4)
 
     @slow("common_subscribe_to_streams is slow")
     def test_gather_subscriptions_mit(self):
@@ -2465,7 +2465,7 @@ class GetSubscribersTest(ZulipTestCase):
                 self.assertTrue(len(sub["subscribers"]) == len(users_to_subscribe))
             else:
                 self.assertTrue(len(sub["subscribers"]) == 0)
-        self.assert_length(queries, 4)
+        self.assert_length(queries, 5)
 
     def test_nonsubscriber(self):
         # type: () -> None

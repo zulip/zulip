@@ -25,6 +25,11 @@ exports.is_active = function (sub) {
 exports.rename_sub = function (sub, new_name) {
     var old_name = sub.name;
     sub.name = new_name;
+    if (sub.old_names) {
+        sub.old_names.push(old_name);
+    } else {
+        sub.old_names = [old_name];
+    }
     stream_info.del(old_name);
     stream_info.set(new_name, sub);
 };
@@ -55,6 +60,22 @@ exports.add_sub = function (stream_name, sub) {
 
 exports.get_sub = function (stream_name) {
     return stream_info.get(stream_name);
+};
+
+exports.new_name_for_stream = function (old_stream_name) {
+    old_stream_name = old_stream_name.toLowerCase();
+    var new_name = _.chain(stream_info.items())
+    .filter(function (si) {
+        var stream = si[1];
+        return stream.old_names && stream.old_names.map(function (name) {
+            return name.toLowerCase();
+        }).indexOf(old_stream_name) !== -1;
+    }).map(function (si) {
+        var stream_name = si[0];
+        return stream_name;
+    }).value()[0];
+
+    return new_name || null;
 };
 
 exports.get_sub_by_id = function (stream_id) {

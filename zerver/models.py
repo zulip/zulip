@@ -851,11 +851,17 @@ class Stream(ModelReprMixin, models.Model):
         # type: () -> Dict[str, Any]
         return dict(name=self.name,
                     stream_id=self.id,
+                    old_names=[],
                     description=self.description,
                     invite_only=self.invite_only)
 
 post_save.connect(flush_stream, sender=Stream)
 post_delete.connect(flush_stream, sender=Stream)
+
+class StreamAlias(ModelReprMixin, models.Model):
+    MAX_NAME_LENGTH = 60
+    old_name = models.CharField(max_length=MAX_NAME_LENGTH) # type: Text
+    stream = models.ForeignKey(Stream) # type: Stream
 
 # The Recipient table is used to map Messages to the set of users who
 # received the message.  It is implemented as a set of triples (id,
