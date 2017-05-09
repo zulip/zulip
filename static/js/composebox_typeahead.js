@@ -58,7 +58,7 @@ function query_matches_person(query, person) {
     query = query.toLowerCase();
 
     return ( person.email    .toLowerCase().indexOf(query) !== -1
-         ||  person.full_name.toLowerCase().indexOf(query) !== -1);
+         ||  person.full_name.toLowerCase().replace(" ", "").indexOf(query) !== -1);
 }
 
 function query_matches_stream(query, stream) {
@@ -401,7 +401,7 @@ exports.initialize_compose_typeahead = function (selector, completions) {
             if (this.completing === 'emoji') {
                 return query_matches_emoji(this.token, item);
             } else if (this.completing === 'mention') {
-                return query_matches_person(this.token, item);
+                return query_matches_person(this.token.replace(" ", ""), item.replace(" ", ""));
             } else if (this.completing === 'stream') {
                 return query_matches_stream(this.token, item);
             } else if (this.completing === 'syntax') {

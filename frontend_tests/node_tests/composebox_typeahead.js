@@ -85,6 +85,8 @@ global.people.add({
     assert_typeahead_equals("test @o", people_with_all);
     assert_typeahead_equals("test @z", people_with_all);
     assert_typeahead_equals("@zuli", people_with_all);
+    assert_typeahead_equals("test @cordeliale", people_with_all);
+    assert_typeahead_equals("test @moorofvenice", people_with_all);
 
     assert_typeahead_equals("hi emoji :", false);
     assert_typeahead_equals("hi emoji :ta", emoji_list);
