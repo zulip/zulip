@@ -359,6 +359,20 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         self.bugdown = bugdown
         markdown.treeprocessors.Treeprocessor.__init__(self, md)
 
+    def get_actual_image_url(self, url):
+        # type: (Text) -> Text
+        # Add specific per-site cases to convert image-preview urls to image urls.
+        # See https://github.com/zulip/zulip/issues/4658 for more information
+        parsed_url = urllib.parse.urlparse(url)
+        if (parsed_url.netloc == 'github.com' or parsed_url.netloc.endswith('.github.com')):
+            # https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png
+            # https://raw.githubusercontent.com/zulip/zulip/master/static/images/logo/zulip-icon-128x128.png
+            if parsed_url.path.split('/')[3] == "blob":
+                partitionpath = parsed_url.path.partition("/blob/")
+                return urllib.parse.urljoin('https://raw.githubusercontent.com', partitionpath[0]+'/'+partitionpath[2])
+
+        return url
+
     def is_image(self, url):
         # type: (Text) -> bool
         if not image_preview_enabled_for_realm():
@@ -628,7 +642,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                       class_attr=class_attr)
                 continue
             if self.is_image(url):
-                add_a(root, url, url, title=text)
+                add_a(root, self.get_actual_image_url(url), url, title=text)
                 continue
             if get_tweet_id(url) is not None:
                 if rendered_tweet_count >= self.TWITTER_MAX_TO_PREVIEW:
