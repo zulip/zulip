@@ -182,7 +182,7 @@ exports.setup_page = function (callback) {
 
                 };
 
-                echo.apply_markdown(formatted);
+                markdown.apply_markdown(formatted);
             } else {
                 var emails = util.extract_pm_recipients(draft.private_message_recipient);
                 var recipients = _.map(emails, function (email) {
@@ -200,7 +200,7 @@ exports.setup_page = function (callback) {
                     recipients: recipients,
                     raw_content: draft.content,
                 };
-                echo.apply_markdown(formatted);
+                markdown.apply_markdown(formatted);
             }
             return formatted;
         });
