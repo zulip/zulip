@@ -178,10 +178,11 @@ function stubbing(func_name_to_stub, test_function) {
 
     _.each([return_true, return_false], function (is_settings_page) {
         _.each([return_true, return_false], function (is_active) {
-            _.each([return_true, return_false], function (is_info_overlay) {
+            _.each([return_true, return_false], function (info_overlay_open) {
                 hotkey.is_settings_page = is_settings_page;
-                set_global('modals', {is_active: is_active});
-                set_global('ui_state', {is_info_overlay: is_info_overlay});
+                set_global('modals', {
+                    is_active: is_active,
+                    info_overlay_open: info_overlay_open});
 
                 test_normal_typing();
             });
@@ -317,10 +318,10 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('spacebar', 'navigate.page_down');
     assert_mapping('up_arrow', 'navigate.up');
 
-    ui_state.is_info_overlay = return_true;
+    modals.info_overlay_open = return_true;
     assert_unmapped('down_arrow');
     assert_unmapped('up_arrow');
-    ui_state.is_info_overlay = return_false;
+    modals.info_overlay_open = return_false;
 
     hotkey.is_subs = return_true;
     assert_mapping('up_arrow', 'subs.switch_rows');
