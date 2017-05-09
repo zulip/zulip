@@ -13,7 +13,7 @@ icon to reveal the emoji reactions menu.
         instead accessed by clicking the {!down-chevron.md!}
 
 3. Locate the emoji you want to choose as your reaction in the emoji
-reactions menu by scrolling through the menu or entering the emoji phrase in
+reactions menu pop-up by using the arrow keys, the scroll-bar on the right edge, or entering the emoji phrase in
 the menu's search bar.
 
 4. Upon clicking on an emoji in the emoji reactions menu, the selected emoji
