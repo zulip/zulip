@@ -205,7 +205,7 @@ exports.process_escape_key = function (e) {
     }
 
     if (exports.is_settings_page()) {
-        $("#settings_overlay_container .exit").click();
+        modals.close_modal('settings');
         return true;
     }
 
