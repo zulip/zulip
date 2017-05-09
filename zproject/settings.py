@@ -877,7 +877,6 @@ JS_SPECS = {
             'js/list_rendering.js',
             'js/floating_recipient_bar.js',
             'js/lightbox.js',
-            'js/ui_state.js',
             'js/ui_report.js',
             'js/ui.js',
             'js/ui_util.js',

@@ -452,7 +452,7 @@ exports.process_hotkey = function (e, hotkey) {
         return reactions.reaction_navigate(e, event_name);
     }
 
-    if (ui_state.is_info_overlay()) {
+    if (modals.info_overlay_open()) {
         return false;
     }
 
