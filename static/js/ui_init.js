@@ -246,13 +246,13 @@ $(function () {
     tutorial.initialize();
     notifications.initialize();
     gear_menu.initialize();
+    settings_sections.initialize();
     hashchange.initialize();
     pointer.initialize();
     unread_ui.initialize();
     activity.initialize();
     emoji.initialize();
     hotspots.initialize();
-    settings_sections.initialize();
 });
 
 
