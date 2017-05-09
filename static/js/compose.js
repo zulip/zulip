@@ -296,15 +296,13 @@ function clear_compose_box() {
 }
 
 exports.send_message_success = function (local_id, message_id, start_time, locally_echoed) {
-    if (! feature_flags.local_echo || !locally_echoed) {
+    if (!locally_echoed) {
         clear_compose_box();
     }
 
     process_send_time(message_id, start_time, locally_echoed);
 
-    if (feature_flags.local_echo) {
-        echo.reify_message_id(local_id, message_id);
-    }
+    echo.reify_message_id(local_id, message_id);
 
     setTimeout(function () {
         if (exports.send_times_data[message_id].received === undefined) {
@@ -336,13 +334,13 @@ function send_message(request) {
 
     var start_time = new Date();
     var local_id;
-    if (feature_flags.local_echo) {
-        local_id = echo.try_deliver_locally(request);
-        if (local_id !== undefined) {
-            // We delivered this message locally
-            request.local_id = local_id;
-        }
+
+    local_id = echo.try_deliver_locally(request);
+    if (local_id !== undefined) {
+        // We delivered this message locally
+        request.local_id = local_id;
     }
+
     var locally_echoed = local_id !== undefined;
 
     function success(data) {
@@ -352,7 +350,7 @@ function send_message(request) {
     function error(response) {
         // If we're not local echo'ing messages, or if this message was not
         // locally echoed, show error in compose box
-        if (!feature_flags.local_echo || request.local_id === undefined) {
+        if (request.local_id === undefined) {
             compose_error(response, $('#new_message_content'));
             return;
         }
@@ -363,7 +361,7 @@ function send_message(request) {
     exports.transmit_message(request, success, error);
     server_events.assert_get_events_running("Restarting get_events because it was not running during send");
 
-    if (feature_flags.local_echo && locally_echoed) {
+    if (locally_echoed) {
         clear_compose_box();
     }
 }
