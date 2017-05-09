@@ -428,13 +428,6 @@ exports.register_click_handlers = function () {
         e.stopPropagation();
         e.preventDefault();
     });
-    $('body').on('click', '.popover_narrow_by_id', function (e) {
-        var msgid = $(e.currentTarget).data('msgid');
-        popovers.hide_actions_popover();
-        narrow.by_id(msgid, {trigger: 'popover'});
-        e.stopPropagation();
-        e.preventDefault();
-    });
     $('body').on('click', '.popover_toggle_collapse', function (e) {
         var msgid = $(e.currentTarget).data('message-id');
         var row = current_msg_list.get_row(msgid);

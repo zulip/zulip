@@ -350,25 +350,6 @@ exports.by_time_travel = function (target_id, opts) {
     narrow.activate([{operator: "near", operand: target_id}], opts);
 };
 
-exports.by_id = function (target_id, opts) {
-    opts = _.defaults({}, opts, {then_select_id: target_id});
-    narrow.activate([{operator: "id", operand: target_id}], opts);
-};
-
-exports.by_conversation_and_time = function (target_id, opts) {
-    var args = [{operator: "near", operand: target_id}];
-    var original = message_store.get(target_id);
-    opts = _.defaults({}, opts, {then_select_id: target_id});
-
-    if (original.type !== 'stream') {
-        args.push({operator: "pm-with", operand: original.reply_to});
-    } else {
-        args.push({operator: 'stream', operand: original.stream});
-        args.push({operator: 'topic', operand: original.subject});
-    }
-    narrow.activate(args, opts);
-};
-
 exports.deactivate = function () {
     if (narrow_state.get_current_filter() === undefined) {
         return;
