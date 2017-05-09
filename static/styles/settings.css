@@ -123,15 +123,13 @@ td .button {
 
 .settings-section {
     display: none;
-    background-color: #fafafa;
-    border-radius: 2px;
+
+    width: calc(100% - 40px);
     margin: 20px;
-    border: 1px solid #dfdfdf;
-    border-top: 5px solid #dfdfdf;
 }
 
 #organization .settings-section {
-    display: block;
+    display: inline-block;
 }
 
 .settings-wrapper {
@@ -156,7 +154,6 @@ td .button {
 }
 
 .settings-section form {
-    padding: 0px 20px;
     margin: 0;
 }
 
@@ -825,6 +822,8 @@ input[type=checkbox].inline-block {
     float: left;
     overflow-y: auto;
     overflow-x: hidden;
+
+    background-color: #fafafa;
 }
 
 #settings_page .table-striped thead th {
