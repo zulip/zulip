@@ -797,7 +797,7 @@ class SubscriptionPropertiesTest(ZulipTestCase):
     def test_set_stream_color(self):
         # type: () -> None
         """
-        A POST request to /json/subscriptions/property with stream_name and
+        A POST request to /api/v1/users/me/subscriptions/properties with stream_id and
         color data sets the stream color, and for that stream only.
         """
         test_user = self.example_user('hamlet')
@@ -806,20 +806,21 @@ class SubscriptionPropertiesTest(ZulipTestCase):
 
         old_subs, _ = gather_subscriptions(test_user)
         sub = old_subs[0]
-        stream_name = sub['name']
+        stream_id = sub['stream_id']
         new_color = "#ffffff" # TODO: ensure that this is different from old_color
         result = self.client_post(
-            "/json/subscriptions/property",
+            "/api/v1/users/me/subscriptions/properties",
             {"subscription_data": ujson.dumps([{"property": "color",
-                                                "stream": stream_name,
-                                                "value": "#ffffff"}])})
+                                                "stream_id": stream_id,
+                                                "value": "#ffffff"}])},
+            **self.api_auth(test_email))
 
         self.assert_json_success(result)
 
         new_subs = gather_subscriptions(get_user_profile_by_email(test_email))[0]
         found_sub = None
         for sub in new_subs:
-            if sub['name'] == stream_name:
+            if sub['stream_id'] == stream_id:
                 found_sub = sub
                 break
 
@@ -828,7 +829,7 @@ class SubscriptionPropertiesTest(ZulipTestCase):
 
         new_subs.remove(found_sub)
         for sub in old_subs:
-            if sub['name'] == stream_name:
+            if sub['stream_id'] == stream_id:
                 found_sub = sub
                 break
         old_subs.remove(found_sub)
@@ -837,19 +838,21 @@ class SubscriptionPropertiesTest(ZulipTestCase):
     def test_set_color_missing_stream_name(self):
         # type: () -> None
         """
-        Updating the color property requires a `stream` key.
+        Updating the color property requires a `stream_id` key.
         """
-        test_email = "hamlet@zulip.com"
+        test_user = self.example_user('hamlet')
+        test_email = test_user.email
         self.login(test_email)
         result = self.client_post(
-            "/json/subscriptions/property",
+            "/api/v1/users/me/subscriptions/properties",
             {"subscription_data": ujson.dumps([{"property": "color",
-                                                "value": "#ffffff"}])})
+                                                "value": "#ffffff"}])},
+            **self.api_auth(test_email))
 
         self.assert_json_error(
-            result, "stream key is missing from subscription_data[0]")
+            result, "stream_id key is missing from subscription_data[0]")
 
-    def test_set_color_unsubscribed_stream_name(self):
+    def test_set_color_unsubscribed_stream_id(self):
         # type: () -> None
         """
         Updating the color property requires a subscribed stream.
@@ -857,32 +860,17 @@ class SubscriptionPropertiesTest(ZulipTestCase):
         test_email = "hamlet@zulip.com"
         self.login(test_email)
 
-        unsubs_stream = 'Rome'
+        subscribed, unsubscribed, never_subscribed = gather_subscriptions_helper(
+            get_user_profile_by_email(test_email))
+        not_subbed = unsubscribed + never_subscribed
         result = self.client_post(
-            "/json/subscriptions/property",
+            "/api/v1/users/me/subscriptions/properties",
             {"subscription_data": ujson.dumps([{"property": "color",
-                                                "stream": unsubs_stream,
-                                                "value": "#ffffff"}])})
+                                                "stream_id": not_subbed[0]["stream_id"],
+                                                "value": "#ffffff"}])},
+            **self.api_auth(test_email))
         self.assert_json_error(
-            result, "Not subscribed to stream %s" % (unsubs_stream,))
-
-    def test_json_subscription_property_invalid_verb(self):
-        # type: () -> None
-        """
-        Called by invalid request method. No other request method other than
-        'post' is allowed in this case.
-        """
-        test_user = self.example_user('hamlet')
-        test_email = test_user.email
-        self.login(test_email)
-        subs = gather_subscriptions(test_user)[0]
-
-        result = self.client_get(
-            "/json/subscriptions/property",
-            {"subscription_data": ujson.dumps([{"property": "in_home_view",
-                                                "stream": subs[0]["name"],
-                                                "value": False}])})
-        self.assert_json_error(result, "Invalid verb")
+            result, "Not subscribed to stream id %d" % (not_subbed[0]["stream_id"],))
 
     def test_set_color_missing_color(self):
         # type: () -> None
@@ -894,9 +882,10 @@ class SubscriptionPropertiesTest(ZulipTestCase):
         self.login(test_email)
         subs = gather_subscriptions(test_user)[0]
         result = self.client_post(
-            "/json/subscriptions/property",
+            "/api/v1/users/me/subscriptions/properties",
             {"subscription_data": ujson.dumps([{"property": "color",
-                                                "stream": subs[0]["name"]}])})
+                                                "stream_id": subs[0]["stream_id"]}])},
+            **self.api_auth(test_email))
 
         self.assert_json_error(
             result, "value key is missing from subscription_data[0]")
@@ -904,7 +893,7 @@ class SubscriptionPropertiesTest(ZulipTestCase):
     def test_set_pin_to_top(self):
         # type: () -> None
         """
-        A POST request to /json/subscriptions/property with stream_name and
+        A POST request to /api/v1/users/me/subscriptions/properties with stream_id and
         pin_to_top data pins the stream.
         """
         user_profile = self.example_user('hamlet')
@@ -913,17 +902,18 @@ class SubscriptionPropertiesTest(ZulipTestCase):
 
         old_subs, _ = gather_subscriptions(user_profile)
         sub = old_subs[0]
-        stream_name = sub['name']
+        stream_id = sub['stream_id']
         new_pin_to_top = not sub['pin_to_top']
         result = self.client_post(
-            "/json/subscriptions/property",
+            "/api/v1/users/me/subscriptions/properties",
             {"subscription_data": ujson.dumps([{"property": "pin_to_top",
-                                                "stream": stream_name,
-                                                "value": new_pin_to_top}])})
+                                                "stream_id": stream_id,
+                                                "value": new_pin_to_top}])},
+            **self.api_auth(test_email))
 
         self.assert_json_success(result)
 
-        updated_sub = get_subscription(stream_name, user_profile)
+        updated_sub = get_subscription(sub['name'], user_profile)
 
         self.assertIsNotNone(updated_sub)
         self.assertEqual(updated_sub.pin_to_top, new_pin_to_top)
@@ -940,40 +930,44 @@ class SubscriptionPropertiesTest(ZulipTestCase):
 
         property_name = "in_home_view"
         result = self.client_post(
-            "/json/subscriptions/property",
+            "/api/v1/users/me/subscriptions/properties",
             {"subscription_data": ujson.dumps([{"property": property_name,
                                                 "value": "bad",
-                                                "stream": subs[0]["name"]}])})
+                                                "stream_id": subs[0]["stream_id"]}])},
+            **self.api_auth(test_email))
 
         self.assert_json_error(result,
                                '%s is not a boolean' % (property_name,))
 
         property_name = "desktop_notifications"
         result = self.client_post(
-            "/json/subscriptions/property",
+            "/api/v1/users/me/subscriptions/properties",
             {"subscription_data": ujson.dumps([{"property": property_name,
                                                 "value": "bad",
-                                                "stream": subs[0]["name"]}])})
+                                                "stream_id": subs[0]["stream_id"]}])},
+            **self.api_auth(test_email))
 
         self.assert_json_error(result,
                                '%s is not a boolean' % (property_name,))
 
         property_name = "audible_notifications"
         result = self.client_post(
-            "/json/subscriptions/property",
+            "/api/v1/users/me/subscriptions/properties",
             {"subscription_data": ujson.dumps([{"property": property_name,
                                                 "value": "bad",
-                                                "stream": subs[0]["name"]}])})
+                                                "stream_id": subs[0]["stream_id"]}])},
+            **self.api_auth(test_email))
 
         self.assert_json_error(result,
                                '%s is not a boolean' % (property_name,))
 
         property_name = "color"
         result = self.client_post(
-            "/json/subscriptions/property",
+            "/api/v1/users/me/subscriptions/properties",
             {"subscription_data": ujson.dumps([{"property": property_name,
                                                 "value": False,
-                                                "stream": subs[0]["name"]}])})
+                                                "stream_id": subs[0]["stream_id"]}])},
+            **self.api_auth(test_email))
 
         self.assert_json_error(result,
                                '%s is not a string' % (property_name,))
@@ -983,14 +977,14 @@ class SubscriptionPropertiesTest(ZulipTestCase):
         test_email = "hamlet@zulip.com"
         self.login(test_email)
 
-        stream_name = "invalid_stream"
+        stream_id = 1000
         result = self.client_post(
-            "/json/subscriptions/property",
+            "/api/v1/users/me/subscriptions/properties",
             {"subscription_data": ujson.dumps([{"property": "in_home_view",
-                                                "stream": stream_name,
-                                                "value": False}])})
-
-        self.assert_json_error(result, "Invalid stream name '%s'" % (stream_name,))
+                                                "stream_id": stream_id,
+                                                "value": False}])},
+            **self.api_auth(test_email))
+        self.assert_json_error(result, "Invalid stream id")
 
     def test_set_invalid_property(self):
         # type: () -> None
@@ -1002,10 +996,11 @@ class SubscriptionPropertiesTest(ZulipTestCase):
         self.login(test_email)
         subs = gather_subscriptions(test_user)[0]
         result = self.client_post(
-            "/json/subscriptions/property",
+            "/api/v1/users/me/subscriptions/properties",
             {"subscription_data": ujson.dumps([{"property": "bad",
                                                 "value": "bad",
-                                                "stream": subs[0]["name"]}])})
+                                                "stream_id": subs[0]["stream_id"]}])},
+            **self.api_auth(test_email))
 
         self.assert_json_error(result,
                                "Unknown subscription property: bad")
@@ -1041,6 +1036,55 @@ class SubscriptionRestApiTest(ZulipTestCase):
         self.assert_json_success(result)
         streams = self.get_streams(email)
         self.assertTrue('my_test_stream_1' not in streams)
+
+    def test_api_valid_property(self):
+        # type: () -> None
+        """
+        Trying to set valid json returns success message.
+        """
+        test_user = self.example_user('hamlet')
+        test_email = test_user.email
+
+        self.login(test_email)
+        subs = gather_subscriptions(test_user)[0]
+        result = self.client_patch(
+            "/api/v1/users/me/subscriptions/%d" % subs[0]["stream_id"],
+            {'property': 'color', 'value': '#c2c2c2'},
+            **self.api_auth(test_email))
+        self.assert_json_success(result)
+
+    def test_api_invalid_property(self):
+        # type: () -> None
+        """
+        Trying to set an invalid property returns a JSON error.
+        """
+
+        test_user = self.example_user('hamlet')
+        test_email = test_user.email
+
+        self.login(test_email)
+        subs = gather_subscriptions(test_user)[0]
+
+        result = self.client_patch(
+            "/api/v1/users/me/subscriptions/%d" % subs[0]["stream_id"],
+            {'property': 'invalid', 'value': 'somevalue'},
+            **self.api_auth(test_email))
+        self.assert_json_error(result,
+                               "Unknown subscription property: invalid")
+
+    def test_api_invalid_stream_id(self):
+        # type: () -> None
+        """
+        Trying to set an invalid stream id returns a JSON error.
+        """
+        test_email = "hamlet@zulip.com"
+        self.login(test_email)
+        result = self.client_patch(
+            "/api/v1/users/me/subscriptions/121",
+            {'property': 'in_home_view', 'value': 'somevalue'},
+            **self.api_auth(test_email))
+        self.assert_json_error(result,
+                               "Invalid stream id")
 
     def test_bad_add_parameters(self):
         # type: () -> None
@@ -2119,7 +2163,6 @@ class SubscriptionAPITest(ZulipTestCase):
         subscription = self.get_subscription(user_profile, invite_streams[0])
         self.assertFalse(subscription.desktop_notifications)
         self.assertFalse(subscription.audible_notifications)
-
 
 class GetPublicStreamsTest(ZulipTestCase):
 

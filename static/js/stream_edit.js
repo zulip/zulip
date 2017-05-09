@@ -248,7 +248,7 @@ exports.set_stream_property = function (sub, property, value) {
     var stream_name = sub.name;
     var sub_data = {stream: stream_name, property: property, value: value};
     return channel.post({
-        url:      '/json/subscriptions/property',
+        url:      '/json/users/me/subscriptions/properties',
         data: {subscription_data: JSON.stringify([sub_data])},
         timeout:  10*1000,
     });
