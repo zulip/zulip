@@ -150,13 +150,14 @@ exports.next_topic = function (streams, get_topics, has_unread_messages, curr_st
 
         return gen;
     }
-
+    
     var outer_gen = exports.fchain(stream_gen, get_topic_gen);
     return outer_gen.next();
 };
 
 exports.get_next_topic = function (curr_stream, curr_topic) {
     var my_streams = stream_sort.get_streams();
+    var unmuted_streams = _.filter(my_streams, stream_data.in_home_view);
 
     function get_topics(stream) {
         var topics = stream_data.get_recent_topics(stream) || [];
@@ -166,9 +167,8 @@ exports.get_next_topic = function (curr_stream, curr_topic) {
     function has_unread_messages(stream, topic) {
         return unread.topic_has_any_unread(stream, topic);
     }
-
     return exports.next_topic(
-        my_streams,
+        unmuted_streams,
         get_topics,
         has_unread_messages,
         curr_stream,
