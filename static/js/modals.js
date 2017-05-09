@@ -20,6 +20,10 @@ exports.info_overlay_open = function () {
     return open_modal_name === 'informationalOverlays';
 };
 
+exports.settings_open = function () {
+    return open_modal_name === 'settings';
+};
+
 exports.open_overlay = function (opts) {
     if (!opts.name || !opts.overlay || !opts.on_close) {
         blueslip.error('Programming error in open_modal');

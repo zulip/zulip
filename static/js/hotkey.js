@@ -25,10 +25,6 @@ function open_reactions() {
     return true;
 }
 
-exports.is_settings_page = function () {
-  return (/^#*(settings|organization)/g).test(window.location.hash);
-};
-
 exports.is_lightbox_open = function () {
     return lightbox.is_open;
 };
@@ -267,7 +263,7 @@ exports.process_enter_key = function (e) {
         return true;
     }
 
-    if (exports.is_settings_page()) {
+    if (modals.settings_open()) {
         // On the settings page just let the browser handle
         // the enter key for things like submitting forms.
         return false;
@@ -411,7 +407,7 @@ exports.process_hotkey = function (e, hotkey) {
             }
     }
 
-    if (exports.is_settings_page()) {
+    if (modals.settings_open()) {
         switch (event_name) {
             case 'up_arrow':
                 settings.handle_up_arrow(e);
