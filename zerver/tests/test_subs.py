@@ -1037,6 +1037,55 @@ class SubscriptionRestApiTest(ZulipTestCase):
         streams = self.get_streams(email)
         self.assertTrue('my_test_stream_1' not in streams)
 
+    def test_api_valid_property(self):
+        # type: () -> None
+        """
+        Trying to set valid json returns success message.
+        """
+        test_user = self.example_user('hamlet')
+        test_email = test_user.email
+
+        self.login(test_email)
+        subs = gather_subscriptions(test_user)[0]
+        result = self.client_patch(
+            "/api/v1/users/me/subscriptions/%d" % subs[0]["stream_id"],
+            {'property': 'color', 'value': '#c2c2c2'},
+            **self.api_auth(test_email))
+        self.assert_json_success(result)
+
+    def test_api_invalid_property(self):
+        # type: () -> None
+        """
+        Trying to set an invalid property returns a JSON error.
+        """
+
+        test_user = self.example_user('hamlet')
+        test_email = test_user.email
+
+        self.login(test_email)
+        subs = gather_subscriptions(test_user)[0]
+
+        result = self.client_patch(
+            "/api/v1/users/me/subscriptions/%d" % subs[0]["stream_id"],
+            {'property': 'invalid', 'value': 'somevalue'},
+            **self.api_auth(test_email))
+        self.assert_json_error(result,
+                               "Unknown subscription property: invalid")
+
+    def test_api_invalid_stream_id(self):
+        # type: () -> None
+        """
+        Trying to set an invalid stream id returns a JSON error.
+        """
+        test_email = "hamlet@zulip.com"
+        self.login(test_email)
+        result = self.client_patch(
+            "/api/v1/users/me/subscriptions/121",
+            {'property': 'in_home_view', 'value': 'somevalue'},
+            **self.api_auth(test_email))
+        self.assert_json_error(result,
+                               "Invalid stream id")
+
     def test_bad_add_parameters(self):
         # type: () -> None
         email = 'hamlet@zulip.com'

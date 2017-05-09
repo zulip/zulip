@@ -255,6 +255,9 @@ v1_api_and_json_patterns = [
     url(r'^users/me/subscriptions/properties$', rest_dispatch,
         {'POST': 'zerver.views.streams.update_subscription_properties_backend'}),
 
+    url(r'users/me/subscriptions/(?P<stream_id>\d+)$', rest_dispatch,
+        {'PATCH': 'zerver.views.streams.update_subscriptions_property'}),
+
     # reactions -> zerver.view.reactions
     # PUT adds a reaction to a message
     # DELETE removes a reaction from a message

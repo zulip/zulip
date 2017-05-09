@@ -411,6 +411,15 @@ def json_get_stream_id(request, user_profile, stream_name=REQ('stream')):
     return json_success({'stream_id': stream.id})
 
 @has_request_variables
+def update_subscriptions_property(request, user_profile, stream_id=REQ(), property=REQ(), value=REQ()):
+    # type: (HttpRequest, UserProfile, int, str, str) -> HttpResponse
+    subscription_data = [{"property": property,
+                          "stream_id": stream_id,
+                          "value": value}]
+    return update_subscription_properties_backend(request, user_profile,
+                                                  subscription_data=subscription_data)
+
+@has_request_variables
 def update_subscription_properties_backend(request, user_profile, subscription_data=REQ(
         validator=check_list(
             check_dict([("stream_id", check_int),
