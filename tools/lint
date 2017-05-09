@@ -442,6 +442,8 @@ def build_custom_checkers(by_lang):
          'exclude': set(['tools/lib/provision.py',
                          'tools/setup/setup_venvs.py',
                          'scripts/lib/setup_venv.py',
+                         'scripts/lib/create-production-venv',
+                         'scripts/lib/setup_path_on_import.py',
                          'tools/lint']),
          'description': 'Explicit python invocations should not include a version'}
     ]) + whitespace_rules
@@ -449,7 +451,7 @@ def build_custom_checkers(by_lang):
         {'pattern': '#!.*sh [-xe]',
          'description': 'Fix shebang line with proper call to /usr/bin/env for Bash path, change -x|-e switches'
                         ' to set -x|set -e'},
-    ] + whitespace_rules[0:1] # type: RuleList
+    ] + whitespace_rules[0:1]  # type: RuleList
     css_rules = cast(RuleList, [
         {'pattern': '^[^:]*:\S[^:]*;$',
          'description': "Missing whitespace after : in CSS"},
