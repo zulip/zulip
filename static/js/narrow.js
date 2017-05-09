@@ -564,13 +564,20 @@ exports.by_near_uri = function (message_id) {
     return "#narrow/near/" + hash_util.encodeHashComponent(message_id);
 };
 
-exports.by_conversation_and_time_uri = function (message) {
+exports.by_conversation_and_time_uri = function (message, is_absolute_url) {
+    var absolute_url = "";
+    if (is_absolute_url) {
+        absolute_url = window.location .protocol + "//" +
+            window.location.host + "/" + window.location.pathname.split('/')[1];
+    }
     if (message.type === "stream") {
-        return "#narrow/stream/" + hash_util.encodeHashComponent(message.stream) +
+        return absolute_url + "#narrow/stream/" +
+            hash_util.encodeHashComponent(message.stream) +
             "/subject/" + hash_util.encodeHashComponent(message.subject) +
             "/near/" + hash_util.encodeHashComponent(message.id);
     }
-    return "#narrow/pm-with/" + hash_util.encodeHashComponent(message.reply_to) +
+    return absolute_url + "#narrow/pm-with/" +
+        hash_util.encodeHashComponent(message.reply_to) +
         "/near/" + hash_util.encodeHashComponent(message.id);
 };
 
