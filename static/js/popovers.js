@@ -41,7 +41,7 @@ function load_medium_avatar(user_email) {
     });
 }
 
-function show_message_info_popover(element, id) {
+exports.show_message_info_popover = function (element, id) {
     var last_popover_elem = current_message_info_popover_elem;
     popovers.hide_all();
     if (last_popover_elem !== undefined
@@ -105,7 +105,7 @@ function show_message_info_popover(element, id) {
 
         current_message_info_popover_elem = elt;
     }
-}
+};
 
 exports.toggle_actions_popover = function (element, id) {
     var last_popover_elem = current_actions_popover_elem;
@@ -281,7 +281,7 @@ exports.register_click_handlers = function () {
     $("#main_div").on("click", ".sender_info_hover", function (e) {
         var row = $(this).closest(".message_row");
         e.stopPropagation();
-        show_message_info_popover(this, rows.id(row));
+        exports.show_message_info_popover(this, rows.id(row));
     });
 
     $('body').on('click', '.user_popover .narrow_to_private_messages', function (e) {

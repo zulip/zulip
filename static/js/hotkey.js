@@ -25,6 +25,14 @@ function open_reactions() {
     return true;
 }
 
+function open_message_info() {
+    var target = $(current_msg_list.selected_row()).find(".sender_info_hover")[0];
+    if (target) {
+        popovers.show_message_info_popover(target, current_msg_list.selected_id());
+    }
+    return true;
+}
+
 exports.is_settings_page = function () {
   return (/^#*(settings|organization)/g).test(window.location.hash);
 };
@@ -116,6 +124,7 @@ var keypress_mappings = {
     106: {name: 'vim_down', message_view_only: true}, // 'j'
     107: {name: 'vim_up', message_view_only: true}, // 'k'
     110: {name: 'new_stream', message_view_only: false}, // 'n'
+    112: {name: 'open_message_info', message_view_only: true}, // 'p'
     113: {name: 'query_users', message_view_only: false}, // 'q'
     114: {name: 'reply_message', message_view_only: true}, // 'r'
     115: {name: 'narrow_by_recipient', message_view_only: true}, // 's'
@@ -661,6 +670,9 @@ exports.process_hotkey = function (e, hotkey) {
             return true;
         case 'open_reactions': // ':': open reactions to message
             open_reactions();
+            return true;
+        case 'open_message_info': // 'p': open message info popover
+            open_message_info();
             return true;
         case 'thumbs_up_emoji': // '+': reacts with thumbs up emoji on selected message
             reactions.toggle_reaction(msg.id, '+1');
