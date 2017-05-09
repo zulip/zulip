@@ -28,6 +28,7 @@ import zerver.views.unsubscribe
 import zerver.views.integrations
 import zerver.views.user_settings
 import zerver.views.muting
+import zerver.views.streams
 import confirmation.views
 
 from zerver.lib.rest import rest_dispatch
@@ -250,6 +251,9 @@ v1_api_and_json_patterns = [
         {'POST': 'zerver.views.messages.update_message_flags'}),
     url(r'^messages/(?P<message_id>\d+)/history$', rest_dispatch,
         {'GET': 'zerver.views.messages.get_message_edit_history'}),
+
+    url(r'^users/me/subscriptions/properties$', rest_dispatch,
+        {'POST': 'zerver.views.streams.update_subscription_properties_backend'}),
 
     # reactions -> zerver.view.reactions
     # PUT adds a reaction to a message
