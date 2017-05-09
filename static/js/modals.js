@@ -61,6 +61,15 @@ exports.close_modal = function (name) {
     close_handler();
 };
 
+exports.close_active = function () {
+    if (!open_modal_name) {
+        blueslip.warn('close_active() called without checking is_active()');
+        return;
+    }
+
+    exports.close_modal(open_modal_name);
+};
+
 exports.close_for_hash_change = function () {
     $(".overlay.show").removeClass("show");
     reset_state();

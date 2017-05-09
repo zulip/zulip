@@ -179,33 +179,8 @@ exports.process_escape_key = function (e) {
         return false;
     }
 
-    if (exports.is_lightbox_open()) {
-        modals.close_modal("lightbox");
-        return true;
-    }
-
-    if ($("#subscription_overlay").hasClass("show")) {
-        modals.close_modal("subscriptions");
-        return true;
-    }
-
-    if (drafts.drafts_overlay_open()) {
-        modals.close_modal("drafts");
-        return true;
-    }
-
-    if ($(".informational-overlays").hasClass("show")) {
-        modals.close_modal("informationalOverlays");
-        return true;
-    }
-
-    if ($("#invite-user.show").length) {
-        modals.close_modal("invite");
-        return true;
-    }
-
-    if (exports.is_settings_page()) {
-        modals.close_modal('settings');
+    if (modals.is_active()) {
+        modals.close_active();
         return true;
     }
 
