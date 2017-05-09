@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 import random
 import requests
-from typing import Any, Dict, List, Optional, SupportsInt, Text, Union
+from typing import Any, Dict, List, Optional, SupportsInt, Text, Union, Type
 
 from version import ZULIP_VERSION
 from zerver.models import PushDeviceToken, Message, Recipient, UserProfile, \
@@ -31,6 +31,15 @@ import os
 import time
 import ujson
 from functools import partial
+
+if settings.ZILENCER_ENABLED:
+    from zilencer.models import RemotePushDeviceToken
+else:
+    from mock import Mock
+    RemotePushDeviceToken = Mock()  # type: ignore # https://github.com/JukkaL/mypy/issues/1188
+
+DeviceToken = Union[PushDeviceToken, RemotePushDeviceToken]
+DeviceTokenType = Union[Type[PushDeviceToken], Type[RemotePushDeviceToken]]
 
 # APNS error codes
 ERROR_CODES = {
@@ -225,11 +234,17 @@ def send_android_push_notification_to_user(user_profile, data):
 
 @statsd_increment("android_push_notification")
 def send_android_push_notification(devices, data):
-    # type: (List[PushDeviceToken], Dict[str, Any]) -> None
+    # type: (List[DeviceToken], Dict[str, Any]) -> None
     if not gcm:
         logging.warning("Attempting to send a GCM push notification, but no API key was configured")
         return
     reg_ids = [device.token for device in devices]
+
+    # If we are on notification bouncer, we will get RemotePushDeviceToken
+    # devices otherwise we will get PushDeviceToken devices. We save the type
+    # of devices in DeviceTokenClass so that we can delete the tokens from
+    # their respective DB tables.
+    DeviceTokenClass = type(devices[0])  # type: DeviceTokenType
 
     res = gcm.json_request(registration_ids=reg_ids, data=data)
 
@@ -245,7 +260,8 @@ def send_android_push_notification(devices, data):
             if reg_id == new_reg_id:
                 # I'm not sure if this should happen. In any case, not really actionable.
                 logging.warning("GCM: Got canonical ref but it already matches our ID %s!" % (reg_id,))
-            elif not PushDeviceToken.objects.filter(token=new_reg_id, kind=PushDeviceToken.GCM).count():
+            elif not DeviceTokenClass.objects.filter(token=new_reg_id,
+                                                     kind=DeviceTokenClass.GCM).count():
                 # This case shouldn't happen; any time we get a canonical ref it should have been
                 # previously registered in our system.
                 #
@@ -253,13 +269,13 @@ def send_android_push_notification(devices, data):
                 logging.warning(
                     "GCM: Got canonical ref %s replacing %s but new ID not registered! Updating." %
                     (new_reg_id, reg_id))
-                PushDeviceToken.objects.filter(
-                    token=reg_id, kind=PushDeviceToken.GCM).update(token=new_reg_id)
+                DeviceTokenClass.objects.filter(
+                    token=reg_id, kind=DeviceTokenClass.GCM).update(token=new_reg_id)
             else:
                 # Since we know the new ID is registered in our system we can just drop the old one.
                 logging.info("GCM: Got canonical ref %s, dropping %s" % (new_reg_id, reg_id))
 
-                PushDeviceToken.objects.filter(token=reg_id, kind=PushDeviceToken.GCM).delete()
+                DeviceTokenClass.objects.filter(token=reg_id, kind=DeviceTokenClass.GCM).delete()
 
     if 'errors' in res:
         for error, reg_ids in res['errors'].items():
@@ -267,7 +283,7 @@ def send_android_push_notification(devices, data):
                 for reg_id in reg_ids:
                     logging.info("GCM: Removing %s" % (reg_id,))
 
-                    device = PushDeviceToken.objects.get(token=reg_id, kind=PushDeviceToken.GCM)
+                    device = DeviceTokenClass.objects.get(token=reg_id, kind=DeviceTokenClass.GCM)
                     device.delete()
             else:
                 for reg_id in reg_ids:
