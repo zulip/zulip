@@ -347,7 +347,6 @@ def handle_push_notification(user_profile_id, missed_message):
         gcm_payload = get_gcm_payload(user_profile, message)
 
         if apple_devices or android_devices:
-            alert = get_alert_from_message(message)
             # TODO: set badge count in a better way
             if apple_devices:
                 send_apple_push_notification(user_profile.id, apple_devices,
