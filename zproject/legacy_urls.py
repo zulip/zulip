@@ -25,7 +25,6 @@ legacy_urls = [
     # pushed to us via the event system.
     url(r'^json/subscriptions/exists$', zerver.views.streams.json_stream_exists),
 
-    url(r'^json/subscriptions/property$', zerver.views.streams.json_subscription_property),
     url(r'^json/fetch_api_key$', zerver.views.auth.json_fetch_api_key),
     url(r'^json/tutorial_send_message$', zerver.views.tutorial.json_tutorial_send_message),
     url(r'^json/tutorial_status$', zerver.views.tutorial.json_tutorial_status),

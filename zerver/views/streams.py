@@ -23,7 +23,7 @@ from zerver.lib.response import json_success, json_error, json_response
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, \
     check_stream_name, check_stream_name_available, filter_stream_authorization, \
     list_to_streams
-from zerver.lib.validator import check_string, check_list, check_dict, \
+from zerver.lib.validator import check_string, check_int, check_list, check_dict, \
     check_bool, check_variable_type
 from zerver.models import UserProfile, Stream, Realm, Subscription, \
     Recipient, get_recipient, get_stream, get_active_user_dicts_in_realm
@@ -410,11 +410,28 @@ def json_get_stream_id(request, user_profile, stream_name=REQ('stream')):
     (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
     return json_success({'stream_id': stream.id})
 
-@authenticated_json_view
 @has_request_variables
-def json_subscription_property(request, user_profile, subscription_data=REQ(
+def update_subscriptions_property(request, user_profile, stream_id=REQ(), property=REQ(), value=REQ()):
+    # type: (HttpRequest, UserProfile, int, str, str) -> HttpResponse
+    subscription_data = [{"property": property,
+                          "stream_id": stream_id,
+                          "value": value}]
+    return update_subscription_properties_backend(request, user_profile, subscription_data)
+
+@has_request_variables
+def update_batch_subscriptions_property(request, user_profile, subscription_data=REQ(
         validator=check_list(
-            check_dict([("stream", check_string),
+            check_dict([("stream_id", check_int),
+                        ("property", check_string),
+                        ("value", check_variable_type(
+                            [check_string, check_bool]))])))):
+    # type: (HttpRequest, UserProfile, List[Dict[str, Any]]) -> HttpResponse
+    return update_subscription_properties_backend(request, user_profile, subscription_data)
+
+
+def update_subscription_properties_backend(request, user_profile, subscription_data=REQ(
+        validator=check_list(
+            check_dict([("stream_id", check_int),
                         ("property", check_string),
                         ("value", check_variable_type(
                             [check_string, check_bool]))])))):
@@ -426,12 +443,9 @@ def json_subscription_property(request, user_profile, subscription_data=REQ(
 
     Requests are of the form:
 
-    [{"stream": "devel", "property": "in_home_view", "value": False},
-     {"stream": "devel", "property": "color", "value": "#c2c2c2"}]
+    [{"stream_id": "1", "property": "in_home_view", "value": False},
+     {"stream_id": "1", "property": "color", "value": "#c2c2c2"}]
     """
-    if request.method != "POST":
-        return json_error(_("Invalid verb"))
-
     property_converters = {"color": check_string, "in_home_view": check_bool,
                            "desktop_notifications": check_bool,
                            "audible_notifications": check_bool,
@@ -439,16 +453,16 @@ def json_subscription_property(request, user_profile, subscription_data=REQ(
     response_data = []
 
     for change in subscription_data:
-        stream_name = change["stream"]
+        stream_id = change["stream_id"]
         property = change["property"]
         value = change["value"]
 
         if property not in property_converters:
             return json_error(_("Unknown subscription property: %s") % (property,))
 
-        (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
+        (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
         if sub is None:
-            return json_error(_("Not subscribed to stream %s") % (stream_name,))
+            return json_error(_("Not subscribed to stream id %d") % (stream_id,))
 
         property_conversion = property_converters[property](property, value)
         if property_conversion:
@@ -457,7 +471,7 @@ def json_subscription_property(request, user_profile, subscription_data=REQ(
         do_change_subscription_property(user_profile, sub, stream,
                                         property, value)
 
-        response_data.append({'stream': stream_name,
+        response_data.append({'stream_id': stream_id,
                               'property': property,
                               'value': value})
 
