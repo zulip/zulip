@@ -121,8 +121,18 @@ def response_listener(error_response):
         logging.warn("APNS: Removing token from database due to above failure")
         try:
             PushDeviceToken.objects.get(user=user, token=b64_token).delete()
+            return  # No need to check RemotePushDeviceToken
         except PushDeviceToken.DoesNotExist:
             pass
+
+        if settings.ZILENCER_ENABLED:
+            # Trying to delete from both models is a bit inefficient than
+            # deleting from only one model but this method is very simple.
+            try:
+                RemotePushDeviceToken.objects.get(user_id=user.id,
+                                                  token=b64_token).delete()
+            except RemotePushDeviceToken.DoesNotExist:
+                pass
 
 def get_connection(cert_file, key_file):
     # type: (str, str) -> APNs
@@ -177,7 +187,7 @@ def send_apple_push_notification_to_user(user, alert, **extra_data):
 # mobile app
 @statsd_increment("apple_push_notification")
 def send_apple_push_notification(user_id, devices, **extra_data):
-    # type: (int, List[PushDeviceToken], **Any) -> None
+    # type: (int, List[DeviceToken], **Any) -> None
     if not connection and not dbx_connection:
         logging.warning("Attempting to send push notification, but no connection was found. "
                         "This may be because we could not find the APNS Certificate file.")
