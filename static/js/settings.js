@@ -1,6 +1,8 @@
 var settings = (function () {
 
 var exports = {};
+var map = {};
+var map_initialized = false;
 
 $("body").ready(function () {
     var $sidebar = $(".form-sidebar");
@@ -45,6 +47,29 @@ $("body").ready(function () {
 
 
 function _setup_page() {
+    // only run once -- if the map has not already been initialized.
+    if (!map_initialized) {
+        map = {
+            "your-account": i18n.t("Your account"),
+            "display-settings": i18n.t("Display settings"),
+            notifications: i18n.t("Notifications"),
+            "your-bots": i18n.t("Your bots"),
+            "alert-words": i18n.t("Alert words"),
+            "uploaded-files": i18n.t("Uploaded files"),
+            "muted-topics": i18n.t("Muted topics"),
+            "zulip-labs": i18n.t("Zulip labs"),
+            "organization-settings": i18n.t("Organization settings"),
+            "emoji-settings": i18n.t("Emoji settings"),
+            "auth-methods": i18n.t("Authorization methods"),
+            "user-list-admin": i18n.t("Active users"),
+            "deactivated-users-admin": i18n.t("Deactivated users"),
+            "bot-list-admin": i18n.t("Bot list"),
+            "streams-list-admin": i18n.t("Streams"),
+            "default-streams-list": i18n.t("Default streams"),
+            "filter-settings": i18n.t("Filter settings"),
+        };
+    }
+
     var tab = (function () {
         var tab = false;
         var hash_sequence = window.location.hash.split(/\//);
@@ -90,6 +115,15 @@ exports.launch_page = function (tab) {
     modals.open_settings();
 
     $active_tab.click();
+};
+
+exports.set_settings_header = function (key) {
+    if (map[key]) {
+        $(".settings-header h1 .section").text(" / " + map[key]);
+    } else {
+        blueslip.warn("Error: the key '" + key + "' does not exist in the settings" +
+            " header mapping file. Please add it.");
+    }
 };
 
 exports.handle_up_arrow = function (e) {
