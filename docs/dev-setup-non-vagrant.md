@@ -291,9 +291,6 @@ Make sure you have followed the steps specific for your platform:
 For managing Zulip's python dependencies, we recommend using
 [virtualenvs](https://virtualenv.pypa.io/en/stable/).
 
-You must create two virtualenvs. One for Python 2 and one for Python 3.
-You must also install appropriate python packages in them.
-
 You should either install the virtualenvs in `/srv`, or put symlinks to
 them in `/srv`.  If you don't do that, some scripts might not work correctly.
 
@@ -303,12 +300,6 @@ virtualenvs - /srv/zulip-venv and /srv/zulip-py3-venv.
 If you want to do it manually, here are the steps:
 
 ```
-sudo virtualenv /srv/zulip-venv -p python2 # Create a python2 virtualenv
-sudo chown -R `whoami`:`whoami` /srv/zulip-venv
-source /srv/zulip-venv/bin/activate # Activate python2 virtualenv
-pip install --upgrade pip # upgrade pip itself because older versions have known issues
-pip install --no-deps -r requirements/py2_dev.txt # install python packages required for development
-
 sudo virtualenv /srv/zulip-py3-venv -p python3 # Create a python3 virtualenv
 sudo chown -R `whoami`:`whoami` /srv/zulip-py3-venv
 source /srv/zulip-py3-venv/bin/activate # Activate python3 virtualenv
