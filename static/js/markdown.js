@@ -222,10 +222,6 @@ function python_to_js_filter(pattern, url) {
 
 exports.set_realm_filters = function (realm_filters) {
     // Update the marked parser with our particular set of realm filters
-    if (!feature_flags.local_echo) {
-        return;
-    }
-
     realm_filter_map = {};
     realm_filter_list = [];
 
