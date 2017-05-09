@@ -32,6 +32,9 @@ set_global('echo', {
     process_from_server: function (messages) {
         return messages;
     },
+});
+
+set_global('markdown', {
     set_realm_filters: noop,
 });
 

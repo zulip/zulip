@@ -128,6 +128,7 @@
         "templates": false,
         "alert_words": false,
         "fenced_code": false,
+        "markdown": false,
         "echo": false,
         "localstorage": false,
         "localStorage": false,

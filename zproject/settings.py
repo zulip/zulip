@@ -859,6 +859,7 @@ JS_SPECS = {
             'js/reload.js',
             'js/compose_fade.js',
             'js/fenced_code.js',
+            'js/markdown.js',
             'js/echo.js',
             'js/socket.js',
             'js/compose_state.js',
