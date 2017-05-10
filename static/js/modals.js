@@ -24,6 +24,10 @@ exports.settings_open = function () {
     return open_modal_name === 'settings';
 };
 
+exports.lightbox_open = function () {
+    return open_modal_name === 'lightbox';
+};
+
 exports.open_overlay = function (opts) {
     if (!opts.name || !opts.overlay || !opts.on_close) {
         blueslip.error('Programming error in open_modal');
