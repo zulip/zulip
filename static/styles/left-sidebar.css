@@ -298,8 +298,7 @@ ul.filters li.out_of_home_view li.muted_topic {
 }
 
 #stream_filters .subscription_block {
-    padding: 0 0 0 10px;
-    padding: 2px 0px;
+    padding: 1px 0px;
     margin-right: 18px;
     margin-left: 10px;
 }
