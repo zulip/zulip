@@ -182,6 +182,10 @@ exports.register_click_handlers = function () {
     });
 };
 
+exports.is_composition = function (emoji) {
+    return emoji.classList.contains('composition');
+};
+
 return exports;
 
 }());
