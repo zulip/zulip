@@ -6,7 +6,7 @@ import subprocess
 
 from django.conf import settings
 from django.test import TestCase, override_settings
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from zproject.settings import DEPLOY_ROOT
 from zerver.lib.integrations import INTEGRATIONS, HUBOT_LOZENGES
@@ -19,11 +19,13 @@ from zerver.views.integrations import (
 )
 
 class DocPageTest(ZulipTestCase):
-        def _test(self, url, expected_content):
-            # type: (str, str) -> None
+        def _test(self, url, expected_content, extra_strings=[]):
+            # type: (str, str, List[str]) -> None
             result = self.client_get(url)
             self.assertEqual(result.status_code, 200)
             self.assertIn(expected_content, str(result.content))
+            for s in extra_strings:
+                self.assertIn(s, str(result.content))
 
         def test_doc_endpoints(self):
             # type: () -> None
@@ -35,7 +37,14 @@ class DocPageTest(ZulipTestCase):
             self._test('/apps/', 'Appsolutely')
             self._test('/features/', 'Talk about multiple topics at once')
             self._test('/hello/', 'productive group chat')
-            self._test('/integrations/', 'require creating a Zulip bot')
+            self._test('/integrations/',
+                       'require creating a Zulip bot',
+                       extra_strings=[
+                           # Ensure that the non-webhook integratins are in the HTML.
+                           "zulip_git_config.py",
+                           # Ensure that the webhook integrations are in the HTML.
+                           "https://my.pingdom.com/reports/integration/settings",
+                       ])
             self._test('/devlogin/', 'Normal users')
             self._test('/register/', 'Sign up for Zulip')
 
