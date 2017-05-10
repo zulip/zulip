@@ -392,7 +392,13 @@ def log_into_subdomain(request):
     email_address = data['email']
     full_name = data['name']
     is_signup = data['is_signup']
-    user_profile, return_data = authenticate_remote_user(request, email_address)
+    if is_signup:
+        # If we are signing up, user_profile should be None. In case
+        # email_address already exists, user will get an error message.
+        user_profile = None
+        return_data = {}  # type: Dict[str, Any]
+    else:
+        user_profile, return_data = authenticate_remote_user(request, email_address)
     invalid_subdomain = bool(return_data.get('invalid_subdomain'))
     return login_or_register_remote_user(request, email_address, user_profile,
                                          full_name, invalid_subdomain=invalid_subdomain,
