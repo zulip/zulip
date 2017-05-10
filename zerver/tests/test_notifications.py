@@ -39,7 +39,7 @@ class TestMissedMessages(ZulipTestCase):
         else:
             reply_to_addresses = ["Zulip <noreply@example.com>"]
         msg = mail.outbox[0]
-        sender = 'Zulip Missed Messages <{}>'.format(settings.NOREPLY_EMAIL_ADDRESS)
+        sender = settings.NOREPLY_EMAIL_ADDRESS
         from_email = sender
         self.assertEqual(len(mail.outbox), 1)
         if send_as_user:
