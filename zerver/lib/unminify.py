@@ -14,7 +14,7 @@ class SourceMap(object):
     def __init__(self, sourcemap_dir):
         # type: (Text) -> None
         self._dir = sourcemap_dir
-        self._indices = {} # type: Dict[Text, sourcemap.SourceMapDecoder]
+        self._indices = {}  # type: Dict[Text, sourcemap.SourceMapDecoder]
 
     def _index_for(self, minified_src):
         # type: (Text) -> sourcemap.SourceMapDecoder
@@ -28,7 +28,7 @@ class SourceMap(object):
 
     def annotate_stacktrace(self, stacktrace):
         # type: (Text) -> Text
-        out = '' # type: Text
+        out = ''  # type: Text
         for ln in stacktrace.splitlines():
             out += ln + '\n'
             match = re.search(r'/static/min/(.+)(\.[0-9a-f]+)\.js:(\d+):(\d+)', ln)

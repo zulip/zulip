@@ -163,7 +163,7 @@ def bugdown_convert(text):
     # type: (Text) -> Text
     return bugdown.convert(text, message_realm=get_realm('zulip'))
 
-class BugdownTest(TestCase):
+class BugdownTest(ZulipTestCase):
     def load_bugdown_tests(self):
         # type: () -> Tuple[Dict[Text, Any], List[List[Text]]]
         test_fixtures = {}
@@ -236,7 +236,7 @@ class BugdownTest(TestCase):
         without_preview = '<p><a href="http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg" target="_blank" title="http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg">http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg</a></p>'
         content = 'http://cdn.wallpapersafari.com/13/6/16eVjx.jpeg'
 
-        sender_user_profile = get_user_profile_by_email("othello@zulip.com")
+        sender_user_profile = self.example_user('othello')
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
         converted = render_markdown(msg, content)
         self.assertEqual(converted, with_preview)
@@ -245,7 +245,7 @@ class BugdownTest(TestCase):
         setattr(realm, 'inline_image_preview', False)
         realm.save()
 
-        sender_user_profile = get_user_profile_by_email("othello@zulip.com")
+        sender_user_profile = self.example_user('othello')
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
         converted = render_markdown(msg, content)
         self.assertEqual(converted, without_preview)
@@ -256,7 +256,7 @@ class BugdownTest(TestCase):
         content = 'http://imaging.nikon.com/lineup/dslr/df/img/sample/img_01.jpg\nhttp://imaging.nikon.com/lineup/dslr/df/img/sample/img_02.jpg\nhttp://imaging.nikon.com/lineup/dslr/df/img/sample/img_03.jpg'
         expected = '<p><a href="http://imaging.nikon.com/lineup/dslr/df/img/sample/img_01.jpg" target="_blank" title="http://imaging.nikon.com/lineup/dslr/df/img/sample/img_01.jpg">http://imaging.nikon.com/lineup/dslr/df/img/sample/img_01.jpg</a><br>\n<a href="http://imaging.nikon.com/lineup/dslr/df/img/sample/img_02.jpg" target="_blank" title="http://imaging.nikon.com/lineup/dslr/df/img/sample/img_02.jpg">http://imaging.nikon.com/lineup/dslr/df/img/sample/img_02.jpg</a><br>\n<a href="http://imaging.nikon.com/lineup/dslr/df/img/sample/img_03.jpg" target="_blank" title="http://imaging.nikon.com/lineup/dslr/df/img/sample/img_03.jpg">http://imaging.nikon.com/lineup/dslr/df/img/sample/img_03.jpg</a></p>\n<div class="message_inline_image"><a href="http://imaging.nikon.com/lineup/dslr/df/img/sample/img_01.jpg" target="_blank" title="http://imaging.nikon.com/lineup/dslr/df/img/sample/img_01.jpg"><img src="https://external-content.zulipcdn.net/1081f3eb3d307ff5b578c1f5ce9d4cef8f8953c4/687474703a2f2f696d6167696e672e6e696b6f6e2e636f6d2f6c696e6575702f64736c722f64662f696d672f73616d706c652f696d675f30312e6a7067"></a></div><div class="message_inline_image"><a href="http://imaging.nikon.com/lineup/dslr/df/img/sample/img_02.jpg" target="_blank" title="http://imaging.nikon.com/lineup/dslr/df/img/sample/img_02.jpg"><img src="https://external-content.zulipcdn.net/8a2da7577389c522fab18ba2e6d6947b85458074/687474703a2f2f696d6167696e672e6e696b6f6e2e636f6d2f6c696e6575702f64736c722f64662f696d672f73616d706c652f696d675f30322e6a7067"></a></div><div class="message_inline_image"><a href="http://imaging.nikon.com/lineup/dslr/df/img/sample/img_03.jpg" target="_blank" title="http://imaging.nikon.com/lineup/dslr/df/img/sample/img_03.jpg"><img src="https://external-content.zulipcdn.net/9c389273b239846aa6e07e109216773934e52828/687474703a2f2f696d6167696e672e6e696b6f6e2e636f6d2f6c696e6575702f64736c722f64662f696d672f73616d706c652f696d675f30332e6a7067"></a></div>'
 
-        sender_user_profile = get_user_profile_by_email("othello@zulip.com")
+        sender_user_profile = self.example_user('othello')
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
         converted = render_markdown(msg, content)
         self.assertEqual(converted, expected)
@@ -276,7 +276,7 @@ class BugdownTest(TestCase):
 
         settings.INLINE_IMAGE_PREVIEW = True
 
-        sender_user_profile = get_user_profile_by_email("othello@zulip.com")
+        sender_user_profile = self.example_user('othello')
         bugdown.current_message = copy.deepcopy(Message(sender=sender_user_profile, sending_client=get_client("test")))
         realm = bugdown.current_message.get_realm()
 
@@ -290,7 +290,7 @@ class BugdownTest(TestCase):
     @override_settings(INLINE_URL_EMBED_PREVIEW=False)
     def test_url_embed_preview_enabled_for_realm(self):
         # type: () -> None
-        sender_user_profile = get_user_profile_by_email("othello@zulip.com")
+        sender_user_profile = self.example_user('othello')
         message = copy.deepcopy(Message(sender=sender_user_profile, sending_client=get_client("test")))
         realm = message.get_realm()
 
@@ -488,7 +488,7 @@ class BugdownTest(TestCase):
         check_add_realm_emoji(realm, "test", 'test.png')
 
         # Needs to mock an actual message because that's how bugdown obtains the realm
-        msg = Message(sender=get_user_profile_by_email("hamlet@zulip.com"))
+        msg = Message(sender=self.example_user('hamlet'))
         converted = bugdown.convert(":test:", message_realm=realm, message=msg)
         self.assertEqual(converted, '<p>%s</p>' % (emoji_img(':test:', 'test.png', realm.id)))
 
@@ -519,7 +519,7 @@ class BugdownTest(TestCase):
             '<RealmFilter(zulip): #(?P<id>[0-9]{2,8})'
             ' https://trac.zulip.net/ticket/%(id)s>')
 
-        msg = Message(sender=get_user_profile_by_email("othello@zulip.com"),
+        msg = Message(sender=self.example_user('othello'),
                       subject="#444")
 
         flush_per_request_caches()
@@ -533,7 +533,7 @@ class BugdownTest(TestCase):
 
         RealmFilter(realm=realm, pattern=r'#(?P<id>[a-zA-Z]+-[0-9]+)',
                     url_format_string=r'https://trac.zulip.net/ticket/%(id)s').save()
-        msg = Message(sender=get_user_profile_by_email('hamlet@zulip.com'))
+        msg = Message(sender=self.example_user('hamlet'))
 
         content = '#ZUL-123 was fixed and code was deployed to production, also #zul-321 was deployed to staging'
         converted = bugdown.convert(content, message_realm=realm, message=msg)
@@ -602,14 +602,14 @@ class BugdownTest(TestCase):
         realm = get_realm('zulip')
         RealmFilter(realm=realm, pattern=r"#(?P<id>[0-9]{2,8})",
                     url_format_string=r"https://trac.zulip.net/ticket/%(id)s").save()
-        boring_msg = Message(sender=get_user_profile_by_email("othello@zulip.com"),
+        boring_msg = Message(sender=self.example_user('othello'),
                              subject=u"no match here")
         converted_boring_subject = bugdown.subject_links(realm.id, boring_msg.subject)
         self.assertEqual(converted_boring_subject, [])
 
     def test_is_status_message(self):
         # type: () -> None
-        user_profile = get_user_profile_by_email("othello@zulip.com")
+        user_profile = self.example_user('othello')
         msg = Message(sender=user_profile, sending_client=get_client("test"))
 
         content = '/me makes a list\n* one\n* two'
@@ -630,7 +630,7 @@ class BugdownTest(TestCase):
 
     def test_alert_words(self):
         # type: () -> None
-        user_profile = get_user_profile_by_email("othello@zulip.com")
+        user_profile = self.example_user('othello')
         do_set_alert_words(user_profile, ["ALERTWORD", "scaryword"])
         msg = Message(sender=user_profile, sending_client=get_client("test"))
         realm_alert_words = alert_words_in_realm(user_profile.realm)
@@ -653,7 +653,7 @@ class BugdownTest(TestCase):
 
     def test_mention_wildcard(self):
         # type: () -> None
-        user_profile = get_user_profile_by_email("othello@zulip.com")
+        user_profile = self.example_user('othello')
         msg = Message(sender=user_profile, sending_client=get_client("test"))
 
         content = "@all test"
@@ -665,7 +665,7 @@ class BugdownTest(TestCase):
 
     def test_mention_everyone(self):
         # type: () -> None
-        user_profile = get_user_profile_by_email("othello@zulip.com")
+        user_profile = self.example_user('othello')
         msg = Message(sender=user_profile, sending_client=get_client("test"))
 
         content = "@everyone test"
@@ -675,8 +675,8 @@ class BugdownTest(TestCase):
 
     def test_mention_single(self):
         # type: () -> None
-        sender_user_profile = get_user_profile_by_email("othello@zulip.com")
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        sender_user_profile = self.example_user('othello')
+        user_profile = self.example_user('hamlet')
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
         user_id = user_profile.id
 
@@ -690,8 +690,8 @@ class BugdownTest(TestCase):
 
     def test_mention_shortname(self):
         # type: () -> None
-        sender_user_profile = get_user_profile_by_email("othello@zulip.com")
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        sender_user_profile = self.example_user('othello')
+        user_profile = self.example_user('hamlet')
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
         user_id = user_profile.id
 
@@ -704,9 +704,9 @@ class BugdownTest(TestCase):
 
     def test_mention_multiple(self):
         # type: () -> None
-        sender_user_profile = get_user_profile_by_email("othello@zulip.com")
-        hamlet = get_user_profile_by_email("hamlet@zulip.com")
-        cordelia = get_user_profile_by_email("cordelia@zulip.com")
+        sender_user_profile = self.example_user('othello')
+        hamlet = self.example_user('hamlet')
+        cordelia = self.example_user('cordelia')
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
 
         content = "@**King Hamlet** and @**cordelia**, check this out"
@@ -723,7 +723,7 @@ class BugdownTest(TestCase):
 
     def test_mention_invalid(self):
         # type: () -> None
-        sender_user_profile = get_user_profile_by_email("othello@zulip.com")
+        sender_user_profile = self.example_user('othello')
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
 
         content = "Hey @**Nonexistent User**"
@@ -734,7 +734,7 @@ class BugdownTest(TestCase):
     def test_stream_single(self):
         # type: () -> None
         denmark = get_stream('Denmark', get_realm('zulip'))
-        sender_user_profile = get_user_profile_by_email("othello@zulip.com")
+        sender_user_profile = self.example_user('othello')
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
         content = "#**Denmark**"
         self.assertEqual(
@@ -745,7 +745,7 @@ class BugdownTest(TestCase):
 
     def test_stream_multiple(self):
         # type: () -> None
-        sender_user_profile = get_user_profile_by_email("othello@zulip.com")
+        sender_user_profile = self.example_user('othello')
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
         realm = get_realm('zulip')
         denmark = get_stream('Denmark', realm)
@@ -765,7 +765,7 @@ class BugdownTest(TestCase):
         # type: () -> None
         realm = get_realm('zulip')
         case_sens = Stream.objects.create(name='CaseSens', realm=realm)
-        sender_user_profile = get_user_profile_by_email("othello@zulip.com")
+        sender_user_profile = self.example_user('othello')
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
         content = "#**CaseSens**"
         self.assertEqual(
@@ -781,7 +781,7 @@ class BugdownTest(TestCase):
         test."""
         realm = get_realm('zulip')
         Stream.objects.create(name='CaseSens', realm=realm)
-        sender_user_profile = get_user_profile_by_email("othello@zulip.com")
+        sender_user_profile = self.example_user('othello')
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
         content = "#**casesens**"
         self.assertEqual(
@@ -792,7 +792,7 @@ class BugdownTest(TestCase):
         # type: () -> None
         realm = get_realm('zulip')
         uni = Stream.objects.create(name=u'привет', realm=realm)
-        sender_user_profile = get_user_profile_by_email("othello@zulip.com")
+        sender_user_profile = self.example_user('othello')
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
         content = u"#**привет**"
         self.assertEqual(
@@ -804,7 +804,7 @@ class BugdownTest(TestCase):
 
     def test_stream_invalid(self):
         # type: () -> None
-        sender_user_profile = get_user_profile_by_email("othello@zulip.com")
+        sender_user_profile = self.example_user('othello')
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
 
         content = "There #**Nonexistentstream**"
@@ -948,7 +948,7 @@ class BugdownApiTests(ZulipTestCase):
         )
         self.assert_json_success(result)
         data = ujson.loads(result.content)
-        user_id = get_user_profile_by_email('hamlet@zulip.com').id
+        user_id = self.example_user('hamlet').id
         self.assertEqual(data['rendered'],
                          u'<p>This mentions <a class="stream" data-stream-id="%s" href="/#narrow/stream/Denmark">#Denmark</a> and <span class="user-mention" data-user-email="%s" data-user-id="%s">@King Hamlet</span>.</p>' % (get_stream("Denmark", get_realm("zulip")).id, 'hamlet@zulip.com', user_id))
 
@@ -973,10 +973,10 @@ class BugdownErrorTests(ZulipTestCase):
 class BugdownAvatarTestCase(ZulipTestCase):
     def test_avatar_with_id(self):
         # type: () -> None
-        sender_user_profile = get_user_profile_by_email("othello@zulip.com")
+        sender_user_profile = self.example_user('othello')
         message = Message(sender=sender_user_profile, sending_client=get_client("test"))
 
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
         msg = '!avatar({0})'.format(user_profile.email)
         converted = bugdown.convert(msg, message=message)
         values = {'email': user_profile.email, 'id': user_profile.id}
@@ -986,7 +986,7 @@ class BugdownAvatarTestCase(ZulipTestCase):
 
     def test_avatar_of_unregistered_user(self):
         # type: () -> None
-        sender_user_profile = get_user_profile_by_email("othello@zulip.com")
+        sender_user_profile = self.example_user('othello')
         message = Message(sender=sender_user_profile, sending_client=get_client("test"))
 
         email = 'fakeuser@example.com'

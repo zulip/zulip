@@ -16,8 +16,10 @@ from zerver.lib.test_classes import (
 )
 
 from zerver.models import (
-    get_display_recipient, get_stream, get_user_profile_by_email,
-    Recipient, get_realm,
+    get_display_recipient,
+    get_realm,
+    get_stream,
+    Recipient
 )
 
 from zerver.lib.actions import (
@@ -87,7 +89,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         # build dummy messages for stream
         # test valid incoming stream message is processed properly
         self.login("hamlet@zulip.com")
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
         self.subscribe_to_stream(user_profile.email, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
 
@@ -116,7 +118,7 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
         # build dummy messages for stream
         # test message with empty body is not sent
         self.login("hamlet@zulip.com")
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
         self.subscribe_to_stream(user_profile.email, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
 
@@ -161,7 +163,7 @@ class TestMissedPersonalMessageEmailMessages(ZulipTestCase):
                                                      "to": "othello@zulip.com"})
         self.assert_json_success(result)
 
-        user_profile = get_user_profile_by_email("othello@zulip.com")
+        user_profile = self.example_user('othello')
         usermessage = most_recent_usermessage(user_profile)
 
         # we don't want to send actual emails but we do need to create and store the
@@ -179,11 +181,11 @@ class TestMissedPersonalMessageEmailMessages(ZulipTestCase):
 
         # self.login("hamlet@zulip.com")
         # confirm that Hamlet got the message
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
         message = most_recent_message(user_profile)
 
         self.assertEqual(message.content, "TestMissedMessageEmailMessages Body")
-        self.assertEqual(message.sender, get_user_profile_by_email("othello@zulip.com"))
+        self.assertEqual(message.sender, self.example_user('othello'))
         self.assertEqual(message.recipient.id, user_profile.id)
         self.assertEqual(message.recipient.type, Recipient.PERSONAL)
 
@@ -202,7 +204,7 @@ class TestMissedHuddleMessageEmailMessages(ZulipTestCase):
                                                                         "iago@zulip.com"])})
         self.assert_json_success(result)
 
-        user_profile = get_user_profile_by_email("cordelia@zulip.com")
+        user_profile = self.example_user('cordelia')
         usermessage = most_recent_usermessage(user_profile)
 
         # we don't want to send actual emails but we do need to create and store the
@@ -219,19 +221,19 @@ class TestMissedHuddleMessageEmailMessages(ZulipTestCase):
         process_message(incoming_valid_message)
 
         # Confirm Iago received the message.
-        user_profile = get_user_profile_by_email("iago@zulip.com")
+        user_profile = self.example_user('iago')
         message = most_recent_message(user_profile)
 
         self.assertEqual(message.content, "TestMissedHuddleMessageEmailMessages Body")
-        self.assertEqual(message.sender, get_user_profile_by_email("cordelia@zulip.com"))
+        self.assertEqual(message.sender, self.example_user('cordelia'))
         self.assertEqual(message.recipient.type, Recipient.HUDDLE)
 
         # Confirm Othello received the message.
-        user_profile = get_user_profile_by_email("othello@zulip.com")
+        user_profile = self.example_user('othello')
         message = most_recent_message(user_profile)
 
         self.assertEqual(message.content, "TestMissedHuddleMessageEmailMessages Body")
-        self.assertEqual(message.sender, get_user_profile_by_email("cordelia@zulip.com"))
+        self.assertEqual(message.sender, self.example_user('cordelia'))
         self.assertEqual(message.recipient.type, Recipient.HUDDLE)
 
 class TestMissedMessageAddressWithEmptyGateway(ZulipTestCase):
@@ -245,7 +247,7 @@ class TestMissedMessageAddressWithEmptyGateway(ZulipTestCase):
                                                                         "iago@zulip.com"])})
         self.assert_json_success(result)
 
-        user_profile = get_user_profile_by_email("cordelia@zulip.com")
+        user_profile = self.example_user('cordelia')
         usermessage = most_recent_usermessage(user_profile)
         with self.settings(EMAIL_GATEWAY_PATTERN=''):
             mm_address = create_missed_message_address(user_profile, usermessage.message)
@@ -268,7 +270,7 @@ class TestDigestEmailMessages(ZulipTestCase):
                                                      "to": "othello@zulip.com"})
         self.assert_json_success(result)
 
-        user_profile = get_user_profile_by_email("othello@zulip.com")
+        user_profile = self.example_user('othello')
         cutoff = time.mktime(datetime.datetime(year=2016, month=1, day=1).timetuple())
 
         handle_digest_email(user_profile.id, cutoff)
@@ -282,7 +284,7 @@ class TestReplyExtraction(ZulipTestCase):
         # build dummy messages for stream
         # test valid incoming stream message is processed properly
         self.login("hamlet@zulip.com")
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
         self.subscribe_to_stream(user_profile.email, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
 
@@ -313,7 +315,7 @@ class TestReplyExtraction(ZulipTestCase):
         # build dummy messages for stream
         # test valid incoming stream message is processed properly
         self.login("hamlet@zulip.com")
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
         self.subscribe_to_stream(user_profile.email, "Denmark")
         stream = get_stream("Denmark", user_profile.realm)
 
@@ -420,7 +422,7 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
             })
         self.assert_json_success(result)
 
-        user_profile = get_user_profile_by_email("cordelia@zulip.com")
+        user_profile = self.example_user('cordelia')
         user_message = most_recent_usermessage(user_profile)
         return create_missed_message_address(user_profile, user_message.message)
 

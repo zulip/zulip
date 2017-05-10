@@ -28,8 +28,8 @@ def fix_params(raw_params):
 class TutorialTests(ZulipTestCase):
     def test_send_message(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
-        user = get_user_profile_by_email(email)
+        user = self.example_user('hamlet')
+        email = user.email
         self.login(email)
 
         welcome_bot = get_user_profile_by_email("welcome-bot@zulip.com")

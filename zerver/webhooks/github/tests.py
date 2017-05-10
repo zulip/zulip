@@ -6,11 +6,11 @@ from zerver.lib.webhooks.git import COMMITS_LIMIT
 from zerver.lib.test_classes import WebhookTestCase
 
 class GithubV1HookTests(WebhookTestCase):
-    STREAM_NAME = None # type: Optional[Text]
+    STREAM_NAME = None  # type: Optional[Text]
     URL_TEMPLATE = u"/api/v1/external/github"
     FIXTURE_DIR_NAME = 'github'
     SEND_STREAM = False
-    BRANCHES = None # type: Optional[Text]
+    BRANCHES = None  # type: Optional[Text]
 
     push_content = u"""zbenjamin [pushed](https://github.com/zbenjamin/zulip-test/compare/4f9adc4777d5...b95449196980) 3 commits to branch master.
 
@@ -146,11 +146,11 @@ class GithubV1HookTests(WebhookTestCase):
                         "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/commit/7c994678d2f98797d299abed852d3ff9d0834533#commitcomment-4252307) on [7c99467](https://github.com/zbenjamin/zulip-test/commit/7c994678d2f98797d299abed852d3ff9d0834533)\n~~~ quote\nThis line adds /unlucky/ cowbell (because of its line number).  We should remove it.\n~~~")
 
 class GithubV2HookTests(WebhookTestCase):
-    STREAM_NAME = None # type: Optional[Text]
+    STREAM_NAME = None  # type: Optional[Text]
     URL_TEMPLATE = u"/api/v1/external/github"
     FIXTURE_DIR_NAME = 'github'
     SEND_STREAM = False
-    BRANCHES = None # type: Optional[Text]
+    BRANCHES = None  # type: Optional[Text]
 
     push_content = """zbenjamin [pushed](https://github.com/zbenjamin/zulip-test/compare/4f9adc4777d5...b95449196980) 3 commits to branch master.
 

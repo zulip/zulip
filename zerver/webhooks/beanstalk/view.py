@@ -27,7 +27,7 @@ def beanstalk_decoder(view_func):
     def _wrapped_view_func(request, *args, **kwargs):
         # type: (HttpRequest, *Any, **Any) -> HttpResponse
         try:
-            auth_type, encoded_value = request.META['HTTP_AUTHORIZATION'].split() # type: str, str
+            auth_type, encoded_value = request.META['HTTP_AUTHORIZATION'].split()  # type: str, str
             if auth_type.lower() == "basic":
                 email, api_key = base64.b64decode(force_bytes(encoded_value)).decode('utf-8').split(":")
                 email = email.replace('%40', '@')
@@ -39,7 +39,7 @@ def beanstalk_decoder(view_func):
 
         return view_func(request, *args, **kwargs)
 
-    return _wrapped_view_func # type: ignore # https://github.com/python/mypy/issues/1927
+    return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
 
 @beanstalk_decoder
 @authenticated_rest_api_view(is_webhook=True)

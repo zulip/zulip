@@ -504,7 +504,7 @@ function welcome() {
 }
 
 exports.start = function () {
-    if (ui_state.home_tab_obscured()) {
+    if (modals.is_active()) {
         ui_util.change_tab_to('#home');
     }
     narrow.deactivate();

@@ -52,7 +52,7 @@ class CountStat(object):
             self.interval = interval
         elif frequency == CountStat.HOUR:
             self.interval = timedelta(hours=1)
-        else: # frequency == CountStat.DAY
+        else:  # frequency == CountStat.DAY
             self.interval = timedelta(days=1)
 
     def __unicode__(self):
@@ -216,12 +216,12 @@ def do_increment_logging_stat(zerver_object, stat, subgroup, event_time, increme
         id_args = {'realm': zerver_object}
     elif table == UserCount:
         id_args = {'realm': zerver_object.realm, 'user': zerver_object}
-    else: # StreamCount
+    else:  # StreamCount
         id_args = {'realm': zerver_object.realm, 'stream': zerver_object}
 
     if stat.frequency == CountStat.DAY:
         end_time = ceiling_to_day(event_time)
-    else: # CountStat.HOUR:
+    else:  # CountStat.HOUR:
         end_time = ceiling_to_hour(event_time)
 
     row, created = table.objects.get_or_create(
@@ -279,7 +279,7 @@ def do_pull_minutes_active(property, start_time, end_time):
     ).values_list(
         'user_profile_id', 'user_profile__realm_id', 'start', 'end')
 
-    seconds_active = defaultdict(float) # type: Dict[Tuple[int, int], float]
+    seconds_active = defaultdict(float)  # type: Dict[Tuple[int, int], float]
     for user_id, realm_id, interval_start, interval_end in user_activity_intervals:
         start = max(start_time, interval_start)
         end = min(end_time, interval_end)

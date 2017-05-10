@@ -67,7 +67,7 @@ def get_imap_messages():
     try:
         mbox.select(settings.EMAIL_GATEWAY_IMAP_FOLDER)
         try:
-            status, num_ids_data = mbox.search(None, 'ALL') # type: bytes, List[bytes]
+            status, num_ids_data = mbox.search(None, 'ALL')  # type: bytes, List[bytes]
             for msgid in num_ids_data[0].split():
                 status, msg_data = mbox.fetch(msgid, '(RFC822)')
                 msg_as_bytes = msg_data[0][1]

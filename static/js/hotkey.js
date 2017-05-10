@@ -456,7 +456,7 @@ exports.process_hotkey = function (e, hotkey) {
         return false;
     }
 
-    if (hotkey.message_view_only && ui_state.home_tab_obscured()) {
+    if (hotkey.message_view_only && modals.is_active()) {
         return false;
     }
 

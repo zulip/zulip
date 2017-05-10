@@ -10,21 +10,21 @@ from django.conf import settings
 
 try:
     # Tornado 2.4
-    orig_poll_impl = ioloop._poll # type: ignore # cross-version type variation is hard for mypy
+    orig_poll_impl = ioloop._poll  # type: ignore # cross-version type variation is hard for mypy
 
     def instrument_tornado_ioloop():
         # type: () -> None
-        ioloop._poll = InstrumentedPoll # type: ignore # cross-version type variation is hard for mypy
+        ioloop._poll = InstrumentedPoll  # type: ignore # cross-version type variation is hard for mypy
 except Exception:
     # Tornado 3
     from tornado.ioloop import IOLoop, PollIOLoop
     # There isn't a good way to get at what the underlying poll implementation
     # will be without actually constructing an IOLoop, so we just assume it will
     # be epoll.
-    orig_poll_impl = select.epoll # type: ignore # There is no stub for select.epoll on python 3
+    orig_poll_impl = select.epoll  # type: ignore # There is no stub for select.epoll on python 3
 
     class InstrumentedPollIOLoop(PollIOLoop):
-        def initialize(self, **kwargs): # type: ignore # TODO investigate likely buggy monkey patching here
+        def initialize(self, **kwargs):  # type: ignore # TODO investigate likely buggy monkey patching here
             super(InstrumentedPollIOLoop, self).initialize(impl=InstrumentedPoll(), **kwargs)
 
     def instrument_tornado_ioloop():
@@ -43,7 +43,7 @@ class InstrumentedPoll(object):
     def __init__(self):
         # type: () -> None
         self._underlying = orig_poll_impl()
-        self._times = [] # type: List[Tuple[float, float]]
+        self._times = []  # type: List[Tuple[float, float]]
         self._last_print = 0.0
 
     # Python won't let us subclass e.g. select.epoll, so instead

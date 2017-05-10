@@ -43,7 +43,7 @@ class AddHeaderMixin(object):
 
             ret_dict[path] = (path, path, True)
 
-        super_class = super(AddHeaderMixin, self) # type: ignore # https://github.com/JukkaL/mypy/issues/857
+        super_class = super(AddHeaderMixin, self)  # type: ignore # https://github.com/JukkaL/mypy/issues/857
         if hasattr(super_class, 'post_process'):
             super_ret = super_class.post_process(paths, dry_run, **kwargs)  # type: ignore # https://github.com/python/mypy/issues/2956
         else:

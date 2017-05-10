@@ -14,7 +14,7 @@ import time
 class Command(BaseCommand):
     def add_arguments(self, parser):
         # type: (CommandParser) -> None
-        default_cutoff = time.time() - 60 * 60 * 24 * 30 # 30 days.
+        default_cutoff = time.time() - 60 * 60 * 24 * 30  # 30 days.
         parser.add_argument('--realm',
                             dest='string_id',
                             type=str,

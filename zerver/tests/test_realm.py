@@ -29,7 +29,7 @@ class RealmTest(ZulipTestCase):
         """The main complicated thing about setting realm names is fighting the
         cache, and we start by populating the cache for Hamlet, and we end
         by checking the cache to ensure that the new value is there."""
-        get_user_profile_by_email('hamlet@zulip.com')
+        self.example_user('hamlet')
         realm = get_realm('zulip')
         new_name = u'Zed You Elle Eye Pea'
         do_set_realm_property(realm, 'name', new_name)
@@ -106,9 +106,9 @@ class RealmTest(ZulipTestCase):
         # type: () -> None
         new_name = 'Mice will play while the cat is away'
 
-        email = 'othello@zulip.com'
+        user_profile = self.example_user('othello')
+        email = user_profile.email
         self.login(email)
-        user_profile = get_user_profile_by_email(email)
         do_change_is_admin(user_profile, False)
 
         req = dict(name=ujson.dumps(new_name))
@@ -118,9 +118,9 @@ class RealmTest(ZulipTestCase):
     def test_unauthorized_name_change(self):
         # type: () -> None
         data = {'full_name': 'Sir Hamlet'}
-        email = 'hamlet@zulip.com'
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
         self.login(email)
-        user_profile = get_user_profile_by_email(email)
         do_set_realm_property(user_profile.realm, 'name_changes_disabled', True)
         url = '/json/settings/change'
         result = self.client_post(url, data)
@@ -135,10 +135,10 @@ class RealmTest(ZulipTestCase):
         Hamlet, and we end by checking the cache to ensure that his
         realm appears to be deactivated.  You can make this test fail
         by disabling cache.flush_realm()."""
-        get_user_profile_by_email('hamlet@zulip.com')
+        self.example_user('hamlet')
         realm = get_realm('zulip')
         do_deactivate_realm(realm)
-        user = get_user_profile_by_email('hamlet@zulip.com')
+        user = self.example_user('hamlet')
         self.assertTrue(user.realm.deactivated)
 
     def test_change_realm_default_language(self):
@@ -171,9 +171,9 @@ class RealmAPITest(ZulipTestCase):
 
     def setUp(self):
         # type: () -> None
-        email = 'cordelia@zulip.com'
+        user_profile = self.example_user('cordelia')
+        email = user_profile.email
         self.login(email)
-        user_profile = get_user_profile_by_email(email)
         do_change_is_admin(user_profile, True)
 
     def set_up_db(self, attr, value):

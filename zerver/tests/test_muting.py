@@ -48,9 +48,9 @@ class MutedTopicsTests(ZulipTestCase):
 
     def test_remove_muted_topic(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
+        self.user_profile = self.example_user('hamlet')
+        email = self.user_profile.email
         self.login(email)
-        self.user_profile = get_user_profile_by_email(email)
 
         do_set_muted_topics(self.user_profile, [[u'Verona', u'Verona3']])
         url = '/api/v1/users/me/subscriptions/muted_topics'
@@ -63,9 +63,9 @@ class MutedTopicsTests(ZulipTestCase):
 
     def test_muted_topic_add_invalid(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
+        self.user_profile = self.example_user('hamlet')
+        email = self.user_profile.email
         self.login(email)
-        self.user_profile = get_user_profile_by_email(email)
 
         do_set_muted_topics(self.user_profile, [[u'Verona', u'Verona3']])
         url = '/api/v1/users/me/subscriptions/muted_topics'
@@ -75,9 +75,9 @@ class MutedTopicsTests(ZulipTestCase):
 
     def test_muted_topic_remove_invalid(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
+        self.user_profile = self.example_user('hamlet')
+        email = self.user_profile.email
         self.login(email)
-        self.user_profile = get_user_profile_by_email(email)
 
         do_set_muted_topics(self.user_profile, [[u'Denmark', u'Denmark3']])
         url = '/api/v1/users/me/subscriptions/muted_topics'

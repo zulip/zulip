@@ -949,6 +949,7 @@ JS_SPECS = {
             'js/typing_events.js',
             'js/ui_init.js',
             'js/emoji_picker.js',
+            'js/compose_ui.js',
             # JS bundled by webpack is also included here if PIPELINE_ENABLED setting is true
         ],
         'output_filename': 'min/app.js'

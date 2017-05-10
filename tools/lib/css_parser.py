@@ -105,11 +105,11 @@ def parse_sections(tokens, start, end):
 def parse_section(tokens, start, end, pre_fluff, post_fluff):
     # type: (List[Token], int, int, str, str) -> Union[CssNestedSection, CssSection]
     assert not ws(tokens[start].s)
-    assert tokens[end-1].s == '}' # caller should strip trailing fluff
+    assert tokens[end-1].s == '}'  # caller should strip trailing fluff
 
     first_token = tokens[start].s
     if first_token in ('@media', '@keyframes') or first_token.startswith('@-'):
-        i, selector_list = parse_selectors_section(tokens, start, end) # not technically selectors
+        i, selector_list = parse_selectors_section(tokens, start, end)  # not technically selectors
         section_list = parse_sections(tokens, i+1, end-1)
         nested_section = CssNestedSection(
             tokens=tokens,
@@ -193,8 +193,8 @@ def parse_selector(tokens, start, end):
 
 def parse_declaration_block(tokens, start, end):
     # type: (List[Token], int, int) -> CssDeclarationBlock
-    assert tokens[start].s == '{' # caller should strip leading fluff
-    assert tokens[end-1].s == '}' # caller should strip trailing fluff
+    assert tokens[start].s == '{'  # caller should strip leading fluff
+    assert tokens[end-1].s == '}'  # caller should strip trailing fluff
     i = start + 1
     declarations = []
     while i < end-1:

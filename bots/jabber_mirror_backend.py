@@ -90,15 +90,15 @@ class JabberToZulipBot(ClientXMPP):
             self.nick = jid.username
             jid.resource = "zulip"
         ClientXMPP.__init__(self, jid, password)
-        self.rooms = set() # type: Set[str]
+        self.rooms = set()  # type: Set[str]
         self.rooms_to_join = rooms
         self.add_event_handler("session_start", self.session_start)
         self.add_event_handler("message", self.message)
-        self.zulip = None # type: Client
+        self.zulip = None  # type: Client
         self.use_ipv6 = False
 
-        self.register_plugin('xep_0045') # Jabber chatrooms
-        self.register_plugin('xep_0199') # XMPP Ping
+        self.register_plugin('xep_0045')  # Jabber chatrooms
+        self.register_plugin('xep_0199')  # XMPP Ping
 
     def set_zulip_client(self, zulipToJabberClient):
         # type: (ZulipToJabberBot) -> None
@@ -216,7 +216,7 @@ class ZulipToJabberBot(object):
     def __init__(self, zulip_client):
         # type: (Client) -> None
         self.client = zulip_client
-        self.jabber = None # type: JabberToZulipBot
+        self.jabber = None  # type: JabberToZulipBot
 
     def set_jabber_client(self, client):
         # type: (JabberToZulipBot) -> None
@@ -313,7 +313,7 @@ def get_rooms(zulipToJabber):
     else:
         stream_infos = get_stream_infos("subscriptions", zulipToJabber.client.list_subscriptions)
 
-    rooms = [] # type: List[str]
+    rooms = []  # type: List[str]
     for stream_info in stream_infos:
             stream = stream_info['name']
             if stream.endswith("/xmpp"):

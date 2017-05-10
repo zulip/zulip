@@ -68,7 +68,7 @@ class REQ(object):
         """
 
         self.post_var_name = whence
-        self.func_var_name = None # type: str
+        self.func_var_name = None  # type: str
         self.converter = converter
         self.validator = validator
         self.default = default

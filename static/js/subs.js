@@ -451,7 +451,11 @@ exports.change_state = (function () {
 exports.launch = function (hash) {
     meta.is_open = true;
     exports.setup_page(function () {
-        $("#subscription_overlay").addClass("show");
+        modals.open_overlay({
+            name: 'subscriptions',
+            overlay: $("#subscription_overlay"),
+            on_close: exports.close,
+        });
 
         exports.change_state(hash);
     });
@@ -697,12 +701,6 @@ $(function () {
         var sub = stream_data.get_sub(data.stream_name);
         exports.rerender_subscribers_count(sub);
     });
-
-    function subscriptions_close_modal() {
-        exports.close();
-    }
-
-    modals.set_close_handler("subscriptions", subscriptions_close_modal);
 
 });
 

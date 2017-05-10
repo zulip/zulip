@@ -18,7 +18,7 @@ import sys
 import ujson
 
 from typing import Any
-Model = Any # TODO: make this mypy type more specific
+Model = Any  # TODO: make this mypy type more specific
 
 class Command(BaseCommand):
     help = """Import Zulip database dump files into a fresh Zulip instance.

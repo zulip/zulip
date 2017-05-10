@@ -65,8 +65,8 @@ class UserPresenceModelTests(ZulipTestCase):
         # type: () -> None
         UserPresence.objects.all().delete()
 
-        email = "hamlet@zulip.com"
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
         presence_dct = UserPresence.get_status_dict_by_realm(user_profile.realm_id)
         self.assertEqual(len(presence_dct), 0)
 
@@ -233,7 +233,7 @@ class SingleUserPresenceTests(ZulipTestCase):
         result = self.client_get("/json/users/cordelia@zulip.com/presence")
         self.assert_json_error(result, "No presence data for cordelia@zulip.com")
 
-        do_deactivate_user(get_user_profile_by_email("cordelia@zulip.com"))
+        do_deactivate_user(self.example_user('cordelia'))
         result = self.client_get("/json/users/cordelia@zulip.com/presence")
         self.assert_json_error(result, "No such user")
 

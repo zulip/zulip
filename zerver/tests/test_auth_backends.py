@@ -226,11 +226,11 @@ class AuthBackendTest(ZulipTestCase):
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.GoogleMobileOauth2Backend',))
     def test_google_backend(self):
         # type: () -> None
-        email = "hamlet@zulip.com"
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
         backend = GoogleMobileOauth2Backend()
         payload = dict(email_verified=True,
                        email=email)
-        user_profile = get_user_profile_by_email(email)
         self.setup_subdomain(user_profile)
 
         with mock.patch('apiclient.sample_tools.client.verify_id_token', return_value=payload):
@@ -273,9 +273,9 @@ class AuthBackendTest(ZulipTestCase):
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_ldap_backend(self):
         # type: () -> None
-        email = "hamlet@zulip.com"
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
         password = "test_password"
-        user_profile = get_user_profile_by_email(email)
         self.setup_subdomain(user_profile)
 
         username = self.get_username()
@@ -381,8 +381,9 @@ class AuthBackendTest(ZulipTestCase):
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.GitHubAuthBackend',))
     def test_github_backend(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
-        self.setup_subdomain(get_user_profile_by_email(email))
+        user = self.example_user('hamlet')
+        email = user.email
+        self.setup_subdomain(user)
         good_kwargs = dict(response=dict(email=email), return_data=dict(),
                            realm_subdomain='acme')
         self.verify_backend(GitHubAuthBackend(),
@@ -411,11 +412,11 @@ class SocialAuthMixinTest(ZulipTestCase):
 class GitHubAuthBackendTest(ZulipTestCase):
     def setUp(self):
         # type: () -> None
-        self.email = 'hamlet@zulip.com'
+        self.user_profile = self.example_user('hamlet')
+        self.email = self.user_profile.email
         self.name = 'Hamlet'
         self.backend = GitHubAuthBackend()
         self.backend.strategy = DjangoStrategy(storage=BaseDjangoStorage())
-        self.user_profile = get_user_profile_by_email(self.email)
         self.user_profile.backend = self.backend
 
         rf = RequestFactory()
@@ -781,7 +782,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         self.assertEqual(query_params["realm"], ['http://zulip.testserver'])
         self.assertEqual(query_params["email"], ['hamlet@zulip.com'])
         encrypted_api_key = query_params["otp_encrypted_api_key"][0]
-        self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").api_key,
+        self.assertEqual(self.example_user('hamlet').api_key,
                          otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp))
 
     def test_log_into_subdomain(self):
@@ -794,7 +795,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         with mock.patch('zerver.views.auth.get_subdomain', return_value='zulip'):
             result = self.client_get('/accounts/login/subdomain/')
             self.assertEqual(result.status_code, 302)
-            user_profile = get_user_profile_by_email('hamlet@zulip.com')
+            user_profile = self.example_user('hamlet')
             self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
             # If authenticate_remote_user detects a subdomain mismatch, then
@@ -910,7 +911,7 @@ class GoogleLoginTest(GoogleOAuthTest):
         account_response = ResponseMock(200, account_data)
         self.google_oauth2_test(token_response, account_response)
 
-        user_profile = get_user_profile_by_email('hamlet@zulip.com')
+        user_profile = self.example_user('hamlet')
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
     def test_google_oauth2_registration(self):
@@ -1001,7 +1002,7 @@ class GoogleLoginTest(GoogleOAuthTest):
         account_response = ResponseMock(200, account_data)
         self.google_oauth2_test(token_response, account_response)
 
-        user_profile = get_user_profile_by_email('hamlet@zulip.com')
+        user_profile = self.example_user('hamlet')
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
     def test_google_oauth2_account_response_no_email(self):
@@ -1057,8 +1058,8 @@ class GoogleLoginTest(GoogleOAuthTest):
 class FetchAPIKeyTest(ZulipTestCase):
     def setUp(self):
         # type: () -> None
-        self.email = "hamlet@zulip.com"
-        self.user_profile = get_user_profile_by_email(self.email)
+        self.user_profile = self.example_user('hamlet')
+        self.email = self.user_profile.email
 
     def test_success(self):
         # type: () -> None
@@ -1172,8 +1173,8 @@ class FetchAPIKeyTest(ZulipTestCase):
 class DevFetchAPIKeyTest(ZulipTestCase):
     def setUp(self):
         # type: () -> None
-        self.email = "hamlet@zulip.com"
-        self.user_profile = get_user_profile_by_email(self.email)
+        self.user_profile = self.example_user('hamlet')
+        self.email = self.user_profile.email
 
     def test_success(self):
         # type: () -> None
@@ -1364,8 +1365,8 @@ class FetchAuthBackends(ZulipTestCase):
 class TestDevAuthBackend(ZulipTestCase):
     def test_login_success(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
         data = {'direct_email': email}
         result = self.client_post('/accounts/login/local/', data)
         self.assertEqual(result.status_code, 302)
@@ -1373,8 +1374,8 @@ class TestDevAuthBackend(ZulipTestCase):
 
     def test_login_with_subdomain(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
         data = {'direct_email': email}
         with self.settings(REALMS_HAVE_SUBDOMAINS=True):
             result = self.client_post('/accounts/login/local/', data)
@@ -1401,8 +1402,8 @@ class TestDevAuthBackend(ZulipTestCase):
 class TestZulipRemoteUserBackend(ZulipTestCase):
     def test_login_success(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',)):
             result = self.client_post('/accounts/login/sso/', REMOTE_USER=email)
             self.assertEqual(result.status_code, 302)
@@ -1416,8 +1417,7 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
     def test_login_success_with_sso_append_domain(self):
         # type: () -> None
         username = 'hamlet'
-        email = 'hamlet@zulip.com'
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.example_user('hamlet')
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',),
                            SSO_APPEND_DOMAIN='zulip.com'):
             result = self.client_post('/accounts/login/sso/', REMOTE_USER=username)
@@ -1478,8 +1478,8 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
 
     def test_login_success_under_subdomains(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
         with mock.patch('zerver.views.auth.get_subdomain', return_value='zulip'):
             with self.settings(
                     REALMS_HAVE_SUBDOMAINS=True,
@@ -1612,8 +1612,7 @@ class TestJWTLogin(ZulipTestCase):
 class TestLDAP(ZulipTestCase):
     def setUp(self):
         # type: () -> None
-        email = "hamlet@zulip.com"
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.example_user('hamlet')
         self.setup_subdomain(user_profile)
 
         ldap_patcher = mock.patch('django_auth_ldap.config.ldap.initialize')

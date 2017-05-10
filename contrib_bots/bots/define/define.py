@@ -63,7 +63,7 @@ class DefineHandler(object):
                 # Could not fetch definitions for the given word.
                 if not definitions:
                     response += self.REQUEST_ERROR_MESSAGE
-                else: # Definitions available.
+                else:  # Definitions available.
                     # Show definitions line by line.
                     for d in definitions:
                         example = d['example'] if d['example'] else '*No example available.*'

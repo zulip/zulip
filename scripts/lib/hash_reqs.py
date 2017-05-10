@@ -18,12 +18,12 @@ def expand_reqs_helper(fpath, visited):
         visited.add(fpath)
 
     curr_dir = os.path.dirname(fpath)
-    result = [] # type: List[str]
+    result = []  # type: List[str]
 
     for line in open(fpath):
         if line.startswith('#'):
             continue
-        dep = line.split(" #", 1)[0].strip() # remove comments and strip whitespace
+        dep = line.split(" #", 1)[0].strip()  # remove comments and strip whitespace
         if dep:
             if dep.startswith('-r'):
                 child = os.path.join(curr_dir, dep[3:])

@@ -30,7 +30,7 @@ class HelpDocumentationSpider(BaseDocumentationSpider):
     def __init__(self, *args, **kwargs):
         # type: (*Any, **Any) -> None
         super(HelpDocumentationSpider, self).__init__(*args, **kwargs)
-        self.static_images = set() # type: Set
+        self.static_images = set()  # type: Set
 
     def _is_external_url(self, url):
         # type: (str) -> bool

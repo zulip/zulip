@@ -146,7 +146,7 @@ class PasswordResetTest(ZulipTestCase):
 
         # log back in with new password
         self.login(email, password='new_password')
-        user_profile = get_user_profile_by_email('hamlet@zulip.com')
+        user_profile = self.example_user('hamlet')
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
         # make sure old password no longer works
@@ -234,7 +234,7 @@ class LoginTest(ZulipTestCase):
     def test_login(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
-        user_profile = get_user_profile_by_email('hamlet@zulip.com')
+        user_profile = self.example_user('hamlet')
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
     def test_login_bad_password(self):
@@ -473,7 +473,7 @@ class InviteUserTest(ZulipTestCase):
         history but only from public streams.
         """
         self.login("hamlet@zulip.com")
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
         private_stream_name = "Secret"
         self.make_stream(private_stream_name, invite_only=True)
         self.subscribe_to_stream(user_profile.email, private_stream_name)
@@ -667,7 +667,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
     def test_refer_friend(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
-        user = get_user_profile_by_email('hamlet@zulip.com')
+        user = self.example_user('hamlet')
         user.invites_granted = 1
         user.invites_used = 0
         user.save()
@@ -679,13 +679,13 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         # verify this works
         Referral.objects.get(user_profile=user, email=invitee)
 
-        user = get_user_profile_by_email('hamlet@zulip.com')
+        user = self.example_user('hamlet')
         self.assertEqual(user.invites_used, 1)
 
     def test_refer_friend_no_email(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
-        user = get_user_profile_by_email('hamlet@zulip.com')
+        user = self.example_user('hamlet')
         user.invites_granted = 1
         user.invites_used = 0
         user.save()
@@ -694,13 +694,13 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             self.client_post('/json/refer_friend', dict(email='')),
             "No email address specified")
 
-        user = get_user_profile_by_email('hamlet@zulip.com')
+        user = self.example_user('hamlet')
         self.assertEqual(user.invites_used, 0)
 
     def test_refer_friend_no_invites(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
-        user = get_user_profile_by_email('hamlet@zulip.com')
+        user = self.example_user('hamlet')
         user.invites_granted = 1
         user.invites_used = 1
         user.save()
@@ -710,7 +710,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             self.client_post('/json/refer_friend', dict(email=invitee)),
             "Insufficient invites")
 
-        user = get_user_profile_by_email('hamlet@zulip.com')
+        user = self.example_user('hamlet')
         self.assertEqual(user.invites_used, 1)
 
     def test_invitation_reminder_email(self):
@@ -790,7 +790,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
         self.assert_in_response('Unknown email unsubscribe request', result)
 
         # An unknown message type "fake" produces an error.
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
         unsubscribe_link = one_click_unsubscribe_link(user_profile, "fake")
         result = self.client_get(urllib.parse.urlparse(unsubscribe_link).path)
         self.assert_in_response('Unknown email unsubscribe request', result)
@@ -802,7 +802,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
         e-mails that you can click even when logged out to update your
         email notification settings.
         """
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
         user_profile.enable_offline_email_notifications = True
         user_profile.save()
 
@@ -822,7 +822,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
         click even when logged out to stop receiving them.
         """
         email = "hamlet@zulip.com"
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
 
         # Simulate a new user signing up, which enqueues 2 welcome e-mails.
         enqueue_welcome_emails(email, "King Hamlet")
@@ -848,7 +848,7 @@ class EmailUnsubscribeTests(ZulipTestCase):
         have been queued.
         """
         email = "hamlet@zulip.com"
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
         self.assertTrue(user_profile.enable_digest_emails)
 
         # Enqueue a fake digest email.
@@ -1599,11 +1599,11 @@ class DeactivateUserTest(ZulipTestCase):
         # type: () -> None
         email = 'hamlet@zulip.com'
         self.login(email)
-        user = get_user_profile_by_email('hamlet@zulip.com')
+        user = self.example_user('hamlet')
         self.assertTrue(user.is_active)
         result = self.client_delete('/json/users/me')
         self.assert_json_success(result)
-        user = get_user_profile_by_email('hamlet@zulip.com')
+        user = self.example_user('hamlet')
         self.assertFalse(user.is_active)
         self.login(email, fails=True)
 
@@ -1611,15 +1611,15 @@ class DeactivateUserTest(ZulipTestCase):
         # type: () -> None
         email = 'iago@zulip.com'
         self.login(email)
-        user = get_user_profile_by_email('iago@zulip.com')
+        user = self.example_user('iago')
         self.assertTrue(user.is_active)
         result = self.client_delete('/json/users/me')
         self.assert_json_error(result, "Cannot deactivate the only organization administrator")
-        user = get_user_profile_by_email('iago@zulip.com')
+        user = self.example_user('iago')
         self.assertTrue(user.is_active)
         self.assertTrue(user.is_realm_admin)
         email = 'hamlet@zulip.com'
-        user_2 = get_user_profile_by_email('hamlet@zulip.com')
+        user_2 = self.example_user('hamlet')
         do_change_is_admin(user_2, True)
         self.assertTrue(user_2.is_realm_admin)
         result = self.client_delete('/json/users/me')
@@ -1757,7 +1757,7 @@ class MobileAuthOTPTest(ZulipTestCase):
 
     def test_otp_encrypt_api_key(self):
         # type: () -> None
-        hamlet = get_user_profile_by_email("hamlet@zulip.com")
+        hamlet = self.example_user('hamlet')
         hamlet.api_key = '12ac' * 8
         otp = '7be38894' * 8
         result = otp_encrypt_api_key(hamlet, otp)

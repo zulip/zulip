@@ -10,7 +10,6 @@ from django.test import override_settings
 from django.template import Template, Context
 from django.template.loader import get_template
 
-from zerver.models import get_user_profile_by_email
 from zerver.lib.test_helpers import get_all_templates
 from zerver.lib.test_classes import (
     ZulipTestCase,
@@ -164,8 +163,8 @@ class TemplateTestCase(ZulipTestCase):
             context.
 
         """
-        email = "hamlet@zulip.com"
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
 
         context = dict(
             article="zerver/help/index.md",

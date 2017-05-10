@@ -46,8 +46,8 @@ def gather_hot_conversations(user_profile, stream_messages):
     # Returns a list of dictionaries containing the templating
     # information for each hot conversation.
 
-    conversation_length = defaultdict(int) # type: Dict[Tuple[int, Text], int]
-    conversation_diversity = defaultdict(set) # type: Dict[Tuple[int, Text], Set[Text]]
+    conversation_length = defaultdict(int)  # type: Dict[Tuple[int, Text], int]
+    conversation_diversity = defaultdict(set)  # type: Dict[Tuple[int, Text], Set[Text]]
     for user_message in stream_messages:
         if not user_message.message.sent_by_human():
             # Don't include automated messages in the count.
@@ -106,7 +106,7 @@ def gather_new_users(user_profile, threshold):
     # Gather information on users in the realm who have recently
     # joined.
     if user_profile.realm.is_zephyr_mirror_realm:
-        new_users = [] # type: List[UserProfile]
+        new_users = []  # type: List[UserProfile]
     else:
         new_users = list(UserProfile.objects.filter(
             realm=user_profile.realm, date_joined__gt=threshold,
@@ -118,12 +118,12 @@ def gather_new_users(user_profile, threshold):
 def gather_new_streams(user_profile, threshold):
     # type: (UserProfile, datetime.datetime) -> Tuple[int, Dict[str, List[Text]]]
     if user_profile.realm.is_zephyr_mirror_realm:
-        new_streams = [] # type: List[Stream]
+        new_streams = []  # type: List[Stream]
     else:
         new_streams = list(get_active_streams(user_profile.realm).filter(
             invite_only=False, date_created__gt=threshold))
 
-    base_url = u"%s/#narrow/stream/" % (user_profile.realm.uri,)
+    base_url = u"%s/  # narrow/stream/" % (user_profile.realm.uri,)
 
     streams_html = []
     streams_plain = []

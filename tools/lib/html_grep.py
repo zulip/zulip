@@ -25,14 +25,14 @@ class Grepper(object):
 
     def __init__(self, fns):
         # type: (List[str]) -> None
-        all_branches = [] # type: List[HtmlTreeBranch]
+        all_branches = []  # type: List[HtmlTreeBranch]
 
         for fn in fns:
             text = open(fn).read()
             branches = html_branches(text, fn=fn)
             all_branches += branches
 
-        self.word_dict = defaultdict(set) # type: Dict[str, Set[HtmlTreeBranch]]
+        self.word_dict = defaultdict(set)  # type: Dict[str, Set[HtmlTreeBranch]]
         for b in all_branches:
             for word in b.words:
                 self.word_dict[word].add(b)
@@ -42,7 +42,7 @@ class Grepper(object):
     def grep(self, word_set):
         # type: (Set[str]) -> None
 
-        words = list(word_set) # type: List[str]
+        words = list(word_set)  # type: List[str]
 
         if len(words) == 0:
             matches = self.all_branches

@@ -41,7 +41,7 @@ class AnalyticsTestCase(TestCase):
         # used to generate unique names in self.create_*
         self.name_counter = 100
         # used as defaults in self.assertCountEquals
-        self.current_property = None # type: Optional[str]
+        self.current_property = None  # type: Optional[str]
 
     # Lightweight creation of users, streams, and messages
     def create_user(self, **kwargs):
@@ -139,7 +139,7 @@ class AnalyticsTestCase(TestCase):
             'end_time': self.TIME_ZERO,
             'value': 1}
         for values in arg_values:
-            kwargs = {} # type: Dict[str, Any]
+            kwargs = {}  # type: Dict[str, Any]
             for i in range(len(values)):
                 kwargs[arg_keys[i]] = values[i]
             for key, value in defaults.items():
@@ -487,7 +487,7 @@ class TestCountStats(AnalyticsTestCase):
         do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
 
         client2_id = str(client2.id)
-        website_client_id = str(get_client('website').id) # default for self.create_message
+        website_client_id = str(get_client('website').id)  # default for self.create_message
         self.assertTableState(UserCount, ['value', 'subgroup', 'user'],
                               [[2, website_client_id, user1],
                                [1, client2_id, user1], [2, client2_id, user2],
@@ -897,7 +897,7 @@ class TestActiveUsersAudit(AnalyticsTestCase):
     def test_empty_realm_or_user_with_no_relevant_activity(self):
         # type: () -> None
         self.add_event('unrelated', 1)
-        self.create_user() # also test a user with no RealmAuditLog entries
+        self.create_user()  # also test a user with no RealmAuditLog entries
         Realm.objects.create(string_id='moo', name='moo')
         do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO)
         self.assertTableState(UserCount, [], [])

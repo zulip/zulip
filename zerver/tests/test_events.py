@@ -195,7 +195,7 @@ class EventsEndpointTest(ZulipTestCase):
                     event=dict(
                         type='other'
                     ),
-                    users=[get_user_profile_by_email('hamlet@zulip.com').id],
+                    users=[self.example_user('hamlet').id],
                 ),
             ),
         )
@@ -218,10 +218,10 @@ class GetEventsTest(ZulipTestCase):
 
     def test_get_events(self):
         # type: () -> None
-        email = "hamlet@zulip.com"
-        recipient_email = "othello@zulip.com"
-        user_profile = get_user_profile_by_email(email)
-        recipient_user_profile = get_user_profile_by_email(recipient_email)
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
+        recipient_user_profile = self.example_user('othello')
+        recipient_email = recipient_user_profile.email
         self.login(email)
 
         result = self.tornado_call(get_events_backend, user_profile,
@@ -308,8 +308,8 @@ class GetEventsTest(ZulipTestCase):
 
     def test_get_events_narrow(self):
         # type: () -> None
-        email = "hamlet@zulip.com"
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
         self.login(email)
 
         result = self.tornado_call(get_events_backend, user_profile,
@@ -348,7 +348,7 @@ class GetEventsTest(ZulipTestCase):
         self.assertEqual(events[0]["message"]["display_recipient"], "Denmark")
 
 class EventsRegisterTest(ZulipTestCase):
-    user_profile = get_user_profile_by_email("hamlet@zulip.com")
+    user_profile = get_user_profile_by_email('hamlet@zulip.com')
     maxDiff = None # type: Optional[int]
 
     def create_bot(self, email):
@@ -534,7 +534,7 @@ class EventsRegisterTest(ZulipTestCase):
         ])
 
         message = self.send_message("cordelia@zulip.com", "hamlet@zulip.com", Recipient.PERSONAL, "hello")
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
         events = self.do_test(
             lambda: do_update_message_flags(user_profile, 'add', 'starred',
                                             [message], False, None, None),
@@ -1351,8 +1351,8 @@ class EventsRegisterTest(ZulipTestCase):
                 ('owner_id', check_int),
             ])),
         ])
-        self.user_profile = get_user_profile_by_email('iago@zulip.com')
-        owner = get_user_profile_by_email('hamlet@zulip.com')
+        self.user_profile = self.example_user('iago')
+        owner = self.example_user('hamlet')
         bot = self.create_bot('test-bot@zulip.com')
         action = lambda: do_change_bot_owner(bot, owner, self.user_profile)
         events = self.do_test(action)
@@ -1561,7 +1561,7 @@ class EventsRegisterTest(ZulipTestCase):
 
         # Now remove the first user, to test the normal unsubscribe flow
         action = lambda: bulk_remove_subscriptions(
-            [get_user_profile_by_email("othello@zulip.com")],
+            [self.example_user('othello')],
             [stream])
         events = self.do_test(action,
                               include_subscribers=include_subscribers,
@@ -1572,7 +1572,7 @@ class EventsRegisterTest(ZulipTestCase):
 
         # Now remove the second user, to test the 'vacate' event flow
         action = lambda: bulk_remove_subscriptions(
-            [get_user_profile_by_email("hamlet@zulip.com")],
+            [self.example_user('hamlet')],
             [stream])
         events = self.do_test(action,
                               include_subscribers=include_subscribers,
@@ -1596,7 +1596,7 @@ class EventsRegisterTest(ZulipTestCase):
 
         # Subscribe to a totally new invite-only stream, so it's just Hamlet on it
         stream = self.make_stream("private", get_realm("zulip"), invite_only=True)
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
         action = lambda: bulk_add_subscriptions([stream], [user_profile])
         events = self.do_test(action, include_subscribers=include_subscribers,
                               num_events=2)
@@ -1608,21 +1608,19 @@ class FetchInitialStateDataTest(ZulipTestCase):
     # Non-admin users don't have access to all bots
     def test_realm_bots_non_admin(self):
         # type: () -> None
-        email = 'cordelia@zulip.com'
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.example_user('cordelia')
         self.assertFalse(user_profile.is_realm_admin)
         result = fetch_initial_state_data(user_profile, None, "")
         self.assert_length(result['realm_bots'], 0)
 
         # additionally the API key for a random bot is not present in the data
-        api_key = get_user_profile_by_email('notification-bot@zulip.com').api_key
+        api_key = self.notification_bot().api_key
         self.assertNotIn(api_key, str(result))
 
     # Admin users have access to all bots in the realm_bots field
     def test_realm_bots_admin(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
-        user_profile = get_user_profile_by_email(email)
+        user_profile = self.example_user('hamlet')
         do_change_is_admin(user_profile, True)
         self.assertTrue(user_profile.is_realm_admin)
         result = fetch_initial_state_data(user_profile, None, "")
@@ -1771,11 +1769,11 @@ class EventQueueTest(TestCase):
                            'type': 'unknown',
                            "timestamp": "1"}])
 
-class TestEventsRegisterAllPublicStreamsDefaults(TestCase):
+class TestEventsRegisterAllPublicStreamsDefaults(ZulipTestCase):
     def setUp(self):
         # type: () -> None
-        self.email = 'hamlet@zulip.com'
-        self.user_profile = get_user_profile_by_email(self.email)
+        self.user_profile = self.example_user('hamlet')
+        self.email = self.user_profile.email
 
     def test_use_passed_all_public_true_default_false(self):
         # type: () -> None
@@ -1819,11 +1817,11 @@ class TestEventsRegisterAllPublicStreamsDefaults(TestCase):
         result = _default_all_public_streams(self.user_profile, None)
         self.assertFalse(result)
 
-class TestEventsRegisterNarrowDefaults(TestCase):
+class TestEventsRegisterNarrowDefaults(ZulipTestCase):
     def setUp(self):
         # type: () -> None
-        self.email = 'hamlet@zulip.com'
-        self.user_profile = get_user_profile_by_email(self.email)
+        self.user_profile = self.example_user('hamlet')
+        self.email = self.user_profile.email
         self.stream = get_stream('Verona', self.user_profile.realm)
 
     def test_use_passed_narrow_no_default(self):

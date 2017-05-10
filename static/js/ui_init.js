@@ -68,7 +68,7 @@ $(function () {
     });
 
     message_viewport.message_pane.mousewheel(function (e, delta) {
-        if (!ui_state.home_tab_obscured()) {
+        if (!modals.is_active()) {
             // In the message view, we use a throttled mousewheel handler.
             throttled_mousewheelhandler(e, delta);
         }
@@ -246,13 +246,13 @@ $(function () {
     tutorial.initialize();
     notifications.initialize();
     gear_menu.initialize();
+    settings_sections.initialize();
     hashchange.initialize();
     pointer.initialize();
     unread_ui.initialize();
     activity.initialize();
     emoji.initialize();
     hotspots.initialize();
-    settings_sections.initialize();
 });
 
 

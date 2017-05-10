@@ -85,9 +85,9 @@ def print_types_to(file_obj):
                                        get_type_str(ret_val))
             print(output, file=file_obj)
             return ret_val
-        return wrapper # type: ignore # https://github.com/python/mypy/issues/1927
+        return wrapper  # type: ignore # https://github.com/python/mypy/issues/1927
     return decorator
 
 def print_types(func):
     # type: (FuncT) -> FuncT
-    return print_types_to(sys.stdout)(func) # type: ignore # https://github.com/python/mypy/issues/1551
+    return print_types_to(sys.stdout)(func)  # type: ignore # https://github.com/python/mypy/issues/1551
