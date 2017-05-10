@@ -3158,7 +3158,7 @@ def do_invite_users(user_profile, invitee_emails, streams, body=None):
         prereg_user.streams = streams
         prereg_user.save()
 
-        event = {"email": prereg_user.email, "referrer_email": user_profile.email, "email_body": body}
+        event = {"email": prereg_user.email, "referrer_id": user_profile.id, "email_body": body}
         queue_json_publish("invites", event,
                            lambda event: do_send_confirmation_email(prereg_user, user_profile, body))
 

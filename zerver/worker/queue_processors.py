@@ -151,7 +151,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
     def consume(self, data):
         # type: (Mapping[str, Any]) -> None
         invitee = get_prereg_user_by_email(data["email"])
-        referrer = get_user_profile_by_email(data["referrer_email"])
+        referrer = get_user_profile_by_id(data["referrer_id"])
         body = data["email_body"]
         do_send_confirmation_email(invitee, referrer, body)
 
