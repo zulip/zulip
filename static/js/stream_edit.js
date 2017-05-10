@@ -209,15 +209,17 @@ function show_subscription_settings(sub_row) {
 exports.show_settings_for = function (node) {
     var stream_id = get_stream_id(node);
     var sub = stream_data.get_sub_by_id(stream_id);
+
+    stream_data.update_calculated_fields(sub);
+    var html = templates.render('subscription_settings', sub);
+    $('.subscriptions .right .settings').html(html);
+
     var sub_settings = settings_for_sub(sub);
 
-    var sub_row = $(".subscription_settings[data-stream-id='" + stream_id + "']");
-    $(".subscription_settings[data-stream].show").removeClass("show");
-
-    $("#subscription_overlay .subscription_settings.show").removeClass("show");
+    $(".nothing-selected").hide();
     sub_settings.addClass("show");
 
-    show_subscription_settings(sub_row);
+    show_subscription_settings(sub_settings);
 };
 
 function stream_home_view_clicked(e) {
