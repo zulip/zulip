@@ -60,18 +60,27 @@ class TestSessions(ZulipTestCase):
 
     def test_delete_all_deactivated_user_sessions(self):
         # type: () -> None
+
+        # Test that no exception is thrown with a logged-out session
         self.login('hamlet@zulip.com')
         self.assertIn('_auth_user_id', self.client.session)
-        user_profile_1 = get_user_profile_by_email('hamlet@zulip.com')
-        user_profile_1.is_active = False
         self.client_post('/accounts/logout/')
         delete_all_deactivated_user_sessions()
         result = self.client_get("/")
         self.assertEqual('/login', result.url)
 
+        # Test nothing happens to an active user's session
         self.login('othello@zulip.com')
         self.assertIn('_auth_user_id', self.client.session)
-        user_profile_2 = get_user_profile_by_email('othello@zulip.com')
-        user_profile_2.is_active = True
         delete_all_deactivated_user_sessions()
         self.assertIn('_auth_user_id', self.client.session)
+
+        # Test that a deactivated session gets logged out
+        self.login('cordelia@zulip.com')
+        self.assertIn('_auth_user_id', self.client.session)
+        user_profile_3 = get_user_profile_by_email('cordelia@zulip.com')
+        user_profile_3.is_active = False
+        user_profile_3.save()
+        delete_all_deactivated_user_sessions()
+        result = self.client_get("/")
+        self.assertEqual('/login', result.url)
