@@ -39,15 +39,14 @@ class TestMissedMessages(ZulipTestCase):
         else:
             reply_to_addresses = ["Zulip <noreply@example.com>"]
         msg = mail.outbox[0]
-        sender = settings.NOREPLY_EMAIL_ADDRESS
+        sender = 'Zulip Missed Messages <{}>'.format(settings.NOREPLY_EMAIL_ADDRESS)
         from_email = sender
         self.assertEqual(len(mail.outbox), 1)
         if send_as_user:
             from_email = '"%s" <%s>' % (othello.full_name, othello.email)
         self.assertEqual(msg.from_email, from_email)
+        self.assertIn(msg.extra_headers['Reply-To'], reply_to_addresses)
         self.assertEqual(msg.subject, subject)
-        self.assertEqual(len(msg.reply_to), 1)
-        self.assertIn(msg.reply_to[0], reply_to_addresses)
         self.assertIn(body, self.normalize_string(msg.body))
 
     @patch('zerver.lib.email_mirror.generate_random_token')
