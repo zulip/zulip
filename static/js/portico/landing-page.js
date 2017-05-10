@@ -150,7 +150,7 @@ var events = function () {
     $("body").click(function (e) {
         var $e = $(e.target);
 
-        var should_close = !$e.is("ul, #hamburger") && $e.closest("ul, #hamburger").length === 0;
+        var should_close = !$e.is("ul, .hamburger") && $e.closest("ul, .hamburger").length === 0;
 
         // this means that it is in mobile sidebar mode.
         if ($("nav ul").height() === window.innerHeight && should_close) {
@@ -158,9 +158,10 @@ var events = function () {
         }
     });
 
-    $("#hamburger").click(function () {
+    $(".hamburger").click(function () {
         $("nav ul").addClass("show");
     });
+
     (function () {
         var $last = $(".details-box").eq(0).addClass("show");
         var $li = $("ul.sidebar li");
