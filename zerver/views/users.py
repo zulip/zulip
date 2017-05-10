@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-from typing import Text, Union, Optional, Dict, Any, List, Tuple
+from typing import Callable, Text, Union, Optional, Dict, Any, List, Tuple
 
 import os
 import simplejson as json
@@ -120,7 +120,7 @@ def avatar(request, email_or_id, medium=False):
     try:
         int(email_or_id)
     except ValueError:
-        get_user_func = get_user_profile_by_email
+        get_user_func = get_user_profile_by_email  # type: Callable[..., UserProfile]
     else:
         get_user_func = get_user_profile_by_id
 

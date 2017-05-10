@@ -688,7 +688,7 @@ def render_incoming_message(message, content, message_users, realm):
     return rendered_content
 
 def get_recipient_user_profiles(recipient, sender_id):
-    # type: (Recipient, Text) -> List[UserProfile]
+    # type: (Recipient, int) -> List[UserProfile]
     if recipient.type == Recipient.PERSONAL:
         recipients = list(set([get_user_profile_by_id(recipient.type_id),
                                get_user_profile_by_id(sender_id)]))

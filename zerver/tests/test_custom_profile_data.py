@@ -225,10 +225,10 @@ class CustomProfileDataTest(ZulipTestCase):
         iago = get_user_profile_by_email('iago@zulip.com')
         expected_value = {f['id']: f['value'] for f in data}
 
-        for field in iago.profile_data:
-            self.assertEqual(field['value'], expected_value[field['id']])
+        for field_dict in iago.profile_data:
+            self.assertEqual(field_dict['value'], expected_value[field_dict['id']])
             for k in ['id', 'type', 'name']:
-                self.assertIn(k, field)
+                self.assertIn(k, field_dict)
 
             self.assertEqual(len(iago.profile_data), 4)
 
