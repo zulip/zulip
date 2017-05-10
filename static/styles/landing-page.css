@@ -1599,6 +1599,7 @@ a:not(.no-style):hover:before {
 @media (max-width: 1024px) {
     nav {
         padding-bottom: 110px;
+        padding-top: 30px;
     }
 
     nav .logo {
@@ -1804,18 +1805,22 @@ a:not(.no-style):hover:before {
     }
 
     nav ul:before {
-        content: " ";
+        content: "Zulip";
         display: block;
-        margin-top: 30px;
+        margin-top: 20px;
+        padding-top: 5px;
+        margin-left: 10px;
 
-        width: 115px;
+        width: 100px;
         height: 40px;
 
-        background-size: 100% auto;
-        background-image: url(/static/images/landing-page/bad-logo.png);
-        background-position: center;
+        font-size: 1.5rem;
+        text-align: right;
+        color: #444;
 
-        -webkit-filter: invert(0.7);
+        background-size: 40px auto;
+        background-image: url(/static/images/zulip-logo.svg);
+        background-repeat: no-repeat;
     }
 
     nav ul {
@@ -1841,7 +1846,7 @@ a:not(.no-style):hover:before {
     }
 
     nav ul li:first-of-type {
-        margin-top: 30px;
+        margin-top: 20px;
     }
 
     nav ul li {
@@ -1895,7 +1900,7 @@ a:not(.no-style):hover:before {
 
 @media (max-device-width: 450px) {
     nav {
-        padding-bottom: 90px;
+        padding-bottom: 105px;
         padding-top: 20px;
     }
 
