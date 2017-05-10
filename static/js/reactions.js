@@ -116,7 +116,11 @@ function maybe_select_emoji(e) {
         e.preventDefault();
         var first_emoji = get_emoji_at_index(0);
         if (first_emoji) {
-            exports.toggle_reaction(current_msg_list.selected_id(), first_emoji.title);
+            if (emoji_picker.is_composition(first_emoji)) {
+                first_emoji.click();
+            } else {
+                exports.toggle_reaction(current_msg_list.selected_id(), first_emoji.title);
+            }
         }
     }
 }
@@ -326,6 +330,10 @@ exports.get_message_reactions = function (message) {
         return reaction;
     });
     return reactions;
+};
+
+exports.is_reaction = function (emoji) {
+    return emoji.classList.contains('reaction');
 };
 
 $(function () {
