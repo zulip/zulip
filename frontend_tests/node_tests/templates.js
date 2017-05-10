@@ -880,6 +880,36 @@ function render(template_name, args) {
 }());
 
 
+(function subscription_settings() {
+    var sub = {
+        name: 'devel',
+        subscribed: true,
+        notifications: true,
+        is_admin: true,
+        render_subscribers: true,
+        color: 'purple',
+        invite_only: true,
+        can_make_public: true,
+        can_make_private: true, /* not logical, but that's ok */
+        email_address: 'xxxxxxxxxxxxxxx@zulip.com',
+        stream_id: 888,
+        in_home_view: true,
+    };
+
+    var html = '';
+    html += render('subscription_settings', sub);
+
+    global.write_handlebars_output("subscription_settings", html);
+
+    var div = $(html).find(".subscription-type");
+    assert(div.text().indexOf('invite-only stream') > 0);
+
+    var anchor = $(html).find(".change-stream-privacy:first");
+    assert.equal(anchor.data("is-private"), true);
+    assert.equal(anchor.text(), "[Change]");
+}());
+
+
 (function subscription_stream_privacy_modal() {
     var args = {
         stream_id: 999,
@@ -932,13 +962,6 @@ function render(template_name, args) {
 
     var span = $(html).find(".stream-name:first");
     assert.equal(span.text(), 'devel');
-
-    var div = $(html).find(".subscription-type");
-    assert(div.text().indexOf('invite-only stream') > 0);
-
-    var anchor = $(html).find(".change-stream-privacy:first");
-    assert.equal(anchor.data("is-private"), true);
-    assert.equal(anchor.text(), "[Change]");
 }());
 
 
