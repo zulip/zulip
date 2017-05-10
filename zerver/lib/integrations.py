@@ -59,6 +59,17 @@ class Integration(object):
         # type: (Dict[Any, Any]) -> None
         self.doc_context = context
 
+    @property
+    def help_content(self):
+        # type: () -> Text
+        doc_context = self.doc_context or {}
+
+        if self.doc.endswith('.md'):
+            return render_markdown_path(self.doc, doc_context)
+        else:
+            template = loader.get_template(self.doc)
+            return mark_safe(template.render(doc_context))
+
 class EmailIntegration(Integration):
     def is_enabled(self):
         # type: () -> bool
@@ -103,17 +114,6 @@ class WebhookIntegration(Integration):
     def url_object(self):
         # type: () -> LocaleRegexProvider
         return url(self.url, self.function)
-
-    @property
-    def help_content(self):
-        # type: () -> Text
-        doc_context = self.doc_context or {}
-
-        if self.doc.endswith('.md'):
-            return render_markdown_path(self.doc, doc_context)
-        else:
-            template = loader.get_template(self.doc)
-            return mark_safe(template.render(doc_context))
 
 class HubotLozenge(Integration):
     GIT_URL_TEMPLATE = "https://github.com/hubot-scripts/hubot-{}"
