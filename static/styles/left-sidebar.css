@@ -190,17 +190,14 @@ li.hidden-filter {
 
 #global_filters .count {
     margin-right: 15px;
+    margin-top: 2px;
     display: none;
+
+    line-height: 13px;
 }
 
 #stream_filters .count {
     margin-right: 10px;
-}
-
-#global_filters .count {
-    line-height: 13px;
-    top: 3px;
-    margin-right: 15px;
 }
 
 .topic-name {
