@@ -9,7 +9,7 @@ from six import binary_type
 
 from typing import Set, Text
 
-from zerver.lib.avatar import get_avatar_url
+from zerver.lib.avatar import avatar_url_from_dict
 from zerver.lib.avatar_hash import gravatar_hash
 import zerver.lib.bugdown as bugdown
 from zerver.lib.cache import cache_with_key, to_dict_cache_key
@@ -151,11 +151,12 @@ class MessageDict(object):
     ):
         # type: (bool, Optional[Message], int, Optional[datetime.datetime], Optional[Text], Text, Text, datetime.datetime, Optional[Text], Optional[int], int, Text, int, Text, Text, Text, Text, int, bool, Text, int, int, int, List[Dict[str, Any]]) -> Dict[str, Any]
 
-        avatar_url = get_avatar_url(
-            sender_avatar_source,
-            sender_email,
-            sender_avatar_version
-        )
+        avatar_url = avatar_url_from_dict(dict(
+            avatar_source=sender_avatar_source,
+            avatar_version=sender_avatar_version,
+            email=sender_email,
+            id=sender_id,
+            realm_id=sender_realm_id))
 
         display_recipient = get_display_recipient_by_id(
             recipient_id,
