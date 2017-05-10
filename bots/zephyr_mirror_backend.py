@@ -307,6 +307,8 @@ def parse_zephyr_body(zephyr_data, notice_format):
                     fields[0], fields[1], fields[2], fields[4], fields[3])
     except ValueError:
         (zsig, body) = ("", zephyr_data)
+    # Clean body of any null characters, since they're invalid in our protocol.
+    body = body.replace('\x00', '')
     return (zsig, body)
 
 def parse_crypt_table(zephyr_class, instance):
