@@ -67,7 +67,7 @@ class PublicURLTest(ZulipTestCase):
                            "/json/invite_users",
                            "/json/settings/change",
                            "/json/subscriptions/exists",
-                           "/json/subscriptions/property",
+                           "/api/v1/users/me/subscriptions/properties",
                            "/json/fetch_api_key",
                            "/json/users/me/pointer",
                            "/json/users/me/subscriptions",

@@ -34,7 +34,7 @@ class DocPageTest(ZulipTestCase):
             self._test('/en/about/', 'Cambridge, Massachusetts')
             self._test('/apps/', 'Appsolutely')
             self._test('/features/', 'Talk about multiple topics at once')
-            self._test('/hello/', 'workplace chat that actually improves your productivity')
+            self._test('/hello/', 'productive group chat')
             self._test('/integrations/', 'require creating a Zulip bot')
             self._test('/devlogin/', 'Normal users')
             self._test('/register/', 'Sign up for Zulip')

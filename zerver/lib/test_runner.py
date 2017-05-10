@@ -201,6 +201,8 @@ class TextTestResult(runner.TextTestResult):
     def addError(self, *args, **kwargs):
         # type: (*Any, **Any) -> None
         TestResult.addError(self, *args, **kwargs)
+        test_name = full_test_name(args[0])
+        self.failed_tests.append(test_name)
 
     def addFailure(self, *args, **kwargs):
         # type: (*Any, **Any) -> None

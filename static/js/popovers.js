@@ -156,7 +156,7 @@ exports.toggle_actions_popover = function (element, id) {
             can_unmute_topic: can_unmute_topic,
             should_display_add_reaction_option: message.sent_by_me,
             should_display_edit_history_option: should_display_edit_history_option,
-            conversation_time_uri: narrow.by_conversation_and_time_uri(message),
+            conversation_time_uri: narrow.by_conversation_and_time_uri(message, true),
             narrowed: narrow_state.active(),
         };
 
@@ -428,20 +428,6 @@ exports.register_click_handlers = function () {
         e.stopPropagation();
         e.preventDefault();
     });
-    $('body').on('click', '.popover_narrow_by_id', function (e) {
-        var msgid = $(e.currentTarget).data('msgid');
-        popovers.hide_actions_popover();
-        narrow.by_id(msgid, {trigger: 'popover'});
-        e.stopPropagation();
-        e.preventDefault();
-    });
-    $('body').on('click', '.popover_narrow_by_conversation_and_time', function (e) {
-        var msgid = $(e.currentTarget).data('message-id');
-        popovers.hide_actions_popover();
-        narrow.by_conversation_and_time(msgid, {trigger: 'popover'});
-        e.stopPropagation();
-        e.preventDefault();
-    });
     $('body').on('click', '.popover_toggle_collapse', function (e) {
         var msgid = $(e.currentTarget).data('message-id');
         var row = current_msg_list.get_row(msgid);
@@ -496,6 +482,22 @@ exports.register_click_handlers = function () {
         popovers.hide_actions_popover();
         muting_ui.unmute_topic(stream, topic);
         muting_ui.persist_and_rerender();
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    function initClipboard(selector) {
+        return new Clipboard(selector);
+    }
+    initClipboard('.copy_link');
+
+    $('body').on('click', '.copy_link', function (e) {
+        popovers.hide_actions_popover();
+        var id = $(this).attr("data-message-id");
+        var row = $("[zid='" + id + "']");
+        row.find(".alert-copied").css("display", "block");
+        row.find(".alert-copied").delay(1000).fadeOut(300);
+
         e.stopPropagation();
         e.preventDefault();
     });

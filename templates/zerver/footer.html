@@ -1,0 +1,43 @@
+<div class="footer">
+    <div class="footer-main">
+        <ul class="footer-navigation">
+            {% if about_link_disabled %}
+            {% else %}
+            <li><a class="no-style" href="{{ server_uri }}/hello">{{ _('About') }}</a></li>
+            <li><span class="little-bullet">·</span></li>
+            {% endif %}
+
+            <li><a class="no-style" href="{{ server_uri }}/terms">{{ _('Legal') }}</a></li>
+            <li><span class="little-bullet">·</span></li>
+            <li><a class="no-style" href="{{ server_uri }}/privacy">{{ _('Privacy') }}</a></li>
+            <li><span class="little-bullet">·</span></li>
+            <li><a class="no-style" href="{{ server_uri }}/features">{{ _('Features') }}</a></li>
+            <li><span class="little-bullet">·</span></li>
+            <li><a class="no-style" href="{{ server_uri }}/help">{{ _('User documentation') }}</a></li>
+
+            {% if login_link_disabled %}
+            {% else %}
+            <li><span class="little-bullet">·</span></li>
+            <li><a class="no-style" href="{{login_url}}">{{ _('Log in') }}</a></li>
+            {% endif %}
+
+            {% if register_link_disabled %}
+            {% elif only_sso %}
+            {% else %}
+            <li><span class="little-bullet">·</span></li>
+            <li><a class="no-style" href="{{ url('register') }}">{{ _('Register') }}</a></li>
+            {% endif %}
+
+            {% if open_realm_creation %}
+            <li><span class="little-bullet">·</span></li>
+            <li><a class="no-style" href="{{ server_uri }}/create_realm">{{ _('Create new organization') }}</a></li>
+            {% endif %}
+
+            {% if find_team_link_disabled %}
+            {% else %}
+            <li><span class="little-bullet">·</span></li>
+            <li><a class="no-style" href="{{ server_uri }}/find_my_team">{{ _('Find my team') }}</a></li>
+            {% endif %}
+        </ul>
+    </div>
+</div>

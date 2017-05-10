@@ -276,7 +276,6 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
 
     senders = set(m.sender.full_name for m in missed_messages)
     sender_str = ", ".join(senders)
-<<<<<<< HEAD
     realm_str = user_profile.realm.name
     context.update({
         'sender_str': sender_str,
@@ -303,27 +302,6 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
         context.update({'at_mention': True})
     from_email = None
 
-=======
-    plural_messages = 's' if len(missed_messages) > 1 else ''
-    realm_str = missed_messages[0].get_realm().string_id
-    if (missed_messages[0].recipient.type == Recipient.HUDDLE):
-        disp_recipient = get_display_recipient(missed_messages[0].recipient)
-        other_recipients = [r['full_name'] for r in disp_recipient
-                                if r['email'] != user_profile.email]
-        if len(other_recipients) == 2:
-            subject = u"Group PM%s with %s in %s" % (plural_messages, " and ".join(other_recipients), realm_str)
-        elif len(other_recipients) == 3:
-            subject = u"Group PM%s with %s, %s, and %s in %s" % (plural_messages, other_recipients[0], other_recipients[1], 
-                other_recipients[2], realm_str)
-        else:
-            subject = u"Group PM%s with %s, and others in %s" % (plural_messages, ', '.join(other_recipients[:2]), realm_str)
-    elif (missed_messages[0].recipient.type == Recipient.PERSONAL):
-        subject = "%s sent you a message in %s" % (sender_str, realm_str)
-    else:
-        subject = "%s @-mentioned you in %s" % (sender_str, realm_str)
-
-    from_email = 'Zulip Missed Messages <%s>' % (settings.NOREPLY_EMAIL_ADDRESS,)
->>>>>>> 8147209bd82d8dc1e9a3669d58e8139f18cf1173
     if len(senders) == 1 and settings.SEND_MISSED_MESSAGE_EMAILS_AS_USER:
         # If this setting is enabled, you can reply to the Zulip
         # missed message emails directly back to the original sender.

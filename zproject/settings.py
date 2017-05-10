@@ -755,6 +755,30 @@ PIPELINE = {
             ),
             'output_filename': 'min/common.css'
         },
+        'apple_sprite': {
+            'source_filenames': (
+                'generated/emoji/google_sprite.css',
+            ),
+            'output_filename': 'min/google_sprite.css',
+        },
+        'emojione_sprite': {
+            'source_filenames': (
+                'generated/emoji/google_sprite.css',
+            ),
+            'output_filename': 'min/google_sprite.css',
+        },
+        'google_sprite': {
+            'source_filenames': (
+                'generated/emoji/google_sprite.css',
+            ),
+            'output_filename': 'min/google_sprite.css',
+        },
+        'twitter_sprite': {
+            'source_filenames': (
+                'generated/emoji/google_sprite.css',
+            ),
+            'output_filename': 'min/google_sprite.css',
+        },
     },
     'JAVASCRIPT': {},
 }
@@ -859,6 +883,7 @@ JS_SPECS = {
             'js/reload.js',
             'js/compose_fade.js',
             'js/fenced_code.js',
+            'js/markdown.js',
             'js/echo.js',
             'js/socket.js',
             'js/compose_state.js',
@@ -877,7 +902,6 @@ JS_SPECS = {
             'js/list_rendering.js',
             'js/floating_recipient_bar.js',
             'js/lightbox.js',
-            'js/ui_state.js',
             'js/ui_report.js',
             'js/ui.js',
             'js/ui_util.js',

@@ -2,7 +2,7 @@
 //
 // The way the Zulip hotkey tests work is as follows.  First, we set
 // up various contexts by monkey-patching the various hotkeys exports
-// functions (like hotkeys.is_settings_page).  Within that context, to
+// functions (like modals.settings_open).  Within that context, to
 // test whether a given key (e.g. `x`) results in a specific function
 // (e.g. `ui.foo()`), we fail to import any modules other than
 // hotkey.js so that accessing them will result in a ReferenceError.
@@ -15,6 +15,9 @@ set_global('activity', {
 });
 
 set_global('drafts', {
+});
+
+set_global('modals', {
 });
 
 set_global('reactions', {
@@ -155,7 +158,7 @@ function stubbing(func_name_to_stub, test_function) {
     // We have to skip some checks due to the way the code is
     // currently organized for mapped keys.
     hotkey.is_editing_stream_name = return_false;
-    hotkey.is_settings_page = return_false;
+    modals.settings_open = return_false;
 
     set_global('popovers', {
         actions_popped: return_false,
@@ -176,12 +179,13 @@ function stubbing(func_name_to_stub, test_function) {
         assert_unmapped('~!@#$%^*()_+{}:"<>?');
     }
 
-    _.each([return_true, return_false], function (is_settings_page) {
+    _.each([return_true, return_false], function (settings_open) {
         _.each([return_true, return_false], function (is_active) {
-            _.each([return_true, return_false], function (is_info_overlay) {
-                hotkey.is_settings_page = is_settings_page;
-                set_global('modals', {is_active: is_active});
-                set_global('ui_state', {is_info_overlay: is_info_overlay});
+            _.each([return_true, return_false], function (info_overlay_open) {
+                set_global('modals', {
+                    is_active: is_active,
+                    settings_open: settings_open,
+                    info_overlay_open: info_overlay_open});
 
                 test_normal_typing();
             });
@@ -190,7 +194,7 @@ function stubbing(func_name_to_stub, test_function) {
 
     // Ok, now test keys that work when we're viewing messages.
     hotkey.processing_text = return_false;
-    hotkey.is_settings_page = return_false;
+    modals.settings_open = return_false;
 
     hotkey.is_subs = return_true;
     assert_mapping('U', 'subs.keyboard_sub');
@@ -222,9 +226,9 @@ function stubbing(func_name_to_stub, test_function) {
     global.current_msg_list.empty = return_false;
 
     // Check that they do nothing while in the settings overlay
-    hotkey.is_settings_page = return_true;
+    modals.settings_open = return_true;
     assert_unmapped('@*+rRjJkKsSvi:GM');
-    hotkey.is_settings_page = return_false;
+    modals.settings_open = return_false;
 
     // TODO: Similar check for being in the subs page
 
@@ -244,6 +248,16 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping(':', 'emoji_picker.toggle_emoji_popover', true);
     assert_mapping('G', 'navigate.to_end');
     assert_mapping('M', 'muting_ui.toggle_mute');
+
+    // Test keys that work when a message is selected and
+    // also when the message list is empty.
+    assert_mapping('n', 'narrow.narrow_to_next_topic');
+
+    global.current_msg_list.empty = return_true;
+    assert_mapping('n', 'narrow.narrow_to_next_topic');
+
+    global.current_msg_list.empty = return_false;
+
 }());
 
 (function test_motion_keys() {
@@ -291,7 +305,7 @@ function stubbing(func_name_to_stub, test_function) {
     list_util.inside_list = return_false;
     global.current_msg_list.empty = return_true;
     global.drafts.drafts_overlay_open = return_false;
-    hotkey.is_settings_page = return_false;
+    modals.settings_open = return_false;
     hotkey.is_subs = return_false;
 
     assert_unmapped('down_arrow');
@@ -317,10 +331,10 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('spacebar', 'navigate.page_down');
     assert_mapping('up_arrow', 'navigate.up');
 
-    ui_state.is_info_overlay = return_true;
+    modals.info_overlay_open = return_true;
     assert_unmapped('down_arrow');
     assert_unmapped('up_arrow');
-    ui_state.is_info_overlay = return_false;
+    modals.info_overlay_open = return_false;
 
     hotkey.is_subs = return_true;
     assert_mapping('up_arrow', 'subs.switch_rows');
@@ -337,7 +351,7 @@ function stubbing(func_name_to_stub, test_function) {
     assert_unmapped('up_arrow');
     hotkey.is_editing_stream_name = return_false;
 
-    hotkey.is_settings_page = return_true;
+    modals.settings_open = return_true;
     assert_unmapped('end');
     assert_unmapped('home');
     assert_unmapped('left_arrow');
@@ -347,7 +361,7 @@ function stubbing(func_name_to_stub, test_function) {
 
     assert_mapping('up_arrow', 'settings.handle_up_arrow');
     assert_mapping('down_arrow', 'settings.handle_down_arrow');
-    hotkey.is_settings_page = return_false;
+    modals.settings_open = return_false;
 
     global.drafts.drafts_overlay_open = return_true;
     assert_mapping('up_arrow', 'drafts.drafts_handle_events');

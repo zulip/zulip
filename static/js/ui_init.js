@@ -241,6 +241,7 @@ $(function () {
 
     // initialize other stuff
     reload.initialize();
+    markdown.initialize();
     composebox_typeahead.initialize();
     search.initialize();
     tutorial.initialize();

@@ -395,13 +395,12 @@ function populate_messages_sent_by_client(data) {
     };
 
     // sort labels so that values are descending in the default view
-    var realm_cumulative = compute_summary_chart_data(data.realm, data.end_times.length,
-                                                      data.display_order.slice(0, 12));
+    var realm_month = compute_summary_chart_data(data.realm, 30, data.display_order.slice(0, 12));
     var label_values = [];
-    for (var i=0; i<realm_cumulative.values.length; i+=1) {
+    for (var i=0; i<realm_month.values.length; i+=1) {
         label_values.push({
-            label: realm_cumulative.labels[i],
-            value: realm_cumulative.labels[i] === "Other" ? -1 : realm_cumulative.values[i],
+            label: realm_month.labels[i],
+            value: realm_month.labels[i] === "Other" ? -1 : realm_month.values[i],
         });
     }
     label_values.sort(function (a, b) { return b.value - a.value; });

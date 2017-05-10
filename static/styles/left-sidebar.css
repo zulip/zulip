@@ -1,6 +1,8 @@
 #left-sidebar {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+
+    font-size: 0.89rem;
 }
 
 #left-sidebar .brand {
@@ -128,11 +130,11 @@ li.hidden-filter {
     display: none;
 }
 
-.filter-icon {
+#left-sidebar .filter-icon {
     display: inline-block;
     width: 18px;
     text-align: center;
-    margin-right: 5px;
+    margin-right: 3px;
 }
 
 .stream-pin-icon {
@@ -146,12 +148,7 @@ li.hidden-filter {
     padding-right: 10px;
 }
 
-.left-sidebar li a {
-    color: #555;
-}
-
 .left-sidebar li {
-    font-size: 1.05em;
     padding-top: 2px;
     padding-bottom: 2px;
 }
@@ -193,17 +190,14 @@ li.hidden-filter {
 
 #global_filters .count {
     margin-right: 15px;
+    margin-top: 2px;
     display: none;
+
+    line-height: 13px;
 }
 
 #stream_filters .count {
     margin-right: 10px;
-}
-
-#global_filters .count {
-    line-height: 13px;
-    top: 3px;
-    margin-right: 15px;
 }
 
 .topic-name {

@@ -659,13 +659,6 @@ $(function () {
         $(".settings-section" + sel + ", .settings-wrapper" + sel).addClass("show");
     });
 
-    $("#settings_overlay_container").on("click", function (e) {
-        var $target = $(e.target);
-        if ($target.is(".exit-sign, .exit")) {
-            hashchange.exit_modal();
-        }
-    });
-
     (function () {
         var settings_toggle = components.toggle({
             name: "settings-toggle",

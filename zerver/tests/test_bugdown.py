@@ -349,6 +349,19 @@ class BugdownTest(ZulipTestCase):
             converted = bugdown_convert(msg)
         self.assertEqual(converted, '<p><a href="https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM" target="_blank" title="https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM">https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM</a></p>')
 
+    def test_inline_github_preview(self):
+        # type: () -> None
+        # Test photo album previews
+        msg = 'https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png'
+        converted = bugdown_convert(msg)
+
+        self.assertEqual(converted, '<p><a href="https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png" target="_blank" title="https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png">https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png</a></p>\n<div class="message_inline_image"><a href="https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png" target="_blank" title="https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png"><img src="https://raw.githubusercontent.com/zulip/zulip/master/static/images/logo/zulip-icon-128x128.png"></a></div>')
+
+        msg = 'https://developer.github.com/assets/images/hero-circuit-bg.png'
+        converted = bugdown_convert(msg)
+
+        self.assertEqual(converted, '<p><a href="https://developer.github.com/assets/images/hero-circuit-bg.png" target="_blank" title="https://developer.github.com/assets/images/hero-circuit-bg.png">https://developer.github.com/assets/images/hero-circuit-bg.png</a></p>\n<div class="message_inline_image"><a href="https://developer.github.com/assets/images/hero-circuit-bg.png" target="_blank" title="https://developer.github.com/assets/images/hero-circuit-bg.png"><img src="https://developer.github.com/assets/images/hero-circuit-bg.png"></a></div>')
+
     def test_twitter_id_extraction(self):
         # type: () -> None
         self.assertEqual(bugdown.get_tweet_id('http://twitter.com/#!/VizzQuotes/status/409030735191097344'), '409030735191097344')

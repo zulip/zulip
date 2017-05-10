@@ -113,6 +113,18 @@ var integration_events = function () {
     });
 };
 
+var hello_events = function () {
+    var counter = 0;
+    $(window).scroll(function () {
+        if (counter % 2 === 0) {
+            $(".screen.hero-screen .message-feed").css("transform", "translateY(-" + $(this).scrollTop() / 5 + "px)");
+        }
+        counter += 1;
+    });
+
+    $(".footer").addClass("hello");
+};
+
 var events = function () {
     ScrollTo();
 
@@ -203,6 +215,10 @@ var events = function () {
 
     if (/\/integrations\/*/.test(window.location.pathname)) {
         integration_events();
+    }
+
+    if (/\/hello\/*/.test(window.location.pathname)) {
+        hello_events();
     }
 };
 

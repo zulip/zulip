@@ -14,7 +14,7 @@ var page_params = {{ page_params }};
 {% block customhead %}
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link href="/static/images/logo/apple-touch-icon-precomposed.png" rel="apple-touch-icon-precomposed">
-<link rel="stylesheet" type="text/css" href="/static/generated/emoji/google_sprite.css" />
+{% stylesheet 'google_sprite' %}
 <style type="text/css">
 
 #css-loading {
@@ -79,11 +79,6 @@ var page_params = {{ page_params }};
         <div class="exit"></div>
         {% trans %}<strong class="message">Unable to connect to
         Zulip.</strong>  Updates may be delayed.{% endtrans %} {{ _('Retrying soon...') }} <a class="restart_get_events_button">{{ _('Try now.') }}</a>
-    </div>
-    <div class="alert alert_sidebar alert-error home-error-bar" id="get_old_messages_error">
-        <div class="exit"></div>
-        {% trans %}<strong class="message">Unable to connect to
-        Zulip.</strong>  Could not fetch messages.{% endtrans %} {{ _('Retrying soon...') }}
     </div>
     <div class="alert alert_sidebar alert-error home-error-bar" id="zephyr-mirror-error">
         <div class="exit"></div>
