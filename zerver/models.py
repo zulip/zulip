@@ -1377,7 +1377,7 @@ def get_owned_bot_dicts(user_profile, include_all_realm_bots_if_admin=True):
         result = UserProfile.objects.filter(realm=user_profile.realm, is_bot=True,
                                             bot_owner=user_profile).values(*bot_dict_fields)
     # TODO: Remove this import cycle
-    from zerver.lib.avatar import get_avatar_url
+    from zerver.lib.avatar import avatar_url_from_dict
 
     return [{'email': botdict['email'],
              'user_id': botdict['id'],
@@ -1388,8 +1388,7 @@ def get_owned_bot_dicts(user_profile, include_all_realm_bots_if_admin=True):
              'default_events_register_stream': botdict['default_events_register_stream__name'],
              'default_all_public_streams': botdict['default_all_public_streams'],
              'owner': botdict['bot_owner__email'],
-             'avatar_url': get_avatar_url(botdict['avatar_source'], botdict['email'],
-                                          botdict['avatar_version']),
+             'avatar_url': avatar_url_from_dict(botdict),
              }
             for botdict in result]
 

@@ -327,6 +327,7 @@ def active_user_dicts_in_realm_cache_key(realm):
 
 bot_dict_fields = ['id', 'full_name', 'short_name', 'email',
                    'is_active', 'default_sending_stream__name',
+                   'realm_id',
                    'default_events_register_stream__name',
                    'default_all_public_streams', 'api_key',
                    'bot_owner__email', 'avatar_source',
