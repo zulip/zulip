@@ -36,5 +36,9 @@ def user_avatar_hash(uid):
 # corresponding update to zerver/migrations/0060_move_avatars_to_be_uid_based.py
 def user_avatar_path(user_profile):
     # type: (UserProfile) -> Text
-    user_id_hash = user_avatar_hash(str(user_profile.id))
-    return '%s/%s' % (str(user_profile.realm_id), user_id_hash)
+    return user_avatar_path_from_ids(user_profile.id, user_profile.realm_id)
+
+def user_avatar_path_from_ids(user_profile_id, realm_id):
+    # type: (int, int) -> Text
+    user_id_hash = user_avatar_hash(str(user_profile_id))
+    return '%s/%s' % (str(realm_id), user_id_hash)
