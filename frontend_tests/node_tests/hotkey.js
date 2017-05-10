@@ -307,6 +307,7 @@ function stubbing(func_name_to_stub, test_function) {
     global.drafts.drafts_overlay_open = return_false;
     modals.settings_open = return_false;
     hotkey.is_subs = return_false;
+    modals.lightbox_open = return_false;
 
     assert_unmapped('down_arrow');
     assert_unmapped('end');
@@ -341,10 +342,10 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('down_arrow', 'subs.switch_rows');
     hotkey.is_subs = return_false;
 
-    hotkey.is_lightbox_open = return_true;
+    modals.lightbox_open = return_true;
     assert_mapping('left_arrow', 'lightbox.prev');
     assert_mapping('right_arrow', 'lightbox.next');
-    hotkey.is_lightbox_open = return_false;
+    modals.lightbox_open = return_false;
 
     hotkey.is_editing_stream_name = return_true;
     assert_unmapped('down_arrow');

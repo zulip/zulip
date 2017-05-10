@@ -25,10 +25,6 @@ function open_reactions() {
     return true;
 }
 
-exports.is_lightbox_open = function () {
-    return lightbox.is_open;
-};
-
 exports.is_subs = function () {
     return subs.is_open;
 };
@@ -497,7 +493,7 @@ exports.process_hotkey = function (e, hotkey) {
     }
 
     if (event_name === 'left_arrow') {
-        if (exports.is_lightbox_open()) {
+        if (modals.lightbox_open()) {
             lightbox.prev();
             return true;
         } else if (exports.is_subs()) {
@@ -510,7 +506,7 @@ exports.process_hotkey = function (e, hotkey) {
     }
 
     if (event_name === 'right_arrow') {
-        if (exports.is_lightbox_open()) {
+        if (modals.lightbox_open()) {
             lightbox.next();
             return true;
         } else if (exports.is_subs()) {

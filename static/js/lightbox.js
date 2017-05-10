@@ -107,7 +107,7 @@ exports.open = function (image) {
 
     function lightbox_close_modal() {
         $(".player-container iframe").remove();
-        lightbox.is_open = false;
+        is_open = false;
         document.activeElement.blur();
     }
 
@@ -118,7 +118,7 @@ exports.open = function (image) {
     });
 
     popovers.hide_all();
-    lightbox.is_open = true;
+    is_open = true;
 };
 
 exports.show_from_selected_message = function () {
@@ -135,17 +135,6 @@ exports.prev = function () {
 exports.next = function () {
     $(".image-list .image.selected").next().click();
 };
-
-Object.defineProperty(exports, "is_open", {
-    get: function () {
-        return is_open;
-    },
-    set: function (value) {
-        if (typeof value === "boolean") {
-            is_open = value;
-        }
-    },
-});
 
 // this is a block of events that are required for the lightbox to work.
 $(function () {
