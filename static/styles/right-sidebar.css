@@ -1,6 +1,6 @@
 .right-sidebar {
     -webkit-font-smoothing: antialiased;
-    color: #555;
+    color: rgba(51, 51, 51, 0.95);
 }
 
 #group-pms li:hover,

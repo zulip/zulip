@@ -147,11 +147,11 @@ li.hidden-filter {
 }
 
 .left-sidebar li a {
-    color: #555;
+    color: rgba(51, 51, 51, 0.95);
 }
 
 .left-sidebar li {
-    font-size: 1.05em;
+    font-size: 1em;
     padding-top: 2px;
     padding-bottom: 2px;
 }
