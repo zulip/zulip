@@ -294,10 +294,17 @@ def process_loop(log):
                 except Exception:
                     logger.exception("Error updating subscriptions from Zulip:")
 
-def parse_zephyr_body(zephyr_data):
-    # type: (str) -> Tuple[str, str]
+def parse_zephyr_body(zephyr_data, notice_format):
+    # type: (str, str) -> Tuple[str, str]
     try:
         (zsig, body) = zephyr_data.split("\x00", 1)
+        if (notice_format == 'New transaction [$1] entered in $2\nFrom: $3 ($5)\nSubject: $4' or
+                notice_format == 'New transaction [$1] entered in $2\nFrom: $3\nSubject: $4'):
+            # Logic based off of owl_zephyr_get_message in barnowl
+            fields = body.split('\x00')
+            if len(fields) == 5:
+                body = 'New transaction [%s] entered in %s\nFrom: %s (%s)\nSubject: %s' % (
+                    fields[0], fields[1], fields[2], fields[4], fields[3])
     except ValueError:
         (zsig, body) = ("", zephyr_data)
     return (zsig, body)
@@ -357,7 +364,7 @@ def decrypt_zephyr(zephyr_class, instance, body):
 
 def process_notice(notice, log):
     # type: (zulip, IO) -> None
-    (zsig, body) = parse_zephyr_body(notice.message)
+    (zsig, body) = parse_zephyr_body(notice.message, notice.format)
     is_personal = False
     is_huddle = False
 
