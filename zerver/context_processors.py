@@ -87,7 +87,6 @@ def zulip_default_context(request):
         'realm_description': realm_description,
         'server_uri': settings.SERVER_URI,
         'api_site_required': settings.EXTERNAL_API_PATH != "api.zulip.com",
-        'email_integration_enabled': settings.EMAIL_GATEWAY_BOT != "",
         'email_gateway_example': settings.EMAIL_GATEWAY_EXAMPLE,
         'open_realm_creation': settings.OPEN_REALM_CREATION,
         'password_auth_enabled': password_auth_enabled(realm),
