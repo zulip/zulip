@@ -755,6 +755,30 @@ PIPELINE = {
             ),
             'output_filename': 'min/common.css'
         },
+        'apple_sprite': {
+            'source_filenames': (
+                'generated/emoji/google_sprite.css',
+            ),
+            'output_filename': 'min/google_sprite.css',
+        },
+        'emojione_sprite': {
+            'source_filenames': (
+                'generated/emoji/google_sprite.css',
+            ),
+            'output_filename': 'min/google_sprite.css',
+        },
+        'google_sprite': {
+            'source_filenames': (
+                'generated/emoji/google_sprite.css',
+            ),
+            'output_filename': 'min/google_sprite.css',
+        },
+        'twitter_sprite': {
+            'source_filenames': (
+                'generated/emoji/google_sprite.css',
+            ),
+            'output_filename': 'min/google_sprite.css',
+        },
     },
     'JAVASCRIPT': {},
 }
