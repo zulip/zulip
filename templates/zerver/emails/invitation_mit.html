@@ -15,8 +15,10 @@
             </p>
             <p>
                 {% if custom_body %}
-                Message from {{ referrer.full_name }}: {{ custom_body }}
-                {% endif %}
+				Message from {{ referrer.full_name }}: {{ custom_body }}
+				{% endif %}
+			</p>
+			<p>
                 To get started, visit the link below:
                 <br />
                 <a href="{{ activate_url }}" style="color:#08c">{{ activate_url }}</a>
