@@ -101,6 +101,10 @@ exports.open = function (image) {
         }
     }
 
+    if (is_open) {
+        return;
+    }
+
     function lightbox_close_modal() {
         $(".player-container iframe").remove();
         lightbox.is_open = false;
