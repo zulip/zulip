@@ -79,7 +79,7 @@ for msg in result['messages']:
     if msg['type'] != 'stream':
         continue
     # Remove extraneous metadata
-    for k in ['flags', 'edit_history', 'subject_links', 'gravatar_hash',
+    for k in ['flags', 'edit_history', 'subject_links',
               'avatar_url', 'recipient_id', 'sender_short_name',
               'content_type', 'client', 'sender_realm_str', 'id', 'type']:
         msg.pop(k, None)

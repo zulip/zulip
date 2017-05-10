@@ -413,8 +413,6 @@ class GetOldMessagesTest(ZulipTestCase):
                           "avatar_url", "recipient_id", "sender_full_name",
                           "sender_short_name", "timestamp", "reactions"):
                 self.assertIn(field, message)
-            # TODO: deprecate soon in favor of avatar_url
-            self.assertIn('gravatar_hash', message)
 
         return result
 

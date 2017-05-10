@@ -10,7 +10,6 @@ from six import binary_type
 from typing import Set, Text
 
 from zerver.lib.avatar import avatar_url_from_dict
-from zerver.lib.avatar_hash import gravatar_hash
 import zerver.lib.bugdown as bugdown
 from zerver.lib.cache import cache_with_key, to_dict_cache_key
 from zerver.lib.request import JsonableError
@@ -194,7 +193,6 @@ class MessageDict(object):
             recipient_id      = recipient_id,
             subject           = subject,
             timestamp         = datetime_to_timestamp(pub_date),
-            gravatar_hash     = gravatar_hash(sender_email), # Deprecated June 2013
             avatar_url        = avatar_url,
             client            = sending_client_name)
 
