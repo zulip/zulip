@@ -13,13 +13,24 @@ from zerver.models import get_user_profile_by_email
 
 def avatar_url(user_profile, medium=False):
     # type: (UserProfile, bool) -> Text
-    url = _get_unversioned_avatar_url(
-        user_profile.avatar_source,
-        email=user_profile.email,
-        realm_id=user_profile.realm_id,
-        user_profile_id=user_profile.id,
+    return avatar_url_from_dict(
+        dict(
+            avatar_source=user_profile.avatar_source,
+            avatar_version=user_profile.avatar_version,
+            email=user_profile.email,
+            id=user_profile.id,
+            realm_id=user_profile.realm_id),
         medium=medium)
-    url += '&version=%d' % (user_profile.avatar_version,)
+
+def avatar_url_from_dict(userdict, medium=False):
+    # type: (Dict[str, Any], bool) -> Text
+    url = _get_unversioned_avatar_url(
+        userdict['avatar_source'],
+        email=userdict['email'],
+        realm_id=userdict['realm_id'],
+        user_profile_id=userdict['id'],
+        medium=medium)
+    url += '&version=%d' % (userdict['avatar_version'],)
     return url
 
 def get_avatar_url(avatar_source, email, avatar_version, medium=False):

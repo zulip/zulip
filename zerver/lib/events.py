@@ -19,7 +19,7 @@ session_engine = import_module(settings.SESSION_ENGINE)
 
 from zerver.lib.alert_words import user_alert_words
 from zerver.lib.attachments import user_attachments
-from zerver.lib.avatar import avatar_url, get_avatar_url
+from zerver.lib.avatar import avatar_url, avatar_url_from_dict
 from zerver.lib.hotspots import get_next_hotspots
 from zerver.lib.narrow import check_supported_events_narrow_filter
 from zerver.lib.realm_icon import realm_icon_url
@@ -39,16 +39,9 @@ from version import ZULIP_VERSION
 
 def get_realm_user_dicts(user_profile):
     # type: (UserProfile) -> List[Dict[str, Text]]
-    def avatar_url(userdict):
-        # type: (Dict[str, Any]) -> Text
-        return get_avatar_url(userdict['avatar_source'],
-                              userdict['email'],
-                              userdict['avatar_version'],
-                              )
-
     return [{'email': userdict['email'],
              'user_id': userdict['id'],
-             'avatar_url': avatar_url(userdict),
+             'avatar_url': avatar_url_from_dict(userdict),
              'is_admin': userdict['is_realm_admin'],
              'is_bot': userdict['is_bot'],
              'full_name': userdict['full_name'],

@@ -319,7 +319,7 @@ def user_profile_by_id_cache_key(user_profile_id):
 active_user_dict_fields = [
     'id', 'full_name', 'short_name', 'email',
     'avatar_source', 'avatar_version',
-    'is_realm_admin', 'is_bot', 'timezone']  # type: List[str]
+    'is_realm_admin', 'is_bot', 'realm_id', 'timezone']  # type: List[str]
 
 def active_user_dicts_in_realm_cache_key(realm):
     # type: (Realm) -> Text
