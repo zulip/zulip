@@ -99,3 +99,29 @@ ul.actions_popover i {
 .user_popover .popover-title {
     padding: 0;
 }
+
+@media (max-width: 768px) {
+    .message-info-popover {
+        display: flex !important;
+        justify-content: center;
+        align-items: center;
+
+        /* these are to override JS embedded inline styles. */
+        top: 0px !important;
+        left: 0px !important;
+        margin: 0 !important;
+        width: 100vw;
+        height: 100vh;
+
+        background-color: rgba(0,0,0,0.7);
+        border-radius: 0px;
+        border: none;
+
+        pointer-events: none;
+    }
+
+    .message-info-popover .popover-inner {
+        background-color: #fff;
+        pointer-events: all;
+    }
+}
