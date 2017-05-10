@@ -9,15 +9,15 @@ import datetime
 from typing import Optional, Tuple, Union, Dict, Any, Text
 
 class FillState(ModelReprMixin, models.Model):
-    property = models.CharField(max_length=40, unique=True) # type: Text
-    end_time = models.DateTimeField() # type: datetime.datetime
+    property = models.CharField(max_length=40, unique=True)  # type: Text
+    end_time = models.DateTimeField()  # type: datetime.datetime
 
     # Valid states are {DONE, STARTED}
     DONE = 1
     STARTED = 2
-    state = models.PositiveSmallIntegerField() # type: int
+    state = models.PositiveSmallIntegerField()  # type: int
 
-    last_modified = models.DateTimeField(auto_now=True) # type: datetime.datetime
+    last_modified = models.DateTimeField(auto_now=True)  # type: datetime.datetime
 
     def __unicode__(self):
         # type: () -> Text
@@ -41,7 +41,7 @@ def last_successful_fill(property):
 
 # would only ever make entries here by hand
 class Anomaly(ModelReprMixin, models.Model):
-    info = models.CharField(max_length=1000) # type: Text
+    info = models.CharField(max_length=1000)  # type: Text
 
     def __unicode__(self):
         # type: () -> Text
@@ -51,11 +51,11 @@ class BaseCount(ModelReprMixin, models.Model):
     # Note: When inheriting from BaseCount, you may want to rearrange
     # the order of the columns in the migration to make sure they
     # match how you'd like the table to be arranged.
-    property = models.CharField(max_length=32) # type: Text
-    subgroup = models.CharField(max_length=16, null=True) # type: Text
-    end_time = models.DateTimeField() # type: datetime.datetime
-    value = models.BigIntegerField() # type: int
-    anomaly = models.ForeignKey(Anomaly, null=True) # type: Optional[Anomaly]
+    property = models.CharField(max_length=32)  # type: Text
+    subgroup = models.CharField(max_length=16, null=True)  # type: Text
+    end_time = models.DateTimeField()  # type: datetime.datetime
+    value = models.BigIntegerField()  # type: int
+    anomaly = models.ForeignKey(Anomaly, null=True)  # type: Optional[Anomaly]
 
     class Meta(object):
         abstract = True

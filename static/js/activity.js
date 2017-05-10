@@ -394,6 +394,19 @@ function focus_ping(want_redraw) {
 
             exports.new_user_input = false;
 
+            // Zulip has 2 data feeds coming from the server to the
+            // client: The server_events data, and this presence feed.
+            // Everything in server_events is nicely serialized, but
+            // if we've been offline and not running for a while
+            // (e.g. due to suspend), we can end up throwing
+            // exceptions due to users appearing in presence that we
+            // haven't learned about yet.  We handle this in 2 stages.
+            // First, here, we make sure that we've confirmed whether
+            // we are indeed in the unsuspend case.  Then, in
+            // `presence.set_info`, we only complain about unknown
+            // users if server_events does not suspect we're offline.
+            server_events.check_for_unsuspend();
+
             if (want_redraw) {
                 presence.set_info(data.presences, data.server_timestamp);
                 exports.build_user_sidebar();

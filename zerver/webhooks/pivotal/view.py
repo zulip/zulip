@@ -46,7 +46,7 @@ def api_pivotal_webhook_v3(request, user_profile, stream):
     if match and len(match.groups()):
         name = match.group(1)
     else:
-        name = "Story changed" # Failed for an unknown reason, show something
+        name = "Story changed"  # Failed for an unknown reason, show something
     more_info = " [(view)](%s)" % (url,)
 
     if event_type == 'story_update':

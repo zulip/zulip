@@ -23,19 +23,19 @@ class ChangeSettingsTest(ZulipTestCase):
     def check_for_toggle_param(self, pattern, param):
         # type: (str, str) -> None
         self.login("hamlet@zulip.com")
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
         json_result = self.client_post(pattern,
                                        {param: ujson.dumps(True)})
         self.assert_json_success(json_result)
         # refetch user_profile object to correctly handle caching
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
         self.assertEqual(getattr(user_profile, param), True)
 
         json_result = self.client_post(pattern,
                                        {param: ujson.dumps(False)})
         self.assert_json_success(json_result)
         # refetch user_profile object to correctly handle caching
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
         self.assertEqual(getattr(user_profile, param), False)
 
     # TODO: requires method consolidation, right now, there's no alternative
@@ -43,19 +43,19 @@ class ChangeSettingsTest(ZulipTestCase):
     def check_for_toggle_param_patch(self, pattern, param):
         # type: (str, str) -> None
         self.login("hamlet@zulip.com")
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
         json_result = self.client_patch(pattern,
                                         {param: ujson.dumps(True)})
         self.assert_json_success(json_result)
         # refetch user_profile object to correctly handle caching
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
         self.assertEqual(getattr(user_profile, param), True)
 
         json_result = self.client_patch(pattern,
                                         {param: ujson.dumps(False)})
         self.assert_json_success(json_result)
         # refetch user_profile object to correctly handle caching
-        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile = self.example_user('hamlet')
         self.assertEqual(getattr(user_profile, param), False)
 
     def test_successful_change_settings(self):
@@ -76,18 +76,18 @@ class ChangeSettingsTest(ZulipTestCase):
         self.assert_json_success(json_result)
         result = ujson.loads(json_result.content)
         self.check_well_formed_change_settings_response(result)
-        self.assertEqual(get_user_profile_by_email("hamlet@zulip.com").
+        self.assertEqual(self.example_user('hamlet').
                          full_name, "Foo Bar")
         self.logout()
         self.login("hamlet@zulip.com", "foobar1")
-        user_profile = get_user_profile_by_email('hamlet@zulip.com')
+        user_profile = self.example_user('hamlet')
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
     def test_illegal_name_changes(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
+        user = self.example_user('hamlet')
+        email = user.email
         self.login(email)
-        user = get_user_profile_by_email(email)
         full_name = user.full_name
 
         with self.settings(NAME_CHANGES_DISABLED=True):
@@ -265,9 +265,9 @@ class ChangeSettingsTest(ZulipTestCase):
 class UserChangesTest(ZulipTestCase):
     def test_update_api_key(self):
         # type: () -> None
-        email = "hamlet@zulip.com"
+        user = self.example_user('hamlet')
+        email = user.email
         self.login(email)
-        user = get_user_profile_by_email(email)
         old_api_key = user.api_key
         result = self.client_post('/json/users/me/api_key/regenerate')
         self.assert_json_success(result)

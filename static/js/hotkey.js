@@ -25,10 +25,6 @@ function open_reactions() {
     return true;
 }
 
-exports.is_settings_page = function () {
-  return (/^#*(settings|organization)/g).test(window.location.hash);
-};
-
 exports.is_lightbox_open = function () {
     return lightbox.is_open;
 };
@@ -115,7 +111,7 @@ var keypress_mappings = {
     105: {name: 'message_actions', message_view_only: true}, // 'i'
     106: {name: 'vim_down', message_view_only: true}, // 'j'
     107: {name: 'vim_up', message_view_only: true}, // 'k'
-    110: {name: 'new_stream', message_view_only: false}, // 'n'
+    110: {name: 'n_key', message_view_only: false}, // 'n'
     113: {name: 'query_users', message_view_only: false}, // 'q'
     114: {name: 'reply_message', message_view_only: true}, // 'r'
     115: {name: 'narrow_by_recipient', message_view_only: true}, // 's'
@@ -179,33 +175,8 @@ exports.process_escape_key = function (e) {
         return false;
     }
 
-    if (exports.is_lightbox_open()) {
-        modals.close_modal("lightbox");
-        return true;
-    }
-
-    if ($("#subscription_overlay").hasClass("show")) {
-        modals.close_modal("subscriptions");
-        return true;
-    }
-
-    if (drafts.drafts_overlay_open()) {
-        modals.close_modal("drafts");
-        return true;
-    }
-
-    if ($(".informational-overlays").hasClass("show")) {
-        modals.close_modal("informationalOverlays");
-        return true;
-    }
-
-    if ($("#invite-user.show").length) {
-        modals.close_modal("invite");
-        return true;
-    }
-
-    if (exports.is_settings_page()) {
-        $("#settings_overlay_container .exit").click();
+    if (modals.is_active()) {
+        modals.close_active();
         return true;
     }
 
@@ -292,7 +263,7 @@ exports.process_enter_key = function (e) {
         return true;
     }
 
-    if (exports.is_settings_page()) {
+    if (modals.settings_open()) {
         // On the settings page just let the browser handle
         // the enter key for things like submitting forms.
         return false;
@@ -436,7 +407,7 @@ exports.process_hotkey = function (e, hotkey) {
             }
     }
 
-    if (exports.is_settings_page()) {
+    if (modals.settings_open()) {
         switch (event_name) {
             case 'up_arrow':
                 settings.handle_up_arrow(e);
@@ -452,7 +423,11 @@ exports.process_hotkey = function (e, hotkey) {
         return reactions.reaction_navigate(e, event_name);
     }
 
-    if (hotkey.message_view_only && ui_state.home_tab_obscured()) {
+    if (modals.info_overlay_open()) {
+        return false;
+    }
+
+    if (hotkey.message_view_only && modals.is_active()) {
         return false;
     }
 
@@ -587,9 +562,11 @@ exports.process_hotkey = function (e, hotkey) {
                 subs.view_stream();
             }
             return true;
-        case 'new_stream':
+        case 'n_key':
             if (exports.is_subs()) {
                 subs.new_stream_clicked();
+            } else {
+                narrow.narrow_to_next_topic();
             }
             return true;
         case 'open_drafts':

@@ -36,7 +36,6 @@ from zerver.lib.test_classes import (
 from zerver.lib.test_runner import slow
 
 from zerver.models import (
-    get_user_profile_by_email,
     Message,
     Realm,
     Recipient,
@@ -60,8 +59,8 @@ class QueryUtilTest(ZulipTestCase):
         # type: () -> None
         self._create_messages()
 
-        cordelia = get_user_profile_by_email('cordelia@zulip.com')
-        hamlet = get_user_profile_by_email('hamlet@zulip.com')
+        cordelia = self.example_user('cordelia')
+        hamlet = self.example_user('hamlet')
 
         def get_queries():
             # type: () -> List[Any]
@@ -79,7 +78,7 @@ class QueryUtilTest(ZulipTestCase):
 
         queries = get_queries()
 
-        all_msg_ids = set() # type: Set[int]
+        all_msg_ids = set()  # type: Set[int]
         chunker = query_chunker(
             queries=queries,
             id_collector=all_msg_ids,
@@ -104,9 +103,9 @@ class QueryUtilTest(ZulipTestCase):
         chunker = query_chunker(
             queries=queries,
             id_collector=all_msg_ids,
-            chunk_size=7, # use a different size
+            chunk_size=7,  # use a different size
         )
-        list(chunker) # exhaust the iterator
+        list(chunker)  # exhaust the iterator
         self.assertEqual(
             len(all_msg_ids),
             len(Message.objects.filter(sender_id__in=[cordelia.id, hamlet.id]))
@@ -120,9 +119,9 @@ class QueryUtilTest(ZulipTestCase):
         chunker = query_chunker(
             queries=queries,
             id_collector=all_msg_ids,
-            chunk_size=11, # use a different size each time
+            chunk_size=11,  # use a different size each time
         )
-        list(chunker) # exhaust the iterator
+        list(chunker)  # exhaust the iterator
         self.assertEqual(
             len(all_msg_ids),
             len(Message.objects.exclude(sender_id=cordelia.id))
@@ -138,10 +137,10 @@ class QueryUtilTest(ZulipTestCase):
         chunker = query_chunker(
             queries=queries,
             id_collector=all_msg_ids,
-            chunk_size=13, # use a different size each time
+            chunk_size=13,  # use a different size each time
         )
         with self.assertRaises(AssertionError):
-            list(chunker) # exercise the iterator
+            list(chunker)  # exercise the iterator
 
         # Try to confuse things with ids part of the query...
         queries = [
@@ -152,10 +151,10 @@ class QueryUtilTest(ZulipTestCase):
         chunker = query_chunker(
             queries=queries,
             id_collector=all_msg_ids,
-            chunk_size=11, # use a different size each time
+            chunk_size=11,  # use a different size each time
         )
-        self.assertEqual(len(all_msg_ids), 0) # until we actually use the iterator
-        list(chunker) # exhaust the iterator
+        self.assertEqual(len(all_msg_ids), 0)  # until we actually use the iterator
+        list(chunker)  # exhaust the iterator
         self.assertEqual(len(all_msg_ids), len(Message.objects.all()))
 
         # Verify that we can just get the first chunk with a next() call.
@@ -166,9 +165,9 @@ class QueryUtilTest(ZulipTestCase):
         chunker = query_chunker(
             queries=queries,
             id_collector=all_msg_ids,
-            chunk_size=10, # use a different size each time
+            chunk_size=10,  # use a different size each time
         )
-        first_chunk = next(chunker) # type: ignore
+        first_chunk = next(chunker)  # type: ignore
         self.assertEqual(len(first_chunk), 10)
         self.assertEqual(len(all_msg_ids), 10)
         expected_msg = Message.objects.all()[0:10][5]
@@ -177,7 +176,7 @@ class QueryUtilTest(ZulipTestCase):
         self.assertEqual(actual_msg.sender_id, expected_msg.sender_id)
 
 
-class ExportTest(TestCase):
+class ExportTest(ZulipTestCase):
 
     def setUp(self):
         # type: () -> None
@@ -289,8 +288,8 @@ class ExportTest(TestCase):
         # TODO, extract get_set/find_by_id, so we can split this test up
 
         # Now, restrict users
-        cordelia = get_user_profile_by_email('cordelia@zulip.com')
-        hamlet = get_user_profile_by_email('hamlet@zulip.com')
+        cordelia = self.example_user('cordelia')
+        hamlet = self.example_user('hamlet')
         user_ids = set([cordelia.id, hamlet.id])
 
         full_data = self._export_realm(realm, exportable_user_ids=user_ids)

@@ -1,6 +1,6 @@
 <div class="overlay-modal" id="keyboard-shortcuts" tabindex="-1" role="dialog"
      aria-labelledby="keyboard-shortcuts-label" aria-hidden="true">
-  <div class="modal-body">
+  <div class="modal-body" tabindex="1">
     <div>
       <table class="hotkeys_table table table-striped table-bordered table-condensed">
         <thead>
@@ -105,6 +105,10 @@
         <tr>
           <td class="hotkey">P</td>
           <td class="definition">{% trans %}Narrow to all private messages{% endtrans %}</td>
+        </tr>
+        <tr>
+          <td class="hotkey">n</td>
+          <td class="definition">{% trans %}Narrow to next unread topic{% endtrans %}</td>
         </tr>
         <tr>
           <td class="hotkey">A or D</td>

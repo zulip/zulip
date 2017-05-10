@@ -39,7 +39,7 @@ You can use "-" to represent stdin.
         file_name = options['file_name']
 
         if file_name == '-':
-            f = sys.stdin # type: IO[str]
+            f = sys.stdin  # type: IO[str]
         else:
             f = open(file_name)
 

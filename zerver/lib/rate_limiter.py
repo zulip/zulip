@@ -1,5 +1,7 @@
 from __future__ import absolute_import
 
+import os
+
 from typing import Any, Iterator, List, Tuple, Text
 
 from django.conf import settings
@@ -16,21 +18,28 @@ import logging
 # http://blog.domaintools.com/2013/04/rate-limiting-with-redis/
 
 client = get_redis_client()
-rules = settings.RATE_LIMITING_RULES # type: List[Tuple[int, int]]
+rules = settings.RATE_LIMITING_RULES  # type: List[Tuple[int, int]]
 def _rules_for_user(user):
     # type: (UserProfile) -> List[Tuple[int, int]]
     if user.rate_limits != "":
-        result = [] # type: List[Tuple[int, int]]
+        result = []  # type: List[Tuple[int, int]]
         for limit in user.rate_limits.split(','):
             (seconds, requests) = limit.split(':', 2)
             result.append((int(seconds), int(requests)))
         return result
     return rules
 
+KEY_PREFIX = u''
+
+def bounce_redis_key_prefix_for_testing(test_name):
+    # type: (Text) -> None
+    global KEY_PREFIX
+    KEY_PREFIX = test_name + u':' + Text(os.getpid()) + u':'
+
 def redis_key(user, domain):
     # type: (UserProfile, Text) -> List[Text]
     """Return the redis keys for this user"""
-    return ["ratelimit:%s:%s:%s:%s" % (type(user), user.id, domain, keytype) for keytype in ['list', 'zset', 'block']]
+    return ["%sratelimit:%s:%s:%s:%s" % (KEY_PREFIX, type(user), user.id, domain, keytype) for keytype in ['list', 'zset', 'block']]
 
 def max_api_calls(user):
     # type: (UserProfile) -> int
@@ -129,7 +138,7 @@ def is_ratelimited(user, domain='all'):
     # get the timestamps for each nth items
     with client.pipeline() as pipe:
         for _, request_count in rules:
-            pipe.lindex(list_key, request_count - 1) # 0-indexed list
+            pipe.lindex(list_key, request_count - 1)  # 0-indexed list
 
         # Get blocking info
         pipe.get(blocking_key)

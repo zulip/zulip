@@ -17,7 +17,11 @@ from zerver.lib.notifications import handle_missedmessage_emails
 from zerver.lib.actions import render_incoming_message, do_update_message
 from zerver.lib.message import access_message
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import get_user_profile_by_email, Recipient, UserMessage, UserProfile
+from zerver.models import (
+    Recipient,
+    UserMessage,
+    UserProfile,
+)
 
 class TestMissedMessages(ZulipTestCase):
     def normalize_string(self, s):
@@ -31,25 +35,23 @@ class TestMissedMessages(ZulipTestCase):
 
     def _test_cases(self, tokens, msg_id, body, subject, send_as_user):
         # type: (List[str], int, str, bool) -> None
-        othello = get_user_profile_by_email('othello@zulip.com')
-        hamlet = get_user_profile_by_email('hamlet@zulip.com')
+        othello = self.example_user('othello')
+        hamlet = self.example_user('hamlet')
         handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id}])
         if settings.EMAIL_GATEWAY_PATTERN != "":
             reply_to_addresses = [settings.EMAIL_GATEWAY_PATTERN % (u'mm' + t) for t in tokens]
         else:
-            reply_to_addresses = ["noreply@example.com"]
+            reply_to_addresses = ["Zulip <noreply@example.com>"]
         msg = mail.outbox[0]
-        sender = 'Zulip Missed Messages <{}>'.format(settings.NOREPLY_EMAIL_ADDRESS)
+        sender = settings.NOREPLY_EMAIL_ADDRESS
         from_email = sender
         self.assertEqual(len(mail.outbox), 1)
         if send_as_user:
             from_email = '"%s" <%s>' % (othello.full_name, othello.email)
-            self.assertEqual(msg.extra_headers['Sender'], sender)
-        else:
-            self.assertNotIn("Sender", msg.extra_headers)
         self.assertEqual(msg.from_email, from_email)
-        self.assertIn(msg.extra_headers['Reply-To'], reply_to_addresses)
         self.assertEqual(msg.subject, subject)
+        self.assertEqual(len(msg.reply_to), 1)
+        self.assertIn(msg.reply_to[0], reply_to_addresses)
         self.assertIn(body, self.normalize_string(msg.body))
 
     @patch('zerver.lib.email_mirror.generate_random_token')
@@ -162,7 +164,7 @@ class TestMissedMessages(ZulipTestCase):
         msg_id = self.send_message("othello@zulip.com", "denmark", Recipient.STREAM,
                                    '@**hamlet** to be deleted')
 
-        hamlet = get_user_profile_by_email('hamlet@zulip.com')
+        hamlet = self.example_user('hamlet')
         self.login("othello@zulip.com")
         result = self.client_patch('/json/messages/' + str(msg_id),
                                    {'message_id': msg_id, 'content': ' '})
@@ -179,7 +181,7 @@ class TestMissedMessages(ZulipTestCase):
         msg_id = self.send_message("othello@zulip.com", "hamlet@zulip.com", Recipient.PERSONAL,
                                    'Extremely personal message! to be deleted!')
 
-        hamlet = get_user_profile_by_email('hamlet@zulip.com')
+        hamlet = self.example_user('hamlet')
         self.login("othello@zulip.com")
         result = self.client_patch('/json/messages/' + str(msg_id),
                                    {'message_id': msg_id, 'content': ' '})
@@ -196,8 +198,8 @@ class TestMissedMessages(ZulipTestCase):
         msg_id = self.send_message("othello@zulip.com", ["hamlet@zulip.com", "iago@zulip.com"],
                                    Recipient.PERSONAL, 'Group personal message!')
 
-        hamlet = get_user_profile_by_email('hamlet@zulip.com')
-        iago = get_user_profile_by_email('iago@zulip.com')
+        hamlet = self.example_user('hamlet')
+        iago = self.example_user('iago')
         self.login("othello@zulip.com")
         result = self.client_patch('/json/messages/' + str(msg_id),
                                    {'message_id': msg_id, 'content': ' '})

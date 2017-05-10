@@ -142,6 +142,8 @@ def find_edges_to_remove(graph, methods):
         ('subs', 'stream_edit'),
         ('narrow_state', 'stream_data'),
         ('stream_edit', 'stream_list'),
+        ('reactions', 'emoji_picker'),
+        ('message_edit', 'resize'),
     ] # type: List[Edge]
 
     def is_exempt(edge):
@@ -219,6 +221,8 @@ def find_edges_to_remove(graph, methods):
         ('subs', 'narrow'),
         ('unread_ui', 'pm_list'),
         ('unread_ui', 'stream_list'),
+        ('modals', 'hashchange'),
+        ('emoji_picker', 'reactions'),
     ]
 
     def cut_is_legal(edge):

@@ -50,11 +50,8 @@ class AlertWordTests(ZulipTestCase):
         """
         Users start out with no alert words.
         """
-        email = "cordelia@zulip.com"
-        user = get_user_profile_by_email(email)
-
+        user = self.example_user('cordelia')
         words = user_alert_words(user)
-
         self.assertEqual(words, [])
 
     def test_add_word(self):
@@ -62,8 +59,7 @@ class AlertWordTests(ZulipTestCase):
         """
         add_user_alert_words can add multiple alert words at once.
         """
-        email = "cordelia@zulip.com"
-        user = get_user_profile_by_email(email)
+        user = self.example_user('cordelia')
 
         # Add several words, including multi-word and non-ascii words.
         add_user_alert_words(user, self.interesting_alert_word_list)
@@ -77,8 +73,7 @@ class AlertWordTests(ZulipTestCase):
         Removing alert words works via remove_user_alert_words, even
         for multi-word and non-ascii words.
         """
-        email = "cordelia@zulip.com"
-        user = get_user_profile_by_email(email)
+        user = self.example_user('cordelia')
 
         add_user_alert_words(user, self.interesting_alert_word_list)
 
@@ -98,13 +93,11 @@ class AlertWordTests(ZulipTestCase):
         alert_words_in_realm. Alerts added for one user do not impact other
         users.
         """
-        email = "cordelia@zulip.com"
-        user1 = get_user_profile_by_email(email)
+        user1 = self.example_user('cordelia')
 
         add_user_alert_words(user1, self.interesting_alert_word_list)
 
-        email = "othello@zulip.com"
-        user2 = get_user_profile_by_email(email)
+        user2 = self.example_user('othello')
         add_user_alert_words(user2, ['another'])
 
         realm_words = alert_words_in_realm(user2.realm)
@@ -176,7 +169,7 @@ class AlertWordTests(ZulipTestCase):
     def test_alert_flags(self):
         # type: () -> None
         self.login("hamlet@zulip.com")
-        user_profile_hamlet = get_user_profile_by_email("hamlet@zulip.com")
+        user_profile_hamlet = self.example_user('hamlet')
 
         result = self.client_put('/json/users/me/alert_words', {'alert_words': ujson.dumps(['one', 'two', 'three'])})
         self.assert_json_success(result)
@@ -207,8 +200,8 @@ class AlertWordTests(ZulipTestCase):
 
     def test_update_alert_words(self):
         # type: () -> None
-        me_email = 'hamlet@zulip.com'
-        user_profile = get_user_profile_by_email(me_email)
+        user_profile = self.example_user('hamlet')
+        me_email = user_profile.email
 
         self.login(me_email)
         result = self.client_put('/json/users/me/alert_words', {'alert_words': ujson.dumps(['ALERT'])})

@@ -15,6 +15,19 @@ exports.is_in_progress = function () {
 };
 
 function preserve_state(send_after_reload, save_pointer, save_narrow, save_compose) {
+    if (!localstorage.supported()) {
+        // If local storage is not supported by the browser, we can't
+        // save the browser's position across reloads (since there's
+        // no secure way to pass that state in a signed fashion to the
+        // next instance of the browser client).
+        //
+        // So we jure return here and let the reload proceed without
+        // having preserved state.  We keep the hash the same so we'll
+        // at least save their narrow state.
+        blueslip.log("Can't preserve state; no local storage.");
+        return;
+    }
+
     if (send_after_reload === undefined) {
         send_after_reload = 0;
     }
@@ -106,7 +119,12 @@ exports.initialize = function reload__initialize() {
     var ls = localstorage();
     var fragment = ls.get(hash_fragment);
     if (fragment === undefined) {
-        blueslip.error("Invalid hash change reload token");
+        // Since this can happen sometimes with hand-reloading, it's
+        // not really worth throwing an exception if these don't
+        // exist, but be log it so that it's available for future
+        // debugging if an exception happens later.
+        blueslip.info("Invalid hash change reload token");
+        hashchange.changehash("");
         return;
     }
     ls.remove(hash_fragment);

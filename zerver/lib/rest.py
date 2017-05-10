@@ -40,7 +40,7 @@ def rest_dispatch(request, **kwargs):
     Never make a urls.py pattern put user input into a variable called GET, POST,
     etc, as that is where we route HTTP verbs to target functions.
     """
-    supported_methods = {} # type: Dict[str, Any]
+    supported_methods = {}  # type: Dict[str, Any]
 
     # duplicate kwargs so we can mutate the original as we go
     for arg in list(kwargs):
@@ -49,7 +49,7 @@ def rest_dispatch(request, **kwargs):
             del kwargs[arg]
 
     if request.method == 'OPTIONS':
-        response = HttpResponse(status=204) # No content
+        response = HttpResponse(status=204)  # No content
         response['Allow'] = ', '.join(sorted(supported_methods.keys()))
         response['Content-Length'] = "0"
         return response

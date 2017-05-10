@@ -24,7 +24,7 @@ class StatsMock(object):
         # type: (Callable) -> None
         self.settings = settings
         self.real_impl = statsd
-        self.func_calls = [] # type: List[Tuple[str, Iterable[Any]]]
+        self.func_calls = []  # type: List[Tuple[str, Iterable[Any]]]
 
     def __getattr__(self, name):
         # type: (str) -> Callable

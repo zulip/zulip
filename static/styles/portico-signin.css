@@ -30,11 +30,11 @@ html {
     margin: 10px;
 }
 
-.login-page-container,
-.register-page-container,
-.find-team-page-container,
-.forgot-password-container,
-#registration {
+.footer {
+    padding: 20px 0px 10px 0px;
+}
+
+.white-box {
     position: relative;
     padding: 30px;
     min-width: 0px;
@@ -74,6 +74,10 @@ html {
     text-align: left;
     font-size: 0.7em;
     font-weight: 600;
+}
+
+.new-style .inline-block {
+    text-align: left;
 }
 
 .app-main .login-page-header {
@@ -126,7 +130,6 @@ html {
 
 .forgot-password-container {
     width: 503px;
-    margin-top: calc(50vh - 150px);
 }
 
 .forgot-password-container form {
@@ -187,6 +190,26 @@ html {
     margin-top: 0px;
 }
 
+.account-creation {
+    font-weight: 400;
+}
+
+.account-creation .pitch {
+    margin-bottom: 0px;
+}
+
+.account-creation .alert.alert-info {
+    padding: 8px 14px;
+    text-align: left;
+
+    font-size: 1em;
+    line-height: 1.3;
+}
+
+.account-creation .white-box p:last-of-type {
+    margin-bottom: 0px;
+}
+
 .relative {
     position: relative;
 }
@@ -219,7 +242,7 @@ html {
     margin-top: 25px;
 }
 
-.new-style .alert {
+.new-style .alert:not(.alert-info) {
     padding: 0;
     margin-bottom: 0;
 
@@ -348,11 +371,23 @@ html {
     color: #444;
 }
 
-.new-style .input-box .text-error {
+.new-style .input-box p.text-error {
+    display: block;
+    padding: 0px;
+
+    color: #d26666;
+    font-size: 0.7em;
+    font-weight: 600;
+    height: 0;
+
+    position: relative;
+    top: -4px;
+}
+
+.new-style .input-box label.text-error {
     display: block;
 
     top: 66px;
-    left: -4px;
     color: #d26666;
     font-size: 0.7em;
     font-weight: 600;
@@ -360,14 +395,9 @@ html {
 }
 
 .new-style .get-started {
-    height: 0px;
-    margin: 0px;
-
     font-size: 2.5rem;
     text-align: center;
     color: #666;
-
-    transform: translateY(-90px);
 }
 
 .new-style button {
@@ -454,6 +484,8 @@ html {
     height: 100px;
     background-color: #444;
     box-shadow: 0px 0px 5px rgba(0,0,0,0.15);
+
+    background-size: 100% auto;
 }
 
 .split-view .org-header .info-box {
@@ -486,11 +518,8 @@ html {
     margin-top: 10px;
 }
 
-.register-page-container .lead,
-.login-page-container .lead,
-.forgot-password-container .lead {
-    margin: 0;
-    text-align: left;
+.new-style .lead {
+    margin: 0px;
 }
 
 .portico-page .or {
@@ -654,6 +683,8 @@ button.login-google-button {
 .split-view .left-side {
     width: 500px;
     border-right: 1px solid #eee;
+    position: relative;
+    left: -1px;
 }
 
 .split-view .left-side + .right-side {
@@ -694,7 +725,6 @@ button.login-google-button {
     .register-page-container,
     .login-page-container {
         width: 400px;
-        margin-top: 50px;
     }
 
     .split-view .org-header .avatar {
@@ -742,15 +772,13 @@ button.login-google-button {
     .split-view .right-side {
         width: 324px;
     }
-
-    .new-style .get-started {
-        transform: translateY(-70px);
-    }
 }
 
 @media (max-width: 500px) {
     .flex.full-page {
-        margin: 20px 0px;
+        display: block;
+        margin: 0 auto;
+        text-align: center;
     }
 
     .new-style .get-started {
@@ -772,5 +800,18 @@ button.login-google-button {
 
     .forgot-password-container form button {
         width: 328px;
+    }
+
+    .white-box {
+        box-shadow: none;
+    }
+
+    .footer-navigation li,
+    .footer-navigation li a {
+        font-size: 1em;
+    }
+
+    .account-creation {
+        font-weight: 400;
     }
 }

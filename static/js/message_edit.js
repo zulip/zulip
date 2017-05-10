@@ -133,7 +133,7 @@ function handle_edit_keydown(from_topic_edited_only, e) {
     var row;
     var code = e.keyCode || e.which;
 
-    if (e.target.id === "message_edit_content" && code === 13 &&
+    if ($(e.target).hasClass("message_edit_content") && code === 13 &&
         (e.metaKey || e.ctrlKey)) {
         row = $(".message_edit_content").filter(":focus").closest(".message_row");
     } else if (e.target.id === "message_edit_topic" && code === 13) {

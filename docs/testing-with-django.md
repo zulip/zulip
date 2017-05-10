@@ -24,10 +24,11 @@ or just done things that are kind of unique in Zulip.
 ## Running tests
 
 Our tests live in `zerver/tests/`. You can run them with
-`./tools/test-backend`. It generally takes about a minute to run
-the entire test suite.  When you are in iterative mode, you
-can run individual tests or individual modules, following the
-dotted.test.name convention below:
+`./tools/test-backend`. The tests run in parallel using multiple
+threads in your development environment, and can finish in under 30s
+on a fast machine.  When you are in iterative mode, you can run
+individual tests or individual modules, following the dotted.test.name
+convention below:
 
     cd /srv/zulip
     ./tools/test-backend zerver.tests.test_queue_worker.WorkerTest

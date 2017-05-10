@@ -163,6 +163,33 @@ td .button {
     border-bottom: none;
 }
 
+.settings-section .table-striped thead th {
+    background-color: inherit;
+    color: inherit;
+    border-top: 1px solid #dddddd !important;
+}
+
+.settings-section input[type=text].search {
+    float: right;
+    margin: 2px 5px 2px 0px;
+    padding: 2px 5px;
+    font-size: 0.9em;
+}
+
+.settings-section .settings-section-title {
+    padding: 4px;
+}
+
+.settings-section .settings-section-title .table-title {
+    display: inline-block;
+    padding: 6px 0px;
+    margin-left: 5px;
+}
+
+.settings-section .settings-section-title .table-title i {
+    margin-right: 5px;
+}
+
 .dynamic-input {
     display: inline-block;
     padding: 5px;
@@ -464,6 +491,11 @@ input[type=checkbox].inline-block {
     margin: 20px 0 0 0;
 }
 
+.progressive-table-wrapper {
+    max-height: calc(95vh - 200px);
+    overflow: auto;
+}
+
 .bots_list {
     display: none;
     list-style-type: none;
@@ -763,6 +795,18 @@ input[type=checkbox].inline-block {
     border-bottom: 1px solid #ddd;
 }
 
+#settings_page .settings-header.mobile {
+    display: none;
+    border-bottom: 1px solid #ddd;
+}
+
+.settings-header.mobile .icon-vector-chevron-left {
+    float: left;
+    position: relative;
+    top: 14px;
+    left: 10px;
+}
+
 #settings_page .content-wrapper #settings_content {
     position: relative;
     width: 100%;
@@ -770,6 +814,7 @@ input[type=checkbox].inline-block {
 
     float: left;
     overflow-y: auto;
+    overflow-x: hidden;
 }
 
 #settings_page .table-striped thead th {
@@ -1029,6 +1074,24 @@ input[type=text]#settings_search {
     .realm-icon-section .inline-block {
         display: block;
         margin: 0;
+    }
+}
+
+@media (max-width: 700px) {
+    #settings_page .settings-header.mobile {
+        display: block;
+    }
+
+    #settings_page .content-wrapper .settings-header {
+        display: none;
+    }
+
+    #settings_page .content-wrapper #settings_content {
+        height: 100%;
+    }
+
+    #settings_page .content-wrapper.right {
+        top: 47px;
     }
 }
 

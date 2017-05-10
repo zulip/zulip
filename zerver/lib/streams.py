@@ -77,7 +77,7 @@ def access_stream_by_name(user_profile, stream_name):
 
 def filter_stream_authorization(user_profile, streams):
     # type: (UserProfile, Iterable[Stream]) -> Tuple[List[Stream], List[Stream]]
-    streams_subscribed = set() # type: Set[int]
+    streams_subscribed = set()  # type: Set[int]
     recipients_map = bulk_get_recipients(Recipient.STREAM, [stream.id for stream in streams])
     subs = Subscription.objects.filter(user_profile=user_profile,
                                        recipient__in=list(recipients_map.values()),
@@ -86,7 +86,7 @@ def filter_stream_authorization(user_profile, streams):
     for sub in subs:
         streams_subscribed.add(sub.recipient.type_id)
 
-    unauthorized_streams = [] # type: List[Stream]
+    unauthorized_streams = []  # type: List[Stream]
     for stream in streams:
         # The user is authorized for his own streams
         if stream.id in streams_subscribed:
@@ -125,8 +125,8 @@ def list_to_streams(streams_raw, user_profile, autocreate=False):
         assert stream_name == stream_name.strip()
         check_stream_name(stream_name)
 
-    existing_streams = [] # type: List[Stream]
-    missing_stream_dicts = [] # type: List[Mapping[str, Any]]
+    existing_streams = []  # type: List[Stream]
+    missing_stream_dicts = []  # type: List[Mapping[str, Any]]
     existing_stream_map = bulk_get_streams(user_profile.realm, stream_set)
 
     for stream_dict in streams_raw:
@@ -140,7 +140,7 @@ def list_to_streams(streams_raw, user_profile, autocreate=False):
     if len(missing_stream_dicts) == 0:
         # This is the happy path for callers who expected all of these
         # streams to exist already.
-        created_streams = [] # type: List[Stream]
+        created_streams = []  # type: List[Stream]
     else:
         # autocreate=True path starts here
         if not user_profile.can_create_streams():

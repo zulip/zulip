@@ -2,13 +2,13 @@ from __future__ import print_function
 
 from typing import cast, Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Text
 
-import mandrill
 from confirmation.models import Confirmation
 from django.conf import settings
-from django.core.mail import EmailMultiAlternatives
 from django.template import loader
 from django.utils.timezone import now as timezone_now
-from zerver.decorator import statsd_increment, uses_mandrill
+from zerver.decorator import statsd_increment
+from zerver.lib.send_email import send_future_email, display_email, \
+    send_email_from_dict
 from zerver.lib.queue import queue_json_publish
 from zerver.models import (
     Recipient,
@@ -248,8 +248,8 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
         )
 
     unsubscribe_link = one_click_unsubscribe_link(user_profile, "missed_messages")
-    template_payload = common_context(user_profile)
-    template_payload.update({
+    context = common_context(user_profile)
+    context.update({
         'name': user_profile.full_name,
         'messages': build_message_list(user_profile, missed_messages),
         'message_count': message_count,
@@ -261,83 +261,49 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
     # can users reply to email to send message to Zulip. Thus, one must
     # ensure to display warning in the template.
     if settings.EMAIL_GATEWAY_PATTERN:
-        template_payload.update({
+        context.update({
             'reply_warning': False,
             'reply_to_zulip': True,
         })
     else:
-        template_payload.update({
+        context.update({
             'reply_warning': True,
             'reply_to_zulip': False,
         })
 
-    headers = {}
     from zerver.lib.email_mirror import create_missed_message_address
     address = create_missed_message_address(user_profile, missed_messages[0])
-    headers['Reply-To'] = address
 
     senders = set(m.sender.full_name for m in missed_messages)
     sender_str = ", ".join(senders)
-    plural_messages = 's' if len(missed_messages) > 1 else ''
-    realm_str = missed_messages[0].get_realm().string_id
-    if (missed_messages[0].recipient.type == Recipient.HUDDLE):
-        disp_recipient = get_display_recipient(missed_messages[0].recipient)
-        other_recipients = [r['full_name'] for r in disp_recipient
-                                if r['email'] != user_profile.email]
-        if len(other_recipients) == 2:
-            subject = u"Group PM%s with %s in %s" % (plural_messages, " and ".join(other_recipients), realm_str)
-        elif len(other_recipients) == 3:
-            subject = u"Group PM%s with %s, %s, and %s in %s" % (plural_messages, other_recipients[0], other_recipients[1], 
-                other_recipients[2], realm_str)
-        else:
-            subject = u"Group PM%s with %s, and others in %s" % (plural_messages, ', '.join(other_recipients[:2]), realm_str)
-    elif (missed_messages[0].recipient.type == Recipient.PERSONAL):
-        subject = "%s sent you a message in %s" % (sender_str, realm_str)
-    else:
-        subject = "%s @-mentioned you in %s" % (sender_str, realm_str)
+    context.update({
+        'sender_str': sender_str,
+    })
 
-    from_email = 'Zulip Missed Messages <%s>' % (settings.NOREPLY_EMAIL_ADDRESS,)
+    from_email = None
     if len(senders) == 1 and settings.SEND_MISSED_MESSAGE_EMAILS_AS_USER:
         # If this setting is enabled, you can reply to the Zulip
         # missed message emails directly back to the original sender.
         # However, one must ensure the Zulip server is in the SPF
         # record for the domain, or there will be spam/deliverability
         # problems.
-        headers['Sender'] = from_email
         sender = missed_messages[0].sender
         from_email = '"%s" <%s>' % (sender_str, sender.email)
-        template_payload.update({
+        context.update({
             'reply_warning': False,
             'reply_to_zulip': False,
         })
 
-    text_content = loader.render_to_string('zerver/missed_message_email.txt', template_payload)
-    html_content = loader.render_to_string('zerver/missed_message_email.html', template_payload)
-    email_content = {
-        'subject': subject,
-        'text_content': text_content,
-        'html_content': html_content,
+    email_dict = {
+        'template_prefix': 'zerver/emails/missed_message',
+        'to_email': display_email(user_profile),
         'from_email': from_email,
-        'to': [user_profile.email],
-        'headers': headers
-    }
-    queue_json_publish("missedmessage_email_senders", email_content, send_missedmessage_email)
+        'reply_to_email': address,
+        'context': context}
+    queue_json_publish("missedmessage_email_senders", email_dict, send_email_from_dict)
 
     user_profile.last_reminder = timezone_now()
     user_profile.save(update_fields=['last_reminder'])
-
-
-def send_missedmessage_email(data):
-    # type: (Mapping[str, Any]) -> None
-    msg = EmailMultiAlternatives(
-        data.get('subject'),
-        data.get('text_content'),
-        data.get('from_email'),
-        data.get('to'),
-        headers=data.get('headers'))
-    msg.attach_alternative(data.get('html_content'), "text/html")
-    msg.send()
-
 
 def handle_missedmessage_emails(user_profile_id, missed_email_events):
     # type: (int, Iterable[Dict[str, Any]]) -> None
@@ -380,31 +346,13 @@ def handle_missedmessage_emails(user_profile_id, missed_email_events):
             message_count_by_recipient_subject[recipient_subject],
         )
 
-@uses_mandrill
-def clear_followup_emails_queue(email, mail_client=None):
-    # type: (Text, Optional[mandrill.Mandrill]) -> None
+def clear_followup_emails_queue(email):
+    # type: (Text) -> None
     """
-    Clear out queued emails (from Mandrill's queue) that would otherwise
-    be sent to a specific email address. Optionally specify which sender
-    to filter by (useful when there are more Zulip subsystems using our
-    mandrill account).
-
-    `email` is a string representing the recipient email
-    `from_email` is a string representing the email account used
-    to send the email (E.g. support@example.com).
+    Clear out queued emails that would otherwise be sent to a specific email address.
     """
-    # SMTP mail delivery implementation
-    if not mail_client:
-        items = ScheduledJob.objects.filter(type=ScheduledJob.EMAIL, filter_string__iexact = email)
-        items.delete()
-        return
-
-    # Mandrill implementation
-    for email_message in mail_client.messages.list_scheduled(to=email):
-        result = mail_client.messages.cancel_scheduled(id=email_message["_id"])
-        if result.get("status") == "error":
-            print(result.get("name"), result.get("error"))
-    return
+    items = ScheduledJob.objects.filter(type=ScheduledJob.EMAIL, filter_string__iexact = email)
+    items.delete()
 
 def log_digest_event(msg):
     # type: (Text) -> None
@@ -412,144 +360,29 @@ def log_digest_event(msg):
     logging.basicConfig(filename=settings.DIGEST_LOG_PATH, level=logging.INFO)
     logging.info(msg)
 
-@uses_mandrill
-def send_future_email(recipients, email_html, email_text, subject,
-                      delay=datetime.timedelta(0), sender=None,
-                      tags=[], mail_client=None):
-    # type: (List[Dict[str, Any]], Text, Text, Text, datetime.timedelta, Optional[Dict[str, Text]], Iterable[Text], Optional[mandrill.Mandrill]) -> None
-    """
-    Sends email via Mandrill, with optional delay
-
-    'mail_client' is filled in by the decorator
-    """
-    # When sending real emails while testing locally, don't accidentally send
-    # emails to non-zulip.com users.
-    if settings.DEVELOPMENT and \
-       settings.EMAIL_BACKEND != 'django.core.mail.backends.console.EmailBackend':
-        for recipient in recipients:
-            email = recipient.get("email")
-            if get_user_profile_by_email(email).realm.string_id != "zulip":
-                raise ValueError("digest: refusing to send emails to non-zulip.com users.")
-
-    # message = {"from_email": "othello@zulip.com",
-    #            "from_name": "Othello",
-    #            "html": "<p>hello</p> there",
-    #            "tags": ["signup-reminders"],
-    #            "to": [{'email':"acrefoot@zulip.com", 'name': "thingamajig"}]
-    #            }
-
-    # SMTP mail delivery implementation
-    if not mail_client:
-        if sender is None:
-            # This may likely overridden by settings.DEFAULT_FROM_EMAIL
-            sender = {'email': settings.NOREPLY_EMAIL_ADDRESS, 'name': 'Zulip'}
-        for recipient in recipients:
-            email_fields = {'email_html': email_html,
-                            'email_subject': subject,
-                            'email_text': email_text,
-                            'recipient_email': recipient.get('email'),
-                            'recipient_name': recipient.get('name'),
-                            'sender_email': sender['email'],
-                            'sender_name': sender['name']}
-            ScheduledJob.objects.create(type=ScheduledJob.EMAIL, filter_string=recipient.get('email'),
-                                        data=ujson.dumps(email_fields),
-                                        scheduled_timestamp=timezone_now() + delay)
-        return
-
-    # Mandrill implementation
-    if sender is None:
-        sender = {'email': settings.NOREPLY_EMAIL_ADDRESS, 'name': 'Zulip'}
-
-    message = {'from_email': sender['email'],
-               'from_name': sender['name'],
-               'to': recipients,
-               'subject': subject,
-               'html': email_html,
-               'text': email_text,
-               'tags': tags,
-               }
-    # ignore any delays smaller than 1-minute because it's cheaper just to sent them immediately
-    if not isinstance(delay, datetime.timedelta):
-        raise TypeError("specified delay is of the wrong type: %s" % (type(delay),))
-    # Note: In the next section we hackishly use **{"async": False} to
-    # work around https://github.com/python/mypy/issues/2959 "# type: ignore" doesn't work
-    if delay < datetime.timedelta(minutes=1):
-        results = mail_client.messages.send(message=message, ip_pool="Main Pool", **{"async": False})
-    else:
-        send_time = (timezone_now() + delay).__format__("%Y-%m-%d %H:%M:%S")
-        results = mail_client.messages.send(message=message, ip_pool="Main Pool",
-                                            send_at=send_time, **{"async": False})
-    problems = [result for result in results if (result['status'] in ('rejected', 'invalid'))]
-
-    if problems:
-        for problem in problems:
-            if problem["status"] == "rejected":
-                if problem["reject_reason"] == "hard-bounce":
-                    # A hard bounce means the address doesn't exist or the
-                    # recipient mail server is completely blocking
-                    # delivery. Don't try to send further emails.
-                    if "digest-emails" in tags:
-                        from zerver.lib.actions import do_change_enable_digest_emails
-                        bounce_email = problem["email"]
-                        user_profile = get_user_profile_by_email(bounce_email)
-                        do_change_enable_digest_emails(user_profile, False)
-                        log_digest_event("%s\nTurned off digest emails for %s" % (
-                            str(problems), bounce_email))
-                        continue
-                elif problem["reject_reason"] == "soft-bounce":
-                    # A soft bounce is temporary; let it try to resolve itself.
-                    continue
-            raise Exception(
-                "While sending email (%s), encountered problems with these recipients: %r"
-                % (subject, problems))
-    return
-
-def send_local_email_template_with_delay(recipients, template_prefix,
-                                         template_payload, delay,
-                                         tags=[], sender={'email': settings.NOREPLY_EMAIL_ADDRESS, 'name': 'Zulip'}):
-    # type: (List[Dict[str, Any]], Text, Dict[str, Text], datetime.timedelta, Iterable[Text], Dict[str, Text]) -> None
-    html_content = loader.render_to_string(template_prefix + ".html", template_payload)
-    text_content = loader.render_to_string(template_prefix + ".txt", template_payload)
-    subject = loader.render_to_string(template_prefix + ".subject", template_payload).strip()
-
-    send_future_email(recipients,
-                      html_content,
-                      text_content,
-                      subject,
-                      delay=delay,
-                      sender=sender,
-                      tags=tags)
-
 def enqueue_welcome_emails(email, name):
     # type: (Text, Text) -> None
     from zerver.context_processors import common_context
     if settings.WELCOME_EMAIL_SENDER is not None:
-        sender = settings.WELCOME_EMAIL_SENDER # type: Dict[str, Text]
+        # line break to avoid triggering lint rule
+        from_email = '%(name)s <%(email)s>' % \
+                     settings.WELCOME_EMAIL_SENDER
     else:
-        sender = {'email': settings.ZULIP_ADMINISTRATOR, 'name': 'Zulip'}
+        from_email = settings.ZULIP_ADMINISTRATOR
 
     user_profile = get_user_profile_by_email(email)
     unsubscribe_link = one_click_unsubscribe_link(user_profile, "welcome")
-    template_payload = common_context(user_profile)
-    template_payload.update({
+    context = common_context(user_profile)
+    context.update({
         'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS,
         'unsubscribe_link': unsubscribe_link
     })
-
-    # Send day 1 email
-    send_local_email_template_with_delay([{'email': email, 'name': name}],
-                                         "zerver/emails/followup/day1",
-                                         template_payload,
-                                         datetime.timedelta(hours=1),
-                                         tags=["followup-emails"],
-                                         sender=sender)
-    # Send day 2 email
-    send_local_email_template_with_delay([{'email': email, 'name': name}],
-                                         "zerver/emails/followup/day2",
-                                         template_payload,
-                                         datetime.timedelta(days=1),
-                                         tags=["followup-emails"],
-                                         sender=sender)
+    send_future_email(
+        "zerver/emails/followup_day1", '%s <%s>' % (name, email),
+        from_email=from_email, context=context, delay=datetime.timedelta(hours=1))
+    send_future_email(
+        "zerver/emails/followup_day2", '%s <%s>' % (name, email),
+        from_email=from_email, context=context, delay=datetime.timedelta(days=1))
 
 def convert_html_to_markdown(html):
     # type: (Text) -> Text

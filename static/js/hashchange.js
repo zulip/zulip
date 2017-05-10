@@ -243,7 +243,7 @@ function hashchanged(from_reload, e) {
 
         if (!should_ignore(old_hash || "#") || ignore.group !== get_hash_group(base)) {
             if (ignore.group !== get_hash_group(base)) {
-                exports.close_modals();
+                modals.close_for_hash_change();
             }
 
             // now only if the previous one should not have been ignored.
@@ -267,7 +267,7 @@ function hashchanged(from_reload, e) {
             subs.change_state(get_hash_components());
         }
     } else if (!should_ignore(window.location.hash) && !ignore.flag) {
-        exports.close_modals();
+        modals.close_for_hash_change();
         changing_hash = true;
         var ret = do_hashchange(from_reload);
         changing_hash = false;
@@ -288,10 +288,6 @@ exports.initialize = function () {
         hashchanged(false, e);
     });
     hashchanged(true);
-};
-
-exports.close_modals = function () {
-    $(".overlay.show").removeClass("show");
 };
 
 exports.exit_modal = function (callback) {

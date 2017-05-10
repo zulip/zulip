@@ -12,11 +12,11 @@ from django.template import RequestContext, loader
 from django.utils.timezone import now
 from django.core.exceptions import ValidationError
 from django.core import validators
-from django.core.mail import send_mail
 from zerver.models import UserProfile, Realm, PreregistrationUser, \
     name_changes_disabled, email_to_username, \
     completely_open, get_unique_open_realm, email_allowed_for_realm, \
     get_realm, get_realm_by_email_domain
+from zerver.lib.send_email import send_email_to_user
 from zerver.lib.events import do_events_register
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
     do_activate_user, do_create_user, do_create_realm, set_default_streams, \
@@ -24,12 +24,13 @@ from zerver.lib.actions import do_change_password, do_change_full_name, do_chang
     compute_mit_user_fullname
 from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, \
     CreateUserForm, FindMyTeamForm
-from zerver.lib.actions import is_inactive
+from zerver.lib.actions import is_inactive, do_set_user_display_setting
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 from zerver.decorator import require_post, has_request_variables, \
     JsonableError, get_user_profile_by_email, REQ
 from zerver.lib.response import json_success
 from zerver.lib.utils import get_subdomain
+from zerver.lib.timezone import get_all_timezones
 from zproject.backends import password_auth_enabled
 
 from confirmation.models import Confirmation, RealmCreationKey, check_key_is_valid
@@ -197,16 +198,22 @@ def accounts_register(request):
         short_name = email_to_username(email)
         first_in_realm = len(UserProfile.objects.filter(realm=realm, is_bot=False)) == 0
 
+        timezone = u""
+        if 'timezone' in request.POST and request.POST['timezone'] in get_all_timezones():
+            timezone = request.POST['timezone']
+
         # FIXME: sanitize email addresses and fullname
         if existing_user_profile is not None and existing_user_profile.is_mirror_dummy:
             user_profile = existing_user_profile
             do_activate_user(user_profile)
             do_change_password(user_profile, password)
             do_change_full_name(user_profile, full_name)
+            do_set_user_display_setting(user_profile, 'timezone', timezone)
         else:
             user_profile = do_create_user(email, password, realm, full_name, short_name,
                                           prereg_user=prereg_user,
                                           tos_version=settings.TOS_VERSION,
+                                          timezone=timezone,
                                           newsletter_data={"IP": request.META['REMOTE_ADDR']})
 
         if first_in_realm:
@@ -286,10 +293,20 @@ def send_registration_completion_email(email, request, realm_creation=False):
     Send an email with a confirmation link to the provided e-mail so the user
     can complete their registration.
     """
+    template_prefix = 'zerver/emails/confirm_registration'
+    # Note: to make the following work in the non-subdomains case, you'll
+    # need to copy the logic from the beginning of accounts_register to
+    # figure out which realm the user is trying to sign up for, and then
+    # check if it is a zephyr mirror realm.
+    if settings.REALMS_HAVE_SUBDOMAINS:
+        realm = get_realm(get_subdomain(request))
+        if realm and realm.is_zephyr_mirror_realm:
+            template_prefix = 'zerver/emails/confirm_registration_mit'
+
     prereg_user = create_preregistration_user(email, request, realm_creation)
     context = {'support_email': settings.ZULIP_ADMINISTRATOR,
                'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS}
-    return Confirmation.objects.send_confirmation(prereg_user, email,
+    return Confirmation.objects.send_confirmation(prereg_user, template_prefix, email,
                                                   additional_context=context,
                                                   host=request.get_host())
 
@@ -373,19 +390,6 @@ def generate_204(request):
     # type: (HttpRequest) -> HttpResponse
     return HttpResponse(content=None, status=204)
 
-def send_find_my_team_emails(user_profile):
-    # type: (UserProfile) -> None
-    text_template = 'zerver/emails/find_team/find_team_email.txt'
-    html_template = 'zerver/emails/find_team/find_team_email.html'
-    context = {'user_profile': user_profile}
-    text_content = loader.render_to_string(text_template, context)
-    html_content = loader.render_to_string(html_template, context)
-    sender = settings.NOREPLY_EMAIL_ADDRESS
-    recipients = [user_profile.email]
-    subject = loader.render_to_string('zerver/emails/find_team/find_team_email.subject').strip()
-
-    send_mail(subject, text_content, sender, recipients, html_message=html_content)
-
 def find_my_team(request):
     # type: (HttpRequest) -> HttpResponse
     url = reverse('zerver.views.registration.find_my_team')
@@ -396,7 +400,8 @@ def find_my_team(request):
         if form.is_valid():
             emails = form.cleaned_data['emails']
             for user_profile in UserProfile.objects.filter(email__in=emails):
-                send_find_my_team_emails(user_profile)
+                send_email_to_user('zerver/emails/find_team', user_profile,
+                                   context={'user_profile': user_profile})
 
             # Note: Show all the emails in the result otherwise this
             # feature can be used to ascertain which email addresses

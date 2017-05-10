@@ -101,7 +101,7 @@ templates = {
     },
     'issue': {
         'create': u':bulb: %(user)s created issue **%(subject)s**.',
-        'set_assigned_to': u':busts_in_silhouette: %(user)s assigned issue **%(subject)s** to %(new)s.', #
+        'set_assigned_to': u':busts_in_silhouette: %(user)s assigned issue **%(subject)s** to %(new)s.',
         'unset_assigned_to': u':busts_in_silhouette: %(user)s unassigned issue **%(subject)s**.',
         'changed_assigned_to': u':busts_in_silhouette: %(user)s reassigned issue **%(subject)s**'
         ' from %(old)s to %(new)s.',

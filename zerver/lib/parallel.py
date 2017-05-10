@@ -9,7 +9,7 @@ import errno
 
 def run_parallel(job, data, threads=6):
     # type: (Any, Iterable[Any], int) -> Generator[Tuple[int, Any], None, None]
-    pids = {} # type: Dict[int, Any]
+    pids = {}  # type: Dict[int, Any]
 
     def wait_for_one():
         # type: () -> Tuple[int, Any]
@@ -29,7 +29,7 @@ def run_parallel(job, data, threads=6):
             except OSError as e:
                 if e.errno != errno.EBADF:
                     raise
-            sys.stdin = open("/dev/null", "r") # type: ignore # py2 and py3 stubs are not compatible
+            sys.stdin = open("/dev/null", "r")  # type: ignore # py2 and py3 stubs are not compatible
             os._exit(job(item))
 
         pids[pid] = item

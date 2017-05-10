@@ -96,7 +96,7 @@ function clear_box() {
 
     exports.clear_textarea();
     $("#new_message_content").removeData("draft-id");
-    compose.autosize_textarea();
+    compose_ui.autosize_textarea();
     $("#send-status").hide(0);
 }
 

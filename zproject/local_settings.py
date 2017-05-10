@@ -11,7 +11,7 @@ import six.moves.configparser
 from base64 import b64decode
 from typing import Set
 
-config_file = six.moves.configparser.RawConfigParser() # type: ignore # https://github.com/python/typeshed/pull/206
+config_file = six.moves.configparser.RawConfigParser()  # type: ignore # https://github.com/python/typeshed/pull/206
 config_file.read("/etc/zulip/zulip.conf")
 
 # Whether we're running in a production environment. Note that PRODUCTION does
@@ -47,10 +47,9 @@ EMAIL_HOST_USER = 'zulip@zulip.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-# We use mandrill, so this doesn't actually get used on our hosted deployment
 DEFAULT_FROM_EMAIL = "Zulip <zulip@zulip.com>"
 # The noreply address to be used as Reply-To for certain generated emails.
-NOREPLY_EMAIL_ADDRESS = "noreply@zulip.com"
+NOREPLY_EMAIL_ADDRESS = "Zulip <noreply@zulip.com>"
 WELCOME_EMAIL_SENDER = {'email': 'wdaher@zulip.com', 'name': 'Waseem Daher'}
 
 SESSION_SERIALIZER = "django.contrib.sessions.serializers.PickleSerializer"
@@ -100,7 +99,7 @@ EMAIL_GATEWAY_EXTRA_PATTERN_HACK = r'@[\w-]*\.zulip\.net'
 EMAIL_GATEWAY_BOT = "emailgateway@zulip.com"
 
 
-SSO_APPEND_DOMAIN = None # type: str
+SSO_APPEND_DOMAIN = None  # type: str
 
 AUTHENTICATION_BACKENDS = ('zproject.backends.EmailAuthBackend',
                            'zproject.backends.GoogleMobileOauth2Backend')
@@ -142,4 +141,4 @@ EXTRA_INSTALLED_APPS = [
 ]
 
 EVENT_LOGS_ENABLED = True
-SYSTEM_ONLY_REALMS = set() # type: Set[str]
+SYSTEM_ONLY_REALMS = set()  # type: Set[str]

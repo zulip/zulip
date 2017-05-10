@@ -207,6 +207,25 @@ class ZulipTestCase(TestCase):
         django_client = self.client # see WRAPPER_COMMENT
         return django_client.get(url, info, **kwargs)
 
+    example_user_map = dict(
+        hamlet='hamlet@zulip.com',
+        cordelia='cordelia@zulip.com',
+        iago='iago@zulip.com',
+        prospero='prospero@zulip.com',
+        othello='othello@zulip.com',
+        AARON='AARON@zulip.com',
+        ZOE='ZOE@zulip.com',
+    )
+
+    def example_user(self, name):
+        # type: (str) -> UserProfile
+        email = self.example_user_map[name]
+        return get_user_profile_by_email(email)
+
+    def notification_bot(self):
+        # type: () -> UserProfile
+        return get_user_profile_by_email('notification-bot@zulip.com')
+
     def login_with_return(self, email, password=None):
         # type: (Text, Optional[Text]) -> HttpResponse
         if password is None:
@@ -234,8 +253,8 @@ class ZulipTestCase(TestCase):
 
     def submit_reg_form_for_user(self, email, password, realm_name="Zulip Test",
                                  realm_subdomain="zuliptest", realm_org_type=Realm.COMMUNITY,
-                                 from_confirmation='', full_name=None, **kwargs):
-        # type: (Text, Text, Optional[Text], Optional[Text], int, Optional[Text], Optional[Text], **Any) -> HttpResponse
+                                 from_confirmation='', full_name=None, timezone=u'', **kwargs):
+        # type: (Text, Text, Optional[Text], Optional[Text], int, Optional[Text], Optional[Text], Optional[Text], **Any) -> HttpResponse
         """
         Stage two of the two-step registration process.
 
@@ -253,6 +272,7 @@ class ZulipTestCase(TestCase):
                                  'realm_subdomain': realm_subdomain,
                                  'key': find_key_by_email(email),
                                  'realm_org_type': realm_org_type,
+                                 'timezone': timezone,
                                  'terms': True,
                                  'from_confirmation': from_confirmation},
                                 **kwargs)

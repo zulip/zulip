@@ -350,25 +350,6 @@ exports.by_time_travel = function (target_id, opts) {
     narrow.activate([{operator: "near", operand: target_id}], opts);
 };
 
-exports.by_id = function (target_id, opts) {
-    opts = _.defaults({}, opts, {then_select_id: target_id});
-    narrow.activate([{operator: "id", operand: target_id}], opts);
-};
-
-exports.by_conversation_and_time = function (target_id, opts) {
-    var args = [{operator: "near", operand: target_id}];
-    var original = message_store.get(target_id);
-    opts = _.defaults({}, opts, {then_select_id: target_id});
-
-    if (original.type !== 'stream') {
-        args.push({operator: "pm-with", operand: original.reply_to});
-    } else {
-        args.push({operator: 'stream', operand: original.stream});
-        args.push({operator: 'topic', operand: original.subject});
-    }
-    narrow.activate(args, opts);
-};
-
 exports.deactivate = function () {
     if (narrow_state.get_current_filter() === undefined) {
         return;
@@ -461,7 +442,7 @@ exports.restore_home_state = function () {
     // If we click on the Home link from another nav pane, just go
     // back to the state you were in (possibly still narrowed) before
     // you left the Home pane.
-    if (!ui_state.home_tab_obscured()) {
+    if (!modals.is_active()) {
         exports.deactivate();
     }
     navigate.maybe_scroll_to_selected();
@@ -564,13 +545,20 @@ exports.by_near_uri = function (message_id) {
     return "#narrow/near/" + hash_util.encodeHashComponent(message_id);
 };
 
-exports.by_conversation_and_time_uri = function (message) {
+exports.by_conversation_and_time_uri = function (message, is_absolute_url) {
+    var absolute_url = "";
+    if (is_absolute_url) {
+        absolute_url = window.location .protocol + "//" +
+            window.location.host + "/" + window.location.pathname.split('/')[1];
+    }
     if (message.type === "stream") {
-        return "#narrow/stream/" + hash_util.encodeHashComponent(message.stream) +
+        return absolute_url + "#narrow/stream/" +
+            hash_util.encodeHashComponent(message.stream) +
             "/subject/" + hash_util.encodeHashComponent(message.subject) +
             "/near/" + hash_util.encodeHashComponent(message.id);
     }
-    return "#narrow/pm-with/" + hash_util.encodeHashComponent(message.reply_to) +
+    return absolute_url + "#narrow/pm-with/" +
+        hash_util.encodeHashComponent(message.reply_to) +
         "/near/" + hash_util.encodeHashComponent(message.id);
 };
 

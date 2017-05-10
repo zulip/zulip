@@ -2,12 +2,12 @@ from __future__ import absolute_import
 
 from django.dispatch import receiver
 from django.contrib.auth.signals import user_logged_in
-from django.core.mail import send_mail
 from django.conf import settings
 from django.template import loader
 from django.utils.timezone import get_current_timezone_name as timezone_get_current_timezone_name
 from django.utils.timezone import now as timezone_now
 from typing import Any, Dict, Optional
+from zerver.lib.send_email import send_email_to_user
 from zerver.models import UserProfile
 
 def get_device_browser(user_agent):
@@ -85,12 +85,4 @@ def email_on_new_login(sender, user, request, **kwargs):
         context['zulip_support'] = settings.ZULIP_ADMINISTRATOR
         context['user'] = user
 
-        text_template = 'zerver/emails/new_login/new_login_alert.txt'
-        html_template = 'zerver/emails/new_login/new_login_alert.html'
-        text_content = loader.render_to_string(text_template, context)
-        html_content = loader.render_to_string(html_template, context)
-
-        sender = settings.NOREPLY_EMAIL_ADDRESS
-        recipients = [user.email]
-        subject = loader.render_to_string('zerver/emails/new_login/new_login_alert.subject').strip()
-        send_mail(subject, text_content, sender, recipients, html_message=html_content)
+        send_email_to_user('zerver/emails/notify_new_login', user, context=context)

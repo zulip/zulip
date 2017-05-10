@@ -291,7 +291,7 @@ def find_emailgateway_recipient(message):
     # it is more accurate, so try to find the most-accurate
     # recipient list in descending priority order
     recipient_headers = ["X-Gm-Original-To", "Delivered-To", "To"]
-    recipients = [] # type: List[Text]
+    recipients = []  # type: List[Text]
     for recipient_header in recipient_headers:
         r = message.get_all(recipient_header, None)
         if r:
@@ -327,7 +327,7 @@ def process_message(message, rcpt_to=None, pre_checked=False):
     subject_header = message.get("Subject", "(no subject)")
     encoded_subject, encoding = decode_header(subject_header)[0]
     if encoding is None:
-        subject = force_text(encoded_subject) # encoded_subject has type str when encoding is None
+        subject = force_text(encoded_subject)  # encoded_subject has type str when encoding is None
     else:
         try:
             subject = encoded_subject.decode(encoding)

@@ -234,7 +234,7 @@ REQUIRED_SETTINGS = [("EXTERNAL_HOST", "zulip.example.com"),
                      # case, it seems worth having in this list
                      ("SECRET_KEY", ""),
                      ("AUTHENTICATION_BACKENDS", ()),
-                     ("NOREPLY_EMAIL_ADDRESS", "noreply@example.com"),
+                     ("NOREPLY_EMAIL_ADDRESS", "Zulip <noreply@example.com>"),
                      ("DEFAULT_FROM_EMAIL", "Zulip <zulip@example.com>"),
                      ]
 
@@ -537,9 +537,6 @@ DROPBOX_APP_KEY = get_secret("dropbox_app_key")
 
 MAILCHIMP_API_KEY = get_secret("mailchimp_api_key")
 
-# This comes from our mandrill accounts page
-MANDRILL_API_KEY = get_secret("mandrill_api_key")
-
 # Twitter API credentials
 # Secrecy not required because its only used for R/O requests.
 # Please don't make us go over our rate limit.
@@ -758,6 +755,30 @@ PIPELINE = {
             ),
             'output_filename': 'min/common.css'
         },
+        'apple_sprite': {
+            'source_filenames': (
+                'generated/emoji/google_sprite.css',
+            ),
+            'output_filename': 'min/google_sprite.css',
+        },
+        'emojione_sprite': {
+            'source_filenames': (
+                'generated/emoji/google_sprite.css',
+            ),
+            'output_filename': 'min/google_sprite.css',
+        },
+        'google_sprite': {
+            'source_filenames': (
+                'generated/emoji/google_sprite.css',
+            ),
+            'output_filename': 'min/google_sprite.css',
+        },
+        'twitter_sprite': {
+            'source_filenames': (
+                'generated/emoji/google_sprite.css',
+            ),
+            'output_filename': 'min/google_sprite.css',
+        },
     },
     'JAVASCRIPT': {},
 }
@@ -862,6 +883,7 @@ JS_SPECS = {
             'js/reload.js',
             'js/compose_fade.js',
             'js/fenced_code.js',
+            'js/markdown.js',
             'js/echo.js',
             'js/socket.js',
             'js/compose_state.js',
@@ -880,7 +902,6 @@ JS_SPECS = {
             'js/list_rendering.js',
             'js/floating_recipient_bar.js',
             'js/lightbox.js',
-            'js/ui_state.js',
             'js/ui_report.js',
             'js/ui.js',
             'js/ui_util.js',
@@ -952,6 +973,7 @@ JS_SPECS = {
             'js/typing_events.js',
             'js/ui_init.js',
             'js/emoji_picker.js',
+            'js/compose_ui.js',
             # JS bundled by webpack is also included here if PIPELINE_ENABLED setting is true
         ],
         'output_filename': 'min/app.js'

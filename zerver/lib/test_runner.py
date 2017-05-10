@@ -18,6 +18,7 @@ from django.test.signals import template_rendered
 
 from zerver.lib import test_classes, test_helpers
 from zerver.lib.cache import bounce_key_prefix_for_testing
+from zerver.lib.rate_limiter import bounce_redis_key_prefix_for_testing
 from zerver.lib.test_classes import flush_caches_for_testing
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.test_helpers import (
@@ -116,6 +117,8 @@ def run_test(test, result):
     test_name = full_test_name(test)
 
     bounce_key_prefix_for_testing(test_name)
+    bounce_redis_key_prefix_for_testing(test_name)
+
     flush_caches_for_testing()
 
     if not hasattr(test, "_pre_setup"):
@@ -198,6 +201,8 @@ class TextTestResult(runner.TextTestResult):
     def addError(self, *args, **kwargs):
         # type: (*Any, **Any) -> None
         TestResult.addError(self, *args, **kwargs)
+        test_name = full_test_name(args[0])
+        self.failed_tests.append(test_name)
 
     def addFailure(self, *args, **kwargs):
         # type: (*Any, **Any) -> None

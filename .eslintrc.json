@@ -27,7 +27,6 @@
         "popovers": false,
         "server_events": false,
         "ui": false,
-        "ui_state": false,
         "ui_report": false,
         "ui_util": false,
         "lightbox": false,
@@ -129,6 +128,7 @@
         "templates": false,
         "alert_words": false,
         "fenced_code": false,
+        "markdown": false,
         "echo": false,
         "localstorage": false,
         "localStorage": false,
@@ -144,7 +144,8 @@
         "katex": false,
         "Clipboard": false,
         "emoji_picker": false,
-        "hotspots": false
+        "hotspots": false,
+        "compose_ui": false
     },
     "rules": {
         "no-restricted-syntax": 0,

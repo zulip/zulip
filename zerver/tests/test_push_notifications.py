@@ -14,8 +14,10 @@ from django.conf import settings
 from django.http import HttpResponse
 
 from zerver.models import PushDeviceToken, UserProfile, Message
-from zerver.models import get_user_profile_by_email, receives_online_notifications, \
-    receives_offline_notifications
+from zerver.models import (
+    receives_offline_notifications,
+    receives_online_notifications,
+)
 from zerver.lib import push_notifications as apn
 from zerver.lib.response import json_success
 from zerver.lib.test_classes import (
@@ -136,7 +138,7 @@ class PushBouncerNotificationTest(ZulipTestCase):
             self.assertEqual(len(remote_tokens), token_count)
 
             # Try adding/removing tokens that are too big...
-            broken_token = "x" * 5000 # too big
+            broken_token = "x" * 5000  # too big
             payload['token'] = broken_token
             result = self.client_post(endpoint, payload, **self.get_auth())
             self.assert_json_error(result, 'Empty or invalid length token')
@@ -149,8 +151,8 @@ class PushBouncerNotificationTest(ZulipTestCase):
         push notification bouncer flow
         """
         mock.side_effect = self.bounce_request
-        email = "cordelia@zulip.com"
-        user = get_user_profile_by_email(email)
+        user = self.example_user('cordelia')
+        email = user.email
         self.login(email)
         server = RemoteZulipServer.objects.get(uuid=self.server_uuid)
 
@@ -162,7 +164,7 @@ class PushBouncerNotificationTest(ZulipTestCase):
         # Test error handling
         for endpoint, _ in endpoints:
             # Try adding/removing tokens that are too big...
-            broken_token = "x" * 5000 # too big
+            broken_token = "x" * 5000  # too big
             result = self.client_post(endpoint, {'token': broken_token})
             self.assert_json_error(result, 'Empty or invalid length token')
 
@@ -215,14 +217,13 @@ class PushBouncerNotificationTest(ZulipTestCase):
         # Auth on this user
         return self.api_auth(self.server_uuid)
 
-class PushNotificationTest(TestCase):
+class PushNotificationTest(ZulipTestCase):
     def setUp(self):
         # type: () -> None
-        email = 'hamlet@zulip.com'
+        self.user_profile = self.example_user('hamlet')
         apn.connection = apn.get_connection('fake-cert', 'fake-key')
         self.redis_client = apn.redis_client = MockRedis()  # type: ignore
         apn.dbx_connection = apn.get_connection('fake-cert', 'fake-key')
-        self.user_profile = get_user_profile_by_email(email)
         self.tokens = [u'aaaa', u'bbbb']
         for token in self.tokens:
             PushDeviceToken.objects.create(
@@ -295,8 +296,8 @@ class ResponseListenerTest(PushNotificationTest):
 class TestPushApi(ZulipTestCase):
     def test_push_api(self):
         # type: () -> None
-        email = "cordelia@zulip.com"
-        user = get_user_profile_by_email(email)
+        user = self.example_user('cordelia')
+        email = user.email
         self.login(email)
 
         endpoints = [
@@ -307,7 +308,7 @@ class TestPushApi(ZulipTestCase):
         # Test error handling
         for endpoint, _ in endpoints:
             # Try adding/removing tokens that are too big...
-            broken_token = "x" * 5000 # too big
+            broken_token = "x" * 5000  # too big
             result = self.client_post(endpoint, {'token': broken_token})
             self.assert_json_error(result, 'Empty or invalid length token')
 
@@ -560,8 +561,7 @@ class GCMFailureTest(GCMTest):
 class TestReceivesNotificationsFunctions(ZulipTestCase):
     def setUp(self):
         # type: () -> None
-        email = "cordelia@zulip.com"
-        self.user = get_user_profile_by_email(email)
+        self.user = self.example_user('cordelia')
 
     def test_receivers_online_notifications_when_user_is_a_bot(self):
         # type: () -> None

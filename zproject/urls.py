@@ -28,6 +28,7 @@ import zerver.views.unsubscribe
 import zerver.views.integrations
 import zerver.views.user_settings
 import zerver.views.muting
+import zerver.views.streams
 import confirmation.views
 
 from zerver.lib.rest import rest_dispatch
@@ -80,7 +81,8 @@ i18n_urls = [
     url(r'^accounts/password/reset/$', password_reset,
         {'post_reset_redirect': '/accounts/password/reset/done/',
          'template_name': 'zerver/reset.html',
-         'email_template_name': 'registration/password_reset_email.txt',
+         'email_template_name': 'zerver/emails/password_reset.txt',
+         'subject_template_name': 'zerver/emails/password_reset.subject',
          'password_reset_form': zerver.forms.ZulipPasswordResetForm,
          }, name='django.contrib.auth.views.password_reset'),
     url(r'^accounts/password/reset/done/$', password_reset_done,
@@ -249,6 +251,12 @@ v1_api_and_json_patterns = [
         {'POST': 'zerver.views.messages.update_message_flags'}),
     url(r'^messages/(?P<message_id>\d+)/history$', rest_dispatch,
         {'GET': 'zerver.views.messages.get_message_edit_history'}),
+
+    url(r'^users/me/subscriptions/properties$', rest_dispatch,
+        {'POST': 'zerver.views.streams.update_subscription_properties_backend'}),
+
+    url(r'users/me/subscriptions/(?P<stream_id>\d+)$', rest_dispatch,
+        {'PATCH': 'zerver.views.streams.update_subscriptions_property'}),
 
     # reactions -> zerver.view.reactions
     # PUT adds a reaction to a message

@@ -163,6 +163,12 @@ def add_embed(root, link, extracted_data):
 
     img_link = extracted_data.get('image')
     if img_link:
+        parsed_img_link = urllib.parse.urlparse(img_link)
+        # Append domain where relative img_link url is given
+        if not parsed_img_link.netloc:
+            parsed_url = urllib.parse.urlparse(link)
+            domain = '{url.scheme}://{url.netloc}/'.format(url=parsed_url)
+            img_link = urllib.parse.urljoin(domain, img_link)
         img = markdown.util.etree.SubElement(container, "a")
         img.set("style", "background-image: url(" + img_link + ")")
         img.set("href", link)
@@ -352,6 +358,21 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         # Passing in bugdown for access to config to check if realm is zulip.com
         self.bugdown = bugdown
         markdown.treeprocessors.Treeprocessor.__init__(self, md)
+
+    def get_actual_image_url(self, url):
+        # type: (Text) -> Text
+        # Add specific per-site cases to convert image-preview urls to image urls.
+        # See https://github.com/zulip/zulip/issues/4658 for more information
+        parsed_url = urllib.parse.urlparse(url)
+        if (parsed_url.netloc == 'github.com' or parsed_url.netloc.endswith('.github.com')):
+            # https://github.com/zulip/zulip/blob/master/static/images/logo/zulip-icon-128x128.png ->
+            # https://raw.githubusercontent.com/zulip/zulip/master/static/images/logo/zulip-icon-128x128.png
+            split_path = parsed_url.path.split('/')
+            if len(split_path) > 3 and split_path[3] == "blob":
+                return urllib.parse.urljoin('https://raw.githubusercontent.com',
+                                            '/'.join(split_path[0:3] + split_path[4:]))
+
+        return url
 
     def is_image(self, url):
         # type: (Text) -> bool
@@ -622,7 +643,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                       class_attr=class_attr)
                 continue
             if self.is_image(url):
-                add_a(root, url, url, title=text)
+                add_a(root, self.get_actual_image_url(url), url, title=text)
                 continue
             if get_tweet_id(url) is not None:
                 if rendered_tweet_count >= self.TWITTER_MAX_TO_PREVIEW:

@@ -47,7 +47,7 @@ with open('/var/lib/nagios_state/last_postgres_backup', 'w') as f:
     f.write(now.isoformat())
     f.write("\n")
 
-backups = {} # type: Dict[datetime, str]
+backups = {}  # type: Dict[datetime, str]
 lines = run(['env-wal-e', 'backup-list']).split("\n")
 for line in lines[1:]:
     if line:

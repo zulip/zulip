@@ -1,6 +1,7 @@
 .right-sidebar {
     -webkit-font-smoothing: antialiased;
     color: #555;
+    font-size: 0.89rem;
 }
 
 #group-pms li:hover,
@@ -18,11 +19,6 @@
 #user_presences:hover,
 #group-pms:hover {
     overflow-y: auto;
-}
-
-#user_presences .user_sidebar_entry:hover,
-#group-pms .group-pms-sidebar-entry:hover {
-    cursor: pointer;
 }
 
 #user_presences li {
@@ -132,6 +128,10 @@
 
 .group-pms-sidebar-entry.group-with-count .selectable_sidebar_block {
     width: 170px;
+}
+
+.selectable_sidebar_block {
+    cursor: pointer;
 }
 
 .user_sidebar_entry .count,

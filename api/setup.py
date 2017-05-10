@@ -58,7 +58,7 @@ package_info = dict(
                   "examples/unsubscribe",
                   ])] + list(recur_expand('share/zulip', 'integrations/')),
     scripts=["bin/zulip-send"],
-) # type: Dict[str, Any]
+)  # type: Dict[str, Any]
 
 setuptools_info = dict(
     install_requires=['requests>=0.12.1',

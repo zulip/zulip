@@ -98,7 +98,9 @@ var social = {
 stream_data.add_sub('Denmark', denmark);
 stream_data.add_sub('social', social);
 
-var echo = require('js/echo.js');
+var markdown = require('js/markdown.js');
+
+markdown.initialize();
 
 var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver/fixtures/bugdown-data.json'), 'utf8', 'r'));
 
@@ -141,11 +143,11 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
                  ];
 
     no_markup.forEach(function (content) {
-        assert.equal(echo.contains_bugdown(content), false);
+        assert.equal(markdown.contains_bugdown(content), false);
     });
 
     markup.forEach(function (content) {
-        assert.equal(echo.contains_bugdown(content), true);
+        assert.equal(markdown.contains_bugdown(content), true);
     });
 }());
 
@@ -153,7 +155,7 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
   var tests = bugdown_data.regular_tests;
   tests.forEach(function (test) {
     var message = {raw_content: test.input};
-    echo.apply_markdown(message);
+    markdown.apply_markdown(message);
     var output = message.content;
 
     if (test.bugdown_matches_marked) {
@@ -166,15 +168,15 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
 
 (function test_message_flags() {
     var message = {raw_content: '@**Leo**'};
-    echo.apply_markdown(message);
+    markdown.apply_markdown(message);
     assert(!_.contains(message.flags, 'mentioned'));
 
     message = {raw_content: '@**Cordelia Lear**'};
-    echo.apply_markdown(message);
+    markdown.apply_markdown(message);
     assert(_.contains(message.flags, 'mentioned'));
 
     message = {raw_content: '@**all**'};
-    echo.apply_markdown(message);
+    markdown.apply_markdown(message);
     assert(_.contains(message.flags, 'mentioned'));
 }());
 
@@ -235,7 +237,7 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
     var expected = test_case.expected;
 
     var message = {raw_content: input};
-    echo.apply_markdown(message);
+    markdown.apply_markdown(message);
     var output = message.content;
 
     assert.equal(expected, output);
@@ -245,34 +247,34 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
 
 (function test_subject_links() {
   var message = {type: 'stream', subject: "No links here"};
-  echo._add_subject_links(message);
+  markdown.add_subject_links(message);
   assert.equal(message.subject_links.length, []);
 
   message = {type: 'stream', subject: "One #123 link here"};
-  echo._add_subject_links(message);
+  markdown.add_subject_links(message);
   assert.equal(message.subject_links.length, 1);
   assert.equal(message.subject_links[0], "https://trac.zulip.net/ticket/123");
 
   message = {type: 'stream', subject: "Two #123 #456 link here"};
-  echo._add_subject_links(message);
+  markdown.add_subject_links(message);
   assert.equal(message.subject_links.length, 2);
   assert.equal(message.subject_links[0], "https://trac.zulip.net/ticket/123");
   assert.equal(message.subject_links[1], "https://trac.zulip.net/ticket/456");
 
   message = {type: 'stream', subject: "New ZBUG_123 link here"};
-  echo._add_subject_links(message);
+  markdown.add_subject_links(message);
   assert.equal(message.subject_links.length, 1);
   assert.equal(message.subject_links[0], "https://trac2.zulip.net/ticket/123");
 
 
   message = {type: 'stream', subject: "New ZBUG_123 with #456 link here"};
-  echo._add_subject_links(message);
+  markdown.add_subject_links(message);
   assert.equal(message.subject_links.length, 2);
   assert(message.subject_links.indexOf("https://trac2.zulip.net/ticket/123") !== -1);
   assert(message.subject_links.indexOf("https://trac.zulip.net/ticket/456") !== -1);
 
   message = {type: 'stream', subject: "One ZGROUP_123:45 link here"};
-  echo._add_subject_links(message);
+  markdown.add_subject_links(message);
   assert.equal(message.subject_links.length, 1);
   assert.equal(message.subject_links[0], "https://zone_45.zulip.net/ticket/123");
 }());
@@ -281,8 +283,8 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
   var input = "/me is testing this";
   var message = {subject: "No links here", raw_content: input};
   message.flags = ['read'];
-  echo.apply_markdown(message);
-  echo._add_message_flags(message);
+  markdown.apply_markdown(message);
+  markdown.add_message_flags(message);
 
   assert.equal(message.flags.length, 2);
   assert(message.flags.indexOf('read') !== -1);
@@ -290,23 +292,23 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
 
   input = "testing this @**all** @**Cordelia Lear**";
   message = {subject: "No links here", raw_content: input};
-  echo.apply_markdown(message);
-  echo._add_message_flags(message);
+  markdown.apply_markdown(message);
+  markdown.add_message_flags(message);
 
   assert.equal(message.flags.length, 1);
   assert(message.flags.indexOf('mentioned') !== -1);
 
   input = "test @all";
   message = {subject: "No links here", raw_content: input};
-  echo.apply_markdown(message);
-  echo._add_message_flags(message);
+  markdown.apply_markdown(message);
+  markdown.add_message_flags(message);
   assert.equal(message.flags.length, 1);
   assert(message.flags.indexOf('mentioned') !== -1);
 
   input = "test @any";
   message = {subject: "No links here", raw_content: input};
-  echo.apply_markdown(message);
-  echo._add_message_flags(message);
+  markdown.apply_markdown(message);
+  markdown.add_message_flags(message);
   assert.equal(message.flags.length, 0);
   assert(message.flags.indexOf('mentioned') === -1);
 }());

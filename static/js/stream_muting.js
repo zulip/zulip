@@ -11,7 +11,7 @@ exports.update_in_home_view = function (sub, value) {
         var msg_offset;
         var saved_ypos;
         // Save our current scroll position
-        if (ui_state.home_tab_obscured()) {
+        if (modals.is_active()) {
             saved_ypos = message_viewport.scrollTop();
         } else if (home_msg_list === current_msg_list &&
                    current_msg_list.selected_row().offset() !== null) {
@@ -24,7 +24,7 @@ exports.update_in_home_view = function (sub, value) {
         message_util.add_messages(message_list.all.all_messages(), home_msg_list);
 
         // Ensure we're still at the same scroll position
-        if (ui_state.home_tab_obscured()) {
+        if (modals.is_active()) {
             message_viewport.scrollTop(saved_ypos);
         } else if (home_msg_list === current_msg_list) {
             // We pass use_closest to handle the case where the

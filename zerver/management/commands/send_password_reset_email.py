@@ -45,8 +45,8 @@ class Command(BaseCommand):
         self.send(users)
 
     def send(self, users,
-             subject_template_name='registration/password_reset_subject.txt',
-             email_template_name='registration/password_reset_email.txt',
+             subject_template_name='zerver/emails/password_reset.subject',
+             email_template_name='zerver/emails/password_reset.txt',
              use_https=True, token_generator=default_token_generator,
              from_email=None, html_email_template_name=None):
         # type: (List[UserProfile], str, str, bool, PasswordResetTokenGenerator, Optional[Text], Optional[str]) -> None
@@ -65,6 +65,9 @@ class Command(BaseCommand):
             }
 
             logging.warning("Sending %s email to %s" % (email_template_name, user_profile.email,))
+            # Our password reset flow is basically a patch of Django's password
+            # reset flow, so this is aligned with Django code rather than using
+            # zerver.lib.send_email.send_email.
             self.send_email(subject_template_name, email_template_name,
                             context, from_email, user_profile.email,
                             html_email_template_name=html_email_template_name)

@@ -35,15 +35,15 @@ from functools import partial
 # APNS error codes
 ERROR_CODES = {
     1: 'Processing error',
-    2: 'Missing device token', # looks like token was empty?
-    3: 'Missing topic', # topic is encoded in the certificate, looks like certificate is wrong. bail out.
-    4: 'Missing payload', # bail out, our message looks like empty
-    5: 'Invalid token size', # current token has wrong size, skip it and retry
-    6: 'Invalid topic size', # can not happen, we do not send topic, it is part of certificate. bail out.
-    7: 'Invalid payload size', # our payload is probably too big. bail out.
-    8: 'Invalid token', # our device token is broken, skipt it and retry
-    10: 'Shutdown', # server went into maintenance mode. reported token is the last success, skip it and retry.
-    None: 'Unknown', # unknown error, for sure we try again, but user should limit number of retries
+    2: 'Missing device token',  # looks like token was empty?
+    3: 'Missing topic',  # topic is encoded in the certificate, looks like certificate is wrong. bail out.
+    4: 'Missing payload',  # bail out, our message looks like empty
+    5: 'Invalid token size',  # current token has wrong size, skip it and retry
+    6: 'Invalid topic size',  # can not happen, we do not send topic, it is part of certificate. bail out.
+    7: 'Invalid payload size',  # our payload is probably too big. bail out.
+    8: 'Invalid token',  # our device token is broken, skipt it and retry
+    10: 'Shutdown',  # server went into maintenance mode. reported token is the last success, skip it and retry.
+    None: 'Unknown',  # unknown error, for sure we try again, but user should limit number of retries
 }
 
 redis_client = get_redis_client()
@@ -323,7 +323,7 @@ def handle_push_notification(user_profile_id, missed_message):
                     'user': user_profile.email,
                     'event': 'message',
                     'alert': alert,
-                    'zulip_message_id': message.id, # message_id is reserved for CCS
+                    'zulip_message_id': message.id,  # message_id is reserved for CCS
                     'time': datetime_to_timestamp(message.pub_date),
                     'content': content,
                     'content_truncated': content_truncated,

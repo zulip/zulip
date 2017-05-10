@@ -90,14 +90,6 @@ function failed_listing_users(xhr) {
 }
 
 function populate_users(realm_people_data) {
-    var users_table = $("#admin_users_table");
-    var deactivated_users_table = $("#admin_deactivated_users_table");
-    var bots_table = $("#admin_bots_table");
-    // Clear table rows, but not the table headers
-    users_table.find("tr.user_row").remove();
-    deactivated_users_table.find("tr.user_row").remove();
-    bots_table.find("tr.user_row").remove();
-
     var active_users = [];
     var deactivated_users = [];
     var bots = [];
@@ -116,36 +108,71 @@ function populate_users(realm_people_data) {
     deactivated_users = _.sortBy(deactivated_users, 'full_name');
     bots = _.sortBy(bots, 'full_name');
 
-    var bots_table_html = "";
-    _.each(bots, function (user) {
-        var bot_html = templates.render("admin_user_list", {user: user, can_modify: page_params.is_admin});
-        bots_table_html = bots_table_html.concat(bot_html);
-    });
-    bots_table.append(bots_table_html);
+    var $bots_table = $("#admin_bots_table");
+    list_render($bots_table, bots, {
+        name: "admin_bot_list",
+        modifier: function (item) {
+            return templates.render("admin_user_list", { user: item, can_modify: page_params.is_admin });
+        },
+        filter: {
+            element: $bots_table.closest(".settings-section").find(".search"),
+            callback: function (item, value) {
+                return (
+                    item.full_name.toLowerCase().match(value) ||
+                    item.email.toLowerCase().match(value)
+                );
+            },
+        },
+    }).init();
 
-    _.each(active_users, function (user) {
-        var activity_rendered;
-        var row = $(templates.render("admin_user_list", {user: user, can_modify: page_params.is_admin}));
-        if (people.is_current_user(user.email)) {
-            activity_rendered = timerender.render_date(new XDate());
-        } else {
-            var last_active_date = presence.last_active_date(user.user_id);
-            if (last_active_date) {
-                activity_rendered = timerender.render_date(last_active_date);
+    var $users_table = $("#admin_users_table");
+    list_render($users_table, active_users, {
+        name: "users_table_list",
+        modifier: function (item) {
+            var activity_rendered;
+            if (people.is_current_user(item.email)) {
+                activity_rendered = timerender.render_date(new XDate());
+            } else if (presence.presence_info[item.user_id]) {
+                // XDate takes number of milliseconds since UTC epoch.
+                var last_active = presence.presence_info[item.user_id].last_active * 1000;
+                activity_rendered = timerender.render_date(new XDate(last_active));
             } else {
                 activity_rendered = $("<span></span>").text(i18n.t("Unknown"));
             }
-        }
-        row.find(".last_active").append(activity_rendered);
-        users_table.append(row);
-    });
 
-    var deactivated_table_html = "";
-    _.each(deactivated_users, function (user) {
-        var user_html = templates.render("admin_user_list", {user: user, can_modify: page_params.is_admin});
-        deactivated_table_html = deactivated_table_html.concat(user_html);
-    });
-    deactivated_users_table.append(deactivated_table_html);
+            var $row = $(templates.render("admin_user_list", {user: item, can_modify: page_params.is_admin}));
+
+            $row.find(".last_active").append(activity_rendered);
+
+            return $row;
+        },
+        filter: {
+            element: $users_table.closest(".settings-section").find(".search"),
+            callback: function (item, value) {
+                return (
+                    item.full_name.toLowerCase().match(value) ||
+                    item.email.toLowerCase().match(value)
+                );
+            },
+        },
+    }).init();
+
+    var $deactivated_users_table = $("#admin_deactivated_users_table");
+    list_render($deactivated_users_table, deactivated_users, {
+        name: "deactivated_users_table_list",
+        modifier: function (item) {
+            return templates.render("admin_user_list", { user: item, can_modify: page_params.is_admin });
+        },
+        filter: {
+            element: $deactivated_users_table.closest(".settings-section").find(".search"),
+            callback: function (item, value) {
+                return (
+                    item.full_name.toLowerCase().match(value) ||
+                    item.email.toLowerCase().match(value)
+                );
+            },
+        },
+    }).init();
     loading.destroy_indicator($('#admin_page_users_loading_indicator'));
     loading.destroy_indicator($('#admin_page_bots_loading_indicator'));
     loading.destroy_indicator($('#admin_page_deactivated_users_loading_indicator'));
