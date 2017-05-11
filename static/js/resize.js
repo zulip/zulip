@@ -167,8 +167,15 @@ function left_userlist_get_new_heights() {
 
 exports.watch_manual_resize = function (element) {
     return (function on_box_resize(cb) {
+        var box = document.querySelector(element);
+
+        if (!box) {
+            blueslip.error('Bad selector in watch_manual_resize: ' + element);
+            return;
+        }
+
         var meta = {
-            box: document.querySelector(element),
+            box: box,
             height: null,
             mousedown: false,
         };
