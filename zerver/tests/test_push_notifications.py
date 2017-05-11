@@ -22,6 +22,7 @@ from zerver.models import (
     get_client,
     Recipient,
     get_user_profile_by_email,
+    Stream,
 )
 from zerver.lib import push_notifications as apn
 from zerver.lib.response import json_success
@@ -260,10 +261,10 @@ class PushNotificationTest(ZulipTestCase):
         for i in [100, 200]:
             self.redis_client.delete(apn.get_apns_key(i))
 
-    def get_message(self, type):
-        # type: (int) -> Message
-        recipient = Recipient.objects.create(
-            type_id=100,
+    def get_message(self, type, type_id=100):
+        # type: (int, int) -> Message
+        recipient, _ = Recipient.objects.get_or_create(
+            type_id=type_id,
             type=type,
         )
 
@@ -388,6 +389,55 @@ class TestGetAPNsPayload(PushNotificationTest):
         expected = {
             "alert": "New private group message from King Hamlet",
             "message_ids": [message.id],
+        }
+        self.assertDictEqual(payload, expected)
+
+class TestGetGCMPayload(PushNotificationTest):
+    def test_get_gcm_payload(self):
+        # type: () -> None
+        email = "hamlet@zulip.com"
+        stream = Stream.objects.filter(name='Verona').get()
+        message = self.get_message(Recipient.STREAM, stream.id)
+        message.content = 'a' * 210
+        message.save()
+
+        user_profile = get_user_profile_by_email(email)
+        payload = apn.get_gcm_payload(user_profile, message)
+        expected = {
+            "user": email,
+            "event": "message",
+            "alert": "New mention from King Hamlet",
+            "zulip_message_id": message.id,
+            "time": apn.datetime_to_timestamp(message.pub_date),
+            "content": 'a' * 200 + '...',
+            "content_truncated": True,
+            "sender_email": "hamlet@zulip.com",
+            "sender_full_name": "King Hamlet",
+            "sender_avatar_url": apn.avatar_url(message.sender),
+            "recipient_type": "stream",
+            "stream": apn.get_display_recipient(message.recipient),
+            "topic": message.subject,
+        }
+        self.assertDictEqual(payload, expected)
+
+    def test_get_gcm_payload_personal(self):
+        # type: () -> None
+        email = "hamlet@zulip.com"
+        message = self.get_message(Recipient.PERSONAL, 1)
+        user_profile = get_user_profile_by_email(email)
+        payload = apn.get_gcm_payload(user_profile, message)
+        expected = {
+            "user": email,
+            "event": "message",
+            "alert": "New private message from King Hamlet",
+            "zulip_message_id": message.id,
+            "time": apn.datetime_to_timestamp(message.pub_date),
+            "content": message.content,
+            "content_truncated": False,
+            "sender_email": "hamlet@zulip.com",
+            "sender_full_name": "King Hamlet",
+            "sender_avatar_url": apn.avatar_url(message.sender),
+            "recipient_type": "private",
         }
         self.assertDictEqual(payload, expected)
 
