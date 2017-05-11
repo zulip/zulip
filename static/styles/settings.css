@@ -39,6 +39,16 @@ label {
     min-width: 200px;
 }
 
+.new-style .grid .user-name-section label {
+    min-width: 120px;
+}
+
+.new-style .grid .user-name-section .warning {
+    display: block;
+    width: calc(100% - 20px - 5px);
+    text-align: right;
+}
+
 .new-style .grid .warning {
     display: inline-block;
     vertical-align: top;
@@ -68,6 +78,11 @@ label {
     background-color: #fff;
     margin: 20px 0px;
     padding: 20px;
+}
+
+.realm-icon-section {
+    float: none;
+    display: inline-block;
 }
 
 .user-avatar-section .inline-block,
@@ -562,7 +577,7 @@ input[type=checkbox].inline-block {
 .bots_list .bot-information-box {
     position: relative;
     display: inline-block;
-    width: calc(33.3% - 10px);
+    width: calc(50% - 10px);
     max-height: 180px;
     margin: 5px;
 
@@ -693,11 +708,18 @@ input[type=checkbox].inline-block {
     position: inherit;
 }
 
-#alert_words_list,
 #attachments_list {
     list-style-type: none;
     margin: auto;
     background-color: #fff;
+}
+
+#alert_words_list {
+    margin: 0;
+}
+
+#alert_words_list li {
+    list-style-type: none;
 }
 
 #alert_words_list li.alert-word-item:last-child {
@@ -749,7 +771,8 @@ input[type=checkbox].inline-block {
 #settings_page {
     height: 95vh;
     width: 97vw;
-    margin: 2.5vh 1.5vw;
+    max-width: 1024px;
+    margin: 2.5vh auto;
     background-color: #fff;
     overflow: hidden;
     border-radius: 4px;
@@ -833,6 +856,7 @@ input[type=checkbox].inline-block {
 
 #settings_page input.search {
     font-size: 0.9rem;
+    margin: 0px 0px 20px 0px;
 }
 
 #settings_page .form-sidebar {
@@ -1040,23 +1064,7 @@ input[type=text]#settings_search {
     bottom: 0px;
 }
 /* -- end new settings overlay -- */
-@media (min-width: 1850px) {
-    .bots_list .bot-information-box {
-        width: calc(20% - 10px);
-    }
-}
-
-@media (min-width: 1500px) and (max-width: 1850px) {
-    .bots_list .bot-information-box {
-        width: calc(25% - 10px);
-    }
-}
-
 @media (max-width: 1215px) {
-    .bots_list .bot-information-box {
-        width: calc(50% - 10px);
-    }
-
     .user-avatar-section,
     .realm-icon-section {
         float: none;
