@@ -98,7 +98,11 @@ exports.stream = function () {
     }
     var stream_operands = current_filter.operands("stream");
     if (stream_operands.length === 1) {
-        return stream_operands[0];
+        var name = stream_operands[0];
+
+        // Use get_name() to get the most current stream
+        // name (considering renames and capitalization).
+        return stream_data.get_name(name);
     }
     return undefined;
 };
