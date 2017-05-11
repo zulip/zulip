@@ -223,7 +223,9 @@ function edit_message(row, raw_content) {
         copy_message.remove();
         var edit_id = "#message_edit_content_" + rows.id(row);
         var listeners = resize.watch_manual_resize(edit_id);
-        currently_editing_messages[rows.id(row)].listeners = listeners;
+        if (listeners) {
+            currently_editing_messages[rows.id(row)].listeners = listeners;
+        }
         composebox_typeahead.initialize_compose_typeahead(edit_id, {emoji: true, stream: true});
     }
 
