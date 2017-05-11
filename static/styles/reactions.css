@@ -24,7 +24,7 @@
     background-color: #eef7fa !important;
 }
 
-.message_reaction div.emoji {
+.message_reaction .emoji {
     display: inline-block;
     vertical-align: top;
     top: 0px;
