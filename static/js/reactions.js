@@ -34,8 +34,7 @@ exports.current_user_has_reacted_to_emoji = function (message, emoji_name) {
     });
 };
 
-function get_user_list_for_message_reaction(message_id, emoji_name) {
-    var message = message_store.get(message_id);
+function get_user_list_for_message_reaction(message, emoji_name) {
     var matching_reactions = message.reactions.filter(function (reaction) {
         return reaction.emoji_name === emoji_name;
     });
@@ -240,7 +239,7 @@ exports.add_reaction = function (event) {
     message.reactions.push(event);
     var message_element = $('.message_table').find("[zid='" + event.message_id + "']");
     var message_reactions_element = message_element.find('.message_reactions');
-    var user_list = get_user_list_for_message_reaction(event.message_id, event.emoji_name);
+    var user_list = get_user_list_for_message_reaction(message, event.emoji_name);
     var new_title = generate_title(event.emoji_name, user_list);
     if (user_list.length === 1) {
         if (emoji.realm_emojis[event.emoji_name]) {
@@ -288,7 +287,7 @@ exports.remove_reaction = function (event) {
     if (i !== -1) {
         message.reactions.splice(i, 1);
     }
-    var user_list = get_user_list_for_message_reaction(message_id, emoji_name);
+    var user_list = get_user_list_for_message_reaction(message, emoji_name);
     var new_title = generate_title(emoji_name, user_list);
     var message_element = $('.message_table').find("[zid='" + message_id + "']");
     var message_reactions_element = message_element.find('.message_reactions');
