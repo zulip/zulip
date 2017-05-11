@@ -273,7 +273,7 @@ function redraw_privacy_related_stuff(sub_row, sub) {
     var stream_settings = settings_for_sub(sub);
     var html;
 
-    sub = stream_data.add_admin_options(sub);
+    stream_data.update_calculated_fields(sub);
 
     html = templates.render('subscription_setting_icon', sub);
     sub_row.find('.icon').expectOne().replaceWith($(html));
