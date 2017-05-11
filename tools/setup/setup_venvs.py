@@ -9,6 +9,7 @@ if ZULIP_PATH not in sys.path:
     sys.path.append(ZULIP_PATH)
 
 from scripts.lib.setup_venv import setup_virtualenv
+from scripts.lib.zulip_tools import run
 
 PY2_VENV_PATH = "/srv/zulip-venv"
 PY3_VENV_PATH = "/srv/zulip-py3-venv"
@@ -30,7 +31,7 @@ def main(is_travis=False):
             setup_virtualenv(PY3_VENV_PATH, PY3_DEV_REQS_FILE, patch_activate_script=True,
                              virtualenv_args=['-p', 'python3'])
     else:
-        setup_virtualenv(PY2_VENV_PATH, PY2_DEV_REQS_FILE, patch_activate_script=True)
+        run(['sudo', 'rm', '-f', PY2_VENV_PATH])
         setup_virtualenv(PY3_VENV_PATH, PY3_DEV_REQS_FILE, patch_activate_script=True,
                          virtualenv_args=['-p', 'python3'])
 
