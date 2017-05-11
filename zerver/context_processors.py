@@ -59,7 +59,8 @@ def zulip_default_context(request):
         realm_uri = realm.uri
         realm_name = realm.name
         realm_icon = get_realm_icon_url(realm)
-        realm_description = convert(realm.description, message_realm=realm) or "The coolest place in the universe."
+        realm_description_raw = realm.description or "The coolest place in the universe."
+        realm_description = convert(realm_description_raw, message_realm=realm)
     else:
         realm_uri = settings.SERVER_URI
         realm_name = None
