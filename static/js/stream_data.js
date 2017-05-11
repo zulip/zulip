@@ -208,7 +208,10 @@ exports.get_name = function (stream_name) {
     // stream_name if we don't have a subscription.  (Stream names
     // are case-insensitive, but we try to display the actual name
     // when we know it.)
-    var sub = exports.get_sub(stream_name);
+    //
+    // This function will also do the right thing if we have
+    // an old stream name in memory for a recently renamed stream.
+    var sub = exports.get_sub_by_name(stream_name);
     if (sub === undefined) {
         return stream_name;
     }
