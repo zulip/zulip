@@ -16,7 +16,7 @@
 
 .private-message .message_reactions .message_reaction {
     /* Use the PM color background, since white-on-yellow looks bad. */
-    background-color: #feffe0;
+    background-color: #f0f4f5;
 }
 
 .message_reactions .reacted {
