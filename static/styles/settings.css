@@ -1151,8 +1151,12 @@ input[type=text]#settings_search {
     border-bottom: none;
 }
 
-#admin_users_table .last_active {
-    width: 15%;
+#admin-user-list .last_active {
+    width: 100px;
+}
+
+thead .actions {
+    min-width: 230px;
 }
 
 #settings_page .display-settings-form select {
