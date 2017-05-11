@@ -171,7 +171,6 @@ exports.zoom_in = function () {
         blueslip.error('Cannot find widget for topic history zooming.');
         return;
     }
-
     exports.rebuild(active_widget.get_parent(), active_widget.get_stream_name());
     $('#stream-filters-container').scrollTop(0);
     $('#stream-filters-container').perfectScrollbar('update');
