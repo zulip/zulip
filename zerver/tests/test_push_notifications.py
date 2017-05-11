@@ -13,10 +13,15 @@ from django.test import TestCase, override_settings
 from django.conf import settings
 from django.http import HttpResponse
 
-from zerver.models import PushDeviceToken, UserProfile, Message
 from zerver.models import (
+    PushDeviceToken,
+    UserProfile,
+    Message,
     receives_offline_notifications,
     receives_online_notifications,
+    get_client,
+    Recipient,
+    get_user_profile_by_email,
 )
 from zerver.lib import push_notifications as apn
 from zerver.lib.response import json_success
@@ -247,10 +252,29 @@ class PushNotificationTest(ZulipTestCase):
                 server=server,
             )
 
+        self.sending_client = get_client('test')
+        self.sender = get_user_profile_by_email('hamlet@zulip.com')
+
     def tearDown(self):
         # type: () -> None
         for i in [100, 200]:
             self.redis_client.delete(apn.get_apns_key(i))
+
+    def get_message(self, type):
+        # type: (int) -> Message
+        recipient = Recipient.objects.create(
+            type_id=100,
+            type=type,
+        )
+
+        return Message.objects.create(
+            sender=self.sender,
+            recipient=recipient,
+            subject='Test Message',
+            content='This is test content',
+            pub_date=now(),
+            sending_client=self.sending_client,
+        )
 
 class APNsMessageTest(PushNotificationTest):
     @mock.patch('random.getrandbits', side_effect=[100, 200])
@@ -341,6 +365,20 @@ class ResponseListenerTest(PushNotificationTest):
         with self.settings(ZILENCER_ENABLED=True):
             apn.response_listener(err_rsp)
         self.assertEqual(RemotePushDeviceToken.objects.all().count(), 1)
+
+class TestGetAlertFromMessage(PushNotificationTest):
+    def test_get_alert_from_message(self):
+        # type: () -> None
+        alert = apn.get_alert_from_message(self.get_message(Recipient.HUDDLE))
+        self.assertEqual(alert, "New private group message from King Hamlet")
+        alert = apn.get_alert_from_message(self.get_message(Recipient.PERSONAL))
+        self.assertEqual(alert, "New private message from King Hamlet")
+        alert = apn.get_alert_from_message(self.get_message(Recipient.STREAM))
+        self.assertEqual(alert, "New mention from King Hamlet")
+        alert = apn.get_alert_from_message(self.get_message(0))
+        self.assertEqual(alert,
+                         "New Zulip mentions and private messages from King "
+                         "Hamlet")
 
 class TestPushApi(ZulipTestCase):
     def test_push_api(self):
