@@ -380,6 +380,17 @@ class TestGetAlertFromMessage(PushNotificationTest):
                          "New Zulip mentions and private messages from King "
                          "Hamlet")
 
+class TestGetAPNsPayload(PushNotificationTest):
+    def test_get_apns_payload(self):
+        # type: () -> None
+        message = self.get_message(Recipient.HUDDLE)
+        payload = apn.get_apns_payload(message)
+        expected = {
+            "alert": "New private group message from King Hamlet",
+            "message_ids": [message.id],
+        }
+        self.assertDictEqual(payload, expected)
+
 class TestPushApi(ZulipTestCase):
     def test_push_api(self):
         # type: () -> None
