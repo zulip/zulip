@@ -441,6 +441,22 @@ class TestGetGCMPayload(PushNotificationTest):
         }
         self.assertDictEqual(payload, expected)
 
+class TestSendNotificationsToBouncer(ZulipTestCase):
+    @mock.patch('zerver.lib.push_notifications.send_to_push_bouncer')
+    def test_send_notifications_to_bouncer(self, mock_send):
+        # type: (mock.MagicMock) -> None
+        apn.send_notifications_to_bouncer(1, {'apns': True}, {'gcm': True})
+        post_data = {
+            'user_id': 1,
+            'apns_payload': {'apns': True},
+            'gcm_payload': {'gcm': True},
+        }
+        mock_send.assert_called_with('POST',
+                                     'notify',
+                                     ujson.dumps(post_data),
+                                     extra_headers={'Content-type':
+                                                    'application/json'})
+
 class TestPushApi(ZulipTestCase):
     def test_push_api(self):
         # type: () -> None
