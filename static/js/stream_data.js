@@ -9,6 +9,8 @@ var stream_info;
 var subs_by_stream_id;
 var recent_topics = new Dict({fold_case: true});
 
+var stream_ids_by_name = new Dict({fold_case: true});
+
 var defaults = {};
 
 exports.clear_subscriptions = function () {
@@ -24,6 +26,9 @@ exports.is_active = function (sub) {
 
 exports.rename_sub = function (sub, new_name) {
     var old_name = sub.name;
+
+    stream_ids_by_name.set(old_name, sub.stream_id);
+
     sub.name = new_name;
     stream_info.del(old_name);
     stream_info.set(new_name, sub);
@@ -58,6 +63,40 @@ exports.get_sub = function (stream_name) {
 };
 
 exports.get_sub_by_id = function (stream_id) {
+    return subs_by_stream_id.get(stream_id);
+};
+
+exports.get_stream_id = function (name) {
+    // Note: Only use this function for situations where
+    // you are comfortable with a user dealing with an
+    // old name of a stream (from prior to a rename).
+    var sub = stream_info.get(name);
+
+    if (sub) {
+        return sub.stream_id;
+    }
+
+    var stream_id = stream_ids_by_name.get(name);
+    return stream_id;
+};
+
+exports.get_sub_by_name = function (name) {
+    // Note: Only use this function for situations where
+    // you are comfortable with a user dealing with an
+    // old name of a stream (from prior to a rename).
+
+    var sub = stream_info.get(name);
+
+    if (sub) {
+        return sub;
+    }
+
+    var stream_id = stream_ids_by_name.get(name);
+
+    if (!stream_id) {
+        return;
+    }
+
     return subs_by_stream_id.get(stream_id);
 };
 
