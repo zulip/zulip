@@ -505,7 +505,7 @@ html {
 }
 
 .split-view .info-box .organization-name {
-    font-size: 2.5em;
+    font-size: 1.5em;
     font-weight: 300;
     line-height: 1;
 }
@@ -732,10 +732,6 @@ button.login-google-button {
 
     .split-view .org-header .info-box {
         margin-top: 0px;
-    }
-
-    .split-view .org-header .info-box .organization-name {
-        font-size: 2em;
     }
 
     .split-view .org-header .info-box .organization-path {
