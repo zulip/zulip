@@ -220,19 +220,21 @@ class SocialAuthMixin(ZulipAuthMixin):
         request = strategy.request
         email_address = self.get_email_address(*args, **kwargs)
         full_name = self.get_full_name(*args, **kwargs)
+        is_signup = strategy.session_get('is_signup') == '1'
 
         subdomain = strategy.session_get('subdomain')
-
         if not subdomain:
             return login_or_register_remote_user(request, email_address,
                                                  user_profile, full_name,
-                                                 bool(invalid_subdomain))
+                                                 invalid_subdomain=bool(invalid_subdomain),
+                                                 is_signup=is_signup)
         try:
             realm = Realm.objects.get(string_id=subdomain)
         except Realm.DoesNotExist:
             return redirect_to_subdomain_login_url()
 
-        return redirect_and_log_into_subdomain(realm, full_name, email_address)
+        return redirect_and_log_into_subdomain(realm, full_name, email_address,
+                                               is_signup=is_signup)
 
     def auth_complete(self, *args, **kwargs):
         # type: (*Any, **Any) -> Optional[HttpResponse]

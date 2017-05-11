@@ -83,17 +83,36 @@ def redirect_to_subdomain_login_url():
     return HttpResponseRedirect(redirect_url)
 
 def login_or_register_remote_user(request, remote_username, user_profile, full_name='',
-                                  invalid_subdomain=False, mobile_flow_otp=None):
-    # type: (HttpRequest, Text, UserProfile, Text, bool, Optional[str]) -> HttpResponse
+                                  invalid_subdomain=False, mobile_flow_otp=None,
+                                  is_signup=False):
+    # type: (HttpRequest, Text, UserProfile, Text, bool, Optional[str], bool) -> HttpResponse
     if invalid_subdomain:
         # Show login page with an error message
         return redirect_to_subdomain_login_url()
 
     if user_profile is None or user_profile.is_mirror_dummy:
-        # Since execution has reached here, the client specified a remote user
-        # but no associated user account exists. Send them over to the
-        # PreregistrationUser flow.
-        return maybe_send_to_registration(request, remote_user_to_email(remote_username), full_name)
+        # Since execution has reached here, we have verified the user
+        # controls an email address (remote_username) but there's no
+        # associated Zulip user account.
+        if is_signup:
+            # If they're trying to sign up, send them over to the PreregistrationUser flow.
+            return maybe_send_to_registration(request, remote_user_to_email(remote_username), full_name)
+
+        # Otherwise, we send them to a special page that asks if they
+        # want to register or provided the wrong email and want to go back.
+        try:
+            validate_email(remote_username)
+            invalid_email = False
+        except ValidationError:
+            # If email address is invalid, we can't send the user
+            # PreregistrationUser flow.
+            invalid_email = True
+        context = {'full_name': full_name,
+                   'email': remote_username,
+                   'invalid_email': invalid_email}
+        return render(request,
+                      'zerver/confirm_continue_registration.html',
+                      context=context)
 
     if mobile_flow_otp is not None:
         # For the mobile Oauth flow, we send the API key and other
@@ -213,6 +232,11 @@ def start_social_login(request, backend):
     # type: (HttpRequest, Text) -> HttpResponse
     backend_url = reverse('social:begin', args=[backend])
     return redirect_to_main_site(request, backend_url)
+
+def start_social_signup(request, backend):
+    # type: (HttpRequest, Text) -> HttpResponse
+    backend_url = reverse('social:begin', args=[backend])
+    return redirect_to_main_site(request, backend_url, is_signup=True)
 
 def send_oauth_request_to_google(request):
     # type: (HttpRequest) -> HttpResponse
@@ -372,10 +396,18 @@ def log_into_subdomain(request):
 
     email_address = data['email']
     full_name = data['name']
-    user_profile, return_data = authenticate_remote_user(request, email_address)
+    is_signup = data['is_signup']
+    if is_signup:
+        # If we are signing up, user_profile should be None. In case
+        # email_address already exists, user will get an error message.
+        user_profile = None
+        return_data = {}  # type: Dict[str, Any]
+    else:
+        user_profile, return_data = authenticate_remote_user(request, email_address)
     invalid_subdomain = bool(return_data.get('invalid_subdomain'))
     return login_or_register_remote_user(request, email_address, user_profile,
-                                         full_name, invalid_subdomain)
+                                         full_name, invalid_subdomain=invalid_subdomain,
+                                         is_signup=is_signup)
 
 def get_dev_users(extra_users_count=10):
     # type: (int) -> List[UserProfile]
