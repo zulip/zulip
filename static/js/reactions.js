@@ -27,6 +27,13 @@ function send_reaction_ajax(message_id, emoji_name, operation) {
     }
 }
 
+exports.current_user_has_reacted_to_emoji = function (message, emoji_name) {
+    var user_id = page_params.user_id;
+    return _.any(message.reactions, function (r) {
+        return (r.user.id === user_id) &&  (r.emoji_name === emoji_name);
+    });
+};
+
 function get_user_list_for_message_reaction(message_id, emoji_name) {
     var message = message_store.get(message_id);
     var matching_reactions = message.reactions.filter(function (reaction) {
@@ -37,17 +44,27 @@ function get_user_list_for_message_reaction(message_id, emoji_name) {
     });
 }
 
-exports.message_reaction_on_click = function (message_id, emoji_name) {
-    // When a message's reaction is clicked,
-    // if the user has reacted to this message with this emoji
-    // the reaction is removed
-    // otherwise, the reaction is added
-    var user_list = get_user_list_for_message_reaction(message_id, emoji_name);
-    var operation = 'remove';
-    if (user_list.indexOf(page_params.user_id) === -1) {
-        // User hasn't reacted with this emoji to this message
-        operation = 'add';
+function get_message(message_id) {
+    var message = message_store.get(message_id);
+    if (!message) {
+        blueslip.error('reactions: Bad message id: ' + message_id);
+        return;
     }
+
+    return message;
+}
+
+exports.message_reaction_on_click = function (message_id, emoji_name) {
+    // This toggles the current user's reaction to the clicked emoji.
+
+    var message = get_message(message_id);
+    if (!message) {
+        return;
+    }
+
+    var has_reacted = exports.current_user_has_reacted_to_emoji(message, emoji_name);
+    var operation = has_reacted ? 'remove' : 'add';
+
     send_reaction_ajax(message_id, emoji_name, operation);
 };
 
@@ -56,6 +73,11 @@ function get_selected_emoji() {
 }
 
 exports.toggle_reaction = function (message_id, emoji_name) {
+    var message = get_message(message_id);
+    if (!message) {
+        return;
+    }
+
     var selected_emoji = get_selected_emoji();
     if (emoji_name === undefined && selected_emoji === undefined) {
         return;
@@ -63,12 +85,10 @@ exports.toggle_reaction = function (message_id, emoji_name) {
     if (selected_emoji) {
         emoji_name = selected_emoji.title;
     }
-    var user_list = get_user_list_for_message_reaction(message_id, emoji_name);
-    var operation = 'add';
-    if (user_list.indexOf(page_params.user_id) !== -1) {
-        // User has reacted with this emoji to this message
-        operation = 'remove';
-    }
+
+    var has_reacted = exports.current_user_has_reacted_to_emoji(message, emoji_name);
+    var operation = has_reacted ? 'remove' : 'add';
+
     send_reaction_ajax(message_id, emoji_name, operation);
     emoji_picker.hide_emoji_popover();
 };
@@ -132,8 +152,13 @@ $(document).on('click', '.emoji-popover-emoji.reaction', function () {
     // otherwise, the reaction is added
     var emoji_name = this.title;
     var message_id = $(this).parent().attr('data-message-id');
-    var user_list = get_user_list_for_message_reaction(message_id, emoji_name);
-    if (user_list.indexOf(page_params.user_id) !== -1) {
+
+    var message = get_message(message_id);
+    if (!message) {
+        return;
+    }
+
+    if (exports.current_user_has_reacted_to_emoji(message, emoji_name)) {
         $(this).removeClass('reacted');
     }
     exports.toggle_reaction(message_id, emoji_name);
@@ -321,8 +346,7 @@ exports.get_message_reactions = function (message) {
             reaction.is_realm_emoji = true;
             reaction.url = emoji.realm_emojis[reaction.emoji_name].emoji_url;
         }
-        if (get_user_list_for_message_reaction(message.id,
-            reaction.emoji_name).indexOf(page_params.user_id) !== -1) {
+        if (user_ids.indexOf(page_params.user_id) !== -1) {
             reaction.class = "message_reaction reacted";
         } else {
             reaction.class = "message_reaction";

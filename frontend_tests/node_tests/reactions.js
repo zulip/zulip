@@ -18,7 +18,7 @@ set_global('blueslip', {
     warn: function () {},
 });
 
-set_global('page_params', {user_id: 1});
+set_global('page_params', {user_id: 5});
 
 (function make_people() {
     var alice = {
@@ -63,7 +63,10 @@ set_global('page_params', {user_id: 1});
     });
     var result = reactions.get_message_reactions(message);
 
-   result.sort(function (a, b) { return a.count - b.count; });
+    assert(reactions.current_user_has_reacted_to_emoji(message, 'smile'));
+    assert(!reactions.current_user_has_reacted_to_emoji(message, 'frown'));
+
+    result.sort(function (a, b) { return a.count - b.count; });
 
     var expected_result = [
       {
@@ -78,9 +81,9 @@ set_global('page_params', {user_id: 1});
          emoji_name: 'smile',
          emoji_name_css_class: 'smile-css',
          count: 2,
-         title: 'Alice and Bob van Roberts reacted with :smile:',
+         title: 'You (click to remove) and Bob van Roberts reacted with :smile:',
          emoji_alt_code: undefined,
-         class: 'message_reaction',
+         class: 'message_reaction reacted',
       },
    ];
    assert.deepEqual(result, expected_result);
