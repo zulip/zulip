@@ -43,8 +43,8 @@ def update_realm(request, user_profile, name=REQ(validator=check_string, default
     # the entire request can succeed or fail atomically.
     if default_language is not None and default_language not in get_available_language_codes():
         raise JsonableError(_("Invalid language '%s'" % (default_language,)))
-    if description is not None and len(description) > 100:
-        return json_error(_("Realm description cannot exceed 100 characters."))
+    if description is not None and len(description) > 1000:
+        return json_error(_("Realm description is too long."))
     if authentication_methods is not None and True not in list(authentication_methods.values()):
         return json_error(_("At least one authentication method must be enabled."),
                           data={"reason": "no authentication"},

@@ -75,6 +75,11 @@ label {
     display: block;
 }
 
+.admin-realm-description {
+    height: 16em;
+    width: 36em;
+}
+
 .padded-container {
     padding: 20px;
 }

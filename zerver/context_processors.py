@@ -14,6 +14,7 @@ from zproject.backends import (
     auth_enabled_helper,
     AUTH_BACKEND_NAME_MAP
 )
+from zerver.lib.bugdown import convert
 from zerver.lib.utils import get_subdomain
 from zerver.lib.realm_icon import get_realm_icon_url
 
@@ -58,7 +59,7 @@ def zulip_default_context(request):
         realm_uri = realm.uri
         realm_name = realm.name
         realm_icon = get_realm_icon_url(realm)
-        realm_description = realm.description or "The coolest place in the universe."
+        realm_description = convert(realm.description, message_realm=realm) or "The coolest place in the universe."
     else:
         realm_uri = settings.SERVER_URI
         realm_name = None

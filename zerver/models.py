@@ -122,7 +122,7 @@ class Realm(ModelReprMixin, models.Model):
     show_digest_email = models.BooleanField(default=True) # type: bool
     name_changes_disabled = models.BooleanField(default=False) # type: bool
     email_changes_disabled = models.BooleanField(default=False) # type: bool
-    description = models.TextField(max_length=100, null=True) # type: Optional[Text]
+    description = models.TextField(null=True) # type: Optional[Text]
 
     allow_message_editing = models.BooleanField(default=True) # type: bool
     DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS = 600 # if changed, also change in admin.js

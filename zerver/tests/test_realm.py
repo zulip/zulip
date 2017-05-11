@@ -90,7 +90,7 @@ class RealmTest(ZulipTestCase):
 
     def test_realm_description_length(self):
         # type: () -> None
-        new_description = u'A' * 101
+        new_description = u'A' * 1001
         data = dict(description=ujson.dumps(new_description))
 
         # create an admin user
@@ -98,7 +98,7 @@ class RealmTest(ZulipTestCase):
         self.login(email)
 
         result = self.client_patch('/json/realm', data)
-        self.assert_json_error(result, 'Realm description cannot exceed 100 characters.')
+        self.assert_json_error(result, 'Realm description is too long.')
         realm = get_realm('zulip')
         self.assertNotEqual(realm.description, new_description)
 
