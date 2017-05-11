@@ -232,6 +232,21 @@ class PushNotificationTest(ZulipTestCase):
                 user=self.user_profile,
                 ios_app_id=settings.ZULIP_IOS_APP_ID)
 
+        server = RemoteZulipServer.objects.create(
+            uuid='remote-server',
+            api_key="magic_secret_api_key",
+            hostname="demo.example.com",
+            last_updated=now()
+        )
+        self.remote_tokens = [u'cccc']
+        for token in self.remote_tokens:
+            RemotePushDeviceToken.objects.create(
+                kind=RemotePushDeviceToken.APNS,
+                token=apn.hex_to_b64(token),
+                user_id=self.user_profile.id,
+                server=server,
+            )
+
     def tearDown(self):
         # type: () -> None
         for i in [100, 200]:
@@ -292,6 +307,40 @@ class ResponseListenerTest(PushNotificationTest):
         self.assertEqual(mock_warn.call_count, 2)
         self.assertEqual(PushDeviceToken.objects.filter(
             user=self.user_profile, token=b64_token).count(), 0)
+
+    @mock.patch('logging.warn')
+    def test_error_code_eight_when_token_doesnt_exist(self, mock_warn):
+        # type: (mock.MagicMock) -> None
+        cache_value = self.get_cache_value()
+        cache_value['token'] = 'cccc'
+        self.redis_client.hmset(apn.get_apns_key(100), cache_value)
+        err_rsp = self.get_error_response(identifier=100, status=8)
+        apn.response_listener(err_rsp)
+        self.assertEqual(PushDeviceToken.objects.all().count(), 2)
+
+    @mock.patch('logging.warn')
+    def test_error_code_eight_with_zilencer(self, mock_warn):
+        # type: (mock.MagicMock) -> None
+        cache_value = self.get_cache_value()
+        cache_value['token'] = 'cccc'
+        self.redis_client.hmset(apn.get_apns_key(100), cache_value)
+        err_rsp = self.get_error_response(identifier=100, status=8)
+        self.assertEqual(RemotePushDeviceToken.objects.all().count(), 1)
+        with self.settings(ZILENCER_ENABLED=True):
+            apn.response_listener(err_rsp)
+        self.assertEqual(RemotePushDeviceToken.objects.all().count(), 0)
+
+    @mock.patch('logging.warn')
+    def test_error_code_eight_with_zilencer_when_token_doesnt_exist(self, mock_warn):
+        # type: (mock.MagicMock) -> None
+        cache_value = self.get_cache_value()
+        cache_value['token'] = 'dddd'
+        self.redis_client.hmset(apn.get_apns_key(100), cache_value)
+        err_rsp = self.get_error_response(identifier=100, status=8)
+        self.assertEqual(RemotePushDeviceToken.objects.all().count(), 1)
+        with self.settings(ZILENCER_ENABLED=True):
+            apn.response_listener(err_rsp)
+        self.assertEqual(RemotePushDeviceToken.objects.all().count(), 1)
 
 class TestPushApi(ZulipTestCase):
     def test_push_api(self):
