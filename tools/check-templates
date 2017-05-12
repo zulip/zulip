@@ -212,15 +212,9 @@ def check_handlebar_templates(templates):
     for fn in templates:
         validate(fn=fn, check_indent=True)
 
-    # Ignore these files since these have not been cleaned yet :/
-    IGNORE_FILES = [
-        'static/templates/user_sidebar_actions.handlebars',
-    ]
-    # TODO: Clean these files
     for fn in templates:
-        if fn not in IGNORE_FILES:
-            if not validate_indent_html(fn):
-                sys.exit(1)
+        if not validate_indent_html(fn):
+            sys.exit(1)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
