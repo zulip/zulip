@@ -55,7 +55,7 @@ class TestMissedMessages(ZulipTestCase):
         self.assertIn(body, self.normalize_string(msg.body))
 
     @patch('zerver.lib.email_mirror.generate_random_token')
-    def _extra_context_in_missed_stream_messages(self, send_as_user, mock_random_token):
+    def _extra_context_in_missed_stream_messages_mention(self, send_as_user, mock_random_token):
         # type: (bool, MagicMock) -> None
         tokens = self._get_tokens()
         mock_random_token.side_effect = tokens
@@ -65,6 +65,19 @@ class TestMissedMessages(ZulipTestCase):
         self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '11', subject='test2')
         msg_id = self.send_message("othello@zulip.com", "denmark", Recipient.STREAM, '@**hamlet**')
         body = 'Denmark > test Othello, the Moor of Venice 1 2 3 4 5 6 7 8 9 10 @**hamlet**'
+        subject = 'Othello, the Moor of Venice mentioned you in Zulip Dev'
+        self._test_cases(tokens, msg_id, body, subject, send_as_user)
+
+    @patch('zerver.lib.email_mirror.generate_random_token')
+    def _extra_context_in_missed_stream_messages_mention_two_senders(self, send_as_user, mock_random_token):
+        # type: (bool, MagicMock) -> None
+        tokens = self._get_tokens()
+        mock_random_token.side_effect = tokens
+
+        for i in range(0, 3):
+            self.send_message("cordelia@zulip.com", "Denmark", Recipient.STREAM, str(i))
+        msg_id = self.send_message("othello@zulip.com", "Denmark", Recipient.STREAM, '@**hamlet**')
+        body = 'Denmark > test Cordelia Lear 0 1 2 Othello, the Moor of Venice @**hamlet**'
         subject = 'Othello, the Moor of Venice mentioned you in Zulip Dev'
         self._test_cases(tokens, msg_id, body, subject, send_as_user)
 
@@ -212,11 +225,20 @@ class TestMissedMessages(ZulipTestCase):
     @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
     def test_extra_context_in_missed_stream_messages_as_user(self):
         # type: () -> None
-        self._extra_context_in_missed_stream_messages(True)
+        self._extra_context_in_missed_stream_messages_mention(True)
 
     def test_extra_context_in_missed_stream_messages(self):
         # type: () -> None
-        self._extra_context_in_missed_stream_messages(False)
+        self._extra_context_in_missed_stream_messages_mention(False)
+
+    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
+    def test_extra_context_in_missed_stream_messages_as_user_two_senders(self):
+        # type: () -> None
+        self._extra_context_in_missed_stream_messages_mention_two_senders(True)
+
+    def test_extra_context_in_missed_stream_messages_two_senders(self):
+        # type: () -> None
+        self._extra_context_in_missed_stream_messages_mention_two_senders(False)
 
     def test_reply_to_email_in_personal_missed_stream_messages(self):
         # type: () -> None

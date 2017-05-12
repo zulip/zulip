@@ -274,14 +274,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
     from zerver.lib.email_mirror import create_missed_message_address
     address = create_missed_message_address(user_profile, missed_messages[0])
 
-    # TODO: For the mention case, senders should just be the people
-    # who mentioned you, not the other senders.
-    senders = set(m.sender.full_name for m in missed_messages)
-    sender_str = ", ".join(senders)
-    context.update({
-        'sender_str': sender_str,
-        'realm_str': user_profile.realm.name,
-    })
+    senders = list(set(m.sender for m in missed_messages))
     if (missed_messages[0].recipient.type == Recipient.HUDDLE):
         display_recipient = get_display_recipient(missed_messages[0].recipient)
         # Make sure that this is a list of strings, not a string.
@@ -301,7 +294,20 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
     elif (missed_messages[0].recipient.type == Recipient.PERSONAL):
         context.update({'private_message': True})
     else:
+        # Keep only the senders who actually mentioned the user
+        #
+        # TODO: When we add wildcard mentions that send emails, add
+        # them to the filter here.
+        senders = list(set(m.sender for m in missed_messages if
+                           UserMessage.objects.filter(message=m, user_profile=user_profile,
+                                                      flags=UserMessage.flags.mentioned).exists()))
         context.update({'at_mention': True})
+
+    context.update({
+        'sender_str': ", ".join(sender.full_name for sender in senders),
+        'realm_str': user_profile.realm.name,
+    })
+
     from_email = None
 
     if len(senders) == 1 and settings.SEND_MISSED_MESSAGE_EMAILS_AS_USER:
@@ -310,8 +316,8 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
         # However, one must ensure the Zulip server is in the SPF
         # record for the domain, or there will be spam/deliverability
         # problems.
-        sender = missed_messages[0].sender
-        from_email = '"%s" <%s>' % (sender_str, sender.email)
+        sender = senders[0]
+        from_email = '"%s" <%s>' % (sender.full_name, sender.email)
         context.update({
             'reply_warning': False,
             'reply_to_zulip': False,
