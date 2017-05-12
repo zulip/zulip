@@ -1031,6 +1031,7 @@ ZULIP_PATHS = [
     ("STATS_DIR", "/home/zulip/stats"),
     ("DIGEST_LOG_PATH", "/var/log/zulip/digest.log"),
     ("ANALYTICS_LOG_PATH", "/var/log/zulip/analytics.log"),
+    ("API_KEY_ONLY_WEBHOOK_LOG_PATH", "/var/log/zulip/webhooks_errors.log"),
 ]
 
 # The Event log basically logs most significant database changes,
@@ -1174,6 +1175,11 @@ LOGGING = {
             'handlers': ['console'],
             'filters': ['require_debug_true', 'skip_site_packages_logs'],
             'level': 'DEBUG',
+            'propagate': False,
+        },
+        'zulip.zerver.webhooks': {
+            'handlers': ['file', 'errors_file'],
+            'level': 'INFO',
             'propagate': False,
         },
         ## Uncomment the following to get all database queries logged to the console
