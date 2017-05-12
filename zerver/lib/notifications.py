@@ -276,11 +276,32 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
 
     senders = set(m.sender.full_name for m in missed_messages)
     sender_str = ", ".join(senders)
+    realm_str = user_profile.realm.name
     context.update({
         'sender_str': sender_str,
+        'realm_str': realm_str
     })
-
+    if (missed_messages[0].recipient.type == Recipient.HUDDLE):
+        disp_recipient = get_display_recipient(missed_messages[0].recipient)
+        assert not isinstance(disp_recipient, Text)
+        other_recipients = [r['full_name'] for r in disp_recipient
+                            if r['email'] != user_profile.email]
+        context.update({'group_pm': True})
+        if len(other_recipients) == 2:
+            huddle_display_name = u"%s" % (" and ".join(other_recipients))
+            context.update({'huddle_display_name': huddle_display_name})
+        elif len(other_recipients) == 3:
+            huddle_display_name = u"%s, %s, and %s" % (other_recipients[0], other_recipients[1], other_recipients[2])
+            context.update({'huddle_display_name': huddle_display_name})
+        else:
+            huddle_display_name = u"%s, and %s others" % (', '.join(other_recipients[:2]), len(other_recipients) - 2)
+            context.update({'huddle_display_name': huddle_display_name})
+    elif (missed_messages[0].recipient.type == Recipient.PERSONAL):
+        context.update({'private_message': True})
+    else:
+        context.update({'at_mention': True})
     from_email = None
+
     if len(senders) == 1 and settings.SEND_MISSED_MESSAGE_EMAILS_AS_USER:
         # If this setting is enabled, you can reply to the Zulip
         # missed message emails directly back to the original sender.
