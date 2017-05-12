@@ -90,7 +90,9 @@ def get_display_recipient_remote_cache(recipient_id, recipient_type, recipient_t
         stream = Stream.objects.get(id=recipient_type_id)
         return stream.name
 
-    # We don't really care what the ordering is, just that it's deterministic.
+    # The main priority for ordering here is being deterministic.
+    # Right now, we order by ID, which matches the ordering of user
+    # names in the left sidebar.
     user_profile_list = (UserProfile.objects.filter(subscription__recipient_id=recipient_id)
                                             .select_related()
                                             .order_by('id'))
