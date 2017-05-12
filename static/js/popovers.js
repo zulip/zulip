@@ -174,13 +174,28 @@ exports.toggle_actions_popover = function (element, id) {
 };
 
 function get_action_menu_menu_items() {
-    return $('li:not(.divider):visible a', current_actions_popover_elem.data('popover').$tip);
+    if (!current_actions_popover_elem) {
+        blueslip.error('Trying to get menu items when action popover is closed.');
+        return;
+    }
+
+    var popover_data = current_actions_popover_elem.data('popover');
+    if (!popover_data) {
+        blueslip.error('Cannot find popover data for actions menu.');
+        return;
+    }
+
+    return $('li:not(.divider):visible a', popover_data.$tip);
 }
 
 function focus_first_action_popover_item() {
     // For now I recommend only calling this when the user opens the menu with a hotkey.
     // Our popup menus act kind of funny when you mix keyboard and mouse.
     var items = get_action_menu_menu_items();
+    if (!items) {
+        return;
+    }
+
     items.eq(0).expectOne().focus();
 }
 
@@ -195,6 +210,10 @@ exports.open_message_menu = function () {
 
 exports.actions_menu_handle_keyboard = function (key) {
     var items = get_action_menu_menu_items();
+    if (!items) {
+        return;
+    }
+
     var index = items.index(items.filter(':focus'));
 
     if (key === "enter" && index >= 0 && index < items.length) {
