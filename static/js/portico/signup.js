@@ -60,4 +60,10 @@ $(function () {
         errorClass: "text-error",
         wrapper: "div",
     });
+
+    var $organization_name = $(".organization-name");
+
+    if ($organization_name.length > 0) {
+        DynamicText($organization_name);
+    }
 });

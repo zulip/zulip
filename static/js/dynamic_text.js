@@ -38,6 +38,7 @@ var DynamicText = (function () {
 
             // reset the font-size to inherit the parent's size; 1em.
             node.style.fontSize = "1em";
+            parent.style.opacity = 0;
 
             var width = {
                 node: node.offsetWidth,
@@ -47,10 +48,12 @@ var DynamicText = (function () {
             // if the width is larger than the parent, resize by the ratio of
             // the parent's width to the node's width.
             if (width.node > width.parent) {
-                node.style.fontSize = (width.parent / width.node) + "em";
+                node.style.fontSize = (width.parent * 0.995 / width.node) + "em";
             } else {
                 node.style.fontSize = "1em";
             }
+
+            parent.style.opacity = 1;
         },
     };
 
