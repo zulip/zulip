@@ -1,10 +1,5 @@
 Scrapy==1.4.0
-cryptography==1.9
 asn1crypto==0.22.0
-
-# Required by cryptography, only for Python 2 (should be removed once we
-# migrate to Python 3):
-ipaddress==1.0.18
 
 parsel==1.2.0
 pyOpenSSL==17.0.0

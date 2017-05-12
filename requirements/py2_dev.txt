@@ -1,2 +1,2 @@
--r py2_common.txt
+-r py2_common_lock.txt
 -r dev.txt
