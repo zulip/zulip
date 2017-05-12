@@ -48,8 +48,8 @@ combine different styles of formatting.
 ## Links
 
 To include hyperlinks in your messages, you can either enter the
-link's url address directly or surround the link's display text
-with`[brackets]` and the url address of the link in `(parentheses)`
+link's URL address directly or surround the link's display text
+with`[brackets]` and the URL address of the link in `(parentheses)`
 immediately after.
 
 ![Link](/static/images/help/link-screenshot.png)
@@ -61,8 +61,6 @@ Zulip currently does not support image embedding through links.
 To link to another stream in one of your messages, you can either type
 `#streamName` and click the stream name in the popup, or you can start
 with `#` and surround your message with double asteriks `**`.
-
-![Stream Link Popup](/static/images/help/stream-link-pop-screenshot.png)
 
 ![Stream Links](/static/images/help/stream-link-screenshot.png)
 
@@ -136,12 +134,13 @@ Zulip also supports syntax highlighting of multi-line code blocks using
 [Pygments](http://pygments.org). To add syntax highlighting to a multi-line code
 block, add the language's **first**
 [Pygments short name](http://pygments.org/docs/lexers/) after the first set of
-back-ticks.
+back-ticks; as you type out a code block's short name, a dropdown with short
+name suggestions will appear.
 
 !!! warn ""
-    You can only specify the language's short name in fenced code blocks.
-    It is not possible to use the syntax highlighter in blocks indented with
-    spaces.
+    **Note:** You can only specify the language's short name in fenced code
+    blocks. It is not possible to use the syntax highlighter in blocks
+    indented with spaces.
 
 ![Python syntax highlighting](/static/images/help/python-syntax.png)
 
