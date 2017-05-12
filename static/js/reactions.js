@@ -103,7 +103,7 @@ exports.render_reaction_show_list = function () {
 
 function filter_emojis() {
     var elt = $(".emoji-popover-filter").expectOne();
-    var search_term = elt.val().trim();
+    var search_term = elt.val().trim().toLowerCase();
     var reaction_list = $(".emoji-popover-emoji");
     if (search_term !== '') {
         reaction_list.filter(function () {

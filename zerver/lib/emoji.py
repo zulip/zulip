@@ -27,8 +27,10 @@ def check_emoji_admin(user_profile):
 
 def check_valid_emoji_name(emoji_name):
     # type: (Text) -> None
-    if re.match('^[0-9a-zA-Z.\-_]+(?<![.\-_])$', emoji_name):
+    if re.match('^[0-9a-z.\-_]+(?<![.\-_])$', emoji_name):
         return
+    if not emoji_name.islower():
+        raise JsonableError(_("Emoji name must be all lowercase"))
     raise JsonableError(_("Invalid characters in emoji name"))
 
 def get_emoji_url(emoji_file_name, realm_id):
