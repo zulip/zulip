@@ -187,3 +187,55 @@ var timerender = require('js/timerender.js');
     var actual = attrs.get('title');
     assert.equal(expected, actual);
 }());
+
+(function test_last_seen_status_from_date() {
+    // Set base_dateto to March 1 2016 12.30 AM (months are zero based)
+    var base_date = new XDate(2016, 2, 1, 0, 30);
+
+    function assert_same(modifier, expected_status) {
+        var past_date = base_date.clone();
+        past_date = modifier(past_date);
+        var actual_status = timerender.last_seen_status_from_date(past_date, base_date);
+        assert.equal(actual_status, expected_status);
+    }
+
+    assert_same(function (d) { return d.addSeconds(-20); },
+                i18n.t("Last seen just now"));
+
+    assert_same(function (d) { return d.addMinutes(-1); },
+                i18n.t("Last seen just now"));
+
+    assert_same(function (d) { return d.addMinutes(-2); },
+                i18n.t("Last seen just now"));
+
+    assert_same(function (d) { return d.addMinutes(-30); },
+                i18n.t("Last seen 30 minutes ago"));
+
+    assert_same(function (d) { return d.addHours(-1); },
+                i18n.t("Last seen an hour ago"));
+
+    assert_same(function (d) { return d.addHours(-2); },
+                i18n.t("Last seen 2 hours ago"));
+
+    assert_same(function (d) { return d.addHours(-20); },
+                i18n.t("Last seen 20 hours ago"));
+
+    assert_same(function (d) { return d.addDays(-1); },
+                i18n.t("Last seen yesterday"));
+
+    assert_same(function (d) { return d.addDays(-2); },
+                i18n.t("Last seen on Feb 28"));
+
+    assert_same(function (d) { return d.addDays(-61); },
+                i18n.t("Last seen on Dec 31"));
+
+    assert_same(function (d) { return d.addDays(-300); },
+                i18n.t("Last seen on May 06"));
+
+    assert_same(function (d) { return d.addDays(-366); },
+                i18n.t("Last seen on Mar 01, 2015"));
+
+    assert_same(function (d) { return d.addYears(-3); },
+                i18n.t("Last seen on Mar 01, 2013"));
+
+}());

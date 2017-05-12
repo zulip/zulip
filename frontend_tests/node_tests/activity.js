@@ -13,6 +13,14 @@ set_global('document', {
     },
 });
 
+set_global('i18n', {
+    t: function (string) {
+        return string;
+    },
+});
+
+set_global('XDate', require("xdate"));
+
 add_dependencies({
     Handlebars: 'handlebars',
     templates: 'js/templates',
@@ -25,6 +33,7 @@ add_dependencies({
     narrow: 'js/narrow.js',
     presence: 'js/presence.js',
     activity: 'js/activity.js',
+    timerender: 'js/timerender.js',
 });
 
 var presence = global.presence;
