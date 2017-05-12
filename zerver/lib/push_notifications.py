@@ -382,14 +382,13 @@ def handle_push_notification(user_profile_id, missed_message):
         apple_devices = list(PushDeviceToken.objects.filter(user=user_profile,
                                                             kind=PushDeviceToken.APNS))
 
-        if apple_devices or android_devices:
-            # TODO: set badge count in a better way
-            if apple_devices:
-                send_apple_push_notification(user_profile.id, apple_devices,
-                                             badge=1, zulip=apns_payload)
+        # TODO: set badge count in a better way
+        if apple_devices:
+            send_apple_push_notification(user_profile.id, apple_devices,
+                                         badge=1, zulip=apns_payload)
 
-            if android_devices:
-                send_android_push_notification(android_devices, gcm_payload)
+        if android_devices:
+            send_android_push_notification(android_devices, gcm_payload)
 
     except UserMessage.DoesNotExist:
         logging.error("Could not find UserMessage with message_id %s" % (missed_message['message_id'],))
