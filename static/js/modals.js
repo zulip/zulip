@@ -59,12 +59,17 @@ exports.open_overlay = function (opts) {
 };
 
 exports.close_modal = function (name) {
-    if ((name !== open_modal_name) || !close_handler) {
-        blueslip.error("Modal close handler for " + name + " not properly setup." );
+    if (name !== open_modal_name) {
+        blueslip.error("Trying to close " + name + " when " + open_modal_name + " is open." );
         return;
     }
 
     active_overlay.removeClass("show");
+
+    if (!close_handler) {
+        blueslip.error("Modal close handler for " + name + " not properly setup." );
+        return;
+    }
 
     close_handler();
 };
