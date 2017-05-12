@@ -62,6 +62,39 @@ exports.render_now = function (time, today) {
     };
 };
 
+// Current date is passed as an argument for unit testing
+exports.last_seen_status_from_date = function (last_active_date, current_date) {
+    if (typeof  current_date === 'undefined') {
+         current_date = new XDate();
+    }
+
+    var minutes = Math.floor(last_active_date.diffMinutes(current_date));
+    if (minutes <= 2) {
+        return i18n.t("Last seen just now");
+    }
+    if (minutes < 60) {
+        return i18n.t("Last seen " + minutes +" minutes ago");
+    }
+
+    var hours = Math.floor(minutes / 60);
+    if (hours === 1) {
+         return i18n.t("Last seen an hour ago");
+    }
+    if (hours < 24) {
+        return i18n.t("Last seen " + hours + " hours ago");
+    }
+
+    var days = Math.floor(hours / 24);
+    if (days === 1) {
+        return [i18n.t("Last seen yesterday")];
+    }
+    if (days < 365) {
+        return i18n.t("Last seen on " + last_active_date.toString("MMM\xa0dd"));
+    }
+
+    return i18n.t("Last seen on " + last_active_date.toString("MMM\xa0dd,\xa0yyyy"));
+};
+
 // List of the dates that need to be updated when the day changes.
 // Each timestamp is represented as a list of length 2:
 //   [id of the span element, XDate representing the time]
