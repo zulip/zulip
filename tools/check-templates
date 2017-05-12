@@ -215,7 +215,6 @@ def check_handlebar_templates(templates):
     # Ignore these files since these have not been cleaned yet :/
     IGNORE_FILES = [
         'static/templates/user_sidebar_actions.handlebars',
-        'static/templates/settings/bot-list-admin.handlebars',
         'static/templates/settings/default-streams-list-admin.handlebars',
         'static/templates/settings/organization-settings-admin.handlebars',
         'static/templates/settings/user-list-admin.handlebars',
