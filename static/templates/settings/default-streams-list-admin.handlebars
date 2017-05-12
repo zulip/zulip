@@ -3,19 +3,19 @@
     <div class="clear-float"></div>
 
     <div class="side-padded-container">
-      <p>{{#tr this}}Configure the default streams new users are subscribed to when joining your organization.{{/tr}}</p>
+        <p>{{#tr this}}Configure the default streams new users are subscribed to when joining your organization.{{/tr}}</p>
     </div>
 
     {{#if is_admin}}
-      <form class="form-horizontal default-stream-form">
+    <form class="form-horizontal default-stream-form">
         <div class="add-new-default-stream-box grey-bg">
-          <div class="new-default-stream-section-title">{{t "Add new default stream" }}</div>
-          <div class="control-group" id="default_stream_inputs">
-            <label for="default_stream_name" class="control-label">{{t "Stream name" }}</label>
-            <input class="create_default_stream" type="text" placeholder="{{t "Stream name" }}" name="stream_name" autocomplete="off"></input>
-          </div>
+            <div class="new-default-stream-section-title">{{t "Add new default stream" }}</div>
+            <div class="control-group" id="default_stream_inputs">
+                <label for="default_stream_name" class="control-label">{{t "Stream name" }}</label>
+                <input class="create_default_stream" type="text" placeholder="{{t "Stream name" }}" name="stream_name" autocomplete="off"></input>
+            </div>
         </div>
-      </form>
+    </form>
     {{/if}}
 
     <div class="progressive-table-wrapper">
@@ -23,7 +23,7 @@
             <thead>
                 <th>{{t "Name" }}</th>
                 {{#if is_admin}}
-                    <th class="actions">{{t "Actions" }}</th>
+                <th class="actions">{{t "Actions" }}</th>
                 {{/if}}
             </thead>
             <tbody class="required-text" data-empty="{{t 'No default streams match you current filter.' }}"
